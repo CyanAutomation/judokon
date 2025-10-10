@@ -78,61 +78,96 @@ export async function getSanitizer() {
 }
 
 const BASIC_ALLOW = new Set(["br", "strong", "em"]);
-const SCRIPT_TOKEN = "scr" + "ipt";
-const STYLE_TOKEN = "style";
-const SCRIPT_STYLE_NAME_GROUP = SCRIPT_TOKEN + "|" + STYLE_TOKEN;
-const SCRIPT_STYLE_FINDER_SOURCE = "<\\s*(" + SCRIPT_STYLE_NAME_GROUP + ")\\b";
-const SCRIPT_STYLE_OPEN_TAG = new RegExp(
-  "<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
-  "gi"
-);
+const EXECUTABLE_TAGS = Object.freeze({
+  SCRIPT: "script",
+  STYLE: "style"
+});
+const EXECUTABLE_TAG_NAMES = Object.values(EXECUTABLE_TAGS);
+const SCRIPT_STYLE_NAME_GROUP = EXECUTABLE_TAG_NAMES.join("|");
+const SCRIPT_STYLE_OPEN_CAPTURE_SOURCE = "<\\s*(" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>";
+const SCRIPT_STYLE_OPEN_TAG = new RegExp("<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>", "gi");
 const SCRIPT_STYLE_CLOSE_TAG = new RegExp(
   "<\\s*\\/\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
   "gi"
 );
+const SCRIPT_CLOSING_SOURCE = "<\\s*\\/\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]*>";
+const STYLE_CLOSING_SOURCE = "<\\s*\\/\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*>";
+const SCRIPT_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]*>";
+const STYLE_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*>";
 
 function stripExecutableBlocks(html) {
-  const finder = new RegExp(SCRIPT_STYLE_FINDER_SOURCE, "gi");
+  const finder = new RegExp(SCRIPT_STYLE_OPEN_CAPTURE_SOURCE, "gi");
+  const scriptOpener = new RegExp(SCRIPT_OPENING_SOURCE, "gi");
+  const styleOpener = new RegExp(STYLE_OPENING_SOURCE, "gi");
+  const scriptCloser = new RegExp(SCRIPT_CLOSING_SOURCE, "gi");
+  const styleCloser = new RegExp(STYLE_CLOSING_SOURCE, "gi");
+  const openers = {
+    [EXECUTABLE_TAGS.SCRIPT]: scriptOpener,
+    [EXECUTABLE_TAGS.STYLE]: styleOpener
+  };
+  const closers = {
+    [EXECUTABLE_TAGS.SCRIPT]: scriptCloser,
+    [EXECUTABLE_TAGS.STYLE]: styleCloser
+  };
+
   let cleaned = "";
   let lastIndex = 0;
   let match;
+  let iterations = 0;
+  const maxIterations = Math.max(16, html.length);
 
   while ((match = finder.exec(html))) {
-    const start = match.index;
+    iterations += 1;
+    if (iterations > maxIterations) {
+      cleaned += html.slice(lastIndex);
+      return cleaned;
+    }
+
+    const tagStart = match.index;
     const tagName = match[1].toLowerCase();
-    const searchFrom = finder.lastIndex;
-    const openEnd = html.indexOf(">", searchFrom);
+    const opener = openers[tagName];
+    const closer = closers[tagName];
 
-    cleaned += html.slice(lastIndex, start);
-
-    if (openEnd === -1) {
-      lastIndex = searchFrom;
-      finder.lastIndex = searchFrom;
+    if (!opener || !closer) {
+      finder.lastIndex = match.index + match[0].length;
       continue;
     }
 
-    const closingPattern = new RegExp(
-      "<\\s*\\/\\s*" + tagName + "\\b",
-      "gi"
-    );
-    closingPattern.lastIndex = openEnd + 1;
-    const closingMatch = closingPattern.exec(html);
+    cleaned += html.slice(lastIndex, tagStart);
 
-    if (!closingMatch) {
-      lastIndex = openEnd + 1;
-      finder.lastIndex = openEnd + 1;
-      continue;
+    const openEnd = finder.lastIndex;
+    let searchIndex = openEnd;
+    let depth = 1;
+
+    while (depth > 0) {
+      closer.lastIndex = searchIndex;
+      const closingMatch = closer.exec(html);
+      if (!closingMatch) {
+        lastIndex = openEnd;
+        finder.lastIndex = openEnd;
+        opener.lastIndex = 0;
+        closer.lastIndex = 0;
+        break;
+      }
+
+      const closeIndex = closingMatch.index;
+
+      opener.lastIndex = searchIndex;
+      let nested;
+      while ((nested = opener.exec(html)) && nested.index < closeIndex) {
+        depth += 1;
+        searchIndex = opener.lastIndex;
+        opener.lastIndex = searchIndex;
+      }
+
+      depth -= 1;
+      searchIndex = closer.lastIndex;
+      lastIndex = searchIndex;
     }
 
-    const closeEnd = html.indexOf(">", closingPattern.lastIndex);
-    if (closeEnd === -1) {
-      lastIndex = openEnd + 1;
-      finder.lastIndex = openEnd + 1;
-      continue;
-    }
-
-    lastIndex = closeEnd + 1;
-    finder.lastIndex = lastIndex;
+    opener.lastIndex = 0;
+    closer.lastIndex = 0;
+    finder.lastIndex = Math.max(finder.lastIndex, lastIndex);
   }
 
   cleaned += html.slice(lastIndex);
@@ -164,10 +199,7 @@ function sanitizeBasic(input) {
     .replace(SCRIPT_STYLE_CLOSE_TAG, "")
     .replace(SCRIPT_STYLE_OPEN_TAG, "");
   // Drop inline event handlers (quoted or unquoted values)
-  out = out.replace(
-    /\son[a-z0-9:-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
-    ""
-  );
+  out = out.replace(/\son[a-z0-9:-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
   // Allow only a small set of tags and strip attributes
   out = out.replace(/<\/?([a-z][a-z0-9:-]*)\b[^>]*>/gi, (m, tag) => {
     const t = String(tag).toLowerCase();

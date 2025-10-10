@@ -26,8 +26,7 @@ describe("sanitizeHtml fallback sanitizer", () => {
   });
 
   it("neutralizes mixed quoting styles on the same element", () => {
-    const input =
-      "<x-bar onclick='alert(1)' onfocus=alert(2) onblur=\"alert(3)\">text</x-bar>";
+    const input = "<x-bar onclick='alert(1)' onfocus=alert(2) onblur=\"alert(3)\">text</x-bar>";
     const result = sanitizeBasic(input);
 
     expect(result).toBe("&lt;x-bar&gt;text&lt;/x-bar&gt;");
@@ -73,5 +72,29 @@ describe("sanitizeHtml fallback sanitizer", () => {
     expect(result).not.toContain("alert");
     expect(result).not.toContain("<script");
     expect(result).not.toContain("<style");
+  });
+
+  it("handles unclosed executable tags without hanging", () => {
+    const input = "<script>bad";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("bad");
+  });
+
+  it("removes executable tags with unusual spacing and casing", () => {
+    const input =
+      '<ScRiPt\n type="text/javascript" data-test=1>evil</sCrIpT>' +
+      "<STYLE media=all>body{color:red}</STyle >";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("");
+  });
+
+  it("strips executable tags from large inputs within bounds", () => {
+    const payload = "a".repeat(1024);
+    const input = `<div>${payload}</div><script>${payload}</script>`;
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe(`&lt;div&gt;${payload}&lt;/div&gt;`);
   });
 });
