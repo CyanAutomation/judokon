@@ -206,16 +206,16 @@ function stripExecutableBlocks(html) {
     while ((match = finder.exec(html))) {
       iterations += 1;
 
-      const tagStart = match.index;
-      const tagName = match[1].toLowerCase();
-      const opener = openers[tagName];
-      const closer = closers[tagName];
-
       if (iterations > maxIterations) {
         exceededIterationLimit = true;
         cleaned += html.slice(lastIndex);
         break;
       }
+
+      const tagStart = match.index;
+      const tagName = match[1].toLowerCase();
+      const opener = openers[tagName];
+      const closer = closers[tagName];
 
       cleaned += html.slice(lastIndex, tagStart);
 
