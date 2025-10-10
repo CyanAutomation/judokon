@@ -59,6 +59,23 @@ describe("battleCLI countdown", () => {
     emitSpy.mockRestore();
   });
 
+  it("flips countdown colour below five seconds and resets on restart", async () => {
+    const mod = await loadBattleCLI({ autoSelect: false });
+    await mod.init();
+    battleEvents.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    const countdown = document.getElementById("cli-countdown");
+    expect(countdown).toBeTruthy();
+    mod.startSelectionCountdown(6);
+    await timers.advanceTimersByTimeAsync(2000);
+    expect(countdown.dataset.remainingTime).toBe("4");
+    expect(countdown.textContent).toContain("4");
+    expect(countdown.style.color).toBe("rgb(255, 204, 0)");
+    const finish = mod.getSelectionFinishFn();
+    await finish?.();
+    mod.startSelectionCountdown(10);
+    expect(countdown.style.color).toBe("");
+  });
+
   it("parses skipRoundCooldown query param", async () => {
     const mod = await loadBattleCLI({
       autoSelect: true,

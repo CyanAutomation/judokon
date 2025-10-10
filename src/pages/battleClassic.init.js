@@ -1863,9 +1863,6 @@ async function init() {
           await startRoundCycle(store);
         } catch (err) {
           console.error("battleClassic: startRoundCycle failed", err);
-          if (err instanceof JudokaDataLoadError) {
-            return;
-          }
           showFatalInitError(err);
         }
       });
