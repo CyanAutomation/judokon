@@ -19,13 +19,40 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 
+class AuditError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+class FileNotFoundAuditError extends AuditError {
+  constructor(filePath) {
+    super(`PRD file not found at expected location: ${filePath}`);
+  }
+}
+
+class AppendixNotFoundError extends AuditError {
+  constructor(heading) {
+    super(`Required appendix section not found: "${heading}"`);
+  }
+}
+
+class MarkdownTableError extends AuditError {
+  constructor(message) {
+    super(message);
+  }
+}
+
 /**
  * Extract a markdown table that follows the given heading text.
  */
 function extractAppendixTable(markdown, heading) {
   const lines = markdown.split("\n");
   const startIndex = lines.findIndex((line) => line.trim() === heading.trim());
-  if (startIndex === -1) return [];
+  if (startIndex === -1) {
+    throw new AppendixNotFoundError(heading);
+  }
 
   const tableLines = [];
   for (let i = startIndex + 1; i < lines.length; i++) {
@@ -36,6 +63,12 @@ function extractAppendixTable(markdown, heading) {
     }
   }
 
+  if (tableLines.length === 0) {
+    throw new MarkdownTableError(
+      `No markdown table found following heading "${heading}".`
+    );
+  }
+
   return parseMarkdownTable(tableLines);
 }
 
@@ -43,7 +76,19 @@ function extractAppendixTable(markdown, heading) {
  * Parse markdown table rows into objects keyed by column header.
  */
 function parseMarkdownTable(tableLines) {
-  if (tableLines.length < 2) return [];
+  if (tableLines.length < 2) {
+    throw new MarkdownTableError(
+      "Invalid markdown table format: expected header and separator rows."
+    );
+  }
+
+  const separatorRow = tableLines[1];
+  if (!/^\|\s*[-:|\s]+\|$/.test(separatorRow)) {
+    throw new MarkdownTableError(
+      "Invalid markdown table format: missing or malformed separator row."
+    );
+  }
+
   const headers = tableLines[0]
     .split("|")
     .slice(1, -1)
@@ -57,7 +102,12 @@ function parseMarkdownTable(tableLines) {
       .split("|")
       .slice(1, -1)
       .map((cell) => cell.trim());
-    if (cells.length !== headers.length) continue;
+    if (cells.length !== headers.length) {
+      console.warn(
+        `Skipping row ${i} due to column mismatch: expected ${headers.length}, received ${cells.length}.`
+      );
+      continue;
+    }
 
     const row = {};
     headers.forEach((header, idx) => {
@@ -76,7 +126,10 @@ function parseEventEmissions(markdown) {
   const rows = extractAppendixTable(markdown, "### Appendix A: Battle Event Emitters Inventory");
   return rows.map((row) => {
     const name = row.Event.replace(/`/g, "");
-    const modules = row["Emitter modules"].split("<br>").map((entry) => entry.replace(/`/g, "").trim());
+    const modules = row["Emitter modules"]
+      .split("<br>")
+      .map((entry) => entry.replace(/`/g, "").trim())
+      .filter(Boolean);
     return {
       name,
       type: "battleEvent",
@@ -92,7 +145,10 @@ function parseEventListeners(markdown) {
   const rows = extractAppendixTable(markdown, "### Appendix B: Listener Inventory (DOM & Event Bus)");
   return rows.map((row) => {
     const event = row.Event.replace(/`/g, "");
-    const modules = row["Listener modules"].split("<br>").map((entry) => entry.replace(/`/g, "").trim());
+    const modules = row["Listener modules"]
+      .split("<br>")
+      .map((entry) => entry.replace(/`/g, "").trim())
+      .filter(Boolean);
     return {
       event,
       modules
@@ -107,7 +163,10 @@ function parseTestEventUsage(markdown) {
   const rows = extractAppendixTable(markdown, "### Appendix C: Test Event Utilities and Dispatch Patterns");
   return rows.map((row) => {
     const pattern = row.Pattern.replace(/`/g, "");
-    const modules = row["Test modules"].split("<br>").map((entry) => entry.replace(/`/g, "").trim());
+    const modules = row["Test modules"]
+      .split("<br>")
+      .map((entry) => entry.replace(/`/g, "").trim())
+      .filter(Boolean);
     return {
       pattern,
       modules
@@ -215,12 +274,27 @@ async function analyzeEventSystem() {
       projectRoot,
       "design/productRequirementsDocuments/prdEventContracts.md"
     );
+    if (!fs.existsSync(prdPath)) {
+      throw new FileNotFoundAuditError(prdPath);
+    }
     const prdContent = fs.readFileSync(prdPath, "utf8");
 
     // Parse content
-    const events = parseEventEmissions(prdContent);
-    const listeners = parseEventListeners(prdContent);
-    const testEvents = parseTestEventUsage(prdContent);
+    let events;
+    let listeners;
+    let testEvents;
+    try {
+      events = parseEventEmissions(prdContent);
+      listeners = parseEventListeners(prdContent);
+      testEvents = parseTestEventUsage(prdContent);
+    } catch (error) {
+      if (error instanceof AuditError) {
+        throw error;
+      }
+      throw new MarkdownTableError(
+        `Failed to parse markdown tables in PRD: ${error.message}`
+      );
+    }
 
     console.log("## Summary");
     console.log("");
@@ -306,7 +380,15 @@ async function analyzeEventSystem() {
     console.log("4. **Update test helpers** to use new event names with backward compatibility");
     console.log("5. **Document event contracts** for future consistency");
   } catch (error) {
-    console.error("❌ Analysis failed:", error.message);
+    if (error instanceof FileNotFoundAuditError) {
+      console.error("❌ PRD file not found:", error.message);
+    } else if (error instanceof AppendixNotFoundError) {
+      console.error("❌ Required appendix missing:", error.message);
+    } else if (error instanceof MarkdownTableError) {
+      console.error("❌ Failed to parse markdown tables:", error.message);
+    } else {
+      console.error("❌ Unexpected analysis failure:", error.message);
+    }
     process.exit(1);
   }
 }
