@@ -141,46 +141,46 @@ Based on a review of the settings page (`src/pages/settings.html`) and its assoc
 
 This phase focuses on high-impact changes to improve the core layout, readability, and accessibility of the settings page.
 
-1.  **Visual Hierarchy and Grouping:**
-    *   **Issue:** The settings page is a long, single-column list of options, which can be overwhelming for users. The separation between sections is not very strong.
-    *   **Suggestion:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
+1. **Visual Hierarchy and Grouping:**
+    - **Issue:** The settings page is a long, single-column list of options, which can be overwhelming for users. The separation between sections is not very strong.
+    - **Suggestion:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
 
-2.  **Responsive Layout for Links:**
-    *   **Issue:** The links at the bottom of the page are presented in a single-column list, which is an inefficient use of space on wider screens.
-    *   **Suggestion:** In `src/styles/layout.css`, convert the `.settings-links-list` into a responsive grid. Use `display: grid;` and `grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));` to create a flexible grid that adapts to the available screen width, presenting the links in multiple columns on larger screens.
+2. **Responsive Layout for Links:**
+    - **Issue:** The links at the bottom of the page are presented in a single-column list, which is an inefficient use of space on wider screens.
+    - **Suggestion:** In `src/styles/layout.css`, convert the `.settings-links-list` into a responsive grid. Use `display: grid;` and `grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));` to create a flexible grid that adapts to the available screen width, presenting the links in multiple columns on larger screens.
 
-3.  **Switch Control Sizing:**
-    *   **Issue:** The toggle switches are currently a fixed width, which can appear too large on smaller screens.
-    *   **Suggestion:** In `src/styles/settings.css`, adjust the width of the `.switch` class to be responsive. Use a smaller base width and consider using `max-width` to ensure the switches scale appropriately on different devices.
+3. **Switch Control Sizing:**
+    - **Issue:** The toggle switches are currently a fixed width, which can appear too large on smaller screens.
+    - **Suggestion:** In `src/styles/settings.css`, adjust the width of the `.switch` class to be responsive. Use a smaller base width and consider using `max-width` to ensure the switches scale appropriately on different devices.
 
 ### Phase 2: Enhanced Interactivity and Theming
 
 This phase focuses on making the settings page more interactive and visually engaging, while also improving theme consistency.
 
-1.  **Interactive Switch States:**
-    *   **Issue:** The toggle switches lack visual feedback on hover, making them feel static.
-    *   **Suggestion:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
+1. **Interactive Switch States:**
+    - **Issue:** The toggle switches lack visual feedback on hover, making them feel static.
+    - **Suggestion:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
 
-2.  **Display Mode Previews:**
-    *   **Issue:** The display mode selection is presented as a simple list of radio buttons, with no indication of what each theme looks like.
-    *   **Suggestion:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
+2. **Display Mode Previews:**
+    - **Issue:** The display mode selection is presented as a simple list of radio buttons, with no indication of what each theme looks like.
+    - **Suggestion:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
 
-3.  **Theme-Specific Styles:**
-    *   **Issue:** While the app supports theming, some components on the settings page may not fully adapt to the different themes.
-    *   **Suggestion:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
+3. **Theme-Specific Styles:**
+    - **Issue:** While the app supports theming, some components on the settings page may not fully adapt to the different themes.
+    - **Suggestion:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
 
 ### Phase 3: Advanced Features and Future-Proofing
 
 This phase introduces more advanced functionality and long-term improvements to enhance the user experience and maintainability of the settings page.
 
-1.  **Collapsible Sections:**
-    *   **Issue:** As more settings are added, the page will become increasingly long and difficult to navigate.
-    *   **Suggestion:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
+1. **Collapsible Sections:**
+    - **Issue:** As more settings are added, the page will become increasingly long and difficult to navigate.
+    - **Suggestion:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
 
-2.  **Unsaved Changes Indicator:**
-    *   **Issue:** The settings are saved automatically, but there is no visual indication that a change has been made and saved, which could be confusing for users.
-    *   **Suggestion:** In `src/helpers/settingsPage.js`, implement a "Saved!" indicator that briefly appears after a setting is changed. This provides immediate feedback to the user, confirming that their action was successful. This can be implemented by adding a temporary class to the relevant setting item and styling it in the CSS.
+2. **Unsaved Changes Indicator:**
+    - **Issue:** The settings are saved automatically, but there is no visual indication that a change has been made and saved, which could be confusing for users.
+    - **Suggestion:** In `src/helpers/settingsPage.js`, implement a "Saved!" indicator that briefly appears after a setting is changed. This provides immediate feedback to the user, confirming that their action was successful. This can be implemented by adding a temporary class to the relevant setting item and styling it in the CSS.
 
-3.  **Search/Filter for Advanced Settings:**
-    *   **Issue:** The "Advanced Settings" section is likely to grow, making it difficult to find specific feature flags.
-    *   **Suggestion:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.
+3. **Search/Filter for Advanced Settings:**
+    - **Issue:** The "Advanced Settings" section is likely to grow, making it difficult to find specific feature flags.
+    - **Suggestion:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.

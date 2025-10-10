@@ -21,4 +21,22 @@ describe("battleCLI verbose flag", () => {
     emitBattleEvent("battleStateChange", { from: "start", to: "end" });
     expect(document.getElementById("cli-verbose-log").textContent).toMatch(/start -> end/);
   });
+
+  it("mirrors the verbose flag in the header indicator", async () => {
+    const mod = await loadBattleCLI({ verbose: false });
+    await mod.init();
+    const indicator = document.getElementById("verbose-indicator");
+    expect(indicator).toBeTruthy();
+    expect(indicator.style.display).toBe("none");
+    expect(indicator.getAttribute("aria-hidden")).toBe("true");
+
+    const checkbox = document.getElementById("verbose-toggle");
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change"));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(indicator.style.display).toBe("inline");
+    expect(indicator.getAttribute("aria-hidden")).toBe("false");
+  });
 });

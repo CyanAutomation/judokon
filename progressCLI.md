@@ -3,6 +3,7 @@
 This revision re-validates every QA finding against the current CLI implementation and its regression coverage.
 
 **Summary**
+
 - 6 of 7 reported issues are no longer reproducible in the current build; behaviour matches the expected design and unit tests.
 - Accessibility coverage exists for live regions, but we still need a fresh assistive-technology audit (VoiceOver/NVDA).
 - Follow-up work focuses on observability discoverability, automated safeguards, and the outstanding a11y review.
