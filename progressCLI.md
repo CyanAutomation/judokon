@@ -108,7 +108,53 @@ This report has been revised based on a detailed code review. Each issue has bee
 
 ---
 
-## Task Progress
+## Layout and Styling Opportunities
+
+Based on a Playwright audit of the CLI page layout and CSS analysis, the following opportunities for improvement have been identified:
+
+- **Enhanced Responsive Design:**
+  - Add intermediate breakpoints (e.g., 1024px, 768px) to optimize the layout for tablets and large mobile devices. The current design switches abruptly at 720px and 420px.
+  - Improve the stat selection grid on mobile: consider a single-column layout with larger touch targets for better usability on small screens.
+
+- **Header Layout Stability:**
+  - The absolutely positioned `#cli-round` element can cause layout shifts on narrow screens when it falls back to static positioning. Implement a more robust centering solution using CSS Grid or Flexbox to prevent jumps.
+  - Add visual separators or background variations to better distinguish the title, status, and controls sections in the header.
+
+- **Settings Section Visual Hierarchy:**
+  - Enhance the collapsible settings panel with better visual cues (e.g., icons, animations) to indicate its expandable state.
+  - Improve form element alignment and spacing, particularly for the seed input and error messages, to create a more polished terminal-like interface.
+
+- **Stat Selection Grid Optimization:**
+  - Refine the CSS Grid layout for stat buttons to ensure consistent sizing and alignment across different viewport widths. Consider using `grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))` for better balance.
+  - Add subtle hover and selection animations to improve user feedback without compromising the terminal aesthetic.
+
+- **Verbose Log Section Improvements:**
+  - Enhance the scrollable verbose log with better visual separation (e.g., timestamps, borders) and ensure it maintains readability at different font sizes.
+  - Add a toggle or indicator to show when new log entries are available, improving discoverability.
+
+- **Footer and Controls Enhancement:**
+  - Improve the footer layout to better integrate the controls hint and snackbar container, ensuring they don't overlap on smaller screens.
+  - Add keyboard shortcut highlighting or tooltips to make the controls more discoverable for new users.
+
+- **Color Scheme and Theming:**
+  - Expand the retro theme options with additional color variations (e.g., amber, blue terminals) while maintaining accessibility standards.
+  - Implement a theme toggle that persists user preferences and applies smoothly without layout shifts.
+
+- **Typography and Spacing Consistency:**
+  - Standardize spacing using a consistent scale (e.g., multiples of 8px) throughout the interface for better visual rhythm.
+  - Optimize font sizes and line heights for different screen densities, ensuring readability on high-DPI displays.
+
+- **Accessibility Layout Enhancements:**
+  - Ensure all interactive elements maintain proper focus indicators and keyboard navigation paths in the CLI layout.
+  - Add `aria-live` regions for dynamic content updates and verify screen reader compatibility for the terminal-style interface.
+
+- **Performance and Rendering:**
+  - Minimize layout recalculations by using fixed dimensions where appropriate and avoiding content-based sizing for critical elements.
+  - Optimize CSS for fast rendering by reducing complex selectors and leveraging efficient layout methods.
+
+- **Interactive Feedback:**
+  - Add subtle animations for state changes (e.g., selection, countdown warnings) to enhance user engagement while respecting `prefers-reduced-motion`.
+  - Implement loading states and progress indicators for better perceived performance during data loading or processing.
 
 - **Escape key handling** — Confirmed the implementation in `src/pages/battleCLI/events.js:59-176` and its coverage in `tests/pages/battleCLI.onKeyDown.test.js:85-136`. Recommended check before release: `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`.
 - **Points-to-win persistence** — Validated `restorePointsToWin` in `src/pages/battleCLI/init.js:1613-1686` alongside `tests/pages/battleCLI.pointsToWin.test.js:16-120`. Recommended check before release: `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`.
