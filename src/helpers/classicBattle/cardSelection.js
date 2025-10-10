@@ -137,19 +137,31 @@ function showLoadError(error) {
  * @summary Fetch and cache the judoka dataset needed for card selection.
  *
  * @pseudocode
- * 1. If cached data exists, return it as an array (or an empty array when invalid).
- * 2. Otherwise invoke the provided fetcher for `judoka.json` and cache the result.
- * 3. Surface errors via `onError` and resolve with an empty array so the caller can recover.
+ * 1. Return cached data immediately when it exists as a non-empty array.
+ * 2. Fetch and validate the `judoka.json` payload, throwing for empty or malformed results.
+ * 3. Cache the validated dataset and surface load failures through `onError` before propagating.
  *
  * @param {{fetcher?: (path: string) => Promise<any>, onError?: (error: any) => void}} [options]
  * @returns {Promise<object[]>}
  */
 export async function loadJudokaData({ fetcher = fetchJson, onError = showLoadError } = {}) {
-  if (judokaData) return Array.isArray(judokaData) ? judokaData : [];
+  if (Array.isArray(judokaData) && judokaData.length > 0) {
+    return judokaData;
+  }
   try {
-    judokaData = await fetcher(`${DATA_DIR}judoka.json`);
-    return Array.isArray(judokaData) ? judokaData : [];
+    const data = await fetcher(`${DATA_DIR}judoka.json`);
+
+    if (!Array.isArray(data)) {
+      throw new JudokaDataLoadError("Invalid judoka dataset received.");
+    }
+    if (data.length === 0) {
+      throw new JudokaDataLoadError("Judoka dataset is empty.");
+    }
+
+    judokaData = data;
+    return judokaData;
   } catch (error) {
+    judokaData = null;
     try {
       onError?.(error);
     } catch {}
