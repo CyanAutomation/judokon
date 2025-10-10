@@ -18,6 +18,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - Confirmed current CI environment cannot execute native screen-reader tooling; documented the manual test pass expectations and handoff notes below for human QA.
 - Added a shortcuts-overlay regression in `tests/pages/battleCLI.shortcuts.test.js` that proves timers pause when the help panel opens and resume with the preserved remaining time when it closes.
 - Added an end-to-end toggle test in `playwright/cli-verbose-toggle.spec.js` verifying that enabling verbose mode reveals the indicator, section, and log while maintaining the correct accessibility attributes.
+- Re-confirmed dual-write scoreboard behaviour via `battleCLI.dualWrite.test.js` so shared Scoreboard + CLI fallbacks remain aligned.
 - Extended the QA report with the implemented verbose toggle coverage and shortcuts pause guard.
 
 ---

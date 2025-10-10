@@ -1018,11 +1018,7 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
       removeExpiredCleanup = null;
     }
 
-    if (
-      visibilityHandler &&
-      documentRef &&
-      typeof documentRef.removeEventListener === "function"
-    ) {
+    if (visibilityHandler && documentRef && typeof documentRef.removeEventListener === "function") {
       try {
         documentRef.removeEventListener("visibilitychange", visibilityHandler);
       } catch {}

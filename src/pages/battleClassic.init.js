@@ -1775,15 +1775,16 @@ async function init() {
       headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
       // Begin first round
       broadcastBattleState("matchStart");
-              try {
-                await startRoundCycle(store);
-              } catch (err) {
-                console.error("battleClassic: startRoundCycle failed", err);
-                if (err instanceof JudokaDataLoadError) {
-                  return;
-                }
-                showFatalInitError(err);
-              }    });
+      try {
+        await startRoundCycle(store);
+      } catch (err) {
+        console.error("battleClassic: startRoundCycle failed", err);
+        if (err instanceof JudokaDataLoadError) {
+          return;
+        }
+        showFatalInitError(err);
+      }
+    });
 
     // In the simplified (non-orchestrated) page, start the next round when the
     // cooldown is considered finished. Some paths may dispatch `ready` directly

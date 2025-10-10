@@ -72,15 +72,17 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       });
       await revisit.goto("/src/pages/battleCLI.html");
       await expect(revisit.locator(".modal-backdrop")).toBeVisible();
-      await expect.poll(async () =>
-        revisit.evaluate(() => {
-          try {
-            return localStorage.getItem("battle.pointsToWin");
-          } catch {
-            return null;
-          }
-        })
-      ).toBe("10");
+      await expect
+        .poll(async () =>
+          revisit.evaluate(() => {
+            try {
+              return localStorage.getItem("battle.pointsToWin");
+            } catch {
+              return null;
+            }
+          })
+        )
+        .toBe("10");
       await expect(revisit.locator("#points-select")).toHaveValue("10");
 
       await revisit.keyboard.press("3");
