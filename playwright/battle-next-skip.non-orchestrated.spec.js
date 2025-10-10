@@ -15,10 +15,20 @@ import { NEXT_ROUND_COOLDOWN_MS } from "./fixtures/nextRoundCooldown.js";
 
 test("skips cooldown without orchestrator", async ({ page }) => {
   await withMutedConsole(async () => {
-    await page.addInitScript(() => {
-      window.__NEXT_ROUND_COOLDOWN_MS = NEXT_ROUND_COOLDOWN_MS;
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-    });
+    await page.addInitScript(
+      ({ cooldown }) => {
+        window.__NEXT_ROUND_COOLDOWN_MS = cooldown;
+        const existingOverrides =
+          window.__FF_OVERRIDES && typeof window.__FF_OVERRIDES === "object"
+            ? window.__FF_OVERRIDES
+            : {};
+        window.__FF_OVERRIDES = {
+          ...existingOverrides,
+          showRoundSelectModal: true
+        };
+      },
+      { cooldown: NEXT_ROUND_COOLDOWN_MS }
+    );
 
     // Navigate to actual battle page instead of replacing body HTML
     await page.goto("/src/pages/battleClassic.html");
