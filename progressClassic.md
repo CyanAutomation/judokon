@@ -9,7 +9,7 @@ This revision reconciles the prior QA write-up with the current codebase and tes
 - **Current status:** Classic Battle boots successfully with the seeded data. When `judoka.json` fails to load, the user now receives a modal + retry affordance rather than an empty-state freeze (`loadJudokaData` rethrows `JudokaDataLoadError` and drives `showLoadError`; see `src/helpers/classicBattle/cardSelection.js:149-179`). No evidence of the “returns []” regression noted in the previous draft.
 - **User impact:** A data fetch failure is interruptive but recoverable; the header navigation remains disabled until retry or reload because the flow assumes the modal path, not a total escape hatch.
 - **Validation:** `npx vitest run` (targeted classic battle suite) and the Playwright smoke scenarios for Classic Battle both pass in the current workspace.
-- **Residual risks:** Repeated load failures now surface a disabled “Retrying...” state but still depend on the modal’s manual retry UX; nav lock clears after failure yet we lack a direct “return to lobby” option.
+- **Residual risks:** Repeated load failures expose retry state and a lobby escape, but still depend on manual recovery; consider telemetry for high-frequency errors.
 
 ---
 
@@ -51,6 +51,7 @@ Given the above, the actionable plan now centers on polish and resilience rather
 - **Replace hot-path dynamic import:** ✅ Implemented. `isMatchEnded` is statically imported, eliminating the `await import()` in `startIfNotEnded` (`src/pages/battleClassic.init.js:21,1856`).
 - **Harden modal telemetry without console noise:** ✅ Implemented. `showEndModal` now uses structured counters/Sentry logging and the smoke spec asserts on `window.__classicBattleEndModalCount` (`src/helpers/classicBattle/endModal.js:25-95`, `playwright/battle-classic/smoke.spec.js`).
 - **Optional UX nicety:** ✅ Implemented. The retry modal disables the button, marks it `aria-busy`, and swaps the label to “Retrying...” while the retry event dispatches (`src/helpers/classicBattle/cardSelection.js:82-126`), validated by `tests/helpers/classicBattle/cardSelection.test.js` and Playwright `battle-classic/smoke.spec.js`.
+- **Provide lobby escape on load failure:** ✅ Implemented. The load error modal now includes “Return to Lobby”, emitting `classicBattle:loadErrorExit`; the init listener unlocks navigation, clears `data-battle-active`, and renders the fallback start control (`src/helpers/classicBattle/cardSelection.js:152-174`, `src/pages/battleClassic.init.js:1665-1692`). Regression coverage comes from `tests/helpers/classicBattle/cardSelection.test.js` and `tests/classicBattle/round-select.test.js`, plus Playwright `battle-classic/round-select.spec.js`.
 
 ---
 
@@ -67,7 +68,7 @@ These suites cover the data-loading retry logic, UI scaffolding, and the end-of-
 
 ## 6. Open Questions
 
-- Do we want the retry modal to offer an explicit “Return to lobby” escape when repeated fetches fail? If so, UX guidance is needed for how to revert the nav lock and scoreboard state.
 - Should the Classic Battle init hook emit structured telemetry (e.g., Sentry span) when `JudokaDataLoadError` occurs repeatedly? Current instrumentation only logs to the console via the modal code path.
+- Do we want the lobby escape to surface additional guidance (e.g., snackbar copy or CTA back to Settings) when load failures persist across multiple retries?
 
 The answers will clarify whether additional engineering work is required beyond the polish items listed in Section 4.
