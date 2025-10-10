@@ -218,12 +218,17 @@ function updateBattleStateDataset(nextState, previousState) {
   const detail = {
     from: previousState ?? null,
     to: String(nextState),
-    event: null
+    event: "fallback"
   };
   try {
     domStateListener({ detail });
     return;
-  } catch {}
+  } catch (error) {
+    console.debug(
+      "battleClassic: domStateListener failed, using fallback DOM sync",
+      error
+    );
+  }
 
   if (typeof document === "undefined" || !document?.body) {
     return;
