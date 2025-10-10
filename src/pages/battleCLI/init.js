@@ -79,6 +79,8 @@ const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
  * Delay between manual fallback state transitions when the orchestrator is unavailable.
  *
  * @type {number}
+ * @constant
+ * @default 50
  */
 export const MANUAL_FALLBACK_DELAY_MS = 50;
 
