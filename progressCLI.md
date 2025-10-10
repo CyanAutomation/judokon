@@ -8,6 +8,11 @@ This revision re-validates every QA finding against the current CLI implementati
 - Accessibility coverage exists for live regions, but we still need a fresh assistive-technology audit (VoiceOver/NVDA).
 - Follow-up work focuses on observability discoverability, automated safeguards, and the outstanding a11y review.
 
+## Latest Actions
+
+- Added a header-level verbose-mode indicator to `src/pages/battleCLI.html` so `setupFlags` can surface observability status without scrolling.
+- Updated `setupFlags` to manage `aria-hidden` on the indicator and added `battleCLI.verboseFlag.test.js` coverage to ensure the UI reflects flag changes.
+
 ---
 
 ## 1. Win target setting does not persist or apply properly
@@ -36,7 +41,7 @@ This revision re-validates every QA finding against the current CLI implementati
 
   > The report is **inaccurate**. `setupFlags` (`src/pages/battleCLI/init.js:2426-2524`) toggles both the checkbox and `#cli-verbose-section`, and `logStateChange` (`src/pages/battleCLI/init.js:2332-2359`) appends a timestamped transcript to `#cli-verbose-log`. Activating `cliVerbose` via the checkbox or `?cliVerbose=1` reveals the log pane at the bottom of the CLI; the transcript can blend into the layout without an additional cue, but the feature itself works as shipped.
   >
-  > **Note:** `setupFlags` references `#verbose-indicator`, but the markup in `src/pages/battleCLI.html` does not currently supply that node. Discoverability is the main gap, not functionality.
+  > **Note:** The header now includes `#verbose-indicator` so verbose mode surfaces inline without scrolling (2025-02-14 refresh).
 
 - **Severity:** None
 
@@ -108,13 +113,14 @@ This revision re-validates every QA finding against the current CLI implementati
 
 ## Recommended Follow-Up
 
-1. **Restore verbose indicator hook (0.5 day)** — Add the missing `#verbose-indicator` element (or equivalent UI affordance) to `src/pages/battleCLI.html` and connect it to `setupFlags`. This keeps observability discoverable without relying on users to scroll.
-2. **Add countdown warning regression test (0.25 day)** — Extend `tests/pages/battleCLI.pointsToWin.test.js` or create a new spec that drives `startSelectionCountdown` below five seconds and asserts the `#cli-countdown` colour swap. This prevents silent CSS regressions.
-3. **Playwright persistence scenario (0.5 day)** — Introduce a CLI E2E test that toggles the win target, reloads, and verifies the header + scoreboard values to complement the unit coverage (`tests/pages/battleCLI.pointsToWin.test.js`).
-4. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
+- **✅ Completed — Verbose indicator hook**: Added `#verbose-indicator`, synchronized `aria-hidden`, and covered the behaviour via `battleCLI.verboseFlag.test.js`.
+1. **Add countdown warning regression test (0.25 day)** — Extend `tests/pages/battleCLI.pointsToWin.test.js` or create a new spec that drives `startSelectionCountdown` below five seconds and asserts the `#cli-countdown` colour swap. This prevents silent CSS regressions.
+2. **Playwright persistence scenario (0.5 day)** — Introduce a CLI E2E test that toggles the win target, reloads, and verifies the header + scoreboard values to complement the unit coverage (`tests/pages/battleCLI.pointsToWin.test.js`).
+3. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
 
 ## Validation Evidence
 
+- `npx vitest run tests/pages/battleCLI.verboseFlag.test.js`
 - `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`
 - `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
 - `npx playwright test playwright/cli.spec.js --reporter=line --workers=1`
