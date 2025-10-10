@@ -24,8 +24,8 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - ✅ Architecture overview (former `docs/technical/architecture.md` / `design/architecture.md`) now lives in `design/productRequirementsDocuments/prdArchitecture.md` (appendix is authoritative).
 - `docs/technical/battleMarkup.md` (retired) / former `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat PRD appendix as authoritative until canonical schema lives in PRD).
 - Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
-- Legacy event naming audit artifacts (`docs/technical/eventNamingAudit.md`, retired `design/eventNamingAudit.md`, and the former `design/eventAudit/*.txt` dumps) → `prdEventContracts.md` (exists; migration tables + listener inventories now maintained in the PRD appendices).
-- `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md#compliance-audit-2025-09-10` (compliance table + priorities live in PRD).
+- Legacy event naming audit artifacts (`docs/technical/eventNamingAudit.md`, retired `design/eventNamingAudit.md`, and `design/eventAudit/*.txt`) → `prdEventContracts.md` (exists; migration tables + listener inventories now maintained in the PRD).
+- Legacy state handler compliance audit → `design/productRequirementsDocuments/prdStateHandler.md#compliance-audit-2025-09-10` (compliance table + priorities live in PRD).
 - `docs/technical/classicBattleTesting.md` (retired) / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
 - `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md#tooltip-manifest` / `prdTooltipViewer.md` (exists).
 - `design/testing/classicBattleTesting.md`, the former `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold residual content into the owning PRD or keep linked appendices with a clear authority statement.
@@ -101,7 +101,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (accessibility contrast guidance into UI PRD)
   - Rationale: Theme and contrast guidance is a UI concern and should sit under the design system PRD.
 
-- `design/stateHandlerAudit.md` -> `prdStateHandler.md#compliance-audit-2025-09-10` (source removed; PRD now canonical)
+- State handler compliance audit → `prdStateHandler.md#compliance-audit-2025-09-10` (source removed; PRD now canonical)
   - Action: Assimilate (add diagrams, compliance table, and acceptance criteria)
   - Rationale: State handler audits and compliance belong with the state handler PRD.
 

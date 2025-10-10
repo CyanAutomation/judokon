@@ -184,7 +184,7 @@ This pattern keeps event emissions optional during migration while guaranteeing 
 
 ## Compliance Audit (2025-09-10)
 
-The former `docs/technical/stateHandlerAudit.md` compliance report is now captured here to keep implementation status aligned with the product requirements.
+This section replaces the legacy compliance report so implementation status stays aligned with the product requirements.
 
 - **States in contract**: 12
 - **Total required onEnter actions**: 29
