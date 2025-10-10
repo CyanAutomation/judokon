@@ -323,21 +323,38 @@ describe.sequential("classicBattle card selection", () => {
         }))
       };
     });
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { drawCards, _resetForTest } = await import(
-      "../../../src/helpers/classicBattle/cardSelection.js"
-    );
-    _resetForTest();
-    fetchJsonMock.mockImplementation(async (path) => {
-      if (path.includes("judoka")) {
-        return [{ id: 1 }];
+
+    const { withMutedConsole } = await import("../../utils/console.js");
+    let consoleErrorCalled = false;
+    const originalError = console.error;
+
+    await withMutedConsole(async () => {
+      console.error = (...args) => {
+        if (args[0] === "JudokaCard did not render an HTMLElement") {
+          consoleErrorCalled = true;
+        }
+      };
+
+      const { drawCards, _resetForTest } = await import(
+        "../../../src/helpers/classicBattle/cardSelection.js"
+      );
+      _resetForTest();
+      fetchJsonMock.mockImplementation(async (path) => {
+        if (path.includes("judoka")) {
+          return [{ id: 1 }];
+        }
+        return [];
+      });
+
+      try {
+        await drawCards();
+      } finally {
+        console.error = originalError;
       }
-      return [];
     });
-    await drawCards();
-    expect(consoleSpy).toHaveBeenCalledWith("JudokaCard did not render an HTMLElement");
+
+    expect(consoleErrorCalled).toBe(true);
     const container = document.getElementById("opponent-card");
     expect(container.innerHTML).toBe("");
-    consoleSpy.mockRestore();
   });
 });
