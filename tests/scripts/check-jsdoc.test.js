@@ -95,5 +95,47 @@ describe("check-jsdoc", () => {
       const valid = validateJsDoc(lines, symbol.line - 1);
       expect(valid).toBe(false);
     });
+
+    it("should return false when the summary line only contains comment markers", () => {
+      const content = `
+        /**
+         *
+         * @pseudocode
+         * 1. Do something.
+         * @returns {void}
+         */
+        export function myFunction() {
+          return true;
+        }
+      `;
+      const lines = content.split("\n");
+      const functionLine = lines.findIndex((line) =>
+        line.includes("export function myFunction")
+      );
+      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe(false);
+    });
+
+    it("should return true when the summary line contains real text", () => {
+      const content = `
+        /**
+         * ***Important summary***
+         * @pseudocode
+         * 1. Do something meaningful.
+         * @returns {boolean}
+         */
+        export function myFunction() {
+          return true;
+        }
+      `;
+      const lines = content.split("\n");
+      const functionLine = lines.findIndex((line) =>
+        line.includes("export function myFunction")
+      );
+      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe(true);
+    });
   });
 });
