@@ -122,11 +122,19 @@ function showLoadError(error) {
  * @returns {Promise<object[]>}
  */
 export async function loadJudokaData({ fetcher = fetchJson, onError = showLoadError } = {}) {
-  if (judokaData) return Array.isArray(judokaData) ? judokaData : [];
+  if (Array.isArray(judokaData)) {
+    return judokaData;
+  }
+
   try {
-    judokaData = await fetcher(`${DATA_DIR}judoka.json`);
-    return Array.isArray(judokaData) ? judokaData : [];
+    const data = await fetcher(`${DATA_DIR}judoka.json`);
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("Judoka dataset is missing or invalid.");
+    }
+    judokaData = data;
+    return judokaData;
   } catch (error) {
+    judokaData = null;
     try {
       onError?.(error);
     } catch {}

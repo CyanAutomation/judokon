@@ -3,6 +3,7 @@ import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers, resetDom } from "../../utils/testUtils.js";
 import { applyMockSetup, mocks } from "./mockSetup.js";
+import { withMutedConsole } from "../../utils/console.js";
 
 let fetchJsonMock;
 let generateRandomCardMock;
@@ -17,7 +18,12 @@ describe.sequential("classicBattle card selection", () => {
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
     timers = useCanonicalTimers();
-    fetchJsonMock = vi.fn(async () => []);
+    fetchJsonMock = vi.fn(async (path) => {
+      if (path.includes("judoka")) {
+        return [{ id: 1 }];
+      }
+      return [];
+    });
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
       container.innerHTML = "<ul></ul>";
       if (cb) cb({ id: 1 });
@@ -175,11 +181,70 @@ describe.sequential("classicBattle card selection", () => {
       value: { ...window.location, reload: vi.fn() }
     });
 
-    await drawCards();
+    await withMutedConsole(() => drawCards());
 
     expect(document.getElementById("round-message").textContent).toBe("boom");
     const retry = document.getElementById("retry-draw-button");
     expect(retry).toBeTruthy();
+  });
+
+  it("shows retry dialog when judoka payload is not an array", async () => {
+    fetchJsonMock.mockImplementation(async (path) => {
+      if (path.includes("judoka")) {
+        return { id: 1 };
+      }
+      return [];
+    });
+
+    const { drawCards, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    await withMutedConsole(() => drawCards());
+
+    expect(document.getElementById("round-message").textContent).toBe(
+      "Judoka dataset is missing or invalid."
+    );
+    const retry = document.getElementById("retry-draw-button");
+    expect(retry).toBeTruthy();
+  });
+
+  it("shows retry dialog when judoka payload is empty", async () => {
+    fetchJsonMock.mockImplementation(async (path) => {
+      if (path.includes("judoka")) {
+        return [];
+      }
+      return [];
+    });
+
+    const { drawCards, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    await withMutedConsole(() => drawCards());
+
+    expect(document.getElementById("round-message").textContent).toBe(
+      "Judoka dataset is missing or invalid."
+    );
+    const retry = document.getElementById("retry-draw-button");
+    expect(retry).toBeTruthy();
+  });
+
+  it("caches judoka data after a successful load", async () => {
+    const { loadJudokaData, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+    fetchJsonMock.mockClear();
+
+    const first = await loadJudokaData();
+    const second = await loadJudokaData();
+
+    expect(first).toEqual([{ id: 1 }]);
+    expect(second).toBe(first);
+    expect(fetchJsonMock).toHaveBeenCalledTimes(1);
   });
 
   it("still loads gokyo data when judoka load fails", async () => {
@@ -197,7 +262,7 @@ describe.sequential("classicBattle card selection", () => {
     );
     _resetForTest();
 
-    const result = await drawCards();
+    const result = await withMutedConsole(() => drawCards());
 
     expect(result).toEqual({ playerJudoka: null, opponentJudoka: null });
     expect(calls.length).toBe(2);
@@ -212,7 +277,9 @@ describe.sequential("classicBattle card selection", () => {
       if (calls.length === 1) {
         throw new Error("boom");
       }
-      // After retry, respond with empty arrays for both resources
+      if (p.includes("judoka")) {
+        return [{ id: 1 }];
+      }
       return [];
     });
 
@@ -225,7 +292,7 @@ describe.sequential("classicBattle card selection", () => {
       value: { ...window.location, reload: vi.fn() }
     });
 
-    await drawCards();
+    await withMutedConsole(() => drawCards());
 
     const retry = document.getElementById("retry-draw-button");
     expect(retry).toBeTruthy();
