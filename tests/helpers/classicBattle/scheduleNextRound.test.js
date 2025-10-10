@@ -224,7 +224,22 @@ describe("classicBattle startCooldown", () => {
       if (String(url).includes("gameTimers.js")) {
         return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
       }
-      if (String(url).includes("judoka.json")) return [{ id: 1 }, { id: 2 }];
+      if (String(url).includes("judoka.json")) {
+        return [
+          {
+            id: 1,
+            name: "Cooldown Alpha",
+            stats: { power: 10 },
+            isHidden: false
+          },
+          {
+            id: 2,
+            name: "Cooldown Beta",
+            stats: { power: 9 },
+            isHidden: false
+          }
+        ];
+      }
       if (String(url).includes("gokyo.json")) return [];
       if (String(url).includes("settings.schema.json")) {
         return {
