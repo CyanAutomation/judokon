@@ -69,3 +69,46 @@ This report has been revised based on a detailed code review. The root cause of 
 
 - **Testing Hooks:**
   - Expose deterministic seeds via query parameters or a debug panel to allow automated QA to reproduce card draws. Provide a headless fast-forward mode that eliminates cooldown delays and timer wait times for test automation.
+
+---
+
+## Layout and Styling Opportunities
+
+Based on a Playwright audit of the page layout and CSS analysis, the following opportunities for improvement have been identified:
+
+- **Responsive Design Enhancements:**
+  - Add an intermediate breakpoint (e.g., 768px) for tablet devices where the 3-column grid remains but with adjusted spacing and sizing. Currently, the layout switches abruptly to single-column at 480px.
+  - Optimize button sizing and spacing for touch devices to ensure adequate touch targets without excessive whitespace.
+
+- **Battle Status Header Integration:**
+  - The `.battle-status-header` overlay uses margin-based positioning which may not align consistently across devices. Consider integrating it into the CSS Grid layout of the header or using Flexbox for better responsive behavior.
+  - Add subtle animations or transitions for status updates to improve visual feedback.
+
+- **Card Slot Visual Balance:**
+  - The grid columns use `minmax(0, 1fr)` which allows slots to shrink to zero width. Implement minimum widths (e.g., `minmax(250px, 1fr)`) to maintain card proportions and prevent visual distortion on wide screens.
+  - Enhance the mystery card placeholder with a more engaging design, such as a card back pattern or subtle animation, instead of the basic SVG question mark.
+
+- **Stat Buttons Layout Consistency:**
+  - Replace the `flex-wrap` layout with CSS Grid (`grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))`) for more uniform button alignment and better space utilization.
+  - Add hover and focus states with smooth transitions to improve interactivity feedback.
+
+- **Modal Layout Optimization:**
+  - The round select modal's button grid works well but could benefit from vertical stacking on very small screens (< 400px) to prevent cramped layouts.
+  - Ensure consistent spacing and sizing between modal buttons and the main battle controls.
+
+- **Visual Hierarchy Improvements:**
+  - Add progress indicators or visual cues (e.g., score bars, round progress dots) to the battle status area for better game state comprehension.
+  - Implement subtle background patterns or gradients for the battle slots to enhance depth without distracting from the cards.
+
+- **Accessibility Layout Enhancements:**
+  - Ensure all interactive elements maintain proper focus indicators and keyboard navigation paths.
+  - Add `aria-live` regions for dynamic score and round updates to improve screen reader experience.
+  - Verify color contrast ratios for all text elements, especially in the battle status overlay.
+
+- **Performance Layout Considerations:**
+  - Minimize layout shifts by using consistent sizing units and avoiding content-based width calculations.
+  - Optimize CSS for fast rendering by reducing complex selectors and leveraging CSS Grid/Flexbox efficiently.
+
+- **Theming and Customization:**
+  - Ensure all layout-related CSS uses design tokens (CSS variables) to support future theming options.
+  - Consider user preference settings for layout density (compact/spacious) to accommodate different user needs.
