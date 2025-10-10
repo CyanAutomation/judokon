@@ -70,22 +70,27 @@ function showLoadError(error) {
     msg = "A critical error occurred during data loading. Please try again.";
   }
 
-  // Track whether the direct DOM fallback updated the round message so we don't
-  // overwrite it again when the primary path also succeeds later in the call stack.
-  let fallbackApplied = false;
+  // Track whether the round message has already been updated so we can avoid redundant DOM writes.
+  let roundMessageHandled = false;
   try {
     showMessage(msg);
+    const roundMessage = document.getElementById("round-message");
+    if (roundMessage?.textContent === msg) {
+      roundMessageHandled = true;
+    }
   } catch (showMessageError) {
     const roundMessage = document.getElementById("round-message");
     if (roundMessage) {
-      roundMessage.textContent = msg;
-      fallbackApplied = true;
+      if (roundMessage.textContent !== msg) {
+        roundMessage.textContent = msg;
+      }
+      roundMessageHandled = true;
     }
   }
 
-  if (!fallbackApplied) {
+  if (!roundMessageHandled) {
     const roundMessage = document.getElementById("round-message");
-    if (roundMessage) {
+    if (roundMessage && roundMessage.textContent !== msg) {
       roundMessage.textContent = msg;
     }
   }

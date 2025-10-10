@@ -313,6 +313,83 @@ describe.sequential("classicBattle card selection", () => {
     expect(first).toEqual([{ id: 42 }]);
   });
 
+  it("relies on the scoreboard when showMessage succeeds", async () => {
+    await vi.resetModules();
+
+    const roundMessage = document.querySelector("#round-message");
+    expect(roundMessage).toBeTruthy();
+
+    const setterSpy = roundMessage ? vi.spyOn(roundMessage, "textContent", "set") : null;
+
+    const showMessageMock = vi.fn((message) => {
+      if (roundMessage) {
+        roundMessage.textContent = message;
+      }
+    });
+
+    vi.doMock("../../../src/helpers/setupScoreboard.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/setupScoreboard.js");
+      return { ...actual, showMessage: showMessageMock };
+    });
+
+    try {
+      const { loadJudokaData, _resetForTest, JudokaDataLoadError } = await import(
+        "../../../src/helpers/classicBattle/cardSelection.js"
+      );
+      _resetForTest();
+
+      const failingFetcher = vi.fn().mockRejectedValue(new Error("boom"));
+
+      await expect(loadJudokaData({ fetcher: failingFetcher })).rejects.toBeInstanceOf(
+        JudokaDataLoadError
+      );
+
+      expect(showMessageMock).toHaveBeenCalledWith("boom");
+      expect(roundMessage?.textContent).toBe("boom");
+      expect(setterSpy?.mock.calls.length ?? 0).toBe(1);
+    } finally {
+      setterSpy?.mockRestore();
+      vi.doUnmock("../../../src/helpers/setupScoreboard.js");
+    }
+  });
+
+  it("falls back to the round message when showMessage throws", async () => {
+    await vi.resetModules();
+
+    const roundMessage = document.querySelector("#round-message");
+    expect(roundMessage).toBeTruthy();
+    const setterSpy = roundMessage ? vi.spyOn(roundMessage, "textContent", "set") : null;
+
+    vi.doMock("../../../src/helpers/setupScoreboard.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/setupScoreboard.js");
+      return {
+        ...actual,
+        showMessage: vi.fn(() => {
+          throw new Error("scoreboard offline");
+        })
+      };
+    });
+
+    try {
+      const { loadJudokaData, _resetForTest, JudokaDataLoadError } = await import(
+        "../../../src/helpers/classicBattle/cardSelection.js"
+      );
+      _resetForTest();
+
+      const failingFetcher = vi.fn().mockRejectedValue(new Error("boom"));
+
+      await expect(loadJudokaData({ fetcher: failingFetcher })).rejects.toBeInstanceOf(
+        JudokaDataLoadError
+      );
+
+      expect(roundMessage?.textContent).toBe("boom");
+      expect(setterSpy?.mock.calls.length ?? 0).toBe(1);
+    } finally {
+      setterSpy?.mockRestore();
+      vi.doUnmock("../../../src/helpers/setupScoreboard.js");
+    }
+  });
+
   it("logs an error when JudokaCard.render does not return an element", async () => {
     await vi.resetModules();
     // Force the JudokaCard module to return a non-HTMLElement deterministically
