@@ -231,10 +231,10 @@ function attachHeaderResizeObserver(header, applyClearance) {
 
       if (cleanupError) {
         throw cleanupError;
+      } else {
+        cleanupObserver = undefined;
+        delete header[headerClearanceObserverKey];
       }
-
-      cleanupObserver = undefined;
-      delete header[headerClearanceObserverKey];
     };
 
     cleanupObserver = observeHeaderRemoval(header, disconnect);
