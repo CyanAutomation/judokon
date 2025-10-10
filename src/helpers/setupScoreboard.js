@@ -227,7 +227,7 @@ function attachHeaderResizeFallback(header, applyClearance) {
           window.removeEventListener("resize", resizeHandler, listenerOptions);
         } catch {}
         delete header[headerClearanceObserverKey];
-      },
+      }
     };
   } catch {}
 }
