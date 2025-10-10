@@ -18,6 +18,8 @@ This revision re-validates every QA finding against the current CLI implementati
 - Confirmed current CI environment cannot execute native screen-reader tooling; documented the manual test pass expectations and handoff notes below for human QA.
 - Added a shortcuts-overlay regression in `tests/pages/battleCLI.shortcuts.test.js` that proves timers pause when the help panel opens and resume with the preserved remaining time when it closes.
 - Added an end-to-end toggle test in `playwright/cli-verbose-toggle.spec.js` verifying that enabling verbose mode reveals the indicator, section, and log while maintaining the correct accessibility attributes.
+- Re-confirmed dual-write scoreboard behaviour via `battleCLI.dualWrite.test.js` so shared Scoreboard + CLI fallbacks remain aligned.
+- Hardened `updateRoundHeader` to fall back to the stored target when the engine hasn’t reported a new value yet, preventing “undefined” copy in the CLI header.
 - Extended the QA report with the implemented verbose toggle coverage and shortcuts pause guard.
 
 ---
@@ -148,6 +150,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`
 - `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
 - `npx vitest run tests/pages/battleCLI.shortcuts.test.js`
+- `npx vitest run tests/pages/battleCLI.dualWrite.test.js`
 - `npx playwright test playwright/cli-verbose-toggle.spec.js --reporter=line --workers=1`
 - `npx playwright test playwright/win-target-sync.spec.js --reporter=line --workers=1`
 - `npx playwright test playwright/cli.spec.js --reporter=line --workers=1`

@@ -11,7 +11,7 @@ test.describe("Classic Battle page", () => {
 
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = {
-        showRoundSelectModal: true,
+        showRoundSelectModal: true
       };
     });
 
@@ -21,7 +21,8 @@ test.describe("Classic Battle page", () => {
     await page.locator('button:has-text("Quick")').click();
 
     // Play until the match ends
-    for (let i = 0; i < 10; i++) { // Max 10 rounds to prevent infinite loop
+    for (let i = 0; i < 10; i++) {
+      // Max 10 rounds to prevent infinite loop
       // 2. Wait for the stat buttons to be ready
       await page.waitForSelector('[data-buttons-ready="true"]');
 
@@ -52,7 +53,7 @@ test.describe("Classic Battle page", () => {
     await expect(page.locator("#match-end-modal")).toBeVisible();
 
     // Assert that the showEndModal function was called
-    const showEndModalCalled = logs.some(log => log.includes("showEndModal called with:"));
+    const showEndModalCalled = logs.some((log) => log.includes("showEndModal called with:"));
     expect(showEndModalCalled).toBe(true);
   });
 });

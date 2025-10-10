@@ -160,6 +160,26 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     expect(cliRound.getAttribute("aria-hidden")).toBe("true");
   });
 
+  it("falls back to engine target when updateRoundHeader receives undefined", async () => {
+    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+      getPointsToWin: () => 9
+    }));
+
+    const { updateRoundHeader } = await importDomWithScoreboard();
+    await ensureCliDom();
+    const { init } = await import(INIT_MODULE_PATH);
+    await init(() => {}); // Dummy startCallback
+
+    updateRoundHeader(4);
+
+    expect(mockSharedScoreboard.updateRoundCounter).toHaveBeenCalledWith(4);
+    const cliRound = document.getElementById("cli-round");
+    expect(cliRound.textContent).toBe("Round 4 Target: 9");
+    const root = document.getElementById("cli-root");
+    expect(root.dataset.round).toBe("4");
+    expect(root.dataset.target).toBe("9");
+  });
+
   it("should have standard scoreboard nodes visible after Phase 2", async () => {
     await ensureCliDom();
     const standardNodes = document.querySelector(".standard-scoreboard-nodes");

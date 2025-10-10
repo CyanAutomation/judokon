@@ -77,18 +77,22 @@ describe("Classic Battle round timer", () => {
     const listenerRefs = new Set();
     const originalAdd = document.addEventListener;
     const originalRemove = document.removeEventListener;
-    const addSpy = vi.spyOn(document, "addEventListener").mockImplementation((type, handler, options) => {
-      if (type === "visibilitychange" && typeof handler === "function") {
-        listenerRefs.add(handler);
-      }
-      return originalAdd.call(document, type, handler, options);
-    });
-    const removeSpy = vi.spyOn(document, "removeEventListener").mockImplementation((type, handler, options) => {
-      if (type === "visibilitychange" && typeof handler === "function") {
-        listenerRefs.delete(handler);
-      }
-      return originalRemove.call(document, type, handler, options);
-    });
+    const addSpy = vi
+      .spyOn(document, "addEventListener")
+      .mockImplementation((type, handler, options) => {
+        if (type === "visibilitychange" && typeof handler === "function") {
+          listenerRefs.add(handler);
+        }
+        return originalAdd.call(document, type, handler, options);
+      });
+    const removeSpy = vi
+      .spyOn(document, "removeEventListener")
+      .mockImplementation((type, handler, options) => {
+        if (type === "visibilitychange" && typeof handler === "function") {
+          listenerRefs.delete(handler);
+        }
+        return originalRemove.call(document, type, handler, options);
+      });
 
     const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
       if (cat === "roundTimer") return 1;
