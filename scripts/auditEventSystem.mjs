@@ -20,146 +20,99 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 
 /**
- * Extract event names from emission patterns
+ * Extract a markdown table that follows the given heading text.
  */
-function parseEventEmissions(content) {
-  const events = [];
-  const lines = content.split("\n");
+function extractAppendixTable(markdown, heading) {
+  const lines = markdown.split("\n");
+  const startIndex = lines.findIndex((line) => line.trim() === heading.trim());
+  if (startIndex === -1) return [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    // Match emitBattleEvent patterns
-    const emitMatch = line.match(/emitBattleEvent\s*\(\s*["']([^"']+)["']/);
-    if (emitMatch) {
-      events.push({
-        name: emitMatch[1],
-        type: "battleEvent",
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
-      continue;
-    }
-
-    // Match eventBus.emit patterns
-    const eventBusMatch = line.match(/eventBus\.emit\s*\(\s*["']([^"']+)["']/);
-    if (eventBusMatch) {
-      events.push({
-        name: eventBusMatch[1],
-        type: "eventBus",
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
-      continue;
-    }
-
-    // Match generic emit patterns
-    const genericEmitMatch = line.match(/\.emit\s*\(\s*["']([^"']+)["']/);
-    if (genericEmitMatch) {
-      events.push({
-        name: genericEmitMatch[1],
-        type: "generic",
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
+  const tableLines = [];
+  for (let i = startIndex + 1; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (trimmed.startsWith("### ") && i > startIndex + 1) break;
+    if (trimmed.startsWith("|")) {
+      tableLines.push(trimmed);
     }
   }
 
-  return events;
+  return parseMarkdownTable(tableLines);
 }
 
 /**
- * Extract event listener patterns
+ * Parse markdown table rows into objects keyed by column header.
  */
-function parseEventListeners(content) {
-  const listeners = [];
-  const lines = content.split("\n");
+function parseMarkdownTable(tableLines) {
+  if (tableLines.length < 2) return [];
+  const headers = tableLines[0]
+    .split("|")
+    .slice(1, -1)
+    .map((header) => header.trim());
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+  const rows = [];
+  for (let i = 2; i < tableLines.length; i++) {
+    const line = tableLines[i];
+    if (!line || /^\|\s*-/.test(line)) continue;
+    const cells = line
+      .split("|")
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+    if (cells.length !== headers.length) continue;
 
-    // Match addEventListener patterns
-    const addEventMatch = line.match(/addEventListener\s*\(\s*["']([^"']+)["']/);
-    if (addEventMatch) {
-      listeners.push({
-        event: addEventMatch[1],
-        type: "addEventListener",
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
-      continue;
-    }
-
-    // Match .on( patterns
-    const onMatch = line.match(/\.on\s*\(\s*["']([^"']+)["']/);
-    if (onMatch) {
-      listeners.push({
-        event: onMatch[1],
-        type: "on",
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
-      continue;
-    }
-
-    // Match setupPromise patterns
-    const promiseMatch = line.match(/setupPromise\s*\(\s*["']([^"']+)["']/);
-    if (promiseMatch) {
-      listeners.push({
-        event: promiseMatch[1],
-        type: "promise",
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
-    }
+    const row = {};
+    headers.forEach((header, idx) => {
+      row[header] = cells[idx];
+    });
+    rows.push(row);
   }
 
-  return listeners;
+  return rows;
 }
 
 /**
- * Extract test event usage patterns
+ * Extract event emissions from Appendix A of the PRD.
  */
-function parseTestEventUsage(content) {
-  const testEvents = [];
-  const lines = content.split("\n");
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    // Match get*Promise patterns
-    const promiseMatch = line.match(/get(\w+)Promise/);
-    if (promiseMatch) {
-      testEvents.push({
-        promiseName: `get${promiseMatch[1]}Promise`,
-        eventType: promiseMatch[1],
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
-      continue;
-    }
-
-    // Match waitFor*Event patterns
-    const waitMatch = line.match(/waitFor(\w+)Event/);
-    if (waitMatch) {
-      testEvents.push({
-        waitName: `waitFor${waitMatch[1]}Event`,
-        eventType: waitMatch[1],
-        file: extractFileFromPath(line),
-        line: line.trim()
-      });
-    }
-  }
-
-  return testEvents;
+function parseEventEmissions(markdown) {
+  const rows = extractAppendixTable(markdown, "### Appendix A: Battle Event Emitters Inventory");
+  return rows.map((row) => {
+    const name = row.Event.replace(/`/g, "");
+    const modules = row["Emitter modules"].split("<br>").map((entry) => entry.replace(/`/g, "").trim());
+    return {
+      name,
+      type: "battleEvent",
+      modules
+    };
+  });
 }
 
 /**
- * Extract file path from grep output line
+ * Extract listener data from Appendix B of the PRD.
  */
-function extractFileFromPath(line) {
-  const match = line.match(/^([^:]+):/);
-  return match ? path.basename(match[1]) : "unknown";
+function parseEventListeners(markdown) {
+  const rows = extractAppendixTable(markdown, "### Appendix B: Listener Inventory (DOM & Event Bus)");
+  return rows.map((row) => {
+    const event = row.Event.replace(/`/g, "");
+    const modules = row["Listener modules"].split("<br>").map((entry) => entry.replace(/`/g, "").trim());
+    return {
+      event,
+      modules
+    };
+  });
+}
+
+/**
+ * Extract test usage data from Appendix C of the PRD.
+ */
+function parseTestEventUsage(markdown) {
+  const rows = extractAppendixTable(markdown, "### Appendix C: Test Event Utilities and Dispatch Patterns");
+  return rows.map((row) => {
+    const pattern = row.Pattern.replace(/`/g, "");
+    const modules = row["Test modules"].split("<br>").map((entry) => entry.replace(/`/g, "").trim());
+    return {
+      pattern,
+      modules
+    };
+  });
 }
 
 /**
@@ -257,25 +210,23 @@ async function analyzeEventSystem() {
   console.log("");
 
   try {
-    // Read audit files
-    const emissionsFile = path.join(projectRoot, "design/eventAudit/eventEmissions.txt");
-    const listenersFile = path.join(projectRoot, "design/eventAudit/eventListeners.txt");
-    const testUsageFile = path.join(projectRoot, "design/eventAudit/testEventUsage.txt");
-
-    const emissionsContent = fs.readFileSync(emissionsFile, "utf8");
-    const listenersContent = fs.readFileSync(listenersFile, "utf8");
-    const testUsageContent = fs.readFileSync(testUsageFile, "utf8");
+    // Read consolidated PRD appendices
+    const prdPath = path.join(
+      projectRoot,
+      "design/productRequirementsDocuments/prdEventContracts.md"
+    );
+    const prdContent = fs.readFileSync(prdPath, "utf8");
 
     // Parse content
-    const events = parseEventEmissions(emissionsContent);
-    const listeners = parseEventListeners(listenersContent);
-    const testEvents = parseTestEventUsage(testUsageContent);
+    const events = parseEventEmissions(prdContent);
+    const listeners = parseEventListeners(prdContent);
+    const testEvents = parseTestEventUsage(prdContent);
 
     console.log("## Summary");
     console.log("");
-    console.log(`- **Events emitted**: ${events.length}`);
-    console.log(`- **Event listeners**: ${listeners.length}`);
-    console.log(`- **Test event patterns**: ${testEvents.length}`);
+    console.log(`- **Emitter entries**: ${events.length}`);
+    console.log(`- **Listener entries**: ${listeners.length}`);
+    console.log(`- **Test utility patterns**: ${testEvents.length}`);
     console.log("");
 
     // Categorize events
@@ -338,11 +289,9 @@ async function analyzeEventSystem() {
     console.log("");
     if (testEvents.length > 0) {
       console.log("**Test helper functions that need updating:**");
-      const uniqueTestEvents = [
-        ...new Set(testEvents.map((e) => e.promiseName || e.waitName))
-      ].sort();
-      uniqueTestEvents.forEach((name) => {
-        if (name) console.log(`- \`${name}\``);
+      const uniqueTestPatterns = [...new Set(testEvents.map((e) => e.pattern))].sort();
+      uniqueTestPatterns.forEach((pattern) => {
+        if (pattern) console.log(`- \`${pattern}\``);
       });
     } else {
       console.log("No test-specific event patterns detected.");

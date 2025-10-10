@@ -6,7 +6,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 - Confirmed that every PRD referenced below exists under `design/productRequirementsDocuments/`.
 - There is no `design/technical/` directory; the duplicated audits live under `docs/technical/` and at the root of `design/`. Language below reflects the actual paths.
-- Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, the former architecture overviews (now consolidated under `design/productRequirementsDocuments/prdArchitecture.md`), `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts. (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
+- Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, the former architecture overviews (now consolidated under `design/productRequirementsDocuments/prdArchitecture.md`), `design/testing/classicBattleTesting.md`, and the event audit appendices now embedded in `design/productRequirementsDocuments/prdEventContracts.md` (formerly `design/eventAudit/`). (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
 - The Battle CLI topic is split between `docs/battle-cli.md` (usage) and `docs/battleCLI.md` (module structure). Those guides should be merged while migrating content into `prdBattleCLI.md`.
 - The retired `design/codeStandards/` deep dives are now consolidated into `prdDevelopmentStandards.md` / `prdTestingStandards.md`; keep PRD references canonical when migrating remaining notes.
 
@@ -39,8 +39,8 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 ## Documents to assimilate or cross-reference
 
-- Legacy event naming audit artifacts (including the retired `design/eventNamingAudit.md` and `design/eventAudit/*.txt`) → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
-- Legacy state handler compliance audit → ✅ integrated into `prdStateHandler.md#compliance-audit-2025-09-10` (table + follow-up actions captured in PRD).
+- Legacy event naming audit artifacts (including the retired `design/eventNamingAudit.md` and the former `design/eventAudit/*.txt` dumps) → combine into `prdEventContracts.md` with the authoritative audit appendices; leave a stub README pointing to the PRD.
+- `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → ✅ integrated into `prdStateHandler.md#compliance-audit-2025-09-10` (table + follow-up actions captured in PRD).
 - `docs/technical/battleMarkup.md` (retired) & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
 - `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), and the former `design/codeStandards/evaluatingPlaywrightTests.md` / `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
 - `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
