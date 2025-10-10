@@ -55,10 +55,7 @@ import {
   resetOpponentPromptTimestamp,
   getOpponentPromptMinDuration
 } from "../helpers/classicBattle/opponentPromptTracker.js";
-import {
-  CARD_RETRY_EVENT,
-  JudokaDataLoadError
-} from "../helpers/classicBattle/cardSelection.js";
+import { CARD_RETRY_EVENT, JudokaDataLoadError } from "../helpers/classicBattle/cardSelection.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
