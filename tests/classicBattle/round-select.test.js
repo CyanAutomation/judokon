@@ -66,11 +66,19 @@ describe("Classic Battle round select modal", () => {
 
     quick.click();
     await new Promise((resolve) => setTimeout(resolve, 0));
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(document.body.getAttribute("data-battle-active")).not.toBe("true");
     document
       .querySelectorAll("header a")
       .forEach((link) => expect(link.style.pointerEvents).not.toBe("none"));
+
+    const exit = document.getElementById("exit-draw-button");
+    expect(exit).toBeTruthy();
+    exit.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.getElementById("round-select-error")).toBeTruthy();
 
     drawCardsSpy.mockRestore();
   });

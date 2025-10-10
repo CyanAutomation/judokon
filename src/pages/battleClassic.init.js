@@ -56,7 +56,11 @@ import {
   resetOpponentPromptTimestamp,
   getOpponentPromptMinDuration
 } from "../helpers/classicBattle/opponentPromptTracker.js";
-import { CARD_RETRY_EVENT, JudokaDataLoadError } from "../helpers/classicBattle/cardSelection.js";
+import {
+  CARD_RETRY_EVENT,
+  LOAD_ERROR_EXIT_EVENT,
+  JudokaDataLoadError
+} from "../helpers/classicBattle/cardSelection.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -1690,6 +1694,30 @@ async function init() {
       };
       window.__classicBattleRetryListener = retryListener;
       window.addEventListener(CARD_RETRY_EVENT, retryListener);
+
+      if (window.__classicBattleExitListener) {
+        window.removeEventListener(LOAD_ERROR_EXIT_EVENT, window.__classicBattleExitListener);
+      }
+      const exitListener = () => {
+        try {
+          stopActiveSelectionTimer();
+        } catch {}
+        setHeaderNavigationLocked(false);
+        try {
+          document.body.removeAttribute("data-battle-active");
+        } catch {}
+        ensureLobbyBadge();
+        try {
+          showSnackbar("");
+        } catch {}
+        try {
+          if (!document.getElementById("round-select-error")) {
+            showRoundSelectFallback(store);
+          }
+        } catch {}
+      };
+      window.__classicBattleExitListener = exitListener;
+      window.addEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
     }
 
     const markFromEvent = () => {

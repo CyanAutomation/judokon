@@ -28,6 +28,7 @@ export class JudokaDataLoadError extends Error {
 }
 
 export const CARD_RETRY_EVENT = "classicBattle:retryCardDraw";
+export const LOAD_ERROR_EXIT_EVENT = "classicBattle:loadErrorExit";
 
 /**
  * Display QA information messages during test mode.
@@ -143,7 +144,26 @@ function showLoadError(error) {
           setLoadingState(false);
         }
       });
-      actions.append(retry);
+      const exit = createButton("Return to Lobby", { id: "exit-draw-button" });
+      exit.addEventListener("click", () => {
+        try {
+          exit.disabled = true;
+          exit.setAttribute("aria-disabled", "true");
+          exit.textContent = "Returning...";
+        } catch {}
+        try {
+          loadErrorModal.close();
+        } catch {}
+        try {
+          if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+            window.dispatchEvent(new CustomEvent(LOAD_ERROR_EXIT_EVENT));
+          }
+        } catch (exitError) {
+          console.debug("Failed to dispatch exit event:", exitError);
+        }
+      });
+
+      actions.append(retry, exit);
 
       const frag = document.createDocumentFragment();
       frag.append(title, desc, actions);

@@ -215,7 +215,13 @@ describe.sequential("classicBattle card selection", () => {
       return [];
     });
 
-    const { drawCards, _resetForTest, JudokaDataLoadError, CARD_RETRY_EVENT } = await import(
+    const {
+      drawCards,
+      _resetForTest,
+      JudokaDataLoadError,
+      CARD_RETRY_EVENT,
+      LOAD_ERROR_EXIT_EVENT
+    } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
     _resetForTest();
@@ -225,9 +231,13 @@ describe.sequential("classicBattle card selection", () => {
     });
 
     await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const retry = document.getElementById("retry-draw-button");
+    const exit = document.getElementById("exit-draw-button");
     expect(retry).toBeTruthy();
+    expect(exit).toBeTruthy();
     await new Promise((resolve) => {
       const handler = async () => {
         window.removeEventListener(CARD_RETRY_EVENT, handler);
@@ -246,12 +256,42 @@ describe.sequential("classicBattle card selection", () => {
     expect(retry.disabled).toBe(true);
     expect(retry.getAttribute("aria-busy")).toBe("true");
     expect(retry.textContent).toBe("Retrying...");
+    expect(exit.disabled).toBe(false);
+    expect(exit.getAttribute("aria-disabled")).toBeNull();
 
     expect(calls.length).toBe(3);
     // Expect sequence: judoka (fail), judoka (success on retry), gokyo (success on retry)
     expect(calls[0]).toMatch(/judoka\.json/);
     expect(calls[1]).toMatch(/judoka\.json/);
     expect(calls[2]).toMatch(/gokyo\.json/);
+  });
+
+  it("Return to Lobby button dispatches exit event", async () => {
+    fetchJsonMock.mockRejectedValueOnce(new Error("boom"));
+
+    const { drawCards, _resetForTest, JudokaDataLoadError, LOAD_ERROR_EXIT_EVENT } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    const exitListener = vi.fn();
+    window.addEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
+
+    await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const exit = document.getElementById("exit-draw-button");
+    expect(exit).toBeTruthy();
+
+    exit.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(exit.disabled).toBe(true);
+    expect(exit.textContent).toBe("Returning...");
+    expect(exitListener).toHaveBeenCalledTimes(1);
+
+    window.removeEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
   });
 
   it("fails when judoka payload is empty", async () => {
