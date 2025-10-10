@@ -17,6 +17,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - Drafted a VoiceOver/NVDA verification plan covering announcements, focus management, and verbose log discoverability so the remaining accessibility follow-up can be executed consistently.
 - Confirmed current CI environment cannot execute native screen-reader tooling; documented the manual test pass expectations and handoff notes below for human QA.
 - Added a shortcuts-overlay regression in `tests/pages/battleCLI.shortcuts.test.js` that proves timers pause when the help panel opens and resume with the preserved remaining time when it closes.
+- Added an end-to-end toggle test in `playwright/cli-verbose-toggle.spec.js` verifying that enabling verbose mode reveals the indicator, section, and log while maintaining the correct accessibility attributes.
 
 ---
 
@@ -146,5 +147,6 @@ This revision re-validates every QA finding against the current CLI implementati
 - `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`
 - `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
 - `npx vitest run tests/pages/battleCLI.shortcuts.test.js`
+- `npx playwright test playwright/cli-verbose-toggle.spec.js --reporter=line --workers=1`
 - `npx playwright test playwright/win-target-sync.spec.js --reporter=line --workers=1`
 - `npx playwright test playwright/cli.spec.js --reporter=line --workers=1`
