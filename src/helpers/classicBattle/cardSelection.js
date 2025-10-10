@@ -70,13 +70,22 @@ function showLoadError(error) {
     msg = "A critical error occurred during data loading. Please try again.";
   }
 
+  let fallbackApplied = false;
   try {
     showMessage(msg);
-  } catch {}
+  } catch (showMessageError) {
+    const roundMessage = document.getElementById("round-message");
+    if (roundMessage) {
+      roundMessage.textContent = msg;
+      fallbackApplied = true;
+    }
+  }
 
-  const roundMessage = document.getElementById("round-message");
-  if (roundMessage) {
-    roundMessage.textContent = msg;
+  if (!fallbackApplied) {
+    const roundMessage = document.getElementById("round-message");
+    if (roundMessage && roundMessage.textContent !== msg) {
+      roundMessage.textContent = msg;
+    }
   }
 
   const createAndShowModal = () => {
