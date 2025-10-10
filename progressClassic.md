@@ -5,6 +5,7 @@ This revision reconciles the prior QA write-up with the current codebase and tes
 ---
 
 ## 1. Executive Summary
+
 - **Current status:** Classic Battle boots successfully with the seeded data. When `judoka.json` fails to load, the user now receives a modal + retry affordance rather than an empty-state freeze (`loadJudokaData` rethrows `JudokaDataLoadError` and drives `showLoadError`; see `src/helpers/classicBattle/cardSelection.js:149-179`). No evidence of the “returns []” regression noted in the previous draft.
 - **User impact:** A data fetch failure is interruptive but recoverable; the header navigation remains disabled until retry or reload because the flow assumes the modal path, not a total escape hatch.
 - **Validation:** `npx vitest run` (targeted classic battle suite) and the Playwright smoke scenarios for Classic Battle both pass in the current workspace.
@@ -15,15 +16,18 @@ This revision reconciles the prior QA write-up with the current codebase and tes
 ## 2. Key Findings (Verified)
 
 ### Data loading and retry path
+
 - `loadJudokaData` throws on empty/malformed payloads and wraps unexpected errors in `JudokaDataLoadError`, resetting caches so retries fetch fresh data (`src/helpers/classicBattle/cardSelection.js:149-178`).
 - `drawCards` propagates those failures; upstream callers catch them to avoid double-reporting while leaving the retry modal in place (`src/helpers/classicBattle/cardSelection.js:425-435` and `src/pages/battleClassic.init.js:1779-1785`).
 - Unit tests exercise this flow, asserting that the retry modal appears and that retries re-sequence the JSON fetches (`tests/helpers/classicBattle/cardSelection.test.js:163-252`).
 
 ### Startup error handling
+
 - The entire `init` sequence is wrapped in a top-level `try/catch` that surfaces fatal errors through `showFatalInitError`, while explicitly ignoring `JudokaDataLoadError` to avoid stacking duplicate UI (`src/pages/battleClassic.init.js:1679-1880`).
 - A dedicated listener replays the round cycle when the retry modal dispatches `CARD_RETRY_EVENT`, ensuring the first successful fetch resumes normal flow (`src/pages/battleClassic.init.js:1665-1678`).
 
 ### Match completion experience
+
 - `showEndModal` short-circuits if a modal already exists, preventing the duplicate-ID regression called out in the original report (`src/helpers/classicBattle/endModal.js:25-28`).
 - The Playwright smoke test covers a full match loop and asserts the modal appears exactly once (`playwright/battle-classic/smoke.spec.js:3-58`), providing high-signal assurance for this behaviour.
 

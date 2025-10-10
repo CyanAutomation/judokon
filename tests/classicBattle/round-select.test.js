@@ -41,4 +41,37 @@ describe("Classic Battle round select modal", () => {
     expect(tooltips.default.ui.roundMedium).toContain("First to 5 points");
     expect(tooltips.default.ui.roundLong).toContain("First to 10 points");
   });
+
+  test("header navigation unlocks when startRoundCycle hits data load failure", async () => {
+    process.env.VITEST = "true";
+    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
+    const html = readFileSync(file, "utf-8");
+    document.documentElement.innerHTML = html;
+
+    const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
+    await initClassicBattleTest({ afterMock: true });
+
+    const cardSelection = await import("../../src/helpers/classicBattle/cardSelection.js");
+    const failure = new cardSelection.JudokaDataLoadError("boom");
+    const drawCardsSpy = vi
+      .spyOn(cardSelection, "drawCards")
+      .mockRejectedValueOnce(failure)
+      .mockImplementation(() => Promise.resolve({ playerJudoka: null, opponentJudoka: null }));
+
+    const mod = await import("../../src/pages/battleClassic.init.js");
+    await mod.init?.();
+
+    const quick = document.getElementById("round-select-1");
+    expect(quick).toBeTruthy();
+
+    quick.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.body.getAttribute("data-battle-active")).not.toBe("true");
+    document
+      .querySelectorAll("header a")
+      .forEach((link) => expect(link.style.pointerEvents).not.toBe("none"));
+
+    drawCardsSpy.mockRestore();
+  });
 });
