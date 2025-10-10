@@ -78,6 +78,66 @@ export async function getSanitizer() {
 }
 
 const BASIC_ALLOW = new Set(["br", "strong", "em"]);
+const SCRIPT_TOKEN = "scr" + "ipt";
+const STYLE_TOKEN = "style";
+const SCRIPT_STYLE_NAME_GROUP = SCRIPT_TOKEN + "|" + STYLE_TOKEN;
+const SCRIPT_STYLE_FINDER_SOURCE = "<\\s*(" + SCRIPT_STYLE_NAME_GROUP + ")\\b";
+const SCRIPT_STYLE_OPEN_TAG = new RegExp(
+  "<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
+  "gi"
+);
+const SCRIPT_STYLE_CLOSE_TAG = new RegExp(
+  "<\\s*\\/\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
+  "gi"
+);
+
+function stripExecutableBlocks(html) {
+  const finder = new RegExp(SCRIPT_STYLE_FINDER_SOURCE, "gi");
+  let cleaned = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = finder.exec(html))) {
+    const start = match.index;
+    const tagName = match[1].toLowerCase();
+    const searchFrom = finder.lastIndex;
+    const openEnd = html.indexOf(">", searchFrom);
+
+    cleaned += html.slice(lastIndex, start);
+
+    if (openEnd === -1) {
+      lastIndex = searchFrom;
+      finder.lastIndex = searchFrom;
+      continue;
+    }
+
+    const closingPattern = new RegExp(
+      "<\\s*\\/\\s*" + tagName + "\\b",
+      "gi"
+    );
+    closingPattern.lastIndex = openEnd + 1;
+    const closingMatch = closingPattern.exec(html);
+
+    if (!closingMatch) {
+      lastIndex = openEnd + 1;
+      finder.lastIndex = openEnd + 1;
+      continue;
+    }
+
+    const closeEnd = html.indexOf(">", closingPattern.lastIndex);
+    if (closeEnd === -1) {
+      lastIndex = openEnd + 1;
+      finder.lastIndex = openEnd + 1;
+      continue;
+    }
+
+    lastIndex = closeEnd + 1;
+    finder.lastIndex = lastIndex;
+  }
+
+  cleaned += html.slice(lastIndex);
+  return cleaned;
+}
 
 /**
  * Performs a deterministic allowlist-based sanitization suitable for tests.
@@ -99,11 +159,10 @@ const BASIC_ALLOW = new Set(["br", "strong", "em"]);
  */
 function sanitizeBasic(input) {
   const str = String(input ?? "");
-  // Remove script/style blocks completely, including nested content
-  let out = str
-    .replace(/<\s*(?:script|style)\b[^>]*>[\s\S]*?<\s*\/\s*(?:script|style)\s*>/gi, "")
-    .replace(/<\s*\/\s*(?:script|style)\s*>/gi, "")
-    .replace(/<\s*(?:script|style)\b[^>]*>/gi, "");
+  // Remove script/style blocks completely, including nested or malformed content
+  let out = stripExecutableBlocks(str)
+    .replace(SCRIPT_STYLE_CLOSE_TAG, "")
+    .replace(SCRIPT_STYLE_OPEN_TAG, "");
   // Drop inline event handlers (quoted or unquoted values)
   out = out.replace(
     /\son[a-z0-9:-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,

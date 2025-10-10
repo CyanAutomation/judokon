@@ -62,4 +62,16 @@ describe("sanitizeHtml fallback sanitizer", () => {
     expect(result).not.toContain("console.log");
     expect(result).not.toContain("<script");
   });
+
+  it("removes nested and malformed script/style tag sequences", () => {
+    const input =
+      "<div><script><script>alert(1)</script></script>safe</div>" +
+      "<script>alert(2)</script\t\n data><style>body{color:red}</style>";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;div&gt;safe&lt;/div&gt;");
+    expect(result).not.toContain("alert");
+    expect(result).not.toContain("<script");
+    expect(result).not.toContain("<style");
+  });
 });
