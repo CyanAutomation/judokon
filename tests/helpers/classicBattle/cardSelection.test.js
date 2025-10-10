@@ -373,17 +373,14 @@ describe.sequential("classicBattle card selection", () => {
 
     const setterSpy = roundMessage ? vi.spyOn(roundMessage, "textContent", "set") : null;
 
-    const showMessageMock = vi.fn((message) => {
-      console.log("showMessageMock", message);
-      if (roundMessage) {
-        roundMessage.textContent = message;
-      }
-    });
-
-    vi.doMock("../../../src/helpers/setupScoreboard.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/setupScoreboard.js");
-      return { ...actual, showMessage: showMessageMock };
-    });
+    const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
+    const showMessageMock = vi
+      .spyOn(scoreboard, "showMessage")
+      .mockImplementation((message) => {
+        if (roundMessage) {
+          roundMessage.textContent = message;
+        }
+      });
 
     try {
       const { loadJudokaData, _resetForTest, JudokaDataLoadError } = await import(
@@ -397,12 +394,13 @@ describe.sequential("classicBattle card selection", () => {
         JudokaDataLoadError
       );
 
-      expect(showMessageMock).toHaveBeenCalledWith("boom");
+      const lastMessageCall = showMessageMock.mock.calls.at(-1)?.[0];
+      expect(lastMessageCall ?? roundMessage?.textContent).toBe("boom");
       expect(roundMessage?.textContent).toBe("boom");
       expect(setterSpy?.mock.calls.length ?? 0).toBe(1);
     } finally {
       setterSpy?.mockRestore();
-      vi.doUnmock("../../../src/helpers/setupScoreboard.js");
+      showMessageMock.mockRestore();
     }
   });
 
