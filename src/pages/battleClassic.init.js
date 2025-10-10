@@ -33,6 +33,7 @@ import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleE
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { getBattleStateMachine } from "../helpers/classicBattle/orchestrator.js";
+import { domStateListener } from "../helpers/classicBattle/stateTransitionListeners.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
@@ -214,6 +215,16 @@ function isOrchestratorHandlingState(machine) {
 }
 
 function updateBattleStateDataset(nextState, previousState) {
+  const detail = {
+    from: previousState ?? null,
+    to: String(nextState),
+    event: null
+  };
+  try {
+    domStateListener({ detail });
+    return;
+  } catch {}
+
   if (typeof document === "undefined" || !document?.body) {
     return;
   }
