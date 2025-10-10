@@ -74,12 +74,13 @@ function showLoadError(error) {
   // Track whether the round message has already been updated so we can avoid redundant DOM writes.
   let roundMessageHandled = false;
   try {
-    showMessage(msg);
+    scoreboardShowMessage(msg);
     const roundMessage = document.getElementById("round-message");
     if (roundMessage?.textContent === msg) {
       roundMessageHandled = true;
     }
   } catch (showMessageError) {
+    console.debug("Falling back to manual round message update:", showMessageError);
     const roundMessage = document.getElementById("round-message");
     if (roundMessage) {
       if (roundMessage.textContent !== msg) {
