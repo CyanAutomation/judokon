@@ -53,7 +53,7 @@ const server = http.createServer((req, res) => {
     res.setHeader("Content-Type", getContentType(filePath));
     const stream = createReadStream(filePath);
     stream.on("error", (err) => {
-      console.error(`Error reading file ${filePath}:`, err);
+      console.error("Error reading file %s:", filePath, err);
       res.statusCode = 500;
       res.end("Internal Server Error");
     });
