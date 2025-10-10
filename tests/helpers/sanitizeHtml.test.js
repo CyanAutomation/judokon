@@ -24,4 +24,42 @@ describe("sanitizeHtml fallback sanitizer", () => {
     expect(result).not.toContain("onmouseover");
     expect(result).not.toContain("alert(1)");
   });
+
+  it("neutralizes mixed quoting styles on the same element", () => {
+    const input =
+      "<x-bar onclick='alert(1)' onfocus=alert(2) onblur=\"alert(3)\">text</x-bar>";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;x-bar&gt;text&lt;/x-bar&gt;");
+    expect(result).not.toContain("onclick");
+    expect(result).not.toContain("onfocus");
+    expect(result).not.toContain("onblur");
+  });
+
+  it("removes hyphenated and namespaced handler attributes", () => {
+    const input = `<x-bar onfoo-bar=alert(1) onsvg:load=alert(2)>`;
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;x-bar&gt;");
+    expect(result).not.toContain("onfoo-bar");
+    expect(result).not.toContain("onsvg:load");
+  });
+
+  it("strips multiple handlers while preserving safe content", () => {
+    const input = `<strong onclick=alert(1) onkeyup=alert(2)>bold</strong>`;
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("<strong>bold</strong>");
+    expect(result).not.toContain("onclick");
+    expect(result).not.toContain("onkeyup");
+  });
+
+  it("removes entire script blocks including nested content", () => {
+    const input = `<div><script>console.log('hi')</script>safe</div>`;
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;div&gt;safe&lt;/div&gt;");
+    expect(result).not.toContain("console.log");
+    expect(result).not.toContain("<script");
+  });
 });
