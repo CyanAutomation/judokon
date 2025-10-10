@@ -72,16 +72,17 @@ function showLoadError(error) {
   }
 
   const roundMessage = document.getElementById("round-message");
-  const originalRoundMessageText = roundMessage?.textContent ?? "";
+  const originalRoundMessageText = roundMessage ? roundMessage.textContent : null;
 
   // Track whether the round message has been written so we can avoid redundant DOM writes.
   let messageWritten = false;
   try {
     scoreboardShowMessage(msg);
-    if (!roundMessage || roundMessage.textContent !== originalRoundMessageText) {
+    if (roundMessage?.textContent === msg) {
       messageWritten = true;
     }
-  } catch {
+  } catch (scoreboardError) {
+    console.debug("Failed to show load error on scoreboard:", scoreboardError);
     if (roundMessage) {
       if (roundMessage.textContent !== msg) {
         roundMessage.textContent = msg;
@@ -92,7 +93,6 @@ function showLoadError(error) {
 
   if (!messageWritten && roundMessage && roundMessage.textContent !== msg) {
     roundMessage.textContent = msg;
-    messageWritten = true;
   }
 
   const createAndShowModal = () => {
