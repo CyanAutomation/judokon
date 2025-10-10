@@ -70,6 +70,8 @@ function showLoadError(error) {
     msg = "A critical error occurred during data loading. Please try again.";
   }
 
+  // Track whether the direct DOM fallback updated the round message so we don't
+  // overwrite it again when the primary path also succeeds later in the call stack.
   let fallbackApplied = false;
   try {
     showMessage(msg);
@@ -83,7 +85,7 @@ function showLoadError(error) {
 
   if (!fallbackApplied) {
     const roundMessage = document.getElementById("round-message");
-    if (roundMessage && roundMessage.textContent !== msg) {
+    if (roundMessage) {
       roundMessage.textContent = msg;
     }
   }
