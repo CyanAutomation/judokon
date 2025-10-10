@@ -78,15 +78,37 @@ export function updateRoundHeader(round, target) {
 
   // Phase 3: Keep CLI element for visual consistency (not primary source)
   const el = byId("cli-round");
+  const root = byId("cli-root");
+  let resolvedTarget = target;
+  if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === "") {
+    try {
+      const getter = engineFacade.getPointsToWin;
+      if (typeof getter === "function") {
+        resolvedTarget = getter();
+      }
+    } catch {}
+  }
+  if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === "") {
+    const existing = root?.dataset?.target;
+    if (existing !== undefined) {
+      resolvedTarget = Number.isNaN(Number(existing)) ? existing : Number(existing);
+    }
+  }
+  if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === "") {
+    resolvedTarget = 5;
+  }
+  const displayTarget =
+    typeof resolvedTarget === "number" && !Number.isNaN(resolvedTarget)
+      ? resolvedTarget
+      : String(resolvedTarget);
   if (el) {
     // Use clear format with space after colon: "Round 0 Target: 5"
-    el.textContent = `Round ${round} Target: ${target}`;
+    el.textContent = `Round ${round} Target: ${displayTarget}`;
   }
 
-  const root = byId("cli-root");
   if (root) {
     root.dataset.round = String(round);
-    root.dataset.target = String(target);
+    root.dataset.target = String(displayTarget);
   }
 }
 
