@@ -32,7 +32,7 @@ test.describe("Classic Battle page", () => {
       // 4. Wait for the next round button to be ready
       try {
         await page.waitForSelector('[data-next-ready="true"]', { timeout: 5000 });
-      } catch (e) {
+      } catch {
         // If the next button doesn't appear, the match might have ended
       }
 
