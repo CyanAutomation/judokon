@@ -81,6 +81,13 @@ describe("sanitizeHtml fallback sanitizer", () => {
     expect(result).toBe("bad");
   });
 
+  it("removes truncated executable openings missing closing brackets", () => {
+    const input = "<div>safe</div><script src=x";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;div&gt;safe&lt;/div&gt;");
+  });
+
   it("removes executable tags with unusual spacing and casing", () => {
     const input =
       '<ScRiPt\n type="text/javascript" data-test=1>evil</sCrIpT>' +
@@ -96,5 +103,13 @@ describe("sanitizeHtml fallback sanitizer", () => {
     const result = sanitizeBasic(input);
 
     expect(result).toBe(`&lt;div&gt;${payload}&lt;/div&gt;`);
+  });
+
+  it("handles very large payloads without exceeding iteration caps", () => {
+    const payload = "x".repeat(10 * 1024);
+    const input = `<script>${payload}</script>${payload}`;
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe(payload);
   });
 });
