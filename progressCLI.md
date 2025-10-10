@@ -1,6 +1,11 @@
 # QA Report for `src/pages/battleCLI.html` - Revised
 
-This report has been revised based on a detailed code review. Each issue has been investigated, and the findings and fix plans have been updated.
+This revision re-validates every QA finding against the current CLI implementation and its regression coverage.
+
+**Summary**
+- 6 of 7 reported issues are no longer reproducible in the current build; behaviour matches the expected design and unit tests.
+- Accessibility coverage exists for live regions, but we still need a fresh assistive-technology audit (VoiceOver/NVDA).
+- Follow-up work focuses on observability discoverability, automated safeguards, and the outstanding a11y review.
 
 ---
 
@@ -29,6 +34,8 @@ This report has been revised based on a detailed code review. Each issue has bee
 - **Finding:**
 
   > The report is **inaccurate**. `setupFlags` (`src/pages/battleCLI/init.js:2426-2524`) toggles both the checkbox and `#cli-verbose-section`, and `logStateChange` (`src/pages/battleCLI/init.js:2332-2359`) appends a timestamped transcript to `#cli-verbose-log`. Activating `cliVerbose` via the checkbox or `?cliVerbose=1` reveals the log pane at the bottom of the CLI; the transcript can blend into the layout without an additional cue, but the feature itself works as shipped.
+  >
+  > **Note:** `setupFlags` references `#verbose-indicator`, but the markup in `src/pages/battleCLI.html` does not currently supply that node. Discoverability is the main gap, not functionality.
 
 - **Severity:** None
 
@@ -98,64 +105,15 @@ This report has been revised based on a detailed code review. Each issue has bee
 
 ---
 
-## Improvement Opportunities
+## Recommended Follow-Up
 
-- **Maintain regression coverage for points-to-win:** The Vitest suite (`tests/pages/battleCLI.pointsToWin.test.js`) already guards the persistence/header flow; consider adding a lightweight Playwright scenario to cover a full reload so DOM regressions cannot slip past unit coverage.
-- **Polish Escape key UX:** ✅ Done — `shouldProcessKey` now bypasses `Escape`/`Esc`, and `onKeyDown` clears countdown errors (`src/pages/battleCLI/events.js:59-176`), with regression coverage in `tests/pages/battleCLI.onKeyDown.test.js:85-136`.
-- **Improve verbose-mode discoverability:** The runtime markup (`src/pages/battleCLI.html`) lacks the `#verbose-indicator` element even though `setupFlags` toggles it. Wire the indicator into the header or surface a snackbar when verbose mode activates so players notice the transcript.
-- **Protect countdown warning styling:** Add a focused unit/integration test that drives `startSelectionCountdown` below five seconds and asserts the colour flip (`src/pages/battleCLI/init.js:1206-1214`) to prevent regressions.
-- **Full accessibility audit:** Run a screen-reader pass (NVDA/VoiceOver) that covers round announcements, countdown changes, and shortcut toggles, documenting any gaps and remediation steps.
+1. **Restore verbose indicator hook (0.5 day)** — Add the missing `#verbose-indicator` element (or equivalent UI affordance) to `src/pages/battleCLI.html` and connect it to `setupFlags`. This keeps observability discoverable without relying on users to scroll.
+2. **Add countdown warning regression test (0.25 day)** — Extend `tests/pages/battleCLI.pointsToWin.test.js` or create a new spec that drives `startSelectionCountdown` below five seconds and asserts the `#cli-countdown` colour swap. This prevents silent CSS regressions.
+3. **Playwright persistence scenario (0.5 day)** — Introduce a CLI E2E test that toggles the win target, reloads, and verifies the header + scoreboard values to complement the unit coverage (`tests/pages/battleCLI.pointsToWin.test.js`).
+4. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
 
----
+## Validation Evidence
 
-## Layout and Styling Opportunities
-
-Based on a Playwright audit of the CLI page layout and CSS analysis, the following opportunities for improvement have been identified:
-
-- **Enhanced Responsive Design:**
-  - Add intermediate breakpoints (e.g., 1024px, 768px) to optimize the layout for tablets and large mobile devices. The current design switches abruptly at 720px and 420px.
-  - Improve the stat selection grid on mobile: consider a single-column layout with larger touch targets for better usability on small screens.
-
-- **Header Layout Stability:**
-  - The absolutely positioned `#cli-round` element can cause layout shifts on narrow screens when it falls back to static positioning. Implement a more robust centering solution using CSS Grid or Flexbox to prevent jumps.
-  - Add visual separators or background variations to better distinguish the title, status, and controls sections in the header.
-
-- **Settings Section Visual Hierarchy:**
-  - Enhance the collapsible settings panel with better visual cues (e.g., icons, animations) to indicate its expandable state.
-  - Improve form element alignment and spacing, particularly for the seed input and error messages, to create a more polished terminal-like interface.
-
-- **Stat Selection Grid Optimization:**
-  - Refine the CSS Grid layout for stat buttons to ensure consistent sizing and alignment across different viewport widths. Consider using `grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))` for better balance.
-  - Add subtle hover and selection animations to improve user feedback without compromising the terminal aesthetic.
-
-- **Verbose Log Section Improvements:**
-  - Enhance the scrollable verbose log with better visual separation (e.g., timestamps, borders) and ensure it maintains readability at different font sizes.
-  - Add a toggle or indicator to show when new log entries are available, improving discoverability.
-
-- **Footer and Controls Enhancement:**
-  - Improve the footer layout to better integrate the controls hint and snackbar container, ensuring they don't overlap on smaller screens.
-  - Add keyboard shortcut highlighting or tooltips to make the controls more discoverable for new users.
-
-- **Color Scheme and Theming:**
-  - Expand the retro theme options with additional color variations (e.g., amber, blue terminals) while maintaining accessibility standards.
-  - Implement a theme toggle that persists user preferences and applies smoothly without layout shifts.
-
-- **Typography and Spacing Consistency:**
-  - Standardize spacing using a consistent scale (e.g., multiples of 8px) throughout the interface for better visual rhythm.
-  - Optimize font sizes and line heights for different screen densities, ensuring readability on high-DPI displays.
-
-- **Accessibility Layout Enhancements:**
-  - Ensure all interactive elements maintain proper focus indicators and keyboard navigation paths in the CLI layout.
-  - Add `aria-live` regions for dynamic content updates and verify screen reader compatibility for the terminal-style interface.
-
-- **Performance and Rendering:**
-  - Minimize layout recalculations by using fixed dimensions where appropriate and avoiding content-based sizing for critical elements.
-  - Optimize CSS for fast rendering by reducing complex selectors and leveraging efficient layout methods.
-
-- **Interactive Feedback:**
-  - Add subtle animations for state changes (e.g., selection, countdown warnings) to enhance user engagement while respecting `prefers-reduced-motion`.
-  - Implement loading states and progress indicators for better perceived performance during data loading or processing.
-
-- **Escape key handling** — Confirmed the implementation in `src/pages/battleCLI/events.js:59-176` and its coverage in `tests/pages/battleCLI.onKeyDown.test.js:85-136`. Recommended check before release: `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`.
-- **Points-to-win persistence** — Validated `restorePointsToWin` in `src/pages/battleCLI/init.js:1613-1686` alongside `tests/pages/battleCLI.pointsToWin.test.js:16-120`. Recommended check before release: `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`.
-- **Match start recovery** — Hooked the existing data-load retry signal into the Classic Battle bootstrap and guarded subsequent round-cycle restarts so load failures surface the modal without fatal overlays (`src/pages/battleClassic.init.js:1683-1963`, `tests/helpers/classicBattle/cardSelection.test.js:166-235`). Tests: `npx vitest run tests/helpers/classicBattle/cardSelection.test.js`, `npx vitest run tests/integration/battleClassic.integration.test.js`, `npx playwright test playwright/battle-classic/bootstrap.spec.js`.
+- `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`
+- `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
+- `npx playwright test playwright/cli.spec.js --reporter=line --workers=1`

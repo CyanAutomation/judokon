@@ -135,51 +135,52 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Layout and Styling Opportunities
 
-Based on a Playwright audit of the settings page layout and CSS analysis, the following opportunities for improvement have been identified:
+Based on a review of the settings page (`src/pages/settings.html`) and its associated styles, the following opportunities have been identified to improve the layout, styling, and user experience. The suggestions are organized into a phased implementation plan.
 
-- **Enhanced Visual Hierarchy and Grouping:**
-  - Add icons or visual indicators to fieldset legends to make sections more distinguishable (e.g., display icon for Display Settings, gear for General Settings).
-  - Implement subtle background variations or borders between fieldsets to improve section separation without cluttering the interface.
-  - Consider collapsible sections for Advanced Settings to reduce visual overload, with a toggle to expand/collapse.
+### Phase 1: Foundational UI/UX Improvements
 
-- **Responsive Design Refinements:**
-  - Add intermediate breakpoints (e.g., 1024px, 768px) for better tablet experience, adjusting switch sizes and spacing accordingly.
-  - Optimize the links grid: consider a 2-column layout on medium screens before collapsing to single column on mobile.
-  - Improve touch targets on mobile by ensuring switches and buttons maintain adequate size across all screen sizes.
+This phase focuses on high-impact changes to improve the core layout, readability, and accessibility of the settings page.
 
-- **Switch and Control Styling Improvements:**
-  - Reduce switch width on smaller screens (current 80px is wide; consider 60px on mobile) while maintaining accessibility.
-  - Add hover states and animations to switches for better interactivity feedback.
-  - Ensure consistent spacing and alignment between switches, labels, and descriptions across all settings items.
+1.  **Visual Hierarchy and Grouping:**
+    *   **Issue:** The settings page is a long, single-column list of options, which can be overwhelming for users. The separation between sections is not very strong.
+    *   **Suggestion:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
 
-- **Form Layout and Readability:**
-  - Improve description text styling: consider larger font size or better contrast for setting descriptions to enhance readability.
-  - Add visual grouping for related settings (e.g., audio-related toggles together) within fieldsets.
-  - Implement a search or filter functionality for the Advanced Settings section to help users find specific flags quickly.
+2.  **Responsive Layout for Links:**
+    *   **Issue:** The links at the bottom of the page are presented in a single-column list, which is an inefficient use of space on wider screens.
+    *   **Suggestion:** In `src/styles/layout.css`, convert the `.settings-links-list` into a responsive grid. Use `display: grid;` and `grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));` to create a flexible grid that adapts to the available screen width, presenting the links in multiple columns on larger screens.
 
-- **Display Mode Selection Enhancement:**
-  - Add preview thumbnails or color swatches next to radio buttons to show what each theme looks like.
-  - Implement smooth transitions when switching display modes to demonstrate the change immediately.
+3.  **Switch Control Sizing:**
+    *   **Issue:** The toggle switches are currently a fixed width, which can appear too large on smaller screens.
+    *   **Suggestion:** In `src/styles/settings.css`, adjust the width of the `.switch` class to be responsive. Use a smaller base width and consider using `max-width` to ensure the switches scale appropriately on different devices.
 
-- **Links Section Optimization:**
-  - Make the links more prominent with better styling (e.g., card-like appearance with hover effects).
-  - Add descriptions or icons to link items to provide context about what each page contains.
-  - Consider organizing links into categories if more are added in the future.
+### Phase 2: Enhanced Interactivity and Theming
 
-- **Accessibility and Focus Management:**
-  - Ensure all interactive elements have proper focus indicators that work well with the custom switch styling.
-  - Add keyboard navigation improvements, such as arrow key navigation through radio groups and better tab order.
-  - Verify screen reader compatibility for the custom switches and ensure ARIA labels are comprehensive.
+This phase focuses on making the settings page more interactive and visually engaging, while also improving theme consistency.
 
-- **Performance and Loading:**
-  - Optimize CSS for faster rendering by reducing complex selectors and leveraging efficient layout methods.
-  - Consider lazy-loading non-critical sections or implementing virtual scrolling if the settings list grows significantly.
+1.  **Interactive Switch States:**
+    *   **Issue:** The toggle switches lack visual feedback on hover, making them feel static.
+    *   **Suggestion:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
 
-- **User Experience Enhancements:**
-  - Add a "Save Changes" indicator or unsaved changes warning to prevent accidental loss of settings.
-  - Implement a settings summary or preview mode to show the impact of changes before applying.
-  - Add tooltips or help text for complex settings, especially in the Advanced Settings section.
+2.  **Display Mode Previews:**
+    *   **Issue:** The display mode selection is presented as a simple list of radio buttons, with no indication of what each theme looks like.
+    *   **Suggestion:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
 
-- **Theming and Consistency:**
-  - Ensure all settings components properly inherit theme variables for consistent appearance across light/dark/retro modes.
-  - Add theme-specific styling variations where appropriate (e.g., retro mode could have more terminal-like switches).
+3.  **Theme-Specific Styles:**
+    *   **Issue:** While the app supports theming, some components on the settings page may not fully adapt to the different themes.
+    *   **Suggestion:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
+
+### Phase 3: Advanced Features and Future-Proofing
+
+This phase introduces more advanced functionality and long-term improvements to enhance the user experience and maintainability of the settings page.
+
+1.  **Collapsible Sections:**
+    *   **Issue:** As more settings are added, the page will become increasingly long and difficult to navigate.
+    *   **Suggestion:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
+
+2.  **Unsaved Changes Indicator:**
+    *   **Issue:** The settings are saved automatically, but there is no visual indication that a change has been made and saved, which could be confusing for users.
+    *   **Suggestion:** In `src/helpers/settingsPage.js`, implement a "Saved!" indicator that briefly appears after a setting is changed. This provides immediate feedback to the user, confirming that their action was successful. This can be implemented by adding a temporary class to the relevant setting item and styling it in the CSS.
+
+3.  **Search/Filter for Advanced Settings:**
+    *   **Issue:** The "Advanced Settings" section is likely to grow, making it difficult to find specific feature flags.
+    *   **Suggestion:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.
