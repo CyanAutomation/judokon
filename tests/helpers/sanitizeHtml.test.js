@@ -96,6 +96,27 @@ describe("sanitizeHtml fallback sanitizer", () => {
     expect(result).toBe("&lt;div&gt;safe&lt;/div&gt;&lt;script src=x trailing text");
   });
 
+  it("escapes truncated iframe openings missing closing brackets", () => {
+    const input = '<iframe src="javascript:alert(1)"';
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe('&lt;iframe src="javascript:alert(1)"');
+  });
+
+  it("escapes truncated closing tags for non-allowlisted elements", () => {
+    const input = "</iframe";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;/iframe");
+  });
+
+  it("treats truncated allowlisted tags as text", () => {
+    const input = "<strong";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;strong");
+  });
+
   it("removes executable tags with unusual spacing and casing", () => {
     const input =
       '<ScRiPt\n type="text/javascript" data-test=1>evil</sCrIpT>' +

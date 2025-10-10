@@ -280,10 +280,11 @@ function sanitizeBasic(input) {
   // Drop inline event handlers (quoted or unquoted values)
   out = out.replace(/\son[a-z0-9:-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
   // Allow only a small set of tags and strip attributes
-  out = out.replace(/<\/?([a-z][a-z0-9:-]*)\b[^>]*>/gi, (m, tag) => {
+  out = out.replace(/<\/?([a-z][a-z0-9:-]*)\b[^>]*(?:>|$)/gi, (m, tag) => {
     const t = String(tag).toLowerCase();
-    if (!BASIC_ALLOW.has(t)) {
-      return m.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escape = () => m.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (!BASIC_ALLOW.has(t) || !m.endsWith(">")) {
+      return escape();
     }
     // Keep tag but remove attributes
     const isEnd = m.startsWith("</");
