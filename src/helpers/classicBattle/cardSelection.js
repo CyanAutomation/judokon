@@ -329,10 +329,10 @@ export async function renderOpponentPlaceholder({
  * @summary Load card data, generate the player card, select an opponent, and render an obscured placeholder.
  *
  * @pseudocode
- * 1. Load judoka and gokyo datasets using injectable helpers for deterministic testing.
- * 2. Generate the player card while capturing the selected judoka.
- * 3. Select an opponent judoka and remember it for subsequent reads.
- * 4. Render the opponent placeholder card with preserved debug panel state.
+ * 1. Attempt to load judoka data while always invoking the gokyo loader to refresh the lookup cache.
+ * 2. When judoka data fails or no lookup exists, return null selections so callers can retry safely.
+ * 3. Generate the player card while capturing the selected judoka.
+ * 4. Select an opponent judoka, persist it, and render the placeholder with preserved debug panel state.
  *
  * @param {{
  *   judokaLoader?: typeof loadJudokaData,
