@@ -1006,32 +1006,49 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
 
   // Return a cleanup function or store the handler for later removal
   const cleanup = () => {
+    const unsubscribeExpired = removeExpiredCleanup;
+    removeExpiredCleanup = null;
+
+    if (typeof unsubscribeExpired === "function") {
+      try {
+        unsubscribeExpired();
+      } catch {}
+    }
+
+    const handler = visibilityHandler;
+    visibilityHandler = null;
+
+    if (
+      handler &&
+      documentRef &&
+      typeof documentRef.removeEventListener === "function"
+    ) {
+      try {
+        documentRef.removeEventListener("visibilitychange", handler);
+      } catch {}
+    }
+
+    cleanupExecuted = true;
+  };
+
+  const handleExpired = () => {
     if (cleanupExecuted) {
       return;
     }
-    cleanupExecuted = true;
-
-    if (typeof removeExpiredCleanup === "function") {
-      try {
-        removeExpiredCleanup();
-      } catch {}
-      removeExpiredCleanup = null;
-    }
-
-    if (visibilityHandler && documentRef && typeof documentRef.removeEventListener === "function") {
-      try {
-        documentRef.removeEventListener("visibilitychange", visibilityHandler);
-      } catch {}
-    }
-    visibilityHandler = null;
+    cleanup();
   };
 
-  removeExpiredCleanup = typeof timer?.on === "function" ? timer.on("expired", cleanup) : null;
+  removeExpiredCleanup =
+    typeof timer?.on === "function" ? timer.on("expired", handleExpired) : null;
 
   if (typeof timer?.stop === "function") {
     const originalStop = timer.stop.bind(timer);
     timer.stop = () => {
-      cleanup();
+      try {
+        cleanup();
+      } catch (error) {
+        console.warn("Timer cleanup failed:", error);
+      }
       return originalStop();
     };
   }

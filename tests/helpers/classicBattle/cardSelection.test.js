@@ -325,13 +325,13 @@ describe.sequential("classicBattle card selection", () => {
     });
 
     const { withMutedConsole } = await import("../../utils/console.js");
-    let consoleErrorCalled = false;
-    const originalError = console.error;
+    let errorMessageDetected = false;
 
     await withMutedConsole(async () => {
+      const originalError = console.error;
       console.error = (...args) => {
         if (args[0] === "JudokaCard did not render an HTMLElement") {
-          consoleErrorCalled = true;
+          errorMessageDetected = true;
         }
       };
 
@@ -353,7 +353,7 @@ describe.sequential("classicBattle card selection", () => {
       }
     });
 
-    expect(consoleErrorCalled).toBe(true);
+    expect(errorMessageDetected).toBe(true);
     const container = document.getElementById("opponent-card");
     expect(container.innerHTML).toBe("");
   });
