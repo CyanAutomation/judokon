@@ -1515,6 +1515,7 @@ async function beginSelectionTimer(store) {
 async function startRoundCycle(store, options = {}) {
   const { skipStartRound = false } = options;
   if (isStartingRoundCycle) return;
+  clearRoundSelectFallback(store);
   isStartingRoundCycle = true;
   try {
     try {
@@ -1562,6 +1563,33 @@ async function startRoundCycle(store, options = {}) {
 }
 
 /**
+ * Remove the round select fallback UI and reset its tracking flag.
+ *
+ * @pseudocode
+ * 1. Remove fallback message and button elements when present.
+ * 2. Reset the store tracking flag so the fallback can be re-rendered later.
+ */
+function clearRoundSelectFallback(store) {
+  if (typeof document === "undefined") {
+    if (store && typeof store === "object") {
+      store.__roundSelectFallbackShown = false;
+    }
+    return;
+  }
+  const fallbackBtn = document.getElementById("round-select-fallback");
+  if (fallbackBtn) {
+    fallbackBtn.remove();
+  }
+  const fallbackMsg = document.getElementById("round-select-error");
+  if (fallbackMsg) {
+    fallbackMsg.remove();
+  }
+  if (store && typeof store === "object") {
+    store.__roundSelectFallbackShown = false;
+  }
+}
+
+/**
  * Display a fallback start button when the round select modal fails.
  *
  * @pseudocode
@@ -1569,8 +1597,14 @@ async function startRoundCycle(store, options = {}) {
  * 2. Clicking the button starts the round cycle.
  */
 function showRoundSelectFallback(store) {
-  const fallbackAlreadyTracked = Boolean(store && store.__roundSelectFallbackShown);
-  if (fallbackAlreadyTracked || document.getElementById("round-select-fallback")) {
+  const fallbackInDom = Boolean(document.getElementById("round-select-fallback"));
+  const fallbackTracked = Boolean(store && store.__roundSelectFallbackShown);
+
+  if (!fallbackInDom && fallbackTracked && store) {
+    store.__roundSelectFallbackShown = false;
+  }
+
+  if ((store && store.__roundSelectFallbackShown) || fallbackInDom) {
     return;
   }
 
@@ -1591,6 +1625,7 @@ function showRoundSelectFallback(store) {
       await startRoundCycle(store);
     } catch (err) {
       console.warn("battleClassic: fallback start failed", err);
+      showRoundSelectFallback(store);
     }
   });
 
@@ -1852,7 +1887,11 @@ async function init() {
         showRoundSelectFallback(store);
       } catch (fallbackError) {
         console.error("battleClassic: showRoundSelectFallback failed", fallbackError);
-        throw fallbackError;
+        try {
+          showFatalInitError(fallbackError);
+        } catch (fatalError) {
+          console.error("battleClassic: fatal error display failed", fatalError);
+        }
       }
     }
 
