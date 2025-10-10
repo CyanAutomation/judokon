@@ -46,6 +46,22 @@ export function setupClassicBattleDom() {
     if (String(url).includes("gameTimers.js")) {
       return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
     }
+    if (String(url).includes("judoka.json")) {
+      return [
+        {
+          id: "judoka-test-1",
+          name: "Test Judoka One",
+          stats: { power: 5, speed: 4, technique: 3 },
+          isHidden: false
+        },
+        {
+          id: "judoka-test-2",
+          name: "Test Judoka Two",
+          stats: { power: 6, speed: 3, technique: 4 },
+          isHidden: false
+        }
+      ];
+    }
     return [];
   });
   const generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {

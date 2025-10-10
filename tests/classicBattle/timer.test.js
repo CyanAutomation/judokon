@@ -144,6 +144,96 @@ describe("Classic Battle round timer", () => {
     }
   });
 
+  test("cleanup tolerates reentrant expiry and repeated stop calls", async () => {
+    vi.resetModules();
+    const timers = useCanonicalTimers();
+    let cleanupExecutionCount = 0;
+
+    const originalAdd = document.addEventListener;
+    const originalRemove = document.removeEventListener;
+    const addSpy = vi
+      .spyOn(document, "addEventListener")
+      .mockImplementation((type, handler, options) => {
+        return originalAdd.call(document, type, handler, options);
+      });
+    const removeSpy = vi
+      .spyOn(document, "removeEventListener")
+      .mockImplementation((type, handler, options) => {
+        return originalRemove.call(document, type, handler, options);
+      });
+
+    const expiredHandlers = new Set();
+
+    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
+      createRoundTimer: () => {
+        const timer = {
+          on: vi.fn((event, handler) => {
+            if (event === "expired" && typeof handler === "function") {
+              expiredHandlers.add(handler);
+              return () => {
+                cleanupExecutionCount += 1;
+                if (expiredHandlers.has(handler)) {
+                  handler();
+                  expiredHandlers.delete(handler);
+                }
+              };
+            }
+            return () => {};
+          }),
+          start: vi.fn(),
+          stop: vi.fn(() => {
+            for (const handler of [...expiredHandlers]) {
+              handler();
+            }
+            return "stopped";
+          }),
+          pause: vi.fn(),
+          resume: vi.fn()
+        };
+        return timer;
+      }
+    }));
+
+    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
+      if (cat === "roundTimer") return 1;
+      return 3;
+    });
+
+    try {
+      const { createBattleHeader } = await import("../utils/testUtils.js");
+      const header = createBattleHeader();
+      document.body.appendChild(header);
+
+      const scoreboardModule = await import("../../src/helpers/setupScoreboard.js");
+      scoreboardModule.setupScoreboard({ pauseTimer: () => {}, resumeTimer: () => {} });
+
+      const { withMutedConsole } = await import("../utils/console.js");
+      const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
+      const timer = await startTimer(async () => {}, { selectionMade: false });
+
+      const [expiredHandler] = expiredHandlers;
+      expect(typeof expiredHandler).toBe("function");
+
+      await withMutedConsole(async () => {
+        expect(() => expiredHandler()).not.toThrow();
+        expect(() => expiredHandler()).not.toThrow();
+
+        expect(timer.stop()).toBe("stopped");
+        expect(timer.stop()).toBe("stopped");
+      }, ["warn"]);
+
+      expect(removeSpy).toHaveBeenCalledTimes(1);
+      expect(cleanupExecutionCount).toBe(1);
+    } finally {
+      spy.mockRestore();
+      addSpy.mockRestore();
+      removeSpy.mockRestore();
+      vi.doUnmock("../../src/helpers/timers/createRoundTimer.js");
+      timers.cleanup();
+      document.body.innerHTML = "";
+    }
+  });
+
   test("Next button dispatches countdown events and ready when skip flag is active", async () => {
     vi.resetModules();
     const timers = useCanonicalTimers();

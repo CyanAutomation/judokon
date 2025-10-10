@@ -41,7 +41,14 @@ describe.sequential("classicBattle card selection", () => {
   it("draws a different card for the opponent", async () => {
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
-        return [{ id: 1 }];
+        return [
+          {
+            id: 1,
+            name: "Opponent Alpha",
+            stats: { power: 12 },
+            isHidden: false
+          }
+        ];
       }
       return [];
     });
@@ -85,8 +92,10 @@ describe.sequential("classicBattle card selection", () => {
     _resetForTest();
 
     const result = await selectOpponentJudoka({
-      availableJudoka: [{ id: 1 }],
-      playerJudoka: { id: 1 },
+      availableJudoka: [
+        { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }
+      ],
+      playerJudoka: { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false },
       randomJudoka: randomJudokaMock,
       fallbackProvider,
       qaLogger
@@ -108,8 +117,10 @@ describe.sequential("classicBattle card selection", () => {
     _resetForTest();
 
     const result = await selectOpponentJudoka({
-      availableJudoka: [{ id: 1 }],
-      playerJudoka: { id: 1 },
+      availableJudoka: [
+        { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }
+      ],
+      playerJudoka: { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false },
       randomJudoka: randomJudokaMock,
       fallbackProvider,
       qaLogger
@@ -125,9 +136,9 @@ describe.sequential("classicBattle card selection", () => {
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
         return [
-          { id: 1, isHidden: true },
-          { id: 2, isHidden: false },
-          { id: 3, isHidden: true }
+          { id: 1, name: "Hidden One", stats: { power: 5 }, isHidden: true },
+          { id: 2, name: "Visible Two", stats: { power: 7 }, isHidden: false },
+          { id: 3, name: "Hidden Three", stats: { power: 6 }, isHidden: true }
         ];
       }
       return [];
@@ -210,12 +221,25 @@ describe.sequential("classicBattle card selection", () => {
         throw new Error("boom");
       }
       if (p.includes("judoka")) {
-        return [{ id: 1 }];
+        return [
+          {
+            id: 1,
+            name: "Retry Success",
+            stats: { power: 9 },
+            isHidden: false
+          }
+        ];
       }
       return [];
     });
 
-    const { drawCards, _resetForTest, JudokaDataLoadError, CARD_RETRY_EVENT } = await import(
+    const {
+      drawCards,
+      _resetForTest,
+      JudokaDataLoadError,
+      CARD_RETRY_EVENT,
+      LOAD_ERROR_EXIT_EVENT
+    } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
     _resetForTest();
@@ -225,9 +249,13 @@ describe.sequential("classicBattle card selection", () => {
     });
 
     await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const retry = document.getElementById("retry-draw-button");
+    const exit = document.getElementById("exit-draw-button");
     expect(retry).toBeTruthy();
+    expect(exit).toBeTruthy();
     await new Promise((resolve) => {
       const handler = async () => {
         window.removeEventListener(CARD_RETRY_EVENT, handler);
@@ -243,12 +271,45 @@ describe.sequential("classicBattle card selection", () => {
       window.addEventListener(CARD_RETRY_EVENT, handler);
       retry.click();
     });
+    expect(retry.disabled).toBe(true);
+    expect(retry.getAttribute("aria-busy")).toBe("true");
+    expect(retry.textContent).toBe("Retrying...");
+    expect(exit.disabled).toBe(false);
+    expect(exit.getAttribute("aria-disabled")).toBeNull();
 
     expect(calls.length).toBe(3);
     // Expect sequence: judoka (fail), judoka (success on retry), gokyo (success on retry)
     expect(calls[0]).toMatch(/judoka\.json/);
     expect(calls[1]).toMatch(/judoka\.json/);
     expect(calls[2]).toMatch(/gokyo\.json/);
+  });
+
+  it("Return to Lobby button dispatches exit event", async () => {
+    fetchJsonMock.mockRejectedValueOnce(new Error("boom"));
+
+    const { drawCards, _resetForTest, JudokaDataLoadError, LOAD_ERROR_EXIT_EVENT } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    const exitListener = vi.fn();
+    window.addEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
+
+    await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const exit = document.getElementById("exit-draw-button");
+    expect(exit).toBeTruthy();
+
+    exit.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(exit.disabled).toBe(true);
+    expect(exit.textContent).toBe("Returning...");
+    expect(exitListener).toHaveBeenCalledTimes(1);
+
+    window.removeEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
   });
 
   it("fails when judoka payload is empty", async () => {
@@ -303,14 +364,20 @@ describe.sequential("classicBattle card selection", () => {
     );
     _resetForTest();
 
-    const fetcher = vi.fn().mockResolvedValue([{ id: 42 }]);
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue([
+        { id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }
+      ]);
 
     const first = await loadJudokaData({ fetcher });
     const second = await loadJudokaData({ fetcher });
 
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(first).toBe(second);
-    expect(first).toEqual([{ id: 42 }]);
+    expect(first).toEqual([
+      { id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }
+    ]);
   });
 
   it("relies on the scoreboard when showMessage succeeds", async () => {
@@ -418,7 +485,9 @@ describe.sequential("classicBattle card selection", () => {
       _resetForTest();
       fetchJsonMock.mockImplementation(async (path) => {
         if (path.includes("judoka")) {
-          return [{ id: 1 }];
+          return [
+            { id: 1, name: "Renderless", stats: { power: 8 }, isHidden: false }
+          ];
         }
         return [];
       });

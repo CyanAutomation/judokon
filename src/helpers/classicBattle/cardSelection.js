@@ -5,7 +5,7 @@ import { isEnabled } from "../featureFlags.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
 import { DATA_DIR } from "../constants.js";
-import { showMessage, showTemporaryMessage } from "../setupScoreboard.js";
+import { showMessage as scoreboardShowMessage, showTemporaryMessage } from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
@@ -28,6 +28,7 @@ export class JudokaDataLoadError extends Error {
 }
 
 export const CARD_RETRY_EVENT = "classicBattle:retryCardDraw";
+export const LOAD_ERROR_EXIT_EVENT = "classicBattle:loadErrorExit";
 
 /**
  * Display QA information messages during test mode.
@@ -109,7 +110,24 @@ function showLoadError(error) {
       actions.className = "modal-actions";
 
       const retry = createButton("Retry", { id: "retry-draw-button" });
+      const originalLabel = retry.textContent;
+      const setLoadingState = (loading) => {
+        try {
+          retry.disabled = loading;
+          if (loading) {
+            retry.setAttribute("aria-disabled", "true");
+            retry.setAttribute("aria-busy", "true");
+            retry.textContent = "Retrying...";
+          } else {
+            retry.removeAttribute("aria-disabled");
+            retry.removeAttribute("aria-busy");
+            retry.textContent = originalLabel;
+          }
+        } catch {}
+      };
+
       retry.addEventListener("click", () => {
+        setLoadingState(true);
         try {
           loadErrorModal.close();
         } catch {}
@@ -120,6 +138,7 @@ function showLoadError(error) {
           }
         } catch (dispatchError) {
           console.debug("Failed to dispatch retry event:", dispatchError);
+          setLoadingState(false);
         }
         try {
           if (typeof window !== "undefined" && window.location?.reload) {
@@ -127,9 +146,29 @@ function showLoadError(error) {
           }
         } catch (reloadError) {
           console.debug("Failed to reload after retry dispatch failure:", reloadError);
+          setLoadingState(false);
         }
       });
-      actions.append(retry);
+      const exit = createButton("Return to Lobby", { id: "exit-draw-button" });
+      exit.addEventListener("click", () => {
+        try {
+          exit.disabled = true;
+          exit.setAttribute("aria-disabled", "true");
+          exit.textContent = "Returning...";
+        } catch {}
+        try {
+          loadErrorModal.close();
+        } catch {}
+        try {
+          if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+            window.dispatchEvent(new CustomEvent(LOAD_ERROR_EXIT_EVENT));
+          }
+        } catch (exitError) {
+          console.debug("Failed to dispatch exit event:", exitError);
+        }
+      });
+
+      actions.append(retry, exit);
 
       const frag = document.createDocumentFragment();
       frag.append(title, desc, actions);

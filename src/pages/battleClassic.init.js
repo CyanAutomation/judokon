@@ -24,7 +24,8 @@ import {
   createBattleEngine,
   STATS,
   on as onEngine,
-  getRoundsPlayed
+  getRoundsPlayed,
+  isMatchEnded
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
@@ -55,7 +56,11 @@ import {
   resetOpponentPromptTimestamp,
   getOpponentPromptMinDuration
 } from "../helpers/classicBattle/opponentPromptTracker.js";
-import { CARD_RETRY_EVENT, JudokaDataLoadError } from "../helpers/classicBattle/cardSelection.js";
+import {
+  CARD_RETRY_EVENT,
+  LOAD_ERROR_EXIT_EVENT,
+  JudokaDataLoadError
+} from "../helpers/classicBattle/cardSelection.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -82,6 +87,23 @@ let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
+
+/**
+ * Toggle header navigation interactivity.
+ *
+ * @param {boolean} locked
+ */
+function setHeaderNavigationLocked(locked) {
+  if (typeof document === "undefined") {
+    return;
+  }
+  try {
+    const headerLinks = document.querySelectorAll("header a");
+    headerLinks.forEach((link) => {
+      link.style.pointerEvents = locked ? "none" : "";
+    });
+  } catch {}
+}
 
 /**
  * Get the current highest displayed round, preferring window global for test isolation.
@@ -1547,6 +1569,15 @@ async function startRoundCycle(store, options = {}) {
  * 2. Clicking the button starts the round cycle.
  */
 function showRoundSelectFallback(store) {
+  const fallbackAlreadyTracked = Boolean(store && store.__roundSelectFallbackShown);
+  if (fallbackAlreadyTracked || document.getElementById("round-select-fallback")) {
+    return;
+  }
+
+  if (store) {
+    store.__roundSelectFallbackShown = true;
+  }
+
   const msg = document.createElement("p");
   msg.id = "round-select-error";
   msg.textContent = "Round selection failed. Start match?";
@@ -1559,7 +1590,7 @@ function showRoundSelectFallback(store) {
     try {
       await startRoundCycle(store);
     } catch (err) {
-      console.debug("battleClassic: fallback start failed", err);
+      console.warn("battleClassic: fallback start failed", err);
     }
   });
 
@@ -1668,6 +1699,30 @@ async function init() {
       };
       window.__classicBattleRetryListener = retryListener;
       window.addEventListener(CARD_RETRY_EVENT, retryListener);
+
+      if (window.__classicBattleExitListener) {
+        window.removeEventListener(LOAD_ERROR_EXIT_EVENT, window.__classicBattleExitListener);
+      }
+      const exitListener = () => {
+        try {
+          stopActiveSelectionTimer();
+        } catch {}
+        setHeaderNavigationLocked(false);
+        try {
+          document.body.removeAttribute("data-battle-active");
+        } catch {}
+        ensureLobbyBadge();
+        try {
+          showSnackbar("");
+        } catch {}
+        try {
+          if (!document.getElementById("round-select-error")) {
+            showRoundSelectFallback(store);
+          }
+        } catch {}
+      };
+      window.__classicBattleExitListener = exitListener;
+      window.addEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
     }
 
     const markFromEvent = () => {
@@ -1757,34 +1812,49 @@ async function init() {
     // Wire Main Menu button with battle store-aware handler
     bindHomeButton(store);
 
-    await initRoundSelectModal(async () => {
-      try {
-        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-          console.debug(
-            `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
-          );
-        }
-      } catch {}
-      // Reflect state change in badge
-      const badge = document.getElementById("battle-state-badge");
-      if (badge && !badge.hidden) badge.textContent = "Round";
-      // Set data-battle-active attribute on body
-      document.body.setAttribute("data-battle-active", "true");
-      // Disable header navigation during battle
-      const headerLinks = document.querySelectorAll("header a");
-      headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
-      // Begin first round
-      broadcastBattleState("matchStart");
-      try {
-        await startRoundCycle(store);
-      } catch (err) {
-        console.error("battleClassic: startRoundCycle failed", err);
-        if (err instanceof JudokaDataLoadError) {
+    try {
+      await initRoundSelectModal(async () => {
+        try {
+          if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+            console.debug(
+              `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
+            );
+          }
+        } catch {}
+        // Reflect state change in badge
+        const badge = document.getElementById("battle-state-badge");
+        if (badge && !badge.hidden) badge.textContent = "Round";
+        // Set data-battle-active attribute on body
+        document.body.setAttribute("data-battle-active", "true");
+        // Disable header navigation during battle
+        setHeaderNavigationLocked(true);
+        // Begin first round
+        broadcastBattleState("matchStart");
+        try {
+          await startRoundCycle(store);
+        } catch (err) {
+          console.error("battleClassic: startRoundCycle failed", err);
+          setHeaderNavigationLocked(false);
+          try {
+            document.body.removeAttribute("data-battle-active");
+          } catch {}
+          ensureLobbyBadge();
+          if (err instanceof JudokaDataLoadError) {
+            return;
+          }
+          showFatalInitError(err);
           return;
         }
-        showFatalInitError(err);
+      });
+    } catch (err) {
+      console.error("battleClassic: initRoundSelectModal failed", err);
+      try {
+        showRoundSelectFallback(store);
+      } catch (fallbackError) {
+        console.error("battleClassic: showRoundSelectFallback failed", fallbackError);
+        throw fallbackError;
       }
-    });
+    }
 
     // In the simplified (non-orchestrated) page, start the next round when the
     // cooldown is considered finished. Some paths may dispatch `ready` directly
@@ -1853,7 +1923,6 @@ async function init() {
         }
       }
 
-      const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
       if (typeof isMatchEnded === "function" && isMatchEnded()) return;
     };
     onBattleEvent("round.start", startIfNotEnded);
