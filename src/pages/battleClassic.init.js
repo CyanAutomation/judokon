@@ -1602,369 +1602,275 @@ function showRoundSelectFallback(store) {
  * 17. Bind `countdownFinished` event to start the next round cycle.
  */
 async function init() {
-  // Clean up any stray modal backdrops from previous page loads or test runs
-  // This ensures that modal backdrops don't interfere with UI interactions
   try {
+    // Clean up any stray modal backdrops from previous page loads or test runs
+    // This ensures that modal backdrops don't interfere with UI interactions
     removeBackdrops();
-  } catch (err) {
-    console.debug("battleClassic: removeBackdrops failed during init", err);
-  }
 
-  try {
     setupScheduler();
-  } catch (err) {
-    console.debug("battleClassic: setupScheduler failed", err);
-  }
 
-  // Mark that init was called for debugging
-  if (typeof window !== "undefined") {
-    window.__initCalled = true;
-  }
+    // Mark that init was called for debugging
+    if (typeof window !== "undefined") {
+      window.__initCalled = true;
+    }
 
-  // Expose test API for testing direct access
-  try {
+    // Expose test API for testing direct access
     exposeTestAPI();
-  } catch {}
 
-  // Initialize badge immediately based on overrides (synchronous)
-  initBattleStateBadge();
-  // Double-ensure Lobby text in E2E contexts
-  ensureLobbyBadge();
+    // Initialize badge immediately based on overrides (synchronous)
+    initBattleStateBadge();
+    // Double-ensure Lobby text in E2E contexts
+    ensureLobbyBadge();
 
-  // Initialize feature flags (async, for other features)
-  try {
+    // Initialize feature flags (async, for other features)
     await initFeatureFlags();
-  } catch (err) {
-    console.debug("battleClassic: initFeatureFlags failed", err);
-  }
-  // Re-assert badge text after async flag init in case any early writers changed it
-  ensureLobbyBadge();
+    // Re-assert badge text after async flag init in case any early writers changed it
+    ensureLobbyBadge();
 
-  // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
-  setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
+    // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
+    setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
 
-  // Ensure opponent card area remains visible so the Mystery placeholder shows pre-reveal
-  try {
+    // Ensure opponent card area remains visible so the Mystery placeholder shows pre-reveal
     const opponentCard = document.getElementById("opponent-card");
     if (opponentCard) opponentCard.classList.remove("opponent-hidden");
-  } catch (err) {
-    console.debug("battleClassic: adjusting opponent card visibility failed", err);
-  }
 
-  // Initialize scoreboard adapter to handle display.score.update events
-  try {
+    // Initialize scoreboard adapter to handle display.score.update events
     initScoreboardAdapter();
-  } catch (err) {
-    console.debug("battleClassic: initScoreboardAdapter failed", err);
-  }
-  // Seed visible defaults to avoid invisible empty elements and enable a11y announcements
-  try {
+    // Seed visible defaults to avoid invisible empty elements and enable a11y announcements
     updateScore(0, 0);
     // Do not force Round 0 after match starts; actual round set in startRoundCycle
     updateRoundCounter(0);
     const rc = document.getElementById("round-counter");
     if (rc && !rc.textContent) rc.textContent = "Round 0";
-  } catch {}
 
-  // Initialize the battle engine and present the round selection modal.
-  try {
+    // Initialize the battle engine and present the round selection modal.
     createBattleEngine(window.__ENGINE_CONFIG || {});
 
     // Initialize engine event bridge after engine is created
-    try {
-      bridgeEngineEvents();
-    } catch (err) {
-      console.debug("battleClassic: bridgeEngineEvents failed", err);
-    }
+    bridgeEngineEvents();
 
     const store = createBattleStore();
-    try {
+    if (typeof window !== "undefined") {
       window.battleStore = store;
-    } catch (err) {
-      console.debug("battleClassic: exposing store to window failed", err);
     }
-    try {
-      if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
-        if (window.__classicBattleRetryListener) {
-          window.removeEventListener(CARD_RETRY_EVENT, window.__classicBattleRetryListener);
-        }
-        const retryListener = async () => {
-          try {
-            await startRoundCycle(store);
-          } catch (err) {
-            console.error("battleClassic: startRoundCycle retry failed", err);
-            if (err instanceof JudokaDataLoadError) {
-              return;
-            }
-            showFatalInitError(err);
-          }
-        };
-        window.__classicBattleRetryListener = retryListener;
-        window.addEventListener(CARD_RETRY_EVENT, retryListener);
+
+    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+      if (window.__classicBattleRetryListener) {
+        window.removeEventListener(CARD_RETRY_EVENT, window.__classicBattleRetryListener);
       }
-    } catch (err) {
-      console.debug("battleClassic: registering retry listener failed", err);
-    }
-    try {
-      const markFromEvent = () => {
-        markCooldownStarted(store);
-      };
-      onBattleEvent("nextRoundCountdownStarted", markFromEvent);
-      onBattleEvent("control.countdown.started", markFromEvent);
-      onBattleEvent("countdownStart", markFromEvent);
-    } catch (err) {
-      console.debug("battleClassic: binding countdown flag listeners failed", err);
-    }
-    // Bind transient UI handlers (opponent choosing message, reveal, outcome)
-    // Bind transient UI handlers (opponent choosing message, reveal, outcome)
-    try {
-      bindUIHelperEventHandlersDynamic();
-    } catch (err) {
-      console.debug("battleClassic: bindUIHelperEventHandlersDynamic failed", err);
-    }
-    // Show modal when a round resolves with matchEnded=true (covers direct-resolve path)
-    try {
-      onBattleEvent("roundResolved", (e) => {
-        try {
-          const result = e?.detail?.result;
-          if (!result || !result.matchEnded) return;
-          const outcome = String(result?.outcome || "");
-          const scores = {
-            player: Number(result?.playerScore) || 0,
-            opponent: Number(result?.opponentScore) || 0
-          };
-          showEndModal(store, { outcome, scores });
-        } catch {}
-      });
-    } catch (err) {
-      console.debug("battleClassic: binding roundResolved listener failed", err);
-    }
-    // Initialize debug panel when enabled
-    try {
-      initDebugPanel();
-    } catch (err) {
-      console.debug("battleClassic: initDebugPanel failed", err);
-    }
-    // One more gentle nudge to keep the badge text deterministic before interaction
-    ensureLobbyBadge();
-    // Show end-of-match modal on engine event to cover all resolution paths
-    try {
-      onEngine?.("matchEnded", (detail) => {
-        try {
-          const outcome = String(detail?.outcome || "");
-          // Skip showing end modal for quit, as it's handled directly in quit flow
-          if (outcome === "quit") return;
-          const scores = {
-            player: Number(detail?.playerScore) || 0,
-            opponent: Number(detail?.opponentScore) || 0
-          };
-          showEndModal(store, { outcome, scores });
-        } catch {}
-      });
-    } catch (err) {
-      console.debug("battleClassic: binding matchEnded listener failed", err);
-    }
-
-    // Wire Next button click to cooldown/advance handler
-    try {
-      const nextBtn = document.getElementById("next-button");
-      if (nextBtn) nextBtn.addEventListener("click", onNextButtonClick);
-    } catch (err) {
-      console.debug("battleClassic: wiring next button failed", err);
-    }
-    // Wire Replay button to restart match
-    try {
-      const replayBtn = document.getElementById("replay-button");
-      if (replayBtn)
-        replayBtn.addEventListener("click", async () => {
-          // Stop any active selection timers and pending fallbacks
-          try {
-            stopActiveSelectionTimer();
-          } catch {}
-          // Clear any in-flight start cycle to avoid duplicate starts after replay
-          isStartingRoundCycle = false;
-          resetOpponentPromptTimestamp();
-          resetRoundCounterTracking();
-
-          // Cancel pending auto-select timers so the fresh match starts cleanly
-          try {
-            if (store.statTimeoutId) {
-              clearTimeout(store.statTimeoutId);
-              store.statTimeoutId = null;
-            }
-            if (store.autoSelectId) {
-              clearTimeout(store.autoSelectId);
-              store.autoSelectId = null;
-            }
-          } catch (err) {
-            console.debug("battleClassic: clearing replay timeouts failed", err);
-          }
-
-          try {
-            // Use unified replay/init path for clean state
-            await handleReplay(store);
-          } catch (err) {
-            console.debug("battleClassic: handleReplay failed", err);
-          }
-
-          try {
-            // Ensure UI mirrors fresh match state
-            updateScore(0, 0);
-            updateRoundCounter(1);
-
-            // Reset fallback scores for tests so DOM mirrors engine state
-            resetFallbackScores();
-          } catch (err) {
-            console.debug("battleClassic: resetting score after replay failed", err);
-          }
-        });
-    } catch (err) {
-      console.debug("battleClassic: wiring replay button failed", err);
-    }
-    // Wire Quit button to open confirmation modal
-    try {
-      const quitBtn = document.getElementById("quit-button");
-      if (quitBtn) quitBtn.addEventListener("click", () => quitMatch(store, quitBtn));
-    } catch (err) {
-      console.debug("battleClassic: wiring quit button failed", err);
-    }
-    // Wire Main Menu button with battle store-aware handler
-    try {
-      bindHomeButton(store);
-    } catch (err) {
-      console.debug("battleClassic: wiring home button failed", err);
-    }
-    try {
-      await initRoundSelectModal(async () => {
-        try {
-          if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-            console.debug(
-              `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
-            );
-          }
-        } catch {}
-        // Reflect state change in badge
-        try {
-          const badge = document.getElementById("battle-state-badge");
-          if (badge && !badge.hidden) badge.textContent = "Round";
-        } catch {}
-        // Set data-battle-active attribute on body
-        try {
-          document.body.setAttribute("data-battle-active", "true");
-        } catch {}
-        // Disable header navigation during battle
-        try {
-          const headerLinks = document.querySelectorAll("header a");
-          headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
-        } catch {}
-        // Begin first round
-        broadcastBattleState("matchStart");
+      const retryListener = async () => {
         try {
           await startRoundCycle(store);
         } catch (err) {
-          console.error("battleClassic: startRoundCycle failed", err);
+          console.error("battleClassic: startRoundCycle retry failed", err);
           showFatalInitError(err);
         }
-      });
-    } catch (err) {
-      console.debug("battleClassic: initRoundSelectModal failed", err);
-      showRoundSelectFallback(store);
+      };
+      window.__classicBattleRetryListener = retryListener;
+      window.addEventListener(CARD_RETRY_EVENT, retryListener);
     }
+
+    const markFromEvent = () => {
+      markCooldownStarted(store);
+    };
+    onBattleEvent("nextRoundCountdownStarted", markFromEvent);
+    onBattleEvent("control.countdown.started", markFromEvent);
+    onBattleEvent("countdownStart", markFromEvent);
+
+    // Bind transient UI handlers (opponent choosing message, reveal, outcome)
+    bindUIHelperEventHandlersDynamic();
+
+    // Show modal when a round resolves with matchEnded=true (covers direct-resolve path)
+    onBattleEvent("roundResolved", (e) => {
+      try {
+        const result = e?.detail?.result;
+        if (!result || !result.matchEnded) return;
+        const outcome = String(result?.outcome || "");
+        const scores = {
+          player: Number(result?.playerScore) || 0,
+          opponent: Number(result?.opponentScore) || 0
+        };
+        showEndModal(store, { outcome, scores });
+      } catch {}
+    });
+
+    // Initialize debug panel when enabled
+    initDebugPanel();
+
+    // One more gentle nudge to keep the badge text deterministic before interaction
+    ensureLobbyBadge();
+
+    // Show end-of-match modal on engine event to cover all resolution paths
+    onEngine?.("matchEnded", (detail) => {
+      try {
+        const outcome = String(detail?.outcome || "");
+        // Skip showing end modal for quit, as it's handled directly in quit flow
+        if (outcome === "quit") return;
+        const scores = {
+          player: Number(detail?.playerScore) || 0,
+          opponent: Number(detail?.opponentScore) || 0
+        };
+        showEndModal(store, { outcome, scores });
+      } catch {}
+    });
+
+    // Wire Next button click to cooldown/advance handler
+    const nextBtn = document.getElementById("next-button");
+    if (nextBtn) nextBtn.addEventListener("click", onNextButtonClick);
+
+    // Wire Replay button to restart match
+    const replayBtn = document.getElementById("replay-button");
+    if (replayBtn)
+      replayBtn.addEventListener("click", async () => {
+        // Stop any active selection timers and pending fallbacks
+        stopActiveSelectionTimer();
+        // Clear any in-flight start cycle to avoid duplicate starts after replay
+        isStartingRoundCycle = false;
+        resetOpponentPromptTimestamp();
+        resetRoundCounterTracking();
+
+        // Cancel pending auto-select timers so the fresh match starts cleanly
+        if (store.statTimeoutId) {
+          clearTimeout(store.statTimeoutId);
+          store.statTimeoutId = null;
+        }
+        if (store.autoSelectId) {
+          clearTimeout(store.autoSelectId);
+          store.autoSelectId = null;
+        }
+
+        // Use unified replay/init path for clean state
+        await handleReplay(store);
+
+        // Ensure UI mirrors fresh match state
+        updateScore(0, 0);
+        updateRoundCounter(1);
+
+        // Reset fallback scores for tests so DOM mirrors engine state
+        resetFallbackScores();
+      });
+
+    // Wire Quit button to open confirmation modal
+    const quitBtn = document.getElementById("quit-button");
+    if (quitBtn) quitBtn.addEventListener("click", () => quitMatch(store, quitBtn));
+
+    // Wire Main Menu button with battle store-aware handler
+    bindHomeButton(store);
+
+    await initRoundSelectModal(async () => {
+      try {
+        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+          console.debug(
+            `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
+          );
+        }
+      } catch {}
+      // Reflect state change in badge
+      const badge = document.getElementById("battle-state-badge");
+      if (badge && !badge.hidden) badge.textContent = "Round";
+      // Set data-battle-active attribute on body
+      document.body.setAttribute("data-battle-active", "true");
+      // Disable header navigation during battle
+      const headerLinks = document.querySelectorAll("header a");
+      headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
+      // Begin first round
+      broadcastBattleState("matchStart");
+      try {
+        await startRoundCycle(store);
+      } catch (err) {
+        console.error("battleClassic: startRoundCycle failed", err);
+        showFatalInitError(err);
+      }
+    });
 
     // In the simplified (non-orchestrated) page, start the next round when the
     // cooldown is considered finished. Some paths may dispatch `ready` directly
     // (e.g. when skipping timers), so listen to both events.
-    try {
-      const startIfNotEnded = async (evt) => {
-        const eventType = typeof evt === "string" ? evt : evt?.type;
-        const eventDetail =
-          evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
-        const manualRoundStart =
-          eventType === "round.start" &&
-          eventDetail &&
-          typeof eventDetail === "object" &&
-          eventDetail?.source === "next-button";
+    const startIfNotEnded = async (evt) => {
+      const eventType = typeof evt === "string" ? evt : evt?.type;
+      const eventDetail =
+        evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
+      const manualRoundStart =
+        eventType === "round.start" &&
+        eventDetail &&
+        typeof eventDetail === "object" &&
+        eventDetail?.source === "next-button";
 
-        if (manualRoundStart) {
-          lastManualRoundStartTimestamp = getCurrentTimestamp();
-          if (typeof window !== "undefined") {
-            try {
-              window.__lastManualRoundStartTimestamp = lastManualRoundStartTimestamp;
-            } catch {}
-          }
+      if (manualRoundStart) {
+        lastManualRoundStartTimestamp = getCurrentTimestamp();
+        if (typeof window !== "undefined") {
+          try {
+            window.__lastManualRoundStartTimestamp = lastManualRoundStartTimestamp;
+          } catch {}
         }
+      }
 
-        if (eventType === "ready") {
-          queueMicrotask(async () => {
-            const now = getCurrentTimestamp();
-            const hasManualStamp = lastManualRoundStartTimestamp > 0;
-            const elapsedSinceManual = hasManualStamp
-              ? now - lastManualRoundStartTimestamp
-              : Number.POSITIVE_INFINITY;
-            const skipDueToManual =
-              hasManualStamp &&
-              elapsedSinceManual >= 0 &&
-              elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
-            const eventInfo = {
-              skipped: skipDueToManual,
-              suppressionWindowMs: READY_SUPPRESSION_WINDOW_MS
-            };
-            if (hasManualStamp && Number.isFinite(elapsedSinceManual)) {
-              eventInfo.sinceManualStartMs = elapsedSinceManual;
-            }
-            trackRoundCycleEvent(eventType, eventInfo, eventDetail);
-            if (skipDueToManual) {
-              return;
-            }
-            try {
-              await startRoundCycle(store);
-              recordRoundCycleTrigger(eventType || "unknown");
-            } catch (err) {
-              console.error("battleClassic: startRoundCycle ready handler failed", err);
-              if (!(err instanceof JudokaDataLoadError)) {
-                showFatalInitError(err);
-              }
-            }
-          });
-        } else {
-          trackRoundCycleEvent(eventType, { manualRoundStart }, eventDetail);
+      if (eventType === "ready") {
+        queueMicrotask(async () => {
+          const now = getCurrentTimestamp();
+          const hasManualStamp = lastManualRoundStartTimestamp > 0;
+          const elapsedSinceManual = hasManualStamp
+            ? now - lastManualRoundStartTimestamp
+            : Number.POSITIVE_INFINITY;
+          const skipDueToManual =
+            hasManualStamp &&
+            elapsedSinceManual >= 0 &&
+            elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
+          const eventInfo = {
+            skipped: skipDueToManual,
+            suppressionWindowMs: READY_SUPPRESSION_WINDOW_MS
+          };
+          if (hasManualStamp && Number.isFinite(elapsedSinceManual)) {
+            eventInfo.sinceManualStartMs = elapsedSinceManual;
+          }
+          trackRoundCycleEvent(eventType, eventInfo, eventDetail);
+          if (skipDueToManual) {
+            return;
+          }
           try {
             await startRoundCycle(store);
             recordRoundCycleTrigger(eventType || "unknown");
           } catch (err) {
-            console.error("battleClassic: startRoundCycle round.start handler failed", err);
+            console.error("battleClassic: startRoundCycle ready handler failed", err);
             if (!(err instanceof JudokaDataLoadError)) {
               showFatalInitError(err);
             }
           }
-        }
-
+        });
+      } else {
+        trackRoundCycleEvent(eventType, { manualRoundStart }, eventDetail);
         try {
-          const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
-          if (typeof isMatchEnded === "function" && isMatchEnded()) return;
-        } catch {}
-      };
-      onBattleEvent("round.start", startIfNotEnded);
-      onBattleEvent("ready", startIfNotEnded);
-      onBattleEvent("roundStarted", async () => {
-        if (isStartingRoundCycle) return;
-        try {
-          await startRoundCycle(store, { skipStartRound: true });
+          await startRoundCycle(store);
+          recordRoundCycleTrigger(eventType || "unknown");
         } catch (err) {
-          console.error("battleClassic: startRoundCycle roundStarted handler failed", err);
+          console.error("battleClassic: startRoundCycle round.start handler failed", err);
           if (!(err instanceof JudokaDataLoadError)) {
             showFatalInitError(err);
           }
         }
-      });
-    } catch {}
+      }
+
+      const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
+      if (typeof isMatchEnded === "function" && isMatchEnded()) return;
+    };
+    onBattleEvent("round.start", startIfNotEnded);
+    onBattleEvent("ready", startIfNotEnded);
+    onBattleEvent("roundStarted", async () => {
+      if (isStartingRoundCycle) return;
+      try {
+        await startRoundCycle(store, { skipStartRound: true });
+      } catch (err) {
+        console.error("battleClassic: startRoundCycle roundStarted handler failed", err);
+        if (!(err instanceof JudokaDataLoadError)) {
+          showFatalInitError(err);
+        }
+      }
+    });
     // Mark initialization as complete for test hooks
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
       // Dispatch event for deterministic test hooks
-      try {
-        document.dispatchEvent(new Event("battle:init-complete"));
-      } catch {}
+      document.dispatchEvent(new Event("battle:init-complete"));
     }
   } catch (err) {
     console.error("battleClassic: bootstrap failed", err);

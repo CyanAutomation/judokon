@@ -12,6 +12,7 @@ This revision re-validates every QA finding against the current CLI implementati
 
 - Added a header-level verbose-mode indicator to `src/pages/battleCLI.html` so `setupFlags` can surface observability status without scrolling.
 - Updated `setupFlags` to manage `aria-hidden` on the indicator and added `battleCLI.verboseFlag.test.js` coverage to ensure the UI reflects flag changes.
+- Extended countdown regression coverage in `tests/pages/battleCLI.countdown.test.js` to assert the warning colour under five seconds and the reset when the timer restarts.
 
 ---
 
@@ -114,13 +115,13 @@ This revision re-validates every QA finding against the current CLI implementati
 ## Recommended Follow-Up
 
 - **✅ Completed — Verbose indicator hook**: Added `#verbose-indicator`, synchronized `aria-hidden`, and covered the behaviour via `battleCLI.verboseFlag.test.js`.
-
-1. **Add countdown warning regression test (0.25 day)** — Extend `tests/pages/battleCLI.pointsToWin.test.js` or create a new spec that drives `startSelectionCountdown` below five seconds and asserts the `#cli-countdown` colour swap. This prevents silent CSS regressions.
-2. **Playwright persistence scenario (0.5 day)** — Introduce a CLI E2E test that toggles the win target, reloads, and verifies the header + scoreboard values to complement the unit coverage (`tests/pages/battleCLI.pointsToWin.test.js`).
-3. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
+- **✅ Completed — Countdown warning regression test**: `battleCLI.countdown.test.js` now asserts the warning colour under five seconds and the reset on restart.
+1. **Playwright persistence scenario (0.5 day)** — Introduce a CLI E2E test that toggles the win target, reloads, and verifies the header + scoreboard values to complement the unit coverage (`tests/pages/battleCLI.pointsToWin.test.js`).
+2. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
 
 ## Validation Evidence
 
+- `npx vitest run tests/pages/battleCLI.countdown.test.js`
 - `npx vitest run tests/pages/battleCLI.verboseFlag.test.js`
 - `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`
 - `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
