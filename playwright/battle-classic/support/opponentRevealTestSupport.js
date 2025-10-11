@@ -141,7 +141,9 @@ function buildBattleFallbackFailureMessage(errors) {
 
   const detailMessage = errors.map((error) => `- ${error.message}`).join("\n");
 
-  return ["Battle readiness quick check failed after fallback strategies.", detailMessage].join("\n");
+  return ["Battle readiness quick check failed after fallback strategies.", detailMessage].join(
+    "\n"
+  );
 }
 
 export async function startMatch(page, selector) {
