@@ -85,7 +85,7 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
       await expect(page.locator(".logo")).toBeVisible();
     }, MUTED_CONSOLE_LEVELS));
 
-  test("opponent reveal handles missing DOM elements gracefully", async ({ page }) =>
+  test("opponent reveal handles hidden snackbar container gracefully", async ({ page }) =>
     withMutedConsole(async () => {
       const routePattern = "**/src/pages/battleClassic.html";
       const removeSnackbarContainer = async (route) => {
