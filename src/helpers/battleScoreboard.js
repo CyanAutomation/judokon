@@ -11,7 +11,11 @@ import {
 import { getScheduler } from "./scheduler.js";
 
 let _bound = false;
+let _state = { current: null, lastOutcome: "none" };
+let _lastRoundIndex = 0;
 let _handlers = [];
+let _waitingTimer = null;
+let _waitingClearer = null;
 // Schedule fallback message if no state is observed within 500ms
 try {
   const scheduler = getScheduler();
@@ -22,11 +26,6 @@ try {
     } catch {}
   }, 500);
 } catch {}
-
-let _state = { current: null, lastOutcome: "none" };
-let _lastRoundIndex = 0;
-let _waitingTimer = null;
-let _waitingClearer = null;
 function _cancelWaiting() {
   try {
     if (_waitingTimer) {
