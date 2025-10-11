@@ -2,11 +2,13 @@
  * Track battle page readiness and signal when complete.
  *
  * @pseudocode
- * 1. Maintain a set of completed parts.
- * 2. When a part is marked ready, add it to the set.
- * 3. If both "home" and "state" are ready:
- *    a. Set `data-ready="true"` on the `.home-screen` root (fallback to `document.body`).
- *    b. Dispatch a `battle:init` event on `document`.
+ * 1. Maintain a set of completed parts and a readiness state tracker.
+ * 2. Lazily attach a one-time `battle:init` listener when the DOM exists.
+ * 3. When a part is marked ready, add it to the set.
+ * 4. Once both "home" and "state" are ready:
+ *    a. Resolve immediately in SSR (no `document`).
+ *    b. Otherwise, set `data-ready="true"` on the `.home-screen` root (fallback to `document.body`).
+ *    c. Dispatch a `battle:init` event on `document`; the listener resolves the readiness promise.
  *
  * @param {"home"|"state"} part - The portion of the page that finished initializing.
  * @returns {void}
@@ -21,9 +23,9 @@ let resolveReady;
  * initializing (both 'home' and 'state' parts are ready).
  * @pseudocode
  * 1. Create a new Promise and store its `resolve` function in `resolveReady`.
- * 2. If `document` exists, add a 'battle:init' event listener that calls `resolveReady` when the event is dispatched;
- *    otherwise defer to direct resolution in SSR contexts.
- * 3. If in a browser environment, expose the promise on the `window` object for legacy consumers.
+ * 2. When the DOM is available, attach a one-time 'battle:init' listener that resolves the promise when dispatched.
+ * 3. In SSR contexts, defer resolution until both parts report readiness.
+ * 4. If in a browser environment, expose the promise on the `window` object for legacy consumers.
  * @type {Promise<void>}
  * @param {(value?: void) => void} resolve - Internal resolver for readiness.
  * @returns {Promise<void>}
@@ -32,33 +34,36 @@ export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
 
-let readyResolved = false;
-let listenerAttached = false;
+const readinessState = {
+  resolved: false,
+  listenerAttached: false
+};
 
-const resolveReadyOnce = () => {
-  if (!readyResolved) {
-    readyResolved = true;
+const tryResolveReady = () => {
+  if (!readinessState.resolved) {
+    readinessState.resolved = true;
     resolveReady();
   }
 };
 
-const attachBattleInitListener = () => {
-  if (listenerAttached || typeof document === "undefined") {
-    return;
+const ensureBattleInitListener = () => {
+  if (readinessState.listenerAttached || typeof document === "undefined") {
+    return readinessState.listenerAttached;
   }
 
   document.addEventListener(
     "battle:init",
     () => {
-      resolveReadyOnce();
+      tryResolveReady();
     },
     { once: true }
   );
 
-  listenerAttached = true;
+  readinessState.listenerAttached = true;
+  return true;
 };
 
-attachBattleInitListener();
+ensureBattleInitListener();
 
 if (typeof window !== "undefined") {
   window.battleReadyPromise = battleReadyPromise;
@@ -69,30 +74,36 @@ if (typeof window !== "undefined") {
  * @summary Add `part` to an internal set; when both `home` and `state` are ready,
  * set the DOM ready flag and dispatch `battle:init`.
  * @pseudocode
- * 1. Add `part` to the `readyParts` set.
- * 2. If both `home` and `state` are present:
- *    a. When the DOM is available, ensure the ready flag is set and dispatch `battle:init`.
- *    b. Otherwise, resolve the readiness promise directly (SSR fallback).
+ * 1. Exit early if the readiness promise already resolved.
+ * 2. Add `part` to the `readyParts` set.
+ * 3. Return until both `home` and `state` are present.
+ * 4. If the DOM is unavailable, resolve the readiness promise directly (SSR fallback).
+ * 5. Otherwise, ensure the listener is attached, set the DOM ready flag, and dispatch `battle:init`.
  *
  * @param {"home"|"state"} part - The portion of the page that finished initializing.
  * @returns {void}
  */
 export function markBattlePartReady(part) {
-  readyParts.add(part);
-  if (readyParts.has("home") && readyParts.has("state")) {
-    attachBattleInitListener();
-
-    if (typeof document === "undefined") {
-      resolveReadyOnce();
-      return;
-    }
-
-    const root = document.querySelector(".home-screen") || document.body;
-    if (root && root.dataset.ready !== "true") {
-      root.dataset.ready = "true";
-      document.dispatchEvent(new CustomEvent("battle:init"));
-    }
-
-    resolveReadyOnce();
+  if (readinessState.resolved) {
+    return;
   }
+
+  readyParts.add(part);
+  if (!readyParts.has("home") || !readyParts.has("state")) {
+    return;
+  }
+
+  if (typeof document === "undefined") {
+    tryResolveReady();
+    return;
+  }
+
+  ensureBattleInitListener();
+
+  const root = document.querySelector(".home-screen") || document.body;
+  if (root && root.dataset.ready !== "true") {
+    root.dataset.ready = "true";
+  }
+
+  document.dispatchEvent(new CustomEvent("battle:init"));
 }
