@@ -2431,6 +2431,8 @@ function parseUrlFlags() {
 export async function setupFlags() {
   const checkbox = byId("verbose-toggle");
   const section = byId("cli-verbose-section");
+  const immersiveCheckbox = byId("immersive-toggle");
+
   const updateVerbose = () => {
     if (checkbox) checkbox.checked = !!verboseEnabled;
     if (section) {
@@ -2510,6 +2512,11 @@ export async function setupFlags() {
   try {
     verboseEnabled = !!isEnabled("cliVerbose");
   } catch {}
+  try {
+    const immersiveEnabled = !!isEnabled("cliImmersive");
+    document.body.classList.toggle("cli-immersive", immersiveEnabled);
+    if(immersiveCheckbox) immersiveCheckbox.checked = immersiveEnabled;
+  } catch {}
   setAutoContinue(true);
   try {
     const params = new URLSearchParams(location.search);
@@ -2540,6 +2547,9 @@ export async function setupFlags() {
   checkbox?.addEventListener("change", async () => {
     await toggleVerbose(!!checkbox.checked);
   });
+  immersiveCheckbox?.addEventListener("change", async () => {
+    await setFlag("cliImmersive", !!immersiveCheckbox.checked);
+  });
   featureFlagsEmitter.addEventListener("change", (e) => {
     const flag = e.detail?.flag;
     if (!flag || flag === "cliVerbose") {
@@ -2555,6 +2565,13 @@ export async function setupFlags() {
     }
     if (!flag || flag === "cliShortcuts") {
       updateCliShortcutsVisibility();
+    }
+    if (!flag || flag === "cliImmersive") {
+      try {
+        const immersiveEnabled = !!isEnabled("cliImmersive");
+        document.body.classList.toggle("cli-immersive", immersiveEnabled);
+        if(immersiveCheckbox) immersiveCheckbox.checked = immersiveEnabled;
+      } catch {}
     }
   });
   return { toggleVerbose };
