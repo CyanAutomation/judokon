@@ -21,6 +21,8 @@ This revision re-validates every QA finding against the current CLI implementati
 - Re-confirmed dual-write scoreboard behaviour via `battleCLI.dualWrite.test.js` so shared Scoreboard + CLI fallbacks remain aligned.
 - Hardened `updateRoundHeader` to fall back to the stored target when the engine hasn’t reported a new value yet, preventing “undefined” copy in the CLI header.
 - Extended the QA report with the implemented verbose toggle coverage and shortcuts pause guard.
+- Added `battleCLI.accessibilityLiveRegions.test.js` to cover round resolution messaging, countdown live-region updates, and manual continuation prompts for screen-reader parity.
+- Logged an automated accessibility verification in `docs/accessibility/audit-log.md`, capturing executed checks and explicitly flagging the outstanding VoiceOver/NVDA manual pass.
 
 ---
 
@@ -126,7 +128,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - **✅ Completed — Countdown warning regression test**: `battleCLI.countdown.test.js` now asserts the warning colour under five seconds and the reset on restart.
 - **✅ Completed — Playwright persistence scenario**: `playwright/win-target-sync.spec.js` now exercises a reload in a fresh page context to confirm stored targets persist and stay synchronized with the header.
 
-1. **Screen-reader verification (1 day)** — Execute the audit plan below with NVDA + VoiceOver sessions, capture findings in the accessibility log, and file remediation tickets as needed.
+1. **🟡 In Progress — Screen-reader verification (1 day)** — Automated live-region regression suite now in place (`tests/pages/battleCLI.accessibilityLiveRegions.test.js`, `playwright/cli.spec.js`); manual NVDA + VoiceOver sessions remain outstanding. Execute the audit plan below, capture findings in the accessibility log, and file remediation tickets as needed.
 
 ## Screen-Reader Audit Plan
 
