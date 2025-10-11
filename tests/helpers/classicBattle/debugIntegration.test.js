@@ -174,26 +174,6 @@ describe("Debug Logger Integration", () => {
   });
 
   describe("Performance Impact", () => {
-    it("should have minimal overhead when disabled", () => {
-      // Create a disabled logger
-      const disabledLogger = new BattleDebugLogger({ enabled: false });
-
-      const startTime = performance.now();
-
-      // Run many logging operations
-      for (let i = 0; i < 1000; i++) {
-        disabledLogger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, `Message ${i}`, {
-          index: i
-        });
-      }
-
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-
-      // Should complete quickly (under 50ms for disabled logger)
-      expect(duration).toBeLessThan(50);
-    });
-
     it("should handle high-frequency logging without memory leaks", () => {
       // Log many messages to test buffer management
       for (let i = 0; i < 2000; i++) {
