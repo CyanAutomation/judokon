@@ -101,37 +101,15 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
     "opponent reveal handles missing DOM elements gracefully",
     async ({ page }) =>
       withMutedConsole(async () => {
-        const routePattern = "**/src/pages/battleClassic.html";
-        const removeSnackbarContainer = async (route) => {
-          const response = await route.fetch();
-          const originalBody = await response.text();
-          const modifiedBody = originalBody.replace(
-            /<div id="snackbar-container"[\s\S]*?<\/div>/,
-            "<!-- snackbar container removed for missing DOM scenario -->"
-          );
+        await initializeBattle(page, {
+          timerOverrides: { roundTimer: 5 }
+        });
 
-          const headers = {
-            ...response.headers(),
-            "content-length": Buffer.byteLength(modifiedBody, "utf-8").toString()
-          };
+        const styleHandle = await page.addStyleTag({
+          content: "#snackbar-container { display: none !important; }"
+        });
 
-          await route.fulfill({
-            status: response.status(),
-            headers,
-            body: modifiedBody,
-            contentType: response.headers()["content-type"]
-          });
-        };
-
-        await page.route(routePattern, removeSnackbarContainer);
-
-        try {
-          await initializeBattle(page, {
-            timerOverrides: { roundTimer: 5 }
-          });
-        } finally {
-          await page.unroute(routePattern, removeSnackbarContainer);
-        }
+        await expect(page.locator(selectors.snackbarContainer())).toBeHidden();
 
         await setOpponentResolveDelay(page, 50);
 
@@ -144,6 +122,8 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
         await ensureRoundResolved(page);
         await waitForRoundsPlayed(page, 1);
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+
+        await styleHandle.evaluate((element) => element.remove());
       }, MUTED_CONSOLE_LEVELS)
   );
 });
