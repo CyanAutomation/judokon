@@ -26,6 +26,28 @@ describe.each([
   });
 });
 
+describe("debug state recording", () => {
+  it("records state for toggleTooltipOverlayDebug", () => {
+    expect(getDebugState().tooltipOverlayDebug).toBe(false);
+
+    toggleTooltipOverlayDebug(true);
+    expect(getDebugState().tooltipOverlayDebug).toBe(true);
+
+    toggleTooltipOverlayDebug(false);
+    expect(getDebugState().tooltipOverlayDebug).toBe(false);
+  });
+
+  it("records state for toggleViewportSimulation", () => {
+    expect(getDebugState().viewportSimulation).toBe(false);
+
+    toggleViewportSimulation(true);
+    expect(getDebugState().viewportSimulation).toBe(true);
+
+    toggleViewportSimulation(false);
+    expect(getDebugState().viewportSimulation).toBe(false);
+  });
+});
+
 describe("feature flag debug toggles integration", () => {
   beforeEach(() => {
     if (typeof window !== "undefined") {
