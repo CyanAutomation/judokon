@@ -101,15 +101,38 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
     "opponent reveal handles missing DOM elements gracefully",
     async ({ page }) =>
       withMutedConsole(async () => {
+        await page.addInitScript(() => {
+          let observer;
+          const removeSnackbarOnce = () => {
+            const snackbar = document.querySelector("#snackbar-container");
+            if (snackbar) {
+              snackbar.remove();
+              observer?.disconnect();
+            }
+          };
+
+          observer = new MutationObserver(() => removeSnackbarOnce());
+          observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+          });
+
+          removeSnackbarOnce();
+        });
+
         await initializeBattle(page, {
           timerOverrides: { roundTimer: 5 }
         });
 
+        const snackbar = page.locator(selectors.snackbarContainer());
+        await page.evaluate(() => {
+          document.querySelector("#snackbar-container")?.remove();
+        });
+        await expect(snackbar).toHaveCount(0);
+
         const styleHandle = await page.addStyleTag({
           content: "#snackbar-container { display: none !important; }"
         });
-
-        await expect(page.locator(selectors.snackbarContainer())).toBeHidden();
 
         await setOpponentResolveDelay(page, 50);
 
@@ -117,7 +140,8 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
         await expect(firstStat).toBeVisible();
         await firstStat.click();
 
-        await expect(page.locator(selectors.snackbarContainer())).toHaveCount(1);
+        await expect(snackbar).toBeAttached();
+        await expect(snackbar).toBeHidden();
 
         await ensureRoundResolved(page);
         await waitForRoundsPlayed(page, 1);
