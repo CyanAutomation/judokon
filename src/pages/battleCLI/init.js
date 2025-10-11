@@ -174,6 +174,8 @@ let quitModal = null;
 let isQuitting = false;
 let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
+let commandHistory = [];
+let historyIndex = -1;
 // state managed in state.js
 
 onEsc(resolveEscapeHandled);
@@ -1150,6 +1152,18 @@ export function selectStat(stat) {
   } catch (err) {
     console.error("Failed to update player choice", err);
   }
+  try {
+    const history = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
+    if (history[history.length - 1] !== stat) {
+        history.push(stat);
+        if (history.length > 20) {
+            history.shift();
+        }
+        localStorage.setItem("cliStatHistory", JSON.stringify(history));
+        commandHistory = history;
+    }
+    historyIndex = commandHistory.length;
+  } catch {}
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     state.roundResolving = true;
@@ -1981,13 +1995,35 @@ export function handleCooldownKey(key) {
   return false;
 }
 
+export function handleCommandHistory(key) {
+    if (key === "ArrowUp") {
+        if (historyIndex > 0) {
+            historyIndex--;
+            showBottomLine(`History: ${commandHistory[historyIndex]}`);
+            return true;
+        }
+    } else if (key === "ArrowDown") {
+        if (historyIndex < commandHistory.length - 1) {
+            historyIndex++;
+            showBottomLine(`History: ${commandHistory[historyIndex]}`);
+            return true;
+        } else if (historyIndex === commandHistory.length - 1) {
+            historyIndex++;
+            showBottomLine("");
+            return true;
+        }
+    }
+    return false;
+}
+
 registerBattleHandlers({
   handleGlobalKey,
   handleWaitingForPlayerActionKey,
   handleWaitingForMatchStartKey,
   handleRoundOverKey,
   handleCooldownKey,
-  handleStatListArrowKey
+  handleStatListArrowKey,
+  handleCommandHistory
 });
 
 /**
@@ -2755,6 +2791,13 @@ export function wireEvents() {
  * wireEvents()
  */
 export async function init() {
+  try {
+    commandHistory = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
+    historyIndex = commandHistory.length;
+  } catch {
+    commandHistory = [];
+    historyIndex = -1;
+  }
   initSeed();
   store = createBattleStore();
   normalizeShortcutCopy();

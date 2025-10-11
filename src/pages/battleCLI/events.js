@@ -1,11 +1,13 @@
 import { isEnabled } from "../../helpers/featureFlags.js";
 import {
+  isEnabled,
   handleGlobalKey,
   handleWaitingForPlayerActionKey,
   handleWaitingForMatchStartKey,
   handleRoundOverKey,
   handleCooldownKey,
-  handleStatListArrowKey
+  handleStatListArrowKey,
+  handleCommandHistory
 } from "./battleHandlers.js";
 
 const byId = (id) => document.getElementById(id);
@@ -134,6 +136,13 @@ function routeKeyByState(key) {
  * 4. Update the countdown element with an error message when the key is not handled.
  */
 export function onKeyDown(e) {
+  if (e.ctrlKey) {
+    if(handleCommandHistory(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
+  }
   if (handleArrowNav(e)) return;
   const lower = e.key.toLowerCase();
   if (!shouldProcessKey(lower)) {

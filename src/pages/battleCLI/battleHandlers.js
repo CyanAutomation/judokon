@@ -83,3 +83,5 @@ export const handleCooldownKey = (key) => handlers.handleCooldownKey(key);
  * 1. Call the registered `handleStatListArrowKey` with `key` and return its result.
  */
 export const handleStatListArrowKey = (key) => handlers.handleStatListArrowKey(key);
+
+export const handleCommandHistory = (key) => handlers.handleCommandHistory(key);

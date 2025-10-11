@@ -5,119 +5,121 @@
 
 ## Executive summary
 
-This review updates the QA findings in the original `progressFlags.md`, improves formatting, and adds a practical assessment of accuracy and feasibility for the proposed fixes. Key takeaways:
+This review re-validates the QA findings in `progressFlags.md`, corrects inaccurate statuses, and adds feasibility notes for the next engineering pass. Key takeaways:
 
-- Many advanced feature flags are currently unimplemented or don't produce the expected UI/behavior.
-- A broken Classic Battle page (`battleClassic.html`) is a critical blocker for verifying several UI-facing flags.
-- The recommended fixes in the original report are valid but need to be expanded with small, testable steps, owner suggestions, and risk/effort estimates.
+- Several flags already function as intended (e.g., test mode wiring, viewport simulation, tooltip overlay, skip cooldown), but the UI affordances and data hooks they expose still need polish.
+- Two flags remain effectively broken because their UI surfaces are missing: there is no `#test-mode-banner` element and no `#battle-state-progress` list in `battleClassic.html`, so those experiences are invisible even when enabled.
+- Other switches (`roundStore`, `opponentDelayMessage`, `statHotkeys`) are either unused or auto-reenable themselves, so we should decide whether to wire them correctly or retire them before adding more test coverage.
 
 Below I document each flag's status, my confidence in the QA observation (based on the original notes and common failure modes), and recommended next actions with feasibility estimates.
 
 ## Critical blocker
 
+- `battleStateProgress` cannot be exercised because `battleClassic.html` does not render a `#battle-state-progress` list; `initBattleStateProgress` exits early when the element is missing (`src/helpers/battleStateProgress.js:71-214`, `src/pages/battleClassic.html:1-156`). Implementing the markup (with a semantic list and `data-testid="battle-state-progress"`) is required before any end-to-end verification can pass.
+- `enableTestMode` is wired through the controller, debug panel, and determinism helpers, but the banner that QA expected never renders because `battleClassic.html` lacks a `#test-mode-banner` target (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/debugPanel.js:360-409`, `src/pages/battleClassic.html:42-66`). Adding that element (and a lightweight `applyBattleFeatureFlags` helper) will unblock visibility checks.
 ## Flag status, confidence & feasibility
 
 Notes: "Confidence" indicates how likely the reported behavior is accurate given the QA notes and typical code patterns (High / Medium / Low). "Effort" is a rough implementation estimate (Low / Medium / High).
 
 - `enableTestMode`
-  - Status: Unimplemented
-  - Confidence: Medium — behavior described (no banner) is consistent with an unwired flag
-  - Effort to implement: Medium (wire flag to UI, add banner and optional developer tools)
-  - Recommended action: If flag should show a banner + developer-only features, implement a single entrypoint (feature flag manager) and a visible banner component guarded by an accessible data attribute.
+  - Status: **Partially implemented** — the controller keeps deterministic mode in sync and the debug panel honours it, but there is no banner because the page never renders a `#test-mode-banner` node (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/debugPanel.js:360-409`, `src/pages/battleClassic.html:42-66`).
+  - Confidence: High (behavior confirmed in unit tests and code inspection).
+  - Effort to finish: Low → Medium (add the banner markup + styling, provide a small helper to toggle visibility, and surface `data-feature="test-mode"` hooks for QA).
+  - Recommended action: Add the missing DOM element, implement `applyBattleFeatureFlags` (currently imported but absent) to toggle the banner, and add a Playwright check that the banner appears when the flag is enabled.
 
 - `enableCardInspector`
-  - Status: Not working / not visible
-  - Confidence: Medium
-  - Effort: Low → Medium (add collapsible panel + wiring; tests)
-  - Recommendation: Implement behind a dev-only feature guard, add `data-feature-card-inspector` on the toggle and `data-hook-card-inspector` on the panel.
+  - Status: **Working** — card draws read the flag before rendering, and `JudokaCard` appends the inspector `<details>` when `enableInspector` is true (`src/helpers/classicBattle/cardSelection.js:447-509`, `src/components/JudokaCard.js:205-214`, `src/helpers/inspector/createInspectorPanel.js:1-56`).
+  - Confidence: High (code path exercised in Vitest, inspector panel present when cards are redrawn).
+  - Effort: Low (add data hooks and documentation so QA can locate the panel; optionally re-render the current card when the flag flips).
+  - Recommendation: Keep the feature, add `data-feature-card-inspector` to the wrapper for automation, and document that toggling the flag requires a fresh card draw.
 
 - `viewportSimulation`
-  - Status: Unimplemented
-  - Confidence: Medium
-  - Effort: Medium (UI + simulator logic or client-side CSS toggles)
-  - Recommendation: If minimal, implement a CSS container that simulates device sizes and a visible device selector in the UI.
+  - Status: **Working** — settings toggles call `toggleViewportSimulation`, which persists class state and updates instantly, with CSS already constraining the layout (`src/helpers/setupDisplaySettings.js:1-33`, `src/helpers/viewportDebug.js:17-22`, `src/styles/settings.css:188-204`).
+  - Confidence: High.
+  - Effort: Low (QA coverage + optional presets).
+  - Recommendation: Add a Playwright smoke test that asserts the `.simulate-viewport` class is applied and that layout width is reduced to the expected 375 px.
 
 - `tooltipOverlayDebug`
-  - Status: Not working
-  - Confidence: Medium
-  - Effort: Low (debug outline CSS + hover instrumentation)
-  - Recommendation: Add a lightweight CSS outline on tooltip hover when enabled; use `prefers-reduced-motion`/performance guard.
+  - Status: **Working** — toggles call `toggleTooltipOverlayDebug`, which sets a body class consumed by existing tooltip CSS (`src/helpers/settings/featureFlagSwitches.js:26-55`, `src/helpers/tooltipOverlayDebug.js:17-34`, `src/styles/tooltip.css:26-31`).
+  - Confidence: High.
+  - Effort: Low (QA automation only).
+  - Recommendation: Add an integration test that asserts tooltip targets gain the outline when the flag is on.
 
 - `battleStateBadge`
-  - Status: Unimplemented
-  - Confidence: High
-  - Effort: Low (badge component + simple wiring to battle state)
-  - Recommendation: Render an unobtrusive badge in the header that reads from the battle state store; add `data-feature-battle-state-badge`.
+  - Status: **Working** — enabling the flag calls `setBattleStateBadgeEnabled`, which creates the badge and updates it via state transitions; the scaffold already contains the placeholder span (`src/helpers/classicBattle/uiHelpers.js:888-910`, `src/pages/battleClassic.html:42-66`).
+  - Confidence: High.
+  - Effort: Low (add coverage + data hooks).
+  - Recommendation: Expose `data-feature-battle-state-badge` so QA can assert visibility, and add a unit test around `setBattleStateBadgeEnabled`.
 
 - `battleStateProgress`
-  - Status: Not working
-  - Confidence: Medium
-  - Effort: Medium (UI + state sequence rendering)
-  - Recommendation: Add a non-critical progress strip component with unit and visual tests.
+  - Status: **Broken** — the helper renders to `#battle-state-progress`, but the Classic Battle page never renders that element, so nothing appears (`src/helpers/battleStateProgress.js:71-214`, `src/pages/battleClassic.html:42-146`).
+  - Confidence: High.
+  - Effort: Medium (add markup, hook into layout, add tests).
+  - Recommendation: Add the list element with semantic `<li>` items, wire it into the layout (e.g., below the stat buttons), and cover it with a browser test that validates the active state's class toggles.
 
 - `skipRoundCooldown`
-  - Status: Not working
-  - Confidence: Medium
-  - Effort: Medium (engine flag to bypass cooldown timer in round flow)
-  - Recommendation: Implement in battle engine hot path with static import; guard with flag read during initialization to avoid dynamic import in hot code path.
+  - Status: **Working** — UI service and timer service both consult the flag and short-circuit countdown timers when it is enabled (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-75`).
+  - Confidence: High.
+  - Effort: Low (add targeted E2E coverage).
+  - Recommendation: Keep the implementation, add a unit test for the skip path, and surface a QA hook (`data-feature-skip-round-cooldown`) on the Next button.
 
 - `roundStore`
-  - Status: No observable effect / unclear purpose
-  - Confidence: Low — unclear intention
-  - Effort: Medium (requires spec + implementation)
-  - Recommendation: Clarify desired behavior (persist rounds across reload? replay rounds?). Add schema to settings metadata and an integration test.
+  - Status: **Unused** — the store is always instantiated and no code branches on `isEnabled("roundStore")`; the flag only changes the label to “Round Store (Experimental)” (`src/helpers/classicBattle/roundStore.js:1-214`, `src/helpers/settings/featureFlagSwitches.js:59-76`).
+  - Confidence: High.
+  - Effort: Medium (decide on behavior or retire the toggle).
+  - Recommendation: Either gate the store behind the flag (and define persistence semantics) or hide the switch until a use-case exists.
 
 - `opponentDelayMessage`
-  - Status: Unable to verify (CLI lacks UI; Classic blocked)
-  - Confidence: Medium
-  - Effort: Low (expose UI element if desired, or clarify intended platform)
-  - Recommendation: Decide whether this is CLI-only or UI; if UI, implement placeholder element and tests.
+  - Status: **Not implemented** — only the docstring references the flag; `bindUIHelperEventHandlers` is a stub and `prepareUiBeforeSelection` always shows the snackbar regardless of feature state (`src/helpers/classicBattle/uiHelpers.js:959-978`, `src/pages/battleClassic.init.js:719-737`).
+  - Confidence: High.
+  - Effort: Low → Medium (implement the delayed snackbar or remove the switch).
+  - Recommendation: Either wire the flag through `bindUIHelperEventHandlersDynamic` (using `getOpponentDelay`/timeouts) or remove it from the settings page to avoid confusion.
 
 - `statHotkeys` & `cliShortcuts`
-  - Status: Interaction issue — coupling observed
-  - Confidence: High (explicit coupling noted)
-  - Effort: Low → Medium (decouple or re-document + combine into single flag)
-  - Recommendation: Either fully decouple: `statHotkeys` should independently register key handlers when enabled; or consolidate into one `enableHotkeys` with sub-flags in UI.
+  - Status: **Coupled** — enabling stat hotkeys immediately persists the flag via `enableFlag("statHotkeys")`, so users cannot keep it disabled, while CLI shortcuts have separate logic and only gate non-`q` keys (`src/helpers/classicBattle/statButtons.js:145-172`, `src/pages/battleCLI/events.js:48-111`).
+  - Confidence: High.
+  - Effort: Low → Medium (stop auto-enabling and clarify configuration model).
+  - Recommendation: Remove the forced `enableFlag` call, ensure hotkeys respect the stored value, and document that CLI shortcuts remain independent (or merge the two toggles into a single “Enable hotkeys” flag with sub-options).
 
-## Feasibility analysis of the original fix plan
+## Feasibility analysis of the remediation plan
 
-- "Decouple Hotkeys" — Feasible and low risk. This is a focused refactor: isolate hotkey registration and feature-flag checks. Add automated tests for keyboard interactions. Effort: Low.
-
-- UI/UX improvements (grouping flags, feedback, accessibility) — Feasible; mostly UI work and content updates. Effort: Low → Medium depending on accessibility remediation needed.
-
-- "Add Flag Metadata" and `data-feature-*` hooks — Feasible and high value for QA and tests. Effort: Low.
+1. **Restore missing UI surfaces** — Add the `#test-mode-banner` element + helper and the `#battle-state-progress` list (+ styles/tests). Both changes are HTML/CSS plus light JS wiring; risk is low because the logic is already in place.
+2. **Tidy unused or misleading flags** — Either wire `roundStore` and `opponentDelayMessage` to real behavior or hide them until a product requirement exists. This is mostly product/UX alignment work with a small amount of code churn.
+3. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
+4. **Decouple hotkeys** — Removing the `enableFlag("statHotkeys")` auto-toggle and documenting CLI shortcuts is a small refactor with low regression risk.
 
 ## Concrete prioritized implementation plan (short, testable steps)
 
-2. Minimal fix for Classic Battle hot path. (owner: core eng) — Effort: Medium — Priority: P0
-   - Inspect initialization path (static imports only in hot paths). Look for recent changes to any battle initialization code and re-introduce a safe guard or early return.
-   - Add a regression test (unit + integration).
-
-3. Decouple or consolidate hotkeys. (owner: UX/core eng) — Effort: Low — Priority: P1
-   - Extract hotkey registration into its own module. If `statHotkeys` requires `cliShortcuts`, display helper text or combine into one flag.
-
-4. Add `data-feature-*` hooks and settings metadata. (owner: infra/devtools) — Effort: Low — Priority: P1
-   - Update settings JSON schema to include `description`, `stability`, `owner`, `lastUpdated`.
-   - Add `data-feature-<name>` attributes to toggles and `data-hook-<name>` to UI elements they control.
-
-5. Implement small, visible debug components behind flags (banner, inspector, tooltip outlines). (owner: feature owner) — Effort: Low → Medium — Priority: P2
+1. Ship the `battle-state-progress` UI (owner: core eng) — Effort: Medium — Priority: P0  
+   - Add the markup to `battleClassic.html`, style it, and cover it with a unit test for `renderStateList` plus a Playwright assertion.
+2. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0  
+   - Add `#test-mode-banner`, implement the missing `applyBattleFeatureFlags` helper, and verify the banner toggles when `enableTestMode` is flipped.
+3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1  
+   - Decide whether `roundStore` and `opponentDelayMessage` stay; implement or retire accordingly, and update settings copy.
+4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1  
+   - Remove the forced `enableFlag` call, ensure both UI and CLI respect stored values, and add regression tests.
+5. Add data hooks + tests for the working flags (owner: dev tooling) — Effort: Low — Priority: P2  
+   - Tag rendered elements with `data-feature-*`, add Vitest/Playwright checks, and document QA entry points.
 
 ## Tests & verification matrix
 
-- Add unit tests for:
-  - Hotkey registration and key handling (happy path + when flag disabled).
-  - Battle engine skip cooldown (unit test toggling flag and advancing fake timers).
-  - Badge and progress components render when flags enabled.
+- **Unit tests**
+  - `battleStateProgress` list rendering + active state mapping (`renderStateList`, `updateActiveState`).
+  - `skipRoundCooldownIfEnabled` happy/disabled paths and timer service auto-skip.
+  - `setBattleStateBadgeEnabled` DOM insertion/removal logic.
+  - Stat hotkey wiring with the forced enable removed.
 
-- Add integration/Playwright tests for:
-  - Classic Battle end-to-end to ensure match flow works and Next button is enabled.
-  - Settings toggles emit correct events and update the UI (assert on `data-feature-*` attributes).
+- **Playwright / integration**
+  - Toggle `enableTestMode` → assert banner presence, debug panel visibility, and deterministic seed copy.
+  - Toggle `battleStateProgress` → assert list renders and active class follows state transitions.
+  - Toggle `viewportSimulation` + `tooltipOverlayDebug` → assert `.simulate-viewport` width and tooltip outlines via `data-feature-*` hooks.
+  - Toggle `skipRoundCooldown` → ensure countdown is bypassed, while manual Next still advances.
 
 ## Accessibility and rollout suggestions
 
-- Disable or mark as "Coming soon" any flags that are not implemented to avoid user confusion.
-- Add ARIA labels to toggles, ensure keyboard operability, and add visible focus indicators.
-- Prefer progressive rollout: behind a developer-only bucket first, then beta testers, then general availability.
+- Hide or label as “Coming soon” any switches that still lack functionality (`opponentDelayMessage`, `roundStore`) until the UX is finalized.
+- When adding the test mode banner and battle state progress list, include ARIA roles/labels so screen readers announce the state change (banner: `role="status"`, progress list: `aria-live="polite"`).
+- Keep focus management intact when banners/lists appear; add regression tests that ensure keyboard flow and visible focus outlines remain consistent.
 
 ## Risk and rollback
 
