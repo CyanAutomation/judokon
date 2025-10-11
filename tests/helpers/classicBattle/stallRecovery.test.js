@@ -3,6 +3,7 @@ import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
+import { stallRecoveryJudokaFixtures } from "./stallRecoveryJudokaFixtures.js";
 
 vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/timerService.js");
@@ -35,25 +36,9 @@ describe("classicBattle stalled stat selection recovery", () => {
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
     timers = useCanonicalTimers();
-    const judokaFixtures = [
-      {
-        id: 1,
-        name: "Test Player",
-        country: "USA",
-        rank: "Shodan",
-        stats: { power: 5 }
-      },
-      {
-        id: 2,
-        name: "Test Opponent",
-        country: "JPN",
-        rank: "Nidan",
-        stats: { power: 3 }
-      }
-    ];
     fetchJsonMock = vi.fn(async (path) => {
-      if (typeof path === "string" && path.includes("judoka.json")) {
-        return judokaFixtures;
+      if (typeof path === "string" && path.endsWith("judoka.json")) {
+        return stallRecoveryJudokaFixtures;
       }
       return [];
     });
