@@ -81,6 +81,8 @@ const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
  * @type {number}
  * @constant
  * @default 50
+ * @pseudocode
+ * 1. Define a shared constant for manual fallback transitions when the orchestrator is unavailable.
  */
 export const MANUAL_FALLBACK_DELAY_MS = 50;
 
