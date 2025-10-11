@@ -9,14 +9,22 @@ import {
 describe("BattleDebugLogger", () => {
   let logger;
   let originalEnv;
+  let originalVitest;
 
   beforeEach(() => {
     originalEnv = process.env.NODE_ENV;
+    originalVitest = process.env.VITEST;
     logger = new BattleDebugLogger({ enabled: true, outputMode: "memory" });
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     process.env.NODE_ENV = originalEnv;
+    if (originalVitest === undefined) {
+      delete process.env.VITEST;
+    } else {
+      process.env.VITEST = originalVitest;
+    }
   });
 
   describe("Logger Configuration", () => {
@@ -228,11 +236,6 @@ describe("BattleDebugLogger", () => {
   });
 
   describe("Console Output Control", () => {
-    afterEach(() => {
-      delete process.env.VITEST;
-      process.env.NODE_ENV = originalEnv;
-    });
-
     it("should default to memory output in vitest environment", () => {
       process.env.VITEST = "true";
 
@@ -248,6 +251,28 @@ describe("BattleDebugLogger", () => {
       });
 
       expect(consoleLogger.outputMode).toBe("console");
+    });
+
+    it("should suppress console output when running under vitest", () => {
+      process.env.VITEST = "true";
+
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      const testEnvLogger = new BattleDebugLogger({ enabled: true });
+      testEnvLogger.log(
+        DEBUG_CATEGORIES.STATE,
+        LOG_LEVELS.INFO,
+        "vitest suppression test"
+      );
+
+      expect(testEnvLogger.outputMode).toBe("memory");
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(consoleInfoSpy).not.toHaveBeenCalled();
+      expect(consoleLogSpy).not.toHaveBeenCalled();
     });
   });
 
