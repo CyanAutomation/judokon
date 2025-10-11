@@ -1,5 +1,4 @@
 // @vitest-environment node
-import { performance } from "node:perf_hooks";
 import { describe, expect, it } from "vitest";
 import { __TEST_ONLY__ } from "../../src/helpers/sanitizeHtml.js";
 
