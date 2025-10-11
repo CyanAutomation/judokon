@@ -78,7 +78,12 @@ const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
 /**
  * Delay between manual fallback state transitions when the orchestrator is unavailable.
  *
+ * @summary This constant defines the delay in milliseconds between manual fallback state transitions when the orchestrator is unavailable.
+ *
  * @constant {number}
+ * @pseudocode
+ * 1. When the orchestrator is unavailable, the CLI will manually transition between battle states.
+ * 2. This constant defines the delay between each of those transitions.
  */
 export const MANUAL_FALLBACK_DELAY_MS = 50;
 
