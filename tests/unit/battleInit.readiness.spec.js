@@ -103,6 +103,8 @@ describe("battleInit readiness", () => {
 
     await battleReadyPromise;
 
-    expect(dispatchEventSpy.mock.calls.filter(([event]) => event?.type === "battle:init")).toHaveLength(1);
+    expect(
+      dispatchEventSpy.mock.calls.filter(([event]) => event?.type === "battle:init")
+    ).toHaveLength(1);
   });
 });
