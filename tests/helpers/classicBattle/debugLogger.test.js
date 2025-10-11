@@ -227,8 +227,7 @@ describe("BattleDebugLogger", () => {
     });
   });
 
-  describe("Console Output Control", () => {
-  });
+  describe("Console Output Control", () => {});
 
   describe("Export Functionality", () => {
     it("should export logs as JSON", () => {
