@@ -17,6 +17,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 
 - `battleStateProgress` cannot be exercised because `battleClassic.html` does not render a `#battle-state-progress` list; `initBattleStateProgress` exits early when the element is missing (`src/helpers/battleStateProgress.js:71-214`, `src/pages/battleClassic.html:1-156`). Implementing the markup (with a semantic list and `data-testid="battle-state-progress"`) is required before any end-to-end verification can pass.
 - `enableTestMode` is wired through the controller, debug panel, and determinism helpers, but the banner that QA expected never renders because `battleClassic.html` lacks a `#test-mode-banner` target (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/debugPanel.js:360-409`, `src/pages/battleClassic.html:42-66`). Adding that element (and a lightweight `applyBattleFeatureFlags` helper) will unblock visibility checks.
+
 ## Flag status, confidence & feasibility
 
 Notes: "Confidence" indicates how likely the reported behavior is accurate given the QA notes and typical code patterns (High / Medium / Low). "Effort" is a rough implementation estimate (Low / Medium / High).
