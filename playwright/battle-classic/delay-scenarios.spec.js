@@ -133,6 +133,17 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
     withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__snackbarRemovedByInit = false;
+        if (window.__snackbarObserver) {
+          window.__snackbarObserver.disconnect();
+        }
+        window.__snackbarObserver = null;
+
+        const disconnectObserver = () => {
+          if (window.__snackbarObserver) {
+            window.__snackbarObserver.disconnect();
+            window.__snackbarObserver = null;
+          }
+        };
 
         const removeSnackbarOnce = () => {
           if (window.__snackbarRemovedByInit) {
@@ -146,47 +157,58 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
 
           container.remove();
           window.__snackbarRemovedByInit = true;
+          disconnectObserver();
+        };
+
+        const ensureRemovalListeners = () => {
+          if (window.__snackbarRemovedByInit) {
+            return;
+          }
+
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", removeSnackbarOnce, {
+              once: true
+            });
+          }
+
+          if (window.__snackbarRemovedByInit) {
+            return;
+          }
+
+          window.__snackbarObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+              for (const node of mutation.addedNodes) {
+                if (
+                  node.nodeType === Node.ELEMENT_NODE &&
+                  (node.id === "snackbar-container" ||
+                    node.querySelector?.("#snackbar-container"))
+                ) {
+                  removeSnackbarOnce();
+                  return;
+                }
+              }
+            }
+          });
+
+          window.__snackbarObserver.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+          });
         };
 
         removeSnackbarOnce();
-
-        if (!window.__snackbarRemovedByInit && document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", removeSnackbarOnce, {
-            once: true
-          });
-        }
-
-        if (window.__snackbarRemovedByInit) {
-          return;
-        }
-
-        const observer = new MutationObserver((mutations) => {
-          for (const mutation of mutations) {
-            for (const node of mutation.addedNodes) {
-              if (
-                node.nodeType === Node.ELEMENT_NODE &&
-                (node.id === "snackbar-container" ||
-                  node.querySelector?.("#snackbar-container"))
-              ) {
-                removeSnackbarOnce();
-                observer.disconnect();
-                return;
-              }
-            }
-          }
-        });
-
-        observer.observe(document.documentElement, {
-          childList: true,
-          subtree: true
-        });
+        ensureRemovalListeners();
       });
 
       await initializeBattle(page, {
         timerOverrides: { roundTimer: 5 }
       });
 
-      await page.waitForFunction(() => window.__snackbarRemovedByInit === true);
+      await page.waitForFunction(
+        () => window.__snackbarRemovedByInit === true,
+        undefined,
+        { timeout: 2000 }
+      );
 
       await setOpponentResolveDelay(page, 50);
 
@@ -194,17 +216,15 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
       await expect(firstStat).toBeVisible();
       await firstStat.click();
 
-      const snackbar = page.locator(selectors.snackbarContainer());
-      const snackbarMessage = snackbar.locator(".snackbar");
+      const snackbarContainer = page.locator(selectors.snackbarContainer());
+      const snackbarMessage = snackbarContainer.locator(".snackbar");
 
       await ensureRoundResolved(page);
       await waitForRoundsPlayed(page, 1);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
-      // Only assert visibility if snackbar was recreated after removal
-      const snackbarCount = await snackbarMessage.count();
-      if (snackbarCount > 0) {
-        await expect(snackbarMessage).toContainText(/Select your move/i);
-      }
+      // The snackbar container should be rebuilt to display the next-round prompt.
+      await expect(snackbarContainer).toHaveCount(1);
+      await expect(snackbarMessage).toContainText(/Select your move/i);
     }, MUTED_CONSOLE_LEVELS));
 });
