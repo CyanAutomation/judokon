@@ -1012,20 +1012,22 @@ export function showFatalInitError(error) {
 
   const errorDiv = document.createElement("div");
   errorDiv.className = "snackbar error";
-  errorDiv.innerHTML = `
-    <span>Battle initialization failed: ${message}</span>
-    <button type="button" id="retry-init-button">Retry</button>
-  `;
+  const messageSpan = document.createElement("span");
+  messageSpan.textContent = `Battle initialization failed: ${message}`;
+
+  const retryButton = document.createElement("button");
+  retryButton.type = "button";
+  retryButton.id = "retry-init-button";
+  retryButton.textContent = "Retry";
+
+  errorDiv.append(messageSpan, retryButton);
 
   container.appendChild(errorDiv);
   requestAnimationFrame(() => errorDiv.classList.add("show"));
 
   // Add retry handler
-  const retryBtn = errorDiv.querySelector("#retry-init-button");
-  if (retryBtn) {
-    retryBtn.addEventListener("click", () => {
-      // Reload the page to retry init
-      window.location.reload();
-    });
-  }
+  retryButton.addEventListener("click", () => {
+    // Reload the page to retry init
+    window.location.reload();
+  });
 }
