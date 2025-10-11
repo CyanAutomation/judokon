@@ -21,9 +21,9 @@ Unless overridden, Playwright tests run at a 1920×1080 desktop viewport.
 - `controls expose correct labels` verifies accessible labels for toggles and feature flags.
 - `tab order follows expected sequence` ensures keyboard navigation visits controls in order.
 
-## Meditation screen
+## Screens without persistent navigation
 
-The meditation screen intentionally omits navigation links to keep the user focused on the quote, so tests pass an empty array to `verifyPageBasics` when verifying page structure.
+The **Browse Judoka**, **Random Judoka**, and **Meditation** screens intentionally skip the top navigation so players can stay focused on roster browsing, random discovery, or the daily quote. When verifying these pages, set the `expectNav` option to `false` in `verifyPageBasics` so the helper skips navigation assertions while still checking titles, the logo, and any custom page expectations.
 
 ## PRD reader tests
 
