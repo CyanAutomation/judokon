@@ -21,7 +21,8 @@ let resolveReady;
  * initializing (both 'home' and 'state' parts are ready).
  * @pseudocode
  * 1. Create a new Promise and store its `resolve` function in `resolveReady`.
- * 2. Add a 'battle:init' event listener to the document that calls `resolveReady` when the event is dispatched.
+ * 2. If `document` exists, add a 'battle:init' event listener that calls `resolveReady` when the event is dispatched;
+ *    otherwise defer to direct resolution in SSR contexts.
  * 3. If in a browser environment, expose the promise on the `window` object for legacy consumers.
  * @type {Promise<void>}
  * @param {(value?: void) => void} resolve - Internal resolver for readiness.
@@ -31,15 +32,33 @@ export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
 
-if (typeof document !== "undefined") {
+let readyResolved = false;
+let listenerAttached = false;
+
+const resolveReadyOnce = () => {
+  if (!readyResolved) {
+    readyResolved = true;
+    resolveReady();
+  }
+};
+
+const attachBattleInitListener = () => {
+  if (listenerAttached || typeof document === "undefined") {
+    return;
+  }
+
   document.addEventListener(
     "battle:init",
     () => {
-      resolveReady();
+      resolveReadyOnce();
     },
     { once: true }
   );
-}
+
+  listenerAttached = true;
+};
+
+attachBattleInitListener();
 
 if (typeof window !== "undefined") {
   window.battleReadyPromise = battleReadyPromise;
@@ -51,8 +70,9 @@ if (typeof window !== "undefined") {
  * set the DOM ready flag and dispatch `battle:init`.
  * @pseudocode
  * 1. Add `part` to the `readyParts` set.
- * 2. If both `home` and `state` are present, set `data-ready="true"` on the root
- *    and dispatch `battle:init`.
+ * 2. If both `home` and `state` are present:
+ *    a. When the DOM is available, ensure the ready flag is set and dispatch `battle:init`.
+ *    b. Otherwise, resolve the readiness promise directly (SSR fallback).
  *
  * @param {"home"|"state"} part - The portion of the page that finished initializing.
  * @returns {void}
@@ -60,7 +80,10 @@ if (typeof window !== "undefined") {
 export function markBattlePartReady(part) {
   readyParts.add(part);
   if (readyParts.has("home") && readyParts.has("state")) {
+    attachBattleInitListener();
+
     if (typeof document === "undefined") {
+      resolveReadyOnce();
       return;
     }
 
@@ -69,5 +92,7 @@ export function markBattlePartReady(part) {
       root.dataset.ready = "true";
       document.dispatchEvent(new CustomEvent("battle:init"));
     }
+
+    resolveReadyOnce();
   }
 }
