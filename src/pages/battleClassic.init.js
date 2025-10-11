@@ -89,6 +89,7 @@ let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
 
+// Guarded telemetry configuration for recurring judoka load failures.
 const JUDOKA_FAILURE_TELEMETRY_THRESHOLD = 3;
 const JUDOKA_FAILURE_TELEMETRY_WINDOW_MS = 120000;
 const JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE = 0.25;
@@ -112,6 +113,54 @@ function shouldSampleJudokaFailureTelemetry() {
   return Math.random() < JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE;
 }
 
+function emitJudokaLoadFailureTelemetry(state, safeContext, timestamp) {
+  try {
+    if (typeof window !== "undefined") {
+      try {
+        window.__classicBattleJudokaFailureTelemetry = {
+          count: state.count,
+          context: safeContext,
+          firstTimestamp: state.firstTimestamp,
+          reportedAt: timestamp
+        };
+      } catch {}
+    }
+    if (typeof Sentry !== "undefined") {
+      if (typeof Sentry.startSpan === "function") {
+        Sentry.startSpan(
+          {
+            op: "ui.retry",
+            name: "classicBattle.judokaLoad.retryLoop"
+          },
+          (span) => {
+            try {
+              if (span && typeof span.setAttribute === "function") {
+                span.setAttribute("failureCount", state.count);
+                span.setAttribute("elapsedMs", timestamp - state.firstTimestamp);
+                span.setAttribute("context", safeContext);
+                span.setAttribute("sampleRate", JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE);
+                span.setAttribute("threshold", JUDOKA_FAILURE_TELEMETRY_THRESHOLD);
+              }
+            } catch {}
+          }
+        );
+      }
+      if (Sentry?.logger?.warn) {
+        try {
+          Sentry.logger.warn(
+            Sentry.logger.fmt`classicBattle:judokaLoadFailure:${safeContext}`,
+            {
+              count: state.count,
+              elapsedMs: timestamp - state.firstTimestamp,
+              threshold: JUDOKA_FAILURE_TELEMETRY_THRESHOLD
+            }
+          );
+        } catch {}
+      }
+    }
+  } catch {}
+}
+
 function recordJudokaLoadFailureTelemetry(context) {
   const state = judokaFailureTelemetryState;
   const now = Date.now();
@@ -121,6 +170,9 @@ function recordJudokaLoadFailureTelemetry(context) {
     state.count = 0;
     state.firstTimestamp = now;
     state.sampled = null;
+    if (windowExceeded) {
+      state.reported = false;
+    }
   }
 
   state.count += 1;
@@ -144,52 +196,7 @@ function recordJudokaLoadFailureTelemetry(context) {
     return;
   }
 
-  try {
-    if (typeof window !== "undefined") {
-      try {
-        window.__classicBattleJudokaFailureTelemetry = {
-          count: state.count,
-          context: safeContext,
-          firstTimestamp: state.firstTimestamp,
-          reportedAt: now
-        };
-      } catch {}
-    }
-    if (typeof Sentry !== "undefined") {
-      if (typeof Sentry.startSpan === "function") {
-        Sentry.startSpan(
-          {
-            op: "ui.retry",
-            name: "classicBattle.judokaLoad.retryLoop"
-          },
-          (span) => {
-            try {
-              if (span && typeof span.setAttribute === "function") {
-                span.setAttribute("failureCount", state.count);
-                span.setAttribute("elapsedMs", now - state.firstTimestamp);
-                span.setAttribute("context", safeContext);
-                span.setAttribute("sampleRate", JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE);
-                span.setAttribute("threshold", JUDOKA_FAILURE_TELEMETRY_THRESHOLD);
-              }
-            } catch {}
-          }
-        );
-      }
-      if (Sentry?.logger?.warn) {
-        try {
-          Sentry.logger.warn(
-            Sentry.logger.fmt`classicBattle:judokaLoadFailure:${safeContext}`,
-            {
-              count: state.count,
-              elapsedMs: now - state.firstTimestamp,
-              threshold: JUDOKA_FAILURE_TELEMETRY_THRESHOLD
-            }
-          );
-        } catch {}
-      }
-    }
-  } catch {}
-
+  emitJudokaLoadFailureTelemetry(state, safeContext, now);
   state.reported = true;
 }
 
