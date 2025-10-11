@@ -35,7 +35,28 @@ describe("classicBattle stalled stat selection recovery", () => {
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
     timers = useCanonicalTimers();
-    fetchJsonMock = vi.fn(async () => []);
+    const judokaFixtures = [
+      {
+        id: 1,
+        name: "Test Player",
+        country: "USA",
+        rank: "Shodan",
+        stats: { power: 5 }
+      },
+      {
+        id: 2,
+        name: "Test Opponent",
+        country: "JPN",
+        rank: "Nidan",
+        stats: { power: 3 }
+      }
+    ];
+    fetchJsonMock = vi.fn(async (path) => {
+      if (typeof path === "string" && path.includes("judoka.json")) {
+        return judokaFixtures;
+      }
+      return [];
+    });
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
       if (cb) cb({ id: 1 });
