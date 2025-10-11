@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+import { withMutedConsole } from "../../utils/console.js";
 import {
   BattleDebugLogger,
   DEBUG_CATEGORIES,
@@ -253,26 +254,28 @@ describe("BattleDebugLogger", () => {
       expect(consoleLogger.outputMode).toBe("console");
     });
 
-    it("should suppress console output when running under vitest", () => {
+    it("should suppress console output when running under vitest", async () => {
       process.env.VITEST = "true";
 
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      await withMutedConsole(async () => {
+        const consoleErrorSpy = vi.spyOn(console, "error");
+        const consoleWarnSpy = vi.spyOn(console, "warn");
+        const consoleInfoSpy = vi.spyOn(console, "info");
+        const consoleLogSpy = vi.spyOn(console, "log");
 
-      const testEnvLogger = new BattleDebugLogger({ enabled: true });
-      testEnvLogger.log(
-        DEBUG_CATEGORIES.STATE,
-        LOG_LEVELS.INFO,
-        "vitest suppression test"
-      );
+        const testEnvLogger = new BattleDebugLogger({ enabled: true });
+        testEnvLogger.log(
+          DEBUG_CATEGORIES.STATE,
+          LOG_LEVELS.INFO,
+          "vitest suppression test"
+        );
 
-      expect(testEnvLogger.outputMode).toBe("memory");
-      expect(consoleErrorSpy).not.toHaveBeenCalled();
-      expect(consoleWarnSpy).not.toHaveBeenCalled();
-      expect(consoleInfoSpy).not.toHaveBeenCalled();
-      expect(consoleLogSpy).not.toHaveBeenCalled();
+        expect(testEnvLogger.outputMode).toBe("memory");
+        expect(consoleErrorSpy).not.toHaveBeenCalled();
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+        expect(consoleInfoSpy).not.toHaveBeenCalled();
+        expect(consoleLogSpy).not.toHaveBeenCalled();
+      }, ["error", "warn", "info", "log"]);
     });
   });
 
