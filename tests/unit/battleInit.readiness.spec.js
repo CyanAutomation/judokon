@@ -76,17 +76,8 @@ describe("battleInit readiness", () => {
       await flushMicrotasks();
       expect(resolutionSpy).toHaveBeenCalledTimes(1);
     } finally {
-      if (typeof originalDocument === "undefined") {
-        globalThis.document = undefined;
-      } else {
-        globalThis.document = originalDocument;
-      }
-
-      if (typeof originalWindow === "undefined") {
-        globalThis.window = undefined;
-      } else {
-        globalThis.window = originalWindow;
-      }
+      globalThis.document = originalDocument;
+      globalThis.window = originalWindow;
     }
   });
 

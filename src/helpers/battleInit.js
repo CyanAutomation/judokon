@@ -48,7 +48,7 @@ const tryResolveReady = () => {
 
 const ensureBattleInitListener = () => {
   if (readinessState.listenerAttached || typeof document === "undefined") {
-    return readinessState.listenerAttached;
+    return;
   }
 
   document.addEventListener(
@@ -58,9 +58,7 @@ const ensureBattleInitListener = () => {
     },
     { once: true }
   );
-
   readinessState.listenerAttached = true;
-  return true;
 };
 
 ensureBattleInitListener();
@@ -103,7 +101,6 @@ export function markBattlePartReady(part) {
   const root = document.querySelector(".home-screen") || document.body;
   if (root && root.dataset.ready !== "true") {
     root.dataset.ready = "true";
+    document.dispatchEvent(new CustomEvent("battle:init"));
   }
-
-  document.dispatchEvent(new CustomEvent("battle:init"));
 }
