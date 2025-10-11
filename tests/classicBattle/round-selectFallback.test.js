@@ -35,7 +35,7 @@ describe("Classic Battle round select fallback", () => {
     }
   });
 
-  it("resets fallback tracking after successful retry", async () => {
+  it("handles fallback retry cycle and cleanup after successful round start", async () => {
     const roundSelectModal = await import("../../src/helpers/classicBattle/roundSelectModal.js");
     const roundManager = await import("../../src/helpers/classicBattle/roundManager.js");
     const { withMutedConsole } = await import("../utils/console.js");
@@ -78,7 +78,80 @@ describe("Classic Battle round select fallback", () => {
     });
 
     expect(startRoundSpy).toHaveBeenCalledTimes(2);
+    expect(startRoundSpy.mock.calls.at(-1)?.[0]).toHaveProperty(
+      "__roundSelectFallbackShown",
+      false
+    );
     expect(store.__roundSelectFallbackShown).not.toBe(true);
+    expect(document.getElementById("round-select-fallback")).toBeNull();
+    expect(document.getElementById("round-select-error")).toBeNull();
+  });
+
+  it("stops retrying fallback start after reaching retry limit", async () => {
+    const roundSelectModal = await import("../../src/helpers/classicBattle/roundSelectModal.js");
+    const roundManager = await import("../../src/helpers/classicBattle/roundManager.js");
+    const uiHelpers = await import("../../src/helpers/classicBattle/uiHelpers.js");
+    const { withMutedConsole } = await import("../utils/console.js");
+
+    vi.spyOn(roundSelectModal, "initRoundSelectModal").mockRejectedValueOnce(
+      new Error("round select modal failed hard")
+    );
+
+    const fatalSpy = vi.spyOn(uiHelpers, "showFatalInitError").mockImplementation(() => {});
+
+    const startRoundSpy = vi
+      .spyOn(roundManager, "startRound")
+      .mockRejectedValue(new Error("round start keeps failing"));
+
+    const mod = await import("../../src/pages/battleClassic.init.js");
+
+    await withMutedConsole(async () => {
+      await mod.init?.();
+      await flushMicrotasks();
+    });
+
+    const store = typeof window !== "undefined" ? window.battleStore : undefined;
+    expect(store).toBeTruthy();
+
+    const fallbackBtn = document.getElementById("round-select-fallback");
+    expect(fallbackBtn).toBeTruthy();
+
+    await withMutedConsole(async () => {
+      fallbackBtn.click();
+      await flushMicrotasks();
+    });
+
+    const retryBtn = document.getElementById("round-select-fallback");
+    expect(retryBtn).toBeTruthy();
+
+    await withMutedConsole(async () => {
+      retryBtn.click();
+      await flushMicrotasks();
+    });
+
+    expect(fatalSpy).not.toHaveBeenCalled();
+
+    const thirdBtn = document.getElementById("round-select-fallback");
+    expect(thirdBtn).toBeTruthy();
+
+    await withMutedConsole(async () => {
+      thirdBtn.click();
+      await flushMicrotasks();
+    });
+
+    expect(startRoundSpy).toHaveBeenCalledTimes(3);
+    expect(fatalSpy).not.toHaveBeenCalled();
+
+    const finalBtn = document.getElementById("round-select-fallback");
+    expect(finalBtn).toBeTruthy();
+
+    await withMutedConsole(async () => {
+      finalBtn.click();
+      await flushMicrotasks();
+    });
+
+    expect(startRoundSpy).toHaveBeenCalledTimes(4);
+    expect(fatalSpy).toHaveBeenCalledTimes(1);
     expect(document.getElementById("round-select-fallback")).toBeNull();
     expect(document.getElementById("round-select-error")).toBeNull();
   });

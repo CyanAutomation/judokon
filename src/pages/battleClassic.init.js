@@ -1523,6 +1523,9 @@ async function beginSelectionTimer(store) {
 /**
  * Start a round cycle: update counter, draw UI, run timer.
  *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle store managing round lifecycle state.
+ * @param {{ skipStartRound?: boolean }} [options] - Optional configuration flags for the round start.
+ *
  * @pseudocode
  * 1. Update round counter.
  * 2. Render selection UI.
@@ -1531,8 +1534,8 @@ async function beginSelectionTimer(store) {
 async function startRoundCycle(store, options = {}) {
   const { skipStartRound = false } = options;
   if (isStartingRoundCycle) return;
-  clearRoundSelectFallback(store);
   isStartingRoundCycle = true;
+  clearRoundSelectFallback(store);
   try {
     try {
       stopActiveSelectionTimer();
@@ -1581,6 +1584,8 @@ async function startRoundCycle(store, options = {}) {
 /**
  * Remove the round select fallback UI and reset its tracking flag.
  *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle store object that tracks fallback state.
+ *
  * @pseudocode
  * 1. Remove fallback message and button elements when present.
  * 2. Reset the store tracking flag so the fallback can be re-rendered later.
@@ -1608,6 +1613,8 @@ function clearRoundSelectFallback(store) {
 /**
  * Display a fallback start button when the round select modal fails.
  *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle store tracking fallback render state.
+ *
  * @pseudocode
  * 1. Render error message and start button.
  * 2. Clicking the button starts the round cycle.
@@ -1618,6 +1625,7 @@ function showRoundSelectFallback(store) {
 
   if (!fallbackInDom && fallbackTracked && store) {
     store.__roundSelectFallbackShown = false;
+    delete store.__roundSelectFallbackRetryCount;
   }
 
   if ((store && store.__roundSelectFallbackShown) || fallbackInDom) {
@@ -1626,6 +1634,9 @@ function showRoundSelectFallback(store) {
 
   if (store) {
     store.__roundSelectFallbackShown = true;
+    if (typeof store.__roundSelectFallbackRetryCount !== "number") {
+      store.__roundSelectFallbackRetryCount = 0;
+    }
   }
 
   const msg = document.createElement("p");
@@ -1639,9 +1650,25 @@ function showRoundSelectFallback(store) {
   btn.addEventListener("click", async () => {
     try {
       await startRoundCycle(store);
+      if (store && typeof store === "object") {
+        delete store.__roundSelectFallbackRetryCount;
+      }
     } catch (err) {
       console.warn("battleClassic: fallback start failed", err);
-      showRoundSelectFallback(store);
+      if (store && typeof store === "object") {
+        const retries = Number(store.__roundSelectFallbackRetryCount) || 0;
+        if (retries < 3) {
+          store.__roundSelectFallbackRetryCount = retries + 1;
+          showRoundSelectFallback(store);
+          return;
+        }
+        console.error("battleClassic: fallback retry limit exceeded", err);
+      }
+      try {
+        showFatalInitError(err);
+      } catch (fatalError) {
+        console.error("battleClassic: fatal error display failed", fatalError);
+      }
     }
   });
 
@@ -1908,6 +1935,7 @@ async function init() {
         } catch (fatalError) {
           console.error("battleClassic: fatal error display failed", fatalError);
         }
+        throw fallbackError;
       }
     }
 
