@@ -162,6 +162,8 @@
   margin: 0;
   list-style: none;
   font-size: var(--font-small);
+}
+
 .battle-state-progress.ready {
   display: flex;
 }
