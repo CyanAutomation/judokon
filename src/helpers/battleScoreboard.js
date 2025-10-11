@@ -162,22 +162,13 @@ export function initBattleScoreboardAdapter() {
  * @returns {void}
  */
 export function disposeBattleScoreboardAdapter() {
+  _cancelWaiting();
   for (const [type, fn] of _handlers) {
     try {
       offBattleEvent(type, fn);
     } catch {}
   }
   _handlers = [];
-  // Schedule fallback message if no state is observed within 500ms
-  try {
-    const scheduler = getScheduler();
-    _waitingTimer = scheduler.setTimeout(() => {
-      try {
-        _waitingClearer =
-          typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
-      } catch {}
-    }, 500);
-  } catch {}
 
   _bound = false;
 }

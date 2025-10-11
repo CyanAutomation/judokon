@@ -208,11 +208,9 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
         timerOverrides: { roundTimer: 5 }
       });
 
-      await page.waitForFunction(
-        () => window.__snackbarRemovedByInit === true,
-        undefined,
-        { timeout: 2000 }
-      );
+      await page.waitForFunction(() => window.__snackbarRemovedByInit === true, undefined, {
+        timeout: 2000
+      });
 
       await setOpponentResolveDelay(page, 50);
 
