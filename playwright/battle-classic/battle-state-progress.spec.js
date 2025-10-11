@@ -2,8 +2,7 @@ import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
 
 test.describe("Battle state progress list", () => {
-  test("renders and updates when the feature flag is enabled", async ({ page }) =>
-    withMutedConsole(async () => {
+  test("renders and updates when the feature flag is enabled", async ({ page }) => {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = {
           battleStateProgress: true,
@@ -22,6 +21,11 @@ test.describe("Battle state progress list", () => {
       await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
 
       const progress = page.getByTestId("battle-state-progress");
+      const flagValue = await page.evaluate(() =>
+        import("../helpers/featureFlags.js").then((mod) => mod.isEnabled("battleStateProgress"))
+      );
+      await expect(flagValue, "battleStateProgress flag should be enabled").toBe(true);
+
       await expect
         .poll(async () => {
           return await page.evaluate(() => {
@@ -72,5 +76,5 @@ test.describe("Battle state progress list", () => {
         "aria-current",
         "step"
       );
-    }, ["log", "info", "warn", "error", "debug"]));
+  });
 });
