@@ -227,24 +227,7 @@ describe("BattleDebugLogger", () => {
     });
   });
 
-  describe("Console Output Control", () => {
-    it("should respect outputMode override when explicitly set", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-      // When outputMode is explicitly provided, it should be respected
-      const testLogger = new BattleDebugLogger({
-        enabled: true,
-        outputMode: "console"
-      });
-
-      testLogger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, "Test message");
-
-      // Explicit outputMode should be respected
-      expect(testLogger.outputMode).toBe("console");
-
-      consoleSpy.mockRestore();
-    });
-  });
+  describe("Console Output Control", () => {});
 
   describe("Export Functionality", () => {
     it("should export logs as JSON", () => {

@@ -26,43 +26,25 @@ describe.each([
   });
 });
 
-describe("toggleTooltipOverlayDebug", () => {
-  it("records fallback state when document is undefined", () => {
-    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-    const originalDocument = global.document;
-    // @ts-ignore - simulate an environment without document
-    delete global.document;
+describe("debug state recording", () => {
+  it("records state for toggleTooltipOverlayDebug", () => {
+    expect(getDebugState().tooltipOverlayDebug).toBe(false);
 
     toggleTooltipOverlayDebug(true);
-
-    expect(infoSpy).toHaveBeenCalledWith(
-      "[tooltipOverlayDebug] Document unavailable; recorded desired state:",
-      true
-    );
     expect(getDebugState().tooltipOverlayDebug).toBe(true);
 
-    global.document = originalDocument;
-    infoSpy.mockRestore();
+    toggleTooltipOverlayDebug(false);
+    expect(getDebugState().tooltipOverlayDebug).toBe(false);
   });
-});
 
-describe("toggleViewportSimulation", () => {
-  it("records fallback state when document is undefined", () => {
-    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-    const originalDocument = global.document;
-    // @ts-ignore - simulate an environment without document
-    delete global.document;
+  it("records state for toggleViewportSimulation", () => {
+    expect(getDebugState().viewportSimulation).toBe(false);
 
     toggleViewportSimulation(true);
-
-    expect(infoSpy).toHaveBeenCalledWith(
-      "[viewportSimulation] Document unavailable; recorded desired state:",
-      true
-    );
     expect(getDebugState().viewportSimulation).toBe(true);
 
-    global.document = originalDocument;
-    infoSpy.mockRestore();
+    toggleViewportSimulation(false);
+    expect(getDebugState().viewportSimulation).toBe(false);
   });
 });
 

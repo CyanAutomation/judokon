@@ -41,6 +41,7 @@ import { POINTS_TO_WIN_OPTIONS } from "../../config/battleDefaults.js";
 import * as debugHooks from "../../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../../helpers/classicBattle/orchestratorHandlers.js";
 import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
+import { domStateListener } from "../../helpers/classicBattle/stateTransitionListeners.js";
 import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";
 import { registerModal, unregisterModal, onEsc } from "../../helpers/modalManager.js";
 import { exposeTestAPI } from "../../helpers/testApi.js";
@@ -2822,31 +2823,24 @@ export async function init() {
           await startRoundCore(store);
         },
         resolveRound: async () => {
-          let prevState = null;
-          try {
-            prevState = document.body?.dataset?.battleState || null;
-          } catch {}
+          const snapshot = getStateSnapshot();
+          const previousState = snapshot?.state ?? null;
+          let resolvedViaOrchestrator = false;
+
           try {
             await resolveRoundForTest();
-          } catch {
+            resolvedViaOrchestrator = true;
+          } catch (error) {
+            console.warn("resolveRoundForTest failed; falling back to manual round resolution", error);
+          }
+
+          if (!resolvedViaOrchestrator) {
             emitBattleEvent("roundResolved", {});
           }
-          try {
-            if (typeof document !== "undefined") {
-              const ds = document.body?.dataset;
-              if (ds) {
-                if (prevState) {
-                  ds.prevBattleState = prevState;
-                } else {
-                  delete ds.prevBattleState;
-                }
-                ds.battleState = "roundOver";
-              }
-            }
-          } catch {}
-          try {
-            emitBattleEvent("battleStateChange", { from: prevState ?? null, to: "roundOver" });
-          } catch {}
+
+          const detail = { from: previousState, to: "roundOver", event: "roundResolved" };
+          domStateListener({ detail });
+          emitBattleEvent("battleStateChange", detail);
         },
         getInternalState: () => {
           return {
