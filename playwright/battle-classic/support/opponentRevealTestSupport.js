@@ -68,6 +68,16 @@ export async function getBattleSnapshot(page) {
   });
 }
 
+/**
+ * @private
+ * Attempts to confirm the battle is ready, using fallbacks when primary readiness
+ * checks fail. This helper augments {@link waitForBattleReady} with visibility and
+ * snapshot heuristics to guard against intermittent initialization flakiness.
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {{ timeout?: number }} [options] - Configuration for readiness deadline
+ * @returns {Promise<void>}
+ */
 async function waitForBattleReadyWithFallbacks(page, options = {}) {
   const { timeout = 3_500 } = options;
 
@@ -192,6 +202,15 @@ export async function startMatchAndAwaitStats(page, selector) {
   await startMatch(page, selector);
 }
 
+/**
+ * @private
+ * Resolves the active round using deterministic fallbacks. Prefers the public
+ * CLI helpers exposed through the Test API and progressively escalates to
+ * manual transitions when those are unavailable.
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @returns {Promise<void>}
+ */
 async function resolveRoundDeterministic(page) {
   const hasResolved = async () => {
     try {
@@ -274,6 +293,25 @@ export async function ensureRoundResolved(page, options = {}) {
   await confirmRoundOver();
 }
 
+/**
+ * Initialize the classic battle Playwright environment with deterministic timers
+ * and feature configuration.
+ * @pseudocode
+ * ADD init script to configure timer overrides, cooldowns, resolve delay, and feature flags
+ * NAVIGATE to the classic battle page and wait for network idle state
+ * START the battle match via the provided selector, optionally waiting for stat readiness
+ * APPLY opponent resolve delay through the public Test API when configured
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page instance
+ * @param {Object} [config] - Battle initialization configuration
+ * @param {string} [config.matchSelector="#round-select-1"] - Selector used to start the match
+ * @param {Object} [config.timerOverrides] - Timer override configuration applied via init script
+ * @param {number} [config.nextRoundCooldown] - Cooldown duration between rounds in ms
+ * @param {number} [config.resolveDelay] - Opponent resolve delay applied after initialization
+ * @param {Object} [config.featureFlags] - Feature flag overrides merged with defaults
+ * @param {boolean} [config.awaitStats=true] - Whether to wait for stat buttons to become visible
+ * @returns {Promise<void>}
+ */
 export async function initializeBattle(page, config = {}) {
   const {
     matchSelector = "#round-select-1",
@@ -317,17 +355,46 @@ export async function initializeBattle(page, config = {}) {
   }
 }
 
+/**
+ * Waits for the tracked rounds played count to reach the desired value using
+ * battle snapshots, capturing diagnostic information for CI flakiness.
+ * @pseudocode
+ * POLL battle snapshot via public inspect API until roundsPlayed is a number
+ * RECORD any snapshot retrieval errors to surface in assertion messaging
+ * FALLBACK to reading battle state through the Test API when snapshots are null
+ * ASSERT roundsPlayed meets or exceeds the expected threshold within timeout window
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page instance
+ * @param {number} expectedRounds - Target rounds played count
+ * @param {{ timeout?: number }} [options] - Polling timeout configuration
+ * @returns {Promise<void>}
+ */
 export async function waitForRoundsPlayed(page, expectedRounds, options = {}) {
   const { timeout = 5_000 } = options;
-
-  await expect
+  let lastSnapshotError = null;
+  let lastKnownState = null;
+  const expectation = expect
     .poll(
       async () => {
-        const snapshot = await getBattleSnapshot(page);
-        if (!snapshot || typeof snapshot.roundsPlayed !== "number") {
-          return null;
+        try {
+          const snapshot = await getBattleSnapshot(page);
+          if (snapshot && typeof snapshot.roundsPlayed === "number") {
+            return snapshot.roundsPlayed;
+          }
+        } catch (error) {
+          lastSnapshotError =
+            error instanceof Error ? error.message : String(error);
         }
-        return snapshot.roundsPlayed;
+
+        try {
+          lastKnownState = await page
+            .evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null)
+            .catch(() => null);
+        } catch {
+          lastKnownState = null;
+        }
+
+        return null;
       },
       {
         timeout,
@@ -335,4 +402,21 @@ export async function waitForRoundsPlayed(page, expectedRounds, options = {}) {
       }
     )
     .toBeGreaterThanOrEqual(expectedRounds);
+
+  try {
+    await expectation;
+  } catch (error) {
+    const diagnostics = [
+      lastKnownState ? `Last known battle state: ${lastKnownState}` : null,
+      lastSnapshotError ? `Snapshot error: ${lastSnapshotError}` : null
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    if (error instanceof Error && diagnostics) {
+      error.message = `${error.message}\n${diagnostics}`;
+    }
+
+    throw error;
+  }
 }

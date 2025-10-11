@@ -101,19 +101,45 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
     "opponent reveal handles missing DOM elements gracefully",
     async ({ page }) =>
       withMutedConsole(async () => {
-        await initializeBattle(page, {
-          timerOverrides: { roundTimer: 5 }
-        });
+        const routePattern = "**/src/pages/battleClassic.html";
+        const removeSnackbarContainer = async (route) => {
+          const response = await route.fetch();
+          const originalBody = await response.text();
+          const modifiedBody = originalBody.replace(
+            /<div id="snackbar-container"[\s\S]*?<\/div>/,
+            "<!-- snackbar container removed for missing DOM scenario -->"
+          );
 
-        await page.evaluate(() => {
-          document.getElementById("snackbar-container")?.remove();
-        });
+          const headers = {
+            ...response.headers(),
+            "content-length": Buffer.byteLength(modifiedBody, "utf-8").toString()
+          };
+
+          await route.fulfill({
+            status: response.status(),
+            headers,
+            body: modifiedBody,
+            contentType: response.headers()["content-type"]
+          });
+        };
+
+        await page.route(routePattern, removeSnackbarContainer);
+
+        try {
+          await initializeBattle(page, {
+            timerOverrides: { roundTimer: 5 }
+          });
+        } finally {
+          await page.unroute(routePattern, removeSnackbarContainer);
+        }
 
         await setOpponentResolveDelay(page, 50);
 
         const firstStat = page.locator("#stat-buttons button[data-stat]").first();
         await expect(firstStat).toBeVisible();
         await firstStat.click();
+
+        await expect(page.locator(selectors.snackbarContainer())).toHaveCount(1);
 
         await ensureRoundResolved(page);
         await waitForRoundsPlayed(page, 1);
