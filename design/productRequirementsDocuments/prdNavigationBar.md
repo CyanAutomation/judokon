@@ -78,6 +78,10 @@ The bottom navigation bar appears consistently across all game screens, populate
 - Player selects a mode and is taken to that screen.
 - If `navigationItems.js` fails, revert to a default order and auto-reload.
 
+### Intentional Exceptions
+
+- **Browse Judoka**, **Random Judoka**, and **Meditation** screens intentionally hide the persistent navigation bar to provide a focused, full-screen experience tailored to their respective interactions.
+
 ### Technical Considerations
 
 - Use `navigationItems.js` to drive CSS classes that control which pre-seeded links are visible and in what order; fallback to defaults on failure.
@@ -118,7 +122,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 ## Acceptance Criteria
 
 - Touch targets maintain **≥44px** size across all device resolutions (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-- Navigation is visible on **100%** of game screens.
+- Navigation is visible on **100%** of standard game screens, excluding **Browse Judoka**, **Random Judoka**, and **Meditation**, which intentionally omit the persistent nav bar.
 - Standard nav bar shows pre-seeded links whose visibility and order are driven by `navigationItems.js` via CSS.
 - Each link in the horizontal layout spans equal width to keep the bar balanced.
 - Each navigation button shows a distinct hover state on pointer devices.
