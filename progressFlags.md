@@ -91,15 +91,15 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Concrete prioritized implementation plan (short, testable steps)
 
-1. Ship the `battle-state-progress` UI (owner: core eng) — Effort: Medium — Priority: P0  
+1. Ship the `battle-state-progress` UI (owner: core eng) — Effort: Medium — Priority: P0
    - Add the markup to `battleClassic.html`, style it, and cover it with a unit test for `renderStateList` plus a Playwright assertion.
-2. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0  
+2. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0
    - Add `#test-mode-banner`, implement the missing `applyBattleFeatureFlags` helper, and verify the banner toggles when `enableTestMode` is flipped.
-3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1  
+3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1
    - Decide whether `roundStore` and `opponentDelayMessage` stay; implement or retire accordingly, and update settings copy.
-4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1  
+4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1
    - Remove the forced `enableFlag` call, ensure both UI and CLI respect stored values, and add regression tests.
-5. Add data hooks + tests for the working flags (owner: dev tooling) — Effort: Low — Priority: P2  
+5. Add data hooks + tests for the working flags (owner: dev tooling) — Effort: Low — Priority: P2
    - Tag rendered elements with `data-feature-*`, add Vitest/Playwright checks, and document QA entry points.
 
 ## Tests & verification matrix
