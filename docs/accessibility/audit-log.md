@@ -1,6 +1,7 @@
 # Battle CLI Accessibility Audit Log
 
 ## 2025-??-?? — Automated Agent Pass
+
 - **Executor:** Codex QA agent (sandboxed environment)
 - **Scope:** Battle CLI live-region behaviour, round confirmation prompts, countdown announcements.
 - **Verification:**
