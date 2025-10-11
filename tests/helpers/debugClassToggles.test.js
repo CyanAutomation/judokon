@@ -27,10 +27,6 @@ describe.each([
 });
 
 describe("debug state recording", () => {
-  beforeEach(() => {
-    resetDebugState();
-  });
-
   it("records state for toggleTooltipOverlayDebug", () => {
     expect(getDebugState().tooltipOverlayDebug).toBe(false);
 
