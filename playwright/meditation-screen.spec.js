@@ -17,7 +17,7 @@ test.describe("Meditation screen", () => {
   });
 
   test("navigation check", async ({ page }) => {
-    await verifyPageBasics(page, [], [], { expectNav: false }); // Meditation screen has no nav links
+    await verifyPageBasics(page, [], [], { expectNav: false }); // Meditation screen has no navigation bar
     await expect(page.locator("nav.top-navbar")).toHaveCount(0);
   });
 

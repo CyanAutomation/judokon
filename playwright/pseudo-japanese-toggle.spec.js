@@ -32,7 +32,8 @@ test.describe("Pseudo-Japanese toggle", () => {
   });
 
   test("toggle updates quote text", async ({ page }) => {
-    await verifyPageBasics(page, []); // Meditation screen has no nav links
+    await verifyPageBasics(page, [], [], { expectNav: false });
+    await expect(page.locator("nav.top-navbar")).toHaveCount(0);
 
     const quote = page.locator("#quote");
     const toggle = page.getByTestId("language-toggle");
