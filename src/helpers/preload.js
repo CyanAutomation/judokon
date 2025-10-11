@@ -1,3 +1,6 @@
+import { fetchJson } from "./dataUtils.js";
+import { DATA_DIR } from "./constants.js";
+
 /**
  * Preloads essential assets required for the Meditation page to ensure a
  * smoother user experience by making resources available before they are needed.
