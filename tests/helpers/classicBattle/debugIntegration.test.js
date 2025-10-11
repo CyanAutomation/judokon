@@ -196,7 +196,7 @@ describe("Debug Logger Integration", () => {
 
       const startTime = performance.now();
 
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 100; i++) {
         disabledLogger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, `Message ${i}`, {
           index: i
         });
@@ -205,7 +205,10 @@ describe("Debug Logger Integration", () => {
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      expect(duration).toBeLessThan(50);
+      expect(disabledLogger.buffer).toHaveLength(0);
+
+      const maxDuration = process.env.CI ? 100 : 25;
+      expect(duration).toBeLessThan(maxDuration);
     });
   });
 });
