@@ -38,26 +38,6 @@
   color: #8cff6b;
 }
 
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
-#cli-cursor {
-  animation: blink 1s steps(2, end) infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #cli-cursor {
-    animation: none;
-  }
-}
-
 body.scanlines::before {
   content: "";
   position: absolute;

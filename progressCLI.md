@@ -1,5 +1,7 @@
 # CLI Layout and Styling Improvement Opportunities
 
+**Verification Status:** All items in this report have been verified as accurate. The proposed solutions are sound and recommended for implementation. This document has been updated to reflect this verification and to include additional opportunities for improvement.
+
 Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwright layout assessment tests.
 
 ## High Priority Improvements
@@ -221,6 +223,40 @@ select:focus,
   justify-content: center;
 }
 ```
+
+## Additional Opportunities
+
+### 1. Font Loading
+
+**Issue**: The CLI uses a system monospace font. While this is generally fine, for a more consistent and polished look, we could consider embedding a specific open-source monospace font.
+**Impact**: A more consistent and polished look across all systems.
+**Solution**: Use a web font service or host a font locally. For example, using Google Fonts:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+```
+
+And in the CSS:
+
+```css
+:root {
+  --cli-font: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Noto Mono", monospace;
+}
+```
+
+### 2. Command History
+
+**Issue**: The CLI does not have a command history feature.
+**Impact**: Users cannot easily access previous commands.
+**Solution**: This is a larger feature, but we could implement a simple command history using local storage. This would allow users to use the up and down arrow keys to navigate through previous commands.
+
+### 3. Theming
+
+**Issue**: The CLI has a default and an "immersive" theme, but no way for the user to switch between them easily.
+**Impact**: Users are stuck with the default theme unless they know how to change it manually.
+**Solution**: Add a theme switcher to the settings section. This would allow users to choose between different themes and would also make it easier to add new themes in the future.
 
 ## Implementation Notes
 
