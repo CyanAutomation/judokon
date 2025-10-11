@@ -131,15 +131,62 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
 
   test("opponent reveal handles missing DOM elements gracefully", async ({ page }) =>
     withMutedConsole(async () => {
+      await page.addInitScript(() => {
+        window.__snackbarRemovedByInit = false;
+
+        const removeSnackbarOnce = () => {
+          if (window.__snackbarRemovedByInit) {
+            return;
+          }
+
+          const container = document.getElementById("snackbar-container");
+          if (!container) {
+            return;
+          }
+
+          container.remove();
+          window.__snackbarRemovedByInit = true;
+        };
+
+        removeSnackbarOnce();
+
+        if (!window.__snackbarRemovedByInit && document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", removeSnackbarOnce, {
+            once: true
+          });
+        }
+
+        if (window.__snackbarRemovedByInit) {
+          return;
+        }
+
+        const observer = new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+              if (
+                node.nodeType === Node.ELEMENT_NODE &&
+                (node.id === "snackbar-container" ||
+                  node.querySelector?.("#snackbar-container"))
+              ) {
+                removeSnackbarOnce();
+                observer.disconnect();
+                return;
+              }
+            }
+          }
+        });
+
+        observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true
+        });
+      });
+
       await initializeBattle(page, {
         timerOverrides: { roundTimer: 5 }
       });
 
-      const styleHandle = await page.addStyleTag({
-        content: "#snackbar-container { display: none !important; }"
-      });
-
-      await expect(page.locator(selectors.snackbarContainer())).toBeHidden();
+      await page.waitForFunction(() => window.__snackbarRemovedByInit === true);
 
       await setOpponentResolveDelay(page, 50);
 
@@ -147,12 +194,17 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
       await expect(firstStat).toBeVisible();
       await firstStat.click();
 
-      await expect(page.locator(selectors.snackbarContainer())).toHaveCount(1);
+      const snackbar = page.locator(selectors.snackbarContainer());
+      const snackbarMessage = snackbar.locator(".snackbar");
 
       await ensureRoundResolved(page);
       await waitForRoundsPlayed(page, 1);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
-      await styleHandle.evaluate((element) => element.remove());
+      // Only assert visibility if snackbar was recreated after removal
+      const snackbarCount = await snackbarMessage.count();
+      if (snackbarCount > 0) {
+        await expect(snackbarMessage).toContainText(/Select your move/i);
+      }
     }, MUTED_CONSOLE_LEVELS));
 });
