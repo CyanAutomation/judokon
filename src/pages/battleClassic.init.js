@@ -89,6 +89,110 @@ let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
 
+const JUDOKA_FAILURE_TELEMETRY_THRESHOLD = 3;
+const JUDOKA_FAILURE_TELEMETRY_WINDOW_MS = 120000;
+const JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE = 0.25;
+const judokaFailureTelemetryState = {
+  count: 0,
+  firstTimestamp: 0,
+  lastTimestamp: 0,
+  reported: false,
+  sampled: null
+};
+
+function shouldSampleJudokaFailureTelemetry() {
+  if (typeof window !== "undefined") {
+    try {
+      const forced = window.__CLASSIC_BATTLE_FORCE_JUDOKA_TELEMETRY;
+      if (typeof forced === "boolean") {
+        return forced;
+      }
+    } catch {}
+  }
+  return Math.random() < JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE;
+}
+
+function recordJudokaLoadFailureTelemetry(context) {
+  const state = judokaFailureTelemetryState;
+  const now = Date.now();
+  const windowExceeded =
+    state.firstTimestamp && now - state.firstTimestamp > JUDOKA_FAILURE_TELEMETRY_WINDOW_MS;
+  if (!state.firstTimestamp || windowExceeded) {
+    state.count = 0;
+    state.firstTimestamp = now;
+    state.sampled = null;
+  }
+
+  state.count += 1;
+  state.lastTimestamp = now;
+  const safeContext = typeof context === "string" && context ? context : "unspecified";
+
+  if (state.reported) {
+    return;
+  }
+  if (state.count < JUDOKA_FAILURE_TELEMETRY_THRESHOLD) {
+    return;
+  }
+  if (now - state.firstTimestamp > JUDOKA_FAILURE_TELEMETRY_WINDOW_MS) {
+    return;
+  }
+  if (state.sampled === null) {
+    state.sampled = shouldSampleJudokaFailureTelemetry();
+  }
+  if (!state.sampled) {
+    state.reported = true;
+    return;
+  }
+
+  try {
+    if (typeof window !== "undefined") {
+      try {
+        window.__classicBattleJudokaFailureTelemetry = {
+          count: state.count,
+          context: safeContext,
+          firstTimestamp: state.firstTimestamp,
+          reportedAt: now
+        };
+      } catch {}
+    }
+    if (typeof Sentry !== "undefined") {
+      if (typeof Sentry.startSpan === "function") {
+        Sentry.startSpan(
+          {
+            op: "ui.retry",
+            name: "classicBattle.judokaLoad.retryLoop"
+          },
+          (span) => {
+            try {
+              if (span && typeof span.setAttribute === "function") {
+                span.setAttribute("failureCount", state.count);
+                span.setAttribute("elapsedMs", now - state.firstTimestamp);
+                span.setAttribute("context", safeContext);
+                span.setAttribute("sampleRate", JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE);
+                span.setAttribute("threshold", JUDOKA_FAILURE_TELEMETRY_THRESHOLD);
+              }
+            } catch {}
+          }
+        );
+      }
+      if (Sentry?.logger?.warn) {
+        try {
+          Sentry.logger.warn(
+            Sentry.logger.fmt`classicBattle:judokaLoadFailure:${safeContext}`,
+            {
+              count: state.count,
+              elapsedMs: now - state.firstTimestamp,
+              threshold: JUDOKA_FAILURE_TELEMETRY_THRESHOLD
+            }
+          );
+        } catch {}
+      }
+    }
+  } catch {}
+
+  state.reported = true;
+}
+
 /**
  * Toggle header navigation interactivity.
  *
@@ -1919,6 +2023,7 @@ async function init() {
           } catch {}
           ensureLobbyBadge();
           if (err instanceof JudokaDataLoadError) {
+            recordJudokaLoadFailureTelemetry("initRoundSelectModal.startRoundCycle");
             return;
           }
           showFatalInitError(err);
@@ -1927,6 +2032,9 @@ async function init() {
       });
     } catch (err) {
       console.error("battleClassic: initRoundSelectModal failed", err);
+      if (err instanceof JudokaDataLoadError) {
+        recordJudokaLoadFailureTelemetry("initRoundSelectModal.bootstrap");
+      }
       try {
         showRoundSelectFallback(store);
       } catch (fallbackError) {
@@ -1989,7 +2097,9 @@ async function init() {
             recordRoundCycleTrigger(eventType || "unknown");
           } catch (err) {
             console.error("battleClassic: startRoundCycle ready handler failed", err);
-            if (!(err instanceof JudokaDataLoadError)) {
+            if (err instanceof JudokaDataLoadError) {
+              recordJudokaLoadFailureTelemetry("event.ready.startRoundCycle");
+            } else {
               showFatalInitError(err);
             }
           }
@@ -2001,7 +2111,9 @@ async function init() {
           recordRoundCycleTrigger(eventType || "unknown");
         } catch (err) {
           console.error("battleClassic: startRoundCycle round.start handler failed", err);
-          if (!(err instanceof JudokaDataLoadError)) {
+          if (err instanceof JudokaDataLoadError) {
+            recordJudokaLoadFailureTelemetry("event.round.start.startRoundCycle");
+          } else {
             showFatalInitError(err);
           }
         }
@@ -2017,7 +2129,9 @@ async function init() {
         await startRoundCycle(store, { skipStartRound: true });
       } catch (err) {
         console.error("battleClassic: startRoundCycle roundStarted handler failed", err);
-        if (!(err instanceof JudokaDataLoadError)) {
+        if (err instanceof JudokaDataLoadError) {
+          recordJudokaLoadFailureTelemetry("event.roundStarted.startRoundCycle");
+        } else {
           showFatalInitError(err);
         }
       }
