@@ -1,11 +1,12 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/randomJudoka.html");
     await page.locator('body[data-random-judoka-ready="true"]').waitFor();
-    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
+    await verifyPageBasics(page, [], [], { expectNav: false });
+    await expect(page.locator("nav.top-navbar")).toHaveCount(0);
   });
 
   test("random judoka elements visible", async ({ page }) => {

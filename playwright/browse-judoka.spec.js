@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 // Use the same dataset the app fetches via route fixtures to avoid mismatches
 import judoka from "../tests/fixtures/judoka.json" with { type: "json" };
 import countryCodeMapping from "../src/data/countryCodeMapping.json" with { type: "json" };
@@ -29,7 +29,8 @@ test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/src/pages/browseJudoka.html");
-    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
+    await verifyPageBasics(page, [], [], { expectNav: false });
+    await expect(page.locator("nav.top-navbar")).toHaveCount(0);
   });
 
   test("browse judoka elements visible", async ({ page }) => {
