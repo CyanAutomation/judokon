@@ -128,7 +128,10 @@ export function updateActiveState(list, state) {
     else if (target === "roundModification") target = "roundDecision";
   }
   for (const li of list.querySelectorAll("li")) {
-    li.classList.toggle("active", li.dataset.state === target);
+    const isActive = li.dataset.state === target;
+    li.classList.toggle("active", isActive);
+    if (isActive) li.setAttribute("aria-current", "step");
+    else li.removeAttribute("aria-current");
   }
   updateBattleStateBadge(state);
 }

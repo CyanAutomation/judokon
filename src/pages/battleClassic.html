@@ -87,6 +87,20 @@
               <div class="stat-selection stat-controls" role="group" aria-label="Choose a stat">
                 <div id="stat-buttons" data-testid="stat-buttons" data-buttons-ready="false"></div>
               </div>
+              <section
+                class="battle-state-progress-wrapper"
+                aria-label="Battle state progress timeline"
+              >
+                <ul
+                  id="battle-state-progress"
+                  data-testid="battle-state-progress"
+                  class="battle-state-progress"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  style="display: none"
+                ></ul>
+              </section>
 
               <section class="battle-controls" role="group" aria-label="Round controls">
                 <button

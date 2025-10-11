@@ -5,8 +5,11 @@ test.describe("CLI Command History", () => {
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForLoadState('domcontentloaded');
 
+    // Manually initialize the battle CLI
+    await page.waitForFunction(() => window.__test, { timeout: 10000 });
+    await page.evaluate(() => window.__test.init());
+
     // Manually start the battle
-    await page.waitForFunction(() => window.testHooks, { timeout: 10000 });
     await page.evaluate(() => window.testHooks.startRound());
 
     // Wait for the battle to be ready for player action

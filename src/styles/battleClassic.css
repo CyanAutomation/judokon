@@ -148,6 +148,49 @@
   outline-offset: 2px;
 }
 
+.battle-state-progress-wrapper {
+  width: 100%;
+}
+
+.battle-state-progress {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: var(--font-small);
+}
+
+.battle-state-progress li {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--space-xs) * 0.75) var(--space-sm);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  min-width: 2.75rem;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.battle-state-progress li.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverted);
+  font-weight: 600;
+}
+
+.battle-state-progress li[aria-current="step"] {
+  outline: 2px solid transparent;
+}
+
 .battle-controls {
   display: flex;
   flex-wrap: wrap;
