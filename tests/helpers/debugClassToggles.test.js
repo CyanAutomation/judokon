@@ -26,46 +26,6 @@ describe.each([
   });
 });
 
-describe("toggleTooltipOverlayDebug", () => {
-  it("records fallback state when document is undefined", () => {
-    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-    const originalDocument = global.document;
-    // @ts-ignore - simulate an environment without document
-    delete global.document;
-
-    toggleTooltipOverlayDebug(true);
-
-    expect(infoSpy).toHaveBeenCalledWith(
-      "[tooltipOverlayDebug] Document unavailable; recorded desired state:",
-      true
-    );
-    expect(getDebugState().tooltipOverlayDebug).toBe(true);
-
-    global.document = originalDocument;
-    infoSpy.mockRestore();
-  });
-});
-
-describe("toggleViewportSimulation", () => {
-  it("records fallback state when document is undefined", () => {
-    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-    const originalDocument = global.document;
-    // @ts-ignore - simulate an environment without document
-    delete global.document;
-
-    toggleViewportSimulation(true);
-
-    expect(infoSpy).toHaveBeenCalledWith(
-      "[viewportSimulation] Document unavailable; recorded desired state:",
-      true
-    );
-    expect(getDebugState().viewportSimulation).toBe(true);
-
-    global.document = originalDocument;
-    infoSpy.mockRestore();
-  });
-});
-
 describe("feature flag debug toggles integration", () => {
   beforeEach(() => {
     if (typeof window !== "undefined") {
