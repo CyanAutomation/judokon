@@ -24,8 +24,8 @@ describe("battleCLI cliShortcuts flag", () => {
     const { wireEvents } = await import("../../src/pages/index.js");
     wireEvents();
     const sec = document.getElementById("cli-shortcuts");
-    expect(sec.hidden).toBe(true);
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(false);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
+    expect(sec.hidden).toBe(true);
   });
 });
