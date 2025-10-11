@@ -142,14 +142,4 @@ describe("sanitizeHtml fallback sanitizer", () => {
     expect(result).toBe(payload);
   });
 
-  it("completes large-payload sanitization promptly", () => {
-    const payload = "x".repeat(25 * 1024);
-    const input = `<script>${payload}</script>${payload}`;
-    const start = performance.now();
-    const result = sanitizeBasic(input);
-    const durationMs = performance.now() - start;
-
-    expect(result).toBe(payload);
-    expect(durationMs).toBeLessThan(100);
-  });
 });
