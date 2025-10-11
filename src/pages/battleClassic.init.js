@@ -147,14 +147,11 @@ function emitJudokaLoadFailureTelemetry(state, safeContext, timestamp) {
       }
       if (Sentry?.logger?.warn) {
         try {
-          Sentry.logger.warn(
-            Sentry.logger.fmt`classicBattle:judokaLoadFailure:${safeContext}`,
-            {
-              count: state.count,
-              elapsedMs: timestamp - state.firstTimestamp,
-              threshold: JUDOKA_FAILURE_TELEMETRY_THRESHOLD
-            }
-          );
+          Sentry.logger.warn(Sentry.logger.fmt`classicBattle:judokaLoadFailure:${safeContext}`, {
+            count: state.count,
+            elapsedMs: timestamp - state.firstTimestamp,
+            threshold: JUDOKA_FAILURE_TELEMETRY_THRESHOLD
+          });
         } catch {}
       }
     }
