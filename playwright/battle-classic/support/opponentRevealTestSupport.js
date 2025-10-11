@@ -69,7 +69,7 @@ export async function getBattleSnapshot(page) {
 }
 
 /**
- * @private
+ * @internal
  * Attempts to confirm the battle is ready, using fallbacks when primary readiness
  * checks fail. This helper augments {@link waitForBattleReady} with visibility and
  * snapshot heuristics to guard against intermittent initialization flakiness.
