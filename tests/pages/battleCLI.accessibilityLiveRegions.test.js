@@ -38,9 +38,7 @@ describe("battleCLI accessibility live regions", () => {
       opponentVal: 17
     });
 
-    expect(roundMessage?.textContent).toBe(
-      "You win! (Speed – You: 42 Opponent: 17)"
-    );
+    expect(roundMessage?.textContent).toBe("You win! (Speed – You: 42 Opponent: 17)");
     const scoreLine = document.getElementById("cli-score");
     expect(scoreLine?.getAttribute("aria-live")).toBe("polite");
     expect(scoreLine?.dataset.scorePlayer).toBe("1");
