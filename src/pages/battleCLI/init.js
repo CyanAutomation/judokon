@@ -2831,7 +2831,10 @@ export async function init() {
             await resolveRoundForTest();
             resolvedViaOrchestrator = true;
           } catch (error) {
-            console.warn("resolveRoundForTest failed; falling back to manual round resolution", error);
+            console.warn(
+              "resolveRoundForTest failed; falling back to manual round resolution",
+              error
+            );
           }
 
           if (!resolvedViaOrchestrator) {
