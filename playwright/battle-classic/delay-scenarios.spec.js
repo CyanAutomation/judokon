@@ -119,32 +119,29 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
         await page.unroute(routePattern, removeSnackbarContainer);
       }
 
-        await setOpponentResolveDelay(page, 200);
+      await setOpponentResolveDelay(page, 200);
 
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await expect(firstStat).toBeVisible();
-        await firstStat.click();
+      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
+      await expect(firstStat).toBeVisible();
+      await firstStat.click();
 
-        await page.goto("/index.html");
-        await expect(page.locator(".logo")).toBeVisible();
-      }, MUTED_CONSOLE_LEVELS)
-  );
+      await page.goto("/index.html");
+      await expect(page.locator(".logo")).toBeVisible();
+    }, MUTED_CONSOLE_LEVELS));
 
-  test(
-    "opponent reveal handles missing DOM elements gracefully",
-    async ({ page }) =>
-      withMutedConsole(async () => {
-        await initializeBattle(page, {
-          timerOverrides: { roundTimer: 5 }
-        });
+  test("opponent reveal handles missing DOM elements gracefully", async ({ page }) =>
+    withMutedConsole(async () => {
+      await initializeBattle(page, {
+        timerOverrides: { roundTimer: 5 }
+      });
 
-        const styleHandle = await page.addStyleTag({
-          content: "#snackbar-container { display: none !important; }"
-        });
+      const styleHandle = await page.addStyleTag({
+        content: "#snackbar-container { display: none !important; }"
+      });
 
-        await expect(page.locator(selectors.snackbarContainer())).toBeHidden();
+      await expect(page.locator(selectors.snackbarContainer())).toBeHidden();
 
-        await setOpponentResolveDelay(page, 50);
+      await setOpponentResolveDelay(page, 50);
 
       const firstStat = page.locator("#stat-buttons button[data-stat]").first();
       await expect(firstStat).toBeVisible();
@@ -152,11 +149,10 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
 
       await expect(page.locator(selectors.snackbarContainer())).toHaveCount(1);
 
-        await ensureRoundResolved(page);
-        await waitForRoundsPlayed(page, 1);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+      await ensureRoundResolved(page);
+      await waitForRoundsPlayed(page, 1);
+      await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
-        await styleHandle.evaluate((element) => element.remove());
-      }, MUTED_CONSOLE_LEVELS)
-  );
+      await styleHandle.evaluate((element) => element.remove());
+    }, MUTED_CONSOLE_LEVELS));
 });
