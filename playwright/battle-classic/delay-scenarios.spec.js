@@ -11,80 +11,113 @@ import {
 } from "./support/opponentRevealTestSupport.js";
 
 test.describe("Classic Battle Opponent Delay Scenarios", () => {
-  test(
-    "handles very short opponent delays gracefully",
-    async ({ page }) =>
-      withMutedConsole(async () => {
+  test("handles very short opponent delays gracefully", async ({ page }) =>
+    withMutedConsole(async () => {
+      await initializeBattle(page, {
+        timerOverrides: { roundTimer: 5 }
+      });
+
+      await setOpponentResolveDelay(page, 10);
+
+      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
+      await expect(firstStat).toBeVisible();
+      await firstStat.click();
+
+      const snackbar = page.locator(selectors.snackbarContainer());
+      await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 200 });
+
+      await ensureRoundResolved(page);
+      await waitForRoundsPlayed(page, 1);
+      await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+    }, MUTED_CONSOLE_LEVELS));
+
+  test("handles long opponent delays without timing out", async ({ page }) =>
+    withMutedConsole(async () => {
+      await initializeBattle(page, {
+        timerOverrides: { roundTimer: 15 }
+      });
+
+      await setOpponentResolveDelay(page, 500);
+
+      const firstStat = page.locator(selectors.statButton(0)).first();
+      await expect(firstStat).toBeVisible();
+      await firstStat.click();
+
+      const snackbar = page.locator(selectors.snackbarContainer());
+      await expect(snackbar).toContainText(/Opponent is choosing/i);
+
+      await ensureRoundResolved(page, { deadline: 700 });
+      await waitForRoundsPlayed(page, 1);
+      await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+    }, MUTED_CONSOLE_LEVELS));
+
+  test("handles rapid stat selections gracefully", async ({ page }) =>
+    withMutedConsole(async () => {
+      await initializeBattle(page, {
+        timerOverrides: { roundTimer: 5 }
+      });
+
+      await setOpponentResolveDelay(page, 50);
+
+      const stats = page.locator("#stat-buttons button[data-stat]");
+      await expect(stats.first()).toBeVisible();
+      await stats.first().click();
+      await stats.nth(1).click();
+
+      await ensureRoundResolved(page);
+      await waitForRoundsPlayed(page, 1);
+      await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+    }, MUTED_CONSOLE_LEVELS));
+
+  test("opponent reveal works when page is navigated during delay", async ({ page }) =>
+    withMutedConsole(async () => {
+      await initializeBattle(page, {
+        timerOverrides: { roundTimer: 5 }
+      });
+
+      await setOpponentResolveDelay(page, 200);
+
+      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
+      await expect(firstStat).toBeVisible();
+      await firstStat.click();
+
+      await page.goto("/index.html");
+      await expect(page.locator(".logo")).toBeVisible();
+    }, MUTED_CONSOLE_LEVELS));
+
+  test("opponent reveal handles missing DOM elements gracefully", async ({ page }) =>
+    withMutedConsole(async () => {
+      const routePattern = "**/src/pages/battleClassic.html";
+      const removeSnackbarContainer = async (route) => {
+        const response = await route.fetch();
+        const originalBody = await response.text();
+        const modifiedBody = originalBody.replace(
+          /<div id="snackbar-container"[\s\S]*?<\/div>/,
+          "<!-- snackbar container removed for missing DOM scenario -->"
+        );
+
+        const headers = {
+          ...response.headers(),
+          "content-length": Buffer.byteLength(modifiedBody, "utf-8").toString()
+        };
+
+        await route.fulfill({
+          status: response.status(),
+          headers,
+          body: modifiedBody,
+          contentType: response.headers()["content-type"]
+        });
+      };
+
+      await page.route(routePattern, removeSnackbarContainer);
+
+      try {
         await initializeBattle(page, {
           timerOverrides: { roundTimer: 5 }
         });
-
-        await setOpponentResolveDelay(page, 10);
-
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await expect(firstStat).toBeVisible();
-        await firstStat.click();
-
-        const snackbar = page.locator(selectors.snackbarContainer());
-        await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 200 });
-
-        await ensureRoundResolved(page);
-        await waitForRoundsPlayed(page, 1);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
-      }, MUTED_CONSOLE_LEVELS)
-  );
-
-  test(
-    "handles long opponent delays without timing out",
-    async ({ page }) =>
-      withMutedConsole(async () => {
-        await initializeBattle(page, {
-          timerOverrides: { roundTimer: 15 }
-        });
-
-        await setOpponentResolveDelay(page, 500);
-
-        const firstStat = page.locator(selectors.statButton(0)).first();
-        await expect(firstStat).toBeVisible();
-        await firstStat.click();
-
-        const snackbar = page.locator(selectors.snackbarContainer());
-        await expect(snackbar).toContainText(/Opponent is choosing/i);
-
-        await ensureRoundResolved(page, { deadline: 700 });
-        await waitForRoundsPlayed(page, 1);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
-      }, MUTED_CONSOLE_LEVELS)
-  );
-
-  test(
-    "handles rapid stat selections gracefully",
-    async ({ page }) =>
-      withMutedConsole(async () => {
-        await initializeBattle(page, {
-          timerOverrides: { roundTimer: 5 }
-        });
-
-        await setOpponentResolveDelay(page, 50);
-
-        const stats = page.locator("#stat-buttons button[data-stat]");
-        await expect(stats.first()).toBeVisible();
-        await stats.first().click();
-        await stats.nth(1).click();
-
-        await ensureRoundResolved(page);
-        await waitForRoundsPlayed(page, 1);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
-      }, MUTED_CONSOLE_LEVELS)
-  );
-
-  test(
-    "opponent reveal works when page is navigated during delay",
-    async ({ page }) =>
-      withMutedConsole(async () => {
-        await initializeBattle(page, {
-          timerOverrides: { roundTimer: 5 }
-        });
+      } finally {
+        await page.unroute(routePattern, removeSnackbarContainer);
+      }
 
         await setOpponentResolveDelay(page, 200);
 
@@ -113,11 +146,11 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
 
         await setOpponentResolveDelay(page, 50);
 
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await expect(firstStat).toBeVisible();
-        await firstStat.click();
+      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
+      await expect(firstStat).toBeVisible();
+      await firstStat.click();
 
-        await expect(page.locator(selectors.snackbarContainer())).toHaveCount(1);
+      await expect(page.locator(selectors.snackbarContainer())).toHaveCount(1);
 
         await ensureRoundResolved(page);
         await waitForRoundsPlayed(page, 1);

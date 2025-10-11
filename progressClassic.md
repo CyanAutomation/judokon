@@ -35,11 +35,11 @@ This revision reconciles the prior QA write-up with the current codebase and tes
 
 ## 3. Fix Plan Review & Adjustments
 
-| Original phase | Status | Notes |
-| -------------- | ------ | ----- |
-| **Phase 1 – Immediate bugfix** (rethrow from `loadJudokaData`, handle errors in `drawCards`) | Already in place | Both behaviours are present and covered by tests; no additional action required beyond keeping coverage green. |
-| **Phase 2 – Robust error handling** (global init catch, improved modal) | Complete | The current `init` guard and modal implementation match the intent. Focus should shift to UX polish when retries repeatedly fail. |
-| **Phase 3 – Feature completion** (end-of-match modal) | Complete | Guard rail exists and E2E coverage verifies it. Remaining work is quality-of-life tuning rather than feature gap closure. |
+| Original phase                                                                               | Status           | Notes                                                                                                                             |
+| -------------------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Phase 1 – Immediate bugfix** (rethrow from `loadJudokaData`, handle errors in `drawCards`) | Already in place | Both behaviours are present and covered by tests; no additional action required beyond keeping coverage green.                    |
+| **Phase 2 – Robust error handling** (global init catch, improved modal)                      | Complete         | The current `init` guard and modal implementation match the intent. Focus should shift to UX polish when retries repeatedly fail. |
+| **Phase 3 – Feature completion** (end-of-match modal)                                        | Complete         | Guard rail exists and E2E coverage verifies it. Remaining work is quality-of-life tuning rather than feature gap closure.         |
 
 Given the above, the actionable plan now centers on polish and resilience rather than foundational bug fixes.
 
@@ -57,10 +57,10 @@ Given the above, the actionable plan now centers on polish and resilience rather
 
 ## 5. Validation Evidence
 
-| Command | Result |
-| ------- | ------ |
-| `npx vitest run tests/classicBattle/bootstrap.test.js tests/classicBattle/page-scaffold.test.js tests/classicBattle/init-complete.test.js tests/classicBattle/round-select.test.js` | ✅ All 18 assertions passed |
-| `npx playwright test playwright/battle-classic/bootstrap.spec.js playwright/battle-classic/round-select.spec.js playwright/battle-classic/smoke.spec.js` | ✅ All 4 scenarios passed (executed with elevated permissions to allow local web server binding) |
+| Command                                                                                                                                                                             | Result                                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `npx vitest run tests/classicBattle/bootstrap.test.js tests/classicBattle/page-scaffold.test.js tests/classicBattle/init-complete.test.js tests/classicBattle/round-select.test.js` | ✅ All 18 assertions passed                                                                      |
+| `npx playwright test playwright/battle-classic/bootstrap.spec.js playwright/battle-classic/round-select.spec.js playwright/battle-classic/smoke.spec.js`                            | ✅ All 4 scenarios passed (executed with elevated permissions to allow local web server binding) |
 
 These suites cover the data-loading retry logic, UI scaffolding, and the end-of-match modal assertions referenced above.
 
