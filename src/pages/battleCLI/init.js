@@ -2822,7 +2822,31 @@ export async function init() {
           await startRoundCore(store);
         },
         resolveRound: async () => {
-          emitBattleEvent("roundResolved", {});
+          let prevState = null;
+          try {
+            prevState = document.body?.dataset?.battleState || null;
+          } catch {}
+          try {
+            await resolveRoundForTest();
+          } catch {
+            emitBattleEvent("roundResolved", {});
+          }
+          try {
+            if (typeof document !== "undefined") {
+              const ds = document.body?.dataset;
+              if (ds) {
+                if (prevState) {
+                  ds.prevBattleState = prevState;
+                } else {
+                  delete ds.prevBattleState;
+                }
+                ds.battleState = "roundOver";
+              }
+            }
+          } catch {}
+          try {
+            emitBattleEvent("battleStateChange", { from: prevState ?? null, to: "roundOver" });
+          } catch {}
         },
         getInternalState: () => {
           return {

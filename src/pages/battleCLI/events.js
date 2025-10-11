@@ -1,6 +1,5 @@
 import { isEnabled } from "../../helpers/featureFlags.js";
 import {
-  isEnabled,
   handleGlobalKey,
   handleWaitingForPlayerActionKey,
   handleWaitingForMatchStartKey,
