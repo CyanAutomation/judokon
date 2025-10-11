@@ -23,12 +23,7 @@ export const NAV_SETTINGS = "nav-13";
  * @param {{ expectNav?: boolean }} [options] - Optional configuration flags.
  * @param {boolean} [options.expectNav=true] - When false, skip verifying that a navigation bar is visible.
  */
-export async function verifyPageBasics(
-  page,
-  linkIds = [],
-  assertions = [],
-  options = {}
-) {
+export async function verifyPageBasics(page, linkIds = [], assertions = [], options = {}) {
   await expect(page).toHaveTitle(/Ju-Do-Kon!/i);
   const shouldExpectNav = options.expectNav ?? true;
   if (shouldExpectNav) {
