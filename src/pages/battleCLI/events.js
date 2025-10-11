@@ -135,11 +135,11 @@ function routeKeyByState(key) {
  * 4. Update the countdown element with an error message when the key is not handled.
  */
 export function onKeyDown(e) {
-  if (e.ctrlKey) {
-    if(handleCommandHistory(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
+  if (e.ctrlKey && isEnabled("cliShortcuts")) {
+    if (handleCommandHistory(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
     }
   }
   if (handleArrowNav(e)) return;
