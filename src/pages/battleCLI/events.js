@@ -136,10 +136,10 @@ function routeKeyByState(key) {
  */
 export function onKeyDown(e) {
   if (e.ctrlKey) {
-    if(handleCommandHistory(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
+    if (handleCommandHistory(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
     }
   }
   if (handleArrowNav(e)) return;
