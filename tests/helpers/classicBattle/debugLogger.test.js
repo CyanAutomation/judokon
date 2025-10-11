@@ -227,7 +227,29 @@ describe("BattleDebugLogger", () => {
     });
   });
 
-  describe("Console Output Control", () => {});
+  describe("Console Output Control", () => {
+    afterEach(() => {
+      delete process.env.VITEST;
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it("should default to memory output in vitest environment", () => {
+      process.env.VITEST = "true";
+
+      const testEnvLogger = new BattleDebugLogger();
+
+      expect(testEnvLogger.outputMode).toBe("memory");
+    });
+
+    it("should respect explicit output mode overrides", () => {
+      const consoleLogger = new BattleDebugLogger({
+        enabled: true,
+        outputMode: "console"
+      });
+
+      expect(consoleLogger.outputMode).toBe("console");
+    });
+  });
 
   describe("Export Functionality", () => {
     it("should export logs as JSON", () => {
