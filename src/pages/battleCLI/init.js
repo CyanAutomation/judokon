@@ -1155,12 +1155,12 @@ export function selectStat(stat) {
   try {
     const history = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
     if (history[history.length - 1] !== stat) {
-        history.push(stat);
-        if (history.length > 20) {
-            history.shift();
-        }
-        localStorage.setItem("cliStatHistory", JSON.stringify(history));
-        commandHistory = history;
+      history.push(stat);
+      if (history.length > 20) {
+        history.shift();
+      }
+      localStorage.setItem("cliStatHistory", JSON.stringify(history));
+      commandHistory = history;
     }
     historyIndex = commandHistory.length;
   } catch {}
@@ -1996,24 +1996,24 @@ export function handleCooldownKey(key) {
 }
 
 export function handleCommandHistory(key) {
-    if (key === "ArrowUp") {
-        if (historyIndex > 0) {
-            historyIndex--;
-            showBottomLine(`History: ${commandHistory[historyIndex]}`);
-            return true;
-        }
-    } else if (key === "ArrowDown") {
-        if (historyIndex < commandHistory.length - 1) {
-            historyIndex++;
-            showBottomLine(`History: ${commandHistory[historyIndex]}`);
-            return true;
-        } else if (historyIndex === commandHistory.length - 1) {
-            historyIndex++;
-            showBottomLine("");
-            return true;
-        }
+  if (key === "ArrowUp") {
+    if (historyIndex > 0) {
+      historyIndex--;
+      showBottomLine(`History: ${commandHistory[historyIndex]}`);
+      return true;
     }
-    return false;
+  } else if (key === "ArrowDown") {
+    if (historyIndex < commandHistory.length - 1) {
+      historyIndex++;
+      showBottomLine(`History: ${commandHistory[historyIndex]}`);
+      return true;
+    } else if (historyIndex === commandHistory.length - 1) {
+      historyIndex++;
+      showBottomLine("");
+      return true;
+    }
+  }
+  return false;
 }
 
 registerBattleHandlers({
@@ -2551,7 +2551,7 @@ export async function setupFlags() {
   try {
     const immersiveEnabled = !!isEnabled("cliImmersive");
     document.body.classList.toggle("cli-immersive", immersiveEnabled);
-    if(immersiveCheckbox) immersiveCheckbox.checked = immersiveEnabled;
+    if (immersiveCheckbox) immersiveCheckbox.checked = immersiveEnabled;
   } catch {}
   setAutoContinue(true);
   try {
@@ -2606,7 +2606,7 @@ export async function setupFlags() {
       try {
         const immersiveEnabled = !!isEnabled("cliImmersive");
         document.body.classList.toggle("cli-immersive", immersiveEnabled);
-        if(immersiveCheckbox) immersiveCheckbox.checked = immersiveEnabled;
+        if (immersiveCheckbox) immersiveCheckbox.checked = immersiveEnabled;
       } catch {}
     }
   });

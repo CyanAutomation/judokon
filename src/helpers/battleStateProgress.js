@@ -84,6 +84,8 @@ export function renderStateList(coreStates) {
   list.style.display = "";
   if (!coreStates.length) {
     list.innerHTML = "<li>No states found</li>";
+    list.dataset.progressInitialized = "true";
+    list.classList.add("ready");
     return list;
   }
   const items = Array.from(list.querySelectorAll("li"));
@@ -105,6 +107,8 @@ export function renderStateList(coreStates) {
     }
     list.appendChild(frag);
   }
+  list.dataset.progressInitialized = "true";
+  list.classList.add("ready");
   return list;
 }
 
@@ -195,7 +199,11 @@ export function initProgressListener(list, initialApplied = false) {
 export async function initBattleStateProgress() {
   if (!isEnabled("battleStateProgress")) {
     if (typeof document !== "undefined") {
-      document.getElementById("battle-state-progress")?.style.setProperty("display", "none");
+      const list = document.getElementById("battle-state-progress");
+      if (list) {
+        list.classList.remove("ready");
+        list.textContent = "";
+      }
     }
     resolveBattleStateProgressReady?.();
     return;

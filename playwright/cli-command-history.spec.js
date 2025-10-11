@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("CLI Command History", () => {
   test("should show stat selection history", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState("domcontentloaded");
 
     // Manually initialize the battle CLI
     await page.waitForFunction(() => window.__test, { timeout: 10000 });
@@ -13,7 +13,9 @@ test.describe("CLI Command History", () => {
     await page.evaluate(() => window.testHooks.startRound());
 
     // Wait for the battle to be ready for player action
-    await page.waitForSelector('body[data-battle-state="waitingForPlayerAction"]', { timeout: 10000 });
+    await page.waitForSelector('body[data-battle-state="waitingForPlayerAction"]', {
+      timeout: 10000
+    });
 
     // Select stat '1'
     await page.keyboard.press("1");

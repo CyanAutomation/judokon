@@ -140,5 +140,4 @@ describe("sanitizeHtml fallback sanitizer", () => {
 
     expect(result).toBe(payload);
   });
-
 });
