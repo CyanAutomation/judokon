@@ -72,8 +72,6 @@ function showLoadError(error) {
   }
 
   const roundMessage = document.getElementById("round-message");
-  const originalRoundMessageText = roundMessage ? roundMessage.textContent : null;
-
   // Track whether the round message has been written so we can avoid redundant DOM writes.
   let messageWritten = false;
   try {
