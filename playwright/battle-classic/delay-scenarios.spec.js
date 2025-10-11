@@ -180,8 +180,7 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
               for (const node of mutation.addedNodes) {
                 if (
                   node.nodeType === Node.ELEMENT_NODE &&
-                  (node.id === "snackbar-container" ||
-                    node.querySelector?.("#snackbar-container"))
+                  (node.id === "snackbar-container" || node.querySelector?.("#snackbar-container"))
                 ) {
                   removeSnackbarOnce();
                   return;
@@ -204,11 +203,9 @@ test.describe("Classic Battle Opponent Delay Scenarios", () => {
         timerOverrides: { roundTimer: 5 }
       });
 
-      await page.waitForFunction(
-        () => window.__snackbarRemovedByInit === true,
-        undefined,
-        { timeout: 2000 }
-      );
+      await page.waitForFunction(() => window.__snackbarRemovedByInit === true, undefined, {
+        timeout: 2000
+      });
 
       await setOpponentResolveDelay(page, 50);
 
