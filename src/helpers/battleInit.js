@@ -31,13 +31,15 @@ export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
 
-document.addEventListener(
-  "battle:init",
-  () => {
-    resolveReady();
-  },
-  { once: true }
-);
+if (typeof document !== "undefined") {
+  document.addEventListener(
+    "battle:init",
+    () => {
+      resolveReady();
+    },
+    { once: true }
+  );
+}
 
 if (typeof window !== "undefined") {
   window.battleReadyPromise = battleReadyPromise;
@@ -58,6 +60,10 @@ if (typeof window !== "undefined") {
 export function markBattlePartReady(part) {
   readyParts.add(part);
   if (readyParts.has("home") && readyParts.has("state")) {
+    if (typeof document === "undefined") {
+      return;
+    }
+
     const root = document.querySelector(".home-screen") || document.body;
     if (root && root.dataset.ready !== "true") {
       root.dataset.ready = "true";
