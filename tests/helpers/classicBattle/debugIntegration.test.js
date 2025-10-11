@@ -2,6 +2,7 @@
  * Integration tests for debug logging system integration
  */
 import { vi, describe, it, expect, beforeEach } from "vitest";
+import { performance } from "node:perf_hooks";
 import {
   BattleDebugLogger,
   DEBUG_CATEGORIES,
@@ -188,6 +189,23 @@ describe("Debug Logger Integration", () => {
       // Should contain the most recent entries
       const lastLog = logs[logs.length - 1];
       expect(lastLog.data.index).toBeGreaterThan(1000);
+    });
+
+    it("should have minimal overhead when disabled", () => {
+      const disabledLogger = new BattleDebugLogger({ enabled: false });
+
+      const startTime = performance.now();
+
+      for (let i = 0; i < 1000; i++) {
+        disabledLogger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, `Message ${i}`, {
+          index: i
+        });
+      }
+
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+
+      expect(duration).toBeLessThan(50);
     });
   });
 });
