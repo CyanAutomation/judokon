@@ -225,10 +225,7 @@ function updateBattleStateDataset(nextState, previousState) {
     return;
   } catch (error) {
     try {
-      console.debug(
-        "battleClassic: domStateListener failed, using fallback DOM sync",
-        error
-      );
+      console.debug("battleClassic: domStateListener failed, using fallback DOM sync", error);
     } catch {
       // Silently ignore logging failures to prevent cascading errors.
     }

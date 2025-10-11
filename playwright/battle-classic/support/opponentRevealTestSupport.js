@@ -151,7 +151,9 @@ function buildBattleFallbackFailureMessage(errors) {
 
   const detailMessage = errors.map((error) => `- ${error.message}`).join("\n");
 
-  return ["Battle readiness quick check failed after fallback strategies.", detailMessage].join("\n");
+  return ["Battle readiness quick check failed after fallback strategies.", detailMessage].join(
+    "\n"
+  );
 }
 
 export async function startMatch(page, selector) {
@@ -382,8 +384,7 @@ export async function waitForRoundsPlayed(page, expectedRounds, options = {}) {
             return snapshot.roundsPlayed;
           }
         } catch (error) {
-          lastSnapshotError =
-            error instanceof Error ? error.message : String(error);
+          lastSnapshotError = error instanceof Error ? error.message : String(error);
         }
 
         try {

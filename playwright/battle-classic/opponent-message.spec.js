@@ -43,24 +43,21 @@ const runMessageTest = (title, testFn, overrides = {}) => {
 };
 
 test.describe("Classic Battle Opponent Messages", () => {
-  runMessageTest(
-    "shows mystery placeholder pre-reveal before stat selection",
-    async ({ page }) => {
-      const domState = await page.evaluate(() => {
-        const container = document.getElementById("opponent-card");
-        const placeholder = document.getElementById("mystery-card-placeholder");
-        const hasHidden = !!container && container.classList.contains("opponent-hidden");
-        return {
-          containerExists: Boolean(container),
-          hasHidden,
-          hasPlaceholder: Boolean(placeholder)
-        };
-      });
+  runMessageTest("shows mystery placeholder pre-reveal before stat selection", async ({ page }) => {
+    const domState = await page.evaluate(() => {
+      const container = document.getElementById("opponent-card");
+      const placeholder = document.getElementById("mystery-card-placeholder");
+      const hasHidden = !!container && container.classList.contains("opponent-hidden");
+      return {
+        containerExists: Boolean(container),
+        hasHidden,
+        hasPlaceholder: Boolean(placeholder)
+      };
+    });
 
-      expect(domState.containerExists).toBe(true);
-      expect(domState.hasPlaceholder || domState.hasHidden === true).toBe(true);
-    }
-  );
+    expect(domState.containerExists).toBe(true);
+    expect(domState.hasPlaceholder || domState.hasHidden === true).toBe(true);
+  });
 
   runMessageTest(
     "placeholder clears and opponent card renders on reveal",
@@ -73,13 +70,10 @@ test.describe("Classic Battle Opponent Messages", () => {
 
       const opponentCard = page.locator("#opponent-card");
       await expect
-        .poll(
-          async () => (await opponentCard.innerHTML()).trim().length > 0,
-          {
-            timeout: 4_000,
-            message: "Expected opponent card content after reveal"
-          }
-        )
+        .poll(async () => (await opponentCard.innerHTML()).trim().length > 0, {
+          timeout: 4_000,
+          message: "Expected opponent card content after reveal"
+        })
         .toBe(true);
     },
     { resolveDelay: 50 }
