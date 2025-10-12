@@ -685,7 +685,10 @@ function updateCliShortcutsVisibility() {
   if (!section) return;
 
   if (!section.dataset.cliShortcutsFlagInitialized) {
-    if (section.hasAttribute("hidden") && !section.dataset.hiddenByCliShortcutsFlag) {
+    if (
+      section.hasAttribute("hidden") &&
+      section.dataset.hiddenByCliShortcutsFlag === undefined
+    ) {
       section.dataset.hiddenByCliShortcutsFlag = "template";
     }
     section.dataset.cliShortcutsFlagInitialized = "true";
