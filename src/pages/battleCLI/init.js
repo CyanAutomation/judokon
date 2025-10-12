@@ -2565,15 +2565,9 @@ export async function setupFlags() {
       hasStoredTarget = false;
       target = undefined;
     }
-    await setFlag("cliVerbose", enable);
-    verboseEnabled = !!enable;
 
-    try {
-      const setter = engineFacade.setPointsToWin;
-      if (hasStoredTarget && typeof setter === "function") {
-        setter(target);
-      }
-    } catch {}
+    verboseEnabled = !!enable;
+    updateVerbose();
 
     const root = byId("cli-root");
     const round = Number(root?.dataset.round || 0);
@@ -2584,7 +2578,21 @@ export async function setupFlags() {
       headerTarget = Number.isNaN(parsedTarget) ? datasetTarget : parsedTarget;
     }
     updateRoundHeader(round, headerTarget);
-    updateVerbose();
+
+    try {
+      await setFlag("cliVerbose", enable);
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.debug("Failed to persist CLI verbose flag:", error);
+      }
+    }
+
+    try {
+      const setter = engineFacade.setPointsToWin;
+      if (hasStoredTarget && typeof setter === "function") {
+        setter(target);
+      }
+    } catch {}
   };
   try {
     await initFeatureFlags();
