@@ -237,79 +237,91 @@ describe("BattleDebugLogger", () => {
   });
 
   describe("Console Output Control", () => {
-    it("should default to memory output in vitest environment", () => {
-      const vitestFlag = process.env.VITEST;
-      process.env.VITEST = "true";
+    const withVitestFlag = (value, testFn) => {
+      const originalVitest = process.env.VITEST;
+      const restoreVitestFlag = () => {
+        if (originalVitest !== undefined) {
+          process.env.VITEST = originalVitest;
+        } else {
+          delete process.env.VITEST;
+        }
+      };
 
-      const testEnvLogger = new BattleDebugLogger();
-
-      expect(testEnvLogger.outputMode).toBe("memory");
-
-      if (vitestFlag !== undefined) {
-        process.env.VITEST = vitestFlag;
-      } else {
+      if (value === undefined) {
         delete process.env.VITEST;
+      } else {
+        process.env.VITEST = value;
       }
+
+      try {
+        const result = testFn();
+
+        if (result && typeof result.then === "function") {
+          return result.finally(restoreVitestFlag);
+        }
+
+        restoreVitestFlag();
+        return result;
+      } catch (error) {
+        restoreVitestFlag();
+        throw error;
+      }
+    };
+
+    it("should default to memory output in vitest environment", () => {
+      withVitestFlag("true", () => {
+        const testEnvLogger = new BattleDebugLogger();
+
+        expect(testEnvLogger.outputMode).toBe("memory");
+      });
     });
 
     it("should respect explicit output mode overrides", () => {
-      const vitestFlag = process.env.VITEST;
-      const consoleLogger = new BattleDebugLogger({
-        enabled: true,
-        outputMode: "console"
+      withVitestFlag(undefined, () => {
+        const consoleLogger = new BattleDebugLogger({
+          enabled: true,
+          outputMode: "console"
+        });
+
+        expect(consoleLogger.outputMode).toBe("console");
       });
-
-      expect(consoleLogger.outputMode).toBe("console");
-
-      if (vitestFlag !== undefined) {
-        process.env.VITEST = vitestFlag;
-      } else {
-        delete process.env.VITEST;
-      }
     });
 
     it("should suppress console output when running under vitest", async () => {
-      const vitestFlag = process.env.VITEST;
-      process.env.VITEST = "true";
-
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
       const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-      await withMutedConsole(async () => {
-        const mutedConsoleError = console.error;
-        const mutedConsoleWarn = console.warn;
+      await withVitestFlag("true", async () => {
+        await withMutedConsole(async () => {
+          const mutedConsoleError = console.error;
+          const mutedConsoleWarn = console.warn;
 
-        console.error = (...args) => {
-          consoleErrorSpy(...args);
-          return mutedConsoleError(...args);
-        };
+          console.error = (...args) => {
+            consoleErrorSpy(...args);
+            return mutedConsoleError(...args);
+          };
 
-        console.warn = (...args) => {
-          consoleWarnSpy(...args);
-          return mutedConsoleWarn(...args);
-        };
+          console.warn = (...args) => {
+            consoleWarnSpy(...args);
+            return mutedConsoleWarn(...args);
+          };
 
-        const testEnvLogger = new BattleDebugLogger({ enabled: true });
-        testEnvLogger.log(
-          DEBUG_CATEGORIES.STATE,
-          LOG_LEVELS.INFO,
-          "vitest suppression test"
-        );
+          const testEnvLogger = new BattleDebugLogger({ enabled: true });
+          testEnvLogger.log(
+            DEBUG_CATEGORIES.STATE,
+            LOG_LEVELS.INFO,
+            "vitest suppression test"
+          );
 
-        expect(testEnvLogger.outputMode).toBe("memory");
-        expect(consoleErrorSpy).not.toHaveBeenCalled();
-        expect(consoleWarnSpy).not.toHaveBeenCalled();
-        expect(consoleInfoSpy).not.toHaveBeenCalled();
-        expect(consoleLogSpy).not.toHaveBeenCalled();
-      }, ["error", "warn", "info", "log"]);
-
-      if (vitestFlag !== undefined) {
-        process.env.VITEST = vitestFlag;
-      } else {
-        delete process.env.VITEST;
-      }
+          expect(testEnvLogger.outputMode).toBe("memory");
+          expect(consoleErrorSpy).not.toHaveBeenCalled();
+          expect(consoleWarnSpy).not.toHaveBeenCalled();
+          expect(consoleInfoSpy).not.toHaveBeenCalled();
+          expect(consoleLogSpy).not.toHaveBeenCalled();
+        }, ["error", "warn", "info", "log"]);
+      });
     });
   });
 
