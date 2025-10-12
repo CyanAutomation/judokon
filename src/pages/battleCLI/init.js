@@ -2039,6 +2039,29 @@ export function handleCooldownKey(key) {
   return false;
 }
 
+/**
+ * Navigate through previously executed commands in the CLI.
+ *
+ * @summary Updates the displayed bottom line with the selected history entry
+ * based on arrow key input and advances the history index cursor accordingly.
+ * @param {string} key - Raw keyboard event `key` value.
+ * @returns {boolean} True if the history view was updated.
+ * @pseudocode
+ * if key is ArrowUp and historyIndex > 0:
+ *   decrement historyIndex
+ *   show bottom line with current history command
+ *   return true
+ * if key is ArrowDown:
+ *   if historyIndex < last history index:
+ *     increment historyIndex
+ *     show bottom line with current history command
+ *     return true
+ *   else if historyIndex is at last history index:
+ *     increment historyIndex
+ *     clear bottom line
+ *     return true
+ * return false
+ */
 export function handleCommandHistory(key) {
   if (key === "ArrowUp") {
     if (historyIndex > 0) {
