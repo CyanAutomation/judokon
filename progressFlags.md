@@ -19,6 +19,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Verified the Test Mode banner surface and helper wiring (`src/pages/battleClassic.html`, `src/helpers/classicBattle/uiHelpers.js`) so QA can observe deterministic mode via existing `data-test-mode` hooks.
 - Added targeted Vitest coverage for `applyBattleFeatureFlags` and ran `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` (pass).
 - Ran `npx playwright test playwright/battle-classic/smoke.spec.js` (pass) to ensure the Classic Battle header remains stable after the new banner markup.
+- Instrumented the battle state progress list with `data-feature-battle-state-*` metadata, new unit tests (`tests/helpers/battleStateProgress.test.js`), and `playwright/battle-classic/battle-state-progress.spec.js` (pass) to validate end-to-end behaviour.
 
 ## Critical blocker
 
@@ -59,10 +60,10 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Recommendation: Expose `data-feature-battle-state-badge` so QA can assert visibility, and add a unit test around `setBattleStateBadgeEnabled`.
 
 - `battleStateProgress`
-  - Status: **Implemented (needs QA hooks)** — `initBattleStateProgress` populates the existing `ul#battle-state-progress` scaffold and toggles classes via `updateActiveState` when the flag is enabled (`src/helpers/battleStateProgress.js:1-214`, `src/pages/battleClassic.html:94-101`).
-  - Confidence: High (verified markup plus helper wiring).
-  - Effort: Low → Medium (add data attributes, polish styling, expand coverage).
-  - Recommendation: Surface `data-feature-battle-state-progress`, add unit/Playwright coverage for `renderStateList` and `updateActiveState`, and ensure the wrapper retains accessible labelling.
+  - Status: **Implemented (QA instrumented)** — `initBattleStateProgress` now emits `data-feature-battle-state-*` hooks, exposes active/ready metadata, and remaps interrupts while keeping the Classic Battle scaffold intact (`src/helpers/battleStateProgress.js:1-214`, `src/pages/battleClassic.html:91-102`).
+  - Confidence: High (reinforced by new unit + Playwright coverage).
+  - Effort: Low (document usage patterns and integrate the hooks into QA automation suites).
+  - Recommendation: Publish guidance for QA on the new data attributes and extend Playwright assertions to broader battle flows as coverage grows.
 
 - `skipRoundCooldown`
   - Status: **Working** — UI service and timer service both consult the flag and short-circuit countdown timers when it is enabled (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-75`).
@@ -91,7 +92,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 ## Feasibility analysis of the remediation plan
 
 1. **Surface the test mode banner** — Completed/verified; follow-up coverage is tracked in the implementation plan.
-2. **Instrument battle state progress** — Add QA-facing data attributes, ensure styling matches the existing controls layout, and exercise `renderStateList`/`updateActiveState` in tests so the flag remains verifiable.
+2. **Instrument battle state progress** — **Completed/verified** via new data attributes, targeted unit coverage, and Playwright validation.
 3. **Tidy unused or misleading flags** — Either wire `roundStore` and `opponentDelayMessage` to real behavior or hide them until a product requirement exists. This is mostly product/UX alignment work with a small amount of code churn.
 4. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
 5. **Decouple hotkeys** — Removing the `enableFlag("statHotkeys")` auto-toggle and documenting CLI shortcuts is a small refactor with low regression risk.
@@ -100,8 +101,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 1. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0 **(Completed / verified)**
    - Existing banner + helper validated via targeted tests; widen coverage to additional journeys as needed.
-2. Instrument the battle state progress feature (owner: core eng) — Effort: Low → Medium — Priority: P1
-   - Expose `data-feature-battle-state-progress`, ensure styling fits within the controls column, and cover `renderStateList`/`updateActiveState` with unit + Playwright checks.
+2. Instrument the battle state progress feature (owner: core eng) — Effort: Low — Priority: P1 **(Completed / verified)**
+   - Data hooks, unit coverage, and Playwright validation added; next step is expanding usage documentation for QA flows.
 3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1
    - Decide whether `roundStore` and `opponentDelayMessage` stay; implement or retire accordingly, and update settings copy.
 4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1
