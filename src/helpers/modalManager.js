@@ -34,7 +34,7 @@ function handleKeydown(e) {
 
 if (
   typeof document !== "undefined" &&
-  document != null &&
+  document !== null &&
   typeof document.addEventListener === "function"
 ) {
   document.addEventListener("keydown", handleKeydown);
