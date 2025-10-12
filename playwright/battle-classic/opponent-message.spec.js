@@ -196,8 +196,7 @@ test.describe("Classic Battle Opponent Messages", () => {
               },
               {
                 timeout: 3_000,
-                message:
-                  'Expected battle state to resolve to "roundOver" after forced fallback'
+                message: 'Expected battle state to resolve to "roundOver" after forced fallback'
               }
             )
             .toBe("roundOver");

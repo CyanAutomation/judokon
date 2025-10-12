@@ -250,8 +250,7 @@ async function attemptCliResolution(page, hasResolved) {
     .catch(() => false);
 
   const stateAfterCli = await safeGetBattleState(page);
-  const resolved =
-    stateAfterCli === ROUND_OVER_STATE ? true : await hasResolved();
+  const resolved = stateAfterCli === ROUND_OVER_STATE ? true : await hasResolved();
 
   return { resolved, stateAfterCli };
 }
@@ -260,8 +259,7 @@ async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
   await triggerStateTransition(page, "roundResolved");
 
   const stateAfterTransition = await safeGetBattleState(page, stateAfterCli);
-  const resolved =
-    stateAfterTransition === ROUND_OVER_STATE ? true : await hasResolved();
+  const resolved = stateAfterTransition === ROUND_OVER_STATE ? true : await hasResolved();
 
   return { resolved, stateAfterTransition };
 }
@@ -270,11 +268,7 @@ function isWaitingForPlayerAction(...states) {
   return states.some((state) => state === WAITING_FOR_PLAYER_ACTION);
 }
 
-async function clickNextButtonFallback(page, {
-  hasResolved,
-  stateAfterCli,
-  stateAfterTransition
-}) {
+async function clickNextButtonFallback(page, { hasResolved, stateAfterCli, stateAfterTransition }) {
   if (await hasResolved()) {
     return;
   }
@@ -285,10 +279,7 @@ async function clickNextButtonFallback(page, {
     return;
   }
 
-  const waitingDetected = isWaitingForPlayerAction(
-    stateAfterCli,
-    stateAfterTransition
-  );
+  const waitingDetected = isWaitingForPlayerAction(stateAfterCli, stateAfterTransition);
 
   const latestState = await safeGetBattleState(page, stateAfterTransition);
 
@@ -302,13 +293,9 @@ async function clickNextButtonFallback(page, {
 }
 
 async function resolveRoundDeterministic(page) {
-  const hasResolved = async () =>
-    (await safeGetBattleState(page)) === ROUND_OVER_STATE;
+  const hasResolved = async () => (await safeGetBattleState(page)) === ROUND_OVER_STATE;
 
-  const { resolved: resolvedViaCli, stateAfterCli } = await attemptCliResolution(
-    page,
-    hasResolved
-  );
+  const { resolved: resolvedViaCli, stateAfterCli } = await attemptCliResolution(page, hasResolved);
   if (resolvedViaCli) {
     return;
   }
