@@ -272,12 +272,17 @@ describe("BattleDebugLogger", () => {
       const vitestFlag = process.env.VITEST;
       process.env.VITEST = "true";
 
-      const consoleErrorSpy = vi.spyOn(console, "error");
-      const consoleWarnSpy = vi.spyOn(console, "warn");
-      const consoleInfoSpy = vi.spyOn(console, "info");
-      const consoleLogSpy = vi.spyOn(console, "log");
+      const consoleErrorSpy = vi.fn();
+      const consoleWarnSpy = vi.fn();
+      const consoleInfoSpy = vi.fn();
+      const consoleLogSpy = vi.fn();
 
       await withMutedConsole(async () => {
+        console.error = consoleErrorSpy;
+        console.warn = consoleWarnSpy;
+        console.info = consoleInfoSpy;
+        console.log = consoleLogSpy;
+
         const testEnvLogger = new BattleDebugLogger({ enabled: true });
         testEnvLogger.log(
           DEBUG_CATEGORIES.STATE,
