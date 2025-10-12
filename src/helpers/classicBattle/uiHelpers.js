@@ -24,7 +24,7 @@ import {
   resolveStatButtonsReady
 } from "./statButtons.js";
 import { guard } from "./guard.js";
-import { updateDebugPanel as updateDebugPanelImpl } from "./debugPanel.js";
+import { updateDebugPanel as updateDebugPanelImpl, setDebugPanelEnabled } from "./debugPanel.js";
 /**
  * Re-export of updateDebugPanel from debugPanel.js
 /**
@@ -39,6 +39,7 @@ export { updateDebugPanelImpl as updateDebugPanel };
 
 import { runWhenIdle } from "./idleCallback.js";
 import { getStateSnapshot } from "./battleDebug.js";
+import { getCurrentSeed } from "../testModeUtils.js";
 
 /**
  * Determine whether round cooldowns should be skipped and optionally invoke a fast path.
