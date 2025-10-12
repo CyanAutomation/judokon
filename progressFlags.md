@@ -8,15 +8,21 @@
 This review re-validates the QA findings in `progressFlags.md`, corrects inaccurate statuses, and adds feasibility notes for the next engineering pass. Key takeaways:
 
 - Most runtime flags (card inspector, viewport simulation, tooltip overlay, battle state badge, skip cooldown) behave as implemented; they primarily lack QA hooks and regression coverage.
-- The `enableTestMode` banner target is still missing and `applyBattleFeatureFlags` is never defined, so the visibility cue for deterministic mode remains blocked.
+- The Test Mode banner now renders via `applyBattleFeatureFlags`, exposing deterministic hooks while still needing broader QA instrumentation.
 - The battle state progress list already ships in `battleClassic.html` and renders when the flag is enabled; focus shifts to instrumentation and testing rather than markup.
 - Switches such as `roundStore`, `opponentDelayMessage`, and the coupled `statHotkeys`/`cliShortcuts` pair still need product decisions or refactors to avoid confusing auto-enabling behavior.
 
 Below I document each flag's status, my confidence in the QA observation (based on the original notes and common failure modes), and recommended next actions with feasibility estimates.
 
+## Recent task updates
+
+- Implemented the Test Mode banner surface and helper wiring (`src/pages/battleClassic.html`, `src/helpers/classicBattle/uiHelpers.js`) so QA can observe deterministic mode via `data-test-mode` hooks.
+- Added targeted Vitest coverage for `applyBattleFeatureFlags` and ran `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` (pass).
+- Ran `npx playwright test playwright/battle-classic/smoke.spec.js` (pass) to ensure the Classic Battle header remains stable after the new banner markup.
+
 ## Critical blocker
 
-- `enableTestMode` is wired through the controller, debug panel, and determinism helpers, but the banner that QA expected never renders because `battleClassic.html` lacks a `#test-mode-banner` target and the imported `applyBattleFeatureFlags` helper is undefined (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/debugPanel.js:360-409`, `src/helpers/classicBattle/view.js:1-40`, `src/pages/battleClassic.html:42-66`). Adding that element (and supplying the helper) will unblock visibility checks.
+- **Resolved:** The Test Mode banner now renders in Classic Battle with deterministic hooks (`src/pages/battleClassic.html:58`, `src/helpers/classicBattle/uiHelpers.js:62-91`), and `applyBattleFeatureFlags` exposes `data-test-mode` plus debug toggles for QA.
 
 ## Flag status, confidence & feasibility
 
@@ -84,7 +90,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Feasibility analysis of the remediation plan
 
-1. **Surface the test mode banner** — Add the `#test-mode-banner` markup, implement `applyBattleFeatureFlags`, and cover the controller/view wiring with regression tests. This is mostly HTML/CSS plus a helper, so risk stays low.
+1. **Surface the test mode banner** — Completed by adding the markup/helper wiring; follow-up coverage is tracked in the implementation plan.
 2. **Instrument battle state progress** — Add QA-facing data attributes, ensure styling matches the existing controls layout, and exercise `renderStateList`/`updateActiveState` in tests so the flag remains verifiable.
 3. **Tidy unused or misleading flags** — Either wire `roundStore` and `opponentDelayMessage` to real behavior or hide them until a product requirement exists. This is mostly product/UX alignment work with a small amount of code churn.
 4. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.

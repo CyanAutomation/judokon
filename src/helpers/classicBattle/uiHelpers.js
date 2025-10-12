@@ -66,6 +66,49 @@ export function skipRoundCooldownIfEnabled(options = {}) {
   return true;
 }
 
+/**
+ * Toggle deterministic test-mode affordances.
+ *
+ * @param {HTMLElement|null} battleArea
+ * @param {HTMLElement|null} banner
+ * @returns {boolean} True when test mode is active.
+ */
+export function applyBattleFeatureFlags(battleArea, banner) {
+  const testModeEnabled = isEnabled("enableTestMode");
+  try {
+    setDebugPanelEnabled(testModeEnabled);
+  } catch {}
+
+  if (battleArea) {
+    if (testModeEnabled) {
+      battleArea.setAttribute("data-test-mode", "true");
+      battleArea.setAttribute("data-feature-test-mode", "true");
+    } else {
+      battleArea.removeAttribute("data-test-mode");
+      battleArea.removeAttribute("data-feature-test-mode");
+    }
+  }
+
+  if (banner) {
+    if (testModeEnabled) {
+      const seed = getCurrentSeed();
+      banner.textContent = `Test Mode active (seed ${seed})`;
+      banner.hidden = false;
+      banner.removeAttribute("hidden");
+      banner.dataset.seed = String(seed);
+      banner.setAttribute("data-feature-test-mode", "banner");
+    } else {
+      banner.hidden = true;
+      banner.setAttribute("hidden", "");
+      banner.textContent = "";
+      delete banner.dataset.seed;
+      banner.removeAttribute("data-feature-test-mode");
+    }
+  }
+
+  return testModeEnabled;
+}
+
 export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";
 
 /**
