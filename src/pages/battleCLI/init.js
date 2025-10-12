@@ -729,16 +729,13 @@ function updateCliShortcutsVisibility() {
     );
   }
 
+  const shouldCollapse = persistedCollapsed ?? true;
   const currentlyCollapsed = section.hasAttribute("hidden");
-  const shouldCollapse =
-    persistedCollapsed === null ? currentlyCollapsed : persistedCollapsed;
 
-  if (shouldCollapse !== currentlyCollapsed) {
-    if (shouldCollapse) {
-      hideCliShortcuts();
-    } else {
-      showCliShortcuts();
-    }
+  if (shouldCollapse && !currentlyCollapsed) {
+    hideCliShortcuts();
+  } else if (!shouldCollapse && currentlyCollapsed) {
+    showCliShortcuts();
   }
 }
 
