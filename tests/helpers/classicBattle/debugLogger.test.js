@@ -262,11 +262,7 @@ describe("BattleDebugLogger", () => {
       const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
       const testEnvLogger = new BattleDebugLogger({ enabled: true });
-      testEnvLogger.log(
-        DEBUG_CATEGORIES.STATE,
-        LOG_LEVELS.INFO,
-        "vitest suppression test"
-      );
+      testEnvLogger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, "vitest suppression test");
 
       expect(testEnvLogger.outputMode).toBe("memory");
       expect(consoleErrorSpy).not.toHaveBeenCalled();
