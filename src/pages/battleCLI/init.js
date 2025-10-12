@@ -693,8 +693,7 @@ function updateCliShortcutsVisibility() {
   if (!section) return;
 
   const isTemplateHiddenAndUntracked =
-    section.hasAttribute("hidden") &&
-    section.dataset.hiddenByCliShortcutsFlag === undefined;
+    section.hasAttribute("hidden") && section.dataset.hiddenByCliShortcutsFlag === undefined;
 
   if (isTemplateHiddenAndUntracked) {
     section.dataset.hiddenByCliShortcutsFlag = "template";
