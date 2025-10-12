@@ -14,19 +14,8 @@ afterEach(() => {
   resetDebugState();
 });
 
-describe.each([
-  ["toggleViewportSimulation", toggleViewportSimulation, "simulate-viewport"],
-  ["toggleTooltipOverlayDebug", toggleTooltipOverlayDebug, "tooltip-overlay-debug"]
-])("%s", (_name, fn, className) => {
-  it("adds and removes the class based on argument", () => {
-    fn(true);
-    expect(document.body.classList.contains(className)).toBe(true);
-    fn(false);
-    expect(document.body.classList.contains(className)).toBe(false);
-  });
-});
-
 describe("debug state recording", () => {
+  // The DOM class toggling helpers are exercised indirectly via the settings UI test below.
   it("records state for toggleTooltipOverlayDebug", () => {
     expect(getDebugState().tooltipOverlayDebug).toBe(false);
 
@@ -61,7 +50,7 @@ describe("feature flag debug toggles integration", () => {
     }
   });
 
-  it("applies debug classes when toggles change", async () => {
+  it("applies debug classes and persists settings when toggles change", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
 
@@ -114,6 +103,22 @@ describe("feature flag debug toggles integration", () => {
     const state = getDebugState();
     expect(state.tooltipOverlayDebug).toBe(true);
     expect(state.viewportSimulation).toBe(true);
+    expect(settings.featureFlags.tooltipOverlayDebug.enabled).toBe(true);
+    expect(settings.featureFlags.viewportSimulation.enabled).toBe(true);
     expect(handleUpdate).toHaveBeenCalledTimes(2);
+    expect(handleUpdate).toHaveBeenCalledWith(
+      "featureFlags",
+      expect.objectContaining({
+        tooltipOverlayDebug: expect.objectContaining({ enabled: true })
+      }),
+      expect.any(Function)
+    );
+    expect(handleUpdate).toHaveBeenCalledWith(
+      "featureFlags",
+      expect.objectContaining({
+        viewportSimulation: expect.objectContaining({ enabled: true })
+      }),
+      expect.any(Function)
+    );
   });
 });
