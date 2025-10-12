@@ -32,7 +32,7 @@ function handleKeydown(e) {
   }
 }
 
-if (typeof document?.addEventListener === "function") {
+if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
   document.addEventListener("keydown", handleKeydown);
 }
 
