@@ -84,4 +84,13 @@ export const handleCooldownKey = (key) => handlers.handleCooldownKey(key);
  */
 export const handleStatListArrowKey = (key) => handlers.handleStatListArrowKey(key);
 
+/**
+ * Delegate wrapper for navigating the command history buffer.
+ *
+ * @param {string} key - Arrow key string triggering history navigation.
+ * @returns {boolean} True when the registered handler consumed the key.
+ *
+ * @pseudocode
+ * 1. Call the registered `handleCommandHistory` with `key` and return its result.
+ */
 export const handleCommandHistory = (key) => handlers.handleCommandHistory(key);
