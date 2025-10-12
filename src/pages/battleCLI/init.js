@@ -684,11 +684,15 @@ function updateCliShortcutsVisibility() {
   const section = byId("cli-shortcuts");
   if (!section) return;
   if (!isEnabled("cliShortcuts")) {
-    section.hidden = true;
+    section.dataset.hiddenByFlag = "true";
+    section.setAttribute("hidden", "");
     section.style.display = "none";
   } else {
-    section.hidden = false;
     section.style.display = "";
+    if (section.dataset.hiddenByFlag) {
+      section.removeAttribute("hidden");
+      delete section.dataset.hiddenByFlag;
+    }
   }
 }
 
