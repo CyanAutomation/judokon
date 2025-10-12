@@ -677,21 +677,54 @@ function updateStateBadgeVisibility() {
  * Show or hide the CLI shortcuts section based on feature flag.
  *
  * @pseudocode
- * if shortcuts section exists:
- *   set hidden to !isEnabled("cliShortcuts")
+ * get shortcuts section; return if missing
+ * if flag disabled:
+ *   mark section.dataset.hiddenByFlag
+ *   force display:none so the panel cannot stay open
+ *   if overlay currently visible -> hideCliShortcuts()
+ * else:
+ *   clear dataset.hiddenByFlag marker
+ *   reset display override
+ *   read persisted collapse state from localStorage
+ *   if persisted state differs from current DOM state -> toggle via show/hide helpers
  */
 function updateCliShortcutsVisibility() {
   const section = byId("cli-shortcuts");
   if (!section) return;
-  if (!isEnabled("cliShortcuts")) {
+  const enabled = isEnabled("cliShortcuts");
+  if (!enabled) {
     section.dataset.hiddenByFlag = "true";
-    section.setAttribute("hidden", "");
     section.style.display = "none";
-  } else {
-    section.style.display = "";
-    if (section.dataset.hiddenByFlag) {
-      section.removeAttribute("hidden");
-      delete section.dataset.hiddenByFlag;
+    if (state.shortcutsOverlay || !section.hasAttribute("hidden")) {
+      hideCliShortcuts();
+    }
+    return;
+  }
+
+  section.style.display = "";
+  if (section.dataset.hiddenByFlag) {
+    delete section.dataset.hiddenByFlag;
+  }
+
+  let persistedCollapsed = null;
+  try {
+    const stored = localStorage.getItem("battleCLI.shortcutsCollapsed");
+    if (stored === "0") {
+      persistedCollapsed = false;
+    } else if (stored === "1") {
+      persistedCollapsed = true;
+    }
+  } catch {}
+
+  const currentlyCollapsed = section.hasAttribute("hidden");
+  const shouldCollapse =
+    persistedCollapsed === null ? currentlyCollapsed : persistedCollapsed;
+
+  if (shouldCollapse !== currentlyCollapsed) {
+    if (shouldCollapse) {
+      hideCliShortcuts();
+    } else {
+      showCliShortcuts();
     }
   }
 }
