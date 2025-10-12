@@ -42,6 +42,44 @@ const runMessageTest = (title, testFn, overrides = {}) => {
   );
 };
 
+const STALLED_CLI_RESOLVE_RESULT = Object.freeze({
+  detail: {},
+  dispatched: false,
+  emitted: false
+});
+
+async function setupStalledCliFallback(page) {
+  await page.evaluate((stalledResult) => {
+    const api = window.__TEST_API;
+    if (!api?.cli?.resolveRound || !api?.state?.dispatchBattleEvent) {
+      throw new Error("Test API unavailable for CLI override");
+    }
+
+    const originalResolveRound = api.cli.resolveRound.bind(api.cli);
+    const originalDispatch = api.state.dispatchBattleEvent.bind(api.state);
+
+    api.__dispatchedEvents = [];
+
+    api.cli.resolveRound = async (...args) => {
+      const state = api.state.getBattleState?.() ?? null;
+      if (state === "waitingForPlayerAction") {
+        return stalledResult;
+      }
+
+      return originalResolveRound(...args);
+    };
+
+    api.state.dispatchBattleEvent = async (eventName, payload) => {
+      api.__dispatchedEvents.push(eventName);
+      return originalDispatch(eventName, payload);
+    };
+  }, STALLED_CLI_RESOLVE_RESULT);
+}
+
+async function getDispatchedEvents(page) {
+  return await page.evaluate(() => window.__TEST_API?.__dispatchedEvents ?? []);
+}
+
 test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest("shows mystery placeholder pre-reveal before stat selection", async ({ page }) => {
     const domState = await page.evaluate(() => {
@@ -113,58 +151,44 @@ test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest(
     "forces round resolution when CLI resolveRound stalls in waitingForPlayerAction",
     async ({ page }) => {
-      await page.evaluate(() => {
-        const api = window.__TEST_API;
-        if (!api?.cli?.resolveRound || !api?.state?.dispatchBattleEvent) {
-          throw new Error("Test API unavailable for CLI override");
-        }
-
-        const originalResolveRound = api.cli.resolveRound.bind(api.cli);
-        const originalDispatch = api.state.dispatchBattleEvent.bind(api.state);
-
-        api.__dispatchedEvents = [];
-
-        api.cli.resolveRound = async (...args) => {
-          const state = api.state.getBattleState?.() ?? null;
-          if (state === "waitingForPlayerAction") {
-            return { detail: {}, dispatched: false, emitted: false };
-          }
-
-          return originalResolveRound(...args);
-        };
-
-        api.state.dispatchBattleEvent = async (eventName, payload) => {
-          api.__dispatchedEvents.push(eventName);
-          return originalDispatch(eventName, payload);
-        };
-      });
+      await setupStalledCliFallback(page);
 
       const firstStat = page.locator(selectors.statButton(0)).first();
       await firstStat.click();
 
       await ensureRoundResolved(page, { forceResolve: true });
 
-      await expect
-        .poll(
-          async () => {
-            try {
-              return await page.evaluate(
-                () => window.__TEST_API?.state?.getBattleState?.() ?? null
-              );
-            } catch {
-              return null;
+      let lastObservedBattleState = null;
+      try {
+        await expect
+          .poll(
+            async () => {
+              try {
+                const state = await page.evaluate(
+                  () => window.__TEST_API?.state?.getBattleState?.() ?? null
+                );
+                lastObservedBattleState = state;
+                return state;
+              } catch {
+                lastObservedBattleState = null;
+                return null;
+              }
+            },
+            {
+              timeout: 3_000,
+              message:
+                'Expected battle state to resolve to "roundOver" after forced fallback'
             }
-          },
-          {
-            timeout: 3_000,
-            message: 'Expected battle state to resolve to "roundOver" after forced fallback'
-          }
-        )
-        .toBe("roundOver");
+          )
+          .toBe("roundOver");
+      } catch (error) {
+        error.message = `${error.message}\nLast observed battle state: ${
+          lastObservedBattleState ?? "null"
+        }`;
+        throw error;
+      }
 
-      const dispatchedEvents = await page.evaluate(
-        () => window.__TEST_API?.__dispatchedEvents ?? []
-      );
+      const dispatchedEvents = await getDispatchedEvents(page);
       expect(dispatchedEvents).toContain("roundResolved");
     },
     { resolveDelay: 50 }

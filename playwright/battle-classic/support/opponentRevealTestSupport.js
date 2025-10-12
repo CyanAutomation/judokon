@@ -213,15 +213,18 @@ export async function startMatchAndAwaitStats(page, selector) {
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @returns {Promise<void>}
  */
-async function resolveRoundDeterministic(page) {
-  const hasResolved = async () => {
-    try {
-      return (await getCurrentBattleState(page)) === "roundOver";
-    } catch {
-      return false;
-    }
-  };
+const ROUND_OVER_STATE = "roundOver";
+const WAITING_FOR_PLAYER_ACTION = "waitingForPlayerAction";
 
+async function safeGetBattleState(page, fallback = null) {
+  try {
+    return await getCurrentBattleState(page);
+  } catch {
+    return fallback;
+  }
+}
+
+async function attemptCliResolution(page, hasResolved) {
   await page
     .evaluate(async () => {
       try {
@@ -240,61 +243,87 @@ async function resolveRoundDeterministic(page) {
     })
     .catch(() => false);
 
-  if (await hasResolved()) {
-    return;
-  }
+  const stateAfterCli = await safeGetBattleState(page);
+  const resolved =
+    stateAfterCli === ROUND_OVER_STATE ? true : await hasResolved();
 
-  let stateAfterCli = null;
-  try {
-    stateAfterCli = await getCurrentBattleState(page);
-  } catch {
-    stateAfterCli = null;
-  }
+  return { resolved, stateAfterCli };
+}
 
+async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
   await triggerStateTransition(page, "roundResolved");
 
+  const stateAfterTransition = await safeGetBattleState(page, stateAfterCli);
+  const resolved =
+    stateAfterTransition === ROUND_OVER_STATE ? true : await hasResolved();
+
+  return { resolved, stateAfterTransition };
+}
+
+function isWaitingForPlayerAction(...states) {
+  return states.some((state) => state === WAITING_FOR_PLAYER_ACTION);
+}
+
+async function clickNextButtonFallback(page, {
+  hasResolved,
+  stateAfterCli,
+  stateAfterTransition
+}) {
+  const waitingDetected = isWaitingForPlayerAction(
+    stateAfterCli,
+    stateAfterTransition
+  );
+
   if (await hasResolved()) {
     return;
   }
 
-  let stateAfterTransition = stateAfterCli;
-  try {
-    stateAfterTransition = await getCurrentBattleState(page);
-  } catch {
-    stateAfterTransition = stateAfterCli;
-  }
-
-  const waitingForPlayerActionDetected =
-    stateAfterCli === "waitingForPlayerAction" ||
-    stateAfterTransition === "waitingForPlayerAction";
-
-  if (waitingForPlayerActionDetected && (await hasResolved())) {
+  const nextBtn = page.locator("#next-button");
+  const nextEnabled = await nextBtn.isEnabled().catch(() => false);
+  if (!nextEnabled) {
     return;
   }
 
-  try {
-    if (await hasResolved()) {
-      return;
-    }
-
-    const nextBtn = page.locator("#next-button");
-    if (!(await nextBtn.isEnabled().catch(() => false))) {
-      return;
-    }
-
-    let latestState = stateAfterTransition;
-    if (!waitingForPlayerActionDetected) {
-      latestState = await getCurrentBattleState(page).catch(() => stateAfterTransition);
-    }
-
-    if (latestState && latestState !== "waitingForPlayerAction") {
-      if (await hasResolved()) {
-        return;
-      }
-    }
-
+  if (waitingDetected) {
     await nextBtn.click();
-  } catch {}
+    return;
+  }
+
+  const latestState = await safeGetBattleState(page, stateAfterTransition);
+
+  if (latestState === WAITING_FOR_PLAYER_ACTION) {
+    await nextBtn.click();
+    return;
+  }
+
+  if (latestState !== ROUND_OVER_STATE && !(await hasResolved())) {
+    await nextBtn.click();
+  }
+}
+
+async function resolveRoundDeterministic(page) {
+  const hasResolved = async () =>
+    (await safeGetBattleState(page)) === ROUND_OVER_STATE;
+
+  const { resolved: resolvedViaCli, stateAfterCli } = await attemptCliResolution(
+    page,
+    hasResolved
+  );
+  if (resolvedViaCli) {
+    return;
+  }
+
+  const { resolved: resolvedAfterTransition, stateAfterTransition } =
+    await triggerRoundResolvedFallback(page, hasResolved, stateAfterCli);
+  if (resolvedAfterTransition) {
+    return;
+  }
+
+  await clickNextButtonFallback(page, {
+    hasResolved,
+    stateAfterCli,
+    stateAfterTransition
+  });
 }
 
 export async function ensureRoundResolved(page, options = {}) {
