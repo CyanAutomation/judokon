@@ -271,25 +271,13 @@ describe("BattleDebugLogger", () => {
       const vitestFlag = process.env.VITEST;
       process.env.VITEST = "true";
 
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-      const consoleWarnSpy = vi
-        .spyOn(console, "warn")
-        .mockImplementation(() => {});
-      const consoleInfoSpy = vi
-        .spyOn(console, "info")
-        .mockImplementation(() => {});
-      const consoleLogSpy = vi
-        .spyOn(console, "log")
-        .mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
       const testEnvLogger = new BattleDebugLogger({ enabled: true });
-      testEnvLogger.log(
-        DEBUG_CATEGORIES.STATE,
-        LOG_LEVELS.INFO,
-        "vitest suppression test"
-      );
+      testEnvLogger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, "vitest suppression test");
 
       expect(testEnvLogger.outputMode).toBe("memory");
       expect(consoleErrorSpy).not.toHaveBeenCalled();
