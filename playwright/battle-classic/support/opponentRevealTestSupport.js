@@ -222,7 +222,7 @@ async function resolveRoundDeterministic(page) {
     }
   };
 
-  const resolvedInPage = await page
+  await page
     .evaluate(async () => {
       try {
         const api = window.__TEST_API;
@@ -240,12 +240,35 @@ async function resolveRoundDeterministic(page) {
     })
     .catch(() => false);
 
-  if (resolvedInPage || (await hasResolved())) {
+  if (await hasResolved()) {
     return;
   }
 
-  const triggered = await triggerStateTransition(page, "roundResolved");
-  if (triggered || (await hasResolved())) {
+  let stateAfterCli = null;
+  try {
+    stateAfterCli = await getCurrentBattleState(page);
+  } catch {
+    stateAfterCli = null;
+  }
+
+  await triggerStateTransition(page, "roundResolved");
+
+  if (await hasResolved()) {
+    return;
+  }
+
+  let stateAfterTransition = stateAfterCli;
+  try {
+    stateAfterTransition = await getCurrentBattleState(page);
+  } catch {
+    stateAfterTransition = stateAfterCli;
+  }
+
+  const waitingForPlayerActionDetected =
+    stateAfterCli === "waitingForPlayerAction" ||
+    stateAfterTransition === "waitingForPlayerAction";
+
+  if (waitingForPlayerActionDetected && (await hasResolved())) {
     return;
   }
 
@@ -255,9 +278,22 @@ async function resolveRoundDeterministic(page) {
     }
 
     const nextBtn = page.locator("#next-button");
-    if (await nextBtn.isEnabled().catch(() => false)) {
-      await nextBtn.click();
+    if (!(await nextBtn.isEnabled().catch(() => false))) {
+      return;
     }
+
+    let latestState = stateAfterTransition;
+    if (!waitingForPlayerActionDetected) {
+      latestState = await getCurrentBattleState(page).catch(() => stateAfterTransition);
+    }
+
+    if (latestState && latestState !== "waitingForPlayerAction") {
+      if (await hasResolved()) {
+        return;
+      }
+    }
+
+    await nextBtn.click();
   } catch {}
 }
 
