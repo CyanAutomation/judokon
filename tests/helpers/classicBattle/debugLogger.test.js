@@ -1,6 +1,5 @@
 import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
-import { withMutedConsole } from "../../utils/console.js";
 import {
   BattleDebugLogger,
   DEBUG_CATEGORIES,
@@ -257,7 +256,16 @@ describe("BattleDebugLogger", () => {
         const result = testFn();
 
         if (result && typeof result.then === "function") {
-          return result.finally(restoreVitestFlag);
+          return result.then(
+            (resolvedValue) => {
+              restoreVitestFlag();
+              return resolvedValue;
+            },
+            (error) => {
+              restoreVitestFlag();
+              throw error;
+            }
+          );
         }
 
         restoreVitestFlag();
@@ -288,26 +296,12 @@ describe("BattleDebugLogger", () => {
     });
 
     it("should suppress console output when running under vitest", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
       await withVitestFlag("true", async () => {
-        await withMutedConsole(async () => {
-          const mutedConsoleError = console.error;
-          const mutedConsoleWarn = console.warn;
+        const spies = ["error", "warn", "info", "log"].map((level) =>
+          vi.spyOn(console, level).mockImplementation(() => {})
+        );
 
-          console.error = (...args) => {
-            consoleErrorSpy(...args);
-            return mutedConsoleError(...args);
-          };
-
-          console.warn = (...args) => {
-            consoleWarnSpy(...args);
-            return mutedConsoleWarn(...args);
-          };
-
+        try {
           const testEnvLogger = new BattleDebugLogger({ enabled: true });
           testEnvLogger.log(
             DEBUG_CATEGORIES.STATE,
@@ -316,11 +310,14 @@ describe("BattleDebugLogger", () => {
           );
 
           expect(testEnvLogger.outputMode).toBe("memory");
-          expect(consoleErrorSpy).not.toHaveBeenCalled();
-          expect(consoleWarnSpy).not.toHaveBeenCalled();
-          expect(consoleInfoSpy).not.toHaveBeenCalled();
-          expect(consoleLogSpy).not.toHaveBeenCalled();
-        }, ["error", "warn", "info", "log"]);
+          spies.forEach((spy) => {
+            expect(spy).not.toHaveBeenCalled();
+          });
+        } finally {
+          spies.forEach((spy) => {
+            spy.mockRestore();
+          });
+        }
       });
     });
   });
