@@ -717,10 +717,7 @@ function updateCliShortcutsVisibility() {
       persistedCollapsed = true;
     }
   } catch (error) {
-    console.debug(
-      "localStorage access failed for shortcuts state:",
-      error?.message || error
-    );
+    console.debug("localStorage access failed for shortcuts state:", error?.message || error);
   }
 
   const shouldCollapse = persistedCollapsed ?? true;
