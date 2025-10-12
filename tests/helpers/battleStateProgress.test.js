@@ -98,12 +98,13 @@ describe("battleStateProgress instrumentation", () => {
   it("marks readiness after the first battleStateChange event", async () => {
     mockIsEnabled.mockReturnValue(true);
     document.body.innerHTML = `<ul id="battle-state-progress"></ul>`;
-    document.body.dataset.battleState = "cooldown";
     const { initBattleStateProgress } = await import("../../src/helpers/battleStateProgress.js");
+    delete document.body.dataset.battleState;
     const cleanup = await initBattleStateProgress();
     const list = document.getElementById("battle-state-progress");
     const stateListener = listeners.find(({ event }) => event === "battleStateChange");
     expect(stateListener).toBeDefined();
+    expect(mockMarkBattlePartReady).not.toHaveBeenCalled();
     stateListener?.handler(new CustomEvent("battleStateChange", { detail: "cooldown" }));
     expect(list?.dataset.featureBattleStateReady).toBe("true");
     expect(list?.getAttribute("data-feature-battle-state-active")).toBe("cooldown");
