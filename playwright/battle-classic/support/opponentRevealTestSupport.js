@@ -216,6 +216,12 @@ export async function startMatchAndAwaitStats(page, selector) {
 const ROUND_OVER_STATE = "roundOver";
 const WAITING_FOR_PLAYER_ACTION = "waitingForPlayerAction";
 
+/**
+ * Safely retrieves the current battle state, returning a fallback value if an error occurs.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {string|null} [fallback=null] - Value to return if state retrieval fails
+ * @returns {Promise<string|null>} The battle state or fallback value
+ */
 async function safeGetBattleState(page, fallback = null) {
   try {
     return await getCurrentBattleState(page);
@@ -269,11 +275,6 @@ async function clickNextButtonFallback(page, {
   stateAfterCli,
   stateAfterTransition
 }) {
-  const waitingDetected = isWaitingForPlayerAction(
-    stateAfterCli,
-    stateAfterTransition
-  );
-
   if (await hasResolved()) {
     return;
   }
@@ -284,19 +285,18 @@ async function clickNextButtonFallback(page, {
     return;
   }
 
-  if (waitingDetected) {
-    await nextBtn.click();
-    return;
-  }
+  const waitingDetected = isWaitingForPlayerAction(
+    stateAfterCli,
+    stateAfterTransition
+  );
 
   const latestState = await safeGetBattleState(page, stateAfterTransition);
 
-  if (latestState === WAITING_FOR_PLAYER_ACTION) {
-    await nextBtn.click();
-    return;
-  }
-
-  if (latestState !== ROUND_OVER_STATE && !(await hasResolved())) {
+  if (
+    waitingDetected ||
+    latestState === WAITING_FOR_PLAYER_ACTION ||
+    (latestState !== ROUND_OVER_STATE && !(await hasResolved()))
+  ) {
     await nextBtn.click();
   }
 }
