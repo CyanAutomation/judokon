@@ -683,15 +683,23 @@ function updateStateBadgeVisibility() {
 function updateCliShortcutsVisibility() {
   const section = byId("cli-shortcuts");
   if (!section) return;
+
+  if (!section.dataset.cliShortcutsFlagInitialized) {
+    if (section.hasAttribute("hidden") && !section.dataset.hiddenByCliShortcutsFlag) {
+      section.dataset.hiddenByCliShortcutsFlag = "template";
+    }
+    section.dataset.cliShortcutsFlagInitialized = "true";
+  }
+
   if (!isEnabled("cliShortcuts")) {
-    section.dataset.hiddenByFlag = "true";
+    section.dataset.hiddenByCliShortcutsFlag = "true";
     section.setAttribute("hidden", "");
     section.style.display = "none";
   } else {
     section.style.display = "";
-    if (section.dataset.hiddenByFlag) {
+    if (section.dataset.hiddenByCliShortcutsFlag) {
       section.removeAttribute("hidden");
-      delete section.dataset.hiddenByFlag;
+      delete section.dataset.hiddenByCliShortcutsFlag;
     }
   }
 }
