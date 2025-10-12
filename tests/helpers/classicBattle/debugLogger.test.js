@@ -1,6 +1,5 @@
 import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
-import { withMutedConsole } from "../../utils/console.js";
 import {
   BattleDebugLogger,
   DEBUG_CATEGORIES,
@@ -272,30 +271,31 @@ describe("BattleDebugLogger", () => {
       const vitestFlag = process.env.VITEST;
       process.env.VITEST = "true";
 
-      const consoleErrorSpy = vi.fn();
-      const consoleWarnSpy = vi.fn();
-      const consoleInfoSpy = vi.fn();
-      const consoleLogSpy = vi.fn();
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+      const consoleInfoSpy = vi
+        .spyOn(console, "info")
+        .mockImplementation(() => {});
+      const consoleLogSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
 
-      await withMutedConsole(async () => {
-        console.error = consoleErrorSpy;
-        console.warn = consoleWarnSpy;
-        console.info = consoleInfoSpy;
-        console.log = consoleLogSpy;
+      const testEnvLogger = new BattleDebugLogger({ enabled: true });
+      testEnvLogger.log(
+        DEBUG_CATEGORIES.STATE,
+        LOG_LEVELS.INFO,
+        "vitest suppression test"
+      );
 
-        const testEnvLogger = new BattleDebugLogger({ enabled: true });
-        testEnvLogger.log(
-          DEBUG_CATEGORIES.STATE,
-          LOG_LEVELS.INFO,
-          "vitest suppression test"
-        );
-
-        expect(testEnvLogger.outputMode).toBe("memory");
-        expect(consoleErrorSpy).not.toHaveBeenCalled();
-        expect(consoleWarnSpy).not.toHaveBeenCalled();
-        expect(consoleInfoSpy).not.toHaveBeenCalled();
-        expect(consoleLogSpy).not.toHaveBeenCalled();
-      }, ["error", "warn", "info", "log"]);
+      expect(testEnvLogger.outputMode).toBe("memory");
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(consoleInfoSpy).not.toHaveBeenCalled();
+      expect(consoleLogSpy).not.toHaveBeenCalled();
 
       if (vitestFlag !== undefined) {
         process.env.VITEST = vitestFlag;
