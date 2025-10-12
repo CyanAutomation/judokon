@@ -679,11 +679,11 @@ function updateStateBadgeVisibility() {
  * @pseudocode
  * get shortcuts section; return if missing
  * if flag disabled:
- *   mark section.dataset.hiddenByFlag
+ *   mark section.dataset.hiddenByCliShortcutsFlag
  *   force display:none so the panel cannot stay open
  *   if overlay currently visible -> hideCliShortcuts()
  * else:
- *   clear dataset.hiddenByFlag marker
+ *   clear dataset.hiddenByCliShortcutsFlag marker
  *   reset display override
  *   read persisted collapse state from localStorage
  *   if persisted state differs from current DOM state -> toggle via show/hide helpers
@@ -691,9 +691,17 @@ function updateStateBadgeVisibility() {
 function updateCliShortcutsVisibility() {
   const section = byId("cli-shortcuts");
   if (!section) return;
+
+  const isTemplateHiddenAndUntracked =
+    section.hasAttribute("hidden") &&
+    section.dataset.hiddenByCliShortcutsFlag === undefined;
+
+  if (isTemplateHiddenAndUntracked) {
+    section.dataset.hiddenByCliShortcutsFlag = "template";
+  }
   const enabled = isEnabled("cliShortcuts");
   if (!enabled) {
-    section.dataset.hiddenByFlag = "true";
+    section.dataset.hiddenByCliShortcutsFlag = "flag";
     section.style.display = "none";
     if (state.shortcutsOverlay || !section.hasAttribute("hidden")) {
       hideCliShortcuts();
@@ -701,11 +709,9 @@ function updateCliShortcutsVisibility() {
     return;
   }
 
-  if (section.style.display) {
-    section.style.display = "";
-  }
-  if (section.dataset.hiddenByFlag) {
-    delete section.dataset.hiddenByFlag;
+  section.style.display = "";
+  if (section.dataset.hiddenByCliShortcutsFlag === "flag") {
+    delete section.dataset.hiddenByCliShortcutsFlag;
   }
 
   let persistedCollapsed = null;
