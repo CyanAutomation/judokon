@@ -98,18 +98,39 @@ describe("Battle Classic Page Integration", () => {
     expect(window.__battleInitComplete).toBe(true);
   });
 
-  it(
-    "keeps the opponent placeholder card inside #opponent-card after init completes so the reveal can upgrade it",
-    async () => {
-      await init();
+  it("preserves opponent placeholder card for reveal upgrade", async () => {
+    await init();
 
-      const opponentCard = document.getElementById("opponent-card");
-      expect(opponentCard).not.toBeNull();
+    const opponentCard = document.getElementById("opponent-card");
+    expect(opponentCard).not.toBeNull();
 
-      const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
-      expect(placeholder).not.toBeNull();
-      expect(placeholder.classList.contains("card")).toBe(true);
-      expect(placeholder.getAttribute("aria-label")).toBe("Mystery opponent card");
-    }
-  );
+    const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
+    expect(placeholder).not.toBeNull();
+    expect(placeholder.classList.contains("card")).toBe(true);
+    expect(placeholder.getAttribute("aria-label")).toBe("Mystery opponent card");
+  });
+
+  it("upgrades the placeholder card during opponent reveal", async () => {
+    await init();
+
+    const opponentCard = document.getElementById("opponent-card");
+    expect(opponentCard).not.toBeNull();
+
+    const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
+    expect(placeholder).not.toBeNull();
+
+    const revealedCard = document.createElement("div");
+    revealedCard.id = "revealed-opponent-card";
+    revealedCard.className = "card revealed-opponent";
+    revealedCard.setAttribute("aria-label", "Revealed opponent card");
+
+    opponentCard.innerHTML = "";
+    opponentCard.appendChild(revealedCard);
+
+    expect(opponentCard.querySelector("#mystery-card-placeholder")).toBeNull();
+    expect(opponentCard.querySelector(".revealed-opponent")).not.toBeNull();
+    expect(opponentCard.querySelector("#revealed-opponent-card")?.getAttribute("aria-label")).toBe(
+      "Revealed opponent card"
+    );
+  });
 });
