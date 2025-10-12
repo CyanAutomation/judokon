@@ -64,6 +64,14 @@ if (!isEnabled("battleStateProgress")) {
     offBattleEvent("battleStateChange", handler);
   };
   onBattleEvent("battleStateChange", handler);
+  const list = typeof document !== "undefined" ? document.getElementById("battle-state-progress") : null;
+  if (list) {
+    list.classList.remove("ready");
+    list.dataset.progressInitialized = "false";
+    list.dataset.featureBattleStateReady = "false";
+    list.removeAttribute("data-feature-battle-state-active");
+    list.removeAttribute("data-feature-battle-state-active-original");
+  }
   resolveBattleStateProgressReady?.();
 }
 
@@ -82,9 +90,17 @@ export function renderStateList(coreStates) {
   const list = document.getElementById("battle-state-progress");
   if (!list) return undefined;
   list.style.display = "";
+  list.setAttribute("data-feature-battle-state-progress", "list");
+  list.dataset.featureBattleStateReady = "pending";
   if (!coreStates.length) {
     list.innerHTML = "<li>No states found</li>";
+    const placeholder = list.querySelector("li");
+    if (placeholder) {
+      placeholder.setAttribute("data-feature-battle-state-progress-item", "true");
+    }
     list.dataset.progressInitialized = "true";
+    list.dataset.featureBattleStateReady = "true";
+    list.dataset.featureBattleStateCount = "0";
     list.classList.add("ready");
     return list;
   }
@@ -103,11 +119,18 @@ export function renderStateList(coreStates) {
       const li = document.createElement("li");
       li.dataset.state = s.name;
       li.textContent = String(s.id);
+      li.setAttribute("data-feature-battle-state-progress-item", "true");
       frag.appendChild(li);
     }
     list.appendChild(frag);
+  } else {
+    for (const li of items) {
+      li.setAttribute("data-feature-battle-state-progress-item", "true");
+    }
   }
   list.dataset.progressInitialized = "true";
+  list.dataset.featureBattleStateReady = "true";
+  list.dataset.featureBattleStateCount = String(coreStates.length);
   list.classList.add("ready");
   return list;
 }
@@ -134,9 +157,16 @@ export function updateActiveState(list, state) {
   for (const li of list.querySelectorAll("li")) {
     const isActive = li.dataset.state === target;
     li.classList.toggle("active", isActive);
-    if (isActive) li.setAttribute("aria-current", "step");
-    else li.removeAttribute("aria-current");
+    if (isActive) {
+      li.setAttribute("aria-current", "step");
+      li.setAttribute("data-feature-battle-state-active", "true");
+    } else {
+      li.removeAttribute("aria-current");
+      li.removeAttribute("data-feature-battle-state-active");
+    }
   }
+  list.setAttribute("data-feature-battle-state-active", target);
+  list.setAttribute("data-feature-battle-state-active-original", state);
   updateBattleStateBadge(state);
 }
 
@@ -167,6 +197,7 @@ export function initProgressListener(list, initialApplied = false) {
     if (!ready) {
       ready = true;
       markBattlePartReady("state");
+      list.dataset.featureBattleStateReady = "true";
     }
   };
   onBattleEvent("battleStateChange", handler);
@@ -203,6 +234,9 @@ export async function initBattleStateProgress() {
       if (list) {
         list.classList.remove("ready");
         list.textContent = "";
+        list.dataset.featureBattleStateReady = "false";
+        list.removeAttribute("data-feature-battle-state-active");
+        list.removeAttribute("data-feature-battle-state-active-original");
       }
     }
     resolveBattleStateProgressReady?.();
