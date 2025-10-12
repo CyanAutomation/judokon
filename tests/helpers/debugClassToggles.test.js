@@ -37,6 +37,36 @@ describe("debug state recording", () => {
   });
 });
 
+describe("debug DOM class toggles", () => {
+  it.each([
+    {
+      name: "tooltip overlay",
+      toggle: toggleTooltipOverlayDebug,
+      className: "tooltip-overlay-debug",
+      stateKey: "tooltipOverlayDebug"
+    },
+    {
+      name: "viewport simulation",
+      toggle: toggleViewportSimulation,
+      className: "simulate-viewport",
+      stateKey: "viewportSimulation"
+    }
+  ])("applies the %s class when enabled", ({ toggle, className, stateKey }) => {
+    expect(document.body.classList.contains(className)).toBe(false);
+    expect(getDebugState()[stateKey]).toBe(false);
+
+    toggle(true);
+
+    expect(document.body.classList.contains(className)).toBe(true);
+    expect(getDebugState()[stateKey]).toBe(true);
+
+    toggle(false);
+
+    expect(document.body.classList.contains(className)).toBe(false);
+    expect(getDebugState()[stateKey]).toBe(false);
+  });
+});
+
 describe("feature flag debug toggles integration", () => {
   beforeEach(() => {
     if (typeof window !== "undefined") {
@@ -90,10 +120,8 @@ describe("feature flag debug toggles integration", () => {
       throw new Error("Expected viewport simulation toggle input");
     }
 
-    overlayToggle.checked = true;
-    overlayToggle.dispatchEvent(new Event("change", { bubbles: true }));
-    viewportToggle.checked = true;
-    viewportToggle.dispatchEvent(new Event("change", { bubbles: true }));
+    overlayToggle.click();
+    viewportToggle.click();
 
     await Promise.resolve();
     await Promise.resolve();
@@ -103,22 +131,20 @@ describe("feature flag debug toggles integration", () => {
     const state = getDebugState();
     expect(state.tooltipOverlayDebug).toBe(true);
     expect(state.viewportSimulation).toBe(true);
-    expect(settings.featureFlags.tooltipOverlayDebug.enabled).toBe(true);
-    expect(settings.featureFlags.viewportSimulation.enabled).toBe(true);
+    expect(settings.featureFlags).toEqual({
+      tooltipOverlayDebug: { enabled: true },
+      viewportSimulation: { enabled: true }
+    });
     expect(handleUpdate).toHaveBeenCalledTimes(2);
-    expect(handleUpdate).toHaveBeenCalledWith(
-      "featureFlags",
-      expect.objectContaining({
-        tooltipOverlayDebug: expect.objectContaining({ enabled: true })
-      }),
-      expect.any(Function)
-    );
-    expect(handleUpdate).toHaveBeenCalledWith(
-      "featureFlags",
-      expect.objectContaining({
-        viewportSimulation: expect.objectContaining({ enabled: true })
-      }),
-      expect.any(Function)
-    );
+    expect(
+      handleUpdate.mock.calls.map(([key, value]) => ({
+        key,
+        tooltip: value.tooltipOverlayDebug?.enabled,
+        viewport: value.viewportSimulation?.enabled
+      }))
+    ).toEqual([
+      { key: "featureFlags", tooltip: true, viewport: false },
+      { key: "featureFlags", tooltip: true, viewport: true }
+    ]);
   });
 });
