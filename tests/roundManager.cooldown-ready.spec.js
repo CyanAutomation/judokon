@@ -8,7 +8,6 @@ import {
 } from "../src/helpers/classicBattle/roundManager.js";
 import {
   detectOrchestratorContext,
-  initializeCooldownTelemetry,
   resolveActiveScheduler,
   createCooldownControls,
   createExpirationDispatcher
@@ -38,12 +37,60 @@ afterEach(() => {
   }
 });
 
-test("cooldown orchestrator telemetry primes debug counters", () => {
-  window.__startCooldownInvoked = false;
-  globalThis.__startCooldownCount = 0;
-  initializeCooldownTelemetry({ schedulerProvided: true });
-  expect(window.__startCooldownInvoked).toBe(true);
-  expect(globalThis.__startCooldownCount).toBe(1);
+test("startCooldown emits countdown started event with computed duration", () => {
+  const store = createBattleStore();
+  const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
+  window.__NEXT_ROUND_COOLDOWN_MS = 7000;
+
+  const emitSpy = vi.fn();
+  const schedulerCallbacks = [];
+  const scheduler = {
+    setTimeout: vi.fn((cb, ms) => {
+      schedulerCallbacks.push({ cb, ms });
+      return Symbol("scheduler-timeout");
+    }),
+    clearTimeout: vi.fn()
+  };
+  const fallbackCallbacks = [];
+  const timerHandlers = new Map();
+  try {
+    const controls = startCooldown(store, scheduler, {
+      eventBus: { emit: emitSpy, on: vi.fn(), off: vi.fn() },
+      createRoundTimer: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        on: vi.fn((event, handler) => {
+          timerHandlers.set(event, handler);
+        })
+      })),
+      attachCooldownRenderer: vi.fn(),
+      requireEngine: vi.fn(() => ({ startCoolDown: vi.fn() })),
+      setSkipHandler: vi.fn(),
+      setupFallbackTimer: vi.fn((ms, cb) => {
+        fallbackCallbacks.push({ ms, cb });
+        return Symbol("fallback-timeout");
+      }),
+      dispatchBattleEvent: vi.fn(),
+      markReady: vi.fn(),
+      showSnackbar: vi.fn(),
+      scoreboard: { showMessage: vi.fn() },
+      getStateSnapshot: vi.fn(() => ({ state: "cooldown" })),
+      isOrchestrated: () => false,
+      startEngineCooldown: vi.fn(),
+      getClassicBattleMachine: () => null
+    });
+
+    expect(emitSpy).toHaveBeenCalledWith("control.countdown.started", {
+      durationMs: 7000
+    });
+    expect(typeof controls?.ready).toBe("object");
+  } finally {
+    if (typeof previousOverride === "number") {
+      window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
+    } else {
+      delete window.__NEXT_ROUND_COOLDOWN_MS;
+    }
+  }
 });
 
 test("resolveActiveScheduler prefers injected scheduler", () => {
