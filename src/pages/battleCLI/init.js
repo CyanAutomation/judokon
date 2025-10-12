@@ -710,8 +710,8 @@ function updateCliShortcutsVisibility() {
   }
 
   section.style.display = "";
-  if (section.dataset.hiddenByCliShortcutsFlag === "flag") {
-    delete section.dataset.hiddenByCliShortcutsFlag;
+  if (section.dataset.hiddenByFlag) {
+    delete section.dataset.hiddenByFlag;
   }
 
   let persistedCollapsed = null;
@@ -726,8 +726,8 @@ function updateCliShortcutsVisibility() {
     console.debug("localStorage access failed for shortcuts state:", error?.message || error);
   }
 
-  const shouldCollapse = persistedCollapsed ?? true;
   const currentlyCollapsed = section.hasAttribute("hidden");
+  const shouldCollapse = persistedCollapsed ?? currentlyCollapsed;
 
   if (shouldCollapse && !currentlyCollapsed) {
     hideCliShortcuts();
