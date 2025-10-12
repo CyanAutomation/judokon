@@ -701,7 +701,9 @@ function updateCliShortcutsVisibility() {
     return;
   }
 
-  section.style.display = "";
+  if (section.style.display) {
+    section.style.display = "";
+  }
   if (section.dataset.hiddenByFlag) {
     delete section.dataset.hiddenByFlag;
   }
@@ -721,16 +723,13 @@ function updateCliShortcutsVisibility() {
     );
   }
 
+  const shouldCollapse = persistedCollapsed ?? true;
   const currentlyCollapsed = section.hasAttribute("hidden");
-  const shouldCollapse =
-    persistedCollapsed === null ? currentlyCollapsed : persistedCollapsed;
 
-  if (shouldCollapse !== currentlyCollapsed) {
-    if (shouldCollapse) {
-      hideCliShortcuts();
-    } else {
-      showCliShortcuts();
-    }
+  if (shouldCollapse && !currentlyCollapsed) {
+    hideCliShortcuts();
+  } else if (!shouldCollapse && currentlyCollapsed) {
+    showCliShortcuts();
   }
 }
 

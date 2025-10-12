@@ -55,5 +55,35 @@ describe("battleCLI cliShortcuts flag", () => {
     expect(sec.hidden).toBe(true);
     expect(sec.style.display).toBe("none");
     expect(body?.style.display).toBe("none");
+
+    setFlag("cliShortcuts", true);
+
+    expect(sec.hidden).toBe(true);
+    expect(sec.hasAttribute("hidden")).toBe(true);
+    expect(sec.style.display).toBe("");
+    expect(body?.style.display).toBe("none");
+    expect(localStorage.getItem("battleCLI.shortcutsCollapsed")).toBe("1");
+  });
+
+  it("keeps shortcuts collapsed when enabling the flag after it was disabled", async () => {
+    const mod = await loadBattleCLI({ cliShortcuts: false });
+    await mod.init();
+    const { wireEvents } = await import("../../src/pages/index.js");
+    wireEvents();
+    const sec = document.getElementById("cli-shortcuts");
+    const body = document.getElementById("cli-shortcuts-body");
+
+    expect(sec.hidden).toBe(true);
+    expect(sec.style.display).toBe("none");
+    expect(body?.style.display ?? "").toBe("");
+
+    const { setFlag } = await import("../../src/helpers/featureFlags.js");
+    setFlag("cliShortcuts", true);
+
+    expect(sec.hidden).toBe(true);
+    expect(sec.hasAttribute("hidden")).toBe(true);
+    expect(sec.style.display).toBe("");
+    expect(body?.style.display ?? "").toBe("");
+    expect(localStorage.getItem("battleCLI.shortcutsCollapsed")).toBeNull();
   });
 });
