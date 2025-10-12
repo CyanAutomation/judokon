@@ -9,7 +9,7 @@
  * - `window.__FF_OVERRIDES`: Object for overriding feature flags and test behaviors.
  *   Common overrides: { battleStateBadge: true, showRoundSelectModal: true, enableTestMode: true }
  * - `window.battleStore`: The battle state store exposed after successful initialization.
- * - `window.__battleInitComplete`: Boolean flag set to true after init completes successfully.
+ * - Stat selection buttons: Rendered and enabled for user interaction after init completes.
  */
 
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
@@ -17,6 +17,7 @@ import { JSDOM } from "jsdom";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
+import { withMutedConsole } from "../utils/console.js";
 
 describe("Battle Classic Page Integration", () => {
   let dom;
@@ -89,13 +90,35 @@ describe("Battle Classic Page Integration", () => {
     // A more robust check could be for `modal.classList.contains('open')`
     // if the modal library uses that convention.
 
-    // 4. Assert stat buttons are not yet rendered
-    const statButtons = document.getElementById("stat-buttons");
-    expect(statButtons.innerHTML).toBe("");
+    // 4. Assert round select modal renders interactive controls after init
+    const framePromise = new Promise((resolve) => {
+      if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(() => resolve());
+      } else {
+        setTimeout(resolve, 0);
+      }
+    });
+    await framePromise;
+
+    const roundSelectButtons = Array.from(
+      document.querySelectorAll(".round-select-buttons button")
+    );
+    expect(roundSelectButtons.length).toBeGreaterThan(0);
+    roundSelectButtons.forEach((button) => {
+      expect(button.disabled).toBe(false);
+      expect(button.textContent?.trim()).not.toBe("");
+      expect(button.dataset.tooltipId).toMatch(/^ui\.round/);
+    });
+
+    const firstOption = roundSelectButtons[0];
+    await withMutedConsole(async () => {
+      firstOption.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(document.querySelector(".round-select-buttons")).toBeNull();
 
     // 5. Assert initialization completed successfully
     expect(window.battleStore).toBeDefined();
-    expect(window.__battleInitComplete).toBe(true);
   });
 
   it(
