@@ -7,16 +7,16 @@
 
 This review re-validates the QA findings in `progressFlags.md`, corrects inaccurate statuses, and adds feasibility notes for the next engineering pass. Key takeaways:
 
-- Several flags already function as intended (e.g., test mode wiring, viewport simulation, tooltip overlay, skip cooldown), but the UI affordances and data hooks they expose still need polish.
-- Two flags remain effectively broken because their UI surfaces are missing: there is no `#test-mode-banner` element and no `#battle-state-progress` list in `battleClassic.html`, so those experiences are invisible even when enabled.
-- Other switches (`roundStore`, `opponentDelayMessage`, `statHotkeys`) are either unused or auto-reenable themselves, so we should decide whether to wire them correctly or retire them before adding more test coverage.
+- Most runtime flags (card inspector, viewport simulation, tooltip overlay, battle state badge, skip cooldown) behave as implemented; they primarily lack QA hooks and regression coverage.
+- The `enableTestMode` banner target is still missing and `applyBattleFeatureFlags` is never defined, so the visibility cue for deterministic mode remains blocked.
+- The battle state progress list already ships in `battleClassic.html` and renders when the flag is enabled; focus shifts to instrumentation and testing rather than markup.
+- Switches such as `roundStore`, `opponentDelayMessage`, and the coupled `statHotkeys`/`cliShortcuts` pair still need product decisions or refactors to avoid confusing auto-enabling behavior.
 
 Below I document each flag's status, my confidence in the QA observation (based on the original notes and common failure modes), and recommended next actions with feasibility estimates.
 
 ## Critical blocker
 
-- `battleStateProgress` cannot be exercised because `battleClassic.html` does not render a `#battle-state-progress` list; `initBattleStateProgress` exits early when the element is missing (`src/helpers/battleStateProgress.js:71-214`, `src/pages/battleClassic.html:1-156`). Implementing the markup (with a semantic list and `data-testid="battle-state-progress"`) is required before any end-to-end verification can pass.
-- `enableTestMode` is wired through the controller, debug panel, and determinism helpers, but the banner that QA expected never renders because `battleClassic.html` lacks a `#test-mode-banner` target (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/debugPanel.js:360-409`, `src/pages/battleClassic.html:42-66`). Adding that element (and a lightweight `applyBattleFeatureFlags` helper) will unblock visibility checks.
+- `enableTestMode` is wired through the controller, debug panel, and determinism helpers, but the banner that QA expected never renders because `battleClassic.html` lacks a `#test-mode-banner` target and the imported `applyBattleFeatureFlags` helper is undefined (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/debugPanel.js:360-409`, `src/helpers/classicBattle/view.js:1-40`, `src/pages/battleClassic.html:42-66`). Adding that element (and supplying the helper) will unblock visibility checks.
 
 ## Flag status, confidence & feasibility
 
@@ -53,10 +53,10 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Recommendation: Expose `data-feature-battle-state-badge` so QA can assert visibility, and add a unit test around `setBattleStateBadgeEnabled`.
 
 - `battleStateProgress`
-  - Status: **Broken** — the helper renders to `#battle-state-progress`, but the Classic Battle page never renders that element, so nothing appears (`src/helpers/battleStateProgress.js:71-214`, `src/pages/battleClassic.html:42-146`).
-  - Confidence: High.
-  - Effort: Medium (add markup, hook into layout, add tests).
-  - Recommendation: Add the list element with semantic `<li>` items, wire it into the layout (e.g., below the stat buttons), and cover it with a browser test that validates the active state's class toggles.
+  - Status: **Implemented (needs QA hooks)** — `initBattleStateProgress` populates the existing `ul#battle-state-progress` scaffold and toggles classes via `updateActiveState` when the flag is enabled (`src/helpers/battleStateProgress.js:1-214`, `src/pages/battleClassic.html:94-101`).
+  - Confidence: High (verified markup plus helper wiring).
+  - Effort: Low → Medium (add data attributes, polish styling, expand coverage).
+  - Recommendation: Surface `data-feature-battle-state-progress`, add unit/Playwright coverage for `renderStateList` and `updateActiveState`, and ensure the wrapper retains accessible labelling.
 
 - `skipRoundCooldown`
   - Status: **Working** — UI service and timer service both consult the flag and short-circuit countdown timers when it is enabled (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-75`).
@@ -84,22 +84,23 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Feasibility analysis of the remediation plan
 
-1. **Restore missing UI surfaces** — Add the `#test-mode-banner` element + helper and the `#battle-state-progress` list (+ styles/tests). Both changes are HTML/CSS plus light JS wiring; risk is low because the logic is already in place.
+1. **Surface the test mode banner** — Add the `#test-mode-banner` markup, implement `applyBattleFeatureFlags`, and cover the controller/view wiring with regression tests. This is mostly HTML/CSS plus a helper, so risk stays low.
+2. **Instrument battle state progress** — Add QA-facing data attributes, ensure styling matches the existing controls layout, and exercise `renderStateList`/`updateActiveState` in tests so the flag remains verifiable.
 2. **Tidy unused or misleading flags** — Either wire `roundStore` and `opponentDelayMessage` to real behavior or hide them until a product requirement exists. This is mostly product/UX alignment work with a small amount of code churn.
-3. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
+3. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
 4. **Decouple hotkeys** — Removing the `enableFlag("statHotkeys")` auto-toggle and documenting CLI shortcuts is a small refactor with low regression risk.
 
 ## Concrete prioritized implementation plan (short, testable steps)
 
-1. Ship the `battle-state-progress` UI (owner: core eng) — Effort: Medium — Priority: P0
-   - Add the markup to `battleClassic.html`, style it, and cover it with a unit test for `renderStateList` plus a Playwright assertion.
-2. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0
+1. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0
    - Add `#test-mode-banner`, implement the missing `applyBattleFeatureFlags` helper, and verify the banner toggles when `enableTestMode` is flipped.
+2. Instrument the battle state progress feature (owner: core eng) — Effort: Low → Medium — Priority: P1
+   - Expose `data-feature-battle-state-progress`, ensure styling fits within the controls column, and cover `renderStateList`/`updateActiveState` with unit + Playwright checks.
 3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1
    - Decide whether `roundStore` and `opponentDelayMessage` stay; implement or retire accordingly, and update settings copy.
 4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1
    - Remove the forced `enableFlag` call, ensure both UI and CLI respect stored values, and add regression tests.
-5. Add data hooks + tests for the working flags (owner: dev tooling) — Effort: Low — Priority: P2
+5. Add data hooks + tests for the other working flags (owner: dev tooling) — Effort: Low — Priority: P2
    - Tag rendered elements with `data-feature-*`, add Vitest/Playwright checks, and document QA entry points.
 
 ## Tests & verification matrix
@@ -119,7 +120,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 ## Accessibility and rollout suggestions
 
 - Hide or label as “Coming soon” any switches that still lack functionality (`opponentDelayMessage`, `roundStore`) until the UX is finalized.
-- When adding the test mode banner and battle state progress list, include ARIA roles/labels so screen readers announce the state change (banner: `role="status"`, progress list: `aria-live="polite"`).
+- When adding the test mode banner, include ARIA roles/labels so screen readers announce the state change; confirm the existing battle state progress list retains `role="status"`, `aria-live="polite"`, and `aria-current` toggling.
 - Keep focus management intact when banners/lists appear; add regression tests that ensure keyboard flow and visible focus outlines remain consistent.
 
 ## Risk and rollback
@@ -149,8 +150,8 @@ This phase focuses on high-impact changes to improve the core layout, readabilit
    - **Suggestion:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
 
 2. **Responsive Layout for Links:**
-   - **Issue:** The links at the bottom of the page are presented in a single-column list, which is an inefficient use of space on wider screens.
-   - **Suggestion:** In `src/styles/layout.css`, convert the `.settings-links-list` into a responsive grid. Use `display: grid;` and `grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));` to create a flexible grid that adapts to the available screen width, presenting the links in multiple columns on larger screens.
+   - **Issue:** `.settings-links-list` already uses a three-column CSS grid, but the fixed `repeat(3, 1fr)` template leaves awkward spacing on medium viewports before collapsing to a single column.
+   - **Suggestion:** In `src/styles/settings.css`, switch the grid definition to something like `grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));` so the links reflow smoothly across small, medium, and large screens without manual breakpoints.
 
 3. **Switch Control Sizing:**
    - **Issue:** The toggle switches are currently a fixed width, which can appear too large on smaller screens.
