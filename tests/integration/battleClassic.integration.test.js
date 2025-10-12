@@ -97,4 +97,19 @@ describe("Battle Classic Page Integration", () => {
     expect(window.battleStore).toBeDefined();
     expect(window.__battleInitComplete).toBe(true);
   });
+
+  it(
+    "keeps the opponent placeholder card inside #opponent-card after init completes so the reveal can upgrade it",
+    async () => {
+      await init();
+
+      const opponentCard = document.getElementById("opponent-card");
+      expect(opponentCard).not.toBeNull();
+
+      const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
+      expect(placeholder).not.toBeNull();
+      expect(placeholder.classList.contains("card")).toBe(true);
+      expect(placeholder.getAttribute("aria-label")).toBe("Mystery opponent card");
+    }
+  );
 });
