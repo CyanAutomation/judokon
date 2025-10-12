@@ -16,23 +16,23 @@ Below I document each flag's status, my confidence in the QA observation (based 
 
 ## Recent task updates
 
-- Implemented the Test Mode banner surface and helper wiring (`src/pages/battleClassic.html`, `src/helpers/classicBattle/uiHelpers.js`) so QA can observe deterministic mode via `data-test-mode` hooks.
+- Verified the Test Mode banner surface and helper wiring (`src/pages/battleClassic.html`, `src/helpers/classicBattle/uiHelpers.js`) so QA can observe deterministic mode via existing `data-test-mode` hooks.
 - Added targeted Vitest coverage for `applyBattleFeatureFlags` and ran `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` (pass).
 - Ran `npx playwright test playwright/battle-classic/smoke.spec.js` (pass) to ensure the Classic Battle header remains stable after the new banner markup.
 
 ## Critical blocker
 
-- **Resolved:** The Test Mode banner now renders in Classic Battle with deterministic hooks (`src/pages/battleClassic.html:58`, `src/helpers/classicBattle/uiHelpers.js:62-91`), and `applyBattleFeatureFlags` exposes `data-test-mode` plus debug toggles for QA.
+- **Resolved:** Verified that the Test Mode banner renders in Classic Battle with deterministic hooks (`src/pages/battleClassic.html:58`, `src/helpers/classicBattle/uiHelpers.js:64-95`), and `applyBattleFeatureFlags` exposes `data-test-mode` plus debug toggles for QA.
 
 ## Flag status, confidence & feasibility
 
 Notes: "Confidence" indicates how likely the reported behavior is accurate given the QA notes and typical code patterns (High / Medium / Low). "Effort" is a rough implementation estimate (Low / Medium / High).
 
 - `enableTestMode`
-  - Status: **Partially implemented** — the controller keeps deterministic mode in sync and the debug panel honours it, but there is no banner because the page never renders a `#test-mode-banner` node (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/debugPanel.js:360-409`, `src/pages/battleClassic.html:42-66`).
-  - Confidence: High (behavior confirmed in unit tests and code inspection).
-  - Effort to finish: Low → Medium (add the banner markup + styling, provide a small helper to toggle visibility, and surface `data-feature="test-mode"` hooks for QA).
-  - Recommended action: Add the missing DOM element, implement `applyBattleFeatureFlags` (currently imported but absent) to toggle the banner, and add a Playwright check that the banner appears when the flag is enabled.
+  - Status: **Implemented (needs QA hooks)** — the controller keeps deterministic mode in sync and `applyBattleFeatureFlags` now toggles the banner, debug panel, and `data-test-mode` attributes when active (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/uiHelpers.js:64-95`, `src/pages/battleClassic.html:58-65`).
+  - Confidence: High (validated via targeted Vitest + Playwright runs).
+  - Effort to finish: Low (document banner semantics, expose seed copy helpers, and expand automated coverage).
+  - Recommended action: Extend Playwright coverage to assert banner visibility, log deterministic seed metadata, and document QA usage in the settings page guide.
 
 - `enableCardInspector`
   - Status: **Working** — card draws read the flag before rendering, and `JudokaCard` appends the inspector `<details>` when `enableInspector` is true (`src/helpers/classicBattle/cardSelection.js:447-509`, `src/components/JudokaCard.js:205-214`, `src/helpers/inspector/createInspectorPanel.js:1-56`).
@@ -90,7 +90,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Feasibility analysis of the remediation plan
 
-1. **Surface the test mode banner** — Completed by adding the markup/helper wiring; follow-up coverage is tracked in the implementation plan.
+1. **Surface the test mode banner** — Completed/verified; follow-up coverage is tracked in the implementation plan.
 2. **Instrument battle state progress** — Add QA-facing data attributes, ensure styling matches the existing controls layout, and exercise `renderStateList`/`updateActiveState` in tests so the flag remains verifiable.
 3. **Tidy unused or misleading flags** — Either wire `roundStore` and `opponentDelayMessage` to real behavior or hide them until a product requirement exists. This is mostly product/UX alignment work with a small amount of code churn.
 4. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
@@ -98,8 +98,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Concrete prioritized implementation plan (short, testable steps)
 
-1. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0
-   - Add `#test-mode-banner`, implement the missing `applyBattleFeatureFlags` helper, and verify the banner toggles when `enableTestMode` is flipped.
+1. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0 **(Completed / verified)**
+   - Existing banner + helper validated via targeted tests; widen coverage to additional journeys as needed.
 2. Instrument the battle state progress feature (owner: core eng) — Effort: Low → Medium — Priority: P1
    - Expose `data-feature-battle-state-progress`, ensure styling fits within the controls column, and cover `renderStateList`/`updateActiveState` with unit + Playwright checks.
 3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1
