@@ -714,7 +714,12 @@ function updateCliShortcutsVisibility() {
     } else if (stored === "1") {
       persistedCollapsed = true;
     }
-  } catch {}
+  } catch (error) {
+    console.debug(
+      "localStorage access failed for shortcuts state:",
+      error?.message || error
+    );
+  }
 
   const currentlyCollapsed = section.hasAttribute("hidden");
   const shouldCollapse =
