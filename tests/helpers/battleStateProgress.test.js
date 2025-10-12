@@ -102,6 +102,9 @@ describe("battleStateProgress instrumentation", () => {
     const { initBattleStateProgress } = await import("../../src/helpers/battleStateProgress.js");
     const cleanup = await initBattleStateProgress();
     const list = document.getElementById("battle-state-progress");
+    const stateListener = listeners.find(({ event }) => event === "battleStateChange");
+    expect(stateListener).toBeDefined();
+    stateListener?.handler(new CustomEvent("battleStateChange", { detail: "cooldown" }));
     expect(list?.dataset.featureBattleStateReady).toBe("true");
     expect(list?.getAttribute("data-feature-battle-state-active")).toBe("cooldown");
     expect(mockMarkBattlePartReady).toHaveBeenCalledWith("state");
