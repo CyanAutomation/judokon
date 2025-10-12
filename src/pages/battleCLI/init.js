@@ -2615,7 +2615,8 @@ export async function setupFlags() {
     } catch (error) {
       verboseEnabled = previousVerboseEnabled;
       updateVerbose();
-      updateRoundHeader(round, previousHeaderTarget);
+      const currentRound = Number(byId("cli-root")?.dataset.round || 0);
+      updateRoundHeader(currentRound, previousHeaderTarget);
       if (process.env.NODE_ENV === "development") {
         console.debug("Failed to persist CLI verbose flag:", error);
       }
