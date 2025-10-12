@@ -2,6 +2,11 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe("Battle CLI verbose toggle", () => {
   test("updates verbose UI immediately and remains in sync", async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        localStorage.clear();
+      } catch {}
+    });
     await page.goto("/src/pages/battleCLI.html");
 
     const indicator = page.locator("#verbose-indicator");
@@ -12,6 +17,7 @@ test.describe("Battle CLI verbose toggle", () => {
     await expect(indicator).toBeHidden();
     await expect(indicator).toHaveAttribute("aria-hidden", "true");
     await expect(verboseSection).toBeHidden();
+    await expect(verboseLog).toBeHidden();
 
     const settingsToggle = page.locator("#cli-settings-toggle");
     const settingsBody = page.locator("#cli-settings-body");
@@ -20,17 +26,19 @@ test.describe("Battle CLI verbose toggle", () => {
       await expect(settingsBody).toBeVisible();
     }
 
-    await page.evaluate(async () => {
-      if (!window.__battleCLI_toggleVerbose) {
-        const moduleNamespace = await window.__battleCLIinit.loadPromise;
-        const { toggleVerbose } = await moduleNamespace.setupFlags();
-        window.__battleCLI_toggleVerbose = toggleVerbose;
-      }
-    });
+    const readPersistedVerbose = () =>
+      page.evaluate(() => {
+        try {
+          const raw = localStorage.getItem("settings");
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          return parsed?.featureFlags?.cliVerbose?.enabled ?? null;
+        } catch {
+          return "parse-error";
+        }
+      });
 
-    await page.evaluate(() => {
-      window.__battleCLI_togglePromise = window.__battleCLI_toggleVerbose(true);
-    });
+    await checkbox.check();
 
     await expect(checkbox).toBeChecked();
     await expect(indicator).toBeVisible();
@@ -38,27 +46,27 @@ test.describe("Battle CLI verbose toggle", () => {
     await expect(verboseSection).toBeVisible();
     await expect(verboseLog).toBeVisible();
 
-    await page.evaluate(() => window.__battleCLI_togglePromise);
+    await expect.poll(readPersistedVerbose).toBe(true);
 
     await expect(checkbox).toBeChecked();
     await expect(indicator).toBeVisible();
     await expect(indicator).toHaveAttribute("aria-hidden", "false");
     await expect(verboseSection).toBeVisible();
 
-    await page.evaluate(() => {
-      window.__battleCLI_togglePromise = window.__battleCLI_toggleVerbose(false);
-    });
+    await checkbox.uncheck();
 
     await expect(checkbox).not.toBeChecked();
     await expect(indicator).toBeHidden();
     await expect(indicator).toHaveAttribute("aria-hidden", "true");
     await expect(verboseSection).toBeHidden();
+    await expect(verboseLog).toBeHidden();
 
-    await page.evaluate(() => window.__battleCLI_togglePromise);
+    await expect.poll(readPersistedVerbose).toBe(false);
 
     await expect(checkbox).not.toBeChecked();
     await expect(indicator).toBeHidden();
     await expect(indicator).toHaveAttribute("aria-hidden", "true");
     await expect(verboseSection).toBeHidden();
+    await expect(verboseLog).toBeHidden();
   });
 });

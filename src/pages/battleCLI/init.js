@@ -2572,6 +2572,13 @@ export async function setupFlags() {
       } catch {}
     }
   };
+  const parseHeaderTarget = (value) => {
+    if (value === undefined) {
+      return undefined;
+    }
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? value : parsed;
+  };
   const toggleVerbose = async (enable) => {
     let target;
     let hasStoredTarget = false;
@@ -2589,25 +2596,30 @@ export async function setupFlags() {
       target = undefined;
     }
 
+    const root = byId("cli-root");
+    const round = Number(root?.dataset.round || 0);
+    const previousHeaderTarget = parseHeaderTarget(root?.dataset.target);
+    const previousVerboseEnabled = !!verboseEnabled;
+
     verboseEnabled = !!enable;
     updateVerbose();
 
-    const root = byId("cli-root");
-    const round = Number(root?.dataset.round || 0);
     let headerTarget = target;
-    if (!hasStoredTarget && root?.dataset.target !== undefined) {
-      const datasetTarget = root.dataset.target;
-      const parsedTarget = Number(datasetTarget);
-      headerTarget = Number.isNaN(parsedTarget) ? datasetTarget : parsedTarget;
+    if (!hasStoredTarget && previousHeaderTarget !== undefined) {
+      headerTarget = previousHeaderTarget;
     }
     updateRoundHeader(round, headerTarget);
 
     try {
       await setFlag("cliVerbose", enable);
     } catch (error) {
+      verboseEnabled = previousVerboseEnabled;
+      updateVerbose();
+      updateRoundHeader(round, previousHeaderTarget);
       if (process.env.NODE_ENV === "development") {
         console.debug("Failed to persist CLI verbose flag:", error);
       }
+      throw error;
     }
 
     try {
