@@ -64,7 +64,8 @@ if (!isEnabled("battleStateProgress")) {
     offBattleEvent("battleStateChange", handler);
   };
   onBattleEvent("battleStateChange", handler);
-  const list = typeof document !== "undefined" ? document.getElementById("battle-state-progress") : null;
+  const list =
+    typeof document !== "undefined" ? document.getElementById("battle-state-progress") : null;
   if (list) {
     list.classList.remove("ready");
     list.dataset.progressInitialized = "false";

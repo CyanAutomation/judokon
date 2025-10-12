@@ -39,7 +39,9 @@ describe("battleStateProgress instrumentation", () => {
       listeners.push({ event, handler });
     });
     mockOffBattleEvent.mockImplementation((event, handler) => {
-      listeners = listeners.filter((listener) => listener.event !== event || listener.handler !== handler);
+      listeners = listeners.filter(
+        (listener) => listener.event !== event || listener.handler !== handler
+      );
     });
     document.body.innerHTML = "";
   });
@@ -90,17 +92,18 @@ describe("battleStateProgress instrumentation", () => {
     const list = document.getElementById("battle-state-progress");
     expect(list?.dataset.featureBattleStateReady).toBe("false");
     expect(list?.hasAttribute("data-feature-battle-state-active")).toBe(false);
-    expect(mod.initBattleStateProgress()).resolves; // ensure callable even when disabled
+    await mod.initBattleStateProgress(); // ensure callable even when disabled
   });
 
   it("marks readiness after the first battleStateChange event", async () => {
     mockIsEnabled.mockReturnValue(true);
     document.body.innerHTML = `<ul id="battle-state-progress"></ul>`;
+    document.body.dataset.battleState = "cooldown";
     const { initBattleStateProgress } = await import("../../src/helpers/battleStateProgress.js");
     const cleanup = await initBattleStateProgress();
     const list = document.getElementById("battle-state-progress");
     expect(list?.dataset.featureBattleStateReady).toBe("true");
-    expect(list?.getAttribute("data-feature-battle-state-active")).toBeDefined();
+    expect(list?.getAttribute("data-feature-battle-state-active")).toBe("cooldown");
     expect(mockMarkBattlePartReady).toHaveBeenCalledWith("state");
     if (cleanup) cleanup();
   });
