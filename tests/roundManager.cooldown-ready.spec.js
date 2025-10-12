@@ -37,53 +37,105 @@ afterEach(() => {
   }
 });
 
-test("startCooldown emits countdown started event with computed duration", () => {
-  const store = createBattleStore();
+test(
+  "startCooldown emits countdown started event with duration from global override",
+  () => {
+    const store = createBattleStore();
+    const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
+    window.__NEXT_ROUND_COOLDOWN_MS = 7000;
+
+    const mockDependencies = createMockCooldownDependencies();
+
+    try {
+      const controls = startCooldown(
+        store,
+        mockDependencies.scheduler,
+        mockDependencies.options
+      );
+
+      expect(mockDependencies.emitSpy).toHaveBeenCalledWith(
+        "control.countdown.started",
+        {
+          durationMs: 7000
+        }
+      );
+      expect(controls).toBeDefined();
+      expect(controls.ready).toBeInstanceOf(Promise);
+      expect(typeof controls.resolveReady).toBe("function");
+    } finally {
+      if (typeof previousOverride === "number") {
+        window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
+      } else {
+        delete window.__NEXT_ROUND_COOLDOWN_MS;
+      }
+    }
+  }
+);
+
+test(
+  "startCooldown emits default countdown duration when global override is missing",
+  () => {
+    const store = createBattleStore();
+    const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
+    delete window.__NEXT_ROUND_COOLDOWN_MS;
+
+    const mockDependencies = createMockCooldownDependencies();
+
+    try {
+      startCooldown(store, mockDependencies.scheduler, mockDependencies.options);
+
+      expect(mockDependencies.emitSpy).toHaveBeenCalledWith(
+        "control.countdown.started",
+        {
+          durationMs: 3000
+        }
+      );
+    } finally {
+      if (typeof previousOverride === "number") {
+        window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
+      } else if (previousOverride === undefined) {
+        delete window.__NEXT_ROUND_COOLDOWN_MS;
+      }
+    }
+  }
+);
+
+test("startCooldown clamps countdown duration for non-positive overrides", () => {
   const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
-  window.__NEXT_ROUND_COOLDOWN_MS = 7000;
+  window.__NEXT_ROUND_COOLDOWN_MS = 0;
 
-  const emitSpy = vi.fn();
-  const schedulerCallbacks = [];
-  const scheduler = {
-    setTimeout: vi.fn((cb, ms) => {
-      schedulerCallbacks.push({ cb, ms });
-      return Symbol("scheduler-timeout");
-    }),
-    clearTimeout: vi.fn()
-  };
-  const fallbackCallbacks = [];
-  const timerHandlers = new Map();
+  const mockDependenciesZero = createMockCooldownDependencies();
+
   try {
-    const controls = startCooldown(store, scheduler, {
-      eventBus: { emit: emitSpy, on: vi.fn(), off: vi.fn() },
-      createRoundTimer: vi.fn(() => ({
-        start: vi.fn(),
-        stop: vi.fn(),
-        on: vi.fn((event, handler) => {
-          timerHandlers.set(event, handler);
-        })
-      })),
-      attachCooldownRenderer: vi.fn(),
-      requireEngine: vi.fn(() => ({ startCoolDown: vi.fn() })),
-      setSkipHandler: vi.fn(),
-      setupFallbackTimer: vi.fn((ms, cb) => {
-        fallbackCallbacks.push({ ms, cb });
-        return Symbol("fallback-timeout");
-      }),
-      dispatchBattleEvent: vi.fn(),
-      markReady: vi.fn(),
-      showSnackbar: vi.fn(),
-      scoreboard: { showMessage: vi.fn() },
-      getStateSnapshot: vi.fn(() => ({ state: "cooldown" })),
-      isOrchestrated: () => false,
-      startEngineCooldown: vi.fn(),
-      getClassicBattleMachine: () => null
-    });
+    startCooldown(
+      createBattleStore(),
+      mockDependenciesZero.scheduler,
+      mockDependenciesZero.options
+    );
 
-    expect(emitSpy).toHaveBeenCalledWith("control.countdown.started", {
-      durationMs: 7000
-    });
-    expect(typeof controls?.ready).toBe("object");
+    expect(mockDependenciesZero.emitSpy).toHaveBeenCalledWith(
+      "control.countdown.started",
+      {
+        durationMs: 1000
+      }
+    );
+
+    window.__NEXT_ROUND_COOLDOWN_MS = -500;
+
+    const mockDependenciesNegative = createMockCooldownDependencies();
+
+    startCooldown(
+      createBattleStore(),
+      mockDependenciesNegative.scheduler,
+      mockDependenciesNegative.options
+    );
+
+    expect(mockDependenciesNegative.emitSpy).toHaveBeenCalledWith(
+      "control.countdown.started",
+      {
+        durationMs: 1000
+      }
+    );
   } finally {
     if (typeof previousOverride === "number") {
       window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
@@ -92,6 +144,43 @@ test("startCooldown emits countdown started event with computed duration", () =>
     }
   }
 });
+
+function createMockCooldownDependencies() {
+  const emitSpy = vi.fn();
+  const timerHandlers = new Map();
+  const scheduler = {
+    setTimeout: vi.fn((cb, ms) => {
+      timerHandlers.set("timeout", { cb, ms });
+      return Symbol("scheduler-timeout");
+    }),
+    clearTimeout: vi.fn()
+  };
+
+  const options = {
+    eventBus: { emit: emitSpy, on: vi.fn(), off: vi.fn() },
+    createRoundTimer: vi.fn(() => ({
+      start: vi.fn(),
+      stop: vi.fn(),
+      on: vi.fn((event, handler) => {
+        timerHandlers.set(event, handler);
+      })
+    })),
+    attachCooldownRenderer: vi.fn(),
+    requireEngine: vi.fn(() => ({ startCoolDown: vi.fn() })),
+    setSkipHandler: vi.fn(),
+    setupFallbackTimer: vi.fn(() => Symbol("fallback-timeout")),
+    dispatchBattleEvent: vi.fn(),
+    markReady: vi.fn(),
+    showSnackbar: vi.fn(),
+    scoreboard: { showMessage: vi.fn() },
+    getStateSnapshot: vi.fn(() => ({ state: "cooldown" })),
+    isOrchestrated: () => false,
+    startEngineCooldown: vi.fn(),
+    getClassicBattleMachine: () => null
+  };
+
+  return { emitSpy, scheduler, options, timerHandlers };
+}
 
 test("resolveActiveScheduler prefers injected scheduler", () => {
   const customScheduler = { setTimeout: vi.fn(), clearTimeout: vi.fn() };
