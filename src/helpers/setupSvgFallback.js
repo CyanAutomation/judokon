@@ -7,6 +7,8 @@
  */
 import { applySvgFallback } from "./svgFallback.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  applySvgFallback("../assets/images/judokonLogoSmall.png");
-});
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
+    applySvgFallback("../assets/images/judokonLogoSmall.png");
+  });
+}
