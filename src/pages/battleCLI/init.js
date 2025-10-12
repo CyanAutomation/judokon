@@ -689,7 +689,6 @@ function updateCliShortcutsVisibility() {
   } else {
     section.hidden = false;
     section.style.display = "";
-    section.removeAttribute("hidden");
   }
 }
 
