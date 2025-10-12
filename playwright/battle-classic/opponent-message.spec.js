@@ -109,4 +109,64 @@ test.describe("Classic Battle Opponent Messages", () => {
     },
     { resolveDelay: 50 }
   );
+
+  runMessageTest(
+    "forces round resolution when CLI resolveRound stalls in waitingForPlayerAction",
+    async ({ page }) => {
+      await page.evaluate(() => {
+        const api = window.__TEST_API;
+        if (!api?.cli?.resolveRound || !api?.state?.dispatchBattleEvent) {
+          throw new Error("Test API unavailable for CLI override");
+        }
+
+        const originalResolveRound = api.cli.resolveRound.bind(api.cli);
+        const originalDispatch = api.state.dispatchBattleEvent.bind(api.state);
+
+        api.__dispatchedEvents = [];
+
+        api.cli.resolveRound = async (...args) => {
+          const state = api.state.getBattleState?.() ?? null;
+          if (state === "waitingForPlayerAction") {
+            return { detail: {}, dispatched: false, emitted: false };
+          }
+
+          return originalResolveRound(...args);
+        };
+
+        api.state.dispatchBattleEvent = async (eventName, payload) => {
+          api.__dispatchedEvents.push(eventName);
+          return originalDispatch(eventName, payload);
+        };
+      });
+
+      const firstStat = page.locator(selectors.statButton(0)).first();
+      await firstStat.click();
+
+      await ensureRoundResolved(page, { forceResolve: true });
+
+      await expect
+        .poll(
+          async () => {
+            try {
+              return await page.evaluate(
+                () => window.__TEST_API?.state?.getBattleState?.() ?? null
+              );
+            } catch {
+              return null;
+            }
+          },
+          {
+            timeout: 3_000,
+            message: 'Expected battle state to resolve to "roundOver" after forced fallback'
+          }
+        )
+        .toBe("roundOver");
+
+      const dispatchedEvents = await page.evaluate(
+        () => window.__TEST_API?.__dispatchedEvents ?? []
+      );
+      expect(dispatchedEvents).toContain("roundResolved");
+    },
+    { resolveDelay: 50 }
+  );
 });
