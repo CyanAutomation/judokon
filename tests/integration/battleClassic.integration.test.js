@@ -18,6 +18,9 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
+import rounds from "../../src/data/battleRounds.js";
+import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
+import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
 describe("Battle Classic Page Integration", () => {
   let dom;
@@ -91,31 +94,35 @@ describe("Battle Classic Page Integration", () => {
     // if the modal library uses that convention.
 
     // 4. Assert round select modal renders interactive controls after init
-    const framePromise = new Promise((resolve) => {
-      if (typeof window.requestAnimationFrame === "function") {
-        window.requestAnimationFrame(() => resolve());
-      } else {
-        setTimeout(resolve, 0);
-      }
-    });
-    await framePromise;
-
     const roundSelectButtons = Array.from(
       document.querySelectorAll(".round-select-buttons button")
     );
     expect(roundSelectButtons.length).toBeGreaterThan(0);
     roundSelectButtons.forEach((button) => {
       expect(button.disabled).toBe(false);
-      expect(button.textContent?.trim()).not.toBe("");
-      expect(button.dataset.tooltipId).toMatch(/^ui\.round/);
+      const label = button.textContent?.trim() ?? "";
+      expect(label).not.toBe("");
+      expect(button.dataset.tooltipId).toBe(`ui.round${label}`);
     });
 
+    expect(getPointsToWin()).toBe(DEFAULT_POINTS_TO_WIN);
+
     const firstOption = roundSelectButtons[0];
+    const selectedLabel = firstOption.textContent?.trim();
+    if (!selectedLabel) {
+      throw new Error("Round select button missing label text");
+    }
+    const selectedRound = rounds.find((round) => round.label === selectedLabel);
+    if (!selectedRound) {
+      throw new Error(`Round configuration missing for label: ${selectedLabel}`);
+    }
+
     await withMutedConsole(async () => {
       firstOption.click();
-      await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    expect(document.querySelector(".round-select-buttons")).toBeNull();
+
+    expect(getPointsToWin()).toBe(selectedRound.value);
+    expect(document.body.dataset.target).toBe(String(selectedRound.value));
 
     // 5. Assert initialization completed successfully
     expect(window.battleStore).toBeDefined();
