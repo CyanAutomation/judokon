@@ -13,6 +13,13 @@ test.describe("Classic Battle page", () => {
     // 1. Click the round select button for a quick match
     await page.locator('button:has-text("Quick")').click();
 
+    await page.waitForTimeout(1000);
+    // eslint-disable-next-line no-console
+    console.log(
+      "buttonsReady dataset:",
+      await page.evaluate(() => document.querySelector("#stat-buttons")?.dataset.buttonsReady)
+    );
+
     // Play until the match ends
     for (let i = 0; i < 10; i++) {
       // Max 10 rounds to prevent infinite loop

@@ -76,7 +76,6 @@ export async function setupClassicBattlePage() {
   }
 
   await initRoundSelectModal(startCallback);
-  await startPromise;
 
   if (typeof window !== "undefined") {
     try {
@@ -84,8 +83,10 @@ export async function setupClassicBattlePage() {
       if (typeof document !== "undefined") {
         document.dispatchEvent(new Event("battle:init-complete"));
       }
+      window.battleReadyPromise = startPromise;
     } catch {}
   }
+  startPromise.catch(() => {});
   return debugApi;
 }
 
