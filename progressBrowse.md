@@ -1,81 +1,121 @@
-QA report for src/pages/browseJudoka.md
+# QA report for `src/pages/browseJudoka.md`
 
 | Issue                                                            | Steps to reproduce                                                                                                                                                                                                                                                                        | Impact                                                                                                                                                             |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Country flag picker becomes unusable after horizontal scroll** | 1. Click the **Country filter** toggle (first red icon).  2. When the slide‑out panel appears, use a horizontal scroll gesture (mouse‑wheel left/right) on the flag row.  3. The flag row disappears, leaving an empty panel. There is no way to scroll back, so no flags are selectable. | Users can accidentally hide the country selector and cannot filter by country. The panel becomes blank, so players cannot pick or change countries.                |
-| **Selecting a flag does not filter the roster**                  | 1. Open the country panel.  2. Click any flag (e.g., the Portugal flag).  3. The panel briefly shows a larger version of the clicked flag, but the card carousel does not update; all judoka remain visible.                                                                              | Filtering appears non‑functional, preventing players from narrowing the roster by country. This fails acceptance criteria requiring country filter to limit cards. |
-| **Card stats require vertical scrolling**                        | Each card container includes its own vertical scroll bar. On desktop at 1024 px width, users must scroll within a card to see the bottom of the stats section. The PRD states that judoka cards should “display all stats without scrolling on common desktop resolutions”.               | Usability & accessibility issue; players may not realize additional stats exist below the fold.                                                                    |
-| **Center card not clearly enlarged**                             | The PRD specifies that the focused (center) card should be enlarged by ~10%. In the current build, the enlargement on focus/hover is subtle and almost imperceptible.                                                                                                                     | The intended “binder‑like” feeling and focus cue are lost, reducing visual polish and accessibility.                                                               |
-| **Page marker highlight difficult to interpret**                 | The page markers below the carousel are tiny dots with only a slight color change. They do not announce updates via an `aria-live` region as required.                                                                                                                                    | Screen‑reader users may not get feedback about their position in the carousel, and sighted players may have difficulty seeing which page is active.                |
-| **Country flags not obviously alphabetized**                     | The flag row shows countries in an order that does not match alphabetical sorting (e.g., Suriname, Georgia, Jamaica, Portugal appear together). The PRD mandates alphabetical ordering.                                                                                                   | Inconsistent ordering makes it harder for players to find their country and conflicts with the acceptance criteria.                                                |
-| **Tooltip and icons on small screens**                           | The panel toggle, clear filter and navigation buttons appear small (~24 px). The PRD calls for a minimum tap‑target size of 44×44 px.                                                                                                                                                     | Touch users may find it difficult to tap the small icons accurately.                                                                                               |
-| **No visible error handling**                                    | Disconnecting from the network during testing did not show an “Unable to load roster” message or retry button, though the PRD specifies this for network failures.                                                                                                                        | Players experiencing connectivity issues might see a blank screen without guidance.                                                                                |
-| **Keyboard closing of country panel not evident**                | The panel does not indicate that pressing `Escape` closes it; only clicking the toggle hides it. This diverges from the requirement that the panel support closing via Escape.                                                                                                            | Keyboard‑only users may struggle to dismiss the panel once opened.                                                                                                 |
+| **Country flag picker becomes unusable after horizontal scroll** | 1. Click the **Country filter** toggle (first red icon).  2. When the slide‑out panel appears, use a horizontal scroll gesture (mouse‑wheel left/right) on the flag row.  3. The flag row disappears, leaving an empty panel. There is no way to scroll back, so no flags are selectable. | Users can accidentally hide the country selector and cannot filter by country. The panel becomes blank, so players cannot pick or change countries. This is high priority because it prevents a primary filtering workflow. |
+| **Selecting a flag does not filter the roster**                  | 1. Open the country panel.  2. Click any flag (e.g., the Portugal flag).  3. The panel briefly shows a larger version of the clicked flag, but the card carousel does not update; all judoka remain visible.                                                                              | Filtering appears non‑functional, preventing players from narrowing the roster by country. This fails acceptance criteria requiring country filter to limit cards. This may be caused by missing event wiring or a mismatch between flag IDs and country keys in the dataset. |
+| **Card stats require vertical scrolling**                        | Each card container includes its own vertical scroll bar. On desktop at 1024 px width, users must scroll within a card to see the bottom of the stats section. The PRD states that judoka cards should “display all stats without scrolling on common desktop resolutions”.               | Usability & accessibility issue; players may not realize additional stats exist below the fold. This can be solved by layout adjustments or slightly reduced padding/line-height for desktop breakpoints.                                                                    |
+| **Center card not clearly enlarged**                             | The PRD specifies that the focused (center) card should be enlarged by ~10%. In the current build, the enlargement on focus/hover is subtle and almost imperceptible.                                                                                                                     | The intended “binder‑like” feeling and focus cue are lost, reducing visual polish and accessibility. Note: ensure enlargement does not cause layout shift that hides adjacent cards at common viewport sizes.                                                               |
+| **Page marker highlight difficult to interpret**                 | The page markers below the carousel are tiny dots with only a slight color change. They do not announce updates via an `aria-live` region as required.                                                                                                                                    | Screen‑reader users may not get feedback about their position in the carousel, and sighted players may have difficulty seeing which page is active. Recommendation: increase active marker size and add an `aria-live` text node that announces "Page X of Y" on change.                |
+| **Country flags not obviously alphabetized**                     | The flag row shows countries in an order that does not match alphabetical sorting (e.g., Suriname, Georgia, Jamaica, Portugal appear together). The PRD mandates alphabetical ordering.                                                                                                   | Inconsistent ordering makes it harder for players to find their country and conflicts with the acceptance criteria. Note: sorting should use the displayed country name (localized if applicable) and stable sort on country code as a tiebreaker.                                               |
+| **Tooltip and icons on small screens**                           | The panel toggle, clear filter and navigation buttons appear small (~24 px). The PRD calls for a minimum tap‑target size of 44×44 px.                                                                                                                                                     | Touch users may find it difficult to tap the small icons accurately. Recommendation: apply hit-area padding while preserving visual icon size to maintain layout.                                                                                               |
+| **No visible error handling**                                    | Disconnecting from the network during testing did not show an “Unable to load roster” message or retry button, though the PRD specifies this for network failures.                                                                                                                        | Players experiencing connectivity issues might see a blank screen without guidance. Recommendation: show a dismissible, focusable error region with a Retry button and include telemetry for failure rates.                                                                                |
+| **Keyboard closing of country panel not evident**                | The panel does not indicate that pressing `Escape` closes it; only clicking the toggle hides it. This diverges from the requirement that the panel support closing via Escape.                                                                                                            | Keyboard‑only users may struggle to dismiss the panel once opened. Recommendation: add keyboard handlers, focus trapping, and visible focus styles when panel is opened.                                                                                                 |
 
-### Revised Fix Plan & Improvement Opportunities
+## Revised Fix Plan & Improvement Opportunities
 
-This plan addresses the issues identified in the QA report with specific, actionable steps.
+This plan addresses the issues identified in the QA report with specific, actionable steps. It adds explicit acceptance criteria, assumptions, and a short test checklist for each item. The country picker horizontal-scroll problem is marked as high priority and the CSS remediation explicitly prevents horizontal scrolling.
 
-#### 1. Country Filter Panel
+### 1. Country Filter Panel (High priority)
 
-* **Issue:** Horizontal scroll breaks the flag picker; filtering is non-functional; flags are not alphabetized.
-* **Fixes:**
-  * **Disable Horizontal Scroll & Improve Layout:** The primary issue is the horizontal scroll. To fix this, apply the following CSS to the flag container:
+* Issue: Horizontal scroll breaks the flag picker; filtering is non-functional; flags are not alphabetized.
+* Acceptance criteria:
+  * Country flag panel must never show a horizontal scrollbar at any viewport width.
+  * Clicking a flag filters the roster to matching judoka.
+  * Flags are alphabetized by displayed name (localized if applicable).
+* Fixes:
+  1. Disable horizontal scrolling and allow wrapping (CSS):
 
         ```css
+        /* Ensure no horizontal scroll and keep flag tappable area accessible */
         .flag-container {
           display: flex;
-          flex-wrap: wrap; /* Allow flags to wrap to the next line */
+          flex-wrap: wrap; /* Wrap flags to multiple rows */
           overflow-x: hidden; /* Prevent horizontal scrolling entirely */
-          justify-content: flex-start;
+          gap: 8px; /* small visual gap between flags */
         }
+
+        /* If the design requires a single-line scroller on large screens, prefer scroll-snap with a hidden scrollbar instead of allowing free horizontal wheel scroll */
+        .flag-container.single-line {
+          overflow-x: auto;
+          -ms-overflow-style: none; /* hide scrollbar IE/Edge */
+          scrollbar-width: none; /* hide scrollbar Firefox */
+        }
+        .flag-container.single-line::-webkit-scrollbar { display: none; }
         ```
 
-        This will make the flags wrap onto new lines instead of creating a horizontal scrollbar.
-  * **Implement Filtering Logic:** Connect the flag selection to the card carousel. When a flag is clicked, update the carousel to show only judoka from that country. If no judoka match, display a message like "No judoka found for this country."
-  * **Alphabetize Flags:** Sort the country data source before rendering the flags. Use `String.prototype.localeCompare()` for proper alphabetical sorting across different languages.
+        Rationale: the explicit `overflow-x: hidden` removes horizontal wheel/trackpad scroll from producing a one-line overflow that later becomes impossible to recover from. If a single-line scroller is still a design requirement, implement `single-line` mode with hidden scrollbar + visible scroll affordance and ensure wheel events do not collapse the content.
+
+  2. Implement filtering wiring: clicking a flag should emit a semantic event (e.g., `countrySelected(code)`) that updates the roster data source and resets the carousel index to 0. If there are no matches, show a friendly message "No judoka found for {Country}" and an inline "Show all" action.
+
+  3. Alphabetize flags on render using locale-aware compare:
 
         ```javascript
-        countries.sort((a, b) => a.name.localeCompare(b.name));
+        countries.sort((a, b) => a.displayName.localeCompare(b.displayName || a.name, undefined, { sensitivity: 'base' }));
         ```
 
-* **Verification:**
-  * Confirm that the country flag panel has no horizontal scrollbar.
-  * Verify that clicking a flag filters the judoka cards correctly.
-  * Check that the flags are displayed in alphabetical order.
+* Verification / Test checklist:
+  * Confirm there is never a horizontal scrollbar on `.flag-container` in desktop and small viewports.
+  * Click several flags and verify the carousel shows only matching cards and the carousel index resets.
+  * Confirm message appears for zero results and "Show all" restores the full roster.
 
-#### 2. Judoka Card Carousel
+### 2. Judoka Card Carousel
 
-* **Issue:** Cards have internal scrollbars; center card enlargement is not noticeable; page markers are unclear.
-* **Fixes:**
-  * **Adjust Card Layout:** Modify the CSS for the judoka cards to ensure all stats are visible without scrolling on desktop. This might involve adjusting padding, font size, or using a more compact layout.
-  * **Enhance Center Card Enlargement:** Increase the `transform: scale()` value for the focused card to at least `1.1` to make the effect clear. Ensure a smooth `transition` is applied to the `transform` property.
-  * **Improve Page Markers:** Increase the size and visual distinction of the active page marker. Use an `aria-live` region to announce page changes to screen readers (e.g., "Page 2 of 5").
-* **Verification:**
-  * Check that cards on desktop (e.g., 1024px width) do not have a vertical scrollbar.
-  * Confirm the center card is visibly larger than other cards.
-  * Verify that page markers are clear and that screen readers announce changes.
+* Issue: Cards have internal scrollbars; center card enlargement is not noticeable; page markers are unclear.
+* Acceptance criteria:
+  * Cards must display all stats without internal vertical scroll at common desktop widths (>= 1024px).
+  * Center card must be visually and programmatically indicated (scale >= 1.08 and aria attributes).
+  * Carousel page markers must be visible, have a clear active state, and changes announced to screen readers.
+* Fixes:
+  - Adjust card CSS (desktop breakpoint) to fit content: reduce vertical padding, tighten line-height for stat rows, and prefer two-column stat layouts where feasible.
+  - Increase center-card scale to 1.08–1.12 with a 200ms transition. Add `aria-current="true"` to the active card and `role="group" aria-roledescription="carousel"` to the container.
+  - Replace tiny dots with larger markers (10–12px) and add a visually hidden `div[aria-live="polite"]` that updates to "Page X of Y" when the carousel page changes.
+* Verification / Test checklist:
+  * Confirm no card shows an internal vertical scrollbar at 1024px desktop.
+  * Verify center card is clearly larger and programmatically marked.
+  * Confirm screen readers announce page changes via the aria-live region.
 
-#### 3. Accessibility & Usability
+### 3. Accessibility & Usability
 
-* **Issue:** Small tap targets; keyboard navigation is missing for the country panel.
-* **Fixes:**
-  * **Increase Tap Target Size:** Ensure all interactive elements (buttons, toggles) have a minimum size of 44x44 pixels as per WCAG guidelines.
-  * **Implement Keyboard Navigation:**
-    * Add a `keydown` event listener to the document when the country panel is open.
-    * If the `Escape` key is pressed, close the panel.
-    * Allow the panel to be opened and closed with `Enter` or `Space` when the toggle button is focused.
-    * Ensure focus is trapped within the panel when it is open.
-* **Verification:**
-  * Use browser developer tools to inspect the size of tap targets.
-  * Test keyboard navigation: open, close, and navigate within the country panel using only the keyboard.
+* Issue: Small tap targets; keyboard navigation missing for the country panel.
+* Acceptance criteria:
+  * All interactive targets meet 44×44px hit area (visually or via padding) on touch breakpoints.
+  * Panel can be opened/closed via keyboard (Enter/Space on toggle, Escape to close) and focus is trapped while open.
+* Fixes:
+  * Add hit-area padding via CSS to buttons without changing visual icon size (e.g., `.icon-btn { padding: 10px; }`).
+  * Implement focus trapping (use the app's existing modal/focus-trap helper if available). Add keyboard listeners to close on Escape and ensure toggle is operable with Enter/Space.
+* Verification / Test checklist:
+  * Measure hit targets in devtools (touch emulation) to ensure 44×44px.
+  * Test keyboard-only flows: open panel, move focus to flag, activate flag, Escape to close, and ensure focus returns to toggle.
 
-#### 4. General Polish & Robustness
+### 4. General Polish & Robustness
 
-* **Issue:** No error handling for network failures.
-* **Fixes:**
-  * **Add Error Handling:** When fetching judoka data, implement a `.catch()` block to handle network errors. If an error occurs, display a user-friendly message and a "Retry" button.
-  * **Add Test IDs:** Add `data-testid` attributes to key elements like the filter buttons, carousel pages, and individual cards to make them easier to target in Playwright tests.
-* **Verification:**
-  * Use browser developer tools to simulate offline mode and verify that the error message is displayed.
-  * Inspect the DOM to confirm that `data-testid` attributes have been added.
+* Issue: No error handling for network failures.
+* Acceptance criteria:
+  * Network errors show a clear error state with a Retry action and do not leave the UI blank.
+  * Key elements expose `data-testid` attributes for reliable Playwright targeting.
+* Fixes:
+  * Add a catch path for the roster fetch that renders an error card with Retry and telemetry hook.
+  * Add `data-testid` attributes to filter controls, carousel, and cards.
+* Verification / Test checklist:
+  * In devtools, simulate offline and verify the error UI and Retry flow.
+  * Confirm `data-testid` attributes exist for tests.
+
+### Assumptions & Risks
+
+- Assumption: The country data source includes a stable display name and an ISO country code for filtering keys. If not, mapping will be needed.
+- Assumption: The carousel component can accept an updated list and reset its index programmatically. If it cannot, a small change to the carousel public API will be required.
+- Risk: Increasing the center-card scale may cause layout shift; test across common viewport widths and adjust scale or card spacing accordingly.
+
+### Developer handoff notes
+
+- Provide a short PR checklist for reviewers:
+  1. Verify `.flag-container` has no horizontal scrollbar at 320–1440px.
+  2. Verify clicking flags filters roster and resets carousel index.
+  3. Verify keyboard accessibility (Escape closes, focus trapped).
+  4. Verify network error UI and Retry flow.
+  5. Confirm `data-testid` coverage for Playwright selectors.
+
+---
+
+Please review these changes and let me know if you'd like me to also (a) search for the component files and propose exact code changes, or (b) implement the fixes and a small test set in a feature branch.

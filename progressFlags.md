@@ -19,6 +19,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Pointed the Classic Battle page at `setupClassicBattlePage` (`src/pages/battleClassic.html:172` → `../helpers/classicBattle/bootstrap.js`), ensuring the controller/view bootstrap owns runtime wiring.
 - Hydrated the stat button container with static markup (`src/pages/battleClassic.html:96-120`) so the new view layer can manage readiness without the legacy renderer.
 - Ran targeted checks: `npx vitest run tests/classicBattle/bootstrap.test.js tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/round-select.spec.js`.
+- Decoupled stat hotkeys from the forced auto-enable path so UI and CLI respect persisted flag state (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`), verified via `npx vitest run tests/helpers/classicBattle/statHotkeys.enabled.test.js tests/pages/battleCLI.selectedStat.test.js tests/pages/battleCLI.invalidNumber.test.js tests/pages/battleCLI.inputLatencyHardened.spec.js` and `npx playwright test playwright/stat-hotkeys.smoke.spec.js`.
 
 ## Critical blocker
 
@@ -83,10 +84,10 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Recommendation: Either wire the flag through `bindUIHelperEventHandlersDynamic` (using `getOpponentDelay`/timeouts) or remove it from the settings page to avoid confusion.
 
 - `statHotkeys` & `cliShortcuts`
-  - Status: **Coupled** — enabling stat hotkeys immediately persists the flag via `enableFlag("statHotkeys")`, so users cannot keep it disabled, while CLI shortcuts have separate logic and only gate non-`q` keys (`src/helpers/classicBattle/statButtons.js:145-172`, `src/pages/battleCLI/events.js:48-111`).
-  - Confidence: High.
-  - Effort: Low → Medium (stop auto-enabling and clarify configuration model).
-  - Recommendation: Remove the forced `enableFlag` call, ensure hotkeys respect the stored value, and document that CLI shortcuts remain independent (or merge the two toggles into a single “Enable hotkeys” flag with sub-options).
+  - Status: **Decoupled** — `wireStatHotkeys` now respects `isEnabled("statHotkeys")` without mutating persistence, and the CLI handler returns `"ignored"` when the flag is off so disabled users are not nagged (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`).
+  - Confidence: High (covered by refreshed Vitest and Playwright runs above).
+  - Effort: Low (remaining follow-up is documentation to clarify that CLI shortcuts stay independent).
+  - Recommendation: Update settings/help copy to explain the two toggles; no additional engineering action unless UX wants to consolidate them.
 
 ## Feasibility analysis of the remediation plan
 
@@ -94,7 +95,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 2. **Instrument battle state progress** — **Completed/verified** via new data attributes, targeted unit coverage, and Playwright validation.
 3. **Tidy unused or misleading flags** — Either wire `roundStore` and `opponentDelayMessage` to real behavior or hide them until a product requirement exists. This is mostly product/UX alignment work with a small amount of code churn.
 4. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
-5. **Decouple hotkeys** — Removing the `enableFlag("statHotkeys")` auto-toggle and documenting CLI shortcuts is a small refactor with low regression risk.
+5. **Decouple hotkeys** — **Completed** by removing the `enableFlag("statHotkeys")` auto-toggle, routing CLI digits through the flag, and backfilling regression coverage.
 
 ## Concrete prioritized implementation plan (short, testable steps)
 
@@ -104,8 +105,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
    - `initBattleStateProgress` executes in production, preserving QA data attributes; follow-on work is documentation and broader E2E coverage.
 3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1
    - Decide whether `roundStore` and `opponentDelayMessage` stay; implement or retire accordingly, and update settings copy.
-4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1
-   - Remove the forced `enableFlag` call, ensure both UI and CLI respect stored values, and add regression tests.
+4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1 **(Completed)**
+   - Removed the forced `enableFlag` call, ensured both UI and CLI respect stored values, and added regression tests.
 5. Add data hooks + tests for the other working flags (owner: dev tooling) — Effort: Low — Priority: P2
    - Tag rendered elements with `data-feature-*`, add Vitest/Playwright checks, and document QA entry points.
 
