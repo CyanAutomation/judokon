@@ -68,7 +68,12 @@ import {
         () => {
           try {
             const bs = document.body?.dataset?.battleState;
-            const pc = window?.battleStore?.playerChoice;
+            const store =
+              window.__TEST_API?.inspect?.getBattleStore?.() ||
+              window.__classicbattledebugapi?.battleStore ||
+              window.battleStore ||
+              null;
+            const pc = store?.playerChoice ?? null;
             const rd = window.__roundDebug;
             if (rd && rd.resolvedAt) return true;
             if (bs === "roundOver" || bs === "cooldown") return true;
