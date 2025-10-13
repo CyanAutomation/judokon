@@ -249,6 +249,9 @@ engine.on("roundEnded", (payload) => {
 - Timer tick granularity: 1s, drift ≤ 100 ms per 10s.
 - Event dispatch latency ≤ 16 ms per frame.
 - Must support **fake timers** for deterministic testing.
+- Coverage note: `tests/roundManager.cooldown-ready.spec.js` now exercises `startCooldown`
+  with an injected scheduler, proving fallback readiness resolves before the default
+  timers and replacing the old helper-level `resolveActiveScheduler` assertion.
 - Deterministic playback possible with recorded event tapes.
 - ≥90% event types must have conformance tests in integration suite.
 

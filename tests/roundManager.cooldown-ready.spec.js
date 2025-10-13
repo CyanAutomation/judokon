@@ -8,7 +8,6 @@ import {
 } from "../src/helpers/classicBattle/roundManager.js";
 import {
   detectOrchestratorContext,
-  resolveActiveScheduler,
   createCooldownControls,
   createExpirationDispatcher
 } from "../src/helpers/classicBattle/cooldownOrchestrator.js";
@@ -118,6 +117,48 @@ describe("startCooldown", () => {
       }
     }
   });
+
+  test("uses injected scheduler to resolve ready before fallback timers", async () => {
+    const defaultHarness = createSchedulerHarness();
+    const defaultControls = startCooldown(
+      createBattleStore(),
+      null,
+      defaultHarness.overrides
+    );
+
+    expect(defaultHarness.fallbacks).toHaveLength(1);
+    expect(defaultControls.readyDispatched).toBe(false);
+
+    const schedulerInvocations = [];
+    const injectedScheduler = {
+      setTimeout: vi.fn((cb, ms) => {
+        schedulerInvocations.push({ cb, ms });
+        return Symbol("injected-scheduler");
+      }),
+      clearTimeout: vi.fn()
+    };
+
+    const injectedHarness = createSchedulerHarness();
+    const controlsWithScheduler = startCooldown(
+      createBattleStore(),
+      injectedScheduler,
+      injectedHarness.overrides
+    );
+
+    expect(injectedScheduler.setTimeout).toHaveBeenCalledTimes(1);
+    expect(injectedHarness.fallbacks).toHaveLength(1);
+    expect(controlsWithScheduler.readyDispatched).toBe(false);
+
+    expect(schedulerInvocations).toHaveLength(1);
+    schedulerInvocations[0].cb();
+
+    await expect(controlsWithScheduler.ready).resolves.toBeUndefined();
+    expect(controlsWithScheduler.readyDispatched).toBe(true);
+    expect(injectedHarness.fallbacks[0].fired).toBe(false);
+
+    defaultHarness.fallbacks[0].run();
+    await expect(defaultControls.ready).resolves.toBeUndefined();
+  });
 });
 
 function createMockCooldownDependencies() {
@@ -162,12 +203,42 @@ function createMockCooldownDependencies() {
   return { emitSpy, scheduler, options, timerHandlers };
 }
 
-test("resolveActiveScheduler prefers injected scheduler", () => {
-  const customScheduler = { setTimeout: vi.fn(), clearTimeout: vi.fn() };
-  expect(resolveActiveScheduler(customScheduler)).toBe(customScheduler);
-  const fallback = resolveActiveScheduler(null);
-  expect(typeof fallback.setTimeout).toBe("function");
-});
+function createSchedulerHarness() {
+  const fallbacks = [];
+  const overrides = {
+    eventBus: { emit: vi.fn(), on: vi.fn(), off: vi.fn() },
+    attachCooldownRenderer: vi.fn(),
+    createRoundTimer: vi.fn(() => ({
+      start: vi.fn(),
+      on: vi.fn(),
+      stop: vi.fn()
+    })),
+    setupFallbackTimer: vi.fn((ms, cb) => {
+      const record = {
+        id: fallbacks.length + 1,
+        ms,
+        fired: false,
+        run: () => {
+          record.fired = true;
+          cb();
+        }
+      };
+      fallbacks.push(record);
+      return record.id;
+    }),
+    dispatchBattleEvent: vi.fn(),
+    markReady: vi.fn(),
+    showSnackbar: vi.fn(),
+    scoreboard: { showMessage: vi.fn() },
+    setSkipHandler: vi.fn(),
+    requireEngine: vi.fn(() => ({ startCoolDown: vi.fn() })),
+    getStateSnapshot: vi.fn(() => ({ state: "cooldown" })),
+    isOrchestrated: () => false,
+    getClassicBattleMachine: () => null
+  };
+
+  return { overrides, fallbacks };
+}
 
 test("detectOrchestratorContext reports debug machine", () => {
   const machine = { id: "orchestrator" };
