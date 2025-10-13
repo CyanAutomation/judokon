@@ -19,6 +19,8 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Pointed the Classic Battle page at `setupClassicBattlePage` (`src/pages/battleClassic.html:172` → `../helpers/classicBattle/bootstrap.js`), ensuring the controller/view bootstrap owns runtime wiring.
 - Hydrated the stat button container with static markup (`src/pages/battleClassic.html:96-120`) so the new view layer can manage readiness without the legacy renderer.
 - Ran targeted checks: `npx vitest run tests/classicBattle/bootstrap.test.js tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/round-select.spec.js`.
+- Implemented the opponent delay flag path so Classic Battle shows/defers the "Opponent is choosing…" snackbar based on the feature toggle with deterministic fallbacks (`src/pages/battleClassic.init.js:720-758`, `src/helpers/classicBattle/uiEventHandlers.js:1-118`, `src/helpers/classicBattle/selectionHandler.js:320-350`); validated via `npx vitest run tests/helpers/classicBattle/opponentDelay.test.js tests/components/opponentChoosing.spec.js`.
+- Hid the legacy **Round Store** toggle from the Settings UI while retaining the backing data for engine consumers and schema validation (`src/data/settings.json:66-74`, `src/helpers/settings/featureFlagSwitches.js:70-115`, `src/schemas/settings.schema.json:38-73`), and exercised the settings flow with `npx playwright test playwright/settings.spec.js`.
 - Decoupled stat hotkeys from the forced auto-enable path so UI and CLI respect persisted flag state (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`), verified via `npx vitest run tests/helpers/classicBattle/statHotkeys.enabled.test.js tests/pages/battleCLI.selectedStat.test.js tests/pages/battleCLI.invalidNumber.test.js tests/pages/battleCLI.inputLatencyHardened.spec.js` and `npx playwright test playwright/stat-hotkeys.smoke.spec.js`.
 
 ## Critical blocker
@@ -72,16 +74,16 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Recommendation: Keep the implementation, add a unit test for the skip path, and surface a QA hook (`data-feature-skip-round-cooldown`) on the Next button.
 
 - `roundStore`
-  - Status: **Unused** — the store is always instantiated and no code branches on `isEnabled("roundStore")`; the flag only changes the label to “Round Store (Experimental)” (`src/helpers/classicBattle/roundStore.js:1-214`, `src/helpers/settings/featureFlagSwitches.js:59-76`).
-  - Confidence: High.
-  - Effort: Medium (decide on behavior or retire the toggle).
-  - Recommendation: Either gate the store behind the flag (and define persistence semantics) or hide the switch until a use-case exists.
+  - Status: **Hidden in UI** — the engine still instantiates the store, but the Settings toggle is suppressed to avoid advertising unfinished behavior (`src/data/settings.json:66-74`, `src/helpers/settings/featureFlagSwitches.js:70-115`).
+  - Confidence: Medium (UI verification via Playwright, engine path unchanged).
+  - Effort: Low (future work is product alignment before re-exposing the control).
+  - Recommendation: Keep the toggle hidden until persistence semantics are defined; update copy + tests when product green-lights the feature.
 
 - `opponentDelayMessage`
-  - Status: **Not implemented** — only the docstring references the flag; `bindUIHelperEventHandlers` is a stub and `prepareUiBeforeSelection` always shows the snackbar regardless of feature state (`src/helpers/classicBattle/uiHelpers.js:959-978`, `src/pages/battleClassic.init.js:719-737`).
-  - Confidence: High.
-  - Effort: Low → Medium (implement the delayed snackbar or remove the switch).
-  - Recommendation: Either wire the flag through `bindUIHelperEventHandlersDynamic` (using `getOpponentDelay`/timeouts) or remove it from the settings page to avoid confusion.
+  - Status: **Working (flag-gated)** — stat selection now respects the flag, deferring the "Opponent is choosing…" snackbar via configurable delays with a deterministic fallback hook (`src/pages/battleClassic.init.js:720-758`, `src/helpers/classicBattle/uiEventHandlers.js:1-118`, `src/helpers/classicBattle/selectionHandler.js:320-350`).
+  - Confidence: High (covered by targeted Vitest component tests).
+  - Effort: Low (follow-up is documentation and possibly orchestrator E2E coverage once battle-classic specs are stable).
+  - Recommendation: Expose the delay override settings in QA docs and consider an orchestrator Playwright probe once existing smoke tests are green again.
 
 - `statHotkeys` & `cliShortcuts`
   - Status: **Decoupled** — `wireStatHotkeys` now respects `isEnabled("statHotkeys")` without mutating persistence, and the CLI handler returns `"ignored"` when the flag is off so disabled users are not nagged (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`).
@@ -93,7 +95,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 1. **Surface the test mode banner** — Completed/verified; follow-up coverage is tracked in the implementation plan.
 2. **Instrument battle state progress** — **Completed/verified** via new data attributes, targeted unit coverage, and Playwright validation.
-3. **Tidy unused or misleading flags** — Either wire `roundStore` and `opponentDelayMessage` to real behavior or hide them until a product requirement exists. This is mostly product/UX alignment work with a small amount of code churn.
+3. **Tidy unused or misleading flags** — **Completed** by wiring `opponentDelayMessage` through the battle flow and hiding the dormant `roundStore` toggle until product requirements land.
 4. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
 5. **Decouple hotkeys** — **Completed** by removing the `enableFlag("statHotkeys")` auto-toggle, routing CLI digits through the flag, and backfilling regression coverage.
 
@@ -103,8 +105,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
    - Classic Battle now boots via `setupClassicBattlePage`; the banner toggles as expected and targeted Playwright coverage observes the hook.
 2. Instrument the battle state progress feature (owner: core eng) — Effort: Medium — Priority: P1 **(Completed)**
    - `initBattleStateProgress` executes in production, preserving QA data attributes; follow-on work is documentation and broader E2E coverage.
-3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1
-   - Decide whether `roundStore` and `opponentDelayMessage` stay; implement or retire accordingly, and update settings copy.
+3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1 **(Completed)**
+   - Hid the `roundStore` toggle and wired `opponentDelayMessage` through the Classic Battle flow pending product follow-up.
 4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1 **(Completed)**
    - Removed the forced `enableFlag` call, ensured both UI and CLI respect stored values, and added regression tests.
 5. Add data hooks + tests for the other working flags (owner: dev tooling) — Effort: Low — Priority: P2
