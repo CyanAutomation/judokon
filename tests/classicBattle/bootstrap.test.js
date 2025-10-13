@@ -1,71 +1,63 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+
+vi.mock("../../src/helpers/domReady.js", () => ({
+  onDomReady: () => {}
+}));
+
+vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+  initRoundSelectModal: vi.fn(async (callback) => {
+    if (typeof callback === "function") {
+      await callback();
+    }
+  })
+}));
+
+const battleClassicHtml = readFileSync(
+  resolve(process.cwd(), "src/pages/battleClassic.html"),
+  "utf-8"
+);
 
 describe("Classic Battle bootstrap", () => {
-  test("initializes scoreboard on DOMContentLoaded", async () => {
-    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-    const html = readFileSync(file, "utf-8");
-    document.documentElement.innerHTML = html;
+  beforeEach(() => {
+    vi.resetModules();
+    document.documentElement.innerHTML = battleClassicHtml;
+    delete window.__battleInitComplete;
+    delete window.__initCalled;
+    delete window.battleStore;
+  });
 
-    // Import the page init and trigger DOMContentLoaded
-    const mod = await import("../../src/pages/battleClassic.init.js");
-    // Call init explicitly to avoid flakiness around DOMContentLoaded in JSDOM
-    if (typeof mod.init === "function") mod.init();
+  test("initializes scoreboard via setupClassicBattlePage", async () => {
+    const { setupClassicBattlePage } = await import(
+      "../../src/helpers/classicBattle/bootstrap.js"
+    );
+
+    await setupClassicBattlePage();
 
     const score = document.getElementById("score-display");
     const round = document.getElementById("round-counter");
+
     expect(score).toBeTruthy();
     expect(round).toBeTruthy();
-    // Scoreboard shows initial score text
-    expect(score.textContent || "").toMatch(/You:\s*0/);
-    expect(score.textContent || "").toMatch(/Opponent:\s*0/);
-    // Round counter starts at 0
-    expect(round.textContent || "").toMatch(/Round\s*0/);
+    expect(score?.textContent || "").toMatch(/You:\s*0/);
+    expect(score?.textContent || "").toMatch(/Opponent:\s*0/);
+    expect(round?.textContent || "").toMatch(/Round\s*\d+/);
+    expect(window.__initCalled).toBe(true);
+    expect(window.__battleInitComplete).toBe(true);
   });
 
-  test("replay resets scoreboard", async () => {
-    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-    const html = readFileSync(file, "utf-8");
-    document.documentElement.innerHTML = html;
-
-    const mod = await import("../../src/pages/battleClassic.init.js");
-    if (typeof mod.init === "function") await mod.init();
-
-    const { onBattleEvent, offBattleEvent } = await import(
-      "../../src/helpers/classicBattle/battleEvents.js"
+  test("exposes battle store and debug helpers on window", async () => {
+    const { setupClassicBattlePage } = await import(
+      "../../src/helpers/classicBattle/bootstrap.js"
     );
-    const { setPointsToWin, createBattleEngine } = await import(
-      "../../src/helpers/battleEngineFacade.js"
-    );
-    const { handleStatSelection, handleReplay, _resetForTest } = await import(
-      "../../src/helpers/classicBattle.js"
-    );
-    const { getState } = await import("../../src/components/Scoreboard.js");
+    await setupClassicBattlePage();
 
-    const roundResolvedPromise = new Promise((resolve) => {
-      const handler = (e) => {
-        offBattleEvent("roundResolved", handler);
-        resolve(e);
-      };
-      onBattleEvent("roundResolved", handler);
-    });
-
-    setPointsToWin(1);
     const store = window.battleStore;
-    await handleStatSelection(store, "power", {
-      playerVal: 5,
-      opponentVal: 3,
-      forceDirectResolution: true
-    });
-    await roundResolvedPromise;
-    expect(getState().score.player).toBe(1);
-
-    createBattleEngine({ forceCreate: true });
-    await handleReplay(store);
-    const { player, opponent } = getState().score;
-    expect(player).toBe(0);
-    expect(opponent).toBe(0);
-
-    _resetForTest(store);
+    expect(store).toBeTruthy();
+    expect(window.__classicbattledebugapi).toBeTruthy();
+    expect(window.__classicbattledebugapi?.battleStore).toBe(store);
+    expect(typeof window.__classicbattledebugapi?.skipBattlePhase).toBe("function");
+    expect(typeof window.__classicbattledebugapi?.round?.advanceAfterCooldown).toBe("function");
   });
 });

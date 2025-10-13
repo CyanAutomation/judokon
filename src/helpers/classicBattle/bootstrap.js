@@ -49,6 +49,9 @@ export async function setupClassicBattlePage() {
       view.bindController(controller);
       await controller.init();
       await view.init();
+      if (typeof window !== "undefined") {
+        window.__initCalled = true;
+      }
 
       // Wire the scoreboard with timer controls so visibility/focus
       // pause/resume hooks activate and DOM refs are resolved early.
@@ -74,6 +77,15 @@ export async function setupClassicBattlePage() {
 
   await initRoundSelectModal(startCallback);
   await startPromise;
+
+  if (typeof window !== "undefined") {
+    try {
+      window.__battleInitComplete = true;
+      if (typeof document !== "undefined") {
+        document.dispatchEvent(new Event("battle:init-complete"));
+      }
+    } catch {}
+  }
   return debugApi;
 }
 
