@@ -1,6 +1,11 @@
 /**
  * Await the next animation frame when available, falling back to a macrotask.
  *
+ * @pseudocode
+ * IF window.requestAnimationFrame exists
+ *   schedule resolve on next animation frame
+ * ELSE
+ *   schedule resolve via setTimeout(0)
  * @returns {Promise<void>} Resolves on the next frame or after a 0ms timeout.
  */
 export const waitForNextFrame = () =>

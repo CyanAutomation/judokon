@@ -185,7 +185,14 @@ describe("Battle Classic Page Integration", () => {
     expect(revealedCard).not.toBeNull();
     const cardJson = revealedContainer?.dataset?.cardJson ?? "";
     expect(cardJson).not.toBe("");
-    const parsedCard = JSON.parse(cardJson);
+    let parsedCard;
+    try {
+      parsedCard = JSON.parse(cardJson);
+    } catch (error) {
+      throw new Error(`Failed to parse card JSON: ${cardJson}`);
+    }
+    expect(typeof parsedCard).toBe("object");
+    expect(parsedCard).not.toBeNull();
     expect(typeof parsedCard.firstname).toBe("string");
     expect(parsedCard.firstname).not.toBe("");
     expect(typeof parsedCard.surname).toBe("string");
