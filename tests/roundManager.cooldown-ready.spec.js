@@ -116,6 +116,11 @@ test("startCooldown clamps countdown duration for non-positive overrides", () =>
 
 function createMockCooldownDependencies() {
   const emitSpy = vi.fn();
+  /**
+   * Stores scheduled callbacks keyed by timer identifier so tests can inspect
+   * the registered handlers via `mockDependencies.timerHandlers.get(name)`
+   * and assert the expected callbacks were wired.
+   */
   const timerHandlers = new Map();
   const scheduler = {
     setTimeout: vi.fn((cb, ms) => {
