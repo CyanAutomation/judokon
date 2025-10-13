@@ -15,17 +15,7 @@ afterEach(() => {
 });
 
 describe("debug state recording", () => {
-  // The DOM class toggling helpers are exercised indirectly via the settings UI test below.
-  it("records state for toggleTooltipOverlayDebug", () => {
-    expect(getDebugState().tooltipOverlayDebug).toBe(false);
-
-    toggleTooltipOverlayDebug(true);
-    expect(getDebugState().tooltipOverlayDebug).toBe(true);
-
-    toggleTooltipOverlayDebug(false);
-    expect(getDebugState().tooltipOverlayDebug).toBe(false);
-  });
-
+  // The tooltip overlay toggle is exercised through the settings UI integration test below.
   it("records state for toggleViewportSimulation", () => {
     expect(getDebugState().viewportSimulation).toBe(false);
 
