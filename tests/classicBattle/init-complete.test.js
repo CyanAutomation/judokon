@@ -88,8 +88,8 @@ describe("Classic Battle Init Complete Hooks", () => {
 
     await init();
 
-    expect(window.__battleInitComplete).toBe(true);
     expect(window.battleStore).toBeDefined();
     expect(eventFired).toBe(true);
+    expect(document.querySelector(".round-select-buttons")).not.toBeNull();
   });
 });
