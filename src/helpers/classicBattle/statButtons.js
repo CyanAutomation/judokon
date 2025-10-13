@@ -1,4 +1,4 @@
-import { isEnabled, enableFlag } from "../featureFlags.js";
+import { isEnabled } from "../featureFlags.js";
 
 /**
  * Normalize assorted button collections into a clean array of elements.
@@ -143,10 +143,6 @@ export function setStatButtonsEnabled(buttons, container, enable, resolveReady, 
  * @returns {() => void} Cleanup function to remove the event listener.
  */
 export function wireStatHotkeys(buttons) {
-  // Ensure hotkeys are enabled by default; feature flag can still disable.
-  try {
-    if (!isEnabled("statHotkeys")) enableFlag("statHotkeys");
-  } catch {}
   // Expose a deterministic test hook to trigger selection by index
   try {
     if (typeof window !== "undefined") {
