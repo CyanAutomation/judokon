@@ -35,6 +35,9 @@ export async function setupUIBindings(view) {
   setupNextButton();
   const statButtonControls = initStatButtons(store);
   onBattleEvent("statButtons:enable", () => {
+    try {
+      console.debug("[debug] statButtons:enable received");
+    } catch {}
     statButtonControls?.enable();
     // Focus the first stat button for keyboard navigation
     const firstButton = document.querySelector("#stat-buttons button[data-stat]");

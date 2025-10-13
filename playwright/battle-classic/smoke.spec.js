@@ -8,6 +8,11 @@ test.describe("Classic Battle page", () => {
       };
     });
 
+    page.on("console", (message) => {
+      // eslint-disable-next-line no-console
+      console.log("page console:", message.text());
+    });
+
     await page.goto("/src/pages/battleClassic.html");
 
     // 1. Click the round select button for a quick match
