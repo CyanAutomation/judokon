@@ -78,7 +78,7 @@ test("startCooldown emits default countdown duration when global override is mis
   } finally {
     if (typeof previousOverride === "number") {
       window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
-    } else if (previousOverride === undefined) {
+    } else {
       delete window.__NEXT_ROUND_COOLDOWN_MS;
     }
   }
