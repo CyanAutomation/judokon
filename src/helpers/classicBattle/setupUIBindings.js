@@ -35,10 +35,16 @@ export async function setupUIBindings(view) {
   setupNextButton();
   const statButtonControls = initStatButtons(store);
   onBattleEvent("statButtons:enable", () => {
+    let before = "undefined";
+    let after = "undefined";
     try {
-      console.debug("[debug] statButtons:enable received");
+      before = document.getElementById("stat-buttons")?.dataset?.buttonsReady ?? "undefined";
     } catch {}
     statButtonControls?.enable();
+    try {
+      after = document.getElementById("stat-buttons")?.dataset?.buttonsReady ?? "undefined";
+      console.debug("[debug] statButtons:enable dataset", before, "->", after);
+    } catch {}
     // Focus the first stat button for keyboard navigation
     const firstButton = document.querySelector("#stat-buttons button[data-stat]");
     if (firstButton) {
