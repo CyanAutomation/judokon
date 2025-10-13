@@ -98,8 +98,8 @@ describe("battleStateProgress instrumentation", () => {
   it("marks readiness after the first battleStateChange event", async () => {
     mockIsEnabled.mockReturnValue(true);
     document.body.innerHTML = `<ul id="battle-state-progress"></ul>`;
-    const { initBattleStateProgress } = await import("../../src/helpers/battleStateProgress.js");
     delete document.body.dataset.battleState;
+    const { initBattleStateProgress } = await import("../../src/helpers/battleStateProgress.js");
     const cleanup = await initBattleStateProgress();
     const list = document.getElementById("battle-state-progress");
     const stateListener = listeners.find(({ event }) => event === "battleStateChange");
