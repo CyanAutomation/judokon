@@ -7,33 +7,32 @@
 
 This review re-validates the QA findings in `progressFlags.md`, corrects inaccurate statuses, and adds feasibility notes for the next engineering pass. Key takeaways:
 
-- Most runtime flags (card inspector, viewport simulation, tooltip overlay, battle state badge, skip cooldown) behave as implemented; they primarily lack QA hooks and regression coverage.
-- The Test Mode banner now renders via `applyBattleFeatureFlags`, exposing deterministic hooks while still needing broader QA instrumentation.
-- The battle state progress list already ships in `battleClassic.html` and renders when the flag is enabled; focus shifts to instrumentation and testing rather than markup.
+- Card inspector, viewport simulation, tooltip overlay, and skip cooldown behave as implemented; the main gap is missing QA hooks and regression coverage.
+- Classic Battle still bootstraps `battleClassic.init.js` (`src/pages/battleClassic.html:172`), so helpers like `applyBattleFeatureFlags` and `initBattleStateProgress` never run in production; the banner and progress UI remain dormant despite unit tests.
+- The battle state badge and progress list modules exist but remain inactive until the Classic page migrates to the new controller/view bootstrap (`src/helpers/classicBattle/bootstrap.js`).
 - Switches such as `roundStore`, `opponentDelayMessage`, and the coupled `statHotkeys`/`cliShortcuts` pair still need product decisions or refactors to avoid confusing auto-enabling behavior.
 
 Below I document each flag's status, my confidence in the QA observation (based on the original notes and common failure modes), and recommended next actions with feasibility estimates.
 
 ## Recent task updates
 
-- Verified the Test Mode banner surface and helper wiring (`src/pages/battleClassic.html`, `src/helpers/classicBattle/uiHelpers.js`) so QA can observe deterministic mode via existing `data-test-mode` hooks.
-- Added targeted Vitest coverage for `applyBattleFeatureFlags` and ran `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` (pass).
-- Ran `npx playwright test playwright/battle-classic/smoke.spec.js` (pass) to ensure the Classic Battle header remains stable after the new banner markup.
-- Instrumented the battle state progress list with `data-feature-battle-state-*` metadata, new unit tests (`tests/helpers/battleStateProgress.test.js`), and `playwright/battle-classic/battle-state-progress.spec.js` (pass) to validate end-to-end behaviour.
+- Confirmed the Classic Battle page still loads `battleClassic.init.js` (`src/pages/battleClassic.html:172`), leaving the new controller/view bootstrap unused; `applyBattleFeatureFlags` and `initBattleStateProgress` never execute in the live flow.
+- Verified targeted Vitest coverage exists for `applyBattleFeatureFlags` (`tests/helpers/classicBattle/applyBattleFeatureFlags.test.js`) and `battleStateProgress` (`tests/helpers/battleStateProgress.test.js`), but the legacy entry point does not invoke those helpers yet.
+- Playwright smoke coverage (`playwright/battle-classic/smoke.spec.js`) still exercises the legacy flow; banner/progress assertions remain blocked until the runtime wiring is updated.
 
 ## Critical blocker
 
-- **Resolved:** Verified that the Test Mode banner renders in Classic Battle with deterministic hooks (`src/pages/battleClassic.html:58`, `src/helpers/classicBattle/uiHelpers.js:64-95`), and `applyBattleFeatureFlags` exposes `data-test-mode` plus debug toggles for QA.
+- **Outstanding:** Classic Battle must switch to the controller/view bootstrap (or invoke `applyBattleFeatureFlags`/`initBattleStateProgress` from `battleClassic.init.js`) before QA can observe the Test Mode banner or progress UI (`src/pages/battleClassic.html:172`, `src/helpers/classicBattle/uiHelpers.js:64-109`, `src/helpers/battleStateProgress.js:1-214`).
 
 ## Flag status, confidence & feasibility
 
 Notes: "Confidence" indicates how likely the reported behavior is accurate given the QA notes and typical code patterns (High / Medium / Low). "Effort" is a rough implementation estimate (Low / Medium / High).
 
 - `enableTestMode`
-  - Status: **Implemented (needs QA hooks)** — the controller keeps deterministic mode in sync and `applyBattleFeatureFlags` now toggles the banner, debug panel, and `data-test-mode` attributes when active (`src/helpers/classicBattle/controller.js:43-79`, `src/helpers/classicBattle/uiHelpers.js:64-95`, `src/pages/battleClassic.html:58-65`).
-  - Confidence: High (validated via targeted Vitest + Playwright runs).
-  - Effort to finish: Low (document banner semantics, expose seed copy helpers, and expand automated coverage).
-  - Recommended action: Extend Playwright coverage to assert banner visibility, log deterministic seed metadata, and document QA usage in the settings page guide.
+  - Status: **Partial (logic only)** — deterministic behaviour is wired (e.g., `qaInfo`, seeded draws, debug panel), but `battleClassic.html` still runs the legacy bootstrap so `applyBattleFeatureFlags` never executes; the banner/data attributes only flip inside the unused `ClassicBattleView` path (`src/pages/battleClassic.html:172`, `src/helpers/classicBattle/uiHelpers.js:64-109`, `src/helpers/classicBattle/controller.js:43-79`).
+  - Confidence: Medium (unit coverage passes, but runtime wiring is absent).
+  - Effort to finish: Medium (migrate the page to `setupClassicBattlePage` or call `applyBattleFeatureFlags` from `battleClassic.init.js`, then backfill QA hooks/tests).
+  - Recommended action: Integrate the new bootstrap (or at minimum call `applyBattleFeatureFlags` on flag changes) so the banner renders, then extend Playwright coverage and document how QA can copy the deterministic seed.
 
 - `enableCardInspector`
   - Status: **Working** — card draws read the flag before rendering, and `JudokaCard` appends the inspector `<details>` when `enableInspector` is true (`src/helpers/classicBattle/cardSelection.js:447-509`, `src/components/JudokaCard.js:205-214`, `src/helpers/inspector/createInspectorPanel.js:1-56`).
@@ -54,16 +53,16 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Recommendation: Add an integration test that asserts tooltip targets gain the outline when the flag is on.
 
 - `battleStateBadge`
-  - Status: **Working** — enabling the flag calls `setBattleStateBadgeEnabled`, which creates the badge and updates it via state transitions; the scaffold already contains the placeholder span (`src/helpers/classicBattle/uiHelpers.js:888-910`, `src/pages/battleClassic.html:42-66`).
+  - Status: **Not wired on Classic** — `battleClassic.init.js` only reveals the badge when `window.__FF_OVERRIDES.battleStateBadge` is set; the settings flag never triggers DOM updates because the page does not subscribe to `featureFlagsEmitter` (`src/pages/battleClassic.html:172`, `src/pages/battleClassic.init.js:987-1014`, `src/helpers/classicBattle/view.js:24-40`).
   - Confidence: High.
-  - Effort: Low (add coverage + data hooks).
-  - Recommendation: Expose `data-feature-battle-state-badge` so QA can assert visibility, and add a unit test around `setBattleStateBadgeEnabled`.
+  - Effort: Medium (hook into the emitter or migrate to the new bootstrap).
+  - Recommendation: Wire flag-change listeners to `setBattleStateBadgeEnabled`, ensure badge updates on `battleStateChange`, and add QA-friendly `data-feature-*` hooks plus regression tests.
 
 - `battleStateProgress`
-  - Status: **Implemented (QA instrumented)** — `initBattleStateProgress` now emits `data-feature-battle-state-*` hooks, exposes active/ready metadata, and remaps interrupts while keeping the Classic Battle scaffold intact (`src/helpers/battleStateProgress.js:1-214`, `src/pages/battleClassic.html:91-102`).
-  - Confidence: High (reinforced by new unit + Playwright coverage).
-  - Effort: Low (document usage patterns and integrate the hooks into QA automation suites).
-  - Recommendation: Publish guidance for QA on the new data attributes and extend Playwright assertions to broader battle flows as coverage grows.
+  - Status: **Not active** — instrumentation exists in `battleStateProgress.js`, but the legacy entry point never calls `initBattleStateProgress`; toggling the flag currently has no effect (`src/pages/battleClassic.html:172`, `src/helpers/battleStateProgress.js:1-214`, `src/helpers/classicBattle/setupUIBindings.js:11-54`).
+  - Confidence: High (manual review and runtime checks).
+  - Effort: Medium (migrate Classic Battle to the new bootstrap or invoke the helper from `battleClassic.init.js`, then expose QA hooks).
+  - Recommendation: Integrate `initBattleStateProgress` into the live flow, keep the data attributes, and add Playwright assertions once the list renders for real users.
 
 - `skipRoundCooldown`
   - Status: **Working** — UI service and timer service both consult the flag and short-circuit countdown timers when it is enabled (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-75`).
@@ -99,10 +98,10 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Concrete prioritized implementation plan (short, testable steps)
 
-1. Surface the test mode banner (owner: core eng) — Effort: Low — Priority: P0 **(Completed / verified)**
-   - Existing banner + helper validated via targeted tests; widen coverage to additional journeys as needed.
-2. Instrument the battle state progress feature (owner: core eng) — Effort: Low — Priority: P1 **(Completed / verified)**
-   - Data hooks, unit coverage, and Playwright validation added; next step is expanding usage documentation for QA flows.
+1. Surface the test mode banner (owner: core eng) — Effort: Medium — Priority: P0 **(Blocked by bootstrap wiring)**
+   - Switch Classic Battle to `setupClassicBattlePage` (or call `applyBattleFeatureFlags` from `battleClassic.init.js`) so QA can see the banner, then widen coverage to additional journeys.
+2. Instrument the battle state progress feature (owner: core eng) — Effort: Medium — Priority: P1 **(Pending wiring)**
+   - Ensure `initBattleStateProgress` runs in production, keep the data hooks, and expand usage documentation for QA flows.
 3. Resolve legacy/unused flags (owner: product + UX) — Effort: Medium — Priority: P1
    - Decide whether `roundStore` and `opponentDelayMessage` stay; implement or retire accordingly, and update settings copy.
 4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1
@@ -111,6 +110,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
    - Tag rendered elements with `data-feature-*`, add Vitest/Playwright checks, and document QA entry points.
 
 ## Tests & verification matrix
+
+Once Classic Battle is wired to the new bootstrap, the following coverage should guard regressions:
 
 - **Unit tests**
   - `battleStateProgress` list rendering + active state mapping (`renderStateList`, `updateActiveState`).
@@ -195,3 +196,10 @@ This phase introduces more advanced functionality and long-term improvements to 
 3. **Search/Filter for Advanced Settings:**
    - **Issue:** The "Advanced Settings" section is likely to grow, making it difficult to find specific feature flags.
    - **Suggestion:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.
+
+## Additional engineering opportunities
+
+- Migrate the Classic Battle page to `setupClassicBattlePage` so the controller/view stack owns flag wiring, banner updates, and state progress (`src/helpers/classicBattle/bootstrap.js`, `src/pages/battleClassic.html:172`).
+- If migration must be incremental, register `featureFlagsEmitter` listeners inside `src/pages/battleClassic.init.js` to call `applyBattleFeatureFlags` and `setBattleStateBadgeEnabled` until the new bootstrap lands.
+- Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`).
+- Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`).
