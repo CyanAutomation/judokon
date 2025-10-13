@@ -18,6 +18,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
+import { waitForNextFrame } from "../utils/timing.js";
 
 describe("Battle Classic Page Integration", () => {
   let dom;
@@ -91,14 +92,7 @@ describe("Battle Classic Page Integration", () => {
     // if the modal library uses that convention.
 
     // 4. Assert round select modal renders interactive controls after init
-    const framePromise = new Promise((resolve) => {
-      if (typeof window.requestAnimationFrame === "function") {
-        window.requestAnimationFrame(() => resolve());
-      } else {
-        setTimeout(resolve, 0);
-      }
-    });
-    await framePromise;
+    await waitForNextFrame();
 
     const roundSelectButtons = Array.from(
       document.querySelectorAll(".round-select-buttons button")
@@ -121,7 +115,7 @@ describe("Battle Classic Page Integration", () => {
     expect(window.battleStore).toBeDefined();
   });
 
-  it("preserves opponent placeholder card structure and accessibility", async () => {
+  it("preserves opponent placeholder card during battle flow", async () => {
     await init();
 
     const opponentCard = document.getElementById("opponent-card");
@@ -142,15 +136,7 @@ describe("Battle Classic Page Integration", () => {
     const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
 
-    const framePromise = new Promise((resolve) => {
-      if (typeof window.requestAnimationFrame === "function") {
-        window.requestAnimationFrame(() => resolve());
-      } else {
-        setTimeout(resolve, 0);
-      }
-    });
-
-    await framePromise;
+    await waitForNextFrame();
 
     const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
     expect(roundButtons.length).toBeGreaterThan(0);
@@ -190,19 +176,21 @@ describe("Battle Classic Page Integration", () => {
     }
     expect(reachedRoundDecision).toBe(true);
 
-    await new Promise((resolve) => {
-      if (typeof window.requestAnimationFrame === "function") {
-        window.requestAnimationFrame(() => resolve());
-      } else {
-        setTimeout(resolve, 0);
-      }
-    });
+    await waitForNextFrame();
 
     expect(opponentCard.querySelector("#mystery-card-placeholder")).toBeNull();
     const revealedContainer = opponentCard.querySelector(".card-container");
     expect(revealedContainer).not.toBeNull();
     const revealedCard = revealedContainer?.querySelector(".judoka-card");
     expect(revealedCard).not.toBeNull();
-    expect(revealedCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
+    const cardJson = revealedContainer?.dataset?.cardJson ?? "";
+    expect(cardJson).not.toBe("");
+    const parsedCard = JSON.parse(cardJson);
+    expect(typeof parsedCard.firstname).toBe("string");
+    expect(parsedCard.firstname).not.toBe("");
+    expect(typeof parsedCard.surname).toBe("string");
+    expect(parsedCard.surname).not.toBe("");
+    const expectedLabel = `${parsedCard.firstname} ${parsedCard.surname} card`;
+    expect(revealedCard?.getAttribute("aria-label")).toBe(expectedLabel);
   });
 });
