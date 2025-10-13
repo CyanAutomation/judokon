@@ -9,7 +9,6 @@ test.describe("Classic Battle page", () => {
     });
 
     page.on("console", (message) => {
-      // eslint-disable-next-line no-console
       console.log("page console:", message.text());
     });
 
@@ -19,7 +18,7 @@ test.describe("Classic Battle page", () => {
     await page.locator('button:has-text("Quick")').click();
 
     await page.waitForTimeout(1000);
-    // eslint-disable-next-line no-console
+
     console.log(
       "buttonsReady dataset:",
       await page.evaluate(() => document.querySelector("#stat-buttons")?.dataset.buttonsReady)

@@ -471,24 +471,26 @@ function chunkMarkdown(text) {
   const finalChunks = [];
 
   for (const section of sections) {
-    if (section.length <= CHUNK_SIZE) {
-      finalChunks.push(section);
-      continue;
-    }
-
-    // Sentence-aware splitting for oversized sections
-    const sentences = section.match(/[^.!?]+[.!?]*\s*/g) || [];
-    let currentChunk = "";
-    for (const sentence of sentences) {
-      if (currentChunk.length + sentence.length > CHUNK_SIZE) {
-        finalChunks.push(currentChunk.trim());
-        currentChunk = sentence;
+    const paragraphs = section.split(/\n\n+/);
+    for (const para of paragraphs) {
+      if (para.length <= CHUNK_SIZE) {
+        finalChunks.push(para);
       } else {
-        currentChunk += sentence;
+        // If a paragraph is too long, split it by sentences
+        const sentences = para.match(/[^.!?]+[.!?]*\s*/g) || [];
+        let currentChunk = "";
+        for (const sentence of sentences) {
+          if (currentChunk.length + sentence.length > CHUNK_SIZE) {
+            finalChunks.push(currentChunk.trim());
+            currentChunk = sentence;
+          } else {
+            currentChunk += sentence;
+          }
+        }
+        if (currentChunk) {
+          finalChunks.push(currentChunk.trim());
+        }
       }
-    }
-    if (currentChunk) {
-      finalChunks.push(currentChunk.trim());
     }
   }
 

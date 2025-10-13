@@ -38,7 +38,11 @@ import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { t } from "../helpers/i18n.js";
-import { showSelectionPrompt, getOpponentDelay, setOpponentDelay } from "../helpers/classicBattle/snackbar.js";
+import {
+  showSelectionPrompt,
+  getOpponentDelay,
+  setOpponentDelay
+} from "../helpers/classicBattle/snackbar.js";
 import {
   removeBackdrops,
   enableNextRoundButton,
@@ -88,6 +92,16 @@ let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
+function clearOpponentPromptFallbackTimer() {
+  if (typeof window === "undefined") return;
+  try {
+    const id = window.__battleClassicOpponentPromptFallback;
+    if (id) clearTimeout(id);
+  } catch {}
+  try {
+    window.__battleClassicOpponentPromptFallback = 0;
+  } catch {}
+}
 
 // Guarded telemetry configuration for recurring judoka load failures.
 const JUDOKA_FAILURE_TELEMETRY_THRESHOLD = 3;
@@ -720,6 +734,7 @@ export function prepareUiBeforeSelection() {
   try {
     stopActiveSelectionTimer();
   } catch {}
+  clearOpponentPromptFallbackTimer();
   const delayOverride =
     typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
       ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
@@ -732,12 +747,25 @@ export function prepareUiBeforeSelection() {
     }
   }
   const flagEnabled = isEnabled("opponentDelayMessage");
-  const baseDelay = Number.isFinite(delayOverride) ? Number(delayOverride) : Number(getOpponentDelay());
+  const baseDelay = Number.isFinite(delayOverride)
+    ? Number(delayOverride)
+    : Number(getOpponentDelay());
   const resolvedDelay = Number.isFinite(baseDelay) && baseDelay > 0 ? baseDelay : 0;
 
   if (flagEnabled) {
     setOpponentDelay(resolvedDelay);
     if (resolvedDelay > 0) {
+      if (typeof window !== "undefined") {
+        try {
+          window.__battleClassicOpponentPromptFallback = setTimeout(() => {
+            try {
+              showSnackbar(t("ui.opponentChoosing"));
+              recordOpponentPromptTimestamp(getCurrentTimestamp());
+            } catch {}
+            clearOpponentPromptFallbackTimer();
+          }, resolvedDelay);
+        } catch {}
+      }
       return resolvedDelay;
     }
   }

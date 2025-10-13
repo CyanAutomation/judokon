@@ -46,11 +46,7 @@ describe("startCooldown", () => {
     const mockDependencies = createMockCooldownDependencies();
 
     try {
-      const controls = startCooldown(
-        store,
-        mockDependencies.scheduler,
-        mockDependencies.options
-      );
+      const controls = startCooldown(store, mockDependencies.scheduler, mockDependencies.options);
 
       expect(mockDependencies.emitSpy).toHaveBeenCalledWith("control.countdown.started", {
         durationMs: 7000
@@ -96,11 +92,7 @@ describe("startCooldown", () => {
 
       const mockDependencies = createMockCooldownDependencies();
 
-      startCooldown(
-        createBattleStore(),
-        mockDependencies.scheduler,
-        mockDependencies.options
-      );
+      startCooldown(createBattleStore(), mockDependencies.scheduler, mockDependencies.options);
 
       expect(mockDependencies.emitSpy).toHaveBeenCalledWith("control.countdown.started", {
         durationMs: 1000

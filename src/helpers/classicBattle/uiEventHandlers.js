@@ -18,6 +18,17 @@ function clearOpponentSnackbarTimeout() {
   opponentSnackbarId = 0;
 }
 
+function clearFallbackPromptTimer() {
+  if (typeof window === "undefined") return;
+  try {
+    const id = window.__battleClassicOpponentPromptFallback;
+    if (id) clearTimeout(id);
+  } catch {}
+  try {
+    window.__battleClassicOpponentPromptFallback = 0;
+  } catch {}
+}
+
 function displayOpponentChoosingPrompt() {
   try {
     showSnackbar(t("ui.opponentChoosing"));
@@ -74,6 +85,7 @@ export function bindUIHelperEventHandlersDynamic() {
       const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
 
       clearOpponentSnackbarTimeout();
+      clearFallbackPromptTimer();
 
       if (!shouldDelay) {
         displayOpponentChoosingPrompt();

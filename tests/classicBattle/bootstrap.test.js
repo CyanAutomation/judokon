@@ -29,9 +29,7 @@ describe("Classic Battle bootstrap", () => {
   });
 
   test("initializes scoreboard via setupClassicBattlePage", async () => {
-    const { setupClassicBattlePage } = await import(
-      "../../src/helpers/classicBattle/bootstrap.js"
-    );
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattle/bootstrap.js");
 
     await setupClassicBattlePage();
 
@@ -48,9 +46,7 @@ describe("Classic Battle bootstrap", () => {
   });
 
   test("exposes battle store and debug helpers on window", async () => {
-    const { setupClassicBattlePage } = await import(
-      "../../src/helpers/classicBattle/bootstrap.js"
-    );
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattle/bootstrap.js");
     await setupClassicBattlePage();
 
     const store = window.battleStore;
