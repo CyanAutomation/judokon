@@ -18,9 +18,10 @@ This plan addresses the issues identified in the QA report with specific, action
 
 #### 1. Country Filter Panel
 
-*   **Issue:** Horizontal scroll breaks the flag picker; filtering is non-functional; flags are not alphabetized.
-*   **Fixes:**
-    *   **Disable Horizontal Scroll & Improve Layout:** The primary issue is the horizontal scroll. To fix this, apply the following CSS to the flag container:
+* **Issue:** Horizontal scroll breaks the flag picker; filtering is non-functional; flags are not alphabetized.
+* **Fixes:**
+  * **Disable Horizontal Scroll & Improve Layout:** The primary issue is the horizontal scroll. To fix this, apply the following CSS to the flag container:
+
         ```css
         .flag-container {
           display: flex;
@@ -29,49 +30,52 @@ This plan addresses the issues identified in the QA report with specific, action
           justify-content: flex-start;
         }
         ```
+
         This will make the flags wrap onto new lines instead of creating a horizontal scrollbar.
-    *   **Implement Filtering Logic:** Connect the flag selection to the card carousel. When a flag is clicked, update the carousel to show only judoka from that country. If no judoka match, display a message like "No judoka found for this country."
-    *   **Alphabetize Flags:** Sort the country data source before rendering the flags. Use `String.prototype.localeCompare()` for proper alphabetical sorting across different languages.
+  * **Implement Filtering Logic:** Connect the flag selection to the card carousel. When a flag is clicked, update the carousel to show only judoka from that country. If no judoka match, display a message like "No judoka found for this country."
+  * **Alphabetize Flags:** Sort the country data source before rendering the flags. Use `String.prototype.localeCompare()` for proper alphabetical sorting across different languages.
+
         ```javascript
         countries.sort((a, b) => a.name.localeCompare(b.name));
         ```
-*   **Verification:**
-    *   Confirm that the country flag panel has no horizontal scrollbar.
-    *   Verify that clicking a flag filters the judoka cards correctly.
-    *   Check that the flags are displayed in alphabetical order.
+
+* **Verification:**
+  * Confirm that the country flag panel has no horizontal scrollbar.
+  * Verify that clicking a flag filters the judoka cards correctly.
+  * Check that the flags are displayed in alphabetical order.
 
 #### 2. Judoka Card Carousel
 
-*   **Issue:** Cards have internal scrollbars; center card enlargement is not noticeable; page markers are unclear.
-*   **Fixes:**
-    *   **Adjust Card Layout:** Modify the CSS for the judoka cards to ensure all stats are visible without scrolling on desktop. This might involve adjusting padding, font size, or using a more compact layout.
-    *   **Enhance Center Card Enlargement:** Increase the `transform: scale()` value for the focused card to at least `1.1` to make the effect clear. Ensure a smooth `transition` is applied to the `transform` property.
-    *   **Improve Page Markers:** Increase the size and visual distinction of the active page marker. Use an `aria-live` region to announce page changes to screen readers (e.g., "Page 2 of 5").
-*   **Verification:**
-    *   Check that cards on desktop (e.g., 1024px width) do not have a vertical scrollbar.
-    *   Confirm the center card is visibly larger than other cards.
-    *   Verify that page markers are clear and that screen readers announce changes.
+* **Issue:** Cards have internal scrollbars; center card enlargement is not noticeable; page markers are unclear.
+* **Fixes:**
+  * **Adjust Card Layout:** Modify the CSS for the judoka cards to ensure all stats are visible without scrolling on desktop. This might involve adjusting padding, font size, or using a more compact layout.
+  * **Enhance Center Card Enlargement:** Increase the `transform: scale()` value for the focused card to at least `1.1` to make the effect clear. Ensure a smooth `transition` is applied to the `transform` property.
+  * **Improve Page Markers:** Increase the size and visual distinction of the active page marker. Use an `aria-live` region to announce page changes to screen readers (e.g., "Page 2 of 5").
+* **Verification:**
+  * Check that cards on desktop (e.g., 1024px width) do not have a vertical scrollbar.
+  * Confirm the center card is visibly larger than other cards.
+  * Verify that page markers are clear and that screen readers announce changes.
 
 #### 3. Accessibility & Usability
 
-*   **Issue:** Small tap targets; keyboard navigation is missing for the country panel.
-*   **Fixes:**
-    *   **Increase Tap Target Size:** Ensure all interactive elements (buttons, toggles) have a minimum size of 44x44 pixels as per WCAG guidelines.
-    *   **Implement Keyboard Navigation:**
-        *   Add a `keydown` event listener to the document when the country panel is open.
-        *   If the `Escape` key is pressed, close the panel.
-        *   Allow the panel to be opened and closed with `Enter` or `Space` when the toggle button is focused.
-        *   Ensure focus is trapped within the panel when it is open.
-*   **Verification:**
-    *   Use browser developer tools to inspect the size of tap targets.
-    *   Test keyboard navigation: open, close, and navigate within the country panel using only the keyboard.
+* **Issue:** Small tap targets; keyboard navigation is missing for the country panel.
+* **Fixes:**
+  * **Increase Tap Target Size:** Ensure all interactive elements (buttons, toggles) have a minimum size of 44x44 pixels as per WCAG guidelines.
+  * **Implement Keyboard Navigation:**
+    * Add a `keydown` event listener to the document when the country panel is open.
+    * If the `Escape` key is pressed, close the panel.
+    * Allow the panel to be opened and closed with `Enter` or `Space` when the toggle button is focused.
+    * Ensure focus is trapped within the panel when it is open.
+* **Verification:**
+  * Use browser developer tools to inspect the size of tap targets.
+  * Test keyboard navigation: open, close, and navigate within the country panel using only the keyboard.
 
 #### 4. General Polish & Robustness
 
-*   **Issue:** No error handling for network failures.
-*   **Fixes:**
-    *   **Add Error Handling:** When fetching judoka data, implement a `.catch()` block to handle network errors. If an error occurs, display a user-friendly message and a "Retry" button.
-    *   **Add Test IDs:** Add `data-testid` attributes to key elements like the filter buttons, carousel pages, and individual cards to make them easier to target in Playwright tests.
-*   **Verification:**
-    *   Use browser developer tools to simulate offline mode and verify that the error message is displayed.
-    *   Inspect the DOM to confirm that `data-testid` attributes have been added.
+* **Issue:** No error handling for network failures.
+* **Fixes:**
+  * **Add Error Handling:** When fetching judoka data, implement a `.catch()` block to handle network errors. If an error occurs, display a user-friendly message and a "Retry" button.
+  * **Add Test IDs:** Add `data-testid` attributes to key elements like the filter buttons, carousel pages, and individual cards to make them easier to target in Playwright tests.
+* **Verification:**
+  * Use browser developer tools to simulate offline mode and verify that the error message is displayed.
+  * Inspect the DOM to confirm that `data-testid` attributes have been added.
