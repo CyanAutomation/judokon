@@ -12,6 +12,7 @@ import { vi } from "vitest";
  * @param {Object} [options] - Optional configuration.
  * @param {boolean} [options.verbose=false] - Enable verbose flag.
  * @param {boolean} [options.cliShortcuts=true] - Enable CLI shortcuts flag.
+ * @param {boolean} [options.statHotkeys=true] - Enable stat hotkeys flag.
  * @param {number} [options.pointsToWin=5] - Initial target score.
  * @param {boolean} [options.autoSelect=true] - Enable auto-select flag.
  * @param {string} [options.html=""] - Extra HTML to append to the test DOM.
@@ -26,6 +27,7 @@ export async function loadBattleCLI(options = {}) {
   const {
     verbose = false,
     cliShortcuts = true,
+    statHotkeys = true,
     pointsToWin = 10,
     autoSelect = true,
     html = "",
@@ -45,6 +47,7 @@ export async function loadBattleCLI(options = {}) {
   const flagState = {
     cliVerbose: verbose,
     cliShortcuts,
+    statHotkeys,
     autoSelect,
     skipRoundCooldown: false
   };
@@ -52,6 +55,7 @@ export async function loadBattleCLI(options = {}) {
     featureFlags: {
       cliVerbose: { enabled: flagState.cliVerbose },
       cliShortcuts: { enabled: flagState.cliShortcuts },
+      statHotkeys: { enabled: flagState.statHotkeys },
       autoSelect: { enabled: flagState.autoSelect }
     }
   });

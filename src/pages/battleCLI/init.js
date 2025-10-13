@@ -1881,8 +1881,9 @@ export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
  *
  * @summary Convert numeric key presses into stat selections when appropriate.
  * @param {string} key - Normalized single-character key value (e.g., '1').
- * @returns {boolean} True when the key was handled.
+ * @returns {boolean|'ignored'} True when the key was handled, "ignored" when hotkeys are disabled.
  * @pseudocode
+ * if key is a digit AND statHotkeys disabled: return "ignored"
  * if key is a digit:
  *   stat = getStatByIndex(key)
  *   if stat missing:
@@ -1897,6 +1898,7 @@ export function handleWaitingForPlayerActionKey(key) {
     console.log("[TEST LOG] handleWaitingForPlayerActionKey called with", key);
   } catch {}
   if (key >= "0" && key <= "9") {
+    if (!isEnabled("statHotkeys")) return "ignored";
     const stat = getStatByIndex(key);
     if (!stat) {
       showHint("Use 1-5, press H for help");

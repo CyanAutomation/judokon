@@ -52,4 +52,15 @@ describe("battleCLI stat interactions", () => {
     await flushMicrotasks();
     expect(statEl.classList.contains("selected")).toBe(true);
   });
+
+  it("ignores numeric keys when stat hotkeys disabled", async () => {
+    const mod = await loadBattleCLI({ ...baseOpts, statHotkeys: false });
+    await mod.renderStatList();
+    const handled = mod.handleWaitingForPlayerActionKey("1");
+    expect(handled).toBe("ignored");
+    await flushMicrotasks();
+    expect(document.querySelector('[data-stat-index="1"]').classList.contains("selected")).toBe(
+      false
+    );
+  });
 });
