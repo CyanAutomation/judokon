@@ -45,7 +45,6 @@ for (const vp of viewports) {
 
     // Evaluate layout checks
     const checks = await page.evaluate(() => {
-      const domIssues = [];
       // page-level horizontal scrollbar
       const pageHasHorizontal =
         document.documentElement.scrollWidth >

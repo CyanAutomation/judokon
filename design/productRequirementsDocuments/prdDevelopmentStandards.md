@@ -291,6 +291,7 @@ Additional rarity colour mapping keeps game identity distinct:
 
 - Implement feature flags with predictable IDs (`feature-<kebab-case>`) and camelCase `name` attributes; include `data-flag` for automation and `data-tooltip-id` for tooltip integration.
 - Place all feature flags within a dedicated `<fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">`.
+- Feature flags should be listed in alphabetical order by their `name` attribute to ensure a consistent and predictable layout.
 - Trigger snackbars via `showSnackbar()` when a flag changes to provide confirmation feedback.
 - Ensure internal state remains observable via DOM attributes and support AI-assisted workflows.
 

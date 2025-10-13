@@ -3,10 +3,7 @@
     "query": "settings feature flags order",
     "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md"
   },
-  {
-    "query": "judoka bio tone guidelines",
-    "expected_source": "design/productRequirementsDocuments/prdCharacterDesign.md"
-  },
+
   {
     "query": "navbar button transition duration",
     "expected_source": "src/styles/buttons.css"

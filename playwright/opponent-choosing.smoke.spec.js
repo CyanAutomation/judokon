@@ -2,6 +2,13 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {
+    page.on("console", (msg) => {
+      console.log("PAGE LOG:", msg.type(), msg.text());
+    });
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = window.__FF_OVERRIDES || {};
+      window.__FF_OVERRIDES.opponentDelayMessage = false;
+    });
     await page.goto("/index.html");
 
     const startBtn =
@@ -15,6 +22,15 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
 
     // Click a stat to trigger the opponent choosing state
     await firstStat.click();
+
+    await page.waitForTimeout(1000);
+    const snapshot = await page.evaluate(() => {
+      const el = document.getElementById("snackbar-container");
+      return el ? el.textContent : "missing";
+    });
+    console.log("SNACKBAR SNAPSHOT:", snapshot);
+    const disabled = await page.evaluate(() => window.__disableSnackbars ?? "unset");
+    console.log("SNACKBAR DISABLED:", disabled);
 
     // Snackbar element shows the opponent choosing message
     const snackbar = page.locator("#snackbar-container .snackbar");

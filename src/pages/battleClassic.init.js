@@ -751,6 +751,9 @@ export function prepareUiBeforeSelection() {
     ? Number(delayOverride)
     : Number(getOpponentDelay());
   const resolvedDelay = Number.isFinite(baseDelay) && baseDelay > 0 ? baseDelay : 0;
+  try {
+    console.debug("prepareUiBeforeSelection", { flagEnabled, resolvedDelay });
+  } catch {}
 
   if (flagEnabled) {
     setOpponentDelay(resolvedDelay);
