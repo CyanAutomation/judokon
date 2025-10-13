@@ -7,10 +7,11 @@ This document provides a verified and actionable fix plan for the issues identif
 The key issues involve a lack of visual feedback (animations, button press), incorrect fallback behavior on data loading errors, and a failure to respect app-level settings for motion.
 
 **Prioritized Fix Plan:**
-1.  **High:** Implement correct fallback behavior to always show a card.
-2.  **Medium:** Enhance UI feedback by adding animations and respecting motion preferences.
-3.  **Medium:** Fix page-level horizontal scroll caused by the country picker.
-4.  **Low:** Improve accessibility with live announcements for screen readers.
+
+1. **High:** Implement correct fallback behavior to always show a card.
+2. **Medium:** Enhance UI feedback by adding animations and respecting motion preferences.
+3. **Medium:** Fix page-level horizontal scroll caused by the country picker.
+4. **Low:** Improve accessibility with live announcements for screen readers.
 
 ---
 
@@ -20,11 +21,11 @@ The key issues involve a lack of visual feedback (animations, button press), inc
 
 - **Issue:** A network failure results in an error message and a disabled button, leaving the card area blank. The PRD requires a fallback judoka card to be shown.
 - **Relevant Files:**
-    - **JavaScript:** `src/helpers/randomJudokaPage.js` (handles the draw logic)
-    - **JavaScript:** `src/helpers/randomCard.js` (where the error is likely caught)
+  - **JavaScript:** `src/helpers/randomJudokaPage.js` (handles the draw logic)
+  - **JavaScript:** `src/helpers/randomCard.js` (where the error is likely caught)
 - **Acceptance Criteria:** When a card fails to load, the UI displays the predefined fallback judoka card along with a non-blocking error notification.
 - **Actionable Fix:**
-    1.  In `src/helpers/randomCard.js` or `randomJudokaPage.js`, modify the `catch` block of the data fetching logic. Instead of just showing an error, call the card rendering function with the fallback judoka data.
+    1. In `src/helpers/randomCard.js` or `randomJudokaPage.js`, modify the `catch` block of the data fetching logic. Instead of just showing an error, call the card rendering function with the fallback judoka data.
 
         ```javascript
         // In the main draw function in src/helpers/randomJudokaPage.js
@@ -45,14 +46,14 @@ The key issues involve a lack of visual feedback (animations, button press), inc
 
 - **Issue:** Card animations are imperceptible, and the "Draw Card" button lacks clear press feedback. The app-level "Reduced Motion" setting is ignored.
 - **Relevant Files:**
-    - **CSS:** `src/styles/randomJudoka.css`
-    - **JavaScript:** `src/helpers/randomJudokaPage.js`
+  - **CSS:** `src/styles/randomJudoka.css`
+  - **JavaScript:** `src/helpers/randomJudokaPage.js`
 - **Acceptance Criteria:**
-    - A clear slide-in or fade-in animation occurs when a new card is drawn.
-    - The "Draw Card" button visibly scales down on press.
-    - All animations are disabled if either the OS `prefers-reduced-motion` media query is active or the in-app setting is toggled off.
+  - A clear slide-in or fade-in animation occurs when a new card is drawn.
+  - The "Draw Card" button visibly scales down on press.
+  - All animations are disabled if either the OS `prefers-reduced-motion` media query is active or the in-app setting is toggled off.
 - **Actionable Fixes:**
-    1.  **Add CSS Animations:** In `src/styles/randomJudoka.css`, define keyframes for the card animation.
+    1. **Add CSS Animations:** In `src/styles/randomJudoka.css`, define keyframes for the card animation.
 
         ```css
         @keyframes slideInFadeIn {
@@ -78,7 +79,7 @@ The key issues involve a lack of visual feedback (animations, button press), inc
         }
         ```
 
-    2.  **Improve Button Feedback:** In `src/styles/randomJudoka.css`, make the active state more pronounced.
+    2. **Improve Button Feedback:** In `src/styles/randomJudoka.css`, make the active state more pronounced.
 
         ```css
         .draw-button:active {
@@ -87,7 +88,7 @@ The key issues involve a lack of visual feedback (animations, button press), inc
         }
         ```
 
-    3.  **Respect App Settings:** In `src/helpers/randomJudokaPage.js`, before triggering the animation, check the application setting.
+    3. **Respect App Settings:** In `src/helpers/randomJudokaPage.js`, before triggering the animation, check the application setting.
 
         ```javascript
         // In the rendering logic within src/helpers/randomJudokaPage.js
@@ -105,10 +106,10 @@ The key issues involve a lack of visual feedback (animations, button press), inc
 
 - **Issue:** The country picker causes page-level horizontal scroll on narrow viewports.
 - **Relevant Files:**
-    - **CSS:** The stylesheet that defines `.country-picker` and its children (likely a shared component stylesheet).
+  - **CSS:** The stylesheet that defines `.country-picker` and its children (likely a shared component stylesheet).
 - **Acceptance Criteria:** The country picker is internally scrollable but never causes the main page body to scroll horizontally.
 - **Actionable Fix:**
-    1.  Apply CSS rules to the picker's container and its internal list to manage overflow correctly.
+    1. Apply CSS rules to the picker's container and its internal list to manage overflow correctly.
 
         ```css
         /* On the main picker container */
@@ -131,17 +132,17 @@ The key issues involve a lack of visual feedback (animations, button press), inc
 
 - **Issue:** Screen readers do not announce when a new card is drawn.
 - **Relevant Files:**
-    - **HTML:** `src/pages/randomJudoka.html`
-    - **JavaScript:** `src/helpers/randomJudokaPage.js`
+  - **HTML:** `src/pages/randomJudoka.html`
+  - **JavaScript:** `src/helpers/randomJudokaPage.js`
 - **Acceptance Criteria:** When a new judoka card is rendered, a screen reader announces the name of the new judoka.
 - **Actionable Fix:**
-    1.  **Add ARIA Live Region:** In `src/pages/randomJudoka.html`, add a visually hidden `aria-live` region.
+    1. **Add ARIA Live Region:** In `src/pages/randomJudoka.html`, add a visually hidden `aria-live` region.
 
         ```html
         <div class="sr-only" aria-live="polite" id="card-announcer"></div>
         ```
 
-    2.  **Update Announcer on Draw:** In `src/helpers/randomJudokaPage.js`, after a new card is rendered, update the content of the announcer element.
+    2. **Update Announcer on Draw:** In `src/helpers/randomJudokaPage.js`, after a new card is rendered, update the content of the announcer element.
 
         ```javascript
         // In the function that renders the new card
