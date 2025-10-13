@@ -110,11 +110,15 @@ describe("Battle Classic Page Integration", () => {
     const firstOption = roundSelectButtons[0];
     const selectedLabel = firstOption.textContent?.trim();
     if (!selectedLabel) {
-      throw new Error("Round select button missing label text");
+      throw new Error("Round select button at index 0 missing label text");
     }
     const selectedRound = rounds.find((round) => round.label === selectedLabel);
     if (!selectedRound) {
-      throw new Error(`Round configuration missing for label: ${selectedLabel}`);
+      throw new Error(
+        `Round configuration missing for label: ${selectedLabel} (available: ${rounds
+          .map((round) => round.label)
+          .join(", ")})`
+      );
     }
 
     await withMutedConsole(async () => {
@@ -123,6 +127,7 @@ describe("Battle Classic Page Integration", () => {
 
     expect(getPointsToWin()).toBe(selectedRound.value);
     expect(document.body.dataset.target).toBe(String(selectedRound.value));
+    expect(document.querySelector(".round-select-buttons")).toBeNull();
 
     // 5. Assert initialization completed successfully
     expect(window.battleStore).toBeDefined();
