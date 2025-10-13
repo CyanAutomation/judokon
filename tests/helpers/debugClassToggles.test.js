@@ -147,4 +147,25 @@ describe("feature flag debug toggles integration", () => {
       { key: "featureFlags", tooltip: true, viewport: true }
     ]);
   });
+
+  it("omits hidden feature flag toggles from settings UI", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+
+    const settings = { featureFlags: {} };
+    const handleUpdate = vi.fn();
+
+    renderFeatureFlagSwitches(
+      container,
+      {
+        roundStore: { enabled: true, hidden: true }
+      },
+      () => settings,
+      handleUpdate,
+      {}
+    );
+
+    expect(container.querySelector("[data-flag='roundStore']")).toBeNull();
+    expect(handleUpdate).not.toHaveBeenCalled();
+  });
 });

@@ -34,11 +34,11 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { getBattleStateMachine } from "../helpers/classicBattle/orchestrator.js";
 import { domStateListener } from "../helpers/classicBattle/stateTransitionListeners.js";
-import { initFeatureFlags } from "../helpers/featureFlags.js";
+import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { t } from "../helpers/i18n.js";
-import { showSelectionPrompt, getOpponentDelay } from "../helpers/classicBattle/snackbar.js";
+import { showSelectionPrompt, getOpponentDelay, setOpponentDelay } from "../helpers/classicBattle/snackbar.js";
 import {
   removeBackdrops,
   enableNextRoundButton,
@@ -723,7 +723,7 @@ export function prepareUiBeforeSelection() {
   const delayOverride =
     typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
       ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
-      : 0;
+      : null;
   if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
     try {
       window.__battleClassicStopSelectionTimer();
@@ -731,11 +731,22 @@ export function prepareUiBeforeSelection() {
       console.debug("battleClassic: cancel selection timer failed", err);
     }
   }
+  const flagEnabled = isEnabled("opponentDelayMessage");
+  const baseDelay = Number.isFinite(delayOverride) ? Number(delayOverride) : Number(getOpponentDelay());
+  const resolvedDelay = Number.isFinite(baseDelay) && baseDelay > 0 ? baseDelay : 0;
+
+  if (flagEnabled) {
+    setOpponentDelay(resolvedDelay);
+    if (resolvedDelay > 0) {
+      return resolvedDelay;
+    }
+  }
+
   try {
     showSnackbar(t("ui.opponentChoosing"));
     recordOpponentPromptTimestamp(getCurrentTimestamp());
   } catch {}
-  return delayOverride;
+  return 0;
 }
 
 function ensureScoreboardReflectsResult(result) {

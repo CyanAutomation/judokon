@@ -7,6 +7,7 @@ import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHe
 import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 import { markOpponentPromptNow } from "./opponentPromptTracker.js";
+import { isEnabled } from "../featureFlags.js";
 
 let opponentSnackbarId = 0;
 
@@ -68,32 +69,30 @@ export function bindUIHelperEventHandlersDynamic() {
     try {
       const detail = (e && e.detail) || {};
       const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
-      if (!hasOpts) {
-        clearOpponentSnackbarTimeout();
+      const opts = hasOpts ? detail.opts || {} : {};
+      const flagEnabled = isEnabled("opponentDelayMessage");
+      const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
+
+      clearOpponentSnackbarTimeout();
+
+      if (!shouldDelay) {
         displayOpponentChoosingPrompt();
         return;
       }
 
-      const opts = detail.opts || {};
-      // If the caller requests a delayed opponent message, schedule it
-      // after the configured opponent delay. Otherwise show it immediately.
-      if (opts.delayOpponentMessage) {
-        const delay = Number(getOpponentDelay());
-        const resolvedDelay = Number.isFinite(delay) && delay > 0 ? delay : 0;
-        clearOpponentSnackbarTimeout();
-        if (resolvedDelay <= 0) {
-          // Handle immediate display when delay is zero or negative by skipping the timeout setup.
-          displayOpponentChoosingPrompt();
-          return;
-        }
-        opponentSnackbarId = setTimeout(() => {
-          displayOpponentChoosingPrompt();
-        }, resolvedDelay);
-      } else {
-        clearOpponentSnackbarTimeout();
-        // Cancel any pending delay to ensure the immediate snackbar wins.
+      const delaySource = Object.prototype.hasOwnProperty.call(opts, "delayMs")
+        ? Number(opts.delayMs)
+        : Number(getOpponentDelay());
+      const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
+
+      if (resolvedDelay <= 0) {
         displayOpponentChoosingPrompt();
+        return;
       }
+
+      opponentSnackbarId = setTimeout(() => {
+        displayOpponentChoosingPrompt();
+      }, resolvedDelay);
     } catch {}
   });
 

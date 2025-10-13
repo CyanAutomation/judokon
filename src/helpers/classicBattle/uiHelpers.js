@@ -38,6 +38,7 @@ import { updateDebugPanel as updateDebugPanelImpl, setDebugPanelEnabled } from "
 export { updateDebugPanelImpl as updateDebugPanel };
 
 import { runWhenIdle } from "./idleCallback.js";
+import { bindUIHelperEventHandlersDynamic } from "./uiEventHandlers.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { getCurrentSeed } from "../testModeUtils.js";
 
@@ -1016,9 +1017,18 @@ if (typeof window !== "undefined") {
  *
  * @returns {void}
  */
+let legacyHandlersBound = false;
+
 export function bindUIHelperEventHandlers() {
-  // Event handlers for UI updates (implementation placeholder)
-  // This function would contain event listener bindings based on the pseudocode above
+  if (legacyHandlersBound) return;
+  try {
+    bindUIHelperEventHandlersDynamic();
+  } catch (error) {
+    if (typeof console !== "undefined" && typeof console.warn === "function") {
+      console.warn("Failed to bind legacy UI helper handlers:", error);
+    }
+  }
+  legacyHandlersBound = true;
 }
 
 // Bind once on module load for runtime. Guard against duplicate bindings when

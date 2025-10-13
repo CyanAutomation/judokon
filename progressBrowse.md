@@ -119,3 +119,53 @@ This plan addresses the issues identified in the QA report with specific, action
 ---
 
 Please review these changes and let me know if you'd like me to also (a) search for the component files and propose exact code changes, or (b) implement the fixes and a small test set in a feature branch.
+
+## Playwright layout assessment
+
+I ran a small Playwright layout assessment script that loads `src/pages/browseJudoka.html` at multiple viewport sizes and captures screenshots + simple layout diagnostics. The script used a `file://` URL initially which triggers browser CORS restrictions for module scripts; for best results start the included static server and run the script against `http://127.0.0.1:5000`.
+
+Summary of automated findings (from `test-results/layout-screenshots/layout-assessment.json`):
+
+* Scripts and helpers did not load when the page was opened via `file://` (CORS blocked). This produced console errors for `setupDisplaySettings.js`, `browseJudokaPage.js` and `setupSvgFallback.js`. When run via a static server these errors will disappear and the dynamic DOM will render.
+
+* The assessed DOM (without JS) showed the country flag track element exists (`.country-flag-slide-track` / `#country-list`) but reported 0 clientWidth/scrollWidth because the dynamic content is inserted by JavaScript. The layout script therefore detected no obvious page-level horizontal overflow in the static HTML-only snapshot.
+
+* No immediate horizontal overflow nodes were detected in the static HTML snapshot, and no card elements with internal vertical scroll were detected before scripts executed.
+
+What this means:
+
+* The Playwright run with `file://` is useful for quick structural checks and screenshots, but it cannot validate dynamic behaviors (filter wiring, flag list ordering, carousel sizing) because the page's JS modules are blocked under `file://`. To validate those, run the assessment against a local static server or the deployed GitHub Pages site.
+
+Recommendations & how to reproduce locally:
+
+1. Start the project's simple static server (already included) and point the Playwright script at it:
+
+```bash
+# in repo root
+# start server (runs on 127.0.0.1:5000 by default)
+node scripts/playwrightServer.js &
+
+# then run the assessment pointing at the server
+node scripts/pw-layout-assess.mjs http://127.0.0.1:5000
+```
+
+2. Inspect generated artifacts in `test-results/layout-screenshots/`:
+
+* `mobile.png`, `tablet.png`, `desktop.png` — full-page screenshots
+* `layout-assessment.json` — structured layout checks and console messages
+
+3. Run the Playwright assessment against the deployed site (if available) to catch environment-specific layout regressions.
+
+Opportunities surfaced by the screenshots and diagnostics (next steps once JS runs):
+
+* Verify `.country-flag-slide-track` rendering after JS executes: confirm that `overflow-x` is not producing a permanent horizontal scrollbar. If a single-line slider is still required, implement a controlled scroll-snap UX that avoids mouse-wheel collapse.
+
+* After JS loads, re-run the layout checks to detect any horizontal overflow elements introduced by dynamic content (e.g., long localized names, large flag images, or layout shifts caused by fonts).
+
+* Use the desktop screenshot to check the carousel card heights and see whether cards need padding/line-height adjustments to avoid internal scroll. If cards overflow, implement the CSS changes listed earlier (desktop-specific breakpoints and compact stat layout).
+
+If you'd like, I can:
+
+* Run the Playwright assessment against the running static server here and paste the complete results and screenshots into the report (I attempted it but `file://` blocked module loading; starting the server and re-running will give full results).
+
+* Implement the CSS and JS fixes and add one Playwright smoke test that checks: no horizontal scroll on the flag container, clicking a flag filters the roster, and Escape closes the panel.

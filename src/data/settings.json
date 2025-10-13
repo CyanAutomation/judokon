@@ -72,7 +72,8 @@
     },
     "roundStore": {
       "enabled": true,
-      "tooltipId": "settings.roundStore"
+      "tooltipId": "settings.roundStore",
+      "hidden": true
     }
   }
 }

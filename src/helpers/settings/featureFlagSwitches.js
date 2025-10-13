@@ -108,6 +108,9 @@ export function renderFeatureFlagSwitches(
   Object.keys(flags).forEach((flag) => {
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const info = flags[flag];
+    if (info && info.hidden) {
+      return;
+    }
     const tipId = info.tooltipId || `settings.${flag}`;
     const label = resolveFlagLabel(flag, tipId, tooltipMap);
     const getDescription = () => tooltipMap[`${tipId}.description`] || "";
