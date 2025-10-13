@@ -6,8 +6,8 @@ const root = process.cwd();
 const targetFile = path.join(root, "src", "pages", "browseJudoka.html");
 const baseArg = process.argv[2] || null; // optional base URL like http://127.0.0.1:5000
 const target = baseArg ? `${baseArg.replace(/\/$/, '')}/src/pages/browseJudoka.html` : `file://${targetFile}`;
-if (!fs.existsSync(target)) {
-  console.error('Target file not found:', target);
+if (!baseArg && !fs.existsSync(targetFile)) {
+  console.error('Target file not found:', targetFile);
   process.exit(1);
 }
 
@@ -30,7 +30,7 @@ for (const vp of viewports) {
   const consoleMessages = [];
   page.on("console", (m) => consoleMessages.push({ type: m.type(), text: m.text() }));
 
-  const fileUrl = `file://${target}`;
+  const fileUrl = target;
   console.log(`Loading ${fileUrl} at ${vp.name} (${vp.width}x${vp.height})`);
 
   try {

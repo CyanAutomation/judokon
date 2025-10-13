@@ -167,5 +167,6 @@ describe("feature flag debug toggles integration", () => {
 
     expect(container.querySelector("[data-flag='roundStore']")).toBeNull();
     expect(handleUpdate).not.toHaveBeenCalled();
+    container.remove();
   });
 });

@@ -122,19 +122,23 @@ Please review these changes and let me know if you'd like me to also (a) search 
 
 ## Playwright layout assessment
 
-I ran a small Playwright layout assessment script that loads `src/pages/browseJudoka.html` at multiple viewport sizes and captures screenshots + simple layout diagnostics. The script used a `file://` URL initially which triggers browser CORS restrictions for module scripts; for best results start the included static server and run the script against `http://127.0.0.1:5000`.
+I ran a small Playwright layout assessment script that loads `src/pages/browseJudoka.html` at multiple viewport sizes and captures screenshots + simple layout diagnostics. The script was run against the project's static server (`http://127.0.0.1:5000`) to ensure scripts load without CORS restrictions.
 
 Summary of automated findings (from `test-results/layout-screenshots/layout-assessment.json`):
 
-* Scripts and helpers did not load when the page was opened via `file://` (CORS blocked). This produced console errors for `setupDisplaySettings.js`, `browseJudokaPage.js` and `setupSvgFallback.js`. When run via a static server these errors will disappear and the dynamic DOM will render.
+* Scripts loaded successfully (no CORS errors), but there were some 404 resource errors and schema validation warnings (likely unrelated to layout).
 
-* The assessed DOM (without JS) showed the country flag track element exists (`.country-flag-slide-track` / `#country-list`) but reported 0 clientWidth/scrollWidth because the dynamic content is inserted by JavaScript. The layout script therefore detected no obvious page-level horizontal overflow in the static HTML-only snapshot.
+* The country flag track (`.country-flag-slide-track` / `#country-list`) exists but reports 0 clientWidth/scrollWidth, suggesting it's empty or hidden by default (panel is closed initially).
 
-* No immediate horizontal overflow nodes were detected in the static HTML snapshot, and no card elements with internal vertical scroll were detected before scripts executed.
+* **Horizontal overflow detected:** The card carousel (`.card-carousel`) has horizontal scroll (scrollWidth > clientWidth) at all viewports, which is expected for a carousel. However, individual judoka cards also have horizontal overflow (e.g., scrollWidth 251px vs clientWidth 210px on mobile), indicating cards are wider than their containers — this is a layout bug that needs fixing.
+
+* **Vertical scroll in cards confirmed:** Multiple judoka cards and their sub-elements (`.card-name`, `.card-stats`) have vertical scroll, matching the QA report's issue about cards requiring vertical scrolling on desktop.
+
+* No page-level horizontal scrollbar detected across viewports.
 
 What this means:
 
-* The Playwright run with `file://` is useful for quick structural checks and screenshots, but it cannot validate dynamic behaviors (filter wiring, flag list ordering, carousel sizing) because the page's JS modules are blocked under `file://`. To validate those, run the assessment against a local static server or the deployed GitHub Pages site.
+* The Playwright run now validates dynamic behaviors since scripts loaded. The horizontal overflow in individual cards is a critical issue — cards should fit their containers without horizontal scroll.
 
 Recommendations & how to reproduce locally:
 
@@ -156,16 +160,20 @@ node scripts/pw-layout-assess.mjs http://127.0.0.1:5000
 
 3. Run the Playwright assessment against the deployed site (if available) to catch environment-specific layout regressions.
 
-Opportunities surfaced by the screenshots and diagnostics (next steps once JS runs):
+Opportunities surfaced by the screenshots and diagnostics:
 
-* Verify `.country-flag-slide-track` rendering after JS executes: confirm that `overflow-x` is not producing a permanent horizontal scrollbar. If a single-line slider is still required, implement a controlled scroll-snap UX that avoids mouse-wheel collapse.
+* **Fix card horizontal overflow:** Cards have scrollWidth > clientWidth (e.g., 251px vs 210px on mobile). Adjust card CSS to ensure content fits without horizontal scroll — likely reduce padding, font size, or use flexbox for better wrapping.
 
-* After JS loads, re-run the layout checks to detect any horizontal overflow elements introduced by dynamic content (e.g., long localized names, large flag images, or layout shifts caused by fonts).
+* **Address vertical scroll in cards:** Confirmed vertical scroll in `.card-stats` and `.card-name` elements. Implement the earlier suggestion: adjust desktop CSS (e.g., reduce line-height, use two-column stat layout) to fit all stats without scroll.
 
-* Use the desktop screenshot to check the carousel card heights and see whether cards need padding/line-height adjustments to avoid internal scroll. If cards overflow, implement the CSS changes listed earlier (desktop-specific breakpoints and compact stat layout).
+* **Verify carousel horizontal scroll:** The carousel itself has horizontal scroll (expected), but ensure it's controlled (e.g., via buttons, not free wheel scroll) to avoid accidental collapse like the country panel.
+
+* **Check country panel after opening:** Re-run checks after opening the country panel (click the toggle) to assess flag container overflow and confirm no horizontal scrollbar appears.
 
 If you'd like, I can:
 
-* Run the Playwright assessment against the running static server here and paste the complete results and screenshots into the report (I attempted it but `file://` blocked module loading; starting the server and re-running will give full results).
+* Implement the CSS fixes for card overflow (horizontal and vertical) and add a Playwright test to verify cards fit their containers without scroll.
 
-* Implement the CSS and JS fixes and add one Playwright smoke test that checks: no horizontal scroll on the flag container, clicking a flag filters the roster, and Escape closes the panel.
+* Open the country panel in the assessment script and check for flag-related overflow.
+
+* Create a feature branch with the fixes and a smoke test.

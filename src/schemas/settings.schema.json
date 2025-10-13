@@ -63,6 +63,10 @@
           "tooltipId": {
             "type": "string",
             "description": "Tooltip identifier for this flag."
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "When true, hide the flag from user-facing settings."
           }
         },
         "required": ["enabled"],

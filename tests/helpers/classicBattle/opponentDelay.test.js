@@ -103,7 +103,7 @@ describe("classicBattle opponent delay", () => {
       "../../../src/helpers/classicBattle/uiEventHandlers.js"
     );
 
-    setOpponentDelay(0);
+    setOpponentDelay(300);
     vi.spyOn(mod, "simulateOpponentStat").mockReturnValue("power");
     vi.spyOn(mod, "evaluateRound").mockReturnValue({ matchEnded: false });
     const store = mod.createBattleStore();
