@@ -333,7 +333,6 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
     delayOpponentMessage: !forceDirectResolution
   };
   try {
-    console.debug("emitSelectionEvent: dispatching statSelected", { delayOpponentMessage: eventOpts.delayOpponentMessage, delayMs: eventOpts.delayMs });
     document.body?.setAttribute?.("data-stat-selected", "true");
   } catch {}
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts });

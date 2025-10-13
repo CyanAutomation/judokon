@@ -73,7 +73,7 @@ for (const vp of viewports) {
           if (ow === "visible") return false;
           try {
             return n.scrollWidth > n.clientWidth + 1; // small tolerance
-          } catch (e) {
+          } catch {
             return false;
           }
         })
@@ -93,7 +93,7 @@ for (const vp of viewports) {
         .filter((n) => {
           try {
             return n.scrollHeight > n.clientHeight + 1;
-          } catch (e) {
+          } catch {
             return false;
           }
         })
