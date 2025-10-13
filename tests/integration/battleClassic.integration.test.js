@@ -121,7 +121,7 @@ describe("Battle Classic Page Integration", () => {
     expect(window.battleStore).toBeDefined();
   });
 
-  it("preserves opponent placeholder card for reveal upgrade", async () => {
+  it("preserves opponent placeholder card structure and accessibility", async () => {
     await init();
 
     const opponentCard = document.getElementById("opponent-card");
@@ -142,18 +142,67 @@ describe("Battle Classic Page Integration", () => {
     const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
 
-    const revealedCard = document.createElement("div");
-    revealedCard.id = "revealed-opponent-card";
-    revealedCard.className = "card revealed-opponent";
-    revealedCard.setAttribute("aria-label", "Revealed opponent card");
+    const framePromise = new Promise((resolve) => {
+      if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(() => resolve());
+      } else {
+        setTimeout(resolve, 0);
+      }
+    });
 
-    opponentCard.innerHTML = "";
-    opponentCard.appendChild(revealedCard);
+    await framePromise;
+
+    const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+    expect(roundButtons.length).toBeGreaterThan(0);
+
+    const testApi = window.__TEST_API;
+    expect(testApi).toBeDefined();
+    expect(testApi?.state?.waitForBattleState).toBeTypeOf("function");
+
+    let reachedPlayerAction = false;
+    await withMutedConsole(async () => {
+      roundButtons[0].click();
+      reachedPlayerAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
+    });
+    expect(reachedPlayerAction).toBe(true);
+
+    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    expect(statButtons.length).toBeGreaterThan(0);
+
+    const resetOpponentDelay = () => {
+      if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
+        testApi.timers.setOpponentResolveDelay(null);
+      }
+    };
+
+    if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
+      testApi.timers.setOpponentResolveDelay(0);
+    }
+
+    let reachedRoundDecision = false;
+    try {
+      await withMutedConsole(async () => {
+        statButtons[0].click();
+        reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
+      });
+    } finally {
+      resetOpponentDelay();
+    }
+    expect(reachedRoundDecision).toBe(true);
+
+    await new Promise((resolve) => {
+      if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(() => resolve());
+      } else {
+        setTimeout(resolve, 0);
+      }
+    });
 
     expect(opponentCard.querySelector("#mystery-card-placeholder")).toBeNull();
-    expect(opponentCard.querySelector(".revealed-opponent")).not.toBeNull();
-    expect(opponentCard.querySelector("#revealed-opponent-card")?.getAttribute("aria-label")).toBe(
-      "Revealed opponent card"
-    );
+    const revealedContainer = opponentCard.querySelector(".card-container");
+    expect(revealedContainer).not.toBeNull();
+    const revealedCard = revealedContainer?.querySelector(".judoka-card");
+    expect(revealedCard).not.toBeNull();
+    expect(revealedCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
   });
 });
