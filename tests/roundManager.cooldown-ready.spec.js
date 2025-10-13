@@ -37,68 +37,52 @@ afterEach(() => {
   }
 });
 
-test(
-  "startCooldown emits countdown started event with duration from global override",
-  () => {
-    const store = createBattleStore();
-    const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
-    window.__NEXT_ROUND_COOLDOWN_MS = 7000;
+test("startCooldown emits countdown started event with duration from global override", () => {
+  const store = createBattleStore();
+  const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
+  window.__NEXT_ROUND_COOLDOWN_MS = 7000;
 
-    const mockDependencies = createMockCooldownDependencies();
+  const mockDependencies = createMockCooldownDependencies();
 
-    try {
-      const controls = startCooldown(
-        store,
-        mockDependencies.scheduler,
-        mockDependencies.options
-      );
+  try {
+    const controls = startCooldown(store, mockDependencies.scheduler, mockDependencies.options);
 
-      expect(mockDependencies.emitSpy).toHaveBeenCalledWith(
-        "control.countdown.started",
-        {
-          durationMs: 7000
-        }
-      );
-      expect(controls).toBeDefined();
-      expect(controls.ready).toBeInstanceOf(Promise);
-      expect(typeof controls.resolveReady).toBe("function");
-    } finally {
-      if (typeof previousOverride === "number") {
-        window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
-      } else {
-        delete window.__NEXT_ROUND_COOLDOWN_MS;
-      }
+    expect(mockDependencies.emitSpy).toHaveBeenCalledWith("control.countdown.started", {
+      durationMs: 7000
+    });
+    expect(controls).toBeDefined();
+    expect(controls.ready).toBeInstanceOf(Promise);
+    expect(typeof controls.resolveReady).toBe("function");
+  } finally {
+    if (typeof previousOverride === "number") {
+      window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
+    } else {
+      delete window.__NEXT_ROUND_COOLDOWN_MS;
     }
   }
-);
+});
 
-test(
-  "startCooldown emits default countdown duration when global override is missing",
-  () => {
-    const store = createBattleStore();
-    const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
-    delete window.__NEXT_ROUND_COOLDOWN_MS;
+test("startCooldown emits default countdown duration when global override is missing", () => {
+  const store = createBattleStore();
+  const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
+  delete window.__NEXT_ROUND_COOLDOWN_MS;
 
-    const mockDependencies = createMockCooldownDependencies();
+  const mockDependencies = createMockCooldownDependencies();
 
-    try {
-      startCooldown(store, mockDependencies.scheduler, mockDependencies.options);
+  try {
+    startCooldown(store, mockDependencies.scheduler, mockDependencies.options);
 
-      expect(mockDependencies.emitSpy).toHaveBeenCalledWith(
-        "control.countdown.started",
-        {
-          durationMs: 3000
-        }
-      );
-    } finally {
-      if (typeof previousOverride === "number") {
-        window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
-      } else if (previousOverride === undefined) {
-        delete window.__NEXT_ROUND_COOLDOWN_MS;
-      }
+    expect(mockDependencies.emitSpy).toHaveBeenCalledWith("control.countdown.started", {
+      durationMs: 3000
+    });
+  } finally {
+    if (typeof previousOverride === "number") {
+      window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
+    } else if (previousOverride === undefined) {
+      delete window.__NEXT_ROUND_COOLDOWN_MS;
     }
   }
-);
+});
 
 test("startCooldown clamps countdown duration for non-positive overrides", () => {
   const previousOverride = window.__NEXT_ROUND_COOLDOWN_MS;
@@ -113,12 +97,9 @@ test("startCooldown clamps countdown duration for non-positive overrides", () =>
       mockDependenciesZero.options
     );
 
-    expect(mockDependenciesZero.emitSpy).toHaveBeenCalledWith(
-      "control.countdown.started",
-      {
-        durationMs: 1000
-      }
-    );
+    expect(mockDependenciesZero.emitSpy).toHaveBeenCalledWith("control.countdown.started", {
+      durationMs: 1000
+    });
 
     window.__NEXT_ROUND_COOLDOWN_MS = -500;
 
@@ -130,12 +111,9 @@ test("startCooldown clamps countdown duration for non-positive overrides", () =>
       mockDependenciesNegative.options
     );
 
-    expect(mockDependenciesNegative.emitSpy).toHaveBeenCalledWith(
-      "control.countdown.started",
-      {
-        durationMs: 1000
-      }
-    );
+    expect(mockDependenciesNegative.emitSpy).toHaveBeenCalledWith("control.countdown.started", {
+      durationMs: 1000
+    });
   } finally {
     if (typeof previousOverride === "number") {
       window.__NEXT_ROUND_COOLDOWN_MS = previousOverride;
