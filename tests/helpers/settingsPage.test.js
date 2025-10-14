@@ -14,7 +14,6 @@ const baseSettings = {
   featureFlags: {
     enableTestMode: { enabled: false },
     enableCardInspector: { enabled: false },
-    viewportSimulation: { enabled: false },
     tooltipOverlayDebug: { enabled: false },
     layoutDebugPanel: { enabled: false, tooltipId: "settings.layoutDebugPanel" }
   }
@@ -30,9 +29,6 @@ const tooltipMap = {
   "settings.showCardOfTheDay.label": "Card Of The Day",
   "settings.showCardOfTheDay.description":
     "Displays a rotating featured judoka card on the landing screen",
-  "settings.viewportSimulation.label": "Viewport Simulation",
-  "settings.viewportSimulation.description":
-    "Adds a dropdown to simulate common device viewport sizes",
   "settings.tooltipOverlayDebug.label": "Tooltip Overlay Debug",
   "settings.tooltipOverlayDebug.description": "Shows bounding boxes for tooltip targets",
   "settings.layoutDebugPanel.label": "Layout Debug Panel",
@@ -47,7 +43,6 @@ const harness = createSettingsHarness({
   mocks: {
     "../../src/helpers/displayMode.js": () => ({ applyDisplayMode: vi.fn() }),
     "../../src/helpers/motionUtils.js": () => ({ applyMotionPreference: vi.fn() }),
-    "../../src/helpers/viewportDebug.js": () => ({ toggleViewportSimulation: vi.fn() }),
     "../../src/helpers/tooltipOverlayDebug.js": () => ({
       toggleTooltipOverlayDebug: vi.fn()
     }),

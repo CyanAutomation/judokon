@@ -22,13 +22,11 @@ describe("randomJudokaPage feature flags", () => {
     const initFeatureFlags = vi.fn().mockResolvedValue({
       motionEffects: true,
       featureFlags: {
-        viewportSimulation: { enabled: false },
         enableCardInspector: { enabled: false },
         tooltipOverlayDebug: { enabled: false }
       }
     });
     const applyMotionPreference = vi.fn();
-    const toggleViewportSimulation = vi.fn();
     const toggleInspectorPanels = vi.fn();
     const toggleTooltipOverlayDebug = vi.fn();
     const setTestMode = vi.fn();
@@ -40,7 +38,6 @@ describe("randomJudokaPage feature flags", () => {
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
     vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels }));
-    vi.doMock("../../src/helpers/viewportDebug.js", () => ({ toggleViewportSimulation }));
     vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({ toggleTooltipOverlayDebug }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({
       setTestMode,
@@ -58,7 +55,6 @@ describe("randomJudokaPage feature flags", () => {
     vi.doUnmock("../../src/helpers/featureFlags.js");
     vi.doUnmock("../../src/helpers/motionUtils.js");
     vi.doUnmock("../../src/helpers/cardUtils.js");
-    vi.doUnmock("../../src/helpers/viewportDebug.js");
     vi.doUnmock("../../src/helpers/tooltipOverlayDebug.js");
     vi.doUnmock("../../src/helpers/testModeUtils.js");
     vi.doUnmock("../../src/helpers/domReady.js");

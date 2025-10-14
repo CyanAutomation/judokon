@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { toggleViewportSimulation } from "../../src/helpers/viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "../../src/helpers/tooltipOverlayDebug.js";
 import { renderFeatureFlagSwitches } from "../../src/helpers/settings/featureFlagSwitches.js";
 import { getDebugState, resetDebugState } from "../../src/helpers/debugState.js";
@@ -15,40 +14,22 @@ afterEach(() => {
 });
 
 describe("debug DOM class toggles", () => {
-  it.each([
-    {
-      name: "tooltip overlay",
-      toggle: toggleTooltipOverlayDebug,
-      className: "tooltip-overlay-debug",
-      stateKey: "tooltipOverlayDebug",
-      featureAttribute: "data-feature-tooltip-overlay-debug"
-    },
-    {
-      name: "viewport simulation",
-      toggle: toggleViewportSimulation,
-      className: "simulate-viewport",
-      stateKey: "viewportSimulation",
-      featureAttribute: "data-feature-viewport-simulation"
-    }
-  ])(
-    "applies the %s class when enabled",
-    ({ toggle, className, stateKey, featureAttribute }) => {
-      expect(document.body.classList.contains(className)).toBe(false);
-      expect(getDebugState()[stateKey]).toBe(false);
+  it("applies the tooltip overlay class when enabled", () => {
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
+    expect(getDebugState().tooltipOverlayDebug).toBe(false);
 
-      toggle(true);
+    toggleTooltipOverlayDebug(true);
 
-      expect(document.body.classList.contains(className)).toBe(true);
-      expect(getDebugState()[stateKey]).toBe(true);
-      expect(document.body.getAttribute(featureAttribute)).toBe("enabled");
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
+    expect(getDebugState().tooltipOverlayDebug).toBe(true);
+    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("enabled");
 
-      toggle(false);
+    toggleTooltipOverlayDebug(false);
 
-      expect(document.body.classList.contains(className)).toBe(false);
-      expect(getDebugState()[stateKey]).toBe(false);
-      expect(document.body.getAttribute(featureAttribute)).toBe("disabled");
-    }
-  );
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
+    expect(getDebugState().tooltipOverlayDebug).toBe(false);
+    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
+  });
 });
 
 describe("feature flag debug toggles integration", () => {
@@ -70,8 +51,7 @@ describe("feature flag debug toggles integration", () => {
 
     const settings = {
       featureFlags: {
-        tooltipOverlayDebug: { enabled: false },
-        viewportSimulation: { enabled: false }
+        tooltipOverlayDebug: { enabled: false }
       }
     };
 
@@ -83,8 +63,7 @@ describe("feature flag debug toggles integration", () => {
     renderFeatureFlagSwitches(
       container,
       {
-        tooltipOverlayDebug: { enabled: false },
-        viewportSimulation: { enabled: false }
+        tooltipOverlayDebug: { enabled: false }
       },
       () => settings,
       handleUpdate,
@@ -92,79 +71,56 @@ describe("feature flag debug toggles integration", () => {
     );
 
     const overlayToggle = container.querySelector("#feature-tooltip-overlay-debug");
-    const viewportToggle = container.querySelector("#feature-viewport-simulation");
 
     expect(overlayToggle).toBeTruthy();
-    expect(viewportToggle).toBeTruthy();
 
     if (!(overlayToggle instanceof HTMLInputElement)) {
       throw new Error("Expected tooltip overlay toggle input");
     }
-    if (!(viewportToggle instanceof HTMLInputElement)) {
-      throw new Error("Expected viewport simulation toggle input");
-    }
 
     expect(getDebugState().tooltipOverlayDebug).toBe(false);
-    expect(getDebugState().viewportSimulation).toBe(false);
 
     overlayToggle.click();
-    viewportToggle.click();
 
     await Promise.resolve();
     await Promise.resolve();
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
-    expect(document.body.classList.contains("simulate-viewport")).toBe(true);
     expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("enabled");
-    expect(document.body.getAttribute("data-feature-viewport-simulation")).toBe("enabled");
     const state = getDebugState();
     expect(state.tooltipOverlayDebug).toBe(true);
-    expect(state.viewportSimulation).toBe(true);
     expect(settings.featureFlags).toEqual({
-      tooltipOverlayDebug: { enabled: true },
-      viewportSimulation: { enabled: true }
+      tooltipOverlayDebug: { enabled: true }
     });
-    expect(handleUpdate).toHaveBeenCalledTimes(2);
+    expect(handleUpdate).toHaveBeenCalledTimes(1);
     expect(
       handleUpdate.mock.calls.map(([key, value]) => ({
         key,
-        tooltip: value.tooltipOverlayDebug?.enabled,
-        viewport: value.viewportSimulation?.enabled
+        tooltip: value.tooltipOverlayDebug?.enabled
       }))
-    ).toEqual([
-      { key: "featureFlags", tooltip: true, viewport: false },
-      { key: "featureFlags", tooltip: true, viewport: true }
-    ]);
+    ).toEqual([{ key: "featureFlags", tooltip: true }]);
 
     overlayToggle.click();
-    viewportToggle.click();
 
     await Promise.resolve();
     await Promise.resolve();
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
-    expect(document.body.classList.contains("simulate-viewport")).toBe(false);
     expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
-    expect(document.body.getAttribute("data-feature-viewport-simulation")).toBe("disabled");
     const resetState = getDebugState();
     expect(resetState.tooltipOverlayDebug).toBe(false);
-    expect(resetState.viewportSimulation).toBe(false);
     expect(settings.featureFlags).toEqual({
-      tooltipOverlayDebug: { enabled: false },
-      viewportSimulation: { enabled: false }
+      tooltipOverlayDebug: { enabled: false }
     });
-    expect(handleUpdate).toHaveBeenCalledTimes(4);
+    expect(handleUpdate).toHaveBeenCalledTimes(2);
     expect(
       handleUpdate.mock.calls.map(([key, value]) => ({
         key,
-        tooltip: value.tooltipOverlayDebug?.enabled,
-        viewport: value.viewportSimulation?.enabled
+        tooltip: value.tooltipOverlayDebug?.enabled
       }))
     ).toEqual([
-      { key: "featureFlags", tooltip: true, viewport: false },
-      { key: "featureFlags", tooltip: true, viewport: true },
-      { key: "featureFlags", tooltip: false, viewport: true },
-      { key: "featureFlags", tooltip: false, viewport: false }
+      { key: "featureFlags", tooltip: true },
+      { key: "featureFlags", tooltip: false }
     ]);
   });
 
