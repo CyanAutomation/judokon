@@ -36,7 +36,7 @@ describe("uiHelpers element assertions", () => {
     setTestMode(true);
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     mod.setupNextButton();
-    btn.click();
+    btn.dispatchEvent(new MouseEvent("click"));
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(warnSpy).toHaveBeenCalledWith(
       '[test] #next-button missing, falling back to [data-role="next-round"]'

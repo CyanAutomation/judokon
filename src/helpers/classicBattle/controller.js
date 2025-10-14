@@ -27,6 +27,7 @@ export class ClassicBattleController extends EventTarget {
   constructor({ waitForOpponentCard } = {}) {
     super();
     this.store = createBattleStore();
+    this.store.waitForOutcomeConfirmation = false;
     this.waitForOpponentCard = waitForOpponentCard;
     this.timerControls = { startCoolDown, pauseTimer, resumeTimer };
   }
