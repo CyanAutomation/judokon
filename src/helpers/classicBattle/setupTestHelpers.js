@@ -151,7 +151,7 @@ export function createClassicBattleDebugAPI(view) {
         } catch {}
         // Wait a short tick to allow resolution
         await Promise.resolve();
-        // Emit canonical roundResolved to mirror production pipeline
+        // Emit canonical roundResolved to mirror production pipeline via battle event bus
         try {
           const result = {
             message: "Test round resolved",
@@ -159,10 +159,10 @@ export function createClassicBattleDebugAPI(view) {
             opponentScore: 0,
             matchEnded: false
           };
-          const ev = new CustomEvent("roundResolved", {
-            detail: { result, store }
-          });
-          window.dispatchEvent(ev);
+          // Defer to microtask to avoid synchronous re-entrancy issues in some harnesses
+          if (typeof queueMicrotask === "function")
+            queueMicrotask(() => emitBattleEvent("roundResolved", { result, store }));
+          else emitBattleEvent("roundResolved", { result, store });
         } catch {}
         // If still not progressing, attempt to skip the phase via handler
         try {

@@ -233,6 +233,24 @@ export async function startRoundCooldown(resolved, config = {}) {
 
   attachRendererSafely(renderer, timer, seconds, rendererOptions);
 
+  // When the countdown expires in non-orchestrated mode, emit canonical
+  // completion signals so the next round starts automatically.
+  try {
+    if (typeof timer.on === "function") {
+      timer.on("expired", () => {
+        try {
+          emitBattleEvent("control.countdown.completed");
+        } catch {}
+        try {
+          emitBattleEvent("countdownFinished");
+        } catch {}
+        try {
+          emitBattleEvent("round.start", { source: "auto", via: "roundUI.startRoundCooldown" });
+        } catch {}
+      });
+    }
+  } catch {}
+
   if (config?.delayOpponentMessage) {
     const waitFn =
       config?.waitForDelayedOpponentPromptDisplay || waitForDelayedOpponentPromptDisplay;
