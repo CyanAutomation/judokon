@@ -219,10 +219,27 @@ function getHistoryPanelTransition(prefersReducedMotion) {
   return prefersReducedMotion ? "transform 0.01s linear" : "transform 0.3s ease";
 }
 
+/**
+ * Format a judoka's display name by combining first and last name fields.
+ *
+ * @summary Constructs a display name by preferring firstname + surname combination,
+ * falling back to the legacy name field if the structured fields are unavailable.
+ *
+ * @pseudocode
+ * 1. Validate judoka object is non-null and an object type.
+ * 2. Extract firstname and surname, filter null/undefined values, trim whitespace.
+ * 3. If valid parts exist, join them with a space and return.
+ * 4. Otherwise, fall back to the legacy name field with trimming.
+ * 5. Return empty string if no valid name data is found.
+ *
+ * @param {Object} judoka - The judoka object containing name fields.
+ * @returns {string} The formatted display name or empty string if invalid.
+ */
 function formatJudokaName(judoka) {
   if (!judoka || typeof judoka !== "object") return "";
   const parts = [judoka.firstname, judoka.surname]
-    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter((value) => value != null && typeof value === "string")
+    .map((value) => value.trim())
     .filter(Boolean);
   if (parts.length > 0) {
     return parts.join(" ");
