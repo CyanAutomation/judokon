@@ -1356,7 +1356,6 @@ const inspectionApi = {
       const combinedRounds = [readStoreRounds(), readEngineRounds()].filter(
         (value) => value !== null
       );
-      const roundsPlayed = combinedRounds.length ? Math.max(...combinedRounds) : null;
 
       return {
         store: store
