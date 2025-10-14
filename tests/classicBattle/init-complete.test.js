@@ -51,7 +51,7 @@ describe("Classic Battle Init Complete Hooks", () => {
     vi.resetModules();
   });
 
-  it("dispatches battle:init-complete event after successful init", async () => {
+  it("signals readiness through init-complete dispatch and exposed hooks", async () => {
     let eventFired = false;
     let eventDetail = null;
 
@@ -67,20 +67,9 @@ describe("Classic Battle Init Complete Hooks", () => {
     expect(eventFired).toBe(true);
     expect(eventDetail).toBeInstanceOf(Event);
     expect(eventDetail.type).toBe("battle:init-complete");
+    expect(window.battleStore).toBeDefined();
+    expect(document.querySelector(".round-select-buttons")).not.toBeNull();
 
     document.removeEventListener("battle:init-complete", eventHandler);
-  });
-
-  it("all hooks are set together after init", async () => {
-    let eventFired = false;
-    document.addEventListener("battle:init-complete", () => {
-      eventFired = true;
-    });
-
-    await init();
-
-    expect(window.battleStore).toBeDefined();
-    expect(eventFired).toBe(true);
-    expect(document.querySelector(".round-select-buttons")).not.toBeNull();
   });
 });
