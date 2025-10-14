@@ -70,6 +70,52 @@ describe("randomJudokaPage draw button", () => {
     expect(button).not.toHaveAttribute("aria-busy");
   });
 
+  it("re-enables draw button immediately when card markup is missing", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    const originalRaf = globalThis.requestAnimationFrame;
+    globalThis.requestAnimationFrame = vi.fn();
+
+    try {
+      const generateRandomCard = vi.fn().mockResolvedValue({ name: "Ghost Judoka" });
+      const fetchJson = vi.fn().mockResolvedValue([]);
+      const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+
+      const loadGokyoLookup = vi.fn().mockResolvedValue({});
+      const renderJudokaCard = vi.fn().mockResolvedValue();
+
+      vi.doMock("../../src/helpers/randomCard.js", () => ({
+        generateRandomCard,
+        loadGokyoLookup,
+        renderJudokaCard
+      }));
+      vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+        ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+        fetchJson
+      }));
+      vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
+
+      const { section, container, placeholderTemplate } = createRandomCardDom();
+      document.body.append(section, container, placeholderTemplate);
+
+      const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+      await initRandomJudokaPage();
+
+      const button = document.getElementById("draw-card-btn");
+      const label = button.querySelector(".button-label");
+
+      button.click();
+
+      await button.drawPromise;
+
+      expect(button.disabled).toBe(false);
+      expect(button).not.toHaveAttribute("aria-disabled");
+      expect(button.classList.contains("is-loading")).toBe(false);
+      expect(label.textContent).toBe("Draw Card!");
+    } finally {
+      globalThis.requestAnimationFrame = originalRaf;
+    }
+  });
+
   it("disables draw button when data load fails", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const dataUtils = await import("../../src/helpers/dataUtils.js");
