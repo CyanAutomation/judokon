@@ -116,8 +116,9 @@ describe("renderJudokaCard", () => {
     renderMock.mockResolvedValue(generatedEl);
 
     const { renderJudokaCard } = await import("../../src/helpers/randomCard.js");
-    await renderJudokaCard({ id: 1 }, {}, container, true);
+    const result = await renderJudokaCard({ id: 1 }, {}, container, true);
 
+    expect(result).toBe(true);
     expect(container.firstChild).toBe(generatedEl);
   });
 
@@ -128,8 +129,9 @@ describe("renderJudokaCard", () => {
       renderMock.mockRejectedValue(new Error("fail"));
 
       const { renderJudokaCard } = await import("../../src/helpers/randomCard.js");
-      await renderJudokaCard({ id: 1 }, {}, container, true);
+      const result = await renderJudokaCard({ id: 1 }, {}, container, true);
 
+      expect(result).toBe(false);
       expect(container.childNodes.length).toBe(0);
     });
   });
@@ -164,7 +166,9 @@ describe("generateRandomCard", () => {
     renderMock.mockClear();
     renderMock.mockResolvedValue(generatedEl);
 
-    await generateRandomCard(judokaData, gokyoData, container, true);
+    await expect(
+      generateRandomCard(judokaData, gokyoData, container, true)
+    ).resolves.toBeUndefined();
 
     expect(getRandomJudokaMock).toHaveBeenCalledWith(expect.any(Array));
     expect(JudokaCardMock).toHaveBeenCalled();
@@ -184,7 +188,9 @@ describe("generateRandomCard", () => {
     renderMock.mockClear();
     renderMock.mockResolvedValue(generatedEl);
     const cb = vi.fn();
-    await generateRandomCard(judokaData, gokyoData, container, true, cb);
+    await expect(
+      generateRandomCard(judokaData, gokyoData, container, true, cb)
+    ).resolves.toBeUndefined();
     expect(cb).toHaveBeenCalledWith(judokaData[0]);
   });
 
@@ -198,7 +204,9 @@ describe("generateRandomCard", () => {
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
     const cb = vi.fn();
     renderMock.mockClear();
-    await generateRandomCard(judokaData, gokyoData, null, true, cb, { skipRender: true });
+    await expect(
+      generateRandomCard(judokaData, gokyoData, null, true, cb, { skipRender: true })
+    ).resolves.toBeUndefined();
     expect(cb).toHaveBeenCalledWith(judokaData[0]);
     expect(JudokaCardMock).not.toHaveBeenCalled();
   });
@@ -221,7 +229,9 @@ describe("generateRandomCard", () => {
       renderMock.mockClear();
       renderMock.mockResolvedValue(fallbackEl);
 
-      await generateRandomCard(judokaData, gokyoData, container, true);
+      await expect(
+        generateRandomCard(judokaData, gokyoData, container, true)
+      ).resolves.toBeUndefined();
 
       expect(renderMock).toHaveBeenCalled();
       expect(container.firstChild).toBe(fallbackEl);
@@ -245,7 +255,9 @@ describe("generateRandomCard", () => {
       renderMock.mockClear();
       renderMock.mockResolvedValue(fallbackEl);
 
-      await generateRandomCard(judokaData, undefined, container, true);
+      await expect(
+        generateRandomCard(judokaData, undefined, container, true)
+      ).resolves.toBeUndefined();
 
       expect(fetchJsonMock).toHaveBeenCalledTimes(1);
       expect(fetchJsonMock).toHaveBeenCalledWith(expect.stringContaining("gokyo.json"));
@@ -282,8 +294,9 @@ describe("generateRandomCard", () => {
       const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
       renderMock.mockClear();
       renderMock.mockRejectedValue(new Error("fail"));
-      const result = await generateRandomCard(judokaData, gokyoData, container, true);
-      expect(result).toBe(selectedJudoka);
+      await expect(
+        generateRandomCard(judokaData, gokyoData, container, true)
+      ).resolves.toBeUndefined();
       expect(container.childNodes.length).toBe(0);
     });
   });
@@ -299,7 +312,9 @@ describe("generateRandomCard", () => {
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
     renderMock.mockClear();
     renderMock.mockResolvedValue(null);
-    await generateRandomCard(judokaData, gokyoData, container, true);
+    await expect(
+      generateRandomCard(judokaData, gokyoData, container, true)
+    ).resolves.toBeUndefined();
     expect(container.childNodes.length).toBe(0);
   });
 });

@@ -107,15 +107,15 @@ export async function pickJudoka(activeCards, onSelect) {
  * @pseudocode
  * 1. Ensure `containerEl` exists; throw if missing.
  * 2. Build a `JudokaCard` for `judoka`.
- * 3. When rendering succeeds, display the card.
- * 4. Log and ignore any rendering errors.
+ * 3. When rendering succeeds, display the card and return success.
+ * 4. On failure, clear the container and return false.
  *
  * @param {Judoka} judoka - Judoka data used to build the card.
  * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
  * @param {HTMLElement} containerEl - Element to contain the card.
  * @param {boolean} prefersReducedMotion - Motion preference flag.
  * @param {boolean} [enableInspector] - Enable inspector feature.
- * @returns {Promise<void>} Resolves when rendering completes.
+ * @returns {Promise<boolean>} Resolves with true when rendered, false otherwise.
  */
 export async function renderJudokaCard(
   judoka,
@@ -129,11 +129,17 @@ export async function renderJudokaCard(
   }
   try {
     const card = await new JudokaCard(judoka, gokyoLookup, { enableInspector }).render();
-    if (card) {
-      displayCard(containerEl, card, prefersReducedMotion);
+    if (!card) {
+      containerEl.innerHTML = "";
+      return false;
     }
+
+    displayCard(containerEl, card, prefersReducedMotion);
+    return true;
   } catch (error) {
     console.error("Error displaying card:", error);
+    containerEl.innerHTML = "";
+    return false;
   }
 }
 
@@ -152,9 +158,7 @@ export async function renderJudokaCard(
  *    with the chosen judoka when provided.
  * 4. Unless `options.skipRender` is true, build and display the card using
  *    `JudokaCard` and `displayCard`.
- * 5. On any error, log the issue and load the fallback judoka using
- *    `getFallbackJudoka()`, then optionally display its card and log any
- *    display error.
+ * 5. When rendering fails, clear the container and exit early.
  *
  * @param {Judoka[]} [activeCards] - Preloaded judoka data.
  * @param {GokyoEntry[]} [gokyoData] - Preloaded gokyo data.
@@ -162,7 +166,7 @@ export async function renderJudokaCard(
  * @param {boolean} [prefersReducedMotion=false] - Motion preference flag.
  * @param {function} [onSelect] - Callback invoked with the chosen judoka.
  * @param {{enableInspector?: boolean, skipRender?: boolean}} [options] - Feature flags.
- * @returns {Promise<void>} Resolves when the card is appended.
+ * @returns {Promise<void>} Resolves when the card generation workflow completes.
  */
 export async function generateRandomCard(
   activeCards,
@@ -179,8 +183,16 @@ export async function generateRandomCard(
   const judoka = await pickJudoka(activeCards, onSelect);
 
   if (!skipRender && containerEl) {
-    await renderJudokaCard(judoka, gokyoLookup, containerEl, prefersReducedMotion, enableInspector);
-  }
+    const rendered = await renderJudokaCard(
+      judoka,
+      gokyoLookup,
+      containerEl,
+      prefersReducedMotion,
+      enableInspector
+    );
 
-  return judoka;
+    if (!rendered) {
+      containerEl.innerHTML = "";
+    }
+  }
 }
