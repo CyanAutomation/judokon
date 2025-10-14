@@ -24,8 +24,7 @@ test.describe("Classic Battle page", () => {
       await page.evaluate(() => document.querySelector("#stat-buttons")?.dataset.buttonsReady)
     );
 
-    const getBattleState = () =>
-      page.evaluate(() => document.body?.dataset?.battleState ?? "");
+    const getBattleState = () => page.evaluate(() => document.body?.dataset?.battleState ?? "");
 
     // Play until the match ends
     for (let i = 0; i < 10; i++) {
