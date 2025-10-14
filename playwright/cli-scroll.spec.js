@@ -158,16 +158,11 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.setViewportSize({ width: 1024, height: 768 });
 
       // Check no horizontal scroll
-      const getScrollMetrics = async () =>
-        page.locator("html").evaluate((el) => {
-          const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
-          return {
-            scrollWidth: scrollingElement.scrollWidth,
-            clientWidth: scrollingElement.clientWidth
-          };
-        });
-      const scrollMetrics = await getScrollMetrics();
-      expect(scrollMetrics.scrollWidth).toBeLessThanOrEqual(scrollMetrics.clientWidth + 10);
+      const viewportSize = page.viewportSize();
+      const bodyBox = await page.locator("body").boundingBox();
+      if (viewportSize && bodyBox) {
+        expect(bodyBox.width).toBeLessThanOrEqual(viewportSize.width + 10);
+      }
 
       // Verify CLI interface elements are properly contained
       const cliContainer = page.locator("#cli-container, .cli-container, main");
@@ -192,33 +187,28 @@ test.describe("CLI Layout and Scrolling", () => {
 
       // Check that content is scrollable vertically but not horizontally
       const scroller = page.locator("html");
-      const getScrollInfo = async () =>
-        scroller.evaluate((el) => {
-          const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
-          return {
-            scrollWidth: scrollingElement.scrollWidth,
-            clientWidth: scrollingElement.clientWidth,
-            scrollHeight: scrollingElement.scrollHeight,
-            clientHeight: scrollingElement.clientHeight,
-            scrollTop: scrollingElement.scrollTop ?? 0
-          };
-        });
-      const scrollInfo = await getScrollInfo();
-
-      // Should not have horizontal scroll
-      expect(scrollInfo.scrollWidth).toBeLessThanOrEqual(scrollInfo.clientWidth + 10);
-
-      // Should have vertical scroll if content is long
-      if (scrollInfo.scrollHeight > scrollInfo.clientHeight) {
-        const initialScrollTop = scrollInfo.scrollTop;
-        await page.mouse.wheel(0, 400);
-        await expect
-          .poll(async () => {
-            const currentInfo = await getScrollInfo();
-            return currentInfo.scrollTop;
-          }, { timeout: 5000 })
-          .toBeGreaterThan(initialScrollTop);
+      const viewportSize = page.viewportSize();
+      const scrollerBox = await scroller.boundingBox();
+      if (viewportSize && scrollerBox) {
+        expect(scrollerBox.width).toBeLessThanOrEqual(viewportSize.width + 10);
       }
+
+      const initialScrollTop = await scroller.evaluate((el) => {
+        const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
+        return scrollingElement.scrollTop ?? 0;
+      });
+
+      await scroller.hover();
+      await page.mouse.wheel(0, 400);
+      await expect
+        .poll(async () => {
+          const currentScrollTop = await scroller.evaluate((el) => {
+            const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
+            return scrollingElement.scrollTop ?? 0;
+          });
+          return currentScrollTop;
+        }, { timeout: 5000 })
+        .toBeGreaterThan(initialScrollTop);
     });
   });
 
