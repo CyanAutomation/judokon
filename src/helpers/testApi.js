@@ -17,6 +17,7 @@ import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
+import { isDevelopmentEnvironment } from "./environment.js";
 import {
   getPointsToWin as facadeGetPointsToWin,
   getRoundsPlayed as facadeGetRoundsPlayed,
@@ -167,18 +168,6 @@ async function waitForNextFrame() {
   } catch {}
 
   await new Promise((resolve) => setTimeout(resolve, FRAME_DELAY_MS));
-}
-
-function isDevelopmentEnvironment() {
-  if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
-    return true;
-  }
-
-  if (typeof window !== "undefined" && window.__DEV__) {
-    return true;
-  }
-
-  return false;
 }
 
 function logDevWarning(message, error) {
