@@ -528,7 +528,9 @@ export function createRandomJudokaPageHarness(customConfig = {}) {
     mocks: {
       // Mock random card generation
       "../../src/helpers/randomCard.js": () => ({
-        generateRandomCard: vi.fn()
+        generateRandomCard: vi.fn(),
+        loadGokyoLookup: vi.fn(),
+        renderJudokaCard: vi.fn()
       }),
       // Mock data utilities
       "../../src/helpers/dataUtils.js": () => ({
