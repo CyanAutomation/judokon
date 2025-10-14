@@ -216,7 +216,7 @@ test.describe("CLI Layout and Scrolling", () => {
           .poll(async () => {
             const currentInfo = await getScrollInfo();
             return currentInfo.scrollTop;
-          })
+          }, { timeout: 5000 })
           .toBeGreaterThan(initialScrollTop);
       }
     });
