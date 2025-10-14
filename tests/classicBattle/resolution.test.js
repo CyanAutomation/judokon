@@ -104,7 +104,8 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
 
   mocks["../../src/helpers/classicBattle/snackbar.js"] = {
     showSelectionPrompt: vi.fn(),
-    getOpponentDelay: () => 0
+    getOpponentDelay: () => 0,
+    setOpponentDelay: vi.fn()
   };
 
   mocks["../../src/helpers/classicBattle/statButtons.js"] = {
