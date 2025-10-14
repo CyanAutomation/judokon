@@ -108,6 +108,12 @@ The key issues involve a lack of visual feedback (animations, button press), inc
      }
      ```
 
+### Phase 2 Completion
+
+- **Actions Taken:** Added CSS keyframes for slideInFadeIn animation and applied it to .judoka-card.new-card. Added active state scaling to .draw-card-btn. Changed the animation class in displayCard from "animate-card" to "new-card". Verified that motion preferences (both OS and app setting) are respected via existing prefersReducedMotion logic.
+- **Code Changes:** Updated `src/styles/randomJudoka.css` with keyframes, .judoka-card.new-card, and .draw-card-btn:active. Modified `src/helpers/randomCard.js` to add "new-card" class instead of "animate-card".
+- **Outcome:** Unit tests pass (randomJudokaPage.drawButton.test.js: 2 passed, randomJudokaPage.featureFlags.test.js: 2 passed, randomJudokaPage.historyPanel.test.js: 2 passed, motionUtils.test.js: 4 passed). Playwright tests pass (random-judoka.spec.js: 3 passed). Card now animates on draw with slide-in effect, button scales on press, and animations respect motion settings.
+
 ### Phase 3: Medium - Layout & Responsive Bugs
 
 - **Issue:** The country picker causes page-level horizontal scroll on narrow viewports.
