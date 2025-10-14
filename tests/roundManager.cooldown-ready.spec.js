@@ -7,7 +7,6 @@ import {
   __testFinalizeReadyControls as finalizeReadyControlsForTest
 } from "../src/helpers/classicBattle/roundManager.js";
 import {
-  detectOrchestratorContext,
   createCooldownControls,
   createExpirationDispatcher
 } from "../src/helpers/classicBattle/cooldownOrchestrator.js";
