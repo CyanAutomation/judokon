@@ -242,23 +242,102 @@ function createOrchestratorOverrides({ orchestrated, machine }) {
   return harness.overrides;
 }
 
+function createNextButtonStub() {
+  const attributes = new Map();
+  const dataset = { nextReady: "false" };
+
+  return {
+    id: "next-button",
+    disabled: true,
+    dataset,
+    setAttribute: vi.fn(function (name, value) {
+      attributes.set(name, value);
+      if (name === "disabled") {
+        this.disabled = value !== null && value !== false;
+      }
+      if (name === "data-next-ready") {
+        dataset.nextReady = String(value);
+      }
+    }),
+    removeAttribute: vi.fn(function (name) {
+      attributes.delete(name);
+      if (name === "disabled") {
+        this.disabled = false;
+      }
+      if (name === "data-next-ready") {
+        delete dataset.nextReady;
+      }
+    }),
+    getAttribute(name) {
+      return attributes.get(name);
+    }
+  };
+}
+
+function stubNextButtonLookup(primary, fallback = null) {
+  const originalGetElementById = document.getElementById;
+  const originalQuerySelector = document.querySelector;
+
+  document.getElementById = (id) => {
+    if (id === "next-button") return primary;
+    return originalGetElementById.call(document, id);
+  };
+
+  document.querySelector = (selector) => {
+    if (selector === '[data-role="next-round"]') return fallback;
+    return originalQuerySelector.call(document, selector);
+  };
+
+  return () => {
+    document.getElementById = originalGetElementById;
+    document.querySelector = originalQuerySelector;
+  };
+}
+
+function exposeMachineForTest(machine) {
+  const existingMap = window.__classicBattleDebugMap;
+  const hadMap = Boolean(existingMap);
+  const hadKey = hadMap ? existingMap.has("getClassicBattleMachine") : false;
+  const previousValue = hadKey ? existingMap.get("getClassicBattleMachine") : undefined;
+
+  exposeDebugState("getClassicBattleMachine", () => machine);
+
+  return () => {
+    const debugMap = window.__classicBattleDebugMap;
+    if (!debugMap) return;
+
+    if (hadKey) {
+      debugMap.set("getClassicBattleMachine", previousValue);
+    } else {
+      debugMap.delete("getClassicBattleMachine");
+      if (!hadMap && debugMap.size === 0) {
+        delete window.__classicBattleDebugMap;
+      }
+    }
+  };
+}
+
 describe("startCooldown orchestrator context integration", () => {
   /**
    * @spec startCooldown must immediately surface Next button readiness when no orchestrator is detected so manual flows stay interactive.
    */
   test("startCooldown marks Next button ready immediately when orchestration is absent", () => {
     const store = createBattleStore();
-    const nextBtn = document.createElement("button");
-    nextBtn.id = "next-button";
-    nextBtn.disabled = true;
-    document.body.appendChild(nextBtn);
-
+    const nextBtn = createNextButtonStub();
+    const restoreLookup = stubNextButtonLookup(nextBtn);
     const overrides = createOrchestratorOverrides({ orchestrated: false, machine: null });
 
-    startCooldown(store, null, overrides);
+    try {
+      startCooldown(store, null, overrides);
+      timers.runAllTimers();
 
-    expect(nextBtn.disabled).toBe(false);
-    expect(nextBtn.dataset.nextReady).toBe("true");
+      expect(nextBtn.disabled).toBe(false);
+      expect(nextBtn.dataset.nextReady).toBe("true");
+      expect(nextBtn.setAttribute).toHaveBeenCalledWith("data-next-ready", "true");
+      expect(nextBtn.removeAttribute).toHaveBeenCalledWith("disabled");
+    } finally {
+      restoreLookup();
+    }
   });
 
   /**
@@ -266,23 +345,27 @@ describe("startCooldown orchestrator context integration", () => {
    */
   test("startCooldown defers Next button readiness while orchestrator machine owns cooldown state", () => {
     const store = createBattleStore();
-    const nextBtn = document.createElement("button");
-    nextBtn.id = "next-button";
-    nextBtn.disabled = true;
-    document.body.appendChild(nextBtn);
-
+    const nextBtn = createNextButtonStub();
+    const restoreLookup = stubNextButtonLookup(nextBtn);
     const machine = {
       getState: vi.fn(() => "cooldown")
     };
-    exposeDebugState("getClassicBattleMachine", () => machine);
-
+    const restoreMachine = exposeMachineForTest(machine);
     const overrides = createOrchestratorOverrides({ orchestrated: true, machine });
 
-    const controls = startCooldown(store, null, overrides);
+    try {
+      const controls = startCooldown(store, null, overrides);
+      timers.runAllTimers();
 
-    expect(nextBtn.disabled).toBe(true);
-    expect(nextBtn.dataset.nextReady).not.toBe("true");
-    expect(controls.readyDispatched).toBe(false);
+      expect(nextBtn.disabled).toBe(true);
+      expect(nextBtn.dataset.nextReady).toBe("false");
+      expect(nextBtn.setAttribute).not.toHaveBeenCalledWith("data-next-ready", "true");
+      expect(nextBtn.removeAttribute).not.toHaveBeenCalledWith("disabled");
+      expect(controls.readyDispatched).toBe(false);
+    } finally {
+      restoreMachine();
+      restoreLookup();
+    }
   });
 });
 
