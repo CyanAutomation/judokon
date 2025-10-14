@@ -210,9 +210,14 @@ test.describe("CLI Layout and Scrolling", () => {
 
       // Should have vertical scroll if content is long
       if (scrollInfo.scrollHeight > scrollInfo.clientHeight) {
+        const initialScrollTop = scrollInfo.scrollTop;
         await page.mouse.wheel(0, 400);
-        const afterScroll = await getScrollInfo();
-        expect(afterScroll.scrollTop).toBeGreaterThan(scrollInfo.scrollTop);
+        await expect
+          .poll(async () => {
+            const currentInfo = await getScrollInfo();
+            return currentInfo.scrollTop;
+          })
+          .toBeGreaterThan(initialScrollTop);
       }
     });
   });
