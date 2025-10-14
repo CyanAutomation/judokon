@@ -66,6 +66,7 @@ import {
   LOAD_ERROR_EXIT_EVENT,
   JudokaDataLoadError
 } from "../helpers/classicBattle/cardSelection.js";
+import { isDevelopmentEnvironment } from "../helpers/environment.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -92,18 +93,6 @@ let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
-
-function isDevelopmentEnvironment() {
-  if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
-    return true;
-  }
-
-  if (typeof window !== "undefined" && window.__DEV__) {
-    return true;
-  }
-
-  return false;
-}
 
 /**
  * Waits for the stat buttons hydration promise (when present) so UI updates
