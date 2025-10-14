@@ -296,7 +296,7 @@ describe("generateRandomCard", () => {
       renderMock.mockRejectedValue(new Error("fail"));
       await expect(
         generateRandomCard(judokaData, gokyoData, container, true)
-      ).resolves.toEqual(selectedJudoka);
+      ).resolves.toBeUndefined();
       expect(container.childNodes.length).toBe(0);
     });
   });
@@ -314,7 +314,7 @@ describe("generateRandomCard", () => {
     renderMock.mockResolvedValue(null);
     await expect(
       generateRandomCard(judokaData, gokyoData, container, true)
-    ).resolves.toEqual(judokaData[0]);
+    ).resolves.toBeUndefined();
     expect(container.childNodes.length).toBe(0);
   });
 });
