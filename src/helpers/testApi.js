@@ -17,7 +17,13 @@ import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
-import { getRoundsPlayed } from "./battleEngineFacade.js";
+import {
+  getPointsToWin as facadeGetPointsToWin,
+  getRoundsPlayed as facadeGetRoundsPlayed,
+  getScores as facadeGetScores,
+  requireEngine,
+  setPointsToWin as facadeSetPointsToWin
+} from "./battleEngineFacade.js";
 
 const FRAME_DELAY_MS = 16;
 
@@ -797,6 +803,31 @@ const timerApi = {
   },
 
   /**
+   * Read the currently configured opponent resolve delay override when present.
+   * @returns {number|null} Delay value in milliseconds or null when unset.
+   */
+  getOpponentResolveDelay() {
+    try {
+      if (typeof window === "undefined") {
+        return null;
+      }
+
+      const value = window.__OPPONENT_RESOLVE_DELAY_MS;
+      if (value === undefined || value === null) {
+        return null;
+      }
+
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("Failed to read opponent resolve delay", error);
+      }
+      return null;
+    }
+  },
+
+  /**
    * Clear all active timers
    */
   clearAllTimers() {
@@ -824,6 +855,103 @@ const timerApi = {
       return true;
     } catch {
       return false;
+    }
+  }
+};
+
+/**
+ * Minimal battle engine facade for Playwright specs.
+ */
+const engineApi = {
+  /**
+   * Access the current engine instance when available.
+   * @returns {import("./battleEngineFacade.js").BattleEngine|null}
+   */
+  require() {
+    try {
+      return requireEngine();
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("Failed to require battle engine", error);
+      }
+      return null;
+    }
+  },
+
+  /**
+   * Override the points-to-win target for deterministic match setup.
+   * @param {number} value - Desired target score.
+   * @returns {boolean} True when the update succeeds.
+   */
+  setPointsToWin(value) {
+    try {
+      facadeSetPointsToWin(value);
+      return true;
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("Failed to set points to win", error);
+      }
+      return false;
+    }
+  },
+
+  /**
+   * Read the current points-to-win target from the engine.
+   * @returns {number|null} Numeric target when available.
+   */
+  getPointsToWin() {
+    try {
+      const value = facadeGetPointsToWin();
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("Failed to get points to win", error);
+      }
+      return null;
+    }
+  },
+
+  /**
+   * Retrieve the current match score snapshot from the engine.
+   * @returns {{ player: number, opponent: number }|null}
+   */
+  getScores() {
+    try {
+      const scores = facadeGetScores();
+      if (!scores || typeof scores !== "object") {
+        return null;
+      }
+
+      const player = Number(scores.player);
+      const opponent = Number(scores.opponent);
+      if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
+        return null;
+      }
+
+      return { player, opponent };
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("Failed to read engine scores", error);
+      }
+      return null;
+    }
+  },
+
+  /**
+   * Expose the rounds played counter as reported by the engine.
+   * @returns {number|null}
+   */
+  getRoundsPlayed() {
+    try {
+      const value = facadeGetRoundsPlayed();
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("Failed to read rounds played", error);
+      }
+      return null;
     }
   }
 };
@@ -1277,7 +1405,8 @@ const testApi = {
   timers: timerApi,
   init: initApi,
   inspect: inspectionApi,
-  viewport: viewportApi
+  viewport: viewportApi,
+  engine: engineApi
 };
 
 /**
@@ -1302,6 +1431,7 @@ export function exposeTestAPI() {
     window.__INIT_API = initApi;
     window.__INSPECT_API = inspectionApi;
     window.__VIEWPORT_API = viewportApi;
+    window.__ENGINE_API = engineApi;
   }
 }
 

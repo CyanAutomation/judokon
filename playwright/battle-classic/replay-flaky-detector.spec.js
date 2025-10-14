@@ -1,4 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
+import { waitForBattleReady } from "../helpers/battleStateHelper.js";
 
 // Focused detector for intermittent scoreboard staleness after Replay.
 // Loops replay N times and asserts the scoreboard is zeroed before a new round starts.
@@ -11,12 +12,22 @@ test.describe("Classic Battle — Replay flaky detector", () => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     await page.goto("/src/pages/battleClassic.html");
-    await page.waitForFunction(() => !!window.battleStore);
-    // Make match short to iterate quickly
-    await page.evaluate(async () => {
-      const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
-      setPointsToWin(1);
+    await waitForBattleReady(page, { allowFallback: false });
+
+    const configured = await page.evaluate(() => {
+      const engineApi = window.__TEST_API?.engine;
+      if (!engineApi) {
+        return { applied: false, error: "ENGINE_API_UNAVAILABLE" };
+      }
+
+      const success = engineApi.setPointsToWin(1);
+      const current = engineApi.getPointsToWin();
+      return { applied: success && current === 1, error: success ? null : "SET_FAILED" };
     });
+
+    if (!configured.applied) {
+      throw new Error(`Failed to configure replay detector: ${configured.error}`);
+    }
     // Start first match
     await page.click("#round-select-2");
 

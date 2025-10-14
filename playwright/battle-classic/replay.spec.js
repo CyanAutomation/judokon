@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import selectors from "../../playwright/helpers/selectors";
+import { waitForBattleReady } from "../helpers/battleStateHelper.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 
 test.describe("Classic Battle replay", () => {
@@ -10,14 +11,23 @@ test.describe("Classic Battle replay", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
-      // Wait for battle engine initialization
-      await page.waitForFunction(() => !!window.battleStore);
+      await waitForBattleReady(page, { allowFallback: false });
 
-      // Set points to win to 1 for quick match
-      await page.evaluate(async () => {
-        const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
-        setPointsToWin(1);
+      const setQuickMatch = await page.evaluate(() => {
+        const engineApi = window.__TEST_API?.engine;
+        if (!engineApi) {
+          return { applied: false, error: "ENGINE_API_UNAVAILABLE" };
+        }
+
+        const success = engineApi.setPointsToWin(1);
+        const current = engineApi.getPointsToWin();
+
+        return { applied: success && current === 1, error: success ? null : "SET_FAILED" };
       });
+
+      if (!setQuickMatch.applied) {
+        throw new Error(`Failed to configure quick match: ${setQuickMatch.error}`);
+      }
 
       // Start match
       await page.click("#round-select-2");
