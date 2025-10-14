@@ -1240,6 +1240,20 @@ const inspectionApi = {
   },
 
   /**
+   * Reset cached inspection state used when computing rounds played.
+   *
+   * @pseudocode
+   * 1. Reset cachedRoundsEstimate to 0 to clear any accumulated round counts
+   * 2. Reset lastBattleState to null to clear state transition tracking
+   * 3. Ensure each test starts with a clean slate for rounds computation
+   * Note: Call this method in test setup (beforeEach) to ensure proper test isolation
+   */
+  resetCache() {
+    cachedRoundsEstimate = 0;
+    lastBattleState = null;
+  },
+
+  /**
    * Get debug information about the current battle state
    * @returns {object} Debug information
    */
