@@ -882,9 +882,23 @@ async function applySelectionResult(store, result) {
   } catch {}
   ensureScoreboardReflectsResult(result);
   const matchEnded = await confirmMatchOutcome(store, result);
-  if (!matchEnded && store && typeof store === "object" && !isOrchestratorActive(store)) {
-    const played = Number(store.roundsPlayed) || 0;
-    store.roundsPlayed = played + 1;
+  if (store && typeof store === "object") {
+    let engineRounds = null;
+    try {
+      const value = Number(getRoundsPlayed());
+      engineRounds = Number.isFinite(value) ? value : null;
+    } catch {
+      engineRounds = null;
+    }
+
+    if (engineRounds === null && !matchEnded && !isOrchestratorActive(store)) {
+      const previous = Number(store.roundsPlayed);
+      engineRounds = Number.isFinite(previous) ? previous + 1 : 1;
+    }
+
+    if (Number.isFinite(engineRounds)) {
+      store.roundsPlayed = engineRounds;
+    }
   }
   if (!matchEnded) {
     scheduleNextReadyAfterSelection(store);

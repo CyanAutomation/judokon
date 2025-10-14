@@ -22,6 +22,65 @@ import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
+async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
+  const inspect = testApi.inspect;
+  const state = testApi.state;
+
+  let store = inspect.getBattleStore();
+  expect(store).toBeTruthy();
+
+  if (orchestrated) {
+    const marker = document.createElement("div");
+    marker.id = "orchestrator-test-marker";
+    marker.setAttribute("data-battle-state", "waitingForPlayerAction");
+    document.body.appendChild(marker);
+  } else {
+    const marker = document.getElementById("orchestrator-test-marker");
+    marker?.remove();
+  }
+
+  expect(store.selectionMade).toBe(false);
+  expect(store.playerChoice).toBeNull();
+
+  const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+  expect(roundButtons.length).toBeGreaterThan(0);
+
+  await withMutedConsole(async () => {
+    roundButtons[0].click();
+    await state.waitForBattleState("waitingForPlayerAction");
+  });
+
+  store = inspect.getBattleStore();
+  expect(store).toBeTruthy();
+  expect(store.selectionMade).toBe(false);
+  expect(store.playerChoice).toBeNull();
+
+  const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+  expect(statButtons.length).toBeGreaterThan(0);
+
+  const chosenButton = statButtons[0];
+  expect(chosenButton.dataset.stat).toBeTruthy();
+
+  const debugBefore = inspect.getDebugInfo();
+  const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
+
+  await withMutedConsole(async () => {
+    chosenButton.click();
+    await state.waitForBattleState("roundDecision");
+  });
+
+  const debugAfter = inspect.getDebugInfo();
+  const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
+  const engineRounds = testApi.engine.getRoundsPlayed();
+
+  return {
+    store: inspect.getBattleStore(),
+    roundsBefore,
+    roundsAfter,
+    engineRounds
+  };
+}
+
 describe("Battle Classic Page Integration", () => {
   let dom;
   let window;
@@ -140,44 +199,22 @@ describe("Battle Classic Page Integration", () => {
     expect(testApi).toBeDefined();
     expect(testApi?.inspect?.getBattleStore).toBeTypeOf("function");
 
-    const inspect = testApi.inspect;
-    let store = inspect.getBattleStore();
-    expect(store).toBeTruthy();
-    expect(store.selectionMade).toBe(false);
-    expect(store.playerChoice).toBeNull();
+    const result = await performStatSelectionFlow(testApi);
+    expect(result.store).toBeTruthy();
+    expect(result.roundsAfter).toBeGreaterThan(result.roundsBefore);
+    expect(result.engineRounds).toBe(result.roundsAfter);
+  });
 
-    const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
-    expect(roundButtons.length).toBeGreaterThan(0);
+  it("keeps roundsPlayed in sync when the orchestrator is active", async () => {
+    await init();
 
-    await withMutedConsole(async () => {
-      roundButtons[0].click();
-      await testApi.state.waitForBattleState("waitingForPlayerAction");
-    });
+    const testApi = window.__TEST_API;
+    expect(testApi).toBeDefined();
 
-    store = inspect.getBattleStore();
-    expect(store.selectionMade).toBe(false);
-    expect(store.playerChoice).toBeNull();
-
-    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    expect(statButtons.length).toBeGreaterThan(0);
-
-    const chosenButton = statButtons[0];
-    const chosenStat = chosenButton.dataset.stat;
-    expect(chosenStat).toBeTruthy();
-
-    const debugBefore = inspect.getDebugInfo();
-    const roundsPlayedBefore = debugBefore?.store?.roundsPlayed ?? 0;
-
-    await withMutedConsole(async () => {
-      chosenButton.click();
-      await testApi.state.waitForBattleState("roundDecision");
-    });
-
-    const debugAfter = inspect.getDebugInfo();
-    expect(debugAfter?.store?.roundsPlayed ?? 0).toBeGreaterThan(roundsPlayedBefore);
-
-    store = inspect.getBattleStore();
-    expect(store).toBeTruthy();
+    const result = await performStatSelectionFlow(testApi, { orchestrated: true });
+    expect(result.store).toBeTruthy();
+    expect(result.roundsAfter).toBeGreaterThan(result.roundsBefore);
+    expect(result.engineRounds).toBe(result.roundsAfter);
   });
 
   it("preserves opponent placeholder card structure and accessibility", async () => {
