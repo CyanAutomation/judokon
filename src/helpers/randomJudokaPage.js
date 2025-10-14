@@ -219,6 +219,13 @@ function getHistoryPanelTransition(prefersReducedMotion) {
   return prefersReducedMotion ? "transform 0.01s linear" : "transform 0.3s ease";
 }
 
+function announceCard(judokaName) {
+  const announcer = document.getElementById("card-announcer");
+  if (announcer) {
+    announcer.textContent = `New card drawn: ${judokaName}`;
+  }
+}
+
 async function displayCard({
   dataLoaded,
   drawButton,
@@ -274,10 +281,7 @@ async function displayCard({
         onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
-      const announcer = document.getElementById("card-announcer");
-      if (announcer) {
-        announcer.textContent = `New card drawn: ${judoka.name}`;
-      }
+      announceCard(judoka.name);
     } catch (err) {
       console.error("Error generating card:", err);
       const fallbackJudoka = await getFallbackJudoka();
@@ -291,10 +295,7 @@ async function displayCard({
         isEnabled("enableCardInspector")
       );
       showSnackbar("Unable to draw a new card. Showing a fallback.");
-      const announcer = document.getElementById("card-announcer");
-      if (announcer) {
-        announcer.textContent = `New card drawn: ${fallbackJudoka.name}`;
-      }
+      announceCard(fallbackJudoka.name);
       enableButton();
       return;
     }

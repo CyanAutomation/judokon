@@ -34,7 +34,9 @@ describe("randomJudokaPage draw button", () => {
     const fetchJson = vi.fn().mockResolvedValue([]);
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
 
-    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard, loadGokyoLookup }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
@@ -75,7 +77,9 @@ describe("randomJudokaPage draw button", () => {
       return btn;
     });
 
-    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard: vi.fn() }));
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard: vi.fn(), loadGokyoLookup }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));

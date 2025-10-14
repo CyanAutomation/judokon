@@ -46,7 +46,6 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P3       | Battle Debug Panel Feature Flag     | Adds a collapsible debug `<pre>` beside the opponent's card showing match state.                                                     |
 | P3       | Battle State Badge Feature Flag     | Displays the current battle state in a header badge on battle pages.                                                                 |
 | P3       | Card Inspector Feature Flag         | Reveals a panel on each card with its raw JSON for debugging.                                                                        |
-| P3       | Viewport Simulation Feature Flag    | Choose preset sizes to simulate different devices.                                                                                   |
 | P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                                                          |
 | P3       | Layout Debug Outlines Feature Flag  | Show element outlines to inspect page layout.                                                                                        |
 | P3       | Navigation Cache Reset Feature Flag | Add a button to clear cached navigation data.                                                                                        |

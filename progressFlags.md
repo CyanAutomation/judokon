@@ -7,7 +7,7 @@
 
 This review re-validates the QA findings in `progressFlags.md`, corrects inaccurate statuses, and adds feasibility notes for the next engineering pass. Key takeaways:
 
-- Card inspector, viewport simulation, tooltip overlay, and skip cooldown behave as implemented; the main gap is missing QA hooks and regression coverage.
+- Card inspector, tooltip overlay, and skip cooldown behave as implemented; the main gap is missing QA hooks and regression coverage.
 - Classic Battle still bootstraps `battleClassic.init.js` (`src/pages/battleClassic.html:172`), so helpers like `applyBattleFeatureFlags` and `initBattleStateProgress` never run in production; the banner and progress UI remain dormant despite unit tests.
 - The battle state badge and progress list modules exist but remain inactive until the Classic page migrates to the new controller/view bootstrap (`src/helpers/classicBattle/bootstrap.js`).
 - Switches such as `roundStore`, `opponentDelayMessage`, and the coupled `statHotkeys`/`cliShortcuts` pair still need product decisions or refactors to avoid confusing auto-enabling behavior.
@@ -22,7 +22,8 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Implemented the opponent delay flag path so Classic Battle shows/defers the "Opponent is choosing…" snackbar based on the feature toggle with deterministic fallbacks (`src/pages/battleClassic.init.js:720-758`, `src/helpers/classicBattle/uiEventHandlers.js:1-118`, `src/helpers/classicBattle/selectionHandler.js:320-350`); validated via `npx vitest run tests/helpers/classicBattle/opponentDelay.test.js tests/components/opponentChoosing.spec.js`.
 - Hid the legacy **Round Store** toggle from the Settings UI while retaining the backing data for engine consumers and schema validation (`src/data/settings.json:66-74`, `src/helpers/settings/featureFlagSwitches.js:70-115`, `src/schemas/settings.schema.json:38-73`), and exercised the settings flow with `npx playwright test playwright/settings.spec.js`.
 - Decoupled stat hotkeys from the forced auto-enable path so UI and CLI respect persisted flag state (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`), verified via `npx vitest run tests/helpers/classicBattle/statHotkeys.enabled.test.js tests/pages/battleCLI.selectedStat.test.js tests/pages/battleCLI.invalidNumber.test.js tests/pages/battleCLI.inputLatencyHardened.spec.js` and `npx playwright test playwright/stat-hotkeys.smoke.spec.js`.
-- Added `data-feature-*` instrumentation for working flags (viewport simulation, tooltip overlay debug, skip round cooldown, battle state badge, and card inspector) plus focused regression coverage (`src/helpers/viewportDebug.js`, `src/helpers/tooltipOverlayDebug.js`, `src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`, `src/helpers/cardUtils.js`, `src/helpers/inspector/createInspectorPanel.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `tests/helpers/judokaCard.test.js`, `playwright/settings.spec.js`); validated with `npx vitest run tests/helpers/debugClassToggles.test.js tests/helpers/classicBattle/uiHelpers.featureFlags.test.js tests/helpers/judokaCard.test.js` and `npx playwright test playwright/settings.spec.js`.
+- Added `data-feature-*` instrumentation for working flags (tooltip overlay debug, skip round cooldown, battle state badge, and card inspector) plus focused regression coverage (`src/helpers/tooltipOverlayDebug.js`, `src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`, `src/helpers/cardUtils.js`, `src/helpers/inspector/createInspectorPanel.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `tests/helpers/judokaCard.test.js`, `playwright/settings.spec.js`); validated with `npx vitest run tests/helpers/debugClassToggles.test.js tests/helpers/classicBattle/uiHelpers.featureFlags.test.js tests/helpers/judokaCard.test.js` and `npx playwright test playwright/settings.spec.js`.
+- Retired the viewport simulation feature in favor of a desktop-only testing surface, removing the flag from settings/UI, deleting its runtime helpers, and updating unit/integration coverage (`src/data/settings.json`, `src/helpers/settingsPage.js`, `src/helpers/setupDisplaySettings.js`, `src/helpers/randomJudokaPage.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/settingsPage.test.js`, `tests/helpers/randomJudokaPage.featureFlags.test.js`, `src/styles/settings.css`).
 
 ## Critical blocker
 
@@ -45,10 +46,10 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Recommendation: Keep the feature, add `data-feature-card-inspector` to the wrapper for automation, and document that toggling the flag requires a fresh card draw.
 
 - `viewportSimulation`
-  - Status: **Working** — settings toggles call `toggleViewportSimulation`, which persists class state and updates instantly, with CSS already constraining the layout (`src/helpers/setupDisplaySettings.js:1-33`, `src/helpers/viewportDebug.js:17-22`, `src/styles/settings.css:188-204`).
-  - Confidence: High.
-  - Effort: Low (QA coverage + optional presets).
-  - Recommendation: Add a Playwright smoke test that asserts the `.simulate-viewport` class is applied and that layout width is reduced to the expected 375 px.
+  - Status: **Removed** — per the desktop-only design decision, the settings toggle, runtime helper, and CSS hook were deleted (`src/data/settings.json`, `src/helpers/settingsPage.js`, `src/helpers/setupDisplaySettings.js`, `src/helpers/randomJudokaPage.js`, `src/styles/settings.css`).
+  - Confidence: High (feature flag and tests eliminated).
+  - Effort: None (no further action planned).
+  - Recommendation: N/A — desktop-resolution remains the sole supported/tested viewport.
 
 - `tooltipOverlayDebug`
   - Status: **Working** — toggles call `toggleTooltipOverlayDebug`, which sets a body class consumed by existing tooltip CSS (`src/helpers/settings/featureFlagSwitches.js:26-55`, `src/helpers/tooltipOverlayDebug.js:17-34`, `src/styles/tooltip.css:26-31`).
@@ -97,7 +98,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 1. **Surface the test mode banner** — Completed/verified; follow-up coverage is tracked in the implementation plan.
 2. **Instrument battle state progress** — **Completed/verified** via new data attributes, targeted unit coverage, and Playwright validation.
 3. **Tidy unused or misleading flags** — **Completed** by wiring `opponentDelayMessage` through the battle flow and hiding the dormant `roundStore` toggle until product requirements land.
-4. **Improve observability** — **Completed** via new `data-feature-*` hooks and focused Vitest/Playwright coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`), enabling QA automation to assert live state.
+4. **Improve observability** — **Completed** via new `data-feature-*` hooks and focused Vitest/Playwright coverage for the working flags (`tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`), enabling QA automation to assert live state.
 5. **Decouple hotkeys** — **Completed** by removing the `enableFlag("statHotkeys")` auto-toggle, routing CLI digits through the flag, and backfilling regression coverage.
 
 ## Concrete prioritized implementation plan (short, testable steps)
@@ -111,7 +112,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1 **(Completed)**
    - Removed the forced `enableFlag` call, ensured both UI and CLI respect stored values, and added regression tests.
 5. Add data hooks + tests for the other working flags (owner: dev tooling) — Effort: Low — Priority: P2 **(Completed)**
-   - Tagged runtime affordances (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) with `data-feature-*` markers, extended Vitest coverage, and taught the Playwright settings spec to ignore hidden toggles.
+   - Tagged runtime affordances (`tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) with `data-feature-*` markers, extended Vitest coverage, and taught the Playwright settings spec to ignore hidden toggles.
 
 ## Tests & verification matrix
 
@@ -126,7 +127,7 @@ Once Classic Battle is wired to the new bootstrap, the following coverage should
 - **Playwright / integration**
   - Toggle `enableTestMode` → assert banner presence, debug panel visibility, and deterministic seed copy.
   - Toggle `battleStateProgress` → assert list renders and active class follows state transitions.
-  - Toggle `viewportSimulation` + `tooltipOverlayDebug` → assert `.simulate-viewport` width and tooltip outlines via `data-feature-*` hooks.
+  - Toggle `tooltipOverlayDebug` → assert outlined targets via `data-feature-*` hooks.
   - Toggle `skipRoundCooldown` → ensure countdown is bypassed, while manual Next still advances.
 
 ## Accessibility and rollout suggestions
@@ -161,13 +162,13 @@ This phase focuses on high-impact changes to improve the core layout, readabilit
    - **Issue:** The settings page is a long, single-column list of options, which can be overwhelming for users. The separation between sections is not very strong.
    - **Suggestion:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
 
-2. **Responsive Layout for Links:**
-   - **Issue:** `.settings-links-list` already uses a three-column CSS grid, but the fixed `repeat(3, 1fr)` template leaves awkward spacing on medium viewports before collapsing to a single column.
-   - **Suggestion:** In `src/styles/settings.css`, switch the grid definition to something like `grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));` so the links reflow smoothly across small, medium, and large screens without manual breakpoints.
+2. **Link Layout (Desktop-Focused):**
+   - **Issue:** With the experience scoped to desktop resolutions, the existing three-column grid is functionally acceptable but could use spacing polish for wide screens.
+   - **Suggestion:** Tune the desktop grid gutters in `src/styles/settings.css` (e.g., via `column-gap`) to balance whitespace on large displays; defer responsive breakpoints until multi-viewport support returns.
 
 3. **Switch Control Sizing:**
-   - **Issue:** The toggle switches are currently a fixed width, which can appear too large on smaller screens.
-   - **Suggestion:** In `src/styles/settings.css`, adjust the width of the `.switch` class to be responsive. Use a smaller base width and consider using `max-width` to ensure the switches scale appropriately on different devices.
+   - **Issue:** Toggle switches currently span a wide footprint; while acceptable on desktop, they can feel oversized relative to neighboring content.
+   - **Suggestion:** In `src/styles/settings.css`, tighten the default width/padding for `.switch` to better align with desktop proportions, keeping responsiveness work out of scope for now.
 
 ### Phase 2: Enhanced Interactivity and Theming
 

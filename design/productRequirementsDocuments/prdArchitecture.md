@@ -181,7 +181,6 @@ Component modules own DOM rendering concerns and expose internal state via `data
 | ------------------ | --------------------- | ------------------------------------------------------- |
 | Feature Flags      | `data-feature-*`      | Each flag in the Settings panel updates this attribute  |
 | Layout Debug Panel | `data-debug="layout"` | Injects red outlines around DOM components              |
-| Viewport Simulator | `#mobile` URL hash    | Simulates mobile layout at 375px width                  |
 | Card Stats         | `data-stat="grip"`    | Embedded in rendered card DOM                           |
 | Tooltip Coverage   | `data-tooltip-id`     | Indicates linked tooltip key, used to validate coverage |
 
