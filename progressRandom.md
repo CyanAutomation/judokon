@@ -172,6 +172,12 @@ The key issues involve a lack of visual feedback (animations, button press), inc
      }
      ```
 
+### Phase 4 Completion
+
+- **Actions Taken:** Added a visually hidden ARIA live region in `src/pages/randomJudoka.html` for screen reader announcements. Modified `generateRandomCard` in `src/helpers/randomCard.js` to return the judoka for announcement. Updated `displayCard` in `src/helpers/randomJudokaPage.js` to announce the judoka name after successful draw or fallback.
+- **Code Changes:** Added `<div class="sr-only" aria-live="polite" id="card-announcer"></div>` to HTML. Modified `generateRandomCard` to return judoka. Added announcement logic in `displayCard` for both success and error cases.
+- **Outcome:** Unit tests pass (randomJudokaPage.drawButton.test.js: 2 passed, randomJudokaPage.featureFlags.test.js: 2 passed, randomJudokaPage.historyPanel.test.js: 2 passed). Playwright tests pass (random-judoka.spec.js: 3 passed). Screen readers will now announce the name of the drawn judoka.
+
 ---
 
 ## 3. Next Steps

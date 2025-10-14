@@ -269,7 +269,7 @@ async function displayCard({
       return;
     }
     try {
-      await generateRandomCard(
+      const judoka = await generateRandomCard(
         cachedJudokaData,
         cachedGokyoData,
         cardContainer,
@@ -277,6 +277,10 @@ async function displayCard({
         onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
+      const announcer = document.getElementById("card-announcer");
+      if (announcer) {
+        announcer.textContent = `New card drawn: ${judoka.name}`;
+      }
     } catch (err) {
       console.error("Error generating card:", err);
       const fallbackJudoka = await getFallbackJudoka();
@@ -290,6 +294,10 @@ async function displayCard({
         isEnabled("enableCardInspector")
       );
       showSnackbar("Unable to draw a new card. Showing a fallback.");
+      const announcer = document.getElementById("card-announcer");
+      if (announcer) {
+        announcer.textContent = `New card drawn: ${fallbackJudoka.name}`;
+      }
       enableButton();
       return;
     }

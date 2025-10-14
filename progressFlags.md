@@ -22,6 +22,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Implemented the opponent delay flag path so Classic Battle shows/defers the "Opponent is choosing…" snackbar based on the feature toggle with deterministic fallbacks (`src/pages/battleClassic.init.js:720-758`, `src/helpers/classicBattle/uiEventHandlers.js:1-118`, `src/helpers/classicBattle/selectionHandler.js:320-350`); validated via `npx vitest run tests/helpers/classicBattle/opponentDelay.test.js tests/components/opponentChoosing.spec.js`.
 - Hid the legacy **Round Store** toggle from the Settings UI while retaining the backing data for engine consumers and schema validation (`src/data/settings.json:66-74`, `src/helpers/settings/featureFlagSwitches.js:70-115`, `src/schemas/settings.schema.json:38-73`), and exercised the settings flow with `npx playwright test playwright/settings.spec.js`.
 - Decoupled stat hotkeys from the forced auto-enable path so UI and CLI respect persisted flag state (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`), verified via `npx vitest run tests/helpers/classicBattle/statHotkeys.enabled.test.js tests/pages/battleCLI.selectedStat.test.js tests/pages/battleCLI.invalidNumber.test.js tests/pages/battleCLI.inputLatencyHardened.spec.js` and `npx playwright test playwright/stat-hotkeys.smoke.spec.js`.
+- Added `data-feature-*` instrumentation for working flags (viewport simulation, tooltip overlay debug, skip round cooldown, battle state badge, and card inspector) plus focused regression coverage (`src/helpers/viewportDebug.js`, `src/helpers/tooltipOverlayDebug.js`, `src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`, `src/helpers/cardUtils.js`, `src/helpers/inspector/createInspectorPanel.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `tests/helpers/judokaCard.test.js`, `playwright/settings.spec.js`); validated with `npx vitest run tests/helpers/debugClassToggles.test.js tests/helpers/classicBattle/uiHelpers.featureFlags.test.js tests/helpers/judokaCard.test.js` and `npx playwright test playwright/settings.spec.js`.
 
 ## Critical blocker
 
@@ -96,7 +97,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 1. **Surface the test mode banner** — Completed/verified; follow-up coverage is tracked in the implementation plan.
 2. **Instrument battle state progress** — **Completed/verified** via new data attributes, targeted unit coverage, and Playwright validation.
 3. **Tidy unused or misleading flags** — **Completed** by wiring `opponentDelayMessage` through the battle flow and hiding the dormant `roundStore` toggle until product requirements land.
-4. **Improve observability** — Add `data-feature-*` hooks and Playwright/Vitest coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) so QA automation can rely on them.
+4. **Improve observability** — **Completed** via new `data-feature-*` hooks and focused Vitest/Playwright coverage for the working flags (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`), enabling QA automation to assert live state.
 5. **Decouple hotkeys** — **Completed** by removing the `enableFlag("statHotkeys")` auto-toggle, routing CLI digits through the flag, and backfilling regression coverage.
 
 ## Concrete prioritized implementation plan (short, testable steps)
@@ -109,8 +110,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
    - Hid the `roundStore` toggle and wired `opponentDelayMessage` through the Classic Battle flow pending product follow-up.
 4. Decouple hotkeys (owner: UX/core eng) — Effort: Low — Priority: P1 **(Completed)**
    - Removed the forced `enableFlag` call, ensured both UI and CLI respect stored values, and added regression tests.
-5. Add data hooks + tests for the other working flags (owner: dev tooling) — Effort: Low — Priority: P2
-   - Tag rendered elements with `data-feature-*`, add Vitest/Playwright checks, and document QA entry points.
+5. Add data hooks + tests for the other working flags (owner: dev tooling) — Effort: Low — Priority: P2 **(Completed)**
+   - Tagged runtime affordances (`viewportSimulation`, `tooltipOverlayDebug`, `battleStateBadge`, `skipRoundCooldown`, `enableCardInspector`) with `data-feature-*` markers, extended Vitest coverage, and taught the Playwright settings spec to ignore hidden toggles.
 
 ## Tests & verification matrix
 

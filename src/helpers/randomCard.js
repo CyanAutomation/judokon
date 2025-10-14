@@ -181,4 +181,6 @@ export async function generateRandomCard(
   if (!skipRender && containerEl) {
     await renderJudokaCard(judoka, gokyoLookup, containerEl, prefersReducedMotion, enableInspector);
   }
+
+  return judoka;
 }
