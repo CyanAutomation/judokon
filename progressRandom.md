@@ -6,10 +6,10 @@ This document serves as a **verified record** of the completed fixes and subsequ
 
 **Verified Fixes:**
 
-1.  **High:** Correct fallback behavior is now implemented, ensuring a card is always shown, even on network failure.
-2.  **Medium:** UI feedback has been enhanced with animations and button-press effects that respect user motion preferences.
-3.  **Medium:** Page-level horizontal scroll caused by the country picker has been resolved.
-4.  **Low:** Accessibility has been improved with ARIA live announcements for screen readers when a new card is drawn.
+1. **High:** Correct fallback behavior is now implemented, ensuring a card is always shown, even on network failure.
+2. **Medium:** UI feedback has been enhanced with animations and button-press effects that respect user motion preferences.
+3. **Medium:** Page-level horizontal scroll caused by the country picker has been resolved.
+4. **Low:** Accessibility has been improved with ARIA live announcements for screen readers when a new card is drawn.
 
 Following the initial verification, two enhancement tasks have also been completed to improve code quality and maintainability.
 
@@ -49,16 +49,16 @@ Following the initial verification, two enhancement tasks have also been complet
 ### Enhancement 1: Reduce Code Duplication in Announcer Logic
 
 - **Actions Taken:**
-  1.  Created a new `announceCard` helper function within `src/helpers/randomJudokaPage.js`.
-  2.  Refactored the `displayCard` function to use this new helper, removing duplicated code from the `try` and `catch` blocks.
-  3.  Updated and fixed several broken unit tests in `tests/helpers/randomJudokaPage.*.test.js` and `tests/helpers/randomCard.test.js` to account for changes in function contracts and mock requirements that surfaced during the refactoring.
+  1. Created a new `announceCard` helper function within `src/helpers/randomJudokaPage.js`.
+  2. Refactored the `displayCard` function to use this new helper, removing duplicated code from the `try` and `catch` blocks.
+  3. Updated and fixed several broken unit tests in `tests/helpers/randomJudokaPage.*.test.js` and `tests/helpers/randomCard.test.js` to account for changes in function contracts and mock requirements that surfaced during the refactoring.
 - **Outcome:** The codebase is now cleaner and adheres to the DRY (Don't Repeat Yourself) principle. All relevant unit and Playwright tests pass, confirming the refactoring was successful and did not introduce regressions.
 
 ### Enhancement 2: Centralize Design Tokens
 
 - **Actions Taken:**
-  1.  Added four new CSS custom properties to `:root` in `src/styles/base.css` to represent animation durations, timing functions, and button press scale.
-  2.  Updated `src/styles/randomJudoka.css` to use these new CSS variables instead of hardcoded values for the card animation and button active state.
+  1. Added four new CSS custom properties to `:root` in `src/styles/base.css` to represent animation durations, timing functions, and button press scale.
+  2. Updated `src/styles/randomJudoka.css` to use these new CSS variables instead of hardcoded values for the card animation and button active state.
 - **Outcome:** Styling values are now centralized, which improves maintainability and ensures a consistent design. All relevant Playwright and unit tests pass, indicating no visual or functional regressions were introduced.
 
 ---

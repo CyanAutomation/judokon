@@ -213,10 +213,13 @@ test.describe("CLI Layout and Scrolling", () => {
         const initialScrollTop = scrollInfo.scrollTop;
         await page.mouse.wheel(0, 400);
         await expect
-          .poll(async () => {
-            const currentInfo = await getScrollInfo();
-            return currentInfo.scrollTop;
-          }, { timeout: 5000 })
+          .poll(
+            async () => {
+              const currentInfo = await getScrollInfo();
+              return currentInfo.scrollTop;
+            },
+            { timeout: 5000 }
+          )
           .toBeGreaterThan(initialScrollTop);
       }
     });

@@ -166,9 +166,9 @@ describe("generateRandomCard", () => {
     renderMock.mockClear();
     renderMock.mockResolvedValue(generatedEl);
 
-    await expect(
-      generateRandomCard(judokaData, gokyoData, container, true)
-    ).resolves.toEqual(judokaData[1]);
+    await expect(generateRandomCard(judokaData, gokyoData, container, true)).resolves.toEqual(
+      judokaData[1]
+    );
 
     expect(getRandomJudokaMock).toHaveBeenCalledWith(expect.any(Array));
     expect(JudokaCardMock).toHaveBeenCalled();
@@ -188,9 +188,9 @@ describe("generateRandomCard", () => {
     renderMock.mockClear();
     renderMock.mockResolvedValue(generatedEl);
     const cb = vi.fn();
-    await expect(
-      generateRandomCard(judokaData, gokyoData, container, true, cb)
-    ).resolves.toEqual(judokaData[0]);
+    await expect(generateRandomCard(judokaData, gokyoData, container, true, cb)).resolves.toEqual(
+      judokaData[0]
+    );
     expect(cb).toHaveBeenCalledWith(judokaData[0]);
   });
 
@@ -229,9 +229,9 @@ describe("generateRandomCard", () => {
       renderMock.mockClear();
       renderMock.mockResolvedValue(fallbackEl);
 
-      await expect(
-        generateRandomCard(judokaData, gokyoData, container, true)
-      ).resolves.toEqual({ id: 0 });
+      await expect(generateRandomCard(judokaData, gokyoData, container, true)).resolves.toEqual({
+        id: 0
+      });
 
       expect(renderMock).toHaveBeenCalled();
       expect(container.firstChild).toBe(fallbackEl);
@@ -255,9 +255,9 @@ describe("generateRandomCard", () => {
       renderMock.mockClear();
       renderMock.mockResolvedValue(fallbackEl);
 
-      await expect(
-        generateRandomCard(judokaData, undefined, container, true)
-      ).resolves.toEqual({ id: 0 });
+      await expect(generateRandomCard(judokaData, undefined, container, true)).resolves.toEqual({
+        id: 0
+      });
 
       expect(fetchJsonMock).toHaveBeenCalledTimes(1);
       expect(fetchJsonMock).toHaveBeenCalledWith(expect.stringContaining("gokyo.json"));
