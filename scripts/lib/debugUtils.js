@@ -1,3 +1,7 @@
+import { getBattleStore } from "../../tests/utils/battleStoreAccess.js";
+
+const BATTLE_STORE_ACCESSOR_SOURCE = getBattleStore.toString();
+
 /**
  * Debug utilities shared by Playwright debug scripts.
  *
@@ -226,72 +230,74 @@ export async function getClickDiagnostics(page, selector) {
 }
 
 export async function getBattleSnapshot(page) {
-  return page.evaluate(() => {
-    try {
-      const byId = (id) => document.getElementById(id);
-      const text = (id) => (byId(id) ? byId(id).textContent || "" : "");
-      const machineTimerEl = byId("machine-timer");
-      const progressItems = Array.from(
-        document.querySelectorAll("#battle-state-progress > li")
-      ).map((li) => li.textContent || "");
-      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button")).map(
-        (b) => ({
-          text: b.textContent || "",
-          stat: b.dataset.stat || "",
-          disabled: !!b.disabled,
-          classes: b.className || ""
-        })
-      );
-      const logArr = Array.isArray(window.__classicBattleStateLog)
-        ? window.__classicBattleStateLog.slice(-20)
-        : [];
-      const active = document.activeElement;
-      const activeDesc = active
-        ? `${active.tagName.toLowerCase()}#${active.id || ""}.${active.className || ""}`
-        : "";
-      return {
-        state: window.__classicBattleState || null,
-        prev: window.__classicBattlePrevState || null,
-        lastEvent: window.__classicBattleLastEvent || null,
-        lastInterruptReason: window.__classicBattleLastInterruptReason || null,
-        lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
-        guardFiredAt: window.__guardFiredAt || null,
-        guardOutcomeEvent: window.__guardOutcomeEvent || null,
-        roundDebug: window.__roundDebug || null,
-        machineTimer: machineTimerEl
-          ? { remaining: machineTimerEl.dataset.remaining, paused: machineTimerEl.dataset.paused }
-          : null,
-        machineStateEl: text("machine-state"),
-        roundResult: text("round-result"),
-        roundCounter: text("round-counter"),
-        roundMessage: text("round-message"),
-        scoreboard: text("score-display"),
-        progressCount: progressItems.length,
-        progressItems,
-        statButtons,
-        store: (() => {
-          try {
-            const storeRef =
-              window.__TEST_API?.inspect?.getBattleStore?.() ||
-              window.__classicbattledebugapi?.battleStore ||
-              window.battleStore ||
-              null;
-            if (!storeRef) return null;
-            return {
-              selectionMade: !!storeRef.selectionMade,
-              playerChoice: storeRef.playerChoice || null
-            };
-          } catch {
-            return null;
-          }
-        })(),
-        machineLog: logArr,
-        activeElement: activeDesc
-      };
-    } catch (e) {
-      return { error: String(e) };
-    }
-  });
+  return page.evaluate(
+    ({ accessorSource }) => {
+      try {
+        const ensureBattleStoreAccessor = () =>
+          window.__getBattleStoreAccessor ||
+          (window.__getBattleStoreAccessor = new Function("return " + accessorSource)());
+        const byId = (id) => document.getElementById(id);
+        const text = (id) => (byId(id) ? byId(id).textContent || "" : "");
+        const machineTimerEl = byId("machine-timer");
+        const progressItems = Array.from(
+          document.querySelectorAll("#battle-state-progress > li")
+        ).map((li) => li.textContent || "");
+        const statButtons = Array.from(document.querySelectorAll("#stat-buttons button")).map(
+          (b) => ({
+            text: b.textContent || "",
+            stat: b.dataset.stat || "",
+            disabled: !!b.disabled,
+            classes: b.className || ""
+          })
+        );
+        const logArr = Array.isArray(window.__classicBattleStateLog)
+          ? window.__classicBattleStateLog.slice(-20)
+          : [];
+        const active = document.activeElement;
+        const activeDesc = active
+          ? `${active.tagName.toLowerCase()}#${active.id || ""}.${active.className || ""}`
+          : "";
+        return {
+          state: window.__classicBattleState || null,
+          prev: window.__classicBattlePrevState || null,
+          lastEvent: window.__classicBattleLastEvent || null,
+          lastInterruptReason: window.__classicBattleLastInterruptReason || null,
+          lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
+          guardFiredAt: window.__guardFiredAt || null,
+          guardOutcomeEvent: window.__guardOutcomeEvent || null,
+          roundDebug: window.__roundDebug || null,
+          machineTimer: machineTimerEl
+            ? { remaining: machineTimerEl.dataset.remaining, paused: machineTimerEl.dataset.paused }
+            : null,
+          machineStateEl: text("machine-state"),
+          roundResult: text("round-result"),
+          roundCounter: text("round-counter"),
+          roundMessage: text("round-message"),
+          scoreboard: text("score-display"),
+          progressCount: progressItems.length,
+          progressItems,
+          statButtons,
+          store: (() => {
+            try {
+              const storeRef = ensureBattleStoreAccessor()?.();
+              if (!storeRef) return null;
+              return {
+                selectionMade: !!storeRef.selectionMade,
+                playerChoice: storeRef.playerChoice || null
+              };
+            } catch {
+              return null;
+            }
+          })(),
+          machineLog: logArr,
+          activeElement: activeDesc
+        };
+      } catch (e) {
+        return { error: String(e) };
+      }
+    },
+    { accessorSource: BATTLE_STORE_ACCESSOR_SOURCE }
+  );
 }
 
 export async function takeScreenshot(page, path) {

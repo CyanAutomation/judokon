@@ -7,6 +7,9 @@ import {
   getBattleSnapshot,
   takeScreenshot
 } from "./lib/debugUtils.js";
+import { getBattleStore } from "../tests/utils/battleStoreAccess.js";
+
+const BATTLE_STORE_ACCESSOR_SOURCE = getBattleStore.toString();
 
 (async function run() {
   const headless = process.env.HEADLESS !== "0";
@@ -19,6 +22,16 @@ import {
   const browser = await chromium.launch({ headless });
   const context = await browser.newContext();
   const page = await context.newPage();
+  await page.addInitScript(
+    ({ accessorSource }) => {
+      try {
+        if (!window.__getBattleStoreAccessor) {
+          window.__getBattleStoreAccessor = new Function("return " + accessorSource)();
+        }
+      } catch {}
+    },
+    { accessorSource: BATTLE_STORE_ACCESSOR_SOURCE }
+  );
   await installSelectorGuard(page);
   attachLoggers(page, { withLocations: true });
 
@@ -65,14 +78,13 @@ import {
     // Wait for one of the canonical resolution signals using page.waitForFunction
     try {
       await page.waitForFunction(
-        () => {
+        ({ accessorSource }) => {
           try {
             const bs = document.body?.dataset?.battleState;
-            const store =
-              window.__TEST_API?.inspect?.getBattleStore?.() ||
-              window.__classicbattledebugapi?.battleStore ||
-              window.battleStore ||
-              null;
+            const getStore =
+              window.__getBattleStoreAccessor ||
+              (window.__getBattleStoreAccessor = new Function("return " + accessorSource)());
+            const store = getStore?.();
             const pc = store?.playerChoice ?? null;
             const rd = window.__roundDebug;
             if (rd && rd.resolvedAt) return true;
@@ -83,6 +95,7 @@ import {
             return false;
           }
         },
+        { accessorSource: BATTLE_STORE_ACCESSOR_SOURCE },
         { timeout: overallTimeout }
       );
       console.log("RESOLVED: waitForFunction observed resolution signal");

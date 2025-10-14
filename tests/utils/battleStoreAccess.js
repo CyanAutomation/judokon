@@ -7,7 +7,7 @@
  * 3. Lastly, return `window.battleStore` for legacy tooling support.
  * 4. Swallow any access errors and return null when the store cannot be read.
  *
- * @returns {ReturnType<import("../../src/helpers/classicBattle/roundManager.js").createBattleStore> | null}
+ * @returns {object | null} The battle store object or null if unavailable
  */
 export function getBattleStore() {
   try {
