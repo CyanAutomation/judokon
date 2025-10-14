@@ -127,11 +127,7 @@ describe("startCooldown", () => {
     };
 
     const harness = createSchedulerHarness();
-    const controls = startCooldown(
-      createBattleStore(),
-      injectedScheduler,
-      harness.overrides
-    );
+    const controls = startCooldown(createBattleStore(), injectedScheduler, harness.overrides);
 
     expect(injectedScheduler.setTimeout).toHaveBeenCalledTimes(1);
     expect(harness.fallbacks).toHaveLength(1);
