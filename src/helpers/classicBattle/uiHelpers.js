@@ -649,6 +649,30 @@ export function selectStat(store, stat) {
   } catch {}
 }
 
+const STAT_BUTTON_HANDLER_KEY = "__classicBattleStatHandler";
+
+function registerStatButtonClickHandler(container, store) {
+  if (!container || container[STAT_BUTTON_HANDLER_KEY]) return;
+  const handler = (event) => {
+    const target = event?.target;
+    if (!target || typeof target.closest !== "function") return;
+    const btn = target.closest("button[data-stat]");
+    if (!btn || btn.disabled) return;
+    const stat = btn.dataset?.stat;
+    if (!stat) return;
+    try {
+      selectStat(store, stat);
+    } catch (error) {
+      guard(() => console.warn("[uiHelpers] Failed to handle stat selection:", error));
+    }
+  };
+  container.addEventListener("click", handler);
+  Object.defineProperty(container, STAT_BUTTON_HANDLER_KEY, {
+    value: handler,
+    configurable: true
+  });
+}
+
 /**
  * Attach the Next button click handler to the DOM Next control.
  *
@@ -808,8 +832,6 @@ export function clearScoreboardAndMessages() {
  * @returns {{enable: Function, disable: Function}} An object with enable and disable functions for the stat buttons.
  */
 export function initStatButtons(store) {
-  // Mark intentionally unused to satisfy eslint while preserving API
-  void store;
   const container = document.getElementById("stat-buttons");
   if (!container) throw new Error("initStatButtons: #stat-buttons missing");
   const buttons = Array.from(container.querySelectorAll("button"));
@@ -822,6 +844,7 @@ export function initStatButtons(store) {
   }
 
   let disposeHotkeys = null;
+  registerStatButtonClickHandler(container, store);
 
   const enable = () => {
     enableStatButtons(buttons, container);
