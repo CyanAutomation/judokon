@@ -104,7 +104,7 @@ Notes:
 
 **For UI-related changes (styles, components, layout):**
 
-- Confirm responsiveness and visual correctness in desktop and simulated mobile viewport.
+- Confirm visual correctness on modern desktop resolutions.
 - Use feature flags for experimental features if applicable.
 - Run and validate the Layout Debug Panel if working on visuals.
 
