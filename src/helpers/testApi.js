@@ -1360,7 +1360,11 @@ const inspectionApi = {
             candidates.push(window.battleStore?.roundsPlayed);
           }
         } catch (error) {
-          if (typeof console !== "undefined" && typeof console.debug === "function") {
+          if (
+            isDevelopmentEnvironment() &&
+            typeof console !== "undefined" &&
+            typeof console.debug === "function"
+          ) {
             console.debug("testApi: Failed to read window.battleStore.roundsPlayed", error);
           }
         }
