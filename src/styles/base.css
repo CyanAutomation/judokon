@@ -70,6 +70,12 @@
   /* Fast easing without property token to compose correctly */
   --transition-fast: 150ms ease; /* UI animations */
 
+  /* Animation and interaction tokens */
+  --animation-duration-medium: 0.4s;
+  --animation-timing-default: ease-out;
+  --button-press-scale: 0.95;
+  --button-press-duration: 100ms;
+
   /* Carousel */
   --scroll-marker-size: 10px;
 

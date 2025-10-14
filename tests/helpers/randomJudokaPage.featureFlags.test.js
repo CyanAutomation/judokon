@@ -78,7 +78,14 @@ describe("randomJudokaPage feature flags", () => {
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const applyMotionPreference = vi.fn();
 
-    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson

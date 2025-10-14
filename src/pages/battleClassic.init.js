@@ -92,6 +92,20 @@ let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
+
+/**
+ * Waits for the stat buttons hydration promise (when present) so UI updates
+ * don't race ahead of component initialization.
+ * @pseudocode await (window.statButtonsReadyPromise || Promise.resolve())
+ */
+async function waitForStatButtonsReady() {
+  const statButtonsReadyPromise =
+    typeof window !== "undefined" && window.statButtonsReadyPromise
+      ? window.statButtonsReadyPromise
+      : Promise.resolve();
+  await statButtonsReadyPromise;
+}
+
 function clearOpponentPromptFallbackTimer() {
   if (typeof window === "undefined") return;
   try {
@@ -2023,12 +2037,8 @@ async function init() {
         // Use unified replay/init path for clean state
         await handleReplay(store);
 
-        // Wait until stat buttons finish hydrating before reflecting fresh round state
-        const statButtonsReadyPromise =
-          typeof window !== "undefined" && window.statButtonsReadyPromise
-            ? window.statButtonsReadyPromise
-            : Promise.resolve();
-        await statButtonsReadyPromise;
+        // Wait for stat buttons hydration to prevent DOM/initialization race conditions
+        await waitForStatButtonsReady();
 
         // Ensure UI mirrors fresh match state
         updateScore(0, 0);

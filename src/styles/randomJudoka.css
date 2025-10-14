@@ -22,8 +22,8 @@ player-info {
 }
 
 .card-section .draw-card-btn:active {
-  transform: scale(0.95);
-  transition: transform 100ms ease-out;
+  transform: scale(var(--button-press-scale));
+  transition: transform var(--button-press-duration) var(--animation-timing-default);
 }
 
 @keyframes slideInFadeIn {
@@ -38,7 +38,7 @@ player-info {
 }
 
 .judoka-card.new-card {
-  animation: slideInFadeIn 0.4s ease-out;
+  animation: slideInFadeIn var(--animation-duration-medium) var(--animation-timing-default);
 }
 
 @media (prefers-reduced-motion: reduce) {

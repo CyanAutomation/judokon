@@ -274,16 +274,16 @@ describe("generateRandomCard", () => {
       const container = document.createElement("div");
       const judokaData = getJudokaFixture().slice(0, 2);
       const gokyoData = getGokyoFixture();
-      getRandomJudokaMock = vi.fn(() => judokaData[0]);
+      const selectedJudoka = judokaData[0];
+      getRandomJudokaMock = vi.fn(() => selectedJudoka);
       getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
       createGokyoLookupMock = vi.fn(() => ({}));
       fetchJsonMock = vi.fn();
       const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
       renderMock.mockClear();
       renderMock.mockRejectedValue(new Error("fail"));
-      await expect(
-        generateRandomCard(judokaData, gokyoData, container, true)
-      ).resolves.toBeUndefined();
+      const result = await generateRandomCard(judokaData, gokyoData, container, true);
+      expect(result).toBe(selectedJudoka);
       expect(container.childNodes.length).toBe(0);
     });
   });

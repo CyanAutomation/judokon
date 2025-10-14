@@ -16,8 +16,14 @@ describe("randomJudokaPage history panel", () => {
     const fetchJson = vi.fn().mockResolvedValue([]);
 
     const applyMotionPreference = vi.fn();
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
 
-    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
@@ -42,12 +48,12 @@ describe("randomJudokaPage history panel", () => {
   it("caps history at 5 entries", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const judokaSeq = [
-      { firstname: "A", surname: "One" },
-      { firstname: "B", surname: "Two" },
-      { firstname: "C", surname: "Three" },
-      { firstname: "D", surname: "Four" },
-      { firstname: "E", surname: "Five" },
-      { firstname: "F", surname: "Six" }
+      { name: "A One", firstname: "A", surname: "One" },
+      { name: "B Two", firstname: "B", surname: "Two" },
+      { name: "C Three", firstname: "C", surname: "Three" },
+      { name: "D Four", firstname: "D", surname: "Four" },
+      { name: "E Five", firstname: "E", surname: "Five" },
+      { name: "F Six", firstname: "F", surname: "Six" }
     ];
     let idx = 0;
     const generateRandomCard = vi
@@ -56,14 +62,22 @@ describe("randomJudokaPage history panel", () => {
         const card = document.createElement("div");
         card.className = "card-container";
         container.appendChild(card);
-        onSelect(judokaSeq[idx]);
+        const judoka = judokaSeq[idx];
+        onSelect(judoka);
         idx += 1;
+        return judoka;
       });
     const fetchJson = vi.fn().mockResolvedValue([]);
 
     const applyMotionPreference = vi.fn();
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
 
-    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
