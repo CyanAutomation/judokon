@@ -168,7 +168,7 @@ describe("generateRandomCard", () => {
 
     await expect(
       generateRandomCard(judokaData, gokyoData, container, true)
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual(judokaData[1]);
 
     expect(getRandomJudokaMock).toHaveBeenCalledWith(expect.any(Array));
     expect(JudokaCardMock).toHaveBeenCalled();
@@ -190,7 +190,7 @@ describe("generateRandomCard", () => {
     const cb = vi.fn();
     await expect(
       generateRandomCard(judokaData, gokyoData, container, true, cb)
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual(judokaData[0]);
     expect(cb).toHaveBeenCalledWith(judokaData[0]);
   });
 
@@ -206,7 +206,7 @@ describe("generateRandomCard", () => {
     renderMock.mockClear();
     await expect(
       generateRandomCard(judokaData, gokyoData, null, true, cb, { skipRender: true })
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual(judokaData[0]);
     expect(cb).toHaveBeenCalledWith(judokaData[0]);
     expect(JudokaCardMock).not.toHaveBeenCalled();
   });
@@ -231,7 +231,7 @@ describe("generateRandomCard", () => {
 
       await expect(
         generateRandomCard(judokaData, gokyoData, container, true)
-      ).resolves.toBeUndefined();
+      ).resolves.toEqual({ id: 0 });
 
       expect(renderMock).toHaveBeenCalled();
       expect(container.firstChild).toBe(fallbackEl);
@@ -257,7 +257,7 @@ describe("generateRandomCard", () => {
 
       await expect(
         generateRandomCard(judokaData, undefined, container, true)
-      ).resolves.toBeUndefined();
+      ).resolves.toEqual({ id: 0 });
 
       expect(fetchJsonMock).toHaveBeenCalledTimes(1);
       expect(fetchJsonMock).toHaveBeenCalledWith(expect.stringContaining("gokyo.json"));
@@ -281,7 +281,7 @@ describe("generateRandomCard", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("handles render throwing an error", async () => {
+  it("clears the container when rendering fails", async () => {
     await withMutedConsole(async () => {
       const container = document.createElement("div");
       const judokaData = getJudokaFixture().slice(0, 2);
@@ -296,7 +296,7 @@ describe("generateRandomCard", () => {
       renderMock.mockRejectedValue(new Error("fail"));
       await expect(
         generateRandomCard(judokaData, gokyoData, container, true)
-      ).resolves.toBeUndefined();
+      ).resolves.toEqual(selectedJudoka);
       expect(container.childNodes.length).toBe(0);
     });
   });
@@ -314,7 +314,7 @@ describe("generateRandomCard", () => {
     renderMock.mockResolvedValue(null);
     await expect(
       generateRandomCard(judokaData, gokyoData, container, true)
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual(judokaData[0]);
     expect(container.childNodes.length).toBe(0);
   });
 });
