@@ -358,6 +358,11 @@ const stateApi = {
 
   /**
    * Read the number of completed rounds reported by the engine.
+   * @pseudocode
+   * 1. Invoke facadeGetRoundsPlayed to read the engine-provided value.
+   * 2. Cast the result to a number and validate it is finite.
+   * 3. Return the numeric value when valid; otherwise return null.
+   * 4. Catch any thrown errors and return null for graceful degradation.
    * @returns {number|null}
    */
   getRoundsPlayed() {
@@ -1222,134 +1227,188 @@ const initApi = {
   }
 };
 
-let cachedRoundsEstimate = 0;
-let lastBattleState = null;
-
 // Component inspection API
-const inspectionApi = {
-  /**
-   * Get battle store state for inspection
-   * @returns {object|null} Battle store or null
-   */
-  getBattleStore() {
+const inspectionApi = (() => {
+  let cachedRoundsEstimate = 0;
+  let lastBattleState = null;
+
+  const isFiniteNumber = (value) => typeof value === "number" && Number.isFinite(value);
+
+  const calculateScoreboardSum = (scoreboard) => {
+    if (!scoreboard) return null;
+
+    if (typeof scoreboard.player === "number" && typeof scoreboard.opponent === "number") {
+      return scoreboard.player + scoreboard.opponent;
+    }
+
+    const playerNum = Number(scoreboard.player);
+    const opponentNum = Number(scoreboard.opponent);
+    if (Number.isFinite(playerNum) && Number.isFinite(opponentNum)) {
+      return playerNum + opponentNum;
+    }
+
+    return null;
+  };
+
+  const readCurrentBattleState = () => {
     try {
-      return typeof window !== "undefined" ? window.battleStore : null;
+      return document.body?.dataset?.battleState ?? null;
     } catch {
       return null;
     }
-  },
+  };
 
-  /**
-   * Get debug information about the current battle state
-   * @returns {object} Debug information
-   */
-  getDebugInfo() {
+  const isStatSelected = () => {
     try {
-      const store = this.getBattleStore();
-      const machine = getBattleStateMachine();
-      const engineRounds = stateApi.getRoundsPlayed();
-      const storeRounds = store ? toFiniteNumber(store.roundsPlayed) : null;
-      const scoreboard = readScoreboardSnapshot();
-      const scoreboardSum =
-        scoreboard && typeof scoreboard.player === "number" && typeof scoreboard.opponent === "number"
-          ? scoreboard.player + scoreboard.opponent
-          : Number.isFinite(Number(scoreboard?.player)) && Number.isFinite(Number(scoreboard?.opponent))
-          ? Number(scoreboard.player) + Number(scoreboard.opponent)
-          : null;
-      const statSelected = (() => {
-        try {
-          return document.body?.dataset?.statSelected === "true";
-        } catch {
-          return false;
-        }
-      })();
-      const scoreboardRounds =
-        typeof scoreboardSum === "number" && Number.isFinite(scoreboardSum) ? scoreboardSum : null;
-      const hasEngineRounds = typeof engineRounds === "number" && Number.isFinite(engineRounds);
-
-      let roundsPlayed = hasEngineRounds ? engineRounds : null;
-      if (typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed) && scoreboardRounds !== null) {
-        roundsPlayed = Math.max(roundsPlayed, scoreboardRounds);
-      } else if (scoreboardRounds !== null) {
-        roundsPlayed = scoreboardRounds;
-      } else if (typeof storeRounds === "number" && Number.isFinite(storeRounds)) {
-        roundsPlayed = storeRounds;
-      }
-
-      const currentState = (() => {
-        try {
-          return document.body?.dataset?.battleState ?? null;
-        } catch {
-          return null;
-        }
-      })();
-
-      if (
-        (!currentState || currentState === "roundSelectModal" || currentState === "waitingForRoundSelection") &&
-        !statSelected &&
-        (scoreboardRounds === null || scoreboardRounds === 0) &&
-        !hasEngineRounds
-      ) {
-        cachedRoundsEstimate = 0;
-      }
-
-      if (currentState === "roundDecision" && lastBattleState !== "roundDecision") {
-        cachedRoundsEstimate = Math.max(cachedRoundsEstimate, 0) + 1;
-      }
-
-      if (currentState === "roundDecision" && (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)) {
-        roundsPlayed = cachedRoundsEstimate;
-      } else if (statSelected && (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)) {
-        roundsPlayed = Math.max(cachedRoundsEstimate, 1);
-      }
-
-      if (typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)) {
-        cachedRoundsEstimate = Math.max(cachedRoundsEstimate, roundsPlayed);
-      }
-      const computedRounds =
-        typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
-          ? roundsPlayed
-          : cachedRoundsEstimate > 0
-          ? cachedRoundsEstimate
-          : null;
-
-      lastBattleState = currentState ?? lastBattleState;
-      let snapshot = null;
-
-      if (machine) {
-        try {
-          snapshot = getStateSnapshot();
-        } catch {
-          snapshot = null;
-        }
-      }
-
-      return {
-        store: store
-          ? {
-              selectionMade: store.selectionMade,
-              playerChoice: store.playerChoice,
-              roundsPlayed: computedRounds
-            }
-          : null,
-        machine: machine
-          ? {
-              currentState: machine.getState?.(),
-              hasDispatch: typeof machine.dispatch === "function"
-            }
-          : null,
-        snapshot,
-        dom: {
-          battleState: document.body?.dataset?.battleState || null,
-          hasNextButton: !!document.getElementById("next-button"),
-          nextButtonReady: document.getElementById("next-button")?.dataset?.nextReady === "true"
-        }
-      };
-    } catch (error) {
-      return { error: error.message };
+      return document.body?.dataset?.statSelected === "true";
+    } catch {
+      return false;
     }
-  }
-};
+  };
+
+  const captureMachineSnapshot = (machine) => {
+    if (!machine) return null;
+    try {
+      return getStateSnapshot();
+    } catch {
+      return null;
+    }
+  };
+
+  const shouldResetRoundCache = ({ currentState, statSelected, scoreboardRounds, hasEngineRounds }) =>
+    (!currentState || currentState === "roundSelectModal" || currentState === "waitingForRoundSelection") &&
+    !statSelected &&
+    (scoreboardRounds === null || scoreboardRounds === 0) &&
+    !hasEngineRounds;
+
+  const deriveInitialRounds = ({ engineRounds, scoreboardRounds, storeRounds }, hasEngineRounds) => {
+    if (isFiniteNumber(engineRounds) && scoreboardRounds !== null) {
+      return Math.max(engineRounds, scoreboardRounds);
+    }
+
+    if (hasEngineRounds) return engineRounds;
+    if (scoreboardRounds !== null) return scoreboardRounds;
+    if (isFiniteNumber(storeRounds)) return storeRounds;
+    return null;
+  };
+
+  const applyFallbacks = (roundsPlayed, { currentState, statSelected }) => {
+    const hasUsableRounds = isFiniteNumber(roundsPlayed) && roundsPlayed > 0;
+    if (currentState === "roundDecision" && !hasUsableRounds) {
+      return cachedRoundsEstimate;
+    }
+    if (statSelected && !hasUsableRounds) {
+      return Math.max(cachedRoundsEstimate, 1);
+    }
+    return roundsPlayed;
+  };
+
+  const finalizeRounds = (roundsPlayed) => {
+    if (isFiniteNumber(roundsPlayed)) {
+      cachedRoundsEstimate = Math.max(cachedRoundsEstimate, roundsPlayed);
+      return roundsPlayed;
+    }
+    return cachedRoundsEstimate > 0 ? cachedRoundsEstimate : null;
+  };
+
+  const trackStateTransition = (currentState) => {
+    if (currentState === "roundDecision" && lastBattleState !== "roundDecision") {
+      cachedRoundsEstimate = Math.max(cachedRoundsEstimate, 0) + 1;
+    }
+    lastBattleState = currentState ?? lastBattleState;
+  };
+
+  const computeRoundsPlayed = (sources, context) => {
+    const { currentState, statSelected, scoreboardRounds, hasEngineRounds } = context;
+
+    if (shouldResetRoundCache({ currentState, statSelected, scoreboardRounds, hasEngineRounds })) {
+      cachedRoundsEstimate = 0;
+    }
+
+    trackStateTransition(currentState);
+
+    const initialRounds = deriveInitialRounds(sources, hasEngineRounds);
+    const reconciledRounds = applyFallbacks(initialRounds, { currentState, statSelected });
+
+    return finalizeRounds(reconciledRounds);
+  };
+
+  const buildDomSnapshot = () => ({
+    battleState: document.body?.dataset?.battleState || null,
+    hasNextButton: !!document.getElementById("next-button"),
+    nextButtonReady: document.getElementById("next-button")?.dataset?.nextReady === "true"
+  });
+
+  const buildStoreSnapshot = (store, computedRounds) =>
+    store
+      ? {
+          selectionMade: store.selectionMade,
+          playerChoice: store.playerChoice,
+          roundsPlayed: computedRounds // Derived value combining engine, scoreboard, and store sources.
+        }
+      : null;
+
+  return {
+    /**
+     * Reset the cached state for test isolation
+     * @internal
+     */
+    resetCache() {
+      cachedRoundsEstimate = 0;
+      lastBattleState = null;
+    },
+
+    /**
+     * Get battle store state for inspection
+     * @returns {object|null} Battle store or null
+     */
+    getBattleStore() {
+      try {
+        return typeof window !== "undefined" ? window.battleStore : null;
+      } catch {
+        return null;
+      }
+    },
+
+    /**
+     * Get debug information about the current battle state
+     * @returns {object} Debug information
+     */
+    getDebugInfo() {
+      try {
+        const store = this.getBattleStore();
+        const machine = getBattleStateMachine();
+        const engineRounds = stateApi.getRoundsPlayed();
+        const storeRounds = store ? toFiniteNumber(store.roundsPlayed) : null;
+        const scoreboard = readScoreboardSnapshot();
+        const scoreboardSum = calculateScoreboardSum(scoreboard);
+        const scoreboardRounds = isFiniteNumber(scoreboardSum) ? scoreboardSum : null;
+        const currentState = readCurrentBattleState();
+        const statSelected = isStatSelected();
+        const hasEngineRounds = isFiniteNumber(engineRounds);
+
+        const sources = { engineRounds, scoreboardRounds, storeRounds };
+        const context = { currentState, statSelected, scoreboardRounds, hasEngineRounds };
+        const computedRounds = computeRoundsPlayed(sources, context);
+        const snapshot = captureMachineSnapshot(machine);
+
+        return {
+          store: buildStoreSnapshot(store, computedRounds),
+          machine: machine
+            ? {
+                currentState: machine.getState?.(),
+                hasDispatch: typeof machine.dispatch === "function"
+              }
+            : null,
+          snapshot,
+          dom: buildDomSnapshot()
+        };
+      } catch (error) {
+        return { error: error.message };
+      }
+    }
+  };
+})();
 
 // Battle CLI API
 const cliApi = {
