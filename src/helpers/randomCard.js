@@ -173,8 +173,9 @@ export async function renderJudokaCard(
  * @param {function} [onSelect] - Callback invoked with the chosen judoka.
  * @param {{enableInspector?: boolean, skipRender?: boolean}} [options] - Feature flags.
  * @returns {Promise<Judoka | void>} Resolves with the selected judoka when the
- * card generation workflow completes, or void when rendering is skipped due to
- * a missing container element.
+ * card generation workflow completes successfully, or void when rendering is
+ * skipped because no container was provided or when rendering fails after a
+ * judoka has been selected.
  */
 export async function generateRandomCard(
   activeCards,
@@ -200,7 +201,8 @@ export async function generateRandomCard(
     );
 
     if (!rendered) {
-      return judoka;
+      containerEl.innerHTML = "";
+      return undefined;
     }
   }
 
