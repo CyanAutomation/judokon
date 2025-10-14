@@ -353,7 +353,9 @@ vi.mock("../../src/helpers/testApi.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/snackbar.js", () => ({
-  showSelectionPrompt: vi.fn()
+  showSelectionPrompt: vi.fn(),
+  getOpponentDelay: vi.fn(() => 0),
+  setOpponentDelay: vi.fn()
 }));
 
 import { setupClassicBattleHooks } from "../helpers/classicBattle/setupTestEnv.js";
