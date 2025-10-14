@@ -1,4 +1,8 @@
-import { setBattleStateBadgeEnabled, applyBattleFeatureFlags } from "./uiHelpers.js";
+import {
+  setBattleStateBadgeEnabled,
+  applyBattleFeatureFlags,
+  setSkipRoundCooldownFeatureMarker
+} from "./uiHelpers.js";
 import setupScheduler from "./setupScheduler.js";
 import setupUIBindings from "./setupUIBindings.js";
 import setupDebugHooks from "./setupDebugHooks.js";
@@ -26,15 +30,18 @@ export class ClassicBattleView {
    */
   bindController(controller) {
     this.controller = controller;
-    controller.addEventListener("featureFlagsChange", () => {
+    const handleFeatureFlagsChange = () => {
       setBattleStateBadgeEnabled(controller.isEnabled("battleStateBadge"));
+      setSkipRoundCooldownFeatureMarker(controller.isEnabled("skipRoundCooldown"));
       try {
         window.__disableSnackbars = controller.isEnabled("enableTestMode");
       } catch {}
       const battleArea = document.getElementById("battle-area");
       const banner = document.getElementById("test-mode-banner");
       applyBattleFeatureFlags(battleArea, banner);
-    });
+    };
+    controller.addEventListener("featureFlagsChange", handleFeatureFlagsChange);
+    handleFeatureFlagsChange();
     controller.addEventListener("roundStartError", (e) => {
       document.dispatchEvent(new CustomEvent("round-start-error", { detail: e.detail }));
     });

@@ -8,7 +8,7 @@ The key issues involve a lack of visual feedback (animations, button press), inc
 
 **Prioritized Fix Plan:**
 
-1. **High:** Implement correct fallback behavior to always show a card.
+1. **High: COMPLETED** - Implement correct fallback behavior to always show a card.
 2. **Medium:** Enhance UI feedback by adding animations and respecting motion preferences.
 3. **Medium:** Fix page-level horizontal scroll caused by the country picker.
 4. **Low:** Improve accessibility with live announcements for screen readers.
@@ -41,6 +41,12 @@ The key issues involve a lack of visual feedback (animations, button press), inc
        showSnackbar("Unable to draw a new card. Showing a fallback.");
      }
      ```
+
+### Phase 1 Completion
+
+- **Actions Taken:** Modified the catch block in `displayCard` function in `src/helpers/randomJudokaPage.js` to render the fallback judoka card and show a snackbar notification instead of disabling the button and showing an error.
+- **Code Changes:** Added imports for `getFallbackJudoka`, `loadGokyoLookup`, `renderJudokaCard`, and `showSnackbar`. Updated the catch block to load and render the fallback card.
+- **Outcome:** Unit tests pass (randomJudokaPage.drawButton.test.js: 2 passed, randomJudokaPage.featureFlags.test.js: 2 passed, randomJudokaPage.historyPanel.test.js: 2 passed, randomCard.test.js: 15 passed). Playwright tests pass (random-judoka.spec.js: 3 passed). The UI now shows a fallback card on errors, meeting the acceptance criteria.
 
 ### Phase 2: Medium - UI Feedback & Animations
 

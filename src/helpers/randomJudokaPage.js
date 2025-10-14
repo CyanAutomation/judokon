@@ -21,7 +21,7 @@
  *
  * @returns {Promise<void>} A promise that resolves when the page setup is complete.
  */
-import { generateRandomCard } from "./randomCard.js";
+import { generateRandomCard, loadGokyoLookup, renderJudokaCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { createButton } from "../components/Button.js";
 import { applyMotionPreference } from "./motionUtils.js";
@@ -32,6 +32,8 @@ import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { setTestMode } from "./testModeUtils.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 import { preloadRandomCardData, createHistoryManager } from "./randomCardService.js";
+import { getFallbackJudoka } from "./judokaUtils.js";
+import { showSnackbar } from "./showSnackbar.js";
 
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
@@ -276,8 +278,18 @@ async function displayCard({
         { enableInspector: isEnabled("enableCardInspector") }
       );
     } catch (err) {
-      showError("Unable to draw card. Please try again later.");
       console.error("Error generating card:", err);
+      const fallbackJudoka = await getFallbackJudoka();
+      onSelect(fallbackJudoka);
+      const gokyoLookup = await loadGokyoLookup(cachedGokyoData);
+      await renderJudokaCard(
+        fallbackJudoka,
+        gokyoLookup,
+        cardContainer,
+        prefersReducedMotion,
+        isEnabled("enableCardInspector")
+      );
+      showSnackbar("Unable to draw a new card. Showing a fallback.");
       enableButton();
       return;
     }

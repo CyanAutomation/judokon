@@ -20,4 +20,8 @@ export function toggleViewportSimulation(enabled) {
     return;
   }
   document.body.classList.toggle("simulate-viewport", nextState);
+  document.body.setAttribute(
+    "data-feature-viewport-simulation",
+    nextState ? "enabled" : "disabled"
+  );
 }

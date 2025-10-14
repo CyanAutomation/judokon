@@ -176,6 +176,10 @@ export class JudokaCard extends Card {
   async render() {
     const container = document.createElement("div");
     container.className = "card-container";
+    container.setAttribute(
+      "data-feature-card-inspector",
+      this.enableInspector ? "enabled" : "disabled"
+    );
     try {
       container.dataset.cardJson = JSON.stringify(this.judoka);
     } catch {
@@ -207,6 +211,7 @@ export class JudokaCard extends Card {
 
     if (this.enableInspector) {
       const panel = createInspectorPanel(container, this.judoka);
+      panel.setAttribute("data-feature-card-inspector", "panel");
       container.appendChild(panel);
     }
 

@@ -20,28 +20,35 @@ describe("debug DOM class toggles", () => {
       name: "tooltip overlay",
       toggle: toggleTooltipOverlayDebug,
       className: "tooltip-overlay-debug",
-      stateKey: "tooltipOverlayDebug"
+      stateKey: "tooltipOverlayDebug",
+      featureAttribute: "data-feature-tooltip-overlay-debug"
     },
     {
       name: "viewport simulation",
       toggle: toggleViewportSimulation,
       className: "simulate-viewport",
-      stateKey: "viewportSimulation"
+      stateKey: "viewportSimulation",
+      featureAttribute: "data-feature-viewport-simulation"
     }
-  ])("applies the %s class when enabled", ({ toggle, className, stateKey }) => {
-    expect(document.body.classList.contains(className)).toBe(false);
-    expect(getDebugState()[stateKey]).toBe(false);
+  ])(
+    "applies the %s class when enabled",
+    ({ toggle, className, stateKey, featureAttribute }) => {
+      expect(document.body.classList.contains(className)).toBe(false);
+      expect(getDebugState()[stateKey]).toBe(false);
 
-    toggle(true);
+      toggle(true);
 
-    expect(document.body.classList.contains(className)).toBe(true);
-    expect(getDebugState()[stateKey]).toBe(true);
+      expect(document.body.classList.contains(className)).toBe(true);
+      expect(getDebugState()[stateKey]).toBe(true);
+      expect(document.body.getAttribute(featureAttribute)).toBe("enabled");
 
-    toggle(false);
+      toggle(false);
 
-    expect(document.body.classList.contains(className)).toBe(false);
-    expect(getDebugState()[stateKey]).toBe(false);
-  });
+      expect(document.body.classList.contains(className)).toBe(false);
+      expect(getDebugState()[stateKey]).toBe(false);
+      expect(document.body.getAttribute(featureAttribute)).toBe("disabled");
+    }
+  );
 });
 
 describe("feature flag debug toggles integration", () => {
@@ -108,6 +115,8 @@ describe("feature flag debug toggles integration", () => {
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
     expect(document.body.classList.contains("simulate-viewport")).toBe(true);
+    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("enabled");
+    expect(document.body.getAttribute("data-feature-viewport-simulation")).toBe("enabled");
     const state = getDebugState();
     expect(state.tooltipOverlayDebug).toBe(true);
     expect(state.viewportSimulation).toBe(true);
@@ -135,6 +144,8 @@ describe("feature flag debug toggles integration", () => {
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
     expect(document.body.classList.contains("simulate-viewport")).toBe(false);
+    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
+    expect(document.body.getAttribute("data-feature-viewport-simulation")).toBe("disabled");
     const resetState = getDebugState();
     expect(resetState.tooltipOverlayDebug).toBe(false);
     expect(resetState.viewportSimulation).toBe(false);

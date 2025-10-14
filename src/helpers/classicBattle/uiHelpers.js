@@ -55,6 +55,7 @@ import { getCurrentSeed } from "../testModeUtils.js";
  */
 export function skipRoundCooldownIfEnabled(options = {}) {
   const enabled = isEnabled("skipRoundCooldown");
+  setSkipRoundCooldownFeatureMarker(enabled);
   if (!enabled) return false;
   const { onSkip } = options || {};
   if (typeof onSkip === "function") {
@@ -65,6 +66,22 @@ export function skipRoundCooldownIfEnabled(options = {}) {
     }
   }
   return true;
+}
+
+/**
+ * Mark DOM elements to reflect the skip-round-cooldown feature state.
+ *
+ * @param {boolean} enable
+ * @returns {void}
+ */
+export function setSkipRoundCooldownFeatureMarker(enable) {
+  if (typeof document === "undefined") return;
+  const value = enable ? "enabled" : "disabled";
+  document.body?.setAttribute("data-feature-skip-round-cooldown", value);
+  const nextButton = document.getElementById("next-button");
+  if (nextButton) {
+    nextButton.setAttribute("data-feature-skip-round-cooldown", value);
+  }
 }
 
 /**
@@ -931,15 +948,17 @@ export function updateBattleStateBadge(state) {
  * @returns {void}
  */
 export function setBattleStateBadgeEnabled(enable) {
-  console.debug("setBattleStateBadgeEnabled called with:", enable);
+  if (typeof document === "undefined") return;
+  document.body?.setAttribute("data-feature-battle-state-badge", enable ? "enabled" : "disabled");
   let badge = document.getElementById("battle-state-badge");
-  console.debug("Found existing badge:", badge);
   if (!enable) {
-    if (badge) badge.remove();
+    if (badge) {
+      badge.setAttribute("data-feature-battle-state-badge", "disabled");
+      badge.remove();
+    }
     return;
   }
   if (!badge) {
-    console.debug("Creating new badge");
     const headerRight =
       document.getElementById("scoreboard-right") ||
       document.querySelector(".battle-header .scoreboard-right");
@@ -952,10 +971,9 @@ export function setBattleStateBadgeEnabled(enable) {
     if (headerRight) headerRight.appendChild(badge);
     else document.querySelector("header")?.appendChild(badge);
   }
-  console.debug("Setting badge visible, before:", badge.hidden, badge.hasAttribute("hidden"));
   badge.hidden = false;
   badge.removeAttribute("hidden");
-  console.debug("Setting badge visible, after:", badge.hidden, badge.hasAttribute("hidden"));
+  badge.setAttribute("data-feature-battle-state-badge", "enabled");
   const state = getStateSnapshot().state ?? "Lobby";
   updateBattleStateBadge(state);
 }

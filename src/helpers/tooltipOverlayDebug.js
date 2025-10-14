@@ -25,4 +25,8 @@ export function toggleTooltipOverlayDebug(enabled) {
     return;
   }
   document.body.classList.toggle("tooltip-overlay-debug", nextState);
+  document.body.setAttribute(
+    "data-feature-tooltip-overlay-debug",
+    nextState ? "enabled" : "disabled"
+  );
 }
