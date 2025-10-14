@@ -109,6 +109,7 @@ describe("testApi.isTestMode", () => {
     delete window.__initCalled;
 
     vi.doUnmock("../../src/helpers/featureFlags.js");
+    vi.resetModules();
     vi.clearAllMocks();
   });
 
