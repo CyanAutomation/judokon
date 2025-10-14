@@ -885,10 +885,16 @@ async function applySelectionResult(store, result) {
   if (store && typeof store === "object") {
     let engineRounds = null;
     try {
-      const value = Number(getRoundsPlayed());
-      engineRounds = Number.isFinite(value) ? value : null;
-    } catch {
+      const value = getRoundsPlayed();
+      if (value !== null && value !== undefined) {
+        const numericValue = Number(value);
+        engineRounds = Number.isFinite(numericValue) ? numericValue : null;
+      }
+    } catch (error) {
       engineRounds = null;
+      if (typeof console !== "undefined" && typeof console.debug === "function") {
+        console.debug("battleClassic: Failed to read engine rounds", error);
+      }
     }
 
     if (engineRounds === null && !matchEnded && !isOrchestratorActive(store)) {
