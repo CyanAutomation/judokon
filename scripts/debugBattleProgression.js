@@ -21,6 +21,9 @@ import {
   getBattleSnapshot,
   takeScreenshot
 } from "./lib/debugUtils.js";
+import { getBattleStore } from "../tests/utils/battleStoreAccess.js";
+
+const BATTLE_STORE_ACCESSOR_SOURCE = getBattleStore.toString();
 
 (async function run() {
   const headless = process.env.HEADLESS !== "0";
@@ -54,6 +57,16 @@ import {
   browser = await chromium.launch(launchOptions);
   const context = await browser.newContext();
   const page = await context.newPage();
+  await page.addInitScript(
+    ({ accessorSource }) => {
+      try {
+        if (!window.__getBattleStoreAccessor) {
+          window.__getBattleStoreAccessor = new Function("return " + accessorSource)();
+        }
+      } catch {}
+    },
+    { accessorSource: BATTLE_STORE_ACCESSOR_SOURCE }
+  );
   await installSelectorGuard(page);
   attachLoggers(page, { withLocations: true });
 
@@ -79,19 +92,21 @@ import {
 
     if (preseed) {
       try {
-        await page.evaluate((chosen) => {
-          try {
-            const store =
-              window.__TEST_API?.inspect?.getBattleStore?.() ||
-              window.__classicbattledebugapi?.battleStore ||
-              window.battleStore ||
-              null;
-            if (store && !store.playerChoice) {
-              store.playerChoice = chosen;
-              store.selectionMade = true;
-            }
-          } catch {}
-        }, stat);
+        await page.evaluate(
+          ({ chosen, accessorSource }) => {
+            try {
+              const getStore =
+                window.__getBattleStoreAccessor ||
+                (window.__getBattleStoreAccessor = new Function("return " + accessorSource)());
+              const store = getStore?.();
+              if (store && !store.playerChoice) {
+                store.playerChoice = chosen;
+                store.selectionMade = true;
+              }
+            } catch {}
+          },
+          { chosen: stat, accessorSource: BATTLE_STORE_ACCESSOR_SOURCE }
+        );
 
         console.log(`Pre-seeded playerChoice="${stat}" via battle store accessor`);
       } catch {}
