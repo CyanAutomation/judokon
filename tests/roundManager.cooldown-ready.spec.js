@@ -233,12 +233,57 @@ function createSchedulerHarness() {
   return { overrides, fallbacks };
 }
 
-test("detectOrchestratorContext reports debug machine", () => {
-  const machine = { id: "orchestrator" };
-  exposeDebugState("getClassicBattleMachine", () => machine);
-  const result = detectOrchestratorContext(() => false);
-  expect(result.machine).toBe(machine);
-  expect(result.orchestrated).toBe(true);
+function createOrchestratorOverrides({ orchestrated, machine }) {
+  const harness = createSchedulerHarness();
+  harness.overrides.isOrchestrated = () => orchestrated;
+  harness.overrides.getClassicBattleMachine = () => machine;
+  harness.overrides.getStateSnapshot = vi.fn(() => ({ state: "cooldown" }));
+  delete harness.overrides.markReady;
+  return harness.overrides;
+}
+
+describe("startCooldown orchestrator context integration", () => {
+  /**
+   * @spec startCooldown must immediately surface Next button readiness when no orchestrator is detected so manual flows stay interactive.
+   */
+  test("startCooldown marks Next button ready immediately when orchestration is absent", () => {
+    const store = createBattleStore();
+    const nextBtn = document.createElement("button");
+    nextBtn.id = "next-button";
+    nextBtn.disabled = true;
+    document.body.appendChild(nextBtn);
+
+    const overrides = createOrchestratorOverrides({ orchestrated: false, machine: null });
+
+    startCooldown(store, null, overrides);
+
+    expect(nextBtn.disabled).toBe(false);
+    expect(nextBtn.dataset.nextReady).toBe("true");
+  });
+
+  /**
+   * @spec startCooldown must defer Next button readiness while the orchestrator controls cooldown state so the UI stays locked until orchestration resolves it.
+   */
+  test("startCooldown defers Next button readiness while orchestrator machine owns cooldown state", () => {
+    const store = createBattleStore();
+    const nextBtn = document.createElement("button");
+    nextBtn.id = "next-button";
+    nextBtn.disabled = true;
+    document.body.appendChild(nextBtn);
+
+    const machine = {
+      getState: vi.fn(() => "cooldown")
+    };
+    exposeDebugState("getClassicBattleMachine", () => machine);
+
+    const overrides = createOrchestratorOverrides({ orchestrated: true, machine });
+
+    const controls = startCooldown(store, null, overrides);
+
+    expect(nextBtn.disabled).toBe(true);
+    expect(nextBtn.dataset.nextReady).not.toBe("true");
+    expect(controls.readyDispatched).toBe(false);
+  });
 });
 
 test("roundManager - cooldown expiry: observe ready dispatch count (baseline)", async () => {
