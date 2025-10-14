@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRandomJudokaPageHarness } from "./integrationHarness.js";
 import { createRandomCardDom } from "../utils/testUtils.js";
 
@@ -6,6 +6,10 @@ const harness = createRandomJudokaPageHarness();
 
 beforeEach(async () => {
   await harness.setup();
+});
+
+afterEach(() => {
+  harness.cleanup();
 });
 
 describe("randomJudokaPage history panel", () => {
