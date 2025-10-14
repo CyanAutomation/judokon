@@ -7,10 +7,11 @@ This document serves as a **verified record** of the completed fixes for the Ran
 The completed work addresses critical gaps in fallback behavior, UI feedback, layout stability, and accessibility.
 
 **Verified Fixes:**
-1.  **High:** Correct fallback behavior is now implemented, ensuring a card is always shown, even on network failure.
-2.  **Medium:** UI feedback has been enhanced with animations and button-press effects that respect user motion preferences.
-3.  **Medium:** Page-level horizontal scroll caused by the country picker has been resolved.
-4.  **Low:** Accessibility has been improved with ARIA live announcements for screen readers when a new card is drawn.
+
+1. **High:** Correct fallback behavior is now implemented, ensuring a card is always shown, even on network failure.
+2. **Medium:** UI feedback has been enhanced with animations and button-press effects that respect user motion preferences.
+3. **Medium:** Page-level horizontal scroll caused by the country picker has been resolved.
+4. **Low:** Accessibility has been improved with ARIA live announcements for screen readers when a new card is drawn.
 
 This report concludes with a section on **Future Enhancements** that could further improve the page's robustness, maintainability, and accessibility.
 
@@ -27,9 +28,9 @@ This report concludes with a section on **Future Enhancements** that could furth
 
 - **Issue:** Card animations were imperceptible, the "Draw Card" button lacked clear feedback, and the app-level "Reduced Motion" setting was ignored.
 - **Verification:**
-    - **CSS:** The file `src/styles/randomJudoka.css` now includes `@keyframes slideInFadeIn` and applies it to the `.judoka-card.new-card` class, creating a clear visual effect.
-    - **Button Feedback:** A `:active` state has been added to `.draw-card-btn`, which scales the button down, providing tactile feedback.
-    - **Motion Preferences:** The animation is applied conditionally. The `prefersReducedMotion` flag is correctly checked in `randomJudokaPage.js`, and the animation is disabled via a media query in CSS, respecting both OS and in-app settings.
+  - **CSS:** The file `src/styles/randomJudoka.css` now includes `@keyframes slideInFadeIn` and applies it to the `.judoka-card.new-card` class, creating a clear visual effect.
+  - **Button Feedback:** A `:active` state has been added to `.draw-card-btn`, which scales the button down, providing tactile feedback.
+  - **Motion Preferences:** The animation is applied conditionally. The `prefersReducedMotion` flag is correctly checked in `randomJudokaPage.js`, and the animation is disabled via a media query in CSS, respecting both OS and in-app settings.
 
 ### Item 3: Medium - Layout & Responsive Bugs
 
@@ -40,8 +41,8 @@ This report concludes with a section on **Future Enhancements** that could furth
 
 - **Issue:** Screen readers did not announce when a new card was drawn.
 - **Verification:**
-    - **HTML:** `src/pages/randomJudoka.html` now includes a visually hidden `aria-live` region (`<div class="sr-only" aria-live="polite" id="card-announcer"></div>`).
-    - **JavaScript:** The `displayCard` function in `src/helpers/randomJudokaPage.js` now updates this element's `textContent` with the new judoka's name in both success and fallback scenarios, ensuring screen reader users are notified of the change.
+  - **HTML:** `src/pages/randomJudoka.html` now includes a visually hidden `aria-live` region (`<div class="sr-only" aria-live="polite" id="card-announcer"></div>`).
+  - **JavaScript:** The `displayCard` function in `src/helpers/randomJudokaPage.js` now updates this element's `textContent` with the new judoka's name in both success and fallback scenarios, ensuring screen reader users are notified of the change.
 
 ---
 
@@ -58,6 +59,7 @@ The current implementation is robust and complete. The following suggestions are
 
 - **Opportunity:** Animation timings and other style values (e.g., `animation: slideInFadeIn 0.4s ease-out;`, `transform: scale(0.95);`) are hardcoded in `randomJudoka.css`.
 - **Suggestion:** Move these values to CSS custom properties (variables) in a global stylesheet like `base.css` or at the top of the local stylesheet. This promotes consistency, simplifies maintenance, and aligns with modern CSS best practices for theming and design systems.
+
     ```css
     :root {
       --animation-duration-medium: 0.4s;
