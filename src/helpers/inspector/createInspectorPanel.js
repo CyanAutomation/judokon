@@ -21,12 +21,14 @@ export function createInspectorPanel(container, judoka) {
     console.error("Failed to serialize judoka:", error);
     const p = document.createElement("p");
     p.textContent = "Invalid card data";
+    p.setAttribute("data-feature-card-inspector", "error");
     return p;
   }
 
   const panel = document.createElement("details");
   panel.className = "debug-panel";
   panel.setAttribute("aria-label", "Inspector panel");
+  panel.setAttribute("data-feature-card-inspector", "panel");
 
   const summary = document.createElement("summary");
   summary.textContent = "Card Inspector";

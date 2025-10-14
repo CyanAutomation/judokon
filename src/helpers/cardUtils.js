@@ -206,6 +206,7 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
  */
 export function toggleInspectorPanels(enable) {
   document.querySelectorAll(".card-container").forEach((container) => {
+    let featureState = enable ? "enabled" : "disabled";
     const existing = container.querySelector(".debug-panel");
     if (enable) {
       if (!existing) {
@@ -217,14 +218,19 @@ export function toggleInspectorPanels(enable) {
           data = JSON.parse(json);
         } catch (error) {
           console.warn("Invalid card JSON:", error);
+          container.setAttribute("data-feature-card-inspector", "error");
           return;
         }
         const panel = createInspectorPanel(container, data);
         container.appendChild(panel);
+        featureState = "enabled";
+      } else {
+        featureState = "enabled";
       }
     } else if (existing) {
       existing.remove();
       container.removeAttribute("data-inspector");
     }
+    container.setAttribute("data-feature-card-inspector", featureState);
   });
 }

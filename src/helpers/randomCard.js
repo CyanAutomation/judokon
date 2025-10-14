@@ -31,7 +31,7 @@ function displayCard(element, card, skipAnimation = false) {
   setupLazyPortraits(card);
   if (!skipAnimation) {
     requestAnimationFrame(() => {
-      card.classList.add("animate-card");
+      card.classList.add("new-card");
     });
   }
 }
