@@ -1251,11 +1251,14 @@ const inspectionApi = {
       const storeRounds = store ? toFiniteNumber(store.roundsPlayed) : null;
       const scoreboard = readScoreboardSnapshot();
       const scoreboardSum =
-        scoreboard && typeof scoreboard.player === "number" && typeof scoreboard.opponent === "number"
+        scoreboard &&
+        typeof scoreboard.player === "number" &&
+        typeof scoreboard.opponent === "number"
           ? scoreboard.player + scoreboard.opponent
-          : Number.isFinite(Number(scoreboard?.player)) && Number.isFinite(Number(scoreboard?.opponent))
-          ? Number(scoreboard.player) + Number(scoreboard.opponent)
-          : null;
+          : Number.isFinite(Number(scoreboard?.player)) &&
+              Number.isFinite(Number(scoreboard?.opponent))
+            ? Number(scoreboard.player) + Number(scoreboard.opponent)
+            : null;
       const statSelected = (() => {
         try {
           return document.body?.dataset?.statSelected === "true";
@@ -1268,7 +1271,11 @@ const inspectionApi = {
       const hasEngineRounds = typeof engineRounds === "number" && Number.isFinite(engineRounds);
 
       let roundsPlayed = hasEngineRounds ? engineRounds : null;
-      if (typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed) && scoreboardRounds !== null) {
+      if (
+        typeof roundsPlayed === "number" &&
+        Number.isFinite(roundsPlayed) &&
+        scoreboardRounds !== null
+      ) {
         roundsPlayed = Math.max(roundsPlayed, scoreboardRounds);
       } else if (scoreboardRounds !== null) {
         roundsPlayed = scoreboardRounds;
@@ -1285,7 +1292,9 @@ const inspectionApi = {
       })();
 
       if (
-        (!currentState || currentState === "roundSelectModal" || currentState === "waitingForRoundSelection") &&
+        (!currentState ||
+          currentState === "roundSelectModal" ||
+          currentState === "waitingForRoundSelection") &&
         !statSelected &&
         (scoreboardRounds === null || scoreboardRounds === 0) &&
         !hasEngineRounds
@@ -1297,7 +1306,10 @@ const inspectionApi = {
         cachedRoundsEstimate = Math.max(cachedRoundsEstimate, 0) + 1;
       }
 
-      if (currentState === "roundDecision" && (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)) {
+      if (
+        currentState === "roundDecision" &&
+        (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)
+      ) {
         roundsPlayed = cachedRoundsEstimate;
       } else if (statSelected && (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)) {
         roundsPlayed = Math.max(cachedRoundsEstimate, 1);
@@ -1310,8 +1322,8 @@ const inspectionApi = {
         typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
           ? roundsPlayed
           : cachedRoundsEstimate > 0
-          ? cachedRoundsEstimate
-          : null;
+            ? cachedRoundsEstimate
+            : null;
 
       lastBattleState = currentState ?? lastBattleState;
       let snapshot = null;
@@ -1334,7 +1346,11 @@ const inspectionApi = {
             candidates.push(window.battleStore?.roundsPlayed);
           }
         } catch (error) {
-          if (typeof console !== "undefined" && typeof console.debug === "function") {
+          if (
+            isDevelopmentEnvironment() &&
+            typeof console !== "undefined" &&
+            typeof console.debug === "function"
+          ) {
             console.debug("testApi: Failed to read window.battleStore.roundsPlayed", error);
           }
         }

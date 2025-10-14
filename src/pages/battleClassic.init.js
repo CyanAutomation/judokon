@@ -93,6 +93,18 @@ let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
 
+function isDevelopmentEnvironment() {
+  if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+    return true;
+  }
+
+  if (typeof window !== "undefined" && window.__DEV__) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Waits for the stat buttons hydration promise (when present) so UI updates
  * don't race ahead of component initialization.
@@ -892,7 +904,11 @@ async function applySelectionResult(store, result) {
       }
     } catch (error) {
       engineRounds = null;
-      if (typeof console !== "undefined" && typeof console.debug === "function") {
+      if (
+        isDevelopmentEnvironment() &&
+        typeof console !== "undefined" &&
+        typeof console.debug === "function"
+      ) {
         console.debug("battleClassic: Failed to read engine rounds", error);
       }
     }
