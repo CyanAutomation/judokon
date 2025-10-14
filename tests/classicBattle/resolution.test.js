@@ -122,7 +122,8 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
   };
 
   mocks["../../src/helpers/featureFlags.js"] = {
-    initFeatureFlags: vi.fn(async () => {})
+    initFeatureFlags: vi.fn(async () => {}),
+    isEnabled: vi.fn(() => false)
   };
 
   mocks["../../src/helpers/showSnackbar.js"] = {
