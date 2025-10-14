@@ -38,7 +38,9 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       await pickFirstStat(page);
       await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
-      await expect(page.locator(selectors.snackbarContainer())).toContainText(/Opponent is choosing/i);
+      await expect(page.locator(selectors.snackbarContainer())).toContainText(
+        /Opponent is choosing/i
+      );
 
       await ensureRoundResolved(page);
       await waitForBattleState(page, "roundOver");
@@ -49,8 +51,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       expect(after?.selectionMade).toBe(true);
 
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
-    }, MUTED_CONSOLE_LEVELS)
-  );
+    }, MUTED_CONSOLE_LEVELS));
 
   test("supports long opponent delays without falling back to DOM polling", async ({ page }) =>
     withMutedConsole(async () => {
@@ -70,8 +71,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       const snapshot = await getBattleSnapshot(page);
       expect(snapshot?.roundsPlayed).toBeGreaterThanOrEqual(1);
       expect(snapshot?.selectionMade).toBe(true);
-    }, MUTED_CONSOLE_LEVELS)
-  );
+    }, MUTED_CONSOLE_LEVELS));
 
   test("resets stat selection after advancing to the next round", async ({ page }) =>
     withMutedConsole(async () => {
@@ -104,8 +104,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       const afterSecondRound = await getBattleSnapshot(page);
       expect(afterSecondRound?.roundsPlayed).toBeGreaterThanOrEqual(2);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
-    }, MUTED_CONSOLE_LEVELS)
-  );
+    }, MUTED_CONSOLE_LEVELS));
 
   test("continues resolving rounds even when snackbar container is removed", async ({ page }) =>
     withMutedConsole(async () => {
@@ -144,8 +143,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       const snapshot = await getBattleSnapshot(page);
       expect(snapshot?.roundsPlayed).toBeGreaterThanOrEqual(1);
-    }, MUTED_CONSOLE_LEVELS)
-  );
+    }, MUTED_CONSOLE_LEVELS));
 
   test("can safely navigate away mid-reveal without leaving timers running", async ({ page }) =>
     withMutedConsole(async () => {
@@ -173,6 +171,5 @@ test.describe("Classic Battle Opponent Reveal", () => {
       });
 
       expect(timerState.countdown === null || timerState.countdown >= 0).toBe(true);
-    }, MUTED_CONSOLE_LEVELS)
-  );
+    }, MUTED_CONSOLE_LEVELS));
 });

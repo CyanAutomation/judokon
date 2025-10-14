@@ -191,6 +191,35 @@ test.describe("CLI Layout and Scrolling", () => {
       const scrollerBox = await scroller.boundingBox();
       if (viewportSize && scrollerBox) {
         expect(scrollerBox.width).toBeLessThanOrEqual(viewportSize.width + 10);
+      const getScrollInfo = async () =>
+        scroller.evaluate((el) => {
+          const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
+          return {
+            scrollWidth: scrollingElement.scrollWidth,
+            clientWidth: scrollingElement.clientWidth,
+            scrollHeight: scrollingElement.scrollHeight,
+            clientHeight: scrollingElement.clientHeight,
+            scrollTop: scrollingElement.scrollTop ?? 0
+          };
+        });
+      const scrollInfo = await getScrollInfo();
+
+      // Should not have horizontal scroll
+      expect(scrollInfo.scrollWidth).toBeLessThanOrEqual(scrollInfo.clientWidth + 10);
+
+      // Should have vertical scroll if content is long
+      if (scrollInfo.scrollHeight > scrollInfo.clientHeight) {
+        const initialScrollTop = scrollInfo.scrollTop;
+        await page.mouse.wheel(0, 400);
+        await expect
+          .poll(
+            async () => {
+              const currentInfo = await getScrollInfo();
+              return currentInfo.scrollTop;
+            },
+            { timeout: 5000 }
+          )
+          .toBeGreaterThan(initialScrollTop);
       }
 
       const initialScrollTop = await scroller.evaluate((el) => {
