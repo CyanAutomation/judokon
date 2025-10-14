@@ -38,7 +38,7 @@ describe("testApi.isTestMode", () => {
   beforeEach(async () => {
     vi.resetModules();
 
-    vi.doMock("../../src/helpers/featureFlags.js", async () => {
+    await vi.doMock("../../src/helpers/featureFlags.js", async () => {
       const actual = await vi.importActual("../../src/helpers/featureFlags.js");
 
       return {
@@ -109,7 +109,6 @@ describe("testApi.isTestMode", () => {
     delete window.__initCalled;
 
     vi.doUnmock("../../src/helpers/featureFlags.js");
-    vi.resetModules();
     vi.clearAllMocks();
   });
 
