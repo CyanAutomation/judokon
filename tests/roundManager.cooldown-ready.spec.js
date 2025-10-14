@@ -253,7 +253,7 @@ function createNextButtonStub() {
     setAttribute: vi.fn(function (name, value) {
       attributes.set(name, value);
       if (name === "disabled") {
-        this.disabled = value !== null && value !== false;
+        this.disabled = value !== null && value !== false && value !== "false";
       }
       if (name === "data-next-ready") {
         dataset.nextReady = String(value);
