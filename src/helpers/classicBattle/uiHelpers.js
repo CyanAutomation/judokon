@@ -1031,17 +1031,11 @@ export function bindUIHelperEventHandlers() {
   legacyHandlersBound = true;
 }
 
-// Bind once on module load for runtime. Guard against duplicate bindings when
-// tests reset modules across files within the same worker process.
-try {
-  const FLAG = "__classicBattleUIHelpersBound";
-  if (!globalThis[FLAG]) {
-    bindUIHelperEventHandlers();
-    globalThis[FLAG] = true;
-  }
-} catch {
-  bindUIHelperEventHandlers();
-}
+// Legacy handler bindings are intentionally deferred. Consumers should invoke
+// `bindUIHelperEventHandlers()` (or the dynamic variant) through explicit
+// initialization paths such as the Classic Battle runtime entrypoint or
+// `__ensureClassicBattleBindings()` to avoid attaching listeners during module
+// import.
 
 /**
  * Show a fatal initialization error with a retry option.
