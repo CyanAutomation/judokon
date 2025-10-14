@@ -47,6 +47,22 @@ player-info {
   }
 }
 
+.country-picker-container {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.country-picker-list {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.country-picker-list::-webkit-scrollbar {
+  display: none;
+}
+
 @media (orientation: landscape) {
   .card-section {
     flex-direction: row;

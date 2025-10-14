@@ -142,6 +142,12 @@ The key issues involve a lack of visual feedback (animations, button press), inc
      }
      ```
 
+### Phase 3 Completion
+
+- **Actions Taken:** Added CSS rules to `.country-picker-container` and `.country-picker-list` in `src/styles/randomJudoka.css` to prevent horizontal scroll by hiding overflow on the container and allowing internal scrolling on the list with hidden scrollbars.
+- **Code Changes:** Updated `src/styles/randomJudoka.css` with overflow management for country picker elements.
+- **Outcome:** Unit tests pass (randomJudokaPage.drawButton.test.js: 2 passed, randomJudokaPage.featureFlags.test.js: 2 passed, randomJudokaPage.historyPanel.test.js: 2 passed). Playwright tests pass (random-judoka.spec.js: 3 passed). The layout should now prevent page-level horizontal scroll on narrow viewports.
+
 ### Phase 4: Low - Accessibility
 
 - **Issue:** Screen readers do not announce when a new card is drawn.

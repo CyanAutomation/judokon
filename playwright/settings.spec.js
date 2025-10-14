@@ -91,7 +91,10 @@ function getLabelData() {
   const sortedNames = [...navModeNames];
 
   const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
-    .filter((flag) => DEFAULT_SETTINGS.featureFlags[flag].enabled)
+    .filter((flag) => {
+      const config = DEFAULT_SETTINGS.featureFlags[flag];
+      return config?.enabled && !config?.hidden;
+    })
     .map((flag) => TOOLTIP_DATA.settings?.[flag]?.label)
     .filter(Boolean);
 
