@@ -167,7 +167,7 @@ test.describe("CLI Layout and Scrolling", () => {
         };
       });
       if (viewportSize && scrollMetrics) {
-        expect(scrollMetrics.scrollWidth).toBeLessThanOrEqual(scrollMetrics.clientWidth + 10);
+        expect(scrollMetrics.clientWidth + 10).toBeGreaterThanOrEqual(scrollMetrics.scrollWidth);
       }
 
       // Verify CLI interface elements are properly contained
@@ -204,7 +204,7 @@ test.describe("CLI Layout and Scrolling", () => {
       });
 
       // Should not have horizontal scroll
-      expect(scrollMetrics.scrollWidth).toBeLessThanOrEqual(scrollMetrics.clientWidth + 10);
+      expect(scrollMetrics.clientWidth + 10).toBeGreaterThanOrEqual(scrollMetrics.scrollWidth);
 
       const getScrollTop = async () => {
         return scroller.evaluate((el) => {
@@ -215,13 +215,11 @@ test.describe("CLI Layout and Scrolling", () => {
 
       const initialScrollTop = await getScrollTop();
 
-      if (scrollMetrics.scrollHeight > scrollMetrics.clientHeight) {
-        await scroller.hover();
-        await page.mouse.wheel(0, 400);
-        await expect
-          .poll(getScrollTop, { timeout: 5000 })
-          .toBeGreaterThan(initialScrollTop);
-      }
+      expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
+
+      await scroller.hover();
+      await page.mouse.wheel(0, 400);
+      await expect.poll(getScrollTop, { timeout: 5000 }).toBeGreaterThan(initialScrollTop);
     });
   });
 
