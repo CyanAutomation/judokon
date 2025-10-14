@@ -357,6 +357,20 @@ const stateApi = {
   },
 
   /**
+   * Read the number of completed rounds reported by the engine.
+   * @returns {number|null}
+   */
+  getRoundsPlayed() {
+    try {
+      const value = facadeGetRoundsPlayed();
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
    * Wait for a specific battle state to be reached
    * @param {string} stateName - Target state name
    * @param {number} timeout - Timeout in milliseconds
@@ -1208,6 +1222,9 @@ const initApi = {
   }
 };
 
+let cachedRoundsEstimate = 0;
+let lastBattleState = null;
+
 // Component inspection API
 const inspectionApi = {
   /**
@@ -1230,7 +1247,82 @@ const inspectionApi = {
     try {
       const store = this.getBattleStore();
       const machine = getBattleStateMachine();
-      const snapshot = getStateSnapshot();
+      const engineRounds = stateApi.getRoundsPlayed();
+      const storeRounds = store ? toFiniteNumber(store.roundsPlayed) : null;
+      const scoreboard = readScoreboardSnapshot();
+      const scoreboardSum =
+        scoreboard && typeof scoreboard.player === "number" && typeof scoreboard.opponent === "number"
+          ? scoreboard.player + scoreboard.opponent
+          : Number.isFinite(Number(scoreboard?.player)) && Number.isFinite(Number(scoreboard?.opponent))
+          ? Number(scoreboard.player) + Number(scoreboard.opponent)
+          : null;
+      const statSelected = (() => {
+        try {
+          return document.body?.dataset?.statSelected === "true";
+        } catch {
+          return false;
+        }
+      })();
+      const scoreboardRounds =
+        typeof scoreboardSum === "number" && Number.isFinite(scoreboardSum) ? scoreboardSum : null;
+      const hasEngineRounds = typeof engineRounds === "number" && Number.isFinite(engineRounds);
+
+      let roundsPlayed = hasEngineRounds ? engineRounds : null;
+      if (typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed) && scoreboardRounds !== null) {
+        roundsPlayed = Math.max(roundsPlayed, scoreboardRounds);
+      } else if (scoreboardRounds !== null) {
+        roundsPlayed = scoreboardRounds;
+      } else if (typeof storeRounds === "number" && Number.isFinite(storeRounds)) {
+        roundsPlayed = storeRounds;
+      }
+
+      const currentState = (() => {
+        try {
+          return document.body?.dataset?.battleState ?? null;
+        } catch {
+          return null;
+        }
+      })();
+
+      if (
+        (!currentState || currentState === "roundSelectModal" || currentState === "waitingForRoundSelection") &&
+        !statSelected &&
+        (scoreboardRounds === null || scoreboardRounds === 0) &&
+        !hasEngineRounds
+      ) {
+        cachedRoundsEstimate = 0;
+      }
+
+      if (currentState === "roundDecision" && lastBattleState !== "roundDecision") {
+        cachedRoundsEstimate = Math.max(cachedRoundsEstimate, 0) + 1;
+      }
+
+      if (currentState === "roundDecision" && (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)) {
+        roundsPlayed = cachedRoundsEstimate;
+      } else if (statSelected && (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)) {
+        roundsPlayed = Math.max(cachedRoundsEstimate, 1);
+      }
+
+      if (typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)) {
+        cachedRoundsEstimate = Math.max(cachedRoundsEstimate, roundsPlayed);
+      }
+      const computedRounds =
+        typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
+          ? roundsPlayed
+          : cachedRoundsEstimate > 0
+          ? cachedRoundsEstimate
+          : null;
+
+      lastBattleState = currentState ?? lastBattleState;
+      let snapshot = null;
+
+      if (machine) {
+        try {
+          snapshot = getStateSnapshot();
+        } catch {
+          snapshot = null;
+        }
+      }
 
       const readStoreRounds = () => {
         const candidates = [];
@@ -1271,7 +1363,7 @@ const inspectionApi = {
           ? {
               selectionMade: store.selectionMade,
               playerChoice: store.playerChoice,
-              roundsPlayed
+              roundsPlayed: computedRounds
             }
           : null,
         machine: machine

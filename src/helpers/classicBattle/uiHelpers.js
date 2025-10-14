@@ -311,23 +311,31 @@ export function setupNextButton() {
       }
     });
     btn = document.querySelector('[data-role="next-round"]');
-
-    if (btn) {
-      btn.addEventListener("click", onNextButtonClick);
-    } else {
-      guard(() => {
-        if (typeof window !== "undefined" && window.__testMode) {
-          console.warn("[test] next round button missing");
-        }
-      });
-      return;
-    }
   }
 
   if (btn) {
-    btn.disabled = false;
-    btn.dataset.nextReady = "true";
+    if (!btn.__classicBattleNextHandlerAttached) {
+      try {
+        btn.addEventListener("click", onNextButtonClick);
+        btn.__classicBattleNextHandlerAttached = true;
+      } catch (error) {
+        guard(() => console.warn("[next] failed to bind click handler:", error));
+      }
+    }
+    try {
+      delete btn.dataset.nextReady;
+      if (!btn.hasAttribute("disabled")) {
+        btn.disabled = true;
+      }
+    } catch {}
+    return;
   }
+
+  guard(() => {
+    if (typeof window !== "undefined" && window.__testMode) {
+      console.warn("[test] next round button missing");
+    }
+  });
 }
 
 /**
