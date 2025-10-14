@@ -2023,6 +2023,13 @@ async function init() {
         // Use unified replay/init path for clean state
         await handleReplay(store);
 
+        // Wait until stat buttons finish hydrating before reflecting fresh round state
+        const statButtonsReadyPromise =
+          typeof window !== "undefined" && window.statButtonsReadyPromise
+            ? window.statButtonsReadyPromise
+            : Promise.resolve();
+        await statButtonsReadyPromise;
+
         // Ensure UI mirrors fresh match state
         updateScore(0, 0);
         updateRoundCounter(1);
