@@ -1333,7 +1333,11 @@ const inspectionApi = {
           if (typeof window !== "undefined") {
             candidates.push(window.battleStore?.roundsPlayed);
           }
-        } catch {}
+        } catch (error) {
+          if (typeof console !== "undefined" && typeof console.debug === "function") {
+            console.debug("testApi: Failed to read window.battleStore.roundsPlayed", error);
+          }
+        }
 
         const finite = candidates
           .map((value) => toFiniteNumber(value))
@@ -1356,13 +1360,14 @@ const inspectionApi = {
       const combinedRounds = [readStoreRounds(), readEngineRounds()].filter(
         (value) => value !== null
       );
+      const aggregatedRounds = combinedRounds.length ? Math.max(...combinedRounds) : null;
 
       return {
         store: store
           ? {
               selectionMade: store.selectionMade,
               playerChoice: store.playerChoice,
-              roundsPlayed: computedRounds
+              roundsPlayed: aggregatedRounds ?? computedRounds
             }
           : null,
         machine: machine

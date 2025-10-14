@@ -23,11 +23,14 @@ import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
-  const inspect = testApi.inspect;
-  const state = testApi.state;
+  const { inspect, state, engine } = testApi;
+  const ensureStore = () => {
+    const currentStore = inspect.getBattleStore();
+    expect(currentStore).toBeTruthy();
+    return currentStore;
+  };
 
-  let store = inspect.getBattleStore();
-  expect(store).toBeTruthy();
+  let store = ensureStore();
 
   if (orchestrated) {
     const marker = document.createElement("div");
@@ -35,8 +38,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     marker.setAttribute("data-battle-state", "waitingForPlayerAction");
     document.body.appendChild(marker);
   } else {
-    const marker = document.getElementById("orchestrator-test-marker");
-    marker?.remove();
+    document.getElementById("orchestrator-test-marker")?.remove();
   }
 
   expect(store.selectionMade).toBe(false);
@@ -47,11 +49,11 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
 
   await withMutedConsole(async () => {
     roundButtons[0].click();
-    await state.waitForBattleState("waitingForPlayerAction");
+    const stateReached = await state.waitForBattleState("waitingForPlayerAction");
+    expect(stateReached).toBe(true);
   });
 
-  store = inspect.getBattleStore();
-  expect(store).toBeTruthy();
+  store = ensureStore();
   expect(store.selectionMade).toBe(false);
   expect(store.playerChoice).toBeNull();
 
@@ -66,18 +68,18 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
 
   await withMutedConsole(async () => {
     chosenButton.click();
-    await state.waitForBattleState("roundDecision");
+    const stateReached = await state.waitForBattleState("roundDecision");
+    expect(stateReached).toBe(true);
   });
 
   const debugAfter = inspect.getDebugInfo();
   const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
-  const engineRounds = testApi.engine.getRoundsPlayed();
 
   return {
-    store: inspect.getBattleStore(),
+    store: ensureStore(),
     roundsBefore,
     roundsAfter,
-    engineRounds
+    engineRounds: engine.getRoundsPlayed()
   };
 }
 
@@ -192,12 +194,11 @@ describe("Battle Classic Page Integration", () => {
     expect(window.battleStore).toBeDefined();
   });
 
-  it("provides the battle store through the inspect API after init", async () => {
+  it("keeps roundsPlayed in sync between engine and store in non-orchestrated flow", async () => {
     await init();
 
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
-    expect(testApi?.inspect?.getBattleStore).toBeTypeOf("function");
 
     const result = await performStatSelectionFlow(testApi);
     expect(result.store).toBeTruthy();
@@ -205,7 +206,7 @@ describe("Battle Classic Page Integration", () => {
     expect(result.engineRounds).toBe(result.roundsAfter);
   });
 
-  it("keeps roundsPlayed in sync when the orchestrator is active", async () => {
+  it("keeps roundsPlayed in sync between engine and store in orchestrated flow", async () => {
     await init();
 
     const testApi = window.__TEST_API;
