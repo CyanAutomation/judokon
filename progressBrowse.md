@@ -22,10 +22,10 @@ The plan integrates findings from both manual QA and an automated Playwright lay
 This phase addresses the highest-priority bugs preventing users from filtering the judoka roster.
 
 - **Issues:**
-    1. **Horizontal scroll breaks the flag picker.** (Manual QA)
-    2. **The flag row disappears and becomes unusable.** (Manual QA)
-    3. **Clicking a flag does not filter the roster.** (Manual QA)
-    4. **Flags are not alphabetized.** (Manual QA)
+  1. **Horizontal scroll breaks the flag picker.** (Manual QA)
+  2. **The flag row disappears and becomes unusable.** (Manual QA)
+  3. **Clicking a flag does not filter the roster.** (Manual QA)
+  4. **Flags are not alphabetized.** (Manual QA)
 
 - **Relevant Files:**
   - **HTML:** `src/pages/browseJudoka.html` (contains `#country-list` container)
@@ -41,39 +41,41 @@ This phase addresses the highest-priority bugs preventing users from filtering t
   - Flags are alphabetized by their displayed country name.
 
 - **Actionable Fixes:**
-    1. **Disable Horizontal Scrolling (CSS):** In `src/styles/layout.css` or `src/styles/navbar.css`, modify the styles for `.country-flag-slide-track` (or `#country-list`) to prevent horizontal scrolling and allow wrapping.
+  1. **Disable Horizontal Scrolling (CSS):** In `src/styles/layout.css` or `src/styles/navbar.css`, modify the styles for `.country-flag-slide-track` (or `#country-list`) to prevent horizontal scrolling and allow wrapping.
 
-        ```css
-        /* In src/styles/layout.css or a more specific stylesheet */
-        #country-list {
-          display: flex;
-          flex-wrap: wrap;    /* Allow flags to wrap to the next line */
-          overflow-x: hidden; /* Explicitly prevent horizontal scrolling */
-          gap: 8px;           /* Add a small gap between flags */
-        }
-        ```
+     ```css
+     /* In src/styles/layout.css or a more specific stylesheet */
+     #country-list {
+       display: flex;
+       flex-wrap: wrap; /* Allow flags to wrap to the next line */
+       overflow-x: hidden; /* Explicitly prevent horizontal scrolling */
+       gap: 8px; /* Add a small gap between flags */
+     }
+     ```
 
-        **Rationale:** `overflow-x: hidden` is critical to prevent the accidental mouse-wheel gesture that currently breaks the component.
+     **Rationale:** `overflow-x: hidden` is critical to prevent the accidental mouse-wheel gesture that currently breaks the component.
 
-    2. **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
+  2. **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
 
-        ```javascript
-        // In src/helpers/browse/setupCountryFilter.js
-        // ... inside the click handler ...
-        const button = findButtonFromEvent(event.target);
-        if (button) {
-            const countryCode = button.dataset.countryCode;
-            // This event should be handled by the main page logic to re-render the carousel
-            window.dispatchEvent(new CustomEvent('filterByCountry', { detail: { countryCode } }));
-        }
-        ```
+     ```javascript
+     // In src/helpers/browse/setupCountryFilter.js
+     // ... inside the click handler ...
+     const button = findButtonFromEvent(event.target);
+     if (button) {
+       const countryCode = button.dataset.countryCode;
+       // This event should be handled by the main page logic to re-render the carousel
+       window.dispatchEvent(new CustomEvent("filterByCountry", { detail: { countryCode } }));
+     }
+     ```
 
-    3. **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
+  3. **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
 
-        ```javascript
-        // In src/helpers/country/list.js, before creating buttons
-        countries.sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }));
-        ```
+     ```javascript
+     // In src/helpers/country/list.js, before creating buttons
+     countries.sort((a, b) =>
+       a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" })
+     );
+     ```
 
 - **Verification:**
   - Confirm no horizontal scrollbar appears on the flag panel at any viewport size.
@@ -85,10 +87,10 @@ This phase addresses the highest-priority bugs preventing users from filtering t
 This phase addresses layout bugs on the judoka cards that hide information and violate design requirements.
 
 - **Issues:**
-    1. **Card stats require vertical scrolling.** (Manual QA & Playwright Assessment)
-    2. **Cards have horizontal overflow.** (Playwright Assessment)
-    3. **Center card enlargement is not noticeable.** (Manual QA)
-    4. **Page markers are difficult to see.** (Manual QA)
+  1. **Card stats require vertical scrolling.** (Manual QA & Playwright Assessment)
+  2. **Cards have horizontal overflow.** (Playwright Assessment)
+  3. **Center card enlargement is not noticeable.** (Manual QA)
+  4. **Page markers are difficult to see.** (Manual QA)
 
 - **Relevant Files:**
   - **CSS:** `src/styles/card.css`, `src/styles/carousel.css`
@@ -100,71 +102,72 @@ This phase addresses layout bugs on the judoka cards that hide information and v
   - Carousel page markers have a clear active state and are announced by screen readers.
 
 - **Actionable Fixes:**
-    1. **Fix Card Scrolling (CSS):** In `src/styles/card.css`, adjust the card layout for desktop viewports.
+  1. **Fix Card Scrolling (CSS):** In `src/styles/card.css`, adjust the card layout for desktop viewports.
 
-        ```css
-        /* In src/styles/card.css, inside a @media (min-width: 1024px) block */
-        .judoka-card .card-stats {
-            overflow-y: hidden; /* Prevent vertical scroll */
-            /* Adjust padding, line-height, or font-size to fit content */
-            padding: 8px;
-            line-height: 1.3;
-        }
-        .judoka-card {
-            overflow: hidden; /* Prevent horizontal scroll */
-        }
-        ```
+     ```css
+     /* In src/styles/card.css, inside a @media (min-width: 1024px) block */
+     .judoka-card .card-stats {
+       overflow-y: hidden; /* Prevent vertical scroll */
+       /* Adjust padding, line-height, or font-size to fit content */
+       padding: 8px;
+       line-height: 1.3;
+     }
+     .judoka-card {
+       overflow: hidden; /* Prevent horizontal scroll */
+     }
+     ```
 
-    2. **Increase Center Card Scale (CSS):** In `src/styles/carousel.css`, increase the scale transform for the active card.
+  2. **Increase Center Card Scale (CSS):** In `src/styles/carousel.css`, increase the scale transform for the active card.
 
-        ```css
-        /* In src/styles/carousel.css */
-        .card-carousel .judoka-card.is-active {
-            transform: scale(1.1); /* Increased from a lower value */
-            transition: transform 200ms ease-in-out;
-        }
-        ```
+     ```css
+     /* In src/styles/carousel.css */
+     .card-carousel .judoka-card.is-active {
+       transform: scale(1.1); /* Increased from a lower value */
+       transition: transform 200ms ease-in-out;
+     }
+     ```
 
-    3. **Improve Page Markers:** Add a visually hidden `aria-live` region to `src/pages/browseJudoka.html` that is updated by the carousel logic in `src/game.js` or `src/helpers/browseJudokaPage.js` to announce "Page X of Y".
+  3. **Improve Page Markers:** Add a visually hidden `aria-live` region to `src/pages/browseJudoka.html` that is updated by the carousel logic in `src/game.js` or `src/helpers/browseJudokaPage.js` to announce "Page X of Y".
 
 ### Phase 3: Medium - Accessibility & Usability
 
 - **Issues:**
-    1. **Tap targets for icons are too small (24x24px instead of 44x44px).** (Manual QA)
-    2. **Country panel cannot be closed with the `Escape` key.** (Manual QA)
+  1. **Tap targets for icons are too small (24x24px instead of 44x44px).** (Manual QA)
+  2. **Country panel cannot be closed with the `Escape` key.** (Manual QA)
 
 - **Relevant Files:**
   - **CSS:** `src/styles/navbar.css`
   - **JavaScript:** `src/helpers/browse/setupCountryToggle.js`
 
 - **Actionable Fixes:**
-    1. **Increase Tap Target Size (CSS):** In `src/styles/navbar.css`, use padding to increase the hit area of icon buttons without changing the visual size.
+  1. **Increase Tap Target Size (CSS):** In `src/styles/navbar.css`, use padding to increase the hit area of icon buttons without changing the visual size.
 
-        ```css
-        .flag-button, .some-other-icon-button {
-            /* Visually the icon might be 24x24, but padding makes it easier to tap */
-            padding: 10px;
-            box-sizing: content-box; /* Ensure padding adds to the size */
-        }
-        ```
+     ```css
+     .flag-button,
+     .some-other-icon-button {
+       /* Visually the icon might be 24x24, but padding makes it easier to tap */
+       padding: 10px;
+       box-sizing: content-box; /* Ensure padding adds to the size */
+     }
+     ```
 
-    2. **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
+  2. **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
 
-        ```javascript
-        // In src/helpers/browse/setupCountryToggle.js
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && isPanelOpen()) {
-                closePanel(); // Assuming a closePanel function exists
-            }
-        });
-        ```
+     ```javascript
+     // In src/helpers/browse/setupCountryToggle.js
+     document.addEventListener("keydown", (event) => {
+       if (event.key === "Escape" && isPanelOpen()) {
+         closePanel(); // Assuming a closePanel function exists
+       }
+     });
+     ```
 
 ### Phase 4: Low - Polish & Robustness
 
 - **Issue:** No visible error handling for network failures.
 - **Actionable Fixes:**
-    1. **Add Error Handling:** In `src/helpers/browseJudokaPage.js`, add a `.catch()` block to the data fetching logic to render an error message if the judoka roster fails to load.
-    2. **Add Test IDs:** Add `data-testid` attributes to key interactive elements like filter controls, the carousel, and cards to create more resilient Playwright tests.
+  1. **Add Error Handling:** In `src/helpers/browseJudokaPage.js`, add a `.catch()` block to the data fetching logic to render an error message if the judoka roster fails to load.
+  2. **Add Test IDs:** Add `data-testid` attributes to key interactive elements like filter controls, the carousel, and cards to create more resilient Playwright tests.
 
 ---
 

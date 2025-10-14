@@ -112,11 +112,7 @@ describe("startCooldown", () => {
 
   test("uses injected scheduler to resolve ready before fallback timers", async () => {
     const defaultHarness = createSchedulerHarness();
-    const defaultControls = startCooldown(
-      createBattleStore(),
-      null,
-      defaultHarness.overrides
-    );
+    const defaultControls = startCooldown(createBattleStore(), null, defaultHarness.overrides);
 
     expect(defaultHarness.fallbacks).toHaveLength(1);
     expect(defaultControls.readyDispatched).toBe(false);

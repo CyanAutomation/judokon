@@ -25,22 +25,22 @@ The key issues involve a lack of visual feedback (animations, button press), inc
   - **JavaScript:** `src/helpers/randomCard.js` (where the error is likely caught)
 - **Acceptance Criteria:** When a card fails to load, the UI displays the predefined fallback judoka card along with a non-blocking error notification.
 - **Actionable Fix:**
-    1. In `src/helpers/randomCard.js` or `randomJudokaPage.js`, modify the `catch` block of the data fetching logic. Instead of just showing an error, call the card rendering function with the fallback judoka data.
+  1. In `src/helpers/randomCard.js` or `randomJudokaPage.js`, modify the `catch` block of the data fetching logic. Instead of just showing an error, call the card rendering function with the fallback judoka data.
 
-        ```javascript
-        // In the main draw function in src/helpers/randomJudokaPage.js
-        try {
-            // ... existing logic to draw a card
-        } catch (error) {
-            console.error("Failed to draw a random judoka:", error);
-            // Instead of just showing an error, render the fallback card.
-            const fallbackJudoka = getFallbackJudoka(); // Assuming a function that returns the fallback data
-            renderJudokaCard(fallbackJudoka);
+     ```javascript
+     // In the main draw function in src/helpers/randomJudokaPage.js
+     try {
+       // ... existing logic to draw a card
+     } catch (error) {
+       console.error("Failed to draw a random judoka:", error);
+       // Instead of just showing an error, render the fallback card.
+       const fallbackJudoka = getFallbackJudoka(); // Assuming a function that returns the fallback data
+       renderJudokaCard(fallbackJudoka);
 
-            // Show a non-blocking notification to the user.
-            showSnackbar("Unable to draw a new card. Showing a fallback.");
-        }
-        ```
+       // Show a non-blocking notification to the user.
+       showSnackbar("Unable to draw a new card. Showing a fallback.");
+     }
+     ```
 
 ### Phase 2: Medium - UI Feedback & Animations
 
@@ -53,54 +53,54 @@ The key issues involve a lack of visual feedback (animations, button press), inc
   - The "Draw Card" button visibly scales down on press.
   - All animations are disabled if either the OS `prefers-reduced-motion` media query is active or the in-app setting is toggled off.
 - **Actionable Fixes:**
-    1. **Add CSS Animations:** In `src/styles/randomJudoka.css`, define keyframes for the card animation.
+  1. **Add CSS Animations:** In `src/styles/randomJudoka.css`, define keyframes for the card animation.
 
-        ```css
-        @keyframes slideInFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+     ```css
+     @keyframes slideInFadeIn {
+       from {
+         opacity: 0;
+         transform: translateY(20px);
+       }
+       to {
+         opacity: 1;
+         transform: translateY(0);
+       }
+     }
 
-        .judoka-card.new-card {
-            /* Apply this class when a new card is rendered */
-            animation: slideInFadeIn 0.4s ease-out;
-        }
+     .judoka-card.new-card {
+       /* Apply this class when a new card is rendered */
+       animation: slideInFadeIn 0.4s ease-out;
+     }
 
-        @media (prefers-reduced-motion: reduce) {
-            .judoka-card.new-card {
-                animation: none;
-            }
-        }
-        ```
+     @media (prefers-reduced-motion: reduce) {
+       .judoka-card.new-card {
+         animation: none;
+       }
+     }
+     ```
 
-    2. **Improve Button Feedback:** In `src/styles/randomJudoka.css`, make the active state more pronounced.
+  2. **Improve Button Feedback:** In `src/styles/randomJudoka.css`, make the active state more pronounced.
 
-        ```css
-        .draw-button:active {
-            transform: scale(0.95); /* Increase scale effect */
-            transition: transform 100ms ease-out;
-        }
-        ```
+     ```css
+     .draw-button:active {
+       transform: scale(0.95); /* Increase scale effect */
+       transition: transform 100ms ease-out;
+     }
+     ```
 
-    3. **Respect App Settings:** In `src/helpers/randomJudokaPage.js`, before triggering the animation, check the application setting.
+  3. **Respect App Settings:** In `src/helpers/randomJudokaPage.js`, before triggering the animation, check the application setting.
 
-        ```javascript
-        // In the rendering logic within src/helpers/randomJudokaPage.js
-        import { getFeatureFlag } from "../helpers/settingsCache.js"; // Or equivalent settings helper
+     ```javascript
+     // In the rendering logic within src/helpers/randomJudokaPage.js
+     import { getFeatureFlag } from "../helpers/settingsCache.js"; // Or equivalent settings helper
 
-        const motionEnabled = !getFeatureFlag('reducedMotion'); // Check your actual flag name
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+     const motionEnabled = !getFeatureFlag("reducedMotion"); // Check your actual flag name
+     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-        if (motionEnabled && !prefersReducedMotion) {
-            newCardElement.classList.add('new-card');
-        }
-        ```
+     if (motionEnabled && !prefersReducedMotion) {
+       newCardElement.classList.add("new-card");
+     }
+     ```
 
 ### Phase 3: Medium - Layout & Responsive Bugs
 
@@ -109,24 +109,26 @@ The key issues involve a lack of visual feedback (animations, button press), inc
   - **CSS:** The stylesheet that defines `.country-picker` and its children (likely a shared component stylesheet).
 - **Acceptance Criteria:** The country picker is internally scrollable but never causes the main page body to scroll horizontally.
 - **Actionable Fix:**
-    1. Apply CSS rules to the picker's container and its internal list to manage overflow correctly.
+  1. Apply CSS rules to the picker's container and its internal list to manage overflow correctly.
 
-        ```css
-        /* On the main picker container */
-        .country-picker-container {
-            overflow-x: hidden;
-            max-width: 100%;
-        }
+     ```css
+     /* On the main picker container */
+     .country-picker-container {
+       overflow-x: hidden;
+       max-width: 100%;
+     }
 
-        /* On the inner list of flags */
-        .country-picker-list {
-            display: flex;
-            overflow-x: auto; /* Allow this element to scroll internally */
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Hide scrollbar for a cleaner look */
-        }
-        .country-picker-list::-webkit-scrollbar { display: none; }
-        ```
+     /* On the inner list of flags */
+     .country-picker-list {
+       display: flex;
+       overflow-x: auto; /* Allow this element to scroll internally */
+       -webkit-overflow-scrolling: touch;
+       scrollbar-width: none; /* Hide scrollbar for a cleaner look */
+     }
+     .country-picker-list::-webkit-scrollbar {
+       display: none;
+     }
+     ```
 
 ### Phase 4: Low - Accessibility
 
@@ -136,21 +138,21 @@ The key issues involve a lack of visual feedback (animations, button press), inc
   - **JavaScript:** `src/helpers/randomJudokaPage.js`
 - **Acceptance Criteria:** When a new judoka card is rendered, a screen reader announces the name of the new judoka.
 - **Actionable Fix:**
-    1. **Add ARIA Live Region:** In `src/pages/randomJudoka.html`, add a visually hidden `aria-live` region.
+  1. **Add ARIA Live Region:** In `src/pages/randomJudoka.html`, add a visually hidden `aria-live` region.
 
-        ```html
-        <div class="sr-only" aria-live="polite" id="card-announcer"></div>
-        ```
+     ```html
+     <div class="sr-only" aria-live="polite" id="card-announcer"></div>
+     ```
 
-    2. **Update Announcer on Draw:** In `src/helpers/randomJudokaPage.js`, after a new card is rendered, update the content of the announcer element.
+  2. **Update Announcer on Draw:** In `src/helpers/randomJudokaPage.js`, after a new card is rendered, update the content of the announcer element.
 
-        ```javascript
-        // In the function that renders the new card
-        const announcer = document.getElementById('card-announcer');
-        if (announcer) {
-            announcer.textContent = `New card drawn: ${judoka.name}`;
-        }
-        ```
+     ```javascript
+     // In the function that renders the new card
+     const announcer = document.getElementById("card-announcer");
+     if (announcer) {
+       announcer.textContent = `New card drawn: ${judoka.name}`;
+     }
+     ```
 
 ---
 
