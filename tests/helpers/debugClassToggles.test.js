@@ -14,19 +14,6 @@ afterEach(() => {
   resetDebugState();
 });
 
-describe("debug state recording", () => {
-  // The tooltip overlay toggle is exercised through the settings UI integration test below.
-  it("records state for toggleViewportSimulation", () => {
-    expect(getDebugState().viewportSimulation).toBe(false);
-
-    toggleViewportSimulation(true);
-    expect(getDebugState().viewportSimulation).toBe(true);
-
-    toggleViewportSimulation(false);
-    expect(getDebugState().viewportSimulation).toBe(false);
-  });
-});
-
 describe("debug DOM class toggles", () => {
   it.each([
     {
@@ -110,6 +97,9 @@ describe("feature flag debug toggles integration", () => {
       throw new Error("Expected viewport simulation toggle input");
     }
 
+    expect(getDebugState().tooltipOverlayDebug).toBe(false);
+    expect(getDebugState().viewportSimulation).toBe(false);
+
     overlayToggle.click();
     viewportToggle.click();
 
@@ -135,6 +125,35 @@ describe("feature flag debug toggles integration", () => {
     ).toEqual([
       { key: "featureFlags", tooltip: true, viewport: false },
       { key: "featureFlags", tooltip: true, viewport: true }
+    ]);
+
+    overlayToggle.click();
+    viewportToggle.click();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
+    expect(document.body.classList.contains("simulate-viewport")).toBe(false);
+    const resetState = getDebugState();
+    expect(resetState.tooltipOverlayDebug).toBe(false);
+    expect(resetState.viewportSimulation).toBe(false);
+    expect(settings.featureFlags).toEqual({
+      tooltipOverlayDebug: { enabled: false },
+      viewportSimulation: { enabled: false }
+    });
+    expect(handleUpdate).toHaveBeenCalledTimes(4);
+    expect(
+      handleUpdate.mock.calls.map(([key, value]) => ({
+        key,
+        tooltip: value.tooltipOverlayDebug?.enabled,
+        viewport: value.viewportSimulation?.enabled
+      }))
+    ).toEqual([
+      { key: "featureFlags", tooltip: true, viewport: false },
+      { key: "featureFlags", tooltip: true, viewport: true },
+      { key: "featureFlags", tooltip: false, viewport: true },
+      { key: "featureFlags", tooltip: false, viewport: false }
     ]);
   });
 
