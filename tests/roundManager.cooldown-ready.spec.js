@@ -142,11 +142,15 @@ describe("startCooldown", () => {
 
     await expect(controls.ready).resolves.toBeUndefined();
     expect(controls.readyDispatched).toBe(true);
+
+    // Verify the fallback timer remains dormant since injected scheduler resolved first
     expect(harness.fallbacks[0].fired).toBe(false);
 
+    // The fallback timer should not affect the already-resolved ready promise
     harness.fallbacks[0].run();
-    await expect(controls.ready).resolves.toBeUndefined();
     expect(harness.fallbacks[0].fired).toBe(true);
+    // Ready promise should still be resolved (no change in behavior)
+    await expect(controls.ready).resolves.toBeUndefined();
   });
 });
 
