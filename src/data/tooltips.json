@@ -82,10 +82,6 @@
       "label": "Card Of The Day",
       "description": "Highlight a featured judoka on the home page."
     },
-    "viewportSimulation": {
-      "label": "Viewport Simulation",
-      "description": "Choose preset sizes to simulate different devices."
-    },
     "tooltipOverlayDebug": {
       "label": "Tooltip Overlay Debug",
       "description": "Outline tooltip targets to debug placement."

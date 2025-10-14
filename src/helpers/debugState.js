@@ -7,8 +7,7 @@
  */
 const DEBUG_STATE_KEY = "__JUDOKON_DEBUG_STATE__";
 const DEFAULT_STATE = {
-  tooltipOverlayDebug: false,
-  viewportSimulation: false
+  tooltipOverlayDebug: false
 };
 
 /**

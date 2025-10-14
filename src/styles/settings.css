@@ -191,9 +191,3 @@
     grid-template-columns: 1fr;
   }
 }
-
-/* Simulated viewport for screenshot testing */
-body.simulate-viewport {
-  width: 375px;
-  margin-inline: auto;
-}

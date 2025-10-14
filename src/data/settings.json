@@ -26,10 +26,6 @@
       "enabled": false,
       "tooltipId": "settings.enableCardInspector"
     },
-    "viewportSimulation": {
-      "enabled": false,
-      "tooltipId": "settings.viewportSimulation"
-    },
     "tooltipOverlayDebug": {
       "enabled": false,
       "tooltipId": "settings.tooltipOverlayDebug"

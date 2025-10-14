@@ -15,7 +15,7 @@
  * 6. Create the main "Draw Card!" button using `createDrawButton()` and append it to the `.card-section`.
  * 7. Define the `onSelect` callback to add drawn judoka to the history manager.
  * 8. Attach a `click` event listener to the "Draw Card!" button that calls `displayCard()` when clicked.
- * 9. Attach a `change` event listener to `featureFlagsEmitter` to update UI based on feature flag changes (e.g., inspector panels, viewport simulation, tooltip overlay debug).
+ * 9. Attach a `change` event listener to `featureFlagsEmitter` to update UI based on feature flag changes (e.g., inspector panels, tooltip overlay debug).
  * 10. If data preloading failed, disable the "Draw Card!" button and display an error message.
  * 11. Initialize all tooltips on the page using `initTooltips()`.
  *
@@ -27,7 +27,6 @@ import { createButton } from "../components/Button.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
-import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { setTestMode } from "./testModeUtils.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
@@ -44,7 +43,7 @@ const DRAW_ICON =
  * @pseudocode
  * 1. Initialize feature flags and load persisted settings.
  * 2. Derive `prefersReducedMotion` and apply motion preferences.
- * 3. Toggle inspector panels, viewport simulation and tooltip overlays.
+ * 3. Toggle inspector panels and tooltip overlays.
  * 4. Return an object with `prefersReducedMotion` for callers.
  *
  * @returns {Promise<{prefersReducedMotion: boolean}>}
@@ -61,7 +60,6 @@ export async function initFeatureFlagState() {
         ? !window.matchMedia("(prefers-reduced-motion: reduce)").matches
         : true,
       featureFlags: {
-        viewportSimulation: { enabled: false },
         enableCardInspector: { enabled: false },
         tooltipOverlayDebug: { enabled: false }
       }
@@ -70,7 +68,6 @@ export async function initFeatureFlagState() {
 
   setTestMode(isEnabled("enableTestMode"));
   applyMotionPreference(settings.motionEffects);
-  toggleViewportSimulation(isEnabled("viewportSimulation"));
   toggleInspectorPanels(isEnabled("enableCardInspector"));
   toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
 
@@ -438,7 +435,6 @@ export async function setupRandomJudokaPage() {
 
   featureFlagsEmitter.addEventListener("change", () => {
     toggleInspectorPanels(isEnabled("enableCardInspector"));
-    toggleViewportSimulation(isEnabled("viewportSimulation"));
     toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
   });
 

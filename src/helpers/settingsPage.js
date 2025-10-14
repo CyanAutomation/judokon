@@ -14,7 +14,6 @@ import { withViewTransition } from "./viewTransition.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips, getTooltips } from "./tooltip.js";
-import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
@@ -122,7 +121,6 @@ function initializeControls(settings) {
       applyDisplayMode(currentSettings.displayMode);
     });
     applyMotionPreference(currentSettings.motionEffects);
-    toggleViewportSimulation(isEnabled("viewportSimulation"));
     toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
     toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
     renderSwitches(latestGameModes, latestTooltipMap);
@@ -358,7 +356,6 @@ async function initializeSettingsPage() {
 function applyInitialSettings(settings) {
   applyDisplayMode(settings.displayMode);
   applyMotionPreference(settings.motionEffects);
-  toggleViewportSimulation(isEnabled("viewportSimulation"));
   toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
   toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
 }

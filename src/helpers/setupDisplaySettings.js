@@ -6,15 +6,13 @@
  *    a. Call `loadSettings()` to retrieve stored settings.
  *    b. Call `applyDisplayMode` with `settings.displayMode`.
  *    c. Call `applyMotionPreference` with `settings.motionEffects`.
- *    d. Call `toggleViewportSimulation` with `featureFlags.isEnabled('viewportSimulation')`.
- *    e. Call `toggleLayoutDebugPanel` with `featureFlags.isEnabled('layoutDebugPanel')`.
+ *    d. Call `toggleLayoutDebugPanel` with `featureFlags.isEnabled('layoutDebugPanel')`.
  *    e. Log any errors to the console.
  * 2. Use `onDomReady` to run `init` when the DOM is ready.
  */
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
-import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
 
@@ -23,7 +21,6 @@ async function init() {
     const settings = await initFeatureFlags();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
-    toggleViewportSimulation(isEnabled("viewportSimulation"));
     toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
   } catch (error) {
     console.error("Failed to apply display mode:", error);

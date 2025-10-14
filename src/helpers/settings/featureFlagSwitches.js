@@ -1,6 +1,5 @@
 import { ToggleSwitch } from "../../components/ToggleSwitch.js";
 import { showSnackbar } from "../showSnackbar.js";
-import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "../tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "../layoutDebugPanel.js";
 
@@ -43,9 +42,6 @@ export function handleFeatureFlagChange({
   )
     .then(() => {
       showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
-      if (flag === "viewportSimulation") {
-        toggleViewportSimulation(input.checked);
-      }
       if (flag === "tooltipOverlayDebug") {
         toggleTooltipOverlayDebug(input.checked);
       }
