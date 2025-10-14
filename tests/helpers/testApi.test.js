@@ -1,9 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../src/helpers/featureFlags.js", () => ({
-  isEnabled: vi.fn(() => false)
-}));
-
 const originalNodeEnv = process.env.NODE_ENV;
 const originalVitestFlag = process.env.VITEST;
 const originalTestFlag = window.__TEST__;
@@ -39,8 +35,17 @@ function restoreWindowProperty(key, value) {
 }
 
 describe("testApi.isTestMode", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
+
+    vi.doMock("../../src/helpers/featureFlags.js", async () => {
+      const actual = await vi.importActual("../../src/helpers/featureFlags.js");
+
+      return {
+        ...actual,
+        isEnabled: vi.fn(() => false)
+      };
+    });
 
     process.env.NODE_ENV = "production";
     delete process.env.VITEST;
@@ -103,6 +108,8 @@ describe("testApi.isTestMode", () => {
 
     delete window.__initCalled;
 
+    vi.doUnmock("../../src/helpers/featureFlags.js");
+    vi.resetModules();
     vi.clearAllMocks();
   });
 
