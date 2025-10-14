@@ -1324,6 +1324,40 @@ const inspectionApi = {
         }
       }
 
+      const readStoreRounds = () => {
+        const candidates = [];
+        if (store && typeof store === "object") {
+          candidates.push(store.roundsPlayed);
+        }
+        try {
+          if (typeof window !== "undefined") {
+            candidates.push(window.battleStore?.roundsPlayed);
+          }
+        } catch {}
+
+        const finite = candidates
+          .map((value) => toFiniteNumber(value))
+          .filter((value) => value !== null);
+        return finite.length ? Math.max(...finite) : null;
+      };
+
+      const readEngineRounds = () => {
+        try {
+          if (engineApi?.getRoundsPlayed) {
+            const value = toFiniteNumber(engineApi.getRoundsPlayed());
+            if (value !== null) {
+              return value;
+            }
+          }
+        } catch {}
+        return null;
+      };
+
+      const combinedRounds = [readStoreRounds(), readEngineRounds()].filter(
+        (value) => value !== null
+      );
+      const roundsPlayed = combinedRounds.length ? Math.max(...combinedRounds) : null;
+
       return {
         store: store
           ? {
