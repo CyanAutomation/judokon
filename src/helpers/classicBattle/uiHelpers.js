@@ -814,19 +814,10 @@ export function clearScoreboardAndMessages() {
  * @pseudocode
  * 1. Get the stat buttons container (`#stat-buttons`). Throw an error if not found.
  * 2. Get all stat buttons within the container. If none, resolve `statButtonsReadyPromise` and return inert enable/disable functions.
- * 3. Define `resetReady` to create a new `statButtonsReadyPromise` and expose its resolver globally.
- * 4. Define `enable` function: enables stat buttons, resolves `statButtonsReadyPromise`, and wires hotkeys.
- * 5. Define `disable` function: disables stat buttons, resets `statButtonsReadyPromise`, and detaches hotkeys.
- * 6. Call `resetReady()` and `disable()` initially.
- * 7. For each stat button:
- *    a. Attach a click handler that:
- *       i. Prevents action if disabled.
- *       ii. Calls `handleStatSelection` (guarded).
- *       iii. Shows a snackbar message (guarded).
- *       iv. Disables all stat buttons (guarded).
- *    b. Attach a keydown handler for Enter/Space to trigger the click handler.
- * 8. Wire initial hotkeys.
- * 9. Return an object with `enable` and `disable` functions.
+ * 3. Register a delegated click handler on the container that calls {@link selectStat}.
+ * 4. Define `enable` to enable buttons, resolve readiness promises, and wire hotkeys.
+ * 5. Define `disable` to disable buttons and tear down hotkeys.
+ * 6. Invoke `disable` once to ensure a known initial state and return the controls.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle state store.
  * @returns {{enable: Function, disable: Function}} An object with enable and disable functions for the stat buttons.
