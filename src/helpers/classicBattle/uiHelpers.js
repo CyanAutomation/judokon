@@ -649,6 +649,30 @@ export function selectStat(store, stat) {
   } catch {}
 }
 
+const STAT_BUTTON_HANDLER_KEY = "__classicBattleStatHandler";
+
+function registerStatButtonClickHandler(container, store) {
+  if (!container || container[STAT_BUTTON_HANDLER_KEY]) return;
+  const handler = (event) => {
+    const target = event?.target;
+    if (!target || typeof target.closest !== "function") return;
+    const btn = target.closest("button[data-stat]");
+    if (!btn || btn.disabled) return;
+    const stat = btn.dataset?.stat;
+    if (!stat) return;
+    try {
+      selectStat(store, stat);
+    } catch (error) {
+      guard(() => console.warn("[uiHelpers] Failed to handle stat selection:", error));
+    }
+  };
+  container.addEventListener("click", handler);
+  Object.defineProperty(container, STAT_BUTTON_HANDLER_KEY, {
+    value: handler,
+    configurable: true
+  });
+}
+
 /**
  * Attach the Next button click handler to the DOM Next control.
  *
@@ -790,26 +814,15 @@ export function clearScoreboardAndMessages() {
  * @pseudocode
  * 1. Get the stat buttons container (`#stat-buttons`). Throw an error if not found.
  * 2. Get all stat buttons within the container. If none, resolve `statButtonsReadyPromise` and return inert enable/disable functions.
- * 3. Define `resetReady` to create a new `statButtonsReadyPromise` and expose its resolver globally.
- * 4. Define `enable` function: enables stat buttons, resolves `statButtonsReadyPromise`, and wires hotkeys.
- * 5. Define `disable` function: disables stat buttons, resets `statButtonsReadyPromise`, and detaches hotkeys.
- * 6. Call `resetReady()` and `disable()` initially.
- * 7. For each stat button:
- *    a. Attach a click handler that:
- *       i. Prevents action if disabled.
- *       ii. Calls `handleStatSelection` (guarded).
- *       iii. Shows a snackbar message (guarded).
- *       iv. Disables all stat buttons (guarded).
- *    b. Attach a keydown handler for Enter/Space to trigger the click handler.
- * 8. Wire initial hotkeys.
- * 9. Return an object with `enable` and `disable` functions.
+ * 3. Register a delegated click handler on the container that calls {@link selectStat}.
+ * 4. Define `enable` to enable buttons, resolve readiness promises, and wire hotkeys.
+ * 5. Define `disable` to disable buttons and tear down hotkeys.
+ * 6. Invoke `disable` once to ensure a known initial state and return the controls.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle state store.
  * @returns {{enable: Function, disable: Function}} An object with enable and disable functions for the stat buttons.
  */
 export function initStatButtons(store) {
-  // Mark intentionally unused to satisfy eslint while preserving API
-  void store;
   const container = document.getElementById("stat-buttons");
   if (!container) throw new Error("initStatButtons: #stat-buttons missing");
   const buttons = Array.from(container.querySelectorAll("button"));
@@ -822,6 +835,7 @@ export function initStatButtons(store) {
   }
 
   let disposeHotkeys = null;
+  registerStatButtonClickHandler(container, store);
 
   const enable = () => {
     enableStatButtons(buttons, container);

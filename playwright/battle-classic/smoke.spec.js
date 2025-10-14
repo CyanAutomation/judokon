@@ -24,6 +24,9 @@ test.describe("Classic Battle page", () => {
       await page.evaluate(() => document.querySelector("#stat-buttons")?.dataset.buttonsReady)
     );
 
+    const getBattleState = () =>
+      page.evaluate(() => document.body?.dataset?.battleState ?? "");
+
     // Play until the match ends
     for (let i = 0; i < 10; i++) {
       // Max 10 rounds to prevent infinite loop
@@ -33,24 +36,21 @@ test.describe("Classic Battle page", () => {
       // 3. Click the first stat button
       await page.locator('[data-testid="stat-button"]').first().click();
 
-      // 4. Wait for the next round button to be ready
-      try {
-        await page.waitForSelector('[data-next-ready="true"]', { timeout: 5000 });
-      } catch {
-        // If the next button doesn't appear, the match might have ended
-      }
+      // Wait for the orchestrator to progress out of the selection state
+      await expect.poll(getBattleState, { timeout: 15000 }).not.toBe("waitingForPlayerAction");
 
-      // Check if the end modal is visible
+      const stateAfterResolution = await getBattleState();
+
+      // Check if the end modal is visible after the round resolves
       const endModalVisible = await page.locator("#match-end-modal").isVisible();
-      if (endModalVisible) {
+      const terminalStates = new Set(["matchDecision", "matchSummary", "matchComplete"]);
+      if (endModalVisible || terminalStates.has(stateAfterResolution)) {
+        await expect(page.locator("#match-end-modal")).toBeVisible({ timeout: 15000 });
         break;
       }
 
-      // 5. Click the next round button if it's not disabled
-      const nextButtonDisabled = await page.locator('[data-testid="next-button"]').isDisabled();
-      if (!nextButtonDisabled) {
-        await page.locator('[data-testid="next-button"]').click();
-      }
+      // Wait for the next round to become ready before continuing
+      await expect.poll(getBattleState, { timeout: 15000 }).toBe("waitingForPlayerAction");
     }
 
     // Assert that the end modal is visible
