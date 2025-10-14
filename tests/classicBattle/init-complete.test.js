@@ -51,15 +51,6 @@ describe("Classic Battle Init Complete Hooks", () => {
     vi.resetModules();
   });
 
-  it("exposes window.battleStore after successful init", async () => {
-    expect(window.battleStore).toBeUndefined();
-
-    await init();
-
-    expect(window.battleStore).toBeDefined();
-    expect(typeof window.battleStore).toBe("object");
-  });
-
   it("dispatches battle:init-complete event after successful init", async () => {
     let eventFired = false;
     let eventDetail = null;

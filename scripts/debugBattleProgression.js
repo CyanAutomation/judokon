@@ -81,14 +81,19 @@ import {
       try {
         await page.evaluate((chosen) => {
           try {
-            if (window.battleStore && !window.battleStore.playerChoice) {
-              window.battleStore.playerChoice = chosen;
-              window.battleStore.selectionMade = true;
+            const store =
+              window.__TEST_API?.inspect?.getBattleStore?.() ||
+              window.__classicbattledebugapi?.battleStore ||
+              window.battleStore ||
+              null;
+            if (store && !store.playerChoice) {
+              store.playerChoice = chosen;
+              store.selectionMade = true;
             }
           } catch {}
         }, stat);
 
-        console.log(`Pre-seeded playerChoice="${stat}" in window.battleStore`);
+        console.log(`Pre-seeded playerChoice="${stat}" via battle store accessor`);
       } catch {}
     }
 

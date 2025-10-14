@@ -269,12 +269,22 @@ export async function getBattleSnapshot(page) {
         progressCount: progressItems.length,
         progressItems,
         statButtons,
-        store: window.battleStore
-          ? {
-              selectionMade: !!window.battleStore.selectionMade,
-              playerChoice: window.battleStore.playerChoice || null
-            }
-          : null,
+        store: (() => {
+          try {
+            const storeRef =
+              window.__TEST_API?.inspect?.getBattleStore?.() ||
+              window.__classicbattledebugapi?.battleStore ||
+              window.battleStore ||
+              null;
+            if (!storeRef) return null;
+            return {
+              selectionMade: !!storeRef.selectionMade,
+              playerChoice: storeRef.playerChoice || null
+            };
+          } catch {
+            return null;
+          }
+        })(),
         machineLog: logArr,
         activeElement: activeDesc
       };
