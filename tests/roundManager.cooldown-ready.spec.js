@@ -126,26 +126,31 @@ describe("startCooldown", () => {
       clearTimeout: vi.fn()
     };
 
-    const injectedHarness = createSchedulerHarness();
-    const controlsWithScheduler = startCooldown(
+    const harness = createSchedulerHarness();
+    const controls = startCooldown(
       createBattleStore(),
       injectedScheduler,
-      injectedHarness.overrides
+      harness.overrides
     );
 
     expect(injectedScheduler.setTimeout).toHaveBeenCalledTimes(1);
-    expect(injectedHarness.fallbacks).toHaveLength(1);
-    expect(controlsWithScheduler.readyDispatched).toBe(false);
+    expect(harness.fallbacks).toHaveLength(1);
+    expect(controls.readyDispatched).toBe(false);
+
+    // Integration coverage replaces the previous resolveActiveScheduler helper test
+    // by asserting the injected scheduler completes readiness before the fallback
+    // timer has a chance to fire.
 
     expect(schedulerInvocations).toHaveLength(1);
     schedulerInvocations[0].cb();
 
-    await expect(controlsWithScheduler.ready).resolves.toBeUndefined();
-    expect(controlsWithScheduler.readyDispatched).toBe(true);
-    expect(injectedHarness.fallbacks[0].fired).toBe(false);
+    await expect(controls.ready).resolves.toBeUndefined();
+    expect(controls.readyDispatched).toBe(true);
+    expect(harness.fallbacks[0].fired).toBe(false);
 
-    defaultHarness.fallbacks[0].run();
-    await expect(defaultControls.ready).resolves.toBeUndefined();
+    harness.fallbacks[0].run();
+    await expect(controls.ready).resolves.toBeUndefined();
+    expect(harness.fallbacks[0].fired).toBe(true);
   });
 });
 
