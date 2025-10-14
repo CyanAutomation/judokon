@@ -219,6 +219,19 @@ function getHistoryPanelTransition(prefersReducedMotion) {
   return prefersReducedMotion ? "transform 0.01s linear" : "transform 0.3s ease";
 }
 
+function formatJudokaName(judoka) {
+  if (!judoka || typeof judoka !== "object") return "";
+  const parts = [judoka.firstname, judoka.surname]
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter(Boolean);
+  if (parts.length > 0) {
+    return parts.join(" ");
+  }
+  const fallbackName =
+    typeof judoka.name === "string" ? judoka.name.trim() : "";
+  return fallbackName || "";
+}
+
 function announceCard(judokaName) {
   const announcer = document.getElementById("card-announcer");
   if (announcer) {
@@ -281,7 +294,7 @@ async function displayCard({
         onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
-      announceCard(judoka.name);
+      announceCard(formatJudokaName(judoka));
     } catch (err) {
       console.error("Error generating card:", err);
       const fallbackJudoka = await getFallbackJudoka();
@@ -295,7 +308,7 @@ async function displayCard({
         isEnabled("enableCardInspector")
       );
       showSnackbar("Unable to draw a new card. Showing a fallback.");
-      announceCard(fallbackJudoka.name);
+      announceCard(formatJudokaName(fallbackJudoka));
       enableButton();
       return;
     }
