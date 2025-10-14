@@ -134,10 +134,16 @@ export async function renderJudokaCard(
       return false;
     }
 
-    displayCard(containerEl, card, prefersReducedMotion);
-    return true;
+    try {
+      displayCard(containerEl, card, prefersReducedMotion);
+      return true;
+    } catch (displayError) {
+      console.error("Error displaying card:", displayError);
+      containerEl.innerHTML = "";
+      return false;
+    }
   } catch (error) {
-    console.error("Error displaying card:", error);
+    console.error("Error rendering card:", error);
     containerEl.innerHTML = "";
     return false;
   }
@@ -166,7 +172,9 @@ export async function renderJudokaCard(
  * @param {boolean} [prefersReducedMotion=false] - Motion preference flag.
  * @param {function} [onSelect] - Callback invoked with the chosen judoka.
  * @param {{enableInspector?: boolean, skipRender?: boolean}} [options] - Feature flags.
- * @returns {Promise<void>} Resolves when the card generation workflow completes.
+ * @returns {Promise<Judoka | void>} Resolves with the selected judoka when the
+ * card generation workflow completes, or void when rendering is skipped due to
+ * a missing container element.
  */
 export async function generateRandomCard(
   activeCards,
@@ -177,7 +185,7 @@ export async function generateRandomCard(
   options = {}
 ) {
   const { enableInspector, skipRender = false } = options;
-  if (!skipRender && !containerEl) return;
+  if (!skipRender && !containerEl) return undefined;
 
   const gokyoLookup = await loadGokyoLookup(gokyoData);
   const judoka = await pickJudoka(activeCards, onSelect);
@@ -192,7 +200,9 @@ export async function generateRandomCard(
     );
 
     if (!rendered) {
-      containerEl.innerHTML = "";
+      return judoka;
     }
   }
+
+  return judoka;
 }

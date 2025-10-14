@@ -272,26 +272,23 @@ async function displayCard({
       enableButton();
       return;
     }
-    let selectedJudoka;
-    const handleSelect = (judoka) => {
-      selectedJudoka = judoka;
-      if (typeof onSelect === "function") {
-        onSelect(judoka);
-      }
-    };
+    let announcedJudoka;
     try {
-      await generateRandomCard(
+      announcedJudoka = await generateRandomCard(
         cachedJudokaData,
         cachedGokyoData,
         cardContainer,
         prefersReducedMotion,
-        handleSelect,
+        onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
     } catch (err) {
       console.error("Error generating card:", err);
       const fallbackJudoka = await getFallbackJudoka();
-      handleSelect(fallbackJudoka);
+      announcedJudoka = fallbackJudoka;
+      if (typeof onSelect === "function") {
+        onSelect(fallbackJudoka);
+      }
       const gokyoLookup = await loadGokyoLookup(cachedGokyoData);
       await renderJudokaCard(
         fallbackJudoka,
@@ -306,8 +303,8 @@ async function displayCard({
       return;
     }
     const cardEl = cardContainer.querySelector(".card-container");
-    if (selectedJudoka && cardEl) {
-      announceCard(selectedJudoka.name);
+    if (announcedJudoka && cardEl) {
+      announceCard(announcedJudoka.name);
     }
     if (prefersReducedMotion) {
       enableButton();
