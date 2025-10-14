@@ -304,7 +304,13 @@ async function displayCard({
     } else {
       const cardEl = cardContainer.querySelector(".card-container");
       if (!cardEl) {
-        requestAnimationFrame(enableButton);
+        enableButton();
+        globalThis.requestAnimationFrame?.(() => {
+          if (drawButton.disabled) {
+            enableButton();
+          }
+        });
+        return;
       } else {
         const {
           setTimeout: set = globalThis.setTimeout,
