@@ -28,6 +28,7 @@
     "check:playwright-patterns": "node scripts/check-playwright-patterns.js",
     "sync:agents": "node scripts/syncAgentDocs.mjs",
     "rag:query": "node scripts/queryRagCli.mjs",
+    "rag:mcp": "node --max-old-space-size=4096 scripts/mcp-rag-server.mjs",
     "rag:validate": "node scripts/checkRagPreflight.mjs && node scripts/evaluation/evaluateRAG.js && npm run validate:data && node scripts/checkHotPaths.js",
     "rag:prepare:models": "node scripts/prepareLocalModel.mjs",
     "check:rag": "node scripts/checkRagModel.mjs",
