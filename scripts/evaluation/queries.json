@@ -1,63 +1,62 @@
 [
   {
-    "query": "settings feature flags order",
+    "query": "What is the standard for ordering feature flags?",
     "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md"
   },
-
   {
-    "query": "navbar button transition duration",
+    "query": "Where is the transition duration for navbar buttons defined?",
     "expected_source": "src/styles/buttons.css"
   },
   {
-    "query": "how to add a new tooltip",
+    "query": "What is the data structure for a tooltip in tooltips.json?",
     "expected_source": "src/data/tooltips.json"
   },
   {
-    "query": "what is the purpose of the classic battle mode",
+    "query": "Describe the classic battle game mode.",
     "expected_source": "src/data/gameModes.json"
   },
   {
-    "query": "how are judoka stats calculated",
+    "query": "Where are judoka stats defined?",
     "expected_source": "src/data/judoka.json"
   },
   {
-    "query": "tooltip content coverage guidelines",
-    "expected_source": "design/productRequirementsDocuments/prdTooltipSystem.md"
-  },
-  {
-    "query": "requirements for navigation bar layout",
+    "query": "What are the layout requirements for the main navigation bar?",
     "expected_source": "design/productRequirementsDocuments/prdNavigationBar.md"
   },
   {
-    "query": "purpose of the prd viewer tool",
-    "expected_source": "design/productRequirementsDocuments/prdPRDViewer.md"
-  },
-  {
-    "query": "default navigation items",
+    "query": "Where are the default navigation items defined?",
     "expected_source": "src/data/navigationItems.js"
   },
   {
-    "query": "weight category definitions",
-    "expected_source": "src/data/weightCategories.json"
-  },
-  {
-    "query": "game timer phases",
+    "query": "What are the different phases of the game timer?",
     "expected_source": "src/data/gameTimers.js"
   },
   {
-    "query": "what does the power stat represent",
+    "query": "What is the definition of the 'power' stat?",
     "expected_source": "src/data/statNames.js"
   },
   {
-    "query": "steps to update a judoka profile",
-    "expected_source": "design/productRequirementsDocuments/prdUpdateJudoka.md"
+    "query": "Where is the default sound setting configured?",
+    "expected_source": "src/config/settingsDefaults.js"
   },
   {
-    "query": "goals of the tooltip viewer",
-    "expected_source": "design/productRequirementsDocuments/prdTooltipViewer.md"
+    "query": "How do I add a new judoka to the game?",
+    "expected_source": "src/data/judoka.json"
   },
   {
-    "query": "default sound setting in configuration",
-    "expected_source": "src/data/settings.json"
+    "query": "Show me the code for the main game loop.",
+    "expected_source": "src/game.js"
+  },
+  {
+    "query": "What is the purpose of the battle engine facade?",
+    "expected_source": "src/helpers/battleEngineFacade.js"
+  },
+  {
+    "query": "How are accessibility features implemented in the CLI?",
+    "expected_source": "playwright/cli-layout-assessment.spec.js"
+  },
+  {
+    "query": "Find the component that renders the judoka card.",
+    "expected_source": "src/components/Card.js"
   }
 ]

@@ -302,6 +302,49 @@ function normalizeAndFilter(text, seen) {
  * @param {any} item - Data value to process.
  * @returns {string|undefined} Space-joined values or undefined when none.
  */
+function formatDataEntry(base, item) {
+  if (base === 'judoka.json') {
+    const judoka = item;
+    const stats = Object.entries(judoka.stats).map(([key, value]) => `${key} ${value}`).join(', ');
+    return `Judoka: ${judoka.firstname} ${judoka.surname}. Country: ${judoka.country}. Rarity: ${judoka.rarity}. Stats: ${stats}. Bio: ${judoka.bio}`;
+  }
+
+  if (base === 'gameTimers.js') {
+    const timer = item;
+    return `Game Timer: ${timer.description}. Category: ${timer.category}, Duration: ${timer.value}s, Skill level: ${timer.skill}.`;
+  }
+
+  if (base === 'tooltips.json') {
+    // tooltips.json has a different structure, it's an object of key-value pairs
+    // I will handle it in processJsonObjectEntries
+    return null;
+  }
+
+  if (base === 'navigationItems.js') {
+    const navItem = item;
+    return `Navigation Item: ${navItem.label}. URL: ${navItem.url}. Category: ${navItem.category}.`;
+  }
+
+  if (base === 'statNames.js') {
+    const stat = item;
+    return `Stat: ${stat.name}. Description: ${stat.description}.`;
+  }
+
+  if (base === 'gameModes.json') {
+    const mode = item;
+    return `Game Mode: ${mode.name}. Description: ${mode.description}. Rules: ${mode.rules}`;
+  }
+
+  // Default fallback for other data files
+  if (typeof item === 'object' && item !== null) {
+    return Object.entries(item)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(' ');
+  }
+
+  return String(item);
+}
+
 function extractAllowedValues(base, item) {
   const allowlist =
     Object.hasOwn(DATA_FIELD_ALLOWLIST, base) && DATA_FIELD_ALLOWLIST[base] !== undefined
