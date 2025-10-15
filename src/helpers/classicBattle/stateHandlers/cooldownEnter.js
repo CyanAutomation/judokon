@@ -1,7 +1,6 @@
 import { startCooldown } from "../roundManager.js";
 import { initStartCooldown } from "../cooldowns.js";
 import { exposeDebugState } from "../debugHooks.js";
-import { updateRoundCounter } from "../../setupScoreboard.js";
 
 /**
  * onEnter handler for `cooldown` state.
@@ -33,12 +32,11 @@ export async function cooldownEnter(machine, payload) {
   console.log("[DEBUG] startCooldown called successfully");
   
   // Announce next round in UI
-  if (store) {
-    const currentRound = store.getCurrentRound?.().number || 1;
-    const nextRound = currentRound + 1;
-    try {
-      updateRoundCounter(nextRound);
-    } catch {}
-  }
+  try {
+    const messageEl = document.getElementById("round-message");
+    if (messageEl) {
+      messageEl.textContent = "Next Round";
+    }
+  } catch {}
 }
 export default cooldownEnter;

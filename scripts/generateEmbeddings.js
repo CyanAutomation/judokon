@@ -345,28 +345,6 @@ function formatDataEntry(base, item) {
   return String(item);
 }
 
-function extractAllowedValues(base, item) {
-  const allowlist =
-    Object.hasOwn(DATA_FIELD_ALLOWLIST, base) && DATA_FIELD_ALLOWLIST[base] !== undefined
-      ? DATA_FIELD_ALLOWLIST[base]
-      : DATA_FIELD_ALLOWLIST.default;
-  if (allowlist === false) return undefined;
-  if (Array.isArray(item)) {
-    return item.map((v) => (typeof v === "object" ? JSON.stringify(v) : v)).join(" ");
-  }
-  if (typeof item === "object" && item !== null) {
-    const values = [];
-    const flat = flattenObject(item);
-    for (const [key, value] of Object.entries(flat)) {
-      if (allowlist === true || allowlist.some((allowedKey) => key.startsWith(allowedKey))) {
-        values.push(`${key}: ${value}`);
-      }
-    }
-    return values.length ? values.join(" ") : undefined;
-  }
-  return String(item);
-}
-
 function collectKeyPaths(obj, prefix = "", out = []) {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
     for (const [k, v] of Object.entries(obj)) {
@@ -383,7 +361,7 @@ function collectKeyPaths(obj, prefix = "", out = []) {
  *
  * @pseudocode
  * 1. Accept base metadata (file name, path, tags) plus extractor/write helpers.
- * 2. When invoked, favor `overrideText`; otherwise compute allowlisted text.
+ * 2. When invoked, favor `overrideText`; otherwise compute formatted text.
  * 3. Normalize, tag, embed, and stream the entry while avoiding duplicates.
  *
  * @param {object} options - Dependencies for the processor.
@@ -393,8 +371,8 @@ function collectKeyPaths(obj, prefix = "", out = []) {
  * @param {(text:string, opts:object)=>Promise<any>} options.extractor - Embedding extractor.
  * @param {(entry:object)=>void} options.writeEntry - Writer that persists entries.
  * @param {Set<string>} options.seenTexts - Tracker preventing duplicate chunks.
- * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
- *   - Function to derive allowlisted text when no override is provided.
+ * @param {(base:string, item:any)=>string|undefined} [options.formatDataEntryFn]
+ *   - Function to derive formatted text when no override is provided.
  * @returns {(item:any, id:string, overrideText?:string)=>Promise<void>} Async processor for a JSON entry.
  */
 function createJsonProcessItem({
@@ -404,14 +382,14 @@ function createJsonProcessItem({
   extractor,
   writeEntry,
   seenTexts,
-  extractAllowedValuesFn = extractAllowedValues
+  formatDataEntryFn = formatDataEntry
 }) {
-  const extractFn = extractAllowedValuesFn || extractAllowedValues;
+  const formatFn = formatDataEntryFn || formatDataEntry;
   return async (item, id, overrideText) => {
     const overrideCandidate = typeof overrideText === "string" ? overrideText.trim() : overrideText;
     const textToEmbed =
       overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
-        ? extractFn(base, item)
+        ? formatFn(base, item)
         : overrideCandidate;
     const chunkText = textToEmbed ? normalizeAndFilter(String(textToEmbed), seenTexts) : undefined;
     if (!chunkText) return;
@@ -448,25 +426,25 @@ function createJsonProcessItem({
  *
  * @pseudocode
  * 1. Iterate entries with their index.
- * 2. Extract allowlisted text for each original item.
- * 3. Skip entries without allowlisted content; otherwise call the processor.
+ * 2. Format each item into a natural language string.
+ * 3. Skip entries without formatted content; otherwise call the processor.
  *
  * @param {Array<any>} items - JSON array to process.
  * @param {object} options - Processing context.
  * @param {string} options.baseName - Base filename for allowlist lookup.
  * @param {Function} options.processItem - Processor created via `createJsonProcessItem`.
- * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
- *   - Optional allowlist extractor override.
+ * @param {(base:string, item:any)=>string|undefined} [options.formatDataEntryFn]
+ *   - Optional formatter override.
  * @returns {Promise<void>} Resolves when all entries are processed.
  */
 async function processJsonArrayEntries(
   items,
-  { baseName, processItem, extractAllowedValuesFn = extractAllowedValues }
+  { baseName, processItem, formatDataEntryFn = formatDataEntry }
 ) {
   for (const [index, item] of items.entries()) {
-    const allowed = extractAllowedValuesFn(baseName, item);
-    if (!allowed) continue;
-    await processItem(item, `item-${index + 1}`, allowed);
+    const formattedText = formatDataEntryFn(baseName, item);
+    if (!formattedText) continue;
+    await processItem(item, `item-${index + 1}`, formattedText);
   }
 }
 
@@ -475,36 +453,35 @@ async function processJsonArrayEntries(
  *
  * @pseudocode
  * 1. Flatten the object into key-path/value tuples.
- * 2. For each tuple, compute allowlisted text for that key path.
- * 3. Skip tuples without allowlisted content; otherwise invoke the processor
+ * 2. For each tuple, format it into a natural language string.
+ * 3. Skip tuples without formatted content; otherwise invoke the processor
  *    with the original key-path structure and override text.
  *
  * @param {object} obj - Root object to flatten and process.
  * @param {object} options - Processing context.
  * @param {string} options.baseName - Base filename for allowlist lookup.
  * @param {Function} options.processItem - Processor created via `createJsonProcessItem`.
- * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
- *   - Optional allowlist extractor override.
+ * @param {(base:string, item:any)=>string|undefined} [options.formatDataEntryFn]
+ *   - Optional formatter override.
  * @returns {Promise<void>} Resolves when all key paths are processed.
  */
 async function processJsonObjectEntries(
   obj,
-  { baseName, processItem, extractAllowedValuesFn = extractAllowedValues }
+  { baseName, processItem, formatDataEntryFn = formatDataEntry }
 ) {
+  if (baseName === 'tooltips.json') {
+    for (const [key, value] of Object.entries(obj)) {
+      const text = `Tooltip ${key}: ${value.content}`;
+      await processItem({ [key]: value }, key, text);
+    }
+    return;
+  }
+
   const flat = collectKeyPaths(obj);
   for (const [keyPath, value] of flat) {
-    const allowed = extractAllowedValuesFn(baseName, { [keyPath]: value });
-    if (!allowed) continue;
-    const allowedText = String(allowed).trim();
-    const prefix = `${keyPath}: `;
-    let overrideText;
-    if (allowedText.startsWith(keyPath) && allowedText.charAt(keyPath.length) === ":") {
-      const remainder = allowedText.slice(keyPath.length + 1).trimStart();
-      overrideText = `${prefix}${remainder}`;
-    } else {
-      overrideText = `${prefix}${allowedText}`;
-    }
-    await processItem({ [keyPath]: value }, keyPath, overrideText);
+    const formattedText = formatDataEntryFn(baseName, { [keyPath]: value });
+    if (!formattedText) continue;
+    await processItem({ [keyPath]: value }, keyPath, formattedText);
   }
 }
 
@@ -1190,12 +1167,10 @@ const __jsonTestHelpers = {
 
 export {
   DATA_FIELD_ALLOWLIST,
-  JSON_FIELD_ALLOWLIST,
   flattenObject,
   BOILERPLATE_STRINGS,
   normalizeText,
   normalizeAndFilter,
-  extractAllowedValues,
   createSparseVector,
   determineTags,
   /** @internal */ __jsonTestHelpers
