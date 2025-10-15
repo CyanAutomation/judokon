@@ -1,6 +1,7 @@
 import { resetStatButtons } from "../battle/index.js";
 import { skipCurrentPhase } from "./skipHandler.js";
 import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
+import { emitBattleEvent } from "./battleEvents.js";
 
 /**
  * Create debug helpers for Classic Battle tests.

@@ -17,14 +17,26 @@ test.describe("Classic Battle page", () => {
     // 1. Click the round select button for a quick match
     await page.locator('button:has-text("Quick")').click();
 
-    await page.waitForTimeout(1000);
-
-    console.log(
-      "buttonsReady dataset:",
-      await page.evaluate(() => document.querySelector("#stat-buttons")?.dataset.buttonsReady)
-    );
-
     const getBattleState = () => page.evaluate(() => document.body?.dataset?.battleState ?? "");
+    const terminalStates = ["matchDecision", "matchSummary", "matchComplete"];
+    const waitForNextRoundState = async () => {
+      const stateHandle = await page.waitForFunction(
+        (states) => {
+          const state = document.body?.dataset?.battleState ?? "";
+          if (states.includes(state)) {
+            return { state, terminal: true };
+          }
+          if (state === "waitingForPlayerAction") {
+            return { state, terminal: false };
+          }
+          return false;
+        },
+        terminalStates,
+        { timeout: 15000 }
+      );
+
+      return stateHandle.jsonValue();
+    };
 
     // Play until the match ends
     for (let i = 0; i < 10; i++) {
@@ -38,12 +50,8 @@ test.describe("Classic Battle page", () => {
       // Wait for the orchestrator to progress out of the selection state
       await expect.poll(getBattleState, { timeout: 15000 }).not.toBe("waitingForPlayerAction");
 
-      const stateAfterResolution = await getBattleState();
-
-      // Check if the end modal is visible after the round resolves
-      const endModalVisible = await page.locator("#match-end-modal").isVisible();
-      const terminalStates = new Set(["matchDecision", "matchSummary", "matchComplete"]);
-      if (endModalVisible || terminalStates.has(stateAfterResolution)) {
+      const { terminal } = await waitForNextRoundState();
+      if (terminal) {
         await expect(page.locator("#match-end-modal")).toBeVisible({ timeout: 15000 });
         break;
       }
