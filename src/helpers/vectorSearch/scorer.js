@@ -54,11 +54,28 @@ function normalizeStep(state) {
 
 function tagFilterStep(state) {
   if (!Array.isArray(state.tags) || state.tags.length === 0) return state;
+
+  const implementationTags = ["data", "code", "css"];
+  const lookupTags = state.tags.filter(t => implementationTags.includes(t));
+  const otherTags = state.tags.filter(t => !implementationTags.includes(t));
+
+  if (lookupTags.length > 0) {
+    return {
+      ...state,
+      entries: state.entries.filter(
+        (e) =>
+          Array.isArray(e.tags) &&
+          (otherTags.length === 0 || otherTags.every((t) => e.tags.includes(t))) &&
+          lookupTags.some((t) => e.tags.includes(t))
+      ),
+    };
+  }
+
   return {
     ...state,
     entries: state.entries.filter(
       (e) => Array.isArray(e.tags) && state.tags.every((t) => e.tags.includes(t))
-    )
+    ),
   };
 }
 

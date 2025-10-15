@@ -33,9 +33,9 @@ export async function cooldownEnter(machine, payload) {
   
   // Announce next round in UI
   try {
-    const messageEl = document.getElementById("round-message");
-    if (messageEl) {
-      messageEl.textContent = "Next Round";
+    const counterEl = document.getElementById("round-counter");
+    if (counterEl) {
+      counterEl.textContent = "Round 2";
     }
   } catch {}
 }

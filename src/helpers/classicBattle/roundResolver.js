@@ -354,7 +354,13 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
     }
   } catch {}
 
-  store.playerChoice = null;
+  if (store && typeof store === "object") {
+    store.playerChoice = null;
+    try {
+      store.lastRoundResult = result;
+      store.matchEnded = Boolean(result?.matchEnded);
+    } catch {}
+  }
   return result;
 }
 

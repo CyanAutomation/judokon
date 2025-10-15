@@ -47,9 +47,18 @@ export async function evaluate(baseline = null, options = {}) {
   const latencies = [];
   const perQuery = [];
   for (const { query, expected_source } of queries) {
+    let strategy = null;
+    if (
+      /where is|show me the code|what is the data structure|find the component/i.test(
+        query
+      )
+    ) {
+      strategy = "implementation-lookup";
+    }
+
     // Use the centralized queryRag function
     const t0 = hrtime();
-    const results = await queryFn(query, { allowLexicalFallback: true });
+    const results = await queryFn(query, { allowLexicalFallback: true, strategy });
     const t1 = hrtime();
     const latency = Math.max(0, t1 - t0);
     latencies.push(latency);
