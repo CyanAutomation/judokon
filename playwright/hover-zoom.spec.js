@@ -24,24 +24,19 @@ async function callBrowseHook(page, hookName, ...args) {
   );
 
   return page.evaluate(
-    ([name, params]) => window.__testHooks?.browse?.[name]?.(...params),
-    [hookName, args]
+    ({ name, params }) => window.__testHooks?.browse?.[name]?.(...params),
+    { name: hookName, params: args }
   );
 }
 
 async function waitForCarouselHook(page) {
   await page.waitForFunction(
-    () => {
-      const hook = window.__testHooks?.browse?.whenCarouselReady;
-      if (typeof hook !== "function") {
-        return false;
-      }
-
-      return hook();
-    },
+    () => typeof window.__testHooks?.browse?.whenCarouselReady === "function",
     undefined,
     { timeout: 10_000 }
   );
+
+  await page.evaluate(() => window.__testHooks?.browse?.whenCarouselReady?.());
 }
 
 async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
@@ -54,8 +49,15 @@ async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
   }
 }
 
-test.afterEach(async ({ page }) => {
-  await page.evaluate(() => window.__testHooks?.browse?.reset?.());
+test.afterEach(async ({ page }, testInfo) => {
+  try {
+    await page.evaluate(() => window.__testHooks?.browse?.reset?.());
+  } catch (error) {
+    testInfo.annotations.push({
+      type: "cleanup-warning",
+      description: error instanceof Error ? error.message : String(error)
+    });
+  }
 });
 
 test.describe("Hover Zoom Functionality", () => {
@@ -286,7 +288,7 @@ test.describe("Hover Zoom Functionality", () => {
       await gotoBrowsePage(page);
 
       // Add a new card dynamically via the production card factory
-      await callBrowseHook(page, "addCard", {
+      const dynamicJudoka = {
         firstname: "Dynamic",
         surname: "Card",
         country: "Testland",
@@ -301,7 +303,26 @@ test.describe("Hover Zoom Functionality", () => {
         weightClass: "60kg",
         signatureMoveId: 1,
         rarity: "common"
+      };
+
+      expect(dynamicJudoka).toMatchObject({
+        firstname: expect.any(String),
+        surname: expect.any(String),
+        country: expect.any(String),
+        countryCode: expect.stringMatching(/^[a-z]{2}$/i),
+        stats: expect.objectContaining({
+          power: expect.any(Number),
+          speed: expect.any(Number),
+          technique: expect.any(Number),
+          kumikata: expect.any(Number),
+          newaza: expect.any(Number)
+        }),
+        weightClass: expect.any(String),
+        signatureMoveId: expect.any(Number),
+        rarity: expect.any(String)
       });
+
+      await callBrowseHook(page, "addCard", dynamicJudoka);
 
       const dynamicCard = page.locator(".judoka-card").last();
 
