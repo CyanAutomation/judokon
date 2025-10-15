@@ -69,10 +69,15 @@ export function skipRoundCooldownIfEnabled(options = {}) {
 }
 
 /**
- * Mark DOM elements to reflect the skip-round-cooldown feature state.
+ * Mark DOM elements to reflect whether the skip-round-cooldown feature is enabled.
  *
- * @param {boolean} enable
+ * @param {boolean} enable - Flag indicating whether the feature should appear enabled.
  * @returns {void}
+ * @pseudocode
+ * 1. Abort when `document` is undefined (non-DOM environment).
+ * 2. Derive an attribute value of "enabled" or "disabled" based on `enable`.
+ * 3. Apply the attribute to `document.body` for global styling hooks.
+ * 4. Locate the "next" button and mirror the attribute if the element exists.
  */
 export function setSkipRoundCooldownFeatureMarker(enable) {
   if (typeof document === "undefined") return;
@@ -85,11 +90,17 @@ export function setSkipRoundCooldownFeatureMarker(enable) {
 }
 
 /**
- * Toggle deterministic test-mode affordances.
+ * Synchronize DOM markers and debug affordances with the test-mode feature flag.
  *
- * @param {HTMLElement|null} battleArea
- * @param {HTMLElement|null} banner
+ * @param {HTMLElement|null} battleArea - Primary battle container whose dataset reflects test mode.
+ * @param {HTMLElement|null} banner - Banner element that communicates the active seed in test mode.
  * @returns {boolean} True when test mode is active.
+ * @pseudocode
+ * 1. Read the `enableTestMode` feature flag and set the debug panel visibility.
+ * 2. If `battleArea` exists, add or remove `data-test-mode` attributes according to the flag state.
+ * 3. If `banner` exists and test mode is enabled, populate banner text, show the element, and set dataset metadata.
+ * 4. When test mode is disabled, hide the banner and clear any previously applied metadata.
+ * 5. Return the resolved flag value for caller awareness.
  */
 export function applyBattleFeatureFlags(battleArea, banner) {
   const testModeEnabled = isEnabled("enableTestMode");
@@ -1040,25 +1051,18 @@ if (typeof window !== "undefined") {
   });
 }
 
-/**
- * Binds event handlers for various UI updates related to battle events.
- *
- * @pseudocode
- * 1. Listen for `opponentReveal` event:
- *    a. Get opponent card data.
- *    b. Render the opponent card in the `#opponent-card` container.
- * 2. Listen for `statSelected` event:
- *    a. Clear the scoreboard timer.
- *    b. If `opponentDelayMessage` feature flag is enabled, show a "Opponent choosing..." snackbar after a delay.
- * 3. Listen for `roundResolved` event:
- *    a. Clear any pending opponent choosing snackbar timeout.
- *    b. Extract round resolution details (store, stat, values, result).
- *    c. If a result exists, show the round outcome, display stat comparison, and update the debug panel.
- *
- * @returns {void}
- */
 let legacyHandlersBound = false;
 
+/**
+ * Bind the legacy DOM event handlers used to keep the classic battle UI in sync with battle events.
+ *
+ * @returns {void}
+ * @pseudocode
+ * 1. If handlers were already bound, exit immediately to avoid duplicate listeners.
+ * 2. Attempt to import and execute the dynamic binding implementation.
+ * 3. If the dynamic import fails, log a warning (when supported) and continue without throwing.
+ * 4. Mark handlers as bound so subsequent calls do nothing.
+ */
 export function bindUIHelperEventHandlers() {
   if (legacyHandlersBound) return;
   try {
