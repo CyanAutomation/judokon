@@ -23,10 +23,10 @@ async function callBrowseHook(page, hookName, ...args) {
     { timeout: 10_000 }
   );
 
-  return page.evaluate(
-    ({ name, params }) => window.__testHooks?.browse?.[name]?.(...params),
-    { name: hookName, params: args }
-  );
+  return page.evaluate(({ name, params }) => window.__testHooks?.browse?.[name]?.(...params), {
+    name: hookName,
+    params: args
+  });
 }
 
 async function waitForCarouselHook(page) {

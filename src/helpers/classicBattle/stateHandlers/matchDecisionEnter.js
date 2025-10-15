@@ -1,6 +1,9 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import { showEndModal } from "../endModal.js";
-import { getScores as getFacadeScores, isMatchEnded as facadeIsMatchEnded } from "../../battleEngineFacade.js";
+import {
+  getScores as getFacadeScores,
+  isMatchEnded as facadeIsMatchEnded
+} from "../../battleEngineFacade.js";
 
 /**
  * Normalize numeric score values.
@@ -65,7 +68,8 @@ function isMatchComplete(store, engine) {
  * @returns {string}
  */
 function resolveOutcome(store, scores) {
-  const lastOutcome = typeof store?.lastRoundResult?.outcome === "string" ? store.lastRoundResult.outcome : "";
+  const lastOutcome =
+    typeof store?.lastRoundResult?.outcome === "string" ? store.lastRoundResult.outcome : "";
   if (lastOutcome) {
     if (lastOutcome === "winPlayer") return "matchWinPlayer";
     if (lastOutcome === "winOpponent") return "matchWinOpponent";
@@ -105,7 +109,11 @@ export async function matchDecisionEnter(machine) {
   const detail = {
     outcome,
     winner:
-      outcome === "matchWinPlayer" ? "player" : outcome === "matchWinOpponent" ? "opponent" : "none",
+      outcome === "matchWinPlayer"
+        ? "player"
+        : outcome === "matchWinOpponent"
+          ? "opponent"
+          : "none",
     scores,
     ...(message ? { message } : {})
   };

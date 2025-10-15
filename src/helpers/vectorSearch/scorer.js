@@ -56,8 +56,8 @@ function tagFilterStep(state) {
   if (!Array.isArray(state.tags) || state.tags.length === 0) return state;
 
   const implementationTags = ["data", "code", "css"];
-  const lookupTags = state.tags.filter(t => implementationTags.includes(t));
-  const otherTags = state.tags.filter(t => !implementationTags.includes(t));
+  const lookupTags = state.tags.filter((t) => implementationTags.includes(t));
+  const otherTags = state.tags.filter((t) => !implementationTags.includes(t));
 
   if (lookupTags.length > 0) {
     return {
@@ -67,7 +67,7 @@ function tagFilterStep(state) {
           Array.isArray(e.tags) &&
           (otherTags.length === 0 || otherTags.every((t) => e.tags.includes(t))) &&
           lookupTags.some((t) => e.tags.includes(t))
-      ),
+      )
     };
   }
 
@@ -75,7 +75,7 @@ function tagFilterStep(state) {
     ...state,
     entries: state.entries.filter(
       (e) => Array.isArray(e.tags) && state.tags.every((t) => e.tags.includes(t))
-    ),
+    )
   };
 }
 
@@ -221,9 +221,9 @@ export function scoreEntries(entries, queryVector, queryText) {
       const section = (entry.section || entry.contextPath || "").toLowerCase();
       const hasSectionHit = section && terms.some((t) => section.includes(t));
       const hasKeyPathHit = dottedTerms.length > 0 && dottedTerms.some((t) => text.includes(t));
-      
+
       let exactMatchBonus = EXACT_MATCH_BONUS;
-      if (entry.tags?.includes('code') || entry.tags?.includes('data')) {
+      if (entry.tags?.includes("code") || entry.tags?.includes("data")) {
         exactMatchBonus = 0.2; // Higher bonus for code and data
       }
 

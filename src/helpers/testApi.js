@@ -1581,7 +1581,7 @@ export function exposeTestAPI() {
     window.__INSPECT_API = inspectionApi;
     window.__VIEWPORT_API = viewportApi;
     window.__ENGINE_API = engineApi;
-    
+
     // Expose emitBattleEvent for test compatibility
     window.emitBattleEvent = emitBattleEvent;
   }

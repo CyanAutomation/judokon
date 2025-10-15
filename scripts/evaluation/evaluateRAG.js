@@ -48,11 +48,7 @@ export async function evaluate(baseline = null, options = {}) {
   const perQuery = [];
   for (const { query, expected_source } of queries) {
     let strategy = null;
-    if (
-      /where is|show me the code|what is the data structure|find the component/i.test(
-        query
-      )
-    ) {
+    if (/where is|show me the code|what is the data structure|find the component/i.test(query)) {
       strategy = "implementation-lookup";
     }
 

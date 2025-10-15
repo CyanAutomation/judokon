@@ -303,43 +303,45 @@ function normalizeAndFilter(text, seen) {
  * @returns {string|undefined} Space-joined values or undefined when none.
  */
 function formatDataEntry(base, item) {
-  if (base === 'judoka.json') {
+  if (base === "judoka.json") {
     const judoka = item;
-    const stats = Object.entries(judoka.stats).map(([key, value]) => `${key} ${value}`).join(', ');
+    const stats = Object.entries(judoka.stats)
+      .map(([key, value]) => `${key} ${value}`)
+      .join(", ");
     return `Judoka: ${judoka.firstname} ${judoka.surname}. Country: ${judoka.country}. Rarity: ${judoka.rarity}. Stats: ${stats}. Bio: ${judoka.bio}`;
   }
 
-  if (base === 'gameTimers.js') {
+  if (base === "gameTimers.js") {
     const timer = item;
     return `Game Timer: ${timer.description}. Category: ${timer.category}, Duration: ${timer.value}s, Skill level: ${timer.skill}.`;
   }
 
-  if (base === 'tooltips.json') {
+  if (base === "tooltips.json") {
     // tooltips.json has a different structure, it's an object of key-value pairs
     // I will handle it in processJsonObjectEntries
     return null;
   }
 
-  if (base === 'navigationItems.js') {
+  if (base === "navigationItems.js") {
     const navItem = item;
     return `Navigation Item: ${navItem.label}. URL: ${navItem.url}. Category: ${navItem.category}.`;
   }
 
-  if (base === 'statNames.js') {
+  if (base === "statNames.js") {
     const stat = item;
     return `Stat: ${stat.name}. Description: ${stat.description}.`;
   }
 
-  if (base === 'gameModes.json') {
+  if (base === "gameModes.json") {
     const mode = item;
     return `Game Mode: ${mode.name}. Description: ${mode.description}. Rules: ${mode.rules}`;
   }
 
   // Default fallback for other data files
-  if (typeof item === 'object' && item !== null) {
+  if (typeof item === "object" && item !== null) {
     return Object.entries(item)
       .map(([key, value]) => `${key}: ${value}`)
-      .join(' ');
+      .join(" ");
   }
 
   return String(item);
@@ -469,7 +471,7 @@ async function processJsonObjectEntries(
   obj,
   { baseName, processItem, formatDataEntryFn = formatDataEntry }
 ) {
-  if (baseName === 'tooltips.json') {
+  if (baseName === "tooltips.json") {
     for (const [key, value] of Object.entries(obj)) {
       const text = `Tooltip ${key}: ${value.content}`;
       await processItem({ [key]: value }, key, text);

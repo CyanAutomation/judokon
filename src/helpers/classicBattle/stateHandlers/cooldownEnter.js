@@ -30,7 +30,7 @@ export async function cooldownEnter(machine, payload) {
     getClassicBattleMachine: () => machine
   });
   console.log("[DEBUG] startCooldown called successfully");
-  
+
   // Announce next round in UI
   try {
     const counterEl = document.getElementById("round-counter");
