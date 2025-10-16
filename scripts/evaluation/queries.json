@@ -36,8 +36,8 @@
     "expected_source": "src/data/statNames.js"
   },
   {
-    "query": "Where is the default sound setting configured?",
-    "expected_source": "src/config/settingsDefaults.js"
+    "query": "Where is the default sound setting stored in the JSON configuration?",
+    "expected_source": "src/data/settings.json"
   },
   {
     "query": "How do I add a new judoka to the game?",
