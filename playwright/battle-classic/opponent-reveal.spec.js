@@ -14,8 +14,8 @@ import {
 
 async function setupBattle(page, overrides = {}) {
   await initializeBattle(page, overrides);
-  await waitForBattleReady(page, { timeout: 7_000 });
-  await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_000 });
+  await waitForBattleReady(page, { timeout: 7_000, allowFallback: false });
+  await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_000, allowFallback: false });
 }
 
 async function pickFirstStat(page) {
