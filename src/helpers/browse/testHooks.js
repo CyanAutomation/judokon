@@ -1,6 +1,7 @@
 import { appendCards } from "../carousel/index.js";
 import { createGokyoLookup } from "../utils.js";
 import { addHoverZoomMarkers } from "../setupHoverZoom.js";
+import { getTestAPI, isTestMode } from "../testApi.js";
 
 const state = {
   container: null,
@@ -13,16 +14,41 @@ const state = {
   isCarouselReady: false
 };
 
-function ensureBrowseHookContainer() {
-  if (typeof window === "undefined") return;
-  window.__testHooks = window.__testHooks || {};
-  window.__testHooks.browse = Object.assign(window.__testHooks.browse || {}, {
+function updateInitSnapshot(snapshot) {
+  if (!isTestMode()) return;
+  try {
+    getTestAPI().init?.__updateBrowseReadySnapshot?.(snapshot);
+  } catch {}
+}
+
+function resetInitSnapshot() {
+  if (!isTestMode()) return;
+  try {
+    getTestAPI().init?.__resetBrowseReadySnapshot?.();
+  } catch {}
+}
+
+function ensureBrowseTestApi() {
+  if (!isTestMode()) return null;
+
+  const testApi = getTestAPI();
+  const browseApi = testApi.browse || {
     disableHoverAnimations,
     enableHoverAnimations,
     addCard: addTestCard,
     whenCarouselReady,
-    reset: resetState
-  });
+    reset: resetState,
+    getSnapshot: createReadySnapshot
+  };
+
+  testApi.browse = browseApi;
+
+  if (typeof window !== "undefined") {
+    window.__TEST_API = testApi;
+    window.__TEST_API.browse = browseApi;
+  }
+
+  return browseApi;
 }
 
 function createReadySnapshot() {
@@ -35,10 +61,12 @@ function createReadySnapshot() {
 function resolveReadyResolvers() {
   if (!state.container) {
     state.isCarouselReady = false;
+    resetInitSnapshot();
     return;
   }
   state.isCarouselReady = true;
   const snapshot = createReadySnapshot();
+  updateInitSnapshot(snapshot);
   for (const resolver of Array.from(state.readyResolvers)) {
     try {
       resolver(snapshot);
@@ -68,6 +96,7 @@ function registerReadyResolver(resolve) {
  * when the carousel is available.
  */
 function whenCarouselReady() {
+  ensureBrowseTestApi();
   return new Promise((resolve) => {
     const resolver = registerReadyResolver(resolve);
 
@@ -188,6 +217,7 @@ function resetState() {
   state.gokyoData = [];
   state.gokyoLookup = {};
   state.isCarouselReady = false;
+  resetInitSnapshot();
   for (const resolver of Array.from(state.readyResolvers)) {
     try {
       resolver({ isReady: false, cardCount: 0, error: "Test reset before carousel ready" });
@@ -205,22 +235,23 @@ function resetState() {
  * 1. Store the provided container and gokyo data in local state.
  * 2. Pre-compute the gokyo lookup when data exists to match production behavior.
  * 3. Clear any tracked nodes so stale references do not affect later resets.
- * 4. Ensure global test hooks are attached to `window.__testHooks.browse`.
+ * 4. Ensure global test helpers are attached to `__TEST_API.browse`.
  *
  * @param {HTMLElement|null} container - Carousel container element.
  * @param {import("../types.js").GokyoEntry[]|undefined} gokyoData - Raw gokyo list.
  * @returns {void}
  */
 export function updateBrowseTestHooksContext({ container, gokyoData }) {
+  ensureBrowseTestApi();
   state.container = container || null;
   state.gokyoData = Array.isArray(gokyoData) ? gokyoData : [];
   state.gokyoLookup = state.gokyoData.length ? createGokyoLookup(state.gokyoData) : {};
   state.addedNodes.clear();
-  ensureBrowseHookContainer();
   if (state.container) {
     resolveReadyResolvers();
   } else {
     state.isCarouselReady = false;
+    resetInitSnapshot();
   }
 }
 
@@ -236,4 +267,4 @@ export function resetBrowseTestHooks() {
   resetState();
 }
 
-ensureBrowseHookContainer();
+ensureBrowseTestApi();

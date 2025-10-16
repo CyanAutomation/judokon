@@ -1149,6 +1149,55 @@ const viewportApi = {
   }
 };
 
+const defaultBrowseSnapshot = Object.freeze({ isReady: false, cardCount: 0 });
+
+const browseReadyState = {
+  ready: false,
+  snapshot: defaultBrowseSnapshot,
+  resolvers: new Set()
+};
+
+function normalizeBrowseSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") {
+    return { ...defaultBrowseSnapshot };
+  }
+
+  const count = Number.isFinite(snapshot.cardCount) ? snapshot.cardCount : defaultBrowseSnapshot.cardCount;
+  return {
+    isReady: snapshot.isReady === true,
+    cardCount: count
+  };
+}
+
+function publishBrowseReadySnapshot(snapshot) {
+  const normalized = normalizeBrowseSnapshot(snapshot);
+  browseReadyState.ready = normalized.isReady;
+  browseReadyState.snapshot = normalized;
+
+  for (const resolver of Array.from(browseReadyState.resolvers)) {
+    try {
+      resolver(normalized);
+    } finally {
+      browseReadyState.resolvers.delete(resolver);
+    }
+  }
+
+  return normalized;
+}
+
+function resetBrowseReadySnapshot() {
+  browseReadyState.ready = false;
+  browseReadyState.snapshot = { ...defaultBrowseSnapshot };
+
+  for (const resolver of Array.from(browseReadyState.resolvers)) {
+    try {
+      resolver({ ...browseReadyState.snapshot });
+    } finally {
+      browseReadyState.resolvers.delete(resolver);
+    }
+  }
+}
+
 // Component initialization API
 const initApi = {
   /**
@@ -1201,6 +1250,94 @@ const initApi = {
 
       check();
     });
+  },
+
+  /**
+   * Determine whether the browse carousel has reported readiness.
+   *
+   * @pseudocode
+   * 1. Return the cached readiness flag maintained by the browse fixtures.
+   *
+   * @returns {boolean} True when the browse page signaled readiness.
+   */
+  isBrowseReady() {
+    return browseReadyState.ready;
+  },
+
+  /**
+   * Retrieve the most recent readiness snapshot from the browse carousel.
+   *
+   * @pseudocode
+   * 1. Return a shallow copy of the stored snapshot to prevent external mutation.
+   *
+   * @returns {{ isReady: boolean, cardCount: number }} Snapshot metadata.
+   */
+  getBrowseReadySnapshot() {
+    return { ...browseReadyState.snapshot };
+  },
+
+  /**
+   * Wait for the browse carousel to finish rendering.
+   *
+   * @pseudocode
+   * 1. Resolve immediately when the cached snapshot is already marked ready.
+   * 2. Otherwise register a resolver that will fire when readiness is published.
+   * 3. Apply a timeout so tests receive the latest snapshot even if readiness never occurs.
+   * 4. Return the snapshot that triggered resolution (ready or fallback).
+   *
+   * @param {number} [timeout=5000] - Timeout in milliseconds.
+   * @returns {Promise<{ isReady: boolean, cardCount: number }>} Readiness snapshot.
+   */
+  async waitForBrowseReady(timeout = 5000) {
+    const currentSnapshot = this.getBrowseReadySnapshot();
+    if (currentSnapshot.isReady) {
+      return currentSnapshot;
+    }
+
+    return new Promise((resolve) => {
+      let finished = false;
+      let timeoutId = null;
+
+      const cleanup = (snapshot) => {
+        if (finished) return;
+        finished = true;
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+        }
+        resolve(snapshot);
+      };
+
+      const resolver = (snapshot) => {
+        browseReadyState.resolvers.delete(resolver);
+        cleanup(snapshot);
+      };
+
+      browseReadyState.resolvers.add(resolver);
+
+      if (timeout > 0) {
+        timeoutId = setTimeout(() => {
+          browseReadyState.resolvers.delete(resolver);
+          cleanup(this.getBrowseReadySnapshot());
+        }, timeout);
+      }
+    });
+  },
+
+  /**
+   * @internal
+   * Update the cached browse readiness snapshot.
+   * @param {{ isReady?: boolean, cardCount?: number }} snapshot
+   */
+  __updateBrowseReadySnapshot(snapshot) {
+    publishBrowseReadySnapshot(snapshot);
+  },
+
+  /**
+   * @internal
+   * Reset cached browse readiness information.
+   */
+  __resetBrowseReadySnapshot() {
+    resetBrowseReadySnapshot();
   },
 
   /**

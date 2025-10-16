@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBrowseReady } from "./fixtures/waits.js";
 
 async function expectToBeEnlarged(locator) {
   await expect(locator).toHaveAttribute("data-enlarged", "true");
@@ -12,46 +13,18 @@ async function movePointerAwayFromCards(page) {
   await page.mouse.move(0, 0);
 }
 
-async function waitForBrowseReady(page) {
-  await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
-}
-
-async function callBrowseHook(page, hookName, ...args) {
-  await page.waitForFunction(
-    (name) => typeof window.__testHooks?.browse?.[name] === "function",
-    hookName,
-    { timeout: 10_000 }
-  );
-
-  return page.evaluate(({ name, params }) => window.__testHooks?.browse?.[name]?.(...params), {
-    name: hookName,
-    params: args
-  });
-}
-
-async function waitForCarouselHook(page) {
-  await page.waitForFunction(
-    () => typeof window.__testHooks?.browse?.whenCarouselReady === "function",
-    undefined,
-    { timeout: 10_000 }
-  );
-
-  await page.evaluate(() => window.__testHooks?.browse?.whenCarouselReady?.());
-}
-
 async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
   await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
   await waitForBrowseReady(page);
-  await waitForCarouselHook(page);
 
   if (disableAnimations) {
-    await callBrowseHook(page, "disableHoverAnimations");
+    await page.evaluate(() => window.__TEST_API?.browse?.disableHoverAnimations?.());
   }
 }
 
 test.afterEach(async ({ page }, testInfo) => {
   try {
-    await page.evaluate(() => window.__testHooks?.browse?.reset?.());
+    await page.evaluate(() => window.__TEST_API?.browse?.reset?.());
   } catch (error) {
     testInfo.annotations.push({
       type: "cleanup-warning",
@@ -170,7 +143,7 @@ test.describe("Hover Zoom Functionality", () => {
 
     test("handles test disable animations attribute", async ({ page }) => {
       await gotoBrowsePage(page);
-      await callBrowseHook(page, "disableHoverAnimations");
+      await page.evaluate(() => window.__TEST_API?.browse?.disableHoverAnimations?.());
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -322,7 +295,7 @@ test.describe("Hover Zoom Functionality", () => {
         rarity: expect.any(String)
       });
 
-      await callBrowseHook(page, "addCard", dynamicJudoka);
+      await page.evaluate((judokaData) => window.__TEST_API?.browse?.addCard?.(judokaData), dynamicJudoka);
 
       const dynamicCard = page.locator(".judoka-card").last();
 
