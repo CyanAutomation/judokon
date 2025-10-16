@@ -41,29 +41,33 @@ export async function getBattleSnapshot(page) {
     const inspectApi = window.__TEST_API?.inspect;
     if (!inspectApi) return null;
 
+    if (typeof inspectApi.getBattleSnapshot === "function") {
+      return inspectApi.getBattleSnapshot();
+    }
+
+    const store = inspectApi.getBattleStore?.();
+    if (!store) return null;
+
     const toNumber = (value) => {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric : null;
     };
 
-    const store = inspectApi.getBattleStore?.();
-    const debug = inspectApi.getDebugInfo?.() ?? null;
-
-    const extractValue = (key, transform = (v) => v) => {
-      if (store && store[key] !== undefined) {
-        return transform(store[key]);
-      }
-      if (debug?.store?.[key] !== undefined) {
-        return transform(debug.store[key]);
+    const normalizeBoolean = (value) => {
+      if (typeof value === "boolean") return value;
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (normalized === "true") return true;
+        if (normalized === "false") return false;
       }
       return null;
     };
 
     return {
-      roundsPlayed: extractValue("roundsPlayed", toNumber),
-      selectionMade: extractValue("selectionMade"),
-      playerScore: extractValue("playerScore", toNumber),
-      opponentScore: extractValue("opponentScore", toNumber)
+      roundsPlayed: toNumber(store.roundsPlayed),
+      selectionMade: normalizeBoolean(store.selectionMade),
+      playerScore: toNumber(store.playerScore),
+      opponentScore: toNumber(store.opponentScore)
     };
   });
 }
@@ -425,26 +429,52 @@ export async function initializeBattle(page, config = {}) {
  */
 export async function waitForRoundsPlayed(page, expectedRounds, options = {}) {
   const { timeout = 5_000 } = options;
+  const apiResult = await page.evaluate(
+    async ({ rounds, waitTimeout }) => {
+      const stateApi = window.__TEST_API?.state;
+      if (stateApi && typeof stateApi.waitForRoundsPlayed === "function") {
+        return await stateApi.waitForRoundsPlayed(rounds, waitTimeout);
+      }
+      return null;
+    },
+    { rounds: expectedRounds, waitTimeout: timeout }
+  );
+
+  if (apiResult === true) {
+    return;
+  }
+
+  const snapshot = await getBattleSnapshot(page);
+  const lastKnownState = await page
+    .evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null)
+    .catch(() => null);
+
+  if (apiResult === false) {
+    const diagnostics = [
+      lastKnownState ? `Last known battle state: ${lastKnownState}` : null,
+      snapshot ? `Snapshot: ${JSON.stringify(snapshot)}` : null
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    throw new Error(
+      [`Expected rounds played to reach ${expectedRounds} within ${timeout}ms.`, diagnostics]
+        .filter(Boolean)
+        .join("\n")
+    );
+  }
+
   let lastSnapshotError = null;
-  let lastKnownState = null;
   const expectation = expect
     .poll(
       async () => {
         try {
-          const snapshot = await getBattleSnapshot(page);
-          if (snapshot && typeof snapshot.roundsPlayed === "number") {
-            return snapshot.roundsPlayed;
+          const current = await getBattleSnapshot(page);
+          if (current && typeof current.roundsPlayed === "number") {
+            return current.roundsPlayed;
           }
         } catch (error) {
           lastSnapshotError = error instanceof Error ? error.message : String(error);
-        }
-
-        try {
-          lastKnownState = await page
-            .evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null)
-            .catch(() => null);
-        } catch {
-          lastKnownState = null;
         }
 
         return null;
@@ -461,6 +491,7 @@ export async function waitForRoundsPlayed(page, expectedRounds, options = {}) {
   } catch (error) {
     const diagnostics = [
       lastKnownState ? `Last known battle state: ${lastKnownState}` : null,
+      snapshot ? `Initial snapshot: ${JSON.stringify(snapshot)}` : null,
       lastSnapshotError ? `Snapshot error: ${lastSnapshotError}` : null
     ]
       .filter(Boolean)
