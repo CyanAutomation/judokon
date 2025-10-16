@@ -2,25 +2,29 @@ import { test, expect } from "@playwright/test";
 import { waitForBattleState } from "../fixtures/waits.js";
 
 test.describe("Classic Battle keyboard navigation", () => {
-  test("should allow tab navigation to stat buttons and keyboard activation", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
       window.__TEST__ = true;
       window.process = window.process || {};
-      window.process.env = { ...(window.process.env || {}), VITEST: "1" };
+      window.process.env = { ...(window.process.env || {}), VITEST: "true" };
     });
     await page.goto("/src/pages/battleClassic.html");
 
     // Start the match via modal
     await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
     await page.getByRole("button", { name: "Medium" }).click();
+  });
 
+  test("should allow tab navigation to stat buttons and keyboard activation", async ({ page }) => {
     // Wait for stat buttons to be enabled via battle state readiness
     const statButtons = page.getByTestId("stat-button");
     await waitForBattleState(page, "waitingForPlayerAction");
     const firstStatButton = statButtons.first();
     await expect(firstStatButton).toBeEnabled();
 
+    // Ensure the first button is focused before navigating via keyboard
+    await firstStatButton.focus();
     await expect(firstStatButton).toBeFocused();
 
     // Tab to the second stat button
@@ -41,18 +45,6 @@ test.describe("Classic Battle keyboard navigation", () => {
   });
 
   test("should show visible focus styles on stat buttons", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      window.__TEST__ = true;
-      window.process = window.process || {};
-      window.process.env = { ...(window.process.env || {}), VITEST: "1" };
-    });
-    await page.goto("/src/pages/battleClassic.html");
-
-    // Start the match via modal
-    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-    await page.getByRole("button", { name: "Medium" }).click();
-
     // Wait for stat buttons to be enabled
     const firstButton = page.getByTestId("stat-button").first();
     await waitForBattleState(page, "waitingForPlayerAction");
@@ -68,18 +60,6 @@ test.describe("Classic Battle keyboard navigation", () => {
   });
 
   test("should have proper ARIA labels on stat buttons", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      window.__TEST__ = true;
-      window.process = window.process || {};
-      window.process.env = { ...(window.process.env || {}), VITEST: "1" };
-    });
-    await page.goto("/src/pages/battleClassic.html");
-
-    // Start the match via modal
-    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-    await page.getByRole("button", { name: "Medium" }).click();
-
     // Check ARIA labels on stat buttons
     const statButtons = page.getByTestId("stat-button");
     await waitForBattleState(page, "waitingForPlayerAction");
