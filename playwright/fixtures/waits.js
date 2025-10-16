@@ -95,6 +95,7 @@ export async function waitForBattleReady(page) {
  * @returns {Promise<{ isReady: boolean, cardCount: number }>}
  */
 export async function waitForBrowseReady(page, { timeout = 10_000 } = {}) {
+  // Browse readiness waits on image-heavy carousel hydration, so we allow extra headroom vs other waits.
   await page.waitForFunction(
     () => typeof window.__TEST_API?.init?.waitForBrowseReady === "function",
     undefined,

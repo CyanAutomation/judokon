@@ -1162,7 +1162,10 @@ function normalizeBrowseSnapshot(snapshot) {
     return { ...defaultBrowseSnapshot };
   }
 
-  const count = Number.isFinite(snapshot.cardCount) ? snapshot.cardCount : defaultBrowseSnapshot.cardCount;
+  const count =
+    Number.isFinite(snapshot.cardCount) && snapshot.cardCount >= 0
+      ? snapshot.cardCount
+      : defaultBrowseSnapshot.cardCount;
   return {
     isReady: snapshot.isReady === true,
     cardCount: count
