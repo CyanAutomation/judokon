@@ -269,6 +269,54 @@ const BOILERPLATE_STRINGS = new Set(["lorem ipsum", "todo", "tbd"]);
 // Back-compat alias for tests expecting this export name
 const JSON_FIELD_ALLOWLIST = DATA_FIELD_ALLOWLIST;
 
+function stringifyAllowedValue(value) {
+  if (value === undefined || value === null) return undefined;
+  if (Array.isArray(value)) {
+    const items = value.map((item) => stringifyAllowedValue(item)).filter(Boolean);
+    return items.length ? items.join(", ") : undefined;
+  }
+  if (typeof value === "object") {
+    const items = Object.values(value).map((item) => stringifyAllowedValue(item)).filter(Boolean);
+    return items.length ? items.join(", ") : undefined;
+  }
+  const text = String(value).trim();
+  return text ? text : undefined;
+}
+
+function matchesAllowlistedKey(key, field) {
+  return key === field || key.startsWith(`${field}.`);
+}
+
+function extractAllowedValues(base, item) {
+  const allowlist = JSON_FIELD_ALLOWLIST[base] ?? JSON_FIELD_ALLOWLIST.default;
+  if (allowlist === false) return undefined;
+  if (allowlist === true) {
+    if (item && typeof item === "object") {
+      const flattened = flattenObject(item);
+      const values = Object.values(flattened)
+        .map((value) => stringifyAllowedValue(value))
+        .filter(Boolean);
+      return values.length ? values.join(". ") : undefined;
+    }
+    const text = stringifyAllowedValue(item);
+    return text;
+  }
+
+  if (!Array.isArray(allowlist) || allowlist.length === 0) {
+    return stringifyAllowedValue(item);
+  }
+
+  const flattened = item && typeof item === "object" ? flattenObject(item) : { value: item };
+  const values = [];
+  for (const [key, value] of Object.entries(flattened)) {
+    if (!allowlist.some((field) => matchesAllowlistedKey(key, field))) continue;
+    const text = stringifyAllowedValue(value);
+    if (text) values.push(text);
+  }
+  if (values.length === 0) return undefined;
+  return values.join(". ");
+}
+
 /**
  * Normalize text by lowercasing and collapsing whitespace.
  *
@@ -373,7 +421,7 @@ function collectKeyPaths(obj, prefix = "", out = []) {
  * @param {(text:string, opts:object)=>Promise<any>} options.extractor - Embedding extractor.
  * @param {(entry:object)=>void} options.writeEntry - Writer that persists entries.
  * @param {Set<string>} options.seenTexts - Tracker preventing duplicate chunks.
- * @param {(base:string, item:any)=>string|undefined} [options.formatDataEntryFn]
+ * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
  *   - Function to derive formatted text when no override is provided.
  * @returns {(item:any, id:string, overrideText?:string)=>Promise<void>} Async processor for a JSON entry.
  */
@@ -384,15 +432,16 @@ function createJsonProcessItem({
   extractor,
   writeEntry,
   seenTexts,
-  formatDataEntryFn = formatDataEntry
+  extractAllowedValuesFn = formatDataEntry
 }) {
-  const formatFn = formatDataEntryFn || formatDataEntry;
+  const allowlistFn = extractAllowedValuesFn || formatDataEntry;
   return async (item, id, overrideText) => {
     const overrideCandidate = typeof overrideText === "string" ? overrideText.trim() : overrideText;
-    const textToEmbed =
+    const extracted =
       overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
-        ? formatFn(base, item)
+        ? allowlistFn(base, item)
         : overrideCandidate;
+    const textToEmbed = extracted === undefined || extracted === null ? extracted : String(extracted);
     const chunkText = textToEmbed ? normalizeAndFilter(String(textToEmbed), seenTexts) : undefined;
     if (!chunkText) return;
     const intent = determineIntent(chunkText);
@@ -435,16 +484,17 @@ function createJsonProcessItem({
  * @param {object} options - Processing context.
  * @param {string} options.baseName - Base filename for allowlist lookup.
  * @param {Function} options.processItem - Processor created via `createJsonProcessItem`.
- * @param {(base:string, item:any)=>string|undefined} [options.formatDataEntryFn]
- *   - Optional formatter override.
+ * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
+ *   - Optional allowlist extractor override.
  * @returns {Promise<void>} Resolves when all entries are processed.
  */
 async function processJsonArrayEntries(
   items,
-  { baseName, processItem, formatDataEntryFn = formatDataEntry }
+  { baseName, processItem, extractAllowedValuesFn = formatDataEntry }
 ) {
+  const allowlistFn = extractAllowedValuesFn || formatDataEntry;
   for (const [index, item] of items.entries()) {
-    const formattedText = formatDataEntryFn(baseName, item);
+    const formattedText = allowlistFn(baseName, item);
     if (!formattedText) continue;
     await processItem(item, `item-${index + 1}`, formattedText);
   }
@@ -463,14 +513,15 @@ async function processJsonArrayEntries(
  * @param {object} options - Processing context.
  * @param {string} options.baseName - Base filename for allowlist lookup.
  * @param {Function} options.processItem - Processor created via `createJsonProcessItem`.
- * @param {(base:string, item:any)=>string|undefined} [options.formatDataEntryFn]
- *   - Optional formatter override.
+ * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
+ *   - Optional allowlist extractor override.
  * @returns {Promise<void>} Resolves when all key paths are processed.
  */
 async function processJsonObjectEntries(
   obj,
-  { baseName, processItem, formatDataEntryFn = formatDataEntry }
+  { baseName, processItem, extractAllowedValuesFn = formatDataEntry }
 ) {
+  const allowlistFn = extractAllowedValuesFn || formatDataEntry;
   if (baseName === "tooltips.json") {
     for (const [key, value] of Object.entries(obj)) {
       const text = `Tooltip ${key}: ${value.content}`;
@@ -481,8 +532,20 @@ async function processJsonObjectEntries(
 
   const flat = collectKeyPaths(obj);
   for (const [keyPath, value] of flat) {
-    const formattedText = formatDataEntryFn(baseName, { [keyPath]: value });
+    const allowed = allowlistFn(baseName, { [keyPath]: value });
+    if (allowed === undefined || allowed === null) continue;
+    let formattedText = String(allowed).trim();
     if (!formattedText) continue;
+
+    const lowerKeyPath = keyPath.toLowerCase();
+    const lowerText = formattedText.toLowerCase();
+    if (lowerText.startsWith(`${lowerKeyPath}:`)) {
+      const suffix = formattedText.slice(keyPath.length + 1).trimStart();
+      formattedText = `${keyPath}: ${suffix}`;
+    } else {
+      formattedText = `${keyPath}: ${formattedText}`;
+    }
+
     await processItem({ [keyPath]: value }, keyPath, formattedText);
   }
 }
@@ -1169,10 +1232,12 @@ const __jsonTestHelpers = {
 
 export {
   DATA_FIELD_ALLOWLIST,
+  JSON_FIELD_ALLOWLIST,
   flattenObject,
   BOILERPLATE_STRINGS,
   normalizeText,
   normalizeAndFilter,
+  extractAllowedValues,
   createSparseVector,
   determineTags,
   /** @internal */ __jsonTestHelpers
