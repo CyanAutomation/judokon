@@ -52,8 +52,8 @@
     "expected_source": "src/helpers/battleEngineFacade.js"
   },
   {
-    "query": "How are accessibility features implemented in the CLI?",
-    "expected_source": "playwright/cli-layout-assessment.spec.js"
+    "query": "Where are the accessibility requirements for the Classic Battle CLI documented?",
+    "expected_source": "design/productRequirementsDocuments/prdBattleCLI.md"
   },
   {
     "query": "Find the component that renders the judoka card.",
