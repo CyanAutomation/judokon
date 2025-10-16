@@ -40,7 +40,7 @@
     "expected_source": "src/data/settings.json"
   },
   {
-    "query": "Where is the canonical schema for a judoka entry documented?",
+    "query": "Which document provides the canonical schema for a judoka entry?",
     "expected_source": "design/productRequirementsDocuments/prdDataSchemas.md"
   },
   {
