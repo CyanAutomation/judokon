@@ -270,16 +270,16 @@ const BOILERPLATE_STRINGS = new Set(["lorem ipsum", "todo", "tbd"]);
 const JSON_FIELD_ALLOWLIST = DATA_FIELD_ALLOWLIST;
 
 /**
- * Convert a value to a string representation, handling recursive structures.
+ * Convert a value to a string representation, handling arrays and objects recursively.
  *
  * @pseudocode
- * 1. Return undefined for nullish inputs.
- * 2. If the value is an array, recursively stringify each element and join with ", ".
- * 3. If the value is an object, recursively stringify values and join with ", ".
- * 4. Otherwise, trim the scalar string form and return it when non-empty.
+ * 1. If value is undefined or null, return undefined.
+ * 2. If value is an array, recursively stringify items, remove undefined results, and join with ", ".
+ * 3. If value is an object, recursively stringify each property, remove undefined results, and join with ", ".
+ * 4. Otherwise, coerce the value to string, trim whitespace, and return the string when non-empty.
  *
- * @param {any} value - Value to stringify.
- * @returns {string|undefined} String representation or undefined when empty.
+ * @param {any} value - The value to stringify.
+ * @returns {string|undefined} String representation or undefined for empty/null values.
  */
 function stringifyAllowedValue(value) {
   if (value === undefined || value === null) return undefined;
@@ -300,15 +300,16 @@ function stringifyAllowedValue(value) {
 }
 
 /**
- * Check whether a flattened key matches a field in the allowlist.
+ * Check if a key matches an allowlisted field pattern.
  *
  * @pseudocode
  * 1. Compare the key directly to the allowlisted field.
- * 2. Allow matches when the key is a nested path under the allowlisted field.
+ * 2. If not equal, check whether the key starts with the field followed by a dot for nested properties.
+ * 3. Return true when either condition passes.
  *
- * @param {string} key - Flattened key to evaluate.
- * @param {string} field - Allowlisted field pattern.
- * @returns {boolean} True when the key is allowed.
+ * @param {string} key - The key to check.
+ * @param {string} field - The allowlisted field pattern.
+ * @returns {boolean} True if key matches the field or is a nested property of it.
  */
 function matchesAllowlistedKey(key, field) {
   return key === field || key.startsWith(`${field}.`);
@@ -318,15 +319,14 @@ function matchesAllowlistedKey(key, field) {
  * Extract allowlisted values from a data item based on configured field allowlists.
  *
  * @pseudocode
- * 1. Look up the allowlist entry for the base file.
- * 2. Exit early when explicitly disabled (false) or when no allowlist exists.
- * 3. When allowlist is true, stringify and join all flattened values.
- * 4. When allowlist is an array, collect values whose keys match allowlisted fields.
- * 5. Join collected values with ". " or return undefined when no values remain.
+ * 1. Look up the allowlist for the file base; return undefined when explicitly disabled.
+ * 2. When allowlist is true, flatten objects (if needed) and join all values.
+ * 3. When allowlist is an array, flatten the item, retain keys that match configured fields, and join results.
+ * 4. For other allowlist values, return undefined to preserve fallback semantics.
  *
  * @param {string} base - Base filename for allowlist lookup.
  * @param {any} item - Data item to extract values from.
- * @returns {string|undefined} Formatted string of allowed values or undefined when none.
+ * @returns {string|undefined} Formatted string of allowed values or undefined if none.
  */
 function extractAllowedValues(base, item) {
   const allowlist = JSON_FIELD_ALLOWLIST[base] ?? JSON_FIELD_ALLOWLIST.default;
@@ -336,7 +336,7 @@ function extractAllowedValues(base, item) {
       const flattened = flattenObject(item);
       const values = Object.values(flattened)
         .map((value) => stringifyAllowedValue(value))
-        .filter(Boolean);
+        .filter((value) => value !== undefined);
       return values.length ? values.join(". ") : undefined;
     }
     const text = stringifyAllowedValue(item);
