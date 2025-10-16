@@ -44,7 +44,7 @@
     "expected_source": "design/productRequirementsDocuments/prdDataSchemas.md"
   },
   {
-    "query": "Show me the code for the main game loop.",
+    "query": "Where is initGame defined and what UI controls does it wire up?",
     "expected_source": "src/game.js"
   },
   {
