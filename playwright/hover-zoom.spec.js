@@ -1,5 +1,11 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBrowseReady } from "./fixtures/waits.js";
+import {
+  addBrowseCard,
+  disableBrowseHoverAnimations,
+  ensureBrowseCarouselReady,
+  resetBrowseTestState
+} from "./helpers/browseTestApi.js";
 
 async function expectToBeEnlarged(locator) {
   await expect(locator).toHaveAttribute("data-enlarged", "true");
@@ -16,15 +22,16 @@ async function movePointerAwayFromCards(page) {
 async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
   await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
   await waitForBrowseReady(page);
+  await ensureBrowseCarouselReady(page);
 
   if (disableAnimations) {
-    await page.evaluate(() => window.__TEST_API?.browse?.disableHoverAnimations?.());
+    await disableBrowseHoverAnimations(page);
   }
 }
 
 test.afterEach(async ({ page }, testInfo) => {
   try {
-    await page.evaluate(() => window.__TEST_API?.browse?.reset?.());
+    await resetBrowseTestState(page);
   } catch (error) {
     testInfo.annotations.push({
       type: "cleanup-warning",
@@ -143,7 +150,7 @@ test.describe("Hover Zoom Functionality", () => {
 
     test("handles test disable animations attribute", async ({ page }) => {
       await gotoBrowsePage(page);
-      await page.evaluate(() => window.__TEST_API?.browse?.disableHoverAnimations?.());
+      await disableBrowseHoverAnimations(page);
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -184,21 +191,16 @@ test.describe("Hover Zoom Functionality", () => {
       await firstCard.focus();
 
       // Verify first card is focused
-      const isFirstFocused = await firstCard.evaluate((el) => el === document.activeElement);
-      expect(isFirstFocused).toBe(true);
+      await expect(firstCard).toBeFocused();
 
       // Try to tab to second card
       await page.keyboard.press("Tab");
 
       // Check that focus moved away from the first card (keyboard navigation works)
-      const isFirstStillFocusedAfterTab = await firstCard.evaluate(
-        (el) => el === document.activeElement
-      );
-      expect(isFirstStillFocusedAfterTab).toBe(false);
+      await expect(firstCard).not.toBeFocused();
 
       // And that some element is focused
-      const activeElementTag = await page.evaluate(() => document.activeElement?.tagName);
-      expect(activeElementTag).toBeDefined();
+      await expect(page.locator(":focus")).toBeVisible();
     });
   });
 
@@ -295,7 +297,7 @@ test.describe("Hover Zoom Functionality", () => {
         rarity: expect.any(String)
       });
 
-      await page.evaluate((judokaData) => window.__TEST_API?.browse?.addCard?.(judokaData), dynamicJudoka);
+      await addBrowseCard(page, dynamicJudoka);
 
       const dynamicCard = page.locator(".judoka-card").last();
 
