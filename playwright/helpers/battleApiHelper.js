@@ -2,6 +2,11 @@
  * Dispatches a battle event through the Test API.
  * @param {import("@playwright/test").Page} page
  * @param {string} eventName
+ * @pseudocode
+ * 1. Evaluate in browser context
+ * 2. Check if Test API state is available
+ * 3. Call dispatchBattleEvent with proper promise handling
+ * 4. Return normalized result with ok/result/reason structure
  */
 export async function dispatchBattleEvent(page, eventName) {
   return await page.evaluate((event) => {
@@ -40,6 +45,12 @@ export async function dispatchBattleEvent(page, eventName) {
  * Completes a battle round via the CLI Test API.
  * @param {import("@playwright/test").Page} page
  * @param {object} [roundInput]
+ * @pseudocode
+ * 1. Evaluate in browser context with input parameters
+ * 2. Check if CLI Test API is available
+ * 3. Merge default options with input options
+ * 4. Call completeRound with proper promise handling
+ * 5. Return normalized result checking for "roundOver" state
  */
 export async function completeRoundViaApi(page, roundInput = {}) {
   return await page.evaluate((input) => {
@@ -97,13 +108,17 @@ export async function completeRoundViaApi(page, roundInput = {}) {
 /**
  * Resolves the current battle state via the Test API.
  * @param {import("@playwright/test").Page} page
+ * @pseudocode
+ * 1. Evaluate in browser context
+ * 2. Try to get battle state from Test API
+ * 3. Return state or null if unavailable/error
  */
 export async function resolveBattleState(page) {
   return await page.evaluate(() => {
     try {
       return window.__TEST_API?.state?.getBattleState?.() ?? null;
     } catch (error) {
-      console.warn("Failed to resolve battle state:", error?.message ?? "unknown error");
+      // Failed to resolve battle state - error handled by returning null
       return null;
     }
   });
