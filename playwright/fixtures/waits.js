@@ -89,6 +89,28 @@ export async function waitForBattleReady(page) {
 }
 
 /**
+ * Wait until the Browse Judoka carousel publishes its readiness snapshot.
+ * @param {import('@playwright/test').Page} page
+ * @param {{ timeout?: number }} [options]
+ * @returns {Promise<{ isReady: boolean, cardCount: number }>}
+ */
+export async function waitForBrowseReady(page, { timeout = 10_000 } = {}) {
+  await page.waitForFunction(
+    () => typeof window.__TEST_API?.init?.waitForBrowseReady === "function",
+    undefined,
+    { timeout }
+  );
+
+  try {
+    return await page.evaluate((limit) => window.__TEST_API.init.waitForBrowseReady(limit), timeout);
+  } catch (error) {
+    throw new Error(
+      `waitForBrowseReady failed: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
  * Wait until Settings page signals readiness via an in-page promise.
  * @param {import('@playwright/test').Page} page
  */
