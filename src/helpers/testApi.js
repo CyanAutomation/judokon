@@ -360,6 +360,108 @@ const stateApi = {
   },
 
   /**
+   * Wait for the engine to report the desired number of completed rounds.
+   * @param {number} targetRounds - Desired rounds played threshold.
+   * @param {number} timeout - Timeout window in milliseconds.
+   * @returns {Promise<boolean>} Resolves true when threshold met, false on timeout.
+   * @pseudocode
+   * 1. Normalize the requested target and bail out early when invalid.
+   * 2. Observe `battleStateChange` events while polling the engine snapshot.
+   * 3. Resolve as soon as the reported rounds meet or exceed the target.
+   * 4. Abort with `false` when the timeout window elapses.
+   */
+  async waitForRoundsPlayed(targetRounds, timeout = 5000) {
+    const desired = Number(targetRounds);
+    if (!Number.isFinite(desired) || desired < 0) {
+      return false;
+    }
+
+    const readCurrentRounds = () => {
+      const engineRounds = this.getRoundsPlayed();
+      if (typeof engineRounds === "number" && Number.isFinite(engineRounds)) {
+        return engineRounds;
+      }
+
+      try {
+        const store = typeof window !== "undefined" ? window.battleStore : null;
+        const fromStore = toFiniteNumber(store?.roundsPlayed);
+        if (typeof fromStore === "number") {
+          return fromStore;
+        }
+      } catch {}
+
+      try {
+        const inspectApi =
+          (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
+          (typeof window !== "undefined" && window.__INSPECT_API);
+        if (inspectApi) {
+          const snapshot =
+            typeof inspectApi.getBattleSnapshot === "function"
+              ? inspectApi.getBattleSnapshot()
+              : inspectApi.getDebugInfo?.()?.store ?? null;
+          const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
+          if (typeof fromSnapshot === "number") {
+            return fromSnapshot;
+          }
+        }
+      } catch {}
+
+      return null;
+    };
+
+    return new Promise((resolve) => {
+      const startTime = Date.now();
+      let finished = false;
+      let intervalId;
+      let timeoutId;
+      let listener;
+
+      const cleanup = (result) => {
+        if (finished) return;
+        finished = true;
+        if (intervalId) clearInterval(intervalId);
+        if (timeoutId) clearTimeout(timeoutId);
+        if (listener) {
+          try {
+            offBattleEvent("battleStateChange", listener);
+          } catch {}
+        }
+        resolve(result);
+      };
+
+      const checkIfSatisfied = () => {
+        const rounds = readCurrentRounds();
+        if (typeof rounds === "number" && rounds >= desired) {
+          cleanup(true);
+          return true;
+        }
+
+        if (Date.now() - startTime > timeout) {
+          cleanup(false);
+          return true;
+        }
+
+        return false;
+      };
+
+      listener = () => {
+        checkIfSatisfied();
+      };
+
+      try {
+        onBattleEvent("battleStateChange", listener);
+      } catch {
+        listener = undefined;
+      }
+
+      if (!checkIfSatisfied()) {
+        intervalId = setInterval(checkIfSatisfied, 50);
+        timeoutId = setTimeout(() => cleanup(false), timeout);
+      }
+    });
+  },
+
+  /**
    * Wait for a specific battle state to be reached
    * @param {string} stateName - Target state name
    * @param {number} timeout - Timeout in milliseconds
@@ -1224,6 +1326,51 @@ const inspectionApi = {
     try {
       return typeof window !== "undefined" ? window.battleStore : null;
     } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Read a normalized battle snapshot for assertions.
+   * @returns {{ roundsPlayed: number|null, selectionMade: boolean|null, playerScore: number|null, opponentScore: number|null }|null}
+   */
+  getBattleSnapshot() {
+    try {
+      const store = this.getBattleStore();
+      const debug = this.getDebugInfo?.() ?? null;
+
+      const normalizeBoolean = (value) => {
+        if (typeof value === "boolean") {
+          return value;
+        }
+        if (typeof value === "string") {
+          const normalized = value.trim().toLowerCase();
+          if (normalized === "true") return true;
+          if (normalized === "false") return false;
+        }
+        return null;
+      };
+
+      const extract = (key, transform = (v) => v) => {
+        if (store && Object.prototype.hasOwnProperty.call(store, key)) {
+          return transform(store[key]);
+        }
+        if (debug?.store && Object.prototype.hasOwnProperty.call(debug.store, key)) {
+          return transform(debug.store[key]);
+        }
+        return null;
+      };
+
+      return {
+        roundsPlayed: extract("roundsPlayed", (value) => toFiniteNumber(value)),
+        selectionMade: extract("selectionMade", normalizeBoolean),
+        playerScore: extract("playerScore", (value) => toFiniteNumber(value)),
+        opponentScore: extract("opponentScore", (value) => toFiniteNumber(value))
+      };
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("testApi.inspect.getBattleSnapshot failed", error);
+      }
       return null;
     }
   },
