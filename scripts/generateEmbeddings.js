@@ -266,9 +266,6 @@ function flattenObject(obj, prefix = "") {
 
 const BOILERPLATE_STRINGS = new Set(["lorem ipsum", "todo", "tbd"]);
 
-// Back-compat alias for tests expecting this export name
-const JSON_FIELD_ALLOWLIST = DATA_FIELD_ALLOWLIST;
-
 /**
  * Normalize text by lowercasing and collapsing whitespace.
  *
@@ -1169,6 +1166,8 @@ const __jsonTestHelpers = {
 
 export {
   DATA_FIELD_ALLOWLIST,
+  // Back-compat alias for tests expecting this export name
+  DATA_FIELD_ALLOWLIST as JSON_FIELD_ALLOWLIST,
   flattenObject,
   BOILERPLATE_STRINGS,
   normalizeText,
