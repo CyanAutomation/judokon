@@ -269,24 +269,65 @@ const BOILERPLATE_STRINGS = new Set(["lorem ipsum", "todo", "tbd"]);
 // Back-compat alias for tests expecting this export name
 const JSON_FIELD_ALLOWLIST = DATA_FIELD_ALLOWLIST;
 
+/**
+ * Convert a value to a string representation, handling recursive structures.
+ *
+ * @pseudocode
+ * 1. Return undefined for nullish inputs.
+ * 2. If the value is an array, recursively stringify each element and join with ", ".
+ * 3. If the value is an object, recursively stringify values and join with ", ".
+ * 4. Otherwise, trim the scalar string form and return it when non-empty.
+ *
+ * @param {any} value - Value to stringify.
+ * @returns {string|undefined} String representation or undefined when empty.
+ */
 function stringifyAllowedValue(value) {
   if (value === undefined || value === null) return undefined;
   if (Array.isArray(value)) {
-    const items = value.map((item) => stringifyAllowedValue(item)).filter(Boolean);
+    const items = value
+      .map((item) => stringifyAllowedValue(item))
+      .filter((item) => item !== undefined);
     return items.length ? items.join(", ") : undefined;
   }
   if (typeof value === "object") {
-    const items = Object.values(value).map((item) => stringifyAllowedValue(item)).filter(Boolean);
+    const items = Object.values(value)
+      .map((item) => stringifyAllowedValue(item))
+      .filter((item) => item !== undefined);
     return items.length ? items.join(", ") : undefined;
   }
   const text = String(value).trim();
   return text ? text : undefined;
 }
 
+/**
+ * Check whether a flattened key matches a field in the allowlist.
+ *
+ * @pseudocode
+ * 1. Compare the key directly to the allowlisted field.
+ * 2. Allow matches when the key is a nested path under the allowlisted field.
+ *
+ * @param {string} key - Flattened key to evaluate.
+ * @param {string} field - Allowlisted field pattern.
+ * @returns {boolean} True when the key is allowed.
+ */
 function matchesAllowlistedKey(key, field) {
   return key === field || key.startsWith(`${field}.`);
 }
 
+/**
+ * Extract allowlisted values from a data item based on configured field allowlists.
+ *
+ * @pseudocode
+ * 1. Look up the allowlist entry for the base file.
+ * 2. Exit early when explicitly disabled (false) or when no allowlist exists.
+ * 3. When allowlist is true, stringify and join all flattened values.
+ * 4. When allowlist is an array, collect values whose keys match allowlisted fields.
+ * 5. Join collected values with ". " or return undefined when no values remain.
+ *
+ * @param {string} base - Base filename for allowlist lookup.
+ * @param {any} item - Data item to extract values from.
+ * @returns {string|undefined} Formatted string of allowed values or undefined when none.
+ */
 function extractAllowedValues(base, item) {
   const allowlist = JSON_FIELD_ALLOWLIST[base] ?? JSON_FIELD_ALLOWLIST.default;
   if (allowlist === false) return undefined;
@@ -303,7 +344,7 @@ function extractAllowedValues(base, item) {
   }
 
   if (!Array.isArray(allowlist) || allowlist.length === 0) {
-    return stringifyAllowedValue(item);
+    return undefined;
   }
 
   const flattened = item && typeof item === "object" ? flattenObject(item) : { value: item };
@@ -441,7 +482,7 @@ function createJsonProcessItem({
       overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
         ? allowlistFn(base, item)
         : overrideCandidate;
-    const textToEmbed = extracted === undefined || extracted === null ? extracted : String(extracted);
+    const textToEmbed = extracted === undefined || extracted === null ? undefined : String(extracted);
     const chunkText = textToEmbed ? normalizeAndFilter(String(textToEmbed), seenTexts) : undefined;
     if (!chunkText) return;
     const intent = determineIntent(chunkText);
@@ -537,9 +578,7 @@ async function processJsonObjectEntries(
     let formattedText = String(allowed).trim();
     if (!formattedText) continue;
 
-    const lowerKeyPath = keyPath.toLowerCase();
-    const lowerText = formattedText.toLowerCase();
-    if (lowerText.startsWith(`${lowerKeyPath}:`)) {
+    if (formattedText.startsWith(`${keyPath}:`)) {
       const suffix = formattedText.slice(keyPath.length + 1).trimStart();
       formattedText = `${keyPath}: ${suffix}`;
     } else {
