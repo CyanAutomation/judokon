@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import { waitForBrowseReady } from "./helpers/browseTestApi.js";
 // Use the same dataset the app fetches via route fixtures to avoid mismatches
 import judoka from "../tests/fixtures/judoka.json" with { type: "json" };
 import countryCodeMapping from "../src/data/countryCodeMapping.json" with { type: "json" };
@@ -8,22 +9,6 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
 const EXPECTED_COUNTRY_SLIDE_COUNT =
   new Set(judoka.map((j) => j.countryCode).filter((code) => countryCodeMapping[code])).size + 1; // include 'All' slide
-
-async function callBrowseHook(page, name, ...args) {
-  await page.waitForFunction(
-    (hookName) => typeof window.__testHooks?.browse?.[hookName] === "function",
-    name,
-    { timeout: 10_000 }
-  );
-  return page.evaluate(
-    ([hookName, params]) => window.__testHooks?.browse?.[hookName]?.(...params),
-    [name, args]
-  );
-}
-
-async function waitForCarouselReady(page) {
-  await callBrowseHook(page, "whenCarouselReady");
-}
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
@@ -65,7 +50,7 @@ test.describe("Browse Judoka screen", () => {
   test("filters judoka by country and resets", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
 
-    await waitForCarouselReady(page);
+    await waitForBrowseReady(page);
     const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
     const initialCount = await allCards.count();
 
@@ -85,7 +70,7 @@ test.describe("Browse Judoka screen", () => {
 
   test("displays country flags", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
-    await waitForCarouselReady(page);
+    await waitForBrowseReady(page);
     await toggle.click();
     const slides = page.locator("#country-list .slide");
     await slides.first().waitFor();
@@ -103,7 +88,7 @@ test.describe("Browse Judoka screen", () => {
     );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
-    await waitForCarouselReady(page);
+    await waitForBrowseReady(page);
     const container = page.locator('[data-testid="carousel"]');
 
     await container.focus();
@@ -251,19 +236,14 @@ test.describe("Browse Judoka screen", () => {
     });
 
     await page.addInitScript(() => {
-      window.__testHooks = window.__testHooks || {
-        showSpinnerImmediately: () => {
-          window.__showSpinnerImmediately__ = true;
-        }
-      };
-      window.__testHooks.showSpinnerImmediately();
+      window.__showSpinnerImmediately__ = true;
     });
     // Instead of reload, navigate directly to ensure routes are active
     await page.goto("/src/pages/browseJudoka.html");
 
     const spinner = page.locator(".loading-spinner");
     await expect(spinner).toBeVisible();
-    await waitForCarouselReady(page);
+    await waitForBrowseReady(page);
     await expect(spinner).toBeHidden();
   });
 }); // Closing brace for test.describe.parallel

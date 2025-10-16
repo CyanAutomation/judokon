@@ -6,7 +6,9 @@
  * 2. Invoke `initGame` to wire up the page.
  */
 import { initGame } from "./game.js";
+import { registerBrowseTestApi } from "./helpers/browse/testApi.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  registerBrowseTestApi();
   initGame().catch(console.error);
 });

@@ -25,6 +25,7 @@ import {
   requireEngine,
   setPointsToWin as facadeSetPointsToWin
 } from "./battleEngineFacade.js";
+import { browseTestApi } from "./browse/testApi.js";
 
 const FRAME_DELAY_MS = 16;
 
@@ -1702,7 +1703,8 @@ const testApi = {
   init: initApi,
   inspect: inspectionApi,
   viewport: viewportApi,
-  engine: engineApi
+  engine: engineApi,
+  browse: browseTestApi
 };
 
 /**

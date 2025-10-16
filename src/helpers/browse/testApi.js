@@ -13,18 +13,6 @@ const state = {
   isCarouselReady: false
 };
 
-function ensureBrowseHookContainer() {
-  if (typeof window === "undefined") return;
-  window.__testHooks = window.__testHooks || {};
-  window.__testHooks.browse = Object.assign(window.__testHooks.browse || {}, {
-    disableHoverAnimations,
-    enableHoverAnimations,
-    addCard: addTestCard,
-    whenCarouselReady,
-    reset: resetState
-  });
-}
-
 function createReadySnapshot() {
   return {
     isReady: state.isCarouselReady && !!state.container,
@@ -67,7 +55,7 @@ function registerReadyResolver(resolve) {
  * @returns {Promise<{ isReady: boolean, cardCount: number }>} Snapshot metadata
  * when the carousel is available.
  */
-function whenCarouselReady() {
+function whenBrowseReady() {
   return new Promise((resolve) => {
     const resolver = registerReadyResolver(resolve);
 
@@ -75,6 +63,42 @@ function whenCarouselReady() {
       state.readyResolvers.delete(resolver);
       resolve(createReadySnapshot());
       return;
+    }
+  });
+}
+
+/**
+ * Await carousel readiness with optional timeout support.
+ *
+ * @pseudocode
+ * 1. Register a readiness resolver.
+ * 2. If the carousel is already ready, resolve immediately.
+ * 3. Otherwise wait for readiness or reject when the timeout elapses.
+ *
+ * @param {{ timeout?: number }} [options]
+ * @returns {Promise<{ isReady: boolean, cardCount: number }>}
+ */
+function waitForBrowseReady({ timeout = 10_000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const resolver = registerReadyResolver((snapshot) => {
+      if (timerId !== null) {
+        clearTimeout(timerId);
+      }
+      resolve(snapshot);
+    });
+
+    if (state.isCarouselReady && state.container) {
+      state.readyResolvers.delete(resolver);
+      resolve(createReadySnapshot());
+      return;
+    }
+
+    let timerId = null;
+    if (Number.isFinite(timeout) && timeout > 0) {
+      timerId = setTimeout(() => {
+        state.readyResolvers.delete(resolver);
+        reject(new Error(`Browse carousel did not become ready within ${timeout}ms`));
+      }, timeout);
     }
   });
 }
@@ -162,7 +186,7 @@ async function addTestCard(judoka) {
 }
 
 /**
- * Remove cards added through the test hook and restore animation state.
+ * Remove cards added through the test API and restore animation state.
  *
  * @pseudocode
  * 1. Re-enable hover animations if they were disabled.
@@ -198,25 +222,59 @@ function resetState() {
   state.readyResolvers.clear();
 }
 
+const browseTestApi = {
+  disableAnimations: disableHoverAnimations,
+  enableAnimations: enableHoverAnimations,
+  addCard: addTestCard,
+  whenReady: whenBrowseReady,
+  waitForReady: waitForBrowseReady,
+  getReadyState: createReadySnapshot,
+  reset: resetState
+};
+
 /**
- * Update carousel references so the browse test hooks operate on the latest render.
+ * Attach the browse test API to the provided window object.
  *
  * @pseudocode
- * 1. Store the provided container and gokyo data in local state.
- * 2. Pre-compute the gokyo lookup when data exists to match production behavior.
- * 3. Clear any tracked nodes so stale references do not affect later resets.
- * 4. Ensure global test hooks are attached to `window.__testHooks.browse`.
+ * 1. Exit when the provided target is unavailable (e.g., during SSR).
+ * 2. Ensure the root `__TEST_API` object exists on the target window.
+ * 3. Merge the browse API helpers into `rootApi.browse` using the shared singleton.
+ * 4. Return the mounted browse API reference for chaining.
  *
- * @param {HTMLElement|null} container - Carousel container element.
- * @param {import("../types.js").GokyoEntry[]|undefined} gokyoData - Raw gokyo list.
+ * @param {Window & { __TEST_API?: Record<string, any> }} [target=window]
+ * @returns {typeof browseTestApi|null}
+ */
+export function registerBrowseTestApi(target = typeof window !== "undefined" ? window : undefined) {
+  if (!target) return null;
+  const rootApi =
+    typeof target.__TEST_API === "object" && target.__TEST_API !== null
+      ? target.__TEST_API
+      : (target.__TEST_API = {});
+  rootApi.browse = Object.assign(rootApi.browse || {}, browseTestApi);
+  return rootApi.browse;
+}
+
+/**
+ * Update carousel references so the browse test API operates on the latest render.
+ *
+ * @pseudocode
+ * 1. Cache the latest carousel container and gokyo metadata.
+ * 2. Rebuild the gokyo lookup for card rendering.
+ * 3. Reset tracked nodes to avoid leaking DOM references across renders.
+ * 4. Re-register the browse test API on the window.
+ * 5. Resolve any pending readiness resolvers when the container exists.
+ *
+ * @param {object} options
+ * @param {HTMLElement|null} options.container - Carousel container element.
+ * @param {import("../types.js").GokyoEntry[]|undefined} options.gokyoData - Raw gokyo list.
  * @returns {void}
  */
-export function updateBrowseTestHooksContext({ container, gokyoData }) {
+export function updateBrowseTestApiContext({ container, gokyoData }) {
   state.container = container || null;
   state.gokyoData = Array.isArray(gokyoData) ? gokyoData : [];
   state.gokyoLookup = state.gokyoData.length ? createGokyoLookup(state.gokyoData) : {};
   state.addedNodes.clear();
-  ensureBrowseHookContainer();
+  registerBrowseTestApi();
   if (state.container) {
     resolveReadyResolvers();
   } else {
@@ -225,15 +283,19 @@ export function updateBrowseTestHooksContext({ container, gokyoData }) {
 }
 
 /**
- * Reset browse-specific test hooks and remove any injected state.
+ * Reset browse-specific test helpers and remove any injected state.
  *
  * @pseudocode
- * 1. Delegate to `resetState()` so animations and injected cards are cleared.
+ * 1. Delegate to `resetState` to restore animations and remove injected cards.
+ * 2. Re-register the browse API so subsequent tests can reuse the helpers.
  *
  * @returns {void}
  */
-export function resetBrowseTestHooks() {
+export function resetBrowseTestApi() {
   resetState();
+  registerBrowseTestApi();
 }
 
-ensureBrowseHookContainer();
+registerBrowseTestApi();
+
+export { browseTestApi };
