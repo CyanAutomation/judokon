@@ -1,52 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { waitForTestApi, waitForBattleState } from "./helpers/battleStateHelper.js";
-
-async function dispatchBattleEvent(page, eventName) {
-  return await page.evaluate(async (event) => {
-    const api = window.__TEST_API?.state;
-    if (!api || typeof api.dispatchBattleEvent !== "function") {
-      return { ok: false, result: null, reason: "state.dispatchBattleEvent unavailable" };
-    }
-
-    try {
-      const result = await api.dispatchBattleEvent(event);
-      return { ok: result !== false, result: result ?? null, reason: null };
-    } catch (error) {
-      return { ok: false, result: null, reason: error?.message ?? "dispatch failed" };
-    }
-  }, eventName);
-}
-
-async function completeRoundViaApi(page, roundInput = {}) {
-  return await page.evaluate(async (input) => {
-    const cliApi = window.__TEST_API?.cli;
-    if (!cliApi || typeof cliApi.completeRound !== "function") {
-      return {
-        ok: false,
-        reason: "cli.completeRound unavailable",
-        finalState: null
-      };
-    }
-
-    try {
-      const resolution = await cliApi.completeRound(input, {
-        outcomeEvent: "outcome=winPlayer",
-        opponentResolveDelayMs: 0
-      });
-      return {
-        ok: resolution?.finalState === "roundOver",
-        reason: null,
-        finalState: resolution?.finalState ?? null
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        reason: error?.message ?? "completeRound failed",
-        finalState: null
-      };
-    }
-  }, roundInput);
-}
+import {
+  completeRoundViaApi,
+  dispatchBattleEvent,
+  resolveBattleState
+} from "./helpers/battleApiHelper.js";
 
 test.describe("CLI Command History", () => {
   test("should show stat selection history", async ({ page }) => {
@@ -66,17 +24,17 @@ test.describe("CLI Command History", () => {
     });
     expect(battleReady, "Test API should report battle readiness").toBe(true);
 
-    const resolveBattleState = async () => {
-      return await page.evaluate(() => {
-        try {
-          return window.__TEST_API?.state?.getBattleState?.() ?? null;
-        } catch {
-          return null;
-        }
-      });
-    };
+    let currentState = await resolveBattleState(page);
 
-    let currentState = await resolveBattleState();
+    /*
+     * The battle Test API may surface several transient states depending on when the
+     * CLI loads relative to the round lifecycle. We normalize into the "waitingForPlayerAction"
+     * state by advancing through the same transitions the game uses in production:
+     *   waitingForMatchStart → matchStart → cooldown → waitingForPlayerAction.
+     * If the state machine is already ahead of one of those transitions, the subsequent
+     * dispatches are skipped. Documenting this flow keeps the intent clear and helps
+     * future contributors reason about the conditional dispatches below.
+     */
 
     if (currentState === "waitingForMatchStart" || currentState === "matchStart") {
       const startClicked = await dispatchBattleEvent(page, "startClicked");
@@ -87,14 +45,15 @@ test.describe("CLI Command History", () => {
       ).toBe(true);
 
       await waitForBattleState(page, "cooldown", { timeout: 10_000 });
-      currentState = await resolveBattleState();
+      currentState = await resolveBattleState(page);
     }
 
     if (currentState !== "waitingForPlayerAction") {
       const readyForRound = await dispatchBattleEvent(page, "ready");
       expect(
         readyForRound.ok,
-        readyForRound.reason ?? `Failed to dispatch ready (result: ${readyForRound.result ?? "unknown"})`
+        readyForRound.reason ??
+          `Failed to dispatch ready (result: ${readyForRound.result ?? "unknown"})`
       ).toBe(true);
     }
 
@@ -112,9 +71,12 @@ test.describe("CLI Command History", () => {
     expect(continueResult.ok, continueResult.reason ?? "Failed to dispatch continue").toBe(true);
 
     const readyForNextRound = await dispatchBattleEvent(page, "ready");
-    expect(readyForNextRound.ok, readyForNextRound.reason ?? "Failed to dispatch ready from cooldown").toBe(true);
+    expect(
+      readyForNextRound.ok,
+      readyForNextRound.reason ?? "Failed to dispatch ready from cooldown"
+    ).toBe(true);
 
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
 
     // Select stat '2'
     await page.keyboard.press("2");
