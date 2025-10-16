@@ -269,24 +269,65 @@ const BOILERPLATE_STRINGS = new Set(["lorem ipsum", "todo", "tbd"]);
 // Back-compat alias for tests expecting this export name
 const JSON_FIELD_ALLOWLIST = DATA_FIELD_ALLOWLIST;
 
+/**
+ * Convert a value to a string representation, handling arrays and objects recursively.
+ *
+ * @pseudocode
+ * 1. If value is undefined or null, return undefined.
+ * 2. If value is an array, recursively stringify items, remove undefined results, and join with ", ".
+ * 3. If value is an object, recursively stringify each property, remove undefined results, and join with ", ".
+ * 4. Otherwise, coerce the value to string, trim whitespace, and return the string when non-empty.
+ *
+ * @param {any} value - The value to stringify.
+ * @returns {string|undefined} String representation or undefined for empty/null values.
+ */
 function stringifyAllowedValue(value) {
   if (value === undefined || value === null) return undefined;
   if (Array.isArray(value)) {
-    const items = value.map((item) => stringifyAllowedValue(item)).filter(Boolean);
+    const items = value
+      .map((item) => stringifyAllowedValue(item))
+      .filter((item) => item !== undefined);
     return items.length ? items.join(", ") : undefined;
   }
   if (typeof value === "object") {
-    const items = Object.values(value).map((item) => stringifyAllowedValue(item)).filter(Boolean);
+    const items = Object.values(value)
+      .map((item) => stringifyAllowedValue(item))
+      .filter((item) => item !== undefined);
     return items.length ? items.join(", ") : undefined;
   }
   const text = String(value).trim();
   return text ? text : undefined;
 }
 
+/**
+ * Check if a key matches an allowlisted field pattern.
+ *
+ * @pseudocode
+ * 1. Compare the key directly to the allowlisted field.
+ * 2. If not equal, check whether the key starts with the field followed by a dot for nested properties.
+ * 3. Return true when either condition passes.
+ *
+ * @param {string} key - The key to check.
+ * @param {string} field - The allowlisted field pattern.
+ * @returns {boolean} True if key matches the field or is a nested property of it.
+ */
 function matchesAllowlistedKey(key, field) {
   return key === field || key.startsWith(`${field}.`);
 }
 
+/**
+ * Extract allowlisted values from a data item based on configured field allowlists.
+ *
+ * @pseudocode
+ * 1. Look up the allowlist for the file base; return undefined when explicitly disabled.
+ * 2. When allowlist is true, flatten objects (if needed) and join all values.
+ * 3. When allowlist is an array, flatten the item, retain keys that match configured fields, and join results.
+ * 4. For other allowlist values, return undefined to preserve fallback semantics.
+ *
+ * @param {string} base - Base filename for allowlist lookup.
+ * @param {any} item - Data item to extract values from.
+ * @returns {string|undefined} Formatted string of allowed values or undefined if none.
+ */
 function extractAllowedValues(base, item) {
   const allowlist = JSON_FIELD_ALLOWLIST[base] ?? JSON_FIELD_ALLOWLIST.default;
   if (allowlist === false) return undefined;
@@ -295,7 +336,7 @@ function extractAllowedValues(base, item) {
       const flattened = flattenObject(item);
       const values = Object.values(flattened)
         .map((value) => stringifyAllowedValue(value))
-        .filter(Boolean);
+        .filter((value) => value !== undefined);
       return values.length ? values.join(". ") : undefined;
     }
     const text = stringifyAllowedValue(item);
@@ -303,7 +344,7 @@ function extractAllowedValues(base, item) {
   }
 
   if (!Array.isArray(allowlist) || allowlist.length === 0) {
-    return stringifyAllowedValue(item);
+    return undefined;
   }
 
   const flattened = item && typeof item === "object" ? flattenObject(item) : { value: item };
@@ -441,8 +482,8 @@ function createJsonProcessItem({
       overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
         ? allowlistFn(base, item)
         : overrideCandidate;
-    const textToEmbed = extracted === undefined || extracted === null ? extracted : String(extracted);
-    const chunkText = textToEmbed ? normalizeAndFilter(String(textToEmbed), seenTexts) : undefined;
+    const textToEmbed = extracted === undefined || extracted === null ? undefined : String(extracted);
+    const chunkText = textToEmbed ? normalizeAndFilter(textToEmbed, seenTexts) : undefined;
     if (!chunkText) return;
     const intent = determineIntent(chunkText);
     const metadata = buildMetadata(relativePath);
@@ -537,9 +578,7 @@ async function processJsonObjectEntries(
     let formattedText = String(allowed).trim();
     if (!formattedText) continue;
 
-    const lowerKeyPath = keyPath.toLowerCase();
-    const lowerText = formattedText.toLowerCase();
-    if (lowerText.startsWith(`${lowerKeyPath}:`)) {
+    if (formattedText.startsWith(`${keyPath}:`)) {
       const suffix = formattedText.slice(keyPath.length + 1).trimStart();
       formattedText = `${keyPath}: ${suffix}`;
     } else {
