@@ -483,7 +483,7 @@ function createJsonProcessItem({
         ? allowlistFn(base, item)
         : overrideCandidate;
     const textToEmbed = extracted === undefined || extracted === null ? undefined : String(extracted);
-    const chunkText = textToEmbed ? normalizeAndFilter(textToEmbed, seenTexts) : undefined;
+    const chunkText = textToEmbed ? normalizeAndFilter(String(textToEmbed), seenTexts) : undefined;
     if (!chunkText) return;
     const intent = determineIntent(chunkText);
     const metadata = buildMetadata(relativePath);
