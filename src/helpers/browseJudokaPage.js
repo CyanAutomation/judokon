@@ -10,7 +10,11 @@ import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
 import { setupCountryFilter } from "./browse/setupCountryFilter.js";
 import { addHoverZoomMarkers } from "./setupHoverZoom.js";
-import { resetBrowseTestHooks, updateBrowseTestHooksContext } from "./browse/testHooks.js";
+import {
+  registerBrowseTestApi,
+  resetBrowseTestApi,
+  updateBrowseTestApiContext
+} from "./browse/testApi.js";
 
 /**
  * @typedef {object} BrowsePageRuntime
@@ -107,7 +111,7 @@ export function createBrowsePageRuntime(documentRef = document) {
       }
       setupButtonEffects();
       addHoverZoomMarkers();
-      updateBrowseTestHooksContext({ container: containerEl || null, gokyoData });
+      updateBrowseTestApiContext({ container: containerEl || null, gokyoData });
       return { carousel, containerEl };
     },
     getAriaLive() {
@@ -205,7 +209,8 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * @returns {Promise<void>} A promise that resolves when the page setup is complete.
  */
 export async function setupBrowseJudokaPage({ runtime } = {}) {
-  resetBrowseTestHooks();
+  registerBrowseTestApi();
+  resetBrowseTestApi();
   const pageRuntime = runtime ?? createBrowsePageRuntime();
   const { carouselContainer } = pageRuntime;
 

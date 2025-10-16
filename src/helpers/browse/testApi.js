@@ -11,7 +11,8 @@ const state = {
   animationsDisabled: false,
   previousAnimationValue: null,
   readyResolvers: new Set(),
-  isCarouselReady: false
+  isCarouselReady: false,
+  apiRegistered: false
 };
 
 function updateInitSnapshot(snapshot) {
@@ -48,7 +49,22 @@ function ensureBrowseTestApi() {
     window.__TEST_API.browse = browseApi;
   }
 
+  state.apiRegistered = true;
   return browseApi;
+}
+
+/**
+ * Register the browse helpers on the shared `__TEST_API` surface.
+ *
+ * @pseudocode
+ * 1. Ensure the application is executing in test mode.
+ * 2. Attach browse helpers to the shared `__TEST_API` namespace.
+ * 3. Remember that the API has been registered so readiness updates can fire.
+ *
+ * @returns {ReturnType<typeof ensureBrowseTestApi>} The registered API when in tests, otherwise `null`.
+ */
+export function registerBrowseTestApi() {
+  return ensureBrowseTestApi();
 }
 
 function createReadySnapshot() {
@@ -241,7 +257,7 @@ function resetState() {
  * @param {import("../types.js").GokyoEntry[]|undefined} gokyoData - Raw gokyo list.
  * @returns {void}
  */
-export function updateBrowseTestHooksContext({ container, gokyoData }) {
+export function updateBrowseTestApiContext({ container, gokyoData }) {
   ensureBrowseTestApi();
   state.container = container || null;
   state.gokyoData = Array.isArray(gokyoData) ? gokyoData : [];
@@ -256,15 +272,13 @@ export function updateBrowseTestHooksContext({ container, gokyoData }) {
 }
 
 /**
- * Reset browse-specific test hooks and remove any injected state.
+ * Reset browse-specific test helpers and remove any injected state.
  *
  * @pseudocode
  * 1. Delegate to `resetState()` so animations and injected cards are cleared.
  *
  * @returns {void}
  */
-export function resetBrowseTestHooks() {
+export function resetBrowseTestApi() {
   resetState();
 }
-
-ensureBrowseTestApi();
