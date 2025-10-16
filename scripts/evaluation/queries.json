@@ -4,7 +4,7 @@
     "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md"
   },
   {
-    "query": "Which CSS variable defines the button transition speed in JU-DO-KON?",
+    "query": "Which CSS token defines the button transition speed in JU-DO-KON?",
     "expected_source": "src/styles/base.css"
   },
   {
