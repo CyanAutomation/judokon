@@ -236,6 +236,26 @@ This phase introduces more advanced functionality and long-term improvements to 
 - Document the flag bootstrap migration in QA runbooks
 - Monitor the test in CI/CD for stability
 
+## Console Logging Cleanup (October 17, 2025)
+
+**Status: VERIFIED** — Console logging in `setBattleStateBadgeEnabled` and related functions has already been properly gated.
+
+**Investigation:**
+
+- Reviewed `src/helpers/classicBattle/uiHelpers.js` for noisy `console.debug` statements (originally listed as lines 932-959).
+- Found that all remaining `console.debug` calls are already behind `VITEST` environment checks (lines 383, 411).
+- Error-case `console.warn` calls in error handlers are appropriate (lines 65, 321, 333, 347, 677, 841).
+- The `setBattleStateBadgeEnabled` function (lines 983-1010) contains no console logging, keeping it production-clean.
+
+**Outcome:**
+
+- ✅ No production console spam detected in battle state badge or related helpers
+- ✅ Test-only logging is properly gated behind `process.env.VITEST` checks
+- ✅ Error logging follows appropriate warning/error patterns
+- ✅ Function remains production-ready as-is
+
+**Recommendation:** No action needed; this task was previously completed during earlier refactoring phases.
+
 ## Additional engineering opportunities
 
 - Migrate the Classic Battle page to `setupClassicBattlePage` so the controller/view stack owns flag wiring, banner updates, and state progress (`src/helpers/classicBattle/bootstrap.js`, `src/pages/battleClassic.html:172`) — **COMPLETED**
