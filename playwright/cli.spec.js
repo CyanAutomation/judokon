@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { waitForTestApi } from "./helpers/battleStateHelper.js";
 
 const DEFAULT_CLI_URL = "http://127.0.0.1:5000/src/pages/battleCLI.html";
 
@@ -15,16 +16,13 @@ const buildCliUrl = () => {
 test("CLI skeleton and helpers smoke", async ({ page }) => {
   await page.goto(buildCliUrl());
 
+  await waitForTestApi(page);
+
   // stats container present (rows may be skeleton or populated, allow racing init)
   await expect(page.locator("#cli-stats")).toHaveCount(1);
   // skeleton placeholders ensure keyboard rows exist before data loads
   const statsCount = await page.locator("#cli-stats .cli-stat").count();
   expect(statsCount).toBeGreaterThan(0);
-
-  // countdown helper exposed via Test API timers
-  await page.waitForFunction(() => typeof window.__TEST_API?.timers?.setCountdown === "function", {
-    timeout: 5000
-  });
 
   // set countdown via helper, validate state via Test API, and confirm UI reflects it
   await page.evaluate(() => window.__TEST_API.timers.setCountdown(12));
