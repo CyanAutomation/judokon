@@ -13,6 +13,10 @@
 import { test as base, expect } from "@playwright/test";
 import { registerCommonRoutes } from "./commonRoutes.js";
 
+if (typeof globalThis !== "undefined") {
+  globalThis.__PLAYWRIGHT_TEST__ = true;
+}
+
 export const test = base.extend({
   /** @type {import('@playwright/test').Page} */
   page: async ({ page }, use) => {
@@ -52,6 +56,12 @@ export const test = base.extend({
       } catch {}
     });
 
+    await page.addInitScript(() => {
+      window.__PLAYWRIGHT_TEST__ = true;
+      try {
+        globalThis.__PLAYWRIGHT_TEST__ = true;
+      } catch {}
+    });
     await page.addInitScript(() => {
       localStorage.clear();
       // Reset snackbar override between tests so snackbar-based assertions remain deterministic
