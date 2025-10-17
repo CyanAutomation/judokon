@@ -4,7 +4,7 @@
     "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md"
   },
   {
-    "query": "Show me the code for base.css button transition duration token CSS styling",
+    "query": "What is the CSS implementation for base.css button transition duration token CSS styling",
     "expected_source": "src/styles/base.css"
   },
   {
@@ -44,11 +44,11 @@
     "expected_source": "design/productRequirementsDocuments/prdDataSchemas.md"
   },
   {
-    "query": "Where is the initGame function defined for UI controls wiring initialization",
+    "query": "What is the implementation for initGame function UI controls wiring initialization",
     "expected_source": "src/game.js"
   },
   {
-    "query": "Find the component implementing the battle engine facade purpose API architecture pattern",
+    "query": "What is the implementation for battle engine facade purpose API architecture pattern",
     "expected_source": "src/helpers/battleEngineFacade.js"
   },
   {
@@ -56,7 +56,7 @@
     "expected_source": "design/productRequirementsDocuments/prdBattleCLI.md"
   },
   {
-    "query": "Find the component for the judoka card render implementation details",
+    "query": "What is the implementation for judoka card render component details",
     "expected_source": "src/components/Card.js"
   }
 ]
