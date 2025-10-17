@@ -58,6 +58,13 @@ This document should be updated to reflect its status as a post-implementation r
   - The CLI now exposes the previewed stat via `data-history-preview` and applies a dedicated `.history-preview` outline, guiding users to confirm the recalled choice.
   - Ran targeted tests: `npx vitest run tests/cli/commandHistory.test.js` and `npx playwright test playwright/cli-command-history.spec.js`, both of which passed without regressions.
 
+### Task: Footer Controls Visibility
+
+- **Action Taken:** Rebuilt the footer shortcuts banner with semantic markup and focusable "kebab" chips. The hint now announces via `aria-live`, exposes a titled shortcuts grid, and swaps the plain string for keycap-style pills.
+- **Outcome:**
+  - `#cli-controls-hint` now highlights keys with `.cli-controls-hint__item` chip styling, adapts to mobile layouts, and includes a screen-reader only summary. The hint toggles using the `hidden` attribute for cleaner accessibility semantics and dims shortcuts automatically when the related feature flags are disabled.
+  - Ran targeted tests: `npx vitest run tests/cli/statDisplay.spec.js` and `npx playwright test playwright/cli-layout-assessment.spec.js`. Both completed successfully, confirming no CLI layout regressions.
+
 # CLI Layout and Styling Improvement Opportunities
 
 **Verification Status:** All items in this report have been verified as accurate. The proposed solutions are sound and recommended for implementation. This document has been updated to reflect this verification and to include additional opportunities for improvement.
@@ -106,14 +113,32 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ```css
 #cli-controls-hint {
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
   background: linear-gradient(to bottom, #040404, #020202);
   border-top: 2px solid #1f1f1f;
   color: #c4e8c4;
   text-align: center;
-  opacity: 0.95;
+}
+.cli-controls-hint__items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 16px;
+}
+.cli-controls-hint__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(60, 255, 155, 0.6);
+}
+.cli-controls-hint__key {
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 ```
 

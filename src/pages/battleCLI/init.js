@@ -178,6 +178,14 @@ let pausedCooldownRemaining = null;
 let commandHistory = [];
 let historyIndex = -1;
 let historyAnchorStat = null;
+const SHORTCUT_HINT_MESSAGES = {
+  default:
+    "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit.",
+  statHotkeysDisabled:
+    "Stat hotkeys are disabled. Use Enter or Space to continue, H to toggle help, and Q to quit.",
+  shortcutsDisabled:
+    "Keyboard shortcuts are disabled. Use the on-screen controls or enable CLI shortcuts in settings."
+};
 // state managed in state.js
 
 onEsc(resolveEscapeHandled);
@@ -230,6 +238,7 @@ export function ensureCliDomForTest({ reset = false } = {}) {
   body.replaceChildren(fragment);
   body.className = "";
   normalizeShortcutCopy();
+  updateControlsHint();
   try {
     const keys = Object.keys(body.dataset || {});
     for (const key of keys) {
@@ -1541,6 +1550,47 @@ function normalizeShortcutCopy() {
     rangeKey.textContent = "1–5";
   }
 }
+
+function updateControlsHint() {
+  const hint = byId("cli-controls-hint");
+  if (!hint) return;
+  let shortcutsEnabled = false;
+  let statHotkeysEnabled = false;
+  try {
+    shortcutsEnabled = !!isEnabled("cliShortcuts");
+  } catch {}
+  try {
+    statHotkeysEnabled = !!isEnabled("statHotkeys");
+  } catch {}
+
+  const items = hint.querySelectorAll(".cli-controls-hint__item");
+  items.forEach((item) => {
+    const requires = (item.dataset.requires || "").trim();
+    const deps = requires ? requires.split(/\s+/) : [];
+    const satisfied = deps.every((dep) => {
+      if (dep === "cliShortcuts") return shortcutsEnabled;
+      if (dep === "statHotkeys") return statHotkeysEnabled;
+      return true;
+    });
+    if (satisfied) {
+      item.classList.remove("cli-controls-hint__item--disabled");
+      item.removeAttribute("aria-disabled");
+    } else {
+      item.classList.add("cli-controls-hint__item--disabled");
+      item.setAttribute("aria-disabled", "true");
+    }
+  });
+
+  const sr = byId("cli-controls-hint-announce");
+  if (sr) {
+    if (!shortcutsEnabled) {
+      sr.textContent = SHORTCUT_HINT_MESSAGES.shortcutsDisabled;
+    } else if (!statHotkeysEnabled) {
+      sr.textContent = SHORTCUT_HINT_MESSAGES.statHotkeysDisabled;
+    } else {
+      sr.textContent = SHORTCUT_HINT_MESSAGES.default;
+    }
+  }
 }
 
 /**
@@ -2735,6 +2785,7 @@ export async function setupFlags() {
   updateStateBadgeVisibility();
   updateBattleStateBadge(getStateSnapshot().state);
   updateCliShortcutsVisibility();
+  updateControlsHint();
   const close = byId("cli-shortcuts-close");
   close?.addEventListener("click", (event) => {
     event.preventDefault();
@@ -2763,6 +2814,10 @@ export async function setupFlags() {
     }
     if (!flag || flag === "cliShortcuts") {
       updateCliShortcutsVisibility();
+      updateControlsHint();
+    }
+    if (!flag || flag === "statHotkeys") {
+      updateControlsHint();
     }
     if (!flag || flag === "cliImmersive") {
       try {
@@ -2965,6 +3020,7 @@ export async function init() {
   initSeed();
   store = createBattleStore();
   normalizeShortcutCopy();
+  updateControlsHint();
   // Enable outcome confirmation pause for better UX
   store.waitForOutcomeConfirmation = true;
   try {
