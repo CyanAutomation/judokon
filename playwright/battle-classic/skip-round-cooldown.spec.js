@@ -1,10 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import {
-  waitForBattleReady,
-  waitForNextButtonReady,
-  waitForTestApi
-} from "../helpers/battleStateHelper.js";
+import { waitForBattleReady, waitForNextButtonReady } from "../helpers/battleStateHelper.js";
 import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 import { TEST_ROUND_TIMER_MS } from "../helpers/testTiming.js";
 
@@ -14,6 +10,7 @@ test.describe("skipRoundCooldown feature flag", () => {
       // Enable the skipRoundCooldown flag and set a realistic cooldown time
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = {
+          showRoundSelectModal: true,
           skipRoundCooldown: true
         };
       });
@@ -25,11 +22,8 @@ test.describe("skipRoundCooldown feature flag", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
-      await waitForTestApi(page);
-
-      const difficultyButton = page.getByRole("button", { name: "Medium" });
-      await expect(difficultyButton).toBeVisible();
-      await difficultyButton.click();
+      // Click the round select button
+      await page.locator('button:has-text("Quick")').click();
 
       await waitForBattleReady(page, { allowFallback: false });
 
@@ -75,6 +69,7 @@ test.describe("skipRoundCooldown feature flag", () => {
       // Explicitly disable the skipRoundCooldown flag
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = {
+          showRoundSelectModal: true,
           skipRoundCooldown: false
         };
       });
@@ -87,11 +82,8 @@ test.describe("skipRoundCooldown feature flag", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
-      await waitForTestApi(page);
-
-      const difficultyButton = page.getByRole("button", { name: "Medium" });
-      await expect(difficultyButton).toBeVisible();
-      await difficultyButton.click();
+      // Click the round select button
+      await page.locator('button:has-text("Quick")').click();
 
       await waitForBattleReady(page, { allowFallback: false });
 
@@ -125,11 +117,12 @@ test.describe("skipRoundCooldown feature flag", () => {
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
-  test("DOM markers correctly reflect flag state transitions", async ({ page }) => {
+  test("DOM markers correctly reflect flag state", async ({ page }) => {
     await withMutedConsole(async () => {
       // Start with the flag enabled
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = {
+          showRoundSelectModal: true,
           skipRoundCooldown: true
         };
       });
@@ -140,24 +133,12 @@ test.describe("skipRoundCooldown feature flag", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
-      await waitForTestApi(page);
-
       const body = page.locator("body");
       const nextButton = page.getByTestId("next-button");
 
       // Initially enabled
       await expect(body).toHaveAttribute("data-feature-skip-round-cooldown", "enabled");
       await expect(nextButton).toHaveAttribute("data-feature-skip-round-cooldown", "enabled");
-
-      // Simulate disabling the flag by accessing window globals
-      // (Note: in a real scenario, you'd toggle the flag via settings)
-      await page.evaluate(() => {
-        if (typeof window !== "undefined" && window.__FF_OVERRIDES) {
-          window.__FF_OVERRIDES.skipRoundCooldown = false;
-          // Trigger an update by dispatching a custom event or calling the marker function
-          // For this test, we're just validating the infrastructure exists
-        }
-      });
 
       // Clean up
       await page.evaluate(() => {

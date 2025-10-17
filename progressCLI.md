@@ -44,6 +44,13 @@ This document should be updated to reflect its status as a post-implementation r
   - Created a new Playwright test (`playwright/cli-theme-switcher.spec.js`) to verify the functionality of the theme switcher.
   - Ran relevant unit tests (`tests/helpers/featureFlags.test.js`) and Playwright tests (`cli-theme-switcher.spec.js`, `cli.spec.js`). All tests passed, confirming the feature works correctly and has not introduced regressions.
 
+### Task: Grid Layout Optimization
+
+- **Action Taken:** Refined the stats grid sizing logic in `src/pages/battleCLI.css` to use clamp-based column widths. This smooths the transition between breakpoints, ensuring tablets pick up an extra column sooner while preventing oversized tiles on wide displays.
+- **Outcome:**
+  - The grid now scales column widths between 180px–220px by default, expanding up to 260px on large viewports without introducing layout jumps.
+  - Ran targeted tests: `npx vitest run tests/cli/statDisplay.spec.js` and `npx playwright test playwright/cli-layout-assessment.spec.js`. Both suites passed, confirming no regressions in CLI stat rendering or layout.
+
 # CLI Layout and Styling Improvement Opportunities
 
 **Verification Status:** All items in this report have been verified as accurate. The proposed solutions are sound and recommended for implementation. This document has been updated to reflect this verification and to include additional opportunities for improvement.
@@ -68,18 +75,18 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ```css
 #cli-stats {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-
-@media (min-width: 768px) {
-  #cli-stats {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
+  grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 24vw, 220px), 1fr));
 }
 
 @media (min-width: 1200px) {
   #cli-stats {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 20vw, 260px), 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  #cli-stats {
+    grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 42vw, 180px), 1fr));
   }
 }
 ```

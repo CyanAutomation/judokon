@@ -262,21 +262,17 @@ body {
 }
 #cli-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  /* Smoothly scale card width so tablets gain extra columns without oversized tiles on desktop. */
+  grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 24vw, 220px), 1fr));
   grid-auto-rows: minmax(44px, auto);
   gap: 8px;
   min-height: 8rem; /* Reserve space for layout stability and touch targets */
 }
 
-@media (min-width: 768px) {
-  #cli-stats {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-}
-
 @media (min-width: 1200px) {
   #cli-stats {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    /* Allow wider tiles on large displays, but cap growth to avoid full-row stretching. */
+    grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 20vw, 260px), 1fr));
   }
 }
 .cli-stat {
@@ -560,7 +556,7 @@ select:focus,
     padding: 12px; /* Consistent 8px rhythm */
   }
   #cli-stats {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 42vw, 180px), 1fr));
     grid-auto-rows: minmax(44px, auto);
     min-height: 8rem; /* Maintain reservation on mobile */
   }
