@@ -236,8 +236,3 @@ export { addScrollMarkers };
 export function showSpinnerImmediately() {
   globalThis.__showSpinnerImmediately__ = true;
 }
-
-if (typeof window !== "undefined") {
-  window.__testHooks = window.__testHooks || {};
-  window.__testHooks.showSpinnerImmediately = showSpinnerImmediately;
-}

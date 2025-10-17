@@ -97,16 +97,32 @@ export async function waitForBattleReady(page) {
 export async function waitForBrowseReady(page, { timeout = 10_000 } = {}) {
   // Browse readiness waits on image-heavy carousel hydration, so we allow extra headroom vs other waits.
   await page.waitForFunction(
-    () => typeof window.__TEST_API?.init?.waitForBrowseReady === "function",
+    () =>
+      typeof window.__TEST_API?.init?.waitForBrowseReady === "function" ||
+      typeof window.__TEST_API?.browse?.whenCarouselReady === "function",
     undefined,
     { timeout }
   );
 
   try {
-    return await page.evaluate(
-      (limit) => window.__TEST_API.init.waitForBrowseReady(limit),
-      timeout
-    );
+    return await page.evaluate((limit) => {
+      const initApi = window.__TEST_API?.init;
+      if (typeof initApi?.waitForBrowseReady === "function") {
+        return initApi.waitForBrowseReady(limit);
+      }
+
+      const browseApi = window.__TEST_API?.browse;
+      if (typeof browseApi?.whenCarouselReady === "function") {
+        return Promise.race([
+          browseApi.whenCarouselReady(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Browse readiness timed out")), limit)
+          )
+        ]);
+      }
+
+      throw new Error("Browse readiness API unavailable");
+    }, timeout);
   } catch (error) {
     throw new Error(
       `waitForBrowseReady failed: ${error instanceof Error ? error.message : String(error)}`
