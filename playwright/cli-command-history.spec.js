@@ -1,10 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { waitForTestApi, waitForBattleState } from "./helpers/battleStateHelper.js";
-import {
-  completeRoundViaApi,
-  dispatchBattleEvent,
-  resolveBattleState
-} from "./helpers/battleApiHelper.js";
+import { completeRoundViaApi, dispatchBattleEvent } from "./helpers/battleApiHelper.js";
 
 test.describe("CLI Command History", () => {
   test("should show stat selection history", async ({ page }) => {
@@ -13,28 +9,51 @@ test.describe("CLI Command History", () => {
 
     await waitForTestApi(page);
 
-    const battleReady = await page.evaluate(async () => {
-      const initApi = window.__TEST_API?.init;
-      if (!initApi || typeof initApi.waitForBattleReady !== "function") {
-        return false;
+    const battleReady = await page.evaluate(async (timeout) => {
+      const initApi = window.__TEST_API?.init ?? null;
+      const waitForBattleReady = initApi?.waitForBattleReady;
+      if (typeof waitForBattleReady !== "function") {
+        return {
+          ok: false,
+          reason: "init.waitForBattleReady unavailable on Test API"
+        };
       }
 
-      const ready = await initApi.waitForBattleReady.call(initApi, 10_000);
-      return ready === true;
+      try {
+        const ready = await waitForBattleReady.call(initApi, timeout);
+        return { ok: ready === true, reason: ready === true ? null : "waitForBattleReady returned false" };
+      } catch (error) {
+        return {
+          ok: false,
+          reason: error?.message ?? "waitForBattleReady threw"
+        };
+      }
+    }, 10_000);
+
+    expect(
+      battleReady.ok,
+      battleReady.reason ?? "Test API waitForBattleReady should report battle readiness"
+    ).toBe(true);
+
+    const currentStateResult = await page.evaluate(() => {
+      try {
+        const state = window.__TEST_API?.state?.getBattleState?.() ?? null;
+        return { ok: state !== null, state, reason: state === null ? "Battle state unavailable" : null };
+      } catch (error) {
+        return {
+          ok: false,
+          state: null,
+          reason: error instanceof Error ? error.message : String(error ?? "unknown error")
+        };
+      }
     });
-    expect(battleReady, "Test API should report battle readiness").toBe(true);
 
-    let currentState = await resolveBattleState(page);
+    expect(
+      currentStateResult.ok,
+      currentStateResult.reason ?? "Unable to resolve battle state via Test API"
+    ).toBe(true);
 
-    /*
-     * The battle Test API may surface several transient states depending on when the
-     * CLI loads relative to the round lifecycle. We normalize into the "waitingForPlayerAction"
-     * state by advancing through the same transitions the game uses in production:
-     *   waitingForMatchStart → matchStart → cooldown → waitingForPlayerAction.
-     * If the state machine is already ahead of one of those transitions, the subsequent
-     * dispatches are skipped. Documenting this flow keeps the intent clear and helps
-     * future contributors reason about the conditional dispatches below.
-     */
+    const { state: currentState } = currentStateResult;
 
     if (currentState === "waitingForMatchStart" || currentState === "matchStart") {
       const startClicked = await dispatchBattleEvent(page, "startClicked");
@@ -44,11 +63,28 @@ test.describe("CLI Command History", () => {
           `Failed to dispatch startClicked (result: ${startClicked.result ?? "unknown"})`
       ).toBe(true);
 
-      await waitForBattleState(page, "cooldown", { timeout: 10_000 });
-      currentState = await resolveBattleState(page);
+      await waitForBattleState(page, "cooldown", { timeout: 10_000, allowFallback: false });
     }
 
-    if (currentState !== "waitingForPlayerAction") {
+    const afterStartStateResult = await page.evaluate(() => {
+      try {
+        const state = window.__TEST_API?.state?.getBattleState?.() ?? null;
+        return { ok: state !== null, state, reason: state === null ? "Battle state unavailable" : null };
+      } catch (error) {
+        return {
+          ok: false,
+          state: null,
+          reason: error instanceof Error ? error.message : String(error ?? "unknown error")
+        };
+      }
+    });
+
+    expect(
+      afterStartStateResult.ok,
+      afterStartStateResult.reason ?? "Unable to resolve battle state after startClicked"
+    ).toBe(true);
+
+    if (afterStartStateResult.state !== "waitingForPlayerAction") {
       const readyForRound = await dispatchBattleEvent(page, "ready");
       expect(
         readyForRound.ok,
@@ -57,7 +93,7 @@ test.describe("CLI Command History", () => {
       ).toBe(true);
     }
 
-    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000, allowFallback: false });
 
     // Select stat '1'
     await page.keyboard.press("1");
