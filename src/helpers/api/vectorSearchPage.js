@@ -95,8 +95,11 @@ export async function getExtractor() {
         const { stat } = await import("fs/promises");
         const { createRequire } = await import("module");
         const { resolve, dirname, sep } = await import("path");
+        const { fileURLToPath } = await import("url");
         const nodeRequire = createRequire(import.meta.url);
-        const rootDir = resolve(dirname(new URL(import.meta.url).pathname), "../..");
+        const modulePath = fileURLToPath(import.meta.url);
+        const moduleDir = dirname(modulePath);
+        const rootDir = resolve(moduleDir, "..", "..", "..");
 
         env.allowLocalModels = true;
         env.localModelPath = rootDir;
