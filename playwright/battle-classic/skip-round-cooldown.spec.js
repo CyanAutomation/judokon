@@ -134,7 +134,10 @@ test.describe("skipRoundCooldown feature flag", () => {
         };
       });
 
-      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: TEST_ROUND_TIMER_MS });
+      await applyDeterministicCooldown(page, {
+        cooldownMs: 0,
+        roundTimerMs: TEST_ROUND_TIMER_MS
+      });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);
