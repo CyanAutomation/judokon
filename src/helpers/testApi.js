@@ -398,7 +398,7 @@ const stateApi = {
           const snapshot =
             typeof inspectApi.getBattleSnapshot === "function"
               ? inspectApi.getBattleSnapshot()
-              : inspectApi.getDebugInfo?.()?.store ?? null;
+              : (inspectApi.getDebugInfo?.()?.store ?? null);
           const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
           if (typeof fromSnapshot === "number") {
             return fromSnapshot;

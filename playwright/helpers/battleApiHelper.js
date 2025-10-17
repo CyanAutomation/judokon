@@ -82,15 +82,13 @@ export async function completeRoundViaApi(page, roundInput = {}) {
         };
 
         if (resolution && typeof resolution.then === "function") {
-          resolution
-            .then(normalizeResolution)
-            .catch((error) => {
-              resolve({
-                ok: false,
-                reason: error?.message ?? "completeRound failed",
-                finalState: null
-              });
+          resolution.then(normalizeResolution).catch((error) => {
+            resolve({
+              ok: false,
+              reason: error?.message ?? "completeRound failed",
+              finalState: null
             });
+          });
         } else {
           normalizeResolution(resolution);
         }
@@ -123,4 +121,3 @@ export async function resolveBattleState(page) {
     }
   });
 }
-

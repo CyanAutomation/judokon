@@ -103,7 +103,10 @@ export async function waitForBrowseReady(page, { timeout = 10_000 } = {}) {
   );
 
   try {
-    return await page.evaluate((limit) => window.__TEST_API.init.waitForBrowseReady(limit), timeout);
+    return await page.evaluate(
+      (limit) => window.__TEST_API.init.waitForBrowseReady(limit),
+      timeout
+    );
   } catch (error) {
     throw new Error(
       `waitForBrowseReady failed: ${error instanceof Error ? error.message : String(error)}`

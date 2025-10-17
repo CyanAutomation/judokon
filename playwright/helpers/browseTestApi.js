@@ -4,10 +4,9 @@ const DEFAULT_TIMEOUT = 5000;
 
 async function waitForBrowseApi(page, timeout = DEFAULT_TIMEOUT) {
   try {
-    await page.waitForFunction(
-      () => typeof window !== "undefined" && !!window.__TEST_API?.browse,
-      { timeout }
-    );
+    await page.waitForFunction(() => typeof window !== "undefined" && !!window.__TEST_API?.browse, {
+      timeout
+    });
     return true;
   } catch (error) {
     return false;
