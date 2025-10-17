@@ -92,14 +92,6 @@ function resolveReadyResolvers() {
   }
 }
 
-function registerReadyResolver(resolve) {
-  const resolver = (snapshot) => {
-    resolve(snapshot);
-  };
-  state.readyResolvers.add(resolver);
-  return resolver;
-}
-
 /**
  * Provide a promise that resolves when the browse carousel has rendered.
  *
@@ -107,19 +99,48 @@ function registerReadyResolver(resolve) {
  * 1. If the carousel is already marked ready, resolve immediately with a snapshot.
  * 2. Otherwise register a resolver that will be triggered the next time the
  *    carousel context updates with a rendered container.
+ * 3. Optionally schedule a timeout fallback that resolves with the latest snapshot.
  *
+ * @param {{ timeout?: number }|number} [options] - Optional timeout configuration.
  * @returns {Promise<{ isReady: boolean, cardCount: number }>} Snapshot metadata
  * when the carousel is available.
  */
-function whenCarouselReady() {
+function whenCarouselReady(options) {
   ensureBrowseTestApi();
+  const rawTimeout =
+    typeof options === "number"
+      ? options
+      : typeof options === "object" && options !== null && typeof options.timeout === "number"
+        ? options.timeout
+        : undefined;
+  const waitTimeout =
+    typeof rawTimeout === "number" && Number.isFinite(rawTimeout) && rawTimeout >= 0
+      ? rawTimeout
+      : undefined;
+
   return new Promise((resolve) => {
-    const resolver = registerReadyResolver(resolve);
+    let timeoutId = null;
+    const resolver = (snapshot) => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      resolve(snapshot);
+    };
+
+    state.readyResolvers.add(resolver);
 
     if (state.isCarouselReady && state.container) {
       state.readyResolvers.delete(resolver);
-      resolve(createReadySnapshot());
+      resolver(createReadySnapshot());
       return;
+    }
+
+    if (typeof waitTimeout === "number" && waitTimeout > 0) {
+      timeoutId = setTimeout(() => {
+        state.readyResolvers.delete(resolver);
+        resolver(createReadySnapshot());
+      }, waitTimeout);
     }
   });
 }

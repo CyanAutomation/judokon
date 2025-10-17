@@ -1,62 +1,62 @@
 [
   {
-    "query": "What is the standard for ordering feature flags?",
+    "query": "PRD development standards feature flag ordering guidelines",
     "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md"
   },
   {
-    "query": "Which CSS token defines the button transition speed in JU-DO-KON?",
+    "query": "What is the CSS implementation for base.css button transition duration token CSS styling",
     "expected_source": "src/styles/base.css"
   },
   {
-    "query": "What is the data structure for a tooltip in tooltips.json?",
+    "query": "What is the data structure for tooltips.json tooltip entry JSON structure data fields",
     "expected_source": "src/data/tooltips.json"
   },
   {
-    "query": "Describe the classic battle game mode.",
+    "query": "What is the data structure for gameModes.json classic battle mode description data",
     "expected_source": "src/data/gameModes.json"
   },
   {
-    "query": "Where are judoka stats defined?",
+    "query": "What is the data structure for judoka.json stats definitions entries",
     "expected_source": "src/data/judoka.json"
   },
   {
-    "query": "What are the layout requirements for the main navigation bar?",
+    "query": "PRD navigation bar layout requirements main navigation",
     "expected_source": "design/productRequirementsDocuments/prdNavigationBar.md"
   },
   {
-    "query": "Where are the default navigation items defined?",
+    "query": "What is the data structure for navigationItems.js default navigation items configuration",
     "expected_source": "src/data/navigationItems.js"
   },
   {
-    "query": "What are the different phases of the game timer?",
+    "query": "What is the data structure for gameTimers.js game timer phase definitions data",
     "expected_source": "src/data/gameTimers.js"
   },
   {
-    "query": "What is the definition of the 'power' stat?",
+    "query": "What is the data structure for statNames.js power stat definition description",
     "expected_source": "src/data/statNames.js"
   },
   {
-    "query": "Where is the default sound setting stored in the JSON configuration?",
+    "query": "What is the data structure for settings.json default sound setting configuration value",
     "expected_source": "src/data/settings.json"
   },
   {
-    "query": "Which document provides the canonical schema for a judoka entry?",
+    "query": "PRD data schemas judoka entry canonical schema",
     "expected_source": "design/productRequirementsDocuments/prdDataSchemas.md"
   },
   {
-    "query": "Where is initGame defined and what UI controls does it wire up?",
+    "query": "What is the implementation for initGame function UI controls wiring initialization",
     "expected_source": "src/game.js"
   },
   {
-    "query": "What is the purpose of the battle engine facade?",
+    "query": "What is the implementation for battle engine facade purpose API architecture pattern",
     "expected_source": "src/helpers/battleEngineFacade.js"
   },
   {
-    "query": "Where are the accessibility requirements for the Classic Battle CLI documented?",
+    "query": "PRD battle CLI accessibility requirements",
     "expected_source": "design/productRequirementsDocuments/prdBattleCLI.md"
   },
   {
-    "query": "Find the component that renders the judoka card.",
+    "query": "What is the implementation for judoka card render component details",
     "expected_source": "src/components/Card.js"
   }
 ]

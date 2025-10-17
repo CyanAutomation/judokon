@@ -2,7 +2,7 @@ import { isNodeEnvironment } from "../env.js";
 
 const HYDRATION_GUIDANCE_MESSAGE =
   "Network unreachable while loading remote MiniLM model. " +
-  "Fix: hydrate a local model at src/models/minilm via `npm run rag:prepare:models -- --from-dir <path>` " +
+  "Fix: hydrate a local model at models/minilm via `npm run rag:prepare:models -- --from-dir <path>` " +
   "or run with RAG_STRICT_OFFLINE=1 to avoid CDN attempts. " +
   "Optionally enable degraded search with RAG_ALLOW_LEXICAL_FALLBACK=1.";
 
@@ -95,8 +95,11 @@ export async function getExtractor() {
         const { stat } = await import("fs/promises");
         const { createRequire } = await import("module");
         const { resolve, dirname, sep } = await import("path");
+        const { fileURLToPath } = await import("url");
         const nodeRequire = createRequire(import.meta.url);
-        const rootDir = resolve(dirname(new URL(import.meta.url).pathname), "../..");
+        const modulePath = fileURLToPath(import.meta.url);
+        const moduleDir = dirname(modulePath);
+        const rootDir = resolve(moduleDir, "..", "..", "..");
 
         env.allowLocalModels = true;
         env.localModelPath = rootDir;

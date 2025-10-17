@@ -5,6 +5,30 @@
 export const STAT_WAIT_TIMEOUT_MS = 5_000;
 
 /**
+ * Safely read the current battle state via the Test API, returning a structured result.
+ * @pseudocode
+ * EVALUATE within the browser context to read window.__TEST_API.state.getBattleState.
+ * RETURN an object containing the battle state when available.
+ * CAPTURE and surface any thrown error messages for clearer diagnostics.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @returns {Promise<{ok: boolean, state: string | null, reason: string | null}>}
+ */
+export async function getBattleStateWithErrorHandling(page) {
+  return await page.evaluate(() => {
+    try {
+      const state = window.__TEST_API?.state?.getBattleState?.() ?? null;
+      return { ok: state !== null, state, reason: state === null ? "Battle state unavailable" : null };
+    } catch (error) {
+      return {
+        ok: false,
+        state: null,
+        reason: error instanceof Error ? error.message : String(error ?? "unknown error")
+      };
+    }
+  });
+}
+
+/**
  * Wait for the Playwright Test API bootstrap to be available on the page.
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {object} options - Options object

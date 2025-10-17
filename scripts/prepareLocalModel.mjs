@@ -9,7 +9,7 @@
  *    - Copy files into destination, creating folders as needed.
  *    - Print success and exit.
  * 4. Else attempt to hydrate via @xenova/transformers (may download when network available):
- *    - Configure env.allowLocalModels, env.cacheDir (src/models), and env.localModelPath (destRoot).
+ *    - Configure env.allowLocalModels, env.cacheDir (models), and env.localModelPath (repo root).
  *    - Instantiate a quantized feature-extraction pipeline for Xenova/all-MiniLM-L6-v2.
  *    - If successful, copy/cache files into models/minilm.
  * 5. On failure, print actionable guidance for strict-offline environments.
@@ -20,8 +20,8 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
-// Destination aligns with getExtractor() which resolves two levels up from src/helpers/api → src/
-const destRoot = path.join(rootDir, "src");
+// Destination aligns with getExtractor() which resolves the repository root from src/helpers/api
+const destRoot = rootDir;
 
 const REQUIRED = [
   "config.json",

@@ -36,12 +36,15 @@ async function waitForBrowseApi(page, timeout = DEFAULT_TIMEOUT) {
  * @param {import("@playwright/test").Page} page - The Playwright page object
  * @param {string} method - The name of the API method to call
  * @param {Array} [args=[]] - Arguments to pass to the API method
- * @param {{ waitForApi?: boolean }} [options={}] - Configuration options
+ * @param {{ waitForApi?: boolean, timeout?: number }} [options={}] - Configuration options
  * @param {boolean} [options.waitForApi=true] - Whether to wait for API availability
+ * @param {number} [options.timeout] - Optional timeout override for API availability checks
  * @returns {Promise<unknown>} The result of the API call
  */
-async function callBrowseApi(page, method, args = [], { waitForApi = true } = {}) {
-  const available = waitForApi ? await waitForBrowseApi(page) : true;
+async function callBrowseApi(page, method, args = [], { waitForApi = true, timeout } = {}) {
+  const waitTimeout =
+    typeof timeout === "number" && Number.isFinite(timeout) && timeout >= 0 ? timeout : undefined;
+  const available = waitForApi ? await waitForBrowseApi(page, waitTimeout) : true;
   if (!available) {
     throw new Error("Browse test API is not available on window.__TEST_API.");
   }
@@ -71,14 +74,21 @@ async function callBrowseApi(page, method, args = [], { waitForApi = true } = {}
  * 3. Assert the readiness flag is true and return the snapshot for callers
  *
  * @param {import("@playwright/test").Page} page - The Playwright page object
+ * @param {{ timeout?: number }} [options] - Optional timeout override in milliseconds
  * @returns {Promise<object>} Readiness snapshot returned by the API
  */
-export async function ensureBrowseCarouselReady(page) {
-  const available = await waitForBrowseApi(page);
+export async function ensureBrowseCarouselReady(page, { timeout } = {}) {
+  const waitTimeout =
+    typeof timeout === "number" && Number.isFinite(timeout) && timeout >= 0 ? timeout : undefined;
+  const available = await waitForBrowseApi(page, waitTimeout);
   if (!available) {
     throw new Error("Browse test API did not register before readiness check.");
   }
-  const snapshot = await callBrowseApi(page, "whenCarouselReady");
+  const callArgs = waitTimeout !== undefined ? [{ timeout: waitTimeout }] : [];
+  const snapshot = await callBrowseApi(page, "whenCarouselReady", callArgs, {
+    waitForApi: false,
+    timeout: waitTimeout
+  });
   expect(snapshot?.isReady).toBe(true);
   return snapshot;
 }
@@ -101,22 +111,15 @@ export async function disableBrowseHoverAnimations(page) {
  * Reset browse test state if the API is available.
  *
  * @pseudocode
- * 1. Evaluate within the page context to access the browse test API
- * 2. Attempt to call its `reset` method when present
- * 3. Swallow known transient errors caused by navigation or teardown
+ * 1. Attempt to call the browse test API `reset` method without forcing availability waits
+ * 2. Swallow known transient errors caused by navigation or teardown
  *
  * @param {import("@playwright/test").Page} page - The Playwright page object
  * @returns {Promise<void>} Resolves after attempting reset, even if API is unavailable
  */
 export async function resetBrowseTestState(page) {
   try {
-    await page.evaluate(() => {
-      try {
-        window.__TEST_API?.browse?.reset?.();
-      } catch (error) {
-        throw error;
-      }
-    });
+    await callBrowseApi(page, "reset", [], { waitForApi: false });
   } catch (error) {
     if (
       error instanceof Error &&

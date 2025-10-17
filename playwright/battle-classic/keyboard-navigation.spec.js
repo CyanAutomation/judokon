@@ -20,11 +20,13 @@ test.describe("Classic Battle keyboard navigation", () => {
     // Wait for stat buttons to be enabled via battle state readiness
     const statButtons = page.getByTestId("stat-button");
     await waitForBattleState(page, "waitingForPlayerAction");
+    const statButtonCount = await statButtons.count();
     const firstStatButton = statButtons.first();
+    const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
     await expect(firstStatButton).toBeEnabled();
 
-    // Ensure the first button is focused before navigating via keyboard
-    await firstStatButton.focus();
+    // Ensure the first stat button naturally receives focus when ready
+    await expect(focusedStatButton).toHaveCount(1);
     await expect(firstStatButton).toBeFocused();
 
     // Tab to the second stat button
@@ -35,28 +37,35 @@ test.describe("Classic Battle keyboard navigation", () => {
     await page.keyboard.press("Tab");
     await expect(statButtons.nth(2)).toBeFocused();
 
+    const thirdStatButton = statButtons.nth(2);
+
     // Press Enter to select the third stat button
     await page.keyboard.press("Enter");
 
     // Verify that selection occurred (timer should start, buttons should be disabled)
     await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: \d+s)$/);
-    // Check that buttons have disabled class (they may not have disabled attribute)
-    await expect(statButtons.first()).toHaveClass(/disabled/);
+    // Check that all buttons receive the disabled class once the round resolves
+    const disabledStatButtons = page.locator('[data-testid="stat-button"].disabled');
+    await expect.poll(async () => disabledStatButtons.count()).toBe(statButtonCount);
+    await expect
+      .poll(async () => thirdStatButton.getAttribute("class"))
+      .toMatch(/disabled/);
   });
 
   test("should show visible focus styles on stat buttons", async ({ page }) => {
     // Wait for stat buttons to be enabled
-    const firstButton = page.getByTestId("stat-button").first();
+    const statButtons = page.getByTestId("stat-button");
+    const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
     await waitForBattleState(page, "waitingForPlayerAction");
-    await expect(firstButton).toBeEnabled();
+    await expect(statButtons.first()).toBeEnabled();
 
-    // Focus the first button
-    await firstButton.focus();
-    await expect(firstButton).toBeFocused();
+    // Verify the naturally focused button displays the expected outline
+    await expect(focusedStatButton).toHaveCount(1);
+    await expect(statButtons.first()).toBeFocused();
 
     // Check that focus styles are applied (outline should be visible)
-    await expect(firstButton).toHaveCSS("outline-style", "solid");
-    await expect(firstButton).toHaveCSS("outline-width", "2px");
+    await expect(focusedStatButton).toHaveCSS("outline-style", "solid");
+    await expect(focusedStatButton).toHaveCSS("outline-width", "2px");
   });
 
   test("should have proper ARIA labels on stat buttons", async ({ page }) => {
