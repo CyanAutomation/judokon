@@ -1,3 +1,5 @@
+import { debugLog } from "../debugLog.js";
+
 /**
  * onEnter handler for `matchStart` state.
  *
@@ -7,7 +9,7 @@
  * 1. Dispatch `ready` with `{ initial: true }` to advance.
  */
 export async function matchStartEnter(machine) {
-  console.log("[DEBUG] matchStartEnter() called");
+  debugLog("matchStartEnter() called");
   await machine.dispatch("ready", { initial: true });
 }
 
