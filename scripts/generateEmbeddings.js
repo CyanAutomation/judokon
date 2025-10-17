@@ -482,7 +482,8 @@ function createJsonProcessItem({
       overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
         ? allowlistFn(base, item)
         : overrideCandidate;
-    const textToEmbed = extracted === undefined || extracted === null ? undefined : String(extracted);
+    const textToEmbed =
+      extracted === undefined || extracted === null ? undefined : String(extracted);
     const chunkText = textToEmbed ? normalizeAndFilter(String(textToEmbed), seenTexts) : undefined;
     if (!chunkText) return;
     const intent = determineIntent(chunkText);
