@@ -16,12 +16,12 @@ async function createSeedModelDir() {
 }
 
 describe("prepareLocalModel", () => {
-  it("copies required files from --from-dir into src/models/minilm", async () => {
+  it("copies required files from --from-dir into models/minilm", async () => {
     const seed = await createSeedModelDir();
     const { prepareLocalModel } = await import("../../scripts/prepareLocalModel.mjs");
 
     // Clean any existing dest
-    await rm(path.join(process.cwd(), "src", "models", "minilm"), { recursive: true, force: true });
+    await rm(path.join(process.cwd(), "models", "minilm"), { recursive: true, force: true });
 
     const res = await prepareLocalModel({ fromDir: seed });
     expect(res.ok).toBe(true);
@@ -34,15 +34,15 @@ describe("prepareLocalModel", () => {
       path.join("onnx", "model_quantized.onnx")
     ];
     for (const rel of expected) {
-      const p = path.join(process.cwd(), "src", "models", "minilm", rel);
+      const p = path.join(process.cwd(), "models", "minilm", rel);
       const s = await stat(p);
       expect(s.size).toBeGreaterThan(0);
     }
   });
 
-  it("hydrates via transformers using src/models cache directory", async () => {
+  it("hydrates via transformers using models cache directory", async () => {
     vi.resetModules();
-    const destRoot = path.join(process.cwd(), "src");
+    const destRoot = process.cwd();
     const cacheDir = path.join(destRoot, "models");
     const destDir = path.join(cacheDir, "minilm");
     const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
@@ -96,9 +96,9 @@ describe("prepareLocalModel", () => {
     vi.resetModules();
   });
 
-  it("flattens cached transformers layout into src/models/minilm", async () => {
+  it("flattens cached transformers layout into models/minilm", async () => {
     vi.resetModules();
-    const destRoot = path.join(process.cwd(), "src");
+    const destRoot = process.cwd();
     const cacheDir = path.join(destRoot, "models");
     const destDir = path.join(cacheDir, "minilm");
     const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
@@ -155,7 +155,7 @@ describe("prepareLocalModel", () => {
 
   it("allows getExtractor to use local model path when present", async () => {
     // Arrange: ensure minimal config exists to take local path branch
-    const dest = path.join(process.cwd(), "src", "models", "minilm");
+    const dest = path.join(process.cwd(), "models", "minilm");
     await mkdir(path.join(dest, "onnx"), { recursive: true });
     await writeFile(path.join(dest, "config.json"), "{}", "utf8");
 
