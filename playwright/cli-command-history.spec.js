@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { waitForTestApi, waitForBattleState } from "./helpers/battleStateHelper.js";
+import {
+  waitForTestApi,
+  waitForBattleState,
+  getBattleStateWithErrorHandling
+} from "./helpers/battleStateHelper.js";
 import { completeRoundViaApi, dispatchBattleEvent } from "./helpers/battleApiHelper.js";
 
 test.describe("CLI Command History", () => {
@@ -35,18 +39,7 @@ test.describe("CLI Command History", () => {
       battleReady.reason ?? "Test API waitForBattleReady should report battle readiness"
     ).toBe(true);
 
-    const currentStateResult = await page.evaluate(() => {
-      try {
-        const state = window.__TEST_API?.state?.getBattleState?.() ?? null;
-        return { ok: state !== null, state, reason: state === null ? "Battle state unavailable" : null };
-      } catch (error) {
-        return {
-          ok: false,
-          state: null,
-          reason: error instanceof Error ? error.message : String(error ?? "unknown error")
-        };
-      }
-    });
+    const currentStateResult = await getBattleStateWithErrorHandling(page);
 
     expect(
       currentStateResult.ok,
@@ -66,18 +59,7 @@ test.describe("CLI Command History", () => {
       await waitForBattleState(page, "cooldown", { timeout: 10_000, allowFallback: false });
     }
 
-    const afterStartStateResult = await page.evaluate(() => {
-      try {
-        const state = window.__TEST_API?.state?.getBattleState?.() ?? null;
-        return { ok: state !== null, state, reason: state === null ? "Battle state unavailable" : null };
-      } catch (error) {
-        return {
-          ok: false,
-          state: null,
-          reason: error instanceof Error ? error.message : String(error ?? "unknown error")
-        };
-      }
-    });
+    const afterStartStateResult = await getBattleStateWithErrorHandling(page);
 
     expect(
       afterStartStateResult.ok,
@@ -112,7 +94,7 @@ test.describe("CLI Command History", () => {
       readyForNextRound.reason ?? "Failed to dispatch ready from cooldown"
     ).toBe(true);
 
-    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000, allowFallback: false });
 
     // Select stat '2'
     await page.keyboard.press("2");
