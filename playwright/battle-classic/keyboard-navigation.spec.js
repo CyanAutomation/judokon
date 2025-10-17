@@ -27,16 +27,15 @@ test.describe("Classic Battle keyboard navigation", () => {
 
     // Ensure the first stat button naturally receives focus when ready
     await expect(focusedStatButton).toHaveCount(1);
+    await expect(focusedStatButton).toBeFocused();
     await expect(firstStatButton).toBeFocused();
 
     // Tab to the second stat button
     await page.keyboard.press("Tab");
-    await expect(focusedStatButton).toHaveCount(1);
     await expect(statButtons.nth(1)).toBeFocused();
 
     // Tab to the third stat button
     await page.keyboard.press("Tab");
-    await expect(focusedStatButton).toHaveCount(1);
     await expect(statButtons.nth(2)).toBeFocused();
 
     const thirdStatButton = statButtons.nth(2);
@@ -62,8 +61,8 @@ test.describe("Classic Battle keyboard navigation", () => {
     await expect(statButtons.first()).toBeEnabled();
 
     // Verify the naturally focused button displays the expected outline
-    await expect(focusedStatButton).toHaveCount(1);
     await expect(statButtons.first()).toBeFocused();
+    await expect(focusedStatButton).toHaveCount(1);
 
     // Check that focus styles are applied (outline should be visible)
     await expect(focusedStatButton).toHaveCSS("outline-style", "solid");
