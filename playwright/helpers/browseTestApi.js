@@ -20,7 +20,7 @@ async function waitForBrowseApi(page, timeout = DEFAULT_TIMEOUT) {
       timeout
     });
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

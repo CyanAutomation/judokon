@@ -96,7 +96,6 @@ export async function waitForBattleReady(page) {
  * @returns {Promise<{ isReady: boolean, cardCount: number }>}
  */
 export async function waitForBrowseReady(page, { timeout = 10_000 } = {}) {
-
   // Browse readiness waits on image-heavy carousel hydration, so we allow extra headroom vs other waits.
   await page.waitForFunction(
     () =>
@@ -125,13 +124,19 @@ export async function waitForBrowseReady(page, { timeout = 10_000 } = {}) {
 
       throw new Error("Browse readiness API unavailable");
     }, timeout);
-  try {
-    // Browse readiness waits on image-heavy carousel hydration, so we allow extra headroom vs other waits.
-    return await ensureBrowseCarouselReady(page, { timeout });
-  } catch (error) {
-    throw new Error(
-      `waitForBrowseReady failed: ${error instanceof Error ? error.message : String(error)}`
-    );
+  } catch (primaryError) {
+    try {
+      // Browse readiness waits on image-heavy carousel hydration, so we allow extra headroom vs other waits.
+      return await ensureBrowseCarouselReady(page, { timeout });
+    } catch (error) {
+      const primaryMessage =
+        primaryError instanceof Error ? primaryError.message : String(primaryError);
+      throw new Error(
+        `waitForBrowseReady failed: ${
+          error instanceof Error ? error.message : String(error)
+        } (primary attempt: ${primaryMessage})`
+      );
+    }
   }
 }
 

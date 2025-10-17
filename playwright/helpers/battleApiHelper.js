@@ -115,7 +115,7 @@ export async function resolveBattleState(page) {
   return await page.evaluate(() => {
     try {
       return window.__TEST_API?.state?.getBattleState?.() ?? null;
-    } catch (error) {
+    } catch {
       // Failed to resolve battle state - error handled by returning null
       return null;
     }
