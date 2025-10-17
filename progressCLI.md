@@ -65,6 +65,13 @@ This document should be updated to reflect its status as a post-implementation r
   - `#cli-controls-hint` now highlights keys with `.cli-controls-hint__item` chip styling, adapts to mobile layouts, and includes a screen-reader only summary. The hint toggles using the `hidden` attribute for cleaner accessibility semantics and dims shortcuts automatically when the related feature flags are disabled.
   - Ran targeted tests: `npx vitest run tests/cli/statDisplay.spec.js` and `npx playwright test playwright/cli-layout-assessment.spec.js`. Both completed successfully, confirming no CLI layout regressions.
 
+### Task: Verbose Log Styling
+
+- **Action Taken:** Restyled the verbose transcript panel with a dedicated container, gradient scroll cues, and keycap-inspired chips. Scroll listeners now update `data-scroll-top`/`data-scroll-bottom` so the UI only shows fades when content overflows.
+- **Outcome:**
+  - `#cli-verbose-section` received a tonal background, inset border, and live scroll indicators, while `#cli-verbose-log` now stabilizes scrollbar guttering and uses a monospace-friendly palette for multi-line output.
+  - Ran targeted tests: `npx vitest run tests/cli/commandHistory.test.js` and `npx playwright test playwright/cli-verbose-toggle.spec.js`. Both passed with zero regressions.
+
 # CLI Layout and Styling Improvement Opportunities
 
 **Verification Status:** All items in this report have been verified as accurate. The proposed solutions are sound and recommended for implementation. This document has been updated to reflect this verification and to include additional opportunities for improvement.
@@ -177,24 +184,48 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 **Solution**: Add scroll indicators and better styling:
 
 ```css
+#cli-verbose-section {
+  position: relative;
+  padding: 16px;
+  border: 1px solid rgba(60, 255, 155, 0.2);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(6, 18, 12, 0.95) 0%, rgba(4, 10, 7, 0.92) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(60, 255, 155, 0.06),
+    0 4px 20px rgba(3, 15, 10, 0.55);
+  overflow: hidden;
+}
+#cli-verbose-section::before,
+#cli-verbose-section::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 18px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+#cli-verbose-section[data-scrollable="true"][data-scroll-top="false"]::before {
+  opacity: 1;
+}
+#cli-verbose-section[data-scrollable="true"][data-scroll-bottom="false"]::after {
+  opacity: 1;
+}
 #cli-verbose-log {
   max-height: 35vh;
   overflow-y: auto;
+  padding: 12px 16px;
+  margin: 0;
+  border-radius: 6px;
+  background: rgba(9, 24, 16, 0.9);
+  color: #d2f1dc;
+  font-size: 13px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
   scrollbar-width: thin;
-  scrollbar-color: #3cff9b #1f1f1f;
-}
-
-#cli-verbose-log::-webkit-scrollbar {
-  width: 6px;
-}
-
-#cli-verbose-log::-webkit-scrollbar-track {
-  background: #1f1f1f;
-}
-
-#cli-verbose-log::-webkit-scrollbar-thumb {
-  background: #3cff9b;
-  border-radius: 3px;
+  scrollbar-gutter: stable both-edges;
+  scrollbar-color: #3cff9b rgba(18, 36, 28, 0.6);
 }
 ```
 

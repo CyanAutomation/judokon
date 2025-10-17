@@ -4,6 +4,8 @@ import * as engineFacade from "../../helpers/battleEngineFacade.js";
 // Dynamic import kept for fallback scenarios only
 let sharedScoreboardHelpers = null;
 let sharedScoreboardReady = Promise.resolve(null);
+let verboseScrollListenerAttached = false;
+let verboseResizeListenerAttached = false;
 
 const assignSharedScoreboardHelpers = (module) => {
   sharedScoreboardHelpers = {
@@ -203,5 +205,53 @@ export function updateScoreLine() {
  */
 export function clearVerboseLog() {
   const el = byId("cli-verbose-log");
-  if (el) el.textContent = "";
+  if (!el) return;
+  el.textContent = "";
+  refreshVerboseScrollIndicators();
+}
+
+function getVerboseElements() {
+  return {
+    section: byId("cli-verbose-section"),
+    log: byId("cli-verbose-log")
+  };
+}
+
+export function refreshVerboseScrollIndicators() {
+  const { section, log } = getVerboseElements();
+  if (!section || !log) return;
+
+  const scrollable = log.scrollHeight > log.clientHeight + 1;
+  if (!scrollable) {
+    delete section.dataset.scrollable;
+    delete section.dataset.scrollTop;
+    delete section.dataset.scrollBottom;
+    return;
+  }
+
+  section.dataset.scrollable = "true";
+  const atTop = log.scrollTop <= 1;
+  const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight <= 1;
+  section.dataset.scrollTop = atTop ? "true" : "false";
+  section.dataset.scrollBottom = atBottom ? "true" : "false";
+}
+
+export function ensureVerboseScrollHandling() {
+  const { log } = getVerboseElements();
+  if (!log) return;
+  if (!verboseScrollListenerAttached) {
+    log.addEventListener(
+      "scroll",
+      () => {
+        refreshVerboseScrollIndicators();
+      },
+      { passive: true }
+    );
+    verboseScrollListenerAttached = true;
+  }
+  if (!verboseResizeListenerAttached && typeof window !== "undefined") {
+    window.addEventListener("resize", refreshVerboseScrollIndicators, { passive: true });
+    verboseResizeListenerAttached = true;
+  }
+  refreshVerboseScrollIndicators();
 }

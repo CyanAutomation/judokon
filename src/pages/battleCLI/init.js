@@ -67,7 +67,9 @@ import {
   updateRoundHeader,
   setRoundMessage,
   updateScoreLine,
-  clearVerboseLog
+  clearVerboseLog,
+  ensureVerboseScrollHandling,
+  refreshVerboseScrollIndicators
 } from "./dom.js";
 import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
@@ -239,6 +241,7 @@ export function ensureCliDomForTest({ reset = false } = {}) {
   body.className = "";
   normalizeShortcutCopy();
   updateControlsHint();
+  ensureVerboseScrollHandling();
   try {
     const keys = Object.keys(body.dataset || {});
     for (const key of keys) {
@@ -302,6 +305,7 @@ function ensureVerboseSectionForTest() {
       section.hidden = false;
     }
   } catch {}
+  ensureVerboseScrollHandling();
 }
 
 /**
@@ -2418,6 +2422,8 @@ function handleRoundResolved(e) {
         const round = Number(byId("cli-root")?.dataset.round || 0);
         const entry = `Round ${round}: ${result.message} (${display} – You: ${playerVal}, Opponent: ${opponentVal}). Scores: You ${result.playerScore}, Opponent ${result.opponentScore}\n`;
         verboseLog.textContent += entry;
+        ensureVerboseScrollHandling();
+        refreshVerboseScrollIndicators();
       }
     }
   }
@@ -2584,6 +2590,8 @@ function logStateChange(from, to) {
     while (existing.length > 50) existing.shift();
     pre.textContent = existing.join("\n");
     pre.scrollTop = pre.scrollHeight;
+    ensureVerboseScrollHandling();
+    refreshVerboseScrollIndicators();
   } catch {}
 }
 
@@ -2695,6 +2703,8 @@ export async function setupFlags() {
         }
       } catch {}
     }
+    ensureVerboseScrollHandling();
+    refreshVerboseScrollIndicators();
   };
   const parseHeaderTarget = (value) => {
     if (value === undefined) {
@@ -2757,6 +2767,8 @@ export async function setupFlags() {
   try {
     await initFeatureFlags();
   } catch {}
+  ensureVerboseScrollHandling();
+  refreshVerboseScrollIndicators();
   try {
     verboseEnabled = !!isEnabled("cliVerbose");
   } catch {}
@@ -2826,6 +2838,7 @@ export async function setupFlags() {
         if (immersiveCheckbox) immersiveCheckbox.checked = immersiveEnabled;
       } catch {}
     }
+    refreshVerboseScrollIndicators();
   });
   return { toggleVerbose };
 }
@@ -3021,6 +3034,7 @@ export async function init() {
   store = createBattleStore();
   normalizeShortcutCopy();
   updateControlsHint();
+  ensureVerboseScrollHandling();
   // Enable outcome confirmation pause for better UX
   store.waitForOutcomeConfirmation = true;
   try {
