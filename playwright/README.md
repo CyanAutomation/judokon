@@ -10,9 +10,13 @@ Unless overridden, Playwright tests run at a 1920×1080 desktop viewport.
 ## Debugging and logs
 
 - Browser contexts created by the shared [`commonSetup`](./fixtures/commonSetup.js) fixture expose a `window.__PLAYWRIGHT_TEST__`
-  flag so app code can detect when it is running inside Playwright.
-- Console output is muted by default when this flag is present. Set `SHOW_TEST_LOGS=1` before running Playwright to opt in to
-  verbose logging:
+  flag so app code can detect when it is running inside Playwright. When the
+  `SHOW_TEST_LOGS` environment variable is truthy, the fixture mirrors the flag
+  into the browser context so client-side code can see it too.
+- Console output is muted by default when this flag is present, suppressing
+  `console.log`, `console.info`, and `console.debug`. Warnings and errors are
+  still surfaced to keep actionable failures visible.
+- Set `SHOW_TEST_LOGS=1` before running Playwright to opt in to verbose logging:
 
   ```bash
   SHOW_TEST_LOGS=1 npx playwright test
