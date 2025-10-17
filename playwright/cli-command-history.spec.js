@@ -25,7 +25,10 @@ test.describe("CLI Command History", () => {
 
       try {
         const ready = await waitForBattleReady.call(initApi, timeout);
-        return { ok: ready === true, reason: ready === true ? null : "waitForBattleReady returned false" };
+        return {
+          ok: ready === true,
+          reason: ready === true ? null : "waitForBattleReady returned false"
+        };
       } catch (error) {
         return {
           ok: false,
@@ -75,7 +78,10 @@ test.describe("CLI Command History", () => {
       ).toBe(true);
     }
 
-    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000, allowFallback: false });
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      timeout: 10_000,
+      allowFallback: false
+    });
 
     // Select stat '1'
     await page.keyboard.press("1");
@@ -94,7 +100,10 @@ test.describe("CLI Command History", () => {
       readyForNextRound.reason ?? "Failed to dispatch ready from cooldown"
     ).toBe(true);
 
-    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000, allowFallback: false });
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      timeout: 10_000,
+      allowFallback: false
+    });
 
     // Select stat '2'
     await page.keyboard.press("2");

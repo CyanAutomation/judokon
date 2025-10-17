@@ -17,7 +17,11 @@ export async function getBattleStateWithErrorHandling(page) {
   return await page.evaluate(() => {
     try {
       const state = window.__TEST_API?.state?.getBattleState?.() ?? null;
-      return { ok: state !== null, state, reason: state === null ? "Battle state unavailable" : null };
+      return {
+        ok: state !== null,
+        state,
+        reason: state === null ? "Battle state unavailable" : null
+      };
     } catch (error) {
       return {
         ok: false,
