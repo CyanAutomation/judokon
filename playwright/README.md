@@ -7,6 +7,17 @@ Unless overridden, Playwright tests run at a 1920×1080 desktop viewport.
 | `homepage.spec.js` | Verifies footer navigation link visibility, ordering, and other interactive elements. |
 | `homepage-layout.spec.js` | Focuses on responsive layout of the homepage grid and footer without testing navigation behavior. |
 
+## Debugging and logs
+
+- Browser contexts created by the shared [`commonSetup`](./fixtures/commonSetup.js) fixture expose a `window.__PLAYWRIGHT_TEST__`
+  flag so app code can detect when it is running inside Playwright.
+- Console output is muted by default when this flag is present. Set `SHOW_TEST_LOGS=1` before running Playwright to opt in to
+  verbose logging:
+
+  ```bash
+  SHOW_TEST_LOGS=1 npx playwright test
+  ```
+
 # Battle tests
 
 | Spec file | Responsibilities |

@@ -6,10 +6,12 @@
 const isVitest = typeof process !== "undefined" && !!process.env && !!process.env.VITEST;
 const showTestLogs =
   typeof process !== "undefined" && !!process.env && !!process.env.SHOW_TEST_LOGS;
+const isPlaywright =
+  typeof globalThis !== "undefined" && !!globalThis.__PLAYWRIGHT_TEST__;
 
 function shouldLog() {
-  // In Vitest worker processes default to silence unless SHOW_TEST_LOGS is truthy.
-  if (isVitest && !showTestLogs) return false;
+  // In test runners default to silence unless SHOW_TEST_LOGS is truthy.
+  if ((isVitest || isPlaywright) && !showTestLogs) return false;
   return true;
 }
 
