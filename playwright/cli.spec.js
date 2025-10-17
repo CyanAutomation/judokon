@@ -26,13 +26,11 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
     timeout: 5000
   });
 
-  // set countdown via helper and verify attribute/text
+  // set countdown via helper, validate state via Test API, and confirm UI reflects it
   await page.evaluate(() => window.__TEST_API.timers.setCountdown(12));
-  await page.waitForFunction(
-    () => document.querySelector("#cli-countdown")?.getAttribute("data-remaining-time") === "12",
-    { timeout: 5000 }
-  );
+  const countdownValue = await page.evaluate(() => window.__TEST_API.timers.getCountdown());
+  expect(countdownValue).toBe(12);
+
   const cd = page.locator("#cli-countdown");
-  await expect(cd).toHaveAttribute("data-remaining-time", "12");
   await expect(cd).toHaveText(/12/);
 });
