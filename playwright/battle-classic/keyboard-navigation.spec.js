@@ -47,9 +47,7 @@ test.describe("Classic Battle keyboard navigation", () => {
     // Check that all buttons receive the disabled class once the round resolves
     const disabledStatButtons = page.locator('[data-testid="stat-button"].disabled');
     await expect.poll(async () => disabledStatButtons.count()).toBe(statButtonCount);
-    await expect
-      .poll(async () => thirdStatButton.getAttribute("class"))
-      .toMatch(/disabled/);
+    await expect.poll(async () => thirdStatButton.getAttribute("class")).toMatch(/disabled/);
   });
 
   test("should show visible focus styles on stat buttons", async ({ page }) => {
