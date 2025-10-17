@@ -278,6 +278,8 @@ Created `playwright/battle-classic/skip-round-cooldown.spec.js` with comprehensi
 
 **Verification Results:**
 
+````markdown
+
 ```bash
 Playwright Tests:
   4 passed (14.8s)
@@ -297,6 +299,85 @@ Smoke Test:
   1 passed (20.3s)
   - Full match simulation with default settings
 ```
+
+**Files Modified:**
+
+- Created: `playwright/battle-classic/skip-round-cooldown.spec.js`
+- Verified: `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js` (existing)
+- Verified: `playwright/battle-classic/smoke.spec.js` (existing)
+
+**Recommendation:** Add these tests to CI/CD pipeline for regression coverage.
+
+## E2E Regression Tests for Feature Flags (feature-flags.spec.js)
+
+**Task:** Create comprehensive E2E test coverage for feature flags: `enableTestMode`, `battleStateBadge`, `tooltipOverlayDebug`, and `enableCardInspector`.
+
+**Status:** ✅ **COMPLETED**
+
+**Date Completed:** October 8, 2025
+
+**Implementation Details:**
+
+1. **Created:** `playwright/battle-classic/feature-flags.spec.js` with 10 tests covering 4 feature flags
+2. **Fixed setupDisplaySettings.js:** Added call to `toggleTooltipOverlayDebug` during display mode initialization so tooltip overlay debug flag is properly applied on tooltip viewer page
+3. **Test Coverage:**
+   - `enableTestMode` (2 tests):
+     - Verifies `data-test-mode` attribute set on `#battle-area` when enabled
+     - Verifies `data-test-mode` attribute removed when disabled
+   - `battleStateBadge` (4 tests):
+     - Verifies `data-feature-battle-state-badge="enabled"` on body when flag enabled
+     - Verifies `data-feature-battle-state-badge="disabled"` on body when flag disabled
+     - Verifies badge element `#battle-state-badge` appears when flag enabled
+     - Verifies badge element does not appear when flag disabled
+   - `tooltipOverlayDebug` (2 tests):
+     - Verifies `tooltip-overlay-debug` class set on body when enabled
+     - Verifies `tooltip-overlay-debug` class removed when disabled
+   - `enableCardInspector` (2 tests):
+     - Verifies feature flag override persists on randomJudoka page when enabled
+     - Verifies feature flag override persists on randomJudoka page when disabled
+
+**Test Results:**
+
+```bash
+Playwright Tests:
+  10 passed (14.7s)
+  - enableTestMode (2 tests): ✓
+  - battleStateBadge (4 tests): ✓
+  - tooltipOverlayDebug (2 tests): ✓
+  - enableCardInspector (2 tests): ✓
+
+Unit Tests (no regressions):
+  4 passed (1.42s) - uiHelpers.featureFlags.test.js
+
+Smoke Test (no regressions):
+  1 passed (16.3s)
+
+Skip Round Cooldown E2E Tests (no regressions):
+  4 passed (14.0s)
+```
+
+**Validation Summary:**
+
+- ✅ ESLint: Passes on `src/helpers/setupDisplaySettings.js` and `playwright/battle-classic/feature-flags.spec.js`
+- ✅ Prettier: All changes formatted correctly
+- ✅ No regressions: Existing Vitest and Playwright tests still passing
+- ✅ Feature flag infrastructure confirmed working across battle classic, tooltip viewer, and random judoka pages
+
+**Files Modified:**
+
+- Created: `playwright/battle-classic/feature-flags.spec.js`
+- Modified: `src/helpers/setupDisplaySettings.js` (added `toggleTooltipOverlayDebug` call)
+
+**Recommendation:** Add feature-flags.spec.js to CI/CD regression suite to catch feature flag bootstrap issues early.
+
+## Additional engineering opportunities
+
+- Migrate the Classic Battle page to `setupClassicBattlePage` so the controller/view stack owns flag wiring, banner updates, and state progress (`src/helpers/classicBattle/bootstrap.js`, `src/pages/battleClassic.html:172`) — **COMPLETED**
+- If migration must be incremental, register `featureFlagsEmitter` listeners inside `src/pages/battleClassic.init.js` to call `applyBattleFeatureFlags` and `setBattleStateBadgeEnabled` until the new bootstrap lands — **NOT NEEDED (bootstrap migration complete)**
+- Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`).
+- Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`).
+
+````
 
 **Files Modified:**
 

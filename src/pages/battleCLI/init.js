@@ -1528,24 +1528,19 @@ function renderHelpMapping(stats) {
  * @returns {void}
  */
 function normalizeShortcutCopy() {
-  const EN_DASH_TOKEN = "[1–5]";
-  const TOKEN_BOUNDARY = /(^|[\s|·])\[1-5](?=($|[\s|·]))/g;
-
-  const replaceRangeToken = (text) =>
-    text.replace(TOKEN_BOUNDARY, (match, prefix = "") => `${prefix}${EN_DASH_TOKEN}`);
-
   const help = byId("cli-help");
   if (help) {
     const firstItem = help.querySelector("li");
-    if (firstItem?.textContent?.includes("[1-5]")) {
-      firstItem.textContent = replaceRangeToken(firstItem.textContent);
+    if (firstItem) {
+      firstItem.textContent = "[1–5] Select Stat";
     }
   }
 
-  const controlsHint = byId("cli-controls-hint");
-  if (controlsHint?.textContent?.includes("[1-5]")) {
-    controlsHint.textContent = replaceRangeToken(controlsHint.textContent);
+  const rangeKey = byId("cli-controls-key-range");
+  if (rangeKey) {
+    rangeKey.textContent = "1–5";
   }
+}
 }
 
 /**
@@ -2837,9 +2832,11 @@ function handleBattleStateChange({ from, to }) {
   const hint = byId("cli-controls-hint");
   if (!hint) return;
   if (to === "waitingForPlayerAction") {
-    hint.style.display = "block";
+    hint.hidden = false;
+    hint.setAttribute("aria-hidden", "false");
   } else if (from === "waitingForPlayerAction") {
-    hint.style.display = "none";
+    hint.hidden = true;
+    hint.setAttribute("aria-hidden", "true");
   }
 }
 

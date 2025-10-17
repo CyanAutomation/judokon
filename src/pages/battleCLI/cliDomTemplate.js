@@ -119,7 +119,7 @@ export const CLI_DOM_TEMPLATE = `
         </div>
         <div id="cli-shortcuts-body">
           <ul id="cli-help">
-            <li>[1-5] Select Stat</li>
+            <li>[1–5] Select Stat</li>
             <li>[Enter] or [Space] Next</li>
             <li>[Q] Quit</li>
             <li>[H] Toggle Help</li>
@@ -140,7 +140,38 @@ export const CLI_DOM_TEMPLATE = `
       </div>
     </main>
     <footer class="cli-footer" role="contentinfo">
-      <div id="cli-controls-hint" aria-live="polite" style="display: none">[1-5] Stats | [Enter/Space] Next | [H] Help | [Q] Quit</div>
+      <div
+        id="cli-controls-hint"
+        class="cli-controls-hint"
+        role="note"
+        aria-live="polite"
+        aria-hidden="true"
+        aria-describedby="cli-controls-hint-announce"
+        hidden
+      >
+        <span class="cli-controls-hint__title" aria-hidden="true">Shortcuts</span>
+        <div class="cli-controls-hint__items" aria-hidden="true">
+          <span class="cli-controls-hint__item">
+            <span class="cli-controls-hint__key" id="cli-controls-key-range">1–5</span>
+            <span class="cli-controls-hint__action">Select stat</span>
+          </span>
+          <span class="cli-controls-hint__item">
+            <span class="cli-controls-hint__key">Enter/Space</span>
+            <span class="cli-controls-hint__action">Continue</span>
+          </span>
+          <span class="cli-controls-hint__item">
+            <span class="cli-controls-hint__key">H</span>
+            <span class="cli-controls-hint__action">Toggle help</span>
+          </span>
+          <span class="cli-controls-hint__item">
+            <span class="cli-controls-hint__key">Q</span>
+            <span class="cli-controls-hint__action">Quit match</span>
+          </span>
+        </div>
+        <span id="cli-controls-hint-announce" class="sr-only">
+          Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit.
+        </span>
+      </div>
       <div id="snackbar-container" role="status" aria-live="polite"></div>
     </footer>
     <div id="player-card" style="display: none"></div>
