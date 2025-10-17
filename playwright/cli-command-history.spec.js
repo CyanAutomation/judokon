@@ -112,14 +112,20 @@ test.describe("CLI Command History", () => {
     // Test history navigation
     await page.keyboard.press("Control+ArrowUp");
     await expect(page.locator("#snackbar-container .snackbar")).toHaveText("History: speed");
+    await expect(page.locator("#cli-stats")).toHaveAttribute("data-history-preview", "speed");
+    await expect(page.locator(".cli-stat.history-preview")).toHaveAttribute("data-stat", "speed");
 
     await page.keyboard.press("Control+ArrowUp");
     await expect(page.locator("#snackbar-container .snackbar")).toHaveText("History: power");
+    await expect(page.locator("#cli-stats")).toHaveAttribute("data-history-preview", "power");
+    await expect(page.locator(".cli-stat.history-preview")).toHaveAttribute("data-stat", "power");
 
     await page.keyboard.press("Control+ArrowDown");
     await expect(page.locator("#snackbar-container .snackbar")).toHaveText("History: speed");
+    await expect(page.locator(".cli-stat.history-preview")).toHaveAttribute("data-stat", "speed");
 
     await page.keyboard.press("Control+ArrowDown");
     await expect(page.locator("#snackbar-container .snackbar")).toHaveText("");
+    await expect(page.locator(".cli-stat.history-preview")).toHaveCount(0);
   });
 });

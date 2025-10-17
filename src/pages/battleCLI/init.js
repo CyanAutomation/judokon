@@ -177,6 +177,7 @@ let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
 let commandHistory = [];
 let historyIndex = -1;
+let historyAnchorStat = null;
 // state managed in state.js
 
 onEsc(resolveEscapeHandled);
@@ -1167,6 +1168,7 @@ export function selectStat(stat) {
   if (!stat) return;
   // Ignore re-entrant calls while a selection is being applied
   if (selectionApplying || state.roundResolving) return;
+  clearHistoryPreview({ restoreAnchor: false });
   selectionApplying = true;
   stopSelectionCountdown();
   clearStoreTimer(store, "statTimeoutId");
@@ -1382,6 +1384,7 @@ function setActiveStatRow(row, { focus = true } = {}) {
  * @returns {boolean} Whether the key was handled.
  */
 export function handleStatListArrowKey(key) {
+  clearHistoryPreview({ restoreAnchor: false });
   const list = byId("cli-stats");
   const rows = list ? Array.from(list.querySelectorAll(".cli-stat")) : [];
   if (!list || rows.length === 0) return false;
@@ -1583,6 +1586,67 @@ function ensureStatClickBinding(list) {
     list.addEventListener("click", onClick);
     boundTargets.add(list);
   }
+}
+
+function getStatRowByKey(stat) {
+  if (!stat) return null;
+  const list = byId("cli-stats");
+  if (!list) return null;
+  return list.querySelector(`.cli-stat[data-stat="${stat}"]`);
+}
+
+function captureHistoryAnchorStat() {
+  const list = byId("cli-stats");
+  if (!list) return null;
+  const selected = list.querySelector(".cli-stat.selected[data-stat]");
+  if (selected?.dataset?.stat) return selected.dataset.stat;
+  const activeId = list.getAttribute("aria-activedescendant");
+  if (activeId) {
+    const active = byId(activeId);
+    if (active?.dataset?.stat) return active.dataset.stat;
+  }
+  const focused = getActiveElement()?.closest?.(".cli-stat");
+  return focused?.dataset?.stat ?? null;
+}
+
+function applyHistoryPreview(stat) {
+  const list = byId("cli-stats");
+  if (!list) return;
+  const previous = list.querySelector(".history-preview");
+  if (previous) {
+    previous.classList.remove("history-preview");
+  }
+  if (!stat) {
+    delete list.dataset.historyPreview;
+    return;
+  }
+  const row = getStatRowByKey(stat);
+  if (!row) {
+    delete list.dataset.historyPreview;
+    return;
+  }
+  list.dataset.historyPreview = stat;
+  row.classList.add("history-preview");
+  setActiveStatRow(row);
+}
+
+function clearHistoryPreview({ restoreAnchor = true } = {}) {
+  const list = byId("cli-stats");
+  if (list) {
+    const previous = list.querySelector(".history-preview");
+    if (previous) {
+      previous.classList.remove("history-preview");
+    }
+    delete list.dataset.historyPreview;
+  }
+  historyIndex = commandHistory.length;
+  if (restoreAnchor && historyAnchorStat) {
+    const anchorRow = getStatRowByKey(historyAnchorStat);
+    if (anchorRow) {
+      setActiveStatRow(anchorRow);
+    }
+  }
+  historyAnchorStat = null;
 }
 
 /**
@@ -2065,19 +2129,32 @@ export function handleCooldownKey(key) {
  * return false
  */
 export function handleCommandHistory(key) {
+  if (!commandHistory.length) return false;
+  if (historyIndex < 0) historyIndex = commandHistory.length;
   if (key === "ArrowUp") {
+    if (historyIndex === commandHistory.length) {
+      historyAnchorStat = captureHistoryAnchorStat();
+    }
     if (historyIndex > 0) {
       historyIndex--;
-      showBottomLine(`History: ${commandHistory[historyIndex]}`);
+      const stat = commandHistory[historyIndex];
+      applyHistoryPreview(stat);
+      showBottomLine(`History: ${stat}`);
       return true;
     }
-  } else if (key === "ArrowDown") {
+    return false;
+  }
+  if (key === "ArrowDown") {
     if (historyIndex < commandHistory.length - 1) {
       historyIndex++;
-      showBottomLine(`History: ${commandHistory[historyIndex]}`);
+      const stat = commandHistory[historyIndex];
+      applyHistoryPreview(stat);
+      showBottomLine(`History: ${stat}`);
       return true;
-    } else if (historyIndex === commandHistory.length - 1) {
+    }
+    if (historyIndex === commandHistory.length - 1) {
       historyIndex++;
+      clearHistoryPreview();
       showBottomLine("");
       return true;
     }

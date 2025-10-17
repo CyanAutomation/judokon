@@ -51,6 +51,13 @@ This document should be updated to reflect its status as a post-implementation r
   - The grid now scales column widths between 180px–220px by default, expanding up to 260px on large viewports without introducing layout jumps.
   - Ran targeted tests: `npx vitest run tests/cli/statDisplay.spec.js` and `npx playwright test playwright/cli-layout-assessment.spec.js`. Both suites passed, confirming no regressions in CLI stat rendering or layout.
 
+### Task: Command History Preview
+
+- **Action Taken:** Enhanced command history navigation so cycling through previous picks highlights the matching stat tile, tracks the original active row, and restores focus when the history preview is dismissed.
+- **Outcome:**
+  - The CLI now exposes the previewed stat via `data-history-preview` and applies a dedicated `.history-preview` outline, guiding users to confirm the recalled choice.
+  - Ran targeted tests: `npx vitest run tests/cli/commandHistory.test.js` and `npx playwright test playwright/cli-command-history.spec.js`, both of which passed without regressions.
+
 # CLI Layout and Styling Improvement Opportunities
 
 **Verification Status:** All items in this report have been verified as accurate. The proposed solutions are sound and recommended for implementation. This document has been updated to reflect this verification and to include additional opportunities for improvement.
@@ -289,9 +296,8 @@ And in the CSS:
 
 ### 2. Command History
 
-**Issue**: The CLI does not have a command history feature.
-**Impact**: Users cannot easily access previous commands.
-**Solution**: This is a larger feature, but we could implement a simple command history using local storage. This would allow users to use the up and down arrow keys to navigate through previous commands.
+**Status**: Implemented.
+**Details**: The CLI now stores up to 20 stat selections in `localStorage` (`cliStatHistory`) and supports `Ctrl + ArrowUp/ArrowDown` to preview previous picks before confirming with `Enter`.
 
 ### 3. Theming
 

@@ -290,6 +290,15 @@ body {
   transition: background-color 0.1s ease; /* Subtle hover feedback */
   color: inherit;
 }
+.cli-stat.history-preview {
+  border-color: #3cff9b;
+  box-shadow:
+    0 0 0 1px rgba(60, 255, 155, 0.75),
+    0 0 0 3px rgba(60, 255, 155, 0.25);
+}
+.cli-stat.history-preview:not(.selected) {
+  background: #0a1e12;
+}
 .cli-stat.skeleton {
   opacity: 0.6;
   background: linear-gradient(90deg, #1f1f1f 25%, #2f2f2f 50%, #1f1f1f 75%);
