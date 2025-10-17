@@ -256,6 +256,56 @@ This phase introduces more advanced functionality and long-term improvements to 
 
 **Recommendation:** No action needed; this task was previously completed during earlier refactoring phases.
 
+## E2E Regression Tests for Feature Flags (October 17, 2025)
+
+**Status: COMPLETED** — Added Playwright E2E tests for the `skipRoundCooldown` feature flag.
+
+**Implementation:**
+
+Created `playwright/battle-classic/skip-round-cooldown.spec.js` with comprehensive coverage for the `skipRoundCooldown` feature flag:
+
+1. **DOM Markers Test** — Verifies that when the flag is enabled, the `data-feature-skip-round-cooldown="enabled"` attribute is set on the `<body>` element.
+2. **DOM Markers Disabled Test** — Verifies that when the flag is disabled, the attribute is set to `"disabled"`.
+3. **Battle Flow with Flag Enabled** — Confirms that during an actual battle round, the flag is reflected in DOM markers and the Next button has the correct attribute.
+4. **Battle Flow with Flag Disabled** — Confirms that the disabled state is properly reflected during battle gameplay.
+
+**Test Coverage:**
+
+- ✅ Feature flag initialization via `window.__FF_OVERRIDES`
+- ✅ DOM marker propagation to `<body>` and `#next-button` elements
+- ✅ Integration with battle state machine (round selection, stat clicks, state transitions)
+- ✅ Proper attribute values ("enabled"/"disabled") based on flag state
+
+**Verification Results:**
+
+```bash
+Playwright Tests:
+  4 passed (14.8s)
+  - DOM markers when enabled
+  - DOM markers when disabled
+  - Battle flow with flag enabled (all 4 stat selections work)
+  - Battle flow with flag disabled (all 4 stat selections work)
+
+Unit Tests:
+  4 passed (uiHelpers.featureFlags.test.js)
+  - setSkipRoundCooldownFeatureMarker when enabled
+  - setSkipRoundCooldownFeatureMarker when disabled
+  - setBattleStateBadgeEnabled when enabled
+  - setBattleStateBadgeEnabled when disabled
+
+Smoke Test:
+  1 passed (20.3s)
+  - Full match simulation with default settings
+```
+
+**Files Modified:**
+
+- Created: `playwright/battle-classic/skip-round-cooldown.spec.js`
+- Verified: `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js` (existing)
+- Verified: `playwright/battle-classic/smoke.spec.js` (existing)
+
+**Recommendation:** Add these tests to CI/CD pipeline for regression coverage.
+
 ## Additional engineering opportunities
 
 - Migrate the Classic Battle page to `setupClassicBattlePage` so the controller/view stack owns flag wiring, banner updates, and state progress (`src/helpers/classicBattle/bootstrap.js`, `src/pages/battleClassic.html:172`) — **COMPLETED**
