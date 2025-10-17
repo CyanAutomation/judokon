@@ -398,7 +398,7 @@ const stateApi = {
           const snapshot =
             typeof inspectApi.getBattleSnapshot === "function"
               ? inspectApi.getBattleSnapshot()
-              : inspectApi.getDebugInfo?.()?.store ?? null;
+              : (inspectApi.getDebugInfo?.()?.store ?? null);
           const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
           if (typeof fromSnapshot === "number") {
             return fromSnapshot;
@@ -817,9 +817,9 @@ const timerApi = {
    * Retrieve the active countdown value displayed in the UI.
    *
    * @pseudocode
-   * 1. Locate the timer element using the shared data-testid/id selectors.
+   * 1. Gather both CLI-specific (`#cli-countdown`) and shared scoreboard (`data-testid="next-round-timer"`) elements.
    * 2. Attempt to parse a numeric value from dataset attributes (`data-remaining-time`).
-   * 3. Fallback to parsing the text content that follows the `Time Left: {n}s` pattern.
+   * 3. Fallback to parsing the countdown text content ("Timer", "Time Left", etc.).
    * 4. Return the parsed integer when available; otherwise return `null` to indicate no countdown.
    *
    * @returns {number|null} Countdown seconds or `null` when unavailable.
@@ -828,25 +828,49 @@ const timerApi = {
     try {
       if (typeof document === "undefined") return null;
 
-      const timerEl = document.querySelector('[data-testid="next-round-timer"]');
-      if (!timerEl) return null;
-
       const parseTimerValue = (value) => {
         const numeric = Number.parseInt(String(value ?? ""), 10);
         return Number.isNaN(numeric) ? null : numeric;
       };
 
-      const datasetValue =
-        timerEl.getAttribute("data-remaining-time") ?? timerEl.dataset?.remainingTime;
-      const fromDataset = parseTimerValue(datasetValue);
-      if (fromDataset !== null) {
-        return fromDataset;
+      const parseFromElement = (el) => {
+        if (!el) return null;
+
+        const datasetValue = el.getAttribute("data-remaining-time") ?? el.dataset?.remainingTime;
+        const fromDataset = parseTimerValue(datasetValue);
+        if (fromDataset !== null) {
+          return fromDataset;
+        }
+
+        const text = el.textContent || "";
+        const targetedMatch = text.match(/(?:Time\s*(?:Left|remaining)?:|Timer:)\s*(\d+)/i);
+        if (targetedMatch) {
+          return parseTimerValue(targetedMatch[1]);
+        }
+
+        const fallbackMatch = text.match(/(\d+)/);
+        if (!fallbackMatch) return null;
+
+        return parseTimerValue(fallbackMatch[1]);
+      };
+
+      const elements = [];
+      const cliTimer = document.getElementById("cli-countdown");
+      if (cliTimer) {
+        elements.push(cliTimer);
       }
 
-      const textMatch = (timerEl.textContent || "").match(/Time Left:\s*(\d+)s/i);
-      if (!textMatch) return null;
+      const scoreboardTimer = document.querySelector('[data-testid="next-round-timer"]');
+      if (scoreboardTimer && !elements.includes(scoreboardTimer)) {
+        elements.push(scoreboardTimer);
+      }
 
-      return parseTimerValue(textMatch[1]);
+      for (const el of elements) {
+        const parsed = parseFromElement(el);
+        if (parsed !== null) return parsed;
+      }
+
+      return null;
     } catch {
       return null;
     }
