@@ -43,10 +43,7 @@ export function shouldEmitDebugLogs() {
   if (isDebugFlagEnabled()) {
     return true;
   }
-  if (isPlaywrightRuntime()) {
-    return false;
-  }
-  return false;
+  return !isPlaywrightRuntime();
 }
 
 /**

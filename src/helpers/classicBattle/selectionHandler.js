@@ -267,6 +267,22 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   return getPlayerAndOpponentValues(stat, playerVal, opponentVal, { store });
 }
 
+function clearNextRoundTimerFallback() {
+  try {
+    if (typeof scoreboard?.clearTimer === "function") {
+      return;
+    }
+  } catch {}
+  try {
+    if (typeof document !== "undefined") {
+      const timerEl = document.getElementById("next-round-timer");
+      if (timerEl) {
+        timerEl.textContent = "";
+      }
+    }
+  } catch {}
+}
+
 /**
  * @summary Stop timers and clear pending timeouts tied to stat selection.
  *
@@ -284,14 +300,14 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
  * stall timeouts so they cannot fire after the player has made a selection.
  *
  * @pseudocode
- * 1. Call engine `stopTimer()` to pause/stop the round countdown and
- *    clear the scoreboard timer when possible.
- * 2. Invoke `window.__battleClassicStopSelectionTimer` when present to ensure
+ * 1. Call engine `stopTimer()` to pause/stop the round countdown.
+ * 2. Invoke `scoreboard.clearTimer` when available to reset the scoreboard display.
+ * 3. Invoke `window.__battleClassicStopSelectionTimer` when present to ensure
  *    the orchestrator cancels any in-flight countdown controller.
- * 3. Blank the DOM fallback `#next-round-timer` node when direct helpers are
+ * 4. Blank the DOM fallback `#next-round-timer` node when direct helpers are
  *    unavailable.
- * 4. Clear `store.statTimeoutId` and `store.autoSelectId` via `clearTimeout`.
- * 5. Null out the stored ids so subsequent cleanup calls are safe.
+ * 5. Clear `store.statTimeoutId` and `store.autoSelectId` via `clearTimeout`.
+ * 6. Null out the stored ids so subsequent cleanup calls are safe.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {void}
@@ -308,14 +324,7 @@ export function cleanupTimers(store) {
       window.__battleClassicStopSelectionTimer();
     }
   } catch {}
-  try {
-    if (typeof document !== "undefined") {
-      const timerEl = document.getElementById("next-round-timer");
-      if (timerEl) {
-        timerEl.textContent = "";
-      }
-    }
-  } catch {}
+  clearNextRoundTimerFallback();
   try {
     clearTimeout(store.statTimeoutId);
   } catch {}
@@ -368,11 +377,9 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   try {
     if (IS_VITEST) {
       try {
-        // Direct DOM fallback to clear timer display when scoreboard adapter is absent
-        const timer = document.getElementById("next-round-timer");
-        if (timer) timer.textContent = "";
         scoreboard.clearTimer?.();
       } catch {}
+      clearNextRoundTimerFallback();
       try {
         const msg = document.getElementById("round-message");
         if (msg) msg.textContent = "";
