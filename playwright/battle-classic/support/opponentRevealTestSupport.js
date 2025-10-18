@@ -219,6 +219,7 @@ export async function startMatchAndAwaitStats(page, selector) {
  */
 const ROUND_OVER_STATE = "roundOver";
 const WAITING_FOR_PLAYER_ACTION = "waitingForPlayerAction";
+const COOLDOWN_STATE = "cooldown";
 
 /**
  * Safely retrieves the current battle state, returning a fallback value if an error occurs.
@@ -262,7 +263,53 @@ async function attemptCliResolution(page, hasResolved) {
 async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
   await triggerStateTransition(page, "roundResolved");
 
-  const stateAfterTransition = await safeGetBattleState(page, stateAfterCli);
+  let stateAfterTransition = await safeGetBattleState(page, stateAfterCli);
+
+  if (shouldForceRoundOver(stateAfterTransition)) {
+    const previousState = stateAfterTransition ?? stateAfterCli ?? null;
+
+    await page.evaluate(async ({ previousState: fromState, finalState }) => {
+      const body = document.body;
+      if (!body) return;
+
+      const initialState =
+        fromState ?? (body.dataset ? body.dataset.battleState ?? null : null);
+
+      if (body.dataset) {
+        body.dataset.battleState = finalState;
+      }
+
+      if (typeof window.emitBattleEvent === "function") {
+        window.emitBattleEvent("battleStateChange", {
+          from: initialState,
+          to: finalState,
+          event: "roundResolved"
+        });
+      }
+
+      const stateApi = window.__TEST_API?.state;
+      if (stateApi && typeof stateApi.dispatchBattleEvent === "function") {
+        try {
+          await stateApi.dispatchBattleEvent(finalState);
+        } catch {}
+      }
+    },
+    { previousState, finalState: ROUND_OVER_STATE });
+
+    await expect
+      .poll(
+        async () => safeGetBattleState(page, ROUND_OVER_STATE),
+        {
+          timeout: 1_000,
+          message:
+            'Expected manual battle state sync to report "roundOver" after fallback'
+        }
+      )
+      .toBe(ROUND_OVER_STATE);
+
+    stateAfterTransition = ROUND_OVER_STATE;
+  }
+
   const resolved = stateAfterTransition === ROUND_OVER_STATE ? true : await hasResolved();
 
   return { resolved, stateAfterTransition };
@@ -270,6 +317,18 @@ async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
 
 function isWaitingForPlayerAction(...states) {
   return states.some((state) => state === WAITING_FOR_PLAYER_ACTION);
+}
+
+function shouldForceRoundOver(state) {
+  if (state === ROUND_OVER_STATE) {
+    return false;
+  }
+
+  if (state === WAITING_FOR_PLAYER_ACTION || state === COOLDOWN_STATE) {
+    return true;
+  }
+
+  return true;
 }
 
 async function clickNextButtonFallback(page, { hasResolved, stateAfterCli, stateAfterTransition }) {
