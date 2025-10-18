@@ -30,6 +30,15 @@ function isDebugFlagEnabled() {
   return hasFlag(typeof globalThis !== "undefined" ? globalThis : undefined, "__SHOW_TEST_LOGS");
 }
 
+/**
+ * Determine whether debug logging should be emitted for classic battles.
+ *
+ * @returns {boolean}
+ * @pseudocode
+ * if isDebugFlagEnabled() -> return true
+ * if isPlaywrightRuntime() -> return false
+ * return false
+ */
 export function shouldEmitDebugLogs() {
   if (isDebugFlagEnabled()) {
     return true;
@@ -40,6 +49,17 @@ export function shouldEmitDebugLogs() {
   return false;
 }
 
+/**
+ * Emit a debug log message when logging is enabled.
+ *
+ * @param {string} message
+ * @param {unknown} [data]
+ * @returns {void}
+ * @pseudocode
+ * if !shouldEmitDebugLogs() -> return
+ * if data is undefined -> baseDebug(message)
+ * else -> baseDebug(message, data)
+ */
 export function debugLog(message, data) {
   if (!shouldEmitDebugLogs()) return;
   if (typeof data === "undefined") {
