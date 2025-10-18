@@ -19,29 +19,32 @@ function isDebugFlagEnabled() {
 }
 
 /**
- * Determines whether debug logs should be emitted for classic battle helpers.
+ * Determine whether debug logging should be emitted for classic battles.
  *
+ * @returns {boolean}
  * @pseudocode
  * IF isDebugFlagEnabled() returns true THEN return true
  * RETURN false
  *
  * @returns {boolean} True when debug logs should be emitted.
+ * if isDebugFlagEnabled() -> return true
+ * if isPlaywrightRuntime() -> return false
+ * return false
  */
 export function shouldEmitDebugLogs() {
   return isDebugFlagEnabled();
 }
 
 /**
- * Conditionally logs debug messages based on runtime and flag checks.
+ * Emit a debug log message when logging is enabled.
  *
- * @pseudocode
- * IF shouldEmitDebugLogs() returns false THEN return early
- * IF data is undefined THEN call baseDebug with message only
- * ELSE call baseDebug with message and data
- *
- * @param {string} message - Message to log when debugging.
- * @param {*} [data] - Optional data payload for richer logs.
+ * @param {string} message
+ * @param {unknown} [data]
  * @returns {void}
+ * @pseudocode
+ * if !shouldEmitDebugLogs() -> return
+ * if data is undefined -> baseDebug(message)
+ * else -> baseDebug(message, data)
  */
 export function debugLog(message, data) {
   if (!shouldEmitDebugLogs()) return;
