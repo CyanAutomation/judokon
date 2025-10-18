@@ -218,6 +218,9 @@ function expandAllSections() {
 
   document.querySelectorAll("#settings-form details").forEach((details) => {
     details.open = true;
+    if (!details.hasAttribute("open")) {
+      details.setAttribute("open", "");
+    }
 
     const summary = details.querySelector("summary");
     if (summary) {
