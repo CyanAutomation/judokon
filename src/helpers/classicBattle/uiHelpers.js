@@ -256,7 +256,7 @@ export async function renderOpponentCard(judoka, container) {
       return;
     }
   } catch (err) {
-    console.debug("Error rendering JudokaCard:", err);
+    guard(() => console.debug("Error rendering JudokaCard:", err));
     return;
   }
   const debugPanel = container.querySelector("#debug-panel");

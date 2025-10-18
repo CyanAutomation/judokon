@@ -104,9 +104,20 @@ function initializeControls(settings) {
   const getCurrentSettings = () => currentSettings;
 
   const showErrorAndRevert = makeErrorPopupHandler(errorPopup);
+  const onUpdate = (controlElement) => {
+    const settingItem = controlElement.closest(".settings-item");
+    if (settingItem) {
+      settingItem.classList.add("saved");
+      setTimeout(() => {
+        settingItem.classList.remove("saved");
+      }, 2000);
+    }
+  };
+
   const handleUpdate = makeHandleUpdate(
     (updated) => (currentSettings = updated),
-    showErrorAndRevert
+    showErrorAndRevert,
+    onUpdate
   );
 
   // Initial control values are applied when `renderSwitches` executes.

@@ -286,3 +286,18 @@ body {
     grid-column: 1;
   }
 }
+
+fieldset {
+  border: 1px solid var(--color-secondary);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+legend {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 0 var(--space-sm);
+  color: var(--color-primary);
+}

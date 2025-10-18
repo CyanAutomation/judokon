@@ -50,11 +50,14 @@ import { updateSetting } from "../settingsStorage.js";
  * @param {(revert?: Function) => void} showErrorAndRevert - UI error handler that also reverts UI.
  * @returns {(key: string, value: any, revert?: Function) => Promise<object>} handleUpdate
  */
-export function makeHandleUpdate(setCurrentSettings, showErrorAndRevert) {
-  return function handleUpdate(key, value, revert) {
+export function makeHandleUpdate(setCurrentSettings, showErrorAndRevert, onUpdate) {
+  return function handleUpdate(key, value, revert, controlElement) {
     return updateSetting(key, value)
       .then((updated) => {
         setCurrentSettings(updated);
+        if (typeof onUpdate === "function") {
+          onUpdate(controlElement);
+        }
         return updated;
       })
       .catch((err) => {

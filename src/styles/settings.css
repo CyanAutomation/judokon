@@ -109,7 +109,7 @@
 .switch input {
   position: absolute;
   opacity: 0;
-  width: 44px;
+  width: 60px;
   height: 44px;
   margin: 0;
   cursor: pointer;
@@ -119,10 +119,14 @@
   box-shadow: 0 0 3px 2px var(--button-bg);
 }
 
+.switch:hover .slider {
+  box-shadow: 0 0 5px 2px var(--color-secondary);
+}
+
 .slider {
   position: relative;
   display: inline-block;
-  width: 80px;
+  width: 60px;
   height: 44px;
   background-color: var(--switch-off-bg);
   border-radius: var(--radius-pill);
@@ -132,10 +136,10 @@
 .slider::before {
   content: "";
   position: absolute;
-  height: 36px;
-  width: 36px;
+  height: 32px;
+  width: 32px;
   left: 4px;
-  top: 4px;
+  top: 6px;
   background-color: var(--color-surface);
   border-radius: 50%;
   transition: var(--transition-fast);
@@ -146,7 +150,7 @@
 }
 
 .switch input:checked + .slider::before {
-  transform: translateX(36px);
+  transform: translateX(20px);
 }
 
 .slider.round {
@@ -164,6 +168,27 @@
   align-items: center;
 }
 
+.theme-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--color-text);
+  margin-left: var(--space-sm);
+}
+
+.theme-light {
+  background-color: #ffffff;
+}
+
+.theme-dark {
+  background-color: #333333;
+}
+
+.theme-retro {
+  background-color: #f3e5ab;
+}
+
+
 .settings-description,
 .flag-description {
   font-size: var(--font-small);
@@ -178,8 +203,8 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-lg);
-  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xl);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
 .settings-links-list .settings-item {
@@ -190,4 +215,23 @@
   .settings-links-list {
     grid-template-columns: 1fr;
   }
+}
+
+summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: var(--space-sm);
+  background-color: var(--color-tertiary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  list-style: none; /* Remove default marker */
+}
+
+summary::-webkit-details-marker {
+  display: none; /* Remove default marker for Chrome */
+}
+
+summary:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }

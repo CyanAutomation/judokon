@@ -374,22 +374,6 @@ Skip Round Cooldown E2E Tests (no regressions):
 
 - Migrate the Classic Battle page to `setupClassicBattlePage` so the controller/view stack owns flag wiring, banner updates, and state progress (`src/helpers/classicBattle/bootstrap.js`, `src/pages/battleClassic.html:172`) — **COMPLETED**
 - If migration must be incremental, register `featureFlagsEmitter` listeners inside `src/pages/battleClassic.init.js` to call `applyBattleFeatureFlags` and `setBattleStateBadgeEnabled` until the new bootstrap lands — **NOT NEEDED (bootstrap migration complete)**
-- Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`).
-- Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`).
+- Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`) — **COMPLETED**
+- Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`) — **COMPLETED**
 
-````
-
-**Files Modified:**
-
-- Created: `playwright/battle-classic/skip-round-cooldown.spec.js`
-- Verified: `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js` (existing)
-- Verified: `playwright/battle-classic/smoke.spec.js` (existing)
-
-**Recommendation:** Add these tests to CI/CD pipeline for regression coverage.
-
-## Additional engineering opportunities
-
-- Migrate the Classic Battle page to `setupClassicBattlePage` so the controller/view stack owns flag wiring, banner updates, and state progress (`src/helpers/classicBattle/bootstrap.js`, `src/pages/battleClassic.html:172`) — **COMPLETED**
-- If migration must be incremental, register `featureFlagsEmitter` listeners inside `src/pages/battleClassic.init.js` to call `applyBattleFeatureFlags` and `setBattleStateBadgeEnabled` until the new bootstrap lands — **NOT NEEDED (bootstrap migration complete)**
-- Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`).
-- Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`).

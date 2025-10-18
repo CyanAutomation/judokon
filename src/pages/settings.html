@@ -73,312 +73,325 @@
               aria-labelledby="display-settings-toggle"
               hidden
             > -->
-          <fieldset
-            id="display-settings-container"
-            class="game-mode-toggle-container settings-form"
-          >
-            <legend>Display Settings</legend>
-            <div
-              class="settings-item display-mode-group"
-              role="radiogroup"
-              aria-label="Display Mode"
+          <details open>
+            <summary>Display Settings</summary>
+            <fieldset
+              id="display-settings-container"
+              class="game-mode-toggle-container settings-form"
             >
-              <div class="display-mode-flex">
-                <div class="display-mode-option">
-                  <input
-                    type="radio"
-                    id="display-mode-light"
-                    name="display-mode"
-                    value="light"
-                    tabindex="0"
-                  />
-                  <label for="display-mode-light">Light</label>
-                </div>
-                <div class="display-mode-option">
-                  <input
-                    type="radio"
-                    id="display-mode-dark"
-                    name="display-mode"
-                    value="dark"
-                    tabindex="-1"
-                  />
-                  <label for="display-mode-dark">Dark</label>
-                </div>
-                <div class="display-mode-option">
-                  <input
-                    type="radio"
-                    id="display-mode-retro"
-                    name="display-mode"
-                    value="retro"
-                    tabindex="-1"
-                  />
-                  <label for="display-mode-retro">Retro</label>
+              <div
+                class="settings-item display-mode-group"
+                role="radiogroup"
+                aria-label="Display Mode"
+              >
+                <div class="display-mode-flex">
+                  <div class="display-mode-option">
+                    <input
+                      type="radio"
+                      id="display-mode-light"
+                      name="display-mode"
+                      value="light"
+                      tabindex="0"
+                    />
+                    <label for="display-mode-light">Light</label>
+                    <div class="theme-preview theme-light"></div>
+                  </div>
+                  <div class="display-mode-option">
+                    <input
+                      type="radio"
+                      id="display-mode-dark"
+                      name="display-mode"
+                      value="dark"
+                      tabindex="-1"
+                    />
+                    <label for="display-mode-dark">Dark</label>
+                    <div class="theme-preview theme-dark"></div>
+                  </div>
+                  <div class="display-mode-option">
+                    <input
+                      type="radio"
+                      id="display-mode-retro"
+                      name="display-mode"
+                      value="retro"
+                      tabindex="-1"
+                    />
+                    <label for="display-mode-retro">Retro</label>
+                    <div class="theme-preview theme-retro"></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </fieldset>
+            </fieldset>
+          </details>
           <br />
 
-          <fieldset
-            id="general-settings-container"
-            class="game-mode-toggle-container settings-form"
-          >
-            <legend>General Settings</legend>
-            <div class="settings-item">
-              <label for="sound-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="sound-toggle"
-                  name="sound"
-                  aria-label="Sound"
-                  aria-describedby="sound-desc"
-                  data-tooltip-id="settings.sound"
-                  checked
-                />
-                <div class="slider round"></div>
-                <span>Sound</span>
-              </label>
-              <p id="sound-desc" class="settings-description">Enable or mute game audio.</p>
-            </div>
-            <div class="settings-item">
-              <label for="motion-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="motion-toggle"
-                  name="motion"
-                  aria-label="Motion Effects"
-                  aria-describedby="motion-desc"
-                  data-tooltip-id="settings.motionEffects"
-                  checked
-                />
-                <div class="slider round"></div>
-                <span>Motion Effects</span>
-              </label>
-              <p id="motion-desc" class="settings-description">
-                Disable animations for a calmer interface.
-              </p>
-            </div>
-            <div class="settings-item">
-              <label for="typewriter-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="typewriter-toggle"
-                  name="typewriter"
-                  aria-label="Typewriter Effect"
-                  aria-describedby="typewriter-desc"
-                  data-tooltip-id="settings.typewriterEffect"
-                />
-                <div class="slider round"></div>
-                <span>Typewriter Effect</span>
-              </label>
-              <p id="typewriter-desc" class="settings-description">
-                Toggle the quote typing animation.
-              </p>
-            </div>
-            <div class="settings-item">
-              <label for="tooltips-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="tooltips-toggle"
-                  name="tooltips"
-                  aria-label="Tooltips"
-                  aria-describedby="tooltips-desc"
-                  data-tooltip-id="settings.tooltips"
-                  checked
-                />
-                <div class="slider round"></div>
-                <span>Tooltips</span>
-              </label>
-              <p id="tooltips-desc" class="settings-description">Show or hide helpful tooltips.</p>
-            </div>
-            <div class="settings-item">
-              <label for="card-of-the-day-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="card-of-the-day-toggle"
-                  name="cardOfTheDay"
-                  aria-label="Card of the Day"
-                  aria-describedby="card-of-the-day-desc"
-                  data-tooltip-id="settings.showCardOfTheDay"
-                />
-                <div class="slider round"></div>
-                <span>Card of the Day</span>
-              </label>
-              <p id="card-of-the-day-desc" class="settings-description">
-                Display a rotating featured card on the landing screen.
-              </p>
-            </div>
-            <div class="settings-item">
-              <label for="full-navigation-map-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="full-navigation-map-toggle"
-                  name="fullNavigationMap"
-                  aria-label="Full Navigation Map"
-                  aria-describedby="full-navigation-map-desc"
-                  data-tooltip-id="settings.fullNavigationMap"
-                />
-                <div class="slider round"></div>
-                <span>Full Navigation Map</span>
-              </label>
-              <p id="full-navigation-map-desc" class="settings-description">
-                Display an overlay map linking to every page.
-              </p>
-            </div>
-          </fieldset>
-
-          <fieldset
-            id="game-mode-toggle-container"
-            class="game-mode-toggle-container settings-form"
-            aria-label="Game Mode Selector"
-          >
-            <legend>Game Modes</legend>
-          </fieldset>
-          <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
-            <legend>Advanced Settings</legend>
-            <div class="settings-item">
-              <label for="feature-cli-immersive" class="switch">
-                <input
-                  type="checkbox"
-                  id="feature-cli-immersive"
-                  data-flag="cliImmersive"
-                  aria-label="CLI Immersive Mode"
-                  aria-describedby="feature-cli-immersive-desc"
-                  data-tooltip-id="settings.cliImmersive"
-                />
-                <div class="slider round"></div>
-                <span>CLI Immersive Mode</span>
-              </label>
-              <p id="feature-cli-immersive-desc" class="settings-description">
-                Enable a more immersive, terminal-like experience in the CLI battle mode.
-              </p>
-            </div>
-            <div class="settings-item">
-              <label for="feature-scanlines" class="switch">
-                <input
-                  type="checkbox"
-                  id="feature-scanlines"
-                  data-flag="scanlines"
-                  aria-label="Scanlines Effect"
-                  aria-describedby="feature-scanlines-desc"
-                  data-tooltip-id="settings.scanlines"
-                />
-                <div class="slider round"></div>
-                <span>Scanlines Effect</span>
-              </label>
-              <p id="feature-scanlines-desc" class="settings-description">
-                Add a retro scanline overlay to the CLI battle mode for a more authentic feel.
-              </p>
-            </div>
-            <!-- Flag toggles are inserted here dynamically -->
-            <div class="settings-item">
-              <label for="feature-cli-verbose" class="switch">
-                <input
-                  type="checkbox"
-                  id="feature-cli-verbose"
-                  data-flag="cliVerbose"
-                  aria-label="CLI Verbose Logging"
-                  aria-describedby="feature-cli-verbose-desc"
-                  data-tooltip-id="settings.cliVerbose"
-                />
-                <div class="slider round"></div>
-                <span>CLI Verbose Logging</span>
-              </label>
-              <p id="feature-cli-verbose-desc" class="settings-description">
-                Show state transition logs in the battle CLI.
-              </p>
-            </div>
-            <div class="settings-item">
-              <label for="feature-skip-round-cooldown" class="switch">
-                <input
-                  type="checkbox"
-                  id="feature-skip-round-cooldown"
-                  data-flag="skipRoundCooldown"
-                  aria-label="Skip Round Cooldown"
-                  aria-describedby="feature-skip-round-cooldown-desc"
-                  data-tooltip-id="settings.skipRoundCooldown"
-                />
-                <div class="slider round"></div>
-                <span>Skip Round Cooldown</span>
-              </label>
-              <p id="feature-skip-round-cooldown-desc" class="settings-description">
-                Start the next round immediately without a cooldown.
-              </p>
-            </div>
-            <div class="settings-item">
-              <label for="feature-auto-select" class="switch">
-                <input
-                  type="checkbox"
-                  id="feature-auto-select"
-                  data-flag="autoSelect"
-                  aria-label="Auto-Select"
-                  aria-describedby="feature-auto-select-desc"
-                  data-tooltip-id="settings.autoSelect"
-                  checked
-                />
-                <div class="slider round"></div>
-                <span>Auto-Select</span>
-              </label>
-              <p id="feature-auto-select-desc" class="settings-description">
-                Automatically pick a random stat when time runs out.
-              </p>
-            </div>
-            <div class="settings-item">
-              <label for="feature-stat-hotkeys" class="switch">
-                <input
-                  type="checkbox"
-                  id="feature-stat-hotkeys"
-                  data-flag="statHotkeys"
-                  aria-label="Stat Hotkeys"
-                  aria-describedby="feature-stat-hotkeys-desc"
-                  data-tooltip-id="settings.statHotkeys"
-                />
-                <div class="slider round"></div>
-                <span>Stat Hotkeys</span>
-              </label>
-              <p id="feature-stat-hotkeys-desc" class="settings-description">
-                Use number keys 1–5 to select stats quickly.
-              </p>
-            </div>
-          </fieldset>
-          <fieldset id="links-container" class="settings-form">
-            <legend>Links</legend>
-            <ul class="settings-links-list settings-links-grid">
-              <li class="settings-item">
-                <a href="../pages/changeLog.html" id="changelog-link" tabindex="99"
-                  >View Change Log</a
-                >
-              </li>
-              <li class="settings-item">
-                <a href="../pages/prdViewer.html" id="prdviewer-link" tabindex="100"
-                  >View PRD Documents</a
-                >
-              </li>
-              <li class="settings-item">
-                <a href="../pages/mockupViewer.html" id="mockupviewer-link" tabindex="101"
-                  >View Design Mockups</a
-                >
-              </li>
-              <li class="settings-item">
-                <a href="../pages/tooltipViewer.html" id="tooltipviewer-link" tabindex="103"
-                  >View Tooltip Descriptions</a
-                >
-              </li>
-              <li class="settings-item">
-                <a href="../pages/vectorSearch.html" id="vectorSearch-link" tabindex="102"
-                  >Vector Search for RAG</a
-                >
-              </li>
-            </ul>
-            <br />
-            <div class="settings-item">
-              <div class="centered-button-container" style="display: flex; justify-content: center">
-                <button type="button" id="reset-settings-button" tabindex="103">
-                  Restore Defaults
-                </button>
+          <details>
+            <summary>General Settings</summary>
+            <fieldset
+              id="general-settings-container"
+              class="game-mode-toggle-container settings-form"
+            >
+              <div class="settings-item">
+                <label for="sound-toggle" class="switch">
+                  <input
+                    type="checkbox"
+                    id="sound-toggle"
+                    name="sound"
+                    aria-label="Sound"
+                    aria-describedby="sound-desc"
+                    data-tooltip-id="settings.sound"
+                    checked
+                  />
+                  <div class="slider round"></div>
+                  <span>Sound</span>
+                </label>
+                <p id="sound-desc" class="settings-description">Enable or mute game audio.</p>
               </div>
-            </div>
-          </fieldset>
+              <div class="settings-item">
+                <label for="motion-toggle" class="switch">
+                  <input
+                    type="checkbox"
+                    id="motion-toggle"
+                    name="motion"
+                    aria-label="Motion Effects"
+                    aria-describedby="motion-desc"
+                    data-tooltip-id="settings.motionEffects"
+                    checked
+                  />
+                  <div class="slider round"></div>
+                  <span>Motion Effects</span>
+                </label>
+                <p id="motion-desc" class="settings-description">
+                  Disable animations for a calmer interface.
+                </p>
+              </div>
+              <div class="settings-item">
+                <label for="typewriter-toggle" class="switch">
+                  <input
+                    type="checkbox"
+                    id="typewriter-toggle"
+                    name="typewriter"
+                    aria-label="Typewriter Effect"
+                    aria-describedby="typewriter-desc"
+                    data-tooltip-id="settings.typewriterEffect"
+                  />
+                  <div class="slider round"></div>
+                  <span>Typewriter Effect</span>
+                </label>
+                <p id="typewriter-desc" class="settings-description">
+                  Toggle the quote typing animation.
+                </p>
+              </div>
+              <div class="settings-item">
+                <label for="tooltips-toggle" class="switch">
+                  <input
+                    type="checkbox"
+                    id="tooltips-toggle"
+                    name="tooltips"
+                    aria-label="Tooltips"
+                    aria-describedby="tooltips-desc"
+                    data-tooltip-id="settings.tooltips"
+                    checked
+                  />
+                  <div class="slider round"></div>
+                  <span>Tooltips</span>
+                </label>
+                <p id="tooltips-desc" class="settings-description">Show or hide helpful tooltips.</p>
+              </div>
+              <div class="settings-item">
+                <label for="card-of-the-day-toggle" class="switch">
+                  <input
+                    type="checkbox"
+                    id="card-of-the-day-toggle"
+                    name="cardOfTheDay"
+                    aria-label="Card of the Day"
+                    aria-describedby="card-of-the-day-desc"
+                    data-tooltip-id="settings.showCardOfTheDay"
+                  />
+                  <div class="slider round"></div>
+                  <span>Card of the Day</span>
+                </label>
+                <p id="card-of-the-day-desc" class="settings-description">
+                  Display a rotating featured card on the landing screen.
+                </p>
+              </div>
+              <div class="settings-item">
+                <label for="full-navigation-map-toggle" class="switch">
+                  <input
+                    type="checkbox"
+                    id="full-navigation-map-toggle"
+                    name="fullNavigationMap"
+                    aria-label="Full Navigation Map"
+                    aria-describedby="full-navigation-map-desc"
+                    data-tooltip-id="settings.fullNavigationMap"
+                  />
+                  <div class="slider round"></div>
+                  <span>Full Navigation Map</span>
+                </label>
+                <p id="full-navigation-map-desc" class="settings-description">
+                  Display an overlay map linking to every page.
+                </p>
+              </div>
+            </fieldset>
+          </details>
+
+          <details>
+            <summary>Game Modes</summary>
+            <fieldset
+              id="game-mode-toggle-container"
+              class="game-mode-toggle-container settings-form"
+              aria-label="Game Mode Selector"
+            >
+            </fieldset>
+          </details>
+          <details>
+            <summary>Advanced Settings</summary>
+            <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
+              <div class="settings-item">
+                <label for="feature-cli-immersive" class="switch">
+                  <input
+                    type="checkbox"
+                    id="feature-cli-immersive"
+                    data-flag="cliImmersive"
+                    aria-label="CLI Immersive Mode"
+                    aria-describedby="feature-cli-immersive-desc"
+                    data-tooltip-id="settings.cliImmersive"
+                  />
+                  <div class="slider round"></div>
+                  <span>CLI Immersive Mode</span>
+                </label>
+                <p id="feature-cli-immersive-desc" class="settings-description">
+                  Enable a more immersive, terminal-like experience in the CLI battle mode.
+                </p>
+              </div>
+              <div class="settings-item">
+                <label for="feature-scanlines" class="switch">
+                  <input
+                    type="checkbox"
+                    id="feature-scanlines"
+                    data-flag="scanlines"
+                    aria-label="Scanlines Effect"
+                    aria-describedby="feature-scanlines-desc"
+                    data-tooltip-id="settings.scanlines"
+                  />
+                  <div class="slider round"></div>
+                  <span>Scanlines Effect</span>
+                </label>
+                <p id="feature-scanlines-desc" class="settings-description">
+                  Add a retro scanline overlay to the CLI battle mode for a more authentic feel.
+                </p>
+              </div>
+              <!-- Flag toggles are inserted here dynamically -->
+              <div class="settings-item">
+                <label for="feature-cli-verbose" class="switch">
+                  <input
+                    type="checkbox"
+                    id="feature-cli-verbose"
+                    data-flag="cliVerbose"
+                    aria-label="CLI Verbose Logging"
+                    aria-describedby="feature-cli-verbose-desc"
+                    data-tooltip-id="settings.cliVerbose"
+                  />
+                  <div class="slider round"></div>
+                  <span>CLI Verbose Logging</span>
+                </label>
+                <p id="feature-cli-verbose-desc" class="settings-description">
+                  Show state transition logs in the battle CLI.
+                </p>
+              </div>
+              <div class="settings-item">
+                <label for="feature-skip-round-cooldown" class="switch">
+                  <input
+                    type="checkbox"
+                    id="feature-skip-round-cooldown"
+                    data-flag="skipRoundCooldown"
+                    aria-label="Skip Round Cooldown"
+                    aria-describedby="feature-skip-round-cooldown-desc"
+                    data-tooltip-id="settings.skipRoundCooldown"
+                  />
+                  <div class="slider round"></div>
+                  <span>Skip Round Cooldown</span>
+                </label>
+                <p id="feature-skip-round-cooldown-desc" class="settings-description">
+                  Start the next round immediately without a cooldown.
+                </p>
+              </div>
+              <div class="settings-item">
+                <label for="feature-auto-select" class="switch">
+                  <input
+                    type="checkbox"
+                    id="feature-auto-select"
+                    data-flag="autoSelect"
+                    aria-label="Auto-Select"
+                    aria-describedby="feature-auto-select-desc"
+                    data-tooltip-id="settings.autoSelect"
+                    checked
+                  />
+                  <div class="slider round"></div>
+                  <span>Auto-Select</span>
+                </label>
+                <p id="feature-auto-select-desc" class="settings-description">
+                  Automatically pick a random stat when time runs out.
+                </p>
+              </div>
+              <div class="settings-item">
+                <label for="feature-stat-hotkeys" class="switch">
+                  <input
+                    type="checkbox"
+                    id="feature-stat-hotkeys"
+                    data-flag="statHotkeys"
+                    aria-label="Stat Hotkeys"
+                    aria-describedby="feature-stat-hotkeys-desc"
+                    data-tooltip-id="settings.statHotkeys"
+                  />
+                  <div class="slider round"></div>
+                  <span>Stat Hotkeys</span>
+                </label>
+                <p id="feature-stat-hotkeys-desc" class="settings-description">
+                  Use number keys 1–5 to select stats quickly.
+                </p>
+              </div>
+            </fieldset>
+          </details>
+          <details>
+            <summary>Links</summary>
+            <fieldset id="links-container" class="settings-form">
+              <ul class="settings-links-list settings-links-grid">
+                <li class="settings-item">
+                  <a href="../pages/changeLog.html" id="changelog-link" tabindex="99"
+                    >View Change Log</a
+                  >
+                </li>
+                <li class="settings-item">
+                  <a href="../pages/prdViewer.html" id="prdviewer-link" tabindex="100"
+                    >View PRD Documents</a
+                  >
+                </li>
+                <li class="settings-item">
+                  <a href="../pages/mockupViewer.html" id="mockupviewer-link" tabindex="101"
+                    >View Design Mockups</a
+                  >
+                </li>
+                <li class="settings-item">
+                  <a href="../pages/tooltipViewer.html" id="tooltipviewer-link" tabindex="103"
+                    >View Tooltip Descriptions</a
+                  >
+                </li>
+                <li class="settings-item">
+                  <a href="../pages/vectorSearch.html" id="vectorSearch-link" tabindex="102"
+                    >Vector Search for RAG</a
+                  >
+                </li>
+              </ul>
+              <br />
+              <div class="settings-item">
+                <div class="centered-button-container" style="display: flex; justify-content: center">
+                  <button type="button" id="reset-settings-button" tabindex="103">
+                    Restore Defaults
+                  </button>
+                </div>
+              </div>
+            </fieldset>
+          </details>
           <button type="submit" class="visually-hidden">Apply Settings</button>
         </form>
         <div
