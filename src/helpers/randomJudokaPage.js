@@ -33,6 +33,7 @@ import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags
 import { preloadRandomCardData, createHistoryManager } from "./randomCardService.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
+import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
 
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
@@ -147,30 +148,6 @@ export function createDrawButton() {
   drawButton.setAttribute("aria-live", "polite");
   drawButton.setAttribute("tabindex", "0");
   return drawButton;
-}
-
-/**
- * Update the draw button's label text while supporting legacy markup structures.
- *
- * @summary Attempts to update the nested `.button-label` element when present,
- * otherwise falls back to updating the button element directly.
- * @pseudocode
- * 1. If `drawButton` is nullish, return early.
- * 2. Query for a child element with the `.button-label` selector.
- * 3. If found, update the child's `textContent`.
- * 4. Otherwise, update the button's `textContent`.
- *
- * @param {HTMLElement | null | undefined} drawButton - The draw button element to update.
- * @param {string} text - The new text content for the button.
- */
-function updateDrawButtonLabel(drawButton, text) {
-  if (!drawButton) return;
-  const label = drawButton.querySelector?.(".button-label");
-  if (label) {
-    label.textContent = text;
-  } else {
-    drawButton.textContent = text;
-  }
 }
 
 function showError(msg) {
@@ -294,6 +271,8 @@ async function displayCard({
   timers,
   fallbackDelayMs = 2000
 }) {
+  const stateMachine = createDrawCardStateMachine(drawButton);
+
   return new Promise(async (resolve) => {
     let resolved = false;
     const settle = () => {
@@ -302,34 +281,28 @@ async function displayCard({
         resolve();
       }
     };
+
+    // Handle data loading failure
     if (!dataLoaded) {
       showError("Unable to load judoka data. Please try again later.");
-      drawButton.disabled = true;
-      drawButton.setAttribute("aria-disabled", "true");
       settle();
       return;
     }
-    drawButton.disabled = true;
-    drawButton.setAttribute("aria-disabled", "true");
-    drawButton.classList.add("is-loading");
-    updateDrawButtonLabel(drawButton, "Drawing…");
-    drawButton.setAttribute("aria-busy", "true");
+
+    // Transition to DRAWING state
+    stateMachine.transition("DRAWING");
     const errorEl = document.getElementById("draw-error-message");
     if (errorEl) errorEl.textContent = "";
     const cardContainer = document.getElementById("card-container");
-    function enableButton() {
-      drawButton.disabled = false;
-      drawButton.removeAttribute("aria-disabled");
-      drawButton.classList.remove("is-loading");
-      updateDrawButtonLabel(drawButton, "Draw Card!");
-      drawButton.removeAttribute("aria-busy");
-      settle();
-    }
+
     if (!cardContainer) {
       showError("Card area missing. Please refresh the page.");
-      enableButton();
+      stateMachine.transition("ERROR");
+      stateMachine.transition("IDLE");
+      settle();
       return;
     }
+
     let announcedJudoka;
     try {
       announcedJudoka = await generateRandomCard(
@@ -340,6 +313,7 @@ async function displayCard({
         onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
+      stateMachine.transition("SUCCESS");
     } catch (err) {
       console.error("Error generating card:", err);
       const fallbackJudoka = await getFallbackJudoka();
@@ -356,41 +330,50 @@ async function displayCard({
         isEnabled("enableCardInspector")
       );
       showSnackbar("Unable to draw a new card. Showing a fallback.");
-      announceCard(fallbackJudoka.name);
-      enableButton();
-      return;
+      stateMachine.transition("ERROR");
     }
-    const cardEl = cardContainer.querySelector(".card-container");
-    if (announcedJudoka && cardEl) {
+
+    // Announce the card to screen readers
+    if (announcedJudoka) {
       announceCard(announcedJudoka.name);
     }
-    if (prefersReducedMotion) {
-      enableButton();
+
+    // Handle animation and button re-enabling
+    const cardEl = cardContainer.querySelector(".card-container");
+
+    if (prefersReducedMotion || stateMachine.currentState === "ERROR") {
+      // No animation: transition back to IDLE immediately
+      stateMachine.transition("IDLE");
+      settle();
+    } else if (!cardEl) {
+      // Card element not found: transition to IDLE with fallback timer
+      stateMachine.transition("IDLE");
+      globalThis.requestAnimationFrame?.(() => {
+        if (drawButton.disabled) {
+          stateMachine.transition("IDLE");
+        }
+      });
+      settle();
     } else {
-      if (!cardEl) {
-        enableButton();
-        globalThis.requestAnimationFrame?.(() => {
-          if (drawButton.disabled) {
-            enableButton();
-          }
-        });
-        return;
-      } else {
-        const {
-          setTimeout: set = globalThis.setTimeout,
-          clearTimeout: clear = globalThis.clearTimeout
-        } = timers || globalThis;
-        const onEnd = () => {
-          cardEl.removeEventListener("animationend", onEnd);
-          clear(fallbackId);
-          enableButton();
-        };
-        cardEl.addEventListener("animationend", onEnd);
-        const fallbackId = set(() => {
-          cardEl.removeEventListener("animationend", onEnd);
-          enableButton();
-        }, fallbackDelayMs);
-      }
+      // Animation exists: wait for animationend or timeout before returning to IDLE
+      const {
+        setTimeout: set = globalThis.setTimeout,
+        clearTimeout: clear = globalThis.clearTimeout
+      } = timers || globalThis;
+
+      const onEnd = () => {
+        cardEl.removeEventListener("animationend", onEnd);
+        clear(fallbackId);
+        stateMachine.transition("IDLE");
+        settle();
+      };
+
+      cardEl.addEventListener("animationend", onEnd);
+      const fallbackId = set(() => {
+        cardEl.removeEventListener("animationend", onEnd);
+        stateMachine.transition("IDLE");
+        settle();
+      }, fallbackDelayMs);
     }
   });
 }
