@@ -19,9 +19,9 @@ After deeper investigation, there are TWO separate code paths that can show the 
 onBattleEvent("statSelected", async (e) => {
   const flagEnabled = isEnabled("opponentDelayMessage");
   const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
-  
+
   if (!shouldDelay) {
-    displayOpponentChoosingPrompt();  // Shows message immediately
+    displayOpponentChoosingPrompt(); // Shows message immediately
   } else {
     // Schedule with delay
     setTimeout(() => displayOpponentChoosingPrompt(), resolvedDelay);
