@@ -205,13 +205,27 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
  * @pseudocode
  * 1. Remove the `hidden` attribute from each `.settings-section-content`.
  * 2. Set `aria-expanded` to `true` on every `.settings-section-toggle`.
+ * 3. Set the `open`/`aria-expanded` attributes on `<details>/<summary>` pairs.
  */
 function expandAllSections() {
   document.querySelectorAll(".settings-section-content").forEach((el) => {
     el.removeAttribute("hidden");
   });
+
   document.querySelectorAll(".settings-section-toggle").forEach((btn) => {
     btn.setAttribute("aria-expanded", "true");
+  });
+
+  document.querySelectorAll("#settings-form details").forEach((details) => {
+    details.open = true;
+    if (!details.hasAttribute("open")) {
+      details.setAttribute("open", "");
+    }
+
+    const summary = details.querySelector("summary");
+    if (summary) {
+      summary.setAttribute("aria-expanded", "true");
+    }
   });
 }
 
