@@ -4,7 +4,13 @@ import { error as logError, warn as logWarn, debug as logDebug } from "../logger
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
- * Validates a state transition against the state table.
+ * Validates a state transition against the provided state table.
+ *
+ * @pseudocode
+ * 1. Look up the definition for `fromState`; return false if it is missing.
+ * 2. Look up the definition for `toState`; return false if it is missing.
+ * 3. Check the `fromState` triggers for the matching event/target pair.
+ * 4. Warn if the event is unexpected but still return `true` for resilience.
  *
  * @param {string} fromState - The current state name.
  * @param {string} toState - The target state name.
