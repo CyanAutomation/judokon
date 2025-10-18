@@ -187,8 +187,8 @@ test.describe("Classic Battle Opponent Messages", () => {
         } catch (error) {
           let lastObservedBattleState = null;
           try {
-            lastObservedBattleState = await page.evaluate(() =>
-              window.__TEST_API?.state?.getBattleState?.() ?? null
+            lastObservedBattleState = await page.evaluate(
+              () => window.__TEST_API?.state?.getBattleState?.() ?? null
             );
           } catch {}
           error.message = `${error.message}\nLast observed battle state: ${

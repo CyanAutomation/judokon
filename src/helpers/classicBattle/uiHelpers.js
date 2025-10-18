@@ -807,7 +807,7 @@ export function resetQuitButton() {
   let quitBtn;
   try {
     quitBtn = document.getElementById
-      ? document.getElementById("quit-button") ?? document.getElementById("quit-match-button")
+      ? (document.getElementById("quit-button") ?? document.getElementById("quit-match-button"))
       : null;
   } catch {}
   if (quitBtn) {
@@ -1017,10 +1017,7 @@ export function setBattleStateBadgeEnabled(enable) {
   if (typeof document === "undefined") return;
   const body = document.body;
   if (body) {
-    body.setAttribute(
-      "data-feature-battle-state-badge",
-      enable ? "enabled" : "disabled"
-    );
+    body.setAttribute("data-feature-battle-state-badge", enable ? "enabled" : "disabled");
   }
   let badge = document.getElementById("battle-state-badge");
   if (!enable) {

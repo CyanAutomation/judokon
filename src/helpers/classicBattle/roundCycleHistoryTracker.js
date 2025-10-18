@@ -9,7 +9,7 @@ import { onBattleEvent } from "./battleEvents.js";
  * 2. Read `window.__READY_SUPPRESSION_WINDOW_MS` when possible.
  * 3. Return the override when it is a number, otherwise fall back to 200.
  * @type {number}
-*/
+ */
 const READY_SUPPRESSION_WINDOW_MS = (() => {
   if (typeof window === "undefined") {
     return 200;
@@ -44,9 +44,7 @@ function getCurrentTimestamp() {
 function sanitizeDetailValue(value) {
   if (value === null || value === undefined) return null;
   const valueType = typeof value;
-  return valueType === "string" || valueType === "number" || valueType === "boolean"
-    ? value
-    : null;
+  return valueType === "string" || valueType === "number" || valueType === "boolean" ? value : null;
 }
 
 function snapshotDetail(detail) {
@@ -106,8 +104,7 @@ function appendHistoryEntry(entry, info, detail) {
 
 function handleRoundStart(event) {
   const detail = event && typeof event === "object" ? event.detail : undefined;
-  const manualRoundStart =
-    detail && typeof detail === "object" && detail?.source === "next-button";
+  const manualRoundStart = detail && typeof detail === "object" && detail?.source === "next-button";
   const timestamp = getCurrentTimestamp();
   if (manualRoundStart) {
     lastManualRoundStartTimestamp = timestamp;

@@ -113,7 +113,10 @@ export function bindUIHelperEventHandlersDynamic() {
       const minDuration = Number(getOpponentPromptMinDuration());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
-      const promptTimestamp = displayOpponentChoosingPrompt({ markTimestamp: true, notifyReady: false });
+      const promptTimestamp = displayOpponentChoosingPrompt({
+        markTimestamp: true,
+        notifyReady: false
+      });
 
       opponentSnackbarId = setTimeout(() => {
         try {
