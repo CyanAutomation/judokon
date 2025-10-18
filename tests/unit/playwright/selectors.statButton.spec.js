@@ -62,8 +62,8 @@ describe("statButton selector helper", () => {
       { logicalName: "statButton", selector: ".foo[data-stat]" }
     ]);
 
-    expect(statButton("tech")).toBe(".foo[data-stat=\"tech\"]");
-    expect(statButton({ statKey: "tech" })).toBe(".foo[data-stat=\"tech\"]");
+    expect(statButton("tech")).toBe('.foo[data-stat="tech"]');
+    expect(statButton({ statKey: "tech" })).toBe('.foo[data-stat="tech"]');
   });
 
   it("falls back to the canonical stat button selector when schema data is missing", async () => {

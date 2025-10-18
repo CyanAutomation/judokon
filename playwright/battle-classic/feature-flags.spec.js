@@ -32,14 +32,16 @@ test.describe("enableTestMode feature flag", () => {
 
     const banner = page.locator("#test-mode-banner");
 
-    await expect.poll(async () => ({
-      hidden: await banner.getAttribute("hidden"),
-      marker: await banner.getAttribute("data-feature-test-mode"),
-      text: (await banner.textContent())?.trim()
-    })).toMatchObject({
-      hidden: null,
-      marker: "banner"
-    });
+    await expect
+      .poll(async () => ({
+        hidden: await banner.getAttribute("hidden"),
+        marker: await banner.getAttribute("data-feature-test-mode"),
+        text: (await banner.textContent())?.trim()
+      }))
+      .toMatchObject({
+        hidden: null,
+        marker: "banner"
+      });
 
     await expect(banner).toBeVisible();
     await expect(banner).toHaveAttribute("data-feature-test-mode", "banner");
@@ -74,15 +76,17 @@ test.describe("enableTestMode feature flag", () => {
 
     const banner = page.locator("#test-mode-banner");
 
-    await expect.poll(async () => ({
-      hidden: await banner.getAttribute("hidden"),
-      hasMarker: await banner.getAttribute("data-feature-test-mode"),
-      text: (await banner.textContent())?.trim()
-    })).toEqual({
-      hidden: "",
-      hasMarker: null,
-      text: ""
-    });
+    await expect
+      .poll(async () => ({
+        hidden: await banner.getAttribute("hidden"),
+        hasMarker: await banner.getAttribute("data-feature-test-mode"),
+        text: (await banner.textContent())?.trim()
+      }))
+      .toEqual({
+        hidden: "",
+        hasMarker: null,
+        text: ""
+      });
 
     await expect(banner).toBeHidden();
   });

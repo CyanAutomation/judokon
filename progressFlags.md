@@ -435,4 +435,55 @@ Skip Round Cooldown E2E Tests (no regressions):
 - If migration must be incremental, register `featureFlagsEmitter` listeners inside `src/pages/battleClassic.init.js` to call `applyBattleFeatureFlags` and `setBattleStateBadgeEnabled` until the new bootstrap lands — **NOT NEEDED (bootstrap migration complete)**
 - Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`) — **COMPLETED**
 - Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`) — **COMPLETED**
-````
+
+---
+
+## Overall Status Summary — Updated October 18, 2025
+
+### Feature Flags Implementation — ✅ **COMPLETE**
+
+All feature flags are now implemented, tested, and integrated into the battle system:
+
+- ✅ `enableTestMode` — Working (banner toggles, seed visible)
+- ✅ `enableCardInspector` — Working (inspector renders on card draw)
+- ✅ `tooltipOverlayDebug` — Working (overlays appear on debug toggle)
+- ✅ `battleStateBadge` — Working (badge shows/hides based on flag)
+- ✅ `battleStateProgress` — Working (progress list renders and tracks state)
+- ✅ `skipRoundCooldown` — Working (countdown skipped when enabled)
+- ✅ `opponentDelayMessage` — Working (snackbar timing controlled by flag)
+- ✅ `statHotkeys` & `cliShortcuts` — Decoupled (both respect stored flag state)
+- ⏸ `roundStore` — Hidden from UI (data preserved, awaiting product alignment)
+- ⏹ `viewportSimulation` — Removed (desktop-only design adopted)
+
+### QA & Test Coverage — ✅ **COMPLETE**
+
+- ✅ Feature flag bootstrap working through `setupClassicBattlePage`
+- ✅ E2E regression tests for all active flags (`playwright/battle-classic/feature-flags.spec.js`, `skip-round-cooldown.spec.js`)
+- ✅ Unit test coverage for flag-related helpers (`uiHelpers.featureFlags.test.js`)
+- ✅ Data attributes for QA automation (`data-test-mode`, `data-feature-*`)
+- ✅ No production console spam (logging properly gated)
+- ✅ Smoke test stable and reliable (20-30s runtime)
+
+### Outstanding Tasks — ⏳ **9 ITEMS**
+
+**Priority: Medium** (1 task)
+1. **Phase 2.1: Interactive Switch States** — Add hover feedback to toggle switches in settings UI
+
+**Priority: Low** (8 tasks)
+2. **Phase 1.1: Visual Hierarchy and Grouping** — Improve fieldset styling and legend prominence
+3. **Phase 1.2: Link Layout Polish** — Tune grid gutters for wide desktop displays
+4. **Phase 1.3: Switch Control Sizing** — Tighten switch dimensions relative to content
+5. **Phase 2.2: Display Mode Previews** — Add visual theme previews to display mode selector
+6. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro)
+7. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
+8. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
+9. **Phase 3.3: Search/Filter for Advanced Settings** — Add searchable filter to feature flags section
+
+### Recommendation
+
+The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
+1. **Phase 2.1** (Interactive Switch States) if improving settings page interactivity is valued
+2. **Phase 3.3** (Search/Filter) if the number of feature flags continues to grow
+3. Remaining Phase 1 and Phase 2 tasks are polish items with lower priority
+
+`````

@@ -34,13 +34,11 @@ describe("battleCLI accessibility smoke tests", () => {
     battleCLI.normalizeShortcutCopy();
     const keyRange = document.getElementById("cli-controls-key-range");
     expect(keyRange?.textContent).toBe("1–5");
-    const keyLabels = Array.from(
-      hint?.querySelectorAll(".cli-controls-hint__key") ?? []
-    ).map((el) => el.textContent?.trim());
+    const keyLabels = Array.from(hint?.querySelectorAll(".cli-controls-hint__key") ?? []).map(
+      (el) => el.textContent?.trim()
+    );
     expect(keyLabels).toEqual(["1–5", "Enter/Space", "H", "Q"]);
-    const announcement = document
-      .getElementById("cli-controls-hint-announce")
-      ?.textContent?.trim();
+    const announcement = document.getElementById("cli-controls-hint-announce")?.textContent?.trim();
     expect(announcement).toBe(
       "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."
     );
