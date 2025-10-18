@@ -25,19 +25,25 @@ function now() {
 /**
  * @summary Records the timestamp when the opponent prompt was shown.
  * @param {number} [timestamp=now()] - The timestamp to record. Defaults to the current time.
- * @returns {void}
+ * @param {{ notify?: boolean }} [options] - Control whether the ready event is emitted.
+ * @returns {number | undefined} The recorded timestamp when valid.
  * @pseudocode
  * 1. Get the current timestamp if not provided.
  * 2. Validate that the timestamp is a finite, non-negative number.
  * 3. If valid, update the module-scoped `lastPromptTimestamp`.
- * 4. Emit the `opponentPromptReady` battle event with the recorded timestamp.
+ * 4. Emit the `opponentPromptReady` battle event unless `options.notify === false`.
+ * 5. Return the recorded timestamp for downstream consumers.
  */
-export function recordOpponentPromptTimestamp(timestamp = now()) {
+export function recordOpponentPromptTimestamp(timestamp = now(), options = {}) {
   const value = Number(timestamp);
   if (Number.isFinite(value) && value >= 0) {
     lastPromptTimestamp = value;
-    notifyPromptReady(value);
+    if (options.notify !== false) {
+      notifyPromptReady(value);
+    }
+    return value;
   }
+  return undefined;
 }
 
 function notifyPromptReady(timestamp) {
@@ -78,13 +84,15 @@ export function resetOpponentPromptTimestamp() {
 
 /**
  * @summary A convenience helper to record the current time as the opponent prompt timestamp.
- * @returns {void}
+ * @param {{ notify?: boolean }} [options] - Pass-through options for notification behavior.
+ * @returns {number | undefined} The recorded timestamp when valid.
  * @pseudocode
  * 1. Get the current time using the internal `now()` helper.
- * 2. Call `recordOpponentPromptTimestamp` with the current time.
+ * 2. Call `recordOpponentPromptTimestamp` with the current time and options.
+ * 3. Return the recorded timestamp for callers that need to reuse the value.
  */
-export function markOpponentPromptNow() {
-  recordOpponentPromptTimestamp(now());
+export function markOpponentPromptNow(options = {}) {
+  return recordOpponentPromptTimestamp(now(), options);
 }
 
 function readMinOverride() {
