@@ -50,8 +50,8 @@ test.describe("Classic Battle – auto-advance", () => {
     const countdown = page.locator('[data-testid="next-round-timer"], #next-round-timer');
     const beforeRoundCounter = (await roundCounter.textContent().catch(() => null))?.trim() || "";
     const beforeRoundMessage = (await roundMsg.textContent().catch(() => null))?.trim() || "";
-    const { battleState: beforeBattleState, hasEnabledStatButtons: hadEnabledStatButtonsBefore } =
-      (await page.evaluate(() => {
+    const getBattleStateInfo = () =>
+      page.evaluate(() => {
         const bodyState = document.body?.dataset?.battleState || null;
         const attrState =
           document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state") || null;
@@ -61,7 +61,10 @@ test.describe("Classic Battle – auto-advance", () => {
         ).some((button) => !button.disabled);
 
         return { battleState, hasEnabledStatButtons };
-      })) || { battleState: "", hasEnabledStatButtons: false };
+      });
+
+    const { battleState: beforeBattleState, hasEnabledStatButtons: hadEnabledStatButtonsBefore } =
+      (await getBattleStateInfo()) || { battleState: "", hasEnabledStatButtons: false };
 
     let cooldownReachedViaApi = false;
     const apiResult = await page.evaluate(async (waitTimeout) => {
@@ -115,19 +118,7 @@ test.describe("Classic Battle – auto-advance", () => {
           const [counterText, messageText, stateInfo] = await Promise.all([
             roundCounter.textContent().catch(() => null),
             roundMsg.textContent().catch(() => null),
-            page.evaluate(() => {
-              const bodyState = document.body?.dataset?.battleState || null;
-              const attrState =
-                document
-                  .querySelector("[data-battle-state]")
-                  ?.getAttribute("data-battle-state") || null;
-              const battleState = bodyState || attrState || "";
-              const hasEnabledStatButtons = Array.from(
-                document.querySelectorAll("#stat-buttons button, [data-testid=\"stat-button\"]")
-              ).some((button) => !button.disabled);
-
-              return { battleState, hasEnabledStatButtons };
-            })
+            getBattleStateInfo()
           ]);
           const counter = (counterText || "").trim();
           const message = (messageText || "").trim();
@@ -139,7 +130,8 @@ test.describe("Classic Battle – auto-advance", () => {
           const messageAppeared = !beforeRoundMessage && message && message !== beforeRoundCounter;
           const messageCleared = Boolean(beforeRoundMessage && !message);
           const waitingForPlayerAction = battleState === "waitingForPlayerAction";
-          const battleStateAdvanced = waitingForPlayerAction && beforeBattleState !== "waitingForPlayerAction";
+          const transitionedToWaitingForAction =
+            waitingForPlayerAction && beforeBattleState !== "waitingForPlayerAction";
           const statButtonsReenabled = hasEnabledStatButtons && !hadEnabledStatButtonsBefore;
 
           return Boolean(
@@ -147,7 +139,7 @@ test.describe("Classic Battle – auto-advance", () => {
               messageChanged ||
               messageAppeared ||
               messageCleared ||
-              battleStateAdvanced ||
+              transitionedToWaitingForAction ||
               statButtonsReenabled
           );
         },
