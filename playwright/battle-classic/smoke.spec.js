@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { waitForBattleReady } from "../helpers/battleStateHelper.js";
+const showLogsInBrowser = typeof process !== "undefined" && !!process?.env?.SHOW_TEST_LOGS;
 
 test.describe("Classic Battle page", () => {
   test("plays a full match and shows the end modal", async ({ page }) => {
@@ -9,9 +10,25 @@ test.describe("Classic Battle page", () => {
       };
     });
 
-    page.on("console", (message) => {
-      console.log("page console:", message.text());
-    });
+    if (showLogsInBrowser) {
+      page.on("console", (message) => {
+        const type = message.type();
+        if (type !== "warning" && type !== "error") return;
+
+        const text = message.text();
+        const isNoisyResource404 =
+          /Failed to load resource: the server responded with a status of 404/i.test(text);
+        const isBenignCountryMapping = /countryCodeMapping\.json/i.test(text);
+        const isBenignNavFallback =
+          /Failed to fetch (navigation items|game modes), falling back to import/i.test(text);
+        if (isNoisyResource404 || isBenignCountryMapping || isBenignNavFallback) {
+          return;
+        }
+
+        const log = type === "error" ? console.error : console.warn;
+        log(`[browser:${type}]`, text);
+      });
+    }
 
     await page.goto("/src/pages/battleClassic.html");
 
