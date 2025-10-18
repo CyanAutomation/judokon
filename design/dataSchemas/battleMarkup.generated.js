@@ -46,11 +46,11 @@ export default {
     },
     {
       logicalName: "statButton",
-      selector: ".stat-button[data-stat][data-player]",
+      selector: ".stat-button[data-stat]",
       dataTestId: "battle:stat-button",
       role: "button",
       description:
-        "Interactive stat button. Attributes: data-stat (strength|speed|tech) and data-player.",
+        "Interactive stat button. Attribute data-stat has values strength|speed|tech.",
       owner: "frontend-team",
       stability: "stable",
       aliases: ["button.stat-action"]

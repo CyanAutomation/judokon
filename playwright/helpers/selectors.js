@@ -48,20 +48,11 @@ export function playerCard(playerIndex) {
  */
 export function statButton(playerIndex, statKey) {
   const entry = findEntryByLogicalName("statButton");
-  if (!entry) {
-    if (typeof statKey !== "undefined")
-      return `#stat-buttons button[data-player="${playerIndex}"][data-stat="${statKey}"]`;
-    return `#stat-buttons button[data-player="${playerIndex}"]`;
-  }
-  let sel = entry.selector;
-  // Replace data-player placeholder if present
-  sel = sel.replace(/\[data-player\]/, `[data-player=\"${playerIndex}\"]`);
+  let sel = entry ? entry.selector : "#stat-buttons button[data-stat]";
   if (typeof statKey !== "undefined") {
-    sel = sel
-      .replace(/\[data-stat\]/, `[data-stat=\"${statKey}\"]`)
-      .replace(/\[data-stat\]/g, `[data-stat=\"${statKey}\"]`);
-    // If original selector used generic attribute, ensure it's applied
-    if (!/data-stat/.test(sel)) {
+    if (/\[data-stat(?:=[^\]]*)?\]/.test(sel)) {
+      sel = sel.replace(/\[data-stat(?:=[^\]]*)?\]/g, `[data-stat=\"${statKey}\"]`);
+    } else {
       sel += `[data-stat=\"${statKey}\"]`;
     }
   }
