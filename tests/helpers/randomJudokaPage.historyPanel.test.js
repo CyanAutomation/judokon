@@ -140,6 +140,7 @@ describe("randomJudokaPage history panel", () => {
     const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
     await initRandomJudokaPage();
 
+    const panel = document.getElementById("history-panel");
     const toggleBtn = document.getElementById("toggle-history-btn");
     const historyTitle = panel.querySelector("h2");
 
