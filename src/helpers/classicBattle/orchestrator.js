@@ -25,6 +25,7 @@ import { initScoreboardAdapter } from "./scoreboardAdapter.js";
 import { initPreloadServices } from "./preloadService.js";
 import { createStateManager } from "./stateManager.js";
 import "./uiService.js";
+import { debugLog } from "./debugLog.js";
 
 let machine = null;
 let machineInitPromise = null;
@@ -269,7 +270,7 @@ export async function initClassicBattleOrchestrator(
   dependencies = {},
   hooks = {}
 ) {
-  console.log("[DEBUG] initClassicBattleOrchestrator() called");
+  debugLog("initClassicBattleOrchestrator() called");
   if (machine) {
     return machine;
   }
@@ -555,7 +556,7 @@ function attachListeners(machineRef) {
     // ignore: catalog event is informational
   }
   debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef);
-  console.error("[TEST DEBUG] orchestrator: Exposing machineRef", machineRef);
+  debugLog("orchestrator: exposing machineRef", machineRef);
   if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
     globalThis.__classicBattleDebugExpose("getClassicBattleMachine", () => machineRef);
   }
@@ -654,7 +655,7 @@ export function disposeClassicBattleOrchestrator() {
  */
 export function getBattleStateMachine() {
   if (typeof console !== "undefined") {
-    console.log("[TEST DEBUG] getBattleStateMachine TOP, machine:", machine);
+    debugLog("getBattleStateMachine: returning existing machine", machine);
   }
   return machine;
 }

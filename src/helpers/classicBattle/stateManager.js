@@ -1,4 +1,5 @@
 import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
+import { debugLog } from "./debugLog.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -78,9 +79,7 @@ export async function createStateManager(
   onTransition,
   stateTable = CLASSIC_BATTLE_STATES
 ) {
-  if (typeof console !== "undefined") {
-    console.error("[TEST DEBUG] createStateManager: stateTable", stateTable);
-  }
+  debugLog("createStateManager: stateTable", stateTable);
   const byName = new Map();
   let initial = null;
   for (const s of Array.isArray(stateTable) ? stateTable : []) {
@@ -96,17 +95,14 @@ export async function createStateManager(
     context,
     getState: () => current,
     async dispatch(eventName, payload) {
-      if (typeof console !== "undefined") {
-        console.error(
-          "[TEST DEBUG] stateManager: dispatch called with",
-          "event=",
-          eventName,
-          "payload=",
+      debugLog(
+        "stateManager: dispatch called",
+        {
+          event: eventName,
           payload,
-          "current=",
           current
-        );
-      }
+        }
+      );
       try {
         const state = byName.get(current);
         const trigger = state?.triggers?.find((t) => t.on === eventName);
@@ -122,14 +118,9 @@ export async function createStateManager(
           return false;
         }
         const from = current;
-        console.error(
-          "[TEST DEBUG] stateManager: Before current update, target:",
-          target,
-          "current:",
-          current
-        );
+        debugLog("stateManager: before current update", { target, current });
         current = target;
-        console.error("[TEST DEBUG] stateManager: After current update, current:", current);
+        debugLog("stateManager: after current update", { current });
         // Validate the state transition
         if (!validateStateTransition(from, target, eventName, stateTable)) {
           console.error(
@@ -138,13 +129,7 @@ export async function createStateManager(
           return false;
         }
         // [TEST DEBUG] log state transition attempt
-        if (typeof console !== "undefined") {
-          console.error("[TEST DEBUG] stateManager transition:", {
-            from,
-            to: target,
-            event: eventName
-          });
-        }
+        debugLog("stateManager transition", { from, to: target, event: eventName });
         try {
           await onTransition?.({ from, to: target, event: eventName });
         } catch {}
