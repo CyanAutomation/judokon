@@ -264,7 +264,9 @@ await pressKey("Enter");
 ## Debugging Tests
 
 - Enable RAF mock debug output: `RAF_MOCK_DEBUG=1 npx vitest run`
-- Show test logs: `SHOW_TEST_LOGS=1 npx vitest run`
+- Show Vitest logs: `SHOW_TEST_LOGS=1 npx vitest run`
+- Playwright runs set a `window.__PLAYWRIGHT_TEST__` flag that keeps client-side
+  logging quiet by default. Opt in with `SHOW_TEST_LOGS=1 npx playwright test`.
 - Run with verbose output: `npx vitest run --reporter=verbose`
 
 ## Related Documentation

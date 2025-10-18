@@ -1,21 +1,23 @@
-/* Lightweight logger that stays silent during Vitest runs unless explicitly enabled.
- * Purpose: many modules use console.log at import or runtime for debug traces.
- * Tests already mute console in setup, but some logs can still escape. This
- * helper centralizes the gate so library code can opt-in to quieter output.
+/* Lightweight logger that stays silent during Vitest and Playwright runs
+ * unless explicitly enabled. Many modules emit console output at import or
+ * runtime for debug traces. Tests already mute console in setup, but some logs
+ * can still escape. This helper centralizes the gate so library code can
+ * opt-in to quieter output.
  */
-const isVitest = typeof process !== "undefined" && !!process.env && !!process.env.VITEST;
-const nodeShowTestLogs =
-  typeof process !== "undefined" && !!process.env && !!process.env.SHOW_TEST_LOGS;
-const globalShowTestLogs =
-  typeof globalThis !== "undefined" &&
-  !!(globalThis.__SHOW_TEST_LOGS__ || globalThis.SHOW_TEST_LOGS);
-const showTestLogs = nodeShowTestLogs || globalShowTestLogs;
-const isPlaywright =
-  typeof globalThis !== "undefined" && !!globalThis.__PLAYWRIGHT_TEST__;
+const isVitest = () => typeof process !== "undefined" && Boolean(process.env?.VITEST);
+const isPlaywright = () =>
+  typeof globalThis !== "undefined" && Boolean(globalThis.__PLAYWRIGHT_TEST__);
+const shouldShowTestLogs = () => {
+  const nodeFlag = typeof process !== "undefined" && Boolean(process.env?.SHOW_TEST_LOGS);
+  const globalFlag =
+    typeof globalThis !== "undefined" &&
+    Boolean(globalThis.__SHOW_TEST_LOGS__ || globalThis.SHOW_TEST_LOGS);
+  return nodeFlag || globalFlag;
+};
 
 function shouldLog() {
   // In test runners default to silence unless SHOW_TEST_LOGS is truthy.
-  if ((isVitest || isPlaywright) && !showTestLogs) return false;
+  if ((isVitest() || isPlaywright()) && !shouldShowTestLogs()) return false;
   return true;
 }
 
