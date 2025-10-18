@@ -283,7 +283,6 @@ Created `playwright/battle-classic/skip-round-cooldown.spec.js` with comprehensi
 **Verification Results:**
 
 ````markdown
-
 ```bash
 Playwright Tests:
   4 passed (14.8s)
@@ -380,4 +379,4 @@ Skip Round Cooldown E2E Tests (no regressions):
 - If migration must be incremental, register `featureFlagsEmitter` listeners inside `src/pages/battleClassic.init.js` to call `applyBattleFeatureFlags` and `setBattleStateBadgeEnabled` until the new bootstrap lands — **NOT NEEDED (bootstrap migration complete)**
 - Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`) — **COMPLETED**
 - Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`) — **COMPLETED**
-
+````
