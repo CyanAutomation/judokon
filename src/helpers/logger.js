@@ -4,8 +4,12 @@
  * helper centralizes the gate so library code can opt-in to quieter output.
  */
 const isVitest = typeof process !== "undefined" && !!process.env && !!process.env.VITEST;
-const showTestLogs =
+const nodeShowTestLogs =
   typeof process !== "undefined" && !!process.env && !!process.env.SHOW_TEST_LOGS;
+const globalShowTestLogs =
+  typeof globalThis !== "undefined" &&
+  !!(globalThis.__SHOW_TEST_LOGS__ || globalThis.SHOW_TEST_LOGS);
+const showTestLogs = nodeShowTestLogs || globalShowTestLogs;
 const isPlaywright =
   typeof globalThis !== "undefined" && !!globalThis.__PLAYWRIGHT_TEST__;
 
