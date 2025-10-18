@@ -205,7 +205,7 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
  * @pseudocode
  * 1. Remove the `hidden` attribute from each `.settings-section-content`.
  * 2. Set `aria-expanded` to `true` on every `.settings-section-toggle`.
- * 3. Set the `open`/`aria-expanded` attributes on `<details>/<summary>` pairs.
+ * 3. Set `open` property to `true` on `<details>` elements and `aria-expanded="true"` on their `<summary>` children.
  */
 function expandAllSections() {
   document.querySelectorAll(".settings-section-content").forEach((el) => {
@@ -218,9 +218,6 @@ function expandAllSections() {
 
   document.querySelectorAll("#settings-form details").forEach((details) => {
     details.open = true;
-    if (!details.hasAttribute("open")) {
-      details.setAttribute("open", "");
-    }
 
     const summary = details.querySelector("summary");
     if (summary) {
