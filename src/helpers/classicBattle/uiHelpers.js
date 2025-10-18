@@ -637,6 +637,9 @@ export function registerRoundStartErrorHandler(retryFn) {
  * @returns {void}
  */
 export function selectStat(store, stat) {
+  try {
+    bindUIHelperEventHandlersDynamic();
+  } catch {}
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
@@ -652,12 +655,41 @@ export function selectStat(store, stat) {
   const playerVal = getCardStatValue(pCard, stat);
   const opponentVal = getCardStatValue(oCard, stat);
   // fire selection and snackbar
+  let delayOpponentMessage = false;
   try {
-    Promise.resolve(handleStatSelection(store, stat, { playerVal, opponentVal })).catch(() => {});
-  } catch {}
+    delayOpponentMessage = isEnabled("opponentDelayMessage");
+  } catch {
+    delayOpponentMessage = false;
+  }
   try {
-    showSnackbar(`You Picked: ${label}`);
+    const selectionOptions = delayOpponentMessage
+      ? { playerVal, opponentVal, delayOpponentMessage: true }
+      : { playerVal, opponentVal };
+    Promise.resolve(handleStatSelection(store, stat, selectionOptions)).catch(() => {});
   } catch {}
+  if (delayOpponentMessage) {
+    try {
+      if (store && typeof store === "object") {
+        store.__delayOpponentMessage = true;
+      }
+    } catch {}
+  }
+  let shouldShowSelectionToast = false;
+  try {
+    const storeDelayFlag =
+      !!store &&
+      typeof store === "object" &&
+      Object.prototype.hasOwnProperty.call(store, "__delayOpponentMessage") &&
+      store.__delayOpponentMessage === true;
+    shouldShowSelectionToast = !delayOpponentMessage && !storeDelayFlag;
+  } catch {
+    shouldShowSelectionToast = false;
+  }
+  if (!delayOpponentMessage && shouldShowSelectionToast) {
+    try {
+      showSnackbar(`You Picked: ${label}`);
+    } catch {}
+  }
 }
 
 const STAT_BUTTON_HANDLER_KEY = "__classicBattleStatHandler";

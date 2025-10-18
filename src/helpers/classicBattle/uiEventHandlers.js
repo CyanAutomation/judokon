@@ -6,7 +6,7 @@ import { t } from "../i18n.js";
 import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
-import { markOpponentPromptNow } from "./opponentPromptTracker.js";
+import { markOpponentPromptNow, getOpponentPromptMinDuration } from "./opponentPromptTracker.js";
 import { isEnabled } from "../featureFlags.js";
 
 let opponentSnackbarId = 0;
@@ -102,9 +102,18 @@ export function bindUIHelperEventHandlersDynamic() {
         return;
       }
 
+      try {
+        showSnackbar(t("ui.opponentChoosing"));
+      } catch {}
+
+      const minDuration = Number(getOpponentPromptMinDuration());
+      const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
+
       opponentSnackbarId = setTimeout(() => {
-        displayOpponentChoosingPrompt();
-      }, resolvedDelay);
+        try {
+          markOpponentPromptNow();
+        } catch {}
+      }, scheduleDelay);
     } catch {}
   });
 
