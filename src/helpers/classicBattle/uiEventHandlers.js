@@ -102,17 +102,11 @@ export function bindUIHelperEventHandlersDynamic() {
         return;
       }
 
-      try {
-        showSnackbar(t("ui.opponentChoosing"));
-      } catch {}
-
       const minDuration = Number(getOpponentPromptMinDuration());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
       opponentSnackbarId = setTimeout(() => {
-        try {
-          markOpponentPromptNow();
-        } catch {}
+        displayOpponentChoosingPrompt();
       }, scheduleDelay);
     } catch {}
   });
@@ -137,6 +131,11 @@ export function bindUIHelperEventHandlersDynamic() {
     try {
       showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
       updateDebugPanel();
+    } catch {}
+    try {
+      if (store && typeof store === "object") {
+        delete store.__delayOpponentMessage;
+      }
     } catch {}
   });
 }
