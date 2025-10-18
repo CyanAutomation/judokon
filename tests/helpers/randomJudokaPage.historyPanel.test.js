@@ -112,4 +112,171 @@ describe("randomJudokaPage history panel", () => {
     const items = Array.from(panel.querySelectorAll("li")).map((li) => li.textContent);
     expect(items).toEqual(["F Six", "E Five", "D Four", "C Three", "B Two"]);
   });
+
+  it("moves focus to history title when panel opens", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const generateRandomCard = vi.fn();
+    const fetchJson = vi.fn().mockResolvedValue([]);
+
+    const applyMotionPreference = vi.fn();
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
+
+    const toggleBtn = document.getElementById("toggle-history-btn");
+    const historyTitle = panel.querySelector("h2");
+
+    // Open the panel
+    toggleBtn.click();
+    // Wait for the microtask that moves focus
+    await Promise.resolve();
+
+    // Focus should be on the history title
+    expect(document.activeElement).toBe(historyTitle);
+  });
+
+  it("returns focus to toggle button when panel closes", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const generateRandomCard = vi.fn();
+    const fetchJson = vi.fn().mockResolvedValue([]);
+
+    const applyMotionPreference = vi.fn();
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
+
+    const toggleBtn = document.getElementById("toggle-history-btn");
+
+    // Open and then close the panel
+    toggleBtn.click();
+    await Promise.resolve();
+    toggleBtn.click();
+
+    // Focus should return to the toggle button
+    expect(document.activeElement).toBe(toggleBtn);
+  });
+
+  it("closes panel when Escape key is pressed", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const generateRandomCard = vi.fn();
+    const fetchJson = vi.fn().mockResolvedValue([]);
+
+    const applyMotionPreference = vi.fn();
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
+
+    const panel = document.getElementById("history-panel");
+    const toggleBtn = document.getElementById("toggle-history-btn");
+
+    // Open the panel
+    toggleBtn.click();
+    await Promise.resolve();
+    expect(panel.getAttribute("aria-hidden")).toBe("false");
+
+    // Press Escape
+    const escapeEvent = new KeyboardEvent("keydown", {
+      key: "Escape",
+      code: "Escape"
+    });
+    document.dispatchEvent(escapeEvent);
+
+    // Panel should close
+    expect(panel.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("restores focus to toggle button after Escape closes panel", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const generateRandomCard = vi.fn();
+    const fetchJson = vi.fn().mockResolvedValue([]);
+
+    const applyMotionPreference = vi.fn();
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
+
+    const toggleBtn = document.getElementById("toggle-history-btn");
+
+    // Open the panel
+    toggleBtn.click();
+    await Promise.resolve();
+
+    // Press Escape
+    const escapeEvent = new KeyboardEvent("keydown", {
+      key: "Escape",
+      code: "Escape"
+    });
+    document.dispatchEvent(escapeEvent);
+
+    // Focus should be on the toggle button
+    expect(document.activeElement).toBe(toggleBtn);
+  });
 });

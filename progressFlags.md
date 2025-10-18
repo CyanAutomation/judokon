@@ -28,6 +28,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Strengthened the `battleStateProgress` flag coverage with Playwright assertions that the list renders, tracks round transitions, and remaps interrupt/modification states to their core markers (`playwright/battle-classic/battle-state-progress.spec.js`); validated with `npx vitest run tests/helpers/battleStateProgress.test.js` and `npx playwright test playwright/battle-classic/battle-state-progress.spec.js`.
 - Added tooltip viewer Playwright coverage to assert the debug overlay toggles body markers and tooltip outlines when enabled/disabled (`playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`); validated with `npx vitest run tests/helpers/tooltip.test.js` and `npx playwright test playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`.
 - Mirrored `data-feature-card-inspector` markers onto the inner judoka card element so automation can track inspector state; updated component logic (`src/components/JudokaCard.js`, `src/helpers/cardUtils.js`) and regression tests (`tests/helpers/judokaCard.test.js`).
+- Synced `data-feature-battle-state-badge` markers across both body and badge elements so QA can read flag state consistently (`src/helpers/classicBattle/uiHelpers.js`); refreshed unit coverage (`tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`).
 
 ## Critical blocker
 
@@ -65,7 +66,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Status: **Working** — `ClassicBattleView` listens for `featureFlagsChange` and calls `setBattleStateBadgeEnabled`, so flipping the flag now shows/hides the badge in both runtime and tests (`src/helpers/classicBattle/view.js:24-40`, `src/helpers/classicBattle/uiHelpers.js:932-959`).
   - Confidence: High.
   - Effort: Low (add QA data hooks and unit coverage for the helper).
-  - Recommendation: Surface a `data-feature-battle-state-badge` attribute and expand unit tests around `setBattleStateBadgeEnabled`.
+  - Recommendation: Reference the synchronized body/badge markers in QA docs (`data-feature-battle-state-badge`) and continue expanding unit coverage if new badge formats are introduced.
 
 - `battleStateProgress`
   - Status: **Implemented (QA instrumented)** — `setupUIBindings` now runs in production and calls `initBattleStateProgress`, so enabling the flag renders the progress list with `data-feature-battle-state-*` hooks (`src/helpers/classicBattle/setupUIBindings.js:28-52`, `src/helpers/battleStateProgress.js:1-214`).

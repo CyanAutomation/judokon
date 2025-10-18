@@ -24,6 +24,7 @@
   "prdDevelopmentStandards.md",
   "prdDrawRandomCard.md",
   "prdEventContracts.md",
+  "prdFlatDesign.md",
   "prdGameModes.md",
   "prdHomePageNavigation.md",
   "prdJudokaCard.md",
@@ -53,6 +54,5 @@
   "prdTooltipViewer.md",
   "prdUIDesignSystem.md",
   "prdUpdateJudoka.md",
-  "prdVectorDatabaseRAG.md",
-  "prdViewportSimulation.md"
+  "prdVectorDatabaseRAG.md"
 ]

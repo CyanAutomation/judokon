@@ -121,9 +121,9 @@ test.describe("View Judoka screen", () => {
     expect(focusedId).toBe("toggle-history-btn");
   });
 
-  test("history panel focus management - clicking button again also closes and restores focus", async (
-    { page }
-  ) => {
+  test("history panel focus management - clicking button again also closes and restores focus", async ({
+    page
+  }) => {
     const historyBtn = page.locator("#toggle-history-btn");
     const historyPanel = page.locator("#history-panel");
 
