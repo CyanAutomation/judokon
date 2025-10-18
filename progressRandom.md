@@ -75,12 +75,13 @@ The following tasks represent future work opportunities that have not yet been i
 
 #### Actions Taken - Task 1
 
-- Defined a `createDrawCardStateMachine()` factory function that encapsulates all state management
-- Implemented 4 explicit states: `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`
-- Each state has an `onEnter()` handler that updates button UI atomically
-- Defined valid state transitions: IDLE→DRAWING, DRAWING→(SUCCESS|ERROR), (SUCCESS|ERROR)→IDLE
-- Invalid transitions throw descriptive errors immediately, catching bugs early
-- Extracted `updateDrawButtonLabel()` as a shared utility for both the state machine and test API
+1. **Created State Machine Module** (`src/helpers/drawCardStateMachine.js`):
+   - Defined a `createDrawCardStateMachine()` factory function that encapsulates all state management
+   - Implemented 4 explicit states: `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`
+   - Each state has an `onEnter()` handler that updates button UI atomically
+   - Defined valid state transitions: IDLE→DRAWING, DRAWING→(SUCCESS|ERROR), (SUCCESS|ERROR)→IDLE
+   - Invalid transitions throw descriptive errors immediately, catching bugs early
+   - Extracted `updateDrawButtonLabel()` as a shared utility for both the state machine and test API
 
 2. **Refactored `displayCard()` Function** (`src/helpers/randomJudokaPage.js`):
    - Replaced manual button state management with state machine transitions
@@ -106,6 +107,8 @@ The following tasks represent future work opportunities that have not yet been i
 
 #### Test Results - Task 1
 
+✅ **Unit Tests:** 27/27 passed
+
 - 3 passed in `randomJudokaPage.drawButton.test.js` (existing functionality preserved)
 - 6 passed in `randomJudokaPage.historyPanel.test.js` (accessibility features preserved)
 - 18 passed in `drawCardStateMachine.test.js` (new state machine tests)
@@ -118,7 +121,7 @@ The following tasks represent future work opportunities that have not yet been i
 
 ✅ **Linting:** All files pass ESLint and Prettier
 
-#### Code Quality Improvements
+#### Code Quality Improvements - Task 1
 
 - ✅ **Centralized State Management:** Button state is now managed entirely by the state machine, eliminating the risk of inconsistent UI
 - ✅ **Explicit State Transitions:** All state changes are visible in code via `stateMachine.transition()` calls
@@ -128,7 +131,7 @@ The following tasks represent future work opportunities that have not yet been i
 - ✅ **Function Length:** `displayCard` function reduced from ~110 lines to ~95 lines
 - ✅ **Separation of Concerns:** Button UI logic is isolated in the state machine module
 
-#### State Diagram
+#### State Machine Diagram
 
 ```text
        ┌─────────────┐
@@ -159,9 +162,8 @@ The following tasks represent future work opportunities that have not yet been i
        └─────────────┘
 ```
 
-#### Code Quality Improvements - Task 1
-
 #### Verification Summary - Task 1
+
 - ✅ State transitions are explicit and validated
 - ✅ Button disabled/enabled state is consistent across all paths
 - ✅ All existing tests pass without modification
@@ -228,6 +230,18 @@ The following tasks represent future work opportunities that have not yet been i
 
 **Phase 1 — QA Fixes:** ✅ Complete (All 4 items verified)
 **Phase 2 — Code Quality Enhancements:** ✅ Complete (2 enhancements delivered)
-**Phase 3 — Future Tasks:** ⏳ Outstanding (2 tasks identified, not yet started)
+**Phase 3 — Outstanding Tasks:** ✅ Complete (Both tasks successfully implemented)
+
+- **Task 1:** State Machine Refactoring ✅ Complete
+  - Implementation: Complete
+  - Unit Tests: 18/18 passing
+  - Playwright Tests: 7/7 passing
+  - No regressions detected
+
+- **Task 2:** History Panel Accessibility ✅ Complete
+  - Implementation: Complete
+  - Unit Tests: 6/6 passing (4 new focus management tests)
+  - Playwright Tests: 7/7 passing (4 new E2E accessibility tests)
+  - No regressions detected
 
 The project has a solid foundation. Phase 3 tasks are opportunities to enhance state management robustness and critical accessibility patterns. Prioritize Task 2 (Focus Management) first due to its accessibility criticality.

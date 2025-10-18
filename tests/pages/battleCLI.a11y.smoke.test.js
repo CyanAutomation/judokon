@@ -43,9 +43,9 @@ describe("battleCLI accessibility smoke tests", () => {
     expect(keyRange?.textContent).toBe("1–5");
 
     // Test that keyboard shortcut keys are exposed in the expected order for assistive tech
-    const keyLabels = Array.from(
-      hint.querySelectorAll(".cli-controls-hint__key") ?? []
-    ).map((el) => el?.textContent?.trim());
+    const keyLabels = Array.from(hint.querySelectorAll(".cli-controls-hint__key") ?? []).map((el) =>
+      el?.textContent?.trim()
+    );
     expect(keyLabels).toEqual(["1–5", "Enter/Space", "H", "Q"]);
 
     // Verify the screen reader announcement contains full context and is exposed via aria-describedby
