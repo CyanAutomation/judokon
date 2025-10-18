@@ -10,6 +10,7 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 const showSnackbar = vi.fn();
 const markOpponentPromptNow = vi.fn();
 const recordOpponentPromptTimestamp = vi.fn();
+const getOpponentPromptMinDuration = vi.fn(() => 600);
 const scoreboardClearTimer = vi.fn();
 const renderOpponentCard = vi.fn();
 const showRoundOutcome = vi.fn();
@@ -26,7 +27,8 @@ vi.mock("../../src/helpers/featureFlags.js", () => ({
 }));
 vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
   markOpponentPromptNow,
-  recordOpponentPromptTimestamp
+  recordOpponentPromptTimestamp,
+  getOpponentPromptMinDuration
 }));
 vi.mock("../../src/helpers/classicBattle/snackbar.js", () => ({
   showSelectionPrompt: vi.fn(),
@@ -77,6 +79,8 @@ describe("UI handlers: opponent message events", () => {
     markOpponentPromptNow.mockReset();
     markOpponentPromptNow.mockImplementation(() => 123.45);
     recordOpponentPromptTimestamp.mockReset();
+    getOpponentPromptMinDuration.mockReset();
+    getOpponentPromptMinDuration.mockReturnValue(600);
     scoreboardClearTimer.mockReset();
     renderOpponentCard.mockReset();
     showRoundOutcome.mockReset();
@@ -110,5 +114,25 @@ describe("UI handlers: opponent message events", () => {
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
     expect(setTimeoutSpy).not.toHaveBeenCalled();
+  });
+
+  it("reuses captured timestamp when notifying after enforced delay", () => {
+    bindUIHelperEventHandlersDynamic();
+
+    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+
+    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
+    expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: false });
+    expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(1);
+    expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+    expect(setTimeoutSpy.mock.calls[0][1]).toBe(600);
+
+    vi.runOnlyPendingTimers();
+
+    expect(recordOpponentPromptTimestamp).toHaveBeenCalledTimes(1);
+    expect(recordOpponentPromptTimestamp).toHaveBeenCalledWith(123.45);
+    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
   });
 });

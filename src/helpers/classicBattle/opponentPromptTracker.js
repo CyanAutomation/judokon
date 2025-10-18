@@ -26,7 +26,7 @@ function now() {
  * @summary Records the timestamp when the opponent prompt was shown.
  * @param {number} [timestamp=now()] - The timestamp to record. Defaults to the current time.
  * @param {{ notify?: boolean }} [options] - Control whether the ready event is emitted.
- * @returns {number | undefined} The recorded timestamp when valid.
+ * @returns {number | null} The recorded timestamp when valid.
  * @pseudocode
  * 1. Get the current timestamp if not provided.
  * 2. Validate that the timestamp is a finite, non-negative number.
@@ -43,7 +43,7 @@ export function recordOpponentPromptTimestamp(timestamp = now(), options = {}) {
     }
     return value;
   }
-  return undefined;
+  return null;
 }
 
 function notifyPromptReady(timestamp) {
@@ -85,7 +85,7 @@ export function resetOpponentPromptTimestamp() {
 /**
  * @summary A convenience helper to record the current time as the opponent prompt timestamp.
  * @param {{ notify?: boolean }} [options] - Pass-through options for notification behavior.
- * @returns {number | undefined} The recorded timestamp when valid.
+ * @returns {number | null} The recorded timestamp when valid.
  * @pseudocode
  * 1. Get the current time using the internal `now()` helper.
  * 2. Call `recordOpponentPromptTimestamp` with the current time and options.

@@ -123,11 +123,7 @@ export function bindUIHelperEventHandlersDynamic() {
             markOpponentPromptNow();
           }
         } catch {
-          try {
-            markOpponentPromptNow();
-          } catch {
-            // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
-          }
+          // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
         }
       }, scheduleDelay);
     } catch {}
