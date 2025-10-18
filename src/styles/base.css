@@ -32,6 +32,7 @@
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
+  --space-xxl: 48px;
 
   /* Aliases for compatibility */
   --space-small: var(--space-sm);

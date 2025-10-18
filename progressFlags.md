@@ -30,6 +30,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Mirrored `data-feature-card-inspector` markers onto the inner judoka card element so automation can track inspector state; updated component logic (`src/components/JudokaCard.js`, `src/helpers/cardUtils.js`) and regression tests (`tests/helpers/judokaCard.test.js`).
 - Synced `data-feature-battle-state-badge` markers across both body and badge elements so QA can read flag state consistently (`src/helpers/classicBattle/uiHelpers.js`); refreshed unit coverage (`tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`).
 - Styled settings fieldsets and section headings to improve visual grouping and hierarchy (`src/styles/settings.css`); verified contrast with `npm run check:contrast`.
+- Tuned settings quick-link gutters for wide displays via responsive spacing clamps and a new spacing token (`src/styles/settings.css`, `src/styles/base.css`).
 
 ## Critical blocker
 
@@ -170,14 +171,9 @@ This phase focuses on high-impact changes to improve the core layout, readabilit
    - **Priority:** Medium
    - **Outcome:** Enhanced `fieldset` styling provides card-like grouping, larger headings, and consistent spacing between settings blocks. Contrast verified with `npm run check:contrast`.
 
-2. **Link Layout (Desktop-Focused)** — **Outstanding**
+2. **Link Layout (Desktop-Focused)** — **Completed**
    - **Priority:** Low
-   - **Issue:** With the experience scoped to desktop resolutions, the existing three-column grid is functionally acceptable but could use spacing polish for wide screens.
-   - **Scope:** Tune the desktop grid gutters in `src/styles/settings.css` (e.g., via `column-gap`) to balance whitespace on large displays; defer responsive breakpoints until multi-viewport support returns.
-   - **Acceptance Criteria:**
-     - Grid gutters are balanced on wide displays (1920px+)
-     - No responsive breakpoints added
-     - Visual balance is improved without breaking layout
+   - **Outcome:** Introduced responsive gutter and padding clamps so quick-link tiles stay balanced on wide screens without introducing new breakpoints; backed by new `--space-xxl` spacing token.
 
 3. **Switch Control Sizing** — **Outstanding**
    - **Priority:** Low
@@ -466,23 +462,16 @@ All feature flags are now implemented, tested, and integrated into the battle sy
 ### Outstanding Tasks — ⏳ **9 ITEMS**
 
 **Priority: Medium** (1 task)
+
 1. **Phase 2.1: Interactive Switch States** — Add hover feedback to toggle switches in settings UI
 
-**Priority: Low** (8 tasks)
-2. **Phase 1.1: Visual Hierarchy and Grouping** — Improve fieldset styling and legend prominence
-3. **Phase 1.2: Link Layout Polish** — Tune grid gutters for wide desktop displays
-4. **Phase 1.3: Switch Control Sizing** — Tighten switch dimensions relative to content
-5. **Phase 2.2: Display Mode Previews** — Add visual theme previews to display mode selector
-6. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro)
-7. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
-8. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
-9. **Phase 3.3: Search/Filter for Advanced Settings** — Add searchable filter to feature flags section
+**Priority: Low** (8 tasks) 2. **Phase 1.1: Visual Hierarchy and Grouping** — Improve fieldset styling and legend prominence 3. **Phase 1.2: Link Layout Polish** — Tune grid gutters for wide desktop displays 4. **Phase 1.3: Switch Control Sizing** — Tighten switch dimensions relative to content 5. **Phase 2.2: Display Mode Previews** — Add visual theme previews to display mode selector 6. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro) 7. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter 8. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes 9. **Phase 3.3: Search/Filter for Advanced Settings** — Add searchable filter to feature flags section
 
 ### Recommendation
 
 The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
+
 1. **Phase 2.1** (Interactive Switch States) if improving settings page interactivity is valued
 2. **Phase 3.3** (Search/Filter) if the number of feature flags continues to grow
 3. Remaining Phase 1 and Phase 2 tasks are polish items with lower priority
-
-`````
+````

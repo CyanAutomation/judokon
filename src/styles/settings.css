@@ -211,8 +211,9 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-xl);
+  gap: clamp(var(--space-lg), 4vw, var(--space-xxl));
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  padding-inline: clamp(var(--space-lg), 6vw, var(--space-xxl));
 }
 
 .settings-links-list .settings-item {
