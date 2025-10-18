@@ -226,7 +226,9 @@ function getVerboseElements() {
  * if !section or !log -> return
  * scrollable = log.scrollHeight > log.clientHeight + 1
  * if !scrollable -> remove dataset flags and return
- * set dataset.scrollable, dataset.scrollTop, dataset.scrollBottom based on scroll position
+ * set dataset.scrollable = "true"
+ * atTop = log.scrollTop <= 1, atBottom = scrollHeight - scrollTop - clientHeight <= 1
+ * set dataset.scrollTop and dataset.scrollBottom based on position thresholds
  */
 export function refreshVerboseScrollIndicators() {
   const { section, log } = getVerboseElements();
@@ -254,8 +256,8 @@ export function refreshVerboseScrollIndicators() {
  * @pseudocode
  * { log } = getVerboseElements()
  * if !log -> return
- * if scroll listener not attached -> add scroll listener updating indicators
- * if resize listener not attached and window defined -> add resize listener updating indicators
+ * if scroll listener not attached -> add passive "scroll" listener updating indicators
+ * if resize listener not attached and window defined -> add passive "resize" listener updating indicators
  * refreshVerboseScrollIndicators()
  */
 export function ensureVerboseScrollHandling() {
