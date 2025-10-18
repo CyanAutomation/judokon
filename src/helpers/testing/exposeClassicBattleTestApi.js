@@ -30,7 +30,7 @@ export async function exposeClassicBattleTestAPI() {
   try {
     const mod = await import("../testApi.js");
     mod?.exposeTestAPI?.();
-  } catch (error) {
+  } catch {
     // Ignore exposure failures; tests can manually import as a fallback.
   }
 }
@@ -162,19 +162,19 @@ function getNormalizedUserAgent(nav) {
     userAgent = "";
   }
 
-    if (!userAgent) {
-      try {
-        const brands = nav.userAgentData?.brands;
-        if (Array.isArray(brands)) {
-          userAgent = brands
-            .map((brand) => brand.brand)
-            .join(" ")
-            .toLowerCase();
-        }
-      } catch {
-        userAgent = "";
+  if (!userAgent) {
+    try {
+      const brands = nav.userAgentData?.brands;
+      if (Array.isArray(brands)) {
+        userAgent = brands
+          .map((brand) => brand.brand)
+          .join(" ")
+          .toLowerCase();
       }
+    } catch {
+      userAgent = "";
     }
+  }
 
   return userAgent ? userAgent.toLowerCase() : "";
 }
