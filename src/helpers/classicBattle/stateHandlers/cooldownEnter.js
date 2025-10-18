@@ -30,6 +30,7 @@ export async function cooldownEnter(machine, payload) {
     isOrchestrated: () => context.orchestrated,
     getClassicBattleMachine: () => machine
   });
+  console.log("[DEBUG] startCooldown called successfully");
   debugLog("cooldownEnter: startCooldown completed");
 
   // Announce next round in UI
