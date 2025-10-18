@@ -217,6 +217,17 @@ function getVerboseElements() {
   };
 }
 
+/**
+ * Update scroll indicator state for the verbose log container.
+ *
+ * @returns {void}
+ * @pseudocode
+ * { section, log } = getVerboseElements()
+ * if !section or !log -> return
+ * scrollable = log.scrollHeight > log.clientHeight + 1
+ * if !scrollable -> remove dataset flags and return
+ * set dataset.scrollable, dataset.scrollTop, dataset.scrollBottom based on scroll position
+ */
 export function refreshVerboseScrollIndicators() {
   const { section, log } = getVerboseElements();
   if (!section || !log) return;
@@ -236,6 +247,17 @@ export function refreshVerboseScrollIndicators() {
   section.dataset.scrollBottom = atBottom ? "true" : "false";
 }
 
+/**
+ * Attach listeners that keep verbose log scroll indicators in sync.
+ *
+ * @returns {void}
+ * @pseudocode
+ * { log } = getVerboseElements()
+ * if !log -> return
+ * if scroll listener not attached -> add scroll listener updating indicators
+ * if resize listener not attached and window defined -> add resize listener updating indicators
+ * refreshVerboseScrollIndicators()
+ */
 export function ensureVerboseScrollHandling() {
   const { log } = getVerboseElements();
   if (!log) return;
