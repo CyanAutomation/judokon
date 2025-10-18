@@ -71,7 +71,7 @@ The following tasks represent future work opportunities that have not yet been i
 
 - **Status:** ⏳ Outstanding
 - **Priority:** Medium
-- **Current State:** The `displayCard` function in `src/helpers/randomJudokaPage.js` manages several states (`loading`, `success`, `error`) through manual boolean flags (lines 246–269) and direct DOM manipulation (e.g., `drawButton.disabled`, `drawButton.classList.add("is-loading")`). Error handling is inline within the try-catch block.
+- **Current State:** The `displayCard` function in `src/helpers/randomJudokaPage.js` (lines 240–340) manages several states (`loading`, `success`, `error`) through manual boolean flags and direct DOM manipulation (e.g., `drawButton.disabled`, `drawButton.classList.add("is-loading")`). The `enableButton()` helper function is called at various points to restore UI state. Error handling is inline within the try-catch block.
 - **Scope:** Refactor the logic into a simple state machine (e.g., with states like `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`). This would:
   - Centralize state management in a dedicated object
   - Reduce the chance of inconsistent UI (like a button remaining disabled)
@@ -88,16 +88,17 @@ The following tasks represent future work opportunities that have not yet been i
 
 - **Status:** ⏳ Outstanding
 - **Priority:** High (Critical Accessibility Pattern)
-- **Current State:** The slide-out history panel (implemented in `buildHistoryPanel()` and `toggleHistory()` in `src/helpers/randomJudokaPage.js`) is visually well-implemented with proper ARIA attributes (`aria-hidden`, `aria-expanded`, `aria-controls`). However, it lacks **keyboard focus management**, which is a critical accessibility pattern for modals and drawers.
+- **Current State:** The slide-out history panel (implemented in `buildHistoryPanel()` at line 91 and `toggleHistory()` at line 210 in `src/helpers/randomJudokaPage.js`) is visually well-implemented with proper ARIA attributes (`aria-hidden`, `aria-expanded`, `aria-controls`). However, it **does NOT implement keyboard focus management**, which is a critical accessibility pattern for modals and drawers. The `toggleHistory()` function only updates DOM visibility and ARIA attributes but does not manage focus.
 - **Scope:** Implement focus management for the history panel:
   - When the history panel is opened, programmatically move keyboard focus to a logical element within it (e.g., the panel header or first list item)
   - When the history panel is closed (either by user action or Escape key), return focus to the "History" button that opened it
   - Handle Escape key to close the panel and restore focus
+  - Optionally trap focus within the panel when open (standard modal pattern)
 - **Acceptance Criteria:**
-  - Focus moves to the panel when it opens (verify with Playwright test)
+  - Focus moves to the panel (e.g., history title h2) when it opens (verify with Playwright test)
   - Escape key closes the panel and returns focus to the toggle button
   - Focus is not lost when the panel closes
-  - Screen readers announce the state changes
+  - Screen readers announce the state changes (currently implemented via `aria-expanded` and `aria-hidden`)
   - Keyboard users can navigate the history list with arrow keys
   - Playwright tests verify focus management across open/close cycles
 
