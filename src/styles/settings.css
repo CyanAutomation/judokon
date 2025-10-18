@@ -199,7 +199,7 @@
   position: absolute;
   inset: 0;
   opacity: 0;
-  pointer-events: none;
+  cursor: pointer;
 }
 
 .display-mode-label {
@@ -258,6 +258,7 @@
   background: var(--preview-chip-alt, var(--color-primary));
 }
 
+.display-mode-option input:hover + .display-mode-label .theme-preview-card,
 .display-mode-label:hover .theme-preview-card {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
