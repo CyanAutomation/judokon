@@ -29,6 +29,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Added tooltip viewer Playwright coverage to assert the debug overlay toggles body markers and tooltip outlines when enabled/disabled (`playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`); validated with `npx vitest run tests/helpers/tooltip.test.js` and `npx playwright test playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`.
 - Mirrored `data-feature-card-inspector` markers onto the inner judoka card element so automation can track inspector state; updated component logic (`src/components/JudokaCard.js`, `src/helpers/cardUtils.js`) and regression tests (`tests/helpers/judokaCard.test.js`).
 - Synced `data-feature-battle-state-badge` markers across both body and badge elements so QA can read flag state consistently (`src/helpers/classicBattle/uiHelpers.js`); refreshed unit coverage (`tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`).
+- Styled settings fieldsets and section headings to improve visual grouping and hierarchy (`src/styles/settings.css`); verified contrast with `npm run check:contrast`.
 
 ## Critical blocker
 
@@ -161,19 +162,13 @@ Once Classic Battle is wired to the new bootstrap, the following coverage should
 
 **Status: NOT STARTED** — The following opportunities represent potential future enhancements to improve the layout, styling, and user experience of the settings page. These are suggestions for future work, not yet implemented.
 
-### Phase 1: Foundational UI/UX Improvements — **NOT STARTED**
+### Phase 1: Foundational UI/UX Improvements — **In Progress**
 
 This phase focuses on high-impact changes to improve the core layout, readability, and accessibility of the settings page.
 
-1. **Visual Hierarchy and Grouping** — **Outstanding**
+1. **Visual Hierarchy and Grouping** — **Completed**
    - **Priority:** Medium
-   - **Issue:** The settings page is a long, single-column list of options, which can be overwhelming for users. The separation between sections is not very strong.
-   - **Scope:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
-   - **Acceptance Criteria:**
-     - Each fieldset has a distinct background color or border
-     - Legend elements are visually prominent (increased font-size/weight)
-     - Layout passes accessibility checks
-     - Visual hierarchy is clear and helps users scan settings
+   - **Outcome:** Enhanced `fieldset` styling provides card-like grouping, larger headings, and consistent spacing between settings blocks. Contrast verified with `npm run check:contrast`.
 
 2. **Link Layout (Desktop-Focused)** — **Outstanding**
    - **Priority:** Low

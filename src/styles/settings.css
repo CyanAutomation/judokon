@@ -21,9 +21,18 @@
 
 /* Reset fieldset styles inside settings forms */
 .settings-form fieldset {
-  border: none;
-  margin: 0 0 var(--space-lg);
-  padding: var(--space-sm);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  background-color: var(--color-surface);
+  background-color: color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 12%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin: 0 0 var(--space-xl);
+  box-shadow: var(--shadow-base);
+}
+
+.settings-form fieldset > * + * {
+  margin-top: var(--space-md);
 }
 
 .settings-form fieldset:last-of-type {
@@ -40,9 +49,9 @@
 
 .settings-form legend {
   font-family: "Russo One", sans-serif;
-  font-size: 24px;
-  /* font-weight: bold; */
-  /* margin-block-end: var(--space-md); */
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 600;
+  margin-block-end: var(--space-md);
 }
 
 /* Settings form controls */
@@ -218,21 +227,33 @@
 
 summary {
   cursor: pointer;
-  font-weight: bold;
-  padding: var(--space-sm);
-  background-color: var(--color-tertiary);
-  border-radius: var(--radius-md);
+  font-family: "Russo One", sans-serif;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-md);
+  background-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface) 86%);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
   margin-bottom: var(--space-sm);
+  box-shadow: var(--shadow-base);
   list-style: none; /* Remove default marker */
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 summary::-webkit-details-marker {
   display: none; /* Remove default marker for Chrome */
 }
 
-summary:focus {
+summary:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface) 82%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+summary:focus-visible {
   outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline-offset: 4px;
 }
 
 .settings-item.saved {
