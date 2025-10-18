@@ -10,8 +10,8 @@ test.describe("Opponent choosing snackbar", () => {
       .first()
       .click();
 
-    // Expect snackbar to contain opponent choosing text
+    // Expect snackbar to show cooldown countdown text
     const snackbar = page.locator(".snackbar.show");
-    await expect(snackbar).toHaveText(/Opponent is choosing/i);
+    await expect(snackbar).toHaveText(/Next round in/i);
   });
 });

@@ -2,6 +2,7 @@ import { startCooldown } from "../roundManager.js";
 import { initStartCooldown } from "../cooldowns.js";
 import { exposeDebugState } from "../debugHooks.js";
 import { debugLog } from "../debugLog.js";
+import { roundStore } from "../roundStore.js";
 
 /**
  * onEnter handler for `cooldown` state.
@@ -29,15 +30,18 @@ export async function cooldownEnter(machine, payload) {
     isOrchestrated: () => context.orchestrated,
     getClassicBattleMachine: () => machine
   });
-  console.log("[DEBUG] startCooldown called successfully");
   debugLog("cooldownEnter: startCooldown completed");
-
-  // Announce next round in UI
   try {
-    const counterEl = document.getElementById("round-counter");
-    if (counterEl) {
-      counterEl.textContent = "Round 2";
-    }
+    roundStore.setRoundState("cooldown", "cooldownEnter");
+  } catch {}
+  try {
+    const current = roundStore.getCurrentRound();
+    const currentNumber =
+      current && typeof current.number === "number" && Number.isFinite(current.number)
+        ? current.number
+        : 0;
+    const nextRoundNumber = currentNumber > 0 ? currentNumber + 1 : 1;
+    roundStore.setRoundNumber(nextRoundNumber);
   } catch {}
 }
 export default cooldownEnter;
