@@ -7,8 +7,10 @@ test.describe("Classic Battle — long-run hang probe", () => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     await page.goto("/src/pages/battleClassic.html");
+    const roundSelectButton = page.locator("#round-select-2");
+    await expect(roundSelectButton).toBeVisible();
+    await roundSelectButton.click();
     await page.waitForFunction(() => !!window.battleStore);
-    await page.click("#round-select-2");
 
     // Advance several rounds by clicking first stat; verify round message updates each loop
     const loops = 6;
