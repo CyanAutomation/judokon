@@ -241,11 +241,21 @@ test.describe("CLI Battle Interface", () => {
       await ensureBattleReady(page);
 
       const controlsHint = page.locator("#cli-controls-hint");
-      await expect(controlsHint).toContainText("[1–5] Stats");
-      await expect(controlsHint).toContainText("[Enter] or [Space] Next");
-      await expect(controlsHint).toContainText("[H] Help");
-      await expect(controlsHint).toContainText("[Q] Quit");
-      await expect(controlsHint).toHaveAttribute("aria-hidden", "true");
+      await expect(controlsHint.locator(".cli-controls-hint__title")).toHaveText("Shortcuts");
+      await expect(controlsHint.locator(".cli-controls-hint__key")).toHaveText([
+        "1–5",
+        "Enter/Space",
+        "H",
+        "Q"
+      ]);
+      await expect(controlsHint).toContainText("Select stat");
+      await expect(controlsHint).toContainText("Continue");
+      await expect(controlsHint).toContainText("Toggle help");
+      await expect(controlsHint).toContainText("Quit match");
+      await expect(controlsHint.locator("#cli-controls-hint-announce")).toHaveText(
+        "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."
+      );
+      await expect(controlsHint).toBeHidden();
     });
   });
 
@@ -642,9 +652,13 @@ test.describe("CLI Battle Interface", () => {
       await page.setViewportSize({ width: 375, height: 667 });
       await startBattle(page);
 
+      const controlsHint = page.locator("#cli-controls-hint");
       await expect(page.locator("#cli-stats")).toBeVisible();
       await expect(page.locator("#cli-settings-toggle")).toBeVisible();
-      await expect(page.locator("#cli-controls-hint")).toBeVisible();
+      await expect(controlsHint).toBeHidden();
+      await expect(controlsHint.locator("#cli-controls-hint-announce")).toHaveText(
+        "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."
+      );
 
       await page.waitForFunction(
         () => document.querySelectorAll(".cli-stat").length > 0,
