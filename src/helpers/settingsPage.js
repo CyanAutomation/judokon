@@ -381,6 +381,24 @@ function showLoadSettingsError() {
 }
 
 onDomReady(initializeSettingsPage);
+
+const searchInput = document.getElementById('advanced-settings-search');
+const settingsItems = document.querySelectorAll('#feature-flags-container .settings-item');
+
+searchInput.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+
+  settingsItems.forEach(item => {
+    const label = item.querySelector('span').textContent.toLowerCase();
+    const description = item.querySelector('p').textContent.toLowerCase();
+
+    if (label.includes(searchTerm) || description.includes(searchTerm)) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+});
 /**
  * Re-exports the game-mode toggle handler used by the Settings UI.
  *

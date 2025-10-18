@@ -49,26 +49,26 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     cardOfTheDayToggle,
     fullNavigationMapToggle
   } = controls;
-  soundToggle?.addEventListener("change", () => {
+  soundToggle?.addEventListener("change", (e) => {
     const prev = !soundToggle.checked;
     Promise.resolve(
       handleUpdate("sound", soundToggle.checked, () => {
         soundToggle.checked = prev;
-      })
+      }, e.target)
     )
       .then(() => {
         showSnackbar(`Sound ${soundToggle.checked ? "enabled" : "disabled"}`);
       })
       .catch(() => {});
   });
-  motionToggle?.addEventListener("change", () => {
+  motionToggle?.addEventListener("change", (e) => {
     const prev = !motionToggle.checked;
     applyMotionPreference(motionToggle.checked);
     Promise.resolve(
       handleUpdate("motionEffects", motionToggle.checked, () => {
         motionToggle.checked = prev;
         applyMotionPreference(prev);
-      })
+      }, e.target)
     )
       .then(() => {
         showSnackbar(`Motion effects ${motionToggle.checked ? "enabled" : "disabled"}`);
@@ -77,7 +77,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   });
   if (displayRadios) {
     displayRadios.forEach((radio) => {
-      radio.addEventListener("change", () => {
+      radio.addEventListener("change", (e) => {
         if (!radio.checked) return;
         const previous = getCurrentSettings().displayMode;
         const mode = radio.value;
@@ -97,7 +97,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
             withViewTransition(() => {
               applyDisplayMode(previous);
             });
-          })
+          }, e.target)
         )
           .then(() => {
             const label = mode.charAt(0).toUpperCase() + mode.slice(1);
@@ -107,48 +107,48 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       });
     });
   }
-  typewriterToggle?.addEventListener("change", () => {
+  typewriterToggle?.addEventListener("change", (e) => {
     const prev = !typewriterToggle.checked;
     Promise.resolve(
       handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
         typewriterToggle.checked = prev;
-      })
+      }, e.target)
     )
       .then(() => {
         showSnackbar(`Typewriter effect ${typewriterToggle.checked ? "enabled" : "disabled"}`);
       })
       .catch(() => {});
   });
-  tooltipsToggle?.addEventListener("change", () => {
+  tooltipsToggle?.addEventListener("change", (e) => {
     const prev = !tooltipsToggle.checked;
     Promise.resolve(
       handleUpdate("tooltips", tooltipsToggle.checked, () => {
         tooltipsToggle.checked = prev;
-      })
+      }, e.target)
     )
       .then(() => {
         showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
       })
       .catch(() => {});
   });
-  cardOfTheDayToggle?.addEventListener("change", () => {
+  cardOfTheDayToggle?.addEventListener("change", (e) => {
     const prev = !cardOfTheDayToggle.checked;
     Promise.resolve(
       handleUpdate("showCardOfTheDay", cardOfTheDayToggle.checked, () => {
         cardOfTheDayToggle.checked = prev;
-      })
+      }, e.target)
     )
       .then(() => {
         showSnackbar(`Card of the Day ${cardOfTheDayToggle.checked ? "enabled" : "disabled"}`);
       })
       .catch(() => {});
   });
-  fullNavigationMapToggle?.addEventListener("change", () => {
+  fullNavigationMapToggle?.addEventListener("change", (e) => {
     const prev = !fullNavigationMapToggle.checked;
     Promise.resolve(
       handleUpdate("fullNavigationMap", fullNavigationMapToggle.checked, () => {
         fullNavigationMapToggle.checked = prev;
-      })
+      }, e.target)
     )
       .then(() => {
         showSnackbar(

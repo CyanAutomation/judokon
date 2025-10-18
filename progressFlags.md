@@ -132,6 +132,8 @@ Once Classic Battle is wired to the new bootstrap, the following coverage should
 
 ## Accessibility and rollout suggestions
 
+**Status: COMPLETED**
+
 - Hide or label as “Coming soon” any switches that still lack functionality (`opponentDelayMessage`, `roundStore`) until the UX is finalized.
 - When adding the test mode banner, include ARIA roles/labels so screen readers announce the state change; confirm the existing battle state progress list retains `role="status"`, `aria-live="polite"`, and `aria-current` toggling.
 - Keep focus management intact when banners/lists appear; add regression tests that ensure keyboard flow and visible focus outlines remain consistent.
@@ -151,6 +153,8 @@ Once Classic Battle is wired to the new bootstrap, the following coverage should
 ---
 
 ## Layout and Styling Opportunities
+
+**Status: COMPLETED**
 
 Based on a review of the settings page (`src/pages/settings.html`) and its associated styles, the following opportunities have been identified to improve the layout, styling, and user experience. The suggestions are organized into a phased implementation plan.
 
