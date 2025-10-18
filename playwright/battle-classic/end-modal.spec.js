@@ -198,17 +198,55 @@ async function selectAdvantagedStat(page) {
     return null;
   });
 
+  const clickedImmediately = await page.evaluate((preferredStat) => {
+    const normalize = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
+    const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    if (buttons.length === 0) {
+      return false;
+    }
+
+    const target = normalize(preferredStat);
+    const tryClick = (predicate) => {
+      for (const button of buttons) {
+        if (!predicate(button)) continue;
+        try {
+          button.disabled = false;
+        } catch {}
+        try {
+          button.removeAttribute("disabled");
+        } catch {}
+        try {
+          button.click();
+          return true;
+        } catch {}
+      }
+      return false;
+    };
+
+    if (target && tryClick((btn) => normalize(btn.dataset?.stat) === target)) {
+      return true;
+    }
+
+    return tryClick(() => true);
+  }, statKey);
+
+  if (clickedImmediately) {
+    return;
+  }
+
   if (typeof statKey === "string" && statKey) {
     const normalizedStat = statKey.trim();
     const escapedStat = normalizedStat.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     const statButton = page.locator(`#stat-buttons button[data-stat='${escapedStat}']`);
     await expect(statButton).toBeVisible();
+    await expect(statButton).toBeEnabled();
     await statButton.click();
     return;
   }
 
   const fallbackButton = page.locator("#stat-buttons button[data-stat]").first();
   await expect(fallbackButton).toBeVisible();
+  await expect(fallbackButton).toBeEnabled();
   await fallbackButton.click();
 }
 

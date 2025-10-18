@@ -21,14 +21,11 @@ import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestAp
  * Bootstrap Classic Battle page by wiring controller and view.
  *
  * @pseudocode
- * 1. Define `startCallback` which:
- *    a. Creates view and controller.
- *    b. Binds them together and initializes both.
- *    c. Creates the debug API and exposes it in test mode.
- *    d. Resolves or rejects `startPromise` based on initialization outcome.
- * 2. Await `initRoundSelectModal(startCallback)`.
- * 3. Await `startPromise`.
- * 4. Return the debug API after the round is selected.
+ * 1. Create the view and controller, exposing the controller's battle store globally for tests.
+ * 2. Define `startCallback` which binds and initializes both, then creates the debug API.
+ * 3. Await `initRoundSelectModal(startCallback)`.
+ * 4. Await `startPromise` and expose readiness markers on `window`.
+ * 5. Return the debug API after the round is selected.
  *
  * @returns {Promise<object|undefined>} Resolves to the debug API object when initialization completes (or `undefined` if not available).
  */
@@ -38,6 +35,8 @@ export async function setupClassicBattlePage() {
   } catch {}
   bridgeEngineEvents();
   let debugApi;
+  const view = new ClassicBattleView();
+  const controller = new ClassicBattleController();
   let resolveStart;
   let rejectStart;
   const startPromise = new Promise((resolve, reject) => {
@@ -45,10 +44,14 @@ export async function setupClassicBattlePage() {
     rejectStart = reject;
   });
 
+  if (typeof window !== "undefined") {
+    try {
+      window.battleStore = controller.battleStore;
+    } catch {}
+  }
+
   async function startCallback() {
     try {
-      const view = new ClassicBattleView();
-      const controller = new ClassicBattleController();
       view.bindController(controller);
       await controller.init();
       await view.init();
