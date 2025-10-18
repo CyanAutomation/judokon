@@ -270,7 +270,7 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 function clearNextRoundTimerFallback() {
   try {
     if (typeof scoreboard?.clearTimer === "function") {
-      return;
+      scoreboard.clearTimer();
     }
   } catch {}
   try {
