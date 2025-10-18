@@ -155,57 +155,112 @@ Once Classic Battle is wired to the new bootstrap, the following coverage should
 
 ## Layout and Styling Opportunities
 
-**Status: COMPLETED**
+**Status: NOT STARTED** — The following opportunities represent potential future enhancements to improve the layout, styling, and user experience of the settings page. These are suggestions for future work, not yet implemented.
 
-Based on a review of the settings page (`src/pages/settings.html`) and its associated styles, the following opportunities have been identified to improve the layout, styling, and user experience. The suggestions are organized into a phased implementation plan.
-
-### Phase 1: Foundational UI/UX Improvements
+### Phase 1: Foundational UI/UX Improvements — **NOT STARTED**
 
 This phase focuses on high-impact changes to improve the core layout, readability, and accessibility of the settings page.
 
-1. **Visual Hierarchy and Grouping:**
+1. **Visual Hierarchy and Grouping** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The settings page is a long, single-column list of options, which can be overwhelming for users. The separation between sections is not very strong.
-   - **Suggestion:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
+   - **Scope:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
+   - **Acceptance Criteria:**
+     - Each fieldset has a distinct background color or border
+     - Legend elements are visually prominent (increased font-size/weight)
+     - Layout passes accessibility checks
+     - Visual hierarchy is clear and helps users scan settings
 
-2. **Link Layout (Desktop-Focused):**
+2. **Link Layout (Desktop-Focused)** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** With the experience scoped to desktop resolutions, the existing three-column grid is functionally acceptable but could use spacing polish for wide screens.
-   - **Suggestion:** Tune the desktop grid gutters in `src/styles/settings.css` (e.g., via `column-gap`) to balance whitespace on large displays; defer responsive breakpoints until multi-viewport support returns.
+   - **Scope:** Tune the desktop grid gutters in `src/styles/settings.css` (e.g., via `column-gap`) to balance whitespace on large displays; defer responsive breakpoints until multi-viewport support returns.
+   - **Acceptance Criteria:**
+     - Grid gutters are balanced on wide displays (1920px+)
+     - No responsive breakpoints added
+     - Visual balance is improved without breaking layout
 
-3. **Switch Control Sizing:**
+3. **Switch Control Sizing** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** Toggle switches currently span a wide footprint; while acceptable on desktop, they can feel oversized relative to neighboring content.
-   - **Suggestion:** In `src/styles/settings.css`, tighten the default width/padding for `.switch` to better align with desktop proportions, keeping responsiveness work out of scope for now.
+   - **Scope:** In `src/styles/settings.css`, tighten the default width/padding for `.switch` to better align with desktop proportions, keeping responsiveness work out of scope for now.
+   - **Acceptance Criteria:**
+     - Switch sizing is proportional to neighboring content
+     - Switches remain usable (adequate touch targets)
+     - Visual balance is improved
 
-### Phase 2: Enhanced Interactivity and Theming
+### Phase 2: Enhanced Interactivity and Theming — **NOT STARTED**
 
 This phase focuses on making the settings page more interactive and visually engaging, while also improving theme consistency.
 
-1. **Interactive Switch States:**
+1. **Interactive Switch States** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The toggle switches lack visual feedback on hover, making them feel static.
-   - **Suggestion:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
+   - **Scope:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
+   - **Acceptance Criteria:**
+     - Switches have clear hover feedback
+     - Feedback is subtle and consistent with design system
+     - Passes contrast and accessibility checks
+     - Works across all supported display modes (light, dark, retro)
 
-2. **Display Mode Previews:**
+2. **Display Mode Previews** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The display mode selection is presented as a simple list of radio buttons, with no indication of what each theme looks like.
-   - **Suggestion:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
+   - **Scope:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
+   - **Acceptance Criteria:**
+     - Visual preview appears next to each theme option
+     - Previews accurately represent the themes
+     - Selection remains accessible to keyboard and screen readers
+     - Previews load efficiently without performance impact
 
-3. **Theme-Specific Styles:**
+3. **Theme-Specific Styles** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** While the app supports theming, some components on the settings page may not fully adapt to the different themes.
-   - **Suggestion:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
+   - **Scope:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
+   - **Acceptance Criteria:**
+     - All settings page components work correctly in light mode
+     - All settings page components work correctly in dark mode
+     - All settings page components work correctly in retro mode
+     - No hardcoded colors; all theming uses CSS variables
+     - WCAG contrast ratio requirements met in all themes
 
-### Phase 3: Advanced Features and Future-Proofing
+### Phase 3: Advanced Features and Future-Proofing — **NOT STARTED**
 
 This phase introduces more advanced functionality and long-term improvements to enhance the user experience and maintainability of the settings page.
 
-1. **Collapsible Sections:**
+1. **Collapsible Sections** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** As more settings are added, the page will become increasingly long and difficult to navigate.
-   - **Suggestion:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
+   - **Scope:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
+   - **Acceptance Criteria:**
+     - Each fieldset can be collapsed/expanded
+     - Default state is appropriate (open for primary settings, closed for advanced)
+     - State persists across page reloads (using localStorage)
+     - Keyboard navigation works for all controls
+     - Screen readers announce expanded/collapsed state
 
-2. **Unsaved Changes Indicator:**
+2. **Unsaved Changes Indicator** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** The settings are saved automatically, but there is no visual indication that a change has been made and saved, which could be confusing for users.
-   - **Suggestion:** In `src/helpers/settingsPage.js`, implement a "Saved!" indicator that briefly appears after a setting is changed. This provides immediate feedback to the user, confirming that their action was successful. This can be implemented by adding a temporary class to the relevant setting item and styling it in the CSS.
+   - **Scope:** In `src/helpers/settingsPage.js`, implement a "Saved!" indicator that briefly appears after a setting is changed. This provides immediate feedback to the user, confirming that their action was successful. This can be implemented by adding a temporary class to the relevant setting item and styling it in the CSS.
+   - **Acceptance Criteria:**
+     - "Saved!" indicator appears briefly after a setting changes
+     - Indicator is visually distinct and positioned appropriately
+     - Animation is smooth and doesn't distract from UI
+     - Works with prefersReducedMotion setting
+     - Does not interfere with subsequent changes
 
-3. **Search/Filter for Advanced Settings:**
+3. **Search/Filter for Advanced Settings** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The "Advanced Settings" section is likely to grow, making it difficult to find specific feature flags.
-   - **Suggestion:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.
+   - **Scope:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.
+   - **Acceptance Criteria:**
+     - Search input appears in Advanced Settings section
+     - Typing filters settings by name/description
+     - Results update in real-time as user types
+     - Clear button allows quick reset
+     - Keyboard navigation remains functional
+     - Search is case-insensitive and handles partial matches
 
 ## Smoke Test Fix Verification (October 17, 2025)
 

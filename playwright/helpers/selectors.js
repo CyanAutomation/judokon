@@ -77,17 +77,7 @@ export function statButton(options) {
     const dataStatPattern = /\[data-stat(?:=[^\]]*)?\]/g;
 
     if (dataStatPattern.test(sel)) {
-      let replaced = false;
-      sel = sel.replace(dataStatPattern, (segment) => {
-        if (replaced) {
-          // Remove subsequent data-stat fragments so we don't emit duplicate
-          // attribute selectors like [data-stat="foo"][data-stat="foo"].
-          return "";
-        }
-
-        replaced = true;
-        return `[data-stat=\"${statKey}\"]`;
-      });
+      sel = sel.replace(dataStatPattern, `[data-stat="${statKey}"]`);
     } else {
       sel += `[data-stat=\"${statKey}\"]`;
     }
