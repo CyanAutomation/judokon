@@ -637,9 +637,6 @@ export function registerRoundStartErrorHandler(retryFn) {
  * @returns {void}
  */
 export function selectStat(store, stat) {
-  try {
-    bindUIHelperEventHandlersDynamic();
-  } catch {}
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
@@ -661,12 +658,6 @@ export function selectStat(store, stat) {
   } catch {
     delayOpponentMessage = false;
   }
-  try {
-    const selectionOptions = delayOpponentMessage
-      ? { playerVal, opponentVal, delayOpponentMessage: true }
-      : { playerVal, opponentVal };
-    Promise.resolve(handleStatSelection(store, stat, selectionOptions)).catch(() => {});
-  } catch {}
   if (delayOpponentMessage) {
     try {
       if (store && typeof store === "object") {
@@ -674,21 +665,29 @@ export function selectStat(store, stat) {
       }
     } catch {}
   }
-  let shouldShowSelectionToast = false;
   try {
-    const storeDelayFlag =
-      !!store &&
-      typeof store === "object" &&
-      Object.prototype.hasOwnProperty.call(store, "__delayOpponentMessage") &&
-      store.__delayOpponentMessage === true;
-    shouldShowSelectionToast = !delayOpponentMessage && !storeDelayFlag;
-  } catch {
-    shouldShowSelectionToast = false;
-  }
-  if (!delayOpponentMessage && shouldShowSelectionToast) {
+    const selectionOptions = delayOpponentMessage
+      ? { playerVal, opponentVal, delayOpponentMessage: true }
+      : { playerVal, opponentVal };
+    Promise.resolve(handleStatSelection(store, stat, selectionOptions)).catch(() => {});
+  } catch {}
+  if (shouldDisplaySelectionSnackbar(store, delayOpponentMessage)) {
     try {
       showSnackbar(`You Picked: ${label}`);
     } catch {}
+  }
+}
+
+function shouldDisplaySelectionSnackbar(store, delayOpponentMessage) {
+  if (delayOpponentMessage) return false;
+  if (!store || typeof store !== "object") return true;
+  try {
+    if (!Object.prototype.hasOwnProperty.call(store, "__delayOpponentMessage")) {
+      return true;
+    }
+    return store.__delayOpponentMessage !== true;
+  } catch {
+    return false;
   }
 }
 
