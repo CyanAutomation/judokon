@@ -32,8 +32,17 @@ describe("battleCLI accessibility smoke tests", () => {
     expect(hint).toBeTruthy();
     expect(hint?.getAttribute("aria-hidden")).toBe("true");
     battleCLI.normalizeShortcutCopy();
-    expect(hint?.textContent?.trim()).toBe(
-      "[1–5] Stats | [Enter] or [Space] Next | [H] Help | [Q] Quit"
+    const keyRange = document.getElementById("cli-controls-key-range");
+    expect(keyRange?.textContent).toBe("1–5");
+    const keyLabels = Array.from(
+      hint?.querySelectorAll(".cli-controls-hint__key") ?? []
+    ).map((el) => el.textContent?.trim());
+    expect(keyLabels).toEqual(["1–5", "Enter/Space", "H", "Q"]);
+    const announcement = document
+      .getElementById("cli-controls-hint-announce")
+      ?.textContent?.trim();
+    expect(announcement).toBe(
+      "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."
     );
   });
 

@@ -48,7 +48,9 @@ describe("Battle CLI Helpers", () => {
         if (node) node.textContent = msg;
       },
       updateScoreLine: vi.fn(),
-      clearVerboseLog: vi.fn()
+      clearVerboseLog: vi.fn(),
+      ensureVerboseScrollHandling: vi.fn(),
+      refreshVerboseScrollIndicators: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => engineFacadeMock);
 

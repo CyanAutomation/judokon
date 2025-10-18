@@ -39,7 +39,10 @@ export async function cooldownEnter(machine, payload) {
   try {
     const current = roundStore.getCurrentRound();
     const hasValidCurrentNumber =
-      current && typeof current.number === "number" && Number.isFinite(current.number) && current.number >= 1;
+      current &&
+      typeof current.number === "number" &&
+      Number.isFinite(current.number) &&
+      current.number >= 1;
     if (!hasValidCurrentNumber) {
       debugLog("cooldownEnter: current round invalid, defaulting next round to 1");
     }

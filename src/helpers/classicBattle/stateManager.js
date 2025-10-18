@@ -125,9 +125,7 @@ export async function createStateManager(
         debugLog("stateManager: after current update", { current });
         // Validate the state transition
         if (!validateStateTransition(from, target, eventName, stateTable)) {
-          logError(
-            `State transition validation failed: ${from} -> ${target} via ${eventName}`
-          );
+          logError(`State transition validation failed: ${from} -> ${target} via ${eventName}`);
           return false;
         }
         // [TEST DEBUG] log state transition attempt

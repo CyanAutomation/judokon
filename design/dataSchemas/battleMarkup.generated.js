@@ -49,8 +49,7 @@ export default {
       selector: ".stat-button[data-stat]",
       dataTestId: "battle:stat-button",
       role: "button",
-      description:
-        "Interactive stat button. Attribute data-stat has values strength|speed|tech.",
+      description: "Interactive stat button. Attribute data-stat has values strength|speed|tech.",
       owner: "frontend-team",
       stability: "stable",
       aliases: ["button.stat-action"]
