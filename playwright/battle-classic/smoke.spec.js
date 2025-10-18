@@ -1,6 +1,14 @@
 import { test, expect } from "@playwright/test";
 import { waitForBattleReady } from "../helpers/battleStateHelper.js";
-const showLogsInBrowser = typeof process !== "undefined" && !!process?.env?.SHOW_TEST_LOGS;
+
+const showLogsInBrowser = typeof process !== "undefined" && process?.env?.SHOW_TEST_LOGS === "true";
+
+// Benign message patterns to filter out during debug logging
+const BENIGN_MESSAGE_PATTERNS = {
+  noisyResource404: /Failed to load resource: the server responded with a status of 404/i,
+  benignCountryMapping: /countryCodeMapping\.json/i,
+  benignNavFallback: /Failed to fetch (navigation items|game modes), falling back to import/i
+};
 
 test.describe("Classic Battle page", () => {
   test("plays a full match and shows the end modal", async ({ page }) => {
@@ -16,11 +24,9 @@ test.describe("Classic Battle page", () => {
         if (type !== "warning" && type !== "error") return;
 
         const text = message.text();
-        const isNoisyResource404 =
-          /Failed to load resource: the server responded with a status of 404/i.test(text);
-        const isBenignCountryMapping = /countryCodeMapping\.json/i.test(text);
-        const isBenignNavFallback =
-          /Failed to fetch (navigation items|game modes), falling back to import/i.test(text);
+        const isNoisyResource404 = BENIGN_MESSAGE_PATTERNS.noisyResource404.test(text);
+        const isBenignCountryMapping = BENIGN_MESSAGE_PATTERNS.benignCountryMapping.test(text);
+        const isBenignNavFallback = BENIGN_MESSAGE_PATTERNS.benignNavFallback.test(text);
         if (isNoisyResource404 || isBenignCountryMapping || isBenignNavFallback) {
           return;
         }
