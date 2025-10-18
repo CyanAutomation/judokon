@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const rootDir = resolve(__dirname, ".."); // Adjust if script is not directly in 'scripts'
 
-const modelDir = resolve(rootDir, "src", "models", "minilm");
+const modelDir = resolve(rootDir, "models", "minilm");
 const requiredFiles = [
   "config.json",
   "tokenizer_config.json",
@@ -20,7 +20,7 @@ const requiredFiles = [
 
 async function checkRagModel() {
   let allFilesPresent = true;
-  console.log(`Verifying local RAG model in: ${modelDir}`);
+  console.log(`Verifying local MiniLM model in: ${modelDir}`);
 
   for (const file of requiredFiles) {
     const filePath = resolve(modelDir, file);
@@ -35,11 +35,11 @@ async function checkRagModel() {
 
   if (!allFilesPresent) {
     console.error(
-      "RAG model files are missing or incomplete. Please run `npm run rag:prepare:models` to download them."
+      "MiniLM assets are missing under models/minilm. Run `npm run rag:prepare:models` to hydrate them."
     );
     process.exit(1);
   } else {
-    console.log("All local RAG model files are present and accounted for.");
+    console.log("All required MiniLM assets exist under models/minilm.");
     process.exit(0);
   }
 }
