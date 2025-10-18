@@ -176,10 +176,8 @@ export class JudokaCard extends Card {
   async render() {
     const container = document.createElement("div");
     container.className = "card-container";
-    container.setAttribute(
-      "data-feature-card-inspector",
-      this.enableInspector ? "enabled" : "disabled"
-    );
+    const inspectorState = this.enableInspector ? "enabled" : "disabled";
+    container.setAttribute("data-feature-card-inspector", inspectorState);
     try {
       container.dataset.cardJson = JSON.stringify(this.judoka);
     } catch {
@@ -207,6 +205,8 @@ export class JudokaCard extends Card {
       card.append(portrait, stats, signature);
     }
     enableCardFlip(card);
+    card.setAttribute("data-feature-card-inspector", inspectorState);
+
     container.appendChild(card);
 
     if (this.enableInspector) {

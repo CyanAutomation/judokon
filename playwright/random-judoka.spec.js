@@ -70,4 +70,73 @@ test.describe("View Judoka screen", () => {
     const ALLOWED_OFFSET = 10;
     expect(bottom).toBeLessThanOrEqual(innerHeight + ALLOWED_OFFSET);
   });
+
+  test("history panel focus management - focus moves to title on open", async ({ page }) => {
+    const historyBtn = page.locator("#toggle-history-btn");
+
+    // Initially, focus should not be on the title
+    let focusedElement = await page.evaluate(() => document.activeElement?.id);
+    expect(focusedElement).not.toBe("history-panel");
+
+    // Click history button to open
+    await historyBtn.click();
+    await page.waitForTimeout(100); // Allow focus update after microtask
+
+    // Focus should now be on the history title
+    focusedElement = await page.evaluate(() => {
+      const h2 = document.querySelector("#history-panel h2");
+      return h2 === document.activeElement ? "history-title" : "other";
+    });
+    expect(focusedElement).toBe("history-title");
+  });
+
+  test("history panel focus management - Escape key closes panel", async ({ page }) => {
+    const historyBtn = page.locator("#toggle-history-btn");
+    const historyPanel = page.locator("#history-panel");
+
+    // Open the panel
+    await historyBtn.click();
+    await expect(historyPanel).toHaveAttribute("aria-hidden", "false");
+
+    // Press Escape
+    await page.press("body", "Escape");
+
+    // Panel should be closed
+    await expect(historyPanel).toHaveAttribute("aria-hidden", "true");
+  });
+
+  test("history panel focus management - focus returns to button on close", async ({ page }) => {
+    const historyBtn = page.locator("#toggle-history-btn");
+
+    // Open the panel
+    await historyBtn.click();
+    await page.waitForTimeout(100);
+
+    // Close the panel by pressing Escape
+    await page.press("body", "Escape");
+    await page.waitForTimeout(100);
+
+    // Focus should return to the toggle button
+    const focusedId = await page.evaluate(() => document.activeElement?.id);
+    expect(focusedId).toBe("toggle-history-btn");
+  });
+
+  test("history panel focus management - clicking button again also closes and restores focus", async (
+    { page }
+  ) => {
+    const historyBtn = page.locator("#toggle-history-btn");
+    const historyPanel = page.locator("#history-panel");
+
+    // Open the panel
+    await historyBtn.click();
+    await expect(historyPanel).toHaveAttribute("aria-hidden", "false");
+
+    // Click button again to close
+    await historyBtn.click();
+    await expect(historyPanel).toHaveAttribute("aria-hidden", "true");
+
+    // Focus should be on the button
+    const focusedId = await page.evaluate(() => document.activeElement?.id);
+    expect(focusedId).toBe("toggle-history-btn");
+  });
 });

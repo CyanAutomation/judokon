@@ -46,6 +46,9 @@ describe("JudokaCard", () => {
     panel.dispatchEvent(new Event("toggle"));
     expect(card.dataset.inspector).toBe("true");
     expect(card.getAttribute("data-feature-card-inspector")).toBe("enabled");
+    expect(card.querySelector(".judoka-card")?.getAttribute("data-feature-card-inspector")).toBe(
+      "enabled"
+    );
     expect(panel?.getAttribute("data-feature-card-inspector")).toBe("panel");
   });
 
@@ -53,13 +56,22 @@ describe("JudokaCard", () => {
     const card = await new JudokaCard(judoka, gokyoLookup).render();
     document.body.appendChild(card);
     expect(card.getAttribute("data-feature-card-inspector")).toBe("disabled");
+    expect(card.querySelector(".judoka-card")?.getAttribute("data-feature-card-inspector")).toBe(
+      "disabled"
+    );
     toggleInspectorPanels(true);
     const panel = card.querySelector(".debug-panel");
     expect(panel).toBeTruthy();
     expect(card.getAttribute("data-feature-card-inspector")).toBe("enabled");
+    expect(card.querySelector(".judoka-card")?.getAttribute("data-feature-card-inspector")).toBe(
+      "enabled"
+    );
     toggleInspectorPanels(false);
     expect(card.querySelector(".debug-panel")).toBeNull();
     expect(card.getAttribute("data-feature-card-inspector")).toBe("disabled");
+    expect(card.querySelector(".judoka-card")?.getAttribute("data-feature-card-inspector")).toBe(
+      "disabled"
+    );
   });
 
   it("toggleInspectorPanels warns and skips on invalid JSON", async () => {
@@ -71,6 +83,9 @@ describe("JudokaCard", () => {
     expect(card.querySelector(".debug-panel")).toBeNull();
     expect(warn).toHaveBeenCalled();
     expect(card.getAttribute("data-feature-card-inspector")).toBe("error");
+    expect(card.querySelector(".judoka-card")?.getAttribute("data-feature-card-inspector")).toBe(
+      "error"
+    );
     card.remove();
     warn.mockRestore();
   });

@@ -27,6 +27,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Extended Playwright coverage for `enableTestMode` to assert the banner's visible/hidden states and seed copy (`playwright/battle-classic/feature-flags.spec.js`); validated with `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/feature-flags.spec.js`.
 - Strengthened the `battleStateProgress` flag coverage with Playwright assertions that the list renders, tracks round transitions, and remaps interrupt/modification states to their core markers (`playwright/battle-classic/battle-state-progress.spec.js`); validated with `npx vitest run tests/helpers/battleStateProgress.test.js` and `npx playwright test playwright/battle-classic/battle-state-progress.spec.js`.
 - Added tooltip viewer Playwright coverage to assert the debug overlay toggles body markers and tooltip outlines when enabled/disabled (`playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`); validated with `npx vitest run tests/helpers/tooltip.test.js` and `npx playwright test playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`.
+- Mirrored `data-feature-card-inspector` markers onto the inner judoka card element so automation can track inspector state; updated component logic (`src/components/JudokaCard.js`, `src/helpers/cardUtils.js`) and regression tests (`tests/helpers/judokaCard.test.js`).
 
 ## Critical blocker
 
@@ -46,7 +47,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Status: **Working** — card draws read the flag before rendering, and `JudokaCard` appends the inspector `<details>` when `enableInspector` is true (`src/helpers/classicBattle/cardSelection.js:447-509`, `src/components/JudokaCard.js:205-214`, `src/helpers/inspector/createInspectorPanel.js:1-56`).
   - Confidence: High (code path exercised in Vitest, inspector panel present when cards are redrawn).
   - Effort: Low (add data hooks and documentation so QA can locate the panel; optionally re-render the current card when the flag flips).
-  - Recommendation: Keep the feature, add `data-feature-card-inspector` to the wrapper for automation, and document that toggling the flag requires a fresh card draw.
+  - Recommendation: Document that both the container and `.judoka-card` expose `data-feature-card-inspector` markers for automation; remind QA that toggling the flag requires a fresh card draw (or running `toggleInspectorPanels`) to refresh panels.
 
 - `viewportSimulation`
   - Status: **Removed** — per the desktop-only design decision, the settings toggle, runtime helper, and CSS hook were deleted (`src/data/settings.json`, `src/helpers/settingsPage.js`, `src/helpers/setupDisplaySettings.js`, `src/helpers/randomJudokaPage.js`, `src/styles/settings.css`).
