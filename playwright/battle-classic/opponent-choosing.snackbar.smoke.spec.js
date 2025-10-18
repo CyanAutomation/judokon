@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Opponent choosing snackbar", () => {
+test.describe("Cooldown countdown snackbar", () => {
   test("shows after selecting a stat", async ({ page }) => {
     await page.goto("/src/pages/battleClassic.html");
 

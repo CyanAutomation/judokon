@@ -33,15 +33,19 @@ export async function cooldownEnter(machine, payload) {
   debugLog("cooldownEnter: startCooldown completed");
   try {
     roundStore.setRoundState("cooldown", "cooldownEnter");
-  } catch {}
+  } catch (error) {
+    debugLog(`cooldownEnter: failed to set round state - ${error.message}`);
+  }
   try {
     const current = roundStore.getCurrentRound();
     const currentNumber =
       current && typeof current.number === "number" && Number.isFinite(current.number)
         ? current.number
-        : 0;
-    const nextRoundNumber = currentNumber > 0 ? currentNumber + 1 : 1;
+        : 1;
+    const nextRoundNumber = currentNumber >= 1 ? currentNumber + 1 : 2;
     roundStore.setRoundNumber(nextRoundNumber);
-  } catch {}
+  } catch (error) {
+    debugLog(`cooldownEnter: failed to set round number - ${error.message}`);
+  }
 }
 export default cooldownEnter;
