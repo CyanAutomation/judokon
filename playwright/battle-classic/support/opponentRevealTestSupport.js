@@ -317,26 +317,148 @@ async function resolveRoundDeterministic(page) {
   });
 }
 
+function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
+  if (state !== "cooldown") {
+    return false;
+  }
+
+  if (Array.isArray(log)) {
+    for (let index = log.length - 1; index >= 0; index -= 1) {
+      const entry = log[index];
+      if (!entry || typeof entry !== "object") {
+        continue;
+      }
+      if (entry.to === "cooldown") {
+        if (entry.from === "roundOver") {
+          return true;
+        }
+        for (let prior = index - 1; prior >= 0; prior -= 1) {
+          const previous = log[prior];
+          if (!previous || typeof previous !== "object") {
+            continue;
+          }
+          return previous.to === "roundOver";
+        }
+        return false;
+      }
+      if (entry.to === "roundOver") {
+        return true;
+      }
+    }
+  }
+
+  return prev === "roundOver";
+}
+
+async function readBattleStateDiagnostics(page) {
+  try {
+    return await page.evaluate(() => {
+      const stateApi = window.__TEST_API?.state;
+
+      const readState = () => {
+        try {
+          const viaApi = stateApi?.getBattleState?.();
+          if (typeof viaApi === "string" && viaApi) {
+            return viaApi;
+          }
+        } catch {}
+        try {
+          const mirrored = document.body?.dataset?.battleState;
+          if (typeof mirrored === "string" && mirrored) {
+            return mirrored;
+          }
+        } catch {}
+        return null;
+      };
+
+      const readSnapshot = () => {
+        try {
+          if (typeof stateApi?.getStateSnapshot === "function") {
+            return stateApi.getStateSnapshot();
+          }
+        } catch {}
+        try {
+          if (typeof window.getStateSnapshot === "function") {
+            return window.getStateSnapshot();
+          }
+        } catch {}
+        return null;
+      };
+
+      return {
+        state: readState(),
+        snapshot: readSnapshot()
+      };
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+/**
+ * Confirm that the round has resolved by inspecting current state transitions.
+ * @pseudocode
+ * POLL the battle state and debug snapshot via the Test API.
+ * DETECT resolution when the state is "roundOver" or when "cooldown" immediately follows "roundOver".
+ * THROW with diagnostic details if neither condition is observed before the timeout.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {{ timeout?: number, message?: string }} [options] - Polling configuration
+ * @returns {Promise<void>}
+ */
+export async function confirmRoundResolved(page, options = {}) {
+  const {
+    timeout = 3_000,
+    message =
+      'Expected battle state to reach "roundOver" (or immediately enter cooldown) after deterministic resolution'
+  } = options;
+
+  await expect
+    .poll(
+      async () => {
+        const diagnostics = await readBattleStateDiagnostics(page);
+        if (diagnostics?.error) {
+          return {
+            resolved: false,
+            state: null,
+            cooldownAfterRoundOver: false,
+            error: diagnostics.error
+          };
+        }
+
+        const snapshot =
+          diagnostics?.snapshot && typeof diagnostics.snapshot === "object"
+            ? diagnostics.snapshot
+            : null;
+        const stateFromSnapshot =
+          typeof snapshot?.state === "string" && snapshot.state ? snapshot.state : null;
+        const currentState =
+          (typeof diagnostics?.state === "string" && diagnostics.state) || stateFromSnapshot;
+        const log = Array.isArray(snapshot?.log) ? snapshot.log : [];
+        const prev = typeof snapshot?.prev === "string" ? snapshot.prev : null;
+        const cooldownAfterRoundOver = cooldownImmediatelyFollowsRoundOver(
+          currentState,
+          log,
+          prev
+        );
+
+        return {
+          resolved: currentState === "roundOver" || cooldownAfterRoundOver,
+          state: currentState,
+          cooldownAfterRoundOver,
+          snapshotState: stateFromSnapshot,
+          snapshotPrev: prev,
+          lastLogEntry: log.length ? log[log.length - 1] : null
+        };
+      },
+      { timeout, message }
+    )
+    .toMatchObject({ resolved: true });
+}
+
 export async function ensureRoundResolved(page, options = {}) {
   const { deadline = 650, verifyTimeout = 3_000, forceResolve = false } = options;
-
-  const confirmRoundOver = async () => {
-    await expect
-      .poll(
-        async () => {
-          try {
-            return await getCurrentBattleState(page);
-          } catch {
-            return null;
-          }
-        },
-        {
-          timeout: verifyTimeout,
-          message: 'Expected battle state to be "roundOver" after deterministic resolution'
-        }
-      )
-      .toBe("roundOver");
-  };
 
   if (!forceResolve) {
     try {
@@ -348,7 +470,7 @@ export async function ensureRoundResolved(page, options = {}) {
   }
 
   await resolveRoundDeterministic(page);
-  await confirmRoundOver();
+  await confirmRoundResolved(page, { timeout: verifyTimeout });
 }
 
 /**

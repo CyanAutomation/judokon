@@ -4,6 +4,7 @@ import { withMutedConsole } from "../../tests/utils/console.js";
 import {
   MUTED_CONSOLE_LEVELS,
   PLAYER_SCORE_PATTERN,
+  confirmRoundResolved,
   ensureRoundResolved,
   initializeBattle
 } from "./support/opponentRevealTestSupport.js";
@@ -178,29 +179,18 @@ test.describe("Classic Battle Opponent Messages", () => {
 
         await ensureRoundResolved(page, { forceResolve: true });
 
-        let lastObservedBattleState = null;
         try {
-          await expect
-            .poll(
-              async () => {
-                try {
-                  const state = await page.evaluate(
-                    () => window.__TEST_API?.state?.getBattleState?.() ?? null
-                  );
-                  lastObservedBattleState = state;
-                  return state;
-                } catch {
-                  lastObservedBattleState = null;
-                  return null;
-                }
-              },
-              {
-                timeout: 3_000,
-                message: 'Expected battle state to resolve to "roundOver" after forced fallback'
-              }
-            )
-            .toBe("roundOver");
+          await confirmRoundResolved(page, {
+            timeout: 3_000,
+            message: 'Expected battle state to resolve to "roundOver" after forced fallback'
+          });
         } catch (error) {
+          let lastObservedBattleState = null;
+          try {
+            lastObservedBattleState = await page.evaluate(() =>
+              window.__TEST_API?.state?.getBattleState?.() ?? null
+            );
+          } catch {}
           error.message = `${error.message}\nLast observed battle state: ${
             lastObservedBattleState ?? "null"
           }`;
