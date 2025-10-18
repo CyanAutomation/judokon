@@ -8,18 +8,6 @@ function hasFlag(target, flag) {
   }
 }
 
-function isPlaywrightRuntime() {
-  if (hasFlag(typeof globalThis !== "undefined" ? globalThis : undefined, "__PLAYWRIGHT_TEST__")) {
-    return true;
-  }
-  if (typeof navigator !== "undefined") {
-    const ua = navigator.userAgent || "";
-    if (/Playwright/i.test(ua)) return true;
-    if (navigator.webdriver) return true;
-  }
-  return false;
-}
-
 function isDebugFlagEnabled() {
   if (typeof process !== "undefined" && Boolean(process.env?.SHOW_TEST_LOGS)) {
     return true;
@@ -35,15 +23,16 @@ function isDebugFlagEnabled() {
  *
  * @returns {boolean}
  * @pseudocode
+ * IF isDebugFlagEnabled() returns true THEN return true
+ * RETURN false
+ *
+ * @returns {boolean} True when debug logs should be emitted.
  * if isDebugFlagEnabled() -> return true
  * if isPlaywrightRuntime() -> return false
  * return false
  */
 export function shouldEmitDebugLogs() {
-  if (isDebugFlagEnabled()) {
-    return true;
-  }
-  return !isPlaywrightRuntime();
+  return isDebugFlagEnabled();
 }
 
 /**
