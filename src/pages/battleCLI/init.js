@@ -1541,17 +1541,50 @@ function renderHelpMapping(stats) {
  * @returns {void}
  */
 function normalizeShortcutCopy() {
+  const replaceRangeToken = (value) =>
+    typeof value === "string" ? value.replace(/\[1-5\]/g, "[1–5]") : value;
+
   const help = byId("cli-help");
   if (help) {
     const firstItem = help.querySelector("li");
     if (firstItem) {
-      firstItem.textContent = "[1–5] Select Stat";
+      const originalText = firstItem.textContent ?? "";
+      const normalizedText = replaceRangeToken(originalText);
+      if (normalizedText !== originalText) {
+        firstItem.textContent = normalizedText;
+      }
     }
   }
 
   const rangeKey = byId("cli-controls-key-range");
   if (rangeKey) {
     rangeKey.textContent = "1–5";
+  }
+
+  const hint = byId("cli-controls-hint");
+  if (hint) {
+    const doc = hint.ownerDocument;
+    if (doc?.createTreeWalker) {
+      const walker = doc.createTreeWalker(
+        hint,
+        typeof NodeFilter !== "undefined" ? NodeFilter.SHOW_TEXT : 4
+      );
+      let node = walker.nextNode();
+      while (node) {
+        const originalValue = node.nodeValue ?? "";
+        const normalizedValue = replaceRangeToken(originalValue);
+        if (normalizedValue !== originalValue) {
+          node.nodeValue = normalizedValue;
+        }
+        node = walker.nextNode();
+      }
+    } else {
+      const originalText = hint.textContent ?? "";
+      const normalizedText = replaceRangeToken(originalText);
+      if (normalizedText !== originalText) {
+        hint.textContent = normalizedText;
+      }
+    }
   }
 }
 
