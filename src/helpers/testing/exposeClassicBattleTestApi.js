@@ -185,23 +185,36 @@ function normalizeHostname(hostname) {
   }
 
   if (trimmed.startsWith("[")) {
-    const bracketCloseIndex = trimmed.indexOf("]");
-    if (bracketCloseIndex > 0) {
-      return trimmed.slice(1, bracketCloseIndex) || "";
-    }
+    return normalizeBracketedIpv6Hostname(trimmed);
   }
 
-  const firstColonIndex = trimmed.indexOf(":");
+  return stripIpv4PortIfPresent(trimmed);
+}
+
+function normalizeBracketedIpv6Hostname(hostname) {
+  const bracketCloseIndex = hostname.indexOf("]");
+  if (bracketCloseIndex >= 0) {
+    return hostname.slice(1, bracketCloseIndex) || "";
+  }
+
+  // Malformed IPv6 address without closing bracket.
+  return "";
+}
+
+function stripIpv4PortIfPresent(hostname) {
+  const firstColonIndex = hostname.indexOf(":");
   if (firstColonIndex === -1) {
-    return trimmed;
+    return hostname;
   }
 
-  const lastColonIndex = trimmed.lastIndexOf(":");
+  const lastColonIndex = hostname.lastIndexOf(":");
+  // IPv4 addresses have at most one colon (for port), IPv6 addresses have multiple.
   if (firstColonIndex === lastColonIndex) {
-    return trimmed.slice(0, firstColonIndex) || "";
+    return hostname.slice(0, firstColonIndex) || "";
   }
 
-  return trimmed;
+  // Multiple colons indicate IPv6 address - return as-is.
+  return hostname;
 }
 
 function getNormalizedUserAgent(nav) {
