@@ -22,7 +22,7 @@ async function setupBattle(page, overrides = {}) {
 }
 
 async function pickFirstStat(page) {
-  const statButton = page.locator(selectors.statButton(0)).first();
+  const statButton = page.locator(selectors.statButton()).first();
   await expect(statButton).toBeVisible();
   await statButton.click();
 }

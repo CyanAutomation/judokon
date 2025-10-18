@@ -145,7 +145,7 @@ import selectors from "../../playwright/helpers/selectors";
 
 test("player can select a stat via keyboard", async ({ page }) => {
   await page.goto("/battle/classic");
-  await page.focus(selectors.statButton(0));
+  await page.focus(selectors.statButton());
   await page.keyboard.press("Enter");
   await expect(page.locator(selectors.roundMessage())).toHaveText(/selected/i);
 });

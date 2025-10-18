@@ -105,7 +105,7 @@ async function waitForBattleReadyWithFallbacks(page, options = {}) {
 async function collectBattleReadinessFallbacks(page) {
   const errors = [];
 
-  const firstStat = page.locator(selectors.statButton(0)).first();
+  const firstStat = page.locator(selectors.statButton()).first();
   let statVisible = false;
   try {
     statVisible = await firstStat.isVisible();
@@ -164,7 +164,7 @@ export async function startMatch(page, selector) {
   const button = page.locator(selector);
 
   const ensureStatSelectionVisible = async () => {
-    await expect(page.locator(selectors.statButton(0)).first()).toBeVisible({
+    await expect(page.locator(selectors.statButton()).first()).toBeVisible({
       timeout: 7_000
     });
   };

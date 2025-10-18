@@ -34,7 +34,7 @@ test.describe("Classic Battle replay", () => {
       // Capture initial score, click, then assert one-side increment by 1
       const score = page.locator(selectors.scoreDisplay());
       const initialText = (await score.textContent())?.trim();
-      await page.locator(selectors.statButton(0)).first().click();
+      await page.locator(selectors.statButton()).first().click();
       await expect(score).not.toHaveText(initialText || "");
       const text = (await score.textContent()) || "";
       const pAfter = Number((text.match(/You:\s*(\d+)/) || [])[1] || 0);

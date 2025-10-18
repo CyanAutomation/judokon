@@ -75,7 +75,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         resolveDelay: 1
       });
 
-      const firstStat = page.locator(selectors.statButton(0)).first();
+      const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
       const snackbar = page.locator(selectors.snackbarContainer());
@@ -99,7 +99,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         resolveDelay: 100
       });
 
-      const firstStat = page.locator(selectors.statButton(0)).first();
+      const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
       await ensureRoundResolved(page);
@@ -127,7 +127,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       const roundCounter = page.locator("#round-counter");
       await expect(roundCounter).toContainText(/Round\s*2/i);
 
-      const nextRoundStat = page.locator(selectors.statButton(0)).first();
+      const nextRoundStat = page.locator(selectors.statButton()).first();
       await expect(nextRoundStat).toBeEnabled();
       await nextRoundStat.click();
 
@@ -143,7 +143,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         resolveDelay: 100
       });
 
-      const firstStat = page.locator(selectors.statButton(0)).first();
+      const firstStat = page.locator(selectors.statButton()).first();
       await expect(firstStat).toBeVisible();
       await firstStat.click();
 
@@ -155,12 +155,12 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
 
-      await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
+      await expect(page.locator(selectors.statButton()).first()).toBeVisible();
 
       const roundCounter = page.locator("#round-counter");
       await expect(roundCounter).toContainText(/Round\s*2/i);
 
-      const secondStat = page.locator(selectors.statButton(0)).nth(1);
+      const secondStat = page.locator(selectors.statButton()).nth(1);
       await expect(secondStat).toBeVisible();
       await secondStat.click();
 
@@ -176,7 +176,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         resolveDelay: 50
       });
 
-      const firstStat = page.locator(selectors.statButton(0)).first();
+      const firstStat = page.locator(selectors.statButton()).first();
       await expect(firstStat).toBeVisible();
       await firstStat.click();
 
@@ -198,7 +198,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
       const maxAttempts = 3;
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const stats = page.locator(selectors.statButton(0));
+        const stats = page.locator(selectors.statButton());
         const statCount = await stats.count();
 
         if (statCount <= attempt) break;

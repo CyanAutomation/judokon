@@ -18,7 +18,7 @@ test.describe("Classic Battle timer clearing", () => {
       // Wait for stat buttons to be ready
       const container = page.getByTestId("stat-buttons");
       await expect(container).toHaveAttribute("data-buttons-ready", "true");
-      const buttons = page.locator(selectors.statButton(0));
+      const buttons = page.locator(selectors.statButton());
       await expect(buttons.first()).toBeVisible();
 
       // Verify timer is initially running
