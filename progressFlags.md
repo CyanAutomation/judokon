@@ -33,6 +33,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Tuned settings quick-link gutters for wide displays via responsive spacing clamps and a new spacing token (`src/styles/settings.css`, `src/styles/base.css`).
 - Right-sized settings toggle switches for desktop proportions while keeping a 40px hit area (`src/styles/settings.css`); validated with `npm run check:contrast` and relevant Vitest coverage.
 - Added hover feedback to settings switches for clearer interactivity cues (`src/styles/settings.css`); verified with `npm run check:contrast`.
+- Added miniature theme previews to the display mode selector to visualize light/dark/retro choices (`src/pages/settings.html`, `src/styles/settings.css`); validated with `npm run check:contrast`, `npx vitest run tests/helpers/settingsPage.test.js`, and `npx playwright test playwright/settings.spec.js`.
 
 ## Critical blocker
 
@@ -189,15 +190,9 @@ This phase focuses on making the settings page more interactive and visually eng
    - **Priority:** Medium
    - **Outcome:** Hovering now lightens the track and adds a subtle shadow/outline so toggles feel interactive while maintaining accessibility; contrast checks remain green across themes.
 
-2. **Display Mode Previews** — **Outstanding**
+2. **Display Mode Previews** — **Completed**
    - **Priority:** Medium
-   - **Issue:** The display mode selection is presented as a simple list of radio buttons, with no indication of what each theme looks like.
-   - **Scope:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
-   - **Acceptance Criteria:**
-     - Visual preview appears next to each theme option
-     - Previews accurately represent the themes
-     - Selection remains accessible to keyboard and screen readers
-     - Previews load efficiently without performance impact
+   - **Outcome:** Each display mode now includes a miniature card preview illustrating header, surface, and accent colors while remaining keyboard/screen-reader friendly; confirmed via contrast audit, Vitest settings tests, and Playwright settings journey.
 
 3. **Theme-Specific Styles** — **Outstanding**
    - **Priority:** Medium
