@@ -120,7 +120,7 @@ function isTestUserAgent(nav) {
  *
  * @pseudocode
  * 1. Obtain a location object from the provided window or global scope.
- * 2. Extract and normalize the hostname, removing any port decorations.
+ * 2. Extract and normalize the hostname, removing port decorations and IPv6 brackets.
  * 3. Compare against the accepted localhost tokens, including IPv6 loopback.
  *
  * @param {Window} win - The window object to inspect for location data.
@@ -169,7 +169,7 @@ function getLocation(win) {
  * @pseudocode
  * 1. Verify the input is a string; otherwise return an empty string.
  * 2. Trim whitespace and transform to lowercase for stable comparisons.
- * 3. Strip any port value by splitting on ':' and returning the first segment.
+ * 3. Remove IPv6 brackets and strip a trailing port when present.
  *
  * @param {string} hostname - The hostname value that may contain a port.
  * @returns {string} The normalized hostname without port information.
@@ -180,8 +180,28 @@ function normalizeHostname(hostname) {
   }
 
   const trimmed = hostname.trim().toLowerCase();
-  const withoutPort = trimmed.split(":")[0];
-  return withoutPort || "";
+  if (!trimmed) {
+    return "";
+  }
+
+  if (trimmed.startsWith("[")) {
+    const bracketCloseIndex = trimmed.indexOf("]");
+    if (bracketCloseIndex > 0) {
+      return trimmed.slice(1, bracketCloseIndex) || "";
+    }
+  }
+
+  const firstColonIndex = trimmed.indexOf(":");
+  if (firstColonIndex === -1) {
+    return trimmed;
+  }
+
+  const lastColonIndex = trimmed.lastIndexOf(":");
+  if (firstColonIndex === lastColonIndex) {
+    return trimmed.slice(0, firstColonIndex) || "";
+  }
+
+  return trimmed;
 }
 
 function getNormalizedUserAgent(nav) {
