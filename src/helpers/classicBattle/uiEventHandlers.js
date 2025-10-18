@@ -102,17 +102,11 @@ export function bindUIHelperEventHandlersDynamic() {
         return;
       }
 
-      try {
-        showSnackbar(t("ui.opponentChoosing"));
-      } catch {}
-
       const minDuration = Number(getOpponentPromptMinDuration());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
       opponentSnackbarId = setTimeout(() => {
-        try {
-          markOpponentPromptNow();
-        } catch {}
+        displayOpponentChoosingPrompt();
       }, scheduleDelay);
     } catch {}
   });
