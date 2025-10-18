@@ -2,6 +2,7 @@
 import "./promises.js";
 // Ensure round UI event listeners are registered (roundStarted -> showSelectionPrompt)
 import "./roundUI.js";
+import "./roundCycleHistoryTracker.js";
 import "../domReady.js";
 
 import { ClassicBattleController } from "./controller.js";
