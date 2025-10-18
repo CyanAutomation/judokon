@@ -50,6 +50,18 @@ test.describe("Classic Battle – auto-advance", () => {
     const countdown = page.locator('[data-testid="next-round-timer"], #next-round-timer');
     const beforeRoundCounter = (await roundCounter.textContent().catch(() => null))?.trim() || "";
     const beforeRoundMessage = (await roundMsg.textContent().catch(() => null))?.trim() || "";
+    const { battleState: beforeBattleState, hasEnabledStatButtons: hadEnabledStatButtonsBefore } =
+      (await page.evaluate(() => {
+        const bodyState = document.body?.dataset?.battleState || null;
+        const attrState =
+          document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state") || null;
+        const battleState = bodyState || attrState || "";
+        const hasEnabledStatButtons = Array.from(
+          document.querySelectorAll("#stat-buttons button, [data-testid=\"stat-button\"]")
+        ).some((button) => !button.disabled);
+
+        return { battleState, hasEnabledStatButtons };
+      })) || { battleState: "", hasEnabledStatButtons: false };
 
     let cooldownReachedViaApi = false;
     const apiResult = await page.evaluate(async (waitTimeout) => {
@@ -100,18 +112,44 @@ test.describe("Classic Battle – auto-advance", () => {
     await expect
       .poll(
         async () => {
-          const [counterText, messageText] = await Promise.all([
+          const [counterText, messageText, stateInfo] = await Promise.all([
             roundCounter.textContent().catch(() => null),
-            roundMsg.textContent().catch(() => null)
+            roundMsg.textContent().catch(() => null),
+            page.evaluate(() => {
+              const bodyState = document.body?.dataset?.battleState || null;
+              const attrState =
+                document
+                  .querySelector("[data-battle-state]")
+                  ?.getAttribute("data-battle-state") || null;
+              const battleState = bodyState || attrState || "";
+              const hasEnabledStatButtons = Array.from(
+                document.querySelectorAll("#stat-buttons button, [data-testid=\"stat-button\"]")
+              ).some((button) => !button.disabled);
+
+              return { battleState, hasEnabledStatButtons };
+            })
           ]);
           const counter = (counterText || "").trim();
           const message = (messageText || "").trim();
+          const battleState = stateInfo?.battleState || "";
+          const hasEnabledStatButtons = Boolean(stateInfo?.hasEnabledStatButtons);
 
           const counterChanged = beforeRoundCounter && counter && counter !== beforeRoundCounter;
           const messageChanged = beforeRoundMessage && message && message !== beforeRoundMessage;
           const messageAppeared = !beforeRoundMessage && message && message !== beforeRoundCounter;
+          const messageCleared = Boolean(beforeRoundMessage && !message);
+          const waitingForPlayerAction = battleState === "waitingForPlayerAction";
+          const battleStateAdvanced = waitingForPlayerAction && beforeBattleState !== "waitingForPlayerAction";
+          const statButtonsReenabled = hasEnabledStatButtons && !hadEnabledStatButtonsBefore;
 
-          return Boolean(counterChanged || messageChanged || messageAppeared);
+          return Boolean(
+            counterChanged ||
+              messageChanged ||
+              messageAppeared ||
+              messageCleared ||
+              battleStateAdvanced ||
+              statButtonsReenabled
+          );
         },
         { message: "expected round message/counter to update", timeout: WAIT_FOR_ADVANCE_TIMEOUT }
       )
