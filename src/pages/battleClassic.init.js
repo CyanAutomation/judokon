@@ -482,72 +482,6 @@ function recordRoundCycleTrigger(source) {
   }
 }
 
-function trackRoundCycleEvent(type, info = {}, eventDetail) {
-  if (typeof window === "undefined") return;
-
-  const sanitizeDetailValue = (value) => {
-    if (value === null || value === undefined) return null;
-    const valueType = typeof value;
-    return valueType === "string" || valueType === "number" || valueType === "boolean"
-      ? value
-      : null;
-  };
-
-  const detailSnapshot =
-    eventDetail && typeof eventDetail === "object"
-      ? Object.fromEntries(
-          Object.entries({
-            source: sanitizeDetailValue(eventDetail?.source),
-            via: sanitizeDetailValue(eventDetail?.via)
-          }).filter(([, value]) => value !== undefined)
-        )
-      : undefined;
-
-  const historyEntry = {
-    type: type || "unknown",
-    timestamp: getCurrentTimestamp()
-  };
-
-  if (info && typeof info === "object") {
-    for (const [key, value] of Object.entries(info)) {
-      if (key === "type" || key === "timestamp") continue;
-      historyEntry[key] = value;
-    }
-  }
-
-  if (detailSnapshot) {
-    historyEntry.payload = detailSnapshot;
-  }
-
-  try {
-    if (!Array.isArray(window.__roundCycleHistory)) {
-      window.__roundCycleHistory = [];
-    }
-    window.__roundCycleHistory.push(historyEntry);
-  } catch (error) {
-    try {
-      if (typeof console !== "undefined") {
-        const logger =
-          typeof console.warn === "function"
-            ? console.warn
-            : typeof console.error === "function"
-              ? console.error
-              : typeof console.log === "function"
-                ? console.log
-                : null;
-        if (logger) {
-          logger.call(console, "battleClassic: failed to push to window.__roundCycleHistory", {
-            type: historyEntry.type,
-            info,
-            payload: historyEntry.payload,
-            error
-          });
-        }
-      }
-    } catch {}
-  }
-}
-
 function handleCooldownError(store, reason, err) {
   try {
     store[COOLDOWN_FLAG] = false;
@@ -2166,14 +2100,6 @@ async function init() {
             hasManualStamp &&
             elapsedSinceManual >= 0 &&
             elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
-          const eventInfo = {
-            skipped: skipDueToManual,
-            suppressionWindowMs: READY_SUPPRESSION_WINDOW_MS
-          };
-          if (hasManualStamp && Number.isFinite(elapsedSinceManual)) {
-            eventInfo.sinceManualStartMs = elapsedSinceManual;
-          }
-          trackRoundCycleEvent(eventType, eventInfo, eventDetail);
           if (skipDueToManual) {
             return;
           }
@@ -2190,7 +2116,6 @@ async function init() {
           }
         });
       } else {
-        trackRoundCycleEvent(eventType, { manualRoundStart }, eventDetail);
         try {
           await startRoundCycle(store);
           recordRoundCycleTrigger(eventType || "unknown");
