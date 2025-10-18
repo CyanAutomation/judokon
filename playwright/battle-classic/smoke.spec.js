@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { waitForBattleReady } from "../helpers/battleStateHelper.js";
 
 test.describe("Classic Battle page", () => {
   test("plays a full match and shows the end modal", async ({ page }) => {
@@ -16,6 +17,8 @@ test.describe("Classic Battle page", () => {
 
     // 1. Click the round select button for a quick match
     await page.locator('button:has-text("Quick")').click();
+
+    await waitForBattleReady(page, { allowFallback: false });
 
     const getBattleState = () => page.evaluate(() => document.body?.dataset?.battleState ?? "");
     const terminalStates = ["matchDecision", "matchSummary", "matchComplete"];
