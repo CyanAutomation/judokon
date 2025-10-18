@@ -1,11 +1,10 @@
 import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
-import { debugLog } from "./debugLog.js";
+import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
+import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
- * Validates a state transition agai        console.warn(
-          `Invalid onEnter handler for state '${stateName}': expected function, got ${typeof fn}`
-        );st the state table.
+ * Validates a state transition against the state table.
  *
  * @param {string} fromState - The current state name.
  * @param {string} toState - The target state name.
@@ -16,13 +15,13 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 function validateStateTransition(fromState, toState, eventName, stateTable) {
   const fromStateDef = stateTable.find((s) => s.name === fromState);
   if (!fromStateDef) {
-    console.error(`State validation error: Unknown fromState '${fromState}'`);
+    logError(`State validation error: Unknown fromState '${fromState}'`);
     return false;
   }
 
   const toStateDef = stateTable.find((s) => s.name === toState);
   if (!toStateDef) {
-    console.error(`State validation error: Unknown toState '${toState}'`);
+    logError(`State validation error: Unknown toState '${toState}'`);
     return false;
   }
 
@@ -31,7 +30,7 @@ function validateStateTransition(fromState, toState, eventName, stateTable) {
     (t) => t.on === eventName && t.target === toState
   );
   if (!validTrigger) {
-    console.warn(
+    logWarn(
       `State validation warning: Event '${eventName}' may not be valid from '${fromState}' to '${toState}'`
     );
     // Don't fail validation for unknown events, just warn
@@ -106,7 +105,7 @@ export async function createStateManager(
         let target = trigger?.target;
         if (!target && byName.has(eventName)) target = eventName;
         if (!target || !byName.has(target)) {
-          console.error(
+          logError(
             "stateManager: dispatch returning false. target:",
             target,
             "byName.has(target):",
@@ -120,7 +119,7 @@ export async function createStateManager(
         debugLog("stateManager: after current update", { current });
         // Validate the state transition
         if (!validateStateTransition(from, target, eventName, stateTable)) {
-          console.error(
+          logError(
             `State transition validation failed: ${from} -> ${target} via ${eventName}`
           );
           return false;
@@ -133,7 +132,7 @@ export async function createStateManager(
         await runOnEnter(target, payload);
         return true;
       } catch (error) {
-        console.error("stateManager: Error in dispatch:", error);
+        logError("stateManager: Error in dispatch:", error);
         throw error; // Re-throw to see the error in orchestrator
       }
     }
@@ -147,15 +146,15 @@ export async function createStateManager(
       } catch (err) {
         const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
         if (!IS_VITEST) {
-          console.error(errorMsg, err);
-        } else {
-          console.debug(errorMsg, err);
+          logError(errorMsg, err);
+        } else if (!shouldSuppressDebugOutput()) {
+          logDebug(errorMsg, err);
         }
         // Don't re-throw errors in onEnter handlers to prevent state machine deadlock
         // Log the error and continue with the transition
       }
     } else if (fn !== undefined) {
-      console.warn(
+      logWarn(
         `Invalid onEnter handler for state '${stateName}': expected function, got ${typeof fn}`
       );
     }

@@ -1,5 +1,7 @@
 import { debug as baseDebug } from "../logger.js";
 
+const DEBUG_FLAG_NAMES = ["__SHOW_TEST_LOGS__", "__SHOW_TEST_LOGS", "SHOW_TEST_LOGS"];
+
 function hasFlag(target, flag) {
   try {
     return Boolean(target?.[flag]);
@@ -8,14 +10,38 @@ function hasFlag(target, flag) {
   }
 }
 
+function hasAnyDebugFlag(target) {
+  return DEBUG_FLAG_NAMES.some((flag) => hasFlag(target, flag));
+}
+
 function isDebugFlagEnabled() {
   if (typeof process !== "undefined" && Boolean(process.env?.SHOW_TEST_LOGS)) {
     return true;
   }
-  if (hasFlag(typeof window !== "undefined" ? window : undefined, "__SHOW_TEST_LOGS")) {
+  if (hasAnyDebugFlag(typeof window !== "undefined" ? window : undefined)) {
     return true;
   }
-  return hasFlag(typeof globalThis !== "undefined" ? globalThis : undefined, "__SHOW_TEST_LOGS");
+  return hasAnyDebugFlag(typeof globalThis !== "undefined" ? globalThis : undefined);
+}
+
+function isPlaywrightRuntime() {
+  try {
+    return Boolean(typeof globalThis !== "undefined" && globalThis.__PLAYWRIGHT_TEST__);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Determine whether debug output should be suppressed in Playwright.
+ *
+ * @returns {boolean}
+ * @pseudocode
+ * IF isPlaywrightRuntime() AND NOT isDebugFlagEnabled() THEN return true
+ * RETURN false
+ */
+export function shouldSuppressDebugOutput() {
+  return isPlaywrightRuntime() && !isDebugFlagEnabled();
 }
 
 /**
@@ -47,7 +73,7 @@ export function shouldEmitDebugLogs() {
  * else -> baseDebug(message, data)
  */
 export function debugLog(message, data) {
-  if (!shouldEmitDebugLogs()) return;
+  if (!shouldEmitDebugLogs() || shouldSuppressDebugOutput()) return;
   if (typeof data === "undefined") {
     baseDebug(message);
     return;
@@ -55,4 +81,4 @@ export function debugLog(message, data) {
   baseDebug(message, data);
 }
 
-export default { debugLog, shouldEmitDebugLogs };
+export default { debugLog, shouldEmitDebugLogs, shouldSuppressDebugOutput };
