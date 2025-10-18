@@ -95,11 +95,10 @@ export async function setupClassicBattlePage() {
 // When this module is loaded as a module script from the page, initialize
 // the Classic Battle page once the DOM is ready. Tests can still import and
 // call `setupClassicBattlePage` directly.
-onDomReady(() => {
-  exposeClassicBattleTestAPI()
-    .catch(() => {})
-    .finally(() => {
-      // Fire-and-forget; errors are swallowed to avoid noisy failures on page load.
-      setupClassicBattlePage().catch(() => {});
-    });
+onDomReady(async () => {
+  // Expose the Classic Battle test API without coupling to the main bootstrap flow.
+  exposeClassicBattleTestAPI().catch(() => {});
+
+  // Fire-and-forget; errors are swallowed to avoid noisy failures on page load.
+  setupClassicBattlePage().catch(() => {});
 });

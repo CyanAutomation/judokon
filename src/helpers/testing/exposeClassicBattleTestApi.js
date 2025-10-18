@@ -1,13 +1,23 @@
+import { isEnabled } from "../featureFlags.js";
+
+const HEADLESS_USER_AGENT_TOKENS = [
+  "playwright",
+  "headlesschrome",
+  "chromium-headless",
+  "phantomjs"
+];
+
 /**
  * Conditionally expose the Classic Battle test API when running under test
  * runners (Vitest, Playwright) without bundling the heavyweight helpers in
  * production.
  *
  * @pseudocode
- * 1. Detect common Node-based and browser-based test environments.
- * 2. If not in a test environment, exit early.
- * 3. Dynamically import the test API module and invoke `exposeTestAPI()`.
- * 4. Swallow any errors to avoid noisy failures during bootstrap.
+ * 1. Detect Node-based test environments via process flags.
+ * 2. Inspect browser globals and navigator automation hints for test runners.
+ * 3. Fall back to the `enableTestMode` feature flag to respect manual overrides.
+ * 4. Dynamically import the test API module and invoke `exposeTestAPI()` when enabled.
+ * 5. Swallow any errors to avoid noisy failures during bootstrap.
  *
  * @returns {Promise<void>} Resolves once the exposure attempt completes.
  */
@@ -25,73 +35,114 @@ export async function exposeClassicBattleTestAPI() {
 }
 
 function shouldExposeTestAPI() {
-  if (typeof process !== "undefined") {
-    if (process.env?.NODE_ENV === "test") return true;
-    if (process.env?.VITEST === "true" || process.env?.VITEST === true) {
-      return true;
+  if (isNodeTestEnvironment()) {
+    return true;
+  }
+
+  const win = getWindow();
+  if (win && hasBrowserTestFlags(win)) {
+    return true;
+  }
+
+  const nav = getNavigator(win);
+  if (nav && (isNavigatorAutomated(nav) || isTestUserAgent(nav))) {
+    return true;
+  }
+
+  return isTestModeFlagEnabled();
+}
+
+function isNodeTestEnvironment() {
+  if (typeof process === "undefined") {
+    return false;
+  }
+
+  if (process.env?.NODE_ENV === "test") {
+    return true;
+  }
+
+  const vitestFlag = process.env?.VITEST;
+  return vitestFlag === "true" || vitestFlag === true;
+}
+
+function hasBrowserTestFlags(win) {
+  try {
+    return Boolean(win.__TEST__ || win.__VITEST__ || win.__PLAYWRIGHT__);
+  } catch {
+    return false;
+  }
+}
+
+function getWindow() {
+  try {
+    return typeof window !== "undefined" ? window : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function getNavigator(win) {
+  if (win) {
+    try {
+      if (win.navigator) {
+        return win.navigator;
+      }
+    } catch {}
+  }
+
+  try {
+    return typeof navigator !== "undefined" ? navigator : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function isNavigatorAutomated(nav) {
+  try {
+    return Boolean(nav && nav.webdriver);
+  } catch {
+    return false;
+  }
+}
+
+function isTestUserAgent(nav) {
+  const normalizedAgent = getNormalizedUserAgent(nav);
+  if (!normalizedAgent) {
+    return false;
+  }
+
+  return HEADLESS_USER_AGENT_TOKENS.some((token) => normalizedAgent.includes(token));
+}
+
+function getNormalizedUserAgent(nav) {
+  let userAgent = "";
+
+  try {
+    if (typeof nav.userAgent === "string") {
+      userAgent = nav.userAgent;
+    }
+  } catch {
+    userAgent = "";
+  }
+
+  if (!userAgent) {
+    try {
+      const brands = nav.userAgentData?.brands;
+      if (Array.isArray(brands)) {
+        userAgent = brands.map((brand) => brand.brand).join(" ");
+      }
+    } catch {
+      userAgent = "";
     }
   }
 
-  if (typeof window !== "undefined") {
-    try {
-      if (window.__TEST__ || window.__VITEST__ || window.__PLAYWRIGHT__) {
-        return true;
-      }
-    } catch {}
+  return userAgent ? userAgent.toLowerCase() : "";
+}
 
-    const href = (() => {
-      try {
-        return window.location?.href || "";
-      } catch {
-        return "";
-      }
-    })();
-    if (href.includes("127.0.0.1") || href.includes("localhost")) {
-      return true;
-    }
-
-    const nav = (() => {
-      try {
-        return window.navigator;
-      } catch {
-        return undefined;
-      }
-    })();
-    if (!nav) return false;
-
-    if (nav.webdriver) {
-      return true;
-    }
-
-    let userAgent = "";
-    try {
-      if (typeof nav.userAgent === "string") {
-        userAgent = nav.userAgent.toLowerCase();
-      }
-    } catch {}
-
-    if (!userAgent) {
-      try {
-        const brands = nav.userAgentData?.brands;
-        if (Array.isArray(brands)) {
-          userAgent = brands.map((brand) => brand.brand).join(" ").toLowerCase();
-        }
-      } catch {
-        userAgent = "";
-      }
-    }
-
-    if (!userAgent) {
-      return false;
-    }
-
-    if (userAgent.includes("playwright")) {
-      return true;
-    }
-    if (userAgent.includes("headless")) {
-      return true;
-    }
+function isTestModeFlagEnabled() {
+  try {
+    return isEnabled("enableTestMode");
+  } catch {
+    return false;
   }
-
-  return false;
 }
