@@ -95,14 +95,11 @@ export async function createStateManager(
     context,
     getState: () => current,
     async dispatch(eventName, payload) {
-      debugLog(
-        "stateManager: dispatch called",
-        {
-          event: eventName,
-          payload,
-          current
-        }
-      );
+      debugLog("stateManager: dispatch called", {
+        event: eventName,
+        payload,
+        current
+      });
       try {
         const state = byName.get(current);
         const trigger = state?.triggers?.find((t) => t.on === eventName);

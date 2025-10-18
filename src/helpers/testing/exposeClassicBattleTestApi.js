@@ -74,7 +74,10 @@ function shouldExposeTestAPI() {
       try {
         const brands = nav.userAgentData?.brands;
         if (Array.isArray(brands)) {
-          userAgent = brands.map((brand) => brand.brand).join(" ").toLowerCase();
+          userAgent = brands
+            .map((brand) => brand.brand)
+            .join(" ")
+            .toLowerCase();
         }
       } catch {
         userAgent = "";

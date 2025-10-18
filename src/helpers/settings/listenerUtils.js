@@ -52,9 +52,14 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   soundToggle?.addEventListener("change", (e) => {
     const prev = !soundToggle.checked;
     Promise.resolve(
-      handleUpdate("sound", soundToggle.checked, () => {
-        soundToggle.checked = prev;
-      }, e.target)
+      handleUpdate(
+        "sound",
+        soundToggle.checked,
+        () => {
+          soundToggle.checked = prev;
+        },
+        e.target
+      )
     )
       .then(() => {
         showSnackbar(`Sound ${soundToggle.checked ? "enabled" : "disabled"}`);
@@ -65,10 +70,15 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     const prev = !motionToggle.checked;
     applyMotionPreference(motionToggle.checked);
     Promise.resolve(
-      handleUpdate("motionEffects", motionToggle.checked, () => {
-        motionToggle.checked = prev;
-        applyMotionPreference(prev);
-      }, e.target)
+      handleUpdate(
+        "motionEffects",
+        motionToggle.checked,
+        () => {
+          motionToggle.checked = prev;
+          applyMotionPreference(prev);
+        },
+        e.target
+      )
     )
       .then(() => {
         showSnackbar(`Motion effects ${motionToggle.checked ? "enabled" : "disabled"}`);
@@ -88,16 +98,21 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
           applyDisplayMode(mode);
         });
         Promise.resolve(
-          handleUpdate("displayMode", mode, () => {
-            const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
-            if (prevRadio) prevRadio.checked = true;
-            displayRadios.forEach((r) => {
-              r.tabIndex = r.value === previous ? 0 : -1;
-            });
-            withViewTransition(() => {
-              applyDisplayMode(previous);
-            });
-          }, e.target)
+          handleUpdate(
+            "displayMode",
+            mode,
+            () => {
+              const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
+              if (prevRadio) prevRadio.checked = true;
+              displayRadios.forEach((r) => {
+                r.tabIndex = r.value === previous ? 0 : -1;
+              });
+              withViewTransition(() => {
+                applyDisplayMode(previous);
+              });
+            },
+            e.target
+          )
         )
           .then(() => {
             const label = mode.charAt(0).toUpperCase() + mode.slice(1);
@@ -110,9 +125,14 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   typewriterToggle?.addEventListener("change", (e) => {
     const prev = !typewriterToggle.checked;
     Promise.resolve(
-      handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
-        typewriterToggle.checked = prev;
-      }, e.target)
+      handleUpdate(
+        "typewriterEffect",
+        typewriterToggle.checked,
+        () => {
+          typewriterToggle.checked = prev;
+        },
+        e.target
+      )
     )
       .then(() => {
         showSnackbar(`Typewriter effect ${typewriterToggle.checked ? "enabled" : "disabled"}`);
@@ -122,9 +142,14 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   tooltipsToggle?.addEventListener("change", (e) => {
     const prev = !tooltipsToggle.checked;
     Promise.resolve(
-      handleUpdate("tooltips", tooltipsToggle.checked, () => {
-        tooltipsToggle.checked = prev;
-      }, e.target)
+      handleUpdate(
+        "tooltips",
+        tooltipsToggle.checked,
+        () => {
+          tooltipsToggle.checked = prev;
+        },
+        e.target
+      )
     )
       .then(() => {
         showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
@@ -134,9 +159,14 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   cardOfTheDayToggle?.addEventListener("change", (e) => {
     const prev = !cardOfTheDayToggle.checked;
     Promise.resolve(
-      handleUpdate("showCardOfTheDay", cardOfTheDayToggle.checked, () => {
-        cardOfTheDayToggle.checked = prev;
-      }, e.target)
+      handleUpdate(
+        "showCardOfTheDay",
+        cardOfTheDayToggle.checked,
+        () => {
+          cardOfTheDayToggle.checked = prev;
+        },
+        e.target
+      )
     )
       .then(() => {
         showSnackbar(`Card of the Day ${cardOfTheDayToggle.checked ? "enabled" : "disabled"}`);
@@ -146,9 +176,14 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   fullNavigationMapToggle?.addEventListener("change", (e) => {
     const prev = !fullNavigationMapToggle.checked;
     Promise.resolve(
-      handleUpdate("fullNavigationMap", fullNavigationMapToggle.checked, () => {
-        fullNavigationMapToggle.checked = prev;
-      }, e.target)
+      handleUpdate(
+        "fullNavigationMap",
+        fullNavigationMapToggle.checked,
+        () => {
+          fullNavigationMapToggle.checked = prev;
+        },
+        e.target
+      )
     )
       .then(() => {
         showSnackbar(

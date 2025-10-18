@@ -10,8 +10,7 @@ const globalShowTestLogs =
   typeof globalThis !== "undefined" &&
   !!(globalThis.__SHOW_TEST_LOGS__ || globalThis.SHOW_TEST_LOGS);
 const showTestLogs = nodeShowTestLogs || globalShowTestLogs;
-const isPlaywright =
-  typeof globalThis !== "undefined" && !!globalThis.__PLAYWRIGHT_TEST__;
+const isPlaywright = typeof globalThis !== "undefined" && !!globalThis.__PLAYWRIGHT_TEST__;
 
 function shouldLog() {
   // In test runners default to silence unless SHOW_TEST_LOGS is truthy.
