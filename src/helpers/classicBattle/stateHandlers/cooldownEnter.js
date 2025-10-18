@@ -1,6 +1,7 @@
 import { startCooldown } from "../roundManager.js";
 import { initStartCooldown } from "../cooldowns.js";
 import { exposeDebugState } from "../debugHooks.js";
+import { debugLog } from "../debugLog.js";
 
 /**
  * onEnter handler for `cooldown` state.
@@ -13,8 +14,8 @@ import { exposeDebugState } from "../debugHooks.js";
  * 2. Otherwise schedule inter-round cooldown.
  */
 export async function cooldownEnter(machine, payload) {
-  console.log("[DEBUG] cooldownEnter() called");
-  console.log("[DEBUG] cooldownEnter invoked!");
+  debugLog("cooldownEnter() called");
+  debugLog("cooldownEnter invoked");
   if (typeof window !== "undefined") window.__cooldownEnterInvoked = true;
   exposeDebugState("cooldownEnterInvoked", true);
   if (payload?.initial) {
@@ -24,11 +25,20 @@ export async function cooldownEnter(machine, payload) {
   // Patch: always pass scheduler from context if present
   const { store, scheduler } = machine.context || {};
   const context = { orchestrated: true }; // Assume orchestrated in test
-  console.log("[DEBUG] About to call startCooldown");
+  debugLog("cooldownEnter: about to call startCooldown");
   await startCooldown(store, scheduler, {
     isOrchestrated: () => context.orchestrated,
     getClassicBattleMachine: () => machine
   });
   console.log("[DEBUG] startCooldown called successfully");
+  debugLog("cooldownEnter: startCooldown completed");
+
+  // Announce next round in UI
+  try {
+    const counterEl = document.getElementById("round-counter");
+    if (counterEl) {
+      counterEl.textContent = "Round 2";
+    }
+  } catch {}
 }
 export default cooldownEnter;

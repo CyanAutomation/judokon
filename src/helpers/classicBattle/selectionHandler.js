@@ -284,10 +284,14 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
  * stall timeouts so they cannot fire after the player has made a selection.
  *
  * @pseudocode
- * 1. Call engine `stopTimer()` to pause/stop the round countdown and invoke
- *    `window.__battleClassicStopSelectionTimer` if available.
- * 2. Clear `store.statTimeoutId` and `store.autoSelectId` via `clearTimeout`.
- * 3. Null out the stored ids so subsequent cleanup calls are safe.
+ * 1. Call engine `stopTimer()` to pause/stop the round countdown and
+ *    clear the scoreboard timer when possible.
+ * 2. Invoke `window.__battleClassicStopSelectionTimer` when present to ensure
+ *    the orchestrator cancels any in-flight countdown controller.
+ * 3. Blank the DOM fallback `#next-round-timer` node when direct helpers are
+ *    unavailable.
+ * 4. Clear `store.statTimeoutId` and `store.autoSelectId` via `clearTimeout`.
+ * 5. Null out the stored ids so subsequent cleanup calls are safe.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {void}
@@ -297,8 +301,19 @@ export function cleanupTimers(store) {
     stopTimer();
   } catch {}
   try {
+    scoreboard.clearTimer?.();
+  } catch {}
+  try {
     if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
       window.__battleClassicStopSelectionTimer();
+    }
+  } catch {}
+  try {
+    if (typeof document !== "undefined") {
+      const timerEl = document.getElementById("next-round-timer");
+      if (timerEl) {
+        timerEl.textContent = "";
+      }
     }
   } catch {}
   try {

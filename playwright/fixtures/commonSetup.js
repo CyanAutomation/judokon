@@ -13,8 +13,16 @@
 import { test as base, expect } from "@playwright/test";
 import { registerCommonRoutes } from "./commonRoutes.js";
 
+const showLogsInBrowser =
+  typeof process !== "undefined" && !!process.env && !!process.env.SHOW_TEST_LOGS;
+
+// Set global flag at module level so logger can detect Playwright context
+// before page initialization and browser context setup
 if (typeof globalThis !== "undefined") {
   globalThis.__PLAYWRIGHT_TEST__ = true;
+  if (showLogsInBrowser) {
+    globalThis.__SHOW_TEST_LOGS__ = true;
+  }
 }
 
 export const test = base.extend({
@@ -56,12 +64,19 @@ export const test = base.extend({
       } catch {}
     });
 
-    await page.addInitScript(() => {
+    await page.addInitScript((shouldShowLogs) => {
       window.__PLAYWRIGHT_TEST__ = true;
       try {
         globalThis.__PLAYWRIGHT_TEST__ = true;
       } catch {}
-    });
+      if (!shouldShowLogs) return;
+      try {
+        window.__SHOW_TEST_LOGS__ = true;
+      } catch {}
+      try {
+        globalThis.__SHOW_TEST_LOGS__ = true;
+      } catch {}
+    }, showLogsInBrowser);
     await page.addInitScript(() => {
       localStorage.clear();
       // Reset snackbar override between tests so snackbar-based assertions remain deterministic

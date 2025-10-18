@@ -2,6 +2,7 @@ import { setupFallbackTimer } from "../setupFallbackTimer.js";
 import { isTestModeEnabled } from "../../testModeUtils.js";
 import { guardAsync } from "../guard.js";
 import { handleRoundError } from "../handleRoundError.js";
+import { debugLog } from "../debugLog.js";
 
 function installRoundStartFallback(machine) {
   if (!isTestModeEnabled || !isTestModeEnabled()) return null;
@@ -33,7 +34,7 @@ function invokeRoundStart(ctx) {
  * @returns {Promise<void>}
  */
 export async function roundStartEnter(machine) {
-  console.log("[DEBUG] roundStartEnter() called");
+  debugLog("roundStartEnter() called");
   const fallback = installRoundStartFallback(machine);
   try {
     await invokeRoundStart(machine.context);
