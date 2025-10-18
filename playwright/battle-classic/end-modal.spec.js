@@ -209,12 +209,9 @@ async function selectAdvantagedStat(page) {
     const tryClick = (predicate) => {
       for (const button of buttons) {
         if (!predicate(button)) continue;
-        try {
-          button.disabled = false;
-        } catch {}
-        try {
-          button.removeAttribute("disabled");
-        } catch {}
+        if (button.disabled || button.hasAttribute("disabled")) {
+          continue;
+        }
         try {
           button.click();
           return true;
