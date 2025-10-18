@@ -5,11 +5,15 @@ const MAPPING_PATH = "../../../design/dataSchemas/battleMarkup.generated.js";
 
 async function importSelectorsWith(entries) {
   vi.resetModules();
-  vi.doMock(MAPPING_PATH, () => ({
-    default: {
-      entries
-    }
-  }), { virtual: true });
+  vi.doMock(
+    MAPPING_PATH,
+    () => ({
+      default: {
+        entries
+      }
+    }),
+    { virtual: true }
+  );
 
   return import(SELECTORS_PATH);
 }
@@ -37,13 +41,11 @@ describe("statButton selector helper", () => {
   });
 
   it("scopes to a specific stat when the selector contains multiple data-stat attributes", async () => {
-    const selector = ".foo[data-stat][data-variant][data-stat=\"speed\"]";
-    const { statButton } = await importSelectorsWith([
-      { logicalName: "statButton", selector }
-    ]);
+    const selector = '.foo[data-stat][data-variant][data-stat="speed"]';
+    const { statButton } = await importSelectorsWith([{ logicalName: "statButton", selector }]);
 
     expect(statButton({ statKey: "power" })).toBe(
-      ".foo[data-stat=\"power\"][data-variant][data-stat=\"power\"]"
+      '.foo[data-stat="power"][data-variant][data-stat="power"]'
     );
   });
 
@@ -52,7 +54,7 @@ describe("statButton selector helper", () => {
       { logicalName: "statButton", selector: ".foo" }
     ]);
 
-    expect(statButton("tech")).toBe(".foo[data-stat=\"tech\"]");
+    expect(statButton("tech")).toBe('.foo[data-stat="tech"]');
   });
 
   it("falls back to the canonical stat button selector when schema data is missing", async () => {
