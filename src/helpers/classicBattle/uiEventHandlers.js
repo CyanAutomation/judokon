@@ -29,16 +29,18 @@ function clearFallbackPromptTimer() {
   } catch {}
 }
 
-function displayOpponentChoosingPrompt() {
+function displayOpponentChoosingPrompt({ markTimestamp = true } = {}) {
   try {
     showSnackbar(t("ui.opponentChoosing"));
   } catch {
     // Intentionally ignore snackbar failures so battle flow is never interrupted.
   }
-  try {
-    markOpponentPromptNow();
-  } catch {
-    // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+  if (markTimestamp) {
+    try {
+      markOpponentPromptNow();
+    } catch {
+      // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+    }
   }
 }
 
@@ -105,8 +107,14 @@ export function bindUIHelperEventHandlersDynamic() {
       const minDuration = Number(getOpponentPromptMinDuration());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
+      displayOpponentChoosingPrompt({ markTimestamp: false });
+
       opponentSnackbarId = setTimeout(() => {
-        displayOpponentChoosingPrompt();
+        try {
+          markOpponentPromptNow();
+        } catch {
+          // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+        }
       }, scheduleDelay);
     } catch {}
   });
