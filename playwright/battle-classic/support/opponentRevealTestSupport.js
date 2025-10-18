@@ -260,6 +260,78 @@ async function attemptCliResolution(page, hasResolved) {
   return { resolved, stateAfterCli };
 }
 
+/**
+ * @pseudocode
+ * - align DOM dataset + emitted events with the desired battle state
+ * - invoke state API dispatch to mirror production state transitions
+ * - verify polling observes the synchronized state before continuing
+ *
+ * Manual synchronization is reserved for the round resolution fallback when the
+ * CLI stalls in transitional states such as waiting for player action. It keeps
+ * the test harness in lock-step with production semantics while documenting the
+ * exceptional pathway.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {{ fromState?: string | null, finalState?: string, timeout?: number }} [options]
+ * @returns {Promise<void>}
+ */
+async function manuallySyncBattleState(
+  page,
+  { fromState = null, finalState = ROUND_OVER_STATE, timeout = 2_000 } = {}
+) {
+  await page.evaluate(async ({ fromState: priorState, finalState: targetState }) => {
+    const body = document.body;
+    if (!body) return;
+
+    const initialState =
+      priorState ?? (body.dataset ? body.dataset.battleState ?? null : null);
+
+    if (body.dataset) {
+      body.dataset.battleState = targetState;
+    }
+
+    if (typeof window.emitBattleEvent === "function") {
+      window.emitBattleEvent("battleStateChange", {
+        from: initialState,
+        to: targetState,
+        event: "roundResolved"
+      });
+    }
+
+    const stateApi = window.__TEST_API?.state;
+    if (stateApi && typeof stateApi.dispatchBattleEvent === "function") {
+      try {
+        await stateApi.dispatchBattleEvent(targetState);
+      } catch (error) {
+        // Intentionally ignore dispatch errors as this is a fallback mechanism.
+        // The polling verification below will catch unresolved state syncs.
+      }
+    }
+  },
+  { fromState, finalState });
+
+  await expect
+    .poll(
+      async () => safeGetBattleState(page, finalState),
+      {
+        timeout,
+        message: `Expected manual battle state sync to report "${finalState}" after fallback`
+      }
+    )
+    .toBe(finalState);
+}
+
+/**
+ * @pseudocode
+ * - trigger production roundResolved transition
+ * - inspect latest battle state and determine if manual sync is required
+ * - when needed, force DOM + state API alignment to "roundOver" and verify sync
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {() => Promise<boolean>} hasResolved
+ * @param {string | null | undefined} stateAfterCli
+ * @returns {Promise<{ resolved: boolean, stateAfterTransition: string | null | undefined }>}
+ */
 async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
   await triggerStateTransition(page, "roundResolved");
 
@@ -268,44 +340,11 @@ async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
   if (shouldForceRoundOver(stateAfterTransition)) {
     const previousState = stateAfterTransition ?? stateAfterCli ?? null;
 
-    await page.evaluate(async ({ previousState: fromState, finalState }) => {
-      const body = document.body;
-      if (!body) return;
-
-      const initialState =
-        fromState ?? (body.dataset ? body.dataset.battleState ?? null : null);
-
-      if (body.dataset) {
-        body.dataset.battleState = finalState;
-      }
-
-      if (typeof window.emitBattleEvent === "function") {
-        window.emitBattleEvent("battleStateChange", {
-          from: initialState,
-          to: finalState,
-          event: "roundResolved"
-        });
-      }
-
-      const stateApi = window.__TEST_API?.state;
-      if (stateApi && typeof stateApi.dispatchBattleEvent === "function") {
-        try {
-          await stateApi.dispatchBattleEvent(finalState);
-        } catch {}
-      }
-    },
-    { previousState, finalState: ROUND_OVER_STATE });
-
-    await expect
-      .poll(
-        async () => safeGetBattleState(page, ROUND_OVER_STATE),
-        {
-          timeout: 1_000,
-          message:
-            'Expected manual battle state sync to report "roundOver" after fallback'
-        }
-      )
-      .toBe(ROUND_OVER_STATE);
+    await manuallySyncBattleState(page, {
+      fromState: previousState,
+      finalState: ROUND_OVER_STATE,
+      timeout: 2_000
+    });
 
     stateAfterTransition = ROUND_OVER_STATE;
   }
@@ -324,11 +363,7 @@ function shouldForceRoundOver(state) {
     return false;
   }
 
-  if (state === WAITING_FOR_PLAYER_ACTION || state === COOLDOWN_STATE) {
-    return true;
-  }
-
-  return true;
+  return state === WAITING_FOR_PLAYER_ACTION || state === COOLDOWN_STATE;
 }
 
 async function clickNextButtonFallback(page, { hasResolved, stateAfterCli, stateAfterTransition }) {
