@@ -31,6 +31,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Synced `data-feature-battle-state-badge` markers across both body and badge elements so QA can read flag state consistently (`src/helpers/classicBattle/uiHelpers.js`); refreshed unit coverage (`tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`).
 - Styled settings fieldsets and section headings to improve visual grouping and hierarchy (`src/styles/settings.css`); verified contrast with `npm run check:contrast`.
 - Tuned settings quick-link gutters for wide displays via responsive spacing clamps and a new spacing token (`src/styles/settings.css`, `src/styles/base.css`).
+- Right-sized settings toggle switches for desktop proportions while keeping a 40px hit area (`src/styles/settings.css`); validated with `npm run check:contrast` and relevant Vitest coverage.
 
 ## Critical blocker
 
@@ -175,14 +176,9 @@ This phase focuses on high-impact changes to improve the core layout, readabilit
    - **Priority:** Low
    - **Outcome:** Introduced responsive gutter and padding clamps so quick-link tiles stay balanced on wide screens without introducing new breakpoints; backed by new `--space-xxl` spacing token.
 
-3. **Switch Control Sizing** — **Outstanding**
+3. **Switch Control Sizing** — **Completed**
    - **Priority:** Low
-   - **Issue:** Toggle switches currently span a wide footprint; while acceptable on desktop, they can feel oversized relative to neighboring content.
-   - **Scope:** In `src/styles/settings.css`, tighten the default width/padding for `.switch` to better align with desktop proportions, keeping responsiveness work out of scope for now.
-   - **Acceptance Criteria:**
-     - Switch sizing is proportional to neighboring content
-     - Switches remain usable (adequate touch targets)
-     - Visual balance is improved
+   - **Outcome:** Reduced the toggle track/knob dimensions to better match adjacent copy while preserving a 40px hit target; confirmed styling with contrast checks and existing unit coverage.
 
 ### Phase 2: Enhanced Interactivity and Theming — **NOT STARTED**
 
