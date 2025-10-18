@@ -14,8 +14,7 @@ import { debugLog } from "../debugLog.js";
  * 2. Otherwise schedule inter-round cooldown.
  */
 export async function cooldownEnter(machine, payload) {
-  debugLog("cooldownEnter() called");
-  debugLog("cooldownEnter invoked");
+  debugLog("cooldownEnter: handler invoked", { hasInitialPayload: !!payload?.initial });
   if (typeof window !== "undefined") window.__cooldownEnterInvoked = true;
   exposeDebugState("cooldownEnterInvoked", true);
   if (payload?.initial) {
