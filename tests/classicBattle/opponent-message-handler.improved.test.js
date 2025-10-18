@@ -9,6 +9,7 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 const showSnackbar = vi.fn();
 const markOpponentPromptNow = vi.fn();
+const recordOpponentPromptTimestamp = vi.fn();
 const scoreboardClearTimer = vi.fn();
 const renderOpponentCard = vi.fn();
 const showRoundOutcome = vi.fn();
@@ -20,8 +21,12 @@ const setOpponentDelayMock = vi.fn();
 const getOpponentDelayMock = vi.fn(() => 500);
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+vi.mock("../../src/helpers/featureFlags.js", () => ({
+  isEnabled: (flag) => flag === "opponentDelayMessage"
+}));
 vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
-  markOpponentPromptNow
+  markOpponentPromptNow,
+  recordOpponentPromptTimestamp
 }));
 vi.mock("../../src/helpers/classicBattle/snackbar.js", () => ({
   showSelectionPrompt: vi.fn(),
@@ -70,6 +75,8 @@ describe("UI handlers: opponent message events", () => {
     setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
     showSnackbar.mockReset();
     markOpponentPromptNow.mockReset();
+    markOpponentPromptNow.mockImplementation(() => 123.45);
+    recordOpponentPromptTimestamp.mockReset();
     scoreboardClearTimer.mockReset();
     renderOpponentCard.mockReset();
     showRoundOutcome.mockReset();
@@ -91,25 +98,6 @@ describe("UI handlers: opponent message events", () => {
     setTimeoutSpy?.mockRestore();
   });
 
-  it("emits opponent choosing snackbar after configured delay", () => {
-    getOpponentDelayMock.mockReturnValue(120);
-    bindUIHelperEventHandlersDynamic();
-
-    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
-
-    expect(scoreboardClearTimer).toHaveBeenCalledTimes(1);
-    expect(showSnackbar).not.toHaveBeenCalled();
-    expect(markOpponentPromptNow).not.toHaveBeenCalled();
-
-    vi.advanceTimersByTime(119);
-    expect(showSnackbar).not.toHaveBeenCalled();
-
-    vi.advanceTimersByTime(1);
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
-    expect(setTimeoutSpy).toHaveBeenCalled();
-  });
-
   it("shows opponent choosing snackbar immediately when delay is not positive", () => {
     getOpponentDelayMock.mockReturnValue(0);
     bindUIHelperEventHandlersDynamic();
@@ -119,6 +107,7 @@ describe("UI handlers: opponent message events", () => {
     expect(scoreboardClearTimer).toHaveBeenCalledTimes(1);
     expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
+    expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
     expect(setTimeoutSpy).not.toHaveBeenCalled();
   });

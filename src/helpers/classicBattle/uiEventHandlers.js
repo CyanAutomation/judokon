@@ -6,7 +6,11 @@ import { t } from "../i18n.js";
 import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
-import { markOpponentPromptNow, getOpponentPromptMinDuration } from "./opponentPromptTracker.js";
+import {
+  markOpponentPromptNow,
+  recordOpponentPromptTimestamp,
+  getOpponentPromptMinDuration
+} from "./opponentPromptTracker.js";
 import { isEnabled } from "../featureFlags.js";
 
 let opponentSnackbarId = 0;
@@ -29,19 +33,21 @@ function clearFallbackPromptTimer() {
   } catch {}
 }
 
-function displayOpponentChoosingPrompt({ markTimestamp = true } = {}) {
+function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
   try {
     showSnackbar(t("ui.opponentChoosing"));
   } catch {
     // Intentionally ignore snackbar failures so battle flow is never interrupted.
   }
+  let recordedTimestamp;
   if (markTimestamp) {
     try {
-      markOpponentPromptNow();
+      recordedTimestamp = markOpponentPromptNow({ notify: notifyReady });
     } catch {
       // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
     }
   }
+  return recordedTimestamp;
 }
 
 /**
@@ -107,13 +113,21 @@ export function bindUIHelperEventHandlersDynamic() {
       const minDuration = Number(getOpponentPromptMinDuration());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
-      displayOpponentChoosingPrompt({ markTimestamp: false });
+      const promptTimestamp = displayOpponentChoosingPrompt({ markTimestamp: true, notifyReady: false });
 
       opponentSnackbarId = setTimeout(() => {
         try {
-          markOpponentPromptNow();
+          if (Number.isFinite(promptTimestamp)) {
+            recordOpponentPromptTimestamp(promptTimestamp);
+          } else {
+            markOpponentPromptNow();
+          }
         } catch {
-          // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+          try {
+            markOpponentPromptNow();
+          } catch {
+            // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+          }
         }
       }, scheduleDelay);
     } catch {}
