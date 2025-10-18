@@ -1,9 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import {
-  verifyPageBasics,
-  NAV_RANDOM_JUDOKA,
-  NAV_CLASSIC_BATTLE
-} from "./fixtures/navigationChecks.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("PRD Reader page", () => {
   test.beforeEach(async ({ page }) => {
@@ -19,7 +15,7 @@ test.describe("PRD Reader page", () => {
   });
 
   test("PRD reader basics", async ({ page }) => {
-    await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
+    await verifyPageBasics(page);
   });
 
   test("forward and back navigation", async ({ page }) => {
