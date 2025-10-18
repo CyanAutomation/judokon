@@ -208,10 +208,10 @@ export function toggleInspectorPanels(enable) {
   document.querySelectorAll(".card-container").forEach((container) => {
     let featureState = enable ? "enabled" : "disabled";
     const existing = container.querySelector(".debug-panel");
+    const card = container.querySelector(".judoka-card");
     if (enable) {
       if (!existing) {
         const json = container.dataset.cardJson;
-        const card = container.querySelector(".judoka-card");
         if (!json || !card) return;
         let data;
         try {
@@ -219,6 +219,7 @@ export function toggleInspectorPanels(enable) {
         } catch (error) {
           console.warn("Invalid card JSON:", error);
           container.setAttribute("data-feature-card-inspector", "error");
+          card?.setAttribute("data-feature-card-inspector", "error");
           return;
         }
         const panel = createInspectorPanel(container, data);
@@ -232,5 +233,8 @@ export function toggleInspectorPanels(enable) {
       container.removeAttribute("data-inspector");
     }
     container.setAttribute("data-feature-card-inspector", featureState);
+    if (card) {
+      card.setAttribute("data-feature-card-inspector", featureState);
+    }
   });
 }

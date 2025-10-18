@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHelper.js";
+import { completeRoundViaApi } from "../helpers/battleApiHelper.js";
 
 test.describe("Battle state progress list", () => {
   test("renders and updates when the feature flag is enabled", async ({ page }) =>
@@ -87,5 +89,122 @@ test.describe("Battle state progress list", () => {
       expect(totalStates).toBeGreaterThan(5);
 
       await expect(items.first()).toHaveAttribute("data-state", "waitingForMatchStart");
+    }, ["log", "info", "warn", "error", "debug"]));
+
+  test("reflects active state transitions through a round", async ({ page }) =>
+    withMutedConsole(async () => {
+      await page.addInitScript(() => {
+        window.__FF_OVERRIDES = {
+          battleStateProgress: true,
+          showRoundSelectModal: true,
+          skipRoundCooldown: true
+        };
+      });
+
+      await page.goto("/src/pages/battleClassic.html");
+
+      // Start a match via the modal to exercise the full battle loop.
+      await expect(page.getByRole("button", { name: "Quick" })).toBeVisible();
+      await page.getByRole("button", { name: "Quick" }).click();
+
+      await waitForBattleReady(page, { timeout: 10_000 });
+
+      const progress = page.getByTestId("battle-state-progress");
+
+      await expect
+        .poll(async () => progress.getAttribute("data-feature-battle-state-ready"))
+        .toBe("true");
+
+      // Initial state should be tracked on the list and a single item marked active.
+      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
+
+      await expect(progress).toHaveAttribute(
+        "data-feature-battle-state-active",
+        "waitingForPlayerAction"
+      );
+      await expect(progress).toHaveAttribute(
+        "data-feature-battle-state-active-original",
+        "waitingForPlayerAction"
+      );
+      await expect(progress.locator('li[data-feature-battle-state-active="true"]')).toHaveCount(1);
+
+      // Select the first stat to drive the round forward.
+      await page.getByTestId("stat-button").first().click();
+
+      await waitForBattleState(page, "roundDecision", { timeout: 7_500 });
+      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundDecision");
+      await expect(progress.locator('li[data-state="roundDecision"]')).toHaveAttribute(
+        "data-feature-battle-state-active",
+        "true"
+      );
+
+      // Complete the round deterministically and verify the progress list tracks the outcome.
+      const completion = await completeRoundViaApi(page, {
+        options: { opponentResolveDelayMs: 0, expireSelection: false }
+      });
+      expect(completion.ok).toBe(true);
+
+      await waitForBattleState(page, "roundOver", { timeout: 7_500 });
+      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundOver");
+      await expect(progress).toHaveAttribute(
+        "data-feature-battle-state-active-original",
+        "roundOver"
+      );
+      await expect(progress.locator('li[data-state="roundOver"]')).toHaveAttribute(
+        "data-feature-battle-state-active",
+        "true"
+      );
+    }, ["log", "info", "warn", "error", "debug"]));
+
+  test("remaps interrupt states to core progress markers", async ({ page }) =>
+    withMutedConsole(async () => {
+      await page.addInitScript(() => {
+        window.__FF_OVERRIDES = {
+          battleStateProgress: true,
+          showRoundSelectModal: true,
+          skipRoundCooldown: true
+        };
+      });
+
+      await page.goto("/src/pages/battleClassic.html");
+
+      await expect(page.getByRole("button", { name: "Quick" })).toBeVisible();
+      await page.getByRole("button", { name: "Quick" }).click();
+
+      await waitForBattleReady(page, { timeout: 10_000 });
+
+      const progress = page.getByTestId("battle-state-progress");
+      await expect
+        .poll(async () => progress.getAttribute("data-feature-battle-state-ready"))
+        .toBe("true");
+
+      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
+
+      const mappingSnapshot = await page.evaluate(async () => {
+        const list = document.getElementById("battle-state-progress");
+        if (!list) return null;
+        const mod = await import("../helpers/battleStateProgress.js");
+        mod.updateActiveState(list, "interruptRound");
+        const cooldownItem = list.querySelector('li[data-state="cooldown"]');
+        const mappedAttr = cooldownItem?.getAttribute("data-feature-battle-state-active") ?? null;
+        const roundModificationItem = list.querySelector('li[data-state="roundDecision"]');
+        mod.updateActiveState(list, "roundModification");
+        const remappedRound = roundModificationItem?.getAttribute(
+          "data-feature-battle-state-active"
+        );
+        return {
+          active: list.getAttribute("data-feature-battle-state-active"),
+          original: list.getAttribute("data-feature-battle-state-active-original"),
+          cooldownMarker: mappedAttr,
+          remappedRound
+        };
+      });
+
+      expect(mappingSnapshot).not.toBeNull();
+      expect(mappingSnapshot?.active).toBe("roundDecision");
+      expect(mappingSnapshot?.original).toBe("roundModification");
+      expect(mappingSnapshot?.cooldownMarker).toBe("true");
+      expect(mappingSnapshot?.remappedRound).toBe("true");
+      await expect(progress.locator('li[data-state="interruptRound"]')).toHaveCount(0);
     }, ["log", "info", "warn", "error", "debug"]));
 });

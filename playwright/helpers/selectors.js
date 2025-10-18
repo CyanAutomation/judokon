@@ -69,11 +69,13 @@ export function statButton(options) {
 
   const { statKey } = normalizedOptions;
   const entry = findEntryByLogicalName("statButton");
-  let sel = entry ? entry.selector : ".stat-button[data-stat]";
+  let sel = entry ? entry.selector : "#stat-buttons button[data-stat]"; // Matches current classic battle markup.
 
   if (typeof statKey !== "undefined") {
-    if (/\[data-stat(?:=[^\]]*)?\]/.test(sel)) {
-      sel = sel.replace(/\[data-stat(?:=[^\]]*)?\]/g, `[data-stat=\"${statKey}\"]`);
+    const dataStatPattern = /\[data-stat(?:=[^\]]*)?\]/g;
+
+    if (dataStatPattern.test(sel)) {
+      sel = sel.replace(dataStatPattern, `[data-stat="${statKey}"]`);
     } else {
       sel += `[data-stat=\"${statKey}\"]`;
     }

@@ -982,11 +982,18 @@ export function updateBattleStateBadge(state) {
  */
 export function setBattleStateBadgeEnabled(enable) {
   if (typeof document === "undefined") return;
-  document.body?.setAttribute("data-feature-battle-state-badge", enable ? "enabled" : "disabled");
+  const body = document.body;
+  if (body) {
+    if (enable) {
+      body.setAttribute("data-feature-battle-state-badge", "enabled");
+    } else {
+      body.removeAttribute("data-feature-battle-state-badge");
+    }
+  }
   let badge = document.getElementById("battle-state-badge");
   if (!enable) {
     if (badge) {
-      badge.setAttribute("data-feature-battle-state-badge", "disabled");
+      badge.removeAttribute("data-feature-battle-state-badge");
       badge.remove();
     }
     return;

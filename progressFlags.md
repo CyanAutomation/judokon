@@ -24,6 +24,11 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Decoupled stat hotkeys from the forced auto-enable path so UI and CLI respect persisted flag state (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`), verified via `npx vitest run tests/helpers/classicBattle/statHotkeys.enabled.test.js tests/pages/battleCLI.selectedStat.test.js tests/pages/battleCLI.invalidNumber.test.js tests/pages/battleCLI.inputLatencyHardened.spec.js` and `npx playwright test playwright/stat-hotkeys.smoke.spec.js`.
 - Added `data-feature-*` instrumentation for working flags (tooltip overlay debug, skip round cooldown, battle state badge, and card inspector) plus focused regression coverage (`src/helpers/tooltipOverlayDebug.js`, `src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`, `src/helpers/cardUtils.js`, `src/helpers/inspector/createInspectorPanel.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `tests/helpers/judokaCard.test.js`, `playwright/settings.spec.js`); validated with `npx vitest run tests/helpers/debugClassToggles.test.js tests/helpers/classicBattle/uiHelpers.featureFlags.test.js tests/helpers/judokaCard.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Retired the viewport simulation feature in favor of a desktop-only testing surface, removing the flag from settings/UI, deleting its runtime helpers, and updating unit/integration coverage (`src/data/settings.json`, `src/helpers/settingsPage.js`, `src/helpers/setupDisplaySettings.js`, `src/helpers/randomJudokaPage.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/settingsPage.test.js`, `tests/helpers/randomJudokaPage.featureFlags.test.js`, `src/styles/settings.css`).
+- Extended Playwright coverage for `enableTestMode` to assert the banner's visible/hidden states and seed copy (`playwright/battle-classic/feature-flags.spec.js`); validated with `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/feature-flags.spec.js`.
+- Strengthened the `battleStateProgress` flag coverage with Playwright assertions that the list renders, tracks round transitions, and remaps interrupt/modification states to their core markers (`playwright/battle-classic/battle-state-progress.spec.js`); validated with `npx vitest run tests/helpers/battleStateProgress.test.js` and `npx playwright test playwright/battle-classic/battle-state-progress.spec.js`.
+- Added tooltip viewer Playwright coverage to assert the debug overlay toggles body markers and tooltip outlines when enabled/disabled (`playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`); validated with `npx vitest run tests/helpers/tooltip.test.js` and `npx playwright test playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`.
+- Mirrored `data-feature-card-inspector` markers onto the inner judoka card element so automation can track inspector state; updated component logic (`src/components/JudokaCard.js`, `src/helpers/cardUtils.js`) and regression tests (`tests/helpers/judokaCard.test.js`).
+- Synced `data-feature-battle-state-badge` markers across both body and badge elements so QA can read flag state consistently (`src/helpers/classicBattle/uiHelpers.js`); refreshed unit coverage (`tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`).
 
 ## Critical blocker
 
@@ -37,13 +42,13 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Status: **Working** — the controller/view bootstrap now initializes Classic Battle, so `applyBattleFeatureFlags` toggles `data-test-mode` markers and the banner when the flag is on (`src/pages/battleClassic.html:172`, `src/helpers/classicBattle/bootstrap.js:32-104`, `src/helpers/classicBattle/view.js:24-38`).
   - Confidence: High (verified via `npx vitest run tests/classicBattle/bootstrap.test.js` and Playwright round-select journeys).
   - Effort: Low (follow-up work is documentation and extended E2E coverage).
-  - Recommendation: Document deterministic seed copying in QA guides and add a dedicated Playwright assertion for the banner.
+  - Recommendation: Document deterministic seed copying in QA guides; Playwright banner assertion now covered by `playwright/battle-classic/feature-flags.spec.js` (validated October 18, 2025).
 
 - `enableCardInspector`
   - Status: **Working** — card draws read the flag before rendering, and `JudokaCard` appends the inspector `<details>` when `enableInspector` is true (`src/helpers/classicBattle/cardSelection.js:447-509`, `src/components/JudokaCard.js:205-214`, `src/helpers/inspector/createInspectorPanel.js:1-56`).
   - Confidence: High (code path exercised in Vitest, inspector panel present when cards are redrawn).
   - Effort: Low (add data hooks and documentation so QA can locate the panel; optionally re-render the current card when the flag flips).
-  - Recommendation: Keep the feature, add `data-feature-card-inspector` to the wrapper for automation, and document that toggling the flag requires a fresh card draw.
+  - Recommendation: Document that both the container and `.judoka-card` expose `data-feature-card-inspector` markers for automation; remind QA that toggling the flag requires a fresh card draw (or running `toggleInspectorPanels`) to refresh panels.
 
 - `viewportSimulation`
   - Status: **Removed** — per the desktop-only design decision, the settings toggle, runtime helper, and CSS hook were deleted (`src/data/settings.json`, `src/helpers/settingsPage.js`, `src/helpers/setupDisplaySettings.js`, `src/helpers/randomJudokaPage.js`, `src/styles/settings.css`).
@@ -55,19 +60,19 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Status: **Working** — toggles call `toggleTooltipOverlayDebug`, which sets a body class consumed by existing tooltip CSS (`src/helpers/settings/featureFlagSwitches.js:26-55`, `src/helpers/tooltipOverlayDebug.js:17-34`, `src/styles/tooltip.css:26-31`).
   - Confidence: High.
   - Effort: Low (QA automation only).
-  - Recommendation: Add an integration test that asserts tooltip targets gain the outline when the flag is on.
+  - Recommendation: Teach QA docs to reference the tooltip viewer spec (`playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`) for overlay verification and ensure future tooltip pages keep the `data-feature-tooltip-overlay-debug` marker in sync.
 
 - `battleStateBadge`
   - Status: **Working** — `ClassicBattleView` listens for `featureFlagsChange` and calls `setBattleStateBadgeEnabled`, so flipping the flag now shows/hides the badge in both runtime and tests (`src/helpers/classicBattle/view.js:24-40`, `src/helpers/classicBattle/uiHelpers.js:932-959`).
   - Confidence: High.
   - Effort: Low (add QA data hooks and unit coverage for the helper).
-  - Recommendation: Surface a `data-feature-battle-state-badge` attribute and expand unit tests around `setBattleStateBadgeEnabled`.
+  - Recommendation: Reference the synchronized body/badge markers in QA docs (`data-feature-battle-state-badge`) and continue expanding unit coverage if new badge formats are introduced.
 
 - `battleStateProgress`
   - Status: **Implemented (QA instrumented)** — `setupUIBindings` now runs in production and calls `initBattleStateProgress`, so enabling the flag renders the progress list with `data-feature-battle-state-*` hooks (`src/helpers/classicBattle/setupUIBindings.js:28-52`, `src/helpers/battleStateProgress.js:1-214`).
   - Confidence: High (covered by existing unit + Playwright round-select specs).
   - Effort: Low (extend documentation for QA and broaden Playwright coverage).
-  - Recommendation: Add broader E2E assertions that the active state tracks round transitions.
+  - Recommendation: Document QA flows that rely on the new Playwright assertions (`playwright/battle-classic/battle-state-progress.spec.js`)—including the interrupt/remap coverage—and ensure long-match scenarios remain covered in smoke tests.
 
 - `skipRoundCooldown`
   - Status: **Working** — UI service and timer service both consult the flag and short-circuit countdown timers when it is enabled (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-75`).
@@ -154,57 +159,112 @@ Once Classic Battle is wired to the new bootstrap, the following coverage should
 
 ## Layout and Styling Opportunities
 
-**Status: COMPLETED**
+**Status: NOT STARTED** — The following opportunities represent potential future enhancements to improve the layout, styling, and user experience of the settings page. These are suggestions for future work, not yet implemented.
 
-Based on a review of the settings page (`src/pages/settings.html`) and its associated styles, the following opportunities have been identified to improve the layout, styling, and user experience. The suggestions are organized into a phased implementation plan.
-
-### Phase 1: Foundational UI/UX Improvements
+### Phase 1: Foundational UI/UX Improvements — **NOT STARTED**
 
 This phase focuses on high-impact changes to improve the core layout, readability, and accessibility of the settings page.
 
-1. **Visual Hierarchy and Grouping:**
+1. **Visual Hierarchy and Grouping** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The settings page is a long, single-column list of options, which can be overwhelming for users. The separation between sections is not very strong.
-   - **Suggestion:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
+   - **Scope:** In `src/styles/layout.css`, introduce distinct visual styling for each `<fieldset>` element. This can be achieved by adding a subtle `border` and a `background-color` to each fieldset to visually group related settings. Additionally, increase the `font-size` and `font-weight` of the `<legend>` elements to make section titles more prominent.
+   - **Acceptance Criteria:**
+     - Each fieldset has a distinct background color or border
+     - Legend elements are visually prominent (increased font-size/weight)
+     - Layout passes accessibility checks
+     - Visual hierarchy is clear and helps users scan settings
 
-2. **Link Layout (Desktop-Focused):**
+2. **Link Layout (Desktop-Focused)** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** With the experience scoped to desktop resolutions, the existing three-column grid is functionally acceptable but could use spacing polish for wide screens.
-   - **Suggestion:** Tune the desktop grid gutters in `src/styles/settings.css` (e.g., via `column-gap`) to balance whitespace on large displays; defer responsive breakpoints until multi-viewport support returns.
+   - **Scope:** Tune the desktop grid gutters in `src/styles/settings.css` (e.g., via `column-gap`) to balance whitespace on large displays; defer responsive breakpoints until multi-viewport support returns.
+   - **Acceptance Criteria:**
+     - Grid gutters are balanced on wide displays (1920px+)
+     - No responsive breakpoints added
+     - Visual balance is improved without breaking layout
 
-3. **Switch Control Sizing:**
+3. **Switch Control Sizing** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** Toggle switches currently span a wide footprint; while acceptable on desktop, they can feel oversized relative to neighboring content.
-   - **Suggestion:** In `src/styles/settings.css`, tighten the default width/padding for `.switch` to better align with desktop proportions, keeping responsiveness work out of scope for now.
+   - **Scope:** In `src/styles/settings.css`, tighten the default width/padding for `.switch` to better align with desktop proportions, keeping responsiveness work out of scope for now.
+   - **Acceptance Criteria:**
+     - Switch sizing is proportional to neighboring content
+     - Switches remain usable (adequate touch targets)
+     - Visual balance is improved
 
-### Phase 2: Enhanced Interactivity and Theming
+### Phase 2: Enhanced Interactivity and Theming — **NOT STARTED**
 
 This phase focuses on making the settings page more interactive and visually engaging, while also improving theme consistency.
 
-1. **Interactive Switch States:**
+1. **Interactive Switch States** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The toggle switches lack visual feedback on hover, making them feel static.
-   - **Suggestion:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
+   - **Scope:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
+   - **Acceptance Criteria:**
+     - Switches have clear hover feedback
+     - Feedback is subtle and consistent with design system
+     - Passes contrast and accessibility checks
+     - Works across all supported display modes (light, dark, retro)
 
-2. **Display Mode Previews:**
+2. **Display Mode Previews** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The display mode selection is presented as a simple list of radio buttons, with no indication of what each theme looks like.
-   - **Suggestion:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
+   - **Scope:** In `src/pages/settings.html`, enhance the display mode selector by adding a small visual preview next to each option. This could be a color swatch or a miniature screenshot that demonstrates the light, dark, and retro themes, making the selection process more intuitive.
+   - **Acceptance Criteria:**
+     - Visual preview appears next to each theme option
+     - Previews accurately represent the themes
+     - Selection remains accessible to keyboard and screen readers
+     - Previews load efficiently without performance impact
 
-3. **Theme-Specific Styles:**
+3. **Theme-Specific Styles** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** While the app supports theming, some components on the settings page may not fully adapt to the different themes.
-   - **Suggestion:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
+   - **Scope:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
+   - **Acceptance Criteria:**
+     - All settings page components work correctly in light mode
+     - All settings page components work correctly in dark mode
+     - All settings page components work correctly in retro mode
+     - No hardcoded colors; all theming uses CSS variables
+     - WCAG contrast ratio requirements met in all themes
 
-### Phase 3: Advanced Features and Future-Proofing
+### Phase 3: Advanced Features and Future-Proofing — **NOT STARTED**
 
 This phase introduces more advanced functionality and long-term improvements to enhance the user experience and maintainability of the settings page.
 
-1. **Collapsible Sections:**
+1. **Collapsible Sections** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** As more settings are added, the page will become increasingly long and difficult to navigate.
-   - **Suggestion:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
+   - **Scope:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
+   - **Acceptance Criteria:**
+     - Each fieldset can be collapsed/expanded
+     - Default state is appropriate (open for primary settings, closed for advanced)
+     - State persists across page reloads (using localStorage)
+     - Keyboard navigation works for all controls
+     - Screen readers announce expanded/collapsed state
 
-2. **Unsaved Changes Indicator:**
+2. **Unsaved Changes Indicator** — **Outstanding**
+   - **Priority:** Low
    - **Issue:** The settings are saved automatically, but there is no visual indication that a change has been made and saved, which could be confusing for users.
-   - **Suggestion:** In `src/helpers/settingsPage.js`, implement a "Saved!" indicator that briefly appears after a setting is changed. This provides immediate feedback to the user, confirming that their action was successful. This can be implemented by adding a temporary class to the relevant setting item and styling it in the CSS.
+   - **Scope:** In `src/helpers/settingsPage.js`, implement a "Saved!" indicator that briefly appears after a setting is changed. This provides immediate feedback to the user, confirming that their action was successful. This can be implemented by adding a temporary class to the relevant setting item and styling it in the CSS.
+   - **Acceptance Criteria:**
+     - "Saved!" indicator appears briefly after a setting changes
+     - Indicator is visually distinct and positioned appropriately
+     - Animation is smooth and doesn't distract from UI
+     - Works with prefersReducedMotion setting
+     - Does not interfere with subsequent changes
 
-3. **Search/Filter for Advanced Settings:**
+3. **Search/Filter for Advanced Settings** — **Outstanding**
+   - **Priority:** Medium
    - **Issue:** The "Advanced Settings" section is likely to grow, making it difficult to find specific feature flags.
-   - **Suggestion:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.
+   - **Scope:** Implement a client-side search/filter functionality for the advanced settings. Add an `<input type="search">` element to the top of the section and use JavaScript in `src/helpers/settingsPage.js` to dynamically show or hide settings based on the user's input. This will significantly improve the usability of this section as more flags are added.
+   - **Acceptance Criteria:**
+     - Search input appears in Advanced Settings section
+     - Typing filters settings by name/description
+     - Results update in real-time as user types
+     - Clear button allows quick reset
+     - Keyboard navigation remains functional
+     - Search is case-insensitive and handles partial matches
 
 ## Smoke Test Fix Verification (October 17, 2025)
 
@@ -283,7 +343,6 @@ Created `playwright/battle-classic/skip-round-cooldown.spec.js` with comprehensi
 **Verification Results:**
 
 ````markdown
-
 ```bash
 Playwright Tests:
   4 passed (14.8s)
@@ -381,3 +440,54 @@ Skip Round Cooldown E2E Tests (no regressions):
 - Add QA data hooks for `skipRoundCooldown` (Next button) and the inspector panel to align with the instrumentation plan once the wiring is active (`src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`) — **COMPLETED**
 - Replace noisy `console.debug` statements in `setBattleStateBadgeEnabled` with the existing log gating helpers or remove them before shipping to production (`src/helpers/classicBattle/uiHelpers.js:932-959`) — **COMPLETED**
 
+---
+
+## Overall Status Summary — Updated October 18, 2025
+
+### Feature Flags Implementation — ✅ **COMPLETE**
+
+All feature flags are now implemented, tested, and integrated into the battle system:
+
+- ✅ `enableTestMode` — Working (banner toggles, seed visible)
+- ✅ `enableCardInspector` — Working (inspector renders on card draw)
+- ✅ `tooltipOverlayDebug` — Working (overlays appear on debug toggle)
+- ✅ `battleStateBadge` — Working (badge shows/hides based on flag)
+- ✅ `battleStateProgress` — Working (progress list renders and tracks state)
+- ✅ `skipRoundCooldown` — Working (countdown skipped when enabled)
+- ✅ `opponentDelayMessage` — Working (snackbar timing controlled by flag)
+- ✅ `statHotkeys` & `cliShortcuts` — Decoupled (both respect stored flag state)
+- ⏸ `roundStore` — Hidden from UI (data preserved, awaiting product alignment)
+- ⏹ `viewportSimulation` — Removed (desktop-only design adopted)
+
+### QA & Test Coverage — ✅ **COMPLETE**
+
+- ✅ Feature flag bootstrap working through `setupClassicBattlePage`
+- ✅ E2E regression tests for all active flags (`playwright/battle-classic/feature-flags.spec.js`, `skip-round-cooldown.spec.js`)
+- ✅ Unit test coverage for flag-related helpers (`uiHelpers.featureFlags.test.js`)
+- ✅ Data attributes for QA automation (`data-test-mode`, `data-feature-*`)
+- ✅ No production console spam (logging properly gated)
+- ✅ Smoke test stable and reliable (20-30s runtime)
+
+### Outstanding Tasks — ⏳ **9 ITEMS**
+
+**Priority: Medium** (1 task)
+1. **Phase 2.1: Interactive Switch States** — Add hover feedback to toggle switches in settings UI
+
+**Priority: Low** (8 tasks)
+2. **Phase 1.1: Visual Hierarchy and Grouping** — Improve fieldset styling and legend prominence
+3. **Phase 1.2: Link Layout Polish** — Tune grid gutters for wide desktop displays
+4. **Phase 1.3: Switch Control Sizing** — Tighten switch dimensions relative to content
+5. **Phase 2.2: Display Mode Previews** — Add visual theme previews to display mode selector
+6. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro)
+7. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
+8. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
+9. **Phase 3.3: Search/Filter for Advanced Settings** — Add searchable filter to feature flags section
+
+### Recommendation
+
+The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
+1. **Phase 2.1** (Interactive Switch States) if improving settings page interactivity is valued
+2. **Phase 3.3** (Search/Filter) if the number of feature flags continues to grow
+3. Remaining Phase 1 and Phase 2 tasks are polish items with lower priority
+
+`````

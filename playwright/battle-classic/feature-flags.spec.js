@@ -21,6 +21,33 @@ test.describe("enableTestMode feature flag", () => {
     expect(testModeMarker).toBe("true");
   });
 
+  test("test mode banner announces active seed when enabled", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = {
+        enableTestMode: true
+      };
+    });
+
+    await page.goto("/src/pages/battleClassic.html");
+
+    const banner = page.locator("#test-mode-banner");
+
+    await expect
+      .poll(async () => ({
+        hidden: await banner.getAttribute("hidden"),
+        marker: await banner.getAttribute("data-feature-test-mode"),
+        text: (await banner.textContent())?.trim()
+      }))
+      .toMatchObject({
+        hidden: null,
+        marker: "banner"
+      });
+
+    await expect(banner).toBeVisible();
+    await expect(banner).toHaveAttribute("data-feature-test-mode", "banner");
+    await expect(banner).toHaveText(/^Test Mode active \(seed \d+\)$/);
+  });
+
   test("test mode flag removes data-test-mode from battle-area when disabled", async ({ page }) => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = {
@@ -36,6 +63,32 @@ test.describe("enableTestMode feature flag", () => {
     const battleArea = page.locator("#battle-area");
     const testModeMarker = await battleArea.getAttribute("data-test-mode");
     expect(testModeMarker).not.toBe("true");
+  });
+
+  test("test mode banner hides when flag disabled", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = {
+        enableTestMode: false
+      };
+    });
+
+    await page.goto("/src/pages/battleClassic.html");
+
+    const banner = page.locator("#test-mode-banner");
+
+    await expect
+      .poll(async () => ({
+        hidden: await banner.getAttribute("hidden"),
+        hasMarker: await banner.getAttribute("data-feature-test-mode"),
+        text: (await banner.textContent())?.trim()
+      }))
+      .toEqual({
+        hidden: "",
+        hasMarker: null,
+        text: ""
+      });
+
+    await expect(banner).toBeHidden();
   });
 });
 

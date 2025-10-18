@@ -63,20 +63,51 @@ Following the initial verification, two enhancement tasks have also been complet
 
 ---
 
-## 4. Opportunities for Future Enhancement
+## 4. Outstanding Tasks
 
-The following suggestions are opportunities for future refinement.
+The following tasks represent future work opportunities that have not yet been implemented.
 
-### Enhancement 1: Refactor `displayCard` with a State Machine
+### Task 1: Refactor `displayCard` with a State Machine — **NOT STARTED**
 
-- **Opportunity:** The `displayCard` function in `src/helpers/randomJudokaPage.js` manages several states (`loading`, `success`, `error`) through manual boolean flags and direct DOM manipulation (e.g., `drawButton.disabled`). This could be simplified and made more robust.
-- **Suggestion:** Refactor the logic into a simple state machine (e.g., with states like `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`). This would centralize state management, reduce the chance of inconsistent UI (like a button remaining disabled), and improve readability.
+- **Status:** ⏳ Outstanding
+- **Priority:** Medium
+- **Current State:** The `displayCard` function in `src/helpers/randomJudokaPage.js` (lines 240–340) manages several states (`loading`, `success`, `error`) through manual boolean flags and direct DOM manipulation (e.g., `drawButton.disabled`, `drawButton.classList.add("is-loading")`). The `enableButton()` helper function is called at various points to restore UI state. Error handling is inline within the try-catch block.
+- **Scope:** Refactor the logic into a simple state machine (e.g., with states like `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`). This would:
+  - Centralize state management in a dedicated object
+  - Reduce the chance of inconsistent UI (like a button remaining disabled)
+  - Improve readability and testability
+  - Separate state transitions from side effects
+- **Acceptance Criteria:**
+  - Define a clear state machine with at least 4 states: `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`
+  - All state transitions are explicit and documented
+  - Button disabled/enabled state is consistent across all paths
+  - All existing tests pass without modification
+  - New tests verify state machine transitions
 
-### Enhancement 2: Improve History Panel Accessibility
+### Task 2: Improve History Panel Accessibility — **NOT STARTED**
 
-- **Opportunity:** The slide-out history panel is visually well-implemented, but its accessibility could be enhanced. When the panel opens, keyboard focus remains on the main page content.
-- **Suggestion:** Implement focus management. When the history panel is opened, programmatically move focus to a logical element within it (e.g., the `<h2>History</h2>` title or the list itself). When it is closed, return focus to the "History" button that opened it. This is a critical accessibility pattern for drawers and dialogs.
+- **Status:** ⏳ Outstanding
+- **Priority:** High (Critical Accessibility Pattern)
+- **Current State:** The slide-out history panel (implemented in `buildHistoryPanel()` at line 91 and `toggleHistory()` at line 210 in `src/helpers/randomJudokaPage.js`) is visually well-implemented with proper ARIA attributes (`aria-hidden`, `aria-expanded`, `aria-controls`). However, it **does NOT implement keyboard focus management**, which is a critical accessibility pattern for modals and drawers. The `toggleHistory()` function only updates DOM visibility and ARIA attributes but does not manage focus.
+- **Scope:** Implement focus management for the history panel:
+  - When the history panel is opened, programmatically move keyboard focus to a logical element within it (e.g., the panel header or first list item)
+  - When the history panel is closed (either by user action or Escape key), return focus to the "History" button that opened it
+  - Handle Escape key to close the panel and restore focus
+  - Optionally trap focus within the panel when open (standard modal pattern)
+- **Acceptance Criteria:**
+  - Focus moves to the panel (e.g., history title h2) when it opens (verify with Playwright test)
+  - Escape key closes the panel and returns focus to the toggle button
+  - Focus is not lost when the panel closes
+  - Screen readers announce the state changes (currently implemented via `aria-expanded` and `aria-hidden`)
+  - Keyboard users can navigate the history list with arrow keys
+  - Playwright tests verify focus management across open/close cycles
 
 ---
 
-This concludes the verification and enhancement phase. The project is in a good state. Please review the suggested enhancements.
+## 5. Verification Summary
+
+**Phase 1 — QA Fixes:** ✅ Complete (All 4 items verified)
+**Phase 2 — Code Quality Enhancements:** ✅ Complete (2 enhancements delivered)
+**Phase 3 — Future Tasks:** ⏳ Outstanding (2 tasks identified, not yet started)
+
+The project has a solid foundation. Phase 3 tasks are opportunities to enhance state management robustness and critical accessibility patterns. Prioritize Task 2 (Focus Management) first due to its accessibility criticality.

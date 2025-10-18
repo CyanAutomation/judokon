@@ -376,7 +376,7 @@ export async function initializeBattle(page, config = {}) {
     timerOverrides = { roundTimer: 5 },
     nextRoundCooldown,
     resolveDelay,
-    featureFlags = { showRoundSelectModal: true },
+    featureFlags = { showRoundSelectModal: true, opponentDelayMessage: true },
     awaitStats = true
   } = config;
 

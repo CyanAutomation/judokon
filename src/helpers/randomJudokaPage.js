@@ -113,6 +113,7 @@ export function buildHistoryPanel(prefersReducedMotion) {
   historyPanel.setAttribute("aria-hidden", "true");
   const historyTitle = document.createElement("h2");
   historyTitle.textContent = "History";
+  historyTitle.setAttribute("tabindex", "-1");
   const historyList = document.createElement("ul");
   historyPanel.append(historyTitle, historyList);
   document.body.appendChild(historyPanel);
@@ -207,12 +208,69 @@ function addToHistory(historyManager, historyList, judoka) {
   updateHistoryUI(historyList, historyManager);
 }
 
+/**
+ * Toggles the history panel visibility and manages keyboard focus and Escape key handling.
+ *
+ * @summary Opens/closes the history panel and manages focus:
+ * - When opening: moves focus to the history title (h2)
+ * - When closing: returns focus to the toggle button
+ * - Attaches/detaches Escape key handler to close the panel
+ *
+ * @pseudocode
+ * 1. Determine current panel state from aria-hidden attribute
+ * 2. Compute nextOpen as the inverse of current state
+ * 3. Update panel visibility: transform and aria-hidden
+ * 4. Update button state: aria-expanded
+ * 5. If opening (nextOpen === true):
+ *    a. Find the h2 (history title) inside the panel
+ *    b. Move focus to the h2 using focus()
+ *    c. Attach Escape key listener to close panel and restore focus
+ * 6. If closing (nextOpen === false):
+ *    a. Remove Escape key listener
+ *    b. Return focus to toggleHistoryBtn
+ *
+ * @param {HTMLElement} historyPanel - The panel element
+ * @param {HTMLElement} toggleHistoryBtn - The toggle button element
+ */
 function toggleHistory(historyPanel, toggleHistoryBtn) {
   const isOpen = historyPanel.getAttribute("aria-hidden") === "false";
   const nextOpen = !isOpen;
   historyPanel.style.transform = nextOpen ? "translateX(0)" : "translateX(100%)";
   historyPanel.setAttribute("aria-hidden", String(!nextOpen));
   toggleHistoryBtn.setAttribute("aria-expanded", String(nextOpen));
+
+  if (nextOpen) {
+    // Panel is opening: move focus into the panel
+    const historyTitle = historyPanel.querySelector("h2");
+    if (historyTitle) {
+      // Use a microtask to ensure the DOM is settled before focusing
+      Promise.resolve().then(() => {
+        historyTitle.focus();
+      });
+    }
+
+    // Attach Escape key handler to close the panel
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        toggleHistory(historyPanel, toggleHistoryBtn);
+      }
+    };
+
+    // Store the handler reference on the button so we can remove it later
+    toggleHistoryBtn._historyEscapeHandler = handleEscape;
+    document.addEventListener("keydown", handleEscape);
+  } else {
+    // Panel is closing: remove Escape handler and restore focus to button
+    const handleEscape = toggleHistoryBtn._historyEscapeHandler;
+    if (handleEscape) {
+      document.removeEventListener("keydown", handleEscape);
+      delete toggleHistoryBtn._historyEscapeHandler;
+    }
+
+    // Return focus to the toggle button
+    toggleHistoryBtn.focus();
+  }
 }
 
 function getHistoryPanelTransition(prefersReducedMotion) {
