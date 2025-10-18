@@ -25,6 +25,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Added `data-feature-*` instrumentation for working flags (tooltip overlay debug, skip round cooldown, battle state badge, and card inspector) plus focused regression coverage (`src/helpers/tooltipOverlayDebug.js`, `src/helpers/classicBattle/uiHelpers.js`, `src/components/JudokaCard.js`, `src/helpers/cardUtils.js`, `src/helpers/inspector/createInspectorPanel.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `tests/helpers/judokaCard.test.js`, `playwright/settings.spec.js`); validated with `npx vitest run tests/helpers/debugClassToggles.test.js tests/helpers/classicBattle/uiHelpers.featureFlags.test.js tests/helpers/judokaCard.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Retired the viewport simulation feature in favor of a desktop-only testing surface, removing the flag from settings/UI, deleting its runtime helpers, and updating unit/integration coverage (`src/data/settings.json`, `src/helpers/settingsPage.js`, `src/helpers/setupDisplaySettings.js`, `src/helpers/randomJudokaPage.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/settingsPage.test.js`, `tests/helpers/randomJudokaPage.featureFlags.test.js`, `src/styles/settings.css`).
 - Extended Playwright coverage for `enableTestMode` to assert the banner's visible/hidden states and seed copy (`playwright/battle-classic/feature-flags.spec.js`); validated with `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/feature-flags.spec.js`.
+- Strengthened the `battleStateProgress` flag coverage with Playwright assertions that the list renders, tracks round transitions, and remaps interrupt/modification states to their core markers (`playwright/battle-classic/battle-state-progress.spec.js`); validated with `npx vitest run tests/helpers/battleStateProgress.test.js` and `npx playwright test playwright/battle-classic/battle-state-progress.spec.js`.
 
 ## Critical blocker
 
@@ -68,7 +69,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Status: **Implemented (QA instrumented)** — `setupUIBindings` now runs in production and calls `initBattleStateProgress`, so enabling the flag renders the progress list with `data-feature-battle-state-*` hooks (`src/helpers/classicBattle/setupUIBindings.js:28-52`, `src/helpers/battleStateProgress.js:1-214`).
   - Confidence: High (covered by existing unit + Playwright round-select specs).
   - Effort: Low (extend documentation for QA and broaden Playwright coverage).
-  - Recommendation: Add broader E2E assertions that the active state tracks round transitions.
+  - Recommendation: Document QA flows that rely on the new Playwright assertions (`playwright/battle-classic/battle-state-progress.spec.js`)—including the interrupt/remap coverage—and ensure long-match scenarios remain covered in smoke tests.
 
 - `skipRoundCooldown`
   - Status: **Working** — UI service and timer service both consult the flag and short-circuit countdown timers when it is enabled (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-75`).
