@@ -56,15 +56,14 @@ describe("resetBattleUI helpers", () => {
 
   it("resetQuitButton replaces quit button", () => {
     const btn = document.createElement("button");
-    btn.id = "quit-match-button";
-    btn.setAttribute("data-testid", "quit-match");
+    btn.id = "quit-button";
     const listener = vi.fn();
     btn.addEventListener("click", listener);
     document.body.append(btn);
 
     helpers.resetQuitButton();
 
-    const newBtn = document.querySelector('[data-testid="quit-match"]');
+    const newBtn = document.getElementById("quit-button");
     expect(newBtn).not.toBe(btn);
     newBtn.dispatchEvent(new MouseEvent("click"));
     expect(listener).not.toHaveBeenCalled();

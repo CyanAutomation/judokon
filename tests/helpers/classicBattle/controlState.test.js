@@ -65,8 +65,8 @@ describe("classicBattle battle control state", () => {
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
     const quitBtn = document.createElement("button");
-    quitBtn.id = "quit-match-button";
-    quitBtn.setAttribute("data-testid", "quit-match");
+    quitBtn.id = "quit-button";
+    quitBtn.setAttribute("data-role", "quit");
     const header = document.createElement("header");
     const statButtons = document.createElement("div");
     statButtons.id = "stat-buttons";
@@ -115,7 +115,7 @@ describe("classicBattle battle control state", () => {
     const { initQuitButton } = await import("../../../src/helpers/classicBattle/quitButton.js");
     window.battleStore = createBattleStore();
     initQuitButton(window.battleStore, { quitMatch: mockQuitMatch });
-    document.querySelector('[data-testid="quit-match"]').click();
+    document.getElementById("quit-button").click();
     expect(document.getElementById("round-message").textContent).toBe("quit");
     expect(window.location.href).toBe("http://localhost/index.html");
   });
