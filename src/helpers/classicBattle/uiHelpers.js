@@ -798,7 +798,7 @@ export function resetNextButton() {
  * Replace the Quit button with a fresh clone to drop existing listeners.
  *
  * @pseudocode
- * 1. Attempt to locate the `#quit-match-button` element in the DOM.
+ * 1. Attempt to locate the `#quit-button` element and fall back to `#quit-match-button`.
  * 2. If the button is found, replace it with a deep clone of itself. This effectively
  *    removes all previously attached event listeners from the original button.
  * @returns {void}
@@ -806,7 +806,9 @@ export function resetNextButton() {
 export function resetQuitButton() {
   let quitBtn;
   try {
-    quitBtn = document.getElementById ? document.getElementById("quit-match-button") : null;
+    quitBtn = document.getElementById
+      ? document.getElementById("quit-button") ?? document.getElementById("quit-match-button")
+      : null;
   } catch {}
   if (quitBtn) {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
@@ -817,7 +819,7 @@ export function resetQuitButton() {
  * Replace the Quit button with an inert clone to remove existing event listeners.
  *
  * @pseudocode
- * 1. Locate `#quit-match-button` in the DOM.
+ * 1. Locate `#quit-button` in the DOM and fall back to `#quit-match-button` when needed.
  * 2. Replace it with `cloneNode(true)` so existing listeners are dropped.
  *
  * @returns {void}

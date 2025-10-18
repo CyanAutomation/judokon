@@ -131,7 +131,9 @@ export function quitMatch(store, trigger) {
       });
     });
   }
-  const fallback = document.getElementById("quit-match-button");
+  const fallback =
+    document.getElementById("quit-button") ??
+    document.getElementById("quit-match-button");
   store.quitModal.open(trigger ?? fallback ?? undefined);
   const check = () => {
     const btn = document.getElementById("confirm-quit-button");
