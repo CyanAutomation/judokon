@@ -10,12 +10,14 @@ import { ClassicBattleView } from "./view.js";
 import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
+import { isEnabled } from "../featureFlags.js";
 import * as engineFacade from "../battleEngineFacade.js";
 // Bridge engine events to PRD taxonomy on the classic battle event bus
 import { bridgeEngineEvents } from "./engineBridge.js";
 import { setupScoreboard } from "../setupScoreboard.js";
 // Test API exposure for Playwright and unit tests
 import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestApi.js";
+import { setBattleStateBadgeEnabled } from "./uiHelpers.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
@@ -78,6 +80,7 @@ export async function setupClassicBattlePage() {
     }
   }
 
+  setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
   await initRoundSelectModal(startCallback);
 
   if (typeof window !== "undefined") {
