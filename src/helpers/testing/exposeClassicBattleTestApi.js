@@ -4,7 +4,8 @@ const HEADLESS_USER_AGENT_TOKENS = [
   "playwright",
   "headlesschrome",
   "chromium-headless",
-  "phantomjs"
+  "phantomjs",
+  "jsdom"
 ];
 
 /**
@@ -40,7 +41,7 @@ function shouldExposeTestAPI() {
   }
 
   const win = getWindow();
-  if (win && hasBrowserTestFlags(win)) {
+  if (win && (hasBrowserTestFlags(win) || isLocalhostOrigin(win))) {
     return true;
   }
 
@@ -112,6 +113,42 @@ function isTestUserAgent(nav) {
   }
 
   return HEADLESS_USER_AGENT_TOKENS.some((token) => normalizedAgent.includes(token));
+}
+
+function isLocalhostOrigin(win) {
+  const loc = getLocation(win);
+  if (!loc) {
+    return false;
+  }
+
+  const hostname = normalizeHostname(loc.hostname || loc.host);
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
+function getLocation(win) {
+  if (win) {
+    try {
+      if (win.location) {
+        return win.location;
+      }
+    } catch {}
+  }
+
+  try {
+    return typeof location !== "undefined" ? location : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeHostname(hostname) {
+  if (typeof hostname !== "string") {
+    return "";
+  }
+
+  const trimmed = hostname.trim().toLowerCase();
+  const withoutPort = trimmed.split(":")[0];
+  return withoutPort || "";
 }
 
 function getNormalizedUserAgent(nav) {
