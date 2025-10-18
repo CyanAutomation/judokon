@@ -2524,6 +2524,16 @@ function handleScoreboardClearMessage() {
   } catch {}
 }
 
+function syncControlsHintVisibility(state) {
+  try {
+    const hint = byId("cli-controls-hint");
+    if (!hint) return;
+    const shouldReveal = state === "waitingForPlayerAction";
+    if (hint.hidden === !shouldReveal) return;
+    hint.hidden = !shouldReveal;
+  } catch {}
+}
+
 /**
  * Update UI elements based on the current battle state.
  *
@@ -2538,6 +2548,7 @@ function handleScoreboardClearMessage() {
  */
 function updateUiForState(state) {
   updateBattleStateBadge(state);
+  syncControlsHintVisibility(state);
   if (hasDocument) {
     try {
       document.getElementById("next-round-button")?.remove();

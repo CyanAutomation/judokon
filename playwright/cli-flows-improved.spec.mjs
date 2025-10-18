@@ -655,7 +655,7 @@ test.describe("CLI Battle Interface", () => {
       const controlsHint = page.locator("#cli-controls-hint");
       await expect(page.locator("#cli-stats")).toBeVisible();
       await expect(page.locator("#cli-settings-toggle")).toBeVisible();
-      await expect(controlsHint).toBeHidden();
+      await expect(controlsHint).toBeVisible();
       await expect(controlsHint.locator("#cli-controls-hint-announce")).toHaveText(
         "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."
       );
