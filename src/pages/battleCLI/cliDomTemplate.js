@@ -145,7 +145,6 @@ export const CLI_DOM_TEMPLATE = `
         class="cli-controls-hint"
         role="note"
         aria-live="polite"
-        aria-hidden="true"
         aria-describedby="cli-controls-hint-announce"
         hidden
       >
