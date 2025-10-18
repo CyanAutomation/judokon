@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleReady } from "../helpers/battleStateHelper.js";
+import { waitForBattleReady, waitForRoundStats } from "../helpers/battleStateHelper.js";
 
 // Focused detector for intermittent scoreboard staleness after Replay.
 // Loops replay N times and asserts the scoreboard is zeroed before a new round starts.
@@ -47,6 +47,9 @@ test.describe("Classic Battle — Replay flaky detector", () => {
     // Loop a handful of times to try and surface timing issues.
     const iterations = 3;
     for (let i = 0; i < iterations; i++) {
+      if (i > 0) {
+        await waitForRoundStats(page);
+      }
       // Open the end modal to access Replay when possible.
       // If a helper exists to finish the match quickly, prefer it; otherwise, rely on existing UI.
       // Here we use the available replay control exposed in the page.
