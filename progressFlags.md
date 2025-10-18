@@ -26,6 +26,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Retired the viewport simulation feature in favor of a desktop-only testing surface, removing the flag from settings/UI, deleting its runtime helpers, and updating unit/integration coverage (`src/data/settings.json`, `src/helpers/settingsPage.js`, `src/helpers/setupDisplaySettings.js`, `src/helpers/randomJudokaPage.js`, `tests/helpers/debugClassToggles.test.js`, `tests/helpers/settingsPage.test.js`, `tests/helpers/randomJudokaPage.featureFlags.test.js`, `src/styles/settings.css`).
 - Extended Playwright coverage for `enableTestMode` to assert the banner's visible/hidden states and seed copy (`playwright/battle-classic/feature-flags.spec.js`); validated with `npx vitest run tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/feature-flags.spec.js`.
 - Strengthened the `battleStateProgress` flag coverage with Playwright assertions that the list renders, tracks round transitions, and remaps interrupt/modification states to their core markers (`playwright/battle-classic/battle-state-progress.spec.js`); validated with `npx vitest run tests/helpers/battleStateProgress.test.js` and `npx playwright test playwright/battle-classic/battle-state-progress.spec.js`.
+- Added tooltip viewer Playwright coverage to assert the debug overlay toggles body markers and tooltip outlines when enabled/disabled (`playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`); validated with `npx vitest run tests/helpers/tooltip.test.js` and `npx playwright test playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`.
 
 ## Critical blocker
 
@@ -57,7 +58,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Status: **Working** — toggles call `toggleTooltipOverlayDebug`, which sets a body class consumed by existing tooltip CSS (`src/helpers/settings/featureFlagSwitches.js:26-55`, `src/helpers/tooltipOverlayDebug.js:17-34`, `src/styles/tooltip.css:26-31`).
   - Confidence: High.
   - Effort: Low (QA automation only).
-  - Recommendation: Add an integration test that asserts tooltip targets gain the outline when the flag is on.
+  - Recommendation: Teach QA docs to reference the tooltip viewer spec (`playwright/tooltip-viewer/tooltip-overlay-debug.spec.js`) for overlay verification and ensure future tooltip pages keep the `data-feature-tooltip-overlay-debug` marker in sync.
 
 - `battleStateBadge`
   - Status: **Working** — `ClassicBattleView` listens for `featureFlagsChange` and calls `setBattleStateBadgeEnabled`, so flipping the flag now shows/hides the badge in both runtime and tests (`src/helpers/classicBattle/view.js:24-40`, `src/helpers/classicBattle/uiHelpers.js:932-959`).

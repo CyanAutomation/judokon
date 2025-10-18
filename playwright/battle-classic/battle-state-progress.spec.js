@@ -146,7 +146,10 @@ test.describe("Battle state progress list", () => {
 
       await waitForBattleState(page, "roundOver", { timeout: 7_500 });
       await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundOver");
-      await expect(progress).toHaveAttribute("data-feature-battle-state-active-original", "roundOver");
+      await expect(progress).toHaveAttribute(
+        "data-feature-battle-state-active-original",
+        "roundOver"
+      );
       await expect(progress.locator('li[data-state="roundOver"]')).toHaveAttribute(
         "data-feature-battle-state-active",
         "true"
