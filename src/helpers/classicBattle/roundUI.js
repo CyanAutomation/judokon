@@ -137,8 +137,12 @@ function clearStatButtonSelections(store) {
     try {
       btn.classList.remove("selected");
       btn.style?.removeProperty?.("background-color");
+      if (typeof btn.blur === "function") {
+        btn.blur();
+      }
     } catch {}
   });
+  return buttons;
 }
 function scheduleUiServicePreload() {
   if (hasScheduledUiServicePreload) return;
@@ -567,7 +571,7 @@ export function handleStatSelectedEvent(event, deps = {}) {
  * 2. Surface the outcome message and update the score using the injected scoreboard API.
  * 3. When the match ends, clear the round counter, show the summary modal, and emit `matchOver`.
  * 4. Otherwise, compute the next-round cooldown and, if not orchestrated, configure and start the timer with injected helpers.
- * 5. Clear stat button visuals, reset their interactive state, and refresh the debug panel.
+ * 5. Clear stat button visuals, keep them disabled until the next round, and refresh the debug panel.
  * @returns {Promise<void>}
  */
 export async function handleRoundResolvedEvent(event, deps = {}) {
@@ -618,7 +622,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   const runReset = () => {
     clearStatButtonSelections(store);
     try {
-      resetStatButtons?.();
+      disableStatButtons?.();
     } catch {}
   };
   let didReset = false;
@@ -651,12 +655,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   } else if (!frameSchedulingSucceeded) {
     runResetOnce();
   }
-  // Proactively enable stat buttons on resolution to prevent deadlock,
-  // UI will disable them again on selection in the next round.
-  try {
-    enableStatButtons?.();
-    emitBattleEvent("statButtons:enable");
-  } catch {}
   const shouldCleanupDelayFlag = !!(store && typeof store === "object");
   try {
     if (result.matchEnded) {

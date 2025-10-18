@@ -46,8 +46,36 @@ test.describe("Classic Battle keyboard navigation", () => {
     await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: \d+s)$/);
     // Check that all buttons receive the disabled class once the round resolves
     const disabledStatButtons = page.locator('[data-testid="stat-button"].disabled');
-    await expect.poll(async () => disabledStatButtons.count()).toBe(statButtonCount);
-    await expect.poll(async () => thirdStatButton.getAttribute("class")).toMatch(/disabled/);
+    await expect(thirdStatButton).toBeDisabled();
+    await expect(disabledStatButtons).toHaveCount(statButtonCount);
+
+    // Confirm stat buttons remain disabled until the next round begins
+    await page.evaluate(() => {
+      window.__statButtonsDisabledViolation = false;
+    });
+    const cooldownWatch = await page.waitForFunction(
+      (expectedCount) => {
+        window.__statButtonsDisabledViolation ??= false;
+        const state = document.body?.dataset?.battleState || "";
+        const disabledCount = document.querySelectorAll(
+          '[data-testid="stat-button"].disabled'
+        ).length;
+        if (state !== "waitingForPlayerAction" && disabledCount !== expectedCount) {
+          window.__statButtonsDisabledViolation = true;
+        }
+        if (state === "waitingForPlayerAction") {
+          return { violation: window.__statButtonsDisabledViolation };
+        }
+        return null;
+      },
+      statButtonCount,
+      { polling: 100, timeout: 10000 }
+    );
+    expect(cooldownWatch?.violation ?? false).toBe(false);
+
+    // Once the next round starts, the stat buttons should be interactive again
+    await expect(thirdStatButton).toBeEnabled();
+    await expect(disabledStatButtons).toHaveCount(0);
   });
 
   test("should show visible focus styles on stat buttons", async ({ page }) => {

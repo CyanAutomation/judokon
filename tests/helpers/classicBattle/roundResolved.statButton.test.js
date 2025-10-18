@@ -7,9 +7,18 @@ const resetSpy = vi.fn(() => {
     .querySelectorAll("#stat-buttons button")
     .forEach((btn) => btn.classList.remove("selected"));
 });
+const disableSpy = vi.fn(() => {
+  document.querySelectorAll("#stat-buttons button").forEach((btn) => {
+    btn.disabled = true;
+    if (!btn.classList.contains("disabled")) {
+      btn.classList.add("disabled");
+    }
+  });
+});
 
 vi.mock("../../../src/helpers/battle/index.js", () => ({
-  resetStatButtons: resetSpy
+  resetStatButtons: resetSpy,
+  disableStatButtons: disableSpy
 }));
 vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({
   syncScoreDisplay: vi.fn(),
@@ -50,6 +59,7 @@ vi.mock("../../../src/helpers/showSnackbar.js", () => ({
 
 beforeEach(async () => {
   resetSpy.mockClear();
+  disableSpy.mockClear();
   document.body.innerHTML = "";
   await vi.resetModules();
 });
@@ -85,14 +95,20 @@ describe("roundResolved stat button reset", () => {
     );
     expect(btn.classList.contains("selected")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
+    expect(disableSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(frameDelayMs);
     expect(btn.classList.contains("selected")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
+    expect(disableSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(frameDelayMs);
-    expect(resetSpy).toHaveBeenCalledOnce();
+    expect(disableSpy).toHaveBeenCalledOnce();
+    expect(resetSpy).not.toHaveBeenCalled();
     expect(btn.classList.contains("selected")).toBe(false);
+    expect(btn.disabled).toBe(true);
+    expect(btn.classList.contains("disabled")).toBe(true);
     await vi.advanceTimersByTimeAsync(32);
-    expect(resetSpy).toHaveBeenCalledOnce();
+    expect(disableSpy).toHaveBeenCalledOnce();
+    expect(resetSpy).not.toHaveBeenCalled();
     runAfterFramesSpy.mockRestore();
     timers.cleanup();
   });
@@ -116,9 +132,13 @@ describe("roundResolved stat button reset", () => {
     );
     expect(btn.classList.contains("selected")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
+    expect(disableSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(32);
-    expect(resetSpy).toHaveBeenCalledOnce();
+    expect(disableSpy).toHaveBeenCalledOnce();
+    expect(resetSpy).not.toHaveBeenCalled();
     expect(btn.classList.contains("selected")).toBe(false);
+    expect(btn.disabled).toBe(true);
+    expect(btn.classList.contains("disabled")).toBe(true);
     runAfterFramesSpy.mockRestore();
     timers.cleanup();
   });
