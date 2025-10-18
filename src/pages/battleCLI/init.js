@@ -2934,10 +2934,8 @@ function handleBattleStateChange({ from, to }) {
   if (!hint) return;
   if (to === "waitingForPlayerAction") {
     hint.hidden = false;
-    hint.setAttribute("aria-hidden", "false");
   } else if (from === "waitingForPlayerAction") {
     hint.hidden = true;
-    hint.setAttribute("aria-hidden", "true");
   }
 }
 

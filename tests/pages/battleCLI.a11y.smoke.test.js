@@ -30,12 +30,10 @@ describe("battleCLI accessibility smoke tests", () => {
   it("includes static controls hint near footer", () => {
     const hint = document.getElementById("cli-controls-hint");
     expect(hint).toBeTruthy();
-    if (!hint) {
-      throw new Error("cli-controls-hint should be present in the DOM");
-    }
+    // hint is guaranteed to be truthy after the above assertion
     expect(hint.getAttribute("role")).toBe("note");
     expect(hint.getAttribute("aria-live")).toBe("polite");
-    expect(hint.getAttribute("aria-hidden")).toBe("true");
+    expect(hint?.hasAttribute("aria-hidden")).toBe(false);
     expect(hint.getAttribute("aria-describedby")).toBe("cli-controls-hint-announce");
 
     battleCLI.normalizeShortcutCopy();
@@ -53,13 +51,10 @@ describe("battleCLI accessibility smoke tests", () => {
     // Verify the screen reader announcement contains full context and is exposed via aria-describedby
     const announcementEl = document.getElementById("cli-controls-hint-announce");
     expect(announcementEl).toBeTruthy();
-    if (!announcementEl) {
-      throw new Error("cli-controls-hint-announce should be present in the DOM");
-    }
+    // announcementEl is guaranteed to be truthy after the above assertion
     expect(announcementEl.classList.contains("sr-only")).toBe(true);
-    expect(announcementEl.hasAttribute("aria-hidden")).toBe(false);
+    expect(announcementEl.getAttribute("aria-hidden")).toBeNull();
     expect(announcementEl.id).toBe("cli-controls-hint-announce");
-    expect(hint.getAttribute("aria-describedby")).toBe(announcementEl.id);
     const announcement = announcementEl.textContent?.trim();
     expect(announcement).toBe(
       "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."
