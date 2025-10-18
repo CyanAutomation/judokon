@@ -54,6 +54,6 @@ describe("setBattleStateBadgeEnabled", () => {
     `;
     setBattleStateBadgeEnabled(false);
     expect(document.getElementById("battle-state-badge")).toBeNull();
-    expect(document.body.hasAttribute("data-feature-battle-state-badge")).toBe(false);
+    expect(document.body.getAttribute("data-feature-battle-state-badge")).toBe("disabled");
   });
 });

@@ -1015,11 +1015,10 @@ export function setBattleStateBadgeEnabled(enable) {
   if (typeof document === "undefined") return;
   const body = document.body;
   if (body) {
-    if (enable) {
-      body.setAttribute("data-feature-battle-state-badge", "enabled");
-    } else {
-      body.removeAttribute("data-feature-battle-state-badge");
-    }
+    body.setAttribute(
+      "data-feature-battle-state-badge",
+      enable ? "enabled" : "disabled"
+    );
   }
   let badge = document.getElementById("battle-state-badge");
   if (!enable) {
