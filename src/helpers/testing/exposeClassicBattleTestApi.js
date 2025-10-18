@@ -115,6 +115,17 @@ function isTestUserAgent(nav) {
   return HEADLESS_USER_AGENT_TOKENS.some((token) => normalizedAgent.includes(token));
 }
 
+/**
+ * Determines if the current origin represents localhost for development use.
+ *
+ * @pseudocode
+ * 1. Obtain a location object from the provided window or global scope.
+ * 2. Extract and normalize the hostname, removing any port decorations.
+ * 3. Compare against the accepted localhost tokens, including IPv6 loopback.
+ *
+ * @param {Window} win - The window object to inspect for location data.
+ * @returns {boolean} True when the hostname matches a localhost identifier.
+ */
 function isLocalhostOrigin(win) {
   const loc = getLocation(win);
   if (!loc) {
@@ -122,9 +133,20 @@ function isLocalhostOrigin(win) {
   }
 
   const hostname = normalizeHostname(loc.hostname || loc.host);
-  return hostname === "localhost" || hostname === "127.0.0.1";
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
 }
 
+/**
+ * Safely retrieves a location object from a window or global scope.
+ *
+ * @pseudocode
+ * 1. Attempt to read `location` from the supplied window, guarding for access errors.
+ * 2. Fall back to the global `location` when the window value is unavailable.
+ * 3. Return `undefined` if neither source can be accessed without throwing.
+ *
+ * @param {Window} win - The window reference that may contain a location.
+ * @returns {Location|undefined} The resolved location or undefined when inaccessible.
+ */
 function getLocation(win) {
   if (win) {
     try {
@@ -141,6 +163,17 @@ function getLocation(win) {
   }
 }
 
+/**
+ * Normalizes hostnames by lowercasing and removing port suffixes.
+ *
+ * @pseudocode
+ * 1. Verify the input is a string; otherwise return an empty string.
+ * 2. Trim whitespace and transform to lowercase for stable comparisons.
+ * 3. Strip any port value by splitting on ':' and returning the first segment.
+ *
+ * @param {string} hostname - The hostname value that may contain a port.
+ * @returns {string} The normalized hostname without port information.
+ */
 function normalizeHostname(hostname) {
   if (typeof hostname !== "string") {
     return "";
