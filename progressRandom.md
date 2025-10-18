@@ -67,22 +67,107 @@ Following the initial verification, two enhancement tasks have also been complet
 
 The following tasks represent future work opportunities that have not yet been implemented.
 
-### Task 1: Refactor `displayCard` with a State Machine — **NOT STARTED**
+### Task 1: Refactor `displayCard` with a State Machine — ✅ **COMPLETED**
 
-- **Status:** ⏳ Outstanding
+- **Status:** ✅ Completed
 - **Priority:** Medium
-- **Current State:** The `displayCard` function in `src/helpers/randomJudokaPage.js` (lines 240–340) manages several states (`loading`, `success`, `error`) through manual boolean flags and direct DOM manipulation (e.g., `drawButton.disabled`, `drawButton.classList.add("is-loading")`). The `enableButton()` helper function is called at various points to restore UI state. Error handling is inline within the try-catch block.
-- **Scope:** Refactor the logic into a simple state machine (e.g., with states like `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`). This would:
-  - Centralize state management in a dedicated object
-  - Reduce the chance of inconsistent UI (like a button remaining disabled)
-  - Improve readability and testability
-  - Separate state transitions from side effects
-- **Acceptance Criteria:**
-  - Define a clear state machine with at least 4 states: `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`
-  - All state transitions are explicit and documented
-  - Button disabled/enabled state is consistent across all paths
-  - All existing tests pass without modification
-  - New tests verify state machine transitions
+- **Completion Date:** October 18, 2025
+
+#### Actions Taken - Task 1
+
+- Defined a `createDrawCardStateMachine()` factory function that encapsulates all state management
+- Implemented 4 explicit states: `IDLE`, `DRAWING`, `SUCCESS`, `ERROR`
+- Each state has an `onEnter()` handler that updates button UI atomically
+- Defined valid state transitions: IDLE→DRAWING, DRAWING→(SUCCESS|ERROR), (SUCCESS|ERROR)→IDLE
+- Invalid transitions throw descriptive errors immediately, catching bugs early
+- Extracted `updateDrawButtonLabel()` as a shared utility for both the state machine and test API
+
+2. **Refactored `displayCard()` Function** (`src/helpers/randomJudokaPage.js`):
+   - Replaced manual button state management with state machine transitions
+   - Removed inline `enableButton()` helper function (now handled by state machine)
+   - Changed from multiple scattered button manipulations to explicit state transitions:
+     - `stateMachine.transition("DRAWING")` when starting the card draw
+     - `stateMachine.transition("SUCCESS")` when card is generated successfully
+     - `stateMachine.transition("ERROR")` when card generation fails
+     - `stateMachine.transition("IDLE")` when animation completes or error is handled
+   - All button state changes are now consistent and centralized
+   - Simplified error handling and animation timing logic
+
+3. **Added Comprehensive Unit Tests** (`tests/helpers/drawCardStateMachine.test.js`):
+   - **Test 1:** "initializes in IDLE state" — Verifies default state
+   - **Test 2:** "IDLE state sets button to enabled with Draw Card label" — Verifies IDLE onEnter side effects
+   - **Test 3:** "transition to DRAWING then back to IDLE restores label" — Verifies state transitions
+   - **Test 4-11:** Individual transition tests for IDLE→DRAWING, DRAWING→SUCCESS, SUCCESS→IDLE, etc.
+   - **Test 12-14:** Invalid transition error handling (IDLE→ERROR, DRAWING→IDLE, SUCCESS→DRAWING)
+   - **Test 15:** Unknown state error handling
+   - **Test 16:** Happy path full cycle (IDLE→DRAWING→SUCCESS→IDLE)
+   - **Test 17:** Error path full cycle (IDLE→DRAWING→ERROR→IDLE)
+   - **Test 18:** `updateDrawButtonLabel` utility function tests (including edge cases like null/undefined)
+
+#### Test Results - Task 1
+
+- 3 passed in `randomJudokaPage.drawButton.test.js` (existing functionality preserved)
+- 6 passed in `randomJudokaPage.historyPanel.test.js` (accessibility features preserved)
+- 18 passed in `drawCardStateMachine.test.js` (new state machine tests)
+
+✅ **Playwright Tests:** 7/7 passed
+
+- All random judoka page E2E tests continue to pass
+- All accessibility tests pass
+- No regressions detected
+
+✅ **Linting:** All files pass ESLint and Prettier
+
+#### Code Quality Improvements
+
+- ✅ **Centralized State Management:** Button state is now managed entirely by the state machine, eliminating the risk of inconsistent UI
+- ✅ **Explicit State Transitions:** All state changes are visible in code via `stateMachine.transition()` calls
+- ✅ **Fail-Fast Error Detection:** Invalid transitions throw immediately, catching bugs during development
+- ✅ **Reduced Complexity:** Removed manual button state management scattered throughout displayCard
+- ✅ **Improved Testability:** State transitions are easily testable in isolation
+- ✅ **Function Length:** `displayCard` function reduced from ~110 lines to ~95 lines
+- ✅ **Separation of Concerns:** Button UI logic is isolated in the state machine module
+
+#### State Diagram
+
+```text
+       ┌─────────────┐
+       │    IDLE     │
+       │ Button On   │
+       └──────┬──────┘
+              │ (transition to DRAWING)
+              ▼
+       ┌─────────────────┐
+       │    DRAWING      │
+       │ Button Disabled │
+       │ Loading UI      │
+       └──┬──────────┬───┘
+          │          │
+(success) │          │ (error)
+          ▼          ▼
+    ┌─────────┐  ┌─────────┐
+    │ SUCCESS │  │  ERROR  │
+    │ Animating.. Fallback  │
+    └────┬────┘  └────┬────┘
+         │            │
+         └────┬───────┘
+              │ (animation ends or error handled)
+              ▼
+       ┌─────────────┐
+       │    IDLE     │
+       │ Button On   │
+       └─────────────┘
+```
+
+#### Code Quality Improvements - Task 1
+
+#### Verification Summary - Task 1
+- ✅ State transitions are explicit and validated
+- ✅ Button disabled/enabled state is consistent across all paths
+- ✅ All existing tests pass without modification
+- ✅ New tests comprehensively verify state transitions and edge cases
+- ✅ No accessibility or functionality regressions
+- ✅ Code is more maintainable and less error-prone
 
 ### Task 2: Improve History Panel Accessibility — ✅ **COMPLETED**
 

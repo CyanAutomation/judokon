@@ -32,6 +32,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Styled settings fieldsets and section headings to improve visual grouping and hierarchy (`src/styles/settings.css`); verified contrast with `npm run check:contrast`.
 - Tuned settings quick-link gutters for wide displays via responsive spacing clamps and a new spacing token (`src/styles/settings.css`, `src/styles/base.css`).
 - Right-sized settings toggle switches for desktop proportions while keeping a 40px hit area (`src/styles/settings.css`); validated with `npm run check:contrast` and relevant Vitest coverage.
+- Added hover feedback to settings switches for clearer interactivity cues (`src/styles/settings.css`); verified with `npm run check:contrast`.
 
 ## Critical blocker
 
@@ -184,15 +185,9 @@ This phase focuses on high-impact changes to improve the core layout, readabilit
 
 This phase focuses on making the settings page more interactive and visually engaging, while also improving theme consistency.
 
-1. **Interactive Switch States** — **Outstanding**
+1. **Interactive Switch States** — **Completed**
    - **Priority:** Medium
-   - **Issue:** The toggle switches lack visual feedback on hover, making them feel static.
-   - **Scope:** In `src/styles/settings.css`, add a `:hover` state to the `.switch` class. This could involve a subtle change in `background-color` or a `box-shadow` to provide clear visual feedback when a user interacts with the switch.
-   - **Acceptance Criteria:**
-     - Switches have clear hover feedback
-     - Feedback is subtle and consistent with design system
-     - Passes contrast and accessibility checks
-     - Works across all supported display modes (light, dark, retro)
+   - **Outcome:** Hovering now lightens the track and adds a subtle shadow/outline so toggles feel interactive while maintaining accessibility; contrast checks remain green across themes.
 
 2. **Display Mode Previews** — **Outstanding**
    - **Priority:** Medium

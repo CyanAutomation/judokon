@@ -116,6 +116,9 @@ export function createDrawCardStateMachine(drawButton) {
     states[nextState].onEnter?.();
   }
 
+  // Initialize to IDLE state
+  states[currentState].onEnter?.();
+
   return {
     get currentState() {
       return currentState;

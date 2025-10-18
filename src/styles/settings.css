@@ -129,7 +129,8 @@
 }
 
 .switch:hover .slider {
-  box-shadow: 0 0 5px 2px var(--color-secondary);
+  background-color: color-mix(in srgb, var(--switch-off-bg) 70%, var(--switch-on-bg) 30%);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
 
 .slider {
@@ -158,8 +159,16 @@
   background-color: var(--switch-on-bg);
 }
 
+.switch:hover input:checked + .slider {
+  background-color: color-mix(in srgb, var(--switch-on-bg) 80%, var(--color-surface) 20%);
+}
+
 .switch input:checked + .slider::before {
   transform: translateX(18px);
+}
+
+.switch:hover .slider::before {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-surface) 70%, transparent);
 }
 
 .slider.round {
