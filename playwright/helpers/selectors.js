@@ -43,12 +43,34 @@ export function playerCard(playerIndex) {
 }
 
 /**
- * Resolve a stat button selector for a given player and statKey.
- * If statKey is omitted, returns the per-player stat buttons selector.
+ * Resolve a stat button selector for the shared stat controls. The current DOM
+ * renders a single `#stat-buttons` group for both players, so filtering by
+ * player is no longer supported.
+ *
+ * @pseudocode statButton(options?): string
+ * @param {object|string|undefined} [options] - Either an options object or a
+ * string `statKey` for convenience.
+ * @param {string} [options.statKey] - Optional stat identifier to scope the
+ * selector to a specific stat button.
+ * @returns {string} Selector targeting the requested stat buttons.
+ * @throws {TypeError} When a legacy player index argument is supplied.
  */
-export function statButton(playerIndex, statKey) {
+export function statButton(options) {
+  if (typeof options === "number") {
+    throw new TypeError(
+      "statButton() no longer accepts a playerIndex argument. Remove the numeric argument and optionally pass { statKey }."
+    );
+  }
+
+  const normalizedOptions =
+    typeof options === "string" || typeof options === "undefined"
+      ? { statKey: options }
+      : options || {};
+
+  const { statKey } = normalizedOptions;
   const entry = findEntryByLogicalName("statButton");
-  let sel = entry ? entry.selector : "#stat-buttons button[data-stat]";
+  let sel = entry ? entry.selector : ".stat-button[data-stat]";
+
   if (typeof statKey !== "undefined") {
     if (/\[data-stat(?:=[^\]]*)?\]/.test(sel)) {
       sel = sel.replace(/\[data-stat(?:=[^\]]*)?\]/g, `[data-stat=\"${statKey}\"]`);
@@ -56,6 +78,7 @@ export function statButton(playerIndex, statKey) {
       sel += `[data-stat=\"${statKey}\"]`;
     }
   }
+
   return sel;
 }
 

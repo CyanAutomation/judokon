@@ -119,7 +119,7 @@ test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest(
     "placeholder clears and opponent card renders on reveal",
     async ({ page }) => {
-      const firstStat = page.locator(selectors.statButton(0)).first();
+      const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
       const placeholder = page.locator("#mystery-card-placeholder");
@@ -139,7 +139,7 @@ test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest(
     "shows opponent choosing snackbar immediately after stat selection",
     async ({ page }) => {
-      const firstStat = page.locator(selectors.statButton(0)).first();
+      const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
       const snack = page.locator(selectors.snackbarContainer());
@@ -154,7 +154,7 @@ test.describe("Classic Battle Opponent Messages", () => {
       const opponentCard = page.locator("#opponent-card");
       await expect(opponentCard).toHaveClass(/opponent-hidden/);
 
-      const firstStat = page.locator(selectors.statButton(0)).first();
+      const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
       await expect(opponentCard).toHaveClass(/opponent-hidden/);
@@ -173,7 +173,7 @@ test.describe("Classic Battle Opponent Messages", () => {
       await setupStalledCliFallback(page);
 
       try {
-        const firstStat = page.locator(selectors.statButton(0)).first();
+        const firstStat = page.locator(selectors.statButton()).first();
         await firstStat.click();
 
         await ensureRoundResolved(page, { forceResolve: true });

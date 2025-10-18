@@ -13,7 +13,7 @@ test.describe("Classic Battle — long-run hang probe", () => {
     // Advance several rounds by clicking first stat; verify round message updates each loop
     const loops = 6;
     for (let i = 0; i < loops; i++) {
-      const btn = page.locator(selectors.statButton(0));
+      const btn = page.locator(selectors.statButton());
       // Wait until button becomes enabled before clicking to avoid disabled state hangs
       await expect(btn.first()).toBeEnabled({ timeout: 10000 });
       await btn.first().click();
