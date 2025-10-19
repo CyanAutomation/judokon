@@ -279,45 +279,43 @@ async function manuallySyncBattleState(
   page,
   { fromState = null, finalState = ROUND_OVER_STATE, timeout = 2_000 } = {}
 ) {
-  await page.evaluate(async ({ fromState: priorState, finalState: targetState }) => {
-    const body = document.body;
-    if (!body) return;
+  await page.evaluate(
+    async ({ fromState: priorState, finalState: targetState }) => {
+      const body = document.body;
+      if (!body) return;
 
-    const initialState =
-      priorState ?? (body.dataset ? body.dataset.battleState ?? null : null);
+      const initialState = priorState ?? (body.dataset ? (body.dataset.battleState ?? null) : null);
 
-    if (body.dataset) {
-      body.dataset.battleState = targetState;
-    }
-
-    if (typeof window.emitBattleEvent === "function") {
-      window.emitBattleEvent("battleStateChange", {
-        from: initialState,
-        to: targetState,
-        event: "roundResolved"
-      });
-    }
-
-    const stateApi = window.__TEST_API?.state;
-    if (stateApi && typeof stateApi.dispatchBattleEvent === "function") {
-      try {
-        await stateApi.dispatchBattleEvent(targetState);
-      } catch (error) {
-        // Intentionally ignore dispatch errors as this is a fallback mechanism.
-        // The polling verification below will catch unresolved state syncs.
+      if (body.dataset) {
+        body.dataset.battleState = targetState;
       }
-    }
-  },
-  { fromState, finalState });
+
+      if (typeof window.emitBattleEvent === "function") {
+        window.emitBattleEvent("battleStateChange", {
+          from: initialState,
+          to: targetState,
+          event: "roundResolved"
+        });
+      }
+
+      const stateApi = window.__TEST_API?.state;
+      if (stateApi && typeof stateApi.dispatchBattleEvent === "function") {
+        try {
+          await stateApi.dispatchBattleEvent(targetState);
+        } catch (error) {
+          // Intentionally ignore dispatch errors as this is a fallback mechanism.
+          // The polling verification below will catch unresolved state syncs.
+        }
+      }
+    },
+    { fromState, finalState }
+  );
 
   await expect
-    .poll(
-      async () => safeGetBattleState(page, finalState),
-      {
-        timeout,
-        message: `Expected manual battle state sync to report "${finalState}" after fallback`
-      }
-    )
+    .poll(async () => safeGetBattleState(page, finalState), {
+      timeout,
+      message: `Expected manual battle state sync to report "${finalState}" after fallback`
+    })
     .toBe(finalState);
 }
 
@@ -504,8 +502,7 @@ async function readBattleStateDiagnostics(page) {
 export async function confirmRoundResolved(page, options = {}) {
   const {
     timeout = 3_000,
-    message =
-      'Expected battle state to reach "roundOver" (or immediately enter cooldown) after deterministic resolution'
+    message = 'Expected battle state to reach "roundOver" (or immediately enter cooldown) after deterministic resolution'
   } = options;
 
   await expect
@@ -531,11 +528,7 @@ export async function confirmRoundResolved(page, options = {}) {
           (typeof diagnostics?.state === "string" && diagnostics.state) || stateFromSnapshot;
         const log = Array.isArray(snapshot?.log) ? snapshot.log : [];
         const prev = typeof snapshot?.prev === "string" ? snapshot.prev : null;
-        const cooldownAfterRoundOver = cooldownImmediatelyFollowsRoundOver(
-          currentState,
-          log,
-          prev
-        );
+        const cooldownAfterRoundOver = cooldownImmediatelyFollowsRoundOver(currentState, log, prev);
 
         return {
           resolved: currentState === "roundOver" || cooldownAfterRoundOver,
