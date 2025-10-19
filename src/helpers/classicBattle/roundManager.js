@@ -10,6 +10,7 @@ import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { isTestModeEnabled } from "../testModeUtils.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
@@ -381,7 +382,7 @@ export function startCooldown(_store, scheduler, overrides = {}) {
       dispatchBattleEvent: overrides.dispatchBattleEvent || dispatchBattleEvent
     });
   }
-  const cooldownSeconds = computeNextRoundCooldown();
+  const cooldownSeconds = computeNextRoundCooldown({ isTestModeEnabled });
   try {
     if (typeof console !== "undefined" && !process?.env?.VITEST)
       console.debug(
