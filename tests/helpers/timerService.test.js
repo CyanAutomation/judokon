@@ -19,7 +19,8 @@ vi.mock("../../src/helpers/setupScoreboard.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  updateDebugPanel: () => {}
+  updateDebugPanel: () => {},
+  setNextButtonFinalizedState: vi.fn()
 }));
 
 vi.mock("../../src/helpers/testModeUtils.js", () => ({
