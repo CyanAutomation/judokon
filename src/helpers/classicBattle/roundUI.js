@@ -619,6 +619,10 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
       syncScoreDisplayFn();
     }
   } catch {}
+  try {
+    disableStatButtons?.();
+  } catch {}
+  emitBattleEvent("statButtons:disable");
   const runReset = () => {
     clearStatButtonSelections(store);
     try {

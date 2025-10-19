@@ -94,21 +94,23 @@ describe("roundResolved stat button reset", () => {
       })
     );
     expect(btn.classList.contains("selected")).toBe(true);
+    expect(disableSpy).toHaveBeenCalledOnce();
+    expect(btn.disabled).toBe(true);
+    expect(btn.classList.contains("disabled")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
-    expect(disableSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(frameDelayMs);
     expect(btn.classList.contains("selected")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
-    expect(disableSpy).not.toHaveBeenCalled();
+    expect(disableSpy).toHaveBeenCalledOnce();
     await vi.advanceTimersByTimeAsync(frameDelayMs);
     expect(disableSpy).toHaveBeenCalledOnce();
-    expect(resetSpy).not.toHaveBeenCalled();
+    expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
     expect(btn.disabled).toBe(true);
     expect(btn.classList.contains("disabled")).toBe(true);
     await vi.advanceTimersByTimeAsync(32);
     expect(disableSpy).toHaveBeenCalledOnce();
-    expect(resetSpy).not.toHaveBeenCalled();
+    expect(resetSpy).toHaveBeenCalledOnce();
     runAfterFramesSpy.mockRestore();
     timers.cleanup();
   });
@@ -131,11 +133,13 @@ describe("roundResolved stat button reset", () => {
       })
     );
     expect(btn.classList.contains("selected")).toBe(true);
+    expect(disableSpy).toHaveBeenCalledOnce();
+    expect(btn.disabled).toBe(true);
+    expect(btn.classList.contains("disabled")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
-    expect(disableSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(32);
     expect(disableSpy).toHaveBeenCalledOnce();
-    expect(resetSpy).not.toHaveBeenCalled();
+    expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
     expect(btn.disabled).toBe(true);
     expect(btn.classList.contains("disabled")).toBe(true);
