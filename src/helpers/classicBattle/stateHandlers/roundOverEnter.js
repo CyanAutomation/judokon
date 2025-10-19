@@ -6,7 +6,7 @@ import { onBattleEvent, offBattleEvent } from "../battleEvents.js";
  * @param {object} machine
  * @returns {Promise<void>}
  * @pseudocode
- * 1. Clear `playerChoice` on the store so the next round starts cleanly.
+ * 1. Clear `playerChoice` on the store while preserving `selectionMade` for diagnostics until the next round resets it.
  * 2. If `waitForOutcomeConfirmation` is true, wait for `outcomeConfirmed` event.
  */
 export async function roundOverEnter(machine) {
