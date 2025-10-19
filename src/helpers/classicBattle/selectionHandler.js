@@ -523,12 +523,18 @@ export async function resolveWithFallback(
 
     if (orchestrated && handledByOrchestrator !== true) {
       const delay = resolveDelay();
-      const fallbackDelay = IS_VITEST ? 0 : Math.max(delay + 100, 800);
+      const configuredDelay = Number(opts?.delayMs);
+      const hasConfiguredDelay = Number.isFinite(configuredDelay) && configuredDelay >= 0;
+      const opponentDelay = hasConfiguredDelay ? configuredDelay : delay;
+      const normalizedDelay = Number.isFinite(opponentDelay) && opponentDelay >= 0 ? opponentDelay : 0;
+      const bufferMs = 32;
+      const fallbackDelay = normalizedDelay + bufferMs;
       const timeoutId = setTimeout(async () => {
         try {
           await syncResultDisplay(store, stat, playerVal, opponentVal, {
             ...opts,
-            delayMs: 0
+            delayMs: normalizedDelay,
+            forceOpponentPrompt: true
           });
         } catch {}
 
@@ -609,7 +615,8 @@ export async function resolveWithFallback(
  */
 export async function syncResultDisplay(store, stat, playerVal, opponentVal, opts) {
   try {
-    if (IS_VITEST && !opts?.delayOpponentMessage) {
+    const shouldForceSnackbar = opts?.forceOpponentPrompt === true;
+    if ((IS_VITEST || shouldForceSnackbar) && !opts?.delayOpponentMessage) {
       showSnackbar(t("ui.opponentChoosing"));
     }
   } catch {}
