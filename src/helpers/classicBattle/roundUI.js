@@ -619,6 +619,16 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
       syncScoreDisplayFn();
     }
   } catch {}
+  /**
+   * Lock stat buttons by disabling them and optionally emitting a disable event.
+   *
+   * @pseudocode
+   * 1. Attempt to disable the stat buttons via `disableStatButtons`.
+   * 2. When `shouldEmitEvent` is true, emit the `statButtons:disable` battle event.
+   *
+   * @param {boolean} [shouldEmitEvent=false] - Emit the disable event when true.
+   * @returns {void}
+   */
   const lockStatButtons = (shouldEmitEvent = false) => {
     try {
       disableStatButtons?.();
@@ -629,10 +639,61 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   lockStatButtons(true);
   const runReset = () => {
     clearStatButtonSelections(store);
+    let fallbackId = null;
+    let postResetLocked = false;
+    const runPostResetLock = () => {
+      if (postResetLocked) return;
+      postResetLocked = true;
+      lockStatButtons();
+    };
+    const cancelFallback = () => {
+      if (fallbackId !== null && typeof clearTimeout === "function") {
+        try {
+          clearTimeout(fallbackId);
+        } catch {}
+      }
+      fallbackId = null;
+    };
+    if (typeof setTimeout === "function") {
+      fallbackId = setTimeout(() => {
+        fallbackId = null;
+        runPostResetLock();
+      }, 32);
+    }
+    const raf = typeof globalThis?.requestAnimationFrame === "function" ? globalThis.requestAnimationFrame : null;
+    const cancelRaf =
+      typeof globalThis?.cancelAnimationFrame === "function" ? globalThis.cancelAnimationFrame : null;
     try {
-      disableStatButtons?.();
-    } catch {}
-    lockStatButtons();
+      resetStatButtons?.({
+        onFrame: (cb) => {
+          if (raf) {
+            const frameId = raf(() => {
+              cb();
+              cancelFallback();
+              runPostResetLock();
+            });
+            return frameId;
+          }
+          cb();
+          cancelFallback();
+          runPostResetLock();
+          return 0;
+        },
+        cancel: (id) => {
+          if (cancelRaf && typeof id === "number" && !Number.isNaN(id)) {
+            try {
+              cancelRaf(id);
+            } catch {}
+          }
+        }
+      });
+    } catch {
+      cancelFallback();
+      runPostResetLock();
+    }
+    if (!postResetLocked && fallbackId === null && !raf) {
+      runPostResetLock();
+    }
   };
   let didReset = false;
   const runResetOnce = () => {
