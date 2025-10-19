@@ -28,7 +28,8 @@ describe("timerService next round handling", () => {
       enableNextRoundButton: vi.fn(),
       disableNextRoundButton: vi.fn(),
       skipRoundCooldownIfEnabled: vi.fn(() => false),
-      syncScoreDisplay: vi.fn()
+      syncScoreDisplay: vi.fn(),
+      setNextButtonFinalizedState: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
@@ -163,6 +164,31 @@ describe("timerService next round handling", () => {
     await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it("forces a 1s cooldown when test mode is active", async () => {
+    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+    setTestMode(true);
+    const cooldownModule = await import(
+      "../../../src/helpers/timers/computeNextRoundCooldown.js"
+    );
+    const computeSpy = vi.spyOn(cooldownModule, "computeNextRoundCooldown");
+    await import("../../../src/helpers/classicBattle/timerService.js");
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
+    createTimerNodes();
+    dispatchBattleEvent.mockClear();
+    const controls = roundMod.startCooldown({}, scheduler);
+    expect(computeSpy).toHaveBeenCalled();
+    const computedValues = computeSpy.mock.results
+      .map((result) => result.value)
+      .filter((value) => typeof value === "number");
+    expect(computedValues).toContain(1);
+    scheduler.tick(999);
+    expect(dispatchBattleEvent).not.toHaveBeenCalled();
+    scheduler.tick(2);
+    await controls.ready;
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    setTestMode(false);
   });
 
   it("retains nextReady when starting a new cooldown", async () => {
