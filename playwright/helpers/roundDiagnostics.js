@@ -70,13 +70,11 @@ export async function readRoundDiagnostics(page) {
         if (context) {
           return context;
         }
-        if (typeof window !== "undefined") {
-          if (window.__classicBattleLastFinalizeContext) {
-            return window.__classicBattleLastFinalizeContext;
-          }
-          if (window.__classicBattleSelectionFinalized === true) {
-            return "advance";
-          }
+        if (window.__classicBattleLastFinalizeContext) {
+          return window.__classicBattleLastFinalizeContext;
+        }
+        if (window.__classicBattleSelectionFinalized === true) {
+          return "advance";
         }
         return null;
       })(),
