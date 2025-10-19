@@ -626,6 +626,9 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
    * 1. Attempt to disable the stat buttons via `disableStatButtons`.
    * 2. When `shouldEmitEvent` is true, emit the `statButtons:disable` battle event.
    *
+   * This helper centralizes the locking logic so the post-reset scheduler can
+   * re-apply the disabled state without duplicating the emit/disable calls.
+   *
    * @param {boolean} [shouldEmitEvent=false] - Emit the disable event when true.
    * @returns {void}
    */
@@ -637,63 +640,130 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   };
 
   lockStatButtons(true);
-  const runReset = () => {
-    clearStatButtonSelections(store);
-    let fallbackId = null;
+  const createFallbackTimer = (onTimeout) => {
+    if (typeof setTimeout !== "function") {
+      return {
+        cancel: () => {},
+        isScheduled: () => false
+      };
+    }
+    let id = setTimeout(() => {
+      id = null;
+      onTimeout();
+    }, 32);
+    return {
+      cancel: () => {
+        if (id === null) return;
+        if (typeof clearTimeout === "function") {
+          try {
+            clearTimeout(id);
+          } catch {
+            // Ignore timer cleanup failures but continue resetting the ID.
+          } finally {
+            id = null;
+          }
+          return;
+        }
+        id = null;
+      },
+      isScheduled: () => id !== null
+    };
+  };
+  const createFrameTracker = (raf, cancelRaf, onIdle) => {
+    let pending = 0;
+    const frameIds = new Set();
+    const decrement = () => {
+      pending = Math.max(0, pending - 1);
+      if (pending === 0) onIdle();
+    };
+    const schedule = (cb) => {
+      if (typeof cb !== "function") return 0;
+      pending += 1;
+      if (raf) {
+        let frameId;
+        frameId = raf(() => {
+          try {
+            cb();
+          } finally {
+            if (frameId !== undefined && frameId !== null) {
+              frameIds.delete(frameId);
+            }
+            decrement();
+          }
+        });
+        if (frameId !== undefined && frameId !== null) {
+          frameIds.add(frameId);
+          return frameId;
+        }
+        return 0;
+      }
+      try {
+        cb();
+      } finally {
+        decrement();
+      }
+      return 0;
+    };
+    const cancel = (id) => {
+      if (!cancelRaf || id === undefined || id === null || !frameIds.has(id)) return;
+      frameIds.delete(id);
+      try {
+        cancelRaf(id);
+      } catch {
+        // Ignore cancel failures but still treat the frame as completed.
+      } finally {
+        decrement();
+      }
+    };
+    return {
+      schedule,
+      cancel,
+      rafAvailable: !!raf
+    };
+  };
+  const createPostResetScheduler = (lockFn) => {
     let postResetLocked = false;
+    const globalTarget = typeof globalThis === "object" && globalThis ? globalThis : {};
+    const rafCandidate = globalTarget.requestAnimationFrame;
+    const cancelRafCandidate = globalTarget.cancelAnimationFrame;
+    const raf = typeof rafCandidate === "function" ? rafCandidate.bind(globalTarget) : null;
+    const cancelRaf = typeof cancelRafCandidate === "function" ? cancelRafCandidate.bind(globalTarget) : null;
     const runPostResetLock = () => {
       if (postResetLocked) return;
       postResetLocked = true;
-      lockStatButtons();
+      lockFn();
     };
-    const cancelFallback = () => {
-      if (fallbackId !== null && typeof clearTimeout === "function") {
-        try {
-          clearTimeout(fallbackId);
-        } catch {}
-      }
-      fallbackId = null;
-    };
-    if (typeof setTimeout === "function") {
-      fallbackId = setTimeout(() => {
-        fallbackId = null;
+    const fallbackTimer = createFallbackTimer(runPostResetLock);
+    const frameTracker = createFrameTracker(raf, cancelRaf, () => {
+      fallbackTimer.cancel();
+      runPostResetLock();
+    });
+    return {
+      scheduler: {
+        onFrame: (cb) => frameTracker.schedule(cb),
+        cancel: (id) => frameTracker.cancel(id)
+      },
+      handleFailure: () => {
+        fallbackTimer.cancel();
         runPostResetLock();
-      }, 32);
-    }
-    const raf = typeof globalThis?.requestAnimationFrame === "function" ? globalThis.requestAnimationFrame : null;
-    const cancelRaf =
-      typeof globalThis?.cancelAnimationFrame === "function" ? globalThis.cancelAnimationFrame : null;
-    try {
-      resetStatButtons?.({
-        onFrame: (cb) => {
-          if (raf) {
-            const frameId = raf(() => {
-              cb();
-              cancelFallback();
-              runPostResetLock();
-            });
-            return frameId;
-          }
-          cb();
-          cancelFallback();
+      },
+      ensureSafetyLock: () => {
+        if (!postResetLocked && !fallbackTimer.isScheduled() && !frameTracker.rafAvailable) {
+          // Final safety: ensure buttons stay locked when no timing APIs succeed.
           runPostResetLock();
-          return 0;
-        },
-        cancel: (id) => {
-          if (cancelRaf && typeof id === "number" && !Number.isNaN(id)) {
-            try {
-              cancelRaf(id);
-            } catch {}
-          }
         }
-      });
+      }
+    };
+  };
+  const runReset = () => {
+    clearStatButtonSelections(store);
+    const { scheduler, handleFailure, ensureSafetyLock } = createPostResetScheduler(lockStatButtons);
+    try {
+      resetStatButtons?.(scheduler);
     } catch {
-      cancelFallback();
-      runPostResetLock();
+      handleFailure();
     }
-    if (!postResetLocked && fallbackId === null && !raf) {
-      runPostResetLock();
-    }
+    ensureSafetyLock();
   };
   let didReset = false;
   const runResetOnce = () => {
