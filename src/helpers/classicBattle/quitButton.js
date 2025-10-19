@@ -12,8 +12,7 @@
  */
 export function initQuitButton(store, { quitMatch: injectedQuitMatch } = {}) {
   const quitBtn =
-    document.getElementById("quit-button") ??
-    document.getElementById("quit-match-button");
+    document.getElementById("quit-button") ?? document.getElementById("quit-match-button");
   if (!quitBtn) return;
   quitBtn.addEventListener("click", async () => {
     const quitMatch =

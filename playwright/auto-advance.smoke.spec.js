@@ -57,7 +57,7 @@ test.describe("Classic Battle – auto-advance", () => {
           document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state") || null;
         const battleState = bodyState || attrState || "";
         const hasEnabledStatButtons = Array.from(
-          document.querySelectorAll("#stat-buttons button, [data-testid=\"stat-button\"]")
+          document.querySelectorAll('#stat-buttons button, [data-testid="stat-button"]')
         ).some((button) => !button.disabled);
 
         return { battleState, hasEnabledStatButtons };

@@ -37,7 +37,13 @@ const pages = [
 ];
 
 test.describe("Static pages", () => {
-  for (const { url, name, assertions, navLinks = [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE], options = {} } of pages) {
+  for (const {
+    url,
+    name,
+    assertions,
+    navLinks = [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE],
+    options = {}
+  } of pages) {
     test(`${name} page loads and has correct content`, async ({ page }) => {
       await page.goto(url);
       await verifyPageBasics(page, navLinks, assertions, options);
