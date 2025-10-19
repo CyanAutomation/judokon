@@ -10,8 +10,8 @@ vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
 
 describe("classicBattle round reset", () => {
   afterEach(() => {
-    vi.resetAllMocks();
     vi.resetModules();
+    vi.resetAllMocks();
   });
 
   it("clears player choice but preserves selection flag for diagnostics", async () => {
