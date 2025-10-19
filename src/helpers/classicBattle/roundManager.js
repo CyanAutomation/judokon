@@ -145,7 +145,7 @@ function getStartRound(store) {
  * @summary Reset match state and UI, then begin a new round.
  *
  * @pseudocode
- * 1. Ensure a battle engine exists by probing `battleEngine.getScores()` and calling `createBattleEngine()` when needed, then rebind events with `bridgeEngineEvents()`.
+ * 1. Reset the battle engine via `resetBattleEnginePreservingConfig()` (falling back to `createBattleEngine()` when unavailable) and then rebind events with `bridgeEngineEvents()`.
  * 2. Dispatch `game:reset-ui` and zero the scoreboard so UI surfaces show a fresh match state.
  * 3. Resolve the `startRound` implementation (allowing debug overrides), await its result, then reaffirm zeroed scores before returning.
  *
@@ -167,32 +167,18 @@ export async function handleReplay(store) {
   };
   trace("begin", { t: Date.now() });
   persistLastJudokaStats(store, store?.currentPlayerJudoka, store?.currentOpponentJudoka);
-  // Only create a new engine when one does not already exist. Tests call
-  // `_resetForTest` frequently; unconditionally recreating the engine here
-  // resets match-level scores and causes cumulative score tests to fail.
-  const ensureEngine = () => {
-    if (typeof battleEngine.getScores === "function") {
-      safeRound(
-        "handleReplay.ensureEngine.check",
-        () => {
-          battleEngine.getScores();
-        },
-        {
-          fallback: () => {
-            createBattleEngine();
-            return null;
-          },
-          suppressInProduction: true
-        }
-      );
-    } else {
-      createBattleEngine();
+  const resetEngine = () => {
+    if (typeof battleEngine.resetBattleEnginePreservingConfig === "function") {
+      battleEngine.resetBattleEnginePreservingConfig();
+      return;
     }
+    // Fallback for environments that have not yet adopted the reset helper.
+    createBattleEngine({ forceCreate: true });
   };
-  safeRound("handleReplay.ensureEngine", ensureEngine, {
+  safeRound("handleReplay.resetEngine", resetEngine, {
     suppressInProduction: true
   });
-  trace("engine_ready");
+  trace("engine_reset");
   bridgeEngineEvents();
   trace("events_bridged");
   if (typeof window !== "undefined") {
@@ -215,8 +201,23 @@ export async function handleReplay(store) {
     safeRound(operation, () => scoreboard.updateScore(0, 0), { suppressInProduction: true });
   updateScoreboard("handleReplay.scoreboardInitialReset");
   trace("scoreboard_zeroed_initial");
+  safeRound(
+    "handleReplay.resetRoundStoreNumber",
+    () => roundStore.setRoundNumber(0, { emitLegacyEvent: false }),
+    { suppressInProduction: true }
+  );
   const startRoundFn = getStartRound(store);
   const res = await startRoundFn();
+  safeRound(
+    "handleReplay.ensureRoundsReset",
+    () => {
+      const engine = battleEngine.requireEngine?.();
+      if (engine && typeof engine === "object") {
+        engine.roundsPlayed = 0;
+      }
+    },
+    { suppressInProduction: true }
+  );
   trace("round_started");
   updateScoreboard("handleReplay.scoreboardPostStart");
   trace("scoreboard_zeroed_postStart");

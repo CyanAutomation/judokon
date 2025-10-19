@@ -16,6 +16,7 @@ let _lastRoundIndex = 0;
 let _handlers = [];
 let _waitingTimer = null;
 let _waitingClearer = null;
+let _onResetUi = null;
 // Schedule fallback message if no state is observed within 500ms
 try {
   const scheduler = getScheduler();
@@ -49,6 +50,41 @@ function mapOutcomeToEnum(outcome) {
   return "none";
 }
 
+function registerResetUiListener() {
+  if (typeof window === "undefined" || typeof window.addEventListener !== "function") {
+    return;
+  }
+  if (_onResetUi) {
+    return;
+  }
+  const handler = () => {
+    _lastRoundIndex = 0;
+    try {
+      clearRoundCounter();
+    } catch {}
+  };
+  _onResetUi = handler;
+  try {
+    window.addEventListener("game:reset-ui", handler);
+  } catch {
+    _onResetUi = null;
+  }
+}
+
+function unregisterResetUiListener() {
+  if (typeof window === "undefined" || typeof window.removeEventListener !== "function") {
+    _onResetUi = null;
+    return;
+  }
+  if (!_onResetUi) {
+    return;
+  }
+  try {
+    window.removeEventListener("game:reset-ui", _onResetUi);
+  } catch {}
+  _onResetUi = null;
+}
+
 /**
  * Initialize the scoreboard PRD adapter.
  *
@@ -62,6 +98,7 @@ export function initBattleScoreboardAdapter() {
   if (_bound) return disposeBattleScoreboardAdapter;
   _bound = true;
   _handlers = [];
+  registerResetUiListener();
   // Schedule fallback message if no state is observed within 500ms
   try {
     const scheduler = getScheduler();
@@ -171,6 +208,7 @@ export function disposeBattleScoreboardAdapter() {
   _handlers = [];
 
   _bound = false;
+  unregisterResetUiListener();
 }
 
 /**
