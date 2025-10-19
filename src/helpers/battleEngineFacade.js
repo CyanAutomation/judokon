@@ -176,6 +176,70 @@ export function createBattleEngine(config = {}) {
 }
 
 /**
+ * Reset the battle engine to a fresh instance while preserving overrides.
+ *
+ * @summary Rebuilds the engine so match state (scores, rounds, flags) returns
+ * to defaults while reapplying configuration tweaks such as `pointsToWin`.
+ *
+ * @pseudocode
+ * 1. Attempt to capture the current `pointsToWin` value when an engine exists.
+ * 2. Call `createBattleEngine({ forceCreate: true })` to rebuild the engine and
+ *    clear accumulated match state.
+ * 3. Reapply captured overrides like `pointsToWin` on the new engine instance
+ *    before returning it.
+ *
+ * @returns {IBattleEngine} Refreshed engine instance.
+ */
+export function resetBattleEnginePreservingConfig() {
+  let preservedPointsToWin = null;
+  let existingEngine = null;
+  try {
+    existingEngine = requireEngine();
+    if (existingEngine && typeof existingEngine.getPointsToWin === "function") {
+      const candidate = Number(existingEngine.getPointsToWin());
+      if (Number.isFinite(candidate)) {
+        preservedPointsToWin = candidate;
+      }
+    }
+  } catch {
+    existingEngine = null;
+  }
+
+  let engine = existingEngine;
+  if (engine && typeof engine._resetForTest === "function") {
+    try {
+      engine._resetForTest();
+    } catch {
+      engine = null;
+    }
+  } else {
+    engine = null;
+  }
+
+  if (!engine) {
+    engine = createBattleEngine({ forceCreate: true });
+  }
+  try {
+    if (engine && typeof engine === "object") {
+      if ("playerScore" in engine) engine.playerScore = 0;
+      if ("opponentScore" in engine) engine.opponentScore = 0;
+      if ("roundsPlayed" in engine) engine.roundsPlayed = 0;
+      if ("matchEnded" in engine) engine.matchEnded = false;
+    }
+  } catch {
+    // Direct property resets are best-effort fallbacks.
+  }
+  if (typeof preservedPointsToWin === "number" && Number.isFinite(preservedPointsToWin)) {
+    try {
+      engine.setPointsToWin(preservedPointsToWin);
+    } catch {
+      // Ignore failures so replay flow can proceed with default thresholds.
+    }
+  }
+  return engine;
+}
+
+/**
  * Set the number of points required to win a match.
  *
  * @pseudocode
