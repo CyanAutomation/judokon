@@ -29,7 +29,7 @@ describe("timerService next round handling", () => {
       disableNextRoundButton: vi.fn(),
       skipRoundCooldownIfEnabled: vi.fn(() => false),
       syncScoreDisplay: vi.fn(),
-      setNextButtonFinalizedState: vi.fn()
+      setNextButtonFinalizedState: vi.fn(),
     }));
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
