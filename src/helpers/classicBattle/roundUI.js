@@ -622,7 +622,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   const runReset = () => {
     clearStatButtonSelections(store);
     try {
-      disableStatButtons?.();
+      resetStatButtons?.();
     } catch {}
   };
   let didReset = false;
