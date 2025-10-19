@@ -1,17 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { roundOverEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { startRound, createBattleStore } from "../../../src/helpers/classicBattle/roundManager.js";
 import * as cardSelection from "../../../src/helpers/classicBattle/cardSelection.js";
 
-describe("classicBattle round reset", () => {
-  beforeEach(() => {
-    vi.resetModules();
-    vi.restoreAllMocks();
-  });
+vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
+  drawCards: vi.fn(),
+  _resetForTest: vi.fn()
+}));
 
+describe("classicBattle round reset", () => {
   afterEach(() => {
+    vi.resetAllMocks();
     vi.resetModules();
-    vi.restoreAllMocks();
   });
 
   it("clears player choice but preserves selection flag for diagnostics", async () => {
@@ -23,11 +23,11 @@ describe("classicBattle round reset", () => {
   });
 
   it("resets selection flag when the next round starts", async () => {
-    vi.spyOn(cardSelection, "drawCards").mockResolvedValue({
+    vi.mocked(cardSelection.drawCards).mockResolvedValue({
       playerJudoka: null,
       opponentJudoka: null
     });
-    vi.spyOn(cardSelection, "_resetForTest").mockImplementation(() => {});
+    vi.mocked(cardSelection._resetForTest).mockImplementation(() => {});
 
     const store = createBattleStore();
     store.selectionMade = true;
