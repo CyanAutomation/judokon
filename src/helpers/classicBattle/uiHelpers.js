@@ -410,6 +410,77 @@ export function disableNextRoundButton() {
   } catch {}
 }
 
+function readVisibleRoundNumber() {
+  try {
+    const counter = document.getElementById("round-counter");
+    if (!counter) return null;
+    const match = String(counter.textContent ?? "").match(/Round\s*(\d+)/i);
+    if (!match) return null;
+    const parsed = Number(match[1]);
+    return Number.isFinite(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Update the diagnostic tracker for the highest displayed round.
+ *
+ * @param {number|null} visibleRound - Round number parsed from the counter label.
+ * @returns {number|null} The stored highest round after normalization.
+ * @pseudocode
+ * 1. Normalize the current diagnostic value to a positive integer or zero.
+ * 2. Normalize the visible round snapshot to a positive integer when available.
+ * 3. If a visible round exists, store the max of the current and visible rounds.
+ * 4. When no visible round exists, preserve the normalized current diagnostic value.
+ * 5. Return the resulting positive integer or null when no rounds are recorded.
+ */
+function updateHighestDisplayedRoundDiagnostic(visibleRound) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const current = Number(window.__highestDisplayedRound);
+  const normalizedCurrent = Number.isFinite(current) && current > 0 ? current : 0;
+  const normalizedVisible =
+    Number.isFinite(visibleRound) && visibleRound > 0 ? visibleRound : null;
+
+  if (normalizedVisible !== null) {
+    const nextHighest =
+      normalizedCurrent > 0
+        ? Math.max(normalizedCurrent, normalizedVisible)
+        : normalizedVisible;
+    if (nextHighest > 0) {
+      window.__highestDisplayedRound = nextHighest;
+      return nextHighest;
+    }
+  } else if (!Number.isFinite(current)) {
+    window.__highestDisplayedRound = normalizedCurrent;
+    return normalizedCurrent > 0 ? normalizedCurrent : null;
+  }
+
+  return Number.isFinite(window.__highestDisplayedRound)
+    ? Number(window.__highestDisplayedRound)
+    : null;
+}
+
+function applyButtonFinalizedState(btn) {
+  if (!btn) return;
+
+  try {
+    btn.disabled = false;
+    btn.removeAttribute("disabled");
+    btn.setAttribute("data-next-ready", "true");
+    btn.setAttribute("data-next-finalized", "true");
+    if (btn.dataset) {
+      if (!btn.dataset.nextReady) {
+        btn.dataset.nextReady = "true";
+      }
+      btn.dataset.nextFinalized = "true";
+    }
+  } catch {}
+}
+
 /**
  * Mark the Next button as finalized and keep readiness diagnostics in sync.
  *
@@ -425,71 +496,20 @@ export function setNextButtonFinalizedState() {
 
   const primary = document.getElementById("next-button");
   const fallback = document.querySelector('[data-role="next-round"]');
-
-  const readVisibleRound = () => {
-    try {
-      const counter = document.getElementById("round-counter");
-      if (!counter) return null;
-      const match = String(counter.textContent ?? "").match(/Round\s*(\d+)/i);
-      if (!match) return null;
-      const parsed = Number(match[1]);
-      return Number.isFinite(parsed) ? parsed : null;
-    } catch {
-      return null;
-    }
-  };
-  const visibleRound = readVisibleRound();
+  const target = primary || fallback || null;
+  const visibleRound = readVisibleRoundNumber();
 
   try {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = true;
       window.__classicBattleLastFinalizeContext = "advance";
-      const currentHighest = Number(window.__highestDisplayedRound);
-      const normalizedCurrent =
-        Number.isFinite(currentHighest) && currentHighest > 0 ? currentHighest : 0;
-      const normalizedVisible =
-        Number.isFinite(visibleRound) && visibleRound > 0 ? visibleRound : null;
-      if (normalizedVisible !== null) {
-        const nextHighest =
-          normalizedCurrent > 0
-            ? Math.max(normalizedCurrent, normalizedVisible)
-            : normalizedVisible;
-        if (nextHighest > 0) {
-          window.__highestDisplayedRound = nextHighest;
-        }
-      } else if (!Number.isFinite(currentHighest)) {
-        window.__highestDisplayedRound = normalizedCurrent;
-      }
+      updateHighestDisplayedRoundDiagnostic(visibleRound);
     }
   } catch {}
 
-  const finalize = (btn) => {
-    if (!btn) return;
-    try {
-      btn.disabled = false;
-    } catch {}
-    try {
-      btn.removeAttribute("disabled");
-    } catch {}
-    try {
-      btn.setAttribute("data-next-ready", "true");
-    } catch {}
-    try {
-      if (btn.dataset) {
-        if (!btn.dataset.nextReady) {
-          btn.dataset.nextReady = "true";
-        }
-        btn.dataset.nextFinalized = "true";
-      }
-    } catch {}
-    try {
-      btn.setAttribute("data-next-finalized", "true");
-    } catch {}
-  };
-
-  finalize(primary || fallback || null);
+  applyButtonFinalizedState(target);
   if (fallback && fallback !== primary) {
-    finalize(fallback);
+    applyButtonFinalizedState(fallback);
   }
 }
 
