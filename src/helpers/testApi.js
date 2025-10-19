@@ -1525,9 +1525,31 @@ const inspectionApi = {
         return null;
       };
 
+      const readSelectionFinalized = () => {
+        try {
+          if (typeof window !== "undefined") {
+            return window.__classicBattleSelectionFinalized === true;
+          }
+        } catch {}
+        return false;
+      };
+
+      const selectionFromStore = extract("selectionMade", normalizeBoolean);
+      const selectionFinalized = readSelectionFinalized();
+      const resolvedSelection =
+        selectionFromStore === true || selectionFinalized
+          ? true
+          : selectionFromStore === false
+            ? selectionFinalized
+              ? true
+              : false
+            : selectionFinalized
+              ? true
+              : null;
+
       return {
         roundsPlayed: extract("roundsPlayed", (value) => toFiniteNumber(value)),
-        selectionMade: extract("selectionMade", normalizeBoolean),
+        selectionMade: resolvedSelection,
         playerScore: extract("playerScore", (value) => toFiniteNumber(value)),
         opponentScore: extract("opponentScore", (value) => toFiniteNumber(value))
       };
@@ -1580,6 +1602,26 @@ const inspectionApi = {
           return false;
         }
       })();
+      const selectionFinalized = (() => {
+        try {
+          if (typeof window !== "undefined") {
+            return window.__classicBattleSelectionFinalized === true;
+          }
+        } catch {}
+        return false;
+      })();
+      const selectionFromStore =
+        typeof store?.selectionMade === "boolean" ? store.selectionMade : null;
+      const resolvedSelectionMade =
+        selectionFromStore === true || selectionFinalized
+          ? true
+          : selectionFromStore === false
+            ? selectionFinalized
+              ? true
+              : false
+            : selectionFinalized
+              ? true
+              : null;
       const scoreboardRounds =
         typeof scoreboardSum === "number" && Number.isFinite(scoreboardSum) ? scoreboardSum : null;
       const hasEngineRounds = typeof engineRounds === "number" && Number.isFinite(engineRounds);
@@ -1695,7 +1737,7 @@ const inspectionApi = {
       return {
         store: store
           ? {
-              selectionMade: store.selectionMade,
+              selectionMade: resolvedSelectionMade,
               playerChoice: store.playerChoice,
               roundsPlayed: aggregatedRounds ?? computedRounds
             }

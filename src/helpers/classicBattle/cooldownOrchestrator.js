@@ -241,7 +241,12 @@ export function markNextReady(btn) {
     "markNextReady.enableButton",
     () => {
       btn.disabled = false;
-      if (btn.dataset) btn.dataset.nextReady = "true";
+      if (btn.dataset) {
+        btn.dataset.nextReady = "true";
+        if (btn.dataset.nextFinalized !== "true") {
+          btn.dataset.nextFinalized = "pending";
+        }
+      }
     },
     { suppressInProduction: true }
   );
@@ -250,13 +255,24 @@ export function markNextReady(btn) {
     () => {
       btn.setAttribute("data-next-ready", "true");
       btn.removeAttribute("disabled");
+      if (btn.getAttribute("data-next-finalized") !== "true") {
+        btn.setAttribute("data-next-finalized", "pending");
+      }
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
         const testBtn = document.querySelector('[data-role="next-round"]');
         if (testBtn && testBtn !== btn) {
           testBtn.disabled = false;
-          if (testBtn.dataset) testBtn.dataset.nextReady = "true";
+          if (testBtn.dataset) {
+            testBtn.dataset.nextReady = "true";
+            if (testBtn.dataset.nextFinalized !== "true") {
+              testBtn.dataset.nextFinalized = "pending";
+            }
+          }
           testBtn.setAttribute("data-next-ready", "true");
           testBtn.removeAttribute("disabled");
+          if (testBtn.getAttribute("data-next-finalized") !== "true") {
+            testBtn.setAttribute("data-next-finalized", "pending");
+          }
         }
       }
     },
@@ -272,14 +288,6 @@ export function markNextReady(btn) {
       }
     },
     { suppressInProduction: true }
-  );
-  console.debug(
-    "[DEBUG] markNextReady called with btn:",
-    btn?.id,
-    "disabled after:",
-    btn?.disabled,
-    "data-next-ready after:",
-    btn?.dataset?.nextReady
   );
 }
 

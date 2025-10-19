@@ -13,6 +13,7 @@ import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js"
 import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
+import { setNextButtonFinalizedState } from "./uiHelpers.js";
 import {
   createExpirationTelemetryEmitter,
   createMachineReader,
@@ -239,6 +240,12 @@ export async function handleReplay(store) {
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
   store.playerChoice = null;
+  try {
+    if (typeof window !== "undefined") {
+      window.__classicBattleSelectionFinalized = false;
+      window.__classicBattleLastFinalizeContext = null;
+    }
+  } catch {}
   // Hide opponent card at start of round to prevent premature reveal
   try {
     const opponentCard = document.getElementById("opponent-card");
@@ -840,6 +847,7 @@ function finalizeReadyControls(controls, dispatched, options = {}) {
   );
   if (dispatched || forceResolve) {
     controls.readyDispatched = true;
+    setNextButtonFinalizedState();
   }
   if (shouldResolveReady) {
     controls.__finalizingReady = true;
@@ -1099,6 +1107,12 @@ export function _resetForTest(store) {
     store.selectionMade = false;
     // Reset any prior player stat selection
     store.playerChoice = null;
+    try {
+      if (typeof window !== "undefined") {
+        window.__classicBattleSelectionFinalized = false;
+        window.__classicBattleLastFinalizeContext = null;
+      }
+    } catch {}
     safeRound("_resetForTest.cancelCompareRaf", () => cancelFrame(store.compareRaf), {
       suppressInProduction: true
     });

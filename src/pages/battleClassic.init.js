@@ -47,7 +47,8 @@ import {
   removeBackdrops,
   enableNextRoundButton,
   disableNextRoundButton,
-  showFatalInitError
+  showFatalInitError,
+  setNextButtonFinalizedState
 } from "../helpers/classicBattle/uiHelpers.js";
 import {
   handleStatSelection,
@@ -93,6 +94,7 @@ let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
 // Track the highest round number displayed to the user (per window)
 let highestDisplayedRound = 0;
+let hasLoggedFinalizeSelectionUpdateFailure = false;
 
 /**
  * Waits for the stat buttons hydration promise (when present) so UI updates
@@ -881,16 +883,38 @@ function finalizeSelectionReady(store, options = {}) {
         expectAdvance: shouldExpectRoundAdvance,
         forceWhenEngineMatchesVisible: shouldExpectRoundAdvance
       });
+    } catch (err) {
+      if (!hasLoggedFinalizeSelectionUpdateFailure) {
+        hasLoggedFinalizeSelectionUpdateFailure = true;
+        if (isDevelopmentEnvironment()) {
+          try {
+            if (typeof console !== "undefined" && typeof console.debug === "function") {
+              console.debug(
+                "battleClassic: updateRoundCounterFromEngine after selection failed",
+                err
+              );
+            }
+          } catch {}
+        }
+      }
+    } finally {
       try {
         const finalizedBtn = getNextRoundButton();
-        if (finalizedBtn?.dataset) {
-          finalizedBtn.dataset.nextFinalized = NEXT_FINALIZED_STATE.COMPLETE;
+        if (finalizedBtn) {
+          try {
+            setNextButtonReadyAttributes(finalizedBtn);
+          } catch {}
         }
+        setNextButtonFinalizedState();
       } catch (contextErr) {
-        console.debug("battleClassic: marking next button finalized failed", contextErr);
+        if (isDevelopmentEnvironment()) {
+          try {
+            if (typeof console !== "undefined" && typeof console.debug === "function") {
+              console.debug("battleClassic: marking next button finalized failed", contextErr);
+            }
+          } catch {}
+        }
       }
-    } catch (err) {
-      console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
     }
   };
 

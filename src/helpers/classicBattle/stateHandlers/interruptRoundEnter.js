@@ -34,6 +34,12 @@ export async function interruptRoundEnter(machine, payload) {
     if (store) {
       store.playerChoice = null;
       store.selectionMade = false;
+      try {
+        if (typeof window !== "undefined") {
+          window.__classicBattleSelectionFinalized = false;
+          window.__classicBattleLastFinalizeContext = null;
+        }
+      } catch {}
     }
     const fn = readDebugState("roundDecisionGuard");
     if (typeof fn === "function") fn();

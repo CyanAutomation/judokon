@@ -30,6 +30,12 @@ export async function interruptMatchEnter(machine, payload) {
     try {
       store.playerChoice = null;
       store.selectionMade = false;
+      try {
+        if (typeof window !== "undefined") {
+          window.__classicBattleSelectionFinalized = false;
+          window.__classicBattleLastFinalizeContext = null;
+        }
+      } catch {}
       // Additional match context cleanup could be added here
     } catch {}
   }
