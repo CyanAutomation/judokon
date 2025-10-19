@@ -2,10 +2,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { withMutedConsole } from "../../utils/console.js";
 
-const resetSpy = vi.fn(() => {
-  document
-    .querySelectorAll("#stat-buttons button")
-    .forEach((btn) => btn.classList.remove("selected"));
+const resetSpy = vi.fn((scheduler) => {
+  document.querySelectorAll("#stat-buttons button").forEach((btn) => {
+    btn.classList.remove("selected");
+    btn.disabled = true;
+    if (!btn.classList.contains("disabled")) {
+      btn.classList.add("disabled");
+    }
+    const enableButton = () => {
+      btn.disabled = false;
+      btn.classList.remove("disabled");
+    };
+    if (scheduler && typeof scheduler.onFrame === "function") {
+      try {
+        scheduler.onFrame(enableButton);
+      } catch {
+        enableButton();
+      }
+      return;
+    }
+    enableButton();
+  });
 });
 const disableSpy = vi.fn(() => {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -73,6 +90,10 @@ describe("roundResolved stat button reset", () => {
     const timers = useCanonicalTimers();
     const rafUtils = await import("../../../src/utils/rafUtils.js");
     const frameDelayMs = 1;
+    const originalRaf = globalThis.requestAnimationFrame;
+    const originalCancelRaf = globalThis.cancelAnimationFrame;
+    globalThis.requestAnimationFrame = (cb) => setTimeout(cb, frameDelayMs);
+    globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
     const runAfterFramesSpy = vi
       .spyOn(rafUtils, "runAfterFrames")
       .mockImplementation((frames, cb) => {
@@ -103,15 +124,19 @@ describe("roundResolved stat button reset", () => {
     expect(resetSpy).not.toHaveBeenCalled();
     expect(disableSpy).toHaveBeenCalledOnce();
     await vi.advanceTimersByTimeAsync(frameDelayMs);
+    await vi.runOnlyPendingTimersAsync();
     expect(disableSpy).toHaveBeenCalledTimes(2);
     expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
     expect(btn.disabled).toBe(true);
     expect(btn.classList.contains("disabled")).toBe(true);
     await vi.advanceTimersByTimeAsync(32);
+    await vi.runOnlyPendingTimersAsync();
     expect(disableSpy).toHaveBeenCalledTimes(2);
     expect(resetSpy).toHaveBeenCalledOnce();
     runAfterFramesSpy.mockRestore();
+    globalThis.requestAnimationFrame = originalRaf;
+    globalThis.cancelAnimationFrame = originalCancelRaf;
     timers.cleanup();
   });
 
@@ -138,6 +163,7 @@ describe("roundResolved stat button reset", () => {
     expect(btn.classList.contains("disabled")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(32);
+    await vi.runOnlyPendingTimersAsync();
     expect(disableSpy).toHaveBeenCalledTimes(2);
     expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
