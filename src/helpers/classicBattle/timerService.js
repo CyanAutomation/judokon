@@ -638,6 +638,11 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     timerLogger.error("[next] error during click handling", error);
   } finally {
     nextClickInFlight = false;
+    try {
+      if (typeof window !== "undefined") {
+        window.__classicBattleSelectionFinalized = false;
+      }
+    } catch {}
   }
 }
 

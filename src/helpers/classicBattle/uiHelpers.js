@@ -390,14 +390,11 @@ export function enableNextRoundButton() {
 /**
  * Disable the Next-round button and clear its ready state.
  *
- * Finds `#next-button` (or fallback) and disables it, removing the
- * `data-next-ready` marker so consumers know the control is not ready.
- *
- * @pseudocode
- * 1. Query `#next-button` and return early if missing.
- * 2. Set `disabled = true` and delete `data-next-ready`.
- *
  * @returns {void}
+ * @pseudocode
+ * 1. Query the primary or fallback Next button element.
+ * 2. Set `disabled = true` and remove ready/finalized dataset markers.
+ * 3. Emit a test log when running under Vitest.
  */
 export function disableNextRoundButton() {
   const btn =
@@ -411,6 +408,89 @@ export function disableNextRoundButton() {
       console.debug(`[test] disableNextRoundButton: disabled=${btn.disabled}`);
     }
   } catch {}
+}
+
+/**
+ * Mark the Next button as finalized and keep readiness diagnostics in sync.
+ *
+ * @returns {void}
+ * @pseudocode
+ * 1. Locate the primary and fallback Next button elements.
+ * 2. Read the visible round number from the round counter for diagnostic updates.
+ * 3. Flag global selection finalization markers and bump the stored highest round when applicable.
+ * 4. Enable each button and ensure `data-next-ready`/`data-next-finalized="true"` are applied consistently.
+ */
+export function setNextButtonFinalizedState() {
+  if (typeof document === "undefined") return;
+
+  const primary = document.getElementById("next-button");
+  const fallback = document.querySelector('[data-role="next-round"]');
+
+  const readVisibleRound = () => {
+    try {
+      const counter = document.getElementById("round-counter");
+      if (!counter) return null;
+      const match = String(counter.textContent ?? "").match(/Round\s*(\d+)/i);
+      if (!match) return null;
+      const parsed = Number(match[1]);
+      return Number.isFinite(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  };
+  const visibleRound = readVisibleRound();
+
+  try {
+    if (typeof window !== "undefined") {
+      window.__classicBattleSelectionFinalized = true;
+      window.__classicBattleLastFinalizeContext = "advance";
+      const currentHighest = Number(window.__highestDisplayedRound);
+      const normalizedCurrent =
+        Number.isFinite(currentHighest) && currentHighest > 0 ? currentHighest : 0;
+      const normalizedVisible =
+        Number.isFinite(visibleRound) && visibleRound > 0 ? visibleRound : null;
+      if (normalizedVisible !== null) {
+        const nextHighest =
+          normalizedCurrent > 0
+            ? Math.max(normalizedCurrent, normalizedVisible)
+            : normalizedVisible;
+        if (nextHighest > 0) {
+          window.__highestDisplayedRound = nextHighest;
+        }
+      } else if (!Number.isFinite(currentHighest)) {
+        window.__highestDisplayedRound = normalizedCurrent;
+      }
+    }
+  } catch {}
+
+  const finalize = (btn) => {
+    if (!btn) return;
+    try {
+      btn.disabled = false;
+    } catch {}
+    try {
+      btn.removeAttribute("disabled");
+    } catch {}
+    try {
+      btn.setAttribute("data-next-ready", "true");
+    } catch {}
+    try {
+      if (btn.dataset) {
+        if (!btn.dataset.nextReady) {
+          btn.dataset.nextReady = "true";
+        }
+        btn.dataset.nextFinalized = "true";
+      }
+    } catch {}
+    try {
+      btn.setAttribute("data-next-finalized", "true");
+    } catch {}
+  };
+
+  finalize(primary || fallback || null);
+  if (fallback && fallback !== primary) {
+    finalize(fallback);
+  }
 }
 
 /**

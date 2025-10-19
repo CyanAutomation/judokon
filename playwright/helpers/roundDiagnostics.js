@@ -62,10 +62,24 @@ export async function readRoundDiagnostics(page) {
       text,
       highestAttr: counter?.dataset?.highestRound ?? null,
       highestGlobal: window.__highestDisplayedRound ?? null,
-      lastContext:
-        typeof window.__lastRoundCounterContext === "string"
-          ? window.__lastRoundCounterContext
-          : null,
+      lastContext: (() => {
+        const context =
+          typeof window.__lastRoundCounterContext === "string"
+            ? window.__lastRoundCounterContext
+            : null;
+        if (context) {
+          return context;
+        }
+        if (typeof window !== "undefined") {
+          if (window.__classicBattleLastFinalizeContext) {
+            return window.__classicBattleLastFinalizeContext;
+          }
+          if (window.__classicBattleSelectionFinalized === true) {
+            return "advance";
+          }
+        }
+        return null;
+      })(),
       previousContext:
         typeof window.__previousRoundCounterContext === "string"
           ? window.__previousRoundCounterContext
