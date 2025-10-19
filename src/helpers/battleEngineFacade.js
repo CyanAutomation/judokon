@@ -219,19 +219,10 @@ export function resetBattleEnginePreservingConfig() {
   if (!engine) {
     engine = createBattleEngine({ forceCreate: true });
   }
-  try {
-    if (engine && typeof engine === "object") {
-      if ("playerScore" in engine) engine.playerScore = 0;
-      if ("opponentScore" in engine) engine.opponentScore = 0;
-      if ("roundsPlayed" in engine) engine.roundsPlayed = 0;
-      if ("matchEnded" in engine) engine.matchEnded = false;
-    }
-  } catch {
-    // Direct property resets are best-effort fallbacks.
-  }
+
   if (typeof preservedPointsToWin === "number" && Number.isFinite(preservedPointsToWin)) {
     try {
-      engine.setPointsToWin(preservedPointsToWin);
+      engine?.setPointsToWin?.(preservedPointsToWin);
     } catch {
       // Ignore failures so replay flow can proceed with default thresholds.
     }

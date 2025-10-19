@@ -8,6 +8,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { roundStore } from "./roundStore.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import * as scoreboard from "../setupScoreboard.js";
+import logger from "../logger.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
@@ -169,9 +170,17 @@ export async function handleReplay(store) {
   trace("begin", { t: Date.now() });
   persistLastJudokaStats(store, store?.currentPlayerJudoka, store?.currentOpponentJudoka);
   const resetEngine = () => {
-    if (typeof battleEngine.resetBattleEnginePreservingConfig === "function") {
-      battleEngine.resetBattleEnginePreservingConfig();
-      return;
+    try {
+      if (typeof battleEngine.resetBattleEnginePreservingConfig === "function") {
+        battleEngine.resetBattleEnginePreservingConfig();
+        return;
+      }
+    } catch (error) {
+      try {
+        logger.warn("resetBattleEnginePreservingConfig failed, using fallback", error);
+      } catch {
+        // Logging failures should not interrupt replay handling.
+      }
     }
     // Fallback for environments that have not yet adopted the reset helper.
     createBattleEngine({ forceCreate: true });
@@ -209,16 +218,6 @@ export async function handleReplay(store) {
   );
   const startRoundFn = getStartRound(store);
   const res = await startRoundFn();
-  safeRound(
-    "handleReplay.ensureRoundsReset",
-    () => {
-      const engine = battleEngine.requireEngine?.();
-      if (engine && typeof engine === "object") {
-        engine.roundsPlayed = 0;
-      }
-    },
-    { suppressInProduction: true }
-  );
   trace("round_started");
   updateScoreboard("handleReplay.scoreboardPostStart");
   trace("scoreboard_zeroed_postStart");

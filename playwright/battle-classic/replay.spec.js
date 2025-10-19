@@ -37,13 +37,30 @@ test.describe("Classic Battle replay", () => {
       let text = initialText || "";
       const statButtons = page.locator(selectors.statButton());
       const maxAttempts = Math.min(await statButtons.count(), 3);
+      const baselineText = initialText || "";
       for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         await statButtons.nth(attempt).click();
-        await page.waitForTimeout(100);
-        const currentText = (await score.textContent())?.trim();
-        if (currentText && currentText !== (initialText || "")) {
-          text = currentText;
-          break;
+        try {
+          const changedTextHandle = await page.waitForFunction(
+            ({ selector, initial }) => {
+              const current = document.querySelector(selector)?.textContent?.trim();
+              if (current && current !== initial) {
+                return current;
+              }
+              return null;
+            },
+            { selector: selectors.scoreDisplay(), initial: baselineText },
+            { timeout: 5000 }
+          );
+          const maybeText = await changedTextHandle.jsonValue();
+          if (maybeText) {
+            text = maybeText;
+            break;
+          }
+        } catch (error) {
+          if (attempt === maxAttempts - 1) {
+            throw error;
+          }
         }
       }
       expect(text).not.toBe(initialText || "");
