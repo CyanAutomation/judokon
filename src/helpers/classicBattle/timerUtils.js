@@ -7,21 +7,32 @@ import { seededRandom } from "../testModeUtils.js";
  * @returns {number} Delay in milliseconds.
  * @summary Determine opponent reveal delay with test overrides.
  * @pseudocode
- * 1. Return `0` when `process.env.VITEST` is truthy.
- * 2. Respect `globalThis.__OVERRIDE_TIMERS.resolveDelay` when provided.
- * 3. Otherwise compute `300 + floor(seededRandom() * 401)`.
+ * 1. Return a finite non-negative `globalThis.__OPPONENT_RESOLVE_DELAY_MS` when available.
+ * 2. Otherwise respect `globalThis.__OVERRIDE_TIMERS.resolveDelay` when provided.
+ * 3. When running under Vitest, fall back to `0`.
+ * 4. Otherwise compute `300 + floor(seededRandom() * 401)`.
  */
 export function resolveDelay() {
   try {
-    if (typeof process !== "undefined" && process.env?.VITEST) return 0;
+    const configured = globalThis?.__OPPONENT_RESOLVE_DELAY_MS;
+    const numeric = Number(configured);
+    if (Number.isFinite(numeric) && numeric >= 0) {
+      return numeric;
+    }
   } catch {}
   try {
     const overrides = globalThis?.__OVERRIDE_TIMERS;
-    if (overrides && typeof overrides.resolveDelay === "number") {
-      return overrides.resolveDelay;
+    const overrideDelay = overrides?.resolveDelay;
+    const numeric = Number(overrideDelay);
+    if (Number.isFinite(numeric) && numeric >= 0) {
+      return numeric;
     }
   } catch {}
-  return 300 + Math.floor(seededRandom() * 401);
+  try {
+    if (typeof process !== "undefined" && process.env?.VITEST) return 0;
+  } catch {}
+  const computed = 300 + Math.floor(seededRandom() * 401);
+  return Number.isFinite(computed) && computed >= 0 ? computed : 0;
 }
 
 /**
