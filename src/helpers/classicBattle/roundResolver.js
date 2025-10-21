@@ -239,7 +239,7 @@ export async function dispatchOutcomeEvents(result) {
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
 export async function updateScoreboard(result) {
-  resetStatButtons();
+  await resetStatButtons();
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       console.log(
@@ -411,7 +411,18 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   } catch {}
   const dispatched = await dispatchOutcomeEvents(evaluated);
   const scored = await updateScoreboard(dispatched);
-  return emitRoundResolved(store, stat, playerVal, opponentVal, scored);
+  const emitted = emitRoundResolved(store, stat, playerVal, opponentVal, scored);
+  if (typeof globalThis?.setTimeout === "function") {
+    await new Promise((resolve) => {
+      try {
+        globalThis.setTimeout(resolve, 50);
+      } catch {
+        resolve();
+      }
+    });
+  }
+  await resetStatButtons();
+  return emitted;
 }
 
 /**
