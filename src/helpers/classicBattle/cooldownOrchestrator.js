@@ -14,7 +14,10 @@ import { createResourceRegistry, createEnhancedCleanup, eventCleanup } from "./e
 import { getStateSnapshot } from "./battleDebug.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { requireEngine } from "../battleEngineFacade.js";
-import { computeOpponentPromptWaitBudget } from "./opponentPromptWaiter.js";
+import {
+  computeOpponentPromptWaitBudget,
+  DEFAULT_PROMPT_POLL_INTERVAL_MS
+} from "./opponentPromptWaiter.js";
 import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 
 const ERROR_SCOPE = "classicBattle.roundManager";
@@ -728,8 +731,8 @@ export function instantiateCooldownTimer(
   let shouldWaitForPrompt = false;
   try {
     const readyState =
-      typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() === true : null;
-    shouldWaitForPrompt = readyState !== true;
+      typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() : null;
+    shouldWaitForPrompt = readyState !== true && readyState !== null;
   } catch {
     shouldWaitForPrompt = true;
   }
@@ -740,7 +743,7 @@ export function instantiateCooldownTimer(
       promptBudget = null;
     }
     if (promptBudget && Number.isFinite(promptBudget.totalMs) && promptBudget.totalMs > 0) {
-      promptPollInterval = 75;
+      promptPollInterval = DEFAULT_PROMPT_POLL_INTERVAL_MS; // Shared interval for consistency.
       rendererOptions = {
         waitForOpponentPrompt: true,
         maxPromptWaitMs: promptBudget.totalMs,

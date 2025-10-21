@@ -430,9 +430,29 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     bus
   );
   if (runtime?.promptWait?.shouldWait) {
+    const fallbackMessage = "Opponent is choosing...";
     try {
-      showSnackbar(t("ui.opponentChoosing"));
-    } catch {}
+      const key = "ui.opponentChoosing";
+      const translated = typeof t === "function" ? t(key) : null;
+      const message =
+        typeof translated === "string" && translated.trim().length > 0
+          ? translated
+          : fallbackMessage;
+      showSnackbar(message);
+    } catch (error) {
+      try {
+        showSnackbar(fallbackMessage);
+      } catch {
+        if (
+          typeof process !== "undefined" &&
+          process?.env?.NODE_ENV !== "production" &&
+          typeof console !== "undefined" &&
+          typeof console.warn === "function"
+        ) {
+          console.warn("Failed to display opponent prompt snackbar:", error);
+        }
+      }
+    }
   }
   const getReadyDispatched = () => hasReadyBeenDispatchedForCurrentCooldown();
   const onExpired = createExpirationDispatcher({
