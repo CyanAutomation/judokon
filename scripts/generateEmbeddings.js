@@ -565,9 +565,45 @@ async function processJsonObjectEntries(
 ) {
   const allowlistFn = extractAllowedValuesFn || formatDataEntry;
   if (baseName === "tooltips.json") {
-    for (const [key, value] of Object.entries(obj)) {
-      const text = `Tooltip ${key}: ${value.content}`;
-      await processItem({ [key]: value }, key, text);
+    const visitTooltipEntry = async (value, pathSegments) => {
+      if (value === undefined || value === null) return;
+      const key = pathSegments.join(".");
+
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        const textBody = String(value).trim();
+        if (!textBody) return;
+        await processItem({ [key]: value }, key, `Tooltip ${key}: ${textBody}`);
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        for (let index = 0; index < value.length; index += 1) {
+          await visitTooltipEntry(value[index], [...pathSegments, index]);
+        }
+        return;
+      }
+
+      if (typeof value === "object") {
+        const label = typeof value.label === "string" ? value.label.trim() : "";
+        const description = typeof value.description === "string" ? value.description.trim() : "";
+        if (label || description) {
+          const summaryParts = [];
+          if (label) summaryParts.push(label);
+          if (description) summaryParts.push(description);
+          await processItem({ [key]: value }, key, `Tooltip ${key}: ${summaryParts.join(" — ")}`);
+        }
+
+        for (const [childKey, childValue] of Object.entries(value)) {
+          if ((childKey === "label" && label) || (childKey === "description" && description)) {
+            continue;
+          }
+          await visitTooltipEntry(childValue, [...pathSegments, childKey]);
+        }
+      }
+    };
+
+    for (const [topKey, topValue] of Object.entries(obj)) {
+      await visitTooltipEntry(topValue, [topKey]);
     }
     return;
   }
