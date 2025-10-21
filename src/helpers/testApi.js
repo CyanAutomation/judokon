@@ -1770,12 +1770,14 @@ const cliApi = {
    * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
    * @pseudocode
    * dispatch = detail => stateApi.dispatchBattleEvent("roundResolved", detail)
+   * emitOpponentReveal = detail => emitBattleEvent("opponentReveal", detail)
    * emit = detail => emitBattleEvent("roundResolved", detail)
    * getStore = () => window.battleStore when available
-   * return resolveRoundForCliTest(eventLike, { dispatch, emit, getStore })
+   * return resolveRoundForCliTest(eventLike, { dispatch, emitOpponentReveal, emit, getStore })
    */
   async resolveRound(eventLike = {}) {
     const dispatch = (detail) => stateApi.dispatchBattleEvent("roundResolved", detail);
+    const emitOpponentReveal = (detail) => emitBattleEvent("opponentReveal", detail);
     const emit = (detail) => emitBattleEvent("roundResolved", detail);
     const getStore = () => {
       try {
@@ -1790,6 +1792,7 @@ const cliApi = {
 
     return resolveRoundForCliTest(eventLike, {
       dispatch,
+      emitOpponentReveal,
       emit,
       getStore
     });

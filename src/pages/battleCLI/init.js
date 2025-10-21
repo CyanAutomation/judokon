@@ -271,6 +271,7 @@ export function ensureCliDomForTest({ reset = false } = {}) {
  * @pseudocode
  * return resolveRoundForTestHelper(eventLike, {
  *   dispatch: detail => safeDispatch("roundResolved", detail),
+ *   emitOpponentReveal: detail => emitBattleEvent("opponentReveal", detail),
  *   emit: detail => emitBattleEvent("roundResolved", detail),
  *   getStore: () => store
  * })
@@ -278,6 +279,7 @@ export function ensureCliDomForTest({ reset = false } = {}) {
 async function resolveRoundForTest(eventLike = {}) {
   return resolveRoundForTestHelper(eventLike, {
     dispatch: (detail) => safeDispatch("roundResolved", detail),
+    emitOpponentReveal: (detail) => emitBattleEvent("opponentReveal", detail),
     emit: (detail) => emitBattleEvent("roundResolved", detail),
     getStore: () => store
   });

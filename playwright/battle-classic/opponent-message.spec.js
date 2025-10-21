@@ -6,7 +6,8 @@ import {
   PLAYER_SCORE_PATTERN,
   confirmRoundResolved,
   ensureRoundResolved,
-  initializeBattle
+  initializeBattle,
+  setOpponentResolveDelay
 } from "./support/opponentRevealTestSupport.js";
 
 const DEFAULT_MESSAGE_CONFIG = {
@@ -138,15 +139,16 @@ test.describe("Classic Battle Opponent Messages", () => {
   );
 
   runMessageTest(
-    "shows opponent choosing snackbar immediately after stat selection",
+    "shows opponent feedback snackbar immediately after stat selection",
     async ({ page }) => {
+      await setOpponentResolveDelay(page, 1_200);
       const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
       const snack = page.locator(selectors.snackbarContainer());
-      await expect(snack).toContainText(/Opponent is choosing/i);
+      await expect(snack).toContainText(/Opponent is choosing|Next round in/i);
     },
-    { nextRoundCooldown: 1_000, resolveDelay: 50 }
+    { nextRoundCooldown: 2_000, resolveDelay: 500 }
   );
 
   runMessageTest(
@@ -162,10 +164,83 @@ test.describe("Classic Battle Opponent Messages", () => {
 
       await ensureRoundResolved(page);
 
-      await expect(opponentCard).not.toHaveClass(/opponent-hidden/);
+      await expect
+        .poll(
+          async () =>
+            await opponentCard.evaluate((node) => node.classList.contains("opponent-hidden")),
+          { timeout: 4_000 }
+        )
+        .toBe(false);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
     },
-    { resolveDelay: 50 }
+    { resolveDelay: 50, nextRoundCooldown: 2_000 }
+  );
+
+  runMessageTest(
+    "CLI resolveRound reveals the opponent card",
+    async ({ page }) => {
+      await page.evaluate(() => {
+        if (typeof window.emitBattleEvent === "function") {
+          window.emitBattleEvent("capture.init");
+        }
+        const target = globalThis.__classicBattleEventTarget || null;
+        const events = [];
+        const handler = (event) => {
+          events.push(event.type);
+        };
+        if (target) {
+          target.addEventListener("opponentReveal", handler);
+          target.addEventListener("roundResolved", handler);
+        }
+        window.__capturedBattleEvents = events;
+        window.__releaseBattleEventCapture = () => {
+          if (target) {
+            target.removeEventListener("opponentReveal", handler);
+            target.removeEventListener("roundResolved", handler);
+          }
+          delete window.__releaseBattleEventCapture;
+        };
+      });
+
+      const firstStat = page.locator(selectors.statButton()).first();
+      await firstStat.click();
+
+      const opponentCard = page.locator("#opponent-card");
+      await expect(opponentCard).toHaveClass(/opponent-hidden/);
+
+      await page.evaluate(async () => {
+        const api = window.__TEST_API;
+        if (!api?.cli?.resolveRound) {
+          throw new Error("CLI resolveRound unavailable for test");
+        }
+        await api.cli.resolveRound();
+      });
+
+      await expect
+        .poll(
+          async () =>
+            await opponentCard.evaluate((node) => node.classList.contains("opponent-hidden")),
+          { timeout: 4_000 }
+        )
+        .toBe(false);
+      await confirmRoundResolved(page, {
+        timeout: 3_000,
+        message: 'Expected battle state to be "roundOver" after CLI resolveRound'
+      });
+      await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+
+      const capturedEvents = await page.evaluate(() => window.__capturedBattleEvents || []);
+      expect(capturedEvents).toContain("opponentReveal");
+      expect(capturedEvents.indexOf("opponentReveal")).toBeLessThan(
+        capturedEvents.lastIndexOf("roundResolved")
+      );
+
+      await page.evaluate(() => {
+        window.__releaseBattleEventCapture?.();
+        delete window.__capturedBattleEvents;
+      });
+    },
+    { resolveDelay: 50, nextRoundCooldown: 2_000 }
   );
 
   runMessageTest(

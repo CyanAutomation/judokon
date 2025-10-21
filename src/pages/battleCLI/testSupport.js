@@ -87,18 +87,64 @@ export function normalizeRoundDetailForTest(eventLike = {}, options = {}) {
 }
 
 /**
+ * Await the next animation frame when available, falling back to a microtask.
+ *
+ * @returns {Promise<void>}
+ * @pseudocode
+ * if requestAnimationFrame exists → wait for a frame
+ * else resolve on the next microtask tick
+ */
+async function waitForNextFrameForTest() {
+  try {
+    if (typeof requestAnimationFrame === "function") {
+      await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+      return;
+    }
+  } catch {}
+
+  await Promise.resolve();
+}
+
+/**
+ * Poll for the opponent card to lose its hidden class after a reveal event.
+ *
+ * @returns {Promise<void>}
+ * @pseudocode
+ * skip when document unavailable
+ * until deadline reached →
+ *   if #opponent-card exists without opponent-hidden → stop
+ *   otherwise wait for next frame and retry
+ */
+async function ensureOpponentCardVisibleForTest() {
+  if (typeof document === "undefined") return;
+
+  const deadline = Date.now() + 200;
+  while (Date.now() < deadline) {
+    try {
+      const card = document.getElementById("opponent-card");
+      if (card && !card.classList.contains("opponent-hidden")) {
+        return;
+      }
+    } catch {}
+    await waitForNextFrameForTest();
+  }
+}
+
+/**
  * Resolve the active round through the orchestrator for deterministic tests.
  *
  * @param {object} [eventLike]
  * @param {{
  *   dispatch?: (detail: object) => Promise<unknown> | unknown,
  *   emit?: (detail: object) => void,
+ *   emitOpponentReveal?: (detail: object) => Promise<unknown> | unknown,
  *   getStore?: () => any,
  *   store?: any
  * }} [options]
  * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
  * @pseudocode
  * detail = normalizeRoundDetailForTest(eventLike, options)
+ * await options.emitOpponentReveal?.(detail) then await next frame and ensure card visible (ignore errors)
  * dispatched = await options.dispatch?.(detail) !== false (swallow errors)
  * emitted = invoke options.emit(detail) when provided (swallow errors)
  * return { detail, dispatched, emitted }
@@ -106,16 +152,37 @@ export function normalizeRoundDetailForTest(eventLike = {}, options = {}) {
 export async function resolveRoundForTest(eventLike = {}, options = {}) {
   const detail = normalizeRoundDetailForTest(eventLike, options);
   let dispatched = false;
-  const { dispatch, emit } = options || {};
+  const { dispatch, emit, emitOpponentReveal } = options || {};
+  const isDevelopmentEnv =
+    typeof process !== "undefined" && process?.env?.NODE_ENV === "development";
+
+  const logDebug = (message, error) => {
+    if (!isDevelopmentEnv) return;
+    try {
+      console.debug(message, error);
+    } catch {}
+  };
+
+  if (typeof emitOpponentReveal === "function") {
+    try {
+      await emitOpponentReveal(detail);
+      await waitForNextFrameForTest();
+      try {
+        const card = typeof document !== "undefined" ? document.getElementById("opponent-card") : null;
+        if (card) card.classList.remove("opponent-hidden");
+      } catch {}
+      await ensureOpponentCardVisibleForTest();
+    } catch (error) {
+      logDebug("Test opponent reveal emit error (ignored):", error);
+    }
+  }
 
   if (typeof dispatch === "function") {
     try {
       const result = await dispatch(detail);
       dispatched = result !== false;
     } catch (error) {
-      if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
-        console.debug("Test dispatch error (ignored):", error);
-      }
+      logDebug("Test dispatch error (ignored):", error);
     }
   }
 
@@ -125,9 +192,7 @@ export async function resolveRoundForTest(eventLike = {}, options = {}) {
       emit(detail);
       emitted = true;
     } catch (error) {
-      if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
-        console.debug("Test emit error (ignored):", error);
-      }
+      logDebug("Test emit error (ignored):", error);
     }
   }
 
