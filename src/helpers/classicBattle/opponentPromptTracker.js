@@ -1,4 +1,5 @@
 import { emitBattleEvent } from "./battleEvents.js";
+import { clampToPositiveTimestamp } from "../utils/positiveNumbers.js";
 
 /**
  * @summary Default minimum display duration for the opponent prompt message in milliseconds.
@@ -10,28 +11,16 @@ export const DEFAULT_MIN_PROMPT_DURATION_MS = 600;
 
 let lastPromptTimestamp = 0;
 
-const clampToPositiveTimestamp = (value) => {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric <= 0) {
-    return Number.EPSILON;
-  }
-  return numeric;
-};
-
 function now() {
   try {
     if (typeof performance !== "undefined" && typeof performance.now === "function") {
       const timestamp = performance.now();
-      if (Number.isFinite(timestamp)) {
-        return clampToPositiveTimestamp(timestamp);
-      }
+      return clampToPositiveTimestamp(timestamp);
     }
   } catch {}
   try {
     const timestamp = Date.now();
-    if (Number.isFinite(timestamp)) {
-      return clampToPositiveTimestamp(timestamp);
-    }
+    return clampToPositiveTimestamp(timestamp);
   } catch {}
   return Number.EPSILON;
 }
@@ -50,15 +39,15 @@ function now() {
  */
 export function recordOpponentPromptTimestamp(timestamp = now(), options = {}) {
   const value = Number(timestamp);
-  if (Number.isFinite(value) && value >= 0) {
-    const normalizedValue = clampToPositiveTimestamp(value);
-    lastPromptTimestamp = normalizedValue;
-    if (options.notify !== false) {
-      notifyPromptReady(normalizedValue);
-    }
-    return normalizedValue;
+  if (!Number.isFinite(value)) {
+    return null;
   }
-  return null;
+  const normalizedValue = clampToPositiveTimestamp(value);
+  lastPromptTimestamp = normalizedValue;
+  if (options.notify !== false) {
+    notifyPromptReady(normalizedValue);
+  }
+  return normalizedValue;
 }
 
 function notifyPromptReady(timestamp) {
