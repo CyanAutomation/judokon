@@ -34,6 +34,7 @@ export async function interruptRoundEnter(machine, payload) {
     if (store) {
       store.playerChoice = null;
       store.selectionMade = false;
+      store.__lastSelectionMade = false;
       try {
         if (typeof window !== "undefined") {
           window.__classicBattleSelectionFinalized = false;

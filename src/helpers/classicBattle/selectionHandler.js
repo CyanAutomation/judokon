@@ -253,6 +253,7 @@ function validateSelectionState(store) {
  */
 function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.selectionMade = true;
+  store.__lastSelectionMade = true;
   store.playerChoice = stat;
   // Mirror selection to RoundStore
   try {
@@ -530,14 +531,7 @@ export async function resolveWithFallback(
       const bufferMs = 32;
       const fallbackDelay = normalizedDelay + bufferMs;
       const timeoutId = setTimeout(async () => {
-        try {
-          await syncResultDisplay(store, stat, playerVal, opponentVal, {
-            ...opts,
-            delayMs: normalizedDelay,
-            forceOpponentPrompt: true
-          });
-        } catch {}
-
+        const selectionWasMade = !!store?.selectionMade;
         let previousState = null;
         try {
           previousState = typeof getBattleState === "function" ? getBattleState() : currentState;
@@ -547,7 +541,7 @@ export async function resolveWithFallback(
 
         if (typeof document !== "undefined" && document.body) {
           try {
-            document.body.dataset.battleState = "roundOver";
+            document.body.dataset.battleState = "roundDecision";
           } catch {}
           try {
             if (previousState) {
@@ -561,6 +555,38 @@ export async function resolveWithFallback(
         try {
           emitBattleEvent("battleStateChange", {
             from: previousState ?? null,
+            to: "roundDecision"
+          });
+        } catch {}
+
+        try {
+          await syncResultDisplay(store, stat, playerVal, opponentVal, {
+            ...opts,
+            delayMs: normalizedDelay,
+            forceOpponentPrompt: true
+          });
+        } catch {}
+
+        if (selectionWasMade) {
+          try {
+            if (store && typeof store === "object") {
+              store.selectionMade = true;
+            }
+          } catch {}
+        }
+
+        if (typeof document !== "undefined" && document.body) {
+          try {
+            document.body.dataset.battleState = "roundOver";
+          } catch {}
+          try {
+            document.body.dataset.prevBattleState = "roundDecision";
+          } catch {}
+        }
+
+        try {
+          emitBattleEvent("battleStateChange", {
+            from: "roundDecision",
             to: "roundOver"
           });
         } catch {}

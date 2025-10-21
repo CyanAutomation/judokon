@@ -30,6 +30,7 @@ export async function interruptMatchEnter(machine, payload) {
     try {
       store.playerChoice = null;
       store.selectionMade = false;
+      store.__lastSelectionMade = false;
       try {
         if (typeof window !== "undefined") {
           window.__classicBattleSelectionFinalized = false;

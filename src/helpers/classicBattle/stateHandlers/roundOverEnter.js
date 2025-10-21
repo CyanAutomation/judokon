@@ -6,14 +6,13 @@ import { onBattleEvent, offBattleEvent } from "../battleEvents.js";
  * @param {object} machine
  * @returns {Promise<void>}
  * @pseudocode
- * 1. Clear `playerChoice` and reset `selectionMade` on the store for the next round.
+ * 1. Clear the stored `playerChoice` so the next round can record a fresh selection.
  * 2. If `waitForOutcomeConfirmation` is true, wait for `outcomeConfirmed` event.
- */
+*/
 export async function roundOverEnter(machine) {
   const store = machine?.context?.store;
   if (store) {
     store.playerChoice = null;
-    store.selectionMade = false;
   }
 
   // If configured to wait for outcome confirmation, pause here until user confirms
