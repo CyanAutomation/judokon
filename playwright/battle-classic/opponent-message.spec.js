@@ -97,6 +97,53 @@ async function cleanupStalledCliFallback(page) {
   });
 }
 
+async function withBattleEventCapture(page, eventNames, callback) {
+  await page.evaluate((names) => {
+    if (typeof window.emitBattleEvent === "function") {
+      window.emitBattleEvent("capture.init");
+    }
+    const target = globalThis.__classicBattleEventTarget || null;
+    const trackedEvents = [];
+    const namesToCapture = Array.isArray(names) && names.length > 0
+      ? names.filter(Boolean)
+      : ["opponentReveal", "roundResolved"];
+    const handler = (event) => {
+      if (
+        namesToCapture.length === 0 ||
+        namesToCapture.includes(event.type)
+      ) {
+        trackedEvents.push(event.type);
+      }
+    };
+    if (target) {
+      namesToCapture.forEach((name) => target.addEventListener(name, handler));
+    }
+    window.__capturedBattleEvents = trackedEvents;
+    window.__releaseBattleEventCapture = () => {
+      if (target) {
+        namesToCapture.forEach((name) =>
+          target.removeEventListener(name, handler)
+        );
+      }
+      delete window.__releaseBattleEventCapture;
+    };
+  }, eventNames);
+
+  try {
+    return await callback({
+      getEvents: async () =>
+        await page.evaluate(() =>
+          Array.from(window.__capturedBattleEvents ?? [])
+        )
+    });
+  } finally {
+    await page.evaluate(() => {
+      window.__releaseBattleEventCapture?.();
+      delete window.__capturedBattleEvents;
+    });
+  }
+}
+
 async function getDispatchedEvents(page) {
   return await page.evaluate(() => window.__TEST_API?.__dispatchedEvents ?? []);
 }
@@ -179,66 +226,53 @@ test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest(
     "CLI resolveRound reveals the opponent card",
     async ({ page }) => {
-      await page.evaluate(() => {
-        if (typeof window.emitBattleEvent === "function") {
-          window.emitBattleEvent("capture.init");
+      await withBattleEventCapture(
+        page,
+        ["opponentReveal", "roundResolved"],
+        async ({ getEvents }) => {
+          const firstStat = page.locator(selectors.statButton()).first();
+          await firstStat.click();
+
+          const opponentCard = page.locator("#opponent-card");
+          await expect(opponentCard).toHaveClass(/opponent-hidden/);
+
+          await page.evaluate(async () => {
+            const api = window.__TEST_API;
+            if (!api?.cli?.resolveRound) {
+              throw new Error("CLI resolveRound unavailable for test");
+            }
+            await api.cli.resolveRound();
+          });
+
+          await expect
+            .poll(
+              async () =>
+                await opponentCard.evaluate((node) =>
+                  node.classList.contains("opponent-hidden")
+                ),
+              { timeout: 4_000 }
+            )
+            .toBe(false);
+          await confirmRoundResolved(page, {
+            timeout: 3_000,
+            message:
+              'Expected battle state to be "roundOver" after CLI resolveRound'
+          });
+          await expect(page.locator(selectors.scoreDisplay())).toContainText(
+            PLAYER_SCORE_PATTERN
+          );
+
+          const capturedEvents = await getEvents();
+          expect(capturedEvents).toContain("opponentReveal");
+
+          const opponentRevealIndex = capturedEvents.indexOf("opponentReveal");
+          const roundResolvedIndex = capturedEvents.lastIndexOf("roundResolved");
+          expect(opponentRevealIndex).toBeLessThan(
+            roundResolvedIndex,
+            `Expected opponentReveal (index ${opponentRevealIndex}) to occur before roundResolved (index ${roundResolvedIndex}). Events: ${capturedEvents.join(", ")}`
+          );
         }
-        const target = globalThis.__classicBattleEventTarget || null;
-        const events = [];
-        const handler = (event) => {
-          events.push(event.type);
-        };
-        if (target) {
-          target.addEventListener("opponentReveal", handler);
-          target.addEventListener("roundResolved", handler);
-        }
-        window.__capturedBattleEvents = events;
-        window.__releaseBattleEventCapture = () => {
-          if (target) {
-            target.removeEventListener("opponentReveal", handler);
-            target.removeEventListener("roundResolved", handler);
-          }
-          delete window.__releaseBattleEventCapture;
-        };
-      });
-
-      const firstStat = page.locator(selectors.statButton()).first();
-      await firstStat.click();
-
-      const opponentCard = page.locator("#opponent-card");
-      await expect(opponentCard).toHaveClass(/opponent-hidden/);
-
-      await page.evaluate(async () => {
-        const api = window.__TEST_API;
-        if (!api?.cli?.resolveRound) {
-          throw new Error("CLI resolveRound unavailable for test");
-        }
-        await api.cli.resolveRound();
-      });
-
-      await expect
-        .poll(
-          async () =>
-            await opponentCard.evaluate((node) => node.classList.contains("opponent-hidden")),
-          { timeout: 4_000 }
-        )
-        .toBe(false);
-      await confirmRoundResolved(page, {
-        timeout: 3_000,
-        message: 'Expected battle state to be "roundOver" after CLI resolveRound'
-      });
-      await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
-
-      const capturedEvents = await page.evaluate(() => window.__capturedBattleEvents || []);
-      expect(capturedEvents).toContain("opponentReveal");
-      expect(capturedEvents.indexOf("opponentReveal")).toBeLessThan(
-        capturedEvents.lastIndexOf("roundResolved")
       );
-
-      await page.evaluate(() => {
-        window.__releaseBattleEventCapture?.();
-        delete window.__capturedBattleEvents;
-      });
     },
     { resolveDelay: 50, nextRoundCooldown: 2_000 }
   );
