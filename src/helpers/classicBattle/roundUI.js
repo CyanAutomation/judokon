@@ -642,7 +642,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   lockStatButtons(true);
   // Approximately two 60fps frames; keeps the UI snappy without locking immediately.
   const DEFAULT_FALLBACK_TIMEOUT_MS = 32;
-  const isFrameIdValid = (id) => id !== undefined && id !== null;
+  const isFrameIdValid = (id) => typeof id === "number" && id > 0;
   const createFallbackTimer = (onTimeout, timeoutMs = DEFAULT_FALLBACK_TIMEOUT_MS) => {
     if (typeof setTimeout !== "function") {
       return {
