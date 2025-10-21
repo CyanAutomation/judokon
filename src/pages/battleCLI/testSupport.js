@@ -105,6 +105,10 @@ async function waitForNextFrameForTest() {
   await Promise.resolve();
 }
 
+// Allow ~12 frames at 60fps to cover DOM updates triggered by opponent reveal flows
+// without introducing long delays that would slow down the CLI test suite.
+const OPPONENT_CARD_VISIBILITY_POLL_TIMEOUT_MS = 200;
+
 /**
  * Poll for the opponent card to lose its hidden class after a reveal event.
  *
@@ -118,7 +122,7 @@ async function waitForNextFrameForTest() {
 async function ensureOpponentCardVisibleForTest() {
   if (typeof document === "undefined") return;
 
-  const deadline = Date.now() + 200;
+  const deadline = Date.now() + OPPONENT_CARD_VISIBILITY_POLL_TIMEOUT_MS;
   while (Date.now() < deadline) {
     try {
       const card = document.getElementById("opponent-card");
