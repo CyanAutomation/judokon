@@ -706,11 +706,62 @@ function chunkCode(source, isTest = false) {
   });
   const chunks = [];
   const importModules = new Set();
+  let firstImportStart = Infinity;
+  let firstExportStart = Infinity;
 
   for (const node of ast.body) {
     if (node.type === "ImportDeclaration") {
       importModules.add(node.source.value);
+      if (node.start < firstImportStart) firstImportStart = node.start;
     }
+    if (
+      node.type === "ExportNamedDeclaration" ||
+      node.type === "ExportDefaultDeclaration"
+    ) {
+      if (node.start < firstExportStart) firstExportStart = node.start;
+    }
+  }
+
+  let moduleDocComment = null;
+  let attachModuleDocToExport = false;
+  if (!isTest && firstImportStart !== Infinity) {
+    for (const comment of comments) {
+      if (
+        comment.type === "Block" &&
+        comment.value.startsWith("*") &&
+        comment.start <= firstImportStart
+      ) {
+        moduleDocComment = comment;
+        break;
+      }
+    }
+  }
+
+  if (moduleDocComment && firstExportStart !== Infinity) {
+    const between = source.slice(moduleDocComment.end, firstExportStart);
+    if (/\S/.test(between)) {
+      attachModuleDocToExport = true;
+    } else {
+      moduleDocComment = null;
+    }
+  }
+  const moduleDocInfo = moduleDocComment ? parseDoc(moduleDocComment) : {};
+  let moduleDocUsed = false;
+
+  function buildDocParts(includeModuleDoc, docComment) {
+    const docInfo = parseDoc(docComment);
+    const jsDocParts = [];
+    const pseudocodeParts = [];
+    if (includeModuleDoc) {
+      if (moduleDocInfo.jsDoc) jsDocParts.push(moduleDocInfo.jsDoc);
+      if (moduleDocInfo.pseudocode) pseudocodeParts.push(moduleDocInfo.pseudocode);
+    }
+    if (docInfo.jsDoc) jsDocParts.push(docInfo.jsDoc);
+    if (docInfo.pseudocode) pseudocodeParts.push(docInfo.pseudocode);
+    return {
+      jsDoc: jsDocParts.length ? jsDocParts.join("\n").trim() : undefined,
+      pseudocode: pseudocodeParts.length ? pseudocodeParts.join("\n").trim() : undefined
+    };
   }
 
   function findJsDoc(start) {
@@ -808,7 +859,13 @@ function chunkCode(source, isTest = false) {
           if (!decl) {
             if (node.type === "ExportNamedDeclaration" && node.specifiers?.length) {
               const doc = findJsDoc(node.start);
-              const { jsDoc, pseudocode } = parseDoc(doc);
+              const includeModuleDoc = Boolean(
+                moduleDocComment &&
+                attachModuleDocToExport &&
+                !moduleDocUsed
+              );
+              if (includeModuleDoc) moduleDocUsed = true;
+              const { jsDoc, pseudocode } = buildDocParts(includeModuleDoc, doc);
               const snippetStart = doc ? doc.start : node.start;
               const snippet = source.slice(snippetStart, node.end);
               const exportNames = node.specifiers
@@ -866,7 +923,13 @@ function chunkCode(source, isTest = false) {
           for (const ex of exports) {
             let start = ex.start;
             const doc = findJsDoc(start);
-            const { jsDoc, pseudocode } = parseDoc(doc);
+            const includeModuleDoc = Boolean(
+              moduleDocComment &&
+              attachModuleDocToExport &&
+              !moduleDocUsed
+            );
+            if (includeModuleDoc) moduleDocUsed = true;
+            const { jsDoc, pseudocode } = buildDocParts(includeModuleDoc, doc);
             if (doc) start = doc.end;
             const code = source.slice(start, ex.end);
             chunks.push({
@@ -881,6 +944,16 @@ function chunkCode(source, isTest = false) {
         }
       }
     });
+    if (moduleDocComment && !moduleDocUsed && !attachModuleDocToExport) {
+      chunks.unshift({
+        id: "module-doc",
+        code: source.slice(moduleDocComment.start, moduleDocComment.end),
+        jsDoc: moduleDocInfo.jsDoc,
+        pseudocode: moduleDocInfo.pseudocode,
+        construct: "module-doc",
+        references: []
+      });
+    }
   }
 
   return { chunks, imports: Array.from(importModules) };
@@ -1341,6 +1414,10 @@ const __jsonTestHelpers = {
   processJsonObjectEntries
 };
 
+const __codeTestHelpers = {
+  chunkCode
+};
+
 export {
   DATA_FIELD_ALLOWLIST,
   JSON_FIELD_ALLOWLIST,
@@ -1351,7 +1428,8 @@ export {
   extractAllowedValues,
   createSparseVector,
   determineTags,
-  /** @internal */ __jsonTestHelpers
+  /** @internal */ __jsonTestHelpers,
+  /** @internal */ __codeTestHelpers
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

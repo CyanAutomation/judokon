@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 import path from "node:path";
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import {
   JSON_FIELD_ALLOWLIST,
   BOILERPLATE_STRINGS,
   extractAllowedValues,
   normalizeAndFilter,
   determineTags,
-  __jsonTestHelpers
+  __jsonTestHelpers,
+  __codeTestHelpers
 } from "../../scripts/generateEmbeddings.js";
 
 describe("JSON_FIELD_ALLOWLIST", () => {
@@ -103,6 +104,7 @@ describe("determineTags", () => {
 
 const { createJsonProcessItem, processJsonArrayEntries, processJsonObjectEntries } =
   __jsonTestHelpers;
+const { chunkCode } = __codeTestHelpers;
 
 describe("JSON processing helpers", () => {
   it("uses overrideText when provided", async () => {
@@ -307,5 +309,28 @@ describe("JSON processing helpers", () => {
       "rules.rounds",
       "rules.rounds: Trimmed content"
     );
+  });
+});
+
+describe("chunkCode", () => {
+  it("attaches module doc comments before imports to the first export", async () => {
+    const source = await readFile(
+      path.resolve(__dirname, "../../src/components/Card.js"),
+      "utf8"
+    );
+    const { chunks } = chunkCode(source, false);
+    const cardChunk = chunks.find((chunk) => chunk.id === "Card");
+    expect(cardChunk).toBeDefined();
+    expect(cardChunk.jsDoc).toContain("Basic card container class.");
+    expect(cardChunk.pseudocode).toContain(
+      "1. Choose a `<div>` or `<a>` element based on the presence of `href`."
+    );
+
+    const factoryChunk = chunks.find((chunk) => chunk.id === "createCard");
+    expect(factoryChunk).toBeDefined();
+    expect(factoryChunk.jsDoc).toContain(
+      "Factory wrapper for backward compatibility with function callers."
+    );
+    expect(factoryChunk.jsDoc).not.toContain("Basic card container class.");
   });
 });
