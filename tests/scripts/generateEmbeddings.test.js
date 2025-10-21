@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import path from "node:path";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import {
   JSON_FIELD_ALLOWLIST,
   BOILERPLATE_STRINGS,
@@ -313,24 +313,53 @@ describe("JSON processing helpers", () => {
 });
 
 describe("chunkCode", () => {
-  it("attaches module doc comments before imports to the first export", async () => {
-    const source = await readFile(
-      path.resolve(__dirname, "../../src/components/Card.js"),
-      "utf8"
-    );
+  it("attaches module doc comments when only imports precede the first export", () => {
+    const source = [
+      "/**",
+      " * Module description for the exported function.",
+      " *",
+      " * @pseudocode",
+      " * 1. Step one.",
+      " * 2. Step two.",
+      " */",
+      "import dependency from \"./dep.js\";",
+      "export function exportedFunction() {",
+      "  return dependency();",
+      "}",
+      "export function otherFunction() {}"
+    ].join("\n");
     const { chunks } = chunkCode(source, false);
-    const cardChunk = chunks.find((chunk) => chunk.id === "Card");
-    expect(cardChunk).toBeDefined();
-    expect(cardChunk.jsDoc).toContain("Basic card container class.");
-    expect(cardChunk.pseudocode).toContain(
-      "1. Choose a `<div>` or `<a>` element based on the presence of `href`."
-    );
+    const exportedChunk = chunks.find((chunk) => chunk.id === "exportedFunction");
+    expect(exportedChunk).toBeDefined();
+    expect(exportedChunk.jsDoc).toContain("Module description for the exported function.");
+    expect(exportedChunk.pseudocode).toContain("1. Step one.");
+    expect(chunks.find((chunk) => chunk.id === "module-doc")).toBeUndefined();
+  });
 
-    const factoryChunk = chunks.find((chunk) => chunk.id === "createCard");
-    expect(factoryChunk).toBeDefined();
-    expect(factoryChunk.jsDoc).toContain(
-      "Factory wrapper for backward compatibility with function callers."
+  it("preserves module docs as standalone chunks when other statements intervene", () => {
+    const source = [
+      "/**",
+      " * Module description that should not attach to the export.",
+      " *",
+      " * @pseudocode",
+      " * 1. Document the module separately.",
+      " */",
+      "import dependency from \"./dep.js\";",
+      "const helper = () => dependency();",
+      "export function exportedFunction() {",
+      "  return helper();",
+      "}"
+    ].join("\n");
+    const { chunks } = chunkCode(source, false);
+    const moduleDocChunk = chunks.find((chunk) => chunk.id === "module-doc");
+    expect(moduleDocChunk).toBeDefined();
+    expect(moduleDocChunk.jsDoc).toContain(
+      "Module description that should not attach to the export."
     );
-    expect(factoryChunk.jsDoc).not.toContain("Basic card container class.");
+    const exportedChunk = chunks.find((chunk) => chunk.id === "exportedFunction");
+    expect(exportedChunk).toBeDefined();
+    expect(exportedChunk.jsDoc ?? "").not.toContain(
+      "Module description that should not attach to the export."
+    );
   });
 });
