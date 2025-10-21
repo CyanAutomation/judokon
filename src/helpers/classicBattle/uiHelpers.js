@@ -741,11 +741,12 @@ export function selectStat(store, stat) {
   // derive label from button text if available
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
   // best-effort visual state
-  try {
-    const container = document.getElementById("stat-buttons");
-    container?.querySelectorAll("button").forEach((b) => (b.disabled = true));
-    btn?.classList.add("selected");
-  } catch {}
+  const container = typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+  if (container) {
+    const buttons = container.querySelectorAll("button");
+    disableStatButtons(Array.from(buttons), container);
+  }
+  btn?.classList.add("selected");
   // read values from cards
   const pCard = document.getElementById("player-card");
   const oCard = document.getElementById("opponent-card");
