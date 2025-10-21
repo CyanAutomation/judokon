@@ -14,6 +14,18 @@ import { isEnabled } from "../featureFlags.js";
 
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
+function detectFakeTimers() {
+  try {
+    if (typeof globalThis?.vi?.isFakeTimers === "function") {
+      return globalThis.vi.isFakeTimers();
+    }
+    const timeout = globalThis?.setTimeout;
+    return Boolean(timeout && typeof timeout === "function" && typeof timeout?.clock === "object");
+  } catch {
+    return false;
+  }
+}
+
 function scheduleImmediate(callback) {
   if (typeof globalThis?.requestAnimationFrame === "function") {
     const rafId = globalThis.requestAnimationFrame(() => {
@@ -196,6 +208,71 @@ export function getRoundMessageEl() {
   return document.getElementById("round-message");
 }
 
+function prepareButtonForReset(btn) {
+  btn.classList.remove("selected");
+  btn.style.removeProperty("background-color");
+  btn.disabled = true;
+  if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
+  void btn.offsetWidth;
+}
+
+function enableButton(btn) {
+  try {
+    btn.disabled = false;
+    btn.classList.remove("disabled");
+    btn.style.backgroundColor = "";
+    btn.blur();
+  } catch {}
+}
+
+function createEnablePromise(btn, scheduler, usingFakeTimers) {
+  const { onFrame, cancel } = scheduler;
+  return new Promise((resolve) => {
+    let finished = false;
+    let cancelFallback;
+    const finishOnce = () => {
+      if (finished) return;
+      finished = true;
+      if (typeof cancelFallback === "function") {
+        try {
+          cancelFallback();
+        } catch {}
+      }
+      enableButton(btn);
+      resolve();
+    };
+
+    if (isEnabled("enableTestMode") || usingFakeTimers || typeof onFrame !== "function") {
+      finishOnce();
+      return;
+    }
+
+    let frameId;
+    const handleFrame = () => {
+      if (typeof cancel === "function" && typeof frameId === "number" && !Number.isNaN(frameId)) {
+        try {
+          cancel(frameId);
+        } catch {}
+      }
+      finishOnce();
+    };
+
+    try {
+      frameId = onFrame(handleFrame);
+    } catch {
+      finishOnce();
+      return;
+    }
+
+    if (typeof frameId !== "number" || Number.isNaN(frameId)) {
+      finishOnce();
+      return;
+    }
+
+    cancelFallback = scheduleImmediate(finishOnce);
+  });
+}
+
 /**
  * Clear visual selection and temporarily disable stat buttons to remove touch highlights.
  *
@@ -220,130 +297,23 @@ export function resetStatButtons(
   try {
     trace("resetStatButtons:begin");
   } catch {}
-  const { onFrame, cancel } = scheduler;
-  const usingFakeTimers = (() => {
-    try {
-      if (typeof globalThis?.vi?.isFakeTimers === "function") {
-        return globalThis.vi.isFakeTimers();
-      }
-      const timeout = globalThis?.setTimeout;
-      return Boolean(timeout && typeof timeout === "function" && typeof timeout?.clock === "object");
-    } catch {
-      return false;
-    }
-  })();
+  const usingFakeTimers = detectFakeTimers();
+
   const enablePromises = [];
+
   getStatButtons().forEach((btn) => {
     if (!btn) {
       return;
     }
-    btn.classList.remove("selected");
-    btn.style.removeProperty("background-color");
-    // Ensure disabled class is consistent with disabled attribute
-    btn.disabled = true;
-    if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
-    void btn.offsetWidth;
-    const enablePromise = new Promise((resolve) => {
-      let finished = false;
-      let cancelFallback;
-      const enableButton = () => {
-        try {
-          btn.disabled = false;
-          btn.classList.remove("disabled");
-          btn.style.backgroundColor = "";
-          btn.blur();
-        } catch {}
-        resolve();
-      };
-      const finishOnce = () => {
-        if (finished) return;
-        finished = true;
-        if (typeof cancelFallback === "function") {
-          try {
-            cancelFallback();
-          } catch {}
-          cancelFallback = undefined;
-        }
-        enableButton();
-      };
-      const scheduleFallback = (task) => {
-        if (typeof globalThis?.setTimeout === "function") {
-          const timeoutId = globalThis.setTimeout(() => {
-            task();
-          }, 16);
-          return () => {
-            try {
-              globalThis.clearTimeout?.(timeoutId);
-            } catch {}
-          };
-        }
-        if (typeof globalThis?.queueMicrotask === "function") {
-          let cancelled = false;
-          globalThis.queueMicrotask(() => {
-            if (cancelled) return;
-            cancelled = true;
-            task();
-          });
-          return () => {
-            cancelled = true;
-          };
-        }
-        if (typeof globalThis?.Promise === "function") {
-          let cancelled = false;
-          globalThis.Promise.resolve()
-            .then(() => {
-              if (cancelled) return;
-              cancelled = true;
-              task();
-            })
-            .catch(() => {
-              if (cancelled) return;
-              cancelled = true;
-              task();
-            });
-          return () => {
-            cancelled = true;
-          };
-        }
-        task();
-        return () => {};
-      };
-      if (isEnabled("enableTestMode") || usingFakeTimers) {
-        finishOnce();
-        return;
-      }
-      if (typeof onFrame !== "function") {
-        finishOnce();
-        return;
-      }
-      let frameId;
-      const handleFrame = () => {
-        if (typeof cancel === "function" && typeof frameId === "number" && !Number.isNaN(frameId)) {
-          try {
-            cancel(frameId);
-          } catch {}
-        }
-        finishOnce();
-      };
-      try {
-        frameId = onFrame(handleFrame);
-      } catch {
-        finishOnce();
-        return;
-      }
-      if (typeof frameId !== "number" || Number.isNaN(frameId)) {
-        finishOnce();
-        return;
-      }
-      cancelFallback = scheduleFallback(finishOnce);
-    });
-    enablePromises.push(enablePromise);
+    prepareButtonForReset(btn);
+    enablePromises.push(createEnablePromise(btn, scheduler, usingFakeTimers));
   });
+
   trace("resetStatButtons:scheduledEnable");
   if (enablePromises.length === 0) {
     return Promise.resolve();
   }
-  return Promise.all(enablePromises).then(() => {});
+  return Promise.all(enablePromises);
 }
 
 let cancelFade;

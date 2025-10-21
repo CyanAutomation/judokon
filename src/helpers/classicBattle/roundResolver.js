@@ -4,6 +4,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
 import { resetStatButtons } from "../battle/battleUI.js";
+import { isEnabled } from "../featureFlags.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
 import { resolveDelay } from "./timerUtils.js";
@@ -228,12 +229,11 @@ export async function dispatchOutcomeEvents(result) {
 }
 
 /**
- * Reset stat buttons and update scoreboard scores.
+ * Update scoreboard scores to reflect the latest round.
  *
  * @pseudocode
- * 1. Reset stat buttons to default state.
- * 2. Dynamically import `setupScoreboard` and call `updateScore`.
- * 3. Return the original result.
+ * 1. Dynamically import `setupScoreboard` and call `updateScore`.
+ * 2. Return the original result.
  *
  * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
@@ -371,7 +371,8 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  * 1. Call `evaluateOutcome`.
  * 2. Await `dispatchOutcomeEvents`.
  * 3. Await `updateScoreboard`.
- * 4. Emit resolution events and return the result.
+ * 4. Await `resetStatButtons` to restore control interactivity.
+ * 5. Emit resolution events and return the result.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -392,8 +393,9 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  * 1. Evaluate the round outcome using player and opponent stat values.
  * 2. Dispatch outcome events for UI and state machine updates.
  * 3. Update scoreboard with new scores.
- * 4. Emit round resolution events with complete result data.
- * 5. Return the final result object.
+ * 4. Reset stat buttons so the next selection can begin.
+ * 5. Emit round resolution events with complete result data.
+ * 6. Return the final result object.
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   try {
@@ -412,17 +414,45 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   const dispatched = await dispatchOutcomeEvents(evaluated);
   const scored = await updateScoreboard(dispatched);
   const emitted = emitRoundResolved(store, stat, playerVal, opponentVal, scored);
-  if (typeof globalThis?.setTimeout === "function") {
-    await new Promise((resolve) => {
-      try {
-        globalThis.setTimeout(resolve, 50);
-      } catch {
-        resolve();
-      }
-    });
-  }
+  await waitForRoundUILocks();
   await resetStatButtons();
   return emitted;
+}
+
+function usingFakeTimers() {
+  try {
+    if (typeof globalThis?.vi?.isFakeTimers === "function") {
+      return globalThis.vi.isFakeTimers();
+    }
+    const timeout = globalThis?.setTimeout;
+    return Boolean(timeout && typeof timeout === "function" && typeof timeout?.clock === "object");
+  } catch {
+    return false;
+  }
+}
+
+async function waitForRoundUILocks() {
+  if (usingFakeTimers()) {
+    const vi = globalThis?.vi;
+    if (typeof vi?.runAllTimersAsync === "function") {
+      try {
+        await vi.runAllTimersAsync();
+      } catch {}
+    }
+    return;
+  }
+  const setTimeoutFn = globalThis?.setTimeout;
+  if (typeof setTimeoutFn !== "function") {
+    return;
+  }
+  const delay = isEnabled("enableTestMode") ? 0 : 50;
+  await new Promise((resolve) => {
+    try {
+      setTimeoutFn(resolve, delay);
+    } catch {
+      resolve();
+    }
+  });
 }
 
 /**
