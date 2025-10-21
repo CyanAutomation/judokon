@@ -14,12 +14,12 @@ describe("classicBattle round reset", () => {
     vi.resetAllMocks();
   });
 
-  it("clears player choice but preserves selection flag for diagnostics", async () => {
+  it("clears player choice and selection flag for next round", async () => {
     const store = { playerChoice: "power", selectionMade: true };
     const machine = { context: { store } };
     await roundOverEnter(machine);
     expect(store.playerChoice).toBeNull();
-    expect(store.selectionMade).toBe(true);
+    expect(store.selectionMade).toBe(false);
   });
 
   it("resets selection flag when the next round starts", async () => {
