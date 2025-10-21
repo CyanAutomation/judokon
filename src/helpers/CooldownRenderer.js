@@ -19,20 +19,34 @@ const defaultClearTimeout =
     ? window.clearTimeout.bind(window)
     : clearTimeout;
 
+const clampToPositiveTimestamp = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return Number.EPSILON;
+  }
+  return numeric;
+};
+
 const defaultNow = () => {
   try {
     if (typeof performance !== "undefined" && typeof performance.now === "function") {
-      return performance.now();
+      const timestamp = performance.now();
+      if (Number.isFinite(timestamp)) {
+        return clampToPositiveTimestamp(timestamp);
+      }
     }
   } catch {
     // performance.now() may not be available in certain runtimes (e.g. Node.js without perf hooks)
   }
   try {
-    return Date.now();
+    const timestamp = Date.now();
+    if (Number.isFinite(timestamp)) {
+      return clampToPositiveTimestamp(timestamp);
+    }
   } catch {
     // Date.now() can fail if the global Date object is unavailable or polyfilled incorrectly
   }
-  return 0;
+  return Number.EPSILON;
 };
 
 const toPositiveNumber = (value, fallback = 0) => {
