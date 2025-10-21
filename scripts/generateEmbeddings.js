@@ -565,6 +565,12 @@ async function processJsonObjectEntries(
 ) {
   const allowlistFn = extractAllowedValuesFn || formatDataEntry;
   if (baseName === "tooltips.json") {
+    /**
+     * Recursively process tooltip entries, handling nested objects and arrays.
+     *
+     * @param {any} value - The tooltip value to process.
+     * @param {string[]} pathSegments - Array of path segments to build the key.
+     */
     const visitTooltipEntry = async (value, pathSegments) => {
       if (value === undefined || value === null) return;
       const key = pathSegments.join(".");
@@ -578,7 +584,7 @@ async function processJsonObjectEntries(
 
       if (Array.isArray(value)) {
         for (let index = 0; index < value.length; index += 1) {
-          await visitTooltipEntry(value[index], [...pathSegments, index]);
+          await visitTooltipEntry(value[index], [...pathSegments, `[${index}]`]);
         }
         return;
       }
@@ -594,6 +600,7 @@ async function processJsonObjectEntries(
         }
 
         for (const [childKey, childValue] of Object.entries(value)) {
+          // Skip label and description fields if they were already processed as summary
           if ((childKey === "label" && label) || (childKey === "description" && description)) {
             continue;
           }
