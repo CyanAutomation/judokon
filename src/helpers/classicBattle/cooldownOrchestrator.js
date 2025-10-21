@@ -14,6 +14,8 @@ import { createResourceRegistry, createEnhancedCleanup, eventCleanup } from "./e
 import { getStateSnapshot } from "./battleDebug.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { requireEngine } from "../battleEngineFacade.js";
+import { computeOpponentPromptWaitBudget } from "./opponentPromptWaiter.js";
+import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 
 const ERROR_SCOPE = "classicBattle.roundManager";
 
@@ -720,7 +722,37 @@ export function instantiateCooldownTimer(
     }
   };
   const timer = timerFactory({ starter: startEngineCooldownWithScheduler });
-  renderer(timer, cooldownSeconds);
+  let rendererOptions = {};
+  let promptBudget = null;
+  let promptPollInterval = 0;
+  let shouldWaitForPrompt = false;
+  try {
+    const readyState =
+      typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() === true : null;
+    shouldWaitForPrompt = readyState !== true;
+  } catch {
+    shouldWaitForPrompt = true;
+  }
+  if (shouldWaitForPrompt) {
+    try {
+      promptBudget = computeOpponentPromptWaitBudget();
+    } catch {
+      promptBudget = null;
+    }
+    if (promptBudget && Number.isFinite(promptBudget.totalMs) && promptBudget.totalMs > 0) {
+      promptPollInterval = 75;
+      rendererOptions = {
+        waitForOpponentPrompt: true,
+        maxPromptWaitMs: promptBudget.totalMs,
+        opponentPromptBufferMs: promptBudget.bufferMs,
+        promptPollIntervalMs: promptPollInterval
+      };
+    } else {
+      shouldWaitForPrompt = false;
+      promptBudget = null;
+    }
+  }
+  renderer(timer, cooldownSeconds, rendererOptions);
   controls.timer = timer;
   const runtime = {
     timer,
@@ -734,7 +766,12 @@ export function instantiateCooldownTimer(
     expired: false,
     fallbackId: null,
     schedulerFallbackId: null,
-    finalizePromise: null
+    finalizePromise: null,
+    promptWait: {
+      shouldWait: shouldWaitForPrompt,
+      budget: promptBudget,
+      pollIntervalMs: promptPollInterval
+    }
   };
   timer.on("tick", (remaining) => {
     safeRound(

@@ -3,7 +3,8 @@ import * as scoreboard from "./setupScoreboard.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 import {
   getOpponentPromptTimestamp,
-  getOpponentPromptMinDuration
+  getOpponentPromptMinDuration,
+  isOpponentPromptReady
 } from "./classicBattle/opponentPromptTracker.js";
 import { t } from "./i18n.js";
 
@@ -88,8 +89,9 @@ const normalizePromptDelayOptions = (options = {}) => {
 
 const hasActivePrompt = () => {
   try {
-    const timestamp = Number(getOpponentPromptTimestamp());
-    return Number.isFinite(timestamp) && timestamp > 0;
+    if (typeof isOpponentPromptReady === "function") {
+      return isOpponentPromptReady() === true;
+    }
   } catch {}
   return false;
 };

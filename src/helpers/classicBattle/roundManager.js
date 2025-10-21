@@ -51,6 +51,8 @@ import {
   resetReadyDispatchState,
   setReadyDispatchedForCurrentCooldown
 } from "./roundReadyState.js";
+import { showSnackbar } from "../showSnackbar.js";
+import { t } from "../i18n.js";
 
 const READY_DISPATCHER_IDENTITY_SYMBOL =
   typeof Symbol === "function"
@@ -424,6 +426,11 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     timerOverrides,
     bus
   );
+  if (runtime?.promptWait?.shouldWait) {
+    try {
+      showSnackbar(t("ui.opponentChoosing"));
+    } catch {}
+  }
   const getReadyDispatched = () => hasReadyBeenDispatchedForCurrentCooldown();
   const onExpired = createExpirationDispatcher({
     controls,
