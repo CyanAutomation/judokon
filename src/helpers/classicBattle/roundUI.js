@@ -640,7 +640,10 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   };
 
   lockStatButtons(true);
-  const createFallbackTimer = (onTimeout) => {
+  // Approximately two 60fps frames; keeps the UI snappy without locking immediately.
+  const DEFAULT_FALLBACK_TIMEOUT_MS = 32;
+  const isFrameIdValid = (id) => id !== undefined && id !== null;
+  const createFallbackTimer = (onTimeout, timeoutMs = DEFAULT_FALLBACK_TIMEOUT_MS) => {
     if (typeof setTimeout !== "function") {
       return {
         cancel: () => {},
@@ -650,7 +653,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     let id = setTimeout(() => {
       id = null;
       onTimeout();
-    }, 32);
+    }, timeoutMs);
     return {
       cancel: () => {
         if (id === null) return;
@@ -669,56 +672,95 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
       isScheduled: () => id !== null
     };
   };
-  const createFrameTracker = (raf, cancelRaf, onIdle) => {
+  const createPendingFrameState = (onIdle) => {
     let pending = 0;
-    const frameIds = new Set();
-    const decrement = () => {
+    const completeFrame = () => {
       pending = Math.max(0, pending - 1);
       if (pending === 0) onIdle();
     };
+    return {
+      beginFrame: () => {
+        pending += 1;
+      },
+      completeFrame
+    };
+  };
+  const createRafSupport = (raf, cancelRaf, onComplete) => {
+    if (typeof raf !== "function") {
+      return {
+        schedule: null,
+        cancel: () => false,
+        rafAvailable: false
+      };
+    }
+    const frameIds = new Set();
     const schedule = (cb) => {
-      if (typeof cb !== "function") return 0;
-      pending += 1;
-      if (raf) {
-        let frameId;
-        frameId = raf(() => {
-          try {
-            cb();
-          } finally {
-            if (frameId !== undefined && frameId !== null) {
-              frameIds.delete(frameId);
-            }
-            decrement();
-          }
-        });
-        if (frameId !== undefined && frameId !== null) {
-          frameIds.add(frameId);
-          return frameId;
+      let frameId;
+      frameId = raf(() => {
+        try {
+          cb();
+        } finally {
+          if (isFrameIdValid(frameId)) frameIds.delete(frameId);
+          onComplete();
         }
-        return 0;
-      }
-      try {
-        cb();
-      } finally {
-        decrement();
+      });
+      if (isFrameIdValid(frameId)) {
+        frameIds.add(frameId);
+        return frameId;
       }
       return 0;
     };
     const cancel = (id) => {
-      if (!cancelRaf || id === undefined || id === null || !frameIds.has(id)) return;
+      if (typeof cancelRaf !== "function") return false;
+      if (!isFrameIdValid(id) || !frameIds.has(id)) return false;
       frameIds.delete(id);
       try {
         cancelRaf(id);
       } catch {
         // Ignore cancel failures but still treat the frame as completed.
       } finally {
-        decrement();
+        onComplete();
       }
+      return true;
     };
     return {
       schedule,
       cancel,
-      rafAvailable: !!raf
+      rafAvailable: true
+    };
+  };
+  const runFrameImmediately = (cb, onComplete) => {
+    try {
+      cb();
+    } finally {
+      onComplete();
+    }
+    return 0;
+  };
+  const createFrameTracker = (raf, cancelRaf, onIdle) => {
+    const state = createPendingFrameState(onIdle);
+    const rafSupport = createRafSupport(raf, cancelRaf, state.completeFrame);
+    const schedule = (cb) => {
+      if (typeof cb !== "function") return 0;
+      state.beginFrame();
+      try {
+        if (rafSupport.rafAvailable && rafSupport.schedule) {
+          return rafSupport.schedule(cb);
+        }
+        return runFrameImmediately(cb, state.completeFrame);
+      } catch (error) {
+        state.completeFrame();
+        throw error;
+      }
+    };
+    const cancel = (id) => {
+      if (!rafSupport.rafAvailable) return;
+      rafSupport.cancel(id);
+    };
+    return {
+      schedule,
+      cancel,
+      rafAvailable: rafSupport.rafAvailable
     };
   };
   const createPostResetScheduler = (lockFn) => {
