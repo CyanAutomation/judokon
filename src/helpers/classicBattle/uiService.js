@@ -10,6 +10,11 @@ import * as battleEvents from "./battleEvents.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { setSkipHandler } from "./skipHandler.js";
+import {
+  computeOpponentPromptWaitBudget,
+  waitForDelayedOpponentPromptDisplay
+} from "./opponentPromptWaiter.js";
+import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 
 /** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
 let activeCountdown = null;
@@ -183,7 +188,7 @@ function bindUIServiceEventHandlers() {
     } catch {}
   });
 
-  onBattleEvent("countdownStart", (e) => {
+  onBattleEvent("countdownStart", async (e) => {
     // If the skip flag is enabled, immediately finish the countdown
     let skipHandled = false;
     const skipEnabled =
@@ -218,11 +223,46 @@ function bindUIServiceEventHandlers() {
       };
 
       activeCountdown = { timer, onExpired };
-      attachCooldownRenderer(timer, duration);
+      let rendererOptions = {};
+      let promptBudget = null;
+      let shouldWaitForPrompt = false;
+      try {
+        const readyState =
+          typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() === true : null;
+        shouldWaitForPrompt = readyState !== true;
+      } catch {
+        shouldWaitForPrompt = true;
+      }
+      if (shouldWaitForPrompt) {
+        try {
+          promptBudget = computeOpponentPromptWaitBudget();
+        } catch {
+          promptBudget = null;
+        }
+        if (promptBudget && Number.isFinite(promptBudget.totalMs) && promptBudget.totalMs > 0) {
+          const promptPollInterval = 75;
+          rendererOptions = {
+            waitForOpponentPrompt: true,
+            maxPromptWaitMs: promptBudget.totalMs,
+            opponentPromptBufferMs: promptBudget.bufferMs,
+            promptPollIntervalMs: promptPollInterval
+          };
+        } else {
+          shouldWaitForPrompt = false;
+        }
+      }
+      attachCooldownRenderer(timer, duration, rendererOptions);
       timer.on("expired", onExpired);
       if (!activeCountdown) {
         // A pending skip consumed the countdown before it began
         return;
+      }
+      if (shouldWaitForPrompt && promptBudget) {
+        try {
+          await waitForDelayedOpponentPromptDisplay(promptBudget, {
+            intervalMs: rendererOptions.promptPollIntervalMs
+          });
+        } catch {}
       }
       timer.start(duration);
     } catch (err) {
