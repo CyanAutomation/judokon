@@ -762,7 +762,34 @@ function chunkCode(source, isTest = false) {
       enter(node) {
         if (node.type === "ExportNamedDeclaration" || node.type === "ExportDefaultDeclaration") {
           const decl = node.declaration;
-          if (!decl) return;
+          if (!decl) {
+            if (node.type === "ExportNamedDeclaration" && node.specifiers?.length) {
+              const doc = findJsDoc(node.start);
+              const { jsDoc, pseudocode } = parseDoc(doc);
+              const snippetStart = doc ? doc.start : node.start;
+              const snippet = source.slice(snippetStart, node.end);
+              const exportNames = node.specifiers
+                .map((spec) => {
+                  if (spec.exported) {
+                    if (spec.exported.type === "Identifier") return spec.exported.name;
+                    if (spec.exported.type === "Literal") return String(spec.exported.value);
+                  }
+                  if (spec.local && spec.local.type === "Identifier") return spec.local.name;
+                  return null;
+                })
+                .filter(Boolean);
+              const slug = exportNames.length ? exportNames.join("-") : `chunk-${chunks.length + 1}`;
+              chunks.push({
+                id: `reexport-${slug}`,
+                code: snippet,
+                jsDoc,
+                pseudocode,
+                construct: "reexport",
+                references: exportNames
+              });
+            }
+            return;
+          }
           const exports = [];
           if (decl.type === "FunctionDeclaration" || decl.type === "ClassDeclaration") {
             const construct = decl.type === "FunctionDeclaration" ? "function" : "class";
