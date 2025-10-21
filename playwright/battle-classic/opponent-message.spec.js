@@ -108,10 +108,7 @@ async function withBattleEventCapture(page, eventNames, callback) {
       ? names.filter(Boolean)
       : ["opponentReveal", "roundResolved"];
     const handler = (event) => {
-      if (
-        namesToCapture.length === 0 ||
-        namesToCapture.includes(event.type)
-      ) {
+      if (namesToCapture.includes(event.type)) {
         trackedEvents.push(event.type);
       }
     };
