@@ -126,14 +126,14 @@ describe("roundResolved stat button reset", () => {
     await vi.advanceTimersByTimeAsync(frameDelayMs);
     await vi.runOnlyPendingTimersAsync();
     expect(disableSpy).toHaveBeenCalledTimes(2);
-    expect(resetSpy).toHaveBeenCalledOnce();
+    expect(resetSpy).not.toHaveBeenCalled();
     expect(btn.classList.contains("selected")).toBe(false);
     expect(btn.disabled).toBe(true);
     expect(btn.classList.contains("disabled")).toBe(true);
     await vi.advanceTimersByTimeAsync(32);
     await vi.runOnlyPendingTimersAsync();
     expect(disableSpy).toHaveBeenCalledTimes(2);
-    expect(resetSpy).toHaveBeenCalledOnce();
+    expect(resetSpy).not.toHaveBeenCalled();
     runAfterFramesSpy.mockRestore();
     globalThis.requestAnimationFrame = originalRaf;
     globalThis.cancelAnimationFrame = originalCancelRaf;
@@ -165,7 +165,7 @@ describe("roundResolved stat button reset", () => {
     await vi.advanceTimersByTimeAsync(32);
     await vi.runOnlyPendingTimersAsync();
     expect(disableSpy).toHaveBeenCalledTimes(2);
-    expect(resetSpy).toHaveBeenCalledOnce();
+    expect(resetSpy).not.toHaveBeenCalled();
     expect(btn.classList.contains("selected")).toBe(false);
     expect(btn.disabled).toBe(true);
     expect(btn.classList.contains("disabled")).toBe(true);

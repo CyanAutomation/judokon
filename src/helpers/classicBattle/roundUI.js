@@ -794,14 +794,18 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
           // Final safety: ensure buttons stay locked when no timing APIs succeed.
           runPostResetLock();
         }
+      },
+      markLocked: () => {
+        postResetLocked = true;
       }
     };
   };
   const runReset = () => {
     clearStatButtonSelections(store);
-    const { scheduler, handleFailure, ensureSafetyLock } = createPostResetScheduler(lockStatButtons);
+    const { handleFailure, ensureSafetyLock, markLocked } = createPostResetScheduler(lockStatButtons);
     try {
-      resetStatButtons?.(scheduler);
+      disableStatButtons?.();
+      markLocked();
     } catch {
       handleFailure();
     }
