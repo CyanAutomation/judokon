@@ -6,6 +6,10 @@ import {
   getOpponentPromptMinDuration
 } from "./classicBattle/opponentPromptTracker.js";
 import { t } from "./i18n.js";
+import {
+  clampToPositiveTimestamp,
+  toPositiveNumber
+} from "./utils/positiveNumbers.js";
 
 const DEFAULT_PROMPT_POLL_INTERVAL = 16;
 
@@ -19,42 +23,22 @@ const defaultClearTimeout =
     ? window.clearTimeout.bind(window)
     : clearTimeout;
 
-const clampToPositiveTimestamp = (value) => {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric <= 0) {
-    return Number.EPSILON;
-  }
-  return numeric;
-};
-
 const defaultNow = () => {
   try {
     if (typeof performance !== "undefined" && typeof performance.now === "function") {
       const timestamp = performance.now();
-      if (Number.isFinite(timestamp)) {
-        return clampToPositiveTimestamp(timestamp);
-      }
+      return clampToPositiveTimestamp(timestamp);
     }
   } catch {
     // performance.now() may not be available in certain runtimes (e.g. Node.js without perf hooks)
   }
   try {
     const timestamp = Date.now();
-    if (Number.isFinite(timestamp)) {
-      return clampToPositiveTimestamp(timestamp);
-    }
+    return clampToPositiveTimestamp(timestamp);
   } catch {
     // Date.now() can fail if the global Date object is unavailable or polyfilled incorrectly
   }
   return Number.EPSILON;
-};
-
-const toPositiveNumber = (value, fallback = 0) => {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric <= 0) {
-    return fallback;
-  }
-  return numeric;
 };
 
 const derivePromptPollRetries = (maxPromptWait, promptPollInterval) => {
