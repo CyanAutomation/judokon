@@ -738,16 +738,33 @@ function chunkCode(source, isTest = false) {
   }
 
   if (moduleDocComment && firstExportStart !== Infinity) {
-    const between = source.slice(moduleDocComment.end, firstExportStart);
-    if (/\S/.test(between)) {
+    const hasOnlyImportsBetween = ast.body.every((node) => {
+      if (node.start >= firstExportStart) return true;
+      if (node.end <= moduleDocComment.end) return true;
+      return node.type === "ImportDeclaration";
+    });
+    if (hasOnlyImportsBetween) {
       attachModuleDocToExport = true;
-    } else {
-      moduleDocComment = null;
     }
   }
   const moduleDocInfo = moduleDocComment ? parseDoc(moduleDocComment) : {};
   let moduleDocUsed = false;
 
+  function shouldIncludeModuleDoc() {
+    if (moduleDocComment && attachModuleDocToExport && !moduleDocUsed) {
+      moduleDocUsed = true;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Combine module-level and function-level documentation parts.
+   *
+   * @param {boolean} includeModuleDoc - Whether to include module documentation
+   * @param {object|null} docComment - Function-level JSDoc comment object
+   * @returns {{jsDoc?: string, pseudocode?: string}} Combined documentation parts
+   */
   function buildDocParts(includeModuleDoc, docComment) {
     const docInfo = parseDoc(docComment);
     const jsDocParts = [];
@@ -859,12 +876,7 @@ function chunkCode(source, isTest = false) {
           if (!decl) {
             if (node.type === "ExportNamedDeclaration" && node.specifiers?.length) {
               const doc = findJsDoc(node.start);
-              const includeModuleDoc = Boolean(
-                moduleDocComment &&
-                attachModuleDocToExport &&
-                !moduleDocUsed
-              );
-              if (includeModuleDoc) moduleDocUsed = true;
+              const includeModuleDoc = shouldIncludeModuleDoc();
               const { jsDoc, pseudocode } = buildDocParts(includeModuleDoc, doc);
               const snippetStart = doc ? doc.start : node.start;
               const snippet = source.slice(snippetStart, node.end);
@@ -923,12 +935,7 @@ function chunkCode(source, isTest = false) {
           for (const ex of exports) {
             let start = ex.start;
             const doc = findJsDoc(start);
-            const includeModuleDoc = Boolean(
-              moduleDocComment &&
-              attachModuleDocToExport &&
-              !moduleDocUsed
-            );
-            if (includeModuleDoc) moduleDocUsed = true;
+            const includeModuleDoc = shouldIncludeModuleDoc();
             const { jsDoc, pseudocode } = buildDocParts(includeModuleDoc, doc);
             if (doc) start = doc.end;
             const code = source.slice(start, ex.end);
