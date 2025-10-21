@@ -18,8 +18,15 @@
  *
  * @summary Attempts to update the nested `.button-label` element when present,
  * otherwise falls back to updating the button element directly.
+ *
+ * @pseudocode
+ * 1. If drawButton is falsy, exit early
+ * 2. Query for optional `.button-label` descendant
+ * 3. When found, update descendant textContent
+ * 4. Otherwise, update button textContent directly
  * @param {HTMLElement | null | undefined} drawButton - The draw button element to update.
  * @param {string} text - The new text content for the button.
+ * @returns {void}
  */
 export function updateDrawButtonLabel(drawButton, text) {
   if (!drawButton) return;
@@ -36,6 +43,13 @@ export function updateDrawButtonLabel(drawButton, text) {
  *
  * @summary Encapsulates state transitions with UI side effects. All button state
  * changes are driven by state transitions, ensuring consistency.
+ *
+ * @pseudocode
+ * 1. Initialize currentState to "IDLE"
+ * 2. Define states map with onEnter handlers mutating button attributes
+ * 3. Configure validTransitions adjacency list
+ * 4. Implement transition() to validate and apply state changes
+ * 5. Trigger initial state's onEnter and expose public API
  *
  * @param {HTMLElement} drawButton - The draw button element
  * @returns {{currentState: string, transition: (nextState: string) => void}}
