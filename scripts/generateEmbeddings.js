@@ -770,6 +770,7 @@ function chunkCode(source, isTest = false) {
               const snippet = source.slice(snippetStart, node.end);
               const exportNames = node.specifiers
                 .map((spec) => {
+                  // Handle both identifier exports (export { foo }) and string literal exports (export { "foo-bar" as bar })
                   if (spec.exported) {
                     if (spec.exported.type === "Identifier") return spec.exported.name;
                     if (spec.exported.type === "Literal") return String(spec.exported.value);
@@ -778,7 +779,7 @@ function chunkCode(source, isTest = false) {
                   return null;
                 })
                 .filter(Boolean);
-              const slug = exportNames.length ? exportNames.join("-") : `chunk-${chunks.length + 1}`;
+              const slug = exportNames.length ? exportNames.join("-") : `empty-${node.start}`;
               chunks.push({
                 id: `reexport-${slug}`,
                 code: snippet,
