@@ -17,7 +17,7 @@ import { bridgeEngineEvents } from "./engineBridge.js";
 import { setupScoreboard } from "../setupScoreboard.js";
 // Test API exposure for Playwright and unit tests
 import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestApi.js";
-import { setBattleStateBadgeEnabled } from "./uiHelpers.js";
+import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpers.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
@@ -57,6 +57,7 @@ export async function setupClassicBattlePage() {
       view.bindController(controller);
       await controller.init();
       await view.init();
+      bindUIHelperEventHandlers();
       if (typeof window !== "undefined") {
         window.__initCalled = true;
       }
