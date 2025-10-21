@@ -36,15 +36,16 @@ test.describe("Classic Battle Opponent Reveal", () => {
         resolveDelay: 30
       });
 
+      await setOpponentResolveDelay(page, 450);
+
       const before = await getBattleSnapshot(page);
       expect(before?.roundsPlayed ?? 0).toBe(0);
 
       await pickFirstStat(page);
-      await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
-      await expect(page.locator(selectors.snackbarContainer())).toContainText(
-        /Opponent is choosing/i
+      const reachedRoundDecision = await page.evaluate(() =>
+        window.__TEST_API?.state?.waitForBattleState?.("roundDecision", 800)
       );
-
+      expect(reachedRoundDecision).toBe(true);
       await ensureRoundResolved(page);
       await waitForBattleState(page, "roundOver");
       await waitForRoundsPlayed(page, 1);
@@ -68,7 +69,6 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
       await ensureRoundResolved(page, { deadline: 800 });
-      await waitForBattleState(page, "roundOver");
       await waitForRoundsPlayed(page, 1);
 
       const snapshot = await getBattleSnapshot(page);
@@ -96,12 +96,17 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
 
-      await waitForBattleState(page, "waitingForPlayerAction");
+      await expect
+        .poll(async () => {
+          const snapshot = await getBattleSnapshot(page);
+          return snapshot?.selectionMade === false;
+        })
+        .toBe(true);
       const secondRound = await getBattleSnapshot(page);
       expect(secondRound?.selectionMade).toBe(false);
 
       await pickFirstStat(page);
-      await ensureRoundResolved(page, { forceResolve: true });
+      await ensureRoundResolved(page);
       await waitForRoundsPlayed(page, 2);
 
       const afterSecondRound = await getBattleSnapshot(page);

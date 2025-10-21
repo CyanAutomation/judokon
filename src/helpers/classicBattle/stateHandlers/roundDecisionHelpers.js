@@ -3,6 +3,7 @@ import { getOpponentJudoka } from "../cardSelection.js";
 import { getStatValue } from "../../battle/index.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "../battleEvents.js";
 import { resolveRound } from "../roundResolver.js";
+import { resolveDelay } from "../timerUtils.js";
 import { guard, guardAsync, scheduleGuard } from "../guard.js";
 import { exposeDebugState, readDebugState } from "../debugHooks.js";
 import { autoContinue } from "../autoContinue.js";
@@ -153,7 +154,8 @@ export async function resolveSelectionIfPresent(store) {
   try {
     debugLog("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
   } catch {}
-  await resolveRound(store, stat, playerVal, opponentVal);
+  const delayMs = resolveDelay();
+  await resolveRound(store, stat, playerVal, opponentVal, { delayMs });
   return true;
 }
 
