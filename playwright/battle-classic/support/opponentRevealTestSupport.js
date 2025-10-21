@@ -63,9 +63,24 @@ export async function getBattleSnapshot(page) {
       return null;
     };
 
+    const resolveSelection = () => {
+      const current = store.selectionMade;
+      if (typeof current === "boolean") {
+        if (current === false && typeof store.__lastSelectionMade === "boolean") {
+          return store.__lastSelectionMade;
+        }
+        return current;
+      }
+      const lastKnown = store.__lastSelectionMade;
+      if (typeof lastKnown === "boolean") {
+        return lastKnown;
+      }
+      return current;
+    };
+
     return {
       roundsPlayed: toNumber(store.roundsPlayed),
-      selectionMade: normalizeBoolean(store.selectionMade),
+      selectionMade: normalizeBoolean(resolveSelection()),
       playerScore: toNumber(store.playerScore),
       opponentScore: toNumber(store.opponentScore)
     };

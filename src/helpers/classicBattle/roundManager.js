@@ -240,6 +240,7 @@ export async function handleReplay(store) {
  */
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
+  store.__lastSelectionMade = false;
   store.playerChoice = null;
   try {
     if (typeof window !== "undefined") {
@@ -1106,6 +1107,7 @@ export function _resetForTest(store) {
     store.statTimeoutId = null;
     store.autoSelectId = null;
     store.selectionMade = false;
+    store.__lastSelectionMade = false;
     // Reset any prior player stat selection
     store.playerChoice = null;
     try {
