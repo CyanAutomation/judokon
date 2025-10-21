@@ -246,7 +246,9 @@ export async function startRound(store, onRoundStart) {
       window.__classicBattleSelectionFinalized = false;
       window.__classicBattleLastFinalizeContext = null;
     }
-  } catch {}
+  } catch {
+    // Intentionally ignore window global availability errors when resetting selection metadata.
+  }
   // Hide opponent card at start of round to prevent premature reveal
   try {
     const opponentCard = document.getElementById("opponent-card");
@@ -1113,7 +1115,9 @@ export function _resetForTest(store) {
         window.__classicBattleSelectionFinalized = false;
         window.__classicBattleLastFinalizeContext = null;
       }
-    } catch {}
+    } catch {
+      // Intentionally ignore window global availability errors when resetting selection metadata.
+    }
     safeRound("_resetForTest.cancelCompareRaf", () => cancelFrame(store.compareRaf), {
       suppressInProduction: true
     });
