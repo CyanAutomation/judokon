@@ -302,7 +302,7 @@ async function manuallySyncBattleState(
       if (stateApi && typeof stateApi.dispatchBattleEvent === "function") {
         try {
           await stateApi.dispatchBattleEvent(targetState);
-        } catch (error) {
+        } catch {
           // Intentionally ignore dispatch errors as this is a fallback mechanism.
           // The polling verification below will catch unresolved state syncs.
         }
