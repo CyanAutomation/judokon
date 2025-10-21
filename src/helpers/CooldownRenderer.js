@@ -76,6 +76,8 @@ const hasActivePrompt = () => {
     if (typeof isOpponentPromptReady === "function") {
       return isOpponentPromptReady() === true;
     }
+    const timestamp = Number(getOpponentPromptTimestamp());
+    return Number.isFinite(timestamp) && timestamp > 0;
   } catch {}
   return false;
 };

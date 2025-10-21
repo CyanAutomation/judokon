@@ -12,7 +12,8 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { setSkipHandler } from "./skipHandler.js";
 import {
   computeOpponentPromptWaitBudget,
-  waitForDelayedOpponentPromptDisplay
+  waitForDelayedOpponentPromptDisplay,
+  DEFAULT_PROMPT_POLL_INTERVAL_MS
 } from "./opponentPromptWaiter.js";
 import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 
@@ -228,8 +229,8 @@ function bindUIServiceEventHandlers() {
       let shouldWaitForPrompt = false;
       try {
         const readyState =
-          typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() === true : null;
-        shouldWaitForPrompt = readyState !== true;
+          typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() : null;
+        shouldWaitForPrompt = readyState !== true && readyState !== null;
       } catch {
         shouldWaitForPrompt = true;
       }
@@ -240,7 +241,7 @@ function bindUIServiceEventHandlers() {
           promptBudget = null;
         }
         if (promptBudget && Number.isFinite(promptBudget.totalMs) && promptBudget.totalMs > 0) {
-          const promptPollInterval = 75;
+          const promptPollInterval = DEFAULT_PROMPT_POLL_INTERVAL_MS; // Shared interval for consistency.
           rendererOptions = {
             waitForOpponentPrompt: true,
             maxPromptWaitMs: promptBudget.totalMs,
@@ -253,16 +254,43 @@ function bindUIServiceEventHandlers() {
       }
       attachCooldownRenderer(timer, duration, rendererOptions);
       timer.on("expired", onExpired);
+      const countdownSnapshot = activeCountdown;
       if (!activeCountdown) {
         // A pending skip consumed the countdown before it began
         return;
       }
       if (shouldWaitForPrompt && promptBudget) {
+        let timeoutId = null;
         try {
-          await waitForDelayedOpponentPromptDisplay(promptBudget, {
+          const waitPromise = waitForDelayedOpponentPromptDisplay(promptBudget, {
             intervalMs: rendererOptions.promptPollIntervalMs
           });
-        } catch {}
+          const maxWaitMs = Number(promptBudget.totalMs);
+          if (Number.isFinite(maxWaitMs) && maxWaitMs > 0 && typeof setTimeout === "function") {
+            const timeoutPromise = new Promise((resolve) => {
+              timeoutId = setTimeout(resolve, maxWaitMs);
+            });
+            await Promise.race([waitPromise, timeoutPromise]);
+          } else {
+            await waitPromise;
+          }
+        } catch (error) {
+          if (
+            typeof process !== "undefined" &&
+            process?.env?.NODE_ENV !== "production" &&
+            typeof console !== "undefined" &&
+            typeof console.warn === "function"
+          ) {
+            console.warn("waitForDelayedOpponentPromptDisplay failed:", error);
+          }
+        } finally {
+          if (timeoutId !== null && typeof clearTimeout === "function") {
+            clearTimeout(timeoutId);
+          }
+        }
+      }
+      if (!activeCountdown || activeCountdown !== countdownSnapshot) {
+        return;
       }
       timer.start(duration);
     } catch (err) {

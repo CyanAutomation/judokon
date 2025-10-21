@@ -20,6 +20,14 @@ function safeNow() {
 
 const PROMPT_READY_EVENT = "opponentPromptReady";
 
+/**
+ * @summary Shared poll interval for opponent prompt readiness checks in milliseconds.
+ * @pseudocode DEFAULT_PROMPT_POLL_INTERVAL_MS = 75
+ * @type {number}
+ * @constant
+ */
+export const DEFAULT_PROMPT_POLL_INTERVAL_MS = 75;
+
 function resolvePromptReadyRegistrar(eventName, options = {}) {
   if (options && typeof options.onEvent === "function" && typeof options.offEvent === "function") {
     return (handler) => {

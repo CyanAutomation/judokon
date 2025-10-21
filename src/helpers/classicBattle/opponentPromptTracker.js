@@ -77,6 +77,22 @@ export function getOpponentPromptTimestamp() {
 }
 
 /**
+ * @summary Determines whether the opponent prompt is currently ready.
+ * @returns {boolean} True when a valid prompt timestamp has been recorded.
+ * @pseudocode
+ * 1. Read the module-scoped `lastPromptTimestamp` value.
+ * 2. Return `true` when the timestamp is a finite positive number.
+ * 3. Return `false` for all other cases or if an error is thrown.
+ */
+export function isOpponentPromptReady() {
+  try {
+    return Number.isFinite(lastPromptTimestamp) && lastPromptTimestamp > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * @summary Resets the opponent prompt timestamp to 0.
  * @returns {void}
  * @pseudocode
