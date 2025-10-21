@@ -209,7 +209,7 @@ export function getRoundMessageEl() {
  * 3. In test mode, skip the delay and immediately re-enable.
  *
  * @param {object} [scheduler] - Optional scheduler with `onFrame` and `cancel`.
- * @returns {void}
+ * @returns {Promise<void>} Resolves after buttons are re-enabled.
  */
 export function resetStatButtons(
   scheduler = {
@@ -221,6 +221,18 @@ export function resetStatButtons(
     trace("resetStatButtons:begin");
   } catch {}
   const { onFrame, cancel } = scheduler;
+  const usingFakeTimers = (() => {
+    try {
+      if (typeof globalThis?.vi?.isFakeTimers === "function") {
+        return globalThis.vi.isFakeTimers();
+      }
+      const timeout = globalThis?.setTimeout;
+      return Boolean(timeout && typeof timeout === "function" && typeof timeout?.clock === "object");
+    } catch {
+      return false;
+    }
+  })();
+  const enablePromises = [];
   getStatButtons().forEach((btn) => {
     if (!btn) {
       return;
@@ -231,57 +243,107 @@ export function resetStatButtons(
     btn.disabled = true;
     if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
     void btn.offsetWidth;
-    const enableButton = () => {
-      btn.disabled = false;
-      btn.classList.remove("disabled");
-      btn.style.backgroundColor = "";
-      btn.blur();
-    };
-    if (isEnabled("enableTestMode")) {
-      enableButton();
-      return;
-    }
-    // Guard against multiple invocations when both the scheduler callback and
-    // the fallback race to re-enable the button.
-    let didRun = false;
-    const runEnableOnce = () => {
-      if (didRun) return;
-      didRun = true;
-      enableButton();
-    };
-    let cancelFallback;
-    const runAndCancelFallback = () => {
-      if (typeof cancelFallback === "function") {
+    const enablePromise = new Promise((resolve) => {
+      let finished = false;
+      let cancelFallback;
+      const enableButton = () => {
         try {
-          cancelFallback();
+          btn.disabled = false;
+          btn.classList.remove("disabled");
+          btn.style.backgroundColor = "";
+          btn.blur();
         } catch {}
-        cancelFallback = undefined;
-      }
-      runEnableOnce();
-    };
-    if (typeof onFrame !== "function") {
-      runEnableOnce();
-      return;
-    }
-    let frameId;
-    try {
-      frameId = onFrame(() => {
-        runAndCancelFallback();
-        if (typeof cancel === "function" && typeof frameId === "number" && !Number.isNaN(frameId)) {
-          cancel(frameId);
+        resolve();
+      };
+      const finishOnce = () => {
+        if (finished) return;
+        finished = true;
+        if (typeof cancelFallback === "function") {
+          try {
+            cancelFallback();
+          } catch {}
+          cancelFallback = undefined;
         }
-      });
-    } catch {
-      runEnableOnce();
-      return;
-    }
-    if (typeof frameId !== "number" || Number.isNaN(frameId)) {
-      runEnableOnce();
-      return;
-    }
-    cancelFallback = scheduleImmediate(runEnableOnce);
+        enableButton();
+      };
+      const scheduleFallback = (task) => {
+        if (typeof globalThis?.setTimeout === "function") {
+          const timeoutId = globalThis.setTimeout(() => {
+            task();
+          }, 16);
+          return () => {
+            try {
+              globalThis.clearTimeout?.(timeoutId);
+            } catch {}
+          };
+        }
+        if (typeof globalThis?.queueMicrotask === "function") {
+          let cancelled = false;
+          globalThis.queueMicrotask(() => {
+            if (cancelled) return;
+            cancelled = true;
+            task();
+          });
+          return () => {
+            cancelled = true;
+          };
+        }
+        if (typeof globalThis?.Promise === "function") {
+          let cancelled = false;
+          globalThis.Promise.resolve()
+            .then(() => {
+              if (cancelled) return;
+              cancelled = true;
+              task();
+            })
+            .catch(() => {
+              if (cancelled) return;
+              cancelled = true;
+              task();
+            });
+          return () => {
+            cancelled = true;
+          };
+        }
+        task();
+        return () => {};
+      };
+      if (isEnabled("enableTestMode") || usingFakeTimers) {
+        finishOnce();
+        return;
+      }
+      if (typeof onFrame !== "function") {
+        finishOnce();
+        return;
+      }
+      let frameId;
+      const handleFrame = () => {
+        if (typeof cancel === "function" && typeof frameId === "number" && !Number.isNaN(frameId)) {
+          try {
+            cancel(frameId);
+          } catch {}
+        }
+        finishOnce();
+      };
+      try {
+        frameId = onFrame(handleFrame);
+      } catch {
+        finishOnce();
+        return;
+      }
+      if (typeof frameId !== "number" || Number.isNaN(frameId)) {
+        finishOnce();
+        return;
+      }
+      cancelFallback = scheduleFallback(finishOnce);
+    });
+    enablePromises.push(enablePromise);
   });
   trace("resetStatButtons:scheduledEnable");
+  if (enablePromises.length === 0) {
+    return Promise.resolve();
+  }
+  return Promise.all(enablePromises).then(() => {});
 }
 
 let cancelFade;
