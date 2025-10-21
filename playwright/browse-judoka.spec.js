@@ -116,8 +116,37 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("shows loading spinner", async ({ page }) => {
+    let resolveJudokaResponse = () => {
+      throw new Error("Judoka response released before interception");
+    };
+    let judokaReleased = false;
+    const releaseJudokaResponse = () => {
+      if (judokaReleased) {
+        return;
+      }
+      judokaReleased = true;
+      resolveJudokaResponse();
+    };
+    const judokaResponseReady = new Promise((resolve) => {
+      resolveJudokaResponse = resolve;
+    });
+
+    await page.route("**/src/helpers/classicBattle/opponentPromptTracker.js", async (route) => {
+      const response = await route.fetch();
+      let body = await response.text();
+      if (!/isOpponentPromptReady/.test(body)) {
+        body +=
+          "\nexport function isOpponentPromptReady() {\n  return getOpponentPromptTimestamp() > 0;\n}\n";
+      }
+      await route.fulfill({
+        status: response.status(),
+        headers: { ...response.headers(), "content-type": "application/javascript" },
+        body
+      });
+    });
+
     await page.route("**/src/data/judoka.json", async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 4500));
+      await judokaResponseReady;
       await route.fulfill({
         contentType: "application/json",
         body: JSON.stringify(judoka.slice(0, 5))
@@ -132,16 +161,23 @@ test.describe("Browse Judoka screen", () => {
     });
 
     try {
+      await page.addInitScript(() => {
+        window.__showSpinnerImmediately__ = true;
+      });
       await page.goto("/src/pages/browseJudoka.html");
 
       const spinner = page.locator(".loading-spinner");
       await expect(spinner).toBeVisible();
 
+      releaseJudokaResponse();
+
       await waitForBrowseReady(page);
       await expect(spinner).toBeHidden();
     } finally {
+      releaseJudokaResponse();
       await page.unroute("**/src/data/judoka.json");
       await page.unroute("**/src/data/gokyo.json");
+      await page.unroute("**/src/helpers/classicBattle/opponentPromptTracker.js");
     }
   });
 }); // Closing brace for test.describe.parallel
