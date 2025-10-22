@@ -102,7 +102,13 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     document.body.innerHTML = `
       <input id="tooltip-search" />
       <ul id="tooltip-list"></ul>
-      <div id="tooltip-preview"></div>
+      <details id="tooltip-preview-container" class="preview-container">
+        <summary class="preview-summary">
+          <span class="summary-label summary-label--closed">Expand preview</span>
+          <span class="summary-label summary-label--open">Collapse preview</span>
+        </summary>
+        <div id="tooltip-preview" class="preview-body"></div>
+      </details>
       <div id="tooltip-warning"></div>
       <pre id="tooltip-raw"></pre>
       <button id="copy-key-btn"></button>
@@ -118,6 +124,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     Element.prototype.scrollIntoView = originalScrollIntoView;
     location.hash = originalHash;
     vi.useRealTimers();
+    window.dispatchEvent(new Event("pagehide"));
   });
 
   it("updates preview when a list item is clicked (legacy)", async () => {
@@ -203,13 +210,39 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     const item = document.querySelector("#tooltip-list li");
     item.click();
 
-    const toggle = document.getElementById("toggle-preview-btn");
-    const container = preview.parentElement;
-    expect(toggle.hidden).toBe(false);
-    expect(container.classList.contains("expanded")).toBe(false);
-    toggle.click();
-    expect(container.classList.contains("expanded")).toBe(true);
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const container = document.getElementById("tooltip-preview-container");
+    expect(container.dataset.collapsible).toBe("true");
+    expect(container.open).toBe(false);
+
+    const summary = container.querySelector("summary");
+    summary.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(container.open).toBe(true);
+
+    summary.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(container.open).toBe(false);
+  });
+
+  it("keeps preview expanded and hides summary when content is short", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.tip": "short" }));
+
+    await init(mod);
+
+    const preview = document.getElementById("tooltip-preview");
+    Object.defineProperty(preview, "scrollHeight", { value: 200, configurable: true });
+
+    const item = document.querySelector("#tooltip-list li");
+    item.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const container = document.getElementById("tooltip-preview-container");
+    expect(container.dataset.collapsible).toBe("false");
+    expect(container.open).toBe(true);
   });
 
   it("shows feedback when copying", async () => {
@@ -347,6 +380,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     const removeSpy = vi.spyOn(searchInput, "removeEventListener");
     const setSpy = vi.spyOn(globalThis, "setTimeout");
     const clearSpy = vi.spyOn(globalThis, "clearTimeout");
+    const removeResizeSpy = vi.spyOn(window, "removeEventListener");
 
     await init(mod);
 
@@ -358,10 +392,12 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     window.dispatchEvent(new Event("pagehide"));
     expect(clearSpy).toHaveBeenCalledWith(timerId);
     expect(removeSpy).toHaveBeenCalledWith("input", expect.any(Function));
+    expect(removeResizeSpy).toHaveBeenCalledWith("resize", expect.any(Function));
 
     setSpy.mockRestore();
     clearSpy.mockRestore();
     removeSpy.mockRestore();
+    removeResizeSpy.mockRestore();
     timers.cleanup();
   });
 });
