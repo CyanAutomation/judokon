@@ -235,6 +235,10 @@ export async function startMatchAndAwaitStats(page, selector) {
 const ROUND_OVER_STATE = "roundOver";
 const WAITING_FOR_PLAYER_ACTION = "waitingForPlayerAction";
 const COOLDOWN_STATE = "cooldown";
+const MATCH_DECISION_STATE = "matchDecision";
+const MATCH_OVER_STATE = "matchOver";
+
+const MATCH_END_STATES = [MATCH_DECISION_STATE, MATCH_OVER_STATE];
 
 /**
  * Safely retrieves the current battle state, returning a fallback value if an error occurs.
@@ -270,7 +274,7 @@ async function attemptCliResolution(page, hasResolved) {
     .catch(() => false);
 
   const stateAfterCli = await safeGetBattleState(page);
-  const resolved = stateAfterCli === ROUND_OVER_STATE ? true : await hasResolved();
+  const resolved = stateAfterCli === ROUND_OVER_STATE;
 
   return { resolved, stateAfterCli };
 }
@@ -404,7 +408,30 @@ async function clickNextButtonFallback(page, { hasResolved, stateAfterCli, state
 }
 
 async function resolveRoundDeterministic(page) {
-  const hasResolved = async () => (await safeGetBattleState(page)) === ROUND_OVER_STATE;
+  const hasResolved = async () => {
+    const state = await safeGetBattleState(page);
+    if (state === ROUND_OVER_STATE) {
+      return true;
+    }
+
+    if (typeof state !== "string" || !MATCH_END_STATES.includes(state)) {
+      return false;
+    }
+
+    const diagnostics = await readBattleStateDiagnostics(page);
+    if (!diagnostics || diagnostics.error) {
+      return false;
+    }
+
+    const snapshot =
+      diagnostics.snapshot && typeof diagnostics.snapshot === "object"
+        ? diagnostics.snapshot
+        : null;
+    const log = Array.isArray(snapshot?.log) ? snapshot.log : [];
+    const prev = typeof snapshot?.prev === "string" ? snapshot.prev : null;
+
+    return matchFlowAdvancedBeyondRoundOver(state, log, prev);
+  };
 
   const { resolved: resolvedViaCli, stateAfterCli } = await attemptCliResolution(page, hasResolved);
   if (resolvedViaCli) {
@@ -425,7 +452,7 @@ async function resolveRoundDeterministic(page) {
 }
 
 function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
-  if (state !== "cooldown") {
+  if (state !== COOLDOWN_STATE) {
     return false;
   }
 
@@ -435,8 +462,8 @@ function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
       if (!entry || typeof entry !== "object") {
         continue;
       }
-      if (entry.to === "cooldown") {
-        if (entry.from === "roundOver") {
+      if (entry.to === COOLDOWN_STATE) {
+        if (entry.from === ROUND_OVER_STATE) {
           return true;
         }
         for (let prior = index - 1; prior >= 0; prior -= 1) {
@@ -444,17 +471,54 @@ function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
           if (!previous || typeof previous !== "object") {
             continue;
           }
-          return previous.to === "roundOver";
+          return previous.to === ROUND_OVER_STATE;
         }
         return false;
       }
-      if (entry.to === "roundOver") {
+      if (entry.to === ROUND_OVER_STATE) {
         return true;
       }
     }
   }
 
-  return prev === "roundOver";
+  return prev === ROUND_OVER_STATE;
+}
+
+function matchFlowAdvancedBeyondRoundOver(state, log, prev) {
+  if (!MATCH_END_STATES.includes(state)) {
+    return false;
+  }
+
+  if (prev === ROUND_OVER_STATE) {
+    return true;
+  }
+
+  if (!Array.isArray(log)) {
+    return false;
+  }
+
+  let trackingTerminal = false;
+
+  for (let index = log.length - 1; index >= 0; index -= 1) {
+    const entry = log[index];
+    if (!entry || typeof entry !== "object") {
+      continue;
+    }
+
+    if (MATCH_END_STATES.includes(entry.to)) {
+      trackingTerminal = true;
+      if (entry.from === ROUND_OVER_STATE) {
+        return true;
+      }
+      continue;
+    }
+
+    if (trackingTerminal && entry.to === ROUND_OVER_STATE) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 async function readBattleStateDiagnostics(page) {
@@ -508,7 +572,7 @@ async function readBattleStateDiagnostics(page) {
  * Confirm that the round has resolved by inspecting current state transitions.
  * @pseudocode
  * POLL the battle state and debug snapshot via the Test API.
- * DETECT resolution when the state is "roundOver" or when "cooldown" immediately follows "roundOver".
+ * DETECT resolution when the state is "roundOver", when "cooldown" immediately follows, or when match-end states follow "roundOver".
  * THROW with diagnostic details if neither condition is observed before the timeout.
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {{ timeout?: number, message?: string }} [options] - Polling configuration
@@ -517,7 +581,8 @@ async function readBattleStateDiagnostics(page) {
 export async function confirmRoundResolved(page, options = {}) {
   const {
     timeout = 3_000,
-    message = 'Expected battle state to reach "roundOver" (or immediately enter cooldown) after deterministic resolution'
+    message =
+      'Expected battle state to reach "roundOver" (or progress into cooldown/match end) after deterministic resolution'
   } = options;
 
   await expect
@@ -544,11 +609,18 @@ export async function confirmRoundResolved(page, options = {}) {
         const log = Array.isArray(snapshot?.log) ? snapshot.log : [];
         const prev = typeof snapshot?.prev === "string" ? snapshot.prev : null;
         const cooldownAfterRoundOver = cooldownImmediatelyFollowsRoundOver(currentState, log, prev);
+        const matchEndedAfterRoundOver =
+          matchFlowAdvancedBeyondRoundOver(currentState, log, prev) ||
+          (stateFromSnapshot
+            ? matchFlowAdvancedBeyondRoundOver(stateFromSnapshot, log, prev)
+            : false);
 
         return {
-          resolved: currentState === "roundOver" || cooldownAfterRoundOver,
+          resolved:
+            currentState === ROUND_OVER_STATE || cooldownAfterRoundOver || matchEndedAfterRoundOver,
           state: currentState,
           cooldownAfterRoundOver,
+          matchEndedAfterRoundOver,
           snapshotState: stateFromSnapshot,
           snapshotPrev: prev,
           lastLogEntry: log.length ? log[log.length - 1] : null
