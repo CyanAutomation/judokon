@@ -1,80 +1,103 @@
-# QA Report — Random Judoka page (src/helpers/randomJudokaPage.js)
+# QA Report: Random Judoka Page
 
-This file summarises accessibility and UX issues found during QA for the Random Judoka page, verifies which problems are present in the codebase, and proposes concrete, feasible fixes. I verified code references directly in the repository and updated the report to correct a few inaccuracies from the initial draft.
-| Issue | Evidence / reproduction | Impact |
-|---|---|---|
-| Screen-reader announcement may read “undefined” | `displayCard()` (in `src/helpers/randomJudokaPage.js`) calls `announceCard(announcedJudoka.name)`. The judoka objects returned by `generateRandomCard()`/`pickJudoka()` expose `firstname` and `surname` (see `src/helpers/cardRender.js` and `src/data/judoka.json`). `announceCard()` expects a single string name; many judoka objects do not have a `name` property, so the live region may receive `undefined`. | High — screen readers will say “New card drawn: undefined”, which is confusing and reduces accessibility. |
-| Global motion/sound settings handling is partial | The page reads motion preference via `initFeatureFlags()` → `settings.motionEffects` and calls `applyMotionPreference()` (see `src/helpers/randomJudokaPage.js` and `src/helpers/motionUtils.js`). However, there are no audio playback calls in the Random page (no sounds currently implemented), and the code does not explicitly gate animations or audio playback with the global `settings.sound` flag (sound toggle exists in `src/pages/settings.html`). | Medium — motion preference is respected in some paths but global sound/motion settings are not consistently enforced for all effects. |
-| No audio feedback implemented | I found no audio API usage (no new Audio(...) or play() calls) in `src/helpers/**` for random card drawing. `settings.html` has a sound toggle, but nothing uses it here. | Low/Optional — missing sound reduces sensory feedback but is listed as optional in the PRD. |
-| Internal vertical scrolling inside card | CSS for `.judoka-card` sets a fixed aspect/height and `overflow-y: visible` but the inner content can overflow the fixed card height on some data (long names, multi-line bios). Some cards can show scrollbars depending on browser rendering or if content is injected differently. Repro: draw a card with long text (e.g., entry with many stats/bio) on a narrow viewport. | Medium — hidden content hurts readability, especially for younger users. |
-| Reduced-motion should cover more effects | The codebase has `@media (prefers-reduced-motion: reduce)` rules in multiple stylesheets and `applyMotionPreference()` helper; however, some transitions (e.g., button scale on hover, history panel transform) depend on CSS transitions that may not be uniformly wrapped. `randomJudokaPage.js` already computes a `prefersReducedMotion` and passes it into `getHistoryPanelTransition()`. | Medium — users who request reduced motion could still experience subtle movement if any effect is missed. |
-| Portraits include alt text (original report incorrect) | `generateCardPortrait()` (in `src/helpers/cardRender.js`) builds an `<img>` with an `alt` attribute containing the judoka's full name (`alt="${escapedFirstname} ${escapedSurname}"`). The `createPortraitSection()` converts that HTML into a DOM node. | Low — already implemented. Report updated to correct this. |
-| Draw button state already implements aria-busy | The draw button is controlled by `createDrawCardStateMachine()` (see `src/helpers/drawCardStateMachine.js`) and sets `aria-busy` during `DRAWING` and `SUCCESS` states. The button text is updated using `updateDrawButtonLabel()`. Playwright tests already assert `aria-busy` behavior. | Low — basic ARIA is present, but additional live announcements could improve clarity. |
-| Contrast/tap target checks not automated | The code enforces touch target sizes in components (styles reference minimum sizes), but there is no runtime contrast verification. The PRD recommends verifying WCAG AA contrast ratios (≥4.5:1). | Medium — may be a risk on some devices/skins; automated checks recommended. |
-| Responsiveness edge cases | The layout uses `min-height: 60dvh` for the card container and a large floating draw button, but on very short viewports or landscape mode the button could be pushed off-screen. Repro: narrow, short viewport or rotate device. | Medium — users may be unable to find the Draw button after rotation. |
-Summary of code verification
-- `announceCard(judokaName)` exists in `src/helpers/randomJudokaPage.js` and is called with `announcedJudoka.name` (line ~337). (Confirmed)
-- The portrait markup includes an `<img>` with an `alt` attribute — `generateCardPortrait()` sets `alt="<firstname> <surname>"`. (Confirmed)
-- Motion preference handling exists (`applyMotionPreference`) and settings are read from `initFeatureFlags()`; reduced-motion CSS rules exist in multiple stylesheets. (Confirmed)
-- There is no audio playback implementation for the draw action found in `src/helpers/**`. (Confirmed)
-- The draw button state machine sets `aria-busy` and updates text via `updateDrawButtonLabel()`. (Confirmed)
-Recommended fixes and concrete changes
-- Fix announceCard usage (priority):
-	- Recommended change: call `announceCard(`${announcedJudoka.firstname} ${announcedJudoka.surname}`)` instead of using `announcedJudoka.name`, or add a `name` getter when constructing/normalizing judoka objects (e.g., in `pickJudoka()` or `getFallbackJudoka()`).
-	- Also add a short live announcement when the draw begins (e.g., write to the same `#card-announcer` element: `Drawing card…`) or set `aria-busy` on the card container so AT users get immediate feedback. This complements the existing `aria-busy` on the draw button.
-- Ensure global settings fully gate motion and sound:
-	- Motion: ensure `applyMotionPreference()` is called early (already is) and that any runtime animations toggle a `data-motion-disabled` body attribute or use `prefers-reduced-motion` media query; add defensive checks in JS where animations are triggered (e.g., before adding `.new-card`).
-	- Sound: implement a short chime (<=1s) played only when `settings.sound` is true. Centralise audio playback behind a small helper (e.g., `src/helpers/audioUtils.js`) that checks the persisted settings before calling `Audio.play()`.
-- Stop internal card scrolling:
-	- Option A (preferred): make the `.card-container` and `.judoka-card` layout flexible (CSS grid/flex) so the card expands as needed while keeping controls pinned with `position: sticky` or a fixed footer. Ensure `.judoka-card` uses `overflow: visible` and has predictable height via `aspect-ratio` + `max-height`.
-	- Option B: truncate long bio/stats and provide a `details`/`summary` or “More” control to expand content.
-- Apply reduced-motion defensively:
-	- Wrap all animations/transitions (card reveal, button press, history panel, micro-animations) with `@media (prefers-reduced-motion: reduce)` or check `settings.motionEffects` before triggering class changes in JS.
+This report summarizes accessibility and UX issues found on the Random Judoka page (`src/helpers/randomJudokaPage.js`). It verifies the problems present in the codebase and proposes concrete, feasible fixes.
 
-- Portraits: no change required — keep current alt attribute pattern. For unknown portraits the `onerror` handler falls back to a silhouette (already implemented in `cardRender.js`).
+## Summary of Issues
 
-- Loading state feedback improvements:
-	- Keep `aria-busy` on the draw button (already present). Add a short `aria-live` message when drawing starts (`card-announcer.textContent = 'Drawing card…'`) and then update to `New card drawn: <name>` when ready. Keep messages `aria-atomic` to ensure they're read correctly.
+| ID | Issue | Impact | Priority |
+|---|---|---|---|
+| 1 | Screen-reader announcement may read “undefined” | High | High |
+| 2 | Global motion/sound settings handling is partial | Medium | Medium |
+| 3 | No audio feedback implemented | Low/Optional | Low |
+| 4 | Internal vertical scrolling inside card | Medium | Medium |
+| 5 | Reduced-motion should cover more effects | Medium | Medium |
+| 6 | Portraits include alt text (Verified) | Low | N/A |
+| 7 | Draw button state implements `aria-busy` (Verified) | Low | N/A |
+| 8 | Contrast/tap target checks not automated | Medium | Medium |
+| 9 | Responsiveness edge cases | Medium | High |
 
-- Contrast & tap targets:
-	- Add a small runtime check during dev builds that uses an existing color-contrast helper or a11y library to assert contrast ratios for theme colours and warn in console if they fail. Tests: add one Playwright/a11y run that captures contrast for the primary CTA.
+---
 
-- Responsiveness:
-	- Ensure the draw button is anchored (sticky/fixed) above the safe-area/footer on small viewports and test landscape orientation. Consider `position: sticky` inside the card-section or a `fixed` footer action bar for small screens.
+## Detailed Analysis and Recommendations
 
-- Deterministic testing:
-	- Expose an optional `seed` parameter to `getRandomJudoka()` / `generateRandomCard()` used only in test mode (feature flag/test hook) so Playwright tests can reproduce sequences.
+### 1. Screen-Reader Announcement Reads "undefined"
 
-Next steps I can take now (pick one or let me proceed):
-1. Create a small patch to fix `announceCard(announcedJudoka.name)` → safe full-name usage and add a short "Drawing…" live update. (small, low-risk)
-2. Implement a tiny `audioUtils.js` wrapper and add a short chime triggered after successful draw when `settings.sound` is true. (medium effort)
-3. Tidy CSS to ensure `prefers-reduced-motion` covers all micro-animations — requires scanning styles and adding missing media queries. (medium effort)
+*   **Issue:** The screen reader announcement for a new card says "New card drawn: undefined".
+*   **Evidence:** `displayCard()` in `src/helpers/randomJudokaPage.js` calls `announceCard(announcedJudoka.name)`. The judoka objects from `generateRandomCard()` and `pickJudoka()` have `firstname` and `surname` properties, but no `name` property (see `src/data/judoka.json`).
+*   **Impact:** This is confusing for screen reader users and reduces accessibility.
+*   **Recommendation:**
+    *   **Immediate Fix:** Change the call to `announceCard(${announcedJudoka.firstname} ${announcedJudoka.surname})`.
+    *   **Long-term Fix:** Add a `name` getter when constructing or normalizing judoka objects.
+    *   **Additional Improvement:** Add a live announcement when the draw begins (e.g., "Drawing card…") to provide immediate feedback.
 
-If you want me to apply any of the concrete fixes now I can implement option 1 (announceCard) immediately and run tests. Otherwise I'll wait for your instruction.
+### 2. Global Motion/Sound Settings Handling is Partial
 
-```
-QA Report for src/pages/randomJudoka.html
+*   **Issue:** The page respects the OS-level `prefers-reduced-motion` setting but does not consistently use the application's global `settings.sound` and `settings.motionEffects` flags.
+*   **Evidence:** `randomJudokaPage.js` reads motion preferences via `initFeatureFlags()` and calls `applyMotionPreference()`. However, there are no audio playback calls, and animations are not consistently gated by the global settings.
+*   **Impact:** Users who disable motion or sound in the settings may still experience them.
+*   **Recommendation:**
+    *   **Motion:** Ensure `applyMotionPreference()` is called early and that all animations are wrapped in `@media (prefers-reduced-motion: reduce)` or check `settings.motionEffects` in JavaScript.
+    *   **Sound:** Implement a centralized audio helper (e.g., `src/helpers/audioUtils.js`) that checks `settings.sound` before playing any audio.
 
-| Issue                                                         | Steps to reproduce / evidence                                                                                                                                                                                                                                                                                                                                                                      | Impact                                                                                                                                                         |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Screen‑reader announcement uses undefined name**            | After a card is drawn, `displayCard()` calls `announceCard(announcedJudoka.name)`. The judoka objects use `firstname` and `surname` fields; many have no `name` property, causing the announcement “New card drawn: undefined” in the ARIA‑live region.                                                                                                                                            | Accessibility bug—screen readers do not announce the drawn judoka’s name, reducing clarity for blind users and failing to meet ARIA expectations.              |
-| **Global motion/sound settings ignored**                      | The code respects OS‑level reduced‑motion via `matchMedia`, but it does not read the global motion or sound preferences from `settings.html`, even though the PRD calls for honoring global sound/motion settings. `applyMotionPreference()` is called for motion, but the `settings.html` value is only used inside the feature‑flags module. No check is made before playing animation or audio. | Users who disable motion or sound in the settings page may still see animations or cannot enable sound; violates PRD tasks 4.1 and 5.0.                        |
-| **Audio feedback not implemented**                            | There is no chime or swoosh sound when drawing cards. The PRD lists this as an optional enhancement, but nothing calls an audio API or checks the sound setting.                                                                                                                                                                                                                                   | Reduces sensory feedback and delight; the absence of optional sound may disappoint players expecting celebratory audio.                                        |
-| **Judoka card scrolls internally**                            | Many judoka cards are taller than the container; a vertical scrollbar appears inside the card (e.g., Leilani Akiyama’s card has a scroll bar at the right side). This makes stats hidden unless the user scrolls within the card, which is not intuitive for children.                                                                                                                             | Hurts readability and engagement; players may miss important stats or signature moves.                                                                         |
-| **Reduced‑motion applied only to animation, not all effects** | The CSS only disables the `.new-card` slide‐in animation under `prefers-reduced-motion`; other transitions (button scale‑in, history panel sliding) still play. The PRD requires all card reveal animations to be disabled when reduced motion is active.                                                                                                                                          | Users with motion sensitivity may still experience subtle motion, causing discomfort.                                                                          |
-| **Missing alt text for portrait images**                      | The judoka portraits are inserted via CSS background images or `<img>` tags within `createPortraitSection` (not inspected here), but there is no evidence of `alt` attributes on those images. Without alt text, screen readers cannot describe the portraits.                                                                                                                                     | Minor but reduces accessibility.                                                                                                                               |
-| **Draw button label does not localize across states**         | When drawing, the button text changes to “Drawing…” (with an ellipsis). The ARIA label stays constant, but there is no live region announcement that a draw is in progress.                                                                                                                                                                                                                        | Screen‑reader users may not know that loading is happening; adding `aria-busy` helps, but additional ARIA‑live announcements could improve clarity.            |
-| **Contrast and tap target validation not verified**           | The code defines large buttons and uses accessible colours, but there is no runtime check of contrast ratios. The PRD (Task 3.1) calls for verifying WCAG AA contrast and tap target sizes.                                                                                                                                                                                                        | Potential accessibility violation if the red or blue colours fail contrast on certain screens; manual/automated checking is needed.                            |
-| **Responsiveness not fully tested**                           | On smaller screen widths or landscape mode, the Draw button may not remain above the fixed navigation bar; the PRD requires adjusting layout to keep the button visible. The current layout sets `min-height:50dvh`, but the vertical card may still push the button off‑screen.                                                                                                                   | Could cause frustration if children cannot find the Draw button after rotating the device.                                                                     |
+### 3. No Audio Feedback Implemented
 
-Improvement opportunities
-Fix screen‑reader announcements – Modify announceCard() to accept firstname and surname (e.g. announceCard(${judoka.firstname} ${judoka.surname})) or add a name property when constructing judoka objects. Announce “New card drawn: [name]” via an ARIA‑live region, and provide an additional announcement when drawing starts (e.g., “Drawing card…”).
-Read motion and sound preferences from settings.html – Import the global settings and disable animations or audio when users have toggled them off. Provide a chime sound (<1 s) that plays only when sound is enabled. This aligns with Tasks 4.1 and 5.1.
-Eliminate internal card scrolling – Make the card container tall enough to show all stats, or shrink content. Alternatively, allow vertical expansion and ensure the Draw button stays visible by using CSS flex or grid layouts. Consider summarizing stats in collapsed sections to avoid scroll bars.
-Disable all motion effects under reduced‑motion – Wrap slide‑in and scale animations (including the history panel transition and button press animation) in CSS media queries or conditional classes so that they turn off when reduced motion is detected.
-Add alt text to portraits – Ensure createPortraitSection() inserts <img alt="Portrait of [name]"> so screen readers can describe images. For silhouettes or unknown portraits, use alt="Portrait placeholder".
-Provide stronger feedback for the loading state – Announce that a card is being drawn and consider adding a spinner or progress indicator on the button while disabled. Use aria-live and aria-busy appropriately.
-Test contrast and tap targets – Run automated checks or integrate a runtime validator to confirm colours meet WCAG 2.1 AA (≥4.5:1). Ensure buttons remain ≥64 px high on all devices.
-Optimize responsiveness – Test the layout across breakpoints (mobile portrait/landscape, tablets). Use min-height and safe‑area insets to guarantee the Draw button and history toggle are always visible above the footer, as outlined in Task 7.1. Add orientation‑based styles if necessary.
-Consider deterministic randomization for tests – Expose a seed to getRandomJudoka() via URL or test API for integration tests; ensures repeatable results in Playwright tests.
+*   **Issue:** There is no sound effect when drawing a card.
+*   **Evidence:** No audio API usage (`new Audio()` or `.play()`) was found in the relevant helper files.
+*   **Impact:** This is a low-priority issue, but adding sound would improve sensory feedback.
+*   **Recommendation:** Implement a short chime (≤1s) that plays on a successful draw, gated by the `settings.sound` flag.
 
+### 4. Internal Vertical Scrolling Inside Card
+
+*   **Issue:** The content of a judoka card can overflow its fixed height, causing internal scrolling or hidden content.
+*   **Evidence:** The `.judoka-card` CSS sets a fixed aspect ratio and height, with `overflow-y: visible`. On smaller viewports or with long content, this can lead to overflow.
+*   **Impact:** Important information can be hidden from the user, harming readability.
+*   **Recommendation:**
+    *   **Preferred:** Use a flexible layout (CSS Grid/Flexbox) to allow the card to expand vertically as needed, while keeping controls pinned.
+    *   **Alternative:** Truncate long text and provide a "More" button to expand the content.
+
+### 5. Reduced-Motion Should Cover More Effects
+
+*   **Issue:** Not all animations and transitions are disabled when `prefers-reduced-motion` is enabled.
+*   **Evidence:** Some CSS transitions (e.g., button scaling, history panel transform) are not wrapped in a `prefers-reduced-motion` media query.
+*   **Impact:** Users with motion sensitivity may still experience unwanted movement.
+*   **Recommendation:** Wrap all animations and transitions with `@media (prefers-reduced-motion: reduce)` or a similar check in JavaScript.
+
+### 6. Portraits Include Alt Text (Verified)
+
+*   **Issue:** The original report incorrectly stated that portrait images were missing `alt` text.
+*   **Evidence:** `generateCardPortrait()` in `src/helpers/cardRender.js` correctly builds an `<img>` with an `alt` attribute: `alt="${escapedFirstname} ${escapedSurname}" `.
+*   **Impact:** This is already implemented correctly. No action is needed.
+
+### 7. Draw Button State Implements `aria-busy` (Verified)
+
+*   **Issue:** The original report questioned the implementation of the draw button's loading state.
+*   **Evidence:** `createDrawCardStateMachine()` in `src/helpers/drawCardStateMachine.js` correctly sets `aria-busy="true"` during the `DRAWING` and `SUCCESS` states.
+*   **Impact:** The basic ARIA implementation is correct. Additional live announcements could further improve clarity.
+
+### 8. Contrast/Tap Target Checks Not Automated
+
+*   **Issue:** There is no automated verification for color contrast and tap target sizes.
+*   **Evidence:** The PRD recommends verifying WCAG AA contrast ratios (≥4.5:1), but this is not part of the automated testing process.
+*   **Impact:** There is a risk of accessibility failures on some devices or with certain themes.
+*   **Recommendation:** Add a runtime contrast check during development builds and include an accessibility audit in the Playwright test suite.
+
+### 9. Responsiveness Edge Cases
+
+*   **Issue:** On very short or narrow viewports (e.g., landscape mode on a phone), the "Draw Card" button can be pushed off-screen.
+*   **Evidence:** The layout uses `min-height: 60dvh` for the card container, which can cause the floating draw button to be pushed out of the viewport.
+*   **Impact:** Users may be unable to use the main feature of the page.
+*   **Recommendation:** Anchor the draw button using `position: sticky` or a fixed footer to ensure it is always visible.
+
+---
+
+## Conclusion and Next Steps
+
+The most critical issues to address are the screen reader announcement bug and the responsiveness problem with the draw button. The other issues are also important for improving the overall user experience and accessibility of the page.
+
+I can proceed with the following actions:
+
+1.  **Fix the screen-reader announcement:** Implement the recommended fix to announce the judoka's full name.
+2.  **Implement audio feedback:** Create a simple `audioUtils.js` helper and add a chime for drawing a card.
+3.  **Improve reduced-motion coverage:** Audit the CSS and add missing `prefers-reduced-motion` media queries.
+
+Please let me know which of these fixes you would like me to implement, or if you have other instructions.

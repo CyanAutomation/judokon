@@ -1,4 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+vi.mock("../../../src/helpers/settings/collapsibleSections.js", () => ({
+  ensureSectionOpen: vi.fn()
+}));
+
+import { ensureSectionOpen } from "../../../src/helpers/settings/collapsibleSections.js";
 import {
   setupAdvancedSettingsSearch,
   reapplyAdvancedSettingsFilter
@@ -37,6 +43,7 @@ describe("setupAdvancedSettingsSearch", () => {
   let statusNode;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     document.body.innerHTML = `
       <div class="advanced-settings-search">
         <label for="advanced-settings-search">Search feature flags</label>
@@ -90,6 +97,7 @@ describe("setupAdvancedSettingsSearch", () => {
     expect(visibleAfterFilter[0].querySelector("span").textContent).toBe("Card Inspector");
     expect(statusNode.textContent).toBe("Showing 1 of 3 feature flags");
     expect(emptyState.hidden).toBe(true);
+    expect(ensureSectionOpen).toHaveBeenCalledWith("advanced");
   });
 
   it("reveals empty state when no matches and clears on Escape", () => {

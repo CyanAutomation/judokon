@@ -28,6 +28,10 @@ import { syncDisplayMode } from "./settings/syncDisplayMode.js";
 import { renderGameModes } from "./settings/renderGameModes.js";
 import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
 import { setupAdvancedSettingsSearch } from "./settings/filterAdvancedSettings.js";
+import {
+  setupCollapsibleSections,
+  expandAllSections
+} from "./settings/collapsibleSections.js";
 
 /**
  * Helper: create and return refs for settings controls and containers.
@@ -201,33 +205,6 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
 }
 
 /**
- * Ensure all settings sections are expanded.
- *
- * @pseudocode
- * 1. Remove the `hidden` attribute from each `.settings-section-content`.
- * 2. Set `aria-expanded` to `true` on every `.settings-section-toggle`.
- * 3. Set `open` property to `true` on `<details>` elements and `aria-expanded="true"` on their `<summary>` children.
- */
-function expandAllSections() {
-  document.querySelectorAll(".settings-section-content").forEach((el) => {
-    el.removeAttribute("hidden");
-  });
-
-  document.querySelectorAll(".settings-section-toggle").forEach((btn) => {
-    btn.setAttribute("aria-expanded", "true");
-  });
-
-  document.querySelectorAll("#settings-form details").forEach((details) => {
-    details.open = true;
-
-    const summary = details.querySelector("summary");
-    if (summary) {
-      summary.setAttribute("aria-expanded", "true");
-    }
-  });
-}
-
-/**
  * Fetch settings, game modes, and tooltips with unified error handling.
  *
  * @pseudocode
@@ -267,10 +244,10 @@ export async function fetchSettingsData() {
  * @returns {HTMLElement} Updated DOM root.
  */
 export function renderSettingsControls(settings, gameModes, tooltipMap) {
-  expandAllSections();
   applyInitialSettings(settings);
   const renderSwitches = initializeControls(settings);
   renderSwitches(gameModes, tooltipMap);
+  setupCollapsibleSections();
   document.dispatchEvent(new Event("settings:ready"));
   return document.body;
 }
@@ -376,6 +353,7 @@ async function initializeSettingsPage() {
   renderWithFallbacks(data);
 
   if (typeof window !== "undefined") {
+    setupCollapsibleSections();
     const searchInput = document.getElementById("advanced-settings-search");
     const flagsContainer = document.getElementById("feature-flags-container");
     const emptyStateNode = document.getElementById("advanced-settings-no-results");

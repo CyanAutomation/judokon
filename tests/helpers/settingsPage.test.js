@@ -61,6 +61,7 @@ const harness = createSettingsHarness({
 beforeEach(async () => {
   await harness.setup();
   resetDom();
+  localStorage.clear();
   document.body.appendChild(createSettingsDom());
 });
 

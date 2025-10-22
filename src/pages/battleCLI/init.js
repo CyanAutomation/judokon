@@ -73,7 +73,6 @@ import {
 } from "./dom.js";
 import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
-import * as initModule from "./init.js";
 
 const hasDocument = typeof document !== "undefined";
 const getSafeDocument = () => (hasDocument ? document : null);
@@ -1228,13 +1227,11 @@ export function selectStat(stat) {
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     state.roundResolving = true;
-    // Dispatch via the module export to ensure external spies (tests) observe the call.
-    const fn = initModule?.safeDispatch;
-    if (typeof fn === "function") {
-      fn("statSelected").catch((err) => {
-        console.error("Error dispatching statSelected", err);
-      });
-    }
+    // Emit the statSelected battle event and dispatch to state machine
+    emitBattleEvent("statSelected", { stat });
+    safeDispatch("statSelected").catch((err) => {
+      console.error("Error dispatching statSelected", err);
+    });
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   } finally {
@@ -1643,7 +1640,6 @@ function updateControlsHint() {
  * @returns {void}
  */
 function handleStatListClick(event) {
-  console.log('handleStatListClick called');
   const list = byId("cli-stats");
   const statDiv = event.target?.closest?.(".cli-stat");
   if (statDiv && list?.contains(statDiv)) {
@@ -1653,7 +1649,6 @@ function handleStatListClick(event) {
 }
 
 function handleStatClick(statDiv, event) {
-  console.log('handleStatClick called');
   event.preventDefault();
   const idx = statDiv?.dataset?.statIndex;
   if (!idx) return;
