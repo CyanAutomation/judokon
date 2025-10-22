@@ -191,9 +191,7 @@ describe("Battle Classic Page Integration", () => {
     let reachedWaitingForAction = false;
     await withMutedConsole(async () => {
       firstOption.click();
-      reachedWaitingForAction = await testApi.state.waitForBattleState(
-        "waitingForPlayerAction"
-      );
+      reachedWaitingForAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
     });
     expect(reachedWaitingForAction).toBe(true);
 
@@ -207,14 +205,10 @@ describe("Battle Classic Page Integration", () => {
     expect(store.selectionMade).toBe(false);
     expect(store.playerChoice).toBeNull();
     const debugBefore = testApi.inspect?.getDebugInfo?.() ?? null;
-    const roundsBefore = Number(
-      debugBefore?.store?.roundsPlayed ?? store.roundsPlayed ?? 0
-    );
+    const roundsBefore = Number(debugBefore?.store?.roundsPlayed ?? store.roundsPlayed ?? 0);
 
     // 6. Stat buttons should be interactive immediately after initialization
-    const statButtons = Array.from(
-      document.querySelectorAll("#stat-buttons button[data-stat]")
-    );
+    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     expect(statButtons.length).toBeGreaterThan(0);
     statButtons.forEach((button) => {
       expect(button.disabled).toBe(false);
@@ -252,7 +246,6 @@ describe("Battle Classic Page Integration", () => {
     expect(roundsAfter).toBeGreaterThan(roundsBefore);
     expect(debugAfter?.store?.selectionMade ?? null).toBe(true);
     expect(document.body.dataset.battleState).toBe("roundDecision");
-
   });
 
   it("keeps roundsPlayed in sync between engine and store in non-orchestrated flow", async () => {
