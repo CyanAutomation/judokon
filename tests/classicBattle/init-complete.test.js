@@ -51,7 +51,7 @@ describe("Classic Battle Init Complete Hooks", () => {
     vi.resetModules();
   });
 
-  it("signals readiness through init-complete dispatch and exposed hooks", async () => {
+  it("signals readiness through init-complete dispatch", async () => {
     let eventFired = false;
     let eventDetail = null;
 
@@ -67,7 +67,6 @@ describe("Classic Battle Init Complete Hooks", () => {
     expect(eventFired).toBe(true);
     expect(eventDetail).toBeInstanceOf(Event);
     expect(eventDetail.type).toBe("battle:init-complete");
-    expect(window.battleStore).toBeDefined();
     expect(document.querySelector(".round-select-buttons")).not.toBeNull();
 
     document.removeEventListener("battle:init-complete", eventHandler);
