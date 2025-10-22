@@ -75,19 +75,14 @@ test.describe("View Judoka screen", () => {
     const historyBtn = page.locator("#toggle-history-btn");
 
     // Initially, focus should not be on the title
-    let focusedElement = await page.evaluate(() => document.activeElement?.id);
+    const focusedElement = await page.evaluate(() => document.activeElement?.id);
     expect(focusedElement).not.toBe("history-panel");
 
     // Click history button to open
     await historyBtn.click();
-    await page.waitForTimeout(100); // Allow focus update after microtask
 
     // Focus should now be on the history title
-    focusedElement = await page.evaluate(() => {
-      const h2 = document.querySelector("#history-panel h2");
-      return h2 === document.activeElement ? "history-title" : "other";
-    });
-    expect(focusedElement).toBe("history-title");
+    await expect(page.locator("#history-panel h2")).toBeFocused();
   });
 
   test("history panel focus management - Escape key closes panel", async ({ page }) => {
@@ -110,15 +105,12 @@ test.describe("View Judoka screen", () => {
 
     // Open the panel
     await historyBtn.click();
-    await page.waitForTimeout(100);
 
     // Close the panel by pressing Escape
     await page.press("body", "Escape");
-    await page.waitForTimeout(100);
 
     // Focus should return to the toggle button
-    const focusedId = await page.evaluate(() => document.activeElement?.id);
-    expect(focusedId).toBe("toggle-history-btn");
+    await expect(page.locator("#toggle-history-btn")).toBeFocused();
   });
 
   test("history panel focus management - clicking button again also closes and restores focus", async ({
