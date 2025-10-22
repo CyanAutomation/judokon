@@ -153,3 +153,87 @@ describe("testApi.isTestMode", () => {
     expect(window.__OPPONENT_RESOLVE_DELAY_MS).toBeUndefined();
   });
 });
+
+describe("initApi readiness gating", () => {
+  let initApi;
+
+  beforeEach(async () => {
+    vi.resetModules();
+
+    process.env.NODE_ENV = "test";
+    process.env.VITEST = "1";
+
+    window.__TEST__ = true;
+    delete window.battleStore;
+    delete window.battleReadyPromise;
+    delete window.__initCalled;
+
+    const mod = await import("../../src/helpers/testApi.js");
+    initApi = mod.getTestAPI().init;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+
+    if (originalVitestFlag === undefined) {
+      delete process.env.VITEST;
+    } else {
+      process.env.VITEST = originalVitestFlag;
+    }
+
+    restoreWindowProperty("__TEST__", originalTestFlag);
+    restoreWindowProperty("__TEST_API", originalTestApi);
+    restoreWindowProperty("__BATTLE_STATE_API", originalBattleStateApi);
+    restoreWindowProperty("__TIMER_API", originalTimerApi);
+    restoreWindowProperty("__INIT_API", originalInitApi);
+    restoreWindowProperty("__INSPECT_API", originalInspectApi);
+    restoreWindowProperty("__VIEWPORT_API", originalViewportApi);
+
+    delete window.battleStore;
+    delete window.battleReadyPromise;
+    delete window.__initCalled;
+
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  it("does not report ready when the battle store is missing an orchestrator", async () => {
+    window.battleStore = { ready: true };
+
+    expect(window.__INIT_API).toBe(initApi);
+    expect(initApi.isBattleReady()).toBe(false);
+  });
+
+  it("reports ready once the battle store exposes an orchestrator", async () => {
+    window.battleStore = { orchestrator: { dispatch: () => {} } };
+
+    expect(initApi.isBattleReady()).toBe(true);
+  });
+
+  it("waits for the orchestrator before resolving waitForBattleReady", async () => {
+    vi.useFakeTimers();
+
+    window.battleStore = {};
+    const resolutionSpy = vi.fn();
+    const readyPromise = initApi.waitForBattleReady(500).then((value) => {
+      resolutionSpy(value);
+      return value;
+    });
+
+    vi.advanceTimersByTime(100);
+    await Promise.resolve();
+    expect(resolutionSpy).not.toHaveBeenCalled();
+
+    window.battleStore.orchestrator = { dispatch: () => {} };
+
+    vi.advanceTimersByTime(100);
+    await expect(readyPromise).resolves.toBe(true);
+    expect(resolutionSpy).toHaveBeenCalledWith(true);
+  });
+});

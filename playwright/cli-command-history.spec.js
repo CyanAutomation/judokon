@@ -105,6 +105,8 @@ test.describe("CLI Command History", () => {
       allowFallback: false
     });
 
+    await expect(page.locator("#snackbar-container .snackbar")).toHaveText("Select your move");
+
     // Select stat '2'
     await page.keyboard.press("2");
     await expect(page.locator("#snackbar-container .snackbar")).toHaveText("You Picked: Speed");

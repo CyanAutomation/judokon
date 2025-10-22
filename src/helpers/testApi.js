@@ -1234,9 +1234,19 @@ const initApi = {
   isBattleReady() {
     try {
       if (typeof window !== "undefined") {
+        const store =
+          typeof window.battleStore === "object" && window.battleStore !== null
+            ? window.battleStore
+            : null;
+        const orchestratorAttached = !!(
+          store &&
+          (typeof store.orchestrator === "object" ||
+            typeof store.orchestrator === "function")
+        );
+
         // Check for various readiness indicators
         return !!(
-          window.battleStore ||
+          orchestratorAttached ||
           window.battleReadyPromise ||
           window.__initCalled ||
           getBattleStateMachine()
