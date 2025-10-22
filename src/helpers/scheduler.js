@@ -3,15 +3,39 @@
  *
  * Exposes `setTimeout`/`clearTimeout` so tests can inject fake timers.
  */
+/**
+ * Creates a requestAnimationFrame-compatible function that safely falls back.
+ *
+ * @summary Prefer the native browser API, but gracefully degrade to timers
+ * when unavailable so animations still execute in non-DOM environments.
+ *
+ * @pseudocode
+ * 1. If `globalThis.requestAnimationFrame` exists, call it with `callback`.
+ * 2. Otherwise call `globalThis.setTimeout(callback, 0)` to mimic RAF.
+ *
+ * @returns {function} A function matching the requestAnimationFrame signature.
+ */
 const createRequestAnimationFrame = () => {
-  return (callback, ...rest) => {
+  return (callback) => {
     if (typeof globalThis.requestAnimationFrame === "function") {
       return globalThis.requestAnimationFrame(callback);
     }
-    return globalThis.setTimeout(callback, 0, ...rest);
+    return globalThis.setTimeout(callback, 0);
   };
 };
 
+/**
+ * Creates a cancelAnimationFrame-compatible function that safely falls back.
+ *
+ * @summary Prefer the native browser API, but gracefully degrade to
+ * `clearTimeout` when unavailable so timer-based fallbacks are cancelable.
+ *
+ * @pseudocode
+ * 1. If `globalThis.cancelAnimationFrame` exists, call it with `handle`.
+ * 2. Otherwise call `globalThis.clearTimeout(handle)`.
+ *
+ * @returns {function} A function matching the cancelAnimationFrame signature.
+ */
 const createCancelAnimationFrame = () => {
   return (handle) => {
     if (typeof globalThis.cancelAnimationFrame === "function") {
