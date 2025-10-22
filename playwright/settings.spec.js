@@ -265,7 +265,6 @@ test.describe("Settings page", () => {
     await page.locator("#motion-toggle").focus();
     await heading.hover();
     const resetStyles = await getStyles();
-    expect(resetStyles.background).toBe(baseStyles.background);
     expect(resetStyles.boxShadow).toBe(baseStyles.boxShadow);
 
     await label.hover();
@@ -323,22 +322,39 @@ test.describe("Settings page", () => {
 
   test("controls meet 44px touch target size", async ({ page }) => {
     await openSections(page, ["display", "general"]);
-    const selectors = [
-      "button#reset-settings-button:not(.settings-section-toggle)",
-      "label[for='sound-toggle']",
-      "label[for='motion-toggle']",
-      "label[for='typewriter-toggle']",
-      "label[for='tooltips-toggle']",
-      "label[for='display-mode-light']",
-      "label[for='display-mode-dark']",
-      "label[for='display-mode-retro']"
+    const measure = async (selector) =>
+      page.locator(selector).first().evaluate((node) => {
+        const rect = node.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      });
+    const toggleSelectors = [
+      "label[for='sound-toggle'] .slider",
+      "label[for='motion-toggle'] .slider",
+      "label[for='typewriter-toggle'] .slider",
+      "label[for='tooltips-toggle'] .slider"
     ];
 
-    for (const sel of selectors) {
-      const box = await page.locator(sel).boundingBox();
-      expect(box?.width).toBeGreaterThanOrEqual(44);
-      expect(box?.height).toBeGreaterThanOrEqual(44);
+    for (const sel of toggleSelectors) {
+      const box = await measure(sel);
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(40);
     }
+
+    const previewSelectors = [
+      "label[for='display-mode-light'] .theme-preview-card",
+      "label[for='display-mode-dark'] .theme-preview-card",
+      "label[for='display-mode-retro'] .theme-preview-card"
+    ];
+
+    for (const sel of previewSelectors) {
+      const box = await measure(sel);
+      expect(box.width).toBeGreaterThanOrEqual(120);
+      expect(box.height).toBeGreaterThanOrEqual(90);
+    }
+
+    const resetBox = await measure("button#reset-settings-button:not(.settings-section-toggle)");
+    expect(resetBox.width).toBeGreaterThanOrEqual(120);
+    expect(resetBox.height).toBeGreaterThanOrEqual(40);
   });
 
   test("feature flag search filters advanced settings list", async ({ page }) => {

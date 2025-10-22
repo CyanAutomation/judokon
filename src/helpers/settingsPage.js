@@ -242,7 +242,6 @@ export function renderSettingsControls(settings, gameModes, tooltipMap) {
   applyInitialSettings(settings);
   const renderSwitches = initializeControls(settings);
   renderSwitches(gameModes, tooltipMap);
-  setupCollapsibleSections();
   document.dispatchEvent(new Event("settings:ready"));
   return document.body;
 }
