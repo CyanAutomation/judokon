@@ -43,39 +43,39 @@ This phase addresses the highest-priority bugs preventing users from filtering t
 - **Actionable Fixes:**
   - [ ] **Disable Horizontal Scrolling (CSS):** In `src/styles/layout.css` or `src/styles/navbar.css`, modify the styles for `.country-flag-slide-track` (or `#country-list`) to prevent horizontal scrolling and allow wrapping.
 
-     ```css
-     /* In src/styles/layout.css or a more specific stylesheet */
-     #country-list {
-       display: flex;
-       flex-wrap: wrap; /* Allow flags to wrap to the next line */
-       overflow-x: hidden; /* Explicitly prevent horizontal scrolling */
-       gap: 8px; /* Add a small gap between flags */
-     }
-     ```
+    ```css
+    /* In src/styles/layout.css or a more specific stylesheet */
+    #country-list {
+      display: flex;
+      flex-wrap: wrap; /* Allow flags to wrap to the next line */
+      overflow-x: hidden; /* Explicitly prevent horizontal scrolling */
+      gap: 8px; /* Add a small gap between flags */
+    }
+    ```
 
-     **Rationale:** `overflow-x: hidden` is critical to prevent the accidental mouse-wheel gesture that currently breaks the component.
+    **Rationale:** `overflow-x: hidden` is critical to prevent the accidental mouse-wheel gesture that currently breaks the component.
 
   - [ ] **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
 
-     ```javascript
-     // In src/helpers/browse/setupCountryFilter.js
-     // ... inside the click handler ...
-     const button = findButtonFromEvent(event.target);
-     if (button) {
-       const countryCode = button.dataset.countryCode;
-       // This event should be handled by the main page logic to re-render the carousel
-       window.dispatchEvent(new CustomEvent("filterByCountry", { detail: { countryCode } }));
-     }
-     ```
+    ```javascript
+    // In src/helpers/browse/setupCountryFilter.js
+    // ... inside the click handler ...
+    const button = findButtonFromEvent(event.target);
+    if (button) {
+      const countryCode = button.dataset.countryCode;
+      // This event should be handled by the main page logic to re-render the carousel
+      window.dispatchEvent(new CustomEvent("filterByCountry", { detail: { countryCode } }));
+    }
+    ```
 
   - [ ] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
 
-     ```javascript
-     // In src/helpers/country/list.js, before creating buttons
-     countries.sort((a, b) =>
-       a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" })
-     );
-     ```
+    ```javascript
+    // In src/helpers/country/list.js, before creating buttons
+    countries.sort((a, b) =>
+      a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" })
+    );
+    ```
 
 - **Verification:**
   - Confirm no horizontal scrollbar appears on the flag panel at any viewport size.
@@ -104,28 +104,28 @@ This phase addresses layout bugs on the judoka cards that hide information and v
 - **Actionable Fixes:**
   - [ ] **Fix Card Scrolling (CSS):** In `src/styles/card.css`, adjust the card layout for desktop viewports.
 
-     ```css
-     /* In src/styles/card.css, inside a @media (min-width: 1024px) block */
-     .judoka-card .card-stats {
-       overflow-y: hidden; /* Prevent vertical scroll */
-       /* Adjust padding, line-height, or font-size to fit content */
-       padding: 8px;
-       line-height: 1.3;
-     }
-     .judoka-card {
-       overflow: hidden; /* Prevent horizontal scroll */
-     }
-     ```
+    ```css
+    /* In src/styles/card.css, inside a @media (min-width: 1024px) block */
+    .judoka-card .card-stats {
+      overflow-y: hidden; /* Prevent vertical scroll */
+      /* Adjust padding, line-height, or font-size to fit content */
+      padding: 8px;
+      line-height: 1.3;
+    }
+    .judoka-card {
+      overflow: hidden; /* Prevent horizontal scroll */
+    }
+    ```
 
   - [ ] **Increase Center Card Scale (CSS):** In `src/styles/carousel.css`, increase the scale transform for the active card.
 
-     ```css
-     /* In src/styles/carousel.css */
-     .card-carousel .judoka-card.is-active {
-       transform: scale(1.1); /* Increased from a lower value */
-       transition: transform 200ms ease-in-out;
-     }
-     ```
+    ```css
+    /* In src/styles/carousel.css */
+    .card-carousel .judoka-card.is-active {
+      transform: scale(1.1); /* Increased from a lower value */
+      transition: transform 200ms ease-in-out;
+    }
+    ```
 
   - [ ] **Improve Page Markers:** Add a visually hidden `aria-live` region to `src/pages/browseJudoka.html` that is updated by the carousel logic in `src/game.js` or `src/helpers/browseJudokaPage.js` to announce "Page X of Y".
 
@@ -142,25 +142,25 @@ This phase addresses layout bugs on the judoka cards that hide information and v
 - **Actionable Fixes:**
   - [ ] **Increase Tap Target Size (CSS):** In `src/styles/navbar.css`, use padding to increase the hit area of icon buttons without changing the visual size.
 
-     ```css
-     .flag-button,
-     .some-other-icon-button {
-       /* Visually the icon might be 24x24, but padding makes it easier to tap */
-       padding: 10px;
-       box-sizing: content-box; /* Ensure padding adds to the size */
-     }
-     ```
+    ```css
+    .flag-button,
+    .some-other-icon-button {
+      /* Visually the icon might be 24x24, but padding makes it easier to tap */
+      padding: 10px;
+      box-sizing: content-box; /* Ensure padding adds to the size */
+    }
+    ```
 
   - [ ] **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
 
-     ```javascript
-     // In src/helpers/browse/setupCountryToggle.js
-     document.addEventListener("keydown", (event) => {
-       if (event.key === "Escape" && isPanelOpen()) {
-         closePanel(); // Assuming a closePanel function exists
-       }
-     });
-     ```
+    ```javascript
+    // In src/helpers/browse/setupCountryToggle.js
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && isPanelOpen()) {
+        closePanel(); // Assuming a closePanel function exists
+      }
+    });
+    ```
 
 ### Phase 4: Low - Polish & Robustness
 

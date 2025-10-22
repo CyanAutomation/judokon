@@ -37,33 +37,33 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
 - **Actionable Fixes:**
   - [ ] **Add Idempotent Guards:** In `src/helpers/classicBattle/roundManager.js` and `src/helpers/classicBattle/selectionHandler.js`, add guards to prevent re-entry into critical functions.
 
-     ```javascript
-     // Example in a function like applyRoundDecisionResult in roundManager.js
-     let isResolving = false;
-     async function applyRoundDecisionResult(store, result) {
-       if (isResolving) return; // Guard against re-entry
-       isResolving = true;
-       try {
-         // ... existing logic ...
-       } finally {
-         isResolving = false;
-       }
-     }
-     ```
+    ```javascript
+    // Example in a function like applyRoundDecisionResult in roundManager.js
+    let isResolving = false;
+    async function applyRoundDecisionResult(store, result) {
+      if (isResolving) return; // Guard against re-entry
+      isResolving = true;
+      try {
+        // ... existing logic ...
+      } finally {
+        isResolving = false;
+      }
+    }
+    ```
 
   - [ ] **Synchronously Disable UI:** In `src/helpers/classicBattle/statButtons.js` or `selectionHandler.js`, disable buttons immediately on click, not after an async operation.
 
-     ```javascript
-     // In handleStatButtonClick within battleClassic.init.js
-     function handleStatButtonClick(store, stat, btn) {
-       if (!btn || btn.disabled) return; // Already handled
-       const container = document.getElementById("stat-buttons");
-       const buttons = container.querySelectorAll("button[data-stat]");
-       disableStatButtons(buttons, container); // Disable synchronously
+    ```javascript
+    // In handleStatButtonClick within battleClassic.init.js
+    function handleStatButtonClick(store, stat, btn) {
+      if (!btn || btn.disabled) return; // Already handled
+      const container = document.getElementById("stat-buttons");
+      const buttons = container.querySelectorAll("button[data-stat]");
+      disableStatButtons(buttons, container); // Disable synchronously
 
-       // ... rest of the async logic ...
-     }
-     ```
+      // ... rest of the async logic ...
+    }
+    ```
 
 ### Phase 2: High - Core Gameplay Bugs
 
@@ -94,14 +94,14 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - [ ] **Queue Scoreboard Messages:** In `src/helpers/setupScoreboard.js`, modify it to queue messages if the scoreboard is not yet initialized, ensuring no messages are dropped.
   - [ ] **Implement Per-Match Deck:** In `src/helpers/classicBattle/roundManager.js`, create a shuffled, 25-card deck when a match starts. Draw from this deck for each round instead of using the global randomizer.
 
-     ```javascript
-     // In a new function in roundManager.js, called by handleReplay or at match start
-     function createMatchDeck(allCards) {
-       const shuffled = allCards.sort(() => 0.5 - Math.random());
-       return shuffled.slice(0, 25);
-     }
-     // Store this deck in the battleStore and .pop() from it in startRound.
-     ```
+    ```javascript
+    // In a new function in roundManager.js, called by handleReplay or at match start
+    function createMatchDeck(allCards) {
+      const shuffled = allCards.sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 25);
+    }
+    // Store this deck in the battleStore and .pop() from it in startRound.
+    ```
 
 ### Phase 4: Low - Accessibility & Timers
 
@@ -117,15 +117,15 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - [ ] **Respect Hotkey Feature Flag:** In `src/helpers/classicBattle/statButtons.js`, modify `wireStatHotkeys` to check the feature flag before adding the event listener. Remove any logic that force-enables the flag.
   - [ ] **Implement Timer Pausing:** In the core timer logic (e.g., `src/helpers/classicBattle/timerService.js`), add event listeners for the Page Visibility API.
 
-     ```javascript
-     document.addEventListener("visibilitychange", () => {
-       if (document.visibilityState === "hidden") {
-         activeSelectionTimer.pause();
-       } else {
-         activeSelectionTimer.resume();
-       }
-     });
-     ```
+    ```javascript
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        activeSelectionTimer.pause();
+      } else {
+        activeSelectionTimer.resume();
+      }
+    });
+    ```
 
 ---
 
