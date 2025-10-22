@@ -182,16 +182,51 @@ describe("Battle Classic Page Integration", () => {
       );
     }
 
+    const testApi = window.__TEST_API;
+    expect(testApi).toBeDefined();
+
+    let reachedPlayerAction = false;
     await withMutedConsole(async () => {
       firstOption.click();
+      reachedPlayerAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
     });
+    expect(reachedPlayerAction).toBe(true);
 
     expect(getPointsToWin()).toBe(selectedRound.value);
     expect(document.body.dataset.target).toBe(String(selectedRound.value));
     expect(document.querySelector(".round-select-buttons")).toBeNull();
 
-    // 5. Assert initialization completed successfully
-    expect(window.battleStore).toBeDefined();
+    // 5. Assert stat selection controls are interactive after initialization
+    const statButtons = Array.from(
+      document.querySelectorAll("#stat-buttons button[data-stat]")
+    );
+    expect(statButtons.length).toBeGreaterThan(0);
+    statButtons.forEach((button) => {
+      expect(button.disabled).toBe(false);
+    });
+
+    const firstStatButton = statButtons[0];
+    const chosenStat = firstStatButton.dataset.stat;
+    expect(chosenStat).toBeTruthy();
+
+    let reachedRoundDecision = false;
+    await withMutedConsole(async () => {
+      firstStatButton.click();
+      reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
+    });
+    expect(reachedRoundDecision).toBe(true);
+
+    const statContainer = document.getElementById("stat-buttons");
+    expect(statContainer).not.toBeNull();
+
+    expect(statContainer?.dataset.buttonsReady).toBe("true");
+
+    const debugInfo = testApi.inspect.getDebugInfo();
+    expect(debugInfo?.dom?.battleState).toBe("roundDecision");
+    expect(debugInfo?.store?.selectionMade).toBe(true);
+
+    const store = window.battleStore;
+    expect(store).toBeDefined();
   });
 
   it("keeps roundsPlayed in sync between engine and store in non-orchestrated flow", async () => {

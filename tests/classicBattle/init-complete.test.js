@@ -2,6 +2,9 @@
  * Test for deterministic initialization hooks in Classic Battle.
  * Ensures that after successful initialization, the required test hooks are exposed
  * and the init-complete event is dispatched.
+ *
+ * This suite intentionally validates readiness via the dispatched DOM event instead of
+ * asserting the legacy `window.__battleInitComplete` marker.
  */
 
 import { describe, it, expect, vi } from "vitest";
@@ -52,24 +55,21 @@ describe("Classic Battle Init Complete Hooks", () => {
   });
 
   it("signals readiness through init-complete dispatch and exposed hooks", async () => {
-    let eventFired = false;
-    let eventDetail = null;
+    const eventPromise = new Promise((resolve) => {
+      document.addEventListener(
+        "battle:init-complete",
+        (event) => resolve(event),
+        { once: true }
+      );
+    });
 
-    const eventHandler = (event) => {
-      eventFired = true;
-      eventDetail = event;
-    };
+    const initPromise = init();
+    const eventDetail = await eventPromise;
+    await initPromise;
 
-    document.addEventListener("battle:init-complete", eventHandler);
-
-    await init();
-
-    expect(eventFired).toBe(true);
     expect(eventDetail).toBeInstanceOf(Event);
     expect(eventDetail.type).toBe("battle:init-complete");
     expect(window.battleStore).toBeDefined();
     expect(document.querySelector(".round-select-buttons")).not.toBeNull();
-
-    document.removeEventListener("battle:init-complete", eventHandler);
   });
 });

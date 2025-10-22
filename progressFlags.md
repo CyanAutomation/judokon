@@ -17,6 +17,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 ## Recent task updates
 
 - Pointed the Classic Battle page at `setupClassicBattlePage` (`src/pages/battleClassic.html:172` → `../helpers/classicBattle/bootstrap.js`), ensuring the controller/view bootstrap owns runtime wiring.
+- Replaced the `init-complete` flag assertion with a user-interaction readiness check so coverage now validates stat selection via `tests/integration/battleClassic.integration.test.js` instead of inspecting `window.__battleInitComplete`.
 - Hydrated the stat button container with static markup (`src/pages/battleClassic.html:96-120`) so the new view layer can manage readiness without the legacy renderer.
 - Ran targeted checks: `npx vitest run tests/classicBattle/bootstrap.test.js tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/round-select.spec.js`.
 - Implemented the opponent delay flag path so Classic Battle shows/defers the "Opponent is choosing…" snackbar based on the feature toggle with deterministic fallbacks (`src/pages/battleClassic.init.js:720-758`, `src/helpers/classicBattle/uiEventHandlers.js:1-118`, `src/helpers/classicBattle/selectionHandler.js:320-350`); validated via `npx vitest run tests/helpers/classicBattle/opponentDelay.test.js tests/components/opponentChoosing.spec.js`.
