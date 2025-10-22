@@ -120,27 +120,41 @@ test.describe("Browse Judoka screen", () => {
       throw new Error("Judoka response released before interception");
     };
     let judokaReleased = false;
+    let judokaResponseTimeoutId;
     const releaseJudokaResponse = () => {
       if (judokaReleased) {
+        // Prevent double-release to avoid race conditions where Playwright retries the route handler.
         return;
       }
       judokaReleased = true;
+      clearTimeout(judokaResponseTimeoutId);
       resolveJudokaResponse();
     };
-    const judokaResponseReady = new Promise((resolve) => {
+    const judokaResponseReady = new Promise((resolve, reject) => {
       resolveJudokaResponse = resolve;
+      judokaResponseTimeoutId = setTimeout(
+        () => reject(new Error("Judoka response timeout after 10s")),
+        10_000
+      );
     });
 
     await page.route("**/src/helpers/classicBattle/opponentPromptTracker.js", async (route) => {
       const response = await route.fetch();
       let body = await response.text();
       if (!/isOpponentPromptReady/.test(body)) {
+        // TODO: Remove this patch once isOpponentPromptReady is exported directly from opponentPromptTracker.js.
         body +=
           "\nexport function isOpponentPromptReady() {\n  return getOpponentPromptTimestamp() > 0;\n}\n";
       }
+      const headers = { ...response.headers(), "content-type": "application/javascript" };
+      for (const headerName of Object.keys(headers)) {
+        if (["content-length", "content-encoding"].includes(headerName.toLowerCase())) {
+          delete headers[headerName];
+        }
+      }
       await route.fulfill({
         status: response.status(),
-        headers: { ...response.headers(), "content-type": "application/javascript" },
+        headers,
         body
       });
     });
@@ -162,6 +176,7 @@ test.describe("Browse Judoka screen", () => {
 
     try {
       await page.addInitScript(() => {
+        // Force spinner to appear immediately for deterministic testing. This flag is set only in Playwright.
         window.__showSpinnerImmediately__ = true;
       });
       await page.goto("/src/pages/browseJudoka.html");
