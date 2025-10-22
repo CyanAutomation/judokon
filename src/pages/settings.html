@@ -264,7 +264,25 @@
           </details>
           <details>
             <summary>Advanced Settings</summary>
-            <input type="search" id="advanced-settings-search" placeholder="Search settings..." />
+            <div class="advanced-settings-search">
+              <label for="advanced-settings-search" class="visually-hidden">Search feature flags</label>
+              <input
+                type="search"
+                id="advanced-settings-search"
+                placeholder="Search feature flags"
+                autocomplete="off"
+                aria-describedby="advanced-settings-search-status"
+              />
+              <p id="advanced-settings-no-results" class="settings-description" hidden>
+                No feature flags match your search.
+              </p>
+              <span
+                id="advanced-settings-search-status"
+                class="visually-hidden"
+                role="status"
+                aria-live="polite"
+              ></span>
+            </div>
             <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
               <div class="settings-item">
                 <label for="feature-cli-immersive" class="switch">

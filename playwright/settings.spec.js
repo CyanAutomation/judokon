@@ -317,6 +317,30 @@ test.describe("Settings page", () => {
     }
   });
 
+  test("feature flag search filters advanced settings list", async ({ page }) => {
+    const search = page.locator("#advanced-settings-search");
+    const totalFlags = await page.locator("#feature-flags-container .settings-item").count();
+    expect(totalFlags).toBeGreaterThan(0);
+
+    await search.fill("debug");
+    const visibleAfterFilter = page.locator("#feature-flags-container .settings-item:visible");
+    const visibleCount = await visibleAfterFilter.count();
+    expect(visibleCount).toBeGreaterThan(0);
+    const allMatchQuery = await visibleAfterFilter.evaluateAll((nodes) =>
+      nodes.every((node) => node.textContent.toLowerCase().includes("debug"))
+    );
+    expect(allMatchQuery).toBe(true);
+    await expect(page.locator("#advanced-settings-no-results")).toBeHidden();
+
+    await search.fill("zzzzzz");
+    await expect(page.locator("#advanced-settings-no-results")).toBeVisible();
+    await expect(page.locator("#feature-flags-container .settings-item:visible")).toHaveCount(0);
+
+    await search.press("Escape");
+    await expect(page.locator("#advanced-settings-no-results")).toBeHidden();
+    await expect(page.locator("#feature-flags-container .settings-item:visible")).toHaveCount(totalFlags);
+  });
+
   test("toggles retro display mode", async ({ page }) => {
     await page.check("#display-mode-retro");
     await expect(page.locator("body")).toHaveAttribute("data-theme", "retro");

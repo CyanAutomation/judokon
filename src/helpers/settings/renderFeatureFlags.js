@@ -1,5 +1,6 @@
 import { renderFeatureFlagSwitches } from "./featureFlagSwitches.js";
 import { syncFeatureFlags } from "./syncFeatureFlags.js";
+import { reapplyAdvancedSettingsFilter } from "./filterAdvancedSettings.js";
 
 /**
  * @summary Render feature flag toggle switches.
@@ -22,4 +23,5 @@ export function renderFeatureFlags(current, getCurrentSettings, handleUpdate, to
   container.querySelectorAll(".settings-item").forEach((el) => el.remove());
   const flags = syncFeatureFlags(current);
   renderFeatureFlagSwitches(container, flags, getCurrentSettings, handleUpdate, tooltipMap);
+  reapplyAdvancedSettingsFilter();
 }
