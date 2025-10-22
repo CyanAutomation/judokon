@@ -6,7 +6,7 @@ import { onBattleEvent, offBattleEvent } from "../battleEvents.js";
  * @param {object} machine
  * @returns {Promise<void>}
  * @pseudocode
- * 1. Clear the stored `playerChoice` so the next round can record a fresh selection.
+ * 1. Clear the stored `playerChoice` while leaving selection flags intact for cooldown diagnostics.
  * 2. If `waitForOutcomeConfirmation` is true, wait for `outcomeConfirmed` event.
  */
 export async function roundOverEnter(machine) {
