@@ -527,7 +527,8 @@ export async function resolveWithFallback(
       const configuredDelay = Number(opts?.delayMs);
       const hasConfiguredDelay = Number.isFinite(configuredDelay) && configuredDelay >= 0;
       const opponentDelay = hasConfiguredDelay ? configuredDelay : delay;
-      const normalizedDelay = Number.isFinite(opponentDelay) && opponentDelay >= 0 ? opponentDelay : 0;
+      const normalizedDelay =
+        Number.isFinite(opponentDelay) && opponentDelay >= 0 ? opponentDelay : 0;
       const bufferMs = 32;
       const fallbackDelay = normalizedDelay + bufferMs;
       const timeoutId = setTimeout(async () => {

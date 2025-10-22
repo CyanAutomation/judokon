@@ -104,9 +104,10 @@ async function withBattleEventCapture(page, eventNames, callback) {
     }
     const target = globalThis.__classicBattleEventTarget || null;
     const trackedEvents = [];
-    const namesToCapture = Array.isArray(names) && names.length > 0
-      ? names.filter(Boolean)
-      : ["opponentReveal", "roundResolved"];
+    const namesToCapture =
+      Array.isArray(names) && names.length > 0
+        ? names.filter(Boolean)
+        : ["opponentReveal", "roundResolved"];
     const handler = (event) => {
       if (namesToCapture.includes(event.type)) {
         trackedEvents.push(event.type);
@@ -118,9 +119,7 @@ async function withBattleEventCapture(page, eventNames, callback) {
     window.__capturedBattleEvents = trackedEvents;
     window.__releaseBattleEventCapture = () => {
       if (target) {
-        namesToCapture.forEach((name) =>
-          target.removeEventListener(name, handler)
-        );
+        namesToCapture.forEach((name) => target.removeEventListener(name, handler));
       }
       delete window.__releaseBattleEventCapture;
     };
@@ -129,9 +128,7 @@ async function withBattleEventCapture(page, eventNames, callback) {
   try {
     return await callback({
       getEvents: async () =>
-        await page.evaluate(() =>
-          Array.from(window.__capturedBattleEvents ?? [])
-        )
+        await page.evaluate(() => Array.from(window.__capturedBattleEvents ?? []))
     });
   } finally {
     await page.evaluate(() => {
@@ -244,20 +241,15 @@ test.describe("Classic Battle Opponent Messages", () => {
           await expect
             .poll(
               async () =>
-                await opponentCard.evaluate((node) =>
-                  node.classList.contains("opponent-hidden")
-                ),
+                await opponentCard.evaluate((node) => node.classList.contains("opponent-hidden")),
               { timeout: 4_000 }
             )
             .toBe(false);
           await confirmRoundResolved(page, {
             timeout: 3_000,
-            message:
-              'Expected battle state to be "roundOver" after CLI resolveRound'
+            message: 'Expected battle state to be "roundOver" after CLI resolveRound'
           });
-          await expect(page.locator(selectors.scoreDisplay())).toContainText(
-            PLAYER_SCORE_PATTERN
-          );
+          await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
           const capturedEvents = await getEvents();
           expect(capturedEvents).toContain("opponentReveal");

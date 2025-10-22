@@ -58,9 +58,7 @@ test.describe("enableTestMode feature flag", () => {
     await page.goto("/src/pages/battleClassic.html");
 
     const battleArea = page.locator("#battle-area");
-    await expect
-      .poll(async () => await battleArea.getAttribute("data-test-mode"))
-      .toBeNull();
+    await expect.poll(async () => await battleArea.getAttribute("data-test-mode")).toBeNull();
     const testModeMarker = await battleArea.getAttribute("data-test-mode");
     expect(testModeMarker).not.toBe("true");
   });
@@ -201,9 +199,7 @@ test.describe("tooltipOverlayDebug feature flag", () => {
     const body = page.locator("body");
     await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "disabled");
     await expect
-      .poll(() =>
-        body.evaluate((el) => el.classList.contains("tooltip-overlay-debug"))
-      )
+      .poll(() => body.evaluate((el) => el.classList.contains("tooltip-overlay-debug")))
       .toBe(false);
   });
 });
@@ -220,9 +216,7 @@ test.describe("enableCardInspector feature flag", () => {
 
     await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");
     await expect
-      .poll(() =>
-        page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null)
-      )
+      .poll(() => page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null))
       .toBe(true);
   });
 
@@ -237,9 +231,7 @@ test.describe("enableCardInspector feature flag", () => {
 
     await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");
     await expect
-      .poll(() =>
-        page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null)
-      )
+      .poll(() => page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null))
       .toBe(false);
   });
 });

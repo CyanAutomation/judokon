@@ -8,7 +8,7 @@ import { onBattleEvent, offBattleEvent } from "../battleEvents.js";
  * @pseudocode
  * 1. Clear the stored `playerChoice` so the next round can record a fresh selection.
  * 2. If `waitForOutcomeConfirmation` is true, wait for `outcomeConfirmed` event.
-*/
+ */
 export async function roundOverEnter(machine) {
   const store = machine?.context?.store;
   if (store) {
