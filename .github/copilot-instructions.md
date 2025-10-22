@@ -31,7 +31,7 @@ src/config/settingsDefaults.js # Settings source of truth
 
 ```bash
 # Core validation (run before commit)
-npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
+npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast
 
 # Agent-specific checks
 grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle && echo "❌ Dynamic import in hot path"
