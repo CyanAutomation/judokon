@@ -35,6 +35,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Right-sized settings toggle switches for desktop proportions while keeping a 40px hit area (`src/styles/settings.css`); validated with `npm run check:contrast` and relevant Vitest coverage.
 - Added hover feedback to settings switches for clearer interactivity cues (`src/styles/settings.css`); verified with `npm run check:contrast`.
 - Added miniature theme previews to the display mode selector to visualize light/dark/retro choices (`src/pages/settings.html`, `src/styles/settings.css`); validated with `npm run check:contrast`, `npx vitest run tests/helpers/settingsPage.test.js`, and `npx playwright test playwright/settings.spec.js`.
+- Refined the switch interactivity pass with label-level hover/focus styling, text emphasis, and dedicated Playwright coverage to assert the new feedback (`src/styles/settings.css`, `playwright/settings.spec.js`); targeted checks: `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 
 ## Critical blocker
 
@@ -183,13 +184,13 @@ This phase focuses on high-impact changes to improve the core layout, readabilit
    - **Priority:** Low
    - **Outcome:** Reduced the toggle track/knob dimensions to better match adjacent copy while preserving a 40px hit target; confirmed styling with contrast checks and existing unit coverage.
 
-### Phase 2: Enhanced Interactivity and Theming — **NOT STARTED**
+### Phase 2: Enhanced Interactivity and Theming — **In Progress**
 
 This phase focuses on making the settings page more interactive and visually engaging, while also improving theme consistency.
 
 1. **Interactive Switch States** — **Completed**
    - **Priority:** Medium
-   - **Outcome:** Hovering now lightens the track and adds a subtle shadow/outline so toggles feel interactive while maintaining accessibility; contrast checks remain green across themes.
+   - **Outcome:** Label-level hover and focus-within states now highlight the switch, add a subtle outline/shadow, and emphasize the caption while preserving the 40px hit target; validated with targeted Vitest coverage and a new Playwright hover/focus assertion.
 
 2. **Display Mode Previews** — **Completed**
    - **Priority:** Medium
@@ -446,19 +447,24 @@ All feature flags are now implemented, tested, and integrated into the battle sy
 - ✅ No production console spam (logging properly gated)
 - ✅ Smoke test stable and reliable (20-30s runtime)
 
-### Outstanding Tasks — ⏳ **9 ITEMS**
+### Outstanding Tasks — ⏳ **8 ITEMS**
 
-**Priority: Medium** (1 task)
+**Priority: Low**
 
-1. **Phase 2.1: Interactive Switch States** — Add hover feedback to toggle switches in settings UI
-
-**Priority: Low** (8 tasks) 2. **Phase 1.1: Visual Hierarchy and Grouping** — Improve fieldset styling and legend prominence 3. **Phase 1.2: Link Layout Polish** — Tune grid gutters for wide desktop displays 4. **Phase 1.3: Switch Control Sizing** — Tighten switch dimensions relative to content 5. **Phase 2.2: Display Mode Previews** — Add visual theme previews to display mode selector 6. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro) 7. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter 8. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes 9. **Phase 3.3: Search/Filter for Advanced Settings** — Add searchable filter to feature flags section
+1. **Phase 1.1: Visual Hierarchy and Grouping** — Improve fieldset styling and legend prominence
+2. **Phase 1.2: Link Layout Polish** — Tune grid gutters for wide desktop displays
+3. **Phase 1.3: Switch Control Sizing** — Tighten switch dimensions relative to content
+4. **Phase 2.2: Display Mode Previews** — Add visual theme previews to display mode selector
+5. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro)
+6. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
+7. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
+8. **Phase 3.3: Search/Filter for Advanced Settings** — Add searchable filter to feature flags section
 
 ### Recommendation
 
 The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
 
-1. **Phase 2.1** (Interactive Switch States) if improving settings page interactivity is valued
-2. **Phase 3.3** (Search/Filter) if the number of feature flags continues to grow
-3. Remaining Phase 1 and Phase 2 tasks are polish items with lower priority
+1. **Phase 3.3** (Search/Filter) if the number of feature flags continues to grow
+2. **Phase 2.2** (Display Mode Previews) to surface theme choices more clearly for users
+3. **Phase 2.3** (Theme-Specific Styles) to ensure consistency across light/dark/retro themes
 ````

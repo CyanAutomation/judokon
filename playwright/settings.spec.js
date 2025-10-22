@@ -214,6 +214,44 @@ test.describe("Settings page", () => {
     expect(reached).toBe(true);
   });
 
+  test("toggle switches surface hover and focus feedback", async ({ page }) => {
+    const label = page.locator("label[for='sound-toggle']");
+    const checkbox = page.locator("#sound-toggle");
+    const heading = page.getByRole("heading", { name: "Settings" });
+
+    const getStyles = async () =>
+      await label.evaluate((node) => {
+        const computed = getComputedStyle(node);
+        const textSpan = node.querySelector("span");
+        const textColor = textSpan ? getComputedStyle(textSpan).color : computed.color;
+        return {
+          background: computed.backgroundColor,
+          boxShadow: computed.boxShadow,
+          color: textColor
+        };
+      });
+
+    await heading.hover();
+    const baseStyles = await getStyles();
+
+    await checkbox.focus();
+    const focusStyles = await getStyles();
+    expect(focusStyles.boxShadow).not.toBe(baseStyles.boxShadow);
+    expect(focusStyles.background).not.toBe(baseStyles.background);
+
+    await page.locator("#motion-toggle").focus();
+    await heading.hover();
+    const resetStyles = await getStyles();
+    expect(resetStyles.background).toBe(baseStyles.background);
+    expect(resetStyles.boxShadow).toBe(baseStyles.boxShadow);
+
+    await label.hover();
+    const hoverStyles = await getStyles();
+    expect(hoverStyles.background).not.toBe(baseStyles.background);
+    expect(hoverStyles.boxShadow.toLowerCase()).not.toBe("none");
+    expect(hoverStyles.color).not.toBe(baseStyles.color);
+  });
+
   test("controls meet minimum color contrast", async ({ page }) => {
     const rgbToHex = (rgb) => {
       const [r, g, b] = rgb
