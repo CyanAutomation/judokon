@@ -13,6 +13,8 @@ export async function roundOverEnter(machine) {
   const store = machine?.context?.store;
   if (store) {
     store.playerChoice = null;
+    store.selectionMade = false;
+    store.__lastSelectionMade = false;
   }
 
   // If configured to wait for outcome confirmation, pause here until user confirms
