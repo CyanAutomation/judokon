@@ -165,7 +165,9 @@ test.describe("Settings page", () => {
       .locator("#feature-flags-container input[type=checkbox]")
       .count();
 
-    const tabStopCount = expectedLabels.length + (renderedFlagCount - flagLabels.length);
+    const searchInputCount = await page.locator("#advanced-settings-search").count();
+    const tabStopCount =
+      expectedLabels.length + (renderedFlagCount - flagLabels.length) + searchInputCount;
 
     await page.focus("#display-mode-light");
 
@@ -338,7 +340,9 @@ test.describe("Settings page", () => {
 
     await search.press("Escape");
     await expect(page.locator("#advanced-settings-no-results")).toBeHidden();
-    await expect(page.locator("#feature-flags-container .settings-item:visible")).toHaveCount(totalFlags);
+    await expect(page.locator("#feature-flags-container .settings-item:visible")).toHaveCount(
+      totalFlags
+    );
   });
 
   test("toggles retro display mode", async ({ page }) => {

@@ -16,6 +16,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 
 ## Recent task updates
 
+- Implemented an accessible search/filter for Advanced Settings, wiring a reusable helper that reapplies after rerenders (`src/pages/settings.html`, `src/helpers/settingsPage.js`, `src/helpers/settings/filterAdvancedSettings.js`, `src/helpers/settings/renderFeatureFlags.js`, `src/styles/settings.css`); validated via `npx vitest run tests/helpers/settings/filterAdvancedSettings.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Replaced the `window.__battleInitComplete` readiness assertion with an interaction-focused check so QA validates the real round/stat controls instead of the debug flag (`tests/classicBattle/init-complete.test.js`, `tests/integration/battleClassic.integration.test.js`).
 - Pointed the Classic Battle page at `setupClassicBattlePage` (`src/pages/battleClassic.html:172` → `../helpers/classicBattle/bootstrap.js`), ensuring the controller/view bootstrap owns runtime wiring.
 - Hydrated the stat button container with static markup (`src/pages/battleClassic.html:96-120`) so the new view layer can manage readiness without the legacy renderer.
@@ -447,7 +448,7 @@ All feature flags are now implemented, tested, and integrated into the battle sy
 - ✅ No production console spam (logging properly gated)
 - ✅ Smoke test stable and reliable (20-30s runtime)
 
-### Outstanding Tasks — ⏳ **8 ITEMS**
+### Outstanding Tasks — ⏳ **7 ITEMS**
 
 **Priority: Low**
 
@@ -458,13 +459,12 @@ All feature flags are now implemented, tested, and integrated into the battle sy
 5. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro)
 6. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
 7. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
-8. **Phase 3.3: Search/Filter for Advanced Settings** — Add searchable filter to feature flags section
 
 ### Recommendation
 
 The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
 
-1. **Phase 3.3** (Search/Filter) if the number of feature flags continues to grow
-2. **Phase 2.2** (Display Mode Previews) to surface theme choices more clearly for users
-3. **Phase 2.3** (Theme-Specific Styles) to ensure consistency across light/dark/retro themes
+1. **Phase 2.2** (Display Mode Previews) to surface theme choices more clearly for users
+2. **Phase 2.3** (Theme-Specific Styles) to ensure consistency across light/dark/retro themes
+3. **Phase 1.1** (Visual Hierarchy and Grouping) to reinforce legibility of dense flag controls
 ````

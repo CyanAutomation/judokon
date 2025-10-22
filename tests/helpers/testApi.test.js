@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 const originalNodeEnv = process.env.NODE_ENV;
 const originalVitestFlag = process.env.VITEST;
@@ -156,6 +157,7 @@ describe("testApi.isTestMode", () => {
 
 describe("initApi readiness gating", () => {
   let initApi;
+  useCanonicalTimers();
 
   beforeEach(async () => {
     vi.resetModules();
@@ -173,8 +175,6 @@ describe("initApi readiness gating", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
-
     if (originalNodeEnv === undefined) {
       delete process.env.NODE_ENV;
     } else {
@@ -217,8 +217,6 @@ describe("initApi readiness gating", () => {
   });
 
   it("waits for the orchestrator before resolving waitForBattleReady", async () => {
-    vi.useFakeTimers();
-
     window.battleStore = {};
     const resolutionSpy = vi.fn();
     const readyPromise = initApi.waitForBattleReady(500).then((value) => {

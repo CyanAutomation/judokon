@@ -254,7 +254,7 @@ async function safeGetBattleState(page, fallback = null) {
   }
 }
 
-async function attemptCliResolution(page, hasResolved) {
+async function attemptCliResolution(page) {
   await page
     .evaluate(async () => {
       try {
@@ -433,7 +433,7 @@ async function resolveRoundDeterministic(page) {
     return matchFlowAdvancedBeyondRoundOver(state, log, prev);
   };
 
-  const { resolved: resolvedViaCli, stateAfterCli } = await attemptCliResolution(page, hasResolved);
+  const { resolved: resolvedViaCli, stateAfterCli } = await attemptCliResolution(page);
   if (resolvedViaCli) {
     return;
   }

@@ -23,11 +23,9 @@ function getSearchableTokens(item) {
   const label = item.querySelector("label span");
   const description = item.querySelector("p");
   const input = item.querySelector("input[data-flag]");
-  return [
-    label?.textContent ?? "",
-    description?.textContent ?? "",
-    input?.dataset.flag ?? ""
-  ].map(normalize);
+  return [label?.textContent ?? "", description?.textContent ?? "", input?.dataset.flag ?? ""].map(
+    normalize
+  );
 }
 
 /**
@@ -101,7 +99,8 @@ export function setupAdvancedSettingsSearch({ input, container, emptyStateNode, 
     return undefined;
   }
 
-  const applyFilter = () => filterFeatureFlags(input, container, emptyStateNode ?? null, statusNode ?? null);
+  const applyFilter = () =>
+    filterFeatureFlags(input, container, emptyStateNode ?? null, statusNode ?? null);
 
   const handleEscape = (event) => {
     if (event.key !== "Escape") {

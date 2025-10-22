@@ -41,7 +41,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 ## Non-Goals
 
 - Complex filters or search
-- Persistent card history or logs of previous draws
 - Weighted draws (favoring certain judoka)
 - Advanced filters or rarity-based restrictions
 
@@ -51,7 +50,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 | Priority | Feature                         | Description                                                                            |
 | :------: | :------------------------------ | :------------------------------------------------------------------------------------- |
-|  **P1**  | Draw Random Judoka              | Automatically display a random judoka on page load and when the Draw button is tapped. |
+|  **P1**  | Draw Random Judoka              | Automatically display a random judoka when the Draw button is tapped. |
 |  **P1**  | Animation Timing                | Card reveal animation completes promptly and respects Reduced Motion settings.         |
 |  **P2**  | Fallback Card                   | If the judoka list is empty or fails to load, show a default placeholder card.         |
 |  **P2**  | Disable Interaction During Draw | Prevent repeated taps while a new card is loading.                                     |
@@ -191,7 +190,7 @@ This state machine implementation satisfies the functional requirement to **"Dis
   - **Action Buttons:**
     - Prominent “Draw Card!” button below the card, centered, clear label
 - **Draw Flow:**
-  1. Player loads the screen → random judoka card appears automatically
+  1. Player loads the screen
   2. Player taps “Draw Card!” button → new random card slides or fades in
   3. If Reduced Motion is active or the player disables motion in `settings.html`, the card changes instantly without animation
 - **Button Size:**
@@ -241,8 +240,7 @@ This state machine implementation satisfies the functional requirement to **"Dis
 ## Tasks
 
 - [x] **1.0 Integrate `generateRandomCard`**
-  - [x] 1.1 Trigger the function on screen load
-  - [x] 1.2 Call it again when the Draw button is tapped
+  - [x] 1.1 Call it when the Draw button is tapped
 - [x] **2.0 Build layout and controls**
   - [x] 2.1 Create card display area and prominent Draw button
 - [ ] **3.0 Accessibility & fallback**
