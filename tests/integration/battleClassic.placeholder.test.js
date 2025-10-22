@@ -6,6 +6,19 @@ import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 
+/**
+ * Completes the first round of battle by clicking round and stat buttons.
+ *
+ * @param {Document} document - The DOM document for the battle page.
+ * @param {Object} testApi - The test API object for state management.
+ *
+ * @pseudocode
+ * completeFirstRound(document, testApi):
+ *   1. Find and click first round button
+ *   2. Wait for "waitingForPlayerAction" state
+ *   3. Find and click first stat button
+ *   4. Wait for "roundDecision" state
+ */
 async function completeFirstRound(document, testApi) {
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
   expect(roundButtons.length).toBeGreaterThan(0);
@@ -28,6 +41,16 @@ async function completeFirstRound(document, testApi) {
   expect(reachedRoundDecision).toBe(true);
 }
 
+/**
+ * Waits for the placeholder replacement to complete after round resolution.
+ *
+ * @param {Object} testApi - The test API object for state management.
+ *
+ * @pseudocode
+ * waitForPlaceholderReplacement(testApi):
+ *   1. Wait for rounds played count to reach 1
+ *   2. Assert completion was successful
+ */
 async function waitForPlaceholderReplacement(testApi) {
   const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
   expect(roundCompleted).toBe(true);
