@@ -3,11 +3,29 @@
  *
  * Exposes `setTimeout`/`clearTimeout` so tests can inject fake timers.
  */
+const createRequestAnimationFrame = () => {
+  return (callback, ...rest) => {
+    if (typeof globalThis.requestAnimationFrame === "function") {
+      return globalThis.requestAnimationFrame(callback);
+    }
+    return globalThis.setTimeout(callback, 0, ...rest);
+  };
+};
+
+const createCancelAnimationFrame = () => {
+  return (handle) => {
+    if (typeof globalThis.cancelAnimationFrame === "function") {
+      return globalThis.cancelAnimationFrame(handle);
+    }
+    return globalThis.clearTimeout(handle);
+  };
+};
+
 export const realScheduler = {
   setTimeout: (...args) => globalThis.setTimeout(...args),
   clearTimeout: (...args) => globalThis.clearTimeout(...args),
-  requestAnimationFrame: (...args) => globalThis.requestAnimationFrame(...args),
-  cancelAnimationFrame: (...args) => globalThis.cancelAnimationFrame(...args)
+  requestAnimationFrame: createRequestAnimationFrame(),
+  cancelAnimationFrame: createCancelAnimationFrame()
 };
 
 let currentScheduler = realScheduler;
