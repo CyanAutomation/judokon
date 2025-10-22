@@ -209,23 +209,11 @@ export async function handleReplay(store) {
     { suppressInProduction: true }
   );
   trace("score_event_zeroed");
-  const zeroScoreMarkup =
-    '<span data-side="player">You: 0</span>\n<span data-side="opponent">Opponent: 0</span>';
   const updateScoreboard = (operation) =>
     safeRound(
       operation,
       () => {
         scoreboard.updateScore(0, 0);
-        try {
-          if (typeof document !== "undefined") {
-            const scoreEl = document.getElementById("score-display");
-            if (scoreEl) {
-              scoreEl.innerHTML = zeroScoreMarkup;
-            }
-          }
-        } catch {
-          // Best-effort DOM sync; ignore failures to preserve replay flow.
-        }
       },
       { suppressInProduction: true }
     );
