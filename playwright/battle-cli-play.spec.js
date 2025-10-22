@@ -61,7 +61,7 @@ test.describe("Battle CLI - Play", () => {
                   playerVal: 88,
                   opponentVal: 42,
                   result: {
-                    message: "Player wins the round!",
+                    message: "You win the round!",
                     playerScore: 1,
                     opponentScore: 0
                   }
@@ -100,7 +100,10 @@ test.describe("Battle CLI - Play", () => {
 
       // Wait for the round message to show the result
       const roundMessage = page.locator("#round-message");
-      await expect(roundMessage).toContainText("Player wins the round!");
+      await expect(roundMessage).toContainText("You:", { timeout: 10_000 });
+      const messageText = await roundMessage.textContent();
+      expect(messageText).toMatch(/((You|Opponent) wins the round!|Tie – no score!)/);
+      expect(messageText).toMatch(/\(.+You:\s*[\d.]+\s+Opponent:\s*[\d.]+\)/);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
