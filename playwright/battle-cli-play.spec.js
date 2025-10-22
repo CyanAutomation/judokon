@@ -6,6 +6,8 @@ const CLI_PLAYER_WIN_OUTCOME_EVENT = "outcome=winPlayer";
 
 test.describe("Battle CLI - Play", () => {
   test("should be able to select a stat and see the result", async ({ page }) => {
+    page.on('console', msg => console.log(msg.text()));
+    await page.evaluate(() => { globalThis.__battleCLIStatListBoundTargets = new WeakSet(); });
     await withMutedConsole(async () => {
       await page.goto("/src/pages/battleCLI.html?autostart=1");
 

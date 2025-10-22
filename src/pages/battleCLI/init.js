@@ -1643,6 +1643,7 @@ function updateControlsHint() {
  * @returns {void}
  */
 function handleStatListClick(event) {
+  console.log('handleStatListClick called');
   const list = byId("cli-stats");
   const statDiv = event.target?.closest?.(".cli-stat");
   if (statDiv && list?.contains(statDiv)) {
@@ -1652,6 +1653,7 @@ function handleStatListClick(event) {
 }
 
 function handleStatClick(statDiv, event) {
+  console.log('handleStatClick called');
   event.preventDefault();
   const idx = statDiv?.dataset?.statIndex;
   if (!idx) return;
@@ -1665,11 +1667,7 @@ function handleStatClick(statDiv, event) {
 
 function ensureStatClickBinding(list) {
   const onClick = handleStatListClick;
-  const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
-  if (!boundTargets.has(list)) {
-    list.addEventListener("click", onClick);
-    boundTargets.add(list);
-  }
+  list.addEventListener("click", onClick);
 }
 
 function getStatRowByKey(stat) {

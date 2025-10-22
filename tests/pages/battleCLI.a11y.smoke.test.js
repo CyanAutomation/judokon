@@ -55,7 +55,7 @@ describe("battleCLI accessibility smoke tests", () => {
     expect(announcementEl.classList.contains("sr-only")).toBe(true);
     expect(announcementEl.getAttribute("aria-hidden")).toBeNull();
     expect(announcementEl.id).toBe("cli-controls-hint-announce");
-    const announcement = announcementEl.textContent?.trim();
+    const announcement = announcementEl.textContent?.trim().replace(/\s+/g, " ");
     expect(announcement).toBe(
       "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."
     );
