@@ -8,7 +8,6 @@ import {
   NAV_CLASSIC_BATTLE,
   NAV_RANDOM_JUDOKA
 } from "./fixtures/navigationChecks.js";
-import { SETTINGS_SECTIONS_STORAGE_KEY } from "../src/helpers/settings/collapsibleSections.js";
 
 import NAV_ITEMS from "../tests/fixtures/navigationItems.js";
 const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
@@ -117,9 +116,6 @@ function getLabelData() {
 test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await waitForSettingsReady(page);
-    await page.evaluate((key) => localStorage.removeItem(key), SETTINGS_SECTIONS_STORAGE_KEY);
-    await page.reload({ waitUntil: "domcontentloaded" });
     await waitForSettingsReady(page);
   });
 
@@ -372,11 +368,7 @@ test.describe("Settings page", () => {
     );
   });
 
-  test("collapsible sections default and persist state", async ({ page }) => {
-    await page.evaluate((key) => localStorage.removeItem(key), SETTINGS_SECTIONS_STORAGE_KEY);
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await waitForSettingsReady(page);
-
+  test("collapsible sections default state and user toggle", async ({ page }) => {
     const snapshot = async () =>
       page.evaluate(() =>
         Array.from(document.querySelectorAll("#settings-form details.settings-section")).map(
@@ -398,18 +390,11 @@ test.describe("Settings page", () => {
       "open",
       true
     );
-    const storedState = await page.evaluate(
-      (key) => localStorage.getItem(key),
-      SETTINGS_SECTIONS_STORAGE_KEY
+    await advancedSummary.click();
+    await expect(page.locator('details[data-section-id="advanced"]')).toHaveJSProperty(
+      "open",
+      false
     );
-    expect(JSON.parse(storedState || "{}").advanced).toBe(true);
-
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await waitForSettingsReady(page);
-    const persistedState = await snapshot();
-    expect(persistedState.find((section) => section.id === "advanced")?.open).toBe(true);
-
-    await page.evaluate((key) => localStorage.removeItem(key), SETTINGS_SECTIONS_STORAGE_KEY);
   });
 
   test("toggles retro display mode", async ({ page }) => {

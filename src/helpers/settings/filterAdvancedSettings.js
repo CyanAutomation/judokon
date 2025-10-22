@@ -72,9 +72,6 @@ function filterFeatureFlags(input, container, emptyStateNode, statusNode) {
     emptyStateNode.hidden = matchCount !== 0;
   }
   announceSearchStatus(statusNode, matchCount, items.length, hasQuery);
-  if (hasQuery) {
-    ensureSectionOpen("advanced");
-  }
 }
 
 let latestFilter = null;
@@ -140,4 +137,3 @@ export function reapplyAdvancedSettingsFilter() {
     latestFilter();
   }
 }
-import { ensureSectionOpen } from "./collapsibleSections.js";

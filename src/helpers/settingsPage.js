@@ -136,7 +136,6 @@ function initializeControls(settings) {
     toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
     toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
     renderSwitches(latestGameModes, latestTooltipMap);
-    expandAllSections();
     showSnackbar("Settings restored to defaults");
   });
 
