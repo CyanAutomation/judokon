@@ -1,7 +1,7 @@
 const STORAGE_KEY = "settings.collapsibleSections";
 const DEFAULT_OPEN_IDS = ["display", "general"];
 
-let cachedState;
+let memoryState = {};
 
 function canUseStorage() {
   try {
@@ -17,32 +17,27 @@ function canUseStorage() {
 }
 
 function readState() {
-  if (cachedState) {
-    return { ...cachedState };
-  }
   if (!canUseStorage()) {
-    cachedState = {};
-    return {};
+    return { ...memoryState };
   }
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
-    cachedState = parsed && typeof parsed === "object" ? parsed : {};
+    return parsed && typeof parsed === "object" ? { ...parsed } : {};
   } catch {
-    cachedState = {};
+    return {};
   }
-  return { ...cachedState };
 }
 
 function writeState(state) {
-  cachedState = { ...state };
   if (!canUseStorage()) {
+    memoryState = { ...state };
     return;
   }
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedState));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    // no-op: storage quota or availability issues should not break UI
+    memoryState = { ...state };
   }
 }
 
