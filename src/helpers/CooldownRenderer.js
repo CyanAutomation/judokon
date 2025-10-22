@@ -7,10 +7,7 @@ import {
   isOpponentPromptReady
 } from "./classicBattle/opponentPromptTracker.js";
 import { t } from "./i18n.js";
-import {
-  clampToPositiveTimestamp,
-  toPositiveNumber
-} from "./utils/positiveNumbers.js";
+import { clampToPositiveTimestamp, toPositiveNumber } from "./utils/positiveNumbers.js";
 
 const DEFAULT_PROMPT_POLL_INTERVAL = 16;
 

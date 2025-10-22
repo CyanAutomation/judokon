@@ -769,7 +769,8 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     const rafCandidate = globalTarget.requestAnimationFrame;
     const cancelRafCandidate = globalTarget.cancelAnimationFrame;
     const raf = typeof rafCandidate === "function" ? rafCandidate.bind(globalTarget) : null;
-    const cancelRaf = typeof cancelRafCandidate === "function" ? cancelRafCandidate.bind(globalTarget) : null;
+    const cancelRaf =
+      typeof cancelRafCandidate === "function" ? cancelRafCandidate.bind(globalTarget) : null;
     const runPostResetLock = () => {
       if (postResetLocked) return;
       postResetLocked = true;
@@ -802,7 +803,8 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   };
   const runReset = () => {
     clearStatButtonSelections(store);
-    const { handleFailure, ensureSafetyLock, markLocked } = createPostResetScheduler(lockStatButtons);
+    const { handleFailure, ensureSafetyLock, markLocked } =
+      createPostResetScheduler(lockStatButtons);
     try {
       disableStatButtons?.();
       markLocked();

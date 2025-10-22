@@ -51,64 +51,16 @@ export function evaluateRoundData(playerVal, opponentVal) {
 }
 
 /**
- * Evaluate a selected stat and return the outcome data.
- * This function only evaluates and returns outcome data; it does not emit any events.
- * Event emission is handled elsewhere (e.g., in handleStatSelection).
+ * @summary Evaluate a selected stat and return the round outcome data without side effects.
+ * @pseudocode
+ * 1. Delegate to `evaluateRoundData` with the provided player and opponent values.
+ * 2. Return the normalized evaluation result for downstream processing.
  *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player's stat value.
- * @param {number} opponentVal - Opponent's stat value.
- * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Evaluate a selected stat and return the outcome data.
- *
- * This function is intentionally pure with no side-effects; callers such as
- * `computeRoundResult` are responsible for emitting events and updating UI.
- *
- * @pseudocode
- * 1. Convert the input values to a stable result shape by delegating to `evaluateRoundData`.
- * 2. Return the evaluation result so callers can act accordingly.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store (unused by pure evaluation).
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store (unused by the pure evaluation).
  * @param {string} stat - Selected stat key.
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
  * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
- */
-/**
- * Evaluate a round with the given stat values.
- *
- * @pseudocode
- * 1. Call evaluateRoundData with player and opponent values.
- * 2. Return the evaluation result with outcome and scores.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store
- * @param {string} stat - Chosen stat key
- * @param {number} playerVal - Player stat value
- * @param {number} opponentVal - Opponent stat value
- * @returns {object} Round evaluation result
  */
 export function evaluateRound(store, stat, playerVal, opponentVal) {
   return evaluateRoundData(playerVal, opponentVal);
@@ -229,17 +181,17 @@ export async function dispatchOutcomeEvents(result) {
 }
 
 /**
- * Update scoreboard scores to reflect the latest round.
- *
+ * @summary Update the scoreboard UI to reflect the latest round result.
  * @pseudocode
- * 1. Dynamically import `setupScoreboard` and call `updateScore`.
- * 2. Return the original result.
+ * 1. Log debug info when running under Vitest.
+ * 2. Invoke `sb.updateScore` when available to update any bound adapters.
+ * 3. Update the DOM scoreboard directly to guarantee deterministic visuals.
+ * 4. Return the original `result` for chaining convenience.
  *
- * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
- * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result to persist.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>} Resolves with the original result.
  */
 export async function updateScoreboard(result) {
-  await resetStatButtons();
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       console.log(
@@ -273,21 +225,6 @@ export async function updateScoreboard(result) {
   return result;
 }
 
-/**
- * Emit round resolution events and clear player choice.
- *
- * @pseudocode
- * 1. Emit `roundResolved` with round details.
- * 2. Emit PRD `round.evaluated` with normalized fields.
- * 3. Clear `store.playerChoice` and return the result.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player stat value.
- * @param {number} opponentVal - Opponent stat value.
- * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
- * @returns {ReturnType<typeof evaluateRound>}
- */
 /**
  * Emit round resolution events with detailed result data.
  *
@@ -365,37 +302,21 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
 }
 
 /**
- * Compute and finalize the round result.
- *
+ * @summary Execute the full round resolution pipeline from evaluation to UI reset.
  * @pseudocode
- * 1. Call `evaluateOutcome`.
- * 2. Await `dispatchOutcomeEvents`.
- * 3. Await `updateScoreboard`.
- * 4. Await `resetStatButtons` to restore control interactivity.
- * 5. Emit resolution events and return the result.
+ * 1. Evaluate the round outcome using the selected stat values.
+ * 2. Dispatch outcome events so dependent systems can react.
+ * 3. Update the scoreboard with the new scores.
+ * 4. Emit round resolved events for external observers.
+ * 5. Wait for UI lock timers to settle to avoid race conditions.
+ * 6. Reset stat buttons so the next selection can begin.
+ * 7. Return the final round result object.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player stat value.
- * @param {number} opponentVal - Opponent stat value.
- * @returns {Promise<ReturnType<typeof evaluateRound>>}
- */
-/**
- * Compute the complete round result from stat selection to event emission.
- *
- * @param {object} store - Battle state store.
- * @param {string} stat - Chosen stat key.
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @returns {Promise<object>} Complete round result with evaluation, events, and UI updates.
- * @summary Execute full round resolution pipeline from evaluation to event emission.
- * @pseudocode
- * 1. Evaluate the round outcome using player and opponent stat values.
- * 2. Dispatch outcome events for UI and state machine updates.
- * 3. Update scoreboard with new scores.
- * 4. Reset stat buttons so the next selection can begin.
- * 5. Emit round resolution events with complete result data.
- * 6. Return the final result object.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   try {
@@ -456,24 +377,13 @@ async function waitForRoundUILocks() {
 }
 
 /**
- * Ensure the state machine is ready to evaluate the round.
- *
+ * @summary Ensure the battle state machine is ready to evaluate the round.
  * @pseudocode
- * 1. Check if `document.body.dataset.battleState` is `"roundDecision"`.
- * 2. If not, dispatch the `"evaluate"` event.
- * 3. Swallow any errors from dispatching.
+ * 1. Check if `document.body.dataset.battleState` equals `"roundDecision"`.
+ * 2. Dispatch an `"evaluate"` event when the state differs.
+ * 3. Swallow dispatch errors to avoid interrupting resolution flow.
  *
  * @returns {Promise<void>}
- */
-/**
- * Ensure the state machine is in round decision state before evaluation.
- *
- * @returns {Promise<void>} Promise that resolves when state is ready for evaluation.
- * @summary Ensure state machine is ready to evaluate round results.
- * @pseudocode
- * 1. Check if current battle state is 'roundDecision'.
- * 2. If not in round decision state, dispatch 'evaluate' event.
- * 3. Handle any errors from event dispatching gracefully.
  */
 export async function ensureRoundDecisionState() {
   try {

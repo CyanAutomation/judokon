@@ -57,10 +57,8 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for page to initialize
-    await page.waitForTimeout(1000);
-
     const battleArea = page.locator("#battle-area");
+    await expect.poll(async () => await battleArea.getAttribute("data-test-mode")).toBeNull();
     const testModeMarker = await battleArea.getAttribute("data-test-mode");
     expect(testModeMarker).not.toBe("true");
   });
@@ -156,12 +154,13 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Give page time to load
-    await page.waitForTimeout(1000);
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-feature-battle-state-badge",
+      "disabled"
+    );
 
     const badge = page.locator("#battle-state-badge");
-    const isVisible = await badge.isVisible().catch(() => false);
-    expect(isVisible).toBe(false);
+    await expect(badge).toHaveCount(0);
   });
 });
 
@@ -197,14 +196,11 @@ test.describe("tooltipOverlayDebug feature flag", () => {
 
     await page.goto("/src/pages/tooltipViewer.html");
 
-    // Wait for page to load
-    await page.waitForTimeout(1000);
-
-    // Verify the body does NOT have the debug class
-    const hasDebugClass = await page
-      .locator("body")
-      .evaluate((el) => el.classList.contains("tooltip-overlay-debug"));
-    expect(hasDebugClass).toBe(false);
+    const body = page.locator("body");
+    await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "disabled");
+    await expect
+      .poll(() => body.evaluate((el) => el.classList.contains("tooltip-overlay-debug")))
+      .toBe(false);
   });
 });
 
@@ -218,13 +214,10 @@ test.describe("enableCardInspector feature flag", () => {
 
     await page.goto("/src/pages/randomJudoka.html");
 
-    // Wait for page to load
-    await page.waitForTimeout(1000);
-
-    // Check that the override is still set
-    const overrideValue = await page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector);
-
-    expect(overrideValue).toBe(true);
+    await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");
+    await expect
+      .poll(() => page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null))
+      .toBe(true);
   });
 
   test("card inspector flag override disabled correctly on page", async ({ page }) => {
@@ -236,12 +229,9 @@ test.describe("enableCardInspector feature flag", () => {
 
     await page.goto("/src/pages/randomJudoka.html");
 
-    // Wait for page to load
-    await page.waitForTimeout(1000);
-
-    // Check that the override is still set
-    const overrideValue = await page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector);
-
-    expect(overrideValue).toBe(false);
+    await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");
+    await expect
+      .poll(() => page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null))
+      .toBe(false);
   });
 });

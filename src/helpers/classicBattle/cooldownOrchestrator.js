@@ -730,8 +730,7 @@ export function instantiateCooldownTimer(
   let promptPollInterval = 0;
   let shouldWaitForPrompt = false;
   try {
-    const readyState =
-      typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() : null;
+    const readyState = typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() : null;
     shouldWaitForPrompt = readyState !== true && readyState !== null;
   } catch {
     shouldWaitForPrompt = true;

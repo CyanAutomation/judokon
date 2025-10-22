@@ -172,7 +172,8 @@ export async function resolveRoundForTest(eventLike = {}, options = {}) {
       await emitOpponentReveal(detail);
       await waitForNextFrameForTest();
       try {
-        const card = typeof document !== "undefined" ? document.getElementById("opponent-card") : null;
+        const card =
+          typeof document !== "undefined" ? document.getElementById("opponent-card") : null;
         if (card) card.classList.remove("opponent-hidden");
       } catch {}
       await ensureOpponentCardVisibleForTest();
