@@ -184,9 +184,18 @@ describe("Battle Classic Page Integration", () => {
       );
     }
 
+    const testApi = window.__TEST_API;
+    expect(testApi).toBeDefined();
+    expect(testApi?.state?.waitForBattleState).toBeTypeOf("function");
+
+    let reachedWaitingForAction = false;
     await withMutedConsole(async () => {
       firstOption.click();
+      reachedWaitingForAction = await testApi.state.waitForBattleState(
+        "waitingForPlayerAction"
+      );
     });
+    expect(reachedWaitingForAction).toBe(true);
 
     expect(getPointsToWin()).toBe(selectedRound.value);
     expect(document.body.dataset.target).toBe(String(selectedRound.value));
@@ -197,6 +206,53 @@ describe("Battle Classic Page Integration", () => {
     expect(store).toBeTruthy();
     expect(store.selectionMade).toBe(false);
     expect(store.playerChoice).toBeNull();
+    const debugBefore = testApi.inspect?.getDebugInfo?.() ?? null;
+    const roundsBefore = Number(
+      debugBefore?.store?.roundsPlayed ?? store.roundsPlayed ?? 0
+    );
+
+    // 6. Stat buttons should be interactive immediately after initialization
+    const statButtons = Array.from(
+      document.querySelectorAll("#stat-buttons button[data-stat]")
+    );
+    expect(statButtons.length).toBeGreaterThan(0);
+    statButtons.forEach((button) => {
+      expect(button.disabled).toBe(false);
+    });
+
+    const selectedButton = statButtons[0];
+    const selectedStat = selectedButton.dataset.stat;
+    expect(selectedStat).toBeTruthy();
+
+    let reachedRoundDecision = false;
+    let resetOpponentDelay = () => {};
+    if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
+      testApi.timers.setOpponentResolveDelay(0);
+      resetOpponentDelay = () => {
+        testApi.timers.setOpponentResolveDelay(null);
+      };
+    }
+
+    try {
+      await withMutedConsole(async () => {
+        selectedButton.click();
+        reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
+      });
+    } finally {
+      resetOpponentDelay();
+    }
+    expect(reachedRoundDecision).toBe(true);
+
+    const postSelectionStore = getBattleStore();
+    expect(postSelectionStore.selectionMade).toBe(true);
+    const debugAfter = testApi.inspect?.getDebugInfo?.() ?? null;
+    const roundsAfter = Number(
+      debugAfter?.store?.roundsPlayed ?? postSelectionStore.roundsPlayed ?? 0
+    );
+    expect(roundsAfter).toBeGreaterThan(roundsBefore);
+    expect(debugAfter?.store?.selectionMade ?? null).toBe(true);
+    expect(document.body.dataset.battleState).toBe("roundDecision");
+
   });
 
   it("keeps roundsPlayed in sync between engine and store in non-orchestrated flow", async () => {

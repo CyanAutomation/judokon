@@ -54,10 +54,18 @@ describe("Classic Battle Init Complete Hooks", () => {
   it("signals readiness through init-complete dispatch", async () => {
     let eventFired = false;
     let eventDetail = null;
+    let initCompleteButtons = [];
 
     const eventHandler = (event) => {
       eventFired = true;
       eventDetail = event;
+      initCompleteButtons = Array.from(
+        document.querySelectorAll(".round-select-buttons button")
+      ).map((button) => ({
+        disabled: button.disabled,
+        label: button.textContent?.trim() ?? "",
+        tooltipId: button.dataset.tooltipId ?? null
+      }));
     };
 
     document.addEventListener("battle:init-complete", eventHandler);
@@ -68,6 +76,12 @@ describe("Classic Battle Init Complete Hooks", () => {
     expect(eventDetail).toBeInstanceOf(Event);
     expect(eventDetail.type).toBe("battle:init-complete");
     expect(document.querySelector(".round-select-buttons")).not.toBeNull();
+    expect(initCompleteButtons.length).toBeGreaterThan(0);
+    initCompleteButtons.forEach(({ disabled, label, tooltipId }) => {
+      expect(disabled).toBe(false);
+      expect(label).not.toBe("");
+      expect(tooltipId).toMatch(/^ui\.round/);
+    });
 
     document.removeEventListener("battle:init-complete", eventHandler);
   });
