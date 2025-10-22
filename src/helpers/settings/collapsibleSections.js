@@ -80,20 +80,16 @@ function setSectionOpen(details, isOpen, { persist = true, stateMap } = {}) {
 
 function applyInitialState(sections) {
   const state = readState();
-  let hasChanges = false;
 
   sections.forEach((details, index) => {
     const sectionId = getSectionId(details, index);
     if (!Object.prototype.hasOwnProperty.call(state, sectionId)) {
       state[sectionId] = DEFAULT_OPEN_IDS.includes(sectionId);
-      hasChanges = true;
     }
     setSectionOpen(details, Boolean(state[sectionId]), { persist: false, stateMap: state });
   });
 
-  if (hasChanges) {
-    writeState(state);
-  }
+  writeState(state);
 }
 
 function bindToggleHandlers(sections) {

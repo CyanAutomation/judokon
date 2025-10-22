@@ -25,7 +25,7 @@ This document should be updated to reflect its status as a post-implementation r
 
 ### Task: Font Loading
 
-- **Action Taken:** Implemented the "Font Loading" improvement from the "Additional Opportunities" section. Added the necessary `<link>` tags to `src/pages/battleCLI.html` to embed the 'Roboto Mono' font from Google Fonts.
+- [x] **Action Taken:** Implemented the "Font Loading" improvement from the "Additional Opportunities" section. Added the necessary `<link>` tags to `src/pages/battleCLI.html` to embed the 'Roboto Mono' font from Google Fonts.
 - **Outcome:**
   - The change was successfully applied to the HTML file.
   - Ran relevant Playwright tests (`cli-layout-assessment.spec.js`, `cli.spec.js`). All tests passed, indicating no regressions in layout or basic CLI functionality.
@@ -33,7 +33,7 @@ This document should be updated to reflect its status as a post-implementation r
 
 ### Task: Theming (Theme Switcher)
 
-- **Action Taken:** Implemented the "Theming" improvement from the "Additional Opportunities" section.
+- [x] **Action Taken:** Implemented the "Theming" improvement from the "Additional Opportunities" section.
   - Added an "Immersive Theme" checkbox to the settings section in `src/pages/battleCLI.html`.
   - Added logic to `src/pages/battleCLI/init.js` to handle the theme switching. This includes:
     - Setting the initial state of the checkbox on page load based on `localStorage`.
@@ -46,28 +46,28 @@ This document should be updated to reflect its status as a post-implementation r
 
 ### Task: Grid Layout Optimization
 
-- **Action Taken:** Refined the stats grid sizing logic in `src/pages/battleCLI.css` to use clamp-based column widths. This smooths the transition between breakpoints, ensuring tablets pick up an extra column sooner while preventing oversized tiles on wide displays.
+- [x] **Action Taken:** Refined the stats grid sizing logic in `src/pages/battleCLI.css` to use clamp-based column widths. This smooths the transition between breakpoints, ensuring tablets pick up an extra column sooner while preventing oversized tiles on wide displays.
 - **Outcome:**
   - The grid now scales column widths between 180px–220px by default, expanding up to 260px on large viewports without introducing layout jumps.
   - Ran targeted tests: `npx vitest run tests/cli/statDisplay.spec.js` and `npx playwright test playwright/cli-layout-assessment.spec.js`. Both suites passed, confirming no regressions in CLI stat rendering or layout.
 
 ### Task: Command History Preview
 
-- **Action Taken:** Enhanced command history navigation so cycling through previous picks highlights the matching stat tile, tracks the original active row, and restores focus when the history preview is dismissed.
+- [x] **Action Taken:** Enhanced command history navigation so cycling through previous picks highlights the matching stat tile, tracks the original active row, and restores focus when the history preview is dismissed.
 - **Outcome:**
   - The CLI now exposes the previewed stat via `data-history-preview` and applies a dedicated `.history-preview` outline, guiding users to confirm the recalled choice.
   - Ran targeted tests: `npx vitest run tests/cli/commandHistory.test.js` and `npx playwright test playwright/cli-command-history.spec.js`, both of which passed without regressions.
 
 ### Task: Footer Controls Visibility
 
-- **Action Taken:** Rebuilt the footer shortcuts banner with semantic markup and focusable "kebab" chips. The hint now announces via `aria-live`, exposes a titled shortcuts grid, and swaps the plain string for keycap-style pills.
+- [x] **Action Taken:** Rebuilt the footer shortcuts banner with semantic markup and focusable "kebab" chips. The hint now announces via `aria-live`, exposes a titled shortcuts grid, and swaps the plain string for keycap-style pills.
 - **Outcome:**
   - `#cli-controls-hint` now highlights keys with `.cli-controls-hint__item` chip styling, adapts to mobile layouts, and includes a screen-reader only summary. The hint toggles using the `hidden` attribute for cleaner accessibility semantics and dims shortcuts automatically when the related feature flags are disabled.
   - Ran targeted tests: `npx vitest run tests/cli/statDisplay.spec.js` and `npx playwright test playwright/cli-layout-assessment.spec.js`. Both completed successfully, confirming no CLI layout regressions.
 
 ### Task: Verbose Log Styling
 
-- **Action Taken:** Restyled the verbose transcript panel with a dedicated container, gradient scroll cues, and keycap-inspired chips. Scroll listeners now update `data-scroll-top`/`data-scroll-bottom` so the UI only shows fades when content overflows.
+- [x] **Action Taken:** Restyled the verbose transcript panel with a dedicated container, gradient scroll cues, and keycap-inspired chips. Scroll listeners now update `data-scroll-top`/`data-scroll-bottom` so the UI only shows fades when content overflows.
 - **Outcome:**
   - `#cli-verbose-section` received a tonal background, inset border, and live scroll indicators, while `#cli-verbose-log` now stabilizes scrollbar guttering and uses a monospace-friendly palette for multi-line output.
   - Ran targeted tests: `npx vitest run tests/cli/commandHistory.test.js` and `npx playwright test playwright/cli-verbose-toggle.spec.js`. Both passed with zero regressions.
@@ -84,15 +84,15 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ### 1. Cursor Animation Consistency
 
-**Issue**: There was a concern that the blinking cursor animation (`#cli-cursor`) might be inconsistent between themes.
-**Impact**: Inconsistent user experience between themes.
-**Investigation Finding**: The blink animation is correctly defined in the main `battleCLI.css` file and is not exclusive to a theme. No fix was needed as the implementation is already correct.
+- [x] **Issue**: There was a concern that the blinking cursor animation (`#cli-cursor`) might be inconsistent between themes.
+- **Impact**: Inconsistent user experience between themes.
+- **Investigation Finding**: The blink animation is correctly defined in the main `battleCLI.css` file and is not exclusive to a theme. No fix was needed as the implementation is already correct.
 
 ### 2. Grid Layout Optimization
 
-**Issue**: The stats grid uses `grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))` which may not provide optimal layout on all screen sizes.
-**Impact**: Stats may not fill available space efficiently, especially on tablets.
-**Solution**: Consider responsive grid columns:
+- [x] **Issue**: The stats grid uses `grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))` which may not provide optimal layout on all screen sizes.
+- **Impact**: Stats may not fill available space efficiently, especially on tablets.
+- **Solution**: Consider responsive grid columns:
 
 ```css
 #cli-stats {
@@ -114,9 +114,9 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ### 3. Footer Controls Visibility
 
-**Issue**: The footer controls hint (`#cli-controls-hint`) uses small text and may not be prominent enough, especially on mobile devices.
-**Impact**: Users may miss important keyboard shortcuts.
-**Solution**: Enhance visibility with better styling:
+- [x] **Issue**: The footer controls hint (`#cli-controls-hint`) uses small text and may not be prominent enough, especially on mobile devices.
+- **Impact**: Users may miss important keyboard shortcuts.
+- **Solution**: Enhance visibility with better styling:
 
 ```css
 #cli-controls-hint {
@@ -153,9 +153,9 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ### 4. Settings Section Organization
 
-**Issue**: The settings section (`#cli-settings-body`) has basic styling but could benefit from better visual hierarchy.
-**Impact**: Settings may be harder to scan quickly.
-**Solution**: Add better spacing and grouping:
+- [ ] **Issue**: The settings section (`#cli-settings-body`) has basic styling but could benefit from better visual hierarchy.
+- **Impact**: Settings may be harder to scan quickly.
+- **Solution**: Add better spacing and grouping:
 
 ```css
 .cli-settings-row {
@@ -179,9 +179,9 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ### 5. Verbose Log Enhancements
 
-**Issue**: The verbose log (`#cli-verbose-log`) has basic scrolling but lacks visual indicators for scrollable content.
-**Impact**: Users may not realize content is scrollable.
-**Solution**: Add scroll indicators and better styling:
+- [x] **Issue**: The verbose log (`#cli-verbose-log`) has basic scrolling but lacks visual indicators for scrollable content.
+- **Impact**: Users may not realize content is scrollable.
+- **Solution**: Add scroll indicators and better styling:
 
 ```css
 #cli-verbose-section {
@@ -231,9 +231,9 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ### 6. Enhanced Focus Indicators
 
-**Issue**: Focus indicators are good but could be more consistent across all interactive elements.
-**Impact**: Keyboard navigation experience could be improved.
-**Solution**: Ensure all interactive elements have consistent focus styles:
+- [ ] **Issue**: Focus indicators are good but could be more consistent across all interactive elements.
+- **Impact**: Keyboard navigation experience could be improved.
+- **Solution**: Ensure all interactive elements have consistent focus styles:
 
 ```css
 button:focus,
@@ -253,9 +253,9 @@ select:focus,
 
 ### 7. Loading State Enhancements
 
-**Issue**: Skeleton placeholders are basic and could be more visually appealing.
-**Impact**: Loading experience could be more polished.
-**Solution**: Improve skeleton animation:
+- [ ] **Issue**: Skeleton placeholders are basic and could be more visually appealing.
+- **Impact**: Loading experience could be more polished.
+- **Solution**: Improve skeleton animation:
 
 ```css
 .cli-stat.skeleton {
@@ -279,9 +279,9 @@ select:focus,
 
 ### 8. Responsive Breakpoint Optimization
 
-**Issue**: Current breakpoints (720px, 420px) could be optimized for modern device sizes.
-**Impact**: Layout may not adapt perfectly to all devices.
-**Solution**: Consider additional breakpoints:
+- [ ] **Issue**: Current breakpoints (720px, 420px) could be optimized for modern device sizes.
+- **Impact**: Layout may not adapt perfectly to all devices.
+- **Solution**: Consider additional breakpoints:
 
 ```css
 @media (max-width: 640px) {
@@ -295,9 +295,9 @@ select:focus,
 
 ### 9. Color Contrast Refinements
 
-**Issue**: While contrast meets WCAG standards, some text could be slightly more readable.
-**Impact**: Minor readability improvements.
-**Solution**: Slight color adjustments:
+- [ ] **Issue**: While contrast meets WCAG standards, some text could be slightly more readable.
+- **Impact**: Minor readability improvements.
+- **Solution**: Slight color adjustments:
 
 ```css
 .cli-status {
@@ -311,9 +311,9 @@ select:focus,
 
 ### 10. Touch Target Consistency
 
-**Issue**: While stats meet 44px minimum, other interactive elements should be reviewed.
-**Impact**: Touch interaction consistency.
-**Solution**: Ensure all touch targets meet minimum sizes:
+- [ ] **Issue**: While stats meet 44px minimum, other interactive elements should be reviewed.
+- **Impact**: Touch interaction consistency.
+- **Solution**: Ensure all touch targets meet minimum sizes:
 
 ```css
 .cli-settings-toggle,
@@ -330,9 +330,9 @@ select:focus,
 
 ### 1. Font Loading
 
-**Issue**: The CLI uses a system monospace font. While this is generally fine, for a more consistent and polished look, we could consider embedding a specific open-source monospace font.
-**Impact**: A more consistent and polished look across all systems.
-**Solution**: Use a web font service or host a font locally. For example, using Google Fonts:
+- [x] **Issue**: The CLI uses a system monospace font. While this is generally fine, for a more consistent and polished look, we could consider embedding a specific open-source monospace font.
+- **Impact**: A more consistent and polished look across all systems.
+- **Solution**: Use a web font service or host a font locally. For example, using Google Fonts:
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -352,14 +352,14 @@ And in the CSS:
 
 ### 2. Command History
 
-**Status**: Implemented.
-**Details**: The CLI now stores up to 20 stat selections in `localStorage` (`cliStatHistory`) and supports `Ctrl + ArrowUp/ArrowDown` to preview previous picks before confirming with `Enter`.
+- [x] **Status**: Implemented.
+- **Details**: The CLI now stores up to 20 stat selections in `localStorage` (`cliStatHistory`) and supports `Ctrl + ArrowUp/ArrowDown` to preview previous picks before confirming with `Enter`.
 
 ### 3. Theming
 
-**Issue**: The CLI has a default and an "immersive" theme, but no way for the user to switch between them easily.
-**Impact**: Users are stuck with the default theme unless they know how to change it manually.
-**Solution**: Add a theme switcher to the settings section. This would allow users to choose between different themes and would also make it easier to add new themes in the future.
+- [x] **Issue**: The CLI has a default and an "immersive" theme, but no way for the user to switch between them easily.
+- **Impact**: Users are stuck with the default theme unless they know how to change it manually.
+- **Solution**: Add a theme switcher to the settings section. This would allow users to choose between different themes and would also make it easier to add new themes in the future.
 
 ## Implementation Notes
 

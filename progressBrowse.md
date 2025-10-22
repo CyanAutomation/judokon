@@ -41,7 +41,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
   - Flags are alphabetized by their displayed country name.
 
 - **Actionable Fixes:**
-  1. **Disable Horizontal Scrolling (CSS):** In `src/styles/layout.css` or `src/styles/navbar.css`, modify the styles for `.country-flag-slide-track` (or `#country-list`) to prevent horizontal scrolling and allow wrapping.
+  - [ ] **Disable Horizontal Scrolling (CSS):** In `src/styles/layout.css` or `src/styles/navbar.css`, modify the styles for `.country-flag-slide-track` (or `#country-list`) to prevent horizontal scrolling and allow wrapping.
 
      ```css
      /* In src/styles/layout.css or a more specific stylesheet */
@@ -55,7 +55,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
 
      **Rationale:** `overflow-x: hidden` is critical to prevent the accidental mouse-wheel gesture that currently breaks the component.
 
-  2. **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
+  - [ ] **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
 
      ```javascript
      // In src/helpers/browse/setupCountryFilter.js
@@ -68,7 +68,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
      }
      ```
 
-  3. **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
+  - [ ] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
 
      ```javascript
      // In src/helpers/country/list.js, before creating buttons
@@ -102,7 +102,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
   - Carousel page markers have a clear active state and are announced by screen readers.
 
 - **Actionable Fixes:**
-  1. **Fix Card Scrolling (CSS):** In `src/styles/card.css`, adjust the card layout for desktop viewports.
+  - [ ] **Fix Card Scrolling (CSS):** In `src/styles/card.css`, adjust the card layout for desktop viewports.
 
      ```css
      /* In src/styles/card.css, inside a @media (min-width: 1024px) block */
@@ -117,7 +117,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
      }
      ```
 
-  2. **Increase Center Card Scale (CSS):** In `src/styles/carousel.css`, increase the scale transform for the active card.
+  - [ ] **Increase Center Card Scale (CSS):** In `src/styles/carousel.css`, increase the scale transform for the active card.
 
      ```css
      /* In src/styles/carousel.css */
@@ -127,7 +127,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
      }
      ```
 
-  3. **Improve Page Markers:** Add a visually hidden `aria-live` region to `src/pages/browseJudoka.html` that is updated by the carousel logic in `src/game.js` or `src/helpers/browseJudokaPage.js` to announce "Page X of Y".
+  - [ ] **Improve Page Markers:** Add a visually hidden `aria-live` region to `src/pages/browseJudoka.html` that is updated by the carousel logic in `src/game.js` or `src/helpers/browseJudokaPage.js` to announce "Page X of Y".
 
 ### Phase 3: Medium - Accessibility & Usability
 
@@ -140,7 +140,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
   - **JavaScript:** `src/helpers/browse/setupCountryToggle.js`
 
 - **Actionable Fixes:**
-  1. **Increase Tap Target Size (CSS):** In `src/styles/navbar.css`, use padding to increase the hit area of icon buttons without changing the visual size.
+  - [ ] **Increase Tap Target Size (CSS):** In `src/styles/navbar.css`, use padding to increase the hit area of icon buttons without changing the visual size.
 
      ```css
      .flag-button,
@@ -151,7 +151,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
      }
      ```
 
-  2. **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
+  - [ ] **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
 
      ```javascript
      // In src/helpers/browse/setupCountryToggle.js
@@ -166,8 +166,8 @@ This phase addresses layout bugs on the judoka cards that hide information and v
 
 - **Issue:** No visible error handling for network failures.
 - **Actionable Fixes:**
-  1. **Add Error Handling:** In `src/helpers/browseJudokaPage.js`, add a `.catch()` block to the data fetching logic to render an error message if the judoka roster fails to load.
-  2. **Add Test IDs:** Add `data-testid` attributes to key interactive elements like filter controls, the carousel, and cards to create more resilient Playwright tests.
+  - [ ] **Add Error Handling:** In `src/helpers/browseJudokaPage.js`, add a `.catch()` block to the data fetching logic to render an error message if the judoka roster fails to load.
+  - [ ] **Add Test IDs:** Add `data-testid` attributes to key interactive elements like filter controls, the carousel, and cards to create more resilient Playwright tests.
 
 ---
 

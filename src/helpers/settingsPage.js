@@ -28,10 +28,7 @@ import { syncDisplayMode } from "./settings/syncDisplayMode.js";
 import { renderGameModes } from "./settings/renderGameModes.js";
 import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
 import { setupAdvancedSettingsSearch } from "./settings/filterAdvancedSettings.js";
-import {
-  setupCollapsibleSections,
-  expandAllSections
-} from "./settings/collapsibleSections.js";
+import { setupCollapsibleSections, expandAllSections } from "./settings/collapsibleSections.js";
 
 /**
  * Helper: create and return refs for settings controls and containers.

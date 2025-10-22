@@ -35,7 +35,7 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - Round state transitions must be idempotent (e.g., multiple `roundResolved` events for the same round do not cause multiple score updates).
   - The UI must not allow new actions while a round result is being processed.
 - **Actionable Fixes:**
-  1. **Add Idempotent Guards:** In `src/helpers/classicBattle/roundManager.js` and `src/helpers/classicBattle/selectionHandler.js`, add guards to prevent re-entry into critical functions.
+  - [ ] **Add Idempotent Guards:** In `src/helpers/classicBattle/roundManager.js` and `src/helpers/classicBattle/selectionHandler.js`, add guards to prevent re-entry into critical functions.
 
      ```javascript
      // Example in a function like applyRoundDecisionResult in roundManager.js
@@ -51,7 +51,7 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
      }
      ```
 
-  2. **Synchronously Disable UI:** In `src/helpers/classicBattle/statButtons.js` or `selectionHandler.js`, disable buttons immediately on click, not after an async operation.
+  - [ ] **Synchronously Disable UI:** In `src/helpers/classicBattle/statButtons.js` or `selectionHandler.js`, disable buttons immediately on click, not after an async operation.
 
      ```javascript
      // In handleStatButtonClick within battleClassic.init.js
@@ -76,8 +76,8 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - The opponent card placeholder must remain visible until the player has selected a stat.
   - All stat buttons must be disabled immediately after a player makes a choice.
 - **Actionable Fixes:**
-  1. **Ensure Placeholder Visibility:** In `src/pages/battleClassic.init.js`, ensure the logic that reveals the opponent's card is strictly tied to an event that fires _after_ the player's selection is confirmed. Add a CSS class like `.is-obscured` to the opponent card container and only remove it upon the `roundResolved` event.
-  2. **Immediate Button Disabling:** (Covered in Phase 1) Ensure the `disableStatButtons` function is called at the very beginning of the `handleStatButtonClick` handler.
+  - [ ] **Ensure Placeholder Visibility:** In `src/pages/battleClassic.init.js`, ensure the logic that reveals the opponent's card is strictly tied to an event that fires _after_ the player's selection is confirmed. Add a CSS class like `.is-obscured` to the opponent card container and only remove it upon the `roundResolved` event.
+  - [ ] **Immediate Button Disabling:** (Covered in Phase 1) Ensure the `disableStatButtons` function is called at the very beginning of the `handleStatButtonClick` handler.
 
 ### Phase 3: Medium - Gameplay Polish
 
@@ -91,8 +91,8 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - A "Win/Loss/Draw" message is shown after every round.
   - All judoka cards drawn within a single match are unique.
 - **Actionable Fixes:**
-  1. **Queue Scoreboard Messages:** In `src/helpers/setupScoreboard.js`, modify it to queue messages if the scoreboard is not yet initialized, ensuring no messages are dropped.
-  2. **Implement Per-Match Deck:** In `src/helpers/classicBattle/roundManager.js`, create a shuffled, 25-card deck when a match starts. Draw from this deck for each round instead of using the global randomizer.
+  - [ ] **Queue Scoreboard Messages:** In `src/helpers/setupScoreboard.js`, modify it to queue messages if the scoreboard is not yet initialized, ensuring no messages are dropped.
+  - [ ] **Implement Per-Match Deck:** In `src/helpers/classicBattle/roundManager.js`, create a shuffled, 25-card deck when a match starts. Draw from this deck for each round instead of using the global randomizer.
 
      ```javascript
      // In a new function in roundManager.js, called by handleReplay or at match start
@@ -114,8 +114,8 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - Stat hotkeys are only active when the `statHotkeys` feature flag is enabled in settings.
   - All timers pause when the page visibility state is "hidden".
 - **Actionable Fixes:**
-  1. **Respect Hotkey Feature Flag:** In `src/helpers/classicBattle/statButtons.js`, modify `wireStatHotkeys` to check the feature flag before adding the event listener. Remove any logic that force-enables the flag.
-  2. **Implement Timer Pausing:** In the core timer logic (e.g., `src/helpers/classicBattle/timerService.js`), add event listeners for the Page Visibility API.
+  - [ ] **Respect Hotkey Feature Flag:** In `src/helpers/classicBattle/statButtons.js`, modify `wireStatHotkeys` to check the feature flag before adding the event listener. Remove any logic that force-enables the flag.
+  - [ ] **Implement Timer Pausing:** In the core timer logic (e.g., `src/helpers/classicBattle/timerService.js`), add event listeners for the Page Visibility API.
 
      ```javascript
      document.addEventListener("visibilitychange", () => {

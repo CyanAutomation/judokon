@@ -118,7 +118,21 @@ test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     await waitForSettingsReady(page);
+    await page.evaluate((key) => localStorage.removeItem(key), SETTINGS_SECTIONS_STORAGE_KEY);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await waitForSettingsReady(page);
   });
+
+  async function openSections(page, ids) {
+    for (const id of ids) {
+      const details = page.locator(`details[data-section-id="${id}"]`);
+      const isOpen = await details.evaluate((el) => el.open);
+      if (!isOpen) {
+        await details.locator("summary").click();
+        await expect(details).toHaveJSProperty("open", true);
+      }
+    }
+  }
 
   test("settings elements visible", async ({ page }) => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE, NAV_RANDOM_JUDOKA]);
@@ -160,6 +174,7 @@ test.describe("Settings page", () => {
   });*/
 
   test("tab order follows expected sequence", async ({ page }) => {
+    await openSections(page, ["display", "general", "gameModes", "advanced"]);
     const { flagLabels, expectedLabels } = getLabelData();
 
     const renderedFlagCount = await page
@@ -197,6 +212,7 @@ test.describe("Settings page", () => {
   });
 
   test("auto-select toggle reachable via keyboard tabbing", async ({ page }) => {
+    await openSections(page, ["advanced"]);
     const autoSelect = page.locator(
       '#feature-flags-container input[type=checkbox][data-flag="autoSelect"]'
     );
@@ -310,15 +326,16 @@ test.describe("Settings page", () => {
   });
 
   test("controls meet 44px touch target size", async ({ page }) => {
+    await openSections(page, ["display", "general"]);
     const selectors = [
       "button#reset-settings-button:not(.settings-section-toggle)",
-      "#sound-toggle",
-      "#motion-toggle",
-      "#typewriter-toggle",
-      "#tooltips-toggle",
-      "#display-mode-light",
-      "#display-mode-dark",
-      "#display-mode-retro"
+      "label[for='sound-toggle']",
+      "label[for='motion-toggle']",
+      "label[for='typewriter-toggle']",
+      "label[for='tooltips-toggle']",
+      "label[for='display-mode-light']",
+      "label[for='display-mode-dark']",
+      "label[for='display-mode-retro']"
     ];
 
     for (const sel of selectors) {
@@ -329,6 +346,7 @@ test.describe("Settings page", () => {
   });
 
   test("feature flag search filters advanced settings list", async ({ page }) => {
+    await openSections(page, ["advanced"]);
     const search = page.locator("#advanced-settings-search");
     const totalFlags = await page.locator("#feature-flags-container .settings-item").count();
     expect(totalFlags).toBeGreaterThan(0);
@@ -376,7 +394,15 @@ test.describe("Settings page", () => {
 
     const advancedSummary = page.locator('details[data-section-id="advanced"] summary');
     await advancedSummary.click();
-    await expect(page.locator('details[data-section-id="advanced"]')).toHaveJSProperty("open", true);
+    await expect(page.locator('details[data-section-id="advanced"]')).toHaveJSProperty(
+      "open",
+      true
+    );
+    const storedState = await page.evaluate(
+      (key) => localStorage.getItem(key),
+      SETTINGS_SECTIONS_STORAGE_KEY
+    );
+    expect(JSON.parse(storedState || "{}").advanced).toBe(true);
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await waitForSettingsReady(page);
@@ -430,6 +456,7 @@ test.describe("Settings page", () => {
   });
 
   test("restore defaults resets settings", async ({ page }) => {
+    await openSections(page, ["general", "links"]);
     await expect(page.getByRole("checkbox", { name: "Sound" })).toBeChecked();
     const sound = page.getByRole("checkbox", { name: "Sound" });
     await sound.click();
