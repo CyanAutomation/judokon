@@ -14,10 +14,11 @@ import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
  *
  * @pseudocode
  * completeFirstRound(document, testApi):
- *   1. Find and click first round button
- *   2. Wait for "waitingForPlayerAction" state
- *   3. Find and click first stat button
- *   4. Wait for "roundDecision" state
+ *   1. Find and click first round button (expects at least one button)
+ *   2. Wait for "waitingForPlayerAction" state with muted console
+ *   3. Find and click first stat button (expects at least one button)
+ *   4. Wait for "roundDecision" state with muted console
+ *   5. Assert all state transitions completed successfully
  */
 async function completeFirstRound(document, testApi) {
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
@@ -48,8 +49,9 @@ async function completeFirstRound(document, testApi) {
  *
  * @pseudocode
  * waitForPlaceholderReplacement(testApi):
- *   1. Wait for rounds played count to reach 1
- *   2. Assert completion was successful
+ *   1. Wait for rounds played count to reach exactly 1
+ *   2. Assert completion was successful (roundCompleted === true)
+ *   3. Ensures placeholder replacement has occurred after first round
  */
 async function waitForPlaceholderReplacement(testApi) {
   const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
