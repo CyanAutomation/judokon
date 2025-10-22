@@ -18,6 +18,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 
 - Brought settings theming to parity across light, dark, and retro modes by introducing theme-scoped tokens and toggle overrides (`src/styles/base.css`, `src/styles/settings.css`); verified with `npx vitest run tests/helpers/displayMode.test.js` and `sleep 5 && npx playwright test playwright/settings.spec.js`.
 - Implemented an accessible search/filter for Advanced Settings, wiring a reusable helper that reapplies after rerenders (`src/pages/settings.html`, `src/helpers/settingsPage.js`, `src/helpers/settings/filterAdvancedSettings.js`, `src/helpers/settings/renderFeatureFlags.js`, `src/styles/settings.css`); validated via `npx vitest run tests/helpers/settings/filterAdvancedSettings.test.js` and `npx playwright test playwright/settings.spec.js`.
+- Confirmed collapsible settings sections rely solely on native `<details>/<summary>` behavior and tightened regression coverage to reflect the HTML/CSS-only approach (`playwright/settings.spec.js`); validated with `npx vitest run tests/helpers/settings/filterAdvancedSettings.test.js tests/helpers/settingsPage.test.js` and `sleep 5 && npx playwright test playwright/settings.spec.js`.
 - Replaced the `window.__battleInitComplete` readiness assertion with an interaction-focused check so QA validates the real round/stat controls instead of the debug flag (`tests/classicBattle/init-complete.test.js`, `tests/integration/battleClassic.integration.test.js`).
 - Pointed the Classic Battle page at `setupClassicBattlePage` (`src/pages/battleClassic.html:172` → `../helpers/classicBattle/bootstrap.js`), ensuring the controller/view bootstrap owns runtime wiring.
 - Hydrated the stat button container with static markup (`src/pages/battleClassic.html:96-120`) so the new view layer can manage readiness without the legacy renderer.
@@ -206,12 +207,9 @@ This phase focuses on making the settings page more interactive and visually eng
 
 This phase introduces more advanced functionality and long-term improvements to enhance the user experience and maintainability of the settings page.
 
-1. **Collapsible Sections** — **Outstanding**
+1. **Collapsible Sections** — **Completed**
    - **Priority:** Low
-   - **Issue:** As more settings are added, the page will become increasingly long and difficult to navigate.
-   - **Scope:** In `src/pages/settings.html` and `src/helpers/settingsPage.js`, implement collapsible sections for the fieldsets. By wrapping each section in a `<details>` element, the content can be hidden by default and expanded by the user, reducing initial visual clutter and making it easier to find specific settings.
-   - **Acceptance Criteria:**
-     - Each fieldset can be collapsed/expanded
+   - **Outcome:** Verified the native `<details>/<summary>` implementation for all settings groupings and refreshed regression coverage so no JavaScript is required for expand/collapse behavior; Playwright now asserts default open state, manual toggling, and downstream control sizing expectations.
      - Default state is appropriate (open for primary settings, closed for advanced)
      - State persists across page reloads (using localStorage)
      - Keyboard navigation works for all controls
@@ -442,17 +440,15 @@ All feature flags are now implemented, tested, and integrated into the battle sy
 - ✅ No production console spam (logging properly gated)
 - ✅ Smoke test stable and reliable (20-30s runtime)
 
-### Outstanding Tasks — ⏳ **2 ITEMS**
+### Outstanding Tasks — ⏳ **1 ITEM**
 
 **Priority: Low**
 
-1. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
-2. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
+1. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
 
 ### Recommendation
 
 The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
 
-1. **Phase 3.1** (Collapsible Sections) to shorten initial scroll depth as the settings catalog grows
-2. **Phase 3.2** (Unsaved Changes Indicator) to provide immediate feedback for toggled controls
+1. **Phase 3.2** (Unsaved Changes Indicator) to provide immediate feedback for toggled controls
 ````
