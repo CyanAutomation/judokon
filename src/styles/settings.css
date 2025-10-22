@@ -113,6 +113,12 @@
   align-items: center;
   gap: var(--space-sm);
   cursor: pointer;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-lg);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .switch input {
@@ -126,6 +132,22 @@
 
 .switch input:focus-visible + .slider {
   box-shadow: 0 0 3px 2px var(--button-bg);
+}
+
+.switch:hover,
+.switch:focus-within {
+  background-color: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent),
+    0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.switch:focus-within {
+  outline: none;
+}
+
+.switch:active {
+  transform: translateY(1px);
 }
 
 .switch:hover .slider {
@@ -169,6 +191,11 @@
 
 .switch:hover .slider::before {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.switch:hover span,
+.switch:focus-within span {
+  color: color-mix(in srgb, var(--color-primary) 60%, var(--color-text) 40%);
 }
 
 .slider.round {
