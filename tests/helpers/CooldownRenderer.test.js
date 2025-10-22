@@ -48,14 +48,16 @@ const createDeterministicScheduler = () => {
 
 const promptTrackerMocks = vi.hoisted(() => ({
   getOpponentPromptTimestamp: vi.fn(() => 0),
-  getOpponentPromptMinDuration: vi.fn(() => 0)
+  getOpponentPromptMinDuration: vi.fn(() => 0),
+  isOpponentPromptReady: vi.fn(() => false)
 }));
 
 vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => promptTrackerMocks);
 
 const {
   getOpponentPromptTimestamp: mockGetOpponentPromptTimestamp,
-  getOpponentPromptMinDuration: mockGetOpponentPromptMinDuration
+  getOpponentPromptMinDuration: mockGetOpponentPromptMinDuration,
+  isOpponentPromptReady: mockIsOpponentPromptReady
 } = promptTrackerMocks;
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -90,6 +92,7 @@ describe("createPromptDelayController", () => {
     currentNow = 0;
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
+    mockIsOpponentPromptReady.mockReturnValue(false);
     vi.clearAllMocks();
   });
 
@@ -150,6 +153,37 @@ describe("createPromptDelayController", () => {
     expect(onReady).toHaveBeenCalledTimes(1);
     expect(onReady).toHaveBeenCalledWith(9, { suppressEvents: false });
     expect(controller.shouldDefer()).toBe(false);
+  });
+
+  it("flushes queued tick once prompt timestamp becomes positive even if readiness check is false", () => {
+    const scheduler = createDeterministicScheduler();
+    currentNow = 0;
+    mockGetOpponentPromptTimestamp.mockReturnValue(0);
+    mockIsOpponentPromptReady.mockReturnValue(false);
+
+    const controller = createPromptDelayController({
+      waitForOpponentPrompt: true,
+      promptPollIntervalMs: 25,
+      maxPromptWaitMs: 100,
+      now,
+      setTimeoutFn: scheduler.setTimeout,
+      clearTimeoutFn: scheduler.clearTimeout
+    });
+    const onReady = vi.fn();
+
+    controller.queueTick(11, {}, onReady);
+
+    expect(onReady).not.toHaveBeenCalled();
+    expect(scheduler.peekDelays()).toEqual([25]);
+
+    mockGetOpponentPromptTimestamp.mockReturnValue(30);
+    mockIsOpponentPromptReady.mockReturnValue(false);
+
+    currentNow = 25;
+    scheduler.runNext();
+
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onReady).toHaveBeenCalledWith(11, { suppressEvents: false });
   });
 
   it("resumes queued countdown after exceeding max prompt wait", () => {
