@@ -87,4 +87,38 @@ describe("showSnackbar", () => {
       timers.cleanup();
     }
   });
+
+  it("falls back to setTimeout when no requestAnimationFrame APIs exist", () => {
+    const timers = useCanonicalTimers();
+    const container = document.getElementById("snackbar-container");
+    const originalRaf = globalThis.requestAnimationFrame;
+    const originalCancel = globalThis.cancelAnimationFrame;
+
+    globalThis.requestAnimationFrame = undefined;
+    globalThis.cancelAnimationFrame = undefined;
+    setScheduler(realScheduler);
+
+    try {
+      expect(() => showSnackbar("Timer fallback")).not.toThrow();
+      vi.advanceTimersByTime(0);
+      const bar = container.firstElementChild;
+      expect(bar?.textContent).toBe("Timer fallback");
+      expect(bar?.classList.contains("show")).toBe(true);
+
+      updateSnackbar("Timer fallback updated");
+      expect(container.firstElementChild?.textContent).toBe("Timer fallback updated");
+      expect(container.firstElementChild?.classList.contains("show")).toBe(true);
+    } finally {
+      try {
+        globalThis.requestAnimationFrame = originalRaf;
+      } catch {}
+      try {
+        globalThis.cancelAnimationFrame = originalCancel;
+      } catch {}
+      try {
+        setScheduler(realScheduler);
+      } catch {}
+      timers.cleanup();
+    }
+  });
 });
