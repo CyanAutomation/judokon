@@ -4,22 +4,45 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
+import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 
-const waitForNextFrame = (window) =>
-  new Promise((resolve) => {
-    if (typeof window.requestAnimationFrame === "function") {
-      window.requestAnimationFrame(() => resolve());
-    } else {
-      setTimeout(resolve, 0);
-    }
+async function completeFirstRound(document, testApi) {
+  const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+  expect(roundButtons.length).toBeGreaterThan(0);
+
+  let reachedPlayerAction = false;
+  await withMutedConsole(async () => {
+    roundButtons[0].click();
+    reachedPlayerAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
   });
+  expect(reachedPlayerAction).toBe(true);
 
+  const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+  expect(statButtons.length).toBeGreaterThan(0);
+
+  let reachedRoundDecision = false;
+  await withMutedConsole(async () => {
+    statButtons[0].click();
+    reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
+  });
+  expect(reachedRoundDecision).toBe(true);
+}
+
+async function waitForPlaceholderReplacement(testApi) {
+  const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
+  expect(roundCompleted).toBe(true);
+}
+
+/**
+ * @fileoverview Integration tests validating the Battle Classic opponent placeholder lifecycle.
+ * @testsetup Uses the real battle init flow with JSDOM to verify placeholder accessibility and replacement logic.
+ */
 describe("Battle Classic opponent placeholder integration", () => {
   let dom;
   let window;
   let document;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
     const htmlContent = readFileSync(htmlPath, "utf-8");
 
@@ -76,47 +99,19 @@ describe("Battle Classic opponent placeholder integration", () => {
     const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
 
-    await waitForNextFrame(window);
-
-    const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
-    expect(roundButtons.length).toBeGreaterThan(0);
-
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
     expect(testApi?.state?.waitForBattleState).toBeTypeOf("function");
 
-    let reachedPlayerAction = false;
-    await withMutedConsole(async () => {
-      roundButtons[0].click();
-      reachedPlayerAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
-    });
-    expect(reachedPlayerAction).toBe(true);
+    const { resetOpponentDelay, setOpponentDelayToZero } = setupOpponentDelayControl(testApi);
+    setOpponentDelayToZero();
 
-    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    expect(statButtons.length).toBeGreaterThan(0);
-
-    const resetOpponentDelay = () => {
-      if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
-        testApi.timers.setOpponentResolveDelay(null);
-      }
-    };
-
-    if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
-      testApi.timers.setOpponentResolveDelay(0);
-    }
-
-    let reachedRoundDecision = false;
     try {
-      await withMutedConsole(async () => {
-        statButtons[0].click();
-        reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
-      });
+      await completeFirstRound(document, testApi);
+      await waitForPlaceholderReplacement(testApi);
     } finally {
       resetOpponentDelay();
     }
-    expect(reachedRoundDecision).toBe(true);
-
-    await waitForNextFrame(window);
 
     expect(opponentCard.querySelector("#mystery-card-placeholder")).toBeNull();
     const revealedContainer = opponentCard.querySelector(".card-container");
