@@ -118,7 +118,8 @@
   transition:
     background-color var(--transition-fast),
     box-shadow var(--transition-fast),
-    color var(--transition-fast);
+    color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .switch input {
@@ -193,9 +194,20 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-surface) 70%, transparent);
 }
 
+.switch:focus-within .slider::before {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
 .switch:hover span,
 .switch:focus-within span {
   color: color-mix(in srgb, var(--color-primary) 60%, var(--color-text) 40%);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch:active {
+    transform: none;
+  }
 }
 
 .slider.round {
