@@ -8,7 +8,7 @@
  *   Use immediately after vi.doMock() in unit tests.
  * - `window.__FF_OVERRIDES`: Object for overriding feature flags and test behaviors.
  *   Common overrides: { battleStateBadge: true, showRoundSelectModal: true, enableTestMode: true }
- * - `window.battleStore`: The battle state store exposed after successful initialization.
+ * - `getBattleStore()`: Helper for reading the battle state store via supported accessors after initialization.
  * - Stat selection buttons: Rendered and enabled for user interaction after init completes.
  */
 
@@ -18,6 +18,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
+import { getBattleStore } from "../utils/battleStoreAccess.js";
 import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
@@ -25,8 +26,9 @@ import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
   const { inspect, state, engine } = testApi;
   const ensureStore = () => {
-    const currentStore = inspect.getBattleStore();
+    const currentStore = getBattleStore();
     expect(currentStore).toBeTruthy();
+    expect(currentStore).toBe(inspect.getBattleStore());
     return currentStore;
   };
 
@@ -190,8 +192,11 @@ describe("Battle Classic Page Integration", () => {
     expect(document.body.dataset.target).toBe(String(selectedRound.value));
     expect(document.querySelector(".round-select-buttons")).toBeNull();
 
-    // 5. Assert initialization completed successfully
-    expect(window.battleStore).toBeDefined();
+    // 5. Assert initialization completed successfully via the public accessor
+    const store = getBattleStore();
+    expect(store).toBeTruthy();
+    expect(store.selectionMade).toBe(false);
+    expect(store.playerChoice).toBeNull();
   });
 
   it("keeps roundsPlayed in sync between engine and store in non-orchestrated flow", async () => {
@@ -216,6 +221,51 @@ describe("Battle Classic Page Integration", () => {
     expect(result.store).toBeTruthy();
     expect(result.roundsAfter).toBeGreaterThan(result.roundsBefore);
     expect(result.engineRounds).toBe(result.roundsAfter);
+  });
+
+  it("exposes the battle store through the public accessor during a full selection flow", async () => {
+    await init();
+
+    const testApi = window.__TEST_API;
+    expect(testApi).toBeDefined();
+
+    const initialStore = getBattleStore();
+    expect(initialStore).toBe(testApi.inspect.getBattleStore());
+    expect(initialStore.selectionMade).toBe(false);
+    expect(initialStore.playerChoice).toBeNull();
+
+    const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+    expect(roundButtons.length).toBeGreaterThan(0);
+
+    const debugBefore = testApi.inspect.getDebugInfo();
+    const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
+
+    await withMutedConsole(async () => {
+      roundButtons[0].click();
+      const stateReached = await testApi.state.waitForBattleState("waitingForPlayerAction");
+      expect(stateReached).toBe(true);
+    });
+
+    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    expect(statButtons.length).toBeGreaterThan(0);
+
+    const chosenButton = statButtons[0];
+    expect(chosenButton.dataset.stat).toBeTruthy();
+
+    await withMutedConsole(async () => {
+      chosenButton.click();
+      const stateReached = await testApi.state.waitForBattleState("roundDecision");
+      expect(stateReached).toBe(true);
+    });
+
+    const updatedStore = getBattleStore();
+    expect(updatedStore).toBe(initialStore);
+    expect(updatedStore.selectionMade).toBe(true);
+
+    const debugAfter = testApi.inspect.getDebugInfo();
+    const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
+    expect(debugAfter?.store?.selectionMade).toBe(true);
+    expect(roundsAfter).toBeGreaterThan(roundsBefore);
   });
 
   it("preserves opponent placeholder card structure and accessibility", async () => {
