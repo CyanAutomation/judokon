@@ -1240,8 +1240,7 @@ const initApi = {
             : null;
         const orchestratorAttached = !!(
           store &&
-          (typeof store.orchestrator === "object" ||
-            typeof store.orchestrator === "function")
+          (typeof store.orchestrator === "object" || typeof store.orchestrator === "function")
         );
 
         // Check for various readiness indicators

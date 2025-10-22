@@ -581,8 +581,7 @@ async function readBattleStateDiagnostics(page) {
 export async function confirmRoundResolved(page, options = {}) {
   const {
     timeout = 3_000,
-    message =
-      'Expected battle state to reach "roundOver" (or progress into cooldown/match end) after deterministic resolution'
+    message = 'Expected battle state to reach "roundOver" (or progress into cooldown/match end) after deterministic resolution'
   } = options;
 
   await expect
