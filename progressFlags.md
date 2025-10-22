@@ -16,6 +16,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 
 ## Recent task updates
 
+- Replaced the `window.__battleInitComplete` readiness assertion with an interaction-focused check so QA validates the real round/stat controls instead of the debug flag (`tests/classicBattle/init-complete.test.js`, `tests/integration/battleClassic.integration.test.js`).
 - Pointed the Classic Battle page at `setupClassicBattlePage` (`src/pages/battleClassic.html:172` → `../helpers/classicBattle/bootstrap.js`), ensuring the controller/view bootstrap owns runtime wiring.
 - Hydrated the stat button container with static markup (`src/pages/battleClassic.html:96-120`) so the new view layer can manage readiness without the legacy renderer.
 - Ran targeted checks: `npx vitest run tests/classicBattle/bootstrap.test.js tests/helpers/classicBattle/applyBattleFeatureFlags.test.js` and `npx playwright test playwright/battle-classic/round-select.spec.js`.
