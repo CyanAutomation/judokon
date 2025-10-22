@@ -58,5 +58,17 @@
   {
     "query": "What is the implementation for judoka card render component details",
     "expected_source": "src/components/Card.js"
+  },
+  {
+    "query": "Which command does the testing standards PRD recommend for catching unsilenced console warnings in tests?",
+    "expected_source": "design/productRequirementsDocuments/prdTestingStandards.md"
+  },
+  {
+    "query": "Where is the feature flag emitter defined for enabling the card inspector?",
+    "expected_source": "src/helpers/featureFlags.js"
+  },
+  {
+    "query": "Which constants control chunk size and overlap for embedding generation?",
+    "expected_source": "src/helpers/vectorSearch/chunkConfig.js"
   }
 ]
