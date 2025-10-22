@@ -103,7 +103,7 @@ test.describe("Battle CLI - Play", () => {
       const roundMessage = page.locator("#round-message");
       await expect(roundMessage).toContainText("You:", { timeout: 10_000 });
       const messageText = await roundMessage.textContent();
-      expect(messageText).toMatch(/((You|Opponent) wins the round!|Tie – no score!)/);
+      expect(messageText).toMatch(/(You win the round!|Opponent wins the round!|Tie – no score!)/);
       expect(messageText).toMatch(/\(.+You:\s*[\d.]+\s+Opponent:\s*[\d.]+\)/);
     }, ["log", "info", "warn", "error", "debug"]);
   });

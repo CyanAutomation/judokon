@@ -28,7 +28,6 @@ import { syncDisplayMode } from "./settings/syncDisplayMode.js";
 import { renderGameModes } from "./settings/renderGameModes.js";
 import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
 import { setupAdvancedSettingsSearch } from "./settings/filterAdvancedSettings.js";
-import { setupCollapsibleSections, expandAllSections } from "./settings/collapsibleSections.js";
 
 /**
  * Helper: create and return refs for settings controls and containers.
@@ -350,7 +349,6 @@ async function initializeSettingsPage() {
   renderWithFallbacks(data);
 
   if (typeof window !== "undefined") {
-    setupCollapsibleSections();
     const searchInput = document.getElementById("advanced-settings-search");
     const flagsContainer = document.getElementById("feature-flags-container");
     const emptyStateNode = document.getElementById("advanced-settings-no-results");

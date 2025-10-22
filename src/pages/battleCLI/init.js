@@ -1227,7 +1227,7 @@ export function selectStat(stat) {
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     state.roundResolving = true;
-    // Emit the statSelected battle event and dispatch to state machine
+    // Dispatch the statSelected event to the state machine and emit the battle event
     emitBattleEvent("statSelected", { stat });
     safeDispatch("statSelected").catch((err) => {
       console.error("Error dispatching statSelected", err);
