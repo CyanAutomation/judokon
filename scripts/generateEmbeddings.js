@@ -714,10 +714,7 @@ function chunkCode(source, isTest = false) {
       importModules.add(node.source.value);
       if (node.start < firstImportStart) firstImportStart = node.start;
     }
-    if (
-      node.type === "ExportNamedDeclaration" ||
-      node.type === "ExportDefaultDeclaration"
-    ) {
+    if (node.type === "ExportNamedDeclaration" || node.type === "ExportDefaultDeclaration") {
       if (node.start < firstExportStart) firstExportStart = node.start;
     }
   }

@@ -442,14 +442,11 @@ function updateHighestDisplayedRoundDiagnostic(visibleRound) {
 
   const current = Number(window.__highestDisplayedRound);
   const normalizedCurrent = Number.isFinite(current) && current > 0 ? current : 0;
-  const normalizedVisible =
-    Number.isFinite(visibleRound) && visibleRound > 0 ? visibleRound : null;
+  const normalizedVisible = Number.isFinite(visibleRound) && visibleRound > 0 ? visibleRound : null;
 
   if (normalizedVisible !== null) {
     const nextHighest =
-      normalizedCurrent > 0
-        ? Math.max(normalizedCurrent, normalizedVisible)
-        : normalizedVisible;
+      normalizedCurrent > 0 ? Math.max(normalizedCurrent, normalizedVisible) : normalizedVisible;
     if (nextHighest > 0) {
       window.__highestDisplayedRound = nextHighest;
       return nextHighest;
@@ -742,7 +739,8 @@ export function selectStat(store, stat) {
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
   // best-effort visual state
   try {
-    const container = typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    const container =
+      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     if (container) {
       const buttons = container.querySelectorAll("button");
       disableStatButtons(buttons, container);

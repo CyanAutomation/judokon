@@ -78,13 +78,10 @@ test.describe("Classic Battle replay", () => {
           return { roundsPlayed: null, pointsToWin: null };
         }
         return {
-          roundsPlayed: typeof engineApi.getRoundsPlayed === "function"
-            ? engineApi.getRoundsPlayed()
-            : null,
+          roundsPlayed:
+            typeof engineApi.getRoundsPlayed === "function" ? engineApi.getRoundsPlayed() : null,
           pointsToWin:
-            typeof engineApi.getPointsToWin === "function"
-              ? engineApi.getPointsToWin()
-              : null
+            typeof engineApi.getPointsToWin === "function" ? engineApi.getPointsToWin() : null
         };
       });
       expect(engineStateAfterReplay?.roundsPlayed).toBeLessThanOrEqual(1);

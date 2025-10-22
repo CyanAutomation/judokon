@@ -29,7 +29,7 @@ describe("timerService next round handling", () => {
       disableNextRoundButton: vi.fn(),
       skipRoundCooldownIfEnabled: vi.fn(() => false),
       syncScoreDisplay: vi.fn(),
-      setNextButtonFinalizedState: vi.fn(),
+      setNextButtonFinalizedState: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
@@ -169,9 +169,7 @@ describe("timerService next round handling", () => {
   it("forces a 1s cooldown when test mode is active", async () => {
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
-    const cooldownModule = await import(
-      "../../../src/helpers/timers/computeNextRoundCooldown.js"
-    );
+    const cooldownModule = await import("../../../src/helpers/timers/computeNextRoundCooldown.js");
     const computeSpy = vi.spyOn(cooldownModule, "computeNextRoundCooldown");
     await import("../../../src/helpers/classicBattle/timerService.js");
     const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
