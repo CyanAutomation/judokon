@@ -226,8 +226,16 @@ test.describe("Settings page", () => {
         const computed = getComputedStyle(node);
         const textSpan = node.querySelector("span");
         const textColor = textSpan ? getComputedStyle(textSpan).color : computed.color;
+        const normalizeColor = (value) => {
+          const temp = document.createElement("div");
+          temp.style.backgroundColor = value;
+          document.body.appendChild(temp);
+          const normalized = getComputedStyle(temp).backgroundColor;
+          temp.remove();
+          return normalized;
+        };
         return {
-          background: computed.backgroundColor,
+          background: normalizeColor(computed.backgroundColor),
           boxShadow: computed.boxShadow,
           color: textColor
         };
@@ -348,6 +356,44 @@ test.describe("Settings page", () => {
   test("toggles retro display mode", async ({ page }) => {
     await page.check("#display-mode-retro");
     await expect(page.locator("body")).toHaveAttribute("data-theme", "retro");
+  });
+
+  test("theme-specific tokens update settings visuals", async ({ page }) => {
+    const readVar = async (name) =>
+      page.evaluate((prop) => getComputedStyle(document.body).getPropertyValue(prop).trim(), name);
+    const readFieldsetBg = async () =>
+      page
+        .locator(".settings-form fieldset")
+        .first()
+        .evaluate((node) => getComputedStyle(node).backgroundColor);
+
+    const snapshot = async () => ({
+      sectionBg: await readVar("--settings-section-bg"),
+      switchOn: await readVar("--switch-on-bg"),
+      searchPlaceholder: await readVar("--settings-search-placeholder"),
+      fieldsetBg: await readFieldsetBg()
+    });
+
+    const light = await snapshot();
+    expect(light.sectionBg).not.toBe("");
+    expect(light.switchOn).not.toBe("");
+    expect(light.searchPlaceholder).not.toBe("");
+
+    await page.check("#display-mode-dark");
+    await page.waitForFunction(() => document.body.dataset.theme === "dark");
+    const dark = await snapshot();
+    expect(dark.sectionBg).not.toBe(light.sectionBg);
+    expect(dark.switchOn).not.toBe(light.switchOn);
+    expect(dark.searchPlaceholder).not.toBe(light.searchPlaceholder);
+    expect(dark.fieldsetBg).not.toBe(light.fieldsetBg);
+
+    await page.check("#display-mode-retro");
+    await page.waitForFunction(() => document.body.dataset.theme === "retro");
+    const retro = await snapshot();
+    expect(retro.sectionBg).not.toBe(dark.sectionBg);
+    expect(retro.switchOn).not.toBe(dark.switchOn);
+    expect(retro.searchPlaceholder).not.toBe(dark.searchPlaceholder);
+    expect(retro.fieldsetBg).not.toBe(dark.fieldsetBg);
   });
 
   test("restore defaults resets settings", async ({ page }) => {

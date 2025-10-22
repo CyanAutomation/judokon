@@ -99,6 +99,8 @@
   --button-disabled-bg: #555555;
   --button-disabled-pattern: none;
   --color-border: rgba(255, 255, 255, 0.24);
+  --switch-off-bg: color-mix(in srgb, var(--color-text) 25%, transparent);
+  --switch-on-bg: color-mix(in srgb, var(--color-primary) 75%, var(--color-surface) 25%);
 }
 
 /* High contrast mode variable overrides */
@@ -118,6 +120,8 @@
   --button-text-color: #000000;
   --toggle-off-bg: #2a2a2a; /* Toggle off state background */
   --toggle-on-bg: #8cff6b; /* Toggle on state background */
+  --switch-off-bg: color-mix(in srgb, var(--color-text) 18%, var(--color-background) 82%);
+  --switch-on-bg: var(--color-primary);
   --color-slider-dot: #8cff6b;
   --color-slider-active: #8cff6b;
   --color-border: #8cff6b;

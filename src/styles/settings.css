@@ -19,12 +19,34 @@
   pointer-events: auto;
 }
 
+:root {
+  --settings-section-bg: color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 12%);
+  --settings-section-border: color-mix(in srgb, var(--color-text) 12%, transparent);
+  --settings-search-bg: color-mix(in srgb, var(--color-surface) 92%, var(--color-primary) 8%);
+  --settings-search-border: color-mix(in srgb, var(--color-text) 14%, transparent);
+  --settings-search-placeholder: color-mix(in srgb, var(--color-text) 52%, transparent);
+}
+
+[data-theme="dark"] {
+  --settings-section-bg: color-mix(in srgb, var(--color-surface) 85%, var(--color-text) 15%);
+  --settings-section-border: color-mix(in srgb, var(--color-text) 24%, transparent);
+  --settings-search-bg: color-mix(in srgb, var(--color-surface) 90%, var(--color-text) 10%);
+  --settings-search-border: color-mix(in srgb, var(--color-text) 28%, transparent);
+  --settings-search-placeholder: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+
+[data-theme="retro"] {
+  --settings-section-bg: color-mix(in srgb, var(--color-background) 78%, var(--color-text) 22%);
+  --settings-section-border: color-mix(in srgb, var(--color-text) 35%, transparent);
+  --settings-search-bg: color-mix(in srgb, var(--color-background) 85%, var(--color-text) 15%);
+  --settings-search-border: color-mix(in srgb, var(--color-text) 45%, transparent);
+  --settings-search-placeholder: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+
 /* Reset fieldset styles inside settings forms */
 .settings-form fieldset {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-  background-color: var(--color-surface);
-  background-color: color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 12%);
+  border: 1px solid var(--settings-section-border);
+  background-color: var(--settings-section-bg);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   margin: 0 0 var(--space-xl);
@@ -49,8 +71,8 @@
 .advanced-settings-search input[type="search"] {
   padding: 0.65rem var(--space-md);
   border-radius: var(--radius-md);
-  border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  background-color: color-mix(in srgb, var(--color-surface) 92%, var(--color-primary) 8%);
+  border: 1px solid var(--settings-search-border);
+  background-color: var(--settings-search-bg);
   color: var(--color-text);
   font-size: 1rem;
   transition:
@@ -65,7 +87,7 @@
 }
 
 .advanced-settings-search input[type="search"]::placeholder {
-  color: color-mix(in srgb, var(--color-text) 52%, transparent);
+  color: var(--settings-search-placeholder);
 }
 
 .settings-form {

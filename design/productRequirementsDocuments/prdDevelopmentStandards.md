@@ -352,7 +352,7 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 - **Quick check (one-liner):**
 
   ```bash
-  npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
+  npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run check:contrast
   ```
 
 - **Full validation (including RAG preflight):**
