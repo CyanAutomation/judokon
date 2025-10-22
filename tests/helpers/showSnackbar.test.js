@@ -14,6 +14,20 @@ beforeEach(() => {
 });
 
 describe("showSnackbar", () => {
+  const expectSnackbarLifecycle = (container, { initial, updated, tick }) => {
+    expect(() => showSnackbar(initial)).not.toThrow();
+    tick?.();
+    const bar = container.firstElementChild;
+    expect(bar?.textContent).toBe(initial);
+    expect(bar?.classList.contains("show")).toBe(true);
+
+    updateSnackbar(updated);
+    tick?.();
+    expect(container.firstElementChild).toBe(bar);
+    expect(container.firstElementChild?.textContent).toBe(updated);
+    expect(container.firstElementChild?.classList.contains("show")).toBe(true);
+  };
+
   it("reuses container and resets timers on new calls", () => {
     const timers = useCanonicalTimers();
     const container = document.getElementById("snackbar-container");
@@ -52,35 +66,29 @@ describe("showSnackbar", () => {
     timers.cleanup();
   });
 
-  it("gracefully handles scheduler without requestAnimationFrame using global fallback", () => {
+  it("uses global requestAnimationFrame when scheduler omits it", () => {
     const timers = useCanonicalTimers();
     const container = document.getElementById("snackbar-container");
-    const originalRaf = globalThis.requestAnimationFrame;
+    const mockRaf = vi.fn((cb) => {
+      cb(0);
+      return 1;
+    });
     const schedulerWithoutRaf = {
-      setTimeout: (...args) => globalThis.setTimeout(...args),
-      clearTimeout: (...args) => globalThis.clearTimeout(...args),
+      ...realScheduler,
       requestAnimationFrame: undefined
     };
 
+    vi.stubGlobal("requestAnimationFrame", mockRaf);
     setScheduler(schedulerWithoutRaf);
-    globalThis.requestAnimationFrame = (cb) => {
-      cb(0);
-      return 0;
-    };
 
     try {
-      expect(() => showSnackbar("Fallback")).not.toThrow();
-      const bar = container.firstElementChild;
-      expect(bar?.textContent).toBe("Fallback");
-      expect(bar?.classList.contains("show")).toBe(true);
-
-      updateSnackbar("Updated");
-      expect(container.firstElementChild?.textContent).toBe("Updated");
-      expect(container.firstElementChild?.classList.contains("show")).toBe(true);
+      expectSnackbarLifecycle(container, {
+        initial: "Fallback",
+        updated: "Updated"
+      });
+      expect(mockRaf).toHaveBeenCalled();
     } finally {
-      try {
-        globalThis.requestAnimationFrame = originalRaf;
-      } catch {}
+      vi.unstubAllGlobals();
       try {
         setScheduler(realScheduler);
       } catch {}
@@ -91,30 +99,21 @@ describe("showSnackbar", () => {
   it("falls back to setTimeout when no requestAnimationFrame APIs exist", () => {
     const timers = useCanonicalTimers();
     const container = document.getElementById("snackbar-container");
-    const originalRaf = globalThis.requestAnimationFrame;
-    const originalCancel = globalThis.cancelAnimationFrame;
 
-    globalThis.requestAnimationFrame = undefined;
-    globalThis.cancelAnimationFrame = undefined;
+    vi.stubGlobal("requestAnimationFrame", undefined);
+    vi.stubGlobal("cancelAnimationFrame", undefined);
     setScheduler(realScheduler);
 
     try {
-      expect(() => showSnackbar("Timer fallback")).not.toThrow();
-      vi.advanceTimersByTime(0);
-      const bar = container.firstElementChild;
-      expect(bar?.textContent).toBe("Timer fallback");
-      expect(bar?.classList.contains("show")).toBe(true);
-
-      updateSnackbar("Timer fallback updated");
-      expect(container.firstElementChild?.textContent).toBe("Timer fallback updated");
-      expect(container.firstElementChild?.classList.contains("show")).toBe(true);
+      expectSnackbarLifecycle(container, {
+        initial: "Timer fallback",
+        updated: "Timer fallback updated",
+        tick: () => {
+          vi.advanceTimersByTime(0);
+        }
+      });
     } finally {
-      try {
-        globalThis.requestAnimationFrame = originalRaf;
-      } catch {}
-      try {
-        globalThis.cancelAnimationFrame = originalCancel;
-      } catch {}
+      vi.unstubAllGlobals();
       try {
         setScheduler(realScheduler);
       } catch {}
