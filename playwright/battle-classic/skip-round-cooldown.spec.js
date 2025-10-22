@@ -64,10 +64,9 @@ test.describe("skipRoundCooldown feature flag", () => {
 
     // With skipRoundCooldown enabled, the battle engine should process the selection quickly
     // We'll verify that the feature flag infrastructure is in place by checking the DOM markers
-    await page.waitForTimeout(500);
-    const nextButtonMarker = await page
-      .locator('[data-testid="next-button"]')
-      .getAttribute("data-feature-skip-round-cooldown");
+    const nextButton = page.locator('[data-testid="next-button"]');
+    await expect(nextButton).toHaveAttribute("data-next-ready", "true");
+    const nextButtonMarker = await nextButton.getAttribute("data-feature-skip-round-cooldown");
     expect(nextButtonMarker).toBe("enabled");
   });
 
