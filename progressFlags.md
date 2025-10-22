@@ -16,6 +16,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 
 ## Recent task updates
 
+- Brought settings theming to parity across light, dark, and retro modes by introducing theme-scoped tokens and toggle overrides (`src/styles/base.css`, `src/styles/settings.css`); verified with `npx vitest run tests/helpers/displayMode.test.js` and `sleep 5 && npx playwright test playwright/settings.spec.js`.
 - Implemented an accessible search/filter for Advanced Settings, wiring a reusable helper that reapplies after rerenders (`src/pages/settings.html`, `src/helpers/settingsPage.js`, `src/helpers/settings/filterAdvancedSettings.js`, `src/helpers/settings/renderFeatureFlags.js`, `src/styles/settings.css`); validated via `npx vitest run tests/helpers/settings/filterAdvancedSettings.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Replaced the `window.__battleInitComplete` readiness assertion with an interaction-focused check so QA validates the real round/stat controls instead of the debug flag (`tests/classicBattle/init-complete.test.js`, `tests/integration/battleClassic.integration.test.js`).
 - Pointed the Classic Battle page at `setupClassicBattlePage` (`src/pages/battleClassic.html:172` → `../helpers/classicBattle/bootstrap.js`), ensuring the controller/view bootstrap owns runtime wiring.
@@ -197,16 +198,9 @@ This phase focuses on making the settings page more interactive and visually eng
    - **Priority:** Medium
    - **Outcome:** Each display mode now includes a miniature card preview illustrating header, surface, and accent colors while remaining keyboard/screen-reader friendly; confirmed via contrast audit, Vitest settings tests, and Playwright settings journey.
 
-3. **Theme-Specific Styles** — **Outstanding**
+3. **Theme-Specific Styles** — **Completed**
    - **Priority:** Medium
-   - **Issue:** While the app supports theming, some components on the settings page may not fully adapt to the different themes.
-   - **Scope:** Conduct a thorough review of the settings page in all three display modes (light, dark, and retro). Identify any elements that do not correctly inherit theme variables and update their styles in `src/styles/settings.css` to ensure a consistent and polished appearance across all themes.
-   - **Acceptance Criteria:**
-     - All settings page components work correctly in light mode
-     - All settings page components work correctly in dark mode
-     - All settings page components work correctly in retro mode
-     - No hardcoded colors; all theming uses CSS variables
-     - WCAG contrast ratio requirements met in all themes
+   - **Outcome:** Introduced theme-scoped settings tokens and switch palette overrides so fieldsets, search inputs, and toggle tracks honor light, dark, and retro schemes; validated with targeted Vitest (`tests/helpers/displayMode.test.js`) and the expanded Playwright theme assertions.
 
 ### Phase 3: Advanced Features and Future-Proofing — **NOT STARTED**
 
@@ -448,23 +442,17 @@ All feature flags are now implemented, tested, and integrated into the battle sy
 - ✅ No production console spam (logging properly gated)
 - ✅ Smoke test stable and reliable (20-30s runtime)
 
-### Outstanding Tasks — ⏳ **7 ITEMS**
+### Outstanding Tasks — ⏳ **2 ITEMS**
 
 **Priority: Low**
 
-1. **Phase 1.1: Visual Hierarchy and Grouping** — Improve fieldset styling and legend prominence
-2. **Phase 1.2: Link Layout Polish** — Tune grid gutters for wide desktop displays
-3. **Phase 1.3: Switch Control Sizing** — Tighten switch dimensions relative to content
-4. **Phase 2.2: Display Mode Previews** — Add visual theme previews to display mode selector
-5. **Phase 2.3: Theme-Specific Styles** — Review and fix theme inconsistencies (light/dark/retro)
-6. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
-7. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
+1. **Phase 3.1: Collapsible Sections** — Implement expandable fieldsets to reduce clutter
+2. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
 
 ### Recommendation
 
 The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
 
-1. **Phase 2.2** (Display Mode Previews) to surface theme choices more clearly for users
-2. **Phase 2.3** (Theme-Specific Styles) to ensure consistency across light/dark/retro themes
-3. **Phase 1.1** (Visual Hierarchy and Grouping) to reinforce legibility of dense flag controls
+1. **Phase 3.1** (Collapsible Sections) to shorten initial scroll depth as the settings catalog grows
+2. **Phase 3.2** (Unsaved Changes Indicator) to provide immediate feedback for toggled controls
 ````

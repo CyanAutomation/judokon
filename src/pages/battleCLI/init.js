@@ -1667,7 +1667,11 @@ function handleStatClick(statDiv, event) {
 
 function ensureStatClickBinding(list) {
   const onClick = handleStatListClick;
-  list.addEventListener("click", onClick);
+  const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
+  if (!boundTargets.has(list)) {
+    list.addEventListener("click", onClick);
+    boundTargets.add(list);
+  }
 }
 
 function getStatRowByKey(stat) {
