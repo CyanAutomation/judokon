@@ -71,7 +71,9 @@ const normalizePromptDelayOptions = (options = {}) => {
 const hasActivePrompt = () => {
   try {
     if (typeof isOpponentPromptReady === "function") {
-      return isOpponentPromptReady() === true;
+      if (isOpponentPromptReady() === true) {
+        return true;
+      }
     }
     const timestamp = Number(getOpponentPromptTimestamp());
     return Number.isFinite(timestamp) && timestamp > 0;
