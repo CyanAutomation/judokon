@@ -42,11 +42,11 @@ describe("randomJudokaPage history panel", () => {
 
     const panel = document.getElementById("history-panel");
     const toggleBtn = document.getElementById("toggle-history-btn");
-    expect(panel.getAttribute("aria-hidden")).toBe("true");
+    expect(panel.open).toBe(false);
     toggleBtn.click();
-    expect(panel.getAttribute("aria-hidden")).toBe("false");
+    expect(panel.open).toBe(true);
     toggleBtn.click();
-    expect(panel.getAttribute("aria-hidden")).toBe("true");
+    expect(panel.open).toBe(false);
   });
 
   it("caps history at 5 entries", async () => {
@@ -106,9 +106,9 @@ describe("randomJudokaPage history panel", () => {
 
     const panel = document.getElementById("history-panel");
     const toggleBtn = document.getElementById("toggle-history-btn");
-    expect(panel.getAttribute("aria-hidden")).toBe("true");
+    expect(panel.open).toBe(false);
     toggleBtn.click();
-    expect(panel.getAttribute("aria-hidden")).toBe("false");
+    expect(panel.open).toBe(true);
     const items = Array.from(panel.querySelectorAll("li")).map((li) => li.textContent);
     expect(items).toEqual(["F Six", "E Five", "D Four", "C Three", "B Two"]);
   });
@@ -180,6 +180,7 @@ describe("randomJudokaPage history panel", () => {
     const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
     await initRandomJudokaPage();
 
+    const panel = document.getElementById("history-panel");
     const toggleBtn = document.getElementById("toggle-history-btn");
 
     // Open and then close the panel
@@ -188,6 +189,7 @@ describe("randomJudokaPage history panel", () => {
     toggleBtn.click();
 
     // Focus should return to the toggle button
+    await Promise.resolve();
     expect(document.activeElement).toBe(toggleBtn);
   });
 
@@ -224,17 +226,13 @@ describe("randomJudokaPage history panel", () => {
     // Open the panel
     toggleBtn.click();
     await Promise.resolve();
-    expect(panel.getAttribute("aria-hidden")).toBe("false");
+    expect(panel.open).toBe(true);
 
-    // Press Escape
-    const escapeEvent = new KeyboardEvent("keydown", {
-      key: "Escape",
-      code: "Escape"
-    });
-    document.dispatchEvent(escapeEvent);
+    // Press Escape via native cancel event
+    panel.dispatchEvent(new Event("cancel", { cancelable: true }));
 
     // Panel should close
-    expect(panel.getAttribute("aria-hidden")).toBe("true");
+    expect(panel.open).toBe(false);
   });
 
   it("restores focus to toggle button after Escape closes panel", async () => {
@@ -264,6 +262,7 @@ describe("randomJudokaPage history panel", () => {
     const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
     await initRandomJudokaPage();
 
+    const panel = document.getElementById("history-panel");
     const toggleBtn = document.getElementById("toggle-history-btn");
 
     // Open the panel
@@ -271,11 +270,8 @@ describe("randomJudokaPage history panel", () => {
     await Promise.resolve();
 
     // Press Escape
-    const escapeEvent = new KeyboardEvent("keydown", {
-      key: "Escape",
-      code: "Escape"
-    });
-    document.dispatchEvent(escapeEvent);
+    panel.dispatchEvent(new Event("cancel", { cancelable: true }));
+    await Promise.resolve();
 
     // Focus should be on the toggle button
     expect(document.activeElement).toBe(toggleBtn);
