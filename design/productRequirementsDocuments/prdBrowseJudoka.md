@@ -59,15 +59,16 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ## Functional Requirements
 
-| Priority | Feature                         | Description                                                                                                                                                                                      |
-| -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **P1**   | Scrollable Card Interface       | Allow players to scroll through the full judoka roster.                                                                                                                                          |
-| **P1**   | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.                                                                                                                                         |
-| **P1**   | Responsive Layout               | Adapt card layout across devices (mobile & desktop).                                                                                                                                             |
-| **P2**   | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.                                                                                                                                             |
+| Priority | Feature                         | Description |
+| -------- | ------------------------------- | ----------- |
+| **P1**   | Scrollable Card Interface       | Allow players to scroll through the full judoka roster. |
+| **P1**   | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display. |
+| **P1**   | Responsive Layout               | Adapt card layout across devices (mobile & desktop). |
+| **P2**   | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid. |
 | **P2**   | Carousel Display of Cards       | Present cards in a swipe/scroll carousel with large "Previous" and "Next" arrow buttons for efficient browsing. (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
-| **P2**   | Hover/Keyboard Navigation       | Support interactions for accessibility.                                                                                                                                                          |
-| **P3**   | Page Markers                    | Show "current page of total" below the carousel with the active page highlighted.                                                                                                                |
+| **P2**   | Hover/Keyboard Navigation       | Support interactions for accessibility. |
+| **P2**   | Country Filter Disclosure       | Use native `<details>`/`<summary>` semantics for the country filter accordion to gain built-in focus management, keyboard toggling, and announced state. |
+| **P3**   | Page Markers                    | Show "current page of total" below the carousel with the active page highlighted. |
 
 ---
 
@@ -109,9 +110,14 @@ See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel-specific animat
 - If no judoka exist for a selected country, an empty state message is shown.
 - If a flag asset fails to load, the picker swaps it for a generic fallback flag icon while keeping the accessible label.
 - Picker is responsive and touch targets are ≥44px.
+- Country filter accordion uses native `<details>` and `<summary>` so disclosure state, focus order, and keyboard toggling follow built-in browser semantics.
 - Judoka cards must display all stats without scrolling on common desktop resolutions (e.g., 1440px width).
 
 Country list generation uses `localeCompare` for alphabetical sorting, applies the country name as both alt text and `aria-label`, and falls back to a generic icon if a flag image fails to load.
+
+### QA Notes
+
+- Rely on the browser’s default focus outline, `summary` activation, and `details[open]` state styling when testing the country filter accordion—custom hover/keyboard affordances are intentionally minimal because native semantics already cover them.
 
 ---
 
