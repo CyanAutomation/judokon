@@ -28,7 +28,8 @@
 }
 
 .filter-bar button,
-.filter-bar summary {
+.filter-bar summary,
+.filter-bar label {
   padding: 0.3rem 0.3rem;
   border-radius: var(--radius-md);
   background: var(--button-bg);
@@ -71,6 +72,24 @@
   width: var(--touch-target-size, 48px);
   height: var(--touch-target-size, 48px);
   padding: 0;
+}
+
+#layout-mode-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#layout-mode-toggle:focus-visible ~ #layout-toggle {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .scroll-markers {
@@ -147,7 +166,7 @@
   transition: transform 300ms ease-in-out, visibility 0s linear 0s;
 }
 
-.country-panel.grid > .country-panel__content {
+#layout-mode-toggle:checked ~ #country-panel > .country-panel__content {
   left: 0;
   right: 0;
   width: 100%;
@@ -157,22 +176,26 @@
   justify-content: center;
 }
 
-.country-panel.grid > .country-panel__content .country-flag-slider {
+#layout-mode-toggle:checked ~ #country-panel > .country-panel__content .country-flag-slider {
   height: 100%;
   overflow-y: hidden;
 }
 
-.country-panel.grid > .country-panel__content .country-flag-slide-track {
+#layout-mode-toggle:checked ~ #country-panel > .country-panel__content .country-flag-slide-track {
   animation: none;
 }
 
-.country-panel.grid > .country-panel__content .country-flag-slide-track > fieldset {
+#layout-mode-toggle:checked
+  ~ #country-panel
+  > .country-panel__content
+  .country-flag-slide-track
+  > fieldset {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: var(--space-md);
 }
 
-.country-panel.grid > .country-panel__content .slide {
+#layout-mode-toggle:checked ~ #country-panel > .country-panel__content .slide {
   display: flex;
 }
 
@@ -264,13 +287,13 @@
 @media (prefers-reduced-motion: reduce) {
   .country-panel__content,
   .country-panel[open] > .country-panel__content,
-  .country-panel.grid > .country-panel__content {
+  #layout-mode-toggle:checked ~ #country-panel > .country-panel__content {
     transition: none;
   }
 }
 
 .reduce-motion .country-panel__content,
 .reduce-motion .country-panel[open] > .country-panel__content,
-.reduce-motion .country-panel.grid > .country-panel__content {
+.reduce-motion #layout-mode-toggle:checked ~ #country-panel > .country-panel__content {
   transition: none;
 }
