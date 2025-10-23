@@ -42,6 +42,8 @@ export class Modal {
     this.element = this.dialog;
 
     this.returnFocus = null;
+    this.pendingFocusHandle = null;
+    this.pendingFocusCancel = null;
     this.handleClose = this.handleClose.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
     this.dialog.addEventListener("close", this.handleClose);
@@ -64,6 +66,7 @@ export class Modal {
    * @returns {void}
    */
   handleClose() {
+    this.cancelPendingFocus();
     const trigger = this.returnFocus;
     this.returnFocus = null;
     if (trigger) {
@@ -92,6 +95,139 @@ export class Modal {
       this.close();
     }
     // Native dialogs handle cancel semantics when `showModal` is supported.
+  }
+
+  /**
+   * Determine whether the dialog is currently open.
+   *
+   * @pseudocode
+   * 1. Check for the native `open` property when supported.
+   * 2. Fallback to the presence of the `open` attribute for polyfilled dialogs.
+   *
+   * @private
+   * @returns {boolean}
+   */
+  isDialogOpen() {
+    return this.dialog.hasAttribute("open") || Boolean(this.dialog.open);
+  }
+
+  /**
+   * Cancel any queued focus retry to avoid stealing focus after close.
+   *
+   * @pseudocode
+   * 1. If a cancel handler exists, invoke it with the stored handle.
+   * 2. Clear the pending handle and cancel reference.
+   *
+   * @private
+   * @returns {void}
+   */
+  cancelPendingFocus() {
+    if (this.pendingFocusCancel) {
+      try {
+        this.pendingFocusCancel(this.pendingFocusHandle);
+      } catch {}
+    }
+    this.pendingFocusHandle = null;
+    this.pendingFocusCancel = null;
+  }
+
+  /**
+   * Queue a single deferred focus callback aligned with the next frame.
+   *
+   * @pseudocode
+   * 1. Cancel any existing pending focus callback.
+   * 2. Prefer `requestAnimationFrame` when available for deterministic timing.
+   * 3. Fallback to a short timeout if animation frames are unavailable.
+   *
+   * @private
+   * @param {Function} callback - Callback to invoke on the next frame.
+   * @returns {void}
+   */
+  queueDeferredFocus(callback) {
+    this.cancelPendingFocus();
+
+    const hasAnimationFrame =
+      typeof requestAnimationFrame === "function" &&
+      typeof cancelAnimationFrame === "function";
+
+    if (hasAnimationFrame) {
+      this.pendingFocusCancel = cancelAnimationFrame;
+      this.pendingFocusHandle = requestAnimationFrame(() => {
+        this.pendingFocusHandle = null;
+        this.pendingFocusCancel = null;
+        callback();
+      });
+      return;
+    }
+
+    this.pendingFocusCancel = clearTimeout;
+    this.pendingFocusHandle = setTimeout(() => {
+      this.pendingFocusHandle = null;
+      this.pendingFocusCancel = null;
+      callback();
+    }, 10);
+  }
+
+  /**
+   * Manage the initial focus placement within the dialog contents.
+   *
+   * @pseudocode
+   * 1. Clear any pending focus retries from prior dialog activity.
+   * 2. Query for the first focusable control within the dialog.
+   * 3. Attempt to focus that control immediately.
+   * 4. Queue a guarded deferred retry, falling back to the dialog element.
+   *
+   * @private
+   * @returns {void}
+   */
+  applyInitialFocus() {
+    this.cancelPendingFocus();
+    try {
+      const focusableSelector =
+        "[autofocus], button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1']), [contenteditable]:not([contenteditable='false'])";
+      const focusTarget = this.dialog.querySelector(focusableSelector);
+      const attemptFocus = (element) => {
+        if (!element) {
+          return false;
+        }
+        try {
+          element.focus();
+        } catch {
+          return false;
+        }
+        return document.activeElement === element;
+      };
+
+      const focusDialogFallback = () => {
+        if (!attemptFocus(this.dialog)) {
+          try {
+            this.dialog.focus();
+          } catch {}
+        }
+      };
+      if (focusTarget) {
+        attemptFocus(focusTarget);
+        this.queueDeferredFocus(() => {
+          if (!this.isDialogOpen()) {
+            return;
+          }
+          const activeElement = document.activeElement;
+          if (
+            activeElement &&
+            activeElement !== this.dialog &&
+            activeElement !== focusTarget &&
+            !this.dialog.contains(activeElement)
+          ) {
+            return;
+          }
+          if (!attemptFocus(focusTarget)) {
+            focusDialogFallback();
+          }
+        });
+      } else {
+        focusDialogFallback();
+      }
+    } catch {}
   }
 
   /**
@@ -127,25 +263,7 @@ export class Modal {
       this.dialog.setAttribute("open", "");
     }
 
-    try {
-      const focusableSelector =
-        "[autofocus], button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1']), [contenteditable='true']";
-      const focusTarget = this.dialog.querySelector(focusableSelector);
-      if (focusTarget) {
-        try {
-          focusTarget.focus();
-        } catch {}
-        setTimeout(() => {
-          try {
-            focusTarget.focus();
-          } catch {
-            this.dialog.focus();
-          }
-        }, 10);
-      } else {
-        this.dialog.focus();
-      }
-    } catch {}
+    this.applyInitialFocus();
   }
 
   /**
@@ -159,6 +277,7 @@ export class Modal {
    * @returns {void}
    */
   close() {
+    this.cancelPendingFocus();
     const isOpen = this.dialog.hasAttribute("open") || this.dialog.open;
     if (!isOpen) {
       return;
@@ -189,6 +308,7 @@ export class Modal {
     try {
       this.close();
     } catch {}
+    this.cancelPendingFocus();
     this.dialog.remove();
     this.returnFocus = null;
   }
