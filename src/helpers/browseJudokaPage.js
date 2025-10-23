@@ -1,6 +1,6 @@
 import { buildCardCarousel, initScrollMarkers } from "./carouselBuilder.js";
 import { createSpinner } from "../components/Spinner.js";
-import { toggleCountryPanelMode } from "./countryPanel.js";
+import { toggleCountryPanel, toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
@@ -20,7 +20,7 @@ import {
  * @typedef {object} BrowsePageRuntime
  * @property {Element|null} carouselContainer
  * @property {Element|null} countryListContainer
- * @property {HTMLButtonElement|null} toggleBtn
+ * @property {HTMLElement|null} toggleBtn
  * @property {HTMLButtonElement|null} layoutToggle
  * @property {Element|null} countryPanel
  * @property {HTMLButtonElement|null} clearBtn
@@ -77,7 +77,7 @@ export function createBrowsePageRuntime(documentRef = document) {
     countryPanel,
     clearBtn,
     ensurePanelHidden() {
-      countryPanel?.setAttribute?.("hidden", "");
+      toggleCountryPanel(toggleBtn, countryPanel, false);
       toggleCountryPanelMode(countryPanel, false);
     },
     setupToggle() {

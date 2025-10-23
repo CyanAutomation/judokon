@@ -14,7 +14,7 @@ describe("browseJudokaPage helpers", () => {
     );
 
     const interactions = {
-      toggle: [],
+      reflect: 0,
       loads: 0,
       navigation: []
     };
@@ -23,14 +23,12 @@ describe("browseJudokaPage helpers", () => {
 
     const adapter = {
       isPanelOpen: () => open,
-      togglePanel: (force) => {
-        interactions.toggle.push(force);
-        if (typeof force === "boolean") {
-          open = force;
-        } else {
-          open = !open;
-        }
-      },
+      reflectPanelState: vi.fn(() => {
+        interactions.reflect += 1;
+      }),
+      closePanel: vi.fn(() => {
+        open = false;
+      }),
       async loadFlags() {
         interactions.loads += 1;
         flagsLoaded = true;
@@ -43,44 +41,49 @@ describe("browseJudokaPage helpers", () => {
 
     const controller = createCountryToggleController(adapter);
 
+    open = true;
     await controller.handleToggle();
-    expect(interactions.toggle).toEqual([undefined]);
+    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(2);
     expect(interactions.loads).toBe(1);
     expect(controller.countriesLoaded()).toBe(true);
 
+    open = false;
     await controller.handleToggle();
-    expect(interactions.toggle).toEqual([undefined, undefined]);
+    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(3);
     expect(interactions.loads).toBe(1);
 
     controller.handleKeydown({ key: "ArrowRight" });
     expect(interactions.navigation).toEqual(["ArrowRight"]);
 
+    open = true;
     controller.handleKeydown({ key: "Escape" });
-    expect(interactions.toggle).toEqual([undefined, undefined, false]);
+    expect(adapter.closePanel).toHaveBeenCalledTimes(1);
 
-    const toggleEvents = [];
-    const keyEvents = [];
+    const panelEvents = [];
     const toggleButton = {
-      addEventListener: vi.fn((event, handler) => {
-        toggleEvents.push({ event, handler });
-      })
+      addEventListener: vi.fn()
     };
     const panel = {
       addEventListener: vi.fn((event, handler) => {
-        keyEvents.push({ event, handler });
+        panelEvents.push({ event, handler });
       })
     };
 
     const loaded = setupCountryToggle(toggleButton, panel, null, { adapter });
 
-    expect(toggleButton.addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
+    expect(toggleButton.addEventListener).not.toHaveBeenCalled();
+    expect(panel.addEventListener).toHaveBeenCalledWith("toggle", expect.any(Function));
     expect(panel.addEventListener).toHaveBeenCalledWith("keydown", expect.any(Function));
 
-    await toggleEvents[0].handler();
-    expect(interactions.toggle).toEqual([undefined, undefined, false, undefined]);
+    open = true;
+    const toggleHandler = panelEvents.find(({ event }) => event === "toggle");
+    await toggleHandler.handler();
+    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(4);
 
-    keyEvents[0].handler({ key: "Escape" });
-    expect(interactions.toggle).toEqual([undefined, undefined, false, undefined, false]);
+    open = true;
+    const keydownHandler = panelEvents.find(({ event }) => event === "keydown");
+    keydownHandler.handler({ key: "Escape" });
+    expect(adapter.closePanel).toHaveBeenCalledTimes(2);
 
     expect(loaded()).toBe(true);
   });

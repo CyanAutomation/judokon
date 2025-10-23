@@ -1,47 +1,54 @@
 /**
- * Toggles the visibility of the country flag panel, managing its open/closed state,
- * accessibility attributes, and focus.
+ * Synchronize the disclosure state of the country flag panel and manage focus affordances.
  *
- * @summary This function controls the display of the country panel, including
- * its visual animation (slide-in/out) and proper ARIA attributes for accessibility.
+ * @summary This helper leans on the native `<details>` behaviour by toggling the
+ * `open` property directly, while ensuring focus and accessibility attributes stay
+ * aligned with the rendered state.
  *
  * @pseudocode
- * 1. Determine the current open state of the `panel` by checking for the `open` CSS class.
- * 2. Calculate the `shouldOpen` state: if `show` is explicitly provided, use it; otherwise, invert the current `isOpen` state.
- * 3. If `shouldOpen` is true (opening the panel):
- *    a. Remove the `hidden` attribute from the `panel` to make it visible.
- *    b. Add the `open` class to trigger the slide-in animation.
- *    c. Set the `aria-expanded` attribute of the `toggleButton` to `true`.
- *    d. Attempt to focus the first flag button within the `panel` for improved accessibility.
- * 4. If `shouldOpen` is false (closing the panel):
- *    a. Remove the `open` class to trigger the slide-out animation.
- *    b. Add the `hidden` attribute to the `panel` to hide it from layout and assistive technologies.
- *    c. Set the `aria-expanded` attribute of the `toggleButton` to `false`.
- *    d. Return focus to the `toggleButton`.
+ * 1. Determine the next state using the optional `show` parameter and the panel's
+ *    native `open` property.
+ * 2. Set the `open` property accordingly, mirroring the state back to
+ *    `aria-expanded` on the summary toggle.
+ * 3. Update the disclosure content's `aria-hidden` attribute to mirror visibility.
+ * 4. When opening, focus the first flag button to keep keyboard navigation fluid.
+ *    When closing, return focus to the toggle control.
  *
- * @param {HTMLButtonElement} toggleButton - The button that controls the panel's visibility.
- * @param {HTMLElement} panel - The country flag panel element.
- * @param {boolean} [show] - Optional. If `true`, forces the panel to open; if `false`, forces it to close. If omitted, toggles the current state.
+ * @param {HTMLElement|null} toggleButton - The summary element that toggles the panel.
+ * @param {HTMLElement} panel - The `<details>` element representing the country panel.
+ * @param {boolean} [show] - Optional. If provided, forces the target state; otherwise toggles the existing state.
  * @returns {void}
  */
 export function toggleCountryPanel(toggleButton, panel, show) {
-  const isOpen = panel.classList.contains("open");
-  const shouldOpen = typeof show === "boolean" ? show : !isOpen;
+  if (!panel) {
+    return;
+  }
+
+  /** @type {HTMLDetailsElement} */
+  const details = panel;
+  const shouldOpen = typeof show === "boolean" ? show : !details.open;
+  details.open = shouldOpen;
+
+  if (toggleButton) {
+    toggleButton.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+  }
+
+  const content = details.querySelector?.(".country-panel__content");
+  if (content) {
+    if (shouldOpen) {
+      content.removeAttribute("aria-hidden");
+      content.removeAttribute("inert");
+    } else {
+      content.setAttribute("aria-hidden", "true");
+      content.setAttribute("inert", "");
+    }
+  }
 
   if (shouldOpen) {
-    // Ensure the panel is exposed to assistive tech and the layout before
-    // starting the open animation.
-    panel.removeAttribute("hidden");
-    panel.classList.add("open");
-    toggleButton.setAttribute("aria-expanded", "true");
-    const firstButton = panel.querySelector("button.flag-button");
-    firstButton?.focus();
+    const firstButton = details.querySelector("button.flag-button");
+    firstButton?.focus?.();
   } else {
-    // Hide the panel from layout and assistive tech when closed.
-    panel.classList.remove("open");
-    panel.setAttribute("hidden", "");
-    toggleButton.setAttribute("aria-expanded", "false");
-    toggleButton.focus();
+    toggleButton?.focus?.();
   }
 }
 
