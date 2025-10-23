@@ -26,6 +26,8 @@ export class Modal {
     this.dialog = document.createElement("dialog");
     this.dialog.className = "modal";
     this.dialog.tabIndex = -1;
+    this.dialog.setAttribute("role", "dialog");
+    this.dialog.setAttribute("aria-modal", "true");
     if (labelledBy) {
       const id = typeof labelledBy === "string" ? labelledBy : labelledBy.id;
       if (id) this.dialog.setAttribute("aria-labelledby", id);
@@ -126,7 +128,14 @@ export class Modal {
     }
 
     try {
-      this.dialog.focus();
+      const focusableSelector =
+        "[autofocus], button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
+      const focusTarget = this.dialog.querySelector(focusableSelector);
+      if (focusTarget) {
+        focusTarget.focus();
+      } else {
+        this.dialog.focus();
+      }
     } catch {}
   }
 
