@@ -98,7 +98,8 @@ describe("rendering", () => {
     const { handleSearch } = await setupPage(defaultDom);
     document.getElementById("vector-search-input").value = "ipsum";
     await handleSearch(new Event("submit"));
-    const cell = document.querySelector(".match-text span");
-    expect(cell.innerHTML).toContain("<mark>ipsum</mark>");
+    const highlight = document.querySelector(".match-text .snippet-full mark");
+    expect(highlight).not.toBeNull();
+    expect(highlight?.outerHTML).toContain("<mark>ipsum</mark>");
   });
 });
