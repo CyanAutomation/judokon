@@ -456,7 +456,12 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
 
         // Select a stat to complete the round and trigger match end
-        await page.click("#stat-buttons button[data-stat='speed']");
+        await waitForRoundStats(page);
+        const match = await resolveMatchFromCurrentRound(page, {
+          statSelector: selectAdvantagedStat
+        });
+        expect(match.timedOut).toBe(false);
+        expectDecisiveFinalScore(match.scores);
 
         // Wait for match to complete and modal to appear
         await waitForModalOpen(page);
@@ -495,7 +500,12 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
 
         // Select a stat to complete the round and trigger match end
-        await page.click("#stat-buttons button[data-stat='speed']");
+        await waitForRoundStats(page);
+        const match = await resolveMatchFromCurrentRound(page, {
+          statSelector: selectAdvantagedStat
+        });
+        expect(match.timedOut).toBe(false);
+        expectDecisiveFinalScore(match.scores);
 
         // Wait for match to complete
         await page.waitForSelector("#match-end-modal", { timeout: 5000 });
