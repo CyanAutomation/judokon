@@ -16,8 +16,8 @@ vi.mock("../../../src/helpers/api/battleUI.js", () => ({
 }));
 vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
-    const element = document.createElement("div");
-    element.className = "modal-backdrop";
+    const element = document.createElement("dialog");
+    element.className = "modal";
     element.appendChild(content);
     return { element, open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
   }

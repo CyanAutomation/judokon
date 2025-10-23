@@ -45,8 +45,8 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     Object.defineProperty(header, "offsetHeight", { value: 40, configurable: true });
     document.body.appendChild(header);
 
-    const backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop";
+    const backdrop = document.createElement("dialog");
+    backdrop.className = "modal";
     mockModalReturning(backdrop);
 
     const addSpy = vi.spyOn(window, "addEventListener");
@@ -92,8 +92,8 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     Object.defineProperty(header, "offsetHeight", { value: 64, configurable: true });
     document.body.appendChild(header);
 
-    const backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop";
+    const backdrop = document.createElement("dialog");
+    backdrop.className = "modal";
     mockModalReturning(backdrop);
 
     // Mock tooltips to resolve quickly

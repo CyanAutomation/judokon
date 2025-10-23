@@ -48,8 +48,8 @@ All factories must provide:
 ```javascript
 export function createModal(content, options = {}) {
   return {
-    element: HTMLElement,           // modal-backdrop with hidden attribute
-    dialog: HTMLElement,            // inner modal dialog element
+    element: HTMLDialogElement,     // native dialog element with `modal` class
+    dialog: HTMLDialogElement,      // alias for element (legacy compatibility)
     open(trigger),                  // open method with focus management
     close(),                        // close method with focus return
     destroy(),                      // cleanup method
@@ -141,13 +141,15 @@ describe("Modal interactions", () => {
     // Open modal
     modal.open(trigger);
     expect(modal.isOpen).toBe(true);
+    expect(modal.element.hasAttribute("open")).toBe(true);
     expect(modal.onOpen).toHaveBeenCalledWith(trigger);
-    
+
     // Close modal
     modal.close();
     expect(modal.isOpen).toBe(false);
+    expect(modal.element.hasAttribute("open")).toBe(false);
     expect(modal.onClose).toHaveBeenCalled();
-    
+
     modal.destroy();
   });
 });

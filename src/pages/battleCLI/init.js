@@ -43,7 +43,6 @@ import { setAutoContinue, autoContinue } from "../../helpers/classicBattle/orche
 import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
 import { domStateListener } from "../../helpers/classicBattle/stateTransitionListeners.js";
 import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";
-import { registerModal, unregisterModal, onEsc } from "../../helpers/modalManager.js";
 import { exposeTestAPI } from "../../helpers/testApi.js";
 // Phase 2: Shared Scoreboard imports for dual-write
 import { setupScoreboard } from "../../helpers/setupScoreboard.js";
@@ -77,6 +76,47 @@ import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.
 const hasDocument = typeof document !== "undefined";
 const getSafeDocument = () => (hasDocument ? document : null);
 const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
+
+/**
+ * Handle Escape key presses at the document level.
+ *
+ * @pseudocode
+ * 1. Ignore keys other than Escape.
+ * 2. If the CLI shortcuts overlay is open, close it.
+ * 3. Resolve the Escape-handled promise for awaiting callers.
+ */
+function handleGlobalEscape(event) {
+  if (event?.key !== "Escape") {
+    return;
+  }
+  if (state.shortcutsOverlay) {
+    hideCliShortcuts();
+  }
+  if (hasDocument) {
+    const dialogs = Array.from(document.querySelectorAll("dialog.modal[open]"));
+    const activeDialog = dialogs.at(-1);
+    if (activeDialog) {
+      const cancelEvent = new Event("cancel", { bubbles: false, cancelable: true });
+      activeDialog.dispatchEvent(cancelEvent);
+      try {
+        if (!cancelEvent.defaultPrevented && typeof activeDialog.close === "function") {
+          activeDialog.close();
+        }
+      } catch {}
+    }
+  }
+  try {
+    queueMicrotask(() => resolveEscapeHandled());
+  } catch {
+    Promise.resolve().then(() => resolveEscapeHandled());
+  }
+}
+
+if (hasDocument) {
+  try {
+    document.addEventListener("keydown", handleGlobalEscape);
+  } catch {}
+}
 /**
  * Delay between manual fallback state transitions when the orchestrator is unavailable.
  *
@@ -188,8 +228,6 @@ const SHORTCUT_HINT_MESSAGES = {
     "Keyboard shortcuts are disabled. Use the on-screen controls or enable CLI shortcuts in settings."
 };
 // state managed in state.js
-
-onEsc(resolveEscapeHandled);
 
 try {
   window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
@@ -774,8 +812,7 @@ function showCliShortcuts() {
     try {
       pauseTimers();
     } catch {}
-    state.shortcutsOverlay = { close: hideCliShortcuts };
-    registerModal(state.shortcutsOverlay);
+    state.shortcutsOverlay = true;
   }
 }
 
@@ -809,10 +846,7 @@ function hideCliShortcuts() {
     state.shortcutsReturnFocus?.focus();
   } catch {}
   state.shortcutsReturnFocus = null;
-  if (state.shortcutsOverlay) {
-    unregisterModal(state.shortcutsOverlay);
-    state.shortcutsOverlay = null;
-  }
+  state.shortcutsOverlay = null;
 }
 
 function showBottomLine(text) {
@@ -1874,37 +1908,61 @@ export function restorePointsToWin() {
           } catch {}
         };
         await new Promise((resolve) => {
-          confirmBtn.addEventListener("click", () => resolve(true), { once: true });
-          cancelBtn.addEventListener("click", () => resolve(false), { once: true });
-          // Close on Escape via global modal manager
-          const escHandler = () => resolve(false);
-          document.addEventListener("keydown", function onKey(e) {
-            if (e.key === "Escape") {
-              document.removeEventListener("keydown", onKey);
-              escHandler();
-            }
-          });
-          // Open the modal after wiring handlers
+          let settled = false;
+          const settle = (value) => {
+            if (settled) return;
+            settled = true;
+            resolve(value);
+          };
+
+          const cancel = () => {
+            settle(false);
+            closeModal();
+          };
+
+          confirmBtn.addEventListener(
+            "click",
+            () => {
+              settle(true);
+              closeModal();
+            },
+            { once: true }
+          );
+          cancelBtn.addEventListener(
+            "click",
+            () => {
+              cancel();
+            },
+            { once: true }
+          );
+          modal.element.addEventListener("cancel", cancel, { once: true });
+          modal.element.addEventListener("close", cancel, { once: true });
+
           try {
             modal.open();
           } catch {}
-        }).then(async (confirmed) => {
-          closeModal();
-          if (confirmed) {
-            storage.set(val);
-            try {
-              await resetMatch();
-            } catch {}
+        })
+          .then(async (confirmed) => {
+            if (confirmed) {
+              storage.set(val);
+              try {
+                await resetMatch();
+              } catch {}
             engineFacade.setPointsToWin?.(val);
             updateRoundHeader(0, val);
             try {
               await announceMatchReady({ focusMain: true });
             } catch {}
             current = val;
-          } else {
-            select.value = String(current);
-          }
-        });
+            } else {
+              select.value = String(current);
+            }
+          })
+          .finally(() => {
+            try {
+              modal.destroy();
+            } catch {}
+          });
       } catch {}
     });
   } catch {}

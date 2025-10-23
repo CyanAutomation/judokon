@@ -29,8 +29,8 @@ describe("roundSelectModal positioning and skinning", () => {
     Object.defineProperty(header, "offsetHeight", { value: 64, configurable: true });
     document.body.appendChild(header);
 
-    const backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop";
+    const backdrop = document.createElement("dialog");
+    backdrop.className = "modal";
     mockModalReturning(backdrop);
 
     vi.doMock("../../../src/helpers/classicBattle/winTargetSync.js", () => ({
@@ -62,8 +62,8 @@ describe("roundSelectModal positioning and skinning", () => {
     Object.defineProperty(header, "offsetHeight", { value: 56, configurable: true });
     document.body.appendChild(header);
 
-    const backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop";
+    const backdrop = document.createElement("dialog");
+    backdrop.className = "modal";
     mockModalReturning(backdrop);
 
     vi.doMock("../../../src/helpers/classicBattle/winTargetSync.js", () => ({

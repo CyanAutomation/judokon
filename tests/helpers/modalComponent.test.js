@@ -21,12 +21,12 @@ describe("createModal", () => {
     container.appendChild(modal.element);
 
     modal.open(trigger.element);
-    expect(modal.element.hasAttribute("hidden")).toBe(false);
+    expect(modal.element.hasAttribute("open")).toBe(true);
     expect(trigger.element).toHaveAttribute("aria-expanded", "true");
-    expect(document.activeElement.id).toBe("cancel-btn");
+    expect(document.activeElement).toBe(modal.element);
 
     modal.close();
-    expect(modal.element.hasAttribute("hidden")).toBe(true);
+    expect(modal.element.hasAttribute("open")).toBe(false);
     expect(trigger.element).toHaveAttribute("aria-expanded", "false");
     expect(document.activeElement).toBe(trigger.element);
 
@@ -43,9 +43,8 @@ describe("createModal", () => {
       describedBy: "modal-desc"
     });
     container.appendChild(modal.element);
-    const dialog = modal.element.querySelector(".modal");
-    expect(dialog).toHaveAttribute("aria-labelledby", "modal-title");
-    expect(dialog).toHaveAttribute("aria-describedby", "modal-desc");
+    expect(modal.element).toHaveAttribute("aria-labelledby", "modal-title");
+    expect(modal.element).toHaveAttribute("aria-describedby", "modal-desc");
     modal.destroy();
     clearBody();
   });
@@ -59,9 +58,9 @@ describe("Modal class", () => {
     const modal = new Modal(buildContent());
     container.appendChild(modal.element);
     modal.open(trigger.element);
-    expect(modal.element.hasAttribute("hidden")).toBe(false);
+    expect(modal.element.hasAttribute("open")).toBe(true);
     modal.close();
-    expect(modal.element.hasAttribute("hidden")).toBe(true);
+    expect(modal.element.hasAttribute("open")).toBe(false);
     modal.destroy();
     clearBody();
   });

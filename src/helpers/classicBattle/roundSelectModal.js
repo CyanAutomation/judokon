@@ -264,9 +264,6 @@ async function handleRoundSelect({ value, modal, cleanupRegistry, onStart, emitE
   persistRoundAndLog(value);
   modal.close();
   try {
-    modal.element.dispatchEvent(new Event("close"));
-  } catch {}
-  try {
     cleanupRegistry.tooltips();
   } catch {}
   try {

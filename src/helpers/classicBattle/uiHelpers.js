@@ -835,7 +835,7 @@ export function attachNextButtonHandler() {
  * Remove modal backdrops and destroy any active quit modal stored on `store`.
  *
  * @pseudocode
- * 1. Query all elements with the class `.modal-backdrop` and remove them from the DOM.
+ * 1. Query all `<dialog>` elements with the `modal` class and remove them from the DOM.
  * 2. Check if a `quitModal` exists in the provided `store`.
  * 3. If it exists, call its `destroy()` method to clean up its DOM elements and event listeners.
  * 4. Set `store.quitModal` to `null` to release the reference.
@@ -845,7 +845,7 @@ export function attachNextButtonHandler() {
  */
 export function removeBackdrops(store) {
   try {
-    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
+    document.querySelectorAll?.("dialog.modal").forEach((m) => {
       if (typeof m.remove === "function") m.remove();
     });
   } catch {}

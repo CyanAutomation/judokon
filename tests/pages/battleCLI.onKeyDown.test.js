@@ -201,7 +201,7 @@ describe("battleCLI onKeyDown", () => {
     roundMsgSet.mockRestore();
   });
 
-  const cancelActions = ["cancel", "escape", "backdrop"];
+  const cancelActions = ["cancel", "escape", "cancelEvent"];
   it.each(cancelActions)(
     "resumes timers and closes modal when quit is canceled via %s",
     async (action) => {
@@ -219,12 +219,14 @@ describe("battleCLI onKeyDown", () => {
         document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
         await handled;
       } else {
-        document.querySelector(".modal-backdrop").click();
+        document
+          .querySelector("dialog.modal")
+          ?.dispatchEvent(new Event("cancel", { bubbles: true, cancelable: true }));
       }
       expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
       const confirm = document.getElementById("confirm-quit-button");
-      const backdrop = confirm?.closest(".modal-backdrop");
-      expect(backdrop?.hasAttribute("hidden")).toBe(true);
+      const dialog = confirm?.closest("dialog.modal");
+      expect(dialog?.hasAttribute("open")).toBe(false);
     }
   );
 
