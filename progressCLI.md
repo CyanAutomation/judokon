@@ -316,12 +316,15 @@ select:focus,
 - **Solution**: Ensure all touch targets meet minimum sizes:
 
 ```css
-.cli-settings-toggle,
+details.cli-settings > summary,
 #cli-shortcuts-close {
   min-height: 44px;
-  min-width: 44px;
   display: flex;
   align-items: center;
+}
+
+#cli-shortcuts-close {
+  min-width: 44px;
   justify-content: center;
 }
 ```

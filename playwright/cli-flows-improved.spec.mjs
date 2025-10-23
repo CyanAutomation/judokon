@@ -222,7 +222,7 @@ test.describe("CLI Battle Interface", () => {
       await expect(roundSection.locator("#round-message")).toBeVisible();
       await expect(roundSection.locator("#cli-countdown")).toBeVisible();
 
-      const settingsSection = page.locator('section[aria-label="Match Settings"]');
+      const settingsSection = page.locator('#cli-settings');
       await expect(settingsSection).toBeVisible();
       await expect(settingsSection).toHaveClass(/cli-settings/);
 
@@ -263,18 +263,19 @@ test.describe("CLI Battle Interface", () => {
     testWithConsole("settings toggle works correctly", async ({ page }) => {
       await ensureBattleReady(page);
 
-      const settingsToggle = page.locator("#cli-settings-toggle");
-      const settingsBody = page.locator("#cli-settings-body");
+      const settings = page.locator("#cli-settings");
+      const summary = settings.locator("summary");
+      const settingsBody = settings.locator("#cli-settings-body");
 
-      await expect(settingsToggle).toHaveAttribute("aria-expanded", "true");
+      await expect(settings).toHaveJSProperty("open", true);
       await expect(settingsBody).toBeVisible();
 
-      await settingsToggle.click();
-      await expect(settingsToggle).toHaveAttribute("aria-expanded", "false");
+      await summary.click();
+      await expect(settings).toHaveJSProperty("open", false);
       await expect(settingsBody).toBeHidden();
 
-      await settingsToggle.click();
-      await expect(settingsToggle).toHaveAttribute("aria-expanded", "true");
+      await summary.click();
+      await expect(settings).toHaveJSProperty("open", true);
       await expect(settingsBody).toBeVisible();
     });
 
@@ -654,7 +655,7 @@ test.describe("CLI Battle Interface", () => {
 
       const controlsHint = page.locator("#cli-controls-hint");
       await expect(page.locator("#cli-stats")).toBeVisible();
-      await expect(page.locator("#cli-settings-toggle")).toBeVisible();
+      await expect(page.getByTestId("settings-summary")).toBeVisible();
       await expect(controlsHint).toBeVisible();
       await expect(controlsHint.locator("#cli-controls-hint-announce")).toHaveText(
         "Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit."

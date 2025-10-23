@@ -101,35 +101,18 @@ function applyRetroTheme(enabled) {
 
 function initSettingsCollapse() {
   // Removed unused initShortcutsCollapse function
-  const toggle = byId("cli-settings-toggle");
-  const body = byId("cli-settings-body");
-  if (!toggle || !body) return;
-  // read saved collapsed state (0 = expanded, 1 = collapsed)
-  let collapsed = false;
+  const settings = byId("cli-settings");
+  if (!settings) return;
+  let shouldOpen = true;
   try {
     const v = localStorage.getItem("battleCLI.settingsCollapsed");
-    collapsed = v === "1";
+    shouldOpen = v !== "1";
   } catch {}
-  const apply = (c) => {
-    if (c) {
-      body.style.display = "none";
-      toggle.setAttribute("aria-expanded", "false");
-      toggle.textContent = "Settings [>]";
-    } else {
-      body.style.display = "";
-      toggle.setAttribute("aria-expanded", "true");
-      toggle.textContent = "Settings [v]";
-    }
-  };
-  apply(collapsed);
-  toggle.addEventListener("click", () => {
-    collapsed = !collapsed;
+  settings.open = shouldOpen;
+  settings.addEventListener("toggle", () => {
     try {
-      localStorage.setItem("battleCLI.settingsCollapsed", collapsed ? "1" : "0");
+      localStorage.setItem("battleCLI.settingsCollapsed", settings.open ? "0" : "1");
     } catch {}
-    apply(collapsed);
-    // brief focus management: ensure settings toggle remains focusable
-    toggle.focus();
   });
 }
 
@@ -172,21 +155,12 @@ function init() {
   // expose programmatic settings collapse/expand helper for tests
   try {
     window.__battleCLIinit.setSettingsCollapsed = function (collapsed) {
-      const toggle = byId("cli-settings-toggle");
-      const body = byId("cli-settings-body");
-      if (!toggle || !body) return false;
+      const details = byId("cli-settings");
+      if (!details) return false;
       try {
         localStorage.setItem("battleCLI.settingsCollapsed", collapsed ? "1" : "0");
       } catch {}
-      if (collapsed) {
-        body.style.display = "none";
-        toggle.setAttribute("aria-expanded", "false");
-        toggle.textContent = "Settings [>]";
-      } else {
-        body.style.display = "";
-        toggle.setAttribute("aria-expanded", "true");
-        toggle.textContent = "Settings [v]";
-      }
+      details.open = !collapsed;
       return true;
     };
   } catch {}

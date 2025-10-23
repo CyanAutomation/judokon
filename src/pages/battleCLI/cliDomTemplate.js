@@ -34,22 +34,10 @@ export const CLI_DOM_TEMPLATE = `
         <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
       </section>
       <div class="ascii-sep">------------------------</div>
-      <section aria-label="Match Settings" class="cli-block cli-settings">
-        <div class="cli-settings-header d-flex align-items-center justify-content-between">
-          <div class="fw-600">Match Settings</div>
-          <div>
-            <button
-              id="cli-settings-toggle"
-              data-testid="settings-button"
-              aria-expanded="true"
-              aria-controls="cli-settings-body"
-              aria-label="Toggle settings panel"
-              class="button-reset"
-            >
-              Settings [v]
-            </button>
-          </div>
-        </div>
+      <details id="cli-settings" class="cli-block cli-settings" aria-label="Match Settings" open>
+        <summary class="cli-settings-summary" data-testid="settings-summary">
+          <span class="fw-600">Match Settings</span>
+        </summary>
         <div id="cli-settings-body">
           <div class="cli-settings-row">
             <label for="points-select">Win target:</label>
@@ -83,7 +71,7 @@ export const CLI_DOM_TEMPLATE = `
             </div>
           </div>
         </div>
-      </section>
+      </details>
       <div class="ascii-sep">------------------------</div>
       <section aria-label="Stat Selection" class="cli-block">
         <div

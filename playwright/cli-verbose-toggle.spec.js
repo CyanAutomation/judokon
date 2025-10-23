@@ -19,12 +19,14 @@ test.describe("Battle CLI verbose toggle", () => {
     await expect(verboseSection).toBeHidden();
     await expect(verboseLog).toBeHidden();
 
-    const settingsToggle = page.locator("#cli-settings-toggle");
-    const settingsBody = page.locator("#cli-settings-body");
-    if (!(await settingsBody.isVisible())) {
-      await settingsToggle.click();
-      await expect(settingsBody).toBeVisible();
+    const settings = page.locator("#cli-settings");
+    const settingsBody = settings.locator("#cli-settings-body");
+    await expect(settings).toBeVisible();
+    if (!(await settings.evaluate((node) => node.open))) {
+      await settings.locator("summary").click();
+      await expect(settings).toHaveJSProperty("open", true);
     }
+    await expect(settingsBody).toBeVisible();
 
     const readPersistedVerbose = () =>
       page.evaluate(() => {
