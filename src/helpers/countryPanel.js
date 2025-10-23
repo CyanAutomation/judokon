@@ -34,8 +34,8 @@ export function toggleCountryPanel(toggleButton, panel, show) {
     panel.removeAttribute("hidden");
     panel.classList.add("open");
     toggleButton.setAttribute("aria-expanded", "true");
-    const firstButton = panel.querySelector("button.flag-button");
-    firstButton?.focus();
+    const firstInput = panel.querySelector("input.flag-radio");
+    firstInput?.focus();
   } else {
     // Hide the panel from layout and assistive tech when closed.
     panel.classList.remove("open");

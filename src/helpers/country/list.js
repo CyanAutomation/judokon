@@ -3,6 +3,10 @@ import { fetchJson } from "../dataUtils.js";
 import { loadCountryMapping, getFlagUrl } from "../api/countryService.js";
 
 const SCROLL_THRESHOLD_PX = 50;
+const COUNTRY_FILTER_GROUP_NAME = "country-filter";
+const GROUP_LABEL = "Filter judoka by country";
+
+let optionIdCounter = 0;
 
 // Track batch loading state by container element
 const batchState = new WeakMap();
@@ -49,22 +53,81 @@ export async function fetchActiveCountries() {
   return { activeCountries, nameToCode };
 }
 
-function renderAllButton(container) {
-  const allButton = document.createElement("button");
-  allButton.className = "flag-button slide";
-  allButton.value = "all";
-  // Accessible name should be "Show all countries" for clarity
-  allButton.setAttribute("aria-label", "Show all countries");
-  const allImg = document.createElement("img");
-  allImg.alt = "All countries";
-  allImg.className = "flag-image";
-  allImg.setAttribute("loading", "lazy");
-  allImg.src = "https://flagcdn.com/w320/vu.png";
-  const allLabel = document.createElement("p");
-  allLabel.textContent = "All";
-  allButton.appendChild(allImg);
-  allButton.appendChild(allLabel);
-  container.appendChild(allButton);
+function nextOptionId() {
+  optionIdCounter += 1;
+  return `country-filter-option-${optionIdCounter}`;
+}
+
+function ensureRadioGroup(container) {
+  container.setAttribute("role", "radiogroup");
+  container.setAttribute("aria-label", GROUP_LABEL);
+}
+
+function createFlagLabel(optionId, textContent) {
+  const label = document.createElement("label");
+  label.className = "flag-button slide";
+  label.setAttribute("for", optionId);
+
+  const text = document.createElement("p");
+  text.textContent = textContent;
+  label.appendChild(text);
+
+  return label;
+}
+
+function appendFlagRadio(container, { value, label, ariaLabel, imageSrc, lazySrc, imageObserver, checked }) {
+  const optionId = nextOptionId();
+  const radio = document.createElement("input");
+  radio.type = "radio";
+  radio.name = COUNTRY_FILTER_GROUP_NAME;
+  radio.value = value;
+  radio.id = optionId;
+  radio.className = "flag-radio";
+  if (checked) {
+    radio.checked = true;
+  }
+  if (ariaLabel) {
+    radio.setAttribute("aria-label", ariaLabel);
+  }
+
+  const labelEl = createFlagLabel(optionId, label);
+
+  const flagImg = document.createElement("img");
+  flagImg.className = "flag-image";
+  flagImg.setAttribute("loading", "lazy");
+
+  if (value === "all") {
+    flagImg.alt = "All countries";
+  } else {
+    flagImg.alt = `${label} Flag`;
+  }
+
+  if (lazySrc && imageObserver) {
+    flagImg.dataset.src = lazySrc;
+    imageObserver.observe(flagImg);
+  } else {
+    flagImg.src = imageSrc ?? lazySrc ?? "";
+  }
+
+  // Ensure the image appears before the text for a consistent layout.
+  labelEl.insertBefore(flagImg, labelEl.firstChild);
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "flag-option";
+  wrapper.appendChild(radio);
+  wrapper.appendChild(labelEl);
+
+  container.appendChild(wrapper);
+}
+
+function renderAllOption(container) {
+  appendFlagRadio(container, {
+    value: "all",
+    label: "All",
+    ariaLabel: "Show all countries",
+    imageSrc: "https://flagcdn.com/w320/vu.png",
+    checked: true
+  });
 }
 
 function determineBatchSize(connection) {
@@ -108,33 +171,23 @@ function initLazyFlagLoader(scrollContainer) {
 
 async function renderCountryBatch(container, countries, nameToCode, imageObserver) {
   for (const countryName of countries) {
-    const button = document.createElement("button");
-    button.className = "flag-button slide";
-    button.value = countryName;
-    // Use "Filter by [country name]" as the accessible name to match tests
-    button.setAttribute("aria-label", `Filter by ${countryName}`);
-    const flagImg = document.createElement("img");
-    flagImg.alt = `${countryName} Flag`;
-    flagImg.className = "flag-image";
-    flagImg.setAttribute("loading", "lazy");
+    let flagUrl;
     try {
       const code = nameToCode.get(countryName);
-      const flagUrl = await getFlagUrl(code);
-      if (imageObserver) {
-        flagImg.dataset.src = flagUrl;
-        imageObserver.observe(flagImg);
-      } else {
-        flagImg.src = flagUrl;
-      }
+      flagUrl = await getFlagUrl(code);
     } catch (error) {
       console.warn(`Failed to load flag for ${countryName}:`, error);
-      flagImg.src = "https://flagcdn.com/w320/vu.png";
+      flagUrl = "https://flagcdn.com/w320/vu.png";
     }
-    const countryLabel = document.createElement("p");
-    countryLabel.textContent = countryName;
-    button.appendChild(flagImg);
-    button.appendChild(countryLabel);
-    container.appendChild(button);
+
+    appendFlagRadio(container, {
+      value: countryName,
+      label: countryName,
+      ariaLabel: `Filter by ${countryName}`,
+      imageSrc: imageObserver ? undefined : flagUrl,
+      lazySrc: imageObserver ? flagUrl : undefined,
+      imageObserver
+    });
   }
 }
 
@@ -185,7 +238,9 @@ export async function populateCountryList(container) {
       return;
     }
 
-    renderAllButton(container);
+    optionIdCounter = 0;
+    ensureRadioGroup(container);
+    renderAllOption(container);
 
     const scrollContainer = container.parentElement || container;
     const connection = typeof navigator !== "undefined" ? navigator.connection : undefined;

@@ -42,23 +42,23 @@
  * 3. Locate the index of the currently focused element and move focus accordingly.
  *
  * @param {KeyboardEvent} event - The originating keyboard event.
- * @param {Element} container - Container element that holds the buttons.
- * @param {string} buttonClass - CSS class for the target buttons.
+ * @param {Element} container - Container element that holds the controls.
+ * @param {string} selector - CSS selector for the focusable controls.
  * @returns {void}
  */
-export function handleKeyboardNavigation(event, container, buttonClass) {
+export function handleKeyboardNavigation(event, container, selector) {
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
     return;
   }
 
-  const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
+  const elements = Array.from(container.querySelectorAll(selector));
   const current = document.activeElement;
-  const index = buttons.indexOf(current);
+  const index = elements.indexOf(current);
   if (index !== -1) {
     event.preventDefault();
     const offset = event.key === "ArrowRight" ? 1 : -1;
-    const next = (index + offset + buttons.length) % buttons.length;
-    buttons[next].focus();
+    const next = (index + offset + elements.length) % elements.length;
+    elements[next].focus();
   }
 }
 

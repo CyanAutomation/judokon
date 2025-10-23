@@ -57,7 +57,7 @@ test.describe("Browse Judoka screen", () => {
     await expect(allCards).toHaveCount(initialCount);
 
     await toggle.click();
-    await page.getByRole("button", { name: "Japan" }).click({ force: true });
+    await page.getByRole("radio", { name: "Japan" }).click({ force: true });
 
     const filteredCards = page.locator("[data-testid=carousel-container] .judoka-card");
     await expect(filteredCards).toHaveCount(1);
@@ -65,7 +65,7 @@ test.describe("Browse Judoka screen", () => {
     await expect(flag).toHaveAttribute("alt", /Japan flag/i);
 
     await toggle.click();
-    await page.getByRole("button", { name: "All" }).click({ force: true });
+    await page.getByRole("radio", { name: "All" }).click({ force: true });
 
     await expect(allCards).toHaveCount(initialCount);
   });

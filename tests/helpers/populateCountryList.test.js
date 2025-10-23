@@ -47,6 +47,7 @@ describe("populateCountryList", () => {
     const slides = container.querySelectorAll(".slide");
     const names = [...slides].map((s) => s.querySelector("p").textContent);
     expect(names).toEqual(["All", "Brazil", "Japan"]);
+    expect(container.getAttribute("role")).toBe("radiogroup");
   });
 
   it("applies accessible aria-labels to flag buttons", async () => {
@@ -66,9 +67,10 @@ describe("populateCountryList", () => {
     const container = document.createElement("div");
     await populateCountryList(container);
 
-    const buttons = container.querySelectorAll("button.flag-button");
-    expect(buttons[0]).toHaveAttribute("aria-label", "Show all countries");
-    expect(buttons[1]).toHaveAttribute("aria-label", "Filter by Japan");
+    const inputs = container.querySelectorAll("input.flag-radio");
+    expect(inputs[0]).toHaveAttribute("aria-label", "Show all countries");
+    expect(inputs[0].checked).toBe(true);
+    expect(inputs[1]).toHaveAttribute("aria-label", "Filter by Japan");
   });
 
   it("adds lazy loading to flag images", async () => {
