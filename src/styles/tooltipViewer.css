@@ -51,6 +51,7 @@
 }
 
 .preview-container:not([open]) .preview-body {
+  display: block;
   max-height: 300px;
   overflow: hidden;
 }
