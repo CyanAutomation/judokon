@@ -149,7 +149,7 @@ describe("Battle Classic Page Integration", () => {
     expect(modalTitle).not.toBeNull();
     expect(modalTitle.textContent).toBe("Select Match Length");
 
-    const modal = document.querySelector(".modal-backdrop");
+    const modal = document.querySelector("dialog.modal");
     expect(modal).not.toBeNull();
     // The modal's open state might be controlled by a class or attribute.
     // Here we assume it's rendered and present in the DOM.

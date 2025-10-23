@@ -14,7 +14,7 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     });
 
     await page.goto("/src/pages/battleCLI.html");
-    await page.waitForSelector(".modal-backdrop", { state: "visible", timeout: 10000 });
+    await page.waitForSelector("dialog.modal", { state: "visible", timeout: 10000 });
   });
 
   test("should show keyboard instructions in modal", async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.keyboard.press("1");
 
     // Wait for the modal to close and stats to appear
-    await page.waitForSelector(".modal-backdrop", { state: "hidden" });
+    await page.waitForSelector("dialog.modal", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
     // Check that Quick mode was selected (3 points to win)
@@ -39,7 +39,7 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.keyboard.press("2");
 
     // Wait for the modal to close and stats to appear
-    await page.waitForSelector(".modal-backdrop", { state: "hidden" });
+    await page.waitForSelector("dialog.modal", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
     // Check that Medium mode was selected (5 points to win)
@@ -51,7 +51,7 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.keyboard.press("3");
 
     // Wait for the modal to close and stats to appear
-    await page.waitForSelector(".modal-backdrop", { state: "hidden" });
+    await page.waitForSelector("dialog.modal", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
     // Check that Long mode was selected (10 points to win)
@@ -88,7 +88,7 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.keyboard.press("Enter");
 
     // Wait for the modal to close and stats to appear
-    await page.waitForSelector(".modal-backdrop", { state: "hidden" });
+    await page.waitForSelector("dialog.modal", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
     // Check that Long mode was selected (10 points to win)

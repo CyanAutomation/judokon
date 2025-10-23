@@ -1,19 +1,16 @@
-import { registerModal, unregisterModal } from "../helpers/modalManager.js";
-
 /**
  * Create a reusable modal dialog with accessible behavior.
  *
  * @pseudocode
- * 1. Build a backdrop element with `modal-backdrop` class and `hidden` attribute.
- * 2. Inside it place a `div.modal` with `role="dialog"` and `aria-modal="true"`.
- * 3. When options include `labelledBy` or `describedBy`, set
- *    `aria-labelledby` and `aria-describedby` on the modal.
- * 4. Append provided content nodes into the modal.
- * 5. Expose `open()` and `close()` instance methods to toggle the backdrop,
- *    manage focus and `aria-expanded` on the trigger.
- * 6. Clicking the backdrop closes the modal.
- * 7. While open, trap focus inside the modal container.
- * 8. Provide `destroy()` to remove listeners and detach the element.
+ * 1. Create a native `<dialog>` element with the `modal` class.
+ * 2. Apply `aria-labelledby` / `aria-describedby` when IDs are supplied.
+ * 3. Append the provided content into the dialog element.
+ * 4. Track the element that triggered the modal so focus can be restored.
+ * 5. Expose `open()` to call `showModal()` (or set `open`) and manage
+ *    `aria-expanded` on the trigger when supplied.
+ * 6. Expose `close()` to call the native `close()` (or unset `open`).
+ * 7. Listen for the dialog's `close` event to restore focus and clean up.
+ * 8. Provide `destroy()` to remove listeners, close the dialog, and detach it.
  *
  * @param {HTMLElement|DocumentFragment} content - Dialog contents.
  * @param {object} [options] - Optional configuration.
@@ -26,14 +23,9 @@ export class Modal {
   constructor(content, options = {}) {
     const { labelledBy, describedBy } = options;
 
-    this.element = document.createElement("div");
-    this.element.className = "modal-backdrop";
-    this.element.setAttribute("hidden", "");
-
-    this.dialog = document.createElement("div");
+    this.dialog = document.createElement("dialog");
     this.dialog.className = "modal";
-    this.dialog.setAttribute("role", "dialog");
-    this.dialog.setAttribute("aria-modal", "true");
+    this.dialog.tabIndex = -1;
     if (labelledBy) {
       const id = typeof labelledBy === "string" ? labelledBy : labelledBy.id;
       if (id) this.dialog.setAttribute("aria-labelledby", id);
@@ -42,145 +34,127 @@ export class Modal {
       const id = typeof describedBy === "string" ? describedBy : describedBy.id;
       if (id) this.dialog.setAttribute("aria-describedby", id);
     }
-    this.dialog.tabIndex = -1;
 
     this.dialog.append(content);
-    this.element.append(this.dialog);
+
+    this.element = this.dialog;
 
     this.returnFocus = null;
-    this.removeTrap = () => {};
+    this.handleClose = this.handleClose.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.dialog.addEventListener("close", this.handleClose);
+    this.dialog.addEventListener("cancel", this.handleCancel);
 
-    this.handleBackdropClick = this.handleBackdropClick.bind(this);
+    this.supportsShowModal = typeof this.dialog.showModal === "function";
+    this.supportsClose = typeof this.dialog.close === "function";
     this.open = this.open.bind(this);
     this.close = this.close.bind(this);
-    this.element.addEventListener("click", this.handleBackdropClick);
   }
 
   /**
-   * Traps focus within a given element, ensuring keyboard navigation stays within its boundaries.
+   * Handle the dialog `close` event by restoring trigger focus.
    *
    * @pseudocode
-   * 1. Define a string of CSS selectors for common focusable elements (links, buttons, inputs, etc.).
-   * 2. Query all elements within the provided `el` that match these selectors to get a list of `focusables`.
-   * 3. If `focusables` is empty (no focusable elements found), return an empty function immediately as there's nothing to trap.
-   * 4. Identify the `first` and `last` focusable elements from the `focusables` list.
-   * 5. Define a `handle` function to serve as the keydown event listener:
-   *    a. Check if the pressed key (`e.key`) is "Tab". If not, exit the handler.
-   *    b. If "Shift" key is also pressed (`e.shiftKey`) AND the currently active element (`document.activeElement`) is the `first` focusable element:
-   *       i. Prevent the default tab behavior (`e.preventDefault()`).
-   *       ii. Move focus to the `last` focusable element.
-   *    c. Else if "Shift" key is NOT pressed AND the currently active element is the `last` focusable element:
-   *       i. Prevent the default tab behavior (`e.preventDefault()`).
-   *       ii. Move focus to the `first` focusable element.
-   * 6. Add the `handle` function as a "keydown" event listener to the `el` element.
-   * 7. Return a cleanup function that, when called, will remove the "keydown" event listener from `el`, effectively disabling the focus trap.
+   * 1. Capture and clear the stored trigger element.
+   * 2. If a trigger exists, set `aria-expanded="false"` and refocus it.
    *
-   * @param {HTMLElement} el - The element within which to trap focus.
-   * @returns {() => void} A function to call to remove the focus trap.
-   */
-  trapFocus(el) {
-    const selectors = "a[href], button, textarea, input, select, [tabindex]:not([tabindex='-1'])";
-    const focusables = Array.from(el.querySelectorAll(selectors));
-    if (focusables.length === 0) {
-      if (!el.hasAttribute("tabindex")) {
-        el.tabIndex = -1;
-      }
-      const handleNoFocusables = (e) => {
-        if (e.key === "Tab") {
-          e.preventDefault();
-          el.focus();
-        }
-      };
-      el.addEventListener("keydown", handleNoFocusables);
-      return () => el.removeEventListener("keydown", handleNoFocusables);
-    }
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-
-    const handle = (e) => {
-      if (e.key !== "Tab") return;
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-
-    el.addEventListener("keydown", handle);
-    return () => el.removeEventListener("keydown", handle);
-  }
-
-  /**
-   * Handles clicks on the modal backdrop to close the modal.
-   *
-   * @pseudocode
-   * 1. Check if the click target is the modal backdrop element itself.
-   * 2. If it is, close the modal.
-   *
-   * @param {MouseEvent} e - The mouse event object.
+   * @private
    * @returns {void}
    */
-  handleBackdropClick(e) {
-    if (e.target === this.element) this.close();
+  handleClose() {
+    const trigger = this.returnFocus;
+    this.returnFocus = null;
+    if (trigger) {
+      try {
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.focus();
+      } catch {}
+    }
+  }
+
+  /**
+   * Handle the dialog `cancel` event (Escape / form cancel).
+   *
+   * @pseudocode
+   * 1. When native `showModal` is unavailable, prevent default dismissal.
+   * 2. Call `close()` to emulate the native closing behavior.
+   *
+   * @param {Event} event - The cancel event.
+   * @returns {void}
+   */
+  handleCancel(event) {
+    if (this.supportsShowModal) {
+      return;
+    }
+    try {
+      event?.preventDefault?.();
+    } catch {}
+    this.close();
   }
 
   /**
    * Opens the modal dialog, makes it visible, and manages focus.
    *
    * @pseudocode
-   * 1. Store the triggering element to return focus to it later.
-   * 2. Remove the 'hidden' attribute from the modal backdrop.
-   * 3. Add the 'open' class to the dialog for styling.
-   * 4. If a trigger element exists, set its 'aria-expanded' attribute to 'true'.
-   * 5. Activate focus trapping within the dialog.
-   * 6. Identify the first focusable element within the dialog and move focus to it.
-   * 7. Register the modal with the global Escape handler.
+   * 1. Store the optional trigger element so focus can be restored later.
+   * 2. Mark the trigger as expanded when provided.
+   * 3. Call the native `showModal()` API when available, otherwise set the
+   *    `open` attribute manually as a graceful fallback.
+   * 4. Focus the dialog so keyboard users land inside the modal content.
    *
    * @param {HTMLElement} [trigger] - The element that triggered the modal to open, used for focus management.
    * @returns {void}
    */
   open(trigger) {
     this.returnFocus = trigger ?? null;
-    this.element.removeAttribute("hidden");
-    this.dialog.classList.add("open");
-    if (trigger) trigger.setAttribute("aria-expanded", "true");
-    this.removeTrap = this.trapFocus(this.dialog);
-    const focusTarget = this.dialog.querySelector(
-      "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
-    );
-    const target = focusTarget || this.dialog;
-    if (!target.hasAttribute("tabindex")) {
-      target.tabIndex = -1;
+    if (trigger) {
+      try {
+        trigger.setAttribute("aria-expanded", "true");
+      } catch {}
     }
-    target.focus();
-    registerModal(this);
+
+    if (this.supportsShowModal) {
+      if (!this.dialog.open) {
+        try {
+          this.dialog.showModal();
+        } catch {
+          this.dialog.setAttribute("open", "");
+        }
+      }
+    } else {
+      this.dialog.setAttribute("open", "");
+    }
+
+    try {
+      this.dialog.focus();
+    } catch {}
   }
 
   /**
    * Closes the modal dialog, hides it, and restores focus to the triggering element.
    *
    * @pseudocode
-   * 1. Remove the 'open' class from the dialog.
-   * 2. Set the 'hidden' attribute on the modal backdrop.
-   * 3. Deactivate the focus trap.
-   * 4. Unregister from the global Escape handler.
-   * 5. If a triggering element was stored, set its 'aria-expanded' attribute to 'false' and return focus to it.
-   * 6. Dispatch a `close` event on the modal backdrop.
+   * 1. No-op if the dialog is already closed.
+   * 2. Invoke the native `close()` method when present, otherwise remove the
+   *    `open` attribute and dispatch a synthetic `close` event so listeners run.
    *
    * @returns {void}
    */
   close() {
-    this.dialog.classList.remove("open");
-    this.element.setAttribute("hidden", "");
-    this.removeTrap();
-    unregisterModal(this);
-    if (this.returnFocus) {
-      this.returnFocus.setAttribute("aria-expanded", "false");
-      this.returnFocus.focus();
+    const isOpen = this.dialog.hasAttribute("open") || this.dialog.open;
+    if (!isOpen) {
+      return;
     }
-    this.element.dispatchEvent(new CustomEvent("close"));
+
+    if (this.supportsClose) {
+      try {
+        this.dialog.close();
+        return;
+      } catch {}
+    }
+
+    this.dialog.removeAttribute("open");
+    this.dialog.dispatchEvent(new Event("close"));
   }
 
   /**
@@ -188,9 +162,17 @@ export class Modal {
    * @returns {void}
    */
   destroy() {
-    this.element.removeEventListener("click", this.handleBackdropClick);
-    unregisterModal(this);
-    this.element.remove();
+    try {
+      this.dialog.removeEventListener("close", this.handleClose);
+    } catch {}
+    try {
+      this.dialog.removeEventListener("cancel", this.handleCancel);
+    } catch {}
+    try {
+      this.close();
+    } catch {}
+    this.dialog.remove();
+    this.returnFocus = null;
   }
 }
 

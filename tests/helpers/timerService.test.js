@@ -51,11 +51,6 @@ describe("timerService", () => {
         return Promise.resolve();
       })
     }));
-    vi.doMock("../../src/helpers/modalManager.js", () => ({
-      closeAll: () => {},
-      register: () => {},
-      unregister: () => {}
-    }));
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => {
       const makeTimer = (onTick, onExpired, duration) => {
         onTick(duration);

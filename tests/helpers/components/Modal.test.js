@@ -7,14 +7,12 @@ describe("createModal", () => {
     content.textContent = "Modal content";
     const modal = createModal(content);
 
-    expect(modal.element.tagName).toBe("DIV");
-    expect(modal.element.className).toBe("modal-backdrop");
-    expect(modal.element.hasAttribute("hidden")).toBe(true);
+    expect(modal.element.tagName).toBe("DIALOG");
+    expect(modal.element.className).toBe("modal");
+    expect(modal.element.hasAttribute("open")).toBe(false);
 
-    expect(modal.dialog.tagName).toBe("DIV");
+    expect(modal.dialog.tagName).toBe("DIALOG");
     expect(modal.dialog.className).toBe("modal");
-    expect(modal.dialog.getAttribute("role")).toBe("dialog");
-    expect(modal.dialog.getAttribute("aria-modal")).toBe("true");
     expect(modal.dialog.tabIndex).toBe(-1);
 
     expect(modal.isOpen).toBe(false);
@@ -46,14 +44,14 @@ describe("createModal", () => {
 
     // Open modal
     modal.open(trigger);
-    expect(modal.element.hasAttribute("hidden")).toBe(false);
+    expect(modal.element.hasAttribute("open")).toBe(true);
     expect(modal.isOpen).toBe(true);
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(modal.onOpen).toHaveBeenCalledWith(trigger);
 
     // Close modal
     modal.close();
-    expect(modal.element.hasAttribute("hidden")).toBe(true);
+    expect(modal.element.hasAttribute("open")).toBe(false);
     expect(modal.isOpen).toBe(false);
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(modal.onClose).toHaveBeenCalled();
@@ -70,8 +68,8 @@ describe("createModal", () => {
     modal.open();
     expect(modal.isOpen).toBe(true);
 
-    // Click on backdrop (not dialog)
-    modal.element.click();
+    // Cancel event should close the dialog
+    modal.element.dispatchEvent(new Event("cancel"));
     expect(modal.isOpen).toBe(false);
     expect(modal.onClose).toHaveBeenCalled();
 

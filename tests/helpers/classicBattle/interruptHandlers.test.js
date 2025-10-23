@@ -34,7 +34,8 @@ vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
 vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
     modalOpenMock = vi.fn();
-    modalElement = document.createElement("div");
+    modalElement = document.createElement("dialog");
+    modalElement.className = "modal";
     modalElement.append(content);
     return { element: modalElement, open: modalOpenMock, close: vi.fn(), destroy: vi.fn() };
   },

@@ -24,7 +24,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     await page.goto("/src/pages/battleCLI.html");
-    await expect(page.locator(".modal-backdrop")).toBeVisible();
+    await expect(page.locator("dialog.modal")).toBeVisible();
   });
 
   test.afterEach(async ({ page }) => {
@@ -39,7 +39,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     test(`should sync win target dropdown when ${name} is selected`, async ({ page }) => {
       await page.keyboard.press(key);
 
-      await expect(page.locator(".modal-backdrop")).toBeHidden();
+      await expect(page.locator("dialog.modal")).toBeHidden();
       await expect(page.locator("#cli-stats")).toBeVisible();
 
       await openSettingsPanel(page);
@@ -71,7 +71,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
       });
       await revisit.goto("/src/pages/battleCLI.html");
-      await expect(revisit.locator(".modal-backdrop")).toBeVisible();
+      await expect(revisit.locator("dialog.modal")).toBeVisible();
       await expect
         .poll(async () =>
           revisit.evaluate(() => {
@@ -86,7 +86,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       await expect(revisit.locator("#points-select")).toHaveValue("10");
 
       await revisit.keyboard.press("3");
-      await expect(revisit.locator(".modal-backdrop")).toBeHidden();
+      await expect(revisit.locator("dialog.modal")).toBeHidden();
       await expect(revisit.locator("#cli-header")).toContainText("Round 0 Target: 10");
     } finally {
       await revisit.close();

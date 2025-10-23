@@ -8,7 +8,8 @@ import { resetFallbackScores } from "../../../src/helpers/api/battleUI.js";
 
 vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
-    const el = document.createElement("div");
+    const el = document.createElement("dialog");
+    el.className = "modal";
     if (content) el.append(content);
     return { element: el, open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
   },
