@@ -75,10 +75,12 @@ function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt }) {
     .replace(/[^a-z0-9]+/gi, "-")
     .replace(/^-+|-+$/g, "")
     .toLowerCase();
-  const fallbackKey = Array.from(rawValue)
-    .map((char) => char.codePointAt(0)?.toString(16) ?? "")
-    .filter(Boolean)
-    .join("-");
+  const fallbackKey = sanitized
+    ? ""
+    : Array.from(rawValue)
+        .map((char) => char.codePointAt(0)?.toString(16) ?? "")
+        .filter(Boolean)
+        .join("-");
   const slug = sanitized || `option-${fallbackKey || "default"}`;
   const id = `country-filter-${slug}`;
 
