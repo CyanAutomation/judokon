@@ -5,7 +5,7 @@ dialog.modal {
   box-shadow: var(--shadow-base);
   padding: var(--space-lg);
   max-width: 600px;
-  width: min(90%, 600px);
+  width: 90%;
   background-color: var(--color-surface);
   color: inherit;
   margin: auto;

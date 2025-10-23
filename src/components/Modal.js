@@ -83,13 +83,13 @@ export class Modal {
    * @returns {void}
    */
   handleCancel(event) {
-    if (this.supportsShowModal) {
-      return;
+    if (!this.supportsShowModal) {
+      try {
+        event?.preventDefault?.();
+      } catch {}
+      this.close();
     }
-    try {
-      event?.preventDefault?.();
-    } catch {}
-    this.close();
+    // Native dialogs handle cancel semantics when `showModal` is supported.
   }
 
   /**
@@ -114,7 +114,7 @@ export class Modal {
     }
 
     if (this.supportsShowModal) {
-      if (!this.dialog.open) {
+      if (!this.dialog.hasAttribute("open")) {
         try {
           this.dialog.showModal();
         } catch {
