@@ -76,12 +76,12 @@ Even though WeakSets allow garbage collection, if the Playwright test environmen
 
 ## Impact Assessment
 
-| Dimension | Assessment |
-|-----------|-----------|
+| Dimension             | Assessment                                                                 |
+| --------------------- | -------------------------------------------------------------------------- |
 | **Functional Impact** | Low - Code works correctly in normal usage and when tests run individually |
-| **CI/CD Impact** | High - Test suite fails when run together, breaking CI pipelines |
-| **Reproducibility** | High - Consistently fails when tests run sequentially |
-| **Test Coverage** | The feature IS properly tested; isolation bug hides this |
+| **CI/CD Impact**      | High - Test suite fails when run together, breaking CI pipelines           |
+| **Reproducibility**   | High - Consistently fails when tests run sequentially                      |
+| **Test Coverage**     | The feature IS properly tested; isolation bug hides this                   |
 
 ---
 
@@ -191,7 +191,7 @@ export default defineConfig({
     // Force new browser context for each test to ensure clean state
     contextIsolation: true,
     // Clear browser cache/storage between tests
-    trace: 'on-first-retry',
+    trace: "on-first-retry"
     // Consider adding launch options
   },
   // Add test setup/teardown
@@ -272,12 +272,12 @@ done
 
 ## Related Code Locations
 
-| Component | File | Line | Issue |
-|-----------|------|------|-------|
-| Stat list binding | `src/pages/battleCLI/init.js` | 1670 | Global WeakSet tracking |
-| Battle initialization | `src/pages/battleCLI/init.js` | 196 | `window.__battleCLIinit` global |
-| Stat selection | `src/pages/battleCLI/init.js` | 1182 | Calls `selectStat()` which dispatches |
-| Test helper | `playwright/helpers/battleStateHelper.js` | - | May need updated context handling |
+| Component             | File                                      | Line | Issue                                 |
+| --------------------- | ----------------------------------------- | ---- | ------------------------------------- |
+| Stat list binding     | `src/pages/battleCLI/init.js`             | 1670 | Global WeakSet tracking               |
+| Battle initialization | `src/pages/battleCLI/init.js`             | 196  | `window.__battleCLIinit` global       |
+| Stat selection        | `src/pages/battleCLI/init.js`             | 1182 | Calls `selectStat()` which dispatches |
+| Test helper           | `playwright/helpers/battleStateHelper.js` | -    | May need updated context handling     |
 
 ---
 
@@ -297,11 +297,11 @@ done
 
 ## Appendix: Current Test Status
 
-| Test | In Isolation | With Others | Notes |
-|------|--------------|-------------|-------|
-| `battle-cli-start.spec.js` | ✓ PASS | ✓ PASS | No issues |
-| `battle-cli-play.spec.js` | ✓ PASS | ✗ FAIL | Fails when 2nd in sequence |
-| `battle-cli-restart.spec.js` | ✓ PASS | ✓ PASS* | Would fail if play.spec.js didn't |
+| Test                         | In Isolation | With Others | Notes                             |
+| ---------------------------- | ------------ | ----------- | --------------------------------- |
+| `battle-cli-start.spec.js`   | ✓ PASS       | ✓ PASS      | No issues                         |
+| `battle-cli-play.spec.js`    | ✓ PASS       | ✗ FAIL      | Fails when 2nd in sequence        |
+| `battle-cli-restart.spec.js` | ✓ PASS       | ✓ PASS\*    | Would fail if play.spec.js didn't |
 
 \* Actual status unknown because play.spec.js fails first and halts suite
 

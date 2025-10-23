@@ -309,10 +309,13 @@ test.describe("Settings page", () => {
   test("controls meet 44px touch target size", async ({ page }) => {
     await openSections(page, ["display", "general", "links"]);
     const measure = async (selector) =>
-      page.locator(selector).first().evaluate((node) => {
-        const rect = node.getBoundingClientRect();
-        return { width: rect.width, height: rect.height };
-      });
+      page
+        .locator(selector)
+        .first()
+        .evaluate((node) => {
+          const rect = node.getBoundingClientRect();
+          return { width: rect.width, height: rect.height };
+        });
     const toggleSelectors = [
       "label[for='sound-toggle'] .slider",
       "label[for='motion-toggle'] .slider",
