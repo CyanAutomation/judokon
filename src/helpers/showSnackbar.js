@@ -16,6 +16,15 @@ let bar;
 let fadeId;
 let removeId;
 
+/**
+ * Get a safe document reference that works in both DOM and non-DOM environments.
+ *
+ * @pseudocode
+ * 1. Check if globalThis is available.
+ * 2. Return globalThis.document if available, otherwise null.
+ *
+ * @returns {Document|null} The document object or null if unavailable.
+ */
 function getDocumentRef() {
   if (typeof globalThis === "undefined") {
     return null;
@@ -25,12 +34,9 @@ function getDocumentRef() {
 
 function ensureDomOrReset() {
   const doc = getDocumentRef();
-  if (typeof document === "undefined" && !doc) {
-    resetState();
-    return null;
-  }
   if (!doc) {
     resetState();
+    return null;
   }
   return doc;
 }
@@ -96,14 +102,14 @@ function resetTimers() {
     return;
   }
   fadeId = scheduler.setTimeout(() => {
-    if (!getDocumentRef()?.getElementById("snackbar-container")) {
+    if (!doc.getElementById("snackbar-container")) {
       resetState();
       return;
     }
     bar?.classList.remove("show");
   }, SNACKBAR_FADE_MS);
   removeId = scheduler.setTimeout(() => {
-    if (!getDocumentRef()?.getElementById("snackbar-container")) {
+    if (!doc.getElementById("snackbar-container")) {
       resetState();
       return;
     }
