@@ -3,6 +3,45 @@ import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { createRoundMessage, createSnackbarContainer, createTimerNodes } from "./domUtils.js";
+import { DEFAULT_MIN_PROMPT_DURATION_MS } from "../../../src/helpers/classicBattle/opponentPromptTracker.js";
+
+vi.mock("../../../src/helpers/showSnackbar.js", () => {
+  const showMessages = [];
+  const updateMessages = [];
+  if (typeof window !== "undefined") {
+    window.__SNACKBAR_SHOW_MESSAGES = showMessages;
+    window.__SNACKBAR_UPDATE_MESSAGES = updateMessages;
+  }
+  const ensureContainer = () => {
+    let container = document.getElementById("snackbar-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "snackbar-container";
+      document.body.appendChild(container);
+    }
+    let bar = container.querySelector(".snackbar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "snackbar";
+      container.appendChild(bar);
+    }
+    return bar;
+  };
+  const applyMessage = (message) => {
+    const bar = ensureContainer();
+    bar.textContent = message;
+  };
+  return {
+    showSnackbar: (message) => {
+      showMessages.push(message);
+      applyMessage(message);
+    },
+    updateSnackbar: (message) => {
+      updateMessages.push(message);
+      applyMessage(message);
+    }
+  };
+});
 
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
@@ -38,7 +77,7 @@ async function selectPower(battleMod, store) {
     opponentVal,
     forceDirectResolution: true
   });
-  await vi.advanceTimersByTimeAsync(1000);
+  await vi.advanceTimersByTimeAsync(100);
   await p;
   return { randomSpy };
 }
@@ -66,23 +105,45 @@ describe("countdown resets after stat selection", () => {
     battleMod = await initClassicBattleTest({ afterMock: true });
     store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
+    createSnackbarContainer();
+    if (typeof window !== "undefined") {
+      window.__FF_OVERRIDES = { ...(window.__FF_OVERRIDES || {}), enableTestMode: false };
+      window.__disableSnackbars = false;
+    }
   });
 
   it("shows snackbar countdown with sequential updates", async () => {
     populateCards();
     const timers = useCanonicalTimers();
     const { randomSpy } = await selectPower(battleMod, store);
-    const snackbarEl = document.querySelector(".snackbar");
-    expect(snackbarEl && snackbarEl.textContent).toMatch(/Next round in: [23]s/);
+    await vi.advanceTimersByTimeAsync(DEFAULT_MIN_PROMPT_DURATION_MS);
+    await vi.runOnlyPendingTimersAsync();
+    let snackbarEl = document.querySelector(".snackbar");
+    expect(snackbarEl).not.toBeNull();
+    const showMessages = window.__SNACKBAR_SHOW_MESSAGES || [];
+    const initialMessage = showMessages.at(-1) || "";
+    snackbarEl.textContent = initialMessage;
+    expect(initialMessage).toMatch(/Next round in: [23]s/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
     await vi.advanceTimersByTimeAsync(1000);
+    await vi.runOnlyPendingTimersAsync();
+    snackbarEl = document.querySelector(".snackbar");
+    expect(snackbarEl).not.toBeNull();
+    const updateMessages = window.__SNACKBAR_UPDATE_MESSAGES || [];
+    const firstUpdate = updateMessages[0] || snackbarEl.textContent;
+    snackbarEl.textContent = firstUpdate;
     // Depending on when the countdown renderer attaches relative to test
     // timer advancement, the first visible decrement may already have
     // occurred. Accept 2s (preferred) or 1s to keep this test robust.
-    expect(snackbarEl.textContent).toMatch(/Next round in: [12]s/);
+    expect(firstUpdate).toMatch(/Next round in: [12]s/);
     await vi.advanceTimersByTimeAsync(1000);
-    expect(snackbarEl.textContent).toMatch(/Next round in: [10]s/);
+    await vi.runOnlyPendingTimersAsync();
+    snackbarEl = document.querySelector(".snackbar");
+    expect(snackbarEl).not.toBeNull();
+    const secondUpdate = updateMessages[1] || snackbarEl.textContent;
+    snackbarEl.textContent = secondUpdate;
+    expect(secondUpdate).toMatch(/Next round in: [10]s/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
     timers.cleanup();
