@@ -1270,6 +1270,7 @@ export function selectStat(stat) {
     if (dispatchResult && typeof dispatchResult.catch === "function") {
       dispatchResult.catch(handleDispatchError);
     } else {
+      // Always wrap in Promise.resolve to preserve error handling for falsy values
       Promise.resolve(dispatchResult).catch(handleDispatchError);
     }
   } catch (err) {
