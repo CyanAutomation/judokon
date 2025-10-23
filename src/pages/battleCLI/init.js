@@ -2113,6 +2113,12 @@ export function handleWaitingForPlayerActionKey(key) {
     return true;
   }
   if (key === "enter") {
+    if (selectionApplying || state.roundResolving) {
+      console.debug(
+        "[TEST DEBUG] handleWaitingForPlayerActionKey enter skipped due to busy state"
+      );
+      return false;
+    }
     const activeElement = getActiveElement();
     const active = activeElement?.closest?.(".cli-stat");
     console.debug(
@@ -2128,9 +2134,7 @@ export function handleWaitingForPlayerActionKey(key) {
         const stat = getStatByIndex(idx);
         console.debug("[TEST DEBUG] resolved stat=", stat);
         if (stat) {
-          // Keep the immediate selection trade-off in mind here as well; synchronous
-          // updates improve feedback but depend on selectStat staying lightweight.
-          selectStat(stat);
+          __scheduleMicrotask(() => selectStat(stat));
           return true;
         }
       }
