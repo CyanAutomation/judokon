@@ -73,6 +73,35 @@ describe("populateCountryList", () => {
     expect(radios[1]).toHaveAttribute("aria-label", "Filter by Japan");
   });
 
+  it("renders each country radio immediately before its associated flag button", async () => {
+    const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue(judoka)
+    }));
+
+    const mapping = {
+      jp: { country: "Japan", code: "jp", active: true }
+    };
+    loadCountryMapping.mockResolvedValue(mapping);
+
+    const { populateCountryList } = await import("../../src/helpers/country/list.js");
+
+    const container = document.createElement("div");
+    await populateCountryList(container);
+
+    const fieldset = container.querySelector("fieldset[data-country-filter]");
+    expect(fieldset).toBeInstanceOf(HTMLFieldSetElement);
+    const radios = fieldset.querySelectorAll('input[type="radio"][name="country-filter"]');
+
+    expect(radios.length).toBeGreaterThan(0);
+    radios.forEach((radio) => {
+      const label = radio.nextElementSibling;
+      expect(label).toBeInstanceOf(HTMLLabelElement);
+      expect(label.classList.contains("flag-button")).toBe(true);
+    });
+  });
+
   it("adds lazy loading to flag images", async () => {
     const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
 
