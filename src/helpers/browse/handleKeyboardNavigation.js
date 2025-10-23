@@ -62,15 +62,9 @@ export function handleKeyboardNavigation(event, container, selector) {
     const next = (index + offset + elements.length) % elements.length;
     const nextElement = elements[next];
 
-    if (!nextElement) {
-      return;
-    }
-
-    if (nextElement !== current) {
-      if (nextElement instanceof HTMLInputElement && nextElement.type === "radio") {
-        nextElement.checked = true;
-        nextElement.dispatchEvent(new Event("change", { bubbles: true }));
-      }
+    if (nextElement instanceof HTMLInputElement && nextElement.type === "radio") {
+      nextElement.checked = true;
+      nextElement.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
     nextElement.focus();
