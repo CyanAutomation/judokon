@@ -7,12 +7,44 @@ import {
   resetBrowseTestState
 } from "./helpers/browseTestApi.js";
 
+async function readScale(locator) {
+  return locator.evaluate((node) => {
+    const transform = window.getComputedStyle(node).transform;
+    if (!transform || transform === "none") {
+      return 1;
+    }
+    if (transform.startsWith("matrix3d(")) {
+      const values = transform
+        .slice("matrix3d(".length, -1)
+        .split(",")
+        .map((value) => Number.parseFloat(value.trim()));
+      return Number.isFinite(values[0]) ? values[0] : 1;
+    }
+    if (transform.startsWith("matrix(")) {
+      const values = transform
+        .slice("matrix(".length, -1)
+        .split(",")
+        .map((value) => Number.parseFloat(value.trim()));
+      return Number.isFinite(values[0]) ? values[0] : 1;
+    }
+    return 1;
+  });
+}
+
+async function expectScale(locator, expected, digits = 2) {
+  await expect
+    .poll(async () => readScale(locator), {
+      message: `expected transform scale to be close to ${expected}`
+    })
+    .toBeCloseTo(expected, digits);
+}
+
 async function expectToBeEnlarged(locator) {
-  await expect(locator).toHaveAttribute("data-enlarged", "true");
+  await expectScale(locator, 1.05);
 }
 
 async function expectToBeCollapsed(locator) {
-  await expect(locator).not.toHaveAttribute("data-enlarged", "true");
+  await expectScale(locator, 1);
 }
 
 async function movePointerAwayFromCards(page) {
@@ -50,9 +82,6 @@ test.describe("Hover Zoom Functionality", () => {
       // Verify card exists and is visible
       await expect(firstCard).toBeVisible();
 
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Hover over the card
       await firstCard.hover();
 
@@ -74,25 +103,19 @@ test.describe("Hover Zoom Functionality", () => {
       const firstCard = cards.nth(0);
       const secondCard = cards.nth(1);
 
-      // Verify both cards have hover zoom markers
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-      await expect(secondCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Hover first card
       await firstCard.hover();
 
       // Check hover states - should be immediate with animations disabled
-      await expect(firstCard).toHaveAttribute("data-enlarged", "true");
-      const secondEnlarged = await secondCard.getAttribute("data-enlarged");
-      expect(secondEnlarged).toBeNull(); // Second card should not be enlarged
+      await expectToBeEnlarged(firstCard);
+      await expectToBeCollapsed(secondCard);
 
       // Hover second card (first should lose zoom)
       await secondCard.hover();
 
       // First card should lose enlargement, second should gain it
-      await expect(secondCard).toHaveAttribute("data-enlarged", "true");
-      const firstEnlargedAfter = await firstCard.getAttribute("data-enlarged");
-      expect(firstEnlargedAfter).toBeNull(); // First card should not be enlarged anymore
+      await expectToBeEnlarged(secondCard);
+      await expectToBeCollapsed(firstCard);
 
       // Move mouse away
       await movePointerAwayFromCards(page);
@@ -103,9 +126,6 @@ test.describe("Hover Zoom Functionality", () => {
 
       const firstCard = page.locator(".judoka-card").first();
 
-      // Verify card has hover zoom markers
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Focus the card
       await firstCard.focus();
 
@@ -115,9 +135,6 @@ test.describe("Hover Zoom Functionality", () => {
       // Simulate hover via mouse (keyboard focus alone doesn't trigger hover)
       await firstCard.hover();
       await expectToBeEnlarged(firstCard);
-
-      // Verify hover zoom markers are still attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
       await movePointerAwayFromCards(page);
@@ -133,15 +150,9 @@ test.describe("Hover Zoom Functionality", () => {
 
       const firstCard = page.locator(".judoka-card").first();
 
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Hover over card
       await firstCard.hover();
       await expectToBeEnlarged(firstCard);
-
-      // Verify hover zoom markers remain attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
       await movePointerAwayFromCards(page);
@@ -154,15 +165,9 @@ test.describe("Hover Zoom Functionality", () => {
 
       const firstCard = page.locator(".judoka-card").first();
 
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Hover over card
       await firstCard.hover();
       await expectToBeEnlarged(firstCard);
-
-      // Verify hover zoom markers remain attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
       await movePointerAwayFromCards(page);
@@ -178,10 +183,6 @@ test.describe("Hover Zoom Functionality", () => {
       // Verify cards are focusable
       await expect(firstCard).toHaveAttribute("tabindex", "0");
       await expect(secondCard).toHaveAttribute("tabindex", "0");
-
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-      await expect(secondCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Hover first card
       await firstCard.hover();
@@ -211,10 +212,6 @@ test.describe("Hover Zoom Functionality", () => {
       const firstCard = page.locator(".judoka-card").first();
       const secondCard = page.locator(".judoka-card").nth(1);
 
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-      await expect(secondCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Rapid hover switching
       await firstCard.hover();
       await expectToBeEnlarged(firstCard);
@@ -230,9 +227,6 @@ test.describe("Hover Zoom Functionality", () => {
       await expectToBeCollapsed(firstCard);
       await expectToBeCollapsed(secondCard);
 
-      // Verify hover zoom markers are still attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-      await expect(secondCard).toHaveAttribute("data-enlarge-listener-attached", "true");
     });
 
     test("handles transition end events properly", async ({ page }) => {
@@ -240,17 +234,11 @@ test.describe("Hover Zoom Functionality", () => {
 
       const firstCard = page.locator(".judoka-card").first();
 
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Hover and wait for transition
       await firstCard.hover();
 
       // Wait for transition to complete
       await expectToBeEnlarged(firstCard);
-
-      // Verify hover zoom markers are still attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
       await movePointerAwayFromCards(page);
@@ -304,9 +292,11 @@ test.describe("Hover Zoom Functionality", () => {
       // Verify new card exists
       await expect(dynamicCard).toBeVisible();
 
-      // The dynamic card won't have hover zoom markers since they were added after initialization
-      // This is expected behavior - we just verify the card exists and exposes the expected aria label
-      // Accessibility assertion deferred
+      // Newly added cards rely purely on CSS for hover scaling
+      await dynamicCard.hover();
+      await expectToBeEnlarged(dynamicCard);
+      await movePointerAwayFromCards(page);
+      await expectToBeCollapsed(dynamicCard);
     });
 
     test("handles missing DOM elements gracefully", async ({ page }) => {
@@ -327,9 +317,6 @@ test.describe("Hover Zoom Functionality", () => {
 
       const firstCard = page.locator(".judoka-card").first();
 
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Start hover
       await firstCard.hover();
       await expectToBeEnlarged(firstCard);
@@ -340,9 +327,11 @@ test.describe("Hover Zoom Functionality", () => {
       // Verify navigation succeeded
       await expect(page.locator("body")).toBeVisible();
 
-      // Should not have any lingering hover states
-      const enlargedElements = page.locator("[data-enlarged]");
-      await expect(enlargedElements).toHaveCount(0);
+      // Should not have any lingering hover states (hover cleared during navigation)
+      const postNavCards = page.locator(".judoka-card");
+      if ((await postNavCards.count()) > 0) {
+        await expectToBeCollapsed(postNavCards.first());
+      }
     });
   });
 
@@ -352,18 +341,12 @@ test.describe("Hover Zoom Functionality", () => {
 
       const firstCard = page.locator(".judoka-card").first();
 
-      // Verify hover zoom markers are attached
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-
       // Hover to enlarge
       await firstCard.hover();
       await expectToBeEnlarged(firstCard);
 
       // Click to flip (if card flip is available)
       await firstCard.click();
-
-      // Verify hover zoom markers are still attached after flip
-      await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
       await movePointerAwayFromCards(page);
@@ -378,9 +361,6 @@ test.describe("Hover Zoom Functionality", () => {
       for (const cardType of cardTypes) {
         const card = page.locator(`${cardType}`).first();
         if ((await card.count()) > 0) {
-          // Verify hover zoom markers are attached
-          await expect(card).toHaveAttribute("data-enlarge-listener-attached", "true");
-
           await card.hover();
           await expectToBeEnlarged(card);
 

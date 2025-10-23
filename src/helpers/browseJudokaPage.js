@@ -9,7 +9,7 @@ import { initTooltips } from "./tooltip.js";
 import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
 import { setupCountryFilter } from "./browse/setupCountryFilter.js";
-import { addHoverZoomMarkers } from "./setupHoverZoom.js";
+import { clearLegacyHoverZoomMarkers } from "./setupHoverZoom.js";
 import {
   registerBrowseTestApi,
   resetBrowseTestApi,
@@ -110,7 +110,7 @@ export function createBrowsePageRuntime(documentRef = document) {
         initScrollMarkers(containerEl, carousel);
       }
       setupButtonEffects();
-      addHoverZoomMarkers();
+      clearLegacyHoverZoomMarkers();
       updateBrowseTestApiContext({ container: containerEl || null, gokyoData });
       return { carousel, containerEl };
     },
