@@ -83,7 +83,6 @@ export function createCountryToggleController(adapter) {
       if (isOpen && !flagsLoaded) {
         await adapter.loadFlags?.();
         flagsLoaded = adapter.hasFlags ? adapter.hasFlags() : true;
-        adapter.reflectPanelState?.();
       }
     },
     handleKeydown(event) {
