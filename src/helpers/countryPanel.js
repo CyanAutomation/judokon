@@ -40,7 +40,7 @@ export function toggleCountryPanel(toggleButton, panel, show) {
       content.removeAttribute("inert");
     } else {
       content.setAttribute("aria-hidden", "true");
-      content.setAttribute("inert", "");
+      content.setAttribute("inert", "true");
     }
   }
 
