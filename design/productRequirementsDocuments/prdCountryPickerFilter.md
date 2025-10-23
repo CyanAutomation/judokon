@@ -60,7 +60,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - The toggle is represented by a panel icon with an arrow.
 - A separate layout toggle switches between the slide-in panel and full-screen grid.
 - Countries are displayed in alphabetical order.
-- Each flag button includes alt-text and an `aria-label` (e.g., "Filter by {country}") for accessibility.
+- Each flag option is implemented as a radio input with an `aria-label` (e.g., "Filter by {country}") paired with a flag label for accessibility.
 - The picker supports keyboard navigation: Tab/Shift+Tab to move between flags, Enter/Space to select, and Escape to close the panel.
 - The panel appears below the persistent top bar so the first row of countries is fully visible.
 - If no judoka exist for a selected country, an empty state message is shown ("No judoka available for this country").
@@ -100,12 +100,12 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 - The Country Picker toggle is visible on all screens where multiple Judoka cards are shown.
 - Selecting a country in the Country Picker filters the visible Judoka list to only those from the selected country.
-- The selected country is visually highlighted in the Country Picker.
+- The selected country is visually highlighted in the Country Picker and reflected by the checked radio input.
 - A clear filter icon resets the filter and shows all Judoka cards.
-- Keyboard navigation is supported for all flag buttons and the clear filter icon.
+- Keyboard navigation is supported for all flag radio options (including Arrow keys) and the clear filter icon.
 - The Country Picker panel can be closed with Escape.
 - Filtering completes within 1 second for 90% of sessions.
-- All country flags have alt-text and aria-labels for accessibility.
+- All country radios expose accessible labels and alt-text on the associated flag imagery.
 - Flags are displayed in alphabetical order.
 - If no Judoka exist for a selected country, an empty state message is shown.
 - If a flag asset fails to load, a generic fallback flag icon is displayed.
@@ -135,7 +135,8 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - Ensure caching headers on flags to minimize repeat loads.
 - Integrate with the card carousel to trigger filtering and update the visible cards.
 - Ensure the panel appears below the persistent top bar and is responsive to different screen sizes.
-- Keyboard navigation and focus management must be implemented for all interactive elements.
+- Keyboard navigation and focus management must be implemented for the radio group and all interactive elements.
+- Render the countries inside a `<fieldset>` with visually hidden radio inputs to provide native single-selection semantics.
 
 ---
 
@@ -176,6 +177,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - Flag grid fade-in duration uses `var(--transition-fast)`.
 - Keyboard navigation:
   - Tab/Shift+Tab to move between flags and clear filter icon.
+  - Arrow keys cycle between country radio options while keeping focus within the group.
   - Enter/Space to select a flag or clear filter.
   - Escape to close the panel.
   - Focus outlines are visible and accessible.

@@ -12,7 +12,7 @@
  *    a. Remove the `hidden` attribute from the `panel` to make it visible.
  *    b. Add the `open` class to trigger the slide-in animation.
  *    c. Set the `aria-expanded` attribute of the `toggleButton` to `true`.
- *    d. Attempt to focus the first flag button within the `panel` for improved accessibility.
+ *    d. Attempt to focus the first flag radio within the `panel` for improved accessibility.
  * 4. If `shouldOpen` is false (closing the panel):
  *    a. Remove the `open` class to trigger the slide-out animation.
  *    b. Add the `hidden` attribute to the `panel` to hide it from layout and assistive technologies.
@@ -34,8 +34,8 @@ export function toggleCountryPanel(toggleButton, panel, show) {
     panel.removeAttribute("hidden");
     panel.classList.add("open");
     toggleButton.setAttribute("aria-expanded", "true");
-    const firstButton = panel.querySelector("button.flag-button");
-    firstButton?.focus();
+    const firstRadio = panel.querySelector('[type="radio"][name="country-filter"]');
+    firstRadio?.focus();
   } else {
     // Hide the panel from layout and assistive tech when closed.
     panel.classList.remove("open");

@@ -33,13 +33,15 @@
  * 1. TODO: Add pseudocode
  */
 /**
- * Handle arrow-key navigation among a group of buttons inside `container`.
+ * Handle arrow-key navigation among the country filter radios inside `container`.
  *
- * @summary Move focus left/right between buttons matching `buttonClass` when Arrow keys are pressed.
+ * @summary Move focus left/right between the `country-filter` radio inputs when Arrow keys are pressed.
  * @pseudocode
- * 1. Exit if the key is not ArrowLeft or ArrowRight.
- * 2. Find buttons inside `container` matching the provided class.
- * 3. Locate the index of the currently focused element and move focus accordingly.
+ * 1. Exit early when the pressed key is neither ArrowLeft nor ArrowRight.
+ * 2. Collect all radio inputs in the `country-filter` group.
+ * 3. Resolve the active index from the focused radio or currently checked radio.
+ * 4. Prevent default behavior, determine the next index, and move focus.
+ * 5. Check the next radio and dispatch a change event so downstream listeners react.
  *
  * @param {KeyboardEvent} event - The originating keyboard event.
  * @param {Element} container - Container element that holds the buttons.
@@ -51,15 +53,37 @@ export function handleKeyboardNavigation(event, container, buttonClass) {
     return;
   }
 
-  const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
-  const current = document.activeElement;
-  const index = buttons.indexOf(current);
-  if (index !== -1) {
-    event.preventDefault();
-    const offset = event.key === "ArrowRight" ? 1 : -1;
-    const next = (index + offset + buttons.length) % buttons.length;
-    buttons[next].focus();
+  // Retain the legacy signature; class parameter no longer influences the lookup.
+  void buttonClass;
+
+  const radios = Array.from(
+    container.querySelectorAll('[type="radio"][name="country-filter"]')
+  );
+  if (radios.length === 0) {
+    return;
   }
+
+  const activeElement = document.activeElement;
+  let index = radios.indexOf(activeElement);
+  if (index === -1) {
+    const checked = container.querySelector('[type="radio"][name="country-filter"]:checked');
+    index = checked ? radios.indexOf(checked) : -1;
+  }
+  if (index === -1) {
+    index = 0;
+  }
+
+  event.preventDefault();
+  const offset = event.key === "ArrowRight" ? 1 : -1;
+  const nextIndex = (index + offset + radios.length) % radios.length;
+  const nextRadio = radios[nextIndex];
+  const currentRadio = radios[index];
+  if (nextRadio === currentRadio) {
+    return;
+  }
+  nextRadio.checked = true;
+  nextRadio.focus();
+  nextRadio.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
 export default handleKeyboardNavigation;

@@ -49,22 +49,45 @@ export async function fetchActiveCountries() {
   return { activeCountries, nameToCode };
 }
 
+function ensureFieldset(container) {
+  const existing = container.querySelector("fieldset.country-filter-fieldset");
+  if (existing) {
+    return existing;
+  }
+  const fieldset = document.createElement("fieldset");
+  fieldset.className = "country-filter-fieldset";
+  container.appendChild(fieldset);
+  return fieldset;
+}
+
 function renderAllButton(container) {
-  const allButton = document.createElement("button");
-  allButton.className = "flag-button slide";
-  allButton.value = "all";
-  // Accessible name should be "Show all countries" for clarity
-  allButton.setAttribute("aria-label", "Show all countries");
+  const fieldset = ensureFieldset(container);
+  const allId = "country-filter-all";
+  const allRadio = document.createElement("input");
+  allRadio.type = "radio";
+  allRadio.name = "country-filter";
+  allRadio.id = allId;
+  allRadio.value = "all";
+  allRadio.checked = true;
+  allRadio.setAttribute("aria-label", "Show all countries");
+
+  const allLabel = document.createElement("label");
+  allLabel.className = "flag-button slide";
+  allLabel.htmlFor = allId;
+
   const allImg = document.createElement("img");
   allImg.alt = "All countries";
   allImg.className = "flag-image";
   allImg.setAttribute("loading", "lazy");
   allImg.src = "https://flagcdn.com/w320/vu.png";
-  const allLabel = document.createElement("p");
-  allLabel.textContent = "All";
-  allButton.appendChild(allImg);
-  allButton.appendChild(allLabel);
-  container.appendChild(allButton);
+  const allText = document.createElement("p");
+  allText.textContent = "All";
+
+  allLabel.appendChild(allImg);
+  allLabel.appendChild(allText);
+
+  fieldset.appendChild(allRadio);
+  fieldset.appendChild(allLabel);
 }
 
 function determineBatchSize(connection) {
@@ -107,18 +130,26 @@ function initLazyFlagLoader(scrollContainer) {
 }
 
 async function renderCountryBatch(container, countries, nameToCode, imageObserver) {
+  const fieldset = ensureFieldset(container);
   for (const countryName of countries) {
-    const button = document.createElement("button");
-    button.className = "flag-button slide";
-    button.value = countryName;
-    // Use "Filter by [country name]" as the accessible name to match tests
-    button.setAttribute("aria-label", `Filter by ${countryName}`);
+    const code = nameToCode.get(countryName);
+    const idSource = (code ?? countryName).toString().toLowerCase();
+    const radioId = `country-filter-${idSource.replace(/[^a-z0-9]+/g, "-")}`;
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "country-filter";
+    radio.id = radioId;
+    radio.value = countryName;
+    radio.setAttribute("aria-label", `Filter by ${countryName}`);
+
+    const label = document.createElement("label");
+    label.className = "flag-button slide";
+    label.htmlFor = radioId;
     const flagImg = document.createElement("img");
     flagImg.alt = `${countryName} Flag`;
     flagImg.className = "flag-image";
     flagImg.setAttribute("loading", "lazy");
     try {
-      const code = nameToCode.get(countryName);
       const flagUrl = await getFlagUrl(code);
       if (imageObserver) {
         flagImg.dataset.src = flagUrl;
@@ -132,9 +163,10 @@ async function renderCountryBatch(container, countries, nameToCode, imageObserve
     }
     const countryLabel = document.createElement("p");
     countryLabel.textContent = countryName;
-    button.appendChild(flagImg);
-    button.appendChild(countryLabel);
-    container.appendChild(button);
+    label.appendChild(flagImg);
+    label.appendChild(countryLabel);
+    fieldset.appendChild(radio);
+    fieldset.appendChild(label);
   }
 }
 

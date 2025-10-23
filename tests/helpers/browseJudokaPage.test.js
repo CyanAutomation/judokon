@@ -124,14 +124,32 @@ describe("browseJudokaPage helpers", () => {
       { id: 2, country: "BR" }
     ];
     const renderCalls = [];
+    const fieldset = document.createElement("fieldset");
+    const allRadio = document.createElement("input");
+    allRadio.type = "radio";
+    allRadio.name = "country-filter";
+    allRadio.value = "all";
+    allRadio.checked = true;
+    const jpRadio = document.createElement("input");
+    jpRadio.type = "radio";
+    jpRadio.name = "country-filter";
+    jpRadio.value = "JP";
+    const caRadio = document.createElement("input");
+    caRadio.type = "radio";
+    caRadio.name = "country-filter";
+    caRadio.value = "CA";
+    fieldset.append(allRadio, jpRadio, caRadio);
+
     const adapter = {
-      clearSelection: vi.fn(),
-      highlightSelection: vi.fn(),
       updateLiveRegion: vi.fn(),
       closePanel: vi.fn(),
       removeNoResultsMessage: vi.fn(),
       showNoResultsMessage: vi.fn(),
-      getButtonValue: (button) => button.value
+      getButtonValue: (button) => button?.value ?? "all",
+      getAllRadio: vi.fn(() => allRadio),
+      getCheckedRadio: vi.fn(() =>
+        fieldset.querySelector('[type="radio"][name="country-filter"]:checked')
+      )
     };
     const render = vi.fn((list) => {
       renderCalls.push(list.map((item) => item.country));
@@ -139,21 +157,22 @@ describe("browseJudokaPage helpers", () => {
 
     const controller = createCountryFilterController(judoka, render, adapter);
 
-    const filtered = await controller.select({ value: "JP" });
+    jpRadio.checked = true;
+    const filtered = await controller.select(jpRadio);
     expect(filtered).toEqual([{ id: 1, country: "JP" }]);
-    expect(adapter.highlightSelection).toHaveBeenCalledWith({ value: "JP" });
     expect(render).toHaveBeenLastCalledWith([{ id: 1, country: "JP" }]);
     expect(adapter.updateLiveRegion).toHaveBeenLastCalledWith(1, "JP");
     expect(adapter.removeNoResultsMessage).toHaveBeenCalled();
     expect(adapter.closePanel).toHaveBeenCalled();
 
     adapter.showNoResultsMessage.mockClear();
-    await controller.select({ value: "CA" });
+    caRadio.checked = true;
+    await controller.select(caRadio);
     expect(adapter.showNoResultsMessage).toHaveBeenCalledTimes(1);
 
     const cleared = await controller.clear();
     expect(cleared).toEqual(judoka);
-    expect(adapter.clearSelection).toHaveBeenCalled();
+    expect(allRadio.checked).toBe(true);
     expect(render).toHaveBeenLastCalledWith(judoka);
     expect(adapter.updateLiveRegion).toHaveBeenLastCalledWith(2, "all countries");
   });

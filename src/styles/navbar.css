@@ -151,22 +151,52 @@
 
 /* Panel is off-screen by default; visibility toggled by `.open` */
 
+.country-filter-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: contents;
+}
+
+.country-filter-fieldset > [type="radio"][name="country-filter"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
 .flag-button {
   background: transparent;
-  border: none;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
   color: var(--color-text-inverted);
   cursor: pointer;
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 }
 
-.flag-button:focus {
+.country-filter-fieldset
+  > [type="radio"][name="country-filter"]:is(:focus, :focus-visible)
+  + .flag-button {
   outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
-.flag-button.selected {
-  border: 2px solid var(--color-primary);
-  border-radius: var(--radius-md);
+[type="radio"][name="country-filter"]:checked + .flag-button {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .clear-filter-button {
