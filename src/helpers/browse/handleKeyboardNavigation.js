@@ -1,5 +1,5 @@
 /**
- * Handle left/right arrow key navigation within a button container.
+ * Handle left/right arrow key navigation within a radio/button container.
  *
  * @pseudocode
  * 1. Exit if the key is not ArrowLeft or ArrowRight.
@@ -33,25 +33,25 @@
  * 1. TODO: Add pseudocode
  */
 /**
- * Handle arrow-key navigation among a group of buttons inside `container`.
+ * Handle arrow-key navigation among a group of controls inside `container`.
  *
- * @summary Move focus left/right between buttons matching `buttonClass` when Arrow keys are pressed.
+ * @summary Move focus left/right between elements matching `selector` when Arrow keys are pressed.
  * @pseudocode
  * 1. Exit if the key is not ArrowLeft or ArrowRight.
- * 2. Find buttons inside `container` matching the provided class.
+ * 2. Find controls inside `container` matching the provided selector.
  * 3. Locate the index of the currently focused element and move focus accordingly.
  *
  * @param {KeyboardEvent} event - The originating keyboard event.
  * @param {Element} container - Container element that holds the buttons.
- * @param {string} buttonClass - CSS class for the target buttons.
+ * @param {string} selector - CSS selector for the target focusable elements.
  * @returns {void}
  */
-export function handleKeyboardNavigation(event, container, buttonClass) {
+export function handleKeyboardNavigation(event, container, selector) {
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
     return;
   }
 
-  const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
+  const buttons = Array.from(container.querySelectorAll(selector));
   const current = document.activeElement;
   const index = buttons.indexOf(current);
   if (index !== -1) {

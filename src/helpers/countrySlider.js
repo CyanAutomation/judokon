@@ -5,10 +5,10 @@ import { populateCountryList } from "./country/list.js";
  *
  * @pseudocode
  * 1. Validate the container element; exit if not present.
- * 2. Use `populateCountryList` to render flag buttons inside the container.
- *    - Each flag button must include alt-text and an aria-label ("Filter by {country}") for accessibility.
+ * 2. Use `populateCountryList` to render radio-driven flag options inside the container.
+ *    - Each radio label must include alt-text and an aria-label ("Filter by {country}") for accessibility.
  *    - Countries are displayed in alphabetical order, only for those present in `judoka.json`.
- *    - Each flag button supports keyboard navigation (Tab/Shift+Tab, Enter/Space to select).
+ *    - Each option supports keyboard navigation (Tab/Shift+Tab, Enter/Space to select).
  *    - If a flag asset fails to load, a fallback icon is shown.
  *    - The flag slider supports touch and mouse interaction, and minimum tap target size (44x44px).
  * 3. The slider integrates with the card carousel to filter visible judoka by country.

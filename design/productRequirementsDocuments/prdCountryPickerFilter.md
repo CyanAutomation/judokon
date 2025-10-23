@@ -51,7 +51,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 **Key Details:**
 
 - Only countries present in the `judoka.json` file will be displayed.
-- Instead of a list, the selector will use flag icons to represent each country.
+- Instead of standalone buttons, the selector renders a `<fieldset>` radio group where each input is paired with a flag icon label.
 - When a user clicks or presses Enter/Space on a flag:
   - The card carousel refreshes, filtering to display only judoka from the selected country (e.g., clicking Jamaica will filter to only Jamaican judoka).
 - Users can only select one country at a time.
@@ -61,7 +61,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - The toggle is represented by a panel icon with an arrow.
 - A separate layout toggle switches between the slide-in panel and full-screen grid.
 - Countries are displayed in alphabetical order.
-- Each flag button includes alt-text and an `aria-label` (e.g., "Filter by {country}") for accessibility.
+- Each radio label includes alt-text and an `aria-label` (e.g., "Filter by {country}") for accessibility while keeping the radio inputs visually hidden.
 - The picker supports keyboard navigation: Tab/Shift+Tab to move between flags, Enter/Space to select, and Escape to close the panel.
 - The panel appears below the persistent top bar so the first row of countries is fully visible.
 - If no judoka exist for a selected country, an empty state message is shown ("No judoka available for this country").
@@ -103,7 +103,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - Selecting a country in the Country Picker filters the visible Judoka list to only those from the selected country.
 - The selected country is visually highlighted in the Country Picker.
 - A clear filter icon resets the filter and shows all Judoka cards.
-- Keyboard navigation is supported for all flag buttons and the clear filter icon.
+- Keyboard navigation is supported for all country radio inputs and the clear filter icon.
 - The Country Picker panel can be closed with Escape.
 - Filtering completes within 1 second for 90% of sessions.
 - All country flags have alt-text and aria-labels for accessibility.
@@ -163,9 +163,9 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 ## Design and UX Considerations
 
 - Background of the country selector uses `var(--color-secondary)` so flags and text meet the required 4.5:1 contrast ratio.
-- Each country is represented by:
+- Each country is represented by a visually hidden radio input and a label that includes:
   - Flag icon.
-  - Country name label beneath the flag.
+  - Country name beneath the flag.
 - Three display modes:
   - Hidden: No UI visible until toggled.
   - Slide-in Panel (default): Narrow vertical panel with scroll.
@@ -200,7 +200,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 - [x] 1.0 Implement Country Flag Picker UI
   - [x] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
-  - [x] 1.2 Load country flags with alt-text and labels, and ensure `aria-label` for each flag button.
+- [x] 1.2 Load country flags with alt-text and labels, and ensure `aria-label` for each flag radio option.
   - [x] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
   - [x] 1.4 Implement selected flag highlighting (e.g., border, shading).
   - [x] 1.5 Implement clear filter icon.
@@ -224,7 +224,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [x] 4.2 Detect slow networks with `navigator.connection` to adjust flag loading.
   - [x] 4.3 Show a message if the country list is empty.
 - [ ] 5.0 Ensure Accessibility and Compliance
-  - [x] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
+- [x] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag radio input for screen readers.
   - [x] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
   - [x] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [x] 5.4 Ensure flags are displayed alphabetically.
