@@ -20,8 +20,8 @@ let removeId;
  * Get a safe document reference that works in both DOM and non-DOM environments.
  *
  * @pseudocode
- * 1. Check if globalThis is available.
- * 2. Return globalThis.document if available, otherwise null.
+ * 1. Check whether `globalThis` is defined for the current runtime.
+ * 2. Return `globalThis.document` when available; otherwise return `null`.
  *
  * @returns {Document|null} The document object or null if unavailable.
  */
@@ -96,20 +96,21 @@ function resetTimers() {
   if (!doc) {
     return;
   }
+  const docRef = doc;
   const container = doc.getElementById("snackbar-container");
   if (!container) {
     resetState();
     return;
   }
   fadeId = scheduler.setTimeout(() => {
-    if (!doc.getElementById("snackbar-container")) {
+    if (!docRef?.getElementById("snackbar-container")) {
       resetState();
       return;
     }
     bar?.classList.remove("show");
   }, SNACKBAR_FADE_MS);
   removeId = scheduler.setTimeout(() => {
-    if (!doc.getElementById("snackbar-container")) {
+    if (!docRef?.getElementById("snackbar-container")) {
       resetState();
       return;
     }
