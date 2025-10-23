@@ -82,7 +82,7 @@ export async function initFeatureFlagState() {
  * Build a slide-out history panel for previously drawn cards.
  *
  * @pseudocode
- * 1. Create toggle button and a fixed-position aside element.
+ * 1. Create toggle button and an off-canvas dialog element.
  * 2. Populate the panel with a title and empty list container.
  * 3. Append the panel to the document body and return UI handles.
  *
@@ -97,27 +97,57 @@ export function buildHistoryPanel(prefersReducedMotion) {
   });
   toggleHistoryBtn.setAttribute("aria-controls", "history-panel");
   toggleHistoryBtn.setAttribute("aria-expanded", "false");
+  toggleHistoryBtn.setAttribute("aria-haspopup", "dialog");
   cardSection.appendChild(toggleHistoryBtn);
 
-  const historyPanel = document.createElement("aside");
+  const historyPanel = document.createElement("dialog");
   historyPanel.id = "history-panel";
-  historyPanel.style.position = "fixed";
-  historyPanel.style.top = "0";
-  historyPanel.style.right = "0";
-  historyPanel.style.height = "100%";
-  historyPanel.style.width = "260px";
-  historyPanel.style.background = "#fff";
-  historyPanel.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
-  historyPanel.style.padding = "16px";
-  historyPanel.style.transform = "translateX(100%)";
-  historyPanel.style.transition = getHistoryPanelTransition(prefersReducedMotion);
-  historyPanel.setAttribute("aria-hidden", "true");
+  historyPanel.setAttribute("aria-labelledby", "history-panel-title");
+  historyPanel.classList.add("history-panel");
+
+  const supportsNativeDialog = typeof historyPanel.showModal === "function";
+
+  if (!supportsNativeDialog) {
+    historyPanel.showModal = () => {
+      if (historyPanel.open) {
+        return;
+      }
+      historyPanel.open = true;
+    };
+    historyPanel.close = (returnValue = "") => {
+      if (!historyPanel.open) {
+        return;
+      }
+      historyPanel.returnValue = returnValue;
+      historyPanel.open = false;
+      historyPanel.dispatchEvent(new Event("close"));
+    };
+  }
+
+  if (prefersReducedMotion) {
+    historyPanel.classList.add("history-panel--reduced-motion");
+  }
+
   const historyTitle = document.createElement("h2");
+  historyTitle.id = "history-panel-title";
   historyTitle.textContent = "History";
   historyTitle.setAttribute("tabindex", "-1");
   const historyList = document.createElement("ul");
   historyPanel.append(historyTitle, historyList);
   document.body.appendChild(historyPanel);
+
+  historyPanel.addEventListener("cancel", (event) => {
+    if (!supportsNativeDialog && !event.defaultPrevented) {
+      historyPanel.close();
+    }
+  });
+
+  historyPanel.addEventListener("close", () => {
+    toggleHistoryBtn.setAttribute("aria-expanded", "false");
+    runMicrotask(() => {
+      toggleHistoryBtn.focus();
+    });
+  });
 
   return { historyPanel, historyList, toggleHistoryBtn };
 }
@@ -170,6 +200,15 @@ function showError(msg) {
   errorEl.textContent = msg;
 }
 
+function runMicrotask(callback) {
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(callback);
+    return;
+  }
+
+  Promise.resolve().then(callback);
+}
+
 function updateHistoryUI(historyList, historyManager) {
   if (!historyList) return;
   historyList.innerHTML = "";
@@ -186,72 +225,35 @@ function addToHistory(historyManager, historyList, judoka) {
 }
 
 /**
- * Toggles the history panel visibility and manages keyboard focus and Escape key handling.
+ * Toggles the history panel dialog and coordinates focus management.
  *
- * @summary Opens/closes the history panel and manages focus:
- * - When opening: moves focus to the history title (h2)
- * - When closing: returns focus to the toggle button
- * - Attaches/detaches Escape key handler to close the panel
+ * @summary Uses the dialog API to show/hide the history drawer and
+ * ensures the heading receives focus on open.
  *
  * @pseudocode
- * 1. Determine current panel state from aria-hidden attribute
- * 2. Compute nextOpen as the inverse of current state
- * 3. Update panel visibility: transform and aria-hidden
- * 4. Update button state: aria-expanded
- * 5. If opening (nextOpen === true):
- *    a. Find the h2 (history title) inside the panel
- *    b. Move focus to the h2 using focus()
- *    c. Attach Escape key listener to close panel and restore focus
- * 6. If closing (nextOpen === false):
- *    a. Remove Escape key listener
- *    b. Return focus to toggleHistoryBtn
+ * 1. If the dialog is closed:
+ *    a. Set `aria-expanded` on the toggle button to "true".
+ *    b. Call `showModal()` on the dialog.
+ *    c. Queue a microtask to focus the history heading.
+ * 2. Otherwise call `close()` to hide the dialog.
  *
- * @param {HTMLElement} historyPanel - The panel element
+ * @param {HTMLDialogElement} historyPanel - The panel dialog element
  * @param {HTMLElement} toggleHistoryBtn - The toggle button element
  */
 function toggleHistory(historyPanel, toggleHistoryBtn) {
-  const isOpen = historyPanel.getAttribute("aria-hidden") === "false";
-  const nextOpen = !isOpen;
-  historyPanel.style.transform = nextOpen ? "translateX(0)" : "translateX(100%)";
-  historyPanel.setAttribute("aria-hidden", String(!nextOpen));
-  toggleHistoryBtn.setAttribute("aria-expanded", String(nextOpen));
+  if (!historyPanel.open) {
+    toggleHistoryBtn.setAttribute("aria-expanded", "true");
+    historyPanel.showModal();
 
-  if (nextOpen) {
-    // Panel is opening: move focus into the panel
     const historyTitle = historyPanel.querySelector("h2");
     if (historyTitle) {
-      // Use a microtask to ensure the DOM is settled before focusing
-      Promise.resolve().then(() => {
+      runMicrotask(() => {
         historyTitle.focus();
       });
     }
-
-    // Attach Escape key handler to close the panel
-    const handleEscape = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        toggleHistory(historyPanel, toggleHistoryBtn);
-      }
-    };
-
-    // Store the handler reference on the button so we can remove it later
-    toggleHistoryBtn._historyEscapeHandler = handleEscape;
-    document.addEventListener("keydown", handleEscape);
   } else {
-    // Panel is closing: remove Escape handler and restore focus to button
-    const handleEscape = toggleHistoryBtn._historyEscapeHandler;
-    if (handleEscape) {
-      document.removeEventListener("keydown", handleEscape);
-      delete toggleHistoryBtn._historyEscapeHandler;
-    }
-
-    // Return focus to the toggle button
-    toggleHistoryBtn.focus();
+    historyPanel.close();
   }
-}
-
-function getHistoryPanelTransition(prefersReducedMotion) {
-  return prefersReducedMotion ? "transform 0.01s linear" : "transform 0.3s ease";
 }
 
 function announceCard(judokaName) {
