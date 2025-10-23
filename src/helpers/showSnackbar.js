@@ -16,6 +16,25 @@ let bar;
 let fadeId;
 let removeId;
 
+function getDocumentRef() {
+  if (typeof globalThis === "undefined") {
+    return null;
+  }
+  return globalThis.document ?? null;
+}
+
+function ensureDomOrReset() {
+  const doc = getDocumentRef();
+  if (typeof document === "undefined" && !doc) {
+    resetState();
+    return null;
+  }
+  if (!doc) {
+    resetState();
+  }
+  return doc;
+}
+
 /**
  * Get a safe requestAnimationFrame function with fallback support.
  *
@@ -67,20 +86,24 @@ function resetTimers() {
   const scheduler = getScheduler();
   scheduler.clearTimeout(fadeId);
   scheduler.clearTimeout(removeId);
-  const container = document.getElementById("snackbar-container");
+  const doc = ensureDomOrReset();
+  if (!doc) {
+    return;
+  }
+  const container = doc.getElementById("snackbar-container");
   if (!container) {
     resetState();
     return;
   }
   fadeId = scheduler.setTimeout(() => {
-    if (!document.getElementById("snackbar-container")) {
+    if (!getDocumentRef()?.getElementById("snackbar-container")) {
       resetState();
       return;
     }
     bar?.classList.remove("show");
   }, SNACKBAR_FADE_MS);
   removeId = scheduler.setTimeout(() => {
-    if (!document.getElementById("snackbar-container")) {
+    if (!getDocumentRef()?.getElementById("snackbar-container")) {
       resetState();
       return;
     }
@@ -106,26 +129,30 @@ export function showSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
+  const doc = ensureDomOrReset();
+  if (!doc) {
+    return;
+  }
   // Defensive: ensure a snackbar container exists so early calls (tests)
   // don't fail because the container is missing. Create a no-op container
   // when running in test environments where the host page hasn't added it.
   try {
-    if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
-      const container = document.createElement("div");
+    if (!doc.getElementById("snackbar-container")) {
+      const container = doc.createElement("div");
       container.id = "snackbar-container";
-      document.body?.appendChild(container);
+      doc.body?.appendChild(container);
     }
   } catch {}
   const scheduler = getScheduler();
   const requestFrame = getSafeRequestAnimationFrame(scheduler);
   scheduler.clearTimeout(fadeId);
   scheduler.clearTimeout(removeId);
-  const container = document.getElementById("snackbar-container");
+  const container = doc.getElementById("snackbar-container");
   if (!container) {
     resetState();
     return;
   }
-  bar = document.createElement("div");
+  bar = doc.createElement("div");
   bar.className = "snackbar";
   bar.textContent = message;
   container.replaceChildren(bar);
@@ -151,16 +178,20 @@ export function updateSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
+  const doc = ensureDomOrReset();
+  if (!doc) {
+    return;
+  }
   // Defensive: expose updateSnackbar as safe even before DOM wiring.
   try {
-    if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
-      const container = document.createElement("div");
+    if (!doc.getElementById("snackbar-container")) {
+      const container = doc.createElement("div");
       container.id = "snackbar-container";
-      document.body?.appendChild(container);
+      doc.body?.appendChild(container);
     }
   } catch {}
   const scheduler = getScheduler();
-  const container = document.getElementById("snackbar-container");
+  const container = doc.getElementById("snackbar-container");
   if (!container) {
     scheduler.clearTimeout(fadeId);
     scheduler.clearTimeout(removeId);
