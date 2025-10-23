@@ -108,11 +108,16 @@ export function buildHistoryPanel(prefersReducedMotion) {
   const supportsNativeDialog = typeof historyPanel.showModal === "function";
 
   if (!supportsNativeDialog) {
+    historyPanel.open = false;
+    historyPanel.returnValue = "";
+
     historyPanel.showModal = () => {
       if (historyPanel.open) {
         return;
       }
       historyPanel.open = true;
+      historyPanel.returnValue = "";
+      historyPanel.setAttribute("open", "");
     };
     historyPanel.close = (returnValue = "") => {
       if (!historyPanel.open) {
@@ -120,6 +125,7 @@ export function buildHistoryPanel(prefersReducedMotion) {
       }
       historyPanel.returnValue = returnValue;
       historyPanel.open = false;
+      historyPanel.removeAttribute("open");
       historyPanel.dispatchEvent(new Event("close"));
     };
   }
@@ -137,7 +143,13 @@ export function buildHistoryPanel(prefersReducedMotion) {
   document.body.appendChild(historyPanel);
 
   historyPanel.addEventListener("cancel", (event) => {
-    if (!supportsNativeDialog && !event.defaultPrevented) {
+    if (event.defaultPrevented) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!supportsNativeDialog) {
+      event.preventDefault();
       historyPanel.close();
     }
   });
@@ -200,6 +212,15 @@ function showError(msg) {
   errorEl.textContent = msg;
 }
 
+/**
+ * Schedules a callback to run during the next microtask tick.
+ *
+ * @pseudocode
+ * 1. If `queueMicrotask` is available, use it to enqueue the callback.
+ * 2. Otherwise, resolve a promise and chain the callback via `.then()`.
+ *
+ * @param {() => void} callback - The function to invoke on the next microtask.
+ */
 function runMicrotask(callback) {
   if (typeof queueMicrotask === "function") {
     queueMicrotask(callback);
