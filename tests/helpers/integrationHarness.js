@@ -412,10 +412,6 @@ export function createBrowseJudokaHarness(customConfig = {}) {
       "../../src/helpers/dataUtils.js": () => ({
         fetchJson: vi.fn()
       }),
-      // Mock button effects
-      "../../src/helpers/buttonEffects.js": () => ({
-        setupButtonEffects: vi.fn()
-      }),
       // Mock hover zoom setup
       "../../src/helpers/setupHoverZoom.js": () => ({
         setupHoverZoom: vi.fn()

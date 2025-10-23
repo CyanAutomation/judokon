@@ -245,19 +245,39 @@
   outline-offset: 2px;
 }
 
-/* Disable ripple animations when motion is reduced */
+/* Disable ripple transitions when motion is reduced */
 @media (prefers-reduced-motion: reduce) {
-  .top-navbar button .ripple,
-  .top-navbar .primary-button .ripple,
-  .filter-bar button .ripple {
-    animation: none;
+  .top-navbar button::after,
+  .top-navbar .primary-button::after,
+  .filter-bar button::after {
+    transition: none;
+  }
+
+  .top-navbar button:active::after,
+  .top-navbar .primary-button:active::after,
+  .filter-bar button:active::after,
+  .top-navbar button:focus-visible::after,
+  .top-navbar .primary-button:focus-visible::after,
+  .filter-bar button:focus-visible::after {
+    opacity: 0.2;
+    transform: none;
   }
 }
 
-.reduce-motion .top-navbar button .ripple,
-.reduce-motion .top-navbar .primary-button .ripple,
-.reduce-motion .filter-bar button .ripple {
-  animation: none;
+.reduce-motion .top-navbar button::after,
+.reduce-motion .top-navbar .primary-button::after,
+.reduce-motion .filter-bar button::after {
+  transition: none;
+}
+
+.reduce-motion .top-navbar button:active::after,
+.reduce-motion .top-navbar .primary-button:active::after,
+.reduce-motion .filter-bar button:active::after,
+.reduce-motion .top-navbar button:focus-visible::after,
+.reduce-motion .top-navbar .primary-button:focus-visible::after,
+.reduce-motion .filter-bar button:focus-visible::after {
+  opacity: 0.2;
+  transform: none;
 }
 
 /* Reduce motion for the country panel */
