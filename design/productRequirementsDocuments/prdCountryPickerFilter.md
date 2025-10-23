@@ -57,7 +57,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - Users can only select one country at a time.
 - A clear filter icon is provided to reset the selection and revert to displaying all judoka.
 - Default display mode when opened is **slide-in panel**.
-- The toggle uses a native `<details>`/`<summary>` disclosure (mirroring [PRD: Browse Judoka](prdBrowseJudoka.md)) so semantics, keyboard toggling, and focus outlines come from the browser while the panel content renders within the `details` body.
+- The toggle uses a native `<details>`/`<summary>` disclosure (mirroring [PRD: Browse Judoka](prdBrowseJudoka.md)) so semantics, keyboard toggling, and focus outlines come from the browser while the panel content renders within the `details` body. The `summary` element serves as the toggle control with the panel icon and arrow.
 - The toggle is represented by a panel icon with an arrow.
 - A separate layout toggle switches between the slide-in panel and full-screen grid.
 - Countries are displayed in alphabetical order.
@@ -141,6 +141,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 ### QA Notes
 
 - During verification, rely on the browser’s built-in handling of `summary` focus rings, toggle affordances, and `details[open]` state—custom hover or key handlers should only supplement (not replace) the native disclosure behavior.
+- Test scenarios should include: keyboard navigation (Tab to focus, Enter/Space to toggle), screen reader announcements of state changes, and visual state consistency between the `details[open]` attribute and panel visibility.
 
 ---
 
