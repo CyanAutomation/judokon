@@ -39,7 +39,9 @@
  * @pseudocode
  * 1. Exit if the key is not ArrowLeft or ArrowRight.
  * 2. Find controls inside `container` matching the provided selector.
- * 3. Locate the index of the currently focused element and move focus accordingly.
+ * 3. Locate the index of the currently focused element.
+ * 4. Prevent default navigation, compute the next index, and focus the next element.
+ * 5. If the target is a radio input, update its checked state and dispatch a change event.
  *
  * @param {KeyboardEvent} event - The originating keyboard event.
  * @param {Element} container - Container element that holds the buttons.
@@ -51,14 +53,27 @@ export function handleKeyboardNavigation(event, container, selector) {
     return;
   }
 
-  const buttons = Array.from(container.querySelectorAll(selector));
+  const elements = Array.from(container.querySelectorAll(selector));
   const current = document.activeElement;
-  const index = buttons.indexOf(current);
-  if (index !== -1) {
+  const index = elements.indexOf(current);
+  if (index !== -1 && elements.length > 0) {
     event.preventDefault();
     const offset = event.key === "ArrowRight" ? 1 : -1;
-    const next = (index + offset + buttons.length) % buttons.length;
-    buttons[next].focus();
+    const next = (index + offset + elements.length) % elements.length;
+    const nextElement = elements[next];
+
+    if (!nextElement) {
+      return;
+    }
+
+    if (nextElement !== current) {
+      if (nextElement instanceof HTMLInputElement && nextElement.type === "radio") {
+        nextElement.checked = true;
+        nextElement.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+
+    nextElement.focus();
   }
 }
 
