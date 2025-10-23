@@ -302,7 +302,7 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 - Hover: Scale slightly, add drop shadow, 2px outline
 - Active: Deeper shadow, slight color shift
 - Focus: 2px `--link-color` outline with text underline
-- Ripple effects via `setupButtonEffects()` helper
+- Ripple effects achieved with CSS `::after` pseudo-elements triggered by `:active`/`:focus-visible`
 
 **Card Animations:**
 

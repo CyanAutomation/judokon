@@ -1,4 +1,3 @@
-import { setupButtonEffects } from "./buttonEffects.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { SidebarList } from "../components/SidebarList.js";
@@ -12,7 +11,7 @@ import { SidebarList } from "../components/SidebarList.js";
  * 3. Build sidebar list items that call `showImage(index)` when activated.
  * 4. Implement `showImage(index)` to update the image, alt text, filename, and sidebar highlight.
  * 5. Define event handlers; remove existing listeners and attach click and keydown handlers to cycle images with wraparound.
- * 6. Show the first image and apply button ripple effects.
+ * 6. Show the first image so CSS-driven button feedback is ready.
  * 7. Return a teardown function that removes event listeners and tooltip listeners.
  *
  * @returns {Promise<() => void>} Teardown function.
@@ -109,7 +108,6 @@ export async function setupMockupViewerPage() {
   document.addEventListener("keydown", handleKeydown);
 
   showImage(0);
-  setupButtonEffects();
   const cleanupTooltips = await initTooltips();
 
   return () => {

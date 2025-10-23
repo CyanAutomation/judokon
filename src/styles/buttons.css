@@ -74,6 +74,43 @@ button:focus-visible,
   text-decoration: underline;
 }
 
+button::after,
+.primary-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle,
+    var(--button-ripple-color, rgba(255, 255, 255, 0.35)) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--transition-fast) ease,
+    transform var(--transition-fast) ease;
+  pointer-events: none;
+}
+
+button:active::after,
+.primary-button:active::after {
+  opacity: 0.4;
+  transform: scale(1.45);
+}
+
+button:focus-visible::after,
+.primary-button:focus-visible::after {
+  opacity: 0.22;
+  transform: scale(1.1);
+}
+
+button:active:focus-visible::after,
+.primary-button:active:focus-visible::after {
+  opacity: 0.45;
+  transform: scale(1.55);
+}
+
 .secondary-button {
   background-color: var(--color-tertiary);
   color: var(--color-secondary);
@@ -91,23 +128,6 @@ button:focus-visible,
 a:focus,
 a:focus-visible {
   outline-offset: 2px;
-}
-
-button .ripple,
-.primary-button .ripple {
-  position: absolute;
-  border-radius: 50%;
-  background-color: var(--color-surface);
-  transform: scale(0);
-  animation: ripple var(--transition-fast);
-  pointer-events: none;
-}
-
-@keyframes ripple {
-  to {
-    transform: scale(4);
-    opacity: 0;
-  }
 }
 
 @keyframes card-enter {
@@ -130,4 +150,30 @@ button .ripple,
   .animate-card {
     animation: none;
   }
+
+  button::after,
+  .primary-button::after {
+    transition: none;
+  }
+
+  button:active::after,
+  .primary-button:active::after,
+  button:focus-visible::after,
+  .primary-button:focus-visible::after {
+    opacity: 0.2;
+    transform: none;
+  }
+}
+
+.reduce-motion button::after,
+.reduce-motion .primary-button::after {
+  transition: none;
+}
+
+.reduce-motion button:active::after,
+.reduce-motion .primary-button:active::after,
+.reduce-motion button:focus-visible::after,
+.reduce-motion .primary-button:focus-visible::after {
+  opacity: 0.2;
+  transform: none;
 }
