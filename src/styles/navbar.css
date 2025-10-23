@@ -27,7 +27,8 @@
   justify-content: center;
 }
 
-.filter-bar button {
+.filter-bar button,
+.filter-bar summary {
   padding: 0.3rem 0.3rem;
   border-radius: var(--radius-md);
   background: var(--button-bg);
@@ -38,6 +39,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+}
+
+#country-panel {
+  position: relative;
+  display: inline-flex;
+}
+
+#country-panel > summary {
+  list-style: none;
+  cursor: pointer;
+  margin: 0;
+}
+
+#country-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+#country-panel > summary::marker {
+  content: "";
 }
 
 #country-toggle {
@@ -104,7 +125,7 @@
   height: 24px;
 }
 
-.country-panel {
+.country-panel__content {
   position: fixed;
   top: var(--header-height);
   bottom: var(--footer-height);
@@ -115,15 +136,18 @@
   overflow-y: auto;
   padding: var(--space-md);
   transform: translateX(100%);
-  transition: transform 300ms ease-in-out;
+  transition: transform 300ms ease-in-out, visibility 0s linear 300ms;
+  visibility: hidden;
   z-index: 50;
 }
 
-.country-panel.open {
+.country-panel[open] > .country-panel__content {
   transform: translateX(0);
+  visibility: visible;
+  transition: transform 300ms ease-in-out, visibility 0s linear 0s;
 }
 
-.country-panel.grid {
+.country-panel.grid > .country-panel__content {
   left: 0;
   right: 0;
   width: 100%;
@@ -133,23 +157,23 @@
   justify-content: center;
 }
 
-.country-panel.grid .country-flag-slider {
+.country-panel.grid > .country-panel__content .country-flag-slider {
   height: 100%;
   overflow-y: hidden;
 }
 
-.country-panel.grid .country-flag-slide-track {
+.country-panel.grid > .country-panel__content .country-flag-slide-track {
   animation: none;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: var(--space-md);
 }
 
-.country-panel.grid .slide {
+.country-panel.grid > .country-panel__content .slide {
   display: flex;
 }
 
-/* Panel is off-screen by default; visibility toggled by `.open` */
+/* Panel is off-screen by default; visibility toggled by the native `open` attribute */
 
 .flag-button {
   background: transparent;
@@ -211,15 +235,15 @@
 
 /* Reduce motion for the country panel */
 @media (prefers-reduced-motion: reduce) {
-  .country-panel,
-  .country-panel.open,
-  .country-panel.grid {
+  .country-panel__content,
+  .country-panel[open] > .country-panel__content,
+  .country-panel.grid > .country-panel__content {
     transition: none;
   }
 }
 
-.reduce-motion .country-panel,
-.reduce-motion .country-panel.open,
-.reduce-motion .country-panel.grid {
+.reduce-motion .country-panel__content,
+.reduce-motion .country-panel[open] > .country-panel__content,
+.reduce-motion .country-panel.grid > .country-panel__content {
   transition: none;
 }

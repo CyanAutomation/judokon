@@ -22,7 +22,7 @@ import { toggleCountryPanel } from "../countryPanel.js";
  * 4. Use the shared `toggleCountryPanel` helper to close the panel.
  *
  * @param {Element} listContainer - Container holding country flag buttons.
- * @param {HTMLButtonElement} toggleButton - Panel toggle button.
+ * @param {HTMLElement} toggleButton - Panel toggle button.
  * @param {Element} panel - Country panel element.
  * @param {Element} carouselEl - Carousel container for feedback messages.
  * @param {Element} ariaLiveEl - Initial aria-live region reference.
@@ -152,7 +152,7 @@ export function createCountryFilterController(judokaList, render, adapter) {
  * @param {HTMLButtonElement} clearButton - Button that clears the current filter.
  * @param {Array<Judoka>} judokaList - Complete judoka dataset.
  * @param {(list: Array<Judoka>) => Promise<void> | void} render - Rendering callback.
- * @param {HTMLButtonElement} toggleButton - Toggle control for the country panel.
+ * @param {HTMLElement} toggleButton - Toggle control for the country panel.
  * @param {Element} panel - Country panel element.
  * @param {Element} carouselEl - Carousel container for feedback messages.
  * @param {Element} ariaLiveEl - Initial aria-live region element.

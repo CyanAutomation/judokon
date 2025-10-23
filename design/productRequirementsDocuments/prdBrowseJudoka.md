@@ -105,6 +105,7 @@ See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel-specific animat
 
 - The Country Flag Picker panel appears below the persistent top bar and stacks above the carousel on screens below 768px.
 - Picker supports keyboard navigation (Tab/Shift+Tab, Enter/Space, Escape) and screen reader accessibility.
+- The picker toggle uses a native `<details>/<summary>` disclosure so semantics, focus management, and keyboard shortcuts follow platform expectations while keeping the custom styling.
 - Picker displays only countries present in `judoka.json`. Countries are sorted alphabetically using `localeCompare`, and each flag image includes alt text and an `aria-label` based on the country name.
 - Picker provides a clear filter icon to reset selection.
 - If no judoka exist for a selected country, an empty state message is shown.
