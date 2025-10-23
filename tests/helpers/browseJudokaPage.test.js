@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { createBrowseJudokaHarness } from "./integrationHarness.js";
 
 const harness = createBrowseJudokaHarness();
@@ -88,32 +90,21 @@ describe("browseJudokaPage helpers", () => {
     expect(loaded()).toBe(true);
   });
 
-  it("setupLayoutToggle switches panel mode", async () => {
-    const toggleCountryPanelMode = vi.fn();
-    vi.doMock("../../src/helpers/countryPanel.js", () => ({
-      toggleCountryPanel: vi.fn(),
-      toggleCountryPanelMode
-    }));
+  it("exposes a CSS-driven layout toggle hook", async () => {
+    const markup = await readFile(join(process.cwd(), "src/pages/browseJudoka.html"), "utf8");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(markup, "text/html");
 
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const checkbox = doc.getElementById("layout-mode-toggle");
+    expect(checkbox).not.toBeNull();
+    expect(checkbox?.getAttribute("type")).toBe("checkbox");
+    expect(checkbox?.nextElementSibling?.id).toBe("country-panel");
+    expect(checkbox?.getAttribute("aria-controls")).toBe("country-panel-content");
 
-    const { setupLayoutToggle } = await import("../../src/helpers/browseJudokaPage.js");
-
-    const handlers = {};
-    const button = {
-      addEventListener: vi.fn((event, handler) => {
-        handlers[event] = handler;
-      })
-    };
-    const panel = {};
-
-    setupLayoutToggle(button, panel);
-    expect(button.addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
-
-    handlers.click();
-    expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel);
-
-    consoleErrorSpy.mockRestore();
+    const label = doc.getElementById("layout-toggle");
+    expect(label).not.toBeNull();
+    expect(label?.getAttribute("for")).toBe("layout-mode-toggle");
+    expect(label?.getAttribute("data-testid")).toBe("layout-toggle");
   });
 
   it("country filter controller filters judoka and clears selection", async () => {
@@ -207,7 +198,6 @@ describe("browseJudokaPage helpers", () => {
         remove: vi.fn(() => spinnerCalls.push("remove"))
       })),
       renderCarousel: vi.fn(async () => ({ carousel: {}, containerEl: {} })),
-      setupLayoutToggle: vi.fn(),
       setupCountryFilter: vi.fn(),
       appendNoResultsMessage: vi.fn(),
       markReady: vi.fn()
@@ -224,7 +214,6 @@ describe("browseJudokaPage helpers", () => {
     expect(runtime.createSpinnerController).toHaveBeenCalledWith(true);
     expect(spinnerCalls).toEqual(["show", "remove"]);
     expect(runtime.renderCarousel).toHaveBeenCalledWith([{ id: 1, country: "JP" }], []);
-    expect(runtime.setupLayoutToggle).toHaveBeenCalled();
     expect(runtime.setupCountryFilter).toHaveBeenCalledWith(
       [{ id: 1, country: "JP" }],
       expect.any(Function)

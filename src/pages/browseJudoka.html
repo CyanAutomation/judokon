@@ -45,6 +45,13 @@
 
       <main class="kodokan-grid" role="main">
         <div class="filter-bar">
+          <input
+            type="checkbox"
+            id="layout-mode-toggle"
+            aria-controls="country-panel-content"
+            aria-label="Toggle layout"
+            data-testid="layout-mode-toggle"
+          />
           <details id="country-panel" class="country-panel">
             <summary
               id="country-toggle"
@@ -97,11 +104,10 @@
               </button>
             </div>
           </details>
-          <button
+          <label
             id="layout-toggle"
+            for="layout-mode-toggle"
             data-testid="layout-toggle"
-            aria-controls="country-panel-content"
-            aria-label="Toggle layout"
             data-tooltip-id="ui.toggleLayout"
           >
             <svg
@@ -116,7 +122,7 @@
                 d="M80-80v-280h280v280H80Zm0-340v-280h280v280H80Zm340 340v-280h280v280H420Zm0-340v-280h280v280H420Z"
               />
             </svg>
-          </button>
+          </label>
         </div>
         <div id="carousel-container" data-testid="carousel-container"></div>
       </main>

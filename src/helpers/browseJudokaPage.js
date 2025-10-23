@@ -21,7 +21,6 @@ import {
  * @property {Element|null} carouselContainer
  * @property {Element|null} countryListContainer
  * @property {HTMLElement|null} toggleBtn
- * @property {HTMLButtonElement|null} layoutToggle
  * @property {Element|null} countryPanel
  * @property {HTMLButtonElement|null} clearBtn
  * @property {() => void} [ensurePanelHidden]
@@ -29,7 +28,6 @@ import {
  * @property {(forceSpinner: boolean) => { show: () => void, remove: () => void }} [createSpinnerController]
  * @property {(list: Array<Judoka>, gokyoData: Array) => Promise<{ carousel: Element, containerEl: Element|null }>} [renderCarousel]
  * @property {() => Element|null} [getAriaLive]
- * @property {() => void} [setupLayoutToggle]
  * @property {(judokaList: Array<Judoka>, render: (list: Array<Judoka>) => Promise<void> | void) => void} [setupCountryFilter]
  * @property {() => Element|null} [appendNoResultsMessage]
  * @property {() => Element|null} [appendErrorMessage]
@@ -64,16 +62,13 @@ export function createBrowsePageRuntime(documentRef = document) {
   const carouselContainer = documentRef?.getElementById?.("carousel-container") ?? null;
   const countryListContainer = documentRef?.getElementById?.("country-list") ?? null;
   const toggleBtn = documentRef?.getElementById?.("country-toggle") ?? null;
-  const layoutToggle = documentRef?.getElementById?.("layout-toggle") ?? null;
   const countryPanel = documentRef?.getElementById?.("country-panel") ?? null;
   const clearBtn = documentRef?.getElementById?.("clear-filter") ?? null;
-  const layoutToggleHandler = setupLayoutToggle;
 
   return {
     carouselContainer,
     countryListContainer,
     toggleBtn,
-    layoutToggle,
     countryPanel,
     clearBtn,
     ensurePanelHidden() {
@@ -116,9 +111,6 @@ export function createBrowsePageRuntime(documentRef = document) {
     },
     getAriaLive() {
       return carouselContainer?.querySelector?.(".carousel-aria-live") ?? null;
-    },
-    setupLayoutToggle() {
-      layoutToggleHandler(layoutToggle, countryPanel);
     },
     setupCountryFilter(judokaList, render) {
       const ariaLive = this.getAriaLive();
@@ -173,22 +165,6 @@ export function createBrowsePageRuntime(documentRef = document) {
 }
 
 /**
- * Attach listener to switch layout mode of country panel.
- *
- * @pseudocode
- * 1. If layoutBtn exists, add click listener to toggle panel display mode.
- *
- * @param {HTMLButtonElement} layoutBtn - Toggle button.
- * @param {Element} panel - Panel element to switch layout.
- * @returns {void}
- */
-export function setupLayoutToggle(layoutBtn, panel) {
-  if (layoutBtn) {
-    layoutBtn.addEventListener("click", () => toggleCountryPanelMode(panel));
-  }
-}
-
-/**
  * Initialize the Browse Judoka page.
  *
  * @pseudocode
@@ -199,7 +175,7 @@ export function setupLayoutToggle(layoutBtn, panel) {
  *    a. Show a loading spinner.
  *    b. Fetch judoka and gokyo data concurrently.
  *    c. Render the judoka carousel with the fetched data.
- *    d. If successful, set up country filtering and layout toggles.
+   *    d. If successful, set up country filtering.
  *    e. If data loading fails, display an error message, a fallback judoka card, and a retry button.
  *    f. Hide the spinner when done.
  * 5. Execute the `init` function.
@@ -272,7 +248,6 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
         pageRuntime.appendNoResultsMessage?.();
       }
 
-      pageRuntime.setupLayoutToggle?.();
       pageRuntime.setupCountryFilter?.(allJudoka, render);
     } catch (error) {
       pageRuntime.markReady?.();
