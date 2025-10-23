@@ -6,12 +6,9 @@ import { createRoundMessage, createSnackbarContainer, createTimerNodes } from ".
 import { DEFAULT_MIN_PROMPT_DURATION_MS } from "../../../src/helpers/classicBattle/opponentPromptTracker.js";
 
 vi.mock("../../../src/helpers/showSnackbar.js", () => {
-  const showMessages = [];
-  const updateMessages = [];
-  if (typeof window !== "undefined") {
-    window.__SNACKBAR_SHOW_MESSAGES = showMessages;
-    window.__SNACKBAR_UPDATE_MESSAGES = updateMessages;
-  }
+  let showMessages = [];
+  let updateMessages = [];
+
   const ensureContainer = () => {
     let container = document.getElementById("snackbar-container");
     if (!container) {
@@ -27,10 +24,12 @@ vi.mock("../../../src/helpers/showSnackbar.js", () => {
     }
     return bar;
   };
+
   const applyMessage = (message) => {
     const bar = ensureContainer();
     bar.textContent = message;
   };
+
   return {
     showSnackbar: (message) => {
       showMessages.push(message);
@@ -39,6 +38,12 @@ vi.mock("../../../src/helpers/showSnackbar.js", () => {
     updateSnackbar: (message) => {
       updateMessages.push(message);
       applyMessage(message);
+    },
+    getShowMessages: () => [...showMessages],
+    getUpdateMessages: () => [...updateMessages],
+    clearMessages: () => {
+      showMessages = [];
+      updateMessages = [];
     }
   };
 });
@@ -85,6 +90,7 @@ async function selectPower(battleMod, store) {
 describe("countdown resets after stat selection", () => {
   let battleMod;
   let store;
+  let snackbarMock;
   beforeEach(async () => {
     document.body.innerHTML = "";
     // Ensure previous tests don't leave snackbars disabled
@@ -105,11 +111,12 @@ describe("countdown resets after stat selection", () => {
     battleMod = await initClassicBattleTest({ afterMock: true });
     store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    createSnackbarContainer();
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES = { ...(window.__FF_OVERRIDES || {}), enableTestMode: false };
       window.__disableSnackbars = false;
     }
+    snackbarMock = await import("../../../src/helpers/showSnackbar.js");
+    snackbarMock.clearMessages();
   });
 
   it("shows snackbar countdown with sequential updates", async () => {
@@ -120,9 +127,9 @@ describe("countdown resets after stat selection", () => {
     await vi.runOnlyPendingTimersAsync();
     let snackbarEl = document.querySelector(".snackbar");
     expect(snackbarEl).not.toBeNull();
-    const showMessages = window.__SNACKBAR_SHOW_MESSAGES || [];
+    const showMessages = snackbarMock.getShowMessages();
     const initialMessage = showMessages.at(-1) || "";
-    snackbarEl.textContent = initialMessage;
+    expect(snackbarEl?.textContent).toMatch(/Next round in: [0-3]s/);
     expect(initialMessage).toMatch(/Next round in: [23]s/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
@@ -130,9 +137,9 @@ describe("countdown resets after stat selection", () => {
     await vi.runOnlyPendingTimersAsync();
     snackbarEl = document.querySelector(".snackbar");
     expect(snackbarEl).not.toBeNull();
-    const updateMessages = window.__SNACKBAR_UPDATE_MESSAGES || [];
-    const firstUpdate = updateMessages[0] || snackbarEl.textContent;
-    snackbarEl.textContent = firstUpdate;
+    const firstBatch = snackbarMock.getUpdateMessages();
+    expect(firstBatch.length).toBeGreaterThan(0);
+    const firstUpdate = firstBatch[0] || snackbarEl?.textContent;
     // Depending on when the countdown renderer attaches relative to test
     // timer advancement, the first visible decrement may already have
     // occurred. Accept 2s (preferred) or 1s to keep this test robust.
@@ -141,8 +148,9 @@ describe("countdown resets after stat selection", () => {
     await vi.runOnlyPendingTimersAsync();
     snackbarEl = document.querySelector(".snackbar");
     expect(snackbarEl).not.toBeNull();
-    const secondUpdate = updateMessages[1] || snackbarEl.textContent;
-    snackbarEl.textContent = secondUpdate;
+    const refreshedUpdates = snackbarMock.getUpdateMessages();
+    expect(refreshedUpdates.length).toBeGreaterThan(1);
+    const secondUpdate = refreshedUpdates[1] || refreshedUpdates.at(-1) || snackbarEl?.textContent;
     expect(secondUpdate).toMatch(/Next round in: [10]s/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
