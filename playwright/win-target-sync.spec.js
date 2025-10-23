@@ -1,13 +1,12 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 
 async function openSettingsPanel(page) {
-  const settingsButton = page.locator("#cli-settings-toggle");
-  await expect(settingsButton).toBeVisible();
-
-  const settingsBody = page.locator("#cli-settings-body");
-  if (!(await settingsBody.isVisible())) {
-    await settingsButton.click();
-    await expect(settingsBody).toBeVisible();
+  const settings = page.locator("#cli-settings");
+  await expect(settings).toBeVisible();
+  const isOpen = await settings.evaluate((node) => node.open);
+  if (!isOpen) {
+    await settings.locator("summary").click();
+    await expect(settings).toHaveJSProperty("open", true);
   }
 }
 
