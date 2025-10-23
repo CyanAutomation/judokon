@@ -157,10 +157,11 @@ describe("testApi.isTestMode", () => {
 
 describe("initApi readiness gating", () => {
   let initApi;
-  useCanonicalTimers();
+  let timers;
 
   beforeEach(async () => {
     vi.resetModules();
+    timers = useCanonicalTimers();
 
     process.env.NODE_ENV = "test";
     process.env.VITEST = "1";
@@ -198,6 +199,8 @@ describe("initApi readiness gating", () => {
     delete window.battleStore;
     delete window.battleReadyPromise;
     delete window.__initCalled;
+
+    timers.cleanup();
 
     vi.resetModules();
     vi.clearAllMocks();
