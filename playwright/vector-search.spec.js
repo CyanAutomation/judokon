@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 
 const harnessStore = new WeakMap();
+const TEST_QUERY = "alpha";
 
 /**
  * @typedef {import("@playwright/test").Route} PlaywrightRoute
@@ -245,7 +246,7 @@ test.describe("Vector Search Page", () => {
     });
 
     test("successful search shows results table", async ({ page }) => {
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       // Verify results table has content
       const resultsTable = page.locator("#vector-results-table tbody");
@@ -261,7 +262,7 @@ test.describe("Vector Search Page", () => {
     });
 
     test("search results contain expected data", async ({ page }) => {
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
 
@@ -274,31 +275,54 @@ test.describe("Vector Search Page", () => {
     });
 
     test("clicking result loads context", async ({ page }) => {
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
-      await firstRow.click();
+      const activationCell = firstRow.locator("td").last();
+      await activationCell.click();
 
       // Verify context is loaded
       const context = firstRow.locator(".result-context");
       await expect(context).toContainText("context A1");
 
-      // Verify row is marked as expanded
-      await expect(firstRow).toHaveAttribute("aria-expanded", "true");
+      // Verify row is marked as loaded
+      await expect(firstRow).toHaveAttribute("data-loaded", "true");
     });
 
     test("context loads only once per result", async ({ page }) => {
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
+      const activationCell = firstRow.locator("td").last();
 
       // Click once
-      await firstRow.click();
+      await activationCell.click();
       await expect(firstRow.locator(".result-context")).toContainText("context A1");
 
       // Click again - should not change
-      await firstRow.click();
+      await activationCell.click();
       await expect(firstRow.locator(".result-context")).toContainText("context A1");
+    });
+
+    test("snippet disclosure toggles without loading context", async ({ page }) => {
+      await submitSearch(page, TEST_QUERY);
+
+      const firstRow = page.locator("#vector-results-table tbody tr").first();
+      const details = firstRow.locator("td.match-text details.snippet-details");
+      const summary = details.locator("summary");
+      const context = firstRow.locator(".result-context");
+
+      await expect(details).toHaveJSProperty("open", false);
+      await expect(context).toHaveText(/\s*/);
+
+      await summary.click();
+      await expect(details).toHaveJSProperty("open", true);
+      await expect(details.locator(".snippet-full mark").first()).toHaveText(/alpha/i);
+      await expect(context).toHaveText(/\s*/);
+
+      await summary.click();
+      await expect(details).toHaveJSProperty("open", false);
+      await expect(context).toHaveText(/\s*/);
     });
   });
 
@@ -319,7 +343,7 @@ test.describe("Vector Search Page", () => {
       // Mock failed embedding load
       await prepareVectorSearchPage(page, { embeddings: { status: 404 } });
 
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       // Should show error message
       const messageEl = page.locator("#search-results-message");
@@ -329,7 +353,7 @@ test.describe("Vector Search Page", () => {
     test("handles transformer failure gracefully", async ({ page }) => {
       await prepareVectorSearchPage(page, { transformer: { status: 404 } });
 
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       // Should handle gracefully (may show error or empty results)
       const messageEl = page.locator("#search-results-message");
@@ -339,10 +363,11 @@ test.describe("Vector Search Page", () => {
     test("handles context load failure gracefully", async ({ page }) => {
       await prepareVectorSearchPage(page, { context: { status: 404 } });
 
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
-      await firstRow.click();
+      const activationCell = firstRow.locator("td").last();
+      await activationCell.click();
 
       // Should show fallback message
       const context = firstRow.locator(".result-context");
@@ -362,13 +387,13 @@ test.describe("Vector Search Page", () => {
 
       const initialUrl = page.url();
 
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       await expect(page).toHaveURL(initialUrl);
     });
 
     test("search input handles keyboard submission", async ({ page }) => {
-      await submitSearch(page, "query", { viaKeyboard: true });
+      await submitSearch(page, TEST_QUERY, { viaKeyboard: true });
 
       // Verify results are shown
       const resultsTable = page.locator("#vector-results-table tbody");
@@ -377,7 +402,7 @@ test.describe("Vector Search Page", () => {
 
     test("multiple searches work correctly", async ({ page }) => {
       // First search
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       const firstResult = page.locator("#vector-results-table tbody tr").first();
       await expect(firstResult).toBeVisible();
@@ -419,17 +444,22 @@ test.describe("Vector Search Page", () => {
     });
 
     test("results table has proper accessibility attributes", async ({ page }) => {
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       const resultsTable = page.locator("#vector-results-table");
       await expect(resultsTable).toHaveAttribute("aria-label", "Search results");
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
-      await expect(firstRow).toHaveAttribute("aria-expanded", "false");
+      const snippetDisclosure = firstRow.locator("details.snippet-details");
+      await expect(snippetDisclosure).toHaveCount(1);
+      await expect(snippetDisclosure).toHaveJSProperty("open", false);
 
-      // Click to expand
-      await firstRow.click();
-      await expect(firstRow).toHaveAttribute("aria-expanded", "true");
+      const summary = snippetDisclosure.locator("summary");
+      await expect(summary).toBeVisible();
+
+      // Activate disclosure
+      await summary.click();
+      await expect(snippetDisclosure).toHaveJSProperty("open", true);
     });
 
     test("status messages are announced to screen readers", async ({ page }) => {
@@ -442,7 +472,7 @@ test.describe("Vector Search Page", () => {
     test("shows loading state during search", async ({ page }) => {
       await prepareVectorSearchPage(page);
 
-      await page.getByRole("searchbox").fill("query");
+      await page.getByRole("searchbox").fill(TEST_QUERY);
 
       // Start search
       await page.getByRole("button", { name: /search/i }).click();
@@ -458,10 +488,11 @@ test.describe("Vector Search Page", () => {
     test("context loading shows appropriate message", async ({ page }) => {
       await prepareVectorSearchPage(page);
 
-      await submitSearch(page, "query");
+      await submitSearch(page, TEST_QUERY);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
-      await firstRow.click();
+      const activationCell = firstRow.locator("td").last();
+      await activationCell.click();
 
       // Should show loading message initially
       const context = firstRow.locator(".result-context");

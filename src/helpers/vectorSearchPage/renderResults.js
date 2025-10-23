@@ -15,7 +15,6 @@ function buildResultRow(match, queryTerms, isTop) {
   if (isTop) row.classList.add("top-match");
   row.dataset.id = match.id;
   row.tabIndex = 0;
-  row.setAttribute("aria-expanded", "false");
 
   const textCell = document.createElement("td");
   textCell.classList.add("match-text");
@@ -101,8 +100,16 @@ function buildResultRow(match, queryTerms, isTop) {
 export function renderResults(tbody, toRender, queryTerms, loadResultContext) {
   for (const [idx, match] of toRender.entries()) {
     const row = buildResultRow(match, queryTerms, idx === 0);
-    row.addEventListener("click", () => loadResultContext(row));
+    row.addEventListener("click", (event) => {
+      if (event.target instanceof Element && event.target.closest("summary")) {
+        return;
+      }
+      loadResultContext(row);
+    });
     row.addEventListener("keydown", (e) => {
+      if (e.target instanceof Element && e.target.closest("summary")) {
+        return;
+      }
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         loadResultContext(row);

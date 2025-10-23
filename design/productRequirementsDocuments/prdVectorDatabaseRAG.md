@@ -162,7 +162,7 @@ Each stored entry also includes a sparse term-frequency vector. Search requests 
 - The Match column is wider than Source, Tags, and Score, which are sized smaller to save space.
 - Paths in the Source column break onto new lines at each `/` so long file names remain legible.
 - Long match snippets are truncated after roughly 200 characters with a
-  "Show more" button that expands the full text within the table row. (**Note:** Truncation and button are styled and logic is present, but ensure UI toggle is fully functional.)
+  native `<details>/<summary>` disclosure that reveals the full text within the table row. (**Note:** The disclosure is styled to match the table and should remain fully keyboard accessible.)
 - Embeddings load automatically when the page initializes so the first search runs immediately.
 - Matches scoring at least `0.6` are considered strong. When the top match is
   more than `0.4` higher than the next best score, only that top result is
