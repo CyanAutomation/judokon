@@ -2,26 +2,26 @@ import { toggleCountryPanel } from "../countryPanel.js";
 
 /**
  * @typedef {object} CountryFilterAdapter
- * @property {() => void} clearSelection - Remove selection styling from all flag buttons.
- * @property {(button: HTMLButtonElement) => void} highlightSelection - Apply selection styling to the chosen button.
  * @property {(count: number, label: string) => void} updateLiveRegion - Announce the visible judoka count.
  * @property {() => void} closePanel - Close the country panel via the toggle helper.
  * @property {() => void} removeNoResultsMessage - Remove any existing "no results" message from the carousel.
  * @property {() => void} showNoResultsMessage - Append the "no results" message to the carousel.
- * @property {(target: EventTarget | null) => HTMLButtonElement | null} findButtonFromEvent - Extract a flag button from a click target.
- * @property {(button: HTMLButtonElement | null) => string} getButtonValue - Read the country value associated with a button.
+ * @property {(target: EventTarget | null) => HTMLInputElement | null} findButtonFromEvent - Extract a radio input from an interaction target.
+ * @property {(button: HTMLInputElement | null) => string} getButtonValue - Read the country value associated with a radio.
+ * @property {() => HTMLInputElement[]} getRadios - List the available country filter radio inputs.
+ * @property {() => HTMLInputElement | null} getDefaultRadio - Return the "all countries" radio input if present.
  */
 
 /**
  * Build the DOM adapter for the country filter interactions.
  *
  * @pseudocode
- * 1. Provide helpers for clearing/highlighting selection state on the flag buttons.
+ * 1. Provide helpers for reading/updating the radio inputs that drive the filter state.
  * 2. Manage the aria-live region by re-querying from the carousel container when necessary.
  * 3. Manage creation and removal of the "no results" message.
  * 4. Use the shared `toggleCountryPanel` helper to close the panel.
  *
- * @param {Element} listContainer - Container holding country flag buttons.
+ * @param {Element} listContainer - Container holding the country flag radio options.
  * @param {HTMLElement} toggleButton - Panel toggle button.
  * @param {Element} panel - Country panel element.
  * @param {Element} carouselEl - Carousel container for feedback messages.
@@ -40,22 +40,6 @@ export function createCountryFilterAdapter(
   let liveRegion = ariaLiveEl ?? null;
 
   return {
-    clearSelection() {
-      if (!listContainer) {
-        console.warn("Country filter: listContainer is null, cannot clear selection");
-        return;
-      }
-      const buttons = listContainer.querySelectorAll("button.flag-button");
-      buttons.forEach((btn) => btn.classList.remove("selected"));
-    },
-    highlightSelection(button) {
-      if (!listContainer) {
-        console.warn("Country filter: listContainer is null, cannot highlight selection");
-        return;
-      }
-      const buttons = listContainer.querySelectorAll("button.flag-button");
-      buttons.forEach((btn) => btn.classList.toggle("selected", btn === button));
-    },
     updateLiveRegion(count, label) {
       liveRegion = carouselEl?.querySelector?.(".carousel-aria-live") ?? liveRegion;
       if (liveRegion) {
@@ -80,10 +64,39 @@ export function createCountryFilterAdapter(
       carouselEl.appendChild(message);
     },
     findButtonFromEvent(target) {
-      return target?.closest?.("button.flag-button") ?? null;
+      if (target instanceof HTMLInputElement && target.type === "radio") {
+        return target;
+      }
+      const label = target instanceof Element ? target.closest("label.flag-button") : null;
+      const control = label && "control" in label ? label.control : null;
+      if (control instanceof HTMLInputElement && control.type === "radio") {
+        return control;
+      }
+      const forId = label?.getAttribute?.("for");
+      if (forId) {
+        const escaped = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(forId) : forId;
+        const node = listContainer?.querySelector?.(`#${escaped}`) ?? null;
+        if (node instanceof HTMLInputElement && node.type === "radio") {
+          return node;
+        }
+      }
+      return null;
     },
     getButtonValue(button) {
       return button?.value ?? "all";
+    },
+    getRadios() {
+      if (!listContainer) return [];
+      return Array.from(
+        listContainer.querySelectorAll('input[type="radio"][name="country-filter"]')
+      );
+    },
+    getDefaultRadio() {
+      return (
+        listContainer?.querySelector?.(
+          'input[type="radio"][name="country-filter"][value="all"]'
+        ) ?? null
+      );
     }
   };
 }
@@ -93,12 +106,12 @@ export function createCountryFilterAdapter(
  *
  * @pseudocode
  * 1. When clearing:
- *    a. Reset selection styling.
+ *    a. Ensure the "all" radio input is checked.
  *    b. Render the full judoka list.
  *    c. Update the aria-live region for "all countries".
  *    d. Remove any stale "no results" message and close the panel.
  * 2. When applying a country filter:
- *    a. Highlight the chosen button.
+ *    a. Derive the currently checked radio value.
  *    b. Filter the judoka list by the selected value.
  *    c. Render the filtered list and update the aria-live message.
  *    d. Replace the "no results" message when the filter produces zero entries.
@@ -108,14 +121,20 @@ export function createCountryFilterAdapter(
  * @param {Array<Judoka>} judokaList - Complete list of judoka.
  * @param {(list: Array<Judoka>) => Promise<void> | void} render - Rendering callback supplied by the carousel runtime.
  * @param {CountryFilterAdapter} adapter - Adapter providing DOM side effects.
- * @returns {{ clear: () => Promise<Array<Judoka>>, select: (button: HTMLButtonElement) => Promise<Array<Judoka>> }}
+ * @returns {{ clear: () => Promise<Array<Judoka>>, select: (button: HTMLInputElement | null) => Promise<Array<Judoka>> }}
  */
 export function createCountryFilterController(judokaList, render, adapter) {
   const toLabel = (value) => (value === "all" ? "all countries" : value);
+  const getRadios = () => adapter.getRadios?.() ?? [];
+  const getDefaultRadio = () => adapter.getDefaultRadio?.() ?? getRadios().find((r) => r.value === "all") ?? null;
+  const getCheckedRadio = () => getRadios().find((radio) => radio.checked) ?? null;
 
   return {
     async clear() {
-      adapter.clearSelection?.();
+      const defaultRadio = getDefaultRadio();
+      if (defaultRadio) {
+        defaultRadio.checked = true;
+      }
       await render(judokaList);
       adapter.updateLiveRegion?.(judokaList.length, toLabel("all"));
       adapter.removeNoResultsMessage?.();
@@ -123,8 +142,15 @@ export function createCountryFilterController(judokaList, render, adapter) {
       return judokaList;
     },
     async select(button) {
-      const value = adapter.getButtonValue?.(button) ?? "all";
-      adapter.highlightSelection?.(button);
+      let radio = null;
+      if (button instanceof HTMLInputElement && button.type === "radio") {
+        radio = button;
+      }
+      radio ??= getCheckedRadio();
+      if (radio) {
+        radio.checked = true;
+      }
+      const value = adapter.getButtonValue?.(radio) ?? "all";
       const filtered =
         value === "all" ? judokaList : judokaList.filter((judoka) => judoka.country === value);
       await render(filtered);
@@ -145,10 +171,10 @@ export function createCountryFilterController(judokaList, render, adapter) {
  * @pseudocode
  * 1. Resolve the DOM adapter (either provided or built from the DOM nodes).
  * 2. Instantiate the controller with the judoka list and render callback.
- * 3. Attach click listeners that delegate to the controller methods.
+ * 3. Attach change listeners that delegate to the controller methods.
  * 4. Return the controller for callers that need to observe state.
  *
- * @param {Element} listContainer - Container for flag buttons.
+ * @param {Element} listContainer - Container for flag radio options.
  * @param {HTMLButtonElement} clearButton - Button that clears the current filter.
  * @param {Array<Judoka>} judokaList - Complete judoka dataset.
  * @param {(list: Array<Judoka>) => Promise<void> | void} render - Rendering callback.
@@ -157,7 +183,7 @@ export function createCountryFilterController(judokaList, render, adapter) {
  * @param {Element} carouselEl - Carousel container for feedback messages.
  * @param {Element} ariaLiveEl - Initial aria-live region element.
  * @param {{ adapter?: CountryFilterAdapter }} [options] - Optional adapter override for tests.
- * @returns {{ clear: () => Promise<Array<Judoka>>, select: (button: HTMLButtonElement) => Promise<Array<Judoka>> }}
+ * @returns {{ clear: () => Promise<Array<Judoka>>, select: (button: HTMLInputElement | null) => Promise<Array<Judoka>> }}
  */
 export function setupCountryFilter(
   listContainer,
@@ -179,7 +205,7 @@ export function setupCountryFilter(
     void controller.clear();
   });
 
-  listContainer?.addEventListener?.("click", (event) => {
+  listContainer?.addEventListener?.("change", (event) => {
     const button = resolvedAdapter.findButtonFromEvent?.(event.target) ?? null;
     if (!button) {
       return;

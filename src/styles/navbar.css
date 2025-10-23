@@ -164,6 +164,9 @@
 
 .country-panel.grid > .country-panel__content .country-flag-slide-track {
   animation: none;
+}
+
+.country-panel.grid > .country-panel__content .country-flag-slide-track > fieldset {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: var(--space-md);
@@ -175,22 +178,46 @@
 
 /* Panel is off-screen by default; visibility toggled by the native `open` attribute */
 
+.country-filter-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.country-filter-group > input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .flag-button {
   background: transparent;
-  border: none;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
   color: var(--color-text-inverted);
   cursor: pointer;
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
+  transition: border-color 150ms ease-in-out, outline-color 150ms ease-in-out;
 }
 
-.flag-button:focus {
+[type="radio"][name="country-filter"]:focus-visible + .flag-button {
   outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
-.flag-button.selected {
-  border: 2px solid var(--color-primary);
-  border-radius: var(--radius-md);
+[type="radio"][name="country-filter"]:checked + .flag-button {
+  border-color: var(--color-primary);
 }
 
 .clear-filter-button {

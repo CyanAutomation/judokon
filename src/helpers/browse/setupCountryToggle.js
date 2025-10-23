@@ -42,7 +42,11 @@ export function createCountryToggleAdapter(
     },
     hasFlags: () => !!listContainer && listContainer.children.length > 0,
     handleArrowNavigation: (event) => {
-      handleKeyboardNavigationImpl(event, listContainer, "flag-button");
+      handleKeyboardNavigationImpl(
+        event,
+        listContainer,
+        'input[type="radio"][name="country-filter"]'
+      );
     }
   };
 }

@@ -127,14 +127,28 @@ describe("browseJudokaPage helpers", () => {
       { id: 2, country: "BR" }
     ];
     const renderCalls = [];
+    const allRadio = document.createElement("input");
+    allRadio.type = "radio";
+    allRadio.name = "country-filter";
+    allRadio.value = "all";
+    allRadio.checked = true;
+    const jpRadio = document.createElement("input");
+    jpRadio.type = "radio";
+    jpRadio.name = "country-filter";
+    jpRadio.value = "JP";
+    const caRadio = document.createElement("input");
+    caRadio.type = "radio";
+    caRadio.name = "country-filter";
+    caRadio.value = "CA";
+
     const adapter = {
-      clearSelection: vi.fn(),
-      highlightSelection: vi.fn(),
       updateLiveRegion: vi.fn(),
       closePanel: vi.fn(),
       removeNoResultsMessage: vi.fn(),
       showNoResultsMessage: vi.fn(),
-      getButtonValue: (button) => button.value
+      getButtonValue: (button) => button?.value ?? "all",
+      getRadios: () => [allRadio, jpRadio, caRadio],
+      getDefaultRadio: () => allRadio
     };
     const render = vi.fn((list) => {
       renderCalls.push(list.map((item) => item.country));
@@ -142,23 +156,23 @@ describe("browseJudokaPage helpers", () => {
 
     const controller = createCountryFilterController(judoka, render, adapter);
 
-    const filtered = await controller.select({ value: "JP" });
+    const filtered = await controller.select(jpRadio);
     expect(filtered).toEqual([{ id: 1, country: "JP" }]);
-    expect(adapter.highlightSelection).toHaveBeenCalledWith({ value: "JP" });
+    expect(jpRadio.checked).toBe(true);
     expect(render).toHaveBeenLastCalledWith([{ id: 1, country: "JP" }]);
     expect(adapter.updateLiveRegion).toHaveBeenLastCalledWith(1, "JP");
     expect(adapter.removeNoResultsMessage).toHaveBeenCalled();
     expect(adapter.closePanel).toHaveBeenCalled();
 
     adapter.showNoResultsMessage.mockClear();
-    await controller.select({ value: "CA" });
+    await controller.select(caRadio);
     expect(adapter.showNoResultsMessage).toHaveBeenCalledTimes(1);
 
     const cleared = await controller.clear();
     expect(cleared).toEqual(judoka);
-    expect(adapter.clearSelection).toHaveBeenCalled();
     expect(render).toHaveBeenLastCalledWith(judoka);
     expect(adapter.updateLiveRegion).toHaveBeenLastCalledWith(2, "all countries");
+    expect(allRadio.checked).toBe(true);
   });
 
   it("shows a spinner during load and removes it after rendering", async () => {

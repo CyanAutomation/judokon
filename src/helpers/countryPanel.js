@@ -45,8 +45,8 @@ export function toggleCountryPanel(toggleButton, panel, show) {
   }
 
   if (shouldOpen) {
-    const firstButton = details.querySelector("button.flag-button");
-    firstButton?.focus?.();
+    const firstRadio = details.querySelector('input[type="radio"][name="country-filter"]');
+    firstRadio?.focus?.();
   } else {
     toggleButton?.focus?.();
   }
