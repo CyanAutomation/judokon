@@ -1,38 +1,4 @@
 /**
- * Handle left/right arrow key navigation within a radio/button container.
- *
- * @pseudocode
- * 1. Exit if the key is not ArrowLeft or ArrowRight.
- * 2. Get all buttons with the specified class in the container.
- * 3. Find the index of the currently focused button.
- * 4. If focus is within the buttons, prevent default and calculate the next index.
- * 5. Move focus to the button at the next index.
- *
- * @param {KeyboardEvent} event
- * @param {Element} container
- * @param {string} buttonClass
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Handle arrow-key navigation among a group of controls inside `container`.
  *
  * @summary Move focus left/right between elements matching `selector` when Arrow keys are pressed.
