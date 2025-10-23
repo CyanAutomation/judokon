@@ -1611,19 +1611,8 @@
     "src/helpers/setupHoverZoom.js": {
       "imports": ["./domReady.js"],
       "functions": {
-        "addHoverZoomMarkers": {
-          "calls": [
-            "querySelectorAll",
-            "forEach",
-            "addEventListener",
-            "reset",
-            "matchMedia",
-            "hasAttribute"
-          ],
-          "patterns": []
-        },
-        "reset": {
-          "calls": [],
+        "clearLegacyHoverZoomMarkers": {
+          "calls": ["querySelectorAll", "forEach", "removeAttribute"],
           "patterns": []
         }
       }
@@ -3261,7 +3250,7 @@
             "querySelector",
             "initScrollMarkers",
             "setupButtonEffects",
-            "addHoverZoomMarkers",
+            "clearLegacyHoverZoomMarkers",
             "has",
             "createSpinner",
             "show",
@@ -3291,7 +3280,7 @@
             "querySelector",
             "initScrollMarkers",
             "setupButtonEffects",
-            "addHoverZoomMarkers"
+            "clearLegacyHoverZoomMarkers"
           ],
           "patterns": []
         },
