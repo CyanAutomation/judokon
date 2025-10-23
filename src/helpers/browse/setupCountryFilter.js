@@ -6,7 +6,6 @@ import { toggleCountryPanel } from "../countryPanel.js";
  * @property {() => void} closePanel - Close the country panel via the toggle helper.
  * @property {() => void} removeNoResultsMessage - Remove any existing "no results" message from the carousel.
  * @property {() => void} showNoResultsMessage - Append the "no results" message to the carousel.
- * @property {(target: EventTarget | null) => HTMLInputElement | null} findButtonFromEvent - Extract a radio input from an interaction target.
  * @property {(button: HTMLInputElement | null) => string} getButtonValue - Read the country value associated with a radio.
  * @property {() => HTMLInputElement[]} getRadios - List the available country filter radio inputs.
  * @property {() => HTMLInputElement | null} getDefaultRadio - Return the "all countries" radio input if present.
@@ -62,25 +61,6 @@ export function createCountryFilterAdapter(
       message.setAttribute("aria-live", "polite");
       message.textContent = "No judoka available for this country";
       carouselEl.appendChild(message);
-    },
-    findButtonFromEvent(target) {
-      if (target instanceof HTMLInputElement && target.type === "radio") {
-        return target;
-      }
-      const label = target instanceof Element ? target.closest("label.flag-button") : null;
-      const control = label && "control" in label ? label.control : null;
-      if (control instanceof HTMLInputElement && control.type === "radio") {
-        return control;
-      }
-      const forId = label?.getAttribute?.("for");
-      if (forId) {
-        const escaped = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(forId) : forId;
-        const node = listContainer?.querySelector?.(`#${escaped}`) ?? null;
-        if (node instanceof HTMLInputElement && node.type === "radio") {
-          return node;
-        }
-      }
-      return null;
     },
     getButtonValue(button) {
       return button?.value ?? "all";
@@ -206,11 +186,11 @@ export function setupCountryFilter(
   });
 
   listContainer?.addEventListener?.("change", (event) => {
-    const button = resolvedAdapter.findButtonFromEvent?.(event.target) ?? null;
-    if (!button) {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || target.type !== "radio") {
       return;
     }
-    void controller.select(button);
+    void controller.select(target);
   });
 
   return controller;

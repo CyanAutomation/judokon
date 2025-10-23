@@ -54,14 +54,22 @@ function ensureRadioGroup(container) {
   let fieldset = container.querySelector("fieldset[data-country-filter]");
   if (!fieldset) {
     fieldset = doc.createElement("fieldset");
-    fieldset.dataset.countryFilter = "";
-    fieldset.className = "country-filter-group";
-    const legend = doc.createElement("legend");
-    legend.className = "sr-only";
-    legend.textContent = "Filter judoka by country";
-    fieldset.appendChild(legend);
     container.appendChild(fieldset);
   }
+  fieldset.dataset.countryFilter = "";
+  fieldset.classList.add("country-filter-group");
+
+  let legend = fieldset.querySelector("legend");
+  if (!(legend instanceof HTMLLegendElement)) {
+    legend = doc.createElement("legend");
+    fieldset.prepend(legend);
+  }
+  legend.className = "sr-only";
+  legend.textContent = "Filter judoka by country";
+
+  fieldset
+    .querySelectorAll('input[type="radio"][name="country-filter"], label.flag-button')
+    .forEach((node) => node.remove());
   return fieldset;
 }
 
