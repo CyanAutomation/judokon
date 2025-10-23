@@ -21,7 +21,7 @@ import { onDomReady } from "./domReady.js";
  *
  * @returns {void}
  */
-export function addHoverZoomMarkers() {
+export function clearLegacyHoverZoomMarkers() {
   if (typeof document === "undefined") return;
 
   const legacyMarkers = document.querySelectorAll(
@@ -33,4 +33,4 @@ export function addHoverZoomMarkers() {
   });
 }
 
-onDomReady(() => addHoverZoomMarkers());
+onDomReady(() => clearLegacyHoverZoomMarkers());

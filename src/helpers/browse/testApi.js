@@ -1,6 +1,6 @@
 import { appendCards } from "../carousel/index.js";
 import { createGokyoLookup } from "../utils.js";
-import { addHoverZoomMarkers } from "../setupHoverZoom.js";
+import { clearLegacyHoverZoomMarkers } from "../setupHoverZoom.js";
 import { getTestAPI, isTestMode } from "../testApi.js";
 
 const state = {
@@ -199,7 +199,7 @@ function enableHoverAnimations() {
  * 2. Record existing direct children of the container so new nodes can be identified later.
  * 3. Run `appendCards(container, [judoka], gokyoLookup)` to build the DOM using real factories.
  * 4. Await the resulting `ready` promise.
- * 5. Re-run `addHoverZoomMarkers()` to clear legacy hover markers on the new nodes.
+ * 5. Re-run `clearLegacyHoverZoomMarkers()` to clear legacy hover markers on the new nodes.
  * 6. Track any newly appended nodes so they can be removed during cleanup.
  *
  * @param {import("../types.js").Judoka} judoka - Judoka data used to create the card.
@@ -223,7 +223,7 @@ async function addTestCard(judoka) {
   }
 
   if (hasNewNodes) {
-    addHoverZoomMarkers();
+    clearLegacyHoverZoomMarkers();
   }
 }
 
