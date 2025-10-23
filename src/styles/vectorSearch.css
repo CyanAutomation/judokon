@@ -47,14 +47,38 @@
   color: var(--color-text-secondary);
 }
 
-.show-more-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--color-primary);
-  cursor: pointer;
-  text-decoration: underline;
+.snippet-details {
+  display: block;
+  text-align: left;
+}
+
+.snippet-summary {
+  display: inline;
+  cursor: default;
+  list-style: none;
+  margin: 0;
   font: inherit;
+  color: inherit;
+}
+
+.snippet-details:not(.snippet-details-static) > .snippet-summary {
+  cursor: pointer;
+}
+
+.snippet-details:not(.snippet-details-static) > .snippet-summary::-webkit-details-marker {
+  color: var(--color-primary);
+}
+
+.snippet-details[open]:not(.snippet-details-static) > .snippet-summary {
+  margin-bottom: var(--space-xs);
+}
+
+.snippet-full {
+  margin-top: 0;
+}
+
+.snippet-details[open]:not(.snippet-details-static) > .snippet-full {
+  margin-top: var(--space-xs);
 }
 
 .top-match {

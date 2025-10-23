@@ -32,41 +32,38 @@ export function highlightTerms(text, terms) {
  * Build a snippet element with optional truncation.
  *
  * @pseudocode
- * 1. Create a container and span for the snippet text, highlighting `terms` when provided.
- * 2. When `text` exceeds `SNIPPET_LIMIT`, append an ellipsis and a
- *    "Show more" button that toggles the full content.
- *    - Update the button label to "Show less" when expanded.
- *    - Prevent the toggle from triggering row click events.
- * 3. Return the container element.
+ * 1. Create a `<details>` wrapper for the snippet content.
+ * 2. Render the truncated snippet within a `<summary>` element, highlighting `terms` once.
+ * 3. Render the full snippet inside a block container and highlight `terms` once.
+ * 4. When the snippet does not require truncation, show the `<details>` in an open, static state.
+ * 5. Return the `<details>` wrapper.
  *
  * @param {string} text - The full match text.
  * @param {string[]} [terms=[]] - Search terms for highlighting.
  * @returns {HTMLElement} Snippet DOM element.
  */
 export function createSnippetElement(text, terms = []) {
-  const container = document.createElement("div");
-  const span = document.createElement("span");
+  const details = document.createElement("details");
+  details.classList.add("snippet-details");
+
   const needsTruncate = text.length > SNIPPET_LIMIT;
-  const shortText = needsTruncate ? text.slice(0, SNIPPET_LIMIT).trimEnd() + "\u2026" : text;
-  const shortHtml = highlightTerms(shortText, terms);
-  const fullHtml = highlightTerms(text, terms);
-  span.innerHTML = shortHtml;
-  container.appendChild(span);
-  if (needsTruncate) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.classList.add("show-more-btn");
-    btn.textContent = "Show more";
-    btn.setAttribute("aria-expanded", "false");
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", expanded ? "false" : "true");
-      span.innerHTML = expanded ? shortHtml : fullHtml;
-      btn.textContent = expanded ? "Show more" : "Show less";
-    });
-    container.appendChild(document.createTextNode(" "));
-    container.appendChild(btn);
+  const truncated = needsTruncate ? text.slice(0, SNIPPET_LIMIT).trimEnd() + "\u2026" : text;
+
+  const summary = document.createElement("summary");
+  summary.classList.add("snippet-summary");
+  summary.innerHTML = highlightTerms(truncated, terms);
+  details.appendChild(summary);
+
+  const full = document.createElement("div");
+  full.classList.add("snippet-full");
+  full.innerHTML = highlightTerms(text, terms);
+  details.appendChild(full);
+
+  if (!needsTruncate) {
+    details.open = true;
+    details.classList.add("snippet-details-static");
+    summary.hidden = true;
   }
-  return container;
+
+  return details;
 }

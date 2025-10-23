@@ -51,7 +51,7 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 - **Sidebar supports category highlighting/grouping by prefix (e.g., stat, ui, mode)**
 - **Visual indicators (icon/tooltip) for invalid, empty, or malformed entries**
 - **Preview panel displays warning for malformed markdown**
-- **Long tooltip values are truncated after 300px height with a “Show more” toggle**
+- **Long tooltip values are truncated after 300px height with a native disclosure toggle (`<details>/<summary>`)**
 - **Copy-to-clipboard buttons provide feedback (e.g., tooltip or animation) on success**
 
 ### Accessibility
@@ -84,7 +84,7 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 | **P3**   | Mobile responsive layout | Stack sidebar above preview on screens <600px.         |
 | **P3**   | Copy-to-clipboard button | One-click copying of key or body content.              |
 | **P3**   | Jump to key via URL hash | Auto-select a tooltip via `#keyname` on page load.     |
-| **P3**   | Show more for long vals  | Truncate long values, add “Show more” toggle.          |
+| **P3**   | Disclosure for long vals | Truncate long values, add native `<details>/<summary>` toggle. |
 | **P3**   | High-contrast/dark mode  | Selected key uses bright color in dark mode.           |
 | **P3**   | ARIA/Accessibility       | Add ARIA attributes/roles for screen readers.          |
 
@@ -122,7 +122,7 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 | Malformed markdown      | Render best-effort version and flag preview with warning icon                                          |
 | Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content"                            |
 | Unrecognized key format | Warn if keys deviate from pattern `prefix.name` (`/^[a-z]+\.[\w-]+$/`); show red icon with tooltip     |
-| Long values             | Truncate preview after 300px height; add “Show more” toggle                                            |
+| Long values             | Truncate preview after 300px height; add native `<details>/<summary>` toggle                                            |
 
 ---
 
@@ -152,7 +152,7 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
     - [x] Malformed entries flagged with warning icon
   - [x] 3.5 Include copy-to-clipboard buttons for key and body
   - [x] 3.6 Show warning for malformed markdown in preview
-  - [x] 3.7 Truncate long values after 300px height; add “Show more” toggle
+  - [x] 3.7 Truncate long values after 300px height; add native `<details>/<summary>` toggle
   - [x] 3.8 Copy-to-clipboard buttons provide feedback (e.g., tooltip/animation)
 
 - [x] 4.0 URL Fragment Support

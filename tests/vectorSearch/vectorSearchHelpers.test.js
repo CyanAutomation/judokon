@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { selectMatches } from "../../src/helpers/api/vectorSearchPage.js";
+import { createSnippetElement } from "../../src/helpers/snippetFormatter.js";
 import { formatSourcePath, formatTags } from "../../src/helpers/vectorSearchPage/renderUtils.js";
 
 /**
@@ -57,5 +58,34 @@ describe("formatTags", () => {
 
   it("returns empty string for non-arrays", () => {
     expect(formatTags(null)).toBe("");
+  });
+});
+
+describe("createSnippetElement", () => {
+  it("returns static details element when truncation is unnecessary", () => {
+    const element = createSnippetElement("alpha text", ["alpha"]);
+    expect(element.tagName).toBe("DETAILS");
+    expect(element.open).toBe(true);
+    expect(element.classList.contains("snippet-details-static")).toBe(true);
+    const summary = element.querySelector("summary");
+    expect(summary?.hidden).toBe(true);
+    expect(summary?.innerHTML).toContain("<mark>alpha</mark>");
+    const full = element.querySelector(".snippet-full");
+    expect(full?.innerHTML).toBe("<mark>alpha</mark> text");
+  });
+
+  it("wraps truncated snippets in a disclosure with highlighted content", () => {
+    const longText = "alpha sentence ".repeat(20).trim();
+    const element = createSnippetElement(longText, ["alpha"]);
+    expect(element.tagName).toBe("DETAILS");
+    expect(element.open).toBe(false);
+    const summary = element.querySelector("summary");
+    expect(summary?.hidden).toBe(false);
+    expect(summary?.textContent?.includes("\u2026")).toBe(true);
+    expect(summary?.innerHTML).toContain("<mark>alpha</mark>");
+    const full = element.querySelector(".snippet-full");
+    expect(full?.innerHTML).toContain("<mark>alpha</mark>");
+    element.open = true;
+    expect(full?.innerHTML).toContain("<mark>alpha</mark>");
   });
 });

@@ -70,7 +70,6 @@ async function loadResultContext(el) {
       live.textContent = "No additional context found.";
     }
     el.dataset.loaded = "true";
-    el.setAttribute("aria-expanded", "true");
   } catch (err) {
     console.error("Failed to load context", err);
     live.textContent = "Context could not be loaded.";
