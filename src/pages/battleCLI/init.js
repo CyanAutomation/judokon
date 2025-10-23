@@ -1263,9 +1263,15 @@ export function selectStat(stat) {
     state.roundResolving = true;
     // Dispatch the statSelected event to the state machine and emit the battle event
     emitBattleEvent("statSelected", { stat });
-    safeDispatch("statSelected").catch((err) => {
+    const dispatchResult = safeDispatch("statSelected");
+    const handleDispatchError = (err) => {
       console.error("Error dispatching statSelected", err);
-    });
+    };
+    if (dispatchResult && typeof dispatchResult.catch === "function") {
+      dispatchResult.catch(handleDispatchError);
+    } else {
+      Promise.resolve(dispatchResult).catch(handleDispatchError);
+    }
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   } finally {
