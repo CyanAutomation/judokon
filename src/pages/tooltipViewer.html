@@ -51,7 +51,13 @@
               Copy Body
             </button>
           </div>
-          <div id="tooltip-preview" class="preview-body"></div>
+          <details id="tooltip-preview-container" class="preview-container">
+            <summary class="preview-summary">
+              <span class="summary-label summary-label--closed">Expand preview</span>
+              <span class="summary-label summary-label--open">Collapse preview</span>
+            </summary>
+            <div id="tooltip-preview" class="preview-body"></div>
+          </details>
           <div id="tooltip-warning" class="preview-warning" hidden></div>
           <pre id="tooltip-raw" class="raw-body"></pre>
         </section>

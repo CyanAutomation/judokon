@@ -1,13 +1,13 @@
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
-import { PreviewToggle } from "../components/PreviewToggle.js";
 import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
 import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
+const PREVIEW_COLLAPSE_THRESHOLD = 300;
 // Test hooks for dependency injection
 let snackbarFnOverride = null;
 
@@ -294,16 +294,29 @@ export function applyHashSelection(listPlaceholder, select) {
   }
 }
 
+function createPreviewSummary() {
+  const summary = document.createElement("summary");
+  summary.className = "preview-summary";
+  const closedLabel = document.createElement("span");
+  closedLabel.className = "summary-label summary-label--closed";
+  closedLabel.textContent = "Expand preview";
+  const openLabel = document.createElement("span");
+  openLabel.className = "summary-label summary-label--open";
+  openLabel.textContent = "Collapse preview";
+  summary.append(closedLabel, openLabel);
+  return summary;
+}
+
 /**
  * Initialize the Tooltip Viewer page.
  *
  * @pseudocode
- * 1. Grab DOM references and instantiate `PreviewToggle`.
+ * 1. Hydrate the preview `<details>` container and prepare overflow measurement.
  * 2. Load tooltip data with {@link loadTooltipData}; exit on failure.
  * 3. Render and filter the list, updating the preview on selection.
  * 4. Bind copy buttons, warm the snackbar module, and set up search filtering.
  * 5. Apply URL hash selection, then initialize help tooltips.
- * 6. Clean up search filtering on `pagehide`.
+ * 6. Clean up search filtering and measurement listeners on `pagehide`.
  */
 /**
  * @summary TODO: Add summary
@@ -353,6 +366,7 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
   const searchInput = document.getElementById("tooltip-search");
   let listPlaceholder = document.getElementById("tooltip-list");
   const previewEl = document.getElementById("tooltip-preview");
+  let previewContainer = document.getElementById("tooltip-preview-container");
   const rawEl = document.getElementById("tooltip-raw");
   const warningEl = document.getElementById("tooltip-warning");
   const keyCopyBtn = document.getElementById("copy-key-btn");
@@ -362,6 +376,7 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
     !searchInput ||
     !listPlaceholder ||
     !previewEl ||
+    !previewEl.parentNode ||
     !rawEl ||
     !warningEl ||
     !keyCopyBtn ||
@@ -369,10 +384,54 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
   ) {
     return;
   }
-  const previewToggle = new PreviewToggle(previewEl);
+  if (!previewContainer) {
+    previewContainer = document.createElement("details");
+    previewContainer.id = "tooltip-preview-container";
+    previewContainer.className = "preview-container";
+    const summary = createPreviewSummary();
+    previewContainer.append(summary);
+    previewEl.parentNode.insertBefore(previewContainer, previewEl);
+    previewContainer.append(previewEl);
+  } else {
+    if (!previewContainer.querySelector("summary")) {
+      previewContainer.insertBefore(createPreviewSummary(), previewContainer.firstChild);
+    }
+    if (!previewContainer.contains(previewEl)) {
+      previewContainer.append(previewEl);
+    }
+  }
+
+  let previewMeasureTimer = null;
+  const clearPreviewMeasurement = () => {
+    if (previewMeasureTimer !== null) {
+      clearTimeout(previewMeasureTimer);
+      previewMeasureTimer = null;
+    }
+  };
+
+  const schedulePreviewMeasurement = () => {
+    clearPreviewMeasurement();
+    previewMeasureTimer = setTimeout(() => {
+      previewMeasureTimer = null;
+      const collapsible = previewEl.scrollHeight > PREVIEW_COLLAPSE_THRESHOLD;
+      previewContainer.dataset.collapsible = collapsible ? "true" : "false";
+      if (collapsible) {
+        previewContainer.open = false;
+      } else {
+        previewContainer.open = true;
+      }
+    }, 0);
+  };
+
+  const handleResize = () => schedulePreviewMeasurement();
+  window.addEventListener("resize", handleResize);
 
   const data = await loadTooltipData(previewEl);
-  if (!data) return;
+  if (!data) {
+    clearPreviewMeasurement();
+    window.removeEventListener("resize", handleResize);
+    return;
+  }
 
   let listSelect;
   function updateList(filter = "") {
@@ -405,8 +464,10 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
     previewEl.classList.remove("fade-in");
     void previewEl.offsetWidth;
     previewEl.classList.add("fade-in");
-    previewToggle.reset();
-    previewToggle.update();
+    if (previewContainer.dataset.collapsible !== "false") {
+      previewContainer.open = false;
+    }
+    schedulePreviewMeasurement();
   }
 
   bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs);
@@ -414,9 +475,15 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
     requestIdleCallback(() => import("./showSnackbar.js").catch(() => {}));
   }
   const cleanupSearch = initSearchFilter(searchInput, updateList, debounceMs);
-  window.addEventListener("pagehide", cleanupSearch, { once: true });
+  const handlePageHide = () => {
+    cleanupSearch();
+    clearPreviewMeasurement();
+    window.removeEventListener("resize", handleResize);
+  };
+  window.addEventListener("pagehide", handlePageHide, { once: true });
 
   updateList();
+  schedulePreviewMeasurement();
   applyHashSelection(listPlaceholder, select);
   initTooltips();
 }

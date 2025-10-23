@@ -889,7 +889,13 @@ export function createTestTooltipViewer(tooltipData = {}) {
   container.innerHTML = `
     <input id="tooltip-search" />
     <ul id="tooltip-list"></ul>
-    <div id="tooltip-preview"></div>
+    <details id="tooltip-preview-container" class="preview-container">
+      <summary class="preview-summary">
+        <span class="summary-label summary-label--closed">Expand preview</span>
+        <span class="summary-label summary-label--open">Collapse preview</span>
+      </summary>
+      <div id="tooltip-preview" class="preview-body"></div>
+    </details>
     <div id="tooltip-warning"></div>
     <pre id="tooltip-raw"></pre>
     <button id="copy-key-btn"></button>
@@ -946,6 +952,7 @@ export function createTestTooltipViewer(tooltipData = {}) {
       getWarningText: () => container.querySelector("#tooltip-warning").textContent,
       getTooltipCount: () => container.querySelectorAll("#tooltip-list li").length,
       cleanup: () => {
+        window.dispatchEvent(new Event("pagehide"));
         if (container.parentNode) {
           container.parentNode.removeChild(container);
         }
