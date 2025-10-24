@@ -4,6 +4,7 @@ import * as init from "../../../src/pages/battleCLI/init.js";
 import * as domMod from "../../../src/pages/battleCLI/dom.js";
 import { withMutedConsole } from "../../utils/console.js";
 import cliState from "../../../src/pages/battleCLI/state.js";
+import { resetCliState } from "../../utils/battleCliTestUtils.js";
 
 describe("battleCLI init import guards", () => {
   it("does not throw when document is undefined", async () => {
@@ -49,13 +50,8 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     document.body.innerHTML = '<div id="cli-countdown"></div>';
   });
   afterEach(() => {
-    cliState.ignoreNextAdvanceClick = false;
-    cliState.roundResolving = false;
-    cliState.shortcutsReturnFocus = null;
-    cliState.shortcutsOverlay = null;
-    cliState.escapeHandledPromise = new Promise((resolve) => {
-      cliState.escapeHandledResolve = resolve;
-    });
+    resetCliState();
+    delete document.activeElement;
     vi.restoreAllMocks();
     document.body.innerHTML = "";
   });
@@ -86,7 +82,6 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     expect(cliState.roundResolving).toBe(true);
     expect(statDiv.classList.contains("selected")).toBe(true);
 
-    delete document.activeElement;
     byIdSpy.mockRestore();
   });
 });
