@@ -131,7 +131,7 @@ export function parseTooltipText(text) {
 }
 
 function ensureTooltipElement() {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
   if (tooltipEl) return tooltipEl;
   tooltipEl = document.createElement("div");
   tooltipEl.className = "tooltip";
