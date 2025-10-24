@@ -2178,14 +2178,12 @@ export function handleWaitingForPlayerActionKey(key) {
       return false;
     }
     const activeElement = getActiveElement();
-    if (activeElement?.dataset?.statIndex) {
-      const idx = activeElement.dataset.statIndex;
-      if (idx) {
-        const stat = getStatByIndex(idx);
-        if (stat) {
-          __scheduleMicrotask(() => selectStat(stat));
-          return true;
-        }
+    if (activeElement?.dataset) {
+      const { stat: statKey, statIndex } = activeElement.dataset;
+      const resolvedStat = statKey || (statIndex ? getStatByIndex(statIndex) : undefined);
+      if (resolvedStat) {
+        __scheduleMicrotask(() => selectStat(resolvedStat));
+        return true;
       }
     }
     return false;
