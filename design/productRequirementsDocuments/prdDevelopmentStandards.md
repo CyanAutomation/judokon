@@ -177,6 +177,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 - Modals max at 600px wide, centre with dim backdrop, keep Cancel left / Save right, and preserve visible action buttons on mobile with confirmation toasts after Save.
 - Judoka editor uses sliders/steppers for stats, live previews (collapsible on mobile), dropdown for signature moves, and a sticky footer with Cancel + Save.
 - Buttons rely on `--button-*` tokens, maintain 44–48px minimum height, use shared border radii, and provide ripple + outline feedback through CSS pseudo-elements tied to `:active`/`:focus-visible` while respecting `prefers-reduced-motion`.
+- Ripple feedback is achieved purely through CSS (`::after`) with no DOM mutations; the deprecated `setupButtonEffects()` helper stays removed to keep interactions declarative and accessible.
 - Classic Battle layouts align player/opponent cards in a three-column grid (stacking on <480px) with stat buttons presented as evenly spaced grids.
 - Sidebar lists pulse selected items for 150 ms while honouring `prefers-reduced-motion`.
 

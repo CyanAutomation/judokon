@@ -160,6 +160,8 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 }
 ```
 
+Ripple and focus feedback are handled through CSS-only `::after` pseudo-elements that respond to `:active` and `:focus-visible`. These rules must honor `@media (prefers-reduced-motion: reduce)` and the `.reduce-motion` utility class by disabling transitions and transforms when motion should be minimized. JavaScript hooks such as the legacy `setupButtonEffects()` helper remain deprecated.
+
 **Card Components:**
 
 - **Judoka Cards**: Cut-out portrait art with clean edges, expressive poses, subtle drop shadows
