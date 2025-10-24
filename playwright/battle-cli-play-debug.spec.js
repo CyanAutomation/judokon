@@ -45,14 +45,43 @@ test.describe("Battle CLI - Play (Debug)", () => {
     await page.waitForTimeout(500);
 
     // Read debug logs from localStorage
-    const debugLogs = await page.evaluate(() => {
+    const selectStatLogs = await page.evaluate(() => {
+      try {
+        return JSON.parse(localStorage.getItem("__DEBUG_SELECT_STAT_LOG") || "[]");
+      } catch {
+        return [];
+      }
+    });
+    console.log("[DEBUG TEST] selectStat logs:", selectStatLogs);
+
+    const dispatchLogs = await page.evaluate(() => {
       try {
         return JSON.parse(localStorage.getItem("__DEBUG_DISPATCH_LOG") || "[]");
       } catch {
         return [];
       }
     });
-    console.log("[DEBUG TEST] Dispatch logs:", debugLogs);
+    console.log("[DEBUG TEST] Dispatch logs:", dispatchLogs);
+
+    const handleClickLogs = await page.evaluate(() => {
+      try {
+        return JSON.parse(localStorage.getItem("__DEBUG_HANDLE_STAT_CLICK") || "[]");
+      } catch {
+        return [];
+      }
+    });
+    console.log("[DEBUG TEST] handleStatClick logs:", handleClickLogs);
+
+    // Also check the battle state from the state machine directly
+    const stateMachineState = await page.evaluate(() => {
+      try {
+        const machine = window.__TEST_API?.state?.getBattleStateMachine?.();
+        return machine?.state?.value ?? "NO_MACHINE";
+      } catch (e) {
+        return `ERROR: ${e.message}`;
+      }
+    });
+    console.log("[DEBUG TEST] Battle state machine value:", stateMachineState);
 
     await expect
       .poll(() => {

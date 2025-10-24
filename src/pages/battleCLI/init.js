@@ -1307,6 +1307,16 @@ function clearStoreTimer(store, timerProperty) {
  * dispatch "statSelected" on machine
  */
 export function selectStat(stat) {
+  // DEBUG: Log to localStorage so we can trace execution
+  try {
+    const logs = JSON.parse(localStorage.getItem("__DEBUG_SELECT_STAT_LOG") || "[]");
+    logs.push(
+      `${new Date().toISOString()}: selectStat called with stat=${stat}, TEST=${window.__TEST__}, selectionApplying=${selectionApplying}, roundResolving=${state.roundResolving}`
+    );
+    if (logs.length > 50) logs.shift();
+    localStorage.setItem("__DEBUG_SELECT_STAT_LOG", JSON.stringify(logs));
+  } catch {}
+
   if (typeof window !== "undefined" && window.__TEST__) {
     safeDispatch("statSelected");
     return;
@@ -1788,6 +1798,16 @@ function handleStatListClick(event) {
 }
 
 function handleStatClick(statDiv, event) {
+  // DEBUG: Log state checks
+  try {
+    const doc = getSafeDocument();
+    const stateValue = doc?.body?.dataset?.battleState ?? "";
+    const logs = JSON.parse(localStorage.getItem("__DEBUG_HANDLE_STAT_CLICK") || "[]");
+    logs.push(`handleStatClick: state=${stateValue}, statDiv=${statDiv?.dataset?.stat}`);
+    if (logs.length > 50) logs.shift();
+    localStorage.setItem("__DEBUG_HANDLE_STAT_CLICK", JSON.stringify(logs));
+  } catch {}
+
   event.preventDefault();
   const idx = statDiv?.dataset?.statIndex;
   if (!idx) return;

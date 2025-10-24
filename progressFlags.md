@@ -41,6 +41,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Implemented default skipRoundCooldown QA markers on the Next button/body and taught helpers to mirror `[data-role="next-round"]` fallbacks for automation (`src/helpers/classicBattle/uiHelpers.js`, `src/pages/battleClassic.html`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `playwright/battle-classic/skip-round-cooldown.spec.js`); validated with `npx vitest run tests/helpers/classicBattle/uiHelpers.featureFlags.test.js` and `npx playwright test playwright/battle-classic/skip-round-cooldown.spec.js`.
 - Implemented Phase 3.2 unsaved changes indicator with an accessible `Saved!` live region and styling (`src/helpers/settingsPage.js`, `src/pages/settings.html`, `src/styles/settings.css`, `tests/helpers/settingsPage.test.js`, `tests/utils/testUtils.js`, `playwright/settings.spec.js`); validated via `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Authored a Battle State Progress QA guide so automation has a canonical checklist of expected `data-feature-*` markers (`docs/qa/battle-state-progress.md`).
+- Documented the difference between `statHotkeys` (Classic UI) and `cliShortcuts` (Battle CLI) and captured verification steps for each (`docs/qa/stat-hotkeys-vs-cli-shortcuts.md`).
 - Added miniature theme previews to the display mode selector to visualize light/dark/retro choices (`src/pages/settings.html`, `src/styles/settings.css`); validated with `npm run check:contrast`, `npx vitest run tests/helpers/settingsPage.test.js`, and `npx playwright test playwright/settings.spec.js`.
 - Refined the switch interactivity pass with label-level hover/focus styling, text emphasis, and dedicated Playwright coverage to assert the new feedback (`src/styles/settings.css`, `playwright/settings.spec.js`); targeted checks: `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 
@@ -109,8 +110,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 - `statHotkeys` & `cliShortcuts`
   - Status: **Decoupled** — `wireStatHotkeys` now respects `isEnabled("statHotkeys")` without mutating persistence, and the CLI handler returns `"ignored"` when the flag is off so disabled users are not nagged (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`).
   - Confidence: High (covered by refreshed Vitest and Playwright runs above).
-  - Effort: Low (remaining follow-up is documentation to clarify that CLI shortcuts stay independent).
-  - Recommendation: Update settings/help copy to explain the two toggles; no additional engineering action unless UX wants to consolidate them.
+  - Effort: Low (documentation published; Settings copy remains accurate with tooltips explaining scope).
+  - Recommendation: Reference the QA guide (`docs/qa/stat-hotkeys-vs-cli-shortcuts.md`) for future audits; no further engineering action required unless UX wants to consolidate the toggles.
 
 ## Feasibility analysis of the remediation plan
 
