@@ -145,7 +145,8 @@ body {
 .game-mode-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 1fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: max-content;
   gap: var(--space-lg);
   padding: var(--space-large) var(--space-xl);
   padding-bottom: calc(var(--space-large) + var(--footer-height) + env(safe-area-inset-bottom));
