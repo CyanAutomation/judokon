@@ -131,6 +131,7 @@ export function parseTooltipText(text) {
 }
 
 function ensureTooltipElement() {
+  if (typeof document === 'undefined') return null;
   if (tooltipEl) return tooltipEl;
   tooltipEl = document.createElement("div");
   tooltipEl.className = "tooltip";
@@ -274,6 +275,10 @@ export async function initTooltips(root = globalThis.document) {
   const DOMPurify = await getSanitizer();
   const data = await loadTooltips();
   const tip = ensureTooltipElement();
+  if (!tip) {
+    notifyReady();
+    return () => {};
+  }
 
   function show(e) {
     const target = e.currentTarget || e.target;
