@@ -23,47 +23,60 @@
 import { test as base } from "@playwright/test";
 
 /**
- * Extended test fixture that ensures battle CLI tests run with isolated contexts.
+ * Extended test fixture that ensures battle CLI tests run with isolated state.
  *
  * @pseudocode
- * 1. Get a fresh browser context for each test (ensures module isolation).
- * 2. Create a new page in that context.
- * 3. Inject script to clear known globals before page navigation.
+ * 1. Create a new page in the browser context.
+ * 2. Inject script to clear known globals BEFORE page navigation.
+ * 3. After page navigation, call __resetModuleState() to clear module vars.
  * 4. Execute the test with clean environment.
  * 5. Cleanup resources after test.
+ *
+ * Strategy: Clear globals early + reset module state after init
+ * This provides defense-in-depth against state pollution between tests.
  *
  * @type {import("@playwright/test").TestType}
  */
 export const test = base.extend({
-  // Create a new browser context for each test to ensure module isolation
-  // This is more robust than just clearing globals, as it forces JavaScript
-  // module reloading and prevents stale closures from previous tests
-  context: async ({ context }, use) => {
-    // Use the context as-is; Playwright creates fresh contexts per test by default
-    // But we ensure isolation by using explicit context creation
-    await use(context);
-  },
-
-  // Override page fixture to add global cleanup before navigation
   page: async ({ context }, use) => {
     const page = await context.newPage();
 
-    // Clear globalThis globals that might persist across page reloads within same context
+    // PRE-NAVIGATION: Clear globals that might persist across page reloads
     await page.addInitScript(() => {
       // WeakSet that tracks stat list elements with bound click handlers
       delete globalThis.__battleCLIStatListBoundTargets;
 
       // Window object that accumulates battle CLI initialization functions
+      // Note: We'll reinitialize this after page loads
       delete globalThis.__battleCLIinit;
 
       // Optional: Any other battle CLI module state stored globally
       delete globalThis.__battleCLIModuleState;
+
+      // CRITICAL: Clear __TEST__ flag to prevent test-mode early returns
+      // in production code (selectStat, etc). The __TEST__ flag is meant
+      // for unit tests with debug hooks, not integration tests.
+      delete globalThis.__TEST__;
+    });
+
+    // Hook into afterNavigate to reset module state after page loads
+    page.on("framenavigated", async () => {
+      try {
+        // POST-NAVIGATION: Call the module reset function to clear all state vars
+        await page.evaluate(() => {
+          if (typeof window !== "undefined" && window.__battleCLIinit?.__resetModuleState) {
+            window.__battleCLIinit.__resetModuleState();
+          }
+        });
+      } catch {
+        // Silently ignore errors during state reset (function may not be available yet)
+      }
     });
 
     // Provide the page to the test
     await use(page);
 
-    // Cleanup: close the page (context cleanup is automatic)
+    // Cleanup: close the page
     await page.close();
   }
 });
