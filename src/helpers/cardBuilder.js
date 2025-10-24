@@ -11,7 +11,7 @@ function createFlipToggleId(seed) {
   const unique =
     typeof globalThis.crypto?.randomUUID === "function"
       ? globalThis.crypto.randomUUID()
-      : Math.random().toString(36).slice(2);
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   return `card-flip-toggle-${seed ?? "card"}-${unique}`;
 }
 
@@ -44,6 +44,11 @@ function attachKeyboardToggle(card, toggle) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       toggle.click();
+      queueMicrotask(() => {
+        if (typeof card.focus === "function") {
+          card.focus({ preventScroll: true });
+        }
+      });
     }
   });
 }
