@@ -81,6 +81,40 @@ if (typeof window !== "undefined") {
 }
 
 let errorPopupTimeoutId;
+let saveStatusTimeoutId;
+
+function createSaveStatusNotifier(statusElement) {
+  if (!statusElement) {
+    return () => {};
+  }
+
+  return function notify(message = "Saved!") {
+    const text = typeof message === "string" && message.trim().length > 0 ? message : "Saved!";
+
+    if (saveStatusTimeoutId) {
+      clearTimeout(saveStatusTimeoutId);
+      saveStatusTimeoutId = undefined;
+    }
+
+    statusElement.hidden = false;
+    statusElement.dataset.visible = "true";
+    const applyMessage = () => {
+      statusElement.textContent = text;
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(applyMessage);
+    } else {
+      applyMessage();
+    }
+
+    saveStatusTimeoutId = setTimeout(() => {
+      statusElement.dataset.visible = "false";
+      statusElement.hidden = true;
+      statusElement.textContent = "";
+      saveStatusTimeoutId = undefined;
+    }, 2000);
+  };
+}
 
 /**
  * Initialize controls and event wiring for the Settings page.
@@ -102,17 +136,21 @@ function initializeControls(settings) {
   let latestTooltipMap = {};
 
   const { controls, errorPopup, resetButton } = createControlsRefs();
+  const notifySaveStatus = createSaveStatusNotifier(
+    document.getElementById("settings-save-status")
+  );
   const getCurrentSettings = () => currentSettings;
 
   const showErrorAndRevert = makeErrorPopupHandler(errorPopup);
   const onUpdate = (controlElement) => {
-    const settingItem = controlElement.closest(".settings-item");
+    const settingItem = controlElement?.closest(".settings-item");
     if (settingItem) {
       settingItem.classList.add("saved");
       setTimeout(() => {
         settingItem.classList.remove("saved");
       }, 2000);
     }
+    notifySaveStatus();
   };
 
   const handleUpdate = makeHandleUpdate(

@@ -225,6 +225,32 @@
   margin-top: var(--space-lg);
 }
 
+.settings-save-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  margin: var(--space-md) auto var(--space-lg);
+  padding: var(--space-xs) var(--space-md);
+  max-width: min(320px, 100%);
+  font-weight: 600;
+  color: var(--color-text);
+  background-color: color-mix(in srgb, var(--color-secondary) 18%, var(--color-surface) 82%);
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-base);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.settings-save-status[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* Toggle switch styles */
 .switch {
   position: relative;

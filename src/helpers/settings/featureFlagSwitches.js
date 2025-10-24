@@ -36,9 +36,14 @@ export function handleFeatureFlagChange({
     [flag]: { ...info, enabled: input.checked }
   };
   return Promise.resolve(
-    handleUpdate("featureFlags", updated, () => {
-      input.checked = prev;
-    })
+    handleUpdate(
+      "featureFlags",
+      updated,
+      () => {
+        input.checked = prev;
+      },
+      input
+    )
   )
     .then(() => {
       showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);

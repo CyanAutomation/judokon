@@ -66,9 +66,14 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
   const navigationModeId = resolveNavigationModeId(mode.id);
 
   const updatePromise = Promise.resolve(
-    handleUpdate("gameModes", updated, () => {
-      input.checked = prev;
-    })
+    handleUpdate(
+      "gameModes",
+      updated,
+      () => {
+        input.checked = prev;
+      },
+      input
+    )
   )
     .then(() => {
       showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);

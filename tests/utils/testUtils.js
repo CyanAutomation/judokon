@@ -115,6 +115,9 @@ export function createBattleCardContainers() {
  */
 export function createSettingsDom() {
   const fragment = document.createDocumentFragment();
+  const saveStatus = document.createElement("p");
+  saveStatus.id = "settings-save-status";
+  saveStatus.hidden = true;
   const soundToggle = document.createElement("input");
   soundToggle.id = "sound-toggle";
   soundToggle.type = "checkbox";
@@ -158,6 +161,7 @@ export function createSettingsDom() {
   const resetButton = document.createElement("button");
   resetButton.id = "reset-settings-button";
   fragment.append(
+    saveStatus,
     soundToggle,
     motionToggle,
     typewriterToggle,

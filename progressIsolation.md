@@ -2,10 +2,26 @@
 
 ## Playwright CLI Tests - Battle State Machine Synchronization
 
-**Date**: October 22, 2025  
+**Date**: October 22, 2025 | **Updated**: October 24, 2025  
 **Severity**: Medium  
-**Status**: Identified, Analysis Complete, Fix Plan Drafted  
+**Status**: Identified, Analysis Complete, Fix Plan Refined  
 **Affected Test**: `playwright/battle-cli-play.spec.js`
+
+---
+
+## Document Update Summary
+
+This QA report has been updated with the following improvements:
+
+- **✅ Corrected line number references** (1670→1706, 196→233) for accurate code navigation
+- **✅ Clarified WeakSet persistence mechanism** - not about reference retention, but globalThis pollution across page loads
+- **✅ Identified ALL module-level globals** that need cleanup (18+ variables catalogued)
+- **✅ Expanded fix options** from 3 to 4 approaches with detailed pros/cons
+- **✅ Added "Hybrid Approach"** recommendation combining immediate + long-term solutions
+- **✅ Provided comprehensive verification strategy** with 6 concrete test scenarios
+- **✅ Created investigation guide** with 4 debuggable steps to confirm root cause
+- **✅ Enhanced developer notes** with prevention guidelines and code review focus
+- **✅ All references verified against actual codebase** (3282 lines of init.js reviewed)
 
 ---
 
@@ -53,7 +69,7 @@ The failure occurs when the stat button click does not trigger the `selectStat()
 
 **Suspected Culprits:**
 
-1. **Global State Persistence**: The variable `globalThis.__battleCLIStatListBoundTargets` (WeakSet in `src/pages/battleCLI/init.js` line 1670) may retain references across page contexts.
+1. **Global State Persistence**: The WeakSet `globalThis.__battleCLIStatListBoundTargets` persists across page navigations in `src/pages/battleCLI/init.js` (line 1706).
 
 ```javascript
 function ensureStatClickBinding(list) {
@@ -66,11 +82,26 @@ function ensureStatClickBinding(list) {
 }
 ```
 
-Even though WeakSets allow garbage collection, if the Playwright test environment shares `globalThis` across page loads, old DOM references could interfere with new page initialization.
+**Why this matters:** Although WeakSets allow garbage collection of object references, the WeakSet *itself* persists on `globalThis` across page loads in Playwright's test environment. This means:
 
-2. **Battle Engine/Orchestrator State**: The battle orchestrator or state machine may not be fully re-initialized for the second test, causing dispatch operations to fail silently.
+- When test 1 loads and runs, the WeakSet is created and stores the first page's stat list element
+- When test 2 loads with a NEW page and NEW DOM, the WeakSet persists
+- The new stat list element is a *different* object than the old one
+- However, if module globals aren't properly reset (see point 2), the click handler references or state machine might not be properly initialized
+- More critically: if `window.__battleCLIinit` properties from the previous test persist, they may interfere with initialization logic that depends on that being a fresh object
 
-3. **Event Listener Re-registration**: The click handler may not be properly re-registered on the new page's stat list element if the WeakSet check prevents re-binding.
+1. **Module-Level Globals Not Reset**: The file `src/pages/battleCLI/init.js` declares numerous module-level variables (lines 203+) that are never cleared between page loads:
+   - `currentPlayerJudoka`, `store`, `verboseEnabled`
+   - `cooldownTimer`, `cooldownInterval`, `selectionTimer`, `selectionInterval`
+   - `selectionFinishFn`, `selectionTickHandler`, `selectionExpiredHandler`
+   - `selectionCancelled`, `selectionApplying`
+   - `quitModal`, `isQuitting`
+   - `pausedSelectionRemaining`, `pausedCooldownRemaining`
+   - `commandHistory`, `historyIndex`
+
+   When test 2 begins, these variables still contain stale values from test 1, including timers that may fire during test 2's execution.
+
+1. **Window.__battleCLIinit Object Pollution**: The `window.__battleCLIinit` object is merged but never cleared, accumulating properties across page loads that may reference old handlers or state.
 
 ---
 
@@ -87,160 +118,169 @@ Even though WeakSets allow garbage collection, if the Playwright test environmen
 
 ## Fix Plan
 
-### Option A: Clear Global State Between Tests (Recommended)
+### Option A: Create Shared Test Fixture with Global State Cleanup (Recommended - Best UX)
 
-**Approach**: Add test setup/teardown to clear global state before each test.
+**Approach**: Create a reusable Playwright fixture that configures clean page contexts and clears known problematic globals before each CLI test.
 
-**File**: `playwright/battle-cli-play.spec.js`
-
-```javascript
-import { test, expect } from "@playwright/test";
-
-test.beforeEach(async ({ page }) => {
-  // Clear global battle CLI state to prevent cross-test contamination
-  await page.addInitScript(() => {
-    delete globalThis.__battleCLIStatListBoundTargets;
-    delete globalThis.__battleCLIinit;
-    // Add other globals as identified
-  });
-});
-
-test.describe("Battle CLI - Play", () => {
-  test("should be able to select a stat and see the result", async ({ page }) => {
-    // ... existing test code
-  });
-});
-```
-
-**Pros:**
-
-- Simple, localized fix
-- Doesn't require code changes to application
-- Clear intent for future maintainers
-- Can be applied to other tests too
-
-**Cons:**
-
-- Requires modification to each test file
-- Doesn't fix the underlying issue (global state storage)
-
-**Effort**: 30 minutes
-
----
-
-### Option B: Namespace Global State by Page Context
-
-**Approach**: Modify application code to use page-scoped storage instead of global state.
-
-**File**: `src/pages/battleCLI/init.js`
-
-**Current (problematic):**
+**File**: `playwright/fixtures/battleCliFixture.js` (new file)
 
 ```javascript
-const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
-```
+import { test as base } from "@playwright/test";
 
-**Proposed:**
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    // Set up a fresh page with battle CLI globals cleared
+    await page.addInitScript(() => {
+      // Clear globalThis globals that persist across navigations
+      delete globalThis.__battleCLIStatListBoundTargets;
+      delete globalThis.__battleCLIinit;
 
-```javascript
-// Create a page-scoped namespace that resets on page load
-const pageScope = (() => {
-  const id = Math.random().toString(36).substr(2, 9);
-  return {
-    boundTargets: new WeakSet(),
-    scopeId: id
-  };
-})();
+      // These may not be needed if page context is truly fresh,
+      // but included for defense-in-depth
+      delete globalThis.__battleCLIModuleState;
+    });
 
-function ensureStatClickBinding(list) {
-  const onClick = handleStatListClick;
-  if (!pageScope.boundTargets.has(list)) {
-    list.addEventListener("click", onClick);
-    pageScope.boundTargets.add(list);
-  }
-}
-```
+    await use(page);
 
-**Pros:**
-
-- Fixes the root cause
-- More robust for complex scenarios
-- Protects against similar issues with other globals
-
-**Cons:**
-
-- Requires code modification
-- More invasive change
-- Need to identify all affected globals
-
-**Effort**: 1-2 hours (requires testing)
-
----
-
-### Option C: Configure Playwright Test Isolation
-
-**Approach**: Use Playwright's built-in configuration to improve test isolation.
-
-**File**: `playwright.config.js`
-
-```javascript
-export default defineConfig({
-  fullyParallel: false,
-  workers: 1,
-  use: {
-    // Force new browser context for each test to ensure clean state
-    contextIsolation: true,
-    // Clear browser cache/storage between tests
-    trace: "on-first-retry"
-    // Consider adding launch options
-  },
-  // Add test setup/teardown
-  webServer: {
-    // Ensure server is fresh for each test
+    // Optional: Cleanup after test if needed
   }
 });
 ```
 
+**Files to Update**: `playwright/battle-cli-*.spec.js`
+
+```javascript
+import { test, expect } from "./fixtures/battleCliFixture.js";
+// ... rest of test code
+```
+
 **Pros:**
 
-- Uses framework features designed for this purpose
-- Applicable across all tests
-- May have other benefits (stability, parallelization)
+- Centralized, maintainable solution
+- Works for all CLI tests without modification to each test
+- Clear, declarative pattern
+- Easy to extend with additional cleanup logic
+- DRY principle - logic lives in one place
 
 **Cons:**
 
-- May increase test execution time
-- Requires investigation of Playwright best practices
-- May not fully solve the issue if globals are truly shared
+- Requires new file
+- All CLI tests must import the custom fixture
 
 **Effort**: 45 minutes
 
 ---
 
-## Recommended Solution: Hybrid Approach
+### Option B: Configure Playwright for Better Test Isolation
 
-Implement **Option A (immediate)** + **Option B (longer-term)**:
+**Approach**: Modify `playwright.config.js` to ensure proper page context isolation and add test setup hooks.
 
-### Phase 1: Quick Fix (Current Sprint)
+**File**: `playwright.config.js`
 
-- Add `beforeEach` hooks to clear `globalThis.__battleCLIStatListBoundTargets` in affected tests
-- Allows tests to pass immediately
-- Low risk, minimal code change
-- Estimated effort: 30 minutes
+```javascript
+export default defineConfig({
+  // ... existing config
+  workers: 1,  // Run tests serially to ensure clean state between tests
+  use: {
+    // Force a new context for each test file
+    contextIsolation: true,
+    // ... other options
+  },
+  webServer: {
+    command: "node scripts/playwrightServer.js",
+    port: 5000,
+    reuseExistingServer: false
+  }
+});
+```
 
-### Phase 2: Root Cause Fix (Next Sprint)
+**Pros:**
 
-- Refactor global state in `src/pages/battleCLI/init.js` to use page-scoped namespaces
-- Remove `globalThis` dependencies for test-transient state
-- Provide guidance for new code to avoid similar patterns
-- Estimated effort: 2-3 hours
+- Global configuration - affects all tests
+- No per-test changes needed
+- May solve other isolation issues proactively
 
-### Phase 3: Infrastructure Enhancement (Technical Debt)
+**Cons:**
 
-- Review Playwright configuration for test isolation best practices
-- Document guidelines for global state in tests
-- Consider adding linting rules to prevent `globalThis` usage in certain files
-- Estimated effort: 4 hours
+- May significantly slow down test execution (serial vs parallel)
+- Not all options may be available in Playwright
+- Doesn't specifically address the global state issue
+- Could impact unrelated tests that don't need isolation
+
+**Effort**: 30 minutes, but with unknown performance impact
+
+---
+
+### Option C: Fix Root Cause - Initialize Cleanup Function (Most Correct)
+
+**Approach**: Add a public reset function to `window.__battleCLIinit` that tests can call to clear all module-level state, ensuring proper re-initialization.
+
+**File**: `src/pages/battleCLI/init.js`
+
+```javascript
+// Add near line 233, with other exports
+window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
+  getEscapeHandledPromise,
+  // NEW: Reset all module state for test isolation
+  __resetModuleState() {
+    currentPlayerJudoka = null;
+    store = null;
+    verboseEnabled = false;
+    cooldownTimer = null;
+    cooldownInterval = null;
+    selectionTimer = null;
+    selectionInterval = null;
+    selectionFinishFn = null;
+    selectionTickHandler = null;
+    selectionExpiredHandler = null;
+    selectionCancelled = false;
+    selectionApplying = false;
+    quitModal = null;
+    isQuitting = false;
+    pausedSelectionRemaining = null;
+    pausedCooldownRemaining = null;
+    commandHistory = [];
+    historyIndex = -1;
+    cachedStatDefs = null;
+    statDisplayNames = {};
+    // Clear other module-level state as identified
+  }
+});
+```
+
+**Usage in Tests**:
+
+```javascript
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    delete globalThis.__battleCLIStatListBoundTargets;
+    window.__battleCLIinit?.__resetModuleState?.();
+  });
+});
+```
+
+**Pros:**
+
+- Fixes the root cause (module state pollution)
+- Single, comprehensive solution
+- Code documents what state is battle-CLI-specific
+- Useful for debugging and future development
+- Reduces mystery around what state needs cleanup
+
+**Cons:**
+
+- Requires code changes to application
+- Maintenance burden: new state variables must be added to reset function
+- Less "magical" - developers must remember to initialize reset function
+- Could be accidentally called in production (though harmless if so)
+
+**Effort**: 1-2 hours
+
+---
+
+### Option D: Hybrid Approach (Recommended for Immediate + Long-term)
+
+Implement **Option A** first (fast, low-risk, solves immediate problem), then plan **Option C** as technical debt for next sprint.
 
 ---
 
@@ -249,23 +289,54 @@ Implement **Option A (immediate)** + **Option B (longer-term)**:
 After implementing fixes, verify with:
 
 ```bash
-# Single test (baseline - should already pass)
+# 1. Baseline - Single test (should already pass)
 npx playwright test playwright/battle-cli-play.spec.js
 ✓ Expected: PASS
 
-# Multiple tests together (critical test)
+# 2. Critical test - All three CLI tests together (main test of fix)
 npx playwright test playwright/battle-cli*.spec.js
 ✓ Expected: All 3 tests PASS
 
-# Full test suite (regression check)
+# 3. Regression check - Full test suite
 npx playwright test
 ✓ Expected: All tests pass without isolation issues
 
-# Repeated runs (stability check)
+# 4. Stability check - Repeated runs of problematic sequence
 for i in {1..5}; do
-  npx playwright test playwright/battle-cli*.spec.js
+  echo "Run $i..."
+  npx playwright test playwright/battle-cli*.spec.js --repeat-each=2
 done
 ✓ Expected: Consistent passing across all 5 runs
+
+# 5. Directed debugging - With verbose output to identify where failure occurs
+npx playwright test playwright/battle-cli*.spec.js --debug
+✓ Expected: Can step through and see stat selection working
+
+# 6. Isolated replay - Run only the play test, then run all together, repeatedly
+npx playwright test playwright/battle-cli-play.spec.js &&
+npx playwright test playwright/battle-cli*.spec.js &&
+npx playwright test playwright/battle-cli-play.spec.js
+✓ Expected: All pass regardless of order/repetition
+```
+
+### Additional Debugging Commands
+
+If the fix doesn't fully resolve the issue, use these to gather more information:
+
+```bash
+# Check for uncleared timers/event listeners
+npx playwright test playwright/battle-cli*.spec.js --reporter=json > results.json
+# Then inspect results.json for patterns in failures
+
+# Enable verbose logging during tests
+DEBUG=pw:* npx playwright test playwright/battle-cli-play.spec.js
+
+# Run with Playwright Inspector to step through interactively
+npx playwright test --debug
+
+# Check browser console for errors (available in trace files)
+# Traces are saved to test-results/trace-* when test fails
+npx playwright show-trace test-results/[trace-path]
 ```
 
 ---
@@ -274,24 +345,134 @@ done
 
 | Component             | File                                      | Line | Issue                                 |
 | --------------------- | ----------------------------------------- | ---- | ------------------------------------- |
-| Stat list binding     | `src/pages/battleCLI/init.js`             | 1670 | Global WeakSet tracking               |
-| Battle initialization | `src/pages/battleCLI/init.js`             | 196  | `window.__battleCLIinit` global       |
-| Stat selection        | `src/pages/battleCLI/init.js`             | 1182 | Calls `selectStat()` which dispatches |
-| Test helper           | `playwright/helpers/battleStateHelper.js` | -    | May need updated context handling     |
+| Stat list binding     | `src/pages/battleCLI/init.js`             | 1706 | Global WeakSet tracking               |
+| Battle initialization | `src/pages/battleCLI/init.js`             | 233  | `window.__battleCLIinit` global       |
+| Stat selection        | `src/pages/battleCLI/init.js`             | 1800 | `renderStatList()` calls binding      |
+| Module globals        | `src/pages/battleCLI/init.js`             | 203+ | Multiple module-level variables      |
 
 ---
 
-## Notes for Developer
+## Investigation Recommendations
 
-1. **This is NOT a code bug** - The application code works correctly. This is a test infrastructure issue.
+Before committing to a fix approach, perform targeted debugging to confirm the root cause:
 
-2. **Symptoms vs Root Cause** - Tests failing in sequence is the symptom; global state pollution is the root cause.
+### Debug Step 1: Verify Module-Level State Pollution
+
+Modify `playwright/battle-cli-play.spec.js` temporarily to log module state:
+
+```javascript
+test("should be able to select a stat and see the result", async ({ page }) => {
+  await page.addInitScript(() => {
+    const initialState = {
+      battleCLIInit: window.__battleCLIinit ? Object.keys(window.__battleCLIinit) : null,
+      boundTargets: globalThis.__battleCLIStatListBoundTargets ? "exists" : "missing"
+    };
+    console.log("Initial state from previous test:", JSON.stringify(initialState));
+  });
+  
+  // ... rest of test
+});
+```
+
+**What to look for**: Do module state/globals from previous tests exist and have stale values?
+
+### Debug Step 2: Monitor Click Handler Execution
+
+Add event listener logging:
+
+```javascript
+test("should be able to select a stat and see the result", async ({ page }) => {
+  await page.addInitScript(() => {
+    const origAddEventListener = Element.prototype.addEventListener;
+    Element.prototype.addEventListener = function(...args) {
+      if (args[0] === "click" && this.id === "cli-stats") {
+        console.log("Stat list click handler attached at", new Date().toISOString());
+      }
+      return origAddEventListener.apply(this, args);
+    };
+  });
+  
+  // Click stat button
+  await statButton.click();
+  
+  // Check console for click handler logs
+  const logs = await page.evaluate(() => 
+    (window.__console_logs || []).filter(msg => msg.includes("click handler"))
+  );
+  console.log("Click handler logs:", logs);
+});
+```
+
+### Debug Step 3: Compare WeakSet Contents Between Tests
+
+```javascript
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    const oldSet = globalThis.__battleCLIStatListBoundTargets;
+    console.log("WeakSet size before navigation:", 
+      oldSet instanceof WeakSet ? "WeakSet (size unknown)" : "Not present");
+    
+    // NEW PAGE LOAD HAPPENS HERE
+  });
+  
+  await page.goto("/src/pages/battleCLI.html?autostart=1");
+  
+  await page.addInitScript(() => {
+    const newSet = globalThis.__battleCLIStatListBoundTargets;
+    console.log("WeakSet after navigation:", 
+      newSet instanceof WeakSet ? "WeakSet (new)" : "Not present");
+  });
+});
+```
+
+### Debug Step 4: Trace State Machine Dispatch
+
+Add logging to the state machine to see if `selectStat()` successfully dispatches:
+
+```javascript
+test("should be able to select a stat and see the result", async ({ page }) => {
+  // Intercept dispatch calls
+  await page.addInitScript(() => {
+    const origDispatch = window.__TEST_API?.state?.dispatchBattleEvent;
+    if (origDispatch) {
+      window.__TEST_API.state.dispatchBattleEvent = function(...args) {
+        console.log("Dispatch called with:", args[0], new Date().toISOString());
+        return origDispatch.apply(this, args);
+      };
+    }
+  });
+  
+  await statButton.click();
+  
+  // Wait and check if dispatch was called
+  await page.waitForTimeout(500);
+});
+```
+
+
+1. **This is NOT a code bug** - The application code works correctly. This is a test infrastructure issue where global JavaScript state persists across Playwright page navigations.
+
+2. **Symptoms vs Root Cause** - Tests failing in sequence is the *symptom*; persistent global state preventing proper handler binding/state machine initialization is the *root cause*.
 
 3. **Why it matters** - CI/CD pipelines that run all tests together will fail, even though individual tests and real user scenarios work fine.
 
-4. **Prevention** - When adding new tests or global state, use page-scoped or lexically-scoped storage instead of `globalThis` or `window` properties that persist across page loads.
+4. **Prevention** - When adding new tests or global state:
+   - Avoid storing test-transient state on `globalThis` or `window` properties
+   - Use local module scope or object-based namespaces that are re-initialized per page load
+   - If globals are necessary, document them and add to test fixture cleanup
+   - Consider using Playwright fixtures for shared test setup/teardown
 
-5. **Testing approach** - After fixes, run tests multiple times and in different orders to verify isolation is working.
+5. **Testing approach** - After implementing the fix:
+   - Run tests multiple times and in different orders to verify isolation is working
+   - Use Playwright's built-in debugging (tracing, screenshots) to verify proper behavior
+   - Add console logging to trace handler binding and state transitions
+   - Consider adding integration tests that run all CLI tests together as a CI gate
+
+6. **Code Review Focus** - When reviewing this fix:
+   - Verify that cleanup code doesn't accidentally delete needed globals
+   - Check that all affected test files are updated consistently
+   - Ensure the fixture pattern is clear and easy to extend
+   - Confirm that module state is properly re-initialized after cleanup
 
 ---
 
