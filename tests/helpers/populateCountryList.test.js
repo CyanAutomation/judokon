@@ -75,8 +75,15 @@ describe("populateCountryList", () => {
     const fieldset = container.querySelector("fieldset[data-country-filter]");
     expect(fieldset).not.toBeNull();
 
+    const legend = fieldset?.querySelector("legend.sr-only");
+    expect(legend).not.toBeNull();
+    expect(legend?.textContent).toContain("Filter judoka");
+
     const radios = fieldset.querySelectorAll('input[type="radio"][name="country-filter"]');
     expect(radios.length).toBeGreaterThan(1);
+
+    const strayButtons = fieldset.querySelectorAll("button.flag-button");
+    expect(strayButtons.length).toBe(0);
 
     radios.forEach((radio) => {
       expect(radio.hasAttribute("hidden")).toBe(false);
