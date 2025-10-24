@@ -83,7 +83,8 @@ export function setSkipRoundCooldownFeatureMarker(enable) {
   if (typeof document === "undefined") return;
   const value = enable ? "enabled" : "disabled";
   document.body?.setAttribute("data-feature-skip-round-cooldown", value);
-  const nextButton = document.getElementById("next-button");
+  const nextButton =
+    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
   if (nextButton) {
     nextButton.setAttribute("data-feature-skip-round-cooldown", value);
   }

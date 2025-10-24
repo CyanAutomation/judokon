@@ -37,6 +37,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Tuned settings quick-link gutters for wide displays via responsive spacing clamps and a new spacing token (`src/styles/settings.css`, `src/styles/base.css`).
 - Right-sized settings toggle switches for desktop proportions while keeping a 40px hit area (`src/styles/settings.css`); validated with `npm run check:contrast` and relevant Vitest coverage.
 - Added hover feedback to settings switches for clearer interactivity cues (`src/styles/settings.css`); verified with `npm run check:contrast`.
+- Implemented default skipRoundCooldown QA markers on the Next button/body and taught helpers to mirror `[data-role="next-round"]` fallbacks for automation (`src/helpers/classicBattle/uiHelpers.js`, `src/pages/battleClassic.html`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `playwright/battle-classic/skip-round-cooldown.spec.js`); validated with `npx vitest run tests/helpers/classicBattle/uiHelpers.featureFlags.test.js` and `npx playwright test playwright/battle-classic/skip-round-cooldown.spec.js`.
 - Implemented Phase 3.2 unsaved changes indicator with an accessible `Saved!` live region and styling (`src/helpers/settingsPage.js`, `src/pages/settings.html`, `src/styles/settings.css`, `tests/helpers/settingsPage.test.js`, `tests/utils/testUtils.js`, `playwright/settings.spec.js`); validated via `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Added miniature theme previews to the display mode selector to visualize light/dark/retro choices (`src/pages/settings.html`, `src/styles/settings.css`); validated with `npm run check:contrast`, `npx vitest run tests/helpers/settingsPage.test.js`, and `npx playwright test playwright/settings.spec.js`.
 - Refined the switch interactivity pass with label-level hover/focus styling, text emphasis, and dedicated Playwright coverage to assert the new feedback (`src/styles/settings.css`, `playwright/settings.spec.js`); targeted checks: `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
@@ -86,10 +87,10 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
   - Recommendation: Document QA flows that rely on the new Playwright assertions (`playwright/battle-classic/battle-state-progress.spec.js`)—including the interrupt/remap coverage—and ensure long-match scenarios remain covered in smoke tests.
 
 - `skipRoundCooldown`
-  - Status: **Working** — UI service and timer service both consult the flag and short-circuit countdown timers when it is enabled (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-75`).
+  - Status: **Working** — UI/timer services respect the flag, and the Next button now exposes persistent `data-feature-skip-round-cooldown` markers even when only the fallback control exists (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-118`, `src/pages/battleClassic.html:152-165`).
   - Confidence: High.
-  - Effort: Low (add targeted E2E coverage).
-  - Recommendation: Keep the implementation, add a unit test for the skip path, and surface a QA hook (`data-feature-skip-round-cooldown`) on the Next button.
+  - Effort: Low (observability complete; keep existing battle E2E probes green).
+  - Recommendation: QA hook shipped; monitor Playwright skip-round coverage and expand docs as needed.
 
 - `roundStore`
   - Status: **Hidden in UI** — the engine still instantiates the store, but the Settings toggle is suppressed to avoid advertising unfinished behavior (`src/data/settings.json:66-74`, `src/helpers/settings/featureFlagSwitches.js:70-115`).

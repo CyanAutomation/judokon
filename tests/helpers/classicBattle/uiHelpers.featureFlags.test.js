@@ -23,6 +23,14 @@ describe("setSkipRoundCooldownFeatureMarker", () => {
     expect(document.body.getAttribute("data-feature-skip-round-cooldown")).toBe("disabled");
     expect(nextButton?.getAttribute("data-feature-skip-round-cooldown")).toBe("disabled");
   });
+
+  it("marks the fallback next-round control when primary button is missing", () => {
+    document.body.innerHTML = '<button data-role="next-round"></button>';
+    setSkipRoundCooldownFeatureMarker(true);
+    const fallback = document.querySelector('[data-role="next-round"]');
+    expect(document.body.getAttribute("data-feature-skip-round-cooldown")).toBe("enabled");
+    expect(fallback?.getAttribute("data-feature-skip-round-cooldown")).toBe("enabled");
+  });
 });
 
 describe("setBattleStateBadgeEnabled", () => {

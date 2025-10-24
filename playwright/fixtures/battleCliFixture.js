@@ -53,24 +53,7 @@ export const test = base.extend({
       // Optional: Any other battle CLI module state stored globally
       delete globalThis.__battleCLIModuleState;
 
-      // CRITICAL: Clear __TEST__ flag to prevent test-mode early returns
-      // in production code (selectStat, etc). The __TEST__ flag is meant
-      // for unit tests with debug hooks, not integration tests.
-      delete globalThis.__TEST__;
-    });
-
-    // Hook into afterNavigate to reset module state after page loads
-    page.on("framenavigated", async () => {
-      try {
-        // POST-NAVIGATION: Call the module reset function to clear all state vars
-        await page.evaluate(() => {
-          if (typeof window !== "undefined" && window.__battleCLIinit?.__resetModuleState) {
-            window.__battleCLIinit.__resetModuleState();
-          }
-        });
-      } catch {
-        // Silently ignore errors during state reset (function may not be available yet)
-      }
+      // Leave __TEST__ flag alone - may be intentionally set by page init
     });
 
     // Provide the page to the test
