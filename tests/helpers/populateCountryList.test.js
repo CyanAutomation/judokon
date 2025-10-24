@@ -51,6 +51,40 @@ describe("populateCountryList", () => {
     expect(radios[0].checked).toBe(true);
   });
 
+  it("places country filter radios before their buttons for native keyboard navigation", async () => {
+    const judoka = [
+      { id: 1, firstname: "A", surname: "B", country: "Japan" },
+      { id: 2, firstname: "C", surname: "D", country: "Brazil" }
+    ];
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue(judoka)
+    }));
+
+    const mapping = {
+      br: { country: "Brazil", code: "br", active: true },
+      jp: { country: "Japan", code: "jp", active: true }
+    };
+    loadCountryMapping.mockResolvedValue(mapping);
+
+    const { populateCountryList } = await import("../../src/helpers/country/list.js");
+
+    const container = document.createElement("div");
+    await populateCountryList(container);
+
+    const fieldset = container.querySelector("fieldset.country-filter-group");
+    expect(fieldset).not.toBeNull();
+
+    const radios = fieldset?.querySelectorAll('input[type="radio"][name="country-filter"]') ?? [];
+    expect(radios.length).toBeGreaterThan(0);
+
+    radios.forEach((radio) => {
+      const sibling = radio.nextElementSibling;
+      expect(sibling).toBeInstanceOf(HTMLLabelElement);
+      expect(sibling?.getAttribute("for")).toBe(radio.id);
+    });
+  });
+
   it("applies accessible aria-labels to flag buttons", async () => {
     const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
 

@@ -4183,10 +4183,6 @@
         }
       }
     },
-    "tests/helpers/handleKeyboardNavigation.test.js": {
-      "imports": ["vitest", "../../src/helpers/browse/handleKeyboardNavigation.js"],
-      "functions": {}
-    },
     "tests/helpers/gameRandom.test.js": {
       "imports": ["vitest"],
       "functions": {
@@ -6969,14 +6965,14 @@
       }
     },
     "src/helpers/browse/setupCountryToggle.js": {
-      "imports": ["../countrySlider.js", "../countryPanel.js", "./handleKeyboardNavigation.js"],
+      "imports": ["../countrySlider.js", "../countryPanel.js"],
       "functions": {
         "handleToggleClick": {
           "calls": ["contains", "toggleCountryPanel", "createCountrySlider"],
           "patterns": []
         },
         "handlePanelKeydown": {
-          "calls": ["toggleCountryPanel", "handleKeyboardNavigation"],
+          "calls": ["toggleCountryPanel"],
           "patterns": []
         },
         "setupCountryToggle": {
@@ -7034,15 +7030,6 @@
         },
         "updateLiveRegion": {
           "calls": ["querySelector"],
-          "patterns": []
-        }
-      }
-    },
-    "src/helpers/browse/handleKeyboardNavigation.js": {
-      "imports": [],
-      "functions": {
-        "handleKeyboardNavigation": {
-          "calls": ["from", "querySelectorAll", "indexOf", "preventDefault", "focus"],
           "patterns": []
         }
       }

@@ -17,8 +17,7 @@ describe("browseJudokaPage helpers", () => {
 
     const interactions = {
       reflect: 0,
-      loads: 0,
-      navigation: []
+      loads: 0
     };
     let open = false;
     let flagsLoaded = false;
@@ -35,10 +34,7 @@ describe("browseJudokaPage helpers", () => {
         interactions.loads += 1;
         flagsLoaded = true;
       },
-      hasFlags: () => flagsLoaded,
-      handleArrowNavigation: (event) => {
-        interactions.navigation.push(event.key);
-      }
+      hasFlags: () => flagsLoaded
     };
 
     const controller = createCountryToggleController(adapter);
@@ -53,9 +49,6 @@ describe("browseJudokaPage helpers", () => {
     await controller.handleToggle();
     expect(adapter.reflectPanelState).toHaveBeenCalledTimes(3);
     expect(interactions.loads).toBe(1);
-
-    controller.handleKeydown({ key: "ArrowRight" });
-    expect(interactions.navigation).toEqual(["ArrowRight"]);
 
     open = true;
     controller.handleKeydown({ key: "Escape" });

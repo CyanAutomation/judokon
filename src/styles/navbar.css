@@ -214,6 +214,7 @@
   gap: 0;
 }
 
+/* Radios stay in the tab order so the native arrow-key navigation works. */
 .country-filter-group > input[type="radio"] {
   position: absolute;
   width: 1px;
@@ -240,6 +241,7 @@
     outline-color 150ms ease-in-out;
 }
 
+[type="radio"][name="country-filter"]:focus + .flag-button,
 [type="radio"][name="country-filter"]:focus-visible + .flag-button {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
