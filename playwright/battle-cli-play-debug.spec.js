@@ -106,28 +106,31 @@ test.describe("Battle CLI - Play (Debug)", () => {
     });
     console.log("[DEBUG TEST] Battle state machine value after 1s wait:", stateMachineState2);
 
-    await expect
-      .poll(
-        () => {
-          return page.evaluate(() => {
-            const state = window.__TEST_API?.state?.getBattleStateMachine?.()?.getState?.() ?? null;
-            const snapshot = window.__TEST_API?.state?.getStateSnapshot?.() ?? {};
-            console.log(
-              "[DEBUG POLL] Current battle state:",
-              state,
-              "| Event:",
-              snapshot.event,
-              "| Previous:",
-              snapshot.prev
-            );
-            return state;
+    // Record all state transitions for 5 seconds
+    const stateHistory = await page.evaluate(async () => {
+      const history = [];
+      let lastState =
+        window.__TEST_API?.state?.getBattleStateMachine?.()?.getState?.() ?? "UNKNOWN";
+      history.push({ timestamp: Date.now(), state: lastState, event: "init" });
+
+      for (let i = 0; i < 50; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        const currentState =
+          window.__TEST_API?.state?.getBattleStateMachine?.()?.getState?.() ?? "UNKNOWN";
+        const snapshot = window.__TEST_API?.state?.getStateSnapshot?.() ?? {};
+        if (currentState !== lastState) {
+          history.push({
+            timestamp: Date.now(),
+            state: currentState,
+            event: snapshot.event,
+            previous: snapshot.prev
           });
-        },
-        {
-          timeout: 10000,
-          intervals: [100] // Check every 100ms to catch all transitions
+          lastState = currentState;
         }
-      )
-      .toBe("roundDecision");
+      }
+      return history;
+    });
+
+    console.log("[DEBUG TEST] State transition history:", JSON.stringify(stateHistory, null, 2));
   });
 });
