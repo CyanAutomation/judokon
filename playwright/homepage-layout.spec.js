@@ -29,15 +29,17 @@ test.describe("Homepage layout", () => {
     });
 
     test("shows Settings tile", async ({ page }) => {
-      const settingsLink = page.getByRole("link", { name: "Settings" });
+      const settingsLink = page.getByRole("link", { name: /open settings/i });
       await expect(settingsLink).toBeVisible();
       await expect(settingsLink).toHaveAttribute("href", "./src/pages/settings.html");
 
       await settingsLink.click();
+      await page.waitForLoadState("networkidle");
       await expect(page).toHaveURL(/\/src\/pages\/settings\.html$/);
       await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
 
       await page.goBack();
+      await page.waitForLoadState("networkidle");
       await expect(page).toHaveURL(/\/index\.html$/);
       await page.locator('body[data-home-ready="true"]').waitFor();
     });
