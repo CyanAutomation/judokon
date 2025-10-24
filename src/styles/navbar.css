@@ -276,6 +276,18 @@
 
 /* Disable ripple transitions when motion is reduced */
 @media (prefers-reduced-motion: reduce) {
+  .top-navbar button,
+  .top-navbar .primary-button,
+  .filter-bar button {
+    transition: none;
+  }
+
+  .top-navbar button:active,
+  .top-navbar .primary-button:active,
+  .filter-bar button:active {
+    transform: none;
+  }
+
   .top-navbar button::after,
   .top-navbar .primary-button::after,
   .filter-bar button::after {
@@ -291,6 +303,18 @@
     opacity: 0.2;
     transform: none;
   }
+}
+
+.reduce-motion .top-navbar button,
+.reduce-motion .top-navbar .primary-button,
+.reduce-motion .filter-bar button {
+  transition: none;
+}
+
+.reduce-motion .top-navbar button:active,
+.reduce-motion .top-navbar .primary-button:active,
+.reduce-motion .filter-bar button:active {
+  transform: none;
 }
 
 .reduce-motion .top-navbar button::after,
