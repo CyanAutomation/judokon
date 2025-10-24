@@ -104,13 +104,13 @@ export function setupCarouselToggle(button, container) {
 /**
  * Toggle the visibility of card backs within the carousel.
  *
- * @summary Attach a click handler to `button` which toggles the `show-card-back` CSS
- * class on every `.judoka-card` inside the carousel container.
+ * @summary Attach a click handler to `button` which toggles the native flip checkbox
+ * for every card in the carousel container.
  * @pseudocode
  * 1. Exit early if `button` is missing.
  * 2. On click:
  *    a. Locate `.card-carousel` in the document.
- *    b. Query all `.judoka-card` elements and toggle `show-card-back` on each.
+ *    b. Query all `.card-flip-toggle` inputs and invert their `checked` state.
  *    c. Log errors when elements are missing.
  *
  * @param {HTMLElement} button - Button that hides card faces.
@@ -126,14 +126,15 @@ export function setupHideCardButton(button) {
       return;
     }
 
-    const cards = container.querySelectorAll(".judoka-card");
-    if (cards.length === 0) {
-      console.error("No judoka cards found in the carousel to toggle.");
+    const toggles = container.querySelectorAll(".card-flip-toggle");
+    if (toggles.length === 0) {
+      console.error("No judoka card toggles found in the carousel to flip.");
       return;
     }
 
-    cards.forEach((card) => {
-      card.classList.toggle("show-card-back");
+    toggles.forEach((toggle) => {
+      toggle.checked = !toggle.checked;
+      toggle.dispatchEvent(new Event("change", { bubbles: true }));
     });
   });
 }

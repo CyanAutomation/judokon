@@ -1,10 +1,79 @@
 import { getFlagUrl } from "./country/codes.js";
 import { safeGenerate } from "./errorUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
-import { enableCardFlip } from "./cardFlip.js";
 import { cardSectionRegistry } from "./cardSections.js";
 import { createInspectorPanel } from "./inspector/createInspectorPanel.js";
 import { markSignatureMoveReady } from "./signatureMove.js";
+
+const FALLBACK_FLAG_URL = "https://flagcdn.com/w320/vu.png";
+
+function createFlipToggleId(seed) {
+  const unique =
+    typeof globalThis.crypto?.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+  return `card-flip-toggle-${seed ?? "card"}-${unique}`;
+}
+
+function createFlipToggleElement(toggleId) {
+  const toggle = document.createElement("input");
+  toggle.type = "checkbox";
+  toggle.className = "card-flip-toggle";
+  toggle.id = toggleId;
+  toggle.setAttribute("aria-label", "Flip card to view back");
+  toggle.tabIndex = -1;
+  return toggle;
+}
+
+function createJudokaCardLabel(judoka, cardType, toggleId, inspectorState) {
+  const judokaCard = document.createElement("label");
+  judokaCard.className = `card judoka-card ${cardType}`;
+  judokaCard.htmlFor = toggleId;
+  judokaCard.setAttribute("role", "button");
+  judokaCard.setAttribute("tabindex", "0");
+  const fullName = [judoka.firstname, judoka.surname].filter(Boolean).join(" ").trim();
+  const ariaLabel = fullName ? `${fullName} card` : "Judoka card";
+  judokaCard.setAttribute("aria-label", ariaLabel);
+  judokaCard.classList.add(judoka.gender === "female" ? "female-card" : "male-card");
+  judokaCard.setAttribute("data-feature-card-inspector", inspectorState);
+  return judokaCard;
+}
+
+function attachKeyboardToggle(card, toggle) {
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggle.click();
+    }
+  });
+}
+
+function createCardContainer(judoka, inspectorState) {
+  const cardContainer = document.createElement("div");
+  cardContainer.className = "card-container";
+  cardContainer.setAttribute("data-feature-card-inspector", inspectorState);
+  try {
+    cardContainer.dataset.cardJson = JSON.stringify(judoka);
+  } catch {
+    // Ignore serialization errors; inspector will render a fallback
+  }
+  return cardContainer;
+}
+
+async function appendJudokaSections(judokaCard, judoka, gokyoLookup, cardType, flagUrl) {
+  for (const buildSection of cardSectionRegistry) {
+    const section = await buildSection(judoka, { flagUrl, gokyoLookup, cardType });
+    judokaCard.appendChild(section);
+  }
+}
+
+async function resolveFlagUrl(judoka) {
+  return await safeGenerate(
+    () => getFlagUrl(judoka.countryCode || "vu"),
+    "Failed to resolve flag URL:",
+    FALLBACK_FLAG_URL
+  );
+}
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -36,31 +105,10 @@ import { markSignatureMoveReady } from "./signatureMove.js";
  * Build and return a DOM container for a judoka card.
  *
  * @pseudocode
- * 1. Destructure `enableInspector` from `options`, defaulting to `false`.
- * 2. Perform initial validation: If `judoka` or `gokyoLookup` are falsy, create a fallback `div` with "No data available" text and return it.
- * 3. Check for missing required fields in `judoka` using `getMissingJudokaFields()`.
- * 4. If `judoka` does not have all required fields (`!hasRequiredJudokaFields(judoka)`), throw an error listing the missing fields.
- * 5. Resolve the `flagUrl`:
- *    a. Get `countryCode` from `judoka`.
- *    b. Use `safeGenerate` to call `getFlagUrl(countryCode || "vu")`.
- *    c. Provide an error message "Failed to resolve flag URL:" and a fallback URL "https://flagcdn.com/w320/vu.png".
- * 6. Determine `cardType` based on `judoka.rarity` (converted to lowercase), defaulting to "common".
- * 7. Create the `cardContainer` (`div` with class "card-container").
- * 8. Attempt to stringify `judoka` and store it in `cardContainer.dataset.cardJson` for inspector use. Catch and ignore serialization errors.
- * 9. Create the `judokaCard` (`div` with class `judoka-card` and `cardType`).
- * 10. Set `judokaCard` attributes: `role="button"`, `tabindex="0"`, and `aria-label` using judoka's name.
- * 11. Determine `genderClass` ("female-card" or "male-card") based on `judoka.gender` and add it to `judokaCard.classList`.
- * 12. Iterate through each `buildSection` function in `cardSectionRegistry`:
- *     a. Asynchronously call `buildSection` with `judoka` and an options object containing `flagUrl`, `gokyoLookup`, and `cardType`.
- *     b. Append the returned `section` to `judokaCard`.
- * 13. Enable card flip interactivity on `judokaCard` using `enableCardFlip()`.
- * 14. Append `judokaCard` to `cardContainer`.
- * 15. If `enableInspector` is true:
- *     a. Create an `inspectorPanel` using `createInspectorPanel(cardContainer, judoka)`.
- *     b. Append `inspectorPanel` to `cardContainer`.
- * 16. Return the `cardContainer`.
- *
- * Validates the judoka data and gokyo lookup, generates DOM sections for the card, and assembles them into a single container. When either argument is missing, a fallback element labeled "No data available" is returned.
+ * 1. Validate inputs and resolve the judoka's flag URL.
+ * 2. Create a visually hidden checkbox toggle and label-based `.judoka-card` element tied together.
+ * 3. Populate the card sections from `cardSectionRegistry` and attach keyboard flipping support.
+ * 4. Append the optional inspector panel when enabled and return the populated container.
  *
  * @param {import("./types.js").Judoka} judoka - Judoka data with required fields such as names, country codes, stats and signatureMoveId.
  * @param {Record<number, import("./types.js").GokyoEntry>} gokyoLookup - Map of technique ids to technique details. Missing lookups result in fallback content.
@@ -68,7 +116,6 @@ import { markSignatureMoveReady } from "./signatureMove.js";
  */
 export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) {
   const { enableInspector = false } = options;
-  // Add null/undefined checks for judoka and gokyoLookup
   if (!judoka || !gokyoLookup) {
     const fallback = document.createElement("div");
     fallback.textContent = "No data available";
@@ -80,40 +127,19 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
     throw new Error(`Invalid Judoka object: Missing required fields: ${missing.join(", ")}`);
   }
 
-  const countryCode = judoka.countryCode;
-  const flagUrl = await safeGenerate(
-    () => getFlagUrl(countryCode || "vu"),
-    "Failed to resolve flag URL:",
-    "https://flagcdn.com/w320/vu.png"
-  );
-
+  const flagUrl = await resolveFlagUrl(judoka);
   const cardType = judoka.rarity?.toLowerCase() || "common";
+  const inspectorState = enableInspector ? "enabled" : "disabled";
 
-  const cardContainer = document.createElement("div");
-  cardContainer.className = "card-container";
-  try {
-    cardContainer.dataset.cardJson = JSON.stringify(judoka);
-  } catch {
-    // Ignore serialization errors; inspector will render a fallback
-  }
+  const cardContainer = createCardContainer(judoka, inspectorState);
+  const toggleId = createFlipToggleId(judoka.id);
+  const flipToggle = createFlipToggleElement(toggleId);
+  const judokaCard = createJudokaCardLabel(judoka, cardType, toggleId, inspectorState);
 
-  const judokaCard = document.createElement("div");
-  judokaCard.className = `judoka-card ${cardType}`;
-  judokaCard.setAttribute("role", "button");
-  judokaCard.setAttribute("tabindex", "0");
-  judokaCard.setAttribute("aria-label", `${judoka.firstname} ${judoka.surname} card`);
+  await appendJudokaSections(judokaCard, judoka, gokyoLookup, cardType, flagUrl);
+  attachKeyboardToggle(judokaCard, flipToggle);
 
-  const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
-  judokaCard.classList.add(genderClass);
-
-  for (const buildSection of cardSectionRegistry) {
-    const section = await buildSection(judoka, { flagUrl, gokyoLookup, cardType });
-    judokaCard.appendChild(section);
-  }
-
-  enableCardFlip(judokaCard);
-
-  cardContainer.appendChild(judokaCard);
+  cardContainer.append(flipToggle, judokaCard);
 
   if (enableInspector) {
     const panel = createInspectorPanel(cardContainer, judoka);
