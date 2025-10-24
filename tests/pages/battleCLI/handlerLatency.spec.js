@@ -3,6 +3,7 @@ import * as init from "../../../src/pages/battleCLI/init.js";
 // Import DOM helpers used within module under test to stub safely
 import * as domMod from "../../../src/pages/battleCLI/dom.js";
 import { withMutedConsole } from "../../utils/console.js";
+import cliState from "../../../src/pages/battleCLI/state.js";
 
 describe("battleCLI init import guards", () => {
   it("does not throw when document is undefined", async () => {
@@ -48,6 +49,13 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     document.body.innerHTML = '<div id="cli-countdown"></div>';
   });
   afterEach(() => {
+    cliState.ignoreNextAdvanceClick = false;
+    cliState.roundResolving = false;
+    cliState.shortcutsReturnFocus = null;
+    cliState.shortcutsOverlay = null;
+    cliState.escapeHandledPromise = new Promise((resolve) => {
+      cliState.escapeHandledResolve = resolve;
+    });
     vi.restoreAllMocks();
     document.body.innerHTML = "";
   });
@@ -70,17 +78,15 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
       return null;
     });
 
-    const dispatchSpy = vi.spyOn(init, "safeDispatch").mockResolvedValue(undefined);
-
     const handled = init.handleWaitingForPlayerActionKey("enter");
     expect(handled).toBe(true);
 
-    // Allow a microtask tick where deferred selectStat triggers dispatch
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => queueMicrotask(resolve));
 
-    expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
+    expect(cliState.roundResolving).toBe(true);
+    expect(statDiv.classList.contains("selected")).toBe(true);
 
+    delete document.activeElement;
     byIdSpy.mockRestore();
   });
 });
