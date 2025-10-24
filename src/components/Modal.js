@@ -194,7 +194,7 @@ export class Modal {
         } catch {
           return false;
         }
-        return document.activeElement === element;
+        return typeof document !== 'undefined' && document.activeElement === element;
       };
 
       const focusDialogFallback = () => {
@@ -210,7 +210,7 @@ export class Modal {
           if (!this.isDialogOpen()) {
             return;
           }
-          const activeElement = document.activeElement;
+          const activeElement = typeof document !== "undefined" ? document.activeElement : null;
           if (
             activeElement &&
             activeElement !== this.dialog &&

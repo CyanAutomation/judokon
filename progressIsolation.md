@@ -988,7 +988,75 @@ The test failure may stem from one of these unexplored causes:
 
 ---
 
+
+
 **Report Updated By**: GitHub Copilot  
 **Implementation Status**: Phase 2 Complete (implementation done, issue unresolved)  
 **Next Action**: Root cause investigation session recommended  
 **Estimated Effort for Root Cause Fix**: 4-8 hours additional investigation
+
+---
+
+## 🔬 Phase 3: Root Cause Investigation (October 24, 2025 - CURRENT SESSION)
+
+### Key Discovery: THE FIX
+
+**Added missing method to test API**: `getBattleStateMachine()` in `src/helpers/testApi.js` (lines 334-346)
+
+The test code and internal dispatch code were trying to access the state machine via:
+
+```javascript
+window.__TEST_API?.state?.getBattleStateMachine?.()
+```
+
+But the `stateApi` object didn't expose this method! It was trying to use it internally but not exposing it for tests.
+
+**Fix Applied**:
+
+```javascript
+/**
+ * Get the battle state machine for testing
+ * @returns {object|null} The state machine or null if unavailable
+ */
+getBattleStateMachine() {
+  try {
+    return getBattleStateMachine();
+  } catch {
+    return null;
+  }
+}
+```
+
+### Progress Made
+
+**What's Now Working**:
+
+- Click on stat button → handler fires
+- `selectStat()` executes
+- Dispatch to state machine succeeds
+- State transitions: `waitingForPlayerAction` → `roundDecision` → `roundOver`
+
+**New Failure Point**:
+
+- Test fails at `playwright/battle-cli-play.spec.js:99`
+- `expect(resolution?.outcomeDispatched).toBe(true)` returns false
+- The outcome event dispatch ("outcome=winPlayer") is failing
+
+### Investigation Process Used
+
+1. **Added debug logging** to localStorage to bypass console muting
+2. **Created temporary test file** to trace state transitions
+3. **Confirmed click handler IS firing** (not DOM binding issue)
+4. **Identified the real problem**: outcome dispatch returns false
+
+### Root Cause Now Narrowed To
+
+The `completeRound()` function calls `stateApi.dispatchBattleEvent(outcomeEvent, detail)` where `outcomeEvent` is "outcome=winPlayer", but this dispatch is returning false/not working.
+
+**Next Investigation**: Why does outcome event dispatch fail? This requires understanding:
+
+- Is "outcome=winPlayer" a valid event for the machine?
+- Is the machine in a state where this event is not handled?
+- Does the event dispatch system recognize this event format?
+
+---
