@@ -92,6 +92,12 @@
   outline-offset: 2px;
 }
 
+#layout-mode-toggle:checked ~ #country-panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  width: 100%;
+}
+
 .scroll-markers {
   position: absolute;
   bottom: 0.5rem;
