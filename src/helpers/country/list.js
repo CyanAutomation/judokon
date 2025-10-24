@@ -182,7 +182,7 @@ function initLazyFlagLoader(scrollContainer) {
 
 async function renderCountryBatch(fieldset, countries, nameToCode, imageObserver) {
   for (const countryName of countries) {
-    const { input, flagImg } = createRadioOption(fieldset, {
+    const { flagImg } = createRadioOption(fieldset, {
       value: countryName,
       label: countryName,
       ariaLabel: `Filter by ${countryName}`,

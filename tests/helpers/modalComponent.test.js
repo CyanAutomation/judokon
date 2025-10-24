@@ -23,7 +23,8 @@ describe("createModal", () => {
     modal.open(trigger.element);
     expect(modal.element.hasAttribute("open")).toBe(true);
     expect(trigger.element).toHaveAttribute("aria-expanded", "true");
-    expect(document.activeElement).toBe(modal.element);
+    const firstButton = modal.element.querySelector("button");
+    expect(document.activeElement).toBe(firstButton);
 
     modal.close();
     expect(modal.element.hasAttribute("open")).toBe(false);
