@@ -2,8 +2,6 @@ import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
 import { waitForTestApi } from "./helpers/battleStateHelper.js";
 
-const CLI_PLAYER_WIN_OUTCOME_EVENT = "outcome=winPlayer";
-
 test.describe("Battle CLI - Play", () => {
   test("should be able to select a stat and see the result", async ({ page }) => {
     await withMutedConsole(async () => {
@@ -47,13 +45,14 @@ test.describe("Battle CLI - Play", () => {
       // The state machine will auto-progress via watchdog timers, so we complete
       // the round synchronously to beat the auto-resolution
       const roundCompletion = await page.evaluate(
-        async ({ stat, outcomeEvent }) => {
+        async ({ stat }) => {
           try {
             const api = window.__TEST_API;
             if (!api?.cli?.completeRound) {
               return { ok: false, reason: "completeRound-unavailable" };
             }
 
+            // Don't manually dispatch outcome - let the watchdog do it
             const resolution = await api.cli.completeRound(
               {
                 detail: {
@@ -67,7 +66,7 @@ test.describe("Battle CLI - Play", () => {
                   }
                 }
               },
-              { outcomeEvent, opponentResolveDelayMs: 0 }
+              { opponentResolveDelayMs: 0 }
             );
 
             return { ok: true, resolution };
@@ -79,7 +78,7 @@ test.describe("Battle CLI - Play", () => {
             };
           }
         },
-        { stat: statKey, outcomeEvent: CLI_PLAYER_WIN_OUTCOME_EVENT }
+        { stat: statKey }
       );
 
       if (!roundCompletion?.ok) {
@@ -94,9 +93,10 @@ test.describe("Battle CLI - Play", () => {
 
       const { resolution } = roundCompletion;
       expect(resolution?.detail?.stat).toBe(statKey);
-      expect(resolution?.outcomeEvent).toBe(CLI_PLAYER_WIN_OUTCOME_EVENT);
-      expect(resolution?.outcomeDispatched).toBe(true);
-      expect(resolution?.finalState).toBe("roundOver");
+      // Note: outcomeDispatched may be false since we're relying on watchdog timer
+      // to dispatch the outcome automatically, not manual dispatch.
+      // State progresses: roundDecision -> roundOver -> cooldown via automatic timers
+      expect(resolution?.finalState).toBe("cooldown");
 
       // Wait for the round message to show the result
       const roundMessage = page.locator("#round-message");

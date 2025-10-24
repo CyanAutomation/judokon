@@ -1317,10 +1317,6 @@ export function selectStat(stat) {
     localStorage.setItem("__DEBUG_SELECT_STAT_LOG", JSON.stringify(logs));
   } catch {}
 
-  if (typeof window !== "undefined" && window.__TEST__) {
-    safeDispatch("statSelected");
-    return;
-  }
   if (!stat) return;
   // Ignore re-entrant calls while a selection is being applied
   if (selectionApplying || state.roundResolving) return;
