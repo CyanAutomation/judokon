@@ -30,7 +30,8 @@
     "teamBattle": "**Team Battle Mode** lets you fight with your whole deck of cards.\nForm a team and win more rounds than the opposing team to triumph!",
     "meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis.",
     "randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
-    "browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
+    "browseJudoka": "**Browse Judoka** opens the full roster in a carousel.",
+    "settings": "**Settings** lets you adjust audio, motion, and accessibility options."
   },
   "nav": {
     "classicBattle": "**Classic Battle**\nBegin a head-to-head match.",
