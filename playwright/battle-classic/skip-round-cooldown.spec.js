@@ -21,9 +21,8 @@ test.describe("skipRoundCooldown feature flag", () => {
 
     await page.waitForFunction(
       () =>
-        document
-          .getElementById("next-button")
-          ?.getAttribute("data-feature-skip-round-cooldown") === "enabled"
+        document.getElementById("next-button")?.getAttribute("data-feature-skip-round-cooldown") ===
+        "enabled"
     );
     const nextMarker = await page
       .locator('[data-testid="next-button"]')
@@ -51,9 +50,8 @@ test.describe("skipRoundCooldown feature flag", () => {
 
     await page.waitForFunction(
       () =>
-        document
-          .getElementById("next-button")
-          ?.getAttribute("data-feature-skip-round-cooldown") === "disabled"
+        document.getElementById("next-button")?.getAttribute("data-feature-skip-round-cooldown") ===
+        "disabled"
     );
     const nextMarker = await page
       .locator('[data-testid="next-button"]')

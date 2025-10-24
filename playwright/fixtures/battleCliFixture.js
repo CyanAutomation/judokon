@@ -47,13 +47,34 @@ export const test = base.extend({
       delete globalThis.__battleCLIStatListBoundTargets;
 
       // Window object that accumulates battle CLI initialization functions
-      // Note: We'll reinitialize this after page loads
       delete globalThis.__battleCLIinit;
 
       // Optional: Any other battle CLI module state stored globally
       delete globalThis.__battleCLIModuleState;
 
       // Leave __TEST__ flag alone - may be intentionally set by page init
+    });
+
+    // POST-NAVIGATION: After page loads, reset module state by calling the init function
+    page.on("framenavigated", async () => {
+      try {
+        // Give the page a moment to initialize
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        await page.evaluate(() => {
+          // After page load,  call the reset function if available
+          // This ensures all module-level vars are in a clean state for tests
+          if (
+            typeof window !== "undefined" &&
+            window.__battleCLIinit &&
+            typeof window.__battleCLIinit.__resetModuleState === "function"
+          ) {
+            window.__battleCLIinit.__resetModuleState();
+          }
+        });
+      } catch {
+        // Silently ignore errors during reset
+      }
     });
 
     // Provide the page to the test
