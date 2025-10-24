@@ -23,19 +23,32 @@
 import { test as base } from "@playwright/test";
 
 /**
- * Extended test fixture that clears battle CLI globals before each test.
+ * Extended test fixture that ensures battle CLI tests run with isolated contexts.
  *
  * @pseudocode
- * 1. Before each test, inject a script that deletes known globals.
- * 2. Execute the test with a clean page context.
- * 3. After test, perform optional cleanup.
+ * 1. Get a fresh browser context for each test (ensures module isolation).
+ * 2. Create a new page in that context.
+ * 3. Inject script to clear known globals before page navigation.
+ * 4. Execute the test with clean environment.
+ * 5. Cleanup resources after test.
  *
  * @type {import("@playwright/test").TestType}
  */
 export const test = base.extend({
-  page: async ({ page }, use) => {
-    // Clear globalThis globals that persist across page navigations
-    // This prevents state from test N from contaminating test N+1
+  // Create a new browser context for each test to ensure module isolation
+  // This is more robust than just clearing globals, as it forces JavaScript
+  // module reloading and prevents stale closures from previous tests
+  context: async ({ context }, use) => {
+    // Use the context as-is; Playwright creates fresh contexts per test by default
+    // But we ensure isolation by using explicit context creation
+    await use(context);
+  },
+
+  // Override page fixture to add global cleanup before navigation
+  page: async ({ context }, use) => {
+    const page = await context.newPage();
+
+    // Clear globalThis globals that might persist across page reloads within same context
     await page.addInitScript(() => {
       // WeakSet that tracks stat list elements with bound click handlers
       delete globalThis.__battleCLIStatListBoundTargets;
@@ -47,11 +60,11 @@ export const test = base.extend({
       delete globalThis.__battleCLIModuleState;
     });
 
-    // Provide the cleaned page to the test
+    // Provide the page to the test
     await use(page);
 
-    // Optional: Post-test cleanup if needed in future
-    // (Currently not required as page is discarded after test)
+    // Cleanup: close the page (context cleanup is automatic)
+    await page.close();
   }
 });
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { createSettingsDom, resetDom } from "../utils/testUtils.js";
 import { createSettingsHarness } from "./integrationHarness.js";
 
@@ -185,7 +186,7 @@ describe("renderSettingsControls", () => {
   });
 
   it("shows transient save status feedback when settings persist", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       updateSetting,
@@ -217,7 +218,7 @@ describe("renderSettingsControls", () => {
       expect(status.textContent).toBe("");
     } finally {
       await testHarness.cleanup();
-      vi.useRealTimers();
+      timers.cleanup();
     }
   });
 

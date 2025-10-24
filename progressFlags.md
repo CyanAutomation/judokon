@@ -37,6 +37,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Tuned settings quick-link gutters for wide displays via responsive spacing clamps and a new spacing token (`src/styles/settings.css`, `src/styles/base.css`).
 - Right-sized settings toggle switches for desktop proportions while keeping a 40px hit area (`src/styles/settings.css`); validated with `npm run check:contrast` and relevant Vitest coverage.
 - Added hover feedback to settings switches for clearer interactivity cues (`src/styles/settings.css`); verified with `npm run check:contrast`.
+- Implemented Phase 3.2 unsaved changes indicator with an accessible `Saved!` live region and styling (`src/helpers/settingsPage.js`, `src/pages/settings.html`, `src/styles/settings.css`, `tests/helpers/settingsPage.test.js`, `tests/utils/testUtils.js`, `playwright/settings.spec.js`); validated via `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Added miniature theme previews to the display mode selector to visualize light/dark/retro choices (`src/pages/settings.html`, `src/styles/settings.css`); validated with `npm run check:contrast`, `npx vitest run tests/helpers/settingsPage.test.js`, and `npx playwright test playwright/settings.spec.js`.
 - Refined the switch interactivity pass with label-level hover/focus styling, text emphasis, and dedicated Playwright coverage to assert the new feedback (`src/styles/settings.css`, `playwright/settings.spec.js`); targeted checks: `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 
@@ -440,15 +441,11 @@ All feature flags are now implemented, tested, and integrated into the battle sy
 - ✅ No production console spam (logging properly gated)
 - ✅ Smoke test stable and reliable (20-30s runtime)
 
-### Outstanding Tasks — ⏳ **1 ITEM**
+### Outstanding Tasks — ✅ **0 ITEMS**
 
-**Priority: Low**
-
-1. **Phase 3.2: Unsaved Changes Indicator** — Show brief "Saved!" feedback on setting changes
+All previously identified follow-ups are now complete; no additional feature flag work is pending.
 
 ### Recommendation
 
-The feature flags system is fully functional and production-ready. Outstanding tasks are primarily UX/styling enhancements to the settings page. Prioritize:
-
-1. **Phase 3.2** (Unsaved Changes Indicator) to provide immediate feedback for toggled controls
+Monitor telemetry/QA feedback for the new settings save indicator and revisit only if additional UX refinements are requested.
 ````

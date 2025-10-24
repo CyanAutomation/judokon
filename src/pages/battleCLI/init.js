@@ -231,7 +231,56 @@ const SHORTCUT_HINT_MESSAGES = {
 
 try {
   window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
-    getEscapeHandledPromise
+    getEscapeHandledPromise,
+    /**
+     * Reset all battle CLI module-level state.
+     * Used to ensure clean initialization between test runs.
+     * This function serves as documentation of all state variables
+     * that are specific to battle CLI operation.
+     *
+     * @see progressIsolation.md - Test isolation fix documentation
+     * @returns {void}
+     */
+    __resetModuleState() {
+      // Judoka and store state
+      currentPlayerJudoka = null;
+      store = null;
+
+      // Settings and flags
+      verboseEnabled = false;
+
+      // Countdown state
+      cooldownTimer = null;
+      cooldownInterval = null;
+
+      // Stat selection state
+      selectionTimer = null;
+      selectionInterval = null;
+      selectionFinishFn = null;
+      selectionTickHandler = null;
+      selectionExpiredHandler = null;
+      selectionCancelled = false;
+      selectionApplying = false;
+
+      // Modal/UI state
+      quitModal = null;
+      isQuitting = false;
+
+      // Pause/resume state
+      pausedSelectionRemaining = null;
+      pausedCooldownRemaining = null;
+
+      // History state
+      commandHistory = [];
+      historyIndex = -1;
+      historyAnchorStat = null;
+
+      // Cache state
+      cachedStatDefs = null;
+      Object.keys(statDisplayNames).forEach((key) => {
+        delete statDisplayNames[key];
+      });
+    }
   });
 } catch {
   // Ignore in non-browser environments where `window` is undefined
