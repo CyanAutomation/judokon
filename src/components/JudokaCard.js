@@ -54,6 +54,8 @@ export class JudokaCard extends Card {
     for (const cls of baseElement.classList) {
       labelElement.classList.add(cls);
     }
+    // The Card base class creates a <div>; swap it for a <label> so the element
+    // can pair with the hidden checkbox and inherit native toggle semantics.
     this.element = labelElement;
 
     this.judoka = processedJudoka;
@@ -76,7 +78,7 @@ export class JudokaCard extends Card {
     const unique =
       typeof globalThis.crypto?.randomUUID === "function"
         ? globalThis.crypto.randomUUID()
-        : Math.random().toString(36).slice(2);
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     return `card-flip-toggle-${seed ?? "card"}-${unique}`;
   }
 
@@ -256,6 +258,11 @@ export class JudokaCard extends Card {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         toggle.click();
+        queueMicrotask(() => {
+          if (typeof card.focus === "function") {
+            card.focus({ preventScroll: true });
+          }
+        });
       }
     });
 

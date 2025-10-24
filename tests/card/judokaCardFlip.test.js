@@ -49,4 +49,30 @@ describe("judoka card flip interactivity", () => {
     card.dispatchEvent(event);
     expect(toggle.checked).toBe(true);
   });
+
+  it("toggles the checkbox when Space is pressed", async () => {
+    const container = await new JudokaCard(judoka, gokyoLookup).render();
+    const card = container.querySelector(".judoka-card");
+    const toggle = container.querySelector(".card-flip-toggle");
+    expect(toggle).not.toBeNull();
+    const event = new KeyboardEvent("keydown", { key: " ", bubbles: true });
+    card.dispatchEvent(event);
+    expect(toggle.checked).toBe(true);
+  });
+
+  it("keeps focus on the card after keyboard toggles", async () => {
+    const container = await new JudokaCard(judoka, gokyoLookup).render();
+    document.body.appendChild(container);
+    const card = container.querySelector(".judoka-card");
+    const toggle = container.querySelector(".card-flip-toggle");
+    expect(toggle).not.toBeNull();
+    card.focus();
+    expect(document.activeElement).toBe(card);
+    const enterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true });
+    card.dispatchEvent(enterEvent);
+    await Promise.resolve();
+    expect(toggle.checked).toBe(true);
+    expect(document.activeElement).toBe(card);
+    container.remove();
+  });
 });
