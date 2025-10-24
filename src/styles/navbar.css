@@ -155,7 +155,9 @@
   overflow-y: auto;
   padding: var(--space-md);
   transform: translateX(100%);
-  transition: transform 300ms ease-in-out, visibility 0s linear 300ms;
+  transition:
+    transform 300ms ease-in-out,
+    visibility 0s linear 300ms;
   visibility: hidden;
   z-index: 50;
 }
@@ -163,7 +165,9 @@
 .country-panel[open] > .country-panel__content {
   transform: translateX(0);
   visibility: visible;
-  transition: transform 300ms ease-in-out, visibility 0s linear 0s;
+  transition:
+    transform 300ms ease-in-out,
+    visibility 0s linear 0s;
 }
 
 #layout-mode-toggle:checked ~ #country-panel > .country-panel__content {
@@ -231,7 +235,9 @@
   cursor: pointer;
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
-  transition: border-color 150ms ease-in-out, outline-color 150ms ease-in-out;
+  transition:
+    border-color 150ms ease-in-out,
+    outline-color 150ms ease-in-out;
 }
 
 [type="radio"][name="country-filter"]:focus-visible + .flag-button {

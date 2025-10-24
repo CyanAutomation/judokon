@@ -57,7 +57,9 @@ test.describe("Browse Judoka screen", () => {
     await expect(allCards).toHaveCount(initialCount);
 
     await toggle.click();
-    await page.addStyleTag({ content: ".country-flag-slide-track { animation: none !important; }" });
+    await page.addStyleTag({
+      content: ".country-flag-slide-track { animation: none !important; }"
+    });
     const japanOption = page.locator("label.flag-button", { hasText: "Japan" });
     await japanOption.click();
     const japanRadio = page.getByRole("radio", { name: "Japan" });

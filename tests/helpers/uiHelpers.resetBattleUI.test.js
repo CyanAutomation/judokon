@@ -25,8 +25,7 @@ describe("resetBattleUI helpers", () => {
   });
 
   it("removeBackdrops removes backdrops and destroys quit modal", () => {
-    document.body.innerHTML =
-      '<dialog class="modal"></dialog><dialog class="modal"></dialog>';
+    document.body.innerHTML = '<dialog class="modal"></dialog><dialog class="modal"></dialog>';
     const destroy = vi.fn();
     const store = { quitModal: { destroy } };
     helpers.removeBackdrops(store);

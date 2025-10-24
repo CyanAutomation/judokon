@@ -226,7 +226,6 @@ test.describe("Hover Zoom Functionality", () => {
       await movePointerAwayFromCards(page);
       await expectToBeCollapsed(firstCard);
       await expectToBeCollapsed(secondCard);
-
     });
 
     test("handles transition end events properly", async ({ page }) => {

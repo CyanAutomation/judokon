@@ -76,9 +76,7 @@ function ensureRadioGroup(container) {
 function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt }) {
   const doc = fieldset.ownerDocument ?? document;
   const rawValue = typeof value === "string" ? value : String(value ?? "");
-  const normalized = rawValue
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "");
+  const normalized = rawValue.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
   const sanitized = normalized
     .replace(/[^a-z0-9]+/gi, "-")
     .replace(/^-+|-+$/g, "")

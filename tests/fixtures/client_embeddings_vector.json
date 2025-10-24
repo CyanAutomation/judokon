@@ -2,19 +2,13 @@
   {
     "id": "docA.md-chunk-1",
     "text": "Alpha insights align with alpha guidelines across multiple contexts, ensuring alpha patterns remain consistent for highlight verification. This alpha oriented paragraph repeats alpha cues so the summary truncation still exposes alpha markers for evaluation while the full disclosure preserves alpha emphasis across sentences.",
-    "embedding": [
-      1,
-      0
-    ],
+    "embedding": [1, 0],
     "source": "docA.md"
   },
   {
     "id": "docB.md-chunk-1",
     "text": "Beta text",
-    "embedding": [
-      0,
-      1
-    ],
+    "embedding": [0, 1],
     "source": "docB.md"
   }
 ]
