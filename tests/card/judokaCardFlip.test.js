@@ -28,20 +28,25 @@ const judoka = {
 const gokyoLookup = { 1: { id: 1, name: "Uchi-mata" } };
 
 describe("judoka card flip interactivity", () => {
-  it("toggles show-card-back on click", async () => {
+  it("toggles the checkbox when the card is clicked", async () => {
     const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
+    const toggle = container.querySelector(".card-flip-toggle");
+    expect(toggle).not.toBeNull();
+    expect(toggle.checked).toBe(false);
     card.click();
-    expect(card.classList.contains("show-card-back")).toBe(true);
+    expect(toggle.checked).toBe(true);
     card.click();
-    expect(card.classList.contains("show-card-back")).toBe(false);
+    expect(toggle.checked).toBe(false);
   });
 
-  it("toggles show-card-back on Enter key", async () => {
+  it("toggles the checkbox when Enter is pressed", async () => {
     const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
-    const event = new KeyboardEvent("keydown", { key: "Enter" });
+    const toggle = container.querySelector(".card-flip-toggle");
+    expect(toggle).not.toBeNull();
+    const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true });
     card.dispatchEvent(event);
-    expect(card.classList.contains("show-card-back")).toBe(true);
+    expect(toggle.checked).toBe(true);
   });
 });

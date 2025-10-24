@@ -2,7 +2,6 @@ import { getFlagUrl } from "../helpers/country/codes.js";
 import { generateCardTopBar, createNoDataContainer } from "../helpers/cardTopBar.js";
 import { safeGenerate } from "../helpers/errorUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "../helpers/judokaValidation.js";
-import { enableCardFlip } from "../helpers/cardFlip.js";
 import {
   createPortraitSection,
   createStatsSection,
@@ -21,9 +20,9 @@ import { Card } from "./Card.js";
  * 2. Store judoka data, gokyo lookup and options for later use.
  * 3. `render()` builds the DOM structure:
  *    - Resolve the flag URL using `safeGenerate(getFlagUrl)`.
- *    - Create a `.card-container` and inner `.judoka-card` element.
+ *    - Create a `.card-container` with a hidden checkbox flip toggle and label-based `.judoka-card` element.
  *    - Build top bar, portrait, stats and signature move sections.
- *    - Enable flip interactivity with `enableCardFlip`.
+ *    - Drive flip interactivity through the native checkbox state.
  *    - Append an inspector panel when enabled.
  *    - Return the container element.
  */
@@ -50,6 +49,12 @@ export class JudokaCard extends Card {
     const cardType = isMystery ? "common" : processedJudoka.rarity?.toLowerCase() || "common";
 
     super("", { className: `judoka-card ${cardType}` });
+    const baseElement = this.element;
+    const labelElement = document.createElement("label");
+    for (const cls of baseElement.classList) {
+      labelElement.classList.add(cls);
+    }
+    this.element = labelElement;
 
     this.judoka = processedJudoka;
     this.gokyoLookup = gokyoLookup;
@@ -65,6 +70,53 @@ export class JudokaCard extends Card {
       : `${this.judoka.firstname} ${this.judoka.surname} card`;
     this.element.setAttribute("aria-label", ariaLabel);
     this.element.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
+  }
+
+  static #createToggleId(seed) {
+    const unique =
+      typeof globalThis.crypto?.randomUUID === "function"
+        ? globalThis.crypto.randomUUID()
+        : Math.random().toString(36).slice(2);
+    return `card-flip-toggle-${seed ?? "card"}-${unique}`;
+  }
+
+  #createFlipToggle(toggleId) {
+    const toggle = document.createElement("input");
+    toggle.type = "checkbox";
+    toggle.className = "card-flip-toggle";
+    toggle.id = toggleId;
+    toggle.setAttribute("aria-label", "Flip card to view back");
+    toggle.tabIndex = -1;
+    return toggle;
+  }
+
+  async #resolveFlagUrl() {
+    return await safeGenerate(
+      () => getFlagUrl(this.judoka.countryCode || "vu"),
+      "Failed to resolve flag URL:",
+      "https://flagcdn.com/w320/vu.png"
+    );
+  }
+
+  #configureCardElement(card, inspectorState, toggleId) {
+    card.htmlFor = toggleId;
+    card.setAttribute("data-feature-card-inspector", inspectorState);
+  }
+
+  async #populateCardSections(card, flagUrl) {
+    const topBar = await this.#buildTopBar(flagUrl);
+    card.append(topBar);
+
+    if (this.isMysteryCard) {
+      const mystery = this.#buildMysterySection();
+      card.append(mystery);
+      return;
+    }
+
+    const portrait = this.#buildPortraitSection();
+    const stats = await this.#buildStatsSection();
+    const signature = this.#buildSignatureMoveSection();
+    card.append(portrait, stats, signature);
   }
 
   /**
@@ -171,6 +223,13 @@ export class JudokaCard extends Card {
   /**
    * Render the card and return the container element.
    *
+   * @pseudocode
+   * 1. Create the outer container and record inspector state metadata.
+   * 2. Generate a unique checkbox toggle and associate the label-based card element with it.
+   * 3. Resolve the flag URL and populate the card sections (top bar, portrait/stats/signature or mystery layout).
+   * 4. Attach keyboard support that forwards Enter/Space to the hidden checkbox.
+   * 5. Append the inspector panel when enabled and return the populated container.
+   *
    * @returns {Promise<HTMLElement>} Resolves with the card container element.
    */
   async render() {
@@ -184,30 +243,23 @@ export class JudokaCard extends Card {
       // ignore serialization errors
     }
 
-    const flagUrl = await safeGenerate(
-      () => getFlagUrl(this.judoka.countryCode || "vu"),
-      "Failed to resolve flag URL:",
-      "https://flagcdn.com/w320/vu.png"
-    );
+    const toggleId = JudokaCard.#createToggleId(this.judoka.id);
+    const toggle = this.#createFlipToggle(toggleId);
 
     const card = this.element;
-    const topBar = await this.#buildTopBar(flagUrl);
-    card.append(topBar);
+    this.#configureCardElement(card, inspectorState, toggleId);
 
-    if (this.isMysteryCard) {
-      // Simplified layout: large SVG only, spanning remaining rows
-      const mystery = this.#buildMysterySection();
-      card.append(mystery);
-    } else {
-      const portrait = this.#buildPortraitSection();
-      const stats = await this.#buildStatsSection();
-      const signature = this.#buildSignatureMoveSection();
-      card.append(portrait, stats, signature);
-    }
-    enableCardFlip(card);
-    card.setAttribute("data-feature-card-inspector", inspectorState);
+    const flagUrl = await this.#resolveFlagUrl();
+    await this.#populateCardSections(card, flagUrl);
 
-    container.appendChild(card);
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggle.click();
+      }
+    });
+
+    container.append(toggle, card);
 
     if (this.enableInspector) {
       const panel = createInspectorPanel(container, this.judoka);
