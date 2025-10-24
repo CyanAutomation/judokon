@@ -1215,7 +1215,7 @@ function clearStoreTimer(store, timerProperty) {
 export function selectStat(stat) {
   if (!stat) return;
   // Ignore re-entrant calls while a selection is being applied
-  if (selectionApplying || state.roundResolving) return;
+  if (selectionApplying) return;
   clearHistoryPreview({ restoreAnchor: false });
   selectionApplying = true;
   stopSelectionCountdown();
@@ -2125,19 +2125,10 @@ export function handleWaitingForPlayerActionKey(key) {
       return false;
     }
     const activeElement = getActiveElement();
-    const active = activeElement?.closest?.(".cli-stat");
-    console.debug(
-      "[TEST DEBUG] handleWaitingForPlayerActionKey enter active=",
-      !!active,
-      "activeElem=",
-      activeElement
-    );
-    if (active) {
-      const idx = active.dataset.statIndex;
-      console.debug("[TEST DEBUG] active.dataset.statIndex=", idx);
+    if (activeElement?.dataset?.statIndex) {
+      const idx = activeElement.dataset.statIndex;
       if (idx) {
         const stat = getStatByIndex(idx);
-        console.debug("[TEST DEBUG] resolved stat=", stat);
         if (stat) {
           __scheduleMicrotask(() => selectStat(stat));
           return true;

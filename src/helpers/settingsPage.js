@@ -83,6 +83,12 @@ if (typeof window !== "undefined") {
 let errorPopupTimeoutId;
 let saveStatusTimeoutId;
 
+/**
+ * Build a notifier that surfaces transient save feedback in the live region.
+ *
+ * @param {HTMLElement|null} statusElement - Container for the save status message.
+ * @returns {(message?: string) => void} Notifier that displays and hides the status.
+ */
 function createSaveStatusNotifier(statusElement) {
   if (!statusElement) {
     return () => {};
@@ -98,14 +104,11 @@ function createSaveStatusNotifier(statusElement) {
 
     statusElement.hidden = false;
     statusElement.dataset.visible = "true";
-    const applyMessage = () => {
-      statusElement.textContent = text;
-    };
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(applyMessage);
-    } else {
-      applyMessage();
+    statusElement.textContent = "";
+    if (statusElement.isConnected) {
+      void statusElement.offsetWidth;
     }
+    statusElement.textContent = text;
 
     saveStatusTimeoutId = setTimeout(() => {
       statusElement.dataset.visible = "false";

@@ -229,6 +229,17 @@ test.describe("Settings page", () => {
     expect(reached).toBe(true);
   });
 
+  test("shows saved indicator after toggling a setting", async ({ page }) => {
+    const status = page.locator("#settings-save-status");
+    await expect(status).toBeHidden();
+
+    await page.getByLabel("Sound").click();
+
+    await expect(status).toBeVisible();
+    await expect(status).toHaveText("Saved!");
+    await expect.poll(async () => status.evaluate((el) => el.hidden)).toBe(true);
+  });
+
   test("toggle switches surface hover and focus feedback", async ({ page }) => {
     await openSections(page, ["general"]);
     const label = page.locator("label[for='sound-toggle']");

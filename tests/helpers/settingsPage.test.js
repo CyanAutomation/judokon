@@ -178,9 +178,47 @@ describe("renderSettingsControls", () => {
         ...baseSettings.featureFlags,
         enableTestMode: { enabled: true }
       },
-      expect.any(Function)
+      expect.any(Function),
+      input
     );
     await testHarness.cleanup();
+  });
+
+  it("shows transient save status feedback when settings persist", async () => {
+    vi.useFakeTimers();
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
+      updateSetting,
+      loadSettings: vi.fn(),
+      resetSettings: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
+    const testHarness = createSettingsHarness();
+    await testHarness.setup();
+    try {
+      const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+      renderSettingsControls(baseSettings, [], tooltipMap);
+      const status = document.getElementById("settings-save-status");
+      const soundToggle = document.getElementById("sound-toggle");
+
+      soundToggle.checked = false;
+      soundToggle.dispatchEvent(new Event("change", { bubbles: true }));
+
+      await Promise.resolve();
+      expect(status.hidden).toBe(false);
+      expect(status.dataset.visible).toBe("true");
+      expect(status.textContent).toBe("Saved!");
+
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(status.hidden).toBe(true);
+      expect(status.textContent).toBe("");
+    } finally {
+      await testHarness.cleanup();
+      vi.useRealTimers();
+    }
   });
 
   it("restores defaults when confirmed", async () => {
