@@ -2215,6 +2215,12 @@ export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
  *     return true
  *   selectStat(stat)
  *   return true
+ * if key is Enter:
+ *   dataset ← activeElement?.dataset
+ *   stat = dataset.stat || getStatByIndex(dataset.statIndex)
+ *   if stat missing: return false
+ *   selectStat(stat)
+ *   return true
  * return false
  */
 export function handleWaitingForPlayerActionKey(key) {
@@ -2239,14 +2245,12 @@ export function handleWaitingForPlayerActionKey(key) {
       return false;
     }
     const activeElement = getActiveElement();
-    if (activeElement?.dataset?.statIndex) {
-      const idx = activeElement.dataset.statIndex;
-      if (idx) {
-        const stat = getStatByIndex(idx);
-        if (stat) {
-          __scheduleMicrotask(() => selectStat(stat));
-          return true;
-        }
+    const dataset = activeElement?.dataset;
+    if (dataset) {
+      const statKey = dataset.stat || (dataset.statIndex ? getStatByIndex(dataset.statIndex) : null);
+      if (statKey) {
+        __scheduleMicrotask(() => selectStat(statKey));
+        return true;
       }
     }
     return false;
