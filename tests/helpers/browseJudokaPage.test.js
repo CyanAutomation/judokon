@@ -100,6 +100,30 @@ describe("browseJudokaPage helpers", () => {
     expect(label?.getAttribute("for")).toBe("layout-mode-toggle");
     expect(label?.getAttribute("data-testid")).toBe("layout-toggle");
     expect(label?.getAttribute("aria-controls")).toBe("country-panel-content");
+    expect(label?.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("allows the accessible layout toggle to respond to keyboard activation", async () => {
+    const markup = await readFile(join(process.cwd(), "src/pages/browseJudoka.html"), "utf8");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(markup, "text/html");
+
+    const { createBrowsePageRuntime } = await import("../../src/helpers/browseJudokaPage.js");
+
+    const runtime = createBrowsePageRuntime(doc);
+    runtime.setupLayoutToggleControl?.();
+
+    const label = doc.getElementById("layout-toggle");
+    const checkbox = doc.getElementById("layout-mode-toggle");
+
+    expect(label?.getAttribute("aria-pressed")).toBe("false");
+    label?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(checkbox?.checked).toBe(true);
+    expect(label?.getAttribute("aria-pressed")).toBe("true");
+
+    label?.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    expect(checkbox?.checked).toBe(false);
+    expect(label?.getAttribute("aria-pressed")).toBe("false");
   });
 
   it("country filter controller filters judoka and clears selection", async () => {
