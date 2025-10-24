@@ -1955,12 +1955,12 @@ export function restorePointsToWin() {
               try {
                 await resetMatch();
               } catch {}
-            engineFacade.setPointsToWin?.(val);
-            updateRoundHeader(0, val);
-            try {
-              await announceMatchReady({ focusMain: true });
-            } catch {}
-            current = val;
+              engineFacade.setPointsToWin?.(val);
+              updateRoundHeader(0, val);
+              try {
+                await announceMatchReady({ focusMain: true });
+              } catch {}
+              current = val;
             } else {
               select.value = String(current);
             }
@@ -2121,9 +2121,7 @@ export function handleWaitingForPlayerActionKey(key) {
   }
   if (key === "enter") {
     if (selectionApplying || state.roundResolving) {
-      console.debug(
-        "[TEST DEBUG] handleWaitingForPlayerActionKey enter skipped due to busy state"
-      );
+      console.debug("[TEST DEBUG] handleWaitingForPlayerActionKey enter skipped due to busy state");
       return false;
     }
     const activeElement = getActiveElement();

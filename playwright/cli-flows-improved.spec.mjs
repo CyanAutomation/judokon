@@ -222,7 +222,7 @@ test.describe("CLI Battle Interface", () => {
       await expect(roundSection.locator("#round-message")).toBeVisible();
       await expect(roundSection.locator("#cli-countdown")).toBeVisible();
 
-      const settingsSection = page.locator('#cli-settings');
+      const settingsSection = page.locator("#cli-settings");
       await expect(settingsSection).toBeVisible();
       await expect(settingsSection).toHaveClass(/cli-settings/);
 

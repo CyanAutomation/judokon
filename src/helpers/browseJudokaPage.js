@@ -172,7 +172,7 @@ export function createBrowsePageRuntime(documentRef = document) {
  *    a. Show a loading spinner.
  *    b. Fetch judoka and gokyo data concurrently.
  *    c. Render the judoka carousel with the fetched data.
-   *    d. If successful, set up country filtering.
+ *    d. If successful, set up country filtering.
  *    e. If data loading fails, display an error message, a fallback judoka card, and a retry button.
  *    f. Hide the spinner when done.
  * 5. Execute the `init` function.

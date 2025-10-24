@@ -73,9 +73,8 @@ export function createCountryFilterAdapter(
     },
     getDefaultRadio() {
       return (
-        listContainer?.querySelector?.(
-          'input[type="radio"][name="country-filter"][value="all"]'
-        ) ?? null
+        listContainer?.querySelector?.('input[type="radio"][name="country-filter"][value="all"]') ??
+        null
       );
     }
   };
@@ -106,7 +105,8 @@ export function createCountryFilterAdapter(
 export function createCountryFilterController(judokaList, render, adapter) {
   const toLabel = (value) => (value === "all" ? "all countries" : value);
   const getRadios = () => adapter.getRadios?.() ?? [];
-  const getDefaultRadio = () => adapter.getDefaultRadio?.() ?? getRadios().find((r) => r.value === "all") ?? null;
+  const getDefaultRadio = () =>
+    adapter.getDefaultRadio?.() ?? getRadios().find((r) => r.value === "all") ?? null;
   const getCheckedRadio = () => getRadios().find((radio) => radio.checked) ?? null;
 
   return {

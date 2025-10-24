@@ -67,26 +67,26 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                  | Description                                            |
-| -------- | ------------------------ | ------------------------------------------------------ |
-| **P1**   | JSON loader              | Load `tooltips.json` from `src/data/tooltips.json`.    |
-| **P1**   | Sidebar key list         | Display all keys in a scrollable, clickable list.      |
-| **P1**   | Preview pane             | Render tooltip content (markdown + raw string).        |
-| **P1**   | Markdown parser          | Apply JU-DO-KON! tooltip formatting rules.             |
-| **P2**   | Search/filter input      | Filter list by tooltip key or body content.            |
-| **P2**   | Category highlighting    | Group or color-code by prefix (`stat`, `ui`, `mode`).  |
-| **P2**   | Invalid key validator    | Flag missing, empty, or malformed entries visually.    |
-| **P2**   | Visual indicators        | Show icon/tooltip for invalid/empty/malformed entries. |
-| **P2**   | Malformed markdown warn  | Show warning in preview for malformed markdown.        |
-| **P2**   | Keyboard navigation      | Support TAB, arrows, ENTER in sidebar and preview.     |
-| **P2**   | Sidebar scroll           | Sidebar scrolls independently from preview.            |
-| **P2**   | Copy feedback            | Copy-to-clipboard buttons show feedback on success.    |
-| **P3**   | Mobile responsive layout | Stack sidebar above preview on screens <600px.         |
-| **P3**   | Copy-to-clipboard button | One-click copying of key or body content.              |
-| **P3**   | Jump to key via URL hash | Auto-select a tooltip via `#keyname` on page load.     |
+| Priority | Feature                  | Description                                                    |
+| -------- | ------------------------ | -------------------------------------------------------------- |
+| **P1**   | JSON loader              | Load `tooltips.json` from `src/data/tooltips.json`.            |
+| **P1**   | Sidebar key list         | Display all keys in a scrollable, clickable list.              |
+| **P1**   | Preview pane             | Render tooltip content (markdown + raw string).                |
+| **P1**   | Markdown parser          | Apply JU-DO-KON! tooltip formatting rules.                     |
+| **P2**   | Search/filter input      | Filter list by tooltip key or body content.                    |
+| **P2**   | Category highlighting    | Group or color-code by prefix (`stat`, `ui`, `mode`).          |
+| **P2**   | Invalid key validator    | Flag missing, empty, or malformed entries visually.            |
+| **P2**   | Visual indicators        | Show icon/tooltip for invalid/empty/malformed entries.         |
+| **P2**   | Malformed markdown warn  | Show warning in preview for malformed markdown.                |
+| **P2**   | Keyboard navigation      | Support TAB, arrows, ENTER in sidebar and preview.             |
+| **P2**   | Sidebar scroll           | Sidebar scrolls independently from preview.                    |
+| **P2**   | Copy feedback            | Copy-to-clipboard buttons show feedback on success.            |
+| **P3**   | Mobile responsive layout | Stack sidebar above preview on screens <600px.                 |
+| **P3**   | Copy-to-clipboard button | One-click copying of key or body content.                      |
+| **P3**   | Jump to key via URL hash | Auto-select a tooltip via `#keyname` on page load.             |
 | **P3**   | Disclosure for long vals | Truncate long values, add native `<details>/<summary>` toggle. |
-| **P3**   | High-contrast/dark mode  | Selected key uses bright color in dark mode.           |
-| **P3**   | ARIA/Accessibility       | Add ARIA attributes/roles for screen readers.          |
+| **P3**   | High-contrast/dark mode  | Selected key uses bright color in dark mode.                   |
+| **P3**   | ARIA/Accessibility       | Add ARIA attributes/roles for screen readers.                  |
 
 ---
 
@@ -122,7 +122,7 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 | Malformed markdown      | Render best-effort version and flag preview with warning icon                                          |
 | Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content"                            |
 | Unrecognized key format | Warn if keys deviate from pattern `prefix.name` (`/^[a-z]+\.[\w-]+$/`); show red icon with tooltip     |
-| Long values             | Truncate preview after 300px height; add native `<details>/<summary>` toggle                                            |
+| Long values             | Truncate preview after 300px height; add native `<details>/<summary>` toggle                           |
 
 ---
 
