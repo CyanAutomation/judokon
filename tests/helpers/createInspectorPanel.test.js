@@ -5,25 +5,30 @@ const judoka = {};
 
 /** @test {createInspectorPanel} */
 describe("createInspectorPanel accessibility", () => {
-  it("adds label, focus styles, and keyboard support", () => {
+  it("relies on native summary behavior and toggles dataset on open", () => {
     const panel = mountInspectorPanel(judoka);
     const summary = panel.querySelector("summary");
+    const container = panel.parentElement;
 
     expect(panel.getAttribute("aria-label")).toBe("Inspector panel");
-    expect(parseInt(summary.style.minHeight)).toBeGreaterThanOrEqual(44);
-    expect(parseInt(summary.style.minWidth)).toBeGreaterThanOrEqual(44);
-    expect(summary.tabIndex).toBe(0);
+    expect(summary?.hasAttribute("tabindex")).toBe(false);
     expect(summary.getAttribute("aria-expanded")).toBe("false");
+    expect(summary.style.minHeight).toBe("");
+    expect(summary.style.minWidth).toBe("");
+    expect(summary.style.outline).toBe("");
 
-    summary.dispatchEvent(new Event("focus"));
-    expect(summary.style.outlineColor).toBe("rgb(0, 0, 0)");
+    expect(container?.dataset.inspector).toBeUndefined();
 
-    expect(panel.open).toBe(false);
-    summary.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    panel.open = true;
+    panel.dispatchEvent(new Event("toggle"));
     expect(panel.open).toBe(true);
     expect(summary.getAttribute("aria-expanded")).toBe("true");
-    summary.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
+    expect(container?.dataset.inspector).toBe("true");
+
+    panel.open = false;
+    panel.dispatchEvent(new Event("toggle"));
     expect(panel.open).toBe(false);
     expect(summary.getAttribute("aria-expanded")).toBe("false");
+    expect(container?.dataset.inspector).toBeUndefined();
   });
 });

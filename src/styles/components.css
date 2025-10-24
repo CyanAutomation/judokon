@@ -35,6 +35,14 @@
   list-style: none;
   user-select: none;
   padding: 0.25rem 0;
+  min-height: 44px;
+  min-width: 44px;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.debug-panel summary:focus-visible {
+  outline-color: #000;
 }
 
 .debug-panel summary #debug-copy {
