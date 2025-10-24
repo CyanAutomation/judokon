@@ -1,19 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as init from "../../../src/pages/battleCLI/init.js";
 import cliState from "../../../src/pages/battleCLI/state.js";
+import { resetCliState } from "../../utils/battleCliTestUtils.js";
 
 describe("CLI input latency hardened test", () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="cli-countdown"></div>';
   });
   afterEach(() => {
-    cliState.ignoreNextAdvanceClick = false;
-    cliState.roundResolving = false;
-    cliState.shortcutsReturnFocus = null;
-    cliState.shortcutsOverlay = null;
-    cliState.escapeHandledPromise = new Promise((resolve) => {
-      cliState.escapeHandledResolve = resolve;
-    });
+    resetCliState();
     vi.restoreAllMocks();
     vi.useRealTimers();
     document.body.innerHTML = "";
