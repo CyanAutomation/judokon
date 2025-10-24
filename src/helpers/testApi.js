@@ -1900,15 +1900,30 @@ const cliApi = {
       }
     }
 
+    const stateBeforeResolve = stateApi.getBattleState();
     const resolution = await this.resolveRound(roundInput);
     const detail = resolution?.detail ?? {};
 
     let outcomeDispatched = false;
     if (outcomeEvent) {
+      const stateBeforeOutcome = stateApi.getBattleState();
       try {
+        logDevDebug("[completeRound] About to dispatch outcome event", {
+          outcomeEvent,
+          stateBeforeResolve,
+          stateBeforeOutcome,
+          machine: stateApi.getBattleStateMachine()
+        });
         const dispatched = await stateApi.dispatchBattleEvent(outcomeEvent, detail);
         outcomeDispatched = dispatched !== false;
-      } catch {
+        logDevDebug("[completeRound] Outcome dispatch result", {
+          outcomeEvent,
+          dispatched,
+          outcomeDispatched,
+          stateAfterOutcome: stateApi.getBattleState()
+        });
+      } catch (error) {
+        logDevDebug("[completeRound] Outcome dispatch error", { outcomeEvent, error });
         outcomeDispatched = false;
       }
     }

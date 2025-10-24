@@ -107,15 +107,35 @@ export async function createStateManager(
       });
       try {
         const state = byName.get(current);
+        debugLog("stateManager: current state definition", {
+          state: current,
+          stateFound: !!state,
+          triggers: state?.triggers?.map((t) => t.on) ?? []
+        });
         const trigger = state?.triggers?.find((t) => t.on === eventName);
+        debugLog("stateManager: trigger search", {
+          eventName,
+          triggerFound: !!trigger,
+          targetFromTrigger: trigger?.target
+        });
         let target = trigger?.target;
         if (!target && byName.has(eventName)) target = eventName;
+        debugLog("stateManager: target resolution", {
+          targetFromTrigger: trigger?.target,
+          targetIsStateName: !trigger && byName.has(eventName),
+          finalTarget: target,
+          targetExists: byName.has(target)
+        });
         if (!target || !byName.has(target)) {
           logError(
             "stateManager: dispatch returning false. target:",
             target,
             "byName.has(target):",
-            byName.has(target)
+            byName.has(target),
+            "current state:",
+            current,
+            "available triggers:",
+            state?.triggers?.map((t) => t.on) ?? []
           );
           return false;
         }
