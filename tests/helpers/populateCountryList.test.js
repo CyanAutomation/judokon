@@ -51,6 +51,43 @@ describe("populateCountryList", () => {
     expect(radios[0].checked).toBe(true);
   });
 
+  it("keeps radios adjacent to flag buttons for native keyboard behavior", async () => {
+    const judoka = [
+      { id: 1, firstname: "A", surname: "B", country: "Japan" },
+      { id: 2, firstname: "C", surname: "D", country: "Brazil" }
+    ];
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue(judoka)
+    }));
+
+    const mapping = {
+      br: { country: "Brazil", code: "br", active: true },
+      jp: { country: "Japan", code: "jp", active: true }
+    };
+    loadCountryMapping.mockResolvedValue(mapping);
+
+    const { populateCountryList } = await import("../../src/helpers/country/list.js");
+
+    const container = document.createElement("div");
+    await populateCountryList(container);
+
+    const fieldset = container.querySelector("fieldset[data-country-filter]");
+    expect(fieldset).not.toBeNull();
+
+    const radios = fieldset.querySelectorAll('input[type="radio"][name="country-filter"]');
+    expect(radios.length).toBeGreaterThan(1);
+
+    radios.forEach((radio) => {
+      expect(radio.hasAttribute("hidden")).toBe(false);
+      expect(radio.getAttribute("aria-hidden")).not.toBe("true");
+      expect(radio.hasAttribute("tabindex")).toBe(false);
+      const sibling = radio.nextElementSibling;
+      expect(sibling).toBeInstanceOf(HTMLLabelElement);
+      expect(sibling.classList.contains("flag-button")).toBe(true);
+    });
+  });
+
   it("applies accessible aria-labels to flag buttons", async () => {
     const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
 

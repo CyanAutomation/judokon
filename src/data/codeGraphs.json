@@ -4183,10 +4183,6 @@
         }
       }
     },
-    "tests/helpers/handleKeyboardNavigation.test.js": {
-      "imports": ["vitest", "../../src/helpers/browse/handleKeyboardNavigation.js"],
-      "functions": {}
-    },
     "tests/helpers/gameRandom.test.js": {
       "imports": ["vitest"],
       "functions": {
@@ -6969,22 +6965,18 @@
       }
     },
     "src/helpers/browse/setupCountryToggle.js": {
-      "imports": ["../countrySlider.js", "../countryPanel.js", "./handleKeyboardNavigation.js"],
+      "imports": ["../countrySlider.js", "../countryPanel.js"],
       "functions": {
-        "handleToggleClick": {
-          "calls": ["contains", "toggleCountryPanel", "createCountrySlider"],
+        "createCountryToggleAdapter": {
+          "calls": ["toggleCountryPanel", "createCountrySlider"],
           "patterns": []
         },
-        "handlePanelKeydown": {
-          "calls": ["toggleCountryPanel", "handleKeyboardNavigation"],
+        "createCountryToggleController": {
+          "calls": ["toggleCountryPanel"],
           "patterns": []
         },
         "setupCountryToggle": {
-          "calls": ["addEventListener", "handleToggleClick", "handlePanelKeydown"],
-          "patterns": []
-        },
-        "countriesLoaded": {
-          "calls": [],
+          "calls": ["createCountryToggleAdapter", "createCountryToggleController", "addEventListener"],
           "patterns": []
         }
       }
@@ -7034,15 +7026,6 @@
         },
         "updateLiveRegion": {
           "calls": ["querySelector"],
-          "patterns": []
-        }
-      }
-    },
-    "src/helpers/browse/handleKeyboardNavigation.js": {
-      "imports": [],
-      "functions": {
-        "handleKeyboardNavigation": {
-          "calls": ["from", "querySelectorAll", "indexOf", "preventDefault", "focus"],
           "patterns": []
         }
       }
