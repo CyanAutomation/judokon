@@ -75,22 +75,59 @@ test.describe("Battle CLI - Play (Debug)", () => {
     // Also check the battle state from the state machine directly
     const stateMachineState = await page.evaluate(() => {
       try {
-        const machine = window.__TEST_API?.state?.getBattleStateMachine?.();
-        return machine?.state?.value ?? "NO_MACHINE";
+        const stateApi = window.__TEST_API?.state;
+        if (!stateApi) return "NO_STATE_API";
+        const getMachineFunc = stateApi.getBattleStateMachine;
+        if (!getMachineFunc) return "NO_GET_MACHINE_FUNC";
+        const machine = getMachineFunc();
+        if (!machine) return "MACHINE_IS_NULL";
+        const state = machine.getState?.();
+        return {
+          current: state ?? "NO_GET_STATE",
+          fullMachine: machine?.state || "NO_STATE_PROP"
+        };
       } catch (e) {
         return `ERROR: ${e.message}`;
       }
     });
-    console.log("[DEBUG TEST] Battle state machine value:", stateMachineState);
+    console.log(
+      "[DEBUG TEST] Battle state machine info:",
+      JSON.stringify(stateMachineState, null, 2)
+    );
+
+    // Wait a bit more and check state again
+    await page.waitForTimeout(1000);
+    const stateMachineState2 = await page.evaluate(() => {
+      try {
+        return window.__TEST_API?.state?.getBattleStateMachine?.()?.getState?.() ?? "NO_STATE";
+      } catch (e) {
+        return `ERROR: ${e.message}`;
+      }
+    });
+    console.log("[DEBUG TEST] Battle state machine value after 1s wait:", stateMachineState2);
 
     await expect
-      .poll(() => {
-        return page.evaluate(() => {
-          const state = window.__TEST_API?.state?.getBattleState?.() ?? null;
-          console.log("[DEBUG POLL] Current battle state:", state);
-          return state;
-        });
-      })
-      .toBe("roundDecision", { timeout: 10000 });
+      .poll(
+        () => {
+          return page.evaluate(() => {
+            const state = window.__TEST_API?.state?.getBattleStateMachine?.()?.getState?.() ?? null;
+            const snapshot = window.__TEST_API?.state?.getStateSnapshot?.() ?? {};
+            console.log(
+              "[DEBUG POLL] Current battle state:",
+              state,
+              "| Event:",
+              snapshot.event,
+              "| Previous:",
+              snapshot.prev
+            );
+            return state;
+          });
+        },
+        {
+          timeout: 10000,
+          intervals: [100] // Check every 100ms to catch all transitions
+        }
+      )
+      .toBe("roundDecision");
   });
 });

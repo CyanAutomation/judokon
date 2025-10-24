@@ -334,6 +334,18 @@ const stateApi = {
   },
 
   /**
+   * Get the battle state machine for testing
+   * @returns {object|null} The state machine or null if unavailable
+   */
+  getBattleStateMachine() {
+    try {
+      return getBattleStateMachine();
+    } catch {
+      return null;
+    }
+  },
+
+  /**
    * Get complete state snapshot for testing
    * @returns {object} State snapshot with current state, previous state, event, and log
    */

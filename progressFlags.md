@@ -42,6 +42,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Implemented Phase 3.2 unsaved changes indicator with an accessible `Saved!` live region and styling (`src/helpers/settingsPage.js`, `src/pages/settings.html`, `src/styles/settings.css`, `tests/helpers/settingsPage.test.js`, `tests/utils/testUtils.js`, `playwright/settings.spec.js`); validated via `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 - Authored a Battle State Progress QA guide so automation has a canonical checklist of expected `data-feature-*` markers (`docs/qa/battle-state-progress.md`).
 - Documented the difference between `statHotkeys` (Classic UI) and `cliShortcuts` (Battle CLI) and captured verification steps for each (`docs/qa/stat-hotkeys-vs-cli-shortcuts.md`).
+- Added an Opponent Delay Message QA checklist covering delayed snackbar verification, overrides, and automation hooks (`docs/qa/opponent-delay-message.md`).
 - Added miniature theme previews to the display mode selector to visualize light/dark/retro choices (`src/pages/settings.html`, `src/styles/settings.css`); validated with `npm run check:contrast`, `npx vitest run tests/helpers/settingsPage.test.js`, and `npx playwright test playwright/settings.spec.js`.
 - Refined the switch interactivity pass with label-level hover/focus styling, text emphasis, and dedicated Playwright coverage to assert the new feedback (`src/styles/settings.css`, `playwright/settings.spec.js`); targeted checks: `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 
@@ -104,8 +105,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 - `opponentDelayMessage`
   - Status: **Working (flag-gated)** — stat selection now respects the flag, deferring the "Opponent is choosing…" snackbar via configurable delays with a deterministic fallback hook (`src/pages/battleClassic.init.js:720-758`, `src/helpers/classicBattle/uiEventHandlers.js:1-118`, `src/helpers/classicBattle/selectionHandler.js:320-350`).
   - Confidence: High (covered by targeted Vitest component tests).
-  - Effort: Low (follow-up is documentation and possibly orchestrator E2E coverage once battle-classic specs are stable).
-  - Recommendation: Expose the delay override settings in QA docs and consider an orchestrator Playwright probe once existing smoke tests are green again.
+  - Effort: Low (documentation in place; orchestrator probe optional once additional coverage is needed).
+  - Recommendation: QA guide available (`docs/qa/opponent-delay-message.md`); future work is limited to optional Playwright coverage.
 
 - `statHotkeys` & `cliShortcuts`
   - Status: **Decoupled** — `wireStatHotkeys` now respects `isEnabled("statHotkeys")` without mutating persistence, and the CLI handler returns `"ignored"` when the flag is off so disabled users are not nagged (`src/helpers/classicBattle/statButtons.js:145-169`, `src/pages/battleCLI/init.js:1883-1902`).
