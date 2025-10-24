@@ -147,8 +147,7 @@ export class Modal {
     this.cancelPendingFocus();
 
     const hasAnimationFrame =
-      typeof requestAnimationFrame === "function" &&
-      typeof cancelAnimationFrame === "function";
+      typeof requestAnimationFrame === "function" && typeof cancelAnimationFrame === "function";
 
     if (hasAnimationFrame) {
       this.pendingFocusCancel = cancelAnimationFrame;

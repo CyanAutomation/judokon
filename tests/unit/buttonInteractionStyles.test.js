@@ -30,7 +30,9 @@ describe("button interaction styles", () => {
     expect(buttonsCss).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*button:active,\s*\n\s*\.primary-button:active\s*\{\s*transform:\s*none;/
     );
-    expect(buttonsCss).toMatch(/\.reduce-motion button,\s*\n\s*\.reduce-motion \.primary-button\s*\{\s*transition:\s*none;/);
+    expect(buttonsCss).toMatch(
+      /\.reduce-motion button,\s*\n\s*\.reduce-motion \.primary-button\s*\{\s*transition:\s*none;/
+    );
     expect(buttonsCss).toMatch(
       /\.reduce-motion button:active,\s*\n\s*\.reduce-motion \.primary-button:active\s*\{\s*transform:\s*none;/
     );
