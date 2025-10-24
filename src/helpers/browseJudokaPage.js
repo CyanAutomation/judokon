@@ -101,12 +101,7 @@ export function createBrowsePageRuntime(documentRef = document) {
           return;
         }
 
-        if (
-          event.key !== "Enter" &&
-          event.key !== " " &&
-          event.key !== "Space" &&
-          event.key !== "Spacebar"
-        ) {
+        if (event.key !== "Enter" && event.key !== " ") {
           return;
         }
 

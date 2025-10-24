@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createBrowseJudokaHarness } from "./integrationHarness.js";
+import { interactions } from "../utils/componentTestUtils.js";
 
 const harness = createBrowseJudokaHarness();
 
@@ -99,7 +100,7 @@ describe("browseJudokaPage helpers", () => {
     expect(label).not.toBeNull();
     expect(label?.getAttribute("for")).toBe("layout-mode-toggle");
     expect(label?.getAttribute("data-testid")).toBe("layout-toggle");
-    expect(label?.getAttribute("aria-controls")).toBe("country-panel-content");
+    expect(label?.hasAttribute("aria-controls")).toBe(false);
     expect(label?.getAttribute("aria-pressed")).toBe("false");
   });
 
@@ -117,11 +118,28 @@ describe("browseJudokaPage helpers", () => {
     const checkbox = doc.getElementById("layout-mode-toggle");
 
     expect(label?.getAttribute("aria-pressed")).toBe("false");
-    label?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+
+    if (label) {
+      interactions.focus(label);
+      interactions.keypress(label, "Enter");
+    }
+
     expect(checkbox?.checked).toBe(true);
     expect(label?.getAttribute("aria-pressed")).toBe("true");
 
-    label?.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    if (label) {
+      interactions.keypress(label, "Tab");
+      expect(checkbox?.checked).toBe(true);
+      interactions.keypress(label, "a");
+    }
+
+    expect(checkbox?.checked).toBe(true);
+    expect(label?.getAttribute("aria-pressed")).toBe("true");
+
+    if (label) {
+      interactions.keypress(label, " ");
+    }
+
     expect(checkbox?.checked).toBe(false);
     expect(label?.getAttribute("aria-pressed")).toBe("false");
   });
