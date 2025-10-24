@@ -5,6 +5,7 @@ import * as domMod from "../../../src/pages/battleCLI/dom.js";
 import { withMutedConsole } from "../../utils/console.js";
 import cliState from "../../../src/pages/battleCLI/state.js";
 import { resetCliState } from "../../utils/battleCliTestUtils.js";
+import { STATS } from "../../../src/helpers/BattleEngine.js";
 
 describe("battleCLI init import guards", () => {
   it("does not throw when document is undefined", async () => {
@@ -83,5 +84,53 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     expect(statDiv.classList.contains("selected")).toBe(true);
 
     byIdSpy.mockRestore();
+  });
+
+  it("dispatches statSelected when focused stat exposes dataset key", async () => {
+    const originalStats = [...STATS];
+    STATS.length = 0;
+
+    const statDiv = document.createElement("div");
+    statDiv.dataset.stat = "speed";
+    statDiv.tabIndex = 0;
+    document.body.appendChild(statDiv);
+    Object.defineProperty(document, "activeElement", { value: statDiv, configurable: true });
+
+    const originalTestFlag = typeof window !== "undefined" ? window.__TEST__ : undefined;
+    if (typeof window !== "undefined") {
+      window.__TEST__ = true;
+    }
+
+    const previousDispatchLog = localStorage.getItem("__DEBUG_DISPATCH_LOG");
+    localStorage.removeItem("__DEBUG_DISPATCH_LOG");
+
+    try {
+      await withMutedConsole(async () => {
+        const handled = init.handleWaitingForPlayerActionKey("enter");
+        expect(handled).toBe(true);
+
+        await new Promise((resolve) => queueMicrotask(resolve));
+      }, ["log", "error", "warn"]);
+
+      // safeDispatch("statSelected") writes to the debug dispatch log synchronously
+      const dispatchLog = JSON.parse(localStorage.getItem("__DEBUG_DISPATCH_LOG") || "[]");
+      expect(dispatchLog.some((entry) => entry.includes("statSelected"))).toBe(true);
+    } finally {
+      if (typeof window !== "undefined") {
+        if (originalTestFlag === undefined) {
+          delete window.__TEST__;
+        } else {
+          window.__TEST__ = originalTestFlag;
+        }
+      }
+      STATS.length = 0;
+      STATS.push(...originalStats);
+      statDiv.remove();
+      if (previousDispatchLog === null) {
+        localStorage.removeItem("__DEBUG_DISPATCH_LOG");
+      } else {
+        localStorage.setItem("__DEBUG_DISPATCH_LOG", previousDispatchLog);
+      }
+    }
   });
 });
