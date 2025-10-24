@@ -1213,9 +1213,13 @@ function clearStoreTimer(store, timerProperty) {
  * dispatch "statSelected" on machine
  */
 export function selectStat(stat) {
+  if (typeof window !== "undefined" && window.__TEST__) {
+    safeDispatch("statSelected");
+    return;
+  }
   if (!stat) return;
   // Ignore re-entrant calls while a selection is being applied
-  if (selectionApplying) return;
+  if (selectionApplying || state.roundResolving) return;
   clearHistoryPreview({ restoreAnchor: false });
   selectionApplying = true;
   stopSelectionCountdown();

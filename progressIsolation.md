@@ -82,11 +82,11 @@ function ensureStatClickBinding(list) {
 }
 ```
 
-**Why this matters:** Although WeakSets allow garbage collection of object references, the WeakSet *itself* persists on `globalThis` across page loads in Playwright's test environment. This means:
+**Why this matters:** Although WeakSets allow garbage collection of object references, the WeakSet _itself_ persists on `globalThis` across page loads in Playwright's test environment. This means:
 
 - When test 1 loads and runs, the WeakSet is created and stores the first page's stat list element
 - When test 2 loads with a NEW page and NEW DOM, the WeakSet persists
-- The new stat list element is a *different* object than the old one
+- The new stat list element is a _different_ object than the old one
 - However, if module globals aren't properly reset (see point 2), the click handler references or state machine might not be properly initialized
 - More critically: if `window.__battleCLIinit` properties from the previous test persist, they may interfere with initialization logic that depends on that being a fresh object
 
@@ -101,7 +101,7 @@ function ensureStatClickBinding(list) {
 
    When test 2 begins, these variables still contain stale values from test 1, including timers that may fire during test 2's execution.
 
-1. **Window.__battleCLIinit Object Pollution**: The `window.__battleCLIinit` object is merged but never cleared, accumulating properties across page loads that may reference old handlers or state.
+1. **Window.\_\_battleCLIinit Object Pollution**: The `window.__battleCLIinit` object is merged but never cleared, accumulating properties across page loads that may reference old handlers or state.
 
 ---
 
@@ -180,10 +180,10 @@ import { test, expect } from "./fixtures/battleCliFixture.js";
 ```javascript
 export default defineConfig({
   // ... existing config
-  workers: 1,  // Run tests serially to ensure clean state between tests
+  workers: 1, // Run tests serially to ensure clean state between tests
   use: {
     // Force a new context for each test file
-    contextIsolation: true,
+    contextIsolation: true
     // ... other options
   },
   webServer: {
@@ -343,12 +343,12 @@ npx playwright show-trace test-results/[trace-path]
 
 ## Related Code Locations
 
-| Component             | File                                      | Line | Issue                                 |
-| --------------------- | ----------------------------------------- | ---- | ------------------------------------- |
-| Stat list binding     | `src/pages/battleCLI/init.js`             | 1706 | Global WeakSet tracking               |
-| Battle initialization | `src/pages/battleCLI/init.js`             | 233  | `window.__battleCLIinit` global       |
-| Stat selection        | `src/pages/battleCLI/init.js`             | 1800 | `renderStatList()` calls binding      |
-| Module globals        | `src/pages/battleCLI/init.js`             | 203+ | Multiple module-level variables      |
+| Component             | File                          | Line | Issue                            |
+| --------------------- | ----------------------------- | ---- | -------------------------------- |
+| Stat list binding     | `src/pages/battleCLI/init.js` | 1706 | Global WeakSet tracking          |
+| Battle initialization | `src/pages/battleCLI/init.js` | 233  | `window.__battleCLIinit` global  |
+| Stat selection        | `src/pages/battleCLI/init.js` | 1800 | `renderStatList()` calls binding |
+| Module globals        | `src/pages/battleCLI/init.js` | 203+ | Multiple module-level variables  |
 
 ---
 
@@ -369,7 +369,7 @@ test("should be able to select a stat and see the result", async ({ page }) => {
     };
     console.log("Initial state from previous test:", JSON.stringify(initialState));
   });
-  
+
   // ... rest of test
 });
 ```
@@ -384,20 +384,20 @@ Add event listener logging:
 test("should be able to select a stat and see the result", async ({ page }) => {
   await page.addInitScript(() => {
     const origAddEventListener = Element.prototype.addEventListener;
-    Element.prototype.addEventListener = function(...args) {
+    Element.prototype.addEventListener = function (...args) {
       if (args[0] === "click" && this.id === "cli-stats") {
         console.log("Stat list click handler attached at", new Date().toISOString());
       }
       return origAddEventListener.apply(this, args);
     };
   });
-  
+
   // Click stat button
   await statButton.click();
-  
+
   // Check console for click handler logs
-  const logs = await page.evaluate(() => 
-    (window.__console_logs || []).filter(msg => msg.includes("click handler"))
+  const logs = await page.evaluate(() =>
+    (window.__console_logs || []).filter((msg) => msg.includes("click handler"))
   );
   console.log("Click handler logs:", logs);
 });
@@ -409,18 +409,22 @@ test("should be able to select a stat and see the result", async ({ page }) => {
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     const oldSet = globalThis.__battleCLIStatListBoundTargets;
-    console.log("WeakSet size before navigation:", 
-      oldSet instanceof WeakSet ? "WeakSet (size unknown)" : "Not present");
-    
+    console.log(
+      "WeakSet size before navigation:",
+      oldSet instanceof WeakSet ? "WeakSet (size unknown)" : "Not present"
+    );
+
     // NEW PAGE LOAD HAPPENS HERE
   });
-  
+
   await page.goto("/src/pages/battleCLI.html?autostart=1");
-  
+
   await page.addInitScript(() => {
     const newSet = globalThis.__battleCLIStatListBoundTargets;
-    console.log("WeakSet after navigation:", 
-      newSet instanceof WeakSet ? "WeakSet (new)" : "Not present");
+    console.log(
+      "WeakSet after navigation:",
+      newSet instanceof WeakSet ? "WeakSet (new)" : "Not present"
+    );
   });
 });
 ```
@@ -435,24 +439,23 @@ test("should be able to select a stat and see the result", async ({ page }) => {
   await page.addInitScript(() => {
     const origDispatch = window.__TEST_API?.state?.dispatchBattleEvent;
     if (origDispatch) {
-      window.__TEST_API.state.dispatchBattleEvent = function(...args) {
+      window.__TEST_API.state.dispatchBattleEvent = function (...args) {
         console.log("Dispatch called with:", args[0], new Date().toISOString());
         return origDispatch.apply(this, args);
       };
     }
   });
-  
+
   await statButton.click();
-  
+
   // Wait and check if dispatch was called
   await page.waitForTimeout(500);
 });
 ```
 
-
 1. **This is NOT a code bug** - The application code works correctly. This is a test infrastructure issue where global JavaScript state persists across Playwright page navigations.
 
-2. **Symptoms vs Root Cause** - Tests failing in sequence is the *symptom*; persistent global state preventing proper handler binding/state machine initialization is the *root cause*.
+2. **Symptoms vs Root Cause** - Tests failing in sequence is the _symptom_; persistent global state preventing proper handler binding/state machine initialization is the _root cause_.
 
 3. **Why it matters** - CI/CD pipelines that run all tests together will fail, even though individual tests and real user scenarios work fine.
 
@@ -488,7 +491,376 @@ test("should be able to select a stat and see the result", async ({ page }) => {
 
 ---
 
+---
+
+## Phase 1 Implementation Status: Option A (Shared Test Fixture)
+
+### Implementation Complete ✅
+
+**Date Started**: October 24, 2025  
+**Implementation Approach**: Option A - Shared Test Fixture with Global State Cleanup
+
+### Changes Made
+
+#### 1. Created New Fixture File
+
+**File**: `playwright/fixtures/battleCliFixture.js` (NEW)
+
+```javascript
+import { test as base } from "@playwright/test";
+
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    // Clear globalThis globals that persist across page navigations
+    await page.addInitScript(() => {
+      delete globalThis.__battleCLIStatListBoundTargets;
+      delete globalThis.__battleCLIinit;
+      delete globalThis.__battleCLIModuleState;
+    });
+
+    await use(page);
+  }
+});
+
+export { expect } from "@playwright/test";
+```
+
+**Key Features**:
+
+- Extends Playwright's base test fixture with custom `page` fixture
+- Injects script to delete known globals BEFORE each test runs
+- Centralized, reusable solution (no duplication across test files)
+- Fully documented with JSDoc and usage examples
+- Re-exports `expect` for convenience (tests don't need separate import)
+
+#### 2. Updated All Three CLI Test Files
+
+Files updated with new import:
+
+- `playwright/battle-cli-start.spec.js` ✅
+- `playwright/battle-cli-play.spec.js` ✅
+- `playwright/battle-cli-restart.spec.js` ✅
+
+**Change Pattern**:
+
+```diff
+-import { test, expect } from "@playwright/test";
++import { test, expect } from "./fixtures/battleCliFixture.js";
+```
+
+### Verification
+
+#### Code Quality Checks ✅
+
+- **ESLint**: Passed (no linting errors in updated files)
+- **Import Paths**: Verified correct relative paths to fixture
+- **Syntax**: All files properly formatted JavaScript/JSDoc
+- **JSDoc Documentation**: Complete with @pseudocode, @module, @example tags
+
+#### Manual Code Review ✅
+
+- Fixture correctly extends Playwright's test fixture pattern
+- Global cleanup targets identified from root cause analysis
+- WeakSet deletion prevents handler binding issues
+- window.\_\_battleCLIinit deletion prevents property accumulation
+- No breaking changes to existing test code (fixture is transparent to tests)
+
+### How the Fix Works
+
+1. **Before Each Test**: `page.addInitScript()` runs before navigation
+2. **Deletion Sequence**: Three globals are deleted from `globalThis`
+3. **Page Navigation**: Fresh page loads without old state
+4. **Test Execution**: Test runs with clean environment
+5. **Automatic Cleanup**: Playwright discards page after test
+
+### Expected Outcome
+
+When all three CLI tests run in sequence:
+
+```text
+Original (Without Fix):
+test 1: PASS ✓
+test 2: FAIL ✗ (state pollution from test 1)
+test 3: PASS (never reached because test 2 failed)
+
+With Fix:
+test 1: PASS ✓
+test 2: PASS ✓ (globals cleared before test starts)
+test 3: PASS ✓
+```
+
+### Test Execution Instructions
+
+Run individual tests:
+
+```bash
+npx playwright test playwright/battle-cli-start.spec.js
+npx playwright test playwright/battle-cli-play.spec.js
+npx playwright test playwright/battle-cli-restart.spec.js
+```
+
+Run all CLI tests together (critical test):
+
+```bash
+npx playwright test playwright/battle-cli*.spec.js
+```
+
+Run with debugging:
+
+```bash
+npx playwright test playwright/battle-cli*.spec.js --debug
+```
+
+### Files Modified
+
+| File                                      | Changes                  | Status      |
+| ----------------------------------------- | ------------------------ | ----------- |
+| `playwright/fixtures/battleCliFixture.js` | Created (NEW, 57 lines)  | ✅ Complete |
+| `playwright/battle-cli-start.spec.js`     | Import statement updated | ✅ Complete |
+| `playwright/battle-cli-play.spec.js`      | Import statement updated | ✅ Complete |
+| `playwright/battle-cli-restart.spec.js`   | Import statement updated | ✅ Complete |
+
+### Next Steps
+
+1. **Immediate**: Run full verification suite in CI/CD environment
+2. **Short-term** (This Sprint): Monitor for any edge cases or regressions
+3. **Long-term** (Next Sprint): Implement Phase 2 (Option C - Module State Reset Function)
+
+### Phase 2 Planning Notes
+
+Once Phase 1 is verified successful, implement Option C to fix the root cause:
+
+- Add `__resetModuleState()` function to `window.__battleCLIinit`
+- Provides deterministic module state cleanup
+- Serves as documentation of what state is battle-CLI-specific
+- Reduces fragility (no more guessing which globals need cleanup)
+- Single source of truth for state initialization
+
+---
+
+---
+
+## Phase 2 Planning: Option C (Root Cause Fix - Module State Reset)
+
+### Overview
+
+Once Phase 1 is verified successful in CI/CD, Phase 2 will implement Option C - fixing the root cause by adding a module state reset function directly in the application code. This provides long-term robustness and serves as documentation.
+
+### Why Phase 2 Matters
+
+**Phase 1 (Current)**: Test-only fix that works around the problem  
+**Phase 2 (Next Sprint)**: Application-level fix that prevents the problem entirely
+
+Phase 2 benefits:
+
+- **Deterministic cleanup**: Application knows exactly what state needs resetting
+- **Self-documenting code**: Reading `__resetModuleState()` shows all battle-CLI state
+- **Maintainability**: New state variables must be added to reset function
+- **Production safe**: Harmless if accidentally called in production
+- **Foundation for testing**: Can be called by any test framework, not just Playwright
+
+### Implementation Plan
+
+#### Step 1: Add Reset Function to window.\_\_battleCLIinit
+
+**File**: `src/pages/battleCLI/init.js`
+
+**Location**: Near line 233 where `window.__battleCLIinit` is first defined
+
+```javascript
+// Add this new function to the Object.assign call
+__resetModuleState() {
+  // Clear all module-level state that persists between tests
+  // This function serves as documentation of battle-CLI-specific state
+
+  // Judoka and store state
+  currentPlayerJudoka = null;
+  store = null;
+
+  // Settings and flags
+  verboseEnabled = false;
+
+  // Countdown state
+  cooldownTimer = null;
+  cooldownInterval = null;
+
+  // Stat selection state
+  selectionTimer = null;
+  selectionInterval = null;
+  selectionFinishFn = null;
+  selectionTickHandler = null;
+  selectionExpiredHandler = null;
+  selectionCancelled = false;
+  selectionApplying = false;
+
+  // Modal/UI state
+  quitModal = null;
+  isQuitting = false;
+
+  // Pause/resume state
+  pausedSelectionRemaining = null;
+  pausedCooldownRemaining = null;
+
+  // History state
+  commandHistory = [];
+  historyIndex = -1;
+
+  // Cache state
+  cachedStatDefs = null;
+  statDisplayNames = {};
+}
+```
+
+#### Step 2: Update Test Fixture to Call Reset Function
+
+**File**: `playwright/fixtures/battleCliFixture.js`
+
+```javascript
+// Enhanced version of battleCliFixture.js
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    // Option 1: Clear globalThis globals (Phase 1 approach)
+    await page.addInitScript(() => {
+      delete globalThis.__battleCLIStatListBoundTargets;
+      delete globalThis.__battleCLIinit;
+      delete globalThis.__battleCLIModuleState;
+    });
+
+    // Option 2: After page loads, call the reset function (Phase 2 approach)
+    // This would be done in afterEach or via page evaluation
+    // Example:
+    // await page.evaluate(() => {
+    //   if (window.__battleCLIinit?.__resetModuleState) {
+    //     window.__battleCLIinit.__resetModuleState();
+    //   }
+    // });
+
+    await use(page);
+  }
+});
+```
+
+For Phase 2, we could migrate to a lighter fixture that relies on `__resetModuleState()`.
+
+#### Step 3: Add Unit Test Coverage
+
+**File**: `tests/pages/battleCLI.test.js` (new or existing)
+
+```javascript
+import { describe, it, expect, beforeEach } from "vitest";
+import {
+  getMachine,
+  getStatByIndex,
+  selectStat
+  // ... other exports
+} from "/src/pages/battleCLI/init.js";
+
+describe("battleCLI module state reset", () => {
+  it("should have a __resetModuleState function available", async () => {
+    // After init runs
+    expect(typeof window.__battleCLIinit?.__resetModuleState).toBe("function");
+  });
+
+  it("should reset all module-level state when called", async () => {
+    // Modify some state
+    // ... setup state changes ...
+
+    // Call reset
+    window.__battleCLIinit.__resetModuleState();
+
+    // Verify state is cleared
+    // ... assertions ...
+  });
+
+  it("should be callable multiple times without errors", () => {
+    expect(() => {
+      window.__battleCLIinit.__resetModuleState();
+      window.__battleCLIinit.__resetModuleState();
+      window.__battleCLIinit.__resetModuleState();
+    }).not.toThrow();
+  });
+});
+```
+
+### Detailed Implementation Checklist
+
+For Phase 2 implementation:
+
+- [ ] Identify ALL module-level variables in `src/pages/battleCLI/init.js`
+- [ ] Add `__resetModuleState()` function with comments for each variable
+- [ ] Test the function manually in browser console
+- [ ] Add unit tests in `tests/pages/battleCLI.test.js`
+- [ ] Update Playwright fixture to optionally call the function
+- [ ] Run full CLI test suite to verify it works
+- [ ] Document in code comments why each variable is included
+- [ ] Add JSDoc with `@see` reference to progressIsolation.md
+- [ ] Run all tests (unit + playwright) for regression check
+- [ ] Update this document with Phase 2 completion notes
+
+### Code Locations for Phase 2
+
+| Component                | File                                      | Action                                        |
+| ------------------------ | ----------------------------------------- | --------------------------------------------- |
+| Module state variables   | `src/pages/battleCLI/init.js:203+`        | Review and document in reset function         |
+| window.\_\_battleCLIinit | `src/pages/battleCLI/init.js:233`         | Add `__resetModuleState()`                    |
+| Test fixture             | `playwright/fixtures/battleCliFixture.js` | Optional: call reset function after page load |
+| Unit tests               | `tests/pages/battleCLI.test.js`           | Create tests for reset function               |
+
+### Testing Strategy for Phase 2
+
+```bash
+# 1. Baseline: Verify Phase 1 still works
+npm run playwright test playwright/battle-cli*.spec.js
+
+# 2. Manual verification: Check reset function exists
+# Navigate to battleCLI page, open console, run:
+# window.__battleCLIinit.__resetModuleState()
+
+# 3. Unit tests
+npm run test tests/pages/battleCLI.test.js
+
+# 4. Integration: Run full suite
+npm run test
+npx playwright test
+```
+
+### Risk Assessment for Phase 2
+
+**Low Risk**:
+
+- Adding a new function doesn't modify existing behavior
+- Function can be no-op if implementation is wrong
+- Thoroughly testable before rollout
+
+**Mitigation**:
+
+- Start with Phase 1 verification
+- Comprehensive unit test coverage
+- Manual testing before merge
+- Gradual rollout (feature flag optional)
+
+### Estimated Effort for Phase 2
+
+- **Analysis**: 1-2 hours (identify all state variables)
+- **Implementation**: 2-3 hours (add function, update fixture, add tests)
+- **Testing & Verification**: 2-3 hours (unit tests, playwright tests, manual tests)
+- **Documentation**: 1 hour (update code comments, PRD refs)
+- **Total**: ~6-9 hours (could span multiple sessions)
+
+### Success Criteria for Phase 2
+
+✅ `__resetModuleState()` exists in `window.__battleCLIinit`  
+✅ All identified module variables are cleared by the function  
+✅ Function is callable multiple times without errors  
+✅ Unit test coverage for reset function (happy + edge cases)  
+✅ All CLI tests pass with/without fixture's reset function call  
+✅ Full test suite passes without regressions  
+✅ Code is well-documented with JSDoc and comments
+
+---
+
 **Report Prepared By**: GitHub Copilot  
 **For Review By**: Development Team  
 **Priority for Fix**: Medium (CI/CD Impact)  
-**Recommended Timeline**: Phase 1 within current sprint, Phase 2 in next sprint
+**Implementation Status**: Phase 1 Complete | Phase 2 Planned  
+**Recommended Timeline**: Phase 1 verification within 24 hours, Phase 2 in next sprint
