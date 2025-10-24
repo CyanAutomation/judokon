@@ -162,21 +162,52 @@ function disposeClassicBattleOrchestrator() {
  * 3. Swallow any errors to keep CLI responsive during tests.
  */
 export async function safeDispatch(eventName, payload) {
+  // DEBUG: Log dispatch attempts to understand why stat selection fails
+  const isDebugEvent = eventName === "statSelected";
+  if (isDebugEvent) {
+    console.log("[CLI.safeDispatch] Attempting dispatch:", eventName);
+  }
+
   try {
     const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
     const m = typeof getter === "function" ? getter() : getter;
+    if (isDebugEvent) {
+      console.log("[CLI.safeDispatch] debugHooks getter result:", { getter, m });
+    }
     if (m?.dispatch) {
+      if (isDebugEvent) {
+        console.log("[CLI.safeDispatch] Using debugHooks machine dispatch");
+      }
       return payload === undefined
         ? await m.dispatch(eventName)
         : await m.dispatch(eventName, payload);
     }
-  } catch {}
+  } catch (err) {
+    if (isDebugEvent) {
+      console.log("[CLI.safeDispatch] debugHooks path failed:", err?.message);
+    }
+  }
+
   try {
     const fn = battleOrchestrator?.dispatchBattleEvent;
+    if (isDebugEvent) {
+      console.log("[CLI.safeDispatch] battleOrchestrator.dispatchBattleEvent:", typeof fn);
+    }
     if (typeof fn === "function") {
+      if (isDebugEvent) {
+        console.log("[CLI.safeDispatch] Using battleOrchestrator dispatch");
+      }
       return payload === undefined ? await fn(eventName) : await fn(eventName, payload);
     }
-  } catch {}
+  } catch (err) {
+    if (isDebugEvent) {
+      console.log("[CLI.safeDispatch] battleOrchestrator path failed:", err?.message);
+    }
+  }
+
+  if (isDebugEvent) {
+    console.log("[CLI.safeDispatch] DISPATCH FAILED - no handler found for:", eventName);
+  }
 }
 
 /**
