@@ -24,6 +24,7 @@ import {
  * @property {HTMLButtonElement|null} clearBtn
  * @property {() => void} [ensurePanelHidden]
  * @property {() => void} [setupToggle]
+ * @property {() => void} [setupLayoutToggleControl]
  * @property {(forceSpinner: boolean) => { show: () => void, remove: () => void }} [createSpinnerController]
  * @property {(list: Array<Judoka>, gokyoData: Array) => Promise<{ carousel: Element, containerEl: Element|null }>} [renderCarousel]
  * @property {() => Element|null} [getAriaLive]
@@ -63,6 +64,9 @@ export function createBrowsePageRuntime(documentRef = document) {
   const toggleBtn = documentRef?.getElementById?.("country-toggle") ?? null;
   const countryPanel = documentRef?.getElementById?.("country-panel") ?? null;
   const clearBtn = documentRef?.getElementById?.("clear-filter") ?? null;
+  const layoutToggleLabel = documentRef?.getElementById?.("layout-toggle") ?? null;
+  const layoutToggleCheckbox = documentRef?.getElementById?.("layout-mode-toggle") ?? null;
+  let layoutToggleConfigured = false;
 
   return {
     carouselContainer,
@@ -75,6 +79,45 @@ export function createBrowsePageRuntime(documentRef = document) {
     },
     setupToggle() {
       setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
+    },
+    setupLayoutToggleControl() {
+      if (layoutToggleConfigured) {
+        return;
+      }
+
+      if (!layoutToggleLabel || !layoutToggleCheckbox) {
+        return;
+      }
+
+      const updatePressedState = () => {
+        layoutToggleLabel.setAttribute(
+          "aria-pressed",
+          layoutToggleCheckbox.checked ? "true" : "false"
+        );
+      };
+
+      const handleKeydown = (event) => {
+        if (event.defaultPrevented) {
+          return;
+        }
+
+        if (
+          event.key !== "Enter" &&
+          event.key !== " " &&
+          event.key !== "Space" &&
+          event.key !== "Spacebar"
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        layoutToggleCheckbox.click();
+      };
+
+      layoutToggleConfigured = true;
+      layoutToggleLabel.addEventListener("keydown", handleKeydown);
+      layoutToggleCheckbox.addEventListener("change", updatePressedState);
+      updatePressedState();
     },
     createSpinnerController(forceSpinner) {
       const spinner = createSpinner(carouselContainer, {
@@ -194,6 +237,7 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
   }
   pageRuntime.ensurePanelHidden?.();
   pageRuntime.setupToggle?.();
+  pageRuntime.setupLayoutToggleControl?.();
 
   /**
    * Fetch judoka and gokyo data concurrently.
