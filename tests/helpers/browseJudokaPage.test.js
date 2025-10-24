@@ -99,12 +99,14 @@ describe("browseJudokaPage helpers", () => {
     expect(checkbox).not.toBeNull();
     expect(checkbox?.getAttribute("type")).toBe("checkbox");
     expect(checkbox?.nextElementSibling?.id).toBe("country-panel");
-    expect(checkbox?.getAttribute("aria-controls")).toBe("country-panel-content");
+    expect(checkbox?.getAttribute("aria-hidden")).toBe("true");
+    expect(checkbox?.getAttribute("tabindex")).toBe("-1");
 
     const label = doc.getElementById("layout-toggle");
     expect(label).not.toBeNull();
     expect(label?.getAttribute("for")).toBe("layout-mode-toggle");
     expect(label?.getAttribute("data-testid")).toBe("layout-toggle");
+    expect(label?.getAttribute("aria-controls")).toBe("country-panel-content");
   });
 
   it("country filter controller filters judoka and clears selection", async () => {
