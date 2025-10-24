@@ -32,26 +32,6 @@ export function createInspectorPanel(container, judoka) {
 
   const summary = document.createElement("summary");
   summary.textContent = "Card Inspector";
-  summary.tabIndex = 0;
-  summary.style.minHeight = "44px";
-  summary.style.minWidth = "44px";
-  summary.style.display = "flex";
-  summary.style.alignItems = "center";
-  summary.style.outline = "2px solid transparent";
-  summary.style.outlineOffset = "2px";
-  summary.addEventListener("focus", () => {
-    summary.style.outlineColor = "#000";
-  });
-  summary.addEventListener("blur", () => {
-    summary.style.outlineColor = "transparent";
-  });
-  summary.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      panel.open = !panel.open;
-      panel.dispatchEvent(new Event("toggle"));
-    }
-  });
   panel.appendChild(summary);
 
   const jsonPre = document.createElement("pre");
