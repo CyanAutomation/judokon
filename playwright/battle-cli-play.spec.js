@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/battleCliFixture.js";
+import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
 import { waitForTestApi } from "./helpers/battleStateHelper.js";
 
