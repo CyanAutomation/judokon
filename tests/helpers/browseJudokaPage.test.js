@@ -17,8 +17,7 @@ describe("browseJudokaPage helpers", () => {
 
     const interactions = {
       reflect: 0,
-      loads: 0,
-      navigation: []
+      loads: 0
     };
     let open = false;
     let flagsLoaded = false;
@@ -35,10 +34,7 @@ describe("browseJudokaPage helpers", () => {
         interactions.loads += 1;
         flagsLoaded = true;
       },
-      hasFlags: () => flagsLoaded,
-      handleArrowNavigation: (event) => {
-        interactions.navigation.push(event.key);
-      }
+      hasFlags: () => flagsLoaded
     };
 
     const controller = createCountryToggleController(adapter);
@@ -53,9 +49,6 @@ describe("browseJudokaPage helpers", () => {
     await controller.handleToggle();
     expect(adapter.reflectPanelState).toHaveBeenCalledTimes(3);
     expect(interactions.loads).toBe(1);
-
-    controller.handleKeydown({ key: "ArrowRight" });
-    expect(interactions.navigation).toEqual(["ArrowRight"]);
 
     open = true;
     controller.handleKeydown({ key: "Escape" });
@@ -99,12 +92,14 @@ describe("browseJudokaPage helpers", () => {
     expect(checkbox).not.toBeNull();
     expect(checkbox?.getAttribute("type")).toBe("checkbox");
     expect(checkbox?.nextElementSibling?.id).toBe("country-panel");
-    expect(checkbox?.getAttribute("aria-controls")).toBe("country-panel-content");
+    expect(checkbox?.getAttribute("aria-hidden")).toBe("true");
+    expect(checkbox?.getAttribute("tabindex")).toBe("-1");
 
     const label = doc.getElementById("layout-toggle");
     expect(label).not.toBeNull();
     expect(label?.getAttribute("for")).toBe("layout-mode-toggle");
     expect(label?.getAttribute("data-testid")).toBe("layout-toggle");
+    expect(label?.getAttribute("aria-controls")).toBe("country-panel-content");
   });
 
   it("country filter controller filters judoka and clears selection", async () => {

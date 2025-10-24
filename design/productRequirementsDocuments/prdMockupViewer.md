@@ -66,6 +66,7 @@ Designers and developers previously relied on scattered folder structures to fin
 - Apply consistent 12px/16px spacing between controls, image, and filename.
 - Use semantic HTML elements (`<figure>`, `<figcaption>`, `<button>`, etc.).
 - Use no external libraries or frameworks; rely on internal styles, CSS-native ripple feedback, and helper modules (`domReady.js`, etc.).
+- Ripple interactions come from the shared button `::after` rules—`setupButtonEffects()` and other DOM-based wrappers stay out of scope.
 - Does not require login or permissions to access.
 - Fade-in transitions on image switch should last ~300ms with ease-in-out easing.
 - Buttons and tap targets must be minimum 44x44 pixels for accessibility.
@@ -74,7 +75,7 @@ Designers and developers previously relied on scattered folder structures to fin
 ## Dependencies and Open Questions
 
 - Image files must be placed in `design/mockups/` with readable names.
-- Uses standard helper modules: CSS button tokens for ripple feedback, `domReady.js`, navbar and SVG fallbacks.
+- Uses standard helper modules: CSS button tokens for ripple feedback, `domReady.js`, navbar and SVG fallbacks. The ripple styling is CSS-native with no JS helper reinstated.
 - Open: Should the viewer support zoom, full-screen, or download options in future versions?
 
 ## Wireframe Sketch (Suggested Additions)

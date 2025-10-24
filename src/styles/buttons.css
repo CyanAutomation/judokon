@@ -151,9 +151,19 @@ a:focus-visible {
     animation: none;
   }
 
+  button,
+  .primary-button {
+    transition: none;
+  }
+
   button::after,
   .primary-button::after {
     transition: none;
+  }
+
+  button:active,
+  .primary-button:active {
+    transform: none;
   }
 
   button:active::after,
@@ -168,6 +178,16 @@ a:focus-visible {
 .reduce-motion button::after,
 .reduce-motion .primary-button::after {
   transition: none;
+}
+
+.reduce-motion button,
+.reduce-motion .primary-button {
+  transition: none;
+}
+
+.reduce-motion button:active,
+.reduce-motion .primary-button:active {
+  transform: none;
 }
 
 .reduce-motion button:active::after,

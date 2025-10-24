@@ -24,6 +24,16 @@ describe("button interaction styles", () => {
   it("respects reduced motion preferences", () => {
     expect(buttonsCss).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*button::after/);
     expect(buttonsCss).toMatch(/\.reduce-motion button::after/);
+    expect(buttonsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*button,\s*\n\s*\.primary-button\s*\{\s*transition:\s*none;/
+    );
+    expect(buttonsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*button:active,\s*\n\s*\.primary-button:active\s*\{\s*transform:\s*none;/
+    );
+    expect(buttonsCss).toMatch(/\.reduce-motion button,\s*\n\s*\.reduce-motion \.primary-button\s*\{\s*transition:\s*none;/);
+    expect(buttonsCss).toMatch(
+      /\.reduce-motion button:active,\s*\n\s*\.reduce-motion \.primary-button:active\s*\{\s*transform:\s*none;/
+    );
   });
 });
 
@@ -31,5 +41,17 @@ describe("navbar ripple overrides", () => {
   it("mirrors reduced motion safeguards", () => {
     expect(navbarCss).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*button::after/);
     expect(navbarCss).not.toMatch(/\.ripple/);
+    expect(navbarCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.top-navbar button,\s*\n\s*\.top-navbar \.primary-button,\s*\n\s*\.filter-bar button\s*\{\s*transition:\s*none;/
+    );
+    expect(navbarCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.top-navbar button:active,\s*\n\s*\.top-navbar \.primary-button:active,\s*\n\s*\.filter-bar button:active\s*\{\s*transform:\s*none;/
+    );
+    expect(navbarCss).toMatch(
+      /\.reduce-motion \.top-navbar button,\s*\n\s*\.reduce-motion \.top-navbar \.primary-button,\s*\n\s*\.reduce-motion \.filter-bar button\s*\{\s*transition:\s*none;/
+    );
+    expect(navbarCss).toMatch(
+      /\.reduce-motion \.top-navbar button:active,\s*\n\s*\.reduce-motion \.top-navbar \.primary-button:active,\s*\n\s*\.reduce-motion \.filter-bar button:active\s*\{\s*transform:\s*none;/
+    );
   });
 });

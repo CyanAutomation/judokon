@@ -1,6 +1,5 @@
 import { createCountrySlider } from "../countrySlider.js";
 import { toggleCountryPanel } from "../countryPanel.js";
-import { handleKeyboardNavigation } from "./handleKeyboardNavigation.js";
 
 /**
  * Build a DOM adapter that exposes the imperative interactions required by the
@@ -17,7 +16,6 @@ import { handleKeyboardNavigation } from "./handleKeyboardNavigation.js";
  * @param {object} [dependencies]
  * @param {typeof toggleCountryPanel} [dependencies.toggleCountryPanelImpl]
  * @param {typeof createCountrySlider} [dependencies.createCountrySliderImpl]
- * @param {typeof handleKeyboardNavigation} [dependencies.handleKeyboardNavigationImpl]
  * @returns {CountryToggleAdapter}
  */
 export function createCountryToggleAdapter(
@@ -26,8 +24,7 @@ export function createCountryToggleAdapter(
   listContainer,
   {
     toggleCountryPanelImpl = toggleCountryPanel,
-    createCountrySliderImpl = createCountrySlider,
-    handleKeyboardNavigationImpl = handleKeyboardNavigation
+    createCountrySliderImpl = createCountrySlider
   } = {}
 ) {
   return {
@@ -40,14 +37,7 @@ export function createCountryToggleAdapter(
       }
       await createCountrySliderImpl(listContainer);
     },
-    hasFlags: () => !!listContainer && listContainer.children.length > 0,
-    handleArrowNavigation: (event) => {
-      handleKeyboardNavigationImpl(
-        event,
-        listContainer,
-        'input[type="radio"][name="country-filter"]'
-      );
-    }
+    hasFlags: () => !!listContainer && listContainer.children.length > 0
   };
 }
 
@@ -58,7 +48,6 @@ export function createCountryToggleAdapter(
  * @property {() => void} closePanel - Close the disclosure and restore focus to the summary toggle.
  * @property {() => Promise<void>} loadFlags - Lazily create the country slider contents.
  * @property {() => boolean} [hasFlags] - Optional hook that reports whether the slider already contains flag buttons.
- * @property {(event: KeyboardEvent) => void} handleArrowNavigation - Delegate keyboard navigation for the flag buttons.
  */
 
 /**
@@ -71,7 +60,7 @@ export function createCountryToggleAdapter(
  *    b. Lazily load flags the first time the disclosure opens.
  * 3. When keydown events arrive:
  *    a. Close the panel on Escape by clearing the `open` state.
- *    b. Delegate Arrow navigation to the injected handler.
+ *    b. Leave native radio interactions untouched so browsers manage arrow navigation.
  * 4. Expose a getter that lets callers inspect whether flags were loaded.
  *
  * @param {CountryToggleAdapter} adapter - Adapter providing imperative DOM hooks.
@@ -98,10 +87,6 @@ export function createCountryToggleController(adapter) {
           adapter.closePanel?.();
         }
         return;
-      }
-
-      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-        adapter.handleArrowNavigation?.(event);
       }
     },
     countriesLoaded: () => flagsLoaded

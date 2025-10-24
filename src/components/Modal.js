@@ -238,7 +238,8 @@ export class Modal {
    * 2. Mark the trigger as expanded when provided.
    * 3. Call the native `showModal()` API when available, otherwise set the
    *    `open` attribute manually as a graceful fallback.
-   * 4. Focus the first interactive control (or the dialog) so keyboard users land inside the modal content.
+   * 4. Attempt immediate focus on the first interactive control (or the dialog) and
+   *    queue a guarded deferred retry so keyboard users remain within the modal content.
    *
    * @param {HTMLElement} [trigger] - The element that triggered the modal to open, used for focus management.
    * @returns {void}
