@@ -40,6 +40,7 @@ Below I document each flag's status, my confidence in the QA observation (based 
 - Added hover feedback to settings switches for clearer interactivity cues (`src/styles/settings.css`); verified with `npm run check:contrast`.
 - Implemented default skipRoundCooldown QA markers on the Next button/body and taught helpers to mirror `[data-role="next-round"]` fallbacks for automation (`src/helpers/classicBattle/uiHelpers.js`, `src/pages/battleClassic.html`, `tests/helpers/classicBattle/uiHelpers.featureFlags.test.js`, `playwright/battle-classic/skip-round-cooldown.spec.js`); validated with `npx vitest run tests/helpers/classicBattle/uiHelpers.featureFlags.test.js` and `npx playwright test playwright/battle-classic/skip-round-cooldown.spec.js`.
 - Implemented Phase 3.2 unsaved changes indicator with an accessible `Saved!` live region and styling (`src/helpers/settingsPage.js`, `src/pages/settings.html`, `src/styles/settings.css`, `tests/helpers/settingsPage.test.js`, `tests/utils/testUtils.js`, `playwright/settings.spec.js`); validated via `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
+- Authored a Battle State Progress QA guide so automation has a canonical checklist of expected `data-feature-*` markers (`docs/qa/battle-state-progress.md`).
 - Added miniature theme previews to the display mode selector to visualize light/dark/retro choices (`src/pages/settings.html`, `src/styles/settings.css`); validated with `npm run check:contrast`, `npx vitest run tests/helpers/settingsPage.test.js`, and `npx playwright test playwright/settings.spec.js`.
 - Refined the switch interactivity pass with label-level hover/focus styling, text emphasis, and dedicated Playwright coverage to assert the new feedback (`src/styles/settings.css`, `playwright/settings.spec.js`); targeted checks: `npx vitest run tests/helpers/settingsPage.test.js` and `npx playwright test playwright/settings.spec.js`.
 
@@ -84,8 +85,8 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 - `battleStateProgress`
   - Status: **Implemented (QA instrumented)** — `setupUIBindings` now runs in production and calls `initBattleStateProgress`, so enabling the flag renders the progress list with `data-feature-battle-state-*` hooks (`src/helpers/classicBattle/setupUIBindings.js:28-52`, `src/helpers/battleStateProgress.js:1-214`).
   - Confidence: High (covered by existing unit + Playwright round-select specs).
-  - Effort: Low (extend documentation for QA and broaden Playwright coverage).
-  - Recommendation: Document QA flows that rely on the new Playwright assertions (`playwright/battle-classic/battle-state-progress.spec.js`)—including the interrupt/remap coverage—and ensure long-match scenarios remain covered in smoke tests.
+  - Effort: Low (QA documentation published; Playwright coverage already in place).
+  - Recommendation: QA guide established—future action is to keep smoke tests aligned if new states are added.
 
 - `skipRoundCooldown`
   - Status: **Working** — UI/timer services respect the flag, and the Next button now exposes persistent `data-feature-skip-round-cooldown` markers even when only the fallback control exists (`src/helpers/classicBattle/uiService.js:186-226`, `src/helpers/classicBattle/timerService.js:461-510`, `src/helpers/classicBattle/uiHelpers.js:49-118`, `src/pages/battleClassic.html:152-165`).
