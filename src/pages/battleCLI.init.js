@@ -168,22 +168,14 @@ function init() {
   // expose shortcuts collapse/expand helper for tests
   try {
     window.__battleCLIinit.setShortcutsCollapsed = function (collapsed) {
-      const closeBtn = byId("cli-shortcuts-close");
-      const body = byId("cli-shortcuts-body");
       const section = byId("cli-shortcuts");
-      if (!closeBtn || !body || !section) return false;
+      const closeBtn = byId("cli-shortcuts-close");
+      if (!closeBtn || !section) return false;
       try {
         localStorage.setItem("battleCLI.shortcutsCollapsed", collapsed ? "1" : "0");
       } catch {}
-      if (collapsed) {
-        body.style.display = "none";
-        section.setAttribute("hidden", "");
-        closeBtn.setAttribute("aria-expanded", "false");
-      } else {
-        body.style.display = "";
-        section.removeAttribute("hidden");
-        closeBtn.setAttribute("aria-expanded", "true");
-      }
+      section.open = !collapsed;
+      closeBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
       return true;
     };
   } catch {}
