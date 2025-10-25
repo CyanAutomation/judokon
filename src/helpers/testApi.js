@@ -1947,7 +1947,28 @@ const testApi = {
   init: initApi,
   inspect: inspectionApi,
   viewport: viewportApi,
-  engine: engineApi
+  engine: engineApi,
+  autoSelect: {
+    /**
+     * Force the stat selection timer to expire when auto-select is enabled.
+     *
+     * @returns {Promise<boolean>} Resolves true when the auto-select flow runs.
+     */
+    async triggerAutoSelect() {
+      try {
+        const expired = typeof timerApi.expireSelectionTimer === "function"
+          ? timerApi.expireSelectionTimer()
+          : false;
+        const dispatched =
+          typeof stateApi.dispatchBattleEvent === "function"
+            ? await stateApi.dispatchBattleEvent("roundTimeout", { via: "test-api" })
+            : false;
+        return Boolean(expired || dispatched);
+      } catch {
+        return false;
+      }
+    }
+  }
 };
 
 /**
