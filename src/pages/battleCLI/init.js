@@ -907,8 +907,7 @@ function updateCliShortcutsVisibility() {
 
   section.hidden = false;
 
-  const shouldBeOpen =
-    persistedCollapsed === null ? section.open : persistedCollapsed === false;
+  const shouldBeOpen = persistedCollapsed === null ? section.open : persistedCollapsed === false;
 
   if (shouldBeOpen !== section.open) {
     section.open = shouldBeOpen;
