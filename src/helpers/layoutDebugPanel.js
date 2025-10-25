@@ -1,3 +1,5 @@
+import { measureDebugFlagToggle } from "./debugFlagPerformance.js";
+
 let enabledState = false;
 const DEFAULT_SELECTORS = ["body *:not(script):not(style)"];
 
@@ -23,17 +25,23 @@ const DEFAULT_SELECTORS = ["body *:not(script):not(style)"];
  */
 export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
   if (!document.body) return;
-  enabledState = Boolean(enabled);
-  document
-    .querySelectorAll(".layout-debug-outline")
-    .forEach((el) => el.classList.remove("layout-debug-outline"));
-  if (enabledState) {
-    selectors.forEach((sel) => {
-      document.querySelectorAll(sel).forEach((el) => {
-        if (el.offsetParent !== null) {
-          el.classList.add("layout-debug-outline");
-        }
-      });
-    });
-  }
+  measureDebugFlagToggle(
+    "layoutDebugPanel",
+    () => {
+      enabledState = Boolean(enabled);
+      document
+        .querySelectorAll(".layout-debug-outline")
+        .forEach((el) => el.classList.remove("layout-debug-outline"));
+      if (enabledState) {
+        selectors.forEach((sel) => {
+          document.querySelectorAll(sel).forEach((el) => {
+            if (el.offsetParent !== null) {
+              el.classList.add("layout-debug-outline");
+            }
+          });
+        });
+      }
+    },
+    { selectors: Array.isArray(selectors) ? selectors.length : null }
+  );
 }

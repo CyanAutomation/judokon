@@ -932,19 +932,10 @@ function updateCliShortcutsVisibility() {
   section.hidden = false;
 
   const shouldBeOpen = persistedCollapsed === null ? false : persistedCollapsed === false;
-  console.log(
-    "[DEBUG] updateCliShortcutsVisibility: persistedCollapsed=",
-    persistedCollapsed,
-    "section.open before=",
-    section.open,
-    "shouldBeOpen=",
-    shouldBeOpen
-  );
 
   if (shouldBeOpen !== section.open) {
     section.open = shouldBeOpen;
   }
-  console.log("[DEBUG] updateCliShortcutsVisibility: section.open after=", section.open);
   syncShortcutsButtonState(section.open);
   updateShortcutsFallback(enabled);
   updateControlsHint();

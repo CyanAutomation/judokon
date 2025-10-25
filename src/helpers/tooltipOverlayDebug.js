@@ -1,5 +1,6 @@
 import { recordDebugState } from "./debugState.js";
 import { isConsoleMocked, shouldShowTestLogs } from "./testLogGate.js";
+import { measureDebugFlagToggle } from "./debugFlagPerformance.js";
 
 /**
  * Toggle the tooltip debug overlay class on the document body.
@@ -24,9 +25,11 @@ export function toggleTooltipOverlayDebug(enabled) {
     }
     return;
   }
-  document.body.classList.toggle("tooltip-overlay-debug", nextState);
-  document.body.setAttribute(
-    "data-feature-tooltip-overlay-debug",
-    nextState ? "enabled" : "disabled"
-  );
+  measureDebugFlagToggle("tooltipOverlayDebug", () => {
+    document.body.classList.toggle("tooltip-overlay-debug", nextState);
+    document.body.setAttribute(
+      "data-feature-tooltip-overlay-debug",
+      nextState ? "enabled" : "disabled"
+    );
+  });
 }
