@@ -5,7 +5,12 @@ let audioContextPromise;
 /**
  * Determine if sound effects are enabled via user settings.
  *
- * @returns {boolean}
+ * @returns {boolean} True when the "sound" setting is not explicitly disabled.
+ * @pseudocode
+ * SET soundSetting TO getSetting("sound")
+ * IF soundSetting is strictly equal to false
+ *   RETURN false
+ * RETURN true
  */
 export function isSoundEnabled() {
   return getSetting("sound") !== false;
@@ -37,7 +42,18 @@ async function createOrResumeContext() {
 /**
  * Lazily obtain a shared AudioContext if sound is enabled.
  *
- * @returns {Promise<AudioContext|null>}
+ * @returns {Promise<AudioContext|null>} Resolves to the shared context or null when unavailable.
+ * @pseudocode
+ * IF sound is not enabled
+ *   RETURN null
+ * IF audioContextPromise is undefined
+ *   SET audioContextPromise TO createOrResumeContext()
+ * AWAIT audioContextPromise INTO ctx
+ * IF ctx is null
+ *   RETURN null
+ * IF ctx.state is "suspended"
+ *   TRY to resume ctx, RETURN null on failure
+ * RETURN ctx
  */
 export async function getAudioContext() {
   if (!isSoundEnabled()) {
@@ -68,10 +84,24 @@ export async function getAudioContext() {
  * Play a short UI tone when sound is enabled.
  *
  * @param {object} [options]
- * @param {number} [options.frequency=880]
- * @param {number} [options.durationMs=140]
- * @param {number} [options.volume=0.04]
+ * @param {number} [options.frequency=880] Oscillator frequency in hertz.
+ * @param {number} [options.durationMs=140] Tone length in milliseconds.
+ * @param {number} [options.volume=0.04] Peak gain value for the tone envelope.
  * @returns {Promise<boolean>} Resolves true when a tone was scheduled.
+ * @pseudocode
+ * IF sound is not enabled
+ *   RETURN false
+ * DESTRUCTURE frequency, durationMs, volume from options with defaults
+ * AWAIT getAudioContext() INTO ctx
+ * IF ctx is null
+ *   RETURN false
+ * CREATE oscillator and gain nodes from ctx
+ * CONFIGURE oscillator type and frequency
+ * SHAPE gain envelope over currentTime and duration
+ * CONNECT oscillator to gain and gain to destination
+ * START oscillator immediately
+ * STOP oscillator after durationMs milliseconds
+ * RETURN true
  */
 export async function playUiTone(options = {}) {
   if (!isSoundEnabled()) {
