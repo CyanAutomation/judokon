@@ -30,7 +30,8 @@ function renderScoreDisplay(playerScore, opponentScore) {
   opponentSpan.dataset.side = "opponent";
   opponentSpan.textContent = `Opponent: ${opponentScore}`;
 
-  scoreEl.replaceChildren(playerSpan, opponentSpan);
+  const separator = document.createTextNode(" ");
+  scoreEl.replaceChildren(playerSpan, separator, opponentSpan);
 }
 
 /**
