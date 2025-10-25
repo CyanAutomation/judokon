@@ -49,6 +49,8 @@ describe("battleCLI onKeyDown", () => {
     __test.ensureCliDomForTest({ reset: true });
     document.body.className = "";
     document.body.dataset.battleState = "";
+    delete window.location;
+    window.location = { href: "" };
   });
 
   afterEach(() => {
@@ -89,11 +91,11 @@ describe("battleCLI onKeyDown", () => {
     focusBtn.focus();
     onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
     const sec = document.getElementById("cli-shortcuts");
-    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(true);
     const handled = getEscapeHandledPromise();
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     await handled;
-    expect(sec.hidden).toBe(true);
+    expect(sec.open).toBe(false);
     expect(document.activeElement).toBe(focusBtn);
   });
 
@@ -299,5 +301,6 @@ describe("battleCLI onKeyDown", () => {
     dispatchSpy.mockReset();
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     expect(document.getElementById("confirm-quit-button")).toBeTruthy();
+    document.getElementById("cancel-quit-button").click();
   });
 });

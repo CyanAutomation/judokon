@@ -46,6 +46,7 @@ The following fixes are recommended to address the identified issues, prioritize
 3.  **Ensure Full Reduced-Motion Compliance:**
     - **Change:** Wrap all remaining animations and transitions (button presses, panel slides) in `@media (prefers-reduced-motion: reduce)` queries.
     - **Verification:** Manually test with the OS-level reduced motion setting enabled to confirm all movement has ceased.
+    - **Status:** Completed – Updated `src/styles/randomJudoka.css` to disable the draw button press scaling and history panel slide transitions when reduced motion is requested, and set the reduced-motion modifier class to remove the panel transition entirely. Verified with `npx vitest run tests/helpers/randomJudokaPage.*.test.js` and `npx playwright test random-judoka.spec.js`.
 
 4.  **Improve Responsiveness:**
     - **Change:** Anchor the "Draw" button to the viewport (e.g., using `position: sticky` or `position: fixed`) to ensure it remains accessible on all screen sizes and orientations.

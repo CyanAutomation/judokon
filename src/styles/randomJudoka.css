@@ -49,7 +49,7 @@ player-info {
 }
 
 #history-panel.history-panel--reduced-motion {
-  transition: transform 0.01s linear;
+  transition: none;
 }
 
 #history-panel[open] {
@@ -78,6 +78,15 @@ player-info {
 @media (prefers-reduced-motion: reduce) {
   .judoka-card.new-card {
     animation: none;
+  }
+
+  .card-section .draw-card-btn:active {
+    transform: none;
+    transition: none;
+  }
+
+  #history-panel {
+    transition: none;
   }
 }
 
