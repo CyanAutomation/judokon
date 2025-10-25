@@ -52,7 +52,7 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P1       | Motion Effects Toggle               | Binary toggle updating `settings.json` live on change.                                                                               |
 | P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                                               |
 | P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                                              |
-| P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI (Light, Dark, Retro).                                                          |
+| P1       | Display Mode Switch                 | Two-option switch applying mode instantly across UI (Light, Dark; legacy Retro values fall back to Dark).                            |
 | P2       | Game Modes Toggles                  | Binary toggles controlling pre-seeded links via `navigationItems.js`; if the file cannot be loaded, a bundled fallback list is used. |
 | P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.js`.                                                                       |
 | P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                                                          |
@@ -101,10 +101,11 @@ Feature flags are handled by `src/helpers/featureFlags.js`:
 
 #### Display Modes
 
-- Supported themes: **Light**, **Dark**, and **Retro** (terminal-style
-  green-on-black that replaces the retired high-contrast mode).
+- Supported themes: **Light** and **Dark**.
+- Retro is no longer selectable; legacy saves with `displayMode: "retro"`
+  must resolve to Dark when the settings payload is normalized.
 - The active mode is reflected via `document.body.dataset.theme` (e.g.
-  `data-theme="retro"`) for downstream CSS hooks.
+  `data-theme="dark"`) for downstream CSS hooks.
 - Changing the display mode in the settings menu must update the dataset value
   instantly and persist via the settings cache.
 
@@ -127,7 +128,8 @@ On load, the Settings page must pre-populate each control with values from
 - **Motion effects (binary):** ON/OFF (default: ON) – Disable animations for a calmer interface.
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.
-- **Display mode (three options):** Light, Dark, Retro (default: Light)
+- **Display mode (two options):** Light, Dark (default: Light; legacy `retro`
+  values should downgrade to Dark when encountered)
 - **Game modes list:** Pre-seeded entries cross-referenced with `navigationItems.js` to determine order and visibility via CSS; each mode has a binary toggle. If `navigationItems.js` can't be fetched, a bundled default list ensures the toggles still render.
 - **View Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **View PRD Documents:** Link opens `prdViewer.html` for browsing product documents.
@@ -331,7 +333,7 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 [ ON | OFF ] (default: ON)
 
 [ SELECTOR: DISPLAY MODE ]  
-[ Light | Dark | Retro ] (default: Light)
+[ Light | Dark ] (default: Light)
 
 ───────────────────────────────  
 | GAME MODES |  

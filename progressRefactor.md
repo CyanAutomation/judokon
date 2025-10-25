@@ -97,7 +97,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (append audit tables and migration checklist)
   - Rationale: Event naming and listener contract audits belong under the event contracts PRD.
 
-- `design/retroThemeContrast.md` -> `design/productRequirementsDocuments/prdUIDesignSystem.md#retro-theme-tokens--contrast-compliance`
+- `design/retroThemeContrast.md` -> `design/productRequirementsDocuments/prdUIDesignSystem.md#historical-note-retro-theme-retired`
   - Action: Assimilate (accessibility contrast guidance into UI PRD)
   - Rationale: Theme and contrast guidance is a UI concern and should sit under the design system PRD.
 
