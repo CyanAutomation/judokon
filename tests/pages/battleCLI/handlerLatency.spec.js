@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as init from "../../../src/pages/battleCLI/init.js";
 // Import DOM helpers used within module under test to stub safely
 import * as domMod from "../../../src/pages/battleCLI/dom.js";
+import * as battleEvents from "../../../src/helpers/classicBattle/battleEvents.js";
 import { withMutedConsole } from "../../utils/console.js";
 import cliState from "../../../src/pages/battleCLI/state.js";
 import { resetCliState } from "../../utils/battleCliTestUtils.js";
-import { STATS } from "../../../src/helpers/BattleEngine.js";
 
 describe("battleCLI init import guards", () => {
   it("does not throw when document is undefined", async () => {
@@ -66,7 +66,7 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     list.appendChild(statDiv);
     document.body.appendChild(list);
     statDiv.tabIndex = 0;
-    // jsdom focus can be unreliable; emulate focus by assigning activeElement
+    const activeElementDescriptor = Object.getOwnPropertyDescriptor(document, "activeElement");
     Object.defineProperty(document, "activeElement", { value: statDiv, configurable: true });
 
     const byIdSpy = vi.spyOn(domMod, "byId").mockImplementation((id) => {
@@ -75,61 +75,110 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
       return null;
     });
 
-    const handled = init.handleWaitingForPlayerActionKey("enter");
-    expect(handled).toBe(true);
+    try {
+      const handled = init.handleWaitingForPlayerActionKey("enter");
+      expect(handled).toBe(true);
 
-    await new Promise((resolve) => queueMicrotask(resolve));
+      await new Promise((resolve) => queueMicrotask(resolve));
 
-    expect(cliState.roundResolving).toBe(true);
-    expect(statDiv.classList.contains("selected")).toBe(true);
-
-    byIdSpy.mockRestore();
+      expect(cliState.roundResolving).toBe(true);
+      expect(statDiv.classList.contains("selected")).toBe(true);
+    } finally {
+      byIdSpy.mockRestore();
+      statDiv.remove();
+      list.remove();
+      if (activeElementDescriptor) {
+        Object.defineProperty(document, "activeElement", activeElementDescriptor);
+      } else {
+        delete document.activeElement;
+      }
+    }
   });
 
   it("dispatches statSelected when focused stat exposes dataset key", async () => {
-    const originalStats = [...STATS];
-    STATS.length = 0;
-
+    const list = document.createElement("div");
+    list.id = "cli-stats";
     const statDiv = document.createElement("div");
+    statDiv.className = "cli-stat";
     statDiv.dataset.stat = "speed";
     statDiv.tabIndex = 0;
-    document.body.appendChild(statDiv);
+    list.appendChild(statDiv);
+    document.body.appendChild(list);
+    const activeElementDescriptor = Object.getOwnPropertyDescriptor(document, "activeElement");
     Object.defineProperty(document, "activeElement", { value: statDiv, configurable: true });
 
-    const originalTestFlag = typeof window !== "undefined" ? window.__TEST__ : undefined;
-    if (typeof window !== "undefined") {
-      window.__TEST__ = true;
-    }
-
-    const previousDispatchLog = localStorage.getItem("__DEBUG_DISPATCH_LOG");
-    localStorage.removeItem("__DEBUG_DISPATCH_LOG");
+    const byIdSpy = vi.spyOn(domMod, "byId").mockImplementation((id) => {
+      if (id === "cli-stats") return list;
+      if (id === "cli-countdown") return document.getElementById("cli-countdown");
+      return null;
+    });
+    const getStatSpy = vi
+      .spyOn(init, "getStatByIndex")
+      .mockImplementation(() => {
+        throw new Error("fallback path should not execute when dataset.stat is provided");
+      });
+    const dispatchSpy = vi.spyOn(battleEvents, "emitBattleEvent");
 
     try {
-      await withMutedConsole(async () => {
-        const handled = init.handleWaitingForPlayerActionKey("enter");
-        expect(handled).toBe(true);
+      const handled = init.handleWaitingForPlayerActionKey("enter");
+      expect(handled).toBe(true);
 
-        await new Promise((resolve) => queueMicrotask(resolve));
-      }, ["log", "error", "warn"]);
+      await new Promise((resolve) => queueMicrotask(resolve));
 
-      // safeDispatch("statSelected") writes to the debug dispatch log synchronously
-      const dispatchLog = JSON.parse(localStorage.getItem("__DEBUG_DISPATCH_LOG") || "[]");
-      expect(dispatchLog.some((entry) => entry.includes("statSelected"))).toBe(true);
+      expect(dispatchSpy).toHaveBeenCalledWith("statSelected", { stat: "speed" });
     } finally {
-      if (typeof window !== "undefined") {
-        if (originalTestFlag === undefined) {
-          delete window.__TEST__;
-        } else {
-          window.__TEST__ = originalTestFlag;
-        }
-      }
-      STATS.length = 0;
-      STATS.push(...originalStats);
+      dispatchSpy.mockRestore();
+      getStatSpy.mockRestore();
+      byIdSpy.mockRestore();
       statDiv.remove();
-      if (previousDispatchLog === null) {
-        localStorage.removeItem("__DEBUG_DISPATCH_LOG");
+      list.remove();
+      if (activeElementDescriptor) {
+        Object.defineProperty(document, "activeElement", activeElementDescriptor);
       } else {
-        localStorage.setItem("__DEBUG_DISPATCH_LOG", previousDispatchLog);
+        delete document.activeElement;
+      }
+    }
+  });
+
+  it("falls back to statIndex when dataset stat is empty", async () => {
+    const fallbackStat = init.getStatByIndex("1");
+    expect(fallbackStat).toBeTruthy();
+
+    const list = document.createElement("div");
+    list.id = "cli-stats";
+    const statDiv = document.createElement("div");
+    statDiv.className = "cli-stat";
+    statDiv.dataset.stat = "";
+    statDiv.dataset.statIndex = "1";
+    statDiv.tabIndex = 0;
+    list.appendChild(statDiv);
+    document.body.appendChild(list);
+    const activeElementDescriptor = Object.getOwnPropertyDescriptor(document, "activeElement");
+    Object.defineProperty(document, "activeElement", { value: statDiv, configurable: true });
+
+    const byIdSpy = vi.spyOn(domMod, "byId").mockImplementation((id) => {
+      if (id === "cli-stats") return list;
+      if (id === "cli-countdown") return document.getElementById("cli-countdown");
+      return null;
+    });
+    const dispatchSpy = vi.spyOn(battleEvents, "emitBattleEvent");
+
+    try {
+      const handled = init.handleWaitingForPlayerActionKey("enter");
+      expect(handled).toBe(true);
+
+      await new Promise((resolve) => queueMicrotask(resolve));
+
+      expect(dispatchSpy).toHaveBeenCalledWith("statSelected", { stat: fallbackStat });
+    } finally {
+      dispatchSpy.mockRestore();
+      byIdSpy.mockRestore();
+      statDiv.remove();
+      list.remove();
+      if (activeElementDescriptor) {
+        Object.defineProperty(document, "activeElement", activeElementDescriptor);
+      } else {
+        delete document.activeElement;
       }
     }
   });
