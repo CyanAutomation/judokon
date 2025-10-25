@@ -58,6 +58,7 @@ The following fixes are recommended to address the identified issues, prioritize
 5.  **Implement Global Settings:**
     - **Sound:** Create a simple `audioUtils.js` helper that checks the global `settings.sound` flag before playing any audio.
     - **Motion:** Ensure all JavaScript-triggered animations are gated by the `settings.motionEffects` flag.
+    - **Status:** Completed – Added `audioUtils.js` for settings-aware sound helpers, refreshed `featureFlags` storage syncing so `settingsCache` tracks live updates, and taught `randomJudokaPage` to recompute motion/sound preferences dynamically (including disabling snackbar animations via `body.reduce-motion`). Verified with `npx vitest run tests/helpers/randomJudokaPage.*.test.js` and `npx playwright test random-judoka.spec.js`.
 
 6.  **Add Automated Accessibility Checks:**
     - **Recommendation:** Integrate a runtime accessibility library (like `axe-core`) into the development build to warn about contrast or tap-target violations in the console.

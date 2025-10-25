@@ -32,7 +32,11 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
@@ -86,7 +90,11 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
@@ -132,7 +140,11 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
@@ -172,7 +184,11 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
@@ -211,7 +227,11 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
@@ -253,7 +273,11 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);

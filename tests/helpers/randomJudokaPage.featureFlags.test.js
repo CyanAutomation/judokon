@@ -137,4 +137,80 @@ describe("randomJudokaPage feature flags", () => {
     );
     expect(container.querySelector(".debug-panel")).toBeTruthy();
   });
+
+  it("updates motion and sound preferences when settings change", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const generateRandomCard = vi
+      .fn()
+      .mockImplementation(async (_c, _g, container) => {
+        const card = document.createElement("div");
+        card.className = "card-container";
+        container.appendChild(card);
+        return { firstname: "A", surname: "Tester" };
+      });
+    const fetchJson = vi.fn().mockResolvedValue([]);
+
+    const applyMotionPreference = vi.fn();
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
+
+    const initialSettings = {
+      ...baseSettings,
+      sound: true,
+      motionEffects: true
+    };
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
+      loadSettings: vi.fn().mockResolvedValue(initialSettings)
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
+
+    const drawBtn = document.getElementById("draw-card-btn");
+    expect(drawBtn.dataset.soundEnabled).toBe("true");
+    const { getPreferences } = window.__TEST_API.randomJudoka;
+    expect(getPreferences()).toEqual({ prefersReducedMotion: false, soundEnabled: true });
+
+    shouldReduceMotionSync.mockReturnValue(true);
+    window.dispatchEvent(
+      new StorageEvent("storage", {
+        key: "settings",
+        newValue: JSON.stringify({
+          ...initialSettings,
+          sound: false,
+          motionEffects: false,
+          featureFlags: initialSettings.featureFlags
+        })
+      })
+    );
+
+    await Promise.resolve();
+    expect(drawBtn.dataset.soundEnabled).toBe("false");
+    expect(getPreferences()).toEqual({ prefersReducedMotion: true, soundEnabled: false });
+
+    vi.resetModules();
+    vi.doUnmock("../../src/helpers/randomCard.js");
+    vi.doUnmock("../../src/helpers/dataUtils.js");
+    vi.doUnmock("../../src/helpers/settingsStorage.js");
+    vi.doUnmock("../../src/helpers/motionUtils.js");
+  });
 });
