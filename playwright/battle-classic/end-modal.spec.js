@@ -224,25 +224,21 @@ async function selectAdvantagedStat(page) {
 
   if (typeof statKey === "string" && statKey) {
     const normalizedStat = statKey.trim().toLowerCase();
-    const targetIndex = await statButtons.evaluateAll(
-      (buttons, target) => {
-        const normalize = (value) =>
-          typeof value === "string" ? value.trim().toLowerCase() : "";
-        const desired = normalize(target);
-        if (!desired) {
-          return -1;
-        }
-        for (let index = 0; index < buttons.length; index += 1) {
-          const button = buttons[index];
-          const datasetValue = button.getAttribute("data-stat") ?? button.dataset?.stat;
-          if (normalize(datasetValue) === desired) {
-            return index;
-          }
-        }
+    const targetIndex = await statButtons.evaluateAll((buttons, target) => {
+      const normalize = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
+      const desired = normalize(target);
+      if (!desired) {
         return -1;
-      },
-      normalizedStat
-    );
+      }
+      for (let index = 0; index < buttons.length; index += 1) {
+        const button = buttons[index];
+        const datasetValue = button.getAttribute("data-stat") ?? button.dataset?.stat;
+        if (normalize(datasetValue) === desired) {
+          return index;
+        }
+      }
+      return -1;
+    }, normalizedStat);
 
     if (Number.isInteger(targetIndex) && targetIndex >= 0) {
       const statButton = statButtons.nth(targetIndex);
@@ -408,7 +404,9 @@ test.describe("Classic Battle End Game Flow", () => {
         // Check if replay button exists and is functional
         const modalReplayButton = page
           .locator("#match-end-modal")
-          .locator("#match-replay-button, [data-testid='replay-button'], button:has-text('Replay')");
+          .locator(
+            "#match-replay-button, [data-testid='replay-button'], button:has-text('Replay')"
+          );
         let replayButton = modalReplayButton.first();
         if ((await replayButton.count()) === 0) {
           replayButton = page

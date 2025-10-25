@@ -631,7 +631,9 @@ async function resolveRoundDeterministic(page) {
       .evaluate(() => {
         const logger = window.__TEST_API?.log;
         if (logger && typeof logger.warn === "function") {
-          logger.warn("Resolution mismatch detected: transition resolved but hasResolved() returned false");
+          logger.warn(
+            "Resolution mismatch detected: transition resolved but hasResolved() returned false"
+          );
           return;
         }
 
