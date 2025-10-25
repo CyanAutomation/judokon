@@ -141,14 +141,12 @@ describe("randomJudokaPage feature flags", () => {
   it("updates motion and sound preferences when settings change", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
-    const generateRandomCard = vi
-      .fn()
-      .mockImplementation(async (_c, _g, container) => {
-        const card = document.createElement("div");
-        card.className = "card-container";
-        container.appendChild(card);
-        return { firstname: "A", surname: "Tester" };
-      });
+    const generateRandomCard = vi.fn().mockImplementation(async (_c, _g, container) => {
+      const card = document.createElement("div");
+      card.className = "card-container";
+      container.appendChild(card);
+      return { firstname: "A", surname: "Tester" };
+    });
     const fetchJson = vi.fn().mockResolvedValue([]);
 
     const applyMotionPreference = vi.fn();

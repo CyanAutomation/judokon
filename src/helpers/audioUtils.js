@@ -102,4 +102,3 @@ export async function playUiTone(options = {}) {
 
   return true;
 }
-

@@ -308,8 +308,29 @@ const SHORTCUT_HINT_MESSAGES = {
   statHotkeysDisabled:
     "Stat hotkeys are disabled. Use Enter or Space to continue, H to toggle help, and Q to quit.",
   shortcutsDisabled:
-    "Keyboard shortcuts are disabled. Use the on-screen controls or enable CLI shortcuts in settings."
+    "Keyboard shortcuts are disabled. Type commands like stat 1 or stat 2 to choose a stat."
 };
+let controlsHintActive = false;
+
+function getCliShortcutsEnabled() {
+  try {
+    return !!isEnabled("cliShortcuts");
+  } catch {
+    return false;
+  }
+}
+
+function updateShortcutsFallback(shortcutsEnabled) {
+  const fallback = byId("cli-shortcuts-disabled-hint");
+  if (!fallback) return;
+  const shouldShow = controlsHintActive && !shortcutsEnabled;
+  fallback.hidden = !shouldShow;
+  if (shouldShow) {
+    fallback.removeAttribute("aria-hidden");
+  } else {
+    fallback.setAttribute("aria-hidden", "true");
+  }
+}
 // state managed in state.js
 
 try {
@@ -903,6 +924,7 @@ function updateCliShortcutsVisibility() {
         localStorage.setItem("battleCLI.shortcutsCollapsed", "1");
       } catch {}
     }
+    updateShortcutsFallback(enabled);
     return;
   }
 
@@ -914,6 +936,7 @@ function updateCliShortcutsVisibility() {
     section.open = shouldBeOpen;
   }
   syncShortcutsButtonState(section.open);
+  updateShortcutsFallback(enabled);
 }
 
 /**
@@ -1758,7 +1781,6 @@ function normalizeShortcutCopy() {
 
 function updateControlsHint() {
   const hint = byId("cli-controls-hint");
-  if (!hint) return;
   let shortcutsEnabled = false;
   let statHotkeysEnabled = false;
   try {
@@ -1768,23 +1790,25 @@ function updateControlsHint() {
     statHotkeysEnabled = !!isEnabled("statHotkeys");
   } catch {}
 
-  const items = hint.querySelectorAll(".cli-controls-hint__item");
-  items.forEach((item) => {
-    const requires = (item.dataset.requires || "").trim();
-    const deps = requires ? requires.split(/\s+/) : [];
-    const satisfied = deps.every((dep) => {
-      if (dep === "cliShortcuts") return shortcutsEnabled;
-      if (dep === "statHotkeys") return statHotkeysEnabled;
-      return true;
+  if (hint) {
+    const items = hint.querySelectorAll(".cli-controls-hint__item");
+    items.forEach((item) => {
+      const requires = (item.dataset.requires || "").trim();
+      const deps = requires ? requires.split(/\s+/) : [];
+      const satisfied = deps.every((dep) => {
+        if (dep === "cliShortcuts") return shortcutsEnabled;
+        if (dep === "statHotkeys") return statHotkeysEnabled;
+        return true;
+      });
+      if (satisfied) {
+        item.classList.remove("cli-controls-hint__item--disabled");
+        item.removeAttribute("aria-disabled");
+      } else {
+        item.classList.add("cli-controls-hint__item--disabled");
+        item.setAttribute("aria-disabled", "true");
+      }
     });
-    if (satisfied) {
-      item.classList.remove("cli-controls-hint__item--disabled");
-      item.removeAttribute("aria-disabled");
-    } else {
-      item.classList.add("cli-controls-hint__item--disabled");
-      item.setAttribute("aria-disabled", "true");
-    }
-  });
+  }
 
   const sr = byId("cli-controls-hint-announce");
   if (sr) {
@@ -1796,6 +1820,7 @@ function updateControlsHint() {
       sr.textContent = SHORTCUT_HINT_MESSAGES.default;
     }
   }
+  updateShortcutsFallback(shortcutsEnabled);
 }
 
 /**
@@ -2728,10 +2753,11 @@ function handleScoreboardClearMessage() {
 function syncControlsHintVisibility(state) {
   try {
     const hint = byId("cli-controls-hint");
-    if (!hint) return;
-    const shouldReveal = state === "waitingForPlayerAction";
-    if (hint.hidden === !shouldReveal) return;
-    hint.hidden = !shouldReveal;
+    controlsHintActive = state === "waitingForPlayerAction";
+    if (hint) {
+      hint.hidden = !controlsHintActive;
+    }
+    updateShortcutsFallback(getCliShortcutsEnabled());
   } catch {}
 }
 

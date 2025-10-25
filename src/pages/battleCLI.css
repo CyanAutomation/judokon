@@ -576,6 +576,37 @@ details.cli-settings > #cli-settings-body {
 #cli-controls-hint[hidden] {
   display: none !important;
 }
+#cli-shortcuts-disabled-hint {
+  margin: 12px auto 0;
+  max-width: 520px;
+  padding: 12px 18px;
+  background: rgba(28, 56, 44, 0.85);
+  border: 1px solid rgba(60, 255, 155, 0.45);
+  border-radius: 6px;
+  color: #c4e8c4;
+  font-size: 13px;
+  text-align: center;
+  box-shadow:
+    inset 0 0 0 1px rgba(8, 30, 20, 0.6),
+    0 -2px 10px rgba(12, 40, 24, 0.35);
+}
+#cli-shortcuts-disabled-hint .cli-controls-hint__key {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 2px 6px;
+  border: 1px solid rgba(60, 255, 155, 0.6);
+  border-radius: 4px;
+  font-family: var(--cli-font);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(60, 255, 155, 0.15);
+  color: #8cffcf;
+}
+#cli-shortcuts-disabled-hint[hidden] {
+  display: none !important;
+}
 /* Enhanced CLI prompt styling */
 #cli-prompt {
   padding: 8px 16px;
