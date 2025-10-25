@@ -137,12 +137,12 @@ describe("Battle CLI Helpers", () => {
       }
       const keydownHandler = keydownCall[1];
       const shortcutsSection = document.getElementById("cli-shortcuts");
-      expect(shortcutsSection.hidden).toBe(true);
+      expect(shortcutsSection.open).toBe(false);
 
       const keydownEvent = new KeyboardEvent("keydown", { key: "h" });
       keydownHandler(keydownEvent);
 
-      expect(shortcutsSection.hidden).toBe(false);
+      expect(shortcutsSection.open).toBe(true);
     });
   });
 

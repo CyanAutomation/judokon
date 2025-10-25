@@ -41,6 +41,7 @@ The following fixes are recommended to address the identified issues, prioritize
 2.  **Stop Internal Card Scrolling:**
     - **Recommendation:** Rework the card and container layout to be flexible (using CSS Grid or Flexbox) so the card can expand vertically as needed.
     - **Alternative:** Truncate long text and provide a "Show More" control to reveal the full content.
+    - **Status:** Completed – Updated `src/styles/card.css` to replace the fixed `.judoka-card` height with a flexible `min-height` and `minmax(...)` row tracks, allowing bios and stats to expand without scrollbars. Verified with `npx vitest run tests/helpers/randomJudokaPage.*.test.js` and `npx playwright test random-judoka.spec.js`.
 
 3.  **Ensure Full Reduced-Motion Compliance:**
     - **Change:** Wrap all remaining animations and transitions (button presses, panel slides) in `@media (prefers-reduced-motion: reduce)` queries.

@@ -2162,7 +2162,6 @@ const globalKeyHandlers = {
   h() {
     const sec = byId("cli-shortcuts");
     if (sec) {
-      if (sec.hidden) return;
       if (!sec.open) {
         const activeElement = getActiveElement();
         state.shortcutsReturnFocus = activeElement instanceof HTMLElement ? activeElement : null;

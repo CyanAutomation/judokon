@@ -75,11 +75,12 @@ describe("battleCLI onKeyDown", () => {
   });
 
   it("toggles shortcuts with H key", () => {
-    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
     const sec = document.getElementById("cli-shortcuts");
-    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(false);
     onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
-    expect(sec.hidden).toBe(true);
+    expect(sec.open).toBe(true);
+    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    expect(sec.open).toBe(false);
   });
 
   it("closes shortcuts with Escape and restores focus", async () => {
