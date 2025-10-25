@@ -1956,14 +1956,13 @@ const testApi = {
      */
     async triggerAutoSelect() {
       try {
-        const expired = typeof timerApi.expireSelectionTimer === "function"
-          ? timerApi.expireSelectionTimer()
-          : false;
-        const dispatched =
-          typeof stateApi.dispatchBattleEvent === "function"
-            ? await stateApi.dispatchBattleEvent("roundTimeout", { via: "test-api" })
-            : false;
-        return Boolean(expired || dispatched);
+        const store = inspectionApi.getBattleStore();
+        if (!store) return false;
+        const { triggerRoundTimeoutNow } = await import(
+          "./classicBattle/testHooks.js"
+        );
+        await triggerRoundTimeoutNow(store);
+        return true;
       } catch {
         return false;
       }
