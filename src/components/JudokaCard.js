@@ -20,9 +20,9 @@ import { Card } from "./Card.js";
  * 2. Store judoka data, gokyo lookup and options for later use.
  * 3. `render()` builds the DOM structure:
  *    - Resolve the flag URL using `safeGenerate(getFlagUrl)`.
- *    - Create a `.card-container` with a hidden checkbox flip toggle and label-based `.judoka-card` element.
+ *    - Create a `.card-container` with a button-based `.judoka-card` element that manages `aria-pressed`.
  *    - Build top bar, portrait, stats and signature move sections.
- *    - Drive flip interactivity through the native checkbox state.
+ *    - Drive flip interactivity through the button's pressed state.
  *    - Append an inspector panel when enabled.
  *    - Return the container element.
  */
@@ -50,13 +50,13 @@ export class JudokaCard extends Card {
 
     super("", { className: `judoka-card ${cardType}` });
     const baseElement = this.element;
-    const labelElement = document.createElement("label");
+    const buttonElement = document.createElement("button");
+    buttonElement.type = "button";
     for (const cls of baseElement.classList) {
-      labelElement.classList.add(cls);
+      buttonElement.classList.add(cls);
     }
-    // The Card base class creates a <div>; swap it for a <label> so the element
-    // can pair with the hidden checkbox and inherit native toggle semantics.
-    this.element = labelElement;
+    // Replace the base <div> with a <button> to leverage native toggle semantics.
+    this.element = buttonElement;
 
     this.judoka = processedJudoka;
     this.gokyoLookup = gokyoLookup;
@@ -64,32 +64,13 @@ export class JudokaCard extends Card {
     this.cardType = cardType;
     this.isMysteryCard = isMystery && useObscuredStats;
 
-    this.element.setAttribute("role", "button");
-    this.element.setAttribute("tabindex", "0");
     // Accessible label: override for Mystery card
     const ariaLabel = this.isMysteryCard
       ? "Mystery Judoka: hidden card"
       : `${this.judoka.firstname} ${this.judoka.surname} card`;
     this.element.setAttribute("aria-label", ariaLabel);
+    this.element.setAttribute("aria-pressed", "false");
     this.element.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
-  }
-
-  static #createToggleId(seed) {
-    const unique =
-      typeof globalThis.crypto?.randomUUID === "function"
-        ? globalThis.crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    return `card-flip-toggle-${seed ?? "card"}-${unique}`;
-  }
-
-  #createFlipToggle(toggleId) {
-    const toggle = document.createElement("input");
-    toggle.type = "checkbox";
-    toggle.className = "card-flip-toggle";
-    toggle.id = toggleId;
-    toggle.setAttribute("aria-label", "Flip card to view back");
-    toggle.tabIndex = -1;
-    return toggle;
   }
 
   async #resolveFlagUrl() {
@@ -100,9 +81,15 @@ export class JudokaCard extends Card {
     );
   }
 
-  #configureCardElement(card, inspectorState, toggleId) {
-    card.htmlFor = toggleId;
+  #configureCardElement(card, inspectorState) {
     card.setAttribute("data-feature-card-inspector", inspectorState);
+  }
+
+  #wireFlipBehavior(card) {
+    card.addEventListener("click", () => {
+      const isPressed = card.getAttribute("aria-pressed") === "true";
+      card.setAttribute("aria-pressed", String(!isPressed));
+    });
   }
 
   async #populateCardSections(card, flagUrl) {
@@ -227,10 +214,9 @@ export class JudokaCard extends Card {
    *
    * @pseudocode
    * 1. Create the outer container and record inspector state metadata.
-   * 2. Generate a unique checkbox toggle and associate the label-based card element with it.
-   * 3. Resolve the flag URL and populate the card sections (top bar, portrait/stats/signature or mystery layout).
-   * 4. Attach keyboard support that forwards Enter/Space to the hidden checkbox.
-   * 5. Append the inspector panel when enabled and return the populated container.
+   * 2. Resolve the flag URL and populate the card sections (top bar, portrait/stats/signature or mystery layout).
+   * 3. Wire click-based flip behavior that toggles the button's `aria-pressed` state.
+   * 4. Append the inspector panel when enabled and return the populated container.
    *
    * @returns {Promise<HTMLElement>} Resolves with the card container element.
    */
@@ -245,28 +231,15 @@ export class JudokaCard extends Card {
       // ignore serialization errors
     }
 
-    const toggleId = JudokaCard.#createToggleId(this.judoka.id);
-    const toggle = this.#createFlipToggle(toggleId);
-
     const card = this.element;
-    this.#configureCardElement(card, inspectorState, toggleId);
+    this.#configureCardElement(card, inspectorState);
 
     const flagUrl = await this.#resolveFlagUrl();
     await this.#populateCardSections(card, flagUrl);
 
-    card.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        toggle.click();
-        queueMicrotask(() => {
-          if (typeof card.focus === "function") {
-            card.focus({ preventScroll: true });
-          }
-        });
-      }
-    });
+    this.#wireFlipBehavior(card);
 
-    container.append(toggle, card);
+    container.append(card);
 
     if (this.enableInspector) {
       const panel = createInspectorPanel(container, this.judoka);

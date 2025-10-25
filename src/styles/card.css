@@ -119,19 +119,6 @@ svg {
   position: relative;
 }
 
-.card-flip-toggle {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  border: 0;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  overflow: hidden;
-  white-space: nowrap;
-}
-
 .judoka-card {
   position: relative;
   /*
@@ -182,17 +169,17 @@ svg {
   transition: opacity 0.3s ease;
 }
 
-.card-flip-toggle:checked + .judoka-card::before {
+.judoka-card[aria-pressed="true"]::before {
   opacity: 1;
   pointer-events: auto;
 }
 
-.card-flip-toggle:not(:checked) + .judoka-card:hover::before {
+.judoka-card[aria-pressed="false"]:hover::before {
   opacity: 0;
   pointer-events: none;
 }
 
-.card-flip-toggle:checked + .judoka-card:hover::before {
+.judoka-card[aria-pressed="true"]:hover::before {
   opacity: 1;
 }
 
