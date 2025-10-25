@@ -23,6 +23,10 @@
 }
 
 /* Debug overlay for tooltip targets */
+[data-tooltip-id] {
+  outline: none;
+}
+
 .tooltip-overlay-debug [data-tooltip-id] {
   outline: 1px dashed var(--color-primary);
 }

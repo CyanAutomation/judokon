@@ -7,6 +7,49 @@ import { getFallbackJudoka } from "./judokaUtils.js";
 import { JudokaCard } from "../components/JudokaCard.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
 import { markSignatureMoveReady } from "./signatureMove.js";
+import { setTestMode, isTestModeEnabled, getCurrentSeed } from "./testModeUtils.js";
+
+const TEST_ENV_GLOBAL_KEYS = ["__TEST__", "__VITEST__", "__PLAYWRIGHT__"];
+
+function isTestEnvironment() {
+  if (typeof process !== "undefined") {
+    if (process.env?.NODE_ENV === "test" || process.env?.VITEST) {
+      return true;
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    return TEST_ENV_GLOBAL_KEYS.some((key) => Boolean(window[key]));
+  }
+
+  return false;
+}
+
+async function withDeterministicSeed(seed, callback) {
+  const numericSeed = Number(seed);
+  const shouldApplySeed = Number.isFinite(numericSeed) && isTestEnvironment();
+
+  if (!shouldApplySeed) {
+    return callback();
+  }
+
+  const previousState = {
+    active: isTestModeEnabled(),
+    seed: getCurrentSeed()
+  };
+
+  setTestMode({ enabled: true, seed: numericSeed });
+
+  try {
+    return await callback();
+  } finally {
+    if (previousState.active) {
+      setTestMode({ enabled: true, seed: previousState.seed });
+    } else {
+      setTestMode(false);
+    }
+  }
+}
 
 /**
  * Replaces the contents of an element with the given card and animates it.
@@ -171,7 +214,7 @@ export async function renderJudokaCard(
  * @param {HTMLElement} containerEl - Element to contain the card.
  * @param {boolean} [prefersReducedMotion=false] - Motion preference flag.
  * @param {function} [onSelect] - Callback invoked with the chosen judoka.
- * @param {{enableInspector?: boolean, skipRender?: boolean}} [options] - Feature flags.
+ * @param {{enableInspector?: boolean, skipRender?: boolean, testSeed?: number}} [options] - Feature flags and test hooks.
  * @returns {Promise<Judoka | void>} Resolves with the selected judoka when the
  * card generation workflow completes successfully, or void when rendering is
  * skipped because no container was provided or when rendering fails after a
@@ -185,26 +228,28 @@ export async function generateRandomCard(
   onSelect,
   options = {}
 ) {
-  const { enableInspector, skipRender = false } = options;
+  const { enableInspector, skipRender = false, testSeed } = options;
   if (!skipRender && !containerEl) return undefined;
 
-  const gokyoLookup = await loadGokyoLookup(gokyoData);
-  const judoka = await pickJudoka(activeCards, onSelect);
+  return withDeterministicSeed(testSeed, async () => {
+    const gokyoLookup = await loadGokyoLookup(gokyoData);
+    const judoka = await pickJudoka(activeCards, onSelect);
 
-  if (!skipRender && containerEl) {
-    const rendered = await renderJudokaCard(
-      judoka,
-      gokyoLookup,
-      containerEl,
-      prefersReducedMotion,
-      enableInspector
-    );
+    if (!skipRender && containerEl) {
+      const rendered = await renderJudokaCard(
+        judoka,
+        gokyoLookup,
+        containerEl,
+        prefersReducedMotion,
+        enableInspector
+      );
 
-    if (!rendered) {
-      containerEl.innerHTML = "";
-      return undefined;
+      if (!rendered) {
+        containerEl.innerHTML = "";
+        return undefined;
+      }
     }
-  }
 
-  return judoka;
+    return judoka;
+  });
 }
