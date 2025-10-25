@@ -30,8 +30,9 @@ export async function queryRag(question, opts = {}) {
   const t0 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
   const expanded = await vectorSearch.expandQueryWithSynonyms(question);
   let vector;
+  let extractor;
   try {
-    const extractor = await getExtractor();
+    extractor = await getExtractor();
     const embedding = await extractor(expanded, { pooling: "mean" });
     const source =
       embedding && typeof embedding === "object" && "data" in embedding
@@ -72,8 +73,8 @@ export async function queryRag(question, opts = {}) {
         const exp = await vectorSearch.expandQueryWithSynonyms(q);
         const emb = await extractor(exp, { pooling: "mean" });
         const src = emb && typeof emb === "object" && "data" in emb ? emb.data : emb;
-        const vec = Array.isArray(src) ? Array.from(src) : null;
-        if (!vec) return [];
+        if (!isIterable(src)) return [];
+        const vec = Array.from(src);
         return vectorSearch.findMatches(vec, k, filtersForStrategy(filters, strategy), q);
       })
     );
