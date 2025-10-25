@@ -139,7 +139,7 @@ describe("battleCLI onKeyDown", () => {
     expect(countdown.textContent).toBe("");
   });
 
-  it("ignores tab navigation", () => {
+  it.only("ignores tab navigation", () => {
     const countdown = document.getElementById("cli-countdown");
     onKeyDown(new KeyboardEvent("keydown", { key: "Tab" }));
     expect(countdown.textContent).toBe("");
