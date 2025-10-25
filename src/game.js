@@ -104,13 +104,13 @@ export function setupCarouselToggle(button, container) {
 /**
  * Toggle the visibility of card backs within the carousel.
  *
- * @summary Attach a click handler to `button` which toggles the native flip checkbox
- * for every card in the carousel container.
+ * @summary Attach a click handler to `button` which toggles the pressed state on
+ * every judoka card button within the carousel container.
  * @pseudocode
  * 1. Exit early if `button` is missing.
  * 2. On click:
  *    a. Locate `.card-carousel` in the document.
- *    b. Query all `.card-flip-toggle` inputs and invert their `checked` state.
+ *    b. Query all `.judoka-card` buttons and invert their `aria-pressed` state.
  *    c. Log errors when elements are missing.
  *
  * @param {HTMLElement} button - Button that hides card faces.
@@ -126,15 +126,15 @@ export function setupHideCardButton(button) {
       return;
     }
 
-    const toggles = container.querySelectorAll(".card-flip-toggle");
-    if (toggles.length === 0) {
-      console.error("No judoka card toggles found in the carousel to flip.");
+    const cards = container.querySelectorAll(".judoka-card[aria-pressed]");
+    if (cards.length === 0) {
+      console.error("No judoka cards found in the carousel to flip.");
       return;
     }
 
-    toggles.forEach((toggle) => {
-      toggle.checked = !toggle.checked;
-      toggle.dispatchEvent(new Event("change", { bubbles: true }));
+    cards.forEach((card) => {
+      const isPressed = card.getAttribute("aria-pressed") === "true";
+      card.setAttribute("aria-pressed", String(!isPressed));
     });
   });
 }

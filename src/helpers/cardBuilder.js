@@ -7,50 +7,17 @@ import { markSignatureMoveReady } from "./signatureMove.js";
 
 const FALLBACK_FLAG_URL = "https://flagcdn.com/w320/vu.png";
 
-function createFlipToggleId(seed) {
-  const unique =
-    typeof globalThis.crypto?.randomUUID === "function"
-      ? globalThis.crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  return `card-flip-toggle-${seed ?? "card"}-${unique}`;
-}
-
-function createFlipToggleElement(toggleId) {
-  const toggle = document.createElement("input");
-  toggle.type = "checkbox";
-  toggle.className = "card-flip-toggle";
-  toggle.id = toggleId;
-  toggle.setAttribute("aria-label", "Flip card to view back");
-  toggle.tabIndex = -1;
-  return toggle;
-}
-
-function createJudokaCardLabel(judoka, cardType, toggleId, inspectorState) {
-  const judokaCard = document.createElement("label");
+function createJudokaCardButton(judoka, cardType, inspectorState) {
+  const judokaCard = document.createElement("button");
+  judokaCard.type = "button";
   judokaCard.className = `card judoka-card ${cardType}`;
-  judokaCard.htmlFor = toggleId;
-  judokaCard.setAttribute("role", "button");
-  judokaCard.setAttribute("tabindex", "0");
   const fullName = [judoka.firstname, judoka.surname].filter(Boolean).join(" ").trim();
   const ariaLabel = fullName ? `${fullName} card` : "Judoka card";
   judokaCard.setAttribute("aria-label", ariaLabel);
+  judokaCard.setAttribute("aria-pressed", "false");
   judokaCard.classList.add(judoka.gender === "female" ? "female-card" : "male-card");
   judokaCard.setAttribute("data-feature-card-inspector", inspectorState);
   return judokaCard;
-}
-
-function attachKeyboardToggle(card, toggle) {
-  card.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      toggle.click();
-      queueMicrotask(() => {
-        if (typeof card.focus === "function") {
-          card.focus({ preventScroll: true });
-        }
-      });
-    }
-  });
 }
 
 function createCardContainer(judoka, inspectorState) {
@@ -70,6 +37,13 @@ async function appendJudokaSections(judokaCard, judoka, gokyoLookup, cardType, f
     const section = await buildSection(judoka, { flagUrl, gokyoLookup, cardType });
     judokaCard.appendChild(section);
   }
+}
+
+function initializeFlipBehavior(judokaCard) {
+  judokaCard.addEventListener("click", () => {
+    const isPressed = judokaCard.getAttribute("aria-pressed") === "true";
+    judokaCard.setAttribute("aria-pressed", String(!isPressed));
+  });
 }
 
 async function resolveFlagUrl(judoka) {
@@ -111,8 +85,8 @@ async function resolveFlagUrl(judoka) {
  *
  * @pseudocode
  * 1. Validate inputs and resolve the judoka's flag URL.
- * 2. Create a visually hidden checkbox toggle and label-based `.judoka-card` element tied together.
- * 3. Populate the card sections from `cardSectionRegistry` and attach keyboard flipping support.
+ * 2. Create a button-based `.judoka-card` element with native toggle semantics.
+ * 3. Populate the card sections from `cardSectionRegistry` and wire the click-based flip behavior.
  * 4. Append the optional inspector panel when enabled and return the populated container.
  *
  * @param {import("./types.js").Judoka} judoka - Judoka data with required fields such as names, country codes, stats and signatureMoveId.
@@ -137,14 +111,12 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
   const inspectorState = enableInspector ? "enabled" : "disabled";
 
   const cardContainer = createCardContainer(judoka, inspectorState);
-  const toggleId = createFlipToggleId(judoka.id);
-  const flipToggle = createFlipToggleElement(toggleId);
-  const judokaCard = createJudokaCardLabel(judoka, cardType, toggleId, inspectorState);
+  const judokaCard = createJudokaCardButton(judoka, cardType, inspectorState);
 
   await appendJudokaSections(judokaCard, judoka, gokyoLookup, cardType, flagUrl);
-  attachKeyboardToggle(judokaCard, flipToggle);
+  initializeFlipBehavior(judokaCard);
 
-  cardContainer.append(flipToggle, judokaCard);
+  cardContainer.append(judokaCard);
 
   if (enableInspector) {
     const panel = createInspectorPanel(cardContainer, judoka);

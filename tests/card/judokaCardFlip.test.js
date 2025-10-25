@@ -27,51 +27,71 @@ const judoka = {
 
 const gokyoLookup = { 1: { id: 1, name: "Uchi-mata" } };
 
+function triggerKeyboardActivation(element, key) {
+  const code = key === " " ? "Space" : key;
+  const keyCode = key === " " ? 32 : 13;
+  const keydown = new KeyboardEvent("keydown", {
+    key,
+    code,
+    keyCode,
+    which: keyCode,
+    bubbles: true,
+    cancelable: true,
+  });
+  const shouldActivate = element.dispatchEvent(keydown);
+  element.dispatchEvent(
+    new KeyboardEvent("keyup", {
+      key,
+      code,
+      keyCode,
+      which: keyCode,
+      bubbles: true,
+      cancelable: true,
+    })
+  );
+  if (shouldActivate) {
+    element.click();
+  }
+}
+
 describe("judoka card flip interactivity", () => {
-  it("toggles the checkbox when the card is clicked", async () => {
+  it("toggles the pressed state when the card is clicked", async () => {
     const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
-    const toggle = container.querySelector(".card-flip-toggle");
-    expect(toggle).not.toBeNull();
-    expect(toggle.checked).toBe(false);
+    expect(card).not.toBeNull();
+    expect(card.tagName).toBe("BUTTON");
+    expect(card.getAttribute("aria-pressed")).toBe("false");
     card.click();
-    expect(toggle.checked).toBe(true);
+    expect(card.getAttribute("aria-pressed")).toBe("true");
     card.click();
-    expect(toggle.checked).toBe(false);
+    expect(card.getAttribute("aria-pressed")).toBe("false");
   });
 
-  it("toggles the checkbox when Enter is pressed", async () => {
+  it("toggles the pressed state when Enter is pressed", async () => {
     const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
-    const toggle = container.querySelector(".card-flip-toggle");
-    expect(toggle).not.toBeNull();
-    const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true });
-    card.dispatchEvent(event);
-    expect(toggle.checked).toBe(true);
+    expect(card).not.toBeNull();
+    triggerKeyboardActivation(card, "Enter");
+    expect(card.getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("toggles the checkbox when Space is pressed", async () => {
+  it("toggles the pressed state when Space is pressed", async () => {
     const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
-    const toggle = container.querySelector(".card-flip-toggle");
-    expect(toggle).not.toBeNull();
-    const event = new KeyboardEvent("keydown", { key: " ", bubbles: true });
-    card.dispatchEvent(event);
-    expect(toggle.checked).toBe(true);
+    expect(card).not.toBeNull();
+    triggerKeyboardActivation(card, " ");
+    expect(card.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("keeps focus on the card after keyboard toggles", async () => {
     const container = await new JudokaCard(judoka, gokyoLookup).render();
     document.body.appendChild(container);
     const card = container.querySelector(".judoka-card");
-    const toggle = container.querySelector(".card-flip-toggle");
-    expect(toggle).not.toBeNull();
+    expect(card).not.toBeNull();
     card.focus();
     expect(document.activeElement).toBe(card);
-    const enterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true });
-    card.dispatchEvent(enterEvent);
-    await Promise.resolve();
-    expect(toggle.checked).toBe(true);
+    triggerKeyboardActivation(card, "Enter");
+    expect(card.getAttribute("aria-pressed")).toBe("true");
     expect(document.activeElement).toBe(card);
     container.remove();
   });
