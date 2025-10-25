@@ -56,7 +56,7 @@ async function applyQuickWinTarget(page, { waitForEngine = true, timeout = 5000 
 async function prepareClassicBattle(page, { seed = 42, cooldown = 500 } = {}) {
   await page.addInitScript(
     ({ cooldownMs, rngSeed }) => {
-      window.__OVERRIDE_TIMERS = { roundTimer: 1 };
+      window.__OVERRIDE_TIMERS = { roundTimer: 3 };
       window.__NEXT_ROUND_COOLDOWN_MS = cooldownMs;
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
       window.__TEST_MODE = { enabled: true, seed: rngSeed };
@@ -145,6 +145,7 @@ async function selectAdvantagedStat(page) {
 
     const playerStats = player.stats;
     const opponentStats = opponent.stats;
+    const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     const keys = Array.from(
       new Set([...Object.keys(playerStats ?? {}), ...Object.keys(opponentStats ?? {})])
     );
@@ -184,10 +185,18 @@ async function selectAdvantagedStat(page) {
     }
 
     if (bestNormalized && Number.isFinite(bestDelta) && bestDelta > 0) {
+      for (const button of buttons) {
+        const datasetValue = button.getAttribute("data-stat") ?? button.dataset?.stat;
+        if (typeof datasetValue === "string" && datasetValue.trim()) {
+          if (datasetValue.trim().toLowerCase() === bestNormalized) {
+            return datasetValue.trim();
+          }
+        }
+      }
       return bestNormalized;
     }
 
-    const firstButton = document.querySelector("#stat-buttons button[data-stat]");
+    const firstButton = buttons[0] ?? null;
     if (!firstButton) {
       return null;
     }
@@ -198,51 +207,40 @@ async function selectAdvantagedStat(page) {
     return null;
   });
 
-  const clickedImmediately = await page.evaluate((preferredStat) => {
-    const normalize = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
-    const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    if (buttons.length === 0) {
-      return false;
-    }
-
-    const target = normalize(preferredStat);
-    const tryClick = (predicate) => {
-      for (const button of buttons) {
-        if (!predicate(button)) continue;
-        if (button.disabled || button.hasAttribute("disabled")) {
-          continue;
-        }
-        try {
-          button.click();
-          return true;
-        } catch {}
-      }
-      return false;
-    };
-
-    if (target && tryClick((btn) => normalize(btn.dataset?.stat) === target)) {
-      return true;
-    }
-
-    return tryClick(() => true);
-  }, statKey);
-
-  if (clickedImmediately) {
-    return;
-  }
+  const statButtons = page.locator("#stat-buttons button[data-stat]");
+  await expect(statButtons.first()).toBeVisible();
 
   if (typeof statKey === "string" && statKey) {
-    const normalizedStat = statKey.trim();
-    const escapedStat = normalizedStat.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const statButton = page.locator(`#stat-buttons button[data-stat='${escapedStat}']`);
-    await expect(statButton).toBeVisible();
-    await expect(statButton).toBeEnabled();
-    await statButton.click();
-    return;
+    const normalizedStat = statKey.trim().toLowerCase();
+    const targetIndex = await statButtons.evaluateAll(
+      (buttons, target) => {
+        const normalize = (value) =>
+          typeof value === "string" ? value.trim().toLowerCase() : "";
+        const desired = normalize(target);
+        if (!desired) {
+          return -1;
+        }
+        for (let index = 0; index < buttons.length; index += 1) {
+          const button = buttons[index];
+          const datasetValue = button.getAttribute("data-stat") ?? button.dataset?.stat;
+          if (normalize(datasetValue) === desired) {
+            return index;
+          }
+        }
+        return -1;
+      },
+      normalizedStat
+    );
+
+    if (Number.isInteger(targetIndex) && targetIndex >= 0) {
+      const statButton = statButtons.nth(targetIndex);
+      await expect(statButton).toBeEnabled();
+      await statButton.click();
+      return;
+    }
   }
 
-  const fallbackButton = page.locator("#stat-buttons button[data-stat]").first();
-  await expect(fallbackButton).toBeVisible();
+  const fallbackButton = statButtons.first();
   await expect(fallbackButton).toBeEnabled();
   await fallbackButton.click();
 }
@@ -396,15 +394,23 @@ test.describe("Classic Battle End Game Flow", () => {
         expectDecisiveFinalScore(scores);
 
         // Check if replay button exists and is functional
-        const replayButton = page
-          .locator("#match-replay-button, #replay-button, [data-testid='replay-button']")
-          .first();
+        const modalReplayButton = page
+          .locator("#match-end-modal")
+          .locator("#match-replay-button, [data-testid='replay-button'], button:has-text('Replay')");
+        let replayButton = modalReplayButton.first();
+        if ((await replayButton.count()) === 0) {
+          replayButton = page
+            .locator("#match-replay-button, #replay-button, [data-testid='replay-button']")
+            .first();
+        }
+
         if ((await replayButton.count()) > 0) {
           await expect(replayButton).toBeVisible();
 
           await waitForModalOpen(page);
 
           // Test replay functionality if button is available
+          await expect(replayButton).toBeEnabled();
           await replayButton.focus();
           await expect(replayButton).toBeFocused();
           await replayButton.press("Enter");
