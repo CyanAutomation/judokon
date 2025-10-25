@@ -293,8 +293,7 @@ test.describe("Settings page", () => {
         "label[for='typewriter-toggle']",
         "label[for='tooltips-toggle']",
         "label[for='display-mode-light']",
-        "label[for='display-mode-dark']",
-        "label[for='display-mode-retro']"
+        "label[for='display-mode-dark']"
       ].join(", "),
       (els) =>
         els.map((el) => {
@@ -397,9 +396,19 @@ test.describe("Settings page", () => {
     );
   });
 
-  test("toggles retro display mode", async ({ page }) => {
-    await page.check("#display-mode-retro");
-    await expect(page.locator("body")).toHaveAttribute("data-theme", "retro");
+  test("normalizes legacy retro value to dark", async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({
+          displayMode: "retro"
+        })
+      );
+    });
+    await page.reload();
+    await page.waitForFunction(() => document.body.dataset.theme === "dark");
+    await expect(page.locator("#display-mode-dark")).toBeChecked();
+    await page.evaluate(() => localStorage.removeItem("settings"));
   });
 
   test("theme-specific tokens update settings visuals", async ({ page }) => {
@@ -431,13 +440,13 @@ test.describe("Settings page", () => {
     expect(dark.searchPlaceholder).not.toBe(light.searchPlaceholder);
     expect(dark.fieldsetBg).not.toBe(light.fieldsetBg);
 
-    await page.check("#display-mode-retro");
-    await page.waitForFunction(() => document.body.dataset.theme === "retro");
-    const retro = await snapshot();
-    expect(retro.sectionBg).not.toBe(dark.sectionBg);
-    expect(retro.switchOn).not.toBe(dark.switchOn);
-    expect(retro.searchPlaceholder).not.toBe(dark.searchPlaceholder);
-    expect(retro.fieldsetBg).not.toBe(dark.fieldsetBg);
+    await page.check("#display-mode-light");
+    await page.waitForFunction(() => document.body.dataset.theme === "light");
+    const backToLight = await snapshot();
+    expect(backToLight.sectionBg).toBe(light.sectionBg);
+    expect(backToLight.switchOn).toBe(light.switchOn);
+    expect(backToLight.searchPlaceholder).toBe(light.searchPlaceholder);
+    expect(backToLight.fieldsetBg).toBe(light.fieldsetBg);
   });
 
   test("restore defaults resets settings", async ({ page }) => {

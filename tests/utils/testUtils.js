@@ -107,7 +107,7 @@ export function createBattleCardContainers() {
  * @pseudocode
  * 1. Create a document fragment to hold UI elements.
  * 2. Create checkbox inputs for sound, motion, typewriter, tooltips, card of the day, and full navigation map.
- * 3. Create radio inputs for light, dark, and high-contrast display modes.
+ * 3. Create radio inputs for light and dark display modes.
  * 4. Create section containers for game mode toggles and feature flags.
  * 5. Create a reset button.
  * 6. Append all created elements to the fragment.
@@ -146,11 +146,6 @@ export function createSettingsDom() {
   displayDark.type = "radio";
   displayDark.name = "display-mode";
   displayDark.value = "dark";
-  const displayHighContrast = document.createElement("input");
-  displayHighContrast.id = "display-mode-retro";
-  displayHighContrast.type = "radio";
-  displayHighContrast.name = "display-mode";
-  displayHighContrast.value = "retro";
   const gameModeToggleContainer = document.createElement("section");
   gameModeToggleContainer.id = "game-mode-toggle-container";
 
@@ -170,7 +165,6 @@ export function createSettingsDom() {
     fullNavigationMapToggle,
     displayLight,
     displayDark,
-    displayHighContrast,
     gameModeToggleContainer,
     featureFlagsContainer,
     resetButton

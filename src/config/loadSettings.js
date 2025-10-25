@@ -1,3 +1,5 @@
+import { normalizeDisplayMode } from "../helpers/displayMode.js";
+
 const SETTINGS_KEY = "settings";
 
 /**
@@ -105,9 +107,19 @@ export async function loadSettings() {
   } catch {
     // Ignore localStorage unavailability or JSON errors
   }
-  // Normalize legacy values: map "high-contrast" display mode to "retro".
-  if (settings && settings.displayMode === "high-contrast") {
-    settings = { ...settings, displayMode: "retro" };
+  if (settings) {
+    const normalizedDisplayMode = normalizeDisplayMode(settings.displayMode);
+    if (normalizedDisplayMode) {
+      if (normalizedDisplayMode !== settings.displayMode) {
+        settings = { ...settings, displayMode: normalizedDisplayMode };
+      }
+    } else if (DEFAULT_SETTINGS?.displayMode) {
+      const defaultMode = normalizeDisplayMode(DEFAULT_SETTINGS.displayMode) ?? "light";
+      console.warn(
+        `Unknown display mode "${settings.displayMode}" encountered. Falling back to "${defaultMode}".`
+      );
+      settings = { ...settings, displayMode: defaultMode };
+    }
   }
 
   return settings;
