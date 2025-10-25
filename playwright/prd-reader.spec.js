@@ -41,13 +41,13 @@ test.describe("PRD Reader page", () => {
   });
 
   test("sidebar-tab-traversal", async ({ page }) => {
-    const items = page.locator(".sidebar-list li");
+    const radios = page.locator(".sidebar-list input[type='radio']");
     const container = page.locator("#prd-content");
     await expect(container).toBeFocused();
-    await items.first().focus();
-    await expect(items.first()).toBeFocused();
+    await radios.first().focus();
+    await expect(radios.first()).toBeFocused();
 
-    await page.keyboard.press("Enter");
+    await page.keyboard.press("Space");
     await expect(container).toBeFocused();
 
     await page.keyboard.press("Tab");
@@ -55,28 +55,22 @@ test.describe("PRD Reader page", () => {
   });
 
   test("arrow-key-content-switching", async ({ page }) => {
-    const item = page.locator(".sidebar-list li");
+    const radios = page.locator(".sidebar-list input[type='radio']");
     const container = page.locator("#prd-content");
     await expect(container).not.toHaveText("");
     const initial = await container.innerHTML();
 
-    await item.focus();
-    await expect(item).toBeFocused();
-
-    await page.keyboard.press("ArrowRight");
-    await expect(item).toBeFocused();
-    expect(await container.innerHTML()).toBe(initial);
+    await radios.first().focus();
+    await expect(radios.first()).toBeFocused();
 
     await page.keyboard.press("ArrowDown");
-    await expect(item).toBeFocused();
-    expect(await container.innerHTML()).toBe(initial);
-
-    await page.keyboard.press("Enter");
     await expect(container).toBeFocused();
+    const afterDown = await container.innerHTML();
+    expect(afterDown).not.toBe(initial);
 
     await page.keyboard.press("ArrowRight");
     await expect(container).toBeFocused();
     const afterNext = await container.innerHTML();
-    expect(afterNext).toBe(initial);
+    expect(afterNext).not.toBe("");
   });
 });

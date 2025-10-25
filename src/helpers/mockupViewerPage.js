@@ -67,15 +67,16 @@ export async function setupMockupViewerPage() {
   ];
 
   let currentIndex = 0;
-  const list = new SidebarList(files, (i) => {
-    if (i !== currentIndex) showImage(i);
+  const list = new SidebarList(files, (i, _label, opts = {}) => {
+    if (i !== currentIndex) showImage(i, opts);
   });
   const listEl = list.element;
-  const listSelect = list.select.bind(list);
+  list.legend.textContent = "Mockup files";
   listEl.id = "mockup-list";
   listPlaceholder.replaceWith(listEl);
+  const listSelect = (index, opts = {}) => list.select(index, { focus: false, silent: true, ...opts });
 
-  function showImage(index) {
+  function showImage(index, opts = {}) {
     currentIndex = (index + files.length) % files.length;
     const file = files[currentIndex];
     imgEl.src = `${basePath}${file}`;
@@ -83,7 +84,7 @@ export async function setupMockupViewerPage() {
     filenameEl.textContent = file;
     imgEl.classList.add("fade");
     imgEl.style.display = "block";
-    listSelect(currentIndex);
+    listSelect(currentIndex, opts);
   }
 
   function handlePrevClick() {

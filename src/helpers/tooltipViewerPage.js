@@ -446,7 +446,8 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
     selectedKey = key;
     const body = data[key] ?? "";
     if (listSelect) {
-      const index = Array.from(listPlaceholder.children).findIndex((el) => el.dataset.key === key);
+      const labels = Array.from(listPlaceholder.querySelectorAll(".sidebar-list__label"));
+      const index = labels.findIndex((label) => label.dataset.key === key);
       if (index !== -1) listSelect(index);
     }
     const { html, warning } = parseTooltipText(body);

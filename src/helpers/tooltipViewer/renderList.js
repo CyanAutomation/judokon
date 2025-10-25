@@ -46,16 +46,18 @@ export function renderList(data, filter, select, listPlaceholder) {
       });
     }
   });
-  const list = new SidebarList(items, (_, el) => {
-    select(el.dataset.key);
+  const list = new SidebarList(items, (_, el, opts = {}) => {
+    select(el.dataset.key, opts);
   });
-  Array.from(list.element.children).forEach((li) => {
+  const legendText = listPlaceholder?.querySelector("legend")?.textContent?.trim();
+  list.legend.textContent = legendText || "Tooltip entries";
+  Array.from(list.element.querySelectorAll(".sidebar-list__label")).forEach((label) => {
     let message = null;
-    if (li.dataset.keyValid === "false") {
+    if (label.dataset.keyValid === "false") {
       message = INVALID_KEY_MSG;
-    } else if (li.dataset.valid === "false") {
+    } else if (label.dataset.valid === "false") {
       message = INVALID_TOOLTIP_MSG;
-    } else if (li.dataset.warning === "true") {
+    } else if (label.dataset.warning === "true") {
       message = MALFORMED_TOOLTIP_MSG;
     }
     if (message) {
@@ -67,10 +69,13 @@ export function renderList(data, filter, select, listPlaceholder) {
       const sr = document.createElement("span");
       sr.className = "tooltip-invalid-text";
       sr.textContent = message;
-      li.append(" ", icon, sr);
+      label.append(" ", icon, sr);
     }
   });
   list.element.id = "tooltip-list";
   if (listPlaceholder) listPlaceholder.replaceWith(list.element);
-  return { element: list.element, listSelect: list.select.bind(list) };
+  return {
+    element: list.element,
+    listSelect: (index, opts = {}) => list.select(index, { focus: false, silent: true, ...opts })
+  };
 }
