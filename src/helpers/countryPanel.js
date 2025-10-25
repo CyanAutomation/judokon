@@ -26,6 +26,7 @@ export function toggleCountryPanel(toggleButton, panel, show) {
 
   /** @type {HTMLDetailsElement} */
   const details = panel;
+  const wasOpen = details.open;
   const shouldOpen = typeof show === "boolean" ? show : !details.open;
   details.open = shouldOpen;
 
@@ -44,10 +45,12 @@ export function toggleCountryPanel(toggleButton, panel, show) {
     }
   }
 
-  if (shouldOpen) {
+  const stateChanged = wasOpen !== shouldOpen;
+
+  if (shouldOpen && stateChanged) {
     const firstRadio = details.querySelector('input[type="radio"][name="country-filter"]');
     firstRadio?.focus?.();
-  } else {
+  } else if (stateChanged && wasOpen && !shouldOpen) {
     toggleButton?.focus?.();
   }
 }
