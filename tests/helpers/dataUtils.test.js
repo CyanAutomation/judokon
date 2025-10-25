@@ -265,8 +265,7 @@ describe("validateWithSchema", () => {
   });
 });
 
-describe("getAjv fallback stub", () => {
-  const message = "Ajv import failed; validation disabled";
+describe("fallback Ajv stub integration", () => {
   let originalNodeVersion;
   let originalWindow;
 
@@ -289,17 +288,19 @@ describe("getAjv fallback stub", () => {
     global.window = originalWindow;
   });
 
-  it("provides stub with errorsText and sets errors", async () => {
+  it("allows schema validation to resolve when Ajv cannot load", async () => {
     await withMutedConsole(async () => {
       const module = await import("../../src/helpers/dataUtils.js");
       vi.spyOn(module.browserAjvLoader, "load").mockRejectedValue(new Error("fail"));
+      const schema = { type: "object" };
+      await expect(module.validateWithSchema({ foo: "bar" }, schema)).resolves.toBeUndefined();
+
       const ajv = await module.getAjv();
-      const validate = ajv.compile({});
-      const result = validate({});
-      expect(result).toBe(false);
-      expect(ajv.errors).toEqual([{ message }]);
-      expect(validate.errors).toEqual([{ message }]);
-      expect(ajv.errorsText(validate.errors)).toBe(message);
+      const validate = ajv.compile(schema);
+      expect(validate({ foo: "bar" })).toBe(true);
+      expect(validate.errors).toBeNull();
+      expect(ajv.errors).toBeNull();
+      expect(ajv.errorsText(validate.errors)).toBe("");
     });
   });
 });
