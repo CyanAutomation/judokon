@@ -57,4 +57,50 @@ describe("queryRag", () => {
     expect(results.length).toBeGreaterThanOrEqual(1);
     expect(results[0].id).toBe("grip");
   });
+
+  it("handles Float32Array embeddings for multi-intent sub-queries", async () => {
+    process.env.RAG_FORCE_JSON = "1";
+    const dataset = [
+      {
+        id: "sweeps",
+        text: "foot sweep tactics",
+        embedding: [1, 0],
+        source: "doc3",
+        tags: []
+      }
+    ];
+    await setupMockDataset(dataset);
+
+    const extractor = vi.fn(async () => new Float32Array([1, 0]));
+    const getExtractorMock = vi.fn(async () => extractor);
+    vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+      getExtractor: getExtractorMock
+    }));
+
+    const question = "Grip fighting and foot sweep tactics";
+    const findMatches = vi.fn(async (vec, _k, _filters, queryText) => {
+      if (queryText === question) {
+        return [];
+      }
+      expect(Array.isArray(vec)).toBe(true);
+      return dataset;
+    });
+
+    vi.doMock("../../src/helpers/vectorSearch/index.js", async () => ({
+      default: {
+        expandQueryWithSynonyms: vi.fn(async (q) => q),
+        findMatches
+      }
+    }));
+
+    const { queryRag } = await import("../../src/helpers/queryRag.js");
+    const results = await queryRag(question);
+    delete process.env.RAG_FORCE_JSON;
+
+    expect(extractor).toHaveBeenCalledTimes(3);
+    expect(findMatches).toHaveBeenCalledWith(expect.any(Array), 5, expect.any(Array), "grip fighting");
+    expect(findMatches).toHaveBeenCalledWith(expect.any(Array), 5, expect.any(Array), "foot sweep tactics");
+    expect(results).not.toHaveLength(0);
+    expect(results[0].id).toBe("sweeps");
+  });
 });
