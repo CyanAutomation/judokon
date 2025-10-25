@@ -135,9 +135,10 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
     await init(mod);
 
-    const item = document.querySelector("#tooltip-list li");
-    expect(item).toBeTruthy();
-    item.click();
+    const input = document.querySelector("#tooltip-list input[type='radio']");
+    expect(input).toBeTruthy();
+    input.checked = true;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
 
     expect(document.getElementById("tooltip-preview").innerHTML).toBe("<strong>Bold</strong>");
     expect(document.getElementById("tooltip-raw").textContent).toBe("**Bold**");
@@ -152,7 +153,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
     await init(mod);
 
-    const invalid = document.querySelector('#tooltip-list li[data-key="ui.bad"]');
+    const invalid = document.querySelector('#tooltip-list .sidebar-list__label[data-key="ui.bad"]');
     expect(invalid).toBeTruthy();
     const icon = invalid.querySelector(".tooltip-invalid-icon");
     expect(icon).toBeTruthy();
@@ -170,7 +171,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
     await init(mod);
 
-    const malformed = document.querySelector('#tooltip-list li[data-key="ui.warn"]');
+    const malformed = document.querySelector('#tooltip-list .sidebar-list__label[data-key="ui.warn"]');
     expect(malformed).toBeTruthy();
     const icon = malformed.querySelector(".tooltip-invalid-icon");
     expect(icon).toBeTruthy();
@@ -188,8 +189,10 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
     await init(mod);
 
-    const item = document.querySelector("#tooltip-list li");
-    item.click();
+    const input = document.querySelector("#tooltip-list input[type='radio']");
+    expect(input).toBeTruthy();
+    input.checked = true;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
 
     const warnEl = document.getElementById("tooltip-warning");
     expect(warnEl.hidden).toBe(false);
@@ -207,8 +210,10 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     const preview = document.getElementById("tooltip-preview");
     Object.defineProperty(preview, "scrollHeight", { value: 400, configurable: true });
 
-    const item = document.querySelector("#tooltip-list li");
-    item.click();
+    const input = document.querySelector("#tooltip-list input[type='radio']");
+    expect(input).toBeTruthy();
+    input.checked = true;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
 
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -235,8 +240,10 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     const preview = document.getElementById("tooltip-preview");
     Object.defineProperty(preview, "scrollHeight", { value: 200, configurable: true });
 
-    const item = document.querySelector("#tooltip-list li");
-    item.click();
+    const input = document.querySelector("#tooltip-list input[type='radio']");
+    expect(input).toBeTruthy();
+    input.checked = true;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
 
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -259,8 +266,10 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     const timers = useCanonicalTimers();
     await init(mod);
 
-    const item = document.querySelector("#tooltip-list li");
-    item.click();
+    const input = document.querySelector("#tooltip-list input[type='radio']");
+    expect(input).toBeTruthy();
+    input.checked = true;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
 
     const btn = document.getElementById("copy-key-btn");
     btn.click();
@@ -289,8 +298,9 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
     await init(mod);
 
-    const item = document.querySelector("#tooltip-list li");
-    item.click();
+    const input = document.querySelector("#tooltip-list input[type='radio']");
+    input.checked = true;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
 
     const btn = document.getElementById("copy-body-btn");
     btn.click();
@@ -358,7 +368,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
     await init(mod);
 
-    const invalid = document.querySelector('#tooltip-list li[data-key="badkey"]');
+    const invalid = document.querySelector('#tooltip-list .sidebar-list__label[data-key="badkey"]');
     expect(invalid).toBeTruthy();
     expect(invalid.dataset.keyValid).toBe("false");
     const icon = invalid.querySelector(".tooltip-invalid-icon");

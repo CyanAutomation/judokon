@@ -122,9 +122,13 @@ export async function loadPrdFileList(docsMap) {
 export function createSidebarList(labels, placeholder, onSelect) {
   const list = new SidebarList(labels, onSelect);
   const listEl = list.element;
+  const legendText = placeholder?.querySelector("legend")?.textContent?.trim();
+  list.legend.textContent = legendText || "Product Requirement Documents";
   listEl.id = "prd-list";
   placeholder.replaceWith(listEl);
-  return { listSelect: list.select.bind(list) };
+  return {
+    listSelect: (index, opts = {}) => list.select(index, { focus: false, silent: true, ...opts })
+  };
 }
 
 /**

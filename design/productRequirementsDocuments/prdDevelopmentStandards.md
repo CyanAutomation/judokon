@@ -179,7 +179,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 - Buttons rely on `--button-*` tokens, maintain 44–48px minimum height, use shared border radii, and provide ripple + outline feedback through CSS pseudo-elements tied to `:active`/`:focus-visible` while respecting `prefers-reduced-motion`.
 - Ripple feedback is achieved purely through CSS (`::after`) with no DOM mutations; the deprecated `setupButtonEffects()` helper stays removed to keep interactions declarative and accessible.
 - Classic Battle layouts align player/opponent cards in a three-column grid (stacking on <480px) with stat buttons presented as evenly spaced grids.
-- Sidebar lists pulse selected items for 150 ms while honouring `prefers-reduced-motion`.
+- Sidebar lists render as `<fieldset>` radio groups with zebra striping and pulse the selected label for 150 ms while honouring `prefers-reduced-motion`.
 
 **Typography Standards:**
 

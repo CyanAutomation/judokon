@@ -112,24 +112,33 @@ export function createTestSidebarList(items, onSelect) {
     instance: sidebarList,
     testApi: {
       selectItem: (index) => {
-        const listItems = element.querySelectorAll("li");
-        if (listItems[index]) {
-          naturalClick(listItems[index]);
+        const inputs = element.querySelectorAll("input[type='radio']");
+        if (inputs[index]) {
+          inputs[index].checked = true;
+          inputs[index].dispatchEvent(new Event("change", { bubbles: true }));
         }
       },
       navigateWithArrows: (direction) => {
-        const key = direction === "down" ? "ArrowDown" : "ArrowUp";
-        naturalKeypress(element, key);
+        const inputs = Array.from(element.querySelectorAll("input[type='radio']"));
+        if (!inputs.length) return;
+        const currentIndex = inputs.findIndex((input) => input.checked);
+        const delta = direction === "down" ? 1 : -1;
+        const nextIndex =
+          currentIndex === -1
+            ? direction === "down"
+              ? 0
+              : inputs.length - 1
+            : (currentIndex + delta + inputs.length) % inputs.length;
+        sidebarList.select(nextIndex);
       },
       getSelectedIndex: () => {
-        const selected = element.querySelector("li.selected");
-        if (!selected) return -1;
-        return Array.from(element.querySelectorAll("li")).indexOf(selected);
+        const inputs = Array.from(element.querySelectorAll("input[type='radio']"));
+        return inputs.findIndex((input) => input.checked);
       },
-      getItemCount: () => element.querySelectorAll("li").length,
+      getItemCount: () => element.querySelectorAll("input[type='radio']").length,
       isItemSelected: (index) => {
-        const item = element.querySelectorAll("li")[index];
-        return item ? item.classList.contains("selected") : false;
+        const input = element.querySelectorAll("input[type='radio']")[index];
+        return input ? input.checked : false;
       },
       cleanup: () => {
         if (element.parentNode) {
@@ -778,17 +787,17 @@ export function createTestMockupViewer() {
         naturalClick(prevBtn);
       },
       selectImage: (index) => {
-        const listItems = container.querySelectorAll("#mockup-list li");
-        if (listItems[index]) {
-          naturalClick(listItems[index]);
+        const inputs = container.querySelectorAll("#mockup-list input[type='radio']");
+        if (inputs[index]) {
+          inputs[index].checked = true;
+          inputs[index].dispatchEvent(new Event("change", { bubbles: true }));
         }
       },
       getSelectedIndex: () => {
-        const selected = container.querySelector("#mockup-list li.selected");
-        if (!selected) return -1;
-        return Array.from(container.querySelectorAll("#mockup-list li")).indexOf(selected);
+        const inputs = Array.from(container.querySelectorAll("#mockup-list input[type='radio']"));
+        return inputs.findIndex((input) => input.checked);
       },
-      getImageCount: () => container.querySelectorAll("#mockup-list li").length,
+      getImageCount: () => container.querySelectorAll("#mockup-list input[type='radio']").length,
       getCurrentImageSrc: () => container.querySelector("#mockup-image").src,
       cleanup: () => {
         if (container.parentNode) {
@@ -811,7 +820,9 @@ export function createTestPrdReader(docs, parser) {
   container.innerHTML = `
     <div id="prd-title"></div>
     <div id="task-summary"></div>
-    <ul id="prd-list"></ul>
+    <fieldset id="prd-list" class="sidebar-list">
+      <legend class="sidebar-list__legend">Product Requirement Documents</legend>
+    </fieldset>
     <div id="prd-content" tabindex="0"></div>
     <button data-nav="prev">Prev</button>
     <button data-nav="next">Next</button>
@@ -837,9 +848,10 @@ export function createTestPrdReader(docs, parser) {
       getTaskSummary: () => container.querySelector("#task-summary"),
       getNextButtons: () => container.querySelectorAll('[data-nav="next"]'),
       getPrevButtons: () => container.querySelectorAll('[data-nav="prev"]'),
-      getListItems: () => Array.from(container.querySelectorAll("#prd-list li")),
+      getListItems: () =>
+        Array.from(container.querySelectorAll("#prd-list .sidebar-list__label")),
       getListItem: (index) => {
-        const items = container.querySelectorAll("#prd-list li");
+        const items = container.querySelectorAll("#prd-list .sidebar-list__label");
         return items[index] ?? null;
       },
       getWarningBadge: () => container.querySelector(".markdown-warning"),
@@ -852,23 +864,25 @@ export function createTestPrdReader(docs, parser) {
         naturalClick(prevBtn);
       },
       selectDocument: (index) => {
-        const listItems = container.querySelectorAll("#prd-list li");
-        if (listItems[index]) {
-          naturalClick(listItems[index]);
+        const inputs = container.querySelectorAll("#prd-list input[type='radio']");
+        if (inputs[index]) {
+          inputs[index].checked = true;
+          inputs[index].dispatchEvent(new Event("change", { bubbles: true }));
         }
       },
       navigateWithKeyboard: (key) => {
-        const list = container.querySelector("#prd-list");
-        naturalKeypress(list, key);
+        const input = container.querySelector("#prd-list input[type='radio']");
+        if (input) {
+          naturalKeypress(input, key);
+        }
       },
       getCurrentContent: () => container.querySelector("#prd-content").innerHTML,
       getCurrentTitle: () => container.querySelector("#prd-title").textContent,
       getSelectedIndex: () => {
-        const selected = container.querySelector("#prd-list li.selected");
-        if (!selected) return -1;
-        return Array.from(container.querySelectorAll("#prd-list li")).indexOf(selected);
+        const inputs = Array.from(container.querySelectorAll("#prd-list input[type='radio']"));
+        return inputs.findIndex((input) => input.checked);
       },
-      getDocumentCount: () => container.querySelectorAll("#prd-list li").length,
+      getDocumentCount: () => container.querySelectorAll("#prd-list input[type='radio']").length,
       cleanup: () => {
         if (container.parentNode) {
           container.parentNode.removeChild(container);
@@ -888,7 +902,9 @@ export function createTestTooltipViewer(tooltipData = {}) {
   const container = document.createElement("div");
   container.innerHTML = `
     <input id="tooltip-search" />
-    <ul id="tooltip-list"></ul>
+    <fieldset id="tooltip-list" class="sidebar-list">
+      <legend class="sidebar-list__legend">Tooltip entries</legend>
+    </fieldset>
     <details id="tooltip-preview-container" class="preview-container">
       <summary class="preview-summary">
         <span class="summary-label summary-label--closed">Expand preview</span>
@@ -929,9 +945,10 @@ export function createTestTooltipViewer(tooltipData = {}) {
       getCopyKeyButton: () => container.querySelector("#copy-key-btn"),
       getCopyBodyButton: () => container.querySelector("#copy-body-btn"),
       selectTooltip: (index) => {
-        const listItems = container.querySelectorAll("#tooltip-list li");
-        if (listItems[index]) {
-          naturalClick(listItems[index]);
+        const inputs = container.querySelectorAll("#tooltip-list input[type='radio']");
+        if (inputs[index]) {
+          inputs[index].checked = true;
+          inputs[index].dispatchEvent(new Event("change", { bubbles: true }));
         }
       },
       searchTooltips: (term) => {
@@ -950,7 +967,7 @@ export function createTestTooltipViewer(tooltipData = {}) {
       getCurrentPreview: () => container.querySelector("#tooltip-preview").innerHTML,
       isWarningVisible: () => !container.querySelector("#tooltip-warning").hidden,
       getWarningText: () => container.querySelector("#tooltip-warning").textContent,
-      getTooltipCount: () => container.querySelectorAll("#tooltip-list li").length,
+      getTooltipCount: () => container.querySelectorAll("#tooltip-list input[type='radio']").length,
       cleanup: () => {
         window.dispatchEvent(new Event("pagehide"));
         if (container.parentNode) {

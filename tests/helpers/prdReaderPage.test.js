@@ -287,6 +287,7 @@ describe("prdReaderPage", () => {
 
     const container = prdReader.testApi.getContentContainer();
     const list = prdReader.testApi.getDocumentList();
+    const radios = Array.from(list.querySelectorAll("input[type='radio']"));
 
     expect(document.activeElement).toBe(container);
     expect(prdReader.testApi.getListItem(0)?.getAttribute("aria-current")).toBe("page");
@@ -296,17 +297,21 @@ describe("prdReaderPage", () => {
     expect(prdReader.testApi.getListItem(1)?.getAttribute("aria-current")).toBe("page");
     expect(document.activeElement).toBe(container);
 
-    list.focus();
-    list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+    radios[0]?.focus();
+    expect(document.activeElement).toBe(radios[0]);
+    radios[0].checked = true;
+    radios[0].dispatchEvent(new Event("change", { bubbles: true }));
     expect(container.innerHTML).toContain("First doc");
     expect(prdReader.testApi.getListItem(0)?.getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(prdReader.testApi.getListItem(0));
+    expect(document.activeElement).toBe(container);
 
-    list.focus();
-    list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    radios[1]?.focus();
+    expect(document.activeElement).toBe(radios[1]);
+    radios[1].checked = true;
+    radios[1].dispatchEvent(new Event("change", { bubbles: true }));
     expect(container.innerHTML).toContain("Second doc");
     expect(prdReader.testApi.getListItem(1)?.getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(prdReader.testApi.getListItem(1));
+    expect(document.activeElement).toBe(container);
 
     prdReader.testApi.cleanup();
   });
