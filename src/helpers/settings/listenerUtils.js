@@ -1,4 +1,4 @@
-import { applyDisplayMode } from "../displayMode.js";
+import { applyDisplayMode, normalizeDisplayMode } from "../displayMode.js";
 import { withViewTransition } from "../viewTransition.js";
 import { applyMotionPreference } from "../motionUtils.js";
 import { showSnackbar } from "../showSnackbar.js";
@@ -25,7 +25,7 @@ import { showSnackbar } from "../showSnackbar.js";
  * 3. For `displayRadios` (if present):
  *    a. Iterate over each radio button and attach a `change` event listener.
  *    b. Inside the listener, if the radio is checked:
- *       i. Get the `previous` display mode from `getCurrentSettings()`.
+ *       i. Normalize the `previous` display mode from `getCurrentSettings()` to a supported value.
  *       ii. Update `tabIndex` for all display radios to ensure only the checked one is tabbable.
  *       iii. Use `withViewTransition()` to apply `applyDisplayMode()` for a smooth UI transition.
  *       iv. Call `handleUpdate("displayMode", newMode, revertCallback)`:
@@ -89,7 +89,9 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     displayRadios.forEach((radio) => {
       radio.addEventListener("change", (e) => {
         if (!radio.checked) return;
-        const previous = getCurrentSettings().displayMode;
+        const previous =
+          normalizeDisplayMode(getCurrentSettings().displayMode) ??
+          (displayRadios[0] ? displayRadios[0].value : "light");
         const mode = radio.value;
         displayRadios.forEach((r) => {
           r.tabIndex = r === radio ? 0 : -1;

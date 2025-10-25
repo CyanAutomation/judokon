@@ -1,5 +1,6 @@
 import { DEFAULT_SETTINGS } from "../../config/settingsDefaults.js";
 import { loadSettings } from "../../config/loadSettings.js";
+import { normalizeDisplayMode } from "../displayMode.js";
 
 const CONTROL_MAP = [
   { control: "soundToggle", setting: "sound", descId: "sound-desc" },
@@ -35,8 +36,9 @@ const CONTROL_MAP = [
  *    e. If a localized `label` and `description` are found in `tooltipMap`, update the `textContent` of the label and description elements.
  * 4. If `controls.displayRadios` exists (for display mode selection):
  *    a. Iterate over each radio button.
- *    b. Set `checked` to `true` if the radio's `value` matches `settings.displayMode`.
- *    c. Set `tabIndex` to `0` for the checked radio and `-1` for others to manage keyboard navigation.
+ *    b. Normalize `settings.displayMode` to a supported value.
+ *    c. Set `checked` to `true` if the radio's `value` matches the normalized display mode.
+ *    d. Set `tabIndex` to `0` for the checked radio and `-1` for others to manage keyboard navigation.
  *
  * @param {Object} controls - An object containing references to various form elements (e.g., `controls.soundToggle`, `controls.displayRadios`).
  * @param {import("../../config/settingsDefaults.js").Settings} [settings=DEFAULT_SETTINGS] - The current application settings object. Defaults to `DEFAULT_SETTINGS`.
@@ -82,9 +84,13 @@ export function applyInitialControlValues(controls, settings = DEFAULT_SETTINGS,
   });
 
   if (controls.displayRadios) {
+    const normalizedDisplayMode =
+      normalizeDisplayMode(settings.displayMode) ??
+      (controls.displayRadios[0] ? controls.displayRadios[0].value : "light");
     controls.displayRadios.forEach((radio) => {
-      radio.checked = radio.value === settings.displayMode;
-      radio.tabIndex = radio.checked ? 0 : -1;
+      const isActive = radio.value === normalizedDisplayMode;
+      radio.checked = isActive;
+      radio.tabIndex = isActive ? 0 : -1;
     });
   }
 }

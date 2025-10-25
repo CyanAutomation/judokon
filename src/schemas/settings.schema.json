@@ -27,8 +27,20 @@
     },
     "displayMode": {
       "type": "string",
-      "enum": ["light", "dark", "retro", "high-contrast"],
-      "description": "Visual display mode. \"high-contrast\" is accepted for backward compatibility and maps to \"retro\"."
+      "description": "Visual display mode. Legacy values are normalized to \"dark\" at runtime.",
+      "oneOf": [
+        { "enum": ["light", "dark"] },
+        {
+          "const": "retro",
+          "deprecated": true,
+          "description": "Legacy value retained for compatibility; normalized to \"dark\"."
+        },
+        {
+          "const": "high-contrast",
+          "deprecated": true,
+          "description": "Legacy alias retained for compatibility; normalized to \"dark\"."
+        }
+      ]
     },
     "fullNavigationMap": {
       "type": "boolean",
