@@ -74,7 +74,8 @@ export async function setupMockupViewerPage() {
   list.legend.textContent = "Mockup files";
   listEl.id = "mockup-list";
   listPlaceholder.replaceWith(listEl);
-  const listSelect = (index, opts = {}) => list.select(index, { focus: false, silent: true, ...opts });
+  const listSelect = (index, opts = {}) =>
+    list.select(index, { focus: false, silent: true, ...opts });
 
   function showImage(index, opts = {}) {
     currentIndex = (index + files.length) % files.length;

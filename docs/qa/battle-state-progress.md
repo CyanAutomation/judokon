@@ -12,11 +12,11 @@ The `battleStateProgress` flag renders a persistent list of match states in Clas
 
 Once the feature is active, verify:
 
-| Element | Selector | Attributes |
-| --- | --- | --- |
-| Wrapper | `[data-feature-battle-state-progress="wrapper"]` | Present at render time; remains visible. |
-| List | `#battle-state-progress[data-feature-battle-state-progress="list"]` | `data-feature-battle-state-ready="true"` once the first state arrives.<br>`data-feature-battle-state-active` reflects the remapped active state.<br>`data-feature-battle-state-active-original` stores the raw state (useful for interrupts).<br>`data-feature-battle-state-count` matches the number of items. |
-| Items | `#battle-state-progress li` | Each item carries `data-feature-battle-state-progress-item="true"`.<br>The active state adds `data-feature-battle-state-active="true"`. |
+| Element | Selector                                                            | Attributes                                                                                                                                                                                                                                                                                                      |
+| ------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wrapper | `[data-feature-battle-state-progress="wrapper"]`                    | Present at render time; remains visible.                                                                                                                                                                                                                                                                        |
+| List    | `#battle-state-progress[data-feature-battle-state-progress="list"]` | `data-feature-battle-state-ready="true"` once the first state arrives.<br>`data-feature-battle-state-active` reflects the remapped active state.<br>`data-feature-battle-state-active-original` stores the raw state (useful for interrupts).<br>`data-feature-battle-state-count` matches the number of items. |
+| Items   | `#battle-state-progress li`                                         | Each item carries `data-feature-battle-state-progress-item="true"`.<br>The active state adds `data-feature-battle-state-active="true"`.                                                                                                                                                                         |
 
 ## Active State Assertions
 

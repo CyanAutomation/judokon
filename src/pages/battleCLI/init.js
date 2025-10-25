@@ -2248,7 +2248,8 @@ export function handleWaitingForPlayerActionKey(key) {
     const dataset = activeElement?.dataset;
     if (dataset) {
       const statKey =
-        dataset.stat || (dataset.statIndex !== undefined ? getStatByIndex(dataset.statIndex) : null);
+        dataset.stat ||
+        (dataset.statIndex !== undefined ? getStatByIndex(dataset.statIndex) : null);
       if (statKey) {
         __scheduleMicrotask(() => selectStat(statKey));
         return true;

@@ -56,7 +56,9 @@
   min-height: var(--touch-target-size, 44px);
   cursor: pointer;
   border-left: 4px solid transparent;
-  transition: background 120ms ease, color 120ms ease;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
 }
 
 .sidebar-list__label:hover,

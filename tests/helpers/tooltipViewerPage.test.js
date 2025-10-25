@@ -171,7 +171,9 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
     await init(mod);
 
-    const malformed = document.querySelector('#tooltip-list .sidebar-list__label[data-key="ui.warn"]');
+    const malformed = document.querySelector(
+      '#tooltip-list .sidebar-list__label[data-key="ui.warn"]'
+    );
     expect(malformed).toBeTruthy();
     const icon = malformed.querySelector(".tooltip-invalid-icon");
     expect(icon).toBeTruthy();

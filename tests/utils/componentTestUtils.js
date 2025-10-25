@@ -848,8 +848,7 @@ export function createTestPrdReader(docs, parser) {
       getTaskSummary: () => container.querySelector("#task-summary"),
       getNextButtons: () => container.querySelectorAll('[data-nav="next"]'),
       getPrevButtons: () => container.querySelectorAll('[data-nav="prev"]'),
-      getListItems: () =>
-        Array.from(container.querySelectorAll("#prd-list .sidebar-list__label")),
+      getListItems: () => Array.from(container.querySelectorAll("#prd-list .sidebar-list__label")),
       getListItem: (index) => {
         const items = container.querySelectorAll("#prd-list .sidebar-list__label");
         return items[index] ?? null;
