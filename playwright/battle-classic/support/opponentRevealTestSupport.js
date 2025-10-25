@@ -249,12 +249,8 @@ const MATCH_END_STATES = [MATCH_DECISION_STATE, MATCH_OVER_STATE];
 async function safeGetBattleState(page, fallback = null) {
   try {
     const result = await getBattleStateWithErrorHandling(page);
-    if (result && typeof result.state === "string" && result.state) {
-      return result.state;
-    }
-
     if (result && typeof result.state === "string") {
-      return result.state;
+      return result.state || fallback;
     }
   } catch {
     // Swallow evaluation errors so callers fall back to the provided value.
@@ -343,6 +339,29 @@ async function manuallySyncBattleState(
 
       const dispatchers = [];
 
+      const nowMs = () =>
+        typeof performance !== "undefined" && typeof performance.now === "function"
+          ? performance.now()
+          : Date.now();
+
+      const logCritical = (eventName, errorMessage) => {
+        if (typeof errorMessage !== "string" || errorMessage.length === 0) {
+          return;
+        }
+
+        try {
+          const logger = window.__TEST_API?.log;
+          if (logger && typeof logger.warn === "function") {
+            logger.warn(`Critical dispatch error for ${eventName}: ${errorMessage}`);
+            return;
+          }
+
+          if (typeof console !== "undefined" && typeof console.warn === "function") {
+            console.warn(`Critical dispatch error for ${eventName}:`, errorMessage);
+          }
+        } catch {}
+      };
+
       if (typeof stateApi.dispatchBattleEvent === "function") {
         const dispatch = stateApi.dispatchBattleEvent.bind(stateApi);
         for (const eventName of eventCandidates) {
@@ -362,12 +381,18 @@ async function manuallySyncBattleState(
               });
               return ok;
             } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : String(error);
               attempts.push({
                 strategy: "state.dispatchBattleEvent",
                 eventName,
                 ok: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: errorMessage
               });
+              const critical =
+                errorMessage.includes("TypeError") || errorMessage.includes("ReferenceError");
+              if (critical) {
+                logCritical(eventName, errorMessage);
+              }
               return false;
             }
           });
@@ -404,10 +429,26 @@ async function manuallySyncBattleState(
         });
       }
 
-      let success = false;
+      let success = initialState === targetState;
+      const dispatchStart = nowMs();
+      const dispatchBudgetMs = 750;
+
       for (const attempt of dispatchers) {
-        success = await attempt();
-        if (success) break;
+        if (success) {
+          break;
+        }
+
+        if (nowMs() - dispatchStart > dispatchBudgetMs) {
+          attempts.push({
+            strategy: "dispatch.sequence",
+            eventName: null,
+            ok: false,
+            error: "TIMEBOX_EXCEEDED"
+          });
+          break;
+        }
+
+        success = (await attempt()) || success;
       }
 
       const finalState = readState();
@@ -429,23 +470,26 @@ async function manuallySyncBattleState(
         .map((attempt) => {
           const parts = [attempt.strategy, attempt.eventName].filter(Boolean);
           if (attempt.ok) {
-            parts.push("ok");
+            parts.push("✓");
           } else if (attempt.error) {
-            parts.push(`error:${attempt.error}`);
+            const errorText = String(attempt.error);
+            const truncated =
+              errorText.length > 30 ? `${errorText.substring(0, 30)}...` : errorText;
+            parts.push(`✗(${truncated})`);
           } else if (attempt.result) {
-            parts.push(`result:${attempt.result}`);
+            parts.push(`→${attempt.result}`);
           }
-          return parts.join("|");
+          return parts.join(" ");
         })
-        .join("; ")
+        .join(", ")
     : "";
 
   const pollDetails = [];
   if (syncResult && !syncResult.success && syncResult.reason) {
-    pollDetails.push(`Manual sync reported ${syncResult.reason}`);
+    pollDetails.push(`Sync failed: ${syncResult.reason}`);
   }
   if (attemptSummary) {
-    pollDetails.push(`Attempts => ${attemptSummary}`);
+    pollDetails.push(`Attempts: ${attemptSummary}`);
   }
 
   const pollMessageParts = [
@@ -577,8 +621,27 @@ async function resolveRoundDeterministic(page) {
 
   const { resolved: resolvedAfterTransition, stateAfterTransition } =
     await triggerRoundResolvedFallback(page, hasResolved, stateForFallback);
-  if (resolvedAfterTransition && (await hasResolved())) {
-    return;
+  if (resolvedAfterTransition) {
+    const finalResolutionCheck = await hasResolved();
+    if (finalResolutionCheck) {
+      return;
+    }
+
+    await page
+      .evaluate(() => {
+        const logger = window.__TEST_API?.log;
+        if (logger && typeof logger.warn === "function") {
+          logger.warn("Resolution mismatch detected: transition resolved but hasResolved() returned false");
+          return;
+        }
+
+        if (typeof console !== "undefined" && typeof console.warn === "function") {
+          console.warn(
+            "Resolution mismatch detected: transition resolved but hasResolved() returned false"
+          );
+        }
+      })
+      .catch(() => {});
   }
 
   await clickNextButtonFallback(page, {
