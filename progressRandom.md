@@ -65,7 +65,8 @@ The following fixes are recommended to address the identified issues, prioritize
     - **Testing:** Add a Playwright test that specifically runs accessibility checks on the rendered page.
 
 7.  **Enable Deterministic Testing:**
-    - **Change:** Expose an optional `seed` parameter to `generateRandomCard()` that can be used only in test environments. This will allow Playwright tests to reproduce specific card sequences reliably.
+    - **Change:** Expose an optional `testSeed` parameter to `generateRandomCard()` that activates deterministic selection only in test environments, allowing Vitest and Playwright flows to reproduce specific card sequences reliably.
+    - **Status:** Completed – Added a scoped seed wrapper that restores prior test-mode state after each draw and introduced `tests/helpers/randomJudokaPage.seed.test.js` to verify deterministic behavior. Verified with `npx vitest run tests/helpers/randomCard.test.js tests/helpers/randomJudokaPage.seed.test.js` and `npx playwright test random-judoka.spec.js`.
 
 ## 3. Next Steps
 
