@@ -286,7 +286,6 @@ This appendix consolidates the previously separate CLI usage, module structure, 
 
 - DOM/test selectors remain unchanged.
 - Styling is additive, no functional regressions.
-- CSS file `src/styles/cli-immersive.css` introduced for immersive styling.
 
 ---
 
