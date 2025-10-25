@@ -11,6 +11,12 @@ import { setTestMode, isTestModeEnabled, getCurrentSeed } from "./testModeUtils.
 
 const TEST_ENV_GLOBAL_KEYS = ["__TEST__", "__VITEST__", "__PLAYWRIGHT__"];
 
+/**
+ * Schedules a callback to run on the next frame, falling back to setTimeout.
+ *
+ * @param {function(number): void} callback - Function invoked with a timestamp-like value.
+ * @returns {number|undefined} Timer ID when using setTimeout fallback; otherwise undefined.
+ */
 const requestNextFrame =
   typeof globalThis === "object" && typeof globalThis.requestAnimationFrame === "function"
     ? globalThis.requestAnimationFrame.bind(globalThis)
