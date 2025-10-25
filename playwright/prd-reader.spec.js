@@ -21,12 +21,13 @@ test.describe("PRD Reader page", () => {
 
   test("forward and back navigation", async ({ page }) => {
     const container = page.locator("#prd-content");
+    const readContent = async () => (await container.textContent())?.trim() ?? "";
     let hasOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
     expect(hasOverflow).toBe(false);
     await expect(container).not.toHaveText("");
-    const original = await container.innerHTML();
+    const original = await readContent();
 
     // Navigate forward to second document
     await page.keyboard.press("ArrowRight");
@@ -34,13 +35,13 @@ test.describe("PRD Reader page", () => {
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
     expect(hasOverflow).toBe(false);
-    const afterNext = await page.locator("#prd-content").innerHTML();
-    expect(afterNext).not.toBe(original);
+    await expect.poll(readContent).toContain("This is context B1.");
+    await expect.poll(readContent).not.toBe(original);
 
     // Navigate back to first document
     await page.keyboard.press("ArrowLeft");
-    const afterPrev = await page.locator("#prd-content").innerHTML();
-    expect(afterPrev).toBe(original);
+    await expect.poll(readContent).toBe(original);
+    await expect(container).toContainText("This is context A1.");
   });
 
   test("sidebar-tab-traversal", async ({ page }) => {
@@ -60,28 +61,24 @@ test.describe("PRD Reader page", () => {
   test("arrow-key-content-switching", async ({ page }) => {
     const radios = page.locator(".sidebar-list input[type='radio']");
     const container = page.locator("#prd-content");
-    await expect(container).not.toHaveText("");
-    const initial = await container.innerHTML();
+    const readContent = async () => (await container.textContent())?.trim() ?? "";
+    await expect.poll(readContent).toContain("This is context A1.");
+    const initialContent = await readContent();
 
     await radios.first().focus();
     await expect(radios.first()).toBeFocused();
 
     await page.keyboard.press("ArrowDown");
     await expect(container).toBeFocused();
-    
-    // Wait for async content loading to complete
-    await page.waitForTimeout(100);
-    
-    const afterDown = await container.innerHTML();
-    expect(afterDown).not.toBe(initial);
+
+    await expect.poll(readContent).toContain("This is context B1.");
+    await expect.poll(readContent).not.toBe(initialContent);
+    await expect(container).toContainText("This is context B1.");
 
     await page.keyboard.press("ArrowRight");
     await expect(container).toBeFocused();
-    
-    // Wait for async content loading
-    await page.waitForTimeout(100);
-    
-    const afterNext = await container.innerHTML();
-    expect(afterNext).not.toBe("");
+
+    await expect.poll(readContent).toBe(initialContent);
+    await expect(container).toContainText("This is context A1.");
   });
 });
