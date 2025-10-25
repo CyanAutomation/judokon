@@ -29,7 +29,8 @@ export function createCountryToggleAdapter(
 ) {
   return {
     isPanelOpen: () => panel?.open ?? false,
-    reflectPanelState: () => toggleCountryPanelImpl(toggleButton, panel, panel?.open ?? false),
+    reflectPanelState: (previousOpen) =>
+      toggleCountryPanelImpl(toggleButton, panel, panel?.open ?? false, { previousOpen }),
     closePanel: () => toggleCountryPanelImpl(toggleButton, panel, false),
     async loadFlags() {
       if (!listContainer || listContainer.children.length > 0) {
@@ -44,7 +45,7 @@ export function createCountryToggleAdapter(
 /**
  * @typedef {object} CountryToggleAdapter
  * @property {() => boolean} isPanelOpen - Returns whether the panel is currently open.
- * @property {() => void} reflectPanelState - Synchronize focus/aria with the panel's `open` property.
+ * @property {(previousOpen?: boolean) => void} reflectPanelState - Synchronize focus/aria with the panel's `open` property.
  * @property {() => void} closePanel - Close the disclosure and restore focus to the summary toggle.
  * @property {() => Promise<void>} loadFlags - Lazily create the country slider contents.
  * @property {() => boolean} [hasFlags] - Optional hook that reports whether the slider already contains flag buttons.
@@ -68,16 +69,19 @@ export function createCountryToggleAdapter(
  */
 export function createCountryToggleController(adapter) {
   let flagsLoaded = adapter.hasFlags ? adapter.hasFlags() : false;
+  let lastKnownOpen = adapter.isPanelOpen?.() ?? false;
 
   return {
     async handleToggle() {
+      const previousOpen = lastKnownOpen;
       const isOpen = adapter.isPanelOpen?.() ?? false;
-      adapter.reflectPanelState?.();
+      adapter.reflectPanelState?.(previousOpen);
+      lastKnownOpen = isOpen;
       if (isOpen && !flagsLoaded) {
         await adapter.loadFlags?.();
         flagsLoaded = adapter.hasFlags ? adapter.hasFlags() : true;
         if (flagsLoaded) {
-          adapter.reflectPanelState?.();
+          adapter.reflectPanelState?.(lastKnownOpen);
         }
       }
     },
@@ -85,6 +89,7 @@ export function createCountryToggleController(adapter) {
       if (event.key === "Escape") {
         if (adapter.isPanelOpen?.()) {
           adapter.closePanel?.();
+          lastKnownOpen = adapter.isPanelOpen?.() ?? false;
         }
         return;
       }
