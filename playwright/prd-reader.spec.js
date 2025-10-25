@@ -7,6 +7,7 @@ test.describe("PRD Reader page", () => {
       route.fulfill({ path: "tests/fixtures/prdIndex.json" })
     );
     await page.route("**/docA.md", (route) => route.fulfill({ path: "tests/fixtures/docA.md" }));
+    await page.route("**/docB.md", (route) => route.fulfill({ path: "tests/fixtures/docB.md" }));
     await page.route("https://esm.sh/dompurify@3.2.6", (route) =>
       route.fulfill({ path: "node_modules/dompurify/dist/purify.es.mjs" })
     );
@@ -27,14 +28,16 @@ test.describe("PRD Reader page", () => {
     await expect(container).not.toHaveText("");
     const original = await container.innerHTML();
 
+    // Navigate forward to second document
     await page.keyboard.press("ArrowRight");
     hasOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
     expect(hasOverflow).toBe(false);
     const afterNext = await page.locator("#prd-content").innerHTML();
-    expect(afterNext).toBe(original);
+    expect(afterNext).not.toBe(original);
 
+    // Navigate back to first document
     await page.keyboard.press("ArrowLeft");
     const afterPrev = await page.locator("#prd-content").innerHTML();
     expect(afterPrev).toBe(original);
@@ -65,11 +68,19 @@ test.describe("PRD Reader page", () => {
 
     await page.keyboard.press("ArrowDown");
     await expect(container).toBeFocused();
+    
+    // Wait for async content loading to complete
+    await page.waitForTimeout(100);
+    
     const afterDown = await container.innerHTML();
     expect(afterDown).not.toBe(initial);
 
     await page.keyboard.press("ArrowRight");
     await expect(container).toBeFocused();
+    
+    // Wait for async content loading
+    await page.waitForTimeout(100);
+    
     const afterNext = await container.innerHTML();
     expect(afterNext).not.toBe("");
   });

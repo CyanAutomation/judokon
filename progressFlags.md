@@ -1,222 +1,78 @@
 # QA Report: Settings & Feature Flags
 
-## Status Overview
+## Snapshot
+- Flag regressions for Card Inspector, layout outlines, skip cooldown, battle state progress, opponent delay, and settings accessibility all remain fixed based on current code and automated coverage.
+- Two UX gaps still need attention: CLI shortcuts offer no visible guidance when disabled, and the battle-state progress list lacks an automated check that covers auto-select expiry.
+- Performance impact from enabling the full debug flag stack is anecdotal; no telemetry or profiling guardrails are in place yet.
 
-This report documents verified issues with feature flags in the JU-DO-KON! application.
-Most critical bugs have been fixed. Current status with verification details is shown below.
+## Issue Status Matrix
+| Bug | Status | Current Notes | Evidence |
+| --- | --- | --- | --- |
+| Card Inspector flag ineffective | ✅ Verified | JSON inspector panels attach and surface QA markers whenever `enableCardInspector` is active. | `tests/helpers/judokaCard.test.js:48`, `tests/helpers/judokaCard.test.js:85`, `playwright/battle-classic/feature-flags.spec.js:207` |
+| Layout Debug Outlines persist | ✅ Verified | Flag mutations apply immediately and persist across navigations through the shared display bootstrapper. | `src/helpers/setupDisplaySettings.js:26`, `src/helpers/settingsPage.js:178`, `tests/helpers/layoutDebugPanel.test.js:9` |
+| Skip Round Cooldown ineffective | ✅ Verified | Hot-path handler short-circuits timers, updates DOM markers, and is covered by schedule/next-round unit tests. | `src/helpers/classicBattle/uiHelpers.js:46`, `src/helpers/classicBattle/timerService.js:476`, `tests/helpers/classicBattle/scheduleNextRound.test.js:454` |
+| Battle State Progress stuck | ✅ Verified | Progress list renders, remaps interrupt states, and follows state transitions end-to-end. | `src/helpers/battleStateProgress.js:80`, `playwright/battle-classic/battle-state-progress.spec.js:1`, `tests/helpers/battleStateProgress.test.js:26` |
+| CLI Shortcuts no guidance | 🟡 Needs UX copy | Feature flag hides the shortcuts panel without providing visible fallback messaging; only the screen-reader alert updates. | `src/pages/battleCLI/init.js:1760`, `src/pages/battleCLI.html:200` |
+| Opponent Delay only in CLI | ✅ Verified | Delay hint dispatches for both Classic Battle and CLI flows. | `src/pages/battleClassic.init.js:701`, `src/helpers/classicBattle/uiEventHandlers.js:92` |
+| Auto-Select Progress stuck | 🟡 Needs targeted test | Auto-select logic fires and updates scores, but progress timeline lacks coverage for timeout-driven state changes. | `tests/helpers/classicBattle/statSelectionTiming.test.js:1`, `playwright/battle-classic/battle-state-progress.spec.js:74` |
+| Settings Accessibility broken | ✅ Verified | Toggles expose semantic labels, descriptions, and focus treatments throughout Settings and advanced flag renders. | `src/pages/settings.html:130`, `src/helpers/settings/featureFlagSwitches.js:66`, `src/styles/settings.css:222` |
+| Debug Flags slow | 🟠 Monitor | Enabling every debug flag still forces synchronous DOM scans; no instrumentation exists to measure real impact. | `src/helpers/layoutDebugPanel.js:1`, `src/helpers/settings/featureFlagSwitches.js:88` |
 
----
+## Verified Fixes
+- **Card Inspector** – Toggling `enableCardInspector` now stamps `data-feature-card-inspector` markers and mounts the inspector panel for each card container; both unit (`tests/helpers/judokaCard.test.js:48`) and Playwright coverage confirm the override wiring (`playwright/battle-classic/feature-flags.spec.js:207`).
+- **Layout Debug Outlines** – `setupDisplaySettings` reapplies the flag on load (`src/helpers/setupDisplaySettings.js:26`) and the toggle helper adds/removes outlines as tested in `tests/helpers/layoutDebugPanel.test.js:9`.
+- **Skip Round Cooldown** – `skipRoundCooldownIfEnabled` skips the inter-round timer and mirrors DOM state (`src/helpers/classicBattle/uiHelpers.js:46`), while timer-service tests ensure the fast path stays deterministic (`tests/helpers/classicBattle/scheduleNextRound.test.js:454`).
+- **Battle State Progress** – The progress list now renders, marks readiness, and remaps interrupts (`src/helpers/battleStateProgress.js:80`); Playwright scenarios cover live state transitions (`playwright/battle-classic/battle-state-progress.spec.js:51`).
+- **Settings Accessibility** – General toggles and feature-flag switches emit `<label>` + `aria-describedby` pairs (`src/pages/settings.html:130`, `src/helpers/settings/featureFlagSwitches.js:66`), and focus styles are defined in `src/styles/settings.css:222`.
+- **Opponent Delay Messaging** – Classic Battle reuses the same delay copy that was previously CLI-only (`src/pages/battleClassic.init.js:701`), with shared UI handlers (`src/helpers/classicBattle/uiEventHandlers.js:92`).
 
-## Bug Verification Status
+## Items Requiring Follow-Up
+### CLI Shortcuts No Guidance (🟡)
+- **Gap**: When `cliShortcuts` is false the panel is hidden (`src/pages/battleCLI.html:200`), leaving keyboard users without on-screen instructions; the live-region message set in `SHORTCUT_HINT_MESSAGES` (`src/pages/battleCLI/init.js:1760`) is not visible.
+- **Next steps**:
+  1. Inject a bottom-line hint via `showBottomLine` when shortcuts are disabled.
+  2. Mirror the hint in the prompt placeholder (`#cli-prompt`) for discoverability.
+  3. Add Playwright coverage that toggles the flag and asserts the fallback copy.
 
-| Bug | Reproduction | Evidence | Status | Notes |
-|---|---|---|---|---|
-| Card Inspector flag ineffective | Enable Card Inspector, navigate to Classic Battle, check for collapsible JSON panel | No JSON panel appears | ✅ FIXED | Flag propagated via `window.__FF_OVERRIDES`. Tests in `battle-classic/feature-flags.spec.js:207` |
-| Layout Debug Outlines persist | Toggle outlines on/off, navigate to different page | Outlines remain on new pages | ✅ FIXED | `toggleLayoutDebugPanel()` synced in `settingsPage.js:178` and `setupDisplaySettings.js:26` |
-| Skip Round Cooldown ineffective | Enable flag, play battle, select stat | Cooldown still applies | ✅ FIXED | Implementation in `classicBattle/uiHelpers.js:56` and `timerService.js:476` |
-| Battle State Progress stuck | Enable flag, play match, observe progress bar | Stays at position 4 | ⚠️ VERIFY | Code exists in `battleStateProgress.js:231`, needs e2e test validation |
-| CLI Shortcuts no guidance | Disable flag, try number keys in CLI | Keys 1-5 fail silently | ⚠️ PARTIAL | Flag works, CLI hides panel. Add help text. |
-| Opponent Delay only in CLI | Enable flag, check both battle modes | Shows in CLI only | ✅ FIXED | Implemented in `battleClassic.init.js:701` and `uiEventHandlers.js:92` |
-| Auto-Select Progress stuck | Enable both flags, let timer expire | Progress bar stuck at 4 | ⚠️ DEPENDENT | Blocked by Battle State Progress bug |
-| Settings Accessibility broken | Tab through settings, use screen reader | Generic labels, skipped elements | ❌ OPEN | Needs ARIA labels, focus styles, semantic HTML |
-| Debug Flags slow | Enable all flags, navigate | Noticeable lag, flickering | ⚠️ PARTIAL | Monitor in production, consider lazy-loading |
+### Auto-Select Progress Coverage (🟡)
+- **Gap**: Auto-select flows update the score and snackbar (`tests/helpers/classicBattle/statSelectionTiming.test.js:24`), but no automated check confirms the battle-state progress list advances after the timer expires.
+- **Next steps**:
+  1. Extend `playwright/battle-classic/battle-state-progress.spec.js` with a scenario that lets the stat timer lapse and verifies `data-feature-battle-state-active`.
+  2. Expose a test hook to shorten the auto-select timeout so the run stays fast.
+  3. Capture a regression screenshot / snapshot to guard the timeline layout.
 
----
+### Debug Flags Performance (🟠)
+- **Gap**: Enabling every debug flag keeps `toggleLayoutDebugPanel` and `toggleTooltipOverlayDebug` in the critical path without any throttling or profiling.
+- **Next steps**:
+  1. Add lightweight performance logging behind a `DEBUG_PERF` guard to measure render cost.
+  2. Evaluate moving heavy selectors to idle callbacks or requestAnimationFrame batches.
+  3. Consider flag-level rate limiting so toggling multiple debug options does not repeatedly rescan the DOM.
 
-## Fixed Issues - Implementation Details
+## Observations & Questions
+- **Hidden `roundStore` Flag** – Still present as `hidden: true` in `src/data/settings.json`; confirm whether it should remain hidden or be retired.
+- **Terminology Drift** – UI labels use “Battle State Progress” while docs mention “Battle State Indicator”; align naming across tooltips, docs, and DOM.
 
-### ✅ Card Inspector
-
-- **File:** `playwright/battle-classic/feature-flags.spec.js:207`
-- **Status:** Playwright tests confirm flag override works on randomJudoka page
-- **Verification:** Both enabled and disabled states tested
-
-### ✅ Layout Debug Outlines
-
-- **Files:** `settingsPage.js:178`, `setupDisplaySettings.js:26`, `featureFlagSwitches.js:53`
-- **Status:** Global toggle properly synced across all pages
-- **Mechanism:** Flag changes trigger `toggleLayoutDebugPanel()` immediately
-
-### ✅ Skip Round Cooldown
-
-- **Files:** `classicBattle/uiHelpers.js:56`, `timerService.js:476`, `battleCLI/init.js:2578`
-- **Status:** Both Classic Battle and CLI properly check flag before applying cooldown
-- **Verification:** CLI supports URL parameter `?skipRoundCooldown=1`
-
-### ✅ Opponent Delay Message
-
-- **Files:** `battleClassic.init.js:701`, `classicBattle/uiEventHandlers.js:92`
-- **Status:** Both battle modes display message when enabled
-- **Verification:** Consistent across UI layers
-
----
-
-## Outstanding Issues
-
-### 🔵 Needs Verification
-
-#### Battle State Progress Not Updating
-
-- **File:** `src/helpers/battleStateProgress.js:231`
-- **Investigation:** Event listeners configured. May be fixed already.
-- **Action Required:**
-  - Run Playwright test to confirm progress updates across states
-  - Verify `battleStateChange` event fires correctly
-  - Check state machine doesn't get stuck in `roundDecision` (ID 4)
-
-### 🟠 Partial Fixes
-
-#### CLI Shortcuts Disabled – No Guidance
-
-- **Current:** Flag properly hides shortcuts panel
-- **Remaining:** Add inline help message in header or input placeholder
-- **Suggested Text:** "Use commands like `stat 1` or `stat 2` to select stats"
-- **File:** `src/pages/battleCLI/init.js:929-951`
-
-### 🔴 Open Issues
-
-#### Settings Page Accessibility
-
-- **Problem Areas:**
-  - No ARIA labels on toggles
-  - Screen readers read generic "checkbox" instead of flag names
-  - Tab order may skip toggles
-  - No visible focus indicators
-- **Recommended Fixes:**
-  - Add `aria-label="Toggle [Flag Name] setting"` to each toggle
-  - Add visible `:focus-visible` outline
-  - Use semantic `<label>` elements with `for` attribute
-  - Test with screen reader (NVDA or JAWS)
-- **File:** `src/helpers/settingsPage.js`
-
-#### Debug Flags Performance
-
-- **Current:** Layout flags use efficient selectors
-- **Recommendation:** Monitor in production; consider lazy-loading if needed
-- **Future:** Move debug UI to separate thread if performance degrades further
-
----
-
-## Configuration Notes
-
-### Hidden Flag
-
-`roundStore` flag appears in `src/data/settings.json` marked `hidden: true` with no UI toggle.
-
-**Clarification needed:** Intentional? Should it be surfaced or removed?
-
-### Naming Inconsistencies
-
-- `layoutDebugPanel` (code) vs PRD terminology
-- `battleStateBadge` (code) vs "Battle State Indicator" (PRD)
-- `battleStateProgress` (code)
-
-**Recommendation:** Harmonize terms across code, PRD, and UI labels.
-
----
-
-## Recommended Improvements
-
-### 1. Group Flags by Category
-
-**Opportunity:** Settings page lists many flags without organization.
-
-**Implementation:**
-
-- Add `category` field to `src/data/settings.json`
-- Categories: gameplay, debug, accessibility, cli
-- Update `src/helpers/settingsPage.js` to render grouped sections
-
-Example JSON schema:
-
-```json
-{
-  "enableCardInspector": {
-    "enabled": false,
-    "category": "debug",
-    "tooltipId": "settings.enableCardInspector"
-  }
-}
-```
-
-### 2. Add Rich Metadata
-
-**Opportunity:** Extend flags with useful metadata.
-
-**Implementation:**
-
-- Add `stabilityLevel` (experimental, beta, stable)
-- Add `owner` (responsible team)
-- Add `description` (user-friendly text)
-- Display metadata badges
-
-Example JSON schema:
-
-```json
-{
-  "enableCardInspector": {
-    "enabled": false,
-    "stabilityLevel": "beta",
-    "owner": "UI Team",
-    "description": "Shows raw card JSON in expandable panel"
-  }
-}
-```
-
-### 3. Improve Accessibility
-
-**Opportunity:** Settings toggles need semantic markup.
-
-**Implementation:**
-
-- Add `aria-label` to all toggles
-- Ensure visible `:focus-visible` styles
-- Use `<label>` elements with `for` attribute
-- Test with screen readers
-
-### 4. Add Help System
-
-**Opportunity:** Players don't understand what flags do without PRD.
-
-**Implementation:**
-
-- Add expandable help icon next to each flag
-- Show rich descriptions with examples
-- Link to documentation
-- Highlight experimental flags with warning
-
-### 5. Role-Based Visibility
-
-**Opportunity:** Hide debug flags from non-developers.
-
-**Implementation:**
-
-- Read `role` from `localStorage`
-- Filter debug flags when rendering
-- Roles: player, developer, admin
-
----
+## Opportunities for Improvement
+1. **CLI Shortcuts Fallback Copy** – Surface a visible hint (chips or footer copy) when the shortcuts flag is disabled so players know to type commands.
+2. **Auto-Select Timeline Test Hook** – Provide a dedicated fixture that forces auto-select expiry within Playwright to harden the state-progress coverage.
+3. **Flag Metadata Layer** – Group flags by category/owner in `src/data/settings.json` and render headings + badges within `renderFeatureFlagSwitches` to reduce scrolling fatigue.
+4. **Flag Help Microcopy** – Add an inline help icon that pulls from `tooltips.json` so players can read a concise description without external docs.
+5. **Role-Based Views** – Honor a persisted role (player/developer/admin) and hide debug-only flags for non-engineering roles to keep Settings approachable.
 
 ## Verification Checklist
-
-Before marking as complete:
-
-- [ ] Card Inspector: Playwright tests pass
-- [ ] Layout Debug: Toggle on/off on Settings, verify persists across pages
-- [ ] Skip Cooldown: Enable, play battle, stat selection is instant
-- [ ] Battle Progress: Enable, play match, progress bar updates each state
-- [ ] CLI Shortcuts: Disable, navigate to CLI, help text appears
-- [ ] Opponent Delay: Enable, both Classic & CLI show "Opponent is choosing…"
-- [ ] Accessibility: Tab through settings, all reachable, screen reader reads names
-- [ ] Performance: Enable all debug flags, no lag in Classic Battle
-
----
+- `npm run validate:data`
+- `npx eslint .`
+- `npx vitest run`
+- `playwright/battle-classic/battle-state-progress.spec.js`
+- Targeted CLI shortcut test covering the disabled state once implemented
 
 ## References
-
-- Settings Data: `src/data/settings.json`
-- Settings Defaults: `src/config/settingsDefaults.js`
-- Settings Page: `src/helpers/settingsPage.js`
-- Battle Classic: `src/pages/battleClassic.init.js`
-- Battle CLI: `src/pages/battleCLI/init.js`
-- Feature Flags Tests: `playwright/battle-classic/feature-flags.spec.js`
+- `src/helpers/battleStateProgress.js:80`
+- `playwright/battle-classic/battle-state-progress.spec.js:51`
+- `src/helpers/classicBattle/uiHelpers.js:46`
+- `src/helpers/classicBattle/timerService.js:476`
+- `src/pages/settings.html:130`
+- `src/helpers/settings/featureFlagSwitches.js:66`
+- `src/styles/settings.css:222`
+- `src/pages/battleCLI/init.js:1760`
+- `src/pages/battleCLI.html:200`

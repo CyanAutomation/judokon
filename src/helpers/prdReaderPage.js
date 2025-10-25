@@ -406,7 +406,7 @@ export function initNavigationHandlers(sidebar, _files) {
  * @pseudocode
  * 1. Load all PRD document metadata and content using `loadPrdDocs(docsMap, parserFn)`.
  * 2. Set up the sidebar user interface with the loaded document data using `setupSidebarUI(docData)`. If sidebar setup fails, exit.
- * 3. Initialize navigation handlers (buttons, keyboard, history) using `initNavigationHandlers(sidebar, sidebar.files)`.
+ * 3. Create navigation handlers and bind them to the sidebar and radio inputs.
  * 4. Replace the current browser history entry with the initial PRD document's state using `replaceHistory(sidebar.baseNames, sidebar.index)`.
  * 5. Show a loading spinner.
  * 6. Ensure the initial document is loaded and parsed: if not already synchronized, fetch it.
@@ -423,7 +423,42 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const docData = await loadPrdDocs(docsMap, parserFn);
   const sidebar = setupSidebarUI(docData);
   if (!sidebar) return;
-  initNavigationHandlers(sidebar, sidebar.files);
+
+  // Bind navigation handlers for buttons, keyboard, and history
+  const nextButtons = document.querySelectorAll('[data-nav="next"]');
+  const prevButtons = document.querySelectorAll('[data-nav="prev"]');
+  const showNext = () => sidebar.selectDocSync(sidebar.index + 1);
+  const showPrev = () => sidebar.selectDocSync(sidebar.index - 1);
+
+  // Update radio inputs with navigation handlers for ArrowDown/Up and Space
+  const radios = document.querySelectorAll(".sidebar-list input[type='radio']");
+  radios.forEach((radio) => {
+    radio.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        sidebar.container.focus({ preventScroll: true });
+        showNext();
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        sidebar.container.focus({ preventScroll: true });
+        showPrev();
+      } else if (event.key === " ") {
+        // Space key: let the radio handle it naturally, then focus container
+        setTimeout(() => {
+          sidebar.container.focus({ preventScroll: true });
+        }, 0);
+      }
+    });
+  });
+
+  bindNavigation({
+    container: sidebar.container,
+    nextButtons,
+    prevButtons,
+    showNext,
+    showPrev
+  });
+  bindHistory((i) => sidebar.selectDocSync(i, false));
   replaceHistory(sidebar.baseNames, sidebar.index);
 
   sidebar.spinner.show();
