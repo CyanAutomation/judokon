@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { applyDisplayMode } from "../../src/helpers/displayMode.js";
+import { applyDisplayMode, normalizeDisplayMode } from "../../src/helpers/displayMode.js";
 
 describe("applyDisplayMode", () => {
   let style;
@@ -11,7 +11,6 @@ describe("applyDisplayMode", () => {
     style.textContent = `
       body.light-mode { background-color: rgb(255, 255, 255); }
       body.dark-mode { background-color: rgb(0, 0, 0); }
-      body.retro-mode { background-color: rgb(0, 0, 0); }
     `;
     document.head.appendChild(style);
   });
@@ -20,10 +19,17 @@ describe("applyDisplayMode", () => {
     style.remove();
   });
 
-  it.each(["dark", "light", "retro"])("sets data-theme and class for %s mode", (mode) => {
-    applyDisplayMode(mode);
-    expect(document.body.dataset.theme).toBe(mode);
-    expect(document.body.classList.contains(`${mode}-mode`)).toBe(true);
+  it.each([
+    ["dark", "dark"],
+    ["light", "light"],
+    ["retro", "dark"],
+    ["high-contrast", "dark"]
+  ])("applies normalized mode for %s", (input, normalized) => {
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    applyDisplayMode(input);
+    expect(document.body.dataset.theme).toBe(normalized);
+    expect(document.body.classList.contains(`${normalized}-mode`)).toBe(true);
+    infoSpy.mockRestore();
   });
 
   it("warns when an invalid mode is provided", () => {
@@ -37,6 +43,13 @@ describe("applyDisplayMode", () => {
     warnSpy.mockRestore();
   });
 
+  it("removes legacy retro classes when normalizing", () => {
+    document.body.classList.add("retro-mode");
+    applyDisplayMode("retro");
+    expect(document.body.classList.contains("retro-mode")).toBe(false);
+    expect(document.body.classList.contains("dark-mode")).toBe(true);
+  });
+
   it("switching modes updates computed styles", () => {
     applyDisplayMode("light");
     const lightBg = getComputedStyle(document.body).backgroundColor;
@@ -44,5 +57,18 @@ describe("applyDisplayMode", () => {
     const darkBg = getComputedStyle(document.body).backgroundColor;
     expect(lightBg).not.toBe(darkBg);
     expect(darkBg).toBe("rgb(0, 0, 0)");
+  });
+});
+
+describe("normalizeDisplayMode", () => {
+  it.each([
+    ["light", "light"],
+    ["dark", "dark"],
+    ["Retro", "dark"],
+    ["HIGH-CONTRAST", "dark"],
+    [123, null],
+    ["neon", null]
+  ])("normalizes %s to %s", (input, expected) => {
+    expect(normalizeDisplayMode(input)).toBe(expected);
   });
 });
