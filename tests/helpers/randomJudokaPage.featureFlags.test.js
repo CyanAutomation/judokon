@@ -36,7 +36,11 @@ describe("randomJudokaPage feature flags", () => {
       isEnabled: vi.fn().mockReturnValue(false),
       featureFlagsEmitter: new EventTarget()
     }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
     vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels }));
     vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({ toggleTooltipOverlayDebug }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({
@@ -48,6 +52,7 @@ describe("randomJudokaPage feature flags", () => {
     const { initFeatureFlagState } = await import("../../src/helpers/randomJudokaPage.js");
     const state = await initFeatureFlagState();
     expect(state.prefersReducedMotion).toBe(false);
+    expect(state.soundEnabled).toBe(true);
     expect(applyMotionPreference).toHaveBeenCalledWith(true);
 
     window.matchMedia = originalMatchMedia;
@@ -95,7 +100,11 @@ describe("randomJudokaPage feature flags", () => {
       DATA_DIR: ""
     }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);

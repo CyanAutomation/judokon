@@ -17,52 +17,59 @@
 ## Improvement Opportunities & Fix Plan
 
 ### 1. Group Flags into Categories
-*   **Opportunity:** The advanced settings page lists many flags with no grouping. Organizing flags under categories such as **Gameplay**, **Debugging**, **Accessibility**, or **CLI** would improve discoverability.
-*   **Fix Plan:**
-    *   Modify `src/pages/settings.html` to introduce category headers.
-    *   Update `src/helpers/settingsPage.js` to render flags under their respective categories.
-    *   Extend `src/data/settings.json` to include a `category` field for each flag.
+
+* **Opportunity:** The advanced settings page lists many flags with no grouping. Organizing flags under categories such as **Gameplay**, **Debugging**, **Accessibility**, or **CLI** would improve discoverability.
+* **Fix Plan:**
+  * Modify `src/pages/settings.html` to introduce category headers.
+  * Update `src/helpers/settingsPage.js` to render flags under their respective categories.
+  * Extend `src/data/settings.json` to include a `category` field for each flag.
 
 ### 2. Add Metadata to `settings.json`
-*   **Opportunity:** Extend each flag entry with metadata like `stabilityLevel` (e.g., `experimental`, `beta`, `stable`), `owner` (team responsible), `lastUpdated` timestamp, and `description`.
-*   **Fix Plan:**
-    *   Update the JSON schema for `src/data/settings.json`.
-    *   Add the new metadata fields to each flag in `settings.json`.
-    *   Update `src/helpers/settingsPage.js` to display this metadata in the UI.
+
+* **Opportunity:** Extend each flag entry with metadata like `stabilityLevel` (e.g., `experimental`, `beta`, `stable`), `owner` (team responsible), `lastUpdated` timestamp, and `description`.
+* **Fix Plan:**
+  * Update the JSON schema for `src/data/settings.json`.
+  * Add the new metadata fields to each flag in `settings.json`.
+  * Update `src/helpers/settingsPage.js` to display this metadata in the UI.
 
 ### 3. Card Inspector Improvement
-*   **Opportunity:** The Card Inspector is not implemented in Classic Battle.
-*   **Fix Plan:**
-    *   In `src/helpers/classicBattle/bootstrap.js`, add a listener for the `featureFlagsEmitter` to toggle the card inspector.
-    *   Ensure the `enableCardInspector` flag is passed down to the `JudokaCard` component.
-    *   Consider adding a small "Inspect" icon to each card that expands to show the raw stats, as suggested in the original report.
+
+* **Opportunity:** The Card Inspector is not implemented in Classic Battle.
+* **Fix Plan:**
+  * In `src/helpers/classicBattle/bootstrap.js`, add a listener for the `featureFlagsEmitter` to toggle the card inspector.
+  * Ensure the `enableCardInspector` flag is passed down to the `JudokaCard` component.
+  * Consider adding a small "Inspect" icon to each card that expands to show the raw stats, as suggested in the original report.
 
 ### 4. Fix Layout Debug Outlines
-*   **Opportunity:** The layout debug outlines persist across pages after being disabled.
-*   **Fix Plan:**
-    *   In a globally loaded script like `src/helpers/setupDisplaySettings.js`, add a listener to `featureFlagsEmitter` that calls `toggleLayoutDebugPanel` when the `layoutDebugPanel` flag changes.
+
+* **Opportunity:** The layout debug outlines persist across pages after being disabled.
+* **Fix Plan:**
+  * In a globally loaded script like `src/helpers/setupDisplaySettings.js`, add a listener to `featureFlagsEmitter` that calls `toggleLayoutDebugPanel` when the `layoutDebugPanel` flag changes.
 
 ### 5. Fix Skip Round Cooldown
-*   **Opportunity:** The "Skip Round Cooldown" flag has no effect.
-*   **Fix Plan:**
-    *   In `src/helpers/classicBattle/roundManager.js`, modify the `startCooldown` function to check for the `skipRoundCooldown` flag.
-    *   If the flag is enabled, dispatch the `ready` event immediately to advance to the next round.
+
+* **Opportunity:** The "Skip Round Cooldown" flag has no effect.
+* **Fix Plan:**
+  * In `src/helpers/classicBattle/roundManager.js`, modify the `startCooldown` function to check for the `skipRoundCooldown` flag.
+  * If the flag is enabled, dispatch the `ready` event immediately to advance to the next round.
 
 ### 6. Fix Battle State Progress
-*   **Opportunity:** The battle state progress bar is stuck.
-*   **Fix Plan:**
-    *   Investigate why the `battleStateChange` event is not firing correctly in the `roundDecision` state.
-    *   The issue is likely in the state machine logic in `src/helpers/classicBattle/orchestrator.js` or one of its handlers.
+
+* **Opportunity:** The battle state progress bar is stuck.
+* **Fix Plan:**
+  * Investigate why the `battleStateChange` event is not firing correctly in the `roundDecision` state.
+  * The issue is likely in the state machine logic in `src/helpers/classicBattle/orchestrator.js` or one of its handlers.
 
 ### 7. Improve Accessibility
-*   **Opportunity:** The settings page has accessibility issues.
-*   **Fix Plan:**
-    *   Add proper ARIA labels to all toggles and controls.
-    *   Ensure all interactive elements have visible focus styles.
-    *   Use semantic HTML and accessible components.
+
+* **Opportunity:** The settings page has accessibility issues.
+* **Fix Plan:**
+  * Add proper ARIA labels to all toggles and controls.
+  * Ensure all interactive elements have visible focus styles.
+  * Use semantic HTML and accessible components.
 
 ## Config & Implementation Alignment Notes
 
-*   **Missing flag in UI:** The `roundStore` flag appears in `settings.json` but there is no toggle for it on the settings page. **Action:** Either remove it from the config or surface it with a description.
-*   **Hidden flags:** The ability to hide the entire advanced settings panel behind a collapsed accordion works, but there is no mention in the PRD of gating debug flags behind a role. **Action:** If non-developers should not see debug flags, consider reading a role from `localStorage` and hiding debug flags appropriately.
-*   **UI labelling:** Some flag names differ slightly from the PRD (e.g., “Battle State Badge” vs. PRD term “Battle State Indicator”). **Action:** Harmonize naming between the code, PRD, and UI to avoid confusion.
+* **Missing flag in UI:** The `roundStore` flag appears in `settings.json` but there is no toggle for it on the settings page. **Action:** Either remove it from the config or surface it with a description.
+* **Hidden flags:** The ability to hide the entire advanced settings panel behind a collapsed accordion works, but there is no mention in the PRD of gating debug flags behind a role. **Action:** If non-developers should not see debug flags, consider reading a role from `localStorage` and hiding debug flags appropriately.
+* **UI labelling:** Some flag names differ slightly from the PRD (e.g., “Battle State Badge” vs. PRD term “Battle State Indicator”). **Action:** Harmonize naming between the code, PRD, and UI to avoid confusion.
