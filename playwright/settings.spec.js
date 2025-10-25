@@ -3,11 +3,7 @@ import { waitForSettingsReady } from "./fixtures/waits.js";
 import fs from "fs";
 import { hex } from "wcag-contrast";
 import { DEFAULT_SETTINGS } from "../src/helpers/settingsUtils.js";
-import {
-  verifyPageBasics,
-  NAV_CLASSIC_BATTLE,
-  NAV_RANDOM_JUDOKA
-} from "./fixtures/navigationChecks.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 import NAV_ITEMS from "../tests/fixtures/navigationItems.js";
 const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
@@ -131,7 +127,7 @@ test.describe("Settings page", () => {
   }
 
   test("settings elements visible", async ({ page }) => {
-    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE, NAV_RANDOM_JUDOKA]);
+    await verifyPageBasics(page, [], [], { expectNav: false });
     await expect(page.getByText(/sound/i)).toBeVisible();
     await expect(page.getByText(/motion effects/i)).toBeVisible();
     await expect(page.getByText(/typewriter effect/i)).toBeVisible();

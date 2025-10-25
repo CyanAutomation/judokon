@@ -80,7 +80,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 
 ### Intentional Exceptions
 
-- **Browse Judoka**, **Random Judoka**, and **Meditation** screens intentionally hide the persistent navigation bar to provide a focused, full-screen experience tailored to their respective interactions.
+- **Browse Judoka**, **Random Judoka**, **Meditation**, and **Settings** screens intentionally hide the persistent navigation bar to provide a focused, full-screen experience tailored to their respective interactions.
 
 ### Technical Considerations
 

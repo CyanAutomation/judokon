@@ -38,7 +38,7 @@ Unless overridden, Playwright tests run at a 1920×1080 desktop viewport.
 
 ## Screens without persistent navigation
 
-The **Browse Judoka**, **Random Judoka**, and **Meditation** screens intentionally skip the top navigation so players can stay focused on roster browsing, random discovery, or the daily quote. When verifying these pages, set the `expectNav` option to `false` in `verifyPageBasics` so the helper skips navigation assertions while still checking titles, the logo, and any custom page expectations.
+The **Browse Judoka**, **Random Judoka**, **Meditation**, and **Settings** screens intentionally skip the top navigation so players can stay focused on roster browsing, random discovery, the daily quote, or adjusting preferences. When verifying these pages, set the `expectNav` option to `false` in `verifyPageBasics` so the helper skips navigation assertions while still checking titles, the logo, and any custom page expectations.
 
 ## PRD reader tests
 
