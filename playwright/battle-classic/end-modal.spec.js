@@ -3,6 +3,18 @@ import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForModalOpen } from "../fixtures/waits.js";
 import { waitForRoundStats } from "../helpers/battleStateHelper.js";
 
+function escapeCssIdentifier(identifier) {
+  if (typeof identifier !== "string" || identifier.length === 0) {
+    return "";
+  }
+
+  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+    return CSS.escape(identifier);
+  }
+
+  return identifier.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
+}
+
 async function waitForBattleInitialization(page) {
   const getBattleStoreReady = () =>
     page.evaluate(() => {
@@ -409,12 +421,14 @@ test.describe("Classic Battle End Game Flow", () => {
           const activeButtonId = await page.evaluate(() => {
             if (typeof document === "undefined") return null;
             const active = document.activeElement;
-            return typeof active?.id === "string" && active.id.length > 0 ? active.id : null;
+            return typeof active?.id === "string" && active.id.trim().length > 0
+              ? active.id.trim()
+              : null;
           });
 
           const focusTarget =
             typeof activeButtonId === "string" && activeButtonId
-              ? page.locator(`#${activeButtonId}`)
+              ? page.locator(`#${escapeCssIdentifier(activeButtonId)}`)
               : replayButton;
 
           await expect(focusTarget).toBeFocused();
