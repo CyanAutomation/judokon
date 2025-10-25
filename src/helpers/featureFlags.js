@@ -136,7 +136,20 @@ if (typeof window !== "undefined") {
       try {
         const stored = JSON.parse(e.newValue);
         if (stored.featureFlags) {
-          cachedFlags = stored.featureFlags;
+          const mergedFlags = {
+            ...DEFAULT_SETTINGS.featureFlags,
+            ...(stored.featureFlags || {})
+          };
+          cachedFlags = mergedFlags;
+          try {
+            setCachedSettings({
+              ...DEFAULT_SETTINGS,
+              ...stored,
+              featureFlags: mergedFlags
+            });
+          } catch {
+            // ignore cache update failures to avoid breaking storage sync
+          }
           featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
           return;
         }
@@ -148,6 +161,7 @@ if (typeof window !== "undefined") {
     if (e.key === "settings") {
       try {
         await initFeatureFlags();
+        return;
       } catch {
         // ignore errors
       }

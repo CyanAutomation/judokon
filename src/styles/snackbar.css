@@ -27,6 +27,11 @@
     snackbar-fadeout 250ms var(--snackbar-delay, 2.5s);
 }
 
+body.reduce-motion .snackbar.show,
+body[data-test-disable-animations] .snackbar.show {
+  animation: none;
+}
+
 @keyframes snackbar-fadein {
   from {
     opacity: 0;

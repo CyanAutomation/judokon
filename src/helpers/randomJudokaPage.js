@@ -24,7 +24,7 @@
 import { generateRandomCard, loadGokyoLookup, renderJudokaCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { createButton } from "../components/Button.js";
-import { applyMotionPreference } from "./motionUtils.js";
+import { applyMotionPreference, shouldReduceMotionSync } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
@@ -34,6 +34,7 @@ import { preloadRandomCardData, createHistoryManager } from "./randomCardService
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
+import { getSetting } from "./settingsCache.js";
 
 const historyTogglePlacementRegistry = new WeakMap();
 
@@ -131,6 +132,7 @@ export async function initFeatureFlagState() {
   } catch (err) {
     console.error("Error loading settings:", err);
     settings = {
+      sound: true,
       motionEffects: hasMatchMedia
         ? !window.matchMedia("(prefers-reduced-motion: reduce)").matches
         : true,
@@ -149,7 +151,8 @@ export async function initFeatureFlagState() {
   const prefersReducedMotion =
     !settings.motionEffects ||
     (hasMatchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  return { prefersReducedMotion };
+  const soundEnabled = settings.sound !== false;
+  return { prefersReducedMotion, soundEnabled };
 }
 
 /**
@@ -532,7 +535,9 @@ async function displayCard({
  * @returns {Promise<void>}
  */
 export async function setupRandomJudokaPage() {
-  const { prefersReducedMotion } = await initFeatureFlagState();
+  const { prefersReducedMotion, soundEnabled } = await initFeatureFlagState();
+  let currentPrefersReducedMotion = prefersReducedMotion;
+  let currentSoundEnabled = soundEnabled;
 
   const cardContainer = document.getElementById("card-container");
   const placeholderTemplate = document.getElementById("card-placeholder-template");
@@ -548,6 +553,7 @@ export async function setupRandomJudokaPage() {
   const cardSection = document.querySelector(".card-section");
   const drawButton = createDrawButton();
   cardSection.appendChild(drawButton);
+  drawButton.dataset.soundEnabled = String(currentSoundEnabled);
 
   if (typeof window !== "undefined") {
     const testApi =
@@ -598,6 +604,10 @@ export async function setupRandomJudokaPage() {
         throw error;
       }
     };
+    randomJudokaApi.getPreferences = () => ({
+      prefersReducedMotion: currentPrefersReducedMotion,
+      soundEnabled: currentSoundEnabled
+    });
   }
 
   const onSelect = (j) => addToHistory(historyManager, historyList, j);
@@ -610,7 +620,7 @@ export async function setupRandomJudokaPage() {
       drawButton,
       cachedJudokaData: judokaData,
       cachedGokyoData: gokyoData,
-      prefersReducedMotion,
+      prefersReducedMotion: currentPrefersReducedMotion,
       onSelect,
       timers: drawButton.timers,
       fallbackDelayMs: delay
@@ -620,6 +630,11 @@ export async function setupRandomJudokaPage() {
   toggleHistoryBtn.addEventListener("click", () => toggleHistory(historyPanel, toggleHistoryBtn));
 
   featureFlagsEmitter.addEventListener("change", () => {
+    const motionEnabled = getSetting("motionEffects") !== false;
+    applyMotionPreference(motionEnabled);
+    currentPrefersReducedMotion = shouldReduceMotionSync();
+    currentSoundEnabled = getSetting("sound") !== false;
+    drawButton.dataset.soundEnabled = String(currentSoundEnabled);
     toggleInspectorPanels(isEnabled("enableCardInspector"));
     toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
   });

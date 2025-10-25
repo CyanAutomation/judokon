@@ -138,7 +138,11 @@ describe("randomJudokaPage draw button", () => {
     }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
     vi.doMock("../../src/helpers/constants.js", async () => ({
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
