@@ -77,6 +77,44 @@ const hasDocument = typeof document !== "undefined";
 const getSafeDocument = () => (hasDocument ? document : null);
 const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
 
+function syncShortcutsButtonState(isOpen) {
+  const close = byId("cli-shortcuts-close");
+  if (close) {
+    close.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  }
+}
+
+function handleShortcutsToggle(event) {
+  const target = event?.currentTarget;
+  if (!target || typeof target !== "object") {
+    return;
+  }
+  const isDetails = typeof target.open === "boolean";
+  if (!isDetails) {
+    return;
+  }
+  const isOpen = target.open === true;
+  syncShortcutsButtonState(isOpen);
+  try {
+    localStorage.setItem("battleCLI.shortcutsCollapsed", isOpen ? "0" : "1");
+  } catch {}
+  if (isOpen) {
+    try {
+      pauseTimers();
+    } catch {}
+    state.shortcutsOverlay = true;
+    return;
+  }
+  try {
+    resumeTimers();
+  } catch {}
+  try {
+    state.shortcutsReturnFocus?.focus();
+  } catch {}
+  state.shortcutsReturnFocus = null;
+  state.shortcutsOverlay = null;
+}
+
 /**
  * Handle Escape key presses at the document level.
  *
@@ -839,27 +877,6 @@ function updateCliShortcutsVisibility() {
   const section = byId("cli-shortcuts");
   if (!section) return;
 
-  const isTemplateHiddenAndUntracked =
-    section.hasAttribute("hidden") && section.dataset.hiddenByCliShortcutsFlag === undefined;
-
-  if (isTemplateHiddenAndUntracked) {
-    section.dataset.hiddenByCliShortcutsFlag = "template";
-  }
-  const enabled = isEnabled("cliShortcuts");
-  if (!enabled) {
-    section.dataset.hiddenByCliShortcutsFlag = "flag";
-    section.style.display = "none";
-    if (state.shortcutsOverlay || !section.hasAttribute("hidden")) {
-      hideCliShortcuts();
-    }
-    return;
-  }
-
-  section.style.display = "";
-  if (section.dataset.hiddenByFlag) {
-    delete section.dataset.hiddenByFlag;
-  }
-
   let persistedCollapsed = null;
   try {
     const stored = localStorage.getItem("battleCLI.shortcutsCollapsed");
@@ -872,14 +889,31 @@ function updateCliShortcutsVisibility() {
     console.debug("localStorage access failed for shortcuts state:", error?.message || error);
   }
 
-  const currentlyCollapsed = section.hasAttribute("hidden");
-  const shouldCollapse = persistedCollapsed ?? currentlyCollapsed;
-
-  if (shouldCollapse && !currentlyCollapsed) {
-    hideCliShortcuts();
-  } else if (!shouldCollapse && currentlyCollapsed) {
-    showCliShortcuts();
+  const enabled = isEnabled("cliShortcuts");
+  if (!enabled) {
+    const wasOpen = section.open;
+    if (section.open) {
+      section.open = false;
+    }
+    section.hidden = true;
+    syncShortcutsButtonState(false);
+    if (persistedCollapsed === false || wasOpen) {
+      try {
+        localStorage.setItem("battleCLI.shortcutsCollapsed", "1");
+      } catch {}
+    }
+    return;
   }
+
+  section.hidden = false;
+
+  const shouldBeOpen =
+    persistedCollapsed === null ? section.open : persistedCollapsed === false;
+
+  if (shouldBeOpen !== section.open) {
+    section.open = shouldBeOpen;
+  }
+  syncShortcutsButtonState(section.open);
 }
 
 /**
@@ -892,21 +926,12 @@ function updateCliShortcutsVisibility() {
  *   set close button `aria-expanded` to true
  */
 function showCliShortcuts() {
-  if (!window.__battleCLIinit?.setShortcutsCollapsed?.(false)) {
-    const body = byId("cli-shortcuts-body");
-    const sec = byId("cli-shortcuts");
-    const close = byId("cli-shortcuts-close");
-    try {
-      localStorage.setItem("battleCLI.shortcutsCollapsed", "0");
-    } catch {}
-    if (body) body.style.display = "";
-    sec?.removeAttribute("hidden");
-    close?.setAttribute("aria-expanded", "true");
-    // Pause active timers while shortcuts overlay is open
-    try {
-      pauseTimers();
-    } catch {}
-    state.shortcutsOverlay = true;
+  if (window.__battleCLIinit?.setShortcutsCollapsed?.(false)) {
+    return;
+  }
+  const sec = byId("cli-shortcuts");
+  if (sec && !sec.open) {
+    sec.open = true;
   }
 }
 
@@ -921,26 +946,13 @@ function showCliShortcuts() {
  * if stored focus exists: focus it and clear reference
  */
 function hideCliShortcuts() {
-  if (!window.__battleCLIinit?.setShortcutsCollapsed?.(true)) {
-    const body = byId("cli-shortcuts-body");
-    const sec = byId("cli-shortcuts");
-    const close = byId("cli-shortcuts-close");
-    try {
-      localStorage.setItem("battleCLI.shortcutsCollapsed", "1");
-    } catch {}
-    if (body) body.style.display = "none";
-    if (sec) sec.setAttribute("hidden", "");
-    close?.setAttribute("aria-expanded", "false");
+  if (window.__battleCLIinit?.setShortcutsCollapsed?.(true)) {
+    return;
   }
-  // Resume timers when shortcuts overlay closes
-  try {
-    resumeTimers();
-  } catch {}
-  try {
-    state.shortcutsReturnFocus?.focus();
-  } catch {}
-  state.shortcutsReturnFocus = null;
-  state.shortcutsOverlay = null;
+  const sec = byId("cli-shortcuts");
+  if (sec?.open) {
+    sec.open = false;
+  }
 }
 
 function showBottomLine(text) {
@@ -2151,14 +2163,15 @@ const globalKeyHandlers = {
   h() {
     const sec = byId("cli-shortcuts");
     if (sec) {
-      if (sec.hidden) {
+      if (sec.hidden) return;
+      if (!sec.open) {
         const activeElement = getActiveElement();
         state.shortcutsReturnFocus = activeElement instanceof HTMLElement ? activeElement : null;
         showCliShortcuts();
         byId("cli-shortcuts-close")?.focus();
-      } else {
-        hideCliShortcuts();
+        return;
       }
+      hideCliShortcuts();
     }
   },
   q() {
@@ -2532,7 +2545,7 @@ function onClickAdvance(event) {
     return;
   }
   const shortcutsPanel = byId("cli-shortcuts");
-  if (shortcutsPanel && !shortcutsPanel.hidden) return;
+  if (shortcutsPanel?.open) return;
   if (event.target?.closest?.(".cli-stat")) return;
   if (event.target?.closest?.("#cli-shortcuts")) return;
   const stateName = document.body?.dataset?.battleState || "";
@@ -3024,8 +3037,15 @@ export async function setupFlags() {
   updateVerbose();
   updateStateBadgeVisibility();
   updateBattleStateBadge(getStateSnapshot().state);
+  const shortcutsDetails = byId("cli-shortcuts");
+  if (shortcutsDetails) {
+    shortcutsDetails.addEventListener("toggle", handleShortcutsToggle);
+  }
   updateCliShortcutsVisibility();
   updateControlsHint();
+  if (shortcutsDetails) {
+    syncShortcutsButtonState(shortcutsDetails.open);
+  }
   const close = byId("cli-shortcuts-close");
   close?.addEventListener("click", (event) => {
     event.preventDefault();

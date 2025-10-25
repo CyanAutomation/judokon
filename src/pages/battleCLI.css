@@ -616,16 +616,40 @@ details.cli-settings > #cli-settings-body {
 #snackbar-container .snackbar {
   display: block;
 }
-/* Shortcuts/help panel: make it a collapsible, in-flow block like `.cli-settings`.
-         Visibility is controlled via the `hidden` attribute so tests and scripts can toggle it.
-         Keep a modest max-width for readability and stack nicely on small screens. */
-#cli-shortcuts {
+/* Shortcuts/help panel: native <details> element keeps summary focusable and
+   allows scripts to observe the `open` state without juggling inline styles. */
+details#cli-shortcuts {
   position: static; /* participate in normal flow */
   margin: 0; /* align with other .cli-block sections */
   background: transparent; /* `.cli-block` provides visible background/border */
   max-width: 760px;
   width: 100%;
 }
+
+details#cli-shortcuts[hidden] {
+  display: none;
+}
+
+details#cli-shortcuts > summary.cli-shortcuts-summary {
+  gap: 8px;
+}
+
+.cli-shortcuts-summary-hint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.cli-shortcuts-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+.cli-shortcuts-body > .cli-settings-header {
+  margin-top: 8px;
+}
+
 #cli-shortcuts-close {
   /* place the close control inline and visually aligned to the right */
   float: none;

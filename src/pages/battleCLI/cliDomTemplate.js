@@ -90,22 +90,27 @@ export const CLI_DOM_TEMPLATE = `
         </div>
       </section>
       <div class="ascii-sep">------------------------</div>
-      <section aria-label="Shortcuts" id="cli-shortcuts" class="cli-block cli-settings" data-flag="cliShortcuts" hidden>
-        <div class="cli-settings-header d-flex align-items-center justify-content-between">
-          <div class="fw-600">Shortcuts</div>
-          <div>
-            <button
-              id="cli-shortcuts-close"
-              aria-label="Close help"
-              aria-controls="cli-shortcuts-body"
-              aria-expanded="false"
-              class="button-reset"
-            >
-              [X]
-            </button>
+      <details aria-label="Shortcuts" id="cli-shortcuts" class="cli-block cli-settings" data-flag="cliShortcuts">
+        <summary class="cli-settings-summary cli-shortcuts-summary" aria-controls="cli-shortcuts-body">
+          <span class="fw-600">Shortcuts</span>
+          <span class="cli-shortcuts-summary-hint" aria-hidden="true">Press H to toggle</span>
+        </summary>
+        <div id="cli-shortcuts-body" class="cli-shortcuts-body">
+          <div class="cli-settings-header d-flex align-items-center justify-content-between">
+            <div class="fw-600" aria-hidden="true">Shortcuts</div>
+            <div>
+              <button
+                id="cli-shortcuts-close"
+                aria-label="Close help"
+                aria-controls="cli-shortcuts-body"
+                aria-expanded="false"
+                class="button-reset"
+                type="button"
+              >
+                [X]
+              </button>
+            </div>
           </div>
-        </div>
-        <div id="cli-shortcuts-body">
           <ul id="cli-help">
             <li>[1–5] Select Stat</li>
             <li>[Enter] or [Space] Next</li>
@@ -113,7 +118,7 @@ export const CLI_DOM_TEMPLATE = `
             <li>[H] Toggle Help</li>
           </ul>
         </div>
-      </section>
+      </details>
       <div class="ascii-sep">------------------------</div>
       <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" data-flag="cliVerbose" hidden>
         <pre

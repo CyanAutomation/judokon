@@ -16,9 +16,11 @@ describe("battleCLI cliShortcuts flag", () => {
     wireEvents();
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(true);
+    expect(sec.open).toBe(false);
     // Natural event dispatch through the global listener
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(true);
+    expect(sec.open).toBe(false);
   });
 
   it("toggles when cliShortcuts is enabled", async () => {
@@ -27,11 +29,14 @@ describe("battleCLI cliShortcuts flag", () => {
     const { wireEvents } = await import("../../src/pages/index.js");
     wireEvents();
     const sec = document.getElementById("cli-shortcuts");
-    expect(sec.hidden).toBe(true);
+    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(false);
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(true);
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
-    expect(sec.hidden).toBe(true);
+    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(false);
   });
 
   it("collapses the shortcuts overlay when the flag is disabled", async () => {
@@ -40,28 +45,30 @@ describe("battleCLI cliShortcuts flag", () => {
     const { wireEvents } = await import("../../src/pages/index.js");
     wireEvents();
     const sec = document.getElementById("cli-shortcuts");
-    expect(sec.hidden).toBe(true);
+    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(false);
     const body = document.getElementById("cli-shortcuts-body");
     expect(body?.style.display ?? "").toBe("");
 
     const { __test } = await import("../../src/pages/battleCLI/init.js");
     __test.showShortcutsPanel();
-    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(true);
     expect(body?.style.display ?? "").toBe("");
 
     const { setFlag } = await import("../../src/helpers/featureFlags.js");
     setFlag("cliShortcuts", false);
 
     expect(sec.hidden).toBe(true);
-    expect(sec.style.display).toBe("none");
-    expect(body?.style.display).toBe("none");
+    expect(sec.open).toBe(false);
+    expect(sec.style.display).toBe("");
+    expect(body?.style.display).toBe("");
 
     setFlag("cliShortcuts", true);
 
-    expect(sec.hidden).toBe(true);
-    expect(sec.hasAttribute("hidden")).toBe(true);
+    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(false);
     expect(sec.style.display).toBe("");
-    expect(body?.style.display).toBe("none");
+    expect(body?.style.display).toBe("");
     expect(localStorage.getItem("battleCLI.shortcutsCollapsed")).toBe("1");
   });
 
@@ -74,14 +81,15 @@ describe("battleCLI cliShortcuts flag", () => {
     const body = document.getElementById("cli-shortcuts-body");
 
     expect(sec.hidden).toBe(true);
-    expect(sec.style.display).toBe("none");
+    expect(sec.open).toBe(false);
+    expect(sec.style.display).toBe("");
     expect(body?.style.display ?? "").toBe("");
 
     const { setFlag } = await import("../../src/helpers/featureFlags.js");
     setFlag("cliShortcuts", true);
 
-    expect(sec.hidden).toBe(true);
-    expect(sec.hasAttribute("hidden")).toBe(true);
+    expect(sec.hidden).toBe(false);
+    expect(sec.open).toBe(false);
     expect(sec.style.display).toBe("");
     expect(body?.style.display ?? "").toBe("");
     expect(localStorage.getItem("battleCLI.shortcutsCollapsed")).toBeNull();
