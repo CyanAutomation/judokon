@@ -37,8 +37,40 @@ test.describe("Battle CLI - Play", () => {
       // Set opponent resolve delay to 0 for deterministic testing
       await page.evaluate(() => window.__TEST_API.timers.setOpponentResolveDelay(0));
 
-      // Click the first stat button
-      await page.waitForTimeout(1000);
+      // Click the first stat button once the CLI reports it as actionable
+      await waitForTestApi(page);
+      await expect
+        .poll(
+          async () =>
+            await page.evaluate(() => {
+              const api = window.__TEST_API;
+              if (!api?.state?.getBattleState) {
+                return "test-api-unavailable";
+              }
+
+              const state = api.state.getBattleState();
+              if (state !== "waitingForPlayerAction") {
+                return state ?? "pending";
+              }
+
+              const statsRoot = document.getElementById("cli-stats");
+              if (statsRoot?.getAttribute("aria-busy") === "true") {
+                return "stats-busy";
+              }
+
+              const firstStat = document.querySelector(".cli-stat");
+              if (!firstStat) {
+                return "no-stat";
+              }
+
+              const ariaDisabled = firstStat.getAttribute("aria-disabled");
+              const hasDisabledAttribute = firstStat.hasAttribute("disabled");
+              return ariaDisabled === "true" || hasDisabledAttribute ? "disabled" : "ready";
+            }),
+          { timeout: 5_000 }
+        )
+        .toBe("ready");
+
       await statButton.click();
 
       // Complete the round immediately (don't wait for intermediate state)
