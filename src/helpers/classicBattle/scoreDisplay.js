@@ -22,7 +22,15 @@ function renderScoreDisplay(playerScore, opponentScore) {
     return;
   }
 
-  scoreEl.innerHTML = `<span data-side="player">You: ${playerScore}</span>\n<span data-side="opponent">Opponent: ${opponentScore}</span>`;
+  const playerSpan = document.createElement("span");
+  playerSpan.dataset.side = "player";
+  playerSpan.textContent = `You: ${playerScore}`;
+
+  const opponentSpan = document.createElement("span");
+  opponentSpan.dataset.side = "opponent";
+  opponentSpan.textContent = `Opponent: ${opponentScore}`;
+
+  scoreEl.replaceChildren(playerSpan, opponentSpan);
 }
 
 /**
