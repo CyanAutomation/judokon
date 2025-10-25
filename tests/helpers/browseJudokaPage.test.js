@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { JSDOM } from "jsdom";
 import { createBrowseJudokaHarness } from "./integrationHarness.js";
-import { interactions } from "../utils/componentTestUtils.js";
 
 const harness = createBrowseJudokaHarness();
 

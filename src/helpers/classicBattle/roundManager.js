@@ -169,7 +169,9 @@ export async function handleReplay(store) {
     } catch (error) {
       try {
         logger.warn("resetBattleEnginePreservingConfig failed, using fallback", error);
-      } catch {}
+      } catch {
+        // Ignore logging errors to ensure fallback execution proceeds.
+      }
     }
 
     createBattleEngine({ forceCreate: true });
@@ -285,7 +287,9 @@ export async function startRound(store, onRoundStart) {
           rounds.push({ played, roundNumber, at: Date.now() });
           window.__roundNumbers = rounds;
         }
-      } catch {}
+      } catch {
+        // Ignore telemetry aggregation failures; round start flow should continue.
+      }
     },
     { suppressInProduction: true }
   );
