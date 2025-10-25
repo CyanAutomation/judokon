@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { getJudokaFixture, getGokyoFixture } from "../utils/testUtils.js";
 import { withMutedConsole } from "../utils/console.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 let getRandomJudokaMock;
 const renderMock = vi.fn();
@@ -330,7 +331,7 @@ describe("generateRandomCard", () => {
     fetchJsonMock = vi.fn();
 
     const originalRAF = globalThis.requestAnimationFrame;
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     try {
       delete globalThis.requestAnimationFrame;
       vi.resetModules();
@@ -344,7 +345,7 @@ describe("generateRandomCard", () => {
       );
 
       expect(container.firstChild).toBe(generatedEl);
-      await vi.runAllTimersAsync();
+      await timers.runAllTimersAsync();
       expect(generatedEl.classList.contains("new-card")).toBe(true);
     } finally {
       if (originalRAF) {
@@ -352,7 +353,7 @@ describe("generateRandomCard", () => {
       } else {
         delete globalThis.requestAnimationFrame;
       }
-      vi.useRealTimers();
+      timers.cleanup();
       vi.resetModules();
     }
   });
