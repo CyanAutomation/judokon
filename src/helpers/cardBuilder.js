@@ -15,6 +15,7 @@ function createJudokaCardButton(judoka, cardType, inspectorState) {
   const ariaLabel = fullName ? `${fullName} card` : "Judoka card";
   judokaCard.setAttribute("aria-label", ariaLabel);
   judokaCard.setAttribute("aria-pressed", "false");
+  judokaCard.setAttribute("tabindex", "0");
   judokaCard.classList.add(judoka.gender === "female" ? "female-card" : "male-card");
   judokaCard.setAttribute("data-feature-card-inspector", inspectorState);
   return judokaCard;

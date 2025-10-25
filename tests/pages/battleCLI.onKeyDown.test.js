@@ -181,6 +181,38 @@ describe("battleCLI onKeyDown", () => {
     expect(countdown.textContent).toBe("");
   });
 
+  it("shows fallback guidance when cli shortcuts feature is disabled", async () => {
+    const featureFlags = await import("../../src/helpers/featureFlags.js");
+    const originalIsEnabled = featureFlags.isEnabled;
+    let cliShortcutsEnabled = false;
+    const isEnabledSpy = vi
+      .spyOn(featureFlags, "isEnabled")
+      .mockImplementation((flag) =>
+        flag === "cliShortcuts" ? cliShortcutsEnabled : originalIsEnabled(flag)
+      );
+
+    const shortcutsSection = document.getElementById("cli-shortcuts");
+    const fallback = document.getElementById("cli-shortcuts-disabled-hint");
+    expect(fallback).toBeTruthy();
+
+    __test.updateCliShortcutsVisibility();
+    __test.handleBattleState(new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } }));
+
+    expect(shortcutsSection.hidden).toBe(true);
+    expect(fallback.hidden).toBe(false);
+    expect(fallback.textContent).toMatch(/stat 1/i);
+    const sr = document.getElementById("cli-controls-hint-announce");
+    expect(sr?.textContent).toBe("Keyboard shortcuts are disabled. Type commands like stat 1 or stat 2 to choose a stat.");
+
+    cliShortcutsEnabled = true;
+    __test.updateCliShortcutsVisibility();
+    __test.handleBattleState(new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } }));
+
+    expect(shortcutsSection.hidden).toBe(false);
+    expect(fallback.hidden).toBe(true);
+    isEnabledSpy.mockRestore();
+  });
+
   it("confirms quit via modal", () => {
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     const confirm = document.getElementById("confirm-quit-button");

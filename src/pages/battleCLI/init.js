@@ -925,6 +925,7 @@ function updateCliShortcutsVisibility() {
       } catch {}
     }
     updateShortcutsFallback(enabled);
+    updateControlsHint();
     return;
   }
 
@@ -937,6 +938,7 @@ function updateCliShortcutsVisibility() {
   }
   syncShortcutsButtonState(section.open);
   updateShortcutsFallback(enabled);
+  updateControlsHint();
 }
 
 /**
