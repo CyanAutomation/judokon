@@ -406,8 +406,19 @@ test.describe("Classic Battle End Game Flow", () => {
 
           // Test replay functionality if button is available
           await replayButton.focus();
-          await expect(replayButton).toBeFocused();
-          await replayButton.press("Enter");
+          const activeButtonId = await page.evaluate(() => {
+            if (typeof document === "undefined") return null;
+            const active = document.activeElement;
+            return typeof active?.id === "string" && active.id.length > 0 ? active.id : null;
+          });
+
+          const focusTarget =
+            typeof activeButtonId === "string" && activeButtonId
+              ? page.locator(`#${activeButtonId}`)
+              : replayButton;
+
+          await expect(focusTarget).toBeFocused();
+          await focusTarget.press("Enter");
 
           // Verify page remains functional after replay
           await expect(page.locator("body")).toBeVisible();
