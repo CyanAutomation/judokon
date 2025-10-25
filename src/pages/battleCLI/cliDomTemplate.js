@@ -164,6 +164,15 @@ export const CLI_DOM_TEMPLATE = `
           Use keys 1 through 5 to choose a stat, Enter or Space to continue, H to toggle help, and Q to quit.
         </span>
       </div>
+      <p
+        id="cli-shortcuts-disabled-hint"
+        class="cli-controls-hint__fallback"
+        role="note"
+        aria-live="polite"
+        hidden
+      >
+        Keyboard shortcuts are disabled. Type commands like <span class="cli-controls-hint__key">stat 1</span> or <span class="cli-controls-hint__key">stat 2</span> to choose a stat.
+      </p>
       <div id="snackbar-container" role="status" aria-live="polite"></div>
     </footer>
     <div id="player-card" style="display: none"></div>

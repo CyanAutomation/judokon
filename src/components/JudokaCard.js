@@ -71,6 +71,7 @@ export class JudokaCard extends Card {
     this.element.setAttribute("aria-label", ariaLabel);
     this.element.setAttribute("role", "button");
     this.element.setAttribute("aria-pressed", "false");
+    this.element.setAttribute("tabindex", "0");
     this.element.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
   }
 

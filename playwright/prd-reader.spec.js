@@ -68,19 +68,19 @@ test.describe("PRD Reader page", () => {
 
     await page.keyboard.press("ArrowDown");
     await expect(container).toBeFocused();
-    
+
     // Wait for async content loading to complete
     await page.waitForTimeout(100);
-    
+
     const afterDown = await container.innerHTML();
     expect(afterDown).not.toBe(initial);
 
     await page.keyboard.press("ArrowRight");
     await expect(container).toBeFocused();
-    
+
     // Wait for async content loading
     await page.waitForTimeout(100);
-    
+
     const afterNext = await container.innerHTML();
     expect(afterNext).not.toBe("");
   });
