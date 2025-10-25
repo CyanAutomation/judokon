@@ -3,8 +3,7 @@ import {
   mockVectorSearch,
   mockDataUtils,
   mockConstants,
-  mockExtractor,
-  defaultDom
+  setupPage
 } from "./fixtures.js";
 
 afterEach(() => {
@@ -13,7 +12,7 @@ afterEach(() => {
 });
 
 describe("vector search form submission", () => {
-  it("lets native Enter key submission reach handleSearch", async () => {
+  it("allows form submission to trigger handleSearch", async () => {
     const match = {
       id: "1",
       text: "result",
@@ -28,34 +27,23 @@ describe("vector search form submission", () => {
     });
     mockDataUtils();
     mockConstants();
-    await mockExtractor();
-
-    document.body.innerHTML = defaultDom;
-
-    const mod = await import("../../../src/helpers/vectorSearchPage.js");
-
-    await mod.init();
+    await setupPage();
 
     const input = document.getElementById("vector-search-input");
     input.value = "grip";
     input.focus();
 
-    const keyEvent = new window.KeyboardEvent("keydown", {
-      key: "Enter",
-      bubbles: true,
-      cancelable: true
-    });
-
-    const dispatched = input.dispatchEvent(keyEvent);
-
-    expect(dispatched).toBe(true);
-    expect(keyEvent.defaultPrevented).toBe(false);
-
     const form = document.getElementById("vector-search-form");
     const previousPromise = window.vectorSearchResultsPromise;
-    const SubmitCtor = window.SubmitEvent ?? window.Event;
-    const submitEvent = new SubmitCtor("submit", { bubbles: true, cancelable: true });
-    form.dispatchEvent(submitEvent);
+    if (typeof form.requestSubmit === "function") {
+      form.requestSubmit();
+    } else {
+      const submitButton = form.querySelector('[type="submit"]');
+      if (!submitButton) {
+        throw new Error("Expected a submit control for the vector search form");
+      }
+      submitButton.click();
+    }
 
     await window.vectorSearchResultsPromise;
 

@@ -43,6 +43,7 @@ export const defaultDom = `
   <form id="vector-search-form">
     <input id="vector-search-input" />
     <select id="tag-filter"><option value="all">all</option></select>
+    <button type="submit">Search</button>
   </form>
   <table id="vector-results-table"><tbody></tbody></table>
   <p id="search-results-message"></p>
