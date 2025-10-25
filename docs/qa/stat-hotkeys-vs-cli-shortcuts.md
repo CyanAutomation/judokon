@@ -4,9 +4,9 @@ Stat and CLI toggles both expose keyboard accelerators, but they target differen
 
 ## Feature Overview
 
-| Flag | Location | Scope | Default |
-| --- | --- | --- | --- |
-| `statHotkeys` | Classic Battle (web UI) | Number row (`1`–`5`) triggers stat buttons under the cursor-less UI. | Enabled |
+| Flag           | Location                   | Scope                                                                       | Default |
+| -------------- | -------------------------- | --------------------------------------------------------------------------- | ------- |
+| `statHotkeys`  | Classic Battle (web UI)    | Number row (`1`–`5`) triggers stat buttons under the cursor-less UI.        | Enabled |
 | `cliShortcuts` | Battle CLI (terminal page) | Single-key commands inside the CLI (e.g., `n` for next, `a`-`e` for stats). | Enabled |
 
 These flags are independent: disabling one does not mutate or enable the other. Persisted states live under `featureFlags.statHotkeys` and `featureFlags.cliShortcuts`.
@@ -39,4 +39,3 @@ Automation Hooks:
 
 - If the Classic Battle UI still responds to number keys after disabling the flag, verify the page was reloaded—feature flags are evaluated during bootstrap.
 - In the CLI, confirm the flag state by inspecting `window.__FEATURE_FLAGS__.cliShortcuts` or running the harness with `{ cliShortcuts: false }`.
-
