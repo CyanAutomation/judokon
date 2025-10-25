@@ -10,10 +10,10 @@ const fakeTimeout = vi.fn(() => "fake-timeout-id");
 const fakeInterval = vi.fn(() => "fake-interval-id");
 
 describe("battleCLI onKeyDown", () => {
-  let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy, emitSpy;
+  let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy, emitSpy, timers;
 
   beforeEach(async () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     fakeTimeout.mockClear();
     fakeInterval.mockClear();
     vi.resetModules();
@@ -75,7 +75,7 @@ describe("battleCLI onKeyDown", () => {
     vi.resetModules();
     vi.doUnmock("../../src/components/Button.js");
     vi.restoreAllMocks();
-    vi.useRealTimers();
+    timers?.cleanup();
   });
 
   it("toggles shortcuts with H key", () => {
