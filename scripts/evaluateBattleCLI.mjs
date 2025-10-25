@@ -21,9 +21,9 @@ const htmlUrl = new URL("../src/pages/battleCLI.html", import.meta.url).href;
   const beforePath = path.join(outDir, "battleCLI-before.png");
   await page.screenshot({ path: beforePath, fullPage: true });
 
-  // Apply immersive styles
+  // Apply optional overlay styles that remain relevant for screenshots
   await page.evaluate(() => {
-    document.body.classList.add("cli-immersive", "scanlines");
+    document.body.classList.add("scanlines");
   });
   await page.waitForTimeout(250);
 
