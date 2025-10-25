@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { JSDOM } from "jsdom";
 import { createBrowseJudokaHarness } from "./integrationHarness.js";
 import { interactions } from "../utils/componentTestUtils.js";
 
@@ -84,64 +85,65 @@ describe("browseJudokaPage helpers", () => {
     expect(loaded()).toBe(true);
   });
 
-  it("exposes a CSS-driven layout toggle hook", async () => {
+  it("exposes the layout mode checkbox as the interactive control", async () => {
     const markup = await readFile(join(process.cwd(), "src/pages/browseJudoka.html"), "utf8");
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(markup, "text/html");
+    const dom = new JSDOM(markup, { pretendToBeVisual: true });
+    const { document } = dom.window;
 
-    const checkbox = doc.getElementById("layout-mode-toggle");
+    const checkbox = document.getElementById("layout-mode-toggle");
     expect(checkbox).not.toBeNull();
     expect(checkbox?.getAttribute("type")).toBe("checkbox");
+    expect(checkbox?.getAttribute("aria-hidden")).toBeNull();
+    expect(checkbox?.getAttribute("tabindex")).toBeNull();
+    expect(checkbox?.getAttribute("aria-label")).toBe("Toggle layout");
+    expect(checkbox?.getAttribute("data-tooltip-id")).toBe("ui.toggleLayout");
     expect(checkbox?.nextElementSibling?.id).toBe("country-panel");
-    expect(checkbox?.getAttribute("aria-hidden")).toBe("true");
-    expect(checkbox?.getAttribute("tabindex")).toBe("-1");
 
-    const label = doc.getElementById("layout-toggle");
-    expect(label).not.toBeNull();
-    expect(label?.getAttribute("for")).toBe("layout-mode-toggle");
-    expect(label?.getAttribute("data-testid")).toBe("layout-toggle");
-    expect(label?.hasAttribute("aria-controls")).toBe(false);
-    expect(label?.getAttribute("aria-pressed")).toBe("false");
+    const surrogate = document.getElementById("layout-toggle");
+    expect(surrogate).toBeNull();
   });
 
-  it("allows the accessible layout toggle to respond to keyboard activation", async () => {
+  it("lets users focus and toggle the layout checkbox without extra helpers", async () => {
     const markup = await readFile(join(process.cwd(), "src/pages/browseJudoka.html"), "utf8");
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(markup, "text/html");
+    const dom = new JSDOM(markup, { pretendToBeVisual: true });
+    const { document, KeyboardEvent } = dom.window;
+
+    const checkbox = document.getElementById("layout-mode-toggle");
+    expect(checkbox).not.toBeNull();
+
+    checkbox?.focus();
+    expect(document.activeElement).toBe(checkbox);
+
+    const keyEvents = [];
+    checkbox?.addEventListener("keydown", (event) => {
+      keyEvents.push({ key: event.key, defaultPrevented: event.defaultPrevented });
+    });
+
+    checkbox?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true })
+    );
+
+    expect(keyEvents).toEqual([{ key: " ", defaultPrevented: false }]);
+    expect(checkbox?.checked).toBe(false);
+
+    checkbox?.click();
+    expect(checkbox?.checked).toBe(true);
+
+    checkbox?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true })
+    );
+
+    expect(keyEvents).toEqual([
+      { key: " ", defaultPrevented: false },
+      { key: " ", defaultPrevented: false }
+    ]);
+
+    checkbox?.click();
+    expect(checkbox?.checked).toBe(false);
 
     const { createBrowsePageRuntime } = await import("../../src/helpers/browseJudokaPage.js");
-
-    const runtime = createBrowsePageRuntime(doc);
-    runtime.setupLayoutToggleControl?.();
-
-    const label = doc.getElementById("layout-toggle");
-    const checkbox = doc.getElementById("layout-mode-toggle");
-
-    expect(label?.getAttribute("aria-pressed")).toBe("false");
-
-    if (label) {
-      interactions.focus(label);
-      interactions.keypress(label, "Enter");
-    }
-
-    expect(checkbox?.checked).toBe(true);
-    expect(label?.getAttribute("aria-pressed")).toBe("true");
-
-    if (label) {
-      interactions.keypress(label, "Tab");
-      expect(checkbox?.checked).toBe(true);
-      interactions.keypress(label, "a");
-    }
-
-    expect(checkbox?.checked).toBe(true);
-    expect(label?.getAttribute("aria-pressed")).toBe("true");
-
-    if (label) {
-      interactions.keypress(label, " ");
-    }
-
-    expect(checkbox?.checked).toBe(false);
-    expect(label?.getAttribute("aria-pressed")).toBe("false");
+    const runtime = createBrowsePageRuntime(document);
+    expect(runtime.setupLayoutToggleControl).toBeUndefined();
   });
 
   it("country filter controller filters judoka and clears selection", async () => {
