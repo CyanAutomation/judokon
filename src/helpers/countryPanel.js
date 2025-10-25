@@ -8,18 +8,21 @@
  * @pseudocode
  * 1. Determine the next state using the optional `show` parameter and the panel's
  *    native `open` property.
- * 2. Set the `open` property accordingly, mirroring the state back to
+ * 2. Capture the previous open state (either the provided `previousOpen` hint or
+ *    the panel's current state) so focus only moves on real transitions.
+ * 3. Set the `open` property accordingly, mirroring the state back to
  *    `aria-expanded` on the summary toggle.
- * 3. Update the disclosure content's `aria-hidden` attribute to mirror visibility.
- * 4. When opening, focus the first flag button to keep keyboard navigation fluid.
+ * 4. Update the disclosure content's `aria-hidden` attribute to mirror visibility.
+ * 5. When opening, focus the first flag button to keep keyboard navigation fluid.
  *    When closing, return focus to the toggle control.
  *
  * @param {HTMLElement|null} toggleButton - The summary element that toggles the panel.
  * @param {HTMLElement} panel - The `<details>` element representing the country panel.
  * @param {boolean} [show] - Optional. If provided, forces the target state; otherwise toggles the existing state.
+ * @param {{ previousOpen?: boolean }} [options]
  * @returns {void}
  */
-export function toggleCountryPanel(toggleButton, panel, show) {
+export function toggleCountryPanel(toggleButton, panel, show, options) {
   if (!panel) {
     return;
   }
@@ -28,6 +31,7 @@ export function toggleCountryPanel(toggleButton, panel, show) {
   const details = panel;
   const wasOpen = details.open;
   const shouldOpen = typeof show === "boolean" ? show : !details.open;
+  const previousOpen = options?.previousOpen ?? wasOpen;
   details.open = shouldOpen;
 
   if (toggleButton) {
@@ -45,7 +49,7 @@ export function toggleCountryPanel(toggleButton, panel, show) {
     }
   }
 
-  const stateChanged = wasOpen !== shouldOpen;
+  const stateChanged = previousOpen !== shouldOpen;
 
   if (shouldOpen && stateChanged) {
     const firstRadio = details.querySelector('input[type="radio"][name="country-filter"]');

@@ -60,6 +60,28 @@ describe("toggleCountryPanel", () => {
     expect(document.activeElement).toBe(toggle);
   });
 
+  test("reflects native open transitions when provided the previous state", () => {
+    const { details, toggle, radio } = setup({ open: false });
+
+    toggle.focus();
+    details.open = true;
+
+    toggleCountryPanel(toggle, details, details.open, { previousOpen: false });
+
+    expect(document.activeElement).toBe(radio);
+  });
+
+  test("skips focus changes when the previous state matches the current state", () => {
+    const { details, toggle, radio, external } = setup({ open: true });
+
+    radio.focus();
+    external.focus();
+
+    toggleCountryPanel(toggle, details, details.open, { previousOpen: true });
+
+    expect(document.activeElement).toBe(external);
+  });
+
   test("does not move focus when already closed", () => {
     const { details, toggle, external } = setup({ open: false });
 
