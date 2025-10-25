@@ -198,6 +198,99 @@ describe("renderSettingsControls", () => {
     await testHarness.cleanup();
   });
 
+  it("uses the persisted toggle state for delayed navigation updates", async () => {
+    vi.resetModules();
+    const gameModes = [
+      { id: 1, name: "Classic", category: "mainMenu", order: 10 }
+    ];
+    let resolveUpdate;
+    const updateSetting = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveUpdate = () => resolve(baseSettings);
+        })
+    );
+    const updateNavigationItemHidden = vi.fn().mockResolvedValue([]);
+    const showSnackbar = vi.fn();
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
+      updateSetting,
+      loadSettings: vi.fn(),
+      resetSettings: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      updateNavigationItemHidden,
+      loadNavigationItems: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar
+    }));
+    const testHarness = createSettingsHarness();
+    await testHarness.setup();
+    const { handleGameModeChange } = await import("../../src/helpers/settings/gameModeSwitches.js");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = true;
+    const promise = handleGameModeChange({
+      input,
+      mode: gameModes[0],
+      label: gameModes[0].name,
+      getCurrentSettings: () => ({ gameModes: {} }),
+      handleUpdate: updateSetting
+    });
+    input.checked = false;
+    expect(typeof resolveUpdate).toBe("function");
+    resolveUpdate();
+    await promise;
+    expect(updateNavigationItemHidden).toHaveBeenCalledWith(1, false);
+    expect(showSnackbar).toHaveBeenCalledWith("Classic enabled");
+    await testHarness.cleanup();
+  });
+
+  it("reverts the toggle and surfaces errors when navigation updates fail", async () => {
+    vi.resetModules();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const gameModes = [
+      { id: 1, name: "Classic", category: "mainMenu", order: 10 }
+    ];
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const updateNavigationItemHidden = vi
+      .fn()
+      .mockRejectedValue(new Error("nav failed"));
+    const showSettingsError = vi.fn();
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
+      updateSetting,
+      loadSettings: vi.fn(),
+      resetSettings: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      updateNavigationItemHidden,
+      loadNavigationItems: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSettingsError.js", () => ({
+      showSettingsError
+    }));
+    const testHarness = createSettingsHarness();
+    await testHarness.setup();
+    const { handleGameModeChange } = await import("../../src/helpers/settings/gameModeSwitches.js");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = true;
+    await expect(
+      handleGameModeChange({
+        input,
+        mode: gameModes[0],
+        label: gameModes[0].name,
+        getCurrentSettings: () => ({ gameModes: {} }),
+        handleUpdate: updateSetting
+      })
+    ).rejects.toThrow("nav failed");
+    expect(updateNavigationItemHidden).toHaveBeenCalledWith(1, false);
+    expect(showSettingsError).toHaveBeenCalled();
+    expect(input.checked).toBe(false);
+    consoleError.mockRestore();
+    await testHarness.cleanup();
+  });
+
   it("persists feature flag changes", async () => {
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
