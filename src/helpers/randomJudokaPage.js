@@ -372,11 +372,24 @@ function toggleHistory(historyPanel, toggleHistoryBtn) {
   }
 }
 
-function announceCard(judokaName) {
+function announceCard(message) {
   const announcer = document.getElementById("card-announcer");
   if (announcer) {
-    announcer.textContent = `New card drawn: ${judokaName}`;
+    announcer.textContent = message;
   }
+}
+
+function announceJudoka(judoka) {
+  if (!judoka) {
+    announceCard("New card drawn");
+    return;
+  }
+
+  const fullName = [judoka.firstname, judoka.surname].filter(Boolean).join(" ").trim();
+  const fallbackName = judoka.name || judoka.codename || judoka.nickname || "";
+  const subject = fullName || fallbackName;
+  const message = subject ? `New card drawn: ${subject}` : "New card drawn";
+  announceCard(message);
 }
 
 async function displayCard({
@@ -409,6 +422,7 @@ async function displayCard({
 
     // Transition to DRAWING state
     stateMachine.transition("DRAWING");
+    announceCard("Drawing card…");
     const errorEl = document.getElementById("draw-error-message");
     if (errorEl) errorEl.textContent = "";
     const cardContainer = document.getElementById("card-container");
@@ -453,7 +467,7 @@ async function displayCard({
 
     // Announce the card to screen readers
     if (announcedJudoka) {
-      announceCard(announcedJudoka.name);
+      announceJudoka(announcedJudoka);
     }
 
     // Handle animation and button re-enabling
