@@ -60,6 +60,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - The toggle uses a native `<details>`/`<summary>` disclosure (mirroring [PRD: Browse Judoka](prdBrowseJudoka.md)) so semantics, keyboard toggling, and focus outlines come from the browser while the panel content renders within the `details` body. The `summary` element serves as the toggle control with the panel icon and arrow.
 - The toggle is represented by a panel icon with an arrow.
 - A separate layout toggle switches between the slide-in panel and full-screen grid.
+- The layout toggle is implemented as a native checkbox control (`#layout-mode-toggle`) styled directly with CSS, without a proxy label element.
 - Countries are displayed in alphabetical order.
 - Each radio label includes alt-text and an `aria-label` (e.g., "Filter by {country}") for accessibility while keeping the radio inputs visually hidden.
 - The picker supports keyboard navigation: Tab/Shift+Tab to move between flags, Enter/Space to select, and Escape to close the panel.

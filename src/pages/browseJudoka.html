@@ -50,8 +50,7 @@
             id="layout-mode-toggle"
             aria-label="Toggle layout"
             data-testid="layout-mode-toggle"
-            aria-hidden="true"
-            tabindex="-1"
+            data-tooltip-id="ui.toggleLayout"
           />
           <details id="country-panel" class="country-panel">
             <summary
@@ -105,29 +104,6 @@
               </button>
             </div>
           </details>
-          <label
-            id="layout-toggle"
-            for="layout-mode-toggle"
-            data-testid="layout-toggle"
-            data-tooltip-id="ui.toggleLayout"
-            role="button"
-            tabindex="0"
-            aria-label="Toggle layout"
-            aria-pressed="false"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 -960 960 960"
-              width="24"
-              height="24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                d="M80-80v-280h280v280H80Zm0-340v-280h280v280H80Zm340 340v-280h280v280H420Zm0-340v-280h280v280H420Z"
-              />
-            </svg>
-          </label>
         </div>
         <div id="carousel-container" data-testid="carousel-container"></div>
       </main>
