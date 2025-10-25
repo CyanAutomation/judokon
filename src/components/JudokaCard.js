@@ -69,6 +69,7 @@ export class JudokaCard extends Card {
       ? "Mystery Judoka: hidden card"
       : `${this.judoka.firstname} ${this.judoka.surname} card`;
     this.element.setAttribute("aria-label", ariaLabel);
+    this.element.setAttribute("role", "button");
     this.element.setAttribute("aria-pressed", "false");
     this.element.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
   }
@@ -86,9 +87,17 @@ export class JudokaCard extends Card {
   }
 
   #wireFlipBehavior(card) {
-    card.addEventListener("click", () => {
+    const togglePressed = () => {
       const isPressed = card.getAttribute("aria-pressed") === "true";
       card.setAttribute("aria-pressed", String(!isPressed));
+    };
+
+    card.addEventListener("click", togglePressed);
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        card.click();
+      }
     });
   }
 

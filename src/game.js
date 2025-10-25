@@ -133,8 +133,7 @@ export function setupHideCardButton(button) {
     }
 
     cards.forEach((card) => {
-      const isPressed = card.getAttribute("aria-pressed") === "true";
-      card.setAttribute("aria-pressed", String(!isPressed));
+      card.click();
     });
   });
 }
