@@ -35,17 +35,17 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                     | Description                                                        |
-| -------- | --------------------------- | ------------------------------------------------------------------ |
-| P1       | Core Color System           | Primary color palette with accessibility-compliant contrast ratios |
-| P1       | Typography Hierarchy        | Font families, sizing, and text treatment standards                |
-| P1       | Component Library           | Standardized UI components with consistent behavior                |
-| P1       | Accessibility Standards     | WCAG AA compliance requirements and testing procedures             |
-| P1       | Spacing and Layout System   | Grid system, spacing tokens, and responsive behavior               |
-| P2       | Theme Variations            | Light, dark, and retro theme specifications                        |
-| P2       | Animation and Interaction   | Motion design principles and feedback patterns                     |
-| P2       | Icon and Imagery Standards  | Visual asset guidelines and usage requirements                     |
-| P3       | Advanced Component Patterns | Complex interaction patterns and specialized components            |
+| Priority | Feature                     | Description                                                         |
+| -------- | --------------------------- | ------------------------------------------------------------------- |
+| P1       | Core Color System           | Primary color palette with accessibility-compliant contrast ratios  |
+| P1       | Typography Hierarchy        | Font families, sizing, and text treatment standards                 |
+| P1       | Component Library           | Standardized UI components with consistent behavior                 |
+| P1       | Accessibility Standards     | WCAG AA compliance requirements and testing procedures              |
+| P1       | Spacing and Layout System   | Grid system, spacing tokens, and responsive behavior                |
+| P2       | Theme Variations            | Light and dark theme specifications (retro documented historically) |
+| P2       | Animation and Interaction   | Motion design principles and feedback patterns                      |
+| P2       | Icon and Imagery Standards  | Visual asset guidelines and usage requirements                      |
+| P3       | Advanced Component Patterns | Complex interaction patterns and specialized components             |
 
 ---
 
@@ -84,26 +84,37 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 
 **Theme Variations:**
 
-- **Light Theme**: Standard color palette as defined above
-- **Dark Theme**: `--color-primary` overridden to `#ff4530`, `--link-color` to `#3399ff`
-- **Retro Theme**: Terminal-style green (`#8cff6b`) on black (`#000000`) with 16.63:1 contrast ratio
+- **Light Theme**: Standard color palette as defined above.
+- **Dark Theme**: Overrides `--color-primary` to `#ff4530`, `--link-color` to `#3399ff`, and swaps surface/background tokens for low-light use.
+- Retro theme retired; see [Historical Note: Retro Theme](#historical-note-retro-theme-retired).
 
-#### Retro Theme Tokens & Contrast Compliance
+#### Dark Theme Overrides & Contrast Compliance
 
-| Token                 | Value     | Usage Notes                                              |
-| --------------------- | --------- | -------------------------------------------------------- |
-| `--color-background`  | `#000000` | Primary page background, retro terminal aesthetic        |
-| `--color-text`        | `#8cff6b` | Default copy, headings, and UI chrome in retro mode      |
-| `--color-primary`     | `#8cff6b` | Primary interactive accents and focus rings              |
-| `--color-secondary`   | `#8cff6b` | Secondary accents (intentionally matches primary)        |
-| `--button-bg`         | `#8cff6b` | Primary button background for high visibility            |
-| `--button-text-color` | `#000000` | Ensures button copy maintains legibility on neon surface |
+| Token                  | Light Value       | Dark Override                                                            | Usage Notes                                                     |
+| ---------------------- | ----------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| `--color-background`   | `#ffffff`         | `#000000`                                                                | Ensures copy maintains ≥ 15:1 contrast in dark environments     |
+| `--color-surface`      | `#ffffff`         | `#121212`                                                                | Provides elevated surface color without crushing shadows        |
+| `--color-text`         | `#000000`         | `#ffffff`                                                                | Supports WCAG AA text contrast on dark backgrounds              |
+| `--color-tertiary`     | `#e8e8e8`         | `#333333`                                                                | Adjusts panel/backdrop neutral tones for night mode             |
+| `--color-primary`      | `#cb2504`         | `#ff4530`                                                                | Preserves brand accents with higher vibrancy on dark surfaces   |
+| `--link-color`         | `#0066cc`         | `#3399ff`                                                                | Improves link visibility against dark surfaces                  |
+| `--color-border`       | `rgba(0,0,0,0.1)` | `rgba(255,255,255,0.24)`                                                 | Maintains definition between panels without harsh edges         |
+| `--button-disabled-bg` | `#757575`         | `#555555`                                                                | Keeps disabled state legible without overpowering active colors |
+| `--switch-off-bg`      | `#707070`         | `color-mix(in srgb, var(--color-text) 25%, transparent)`                 | Balances inactive toggles                                       |
+| `--switch-on-bg`       | `#007f00`         | `color-mix(in srgb, var(--color-primary) 75%, var(--color-surface) 25%)` | Keeps toggles vivid while respecting reduced glare              |
 
 **Contrast Verification:**
 
-- Foreground `#8cff6b` on background `#000000` — 16.63:1 contrast ratio
-- Foreground `#000000` on background `#8cff6b` — 16.63:1 contrast ratio
-- Validated with `npm run check:contrast` (wcag-contrast library) to confirm WCAG AA compliance
+- Foreground `#ffffff` on background `#000000` — 21:1 contrast ratio.
+- Foreground `#ff4530` on background `#121212` — 6.33:1 contrast ratio.
+- Foreground `#3399ff` on background `#000000` — 10.66:1 contrast ratio.
+- Validated with `npm run check:contrast` (wcag-contrast library) to confirm WCAG AA compliance across light and dark palettes.
+
+#### Historical Note: Retro Theme (Retired)
+
+- Original terminal-style palette (`#8cff6b` on `#000000`) is preserved in `src/styles/base.css` for teams maintaining CLI overlays, but it is no longer exposed through the global theme switcher.
+- Runtime and settings loaders must gracefully remap stored `"retro"` or `"high-contrast"` values to `dark` to avoid stranding legacy preferences.
+- When referencing historical mocks, annotate that retro visuals are archival and should not surface in new UI deliverables.
 
 **Accessibility Requirements:**
 
@@ -258,23 +269,18 @@ Ripple and focus feedback are handled through CSS-only `::after` pseudo-elements
 
 **Light Theme (Default):**
 
-- Background: Light colors with high contrast text
-- Primary palette as defined in core color system
-- Optimized for daytime use and general accessibility
+- Background: Light colors with high contrast text.
+- Primary palette as defined in core color system.
+- Optimized for daytime use and general accessibility.
 
 **Dark Theme:**
 
-- Background: Dark colors with light text
-- Modified primary colors: `--color-primary: #ff4530`, `--link-color: #3399ff`
-- Maintains WCAG AA contrast ratios
-- Reduced eye strain for low-light environments
+- Background: Dark colors with light text.
+- Modified primary colors: `--color-primary: #ff4530`, `--link-color: #3399ff`.
+- Maintains WCAG AA contrast ratios.
+- Reduced eye strain for low-light environments.
 
-**Retro Theme:**
-
-- Terminal-style aesthetic with green-on-black color scheme
-- Background: `#000000`, Text: `#8cff6b`
-- 16.63:1 contrast ratio for excellent accessibility
-- Nostalgic computing aesthetic for specialized users
+> **Historical Reference:** The Retro theme (green-on-black) is no longer part of the selectable UI but remains documented in the [historical note](#historical-note-retro-theme-retired) for teams that still maintain CLI experiences inspired by the terminal aesthetic.
 
 **Theme Switching:**
 
@@ -446,7 +452,7 @@ Ripple and focus feedback are handled through CSS-only `::after` pseudo-elements
 
 This PRD consolidates content from the following design files:
 
-- Retro theme color specifications and contrast validation (now canonical in [Retro Theme Tokens & Contrast Compliance](#retro-theme-tokens--contrast-compliance))
+- Historical retro theme guidance is consolidated in [Historical Note: Retro Theme (Retired)](#historical-note-retro-theme-retired).
 - [PRD: Development Standards](./prdDevelopmentStandards.md#5-ui-design-system-integration-p2) - Comprehensive UI design guidelines, typography, component patterns, tokens, and accessibility standards (formerly `design/codeStandards/codeUIDesignStandards.md`)
 - [PRD: Development Standards – Settings Page Guidelines](./prdDevelopmentStandards.md#6-settings-page-guidelines-p2) - Settings interface layout, styling, accessibility, and feature flag requirements (formerly `design/codeStandards/settingsPageDesignGuidelines.md`)
 - `src/styles/base.css` - CSS custom properties and design tokens currently in use

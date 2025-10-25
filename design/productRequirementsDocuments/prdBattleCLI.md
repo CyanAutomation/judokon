@@ -245,7 +245,7 @@ This appendix consolidates the previously separate CLI usage, module structure, 
 - **CLI Layout** is PRD compliant (last Playwright assessment 2024) with responsive grid behavior and 44px minimum touch targets.
 - `#cli-stats` relies on CSS Grid; `.cli-stat` maintains 44px minimum height and accessible focus rings.
 - Height reservations (`min-height: 8rem`) prevent layout instability and layout shift.
-- Terminal aesthetic: monospace typography, CLI gradient title bar, and retro color themes.
+- Terminal aesthetic: monospace typography, CLI gradient title bar, and optional retro-inspired color treatments scoped to the CLI (not exposed through the global theme selector).
 - Accessibility coverage: ARIA live regions, screen reader labels, and keyboard navigation parity.
 - Validation suites live in `playwright/cli-layout-assessment.spec.js` and should stay aligned with PRD requirements.
 

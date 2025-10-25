@@ -181,9 +181,9 @@ accessing `settings.featureFlags` directly.
 
 ### Display Modes
 
-- Available modes: `Light`, `Dark`, and `Retro`.
-- Retro emulates a terminal-style green-on-black palette and replaces the former High Contrast mode.
-- The current mode is exposed via `document.body.dataset.theme` (e.g., `data-theme="retro"`).
+- Available modes: `Light` and `Dark`.
+- Retro is now retired; previously saved `retro` preferences are normalized to Dark when encountered.
+- The current mode is exposed via `document.body.dataset.theme` (e.g., `data-theme="dark"`).
 
 > `navigationItems.js` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
 

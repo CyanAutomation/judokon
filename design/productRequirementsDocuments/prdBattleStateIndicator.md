@@ -150,7 +150,7 @@ Provided at init via `getCatalog()` or sticky event `control.state.catalog`.
 
 ## 9. Design and UX Considerations
 
-- Visual style should match the **retro-terminal look** of Classic Battle mode
+- Visual style should match the CLI’s terminal look (historically retro-themed) without depending on a globally selectable Retro mode
 - No shadows or animations; align with CLI aesthetic
 - Announcer should be invisible visually but fully screen-reader compatible
 - Layout should allow horizontal scrolling if too many states

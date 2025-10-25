@@ -274,7 +274,7 @@ Additional rarity colour mapping keeps game identity distinct:
   ```
 
 - Style selects and radio buttons with existing dark backgrounds, padding, and rounded borders; avoid bespoke colour values—use CSS variables (`--color-primary`, `--button-bg`, etc.).
-- Honour Light, Dark, and Retro themes, ensuring snackbars use `--color-tertiary` with a contrasting border to avoid conflict with the navigation bar.
+- Honour Light and Dark themes, ensuring snackbars use `--color-tertiary` with a contrasting border to avoid conflict with the navigation bar; legacy `retro` values should normalize to Dark before styles apply.
 - Apply spacing tokens (`--space-sm`, `--space-md`, etc.) and keep inputs at least 48px tall for touch accessibility.
 - Use `.settings-description` for general text and `.flag-description` for feature flag details (or standardise on one class when refactoring).
 
