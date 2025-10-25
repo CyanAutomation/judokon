@@ -58,13 +58,14 @@ function resolveNavigationModeId(modeId) {
  * @returns {Promise<Array>} Resolves when persistence and navigation update complete.
  */
 export function handleGameModeChange({ input, mode, label, getCurrentSettings, handleUpdate }) {
-  const prev = !input.checked;
+  const nextChecked = input.checked;
+  const prev = !nextChecked;
   const revert = () => {
     input.checked = prev;
   };
   const updated = {
     ...(getCurrentSettings().gameModes ?? {}),
-    [mode.id]: input.checked
+    [mode.id]: nextChecked
   };
 
   const navigationModeId = resolveNavigationModeId(mode.id);
@@ -78,10 +79,13 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
     )
   )
     .then(() => {
-      showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+      showSnackbar(`${label} ${nextChecked ? "enabled" : "disabled"}`);
       return { success: true };
     })
-    .catch((error) => ({ success: false, error }));
+    .catch((error) => {
+      console.error("Failed to persist game mode setting:", error);
+      return { success: false, error };
+    });
 
   const navPromise =
     navigationModeId === null
@@ -92,16 +96,17 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
           }
 
           return Promise.resolve(
-            updateNavigationItemHidden(navigationModeId, !input.checked)
+            updateNavigationItemHidden(navigationModeId, !nextChecked)
           ).catch((err) => {
             console.error("Failed to update navigation item", err);
             revert();
             showSettingsError();
+            throw err;
           });
         });
 
   return Promise.all([
-    updatePromise.then(() => undefined),
+    updatePromise,
     navPromise
   ]);
 }
