@@ -8,9 +8,9 @@ let audioContextPromise;
  * @returns {boolean} True when the "sound" setting is not explicitly disabled.
  * @pseudocode
  * SET soundSetting TO getSetting("sound")
- * IF soundSetting is strictly equal to false
- *   RETURN false
- * RETURN true
+ * IF soundSetting is NOT strictly equal to false
+ *   RETURN true
+ * RETURN false
  */
 export function isSoundEnabled() {
   return getSetting("sound") !== false;
@@ -46,7 +46,7 @@ async function createOrResumeContext() {
  * @pseudocode
  * IF sound is not enabled
  *   RETURN null
- * IF audioContextPromise is undefined
+ * IF audioContextPromise is falsy
  *   SET audioContextPromise TO createOrResumeContext()
  * AWAIT audioContextPromise INTO ctx
  * IF ctx is null
@@ -91,7 +91,7 @@ export async function getAudioContext() {
  * @pseudocode
  * IF sound is not enabled
  *   RETURN false
- * DESTRUCTURE frequency, durationMs, volume from options with defaults
+ * DESTRUCTURE frequency (default 880), durationMs (default 140), volume (default 0.04) from options
  * AWAIT getAudioContext() INTO ctx
  * IF ctx is null
  *   RETURN false
