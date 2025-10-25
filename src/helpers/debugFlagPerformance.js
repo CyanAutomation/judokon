@@ -58,6 +58,14 @@ function recordMetric(entry) {
  * @param {() => T} action - Synchronous action to profile.
  * @param {Record<string, unknown>} [metadata] - Optional metadata to include in the metric.
  * @returns {T}
+ * @pseudocode
+ *   if action is not a function -> return action
+ *   if profiling is disabled -> return action()
+ *   start <- now()
+ *   result <- action()
+ *   duration <- max(0, now() - start)
+ *   recordMetric({ flag, duration, metadata or null, timestamp: Date.now() })
+ *   return result
  */
 export function measureDebugFlagToggle(flag, action, metadata = undefined) {
   if (typeof action !== "function") {
@@ -84,6 +92,8 @@ export function measureDebugFlagToggle(flag, action, metadata = undefined) {
  * Retrieve recorded debug flag performance metrics.
  *
  * @returns {Array<{flag: string, duration: number, metadata: Record<string, unknown>|null, timestamp: number}>}
+ * @pseudocode
+ *   return shallow copy of metricsBuffer
  */
 export function getDebugFlagMetrics() {
   return metricsBuffer.slice();
@@ -93,6 +103,9 @@ export function getDebugFlagMetrics() {
  * Clear all recorded debug flag performance metrics.
  *
  * @returns {void}
+ * @pseudocode
+ *   metricsBuffer.length <- 0
+ *   if window exists and window.__DEBUG_FLAG_METRICS__ is an array -> set its length to 0
  */
 export function resetDebugFlagMetrics() {
   metricsBuffer.length = 0;
