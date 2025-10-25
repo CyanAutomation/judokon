@@ -956,6 +956,13 @@ function hideCliShortcuts() {
   if (sec?.open) {
     sec.open = false;
   }
+  try {
+    resumeTimers();
+  } catch {}
+  try {
+    state.shortcutsReturnFocus?.focus();
+  } catch {}
+  state.shortcutsReturnFocus = null;
   state.shortcutsOverlay = null;
 }
 
