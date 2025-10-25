@@ -8,6 +8,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { roundStore } from "./roundStore.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import { writeScoreDisplay, syncScoreboardDisplay } from "./scoreDisplay.js";
+import * as scoreboard from "../setupScoreboard.js";
 import logger from "../logger.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
@@ -258,20 +259,15 @@ export async function startRound(store, onRoundStart) {
   safeRound(
     "startRound.syncScoreDisplay",
     () => {
-      const scores =
-        typeof battleEngine.getScores === "function" ? battleEngine.getScores() : null;
+      const scores = typeof battleEngine.getScores === "function" ? battleEngine.getScores() : null;
       if (!scores || typeof scores !== "object") {
         writeScoreDisplay(0, 0);
         return;
       }
       const rawPlayer =
-        typeof scores.playerScore !== "undefined"
-          ? scores.playerScore
-          : scores.player;
+        typeof scores.playerScore !== "undefined" ? scores.playerScore : scores.player;
       const rawOpponent =
-        typeof scores.opponentScore !== "undefined"
-          ? scores.opponentScore
-          : scores.opponent;
+        typeof scores.opponentScore !== "undefined" ? scores.opponentScore : scores.opponent;
       syncScoreboardDisplay(rawPlayer, rawOpponent);
     },
     { suppressInProduction: true }
