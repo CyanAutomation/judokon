@@ -59,7 +59,7 @@ function recordMetric(entry) {
  * @param {Record<string, unknown>} [metadata] - Optional metadata to include in the metric.
  * @returns {T}
  * @pseudocode
- *   if action is not a function -> return action
+ *   if action is not a function -> return action (as-is, not called)
  *   if profiling is disabled -> return action()
  *   start <- now()
  *   result <- action()
@@ -105,7 +105,7 @@ export function getDebugFlagMetrics() {
  * @returns {void}
  * @pseudocode
  *   metricsBuffer.length <- 0
- *   if window exists and window.__DEBUG_FLAG_METRICS__ is an array -> set its length to 0
+ *   if window exists AND window.__DEBUG_FLAG_METRICS__ is an array -> set its length to 0
  */
 export function resetDebugFlagMetrics() {
   metricsBuffer.length = 0;
