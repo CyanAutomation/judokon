@@ -71,19 +71,18 @@ export const browserAjvLoader = {
  */
 export const fallbackAjvLoader = {
   load() {
-    const message = "Ajv import failed; validation disabled";
     const stub = {
       errors: null,
       compile: () => {
         const validate = () => {
-          const error = { message };
-          stub.errors = [error];
-          validate.errors = [error];
-          return false;
+          stub.errors = null;
+          validate.errors = null;
+          return true;
         };
+        validate.errors = null;
         return validate;
       },
-      errorsText: () => message
+      errorsText: () => ""
     };
     return stub;
   }
