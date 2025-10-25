@@ -3,7 +3,7 @@
 ## Snapshot
 
 - Flag regressions for Card Inspector, layout outlines, skip cooldown, battle state progress, opponent delay, and settings accessibility all remain fixed based on current code and automated coverage.
-- Two UX gaps still need attention: CLI shortcuts offer no visible guidance when disabled, and the battle-state progress list lacks an automated check that covers auto-select expiry.
+- Remaining coverage gap: the battle-state progress list still needs an automated check that covers auto-select expiry scenarios.
 - Performance impact from enabling the full debug flag stack is anecdotal; no telemetry or profiling guardrails are in place yet.
 
 ## Issue Status Matrix
@@ -14,7 +14,7 @@
 | Layout Debug Outlines persist | ✅ Verified | Flag mutations apply immediately and persist across navigations through the shared display bootstrapper. | `src/helpers/setupDisplaySettings.js:26`, `src/helpers/settingsPage.js:178`, `tests/helpers/layoutDebugPanel.test.js:9` |
 | Skip Round Cooldown ineffective | ✅ Verified | Hot-path handler short-circuits timers, updates DOM markers, and is covered by schedule/next-round unit tests. | `src/helpers/classicBattle/uiHelpers.js:46`, `src/helpers/classicBattle/timerService.js:476`, `tests/helpers/classicBattle/scheduleNextRound.test.js:454` |
 | Battle State Progress stuck | ✅ Verified | Progress list renders, remaps interrupt states, and follows state transitions end-to-end. | `src/helpers/battleStateProgress.js:80`, `playwright/battle-classic/battle-state-progress.spec.js:1`, `tests/helpers/battleStateProgress.test.js:26` |
-| CLI Shortcuts no guidance | 🟡 Needs UX copy | Feature flag hides the shortcuts panel without providing visible fallback messaging; only the screen-reader alert updates. | `src/pages/battleCLI/init.js:1760`, `src/pages/battleCLI.html:200` |
+| CLI Shortcuts no guidance | ✅ Verified | Shortcuts panel remains hidden but footer now shows inline CLI command guidance whenever the flag is off. | `src/pages/battleCLI/init.js:1758`, `tests/pages/battleCLI.onKeyDown.test.js:198` |
 | Opponent Delay only in CLI | ✅ Verified | Delay hint dispatches for both Classic Battle and CLI flows. | `src/pages/battleClassic.init.js:701`, `src/helpers/classicBattle/uiEventHandlers.js:92` |
 | Auto-Select Progress stuck | 🟡 Needs targeted test | Auto-select logic fires and updates scores, but progress timeline lacks coverage for timeout-driven state changes. | `tests/helpers/classicBattle/statSelectionTiming.test.js:1`, `playwright/battle-classic/battle-state-progress.spec.js:74` |
 | Settings Accessibility broken | ✅ Verified | Toggles expose semantic labels, descriptions, and focus treatments throughout Settings and advanced flag renders. | `src/pages/settings.html:130`, `src/helpers/settings/featureFlagSwitches.js:66`, `src/styles/settings.css:222` |
@@ -28,16 +28,9 @@
 - **Battle State Progress** – The progress list now renders, marks readiness, and remaps interrupts (`src/helpers/battleStateProgress.js:80`); Playwright scenarios cover live state transitions (`playwright/battle-classic/battle-state-progress.spec.js:51`).
 - **Settings Accessibility** – General toggles and feature-flag switches emit `<label>` + `aria-describedby` pairs (`src/pages/settings.html:130`, `src/helpers/settings/featureFlagSwitches.js:66`), and focus styles are defined in `src/styles/settings.css:222`.
 - **Opponent Delay Messaging** – Classic Battle reuses the same delay copy that was previously CLI-only (`src/pages/battleClassic.init.js:701`), with shared UI handlers (`src/helpers/classicBattle/uiEventHandlers.js:92`).
+- **CLI Shortcuts Guidance** – When `cliShortcuts` is disabled, a footer fallback keeps keyboard tips visible and aligned with the new live-region copy (`src/pages/battleCLI/init.js:1720`, `src/pages/battleCLI.html:200`), with coverage in `tests/pages/battleCLI.onKeyDown.test.js:198` and `playwright/cli-layout.spec.js`.
 
 ## Items Requiring Follow-Up
-
-### CLI Shortcuts No Guidance (🟡)
-
-- **Gap**: When `cliShortcuts` is false the panel is hidden (`src/pages/battleCLI.html:200`), leaving keyboard users without on-screen instructions; the live-region message set in `SHORTCUT_HINT_MESSAGES` (`src/pages/battleCLI/init.js:1760`) is not visible.
-- **Next steps**:
-  1. Inject a bottom-line hint via `showBottomLine` when shortcuts are disabled.
-  2. Mirror the hint in the prompt placeholder (`#cli-prompt`) for discoverability.
-  3. Add Playwright coverage that toggles the flag and asserts the fallback copy.
 
 ### Auto-Select Progress Coverage (🟡)
 
@@ -62,19 +55,15 @@
 
 ## Opportunities for Improvement
 
-1. **CLI Shortcuts Fallback Copy** – Surface a visible hint (chips or footer copy) when the shortcuts flag is disabled so players know to type commands.
-2. **Auto-Select Timeline Test Hook** – Provide a dedicated fixture that forces auto-select expiry within Playwright to harden the state-progress coverage.
-3. **Flag Metadata Layer** – Group flags by category/owner in `src/data/settings.json` and render headings + badges within `renderFeatureFlagSwitches` to reduce scrolling fatigue.
-4. **Flag Help Microcopy** – Add an inline help icon that pulls from `tooltips.json` so players can read a concise description without external docs.
-5. **Role-Based Views** – Honor a persisted role (player/developer/admin) and hide debug-only flags for non-engineering roles to keep Settings approachable.
+1. **Auto-Select Timeline Test Hook** – Provide a dedicated fixture that forces auto-select expiry within Playwright to harden the state-progress coverage.
+2. **Flag Metadata Layer** – Group flags by category/owner in `src/data/settings.json` and render headings + badges within `renderFeatureFlagSwitches` to reduce scrolling fatigue.
+3. **Flag Help Microcopy** – Add an inline help icon that pulls from `tooltips.json` so players can read a concise description without external docs.
+4. **Role-Based Views** – Honor a persisted role (player/developer/admin) and hide debug-only flags for non-engineering roles to keep Settings approachable.
 
 ## Verification Checklist
 
-- `npm run validate:data`
-- `npx eslint .`
-- `npx vitest run`
-- `playwright/battle-classic/battle-state-progress.spec.js`
-- Targeted CLI shortcut test covering the disabled state once implemented
+- `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
+- `npx playwright test playwright/cli-layout.spec.js`
 
 ## References
 
