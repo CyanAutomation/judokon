@@ -43,7 +43,7 @@ export async function setupUIBindings(view) {
       }
 
       const replayTarget = target.closest(
-        "#replay-button, #match-replay-button, [data-testid=\"replay-button\"]"
+        '#replay-button, #match-replay-button, [data-testid="replay-button"]'
       );
       if (!replayTarget) {
         return;

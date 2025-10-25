@@ -112,11 +112,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
       if (id === "cli-countdown") return document.getElementById("cli-countdown");
       return null;
     });
-    const getStatSpy = vi
-      .spyOn(init, "getStatByIndex")
-      .mockImplementation(() => {
-        throw new Error("fallback path should not execute when dataset.stat is provided");
-      });
+    const getStatSpy = vi.spyOn(init, "getStatByIndex").mockImplementation(() => {
+      throw new Error("fallback path should not execute when dataset.stat is provided");
+    });
     const dispatchSpy = vi.spyOn(battleEvents, "emitBattleEvent");
 
     try {

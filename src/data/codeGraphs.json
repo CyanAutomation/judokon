@@ -6976,7 +6976,11 @@
           "patterns": []
         },
         "setupCountryToggle": {
-          "calls": ["createCountryToggleAdapter", "createCountryToggleController", "addEventListener"],
+          "calls": [
+            "createCountryToggleAdapter",
+            "createCountryToggleController",
+            "addEventListener"
+          ],
           "patterns": []
         }
       }
