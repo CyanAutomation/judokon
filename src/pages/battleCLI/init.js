@@ -983,7 +983,6 @@ function hideCliShortcuts() {
   const sec = byId("cli-shortcuts");
   if (sec) {
     sec.open = false;
-    sec.hidden = true;
   }
   try {
     resumeTimers();
@@ -3087,8 +3086,6 @@ export async function setupFlags() {
   updateControlsHint();
   if (shortcutsDetails) {
     syncShortcutsButtonState(shortcutsDetails.open);
-    // Set hidden attribute based on open state so tests can verify visibility
-    shortcutsDetails.hidden = !shortcutsDetails.open;
   }
   const close = byId("cli-shortcuts-close");
   close?.addEventListener("click", (event) => {
