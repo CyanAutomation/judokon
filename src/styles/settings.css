@@ -45,7 +45,6 @@
 
 .settings-main {
   padding-top: clamp(var(--space-lg), 4vh, var(--space-xxl));
-  padding-bottom: var(--space-xxl);
   padding-bottom: calc(var(--space-xxl) + env(safe-area-inset-bottom));
   padding-inline: clamp(var(--space-sm), 5vw, var(--space-xl));
   margin: 0 auto;
