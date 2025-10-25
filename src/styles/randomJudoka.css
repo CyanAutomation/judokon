@@ -4,21 +4,35 @@ player-info {
 }
 
 .card-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: stretch;
+  justify-items: center;
+  gap: var(--space-lg);
+  width: min(100%, 460px);
+  margin-inline: auto;
   padding-bottom: calc(var(--footer-height) + env(safe-area-inset-bottom));
 }
 
 .draw-controls {
+  --draw-controls-sticky-gap: clamp(96px, 20vh, 160px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: var(--space-lg);
+  width: min(100%, 340px);
+  margin-top: 0;
+  position: sticky;
+  /* Keep the draw controls anchored near the bottom of the viewport on short displays */
+  top: calc(
+    100dvh - var(--footer-height) - env(safe-area-inset-bottom) - var(--draw-controls-sticky-gap)
+  );
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 5;
 }
 
 .card-section .draw-card-btn {
   align-self: center;
+  margin: 0 auto;
 }
 
 .card-section .draw-card-btn:active {
@@ -108,17 +122,15 @@ player-info {
 
 @media (orientation: landscape) {
   .card-section {
-    flex-direction: row;
-    justify-content: center;
+    width: min(100%, 960px);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto;
     align-items: flex-start;
-    gap: var(--space-lg);
+    justify-content: center;
   }
 
   .draw-controls {
-    margin-top: 0;
-  }
-
-  .card-section .draw-card-btn {
-    margin: var(--space-large) 0;
+    align-self: flex-start;
+    top: calc(var(--header-height) + var(--space-lg));
   }
 }

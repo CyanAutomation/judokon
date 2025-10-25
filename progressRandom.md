@@ -50,6 +50,7 @@ The following fixes are recommended to address the identified issues, prioritize
 
 4.  **Improve Responsiveness:**
     - **Change:** Anchor the "Draw" button to the viewport (e.g., using `position: sticky` or `position: fixed`) to ensure it remains accessible on all screen sizes and orientations.
+    - **Status:** Completed – Refactored `src/styles/randomJudoka.css` so `.card-section` uses a grid layout and the `.draw-controls` block sticks near the bottom of the viewport (with landscape-specific offsets), keeping the "Draw Card" button visible on short viewports. Verified with `npx vitest run tests/helpers/randomJudokaPage.*.test.js` and `npx playwright test random-judoka.spec.js`.
 
 ### Priority 3: Polish and Long-Term Health
 
