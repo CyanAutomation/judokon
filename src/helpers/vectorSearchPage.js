@@ -319,10 +319,4 @@ function updateStats(meta) {
 
 function attachFormHandlers(form) {
   form?.addEventListener("submit", handleSearch);
-  form?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      form.requestSubmit();
-    }
-  });
 }
