@@ -3,7 +3,7 @@ import selectors from "../../helpers/selectors.js";
 import {
   waitForBattleState,
   waitForBattleReady,
-  getCurrentBattleState,
+  getBattleStateWithErrorHandling,
   triggerStateTransition
 } from "../../helpers/battleStateHelper.js";
 
@@ -248,10 +248,19 @@ const MATCH_END_STATES = [MATCH_DECISION_STATE, MATCH_OVER_STATE];
  */
 async function safeGetBattleState(page, fallback = null) {
   try {
-    return await getCurrentBattleState(page);
+    const result = await getBattleStateWithErrorHandling(page);
+    if (result && typeof result.state === "string" && result.state) {
+      return result.state;
+    }
+
+    if (result && typeof result.state === "string") {
+      return result.state;
+    }
   } catch {
-    return fallback;
+    // Swallow evaluation errors so callers fall back to the provided value.
   }
+
+  return fallback;
 }
 
 async function attemptCliResolution(page) {
@@ -292,50 +301,169 @@ async function attemptCliResolution(page) {
  *
  * @param {import('@playwright/test').Page} page
  * @param {{ fromState?: string | null, finalState?: string, timeout?: number }} [options]
- * @returns {Promise<void>}
+ * @returns {Promise<string|null>} Verified battle state reported via the Test API after synchronization.
  */
 async function manuallySyncBattleState(
   page,
   { fromState = null, finalState = ROUND_OVER_STATE, timeout = 2_000 } = {}
 ) {
-  await page.evaluate(
+  const syncResult = await page.evaluate(
     async ({ fromState: priorState, finalState: targetState }) => {
-      const body = document.body;
-      if (!body) return;
-
-      const initialState = priorState ?? (body.dataset ? (body.dataset.battleState ?? null) : null);
-
-      if (body.dataset) {
-        body.dataset.battleState = targetState;
+      const stateApi = window.__TEST_API?.state;
+      if (!stateApi) {
+        return {
+          success: false,
+          reason: "STATE_API_UNAVAILABLE",
+          attempts: [],
+          initialState: priorState ?? null,
+          finalState: null
+        };
       }
 
-      if (typeof window.emitBattleEvent === "function") {
-        window.emitBattleEvent("battleStateChange", {
-          from: initialState,
-          to: targetState,
-          event: "roundResolved"
+      const readState = () => {
+        try {
+          return typeof stateApi.getBattleState === "function"
+            ? stateApi.getBattleState() ?? null
+            : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const initialState = priorState ?? readState();
+      const attempts = [];
+
+      const eventCandidates = [];
+      if (targetState === "roundOver") {
+        eventCandidates.push("roundResolved");
+      }
+      if (typeof targetState === "string" && targetState) {
+        eventCandidates.push(targetState);
+      }
+
+      const dispatchers = [];
+
+      if (typeof stateApi.dispatchBattleEvent === "function") {
+        const dispatch = stateApi.dispatchBattleEvent.bind(stateApi);
+        for (const eventName of eventCandidates) {
+          dispatchers.push(async () => {
+            try {
+              const result = await dispatch(eventName, {
+                __manualSync: true,
+                from: initialState ?? null,
+                to: targetState
+              });
+              const ok = result === true || result === targetState;
+              attempts.push({
+                strategy: "state.dispatchBattleEvent",
+                eventName,
+                ok,
+                result: ok ? "resolved" : result ?? null
+              });
+              return ok;
+            } catch (error) {
+              attempts.push({
+                strategy: "state.dispatchBattleEvent",
+                eventName,
+                ok: false,
+                error: error instanceof Error ? error.message : String(error)
+              });
+              return false;
+            }
+          });
+        }
+      }
+
+      const machine =
+        typeof stateApi.getBattleStateMachine === "function"
+          ? stateApi.getBattleStateMachine()
+          : null;
+
+      if (machine && typeof machine.dispatch === "function") {
+        const machineDispatch = machine.dispatch.bind(machine);
+        dispatchers.push(async () => {
+          try {
+            const result = await machineDispatch(targetState);
+            const ok = result === true || result === targetState;
+            attempts.push({
+              strategy: "stateMachine.dispatch",
+              eventName: targetState,
+              ok,
+              result: ok ? "resolved" : result ?? null
+            });
+            return ok;
+          } catch (error) {
+            attempts.push({
+              strategy: "stateMachine.dispatch",
+              eventName: targetState,
+              ok: false,
+              error: error instanceof Error ? error.message : String(error)
+            });
+            return false;
+          }
         });
       }
 
-      const stateApi = window.__TEST_API?.state;
-      if (stateApi && typeof stateApi.dispatchBattleEvent === "function") {
-        try {
-          await stateApi.dispatchBattleEvent(targetState);
-        } catch {
-          // Intentionally ignore dispatch errors as this is a fallback mechanism.
-          // The polling verification below will catch unresolved state syncs.
-        }
+      let success = false;
+      for (const attempt of dispatchers) {
+        success = await attempt();
+        if (success) break;
       }
+
+      const finalState = readState();
+      success = success || finalState === targetState;
+
+      return {
+        success,
+        reason: success ? null : "STATE_NOT_REACHED",
+        attempts,
+        initialState,
+        finalState
+      };
     },
     { fromState, finalState }
   );
 
+  const attemptSummary = Array.isArray(syncResult?.attempts)
+    ? syncResult.attempts
+        .map((attempt) => {
+          const parts = [attempt.strategy, attempt.eventName].filter(Boolean);
+          if (attempt.ok) {
+            parts.push("ok");
+          } else if (attempt.error) {
+            parts.push(`error:${attempt.error}`);
+          } else if (attempt.result) {
+            parts.push(`result:${attempt.result}`);
+          }
+          return parts.join("|");
+        })
+        .join("; ")
+    : "";
+
+  const pollDetails = [];
+  if (syncResult && !syncResult.success && syncResult.reason) {
+    pollDetails.push(`Manual sync reported ${syncResult.reason}`);
+  }
+  if (attemptSummary) {
+    pollDetails.push(`Attempts => ${attemptSummary}`);
+  }
+
+  const pollMessageParts = [
+    `Expected manual battle state sync to report "${finalState}" after fallback.`
+  ];
+  if (pollDetails.length) {
+    pollMessageParts.push(pollDetails.join(" | "));
+  }
+
   await expect
-    .poll(async () => safeGetBattleState(page, finalState), {
+    .poll(async () => safeGetBattleState(page), {
       timeout,
-      message: `Expected manual battle state sync to report "${finalState}" after fallback`
+      message: pollMessageParts.join(" ")
     })
     .toBe(finalState);
+
+  const verifiedState = await safeGetBattleState(page, null);
+  return typeof verifiedState === "string" && verifiedState ? verifiedState : null;
 }
 
 /**
@@ -357,13 +485,17 @@ async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
   if (shouldForceRoundOver(stateAfterTransition)) {
     const previousState = stateAfterTransition ?? stateAfterCli ?? null;
 
-    await manuallySyncBattleState(page, {
+    const syncedState = await manuallySyncBattleState(page, {
       fromState: previousState,
       finalState: ROUND_OVER_STATE,
       timeout: 2_000
     });
 
-    stateAfterTransition = ROUND_OVER_STATE;
+    if (typeof syncedState === "string" && syncedState) {
+      stateAfterTransition = syncedState;
+    } else {
+      stateAfterTransition = await safeGetBattleState(page, ROUND_OVER_STATE);
+    }
   }
 
   const resolved = stateAfterTransition === ROUND_OVER_STATE ? true : await hasResolved();
@@ -434,19 +566,24 @@ async function resolveRoundDeterministic(page) {
   };
 
   const { resolved: resolvedViaCli, stateAfterCli } = await attemptCliResolution(page);
+  let stateForFallback = stateAfterCli;
   if (resolvedViaCli) {
-    return;
+    const latestState = await safeGetBattleState(page, stateAfterCli);
+    if (MATCH_END_STATES.includes(latestState)) {
+      return;
+    }
+    stateForFallback = latestState;
   }
 
   const { resolved: resolvedAfterTransition, stateAfterTransition } =
-    await triggerRoundResolvedFallback(page, hasResolved, stateAfterCli);
-  if (resolvedAfterTransition) {
+    await triggerRoundResolvedFallback(page, hasResolved, stateForFallback);
+  if (resolvedAfterTransition && (await hasResolved())) {
     return;
   }
 
   await clickNextButtonFallback(page, {
     hasResolved,
-    stateAfterCli,
+    stateAfterCli: stateForFallback,
     stateAfterTransition
   });
 }
