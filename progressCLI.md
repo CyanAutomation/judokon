@@ -31,19 +31,6 @@ This document should be updated to reflect its status as a post-implementation r
   - Ran relevant Playwright tests (`cli-layout-assessment.spec.js`, `cli.spec.js`). All tests passed, indicating no regressions in layout or basic CLI functionality.
   - The CLI interface now uses the embedded 'Roboto Mono' font, ensuring a more consistent visual appearance across different user systems.
 
-### Task: Theming (Theme Switcher)
-
-- [x] **Action Taken:** Implemented the "Theming" improvement from the "Additional Opportunities" section.
-  - Added an "Immersive Theme" checkbox to the settings section in `src/pages/battleCLI.html`.
-  - Added logic to `src/pages/battleCLI/init.js` to handle the theme switching. This includes:
-    - Setting the initial state of the checkbox on page load based on `localStorage`.
-    - Adding an event listener to the checkbox that updates the `cliImmersive` flag in `localStorage` using the `setFlag` helper.
-    - Listening for `featureFlagsEmitter` changes to toggle the `cli-immersive` class on the `<body>` element.
-- **Outcome:**
-  - The theme switcher is now functional in the CLI settings.
-  - Created a new Playwright test (`playwright/cli-theme-switcher.spec.js`) to verify the functionality of the theme switcher.
-  - Ran relevant unit tests (`tests/helpers/featureFlags.test.js`) and Playwright tests (`cli-theme-switcher.spec.js`, `cli.spec.js`). All tests passed, confirming the feature works correctly and has not introduced regressions.
-
 ### Task: Grid Layout Optimization
 
 - [x] **Action Taken:** Refined the stats grid sizing logic in `src/pages/battleCLI.css` to use clamp-based column widths. This smooths the transition between breakpoints, ensuring tablets pick up an extra column sooner while preventing oversized tiles on wide displays.
