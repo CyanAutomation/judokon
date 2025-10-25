@@ -100,4 +100,3 @@ export function resetDebugFlagMetrics() {
     window.__DEBUG_FLAG_METRICS__.length = 0;
   }
 }
-

@@ -70,14 +70,7 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
 
   const navigationModeId = resolveNavigationModeId(mode.id);
 
-  const updatePromise = Promise.resolve(
-    handleUpdate(
-      "gameModes",
-      updated,
-      revert,
-      input
-    )
-  )
+  const updatePromise = Promise.resolve(handleUpdate("gameModes", updated, revert, input))
     .then(() => {
       showSnackbar(`${label} ${nextChecked ? "enabled" : "disabled"}`);
       return { success: true };
@@ -95,20 +88,17 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
             return;
           }
 
-          return Promise.resolve(
-            updateNavigationItemHidden(navigationModeId, !nextChecked)
-          ).catch((err) => {
-            console.error("Failed to update navigation item", err);
-            revert();
-            showSettingsError();
-            throw err;
-          });
+          return Promise.resolve(updateNavigationItemHidden(navigationModeId, !nextChecked)).catch(
+            (err) => {
+              console.error("Failed to update navigation item", err);
+              revert();
+              showSettingsError();
+              throw err;
+            }
+          );
         });
 
-  return Promise.all([
-    updatePromise,
-    navPromise
-  ]);
+  return Promise.all([updatePromise, navPromise]);
 }
 
 /**

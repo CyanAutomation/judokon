@@ -1958,9 +1958,7 @@ const testApi = {
       try {
         const store = inspectionApi.getBattleStore();
         if (!store) return false;
-        const { triggerRoundTimeoutNow } = await import(
-          "./classicBattle/testHooks.js"
-        );
+        const { triggerRoundTimeoutNow } = await import("./classicBattle/testHooks.js");
         await triggerRoundTimeoutNow(store);
         return true;
       } catch {

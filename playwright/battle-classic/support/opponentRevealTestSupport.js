@@ -323,7 +323,7 @@ async function manuallySyncBattleState(
       const readState = () => {
         try {
           return typeof stateApi.getBattleState === "function"
-            ? stateApi.getBattleState() ?? null
+            ? (stateApi.getBattleState() ?? null)
             : null;
         } catch {
           return null;
@@ -358,7 +358,7 @@ async function manuallySyncBattleState(
                 strategy: "state.dispatchBattleEvent",
                 eventName,
                 ok,
-                result: ok ? "resolved" : result ?? null
+                result: ok ? "resolved" : (result ?? null)
               });
               return ok;
             } catch (error) {
@@ -389,7 +389,7 @@ async function manuallySyncBattleState(
               strategy: "stateMachine.dispatch",
               eventName: targetState,
               ok,
-              result: ok ? "resolved" : result ?? null
+              result: ok ? "resolved" : (result ?? null)
             });
             return ok;
           } catch (error) {

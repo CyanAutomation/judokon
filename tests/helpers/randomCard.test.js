@@ -339,9 +339,9 @@ describe("generateRandomCard", () => {
       renderMock.mockClear();
       renderMock.mockResolvedValue(generatedEl);
 
-      await expect(
-        generateRandomCard(judokaData, gokyoData, container, false)
-      ).resolves.toEqual(judokaData[0]);
+      await expect(generateRandomCard(judokaData, gokyoData, container, false)).resolves.toEqual(
+        judokaData[0]
+      );
 
       expect(container.firstChild).toBe(generatedEl);
       await vi.runAllTimersAsync();

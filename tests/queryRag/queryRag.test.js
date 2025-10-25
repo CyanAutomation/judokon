@@ -98,8 +98,18 @@ describe("queryRag", () => {
     delete process.env.RAG_FORCE_JSON;
 
     expect(extractor).toHaveBeenCalledTimes(3);
-    expect(findMatches).toHaveBeenCalledWith(expect.any(Array), 5, expect.any(Array), "grip fighting");
-    expect(findMatches).toHaveBeenCalledWith(expect.any(Array), 5, expect.any(Array), "foot sweep tactics");
+    expect(findMatches).toHaveBeenCalledWith(
+      expect.any(Array),
+      5,
+      expect.any(Array),
+      "grip fighting"
+    );
+    expect(findMatches).toHaveBeenCalledWith(
+      expect.any(Array),
+      5,
+      expect.any(Array),
+      "foot sweep tactics"
+    );
     expect(results).not.toHaveLength(0);
     expect(results[0].id).toBe("sweeps");
   });

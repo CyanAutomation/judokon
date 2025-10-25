@@ -196,17 +196,23 @@ describe("battleCLI onKeyDown", () => {
     expect(fallback).toBeTruthy();
 
     __test.updateCliShortcutsVisibility();
-    __test.handleBattleState(new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } }));
+    __test.handleBattleState(
+      new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } })
+    );
 
     expect(shortcutsSection.hidden).toBe(true);
     expect(fallback.hidden).toBe(false);
     expect(fallback.textContent).toMatch(/stat 1/i);
     const sr = document.getElementById("cli-controls-hint-announce");
-    expect(sr?.textContent).toBe("Keyboard shortcuts are disabled. Type commands like stat 1 or stat 2 to choose a stat.");
+    expect(sr?.textContent).toBe(
+      "Keyboard shortcuts are disabled. Type commands like stat 1 or stat 2 to choose a stat."
+    );
 
     cliShortcutsEnabled = true;
     __test.updateCliShortcutsVisibility();
-    __test.handleBattleState(new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } }));
+    __test.handleBattleState(
+      new CustomEvent("battleStateChange", { detail: { to: "waitingForPlayerAction" } })
+    );
 
     expect(shortcutsSection.hidden).toBe(false);
     expect(fallback.hidden).toBe(true);

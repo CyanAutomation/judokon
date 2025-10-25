@@ -11,17 +11,25 @@
  *    f. Log any errors to the console.
  * 2. Use `onDomReady` to run `init` when the DOM is ready.
  */
-import { applyDisplayMode } from "./displayMode.js";
+import { applyDisplayMode, normalizeDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
+import { updateSetting } from "./settingsStorage.js";
 
 async function init() {
   try {
     const settings = await initFeatureFlags();
+    const normalizedMode = normalizeDisplayMode(settings.displayMode);
     applyDisplayMode(settings.displayMode);
+    if (normalizedMode && normalizedMode !== settings.displayMode) {
+      try {
+        await updateSetting("displayMode", normalizedMode);
+        settings.displayMode = normalizedMode;
+      } catch {}
+    }
     applyMotionPreference(settings.motionEffects);
     toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
     toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));

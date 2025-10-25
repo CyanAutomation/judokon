@@ -39,4 +39,3 @@ describe("debugFlagPerformance", () => {
     expect(window.__DEBUG_FLAG_METRICS__).toHaveLength(1);
   });
 });
-

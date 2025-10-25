@@ -148,9 +148,7 @@ describe("renderSettingsControls", () => {
 
   it("skips navigation updates when persistence fails", async () => {
     vi.resetModules();
-    const gameModes = [
-      { id: 1, name: "Classic", category: "mainMenu", order: 10 }
-    ];
+    const gameModes = [{ id: 1, name: "Classic", category: "mainMenu", order: 10 }];
     const revertSpy = vi.fn();
     const updateSetting = vi.fn().mockImplementation((key, value, revert) => {
       if (typeof revert === "function") {
@@ -200,9 +198,7 @@ describe("renderSettingsControls", () => {
 
   it("uses the persisted toggle state for delayed navigation updates", async () => {
     vi.resetModules();
-    const gameModes = [
-      { id: 1, name: "Classic", category: "mainMenu", order: 10 }
-    ];
+    const gameModes = [{ id: 1, name: "Classic", category: "mainMenu", order: 10 }];
     let resolveUpdate;
     const updateSetting = vi.fn().mockImplementation(
       () =>
@@ -249,13 +245,9 @@ describe("renderSettingsControls", () => {
   it("reverts the toggle and surfaces errors when navigation updates fail", async () => {
     vi.resetModules();
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-    const gameModes = [
-      { id: 1, name: "Classic", category: "mainMenu", order: 10 }
-    ];
+    const gameModes = [{ id: 1, name: "Classic", category: "mainMenu", order: 10 }];
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    const updateNavigationItemHidden = vi
-      .fn()
-      .mockRejectedValue(new Error("nav failed"));
+    const updateNavigationItemHidden = vi.fn().mockRejectedValue(new Error("nav failed"));
     const showSettingsError = vi.fn();
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       updateSetting,

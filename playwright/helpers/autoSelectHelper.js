@@ -17,4 +17,3 @@ export async function triggerAutoSelect(page) {
     throw new Error("Failed to trigger auto-select via Test API");
   }
 }
-
