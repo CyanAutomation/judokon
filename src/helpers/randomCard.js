@@ -11,6 +11,18 @@ import { setTestMode, isTestModeEnabled, getCurrentSeed } from "./testModeUtils.
 
 const TEST_ENV_GLOBAL_KEYS = ["__TEST__", "__VITEST__", "__PLAYWRIGHT__"];
 
+const requestNextFrame =
+  typeof globalThis === "object" && typeof globalThis.requestAnimationFrame === "function"
+    ? globalThis.requestAnimationFrame.bind(globalThis)
+    : (callback) =>
+        setTimeout(() => {
+          const now =
+            typeof globalThis === "object" && typeof globalThis.performance?.now === "function"
+              ? globalThis.performance.now()
+              : Date.now();
+          callback(now);
+        }, 0);
+
 function isTestEnvironment() {
   if (typeof process !== "undefined") {
     if (process.env?.NODE_ENV === "test" || process.env?.VITEST) {
@@ -73,7 +85,7 @@ function displayCard(element, card, skipAnimation = false) {
   }
   setupLazyPortraits(card);
   if (!skipAnimation) {
-    requestAnimationFrame(() => {
+    requestNextFrame(() => {
       card.classList.add("new-card");
     });
   }

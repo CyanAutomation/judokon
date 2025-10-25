@@ -317,4 +317,43 @@ describe("generateRandomCard", () => {
     ).resolves.toBeUndefined();
     expect(container.childNodes.length).toBe(0);
   });
+
+  it("falls back to setTimeout when requestAnimationFrame is unavailable", async () => {
+    const container = document.createElement("div");
+    const generatedEl = document.createElement("div");
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
+
+    getRandomJudokaMock = vi.fn(() => judokaData[0]);
+    getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
+    createGokyoLookupMock = vi.fn(() => ({}));
+    fetchJsonMock = vi.fn();
+
+    const originalRAF = globalThis.requestAnimationFrame;
+    vi.useFakeTimers();
+    try {
+      delete globalThis.requestAnimationFrame;
+      vi.resetModules();
+
+      const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+      renderMock.mockClear();
+      renderMock.mockResolvedValue(generatedEl);
+
+      await expect(
+        generateRandomCard(judokaData, gokyoData, container, false)
+      ).resolves.toEqual(judokaData[0]);
+
+      expect(container.firstChild).toBe(generatedEl);
+      await vi.runAllTimersAsync();
+      expect(generatedEl.classList.contains("new-card")).toBe(true);
+    } finally {
+      if (originalRAF) {
+        globalThis.requestAnimationFrame = originalRAF;
+      } else {
+        delete globalThis.requestAnimationFrame;
+      }
+      vi.useRealTimers();
+      vi.resetModules();
+    }
+  });
 });
