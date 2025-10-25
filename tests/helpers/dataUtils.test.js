@@ -298,9 +298,10 @@ describe("fallback Ajv stub integration", () => {
       const ajv = await module.getAjv();
       const validate = ajv.compile(schema);
       expect(validate({ foo: "bar" })).toBe(true);
+      expect(validate({ invalid: "data" })).toBe(true);
       expect(validate.errors).toBeNull();
       expect(ajv.errors).toBeNull();
-      expect(ajv.errorsText(validate.errors)).toBe("");
+      expect(ajv.errorsText(validate.errors)).toBe("Validation skipped (Ajv unavailable)");
     });
   });
 });

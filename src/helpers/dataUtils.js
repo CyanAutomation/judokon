@@ -71,10 +71,12 @@ export const browserAjvLoader = {
  */
 export const fallbackAjvLoader = {
   load() {
+    const warningMessage = "Ajv validation unavailable; skipping schema validation";
     const stub = {
       errors: null,
       compile: () => {
         const validate = () => {
+          console.warn(warningMessage);
           stub.errors = null;
           validate.errors = null;
           return true;
@@ -82,7 +84,7 @@ export const fallbackAjvLoader = {
         validate.errors = null;
         return validate;
       },
-      errorsText: () => ""
+      errorsText: () => "Validation skipped (Ajv unavailable)"
     };
     return stub;
   }
