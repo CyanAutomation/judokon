@@ -1,4 +1,5 @@
 import { setupScoreboard } from "../setupScoreboard.js";
+import { syncScoreboardDisplay } from "./scoreDisplay.js";
 import { initQuitButton } from "./quitButton.js";
 import { initInterruptHandlers } from "./interruptHandlers.js";
 import {
@@ -30,6 +31,28 @@ export async function setupUIBindings(view) {
   setupScoreboard(view.controller.timerControls);
   initQuitButton(store);
   initInterruptHandlers(store);
+  const applyReplayScoreReset = () => {
+    syncScoreboardDisplay(0, 0);
+  };
+  document.addEventListener(
+    "click",
+    (event) => {
+      const target = event?.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const replayTarget = target.closest(
+        "#replay-button, #match-replay-button, [data-testid=\"replay-button\"]"
+      );
+      if (!replayTarget) {
+        return;
+      }
+
+      applyReplayScoreReset();
+    },
+    { capture: true }
+  );
   watchBattleOrientation(() => view.applyBattleOrientation());
 
   setupNextButton();

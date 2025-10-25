@@ -7,7 +7,7 @@ import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { roundStore } from "./roundStore.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
-import * as scoreboard from "../setupScoreboard.js";
+import { writeScoreDisplay, syncScoreboardDisplay } from "./scoreDisplay.js";
 import logger from "../logger.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
@@ -157,20 +157,8 @@ function getStartRound(store) {
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
  */
 export async function handleReplay(store) {
-  // Scoped replay trace for intermittent scoreboard-race debugging. Uses Sentry if available.
-  const trace = (phase, extra = {}) => {
-    try {
-      // Avoid unsilenced console in tests; prefer Sentry if present.
-
-      if (typeof Sentry !== "undefined" && Sentry?.logger) {
-        Sentry.logger.debug(Sentry.logger.fmt`replay:${phase}`, extra);
-      }
-    } catch {
-      // Sentry logging is opportunistic; errors are swallowed.
-    }
-  };
-  trace("begin", { t: Date.now() });
   persistLastJudokaStats(store, store?.currentPlayerJudoka, store?.currentOpponentJudoka);
+
   const resetEngine = () => {
     try {
       if (typeof battleEngine.resetBattleEnginePreservingConfig === "function") {
@@ -180,50 +168,52 @@ export async function handleReplay(store) {
     } catch (error) {
       try {
         logger.warn("resetBattleEnginePreservingConfig failed, using fallback", error);
-      } catch {
-        // Logging failures should not interrupt replay handling.
-      }
+      } catch {}
     }
-    // Fallback for environments that have not yet adopted the reset helper.
+
     createBattleEngine({ forceCreate: true });
   };
-  safeRound("handleReplay.resetEngine", resetEngine, {
-    suppressInProduction: true
-  });
-  trace("engine_reset");
+
+  safeRound("handleReplay.resetEngine", resetEngine, { suppressInProduction: true });
+
   bridgeEngineEvents();
-  trace("events_bridged");
-  if (typeof window !== "undefined") {
-    safeRound(
-      "handleReplay.dispatchResetEvent",
-      () => window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } })),
-      { suppressInProduction: true }
-    );
-  }
-  trace("ui_reset_dispatched");
-  // Explicitly reset displayed scores to 0 after recreating the engine so
-  // the scoreboard model reflects the fresh match state immediately.
+
+  const applyZeroScores = () => {
+    syncScoreboardDisplay(0, 0);
+  };
+
+  safeRound(
+    "handleReplay.dispatchResetEvent",
+    () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
+    },
+    { suppressInProduction: true }
+  );
+
   safeRound(
     "handleReplay.emitScoreReset",
     () => emitBattleEvent("display.score.update", { player: 0, opponent: 0 }),
     { suppressInProduction: true }
   );
-  trace("score_event_zeroed");
-  const updateScoreboard = (operation) =>
-    safeRound(operation, () => scoreboard.updateScore(0, 0), { suppressInProduction: true });
-  updateScoreboard("handleReplay.scoreboardInitialReset");
-  trace("scoreboard_zeroed_initial");
+
+  safeRound("handleReplay.resetScoreboard", applyZeroScores, { suppressInProduction: true });
+
   safeRound(
     "handleReplay.resetRoundStoreNumber",
     () => roundStore.setRoundNumber(0, { emitLegacyEvent: false }),
     { suppressInProduction: true }
   );
+
   const startRoundFn = getStartRound(store);
-  const res = await startRoundFn();
-  trace("round_started");
-  updateScoreboard("handleReplay.scoreboardPostStart");
-  trace("scoreboard_zeroed_postStart");
-  return res;
+  const result = await startRoundFn();
+
+  safeRound("handleReplay.reapplyScoreboardReset", applyZeroScores, { suppressInProduction: true });
+
+  return result;
 }
 
 /**
@@ -265,6 +255,27 @@ export async function startRound(store, onRoundStart) {
   store.currentPlayerJudoka = cards.playerJudoka || null;
   store.currentOpponentJudoka = cards.opponentJudoka || null;
   persistLastJudokaStats(store, cards.playerJudoka, cards.opponentJudoka);
+  safeRound(
+    "startRound.syncScoreDisplay",
+    () => {
+      const scores =
+        typeof battleEngine.getScores === "function" ? battleEngine.getScores() : null;
+      if (!scores || typeof scores !== "object") {
+        writeScoreDisplay(0, 0);
+        return;
+      }
+      const rawPlayer =
+        typeof scores.playerScore !== "undefined"
+          ? scores.playerScore
+          : scores.player;
+      const rawOpponent =
+        typeof scores.opponentScore !== "undefined"
+          ? scores.opponentScore
+          : scores.opponent;
+      syncScoreboardDisplay(rawPlayer, rawOpponent);
+    },
+    { suppressInProduction: true }
+  );
   let roundNumber = 1;
   safeRound(
     "startRound.resolveRoundNumber",
@@ -272,6 +283,13 @@ export async function startRound(store, onRoundStart) {
       const fn = battleEngine.getRoundsPlayed;
       const played = typeof fn === "function" ? Number(fn()) : 0;
       if (Number.isFinite(played)) roundNumber = played + 1;
+      try {
+        if (typeof window !== "undefined") {
+          const rounds = Array.isArray(window.__roundNumbers) ? window.__roundNumbers : [];
+          rounds.push({ played, roundNumber, at: Date.now() });
+          window.__roundNumbers = rounds;
+        }
+      } catch {}
     },
     { suppressInProduction: true }
   );
