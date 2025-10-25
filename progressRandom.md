@@ -35,6 +35,7 @@ The following fixes are recommended to address the identified issues, prioritize
     - **Change:** In `src/helpers/randomJudokaPage.js`, modify the `announceCard` call to use the judoka's full name.
     - **Code:** Change `announceCard(announcedJudoka.name)` to `announceCard(`${announcedJudoka.firstname} ${announcedJudoka.surname}`).`
     - **Enhancement:** Add an announcement when the draw begins (e.g., `Drawing card…`) to provide immediate feedback to screen reader users.
+    - **Status:** Completed – Added `announceJudoka()` in `src/helpers/randomJudokaPage.js` to build full-name announcements (with fallbacks) and triggered a "Drawing card…" cue as soon as the draw starts. Verified with `npx vitest run tests/helpers/randomJudokaPage.*.test.js` and `npx playwright test random-judoka.spec.js`.
 
 ### Priority 2: Medium-Impact UX & Accessibility Fixes
 

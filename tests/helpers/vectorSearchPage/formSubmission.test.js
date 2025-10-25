@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import {
-  mockVectorSearch,
-  mockDataUtils,
-  mockConstants,
-  setupPage
-} from "./fixtures.js";
+import { mockVectorSearch, mockDataUtils, mockConstants, setupPage } from "./fixtures.js";
 
 afterEach(() => {
   vi.resetModules();
