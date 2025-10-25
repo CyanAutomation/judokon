@@ -37,6 +37,18 @@ import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardSta
 
 const historyTogglePlacementRegistry = new WeakMap();
 
+/**
+ * Floats the history toggle button inside the dialog panel to keep it accessible.
+ *
+ * @pseudocode
+ * 1. Look up the placement registration for the provided dialog.
+ * 2. Mirror the toggle button's size on the placeholder and reveal it.
+ * 3. Absolutely position the toggle button via fixed positioning inside the dialog.
+ * 4. Append the toggle button into the dialog so it remains clickable.
+ *
+ * @param {HTMLDialogElement} historyPanel - The dialog panel element.
+ * @param {HTMLElement} toggleHistoryBtn - The toggle button to float.
+ */
 function floatHistoryToggleButton(historyPanel, toggleHistoryBtn) {
   const placement = historyTogglePlacementRegistry.get(historyPanel);
   if (!placement) {
@@ -55,11 +67,23 @@ function floatHistoryToggleButton(historyPanel, toggleHistoryBtn) {
   toggleHistoryBtn.style.left = `${rect.left}px`;
   toggleHistoryBtn.style.width = `${rect.width}px`;
   toggleHistoryBtn.style.height = `${rect.height}px`;
-  toggleHistoryBtn.style.zIndex = "101";
+  toggleHistoryBtn.style.zIndex = "var(--z-index-floating-toggle, 101)";
 
   historyPanel.appendChild(toggleHistoryBtn);
 }
 
+/**
+ * Restores the history toggle button to its original position.
+ *
+ * @pseudocode
+ * 1. Ensure the toggle button is currently floated.
+ * 2. Retrieve the placeholder that marks the original position.
+ * 3. Hide the placeholder and move the toggle button back before it.
+ * 4. Clear the positioning styles and floating metadata on the toggle button.
+ *
+ * @param {HTMLDialogElement} historyPanel - The dialog panel element.
+ * @param {HTMLElement} toggleHistoryBtn - The toggle button to restore.
+ */
 function restoreHistoryToggleButton(historyPanel, toggleHistoryBtn) {
   if (toggleHistoryBtn.dataset.historyToggleFloating !== "true") {
     return;
@@ -161,6 +185,10 @@ export function buildHistoryPanel(prefersReducedMotion) {
   historyPanel.classList.add("history-panel");
 
   const supportsNativeDialog = typeof historyPanel.showModal === "function";
+  historyPanel.dataset.supportsNativeDialog = supportsNativeDialog ? "true" : "false";
+  historyTogglePlacementRegistry.set(historyPanel, {
+    placeholder: togglePlaceholder
+  });
 
   if (!supportsNativeDialog) {
     historyPanel.open = false;
@@ -213,18 +241,14 @@ export function buildHistoryPanel(prefersReducedMotion) {
 
   historyPanel.addEventListener("close", () => {
     toggleHistoryBtn.setAttribute("aria-expanded", "false");
-    historyPanel.setAttribute("aria-hidden", "true");
+    if (historyPanel.dataset.supportsNativeDialog === "true") {
+      historyPanel.setAttribute("aria-hidden", "true");
+    }
     restoreHistoryToggleButton(historyPanel, toggleHistoryBtn);
     runMicrotask(() => {
       toggleHistoryBtn.focus();
     });
   });
-
-  if (supportsNativeDialog) {
-    historyTogglePlacementRegistry.set(historyPanel, {
-      placeholder: togglePlaceholder
-    });
-  }
 
   return { historyPanel, historyList, toggleHistoryBtn };
 }
@@ -330,7 +354,9 @@ function toggleHistory(historyPanel, toggleHistoryBtn) {
   if (!historyPanel.open) {
     toggleHistoryBtn.setAttribute("aria-expanded", "true");
     historyPanel.showModal();
-    historyPanel.setAttribute("aria-hidden", "false");
+    if (historyPanel.dataset.supportsNativeDialog === "true") {
+      historyPanel.setAttribute("aria-hidden", "false");
+    }
     if (historyTogglePlacementRegistry.has(historyPanel)) {
       floatHistoryToggleButton(historyPanel, toggleHistoryBtn);
     }
