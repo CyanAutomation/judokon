@@ -930,6 +930,7 @@ function showCliShortcuts() {
   if (window.__battleCLIinit?.setShortcutsCollapsed?.(false)) {
     return;
   }
+  pauseTimers();
   const sec = byId("cli-shortcuts");
   if (sec && !sec.open) {
     sec.open = true;
