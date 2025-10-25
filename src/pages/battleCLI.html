@@ -15,23 +15,8 @@
       href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../styles/cli-immersive.css" />
     <link rel="stylesheet" href="../styles/components.css" />
     <link rel="stylesheet" href="battleCLI.css" />
-    <script>
-      if (
-        localStorage.getItem("userFlags") &&
-        JSON.parse(localStorage.getItem("userFlags")).cliImmersive
-      ) {
-        document.body.classList.add("cli-immersive");
-      }
-      if (
-        localStorage.getItem("userFlags") &&
-        JSON.parse(localStorage.getItem("userFlags")).scanlines
-      ) {
-        document.body.classList.add("scanlines");
-      }
-    </script>
   </head>
   <body>
     <div class="terminal-title-bar">bash - JU-DO-KON</div>
@@ -117,15 +102,6 @@
                 type="checkbox"
                 aria-label="Toggle verbose logging"
                 data-flag="cliVerbose"
-              />
-            </div>
-            <div class="cli-settings-row">
-              <label for="immersive-toggle">Immersive Theme:</label>
-              <input
-                id="immersive-toggle"
-                type="checkbox"
-                aria-label="Toggle immersive theme"
-                data-flag="cliImmersive"
               />
             </div>
             <div class="cli-settings-row">
