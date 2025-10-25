@@ -63,10 +63,16 @@ export function runAfterFrames(n, fn) {
  */
 export function withFrameBudget(workFn, budgetMs = 5) {
   const start = performance.now();
-  while (workFn() && performance.now() - start < budgetMs) {
-    // Continue work within budget
+  let hasMoreWork = true;
+  let timedOut = false;
+
+  while (hasMoreWork && !timedOut) {
+    hasMoreWork = workFn();
+    if (!hasMoreWork) break;
+    timedOut = performance.now() - start >= budgetMs;
   }
-  if (workFn()) {
+
+  if (hasMoreWork && timedOut) {
     // More work remains, schedule next frame
     requestAnimationFrame(() => withFrameBudget(workFn, budgetMs));
   }
