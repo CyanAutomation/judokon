@@ -19,6 +19,7 @@ import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import { setupScoreboard } from "../helpers/setupScoreboard.js";
+import { syncScoreboardDisplay } from "../helpers/classicBattle/scoreDisplay.js";
 import { resetFallbackScores } from "../helpers/api/battleUI.js";
 import {
   createBattleEngine,
@@ -736,20 +737,15 @@ function ensureScoreboardReflectsResult(result) {
       const normalizedPlayerScore = Number.isFinite(rawPlayerScore) ? rawPlayerScore : 0;
       const normalizedOpponentScore = Number.isFinite(rawOpponentScore) ? rawOpponentScore : 0;
 
-      updateScore(normalizedPlayerScore, normalizedOpponentScore);
+      const normalized = syncScoreboardDisplay(normalizedPlayerScore, normalizedOpponentScore);
 
       try {
         emitBattleEvent("display.score.update", {
-          player: normalizedPlayerScore,
-          opponent: normalizedOpponentScore
+          player: normalized.player,
+          opponent: normalized.opponent
         });
       } catch (err) {
         console.debug("battleClassic: failed to emit display.score.update event", err);
-      }
-
-      const scoreEl = document.getElementById("score-display");
-      if (scoreEl) {
-        scoreEl.innerHTML = `<span data-side=\"player\">You: ${normalizedPlayerScore}</span>\n<span data-side=\"opponent\">Opponent: ${normalizedOpponentScore}</span>`;
       }
     }
   } catch {}
