@@ -172,6 +172,8 @@ describe("battleCLI onKeyDown", () => {
     vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) =>
       flag === "cliShortcuts" ? false : originalIsEnabled(flag)
     );
+    // Update shortcuts visibility to reflect the disabled flag
+    __test.updateCliShortcutsVisibility();
     const shortcuts = document.getElementById("cli-shortcuts");
     const countdown = document.getElementById("cli-countdown");
     onKeyDown(new KeyboardEvent("keydown", { key: "h" }));

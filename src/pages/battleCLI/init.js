@@ -572,6 +572,7 @@ export const __test = {
   startRoundWrapper,
   showShortcutsPanel: showCliShortcuts,
   hideShortcutsPanel: hideCliShortcuts,
+  updateCliShortcutsVisibility,
   // Expose init for tests to manually initialize without DOMContentLoaded
   init,
   // Phase 4: Removed handleScoreboardShowMessage and handleScoreboardClearMessage exports
@@ -923,6 +924,7 @@ function updateCliShortcutsVisibility() {
  *   show shortcuts section and body
  *   persist expanded state to localStorage
  *   set close button `aria-expanded` to true
+ * set state.shortcutsOverlay = true to track that overlay is active
  */
 function showCliShortcuts() {
   if (window.__battleCLIinit?.setShortcutsCollapsed?.(false)) {
@@ -932,6 +934,7 @@ function showCliShortcuts() {
   if (sec && !sec.open) {
     sec.open = true;
   }
+  state.shortcutsOverlay = true;
 }
 
 /**
@@ -943,6 +946,7 @@ function showCliShortcuts() {
  *   persist collapsed state to localStorage
  *   set close button `aria-expanded` to false
  * if stored focus exists: focus it and clear reference
+ * set state.shortcutsOverlay = null to track that overlay is closed
  */
 function hideCliShortcuts() {
   if (window.__battleCLIinit?.setShortcutsCollapsed?.(true)) {
@@ -952,6 +956,7 @@ function hideCliShortcuts() {
   if (sec?.open) {
     sec.open = false;
   }
+  state.shortcutsOverlay = null;
 }
 
 function showBottomLine(text) {
