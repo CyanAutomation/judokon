@@ -35,6 +35,56 @@ import { getFallbackJudoka } from "./judokaUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
 
+const historyTogglePlacementRegistry = new WeakMap();
+
+function floatHistoryToggleButton(historyPanel, toggleHistoryBtn) {
+  const placement = historyTogglePlacementRegistry.get(historyPanel);
+  if (!placement) {
+    return;
+  }
+
+  const rect = toggleHistoryBtn.getBoundingClientRect();
+
+  placement.placeholder.style.display = "inline-block";
+  placement.placeholder.style.width = `${rect.width}px`;
+  placement.placeholder.style.height = `${rect.height}px`;
+
+  toggleHistoryBtn.dataset.historyToggleFloating = "true";
+  toggleHistoryBtn.style.position = "fixed";
+  toggleHistoryBtn.style.top = `${rect.top}px`;
+  toggleHistoryBtn.style.left = `${rect.left}px`;
+  toggleHistoryBtn.style.width = `${rect.width}px`;
+  toggleHistoryBtn.style.height = `${rect.height}px`;
+  toggleHistoryBtn.style.zIndex = "101";
+
+  historyPanel.appendChild(toggleHistoryBtn);
+}
+
+function restoreHistoryToggleButton(historyPanel, toggleHistoryBtn) {
+  if (toggleHistoryBtn.dataset.historyToggleFloating !== "true") {
+    return;
+  }
+
+  const placement = historyTogglePlacementRegistry.get(historyPanel);
+  if (!placement?.placeholder?.parentElement) {
+    return;
+  }
+
+  placement.placeholder.style.display = "none";
+  placement.placeholder.style.width = "";
+  placement.placeholder.style.height = "";
+
+  placement.placeholder.parentElement.insertBefore(toggleHistoryBtn, placement.placeholder);
+
+  toggleHistoryBtn.style.position = "";
+  toggleHistoryBtn.style.top = "";
+  toggleHistoryBtn.style.left = "";
+  toggleHistoryBtn.style.width = "";
+  toggleHistoryBtn.style.height = "";
+  toggleHistoryBtn.style.zIndex = "";
+  delete toggleHistoryBtn.dataset.historyToggleFloating;
+}
+
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
 
@@ -99,10 +149,15 @@ export function buildHistoryPanel(prefersReducedMotion) {
   toggleHistoryBtn.setAttribute("aria-expanded", "false");
   toggleHistoryBtn.setAttribute("aria-haspopup", "dialog");
   cardSection.appendChild(toggleHistoryBtn);
+  const togglePlaceholder = document.createElement("span");
+  togglePlaceholder.dataset.historyTogglePlaceholder = "true";
+  togglePlaceholder.style.display = "none";
+  toggleHistoryBtn.after(togglePlaceholder);
 
   const historyPanel = document.createElement("dialog");
   historyPanel.id = "history-panel";
   historyPanel.setAttribute("aria-labelledby", "history-panel-title");
+  historyPanel.setAttribute("aria-hidden", "true");
   historyPanel.classList.add("history-panel");
 
   const supportsNativeDialog = typeof historyPanel.showModal === "function";
@@ -118,6 +173,7 @@ export function buildHistoryPanel(prefersReducedMotion) {
       historyPanel.open = true;
       historyPanel.returnValue = "";
       historyPanel.setAttribute("open", "");
+      historyPanel.setAttribute("aria-hidden", "false");
     };
     historyPanel.close = (returnValue = "") => {
       if (!historyPanel.open) {
@@ -126,6 +182,7 @@ export function buildHistoryPanel(prefersReducedMotion) {
       historyPanel.returnValue = returnValue;
       historyPanel.open = false;
       historyPanel.removeAttribute("open");
+      historyPanel.setAttribute("aria-hidden", "true");
       historyPanel.dispatchEvent(new Event("close"));
     };
   }
@@ -156,10 +213,18 @@ export function buildHistoryPanel(prefersReducedMotion) {
 
   historyPanel.addEventListener("close", () => {
     toggleHistoryBtn.setAttribute("aria-expanded", "false");
+    historyPanel.setAttribute("aria-hidden", "true");
+    restoreHistoryToggleButton(historyPanel, toggleHistoryBtn);
     runMicrotask(() => {
       toggleHistoryBtn.focus();
     });
   });
+
+  if (supportsNativeDialog) {
+    historyTogglePlacementRegistry.set(historyPanel, {
+      placeholder: togglePlaceholder
+    });
+  }
 
   return { historyPanel, historyList, toggleHistoryBtn };
 }
@@ -265,6 +330,10 @@ function toggleHistory(historyPanel, toggleHistoryBtn) {
   if (!historyPanel.open) {
     toggleHistoryBtn.setAttribute("aria-expanded", "true");
     historyPanel.showModal();
+    historyPanel.setAttribute("aria-hidden", "false");
+    if (historyTogglePlacementRegistry.has(historyPanel)) {
+      floatHistoryToggleButton(historyPanel, toggleHistoryBtn);
+    }
 
     const historyTitle = historyPanel.querySelector("h2");
     if (historyTitle) {
