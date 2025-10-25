@@ -44,8 +44,9 @@ function resolveNavigationModeId(modeId) {
  * @pseudocode
  * 1. Create a copy of current game mode settings with the updated value.
  * 2. Persist the change via `handleUpdate`; on failure revert the checkbox.
- * 3. Update navigation visibility via `updateNavigationItemHidden`.
- * 4. Show a snackbar when the setting is saved.
+ * 3. When persistence succeeds, update navigation visibility via `updateNavigationItemHidden`.
+ * 4. Revert and surface an error if the navigation update fails.
+ * 5. Show a snackbar when the setting is saved.
  *
  * @param {{
  *   input: HTMLInputElement,
@@ -58,6 +59,9 @@ function resolveNavigationModeId(modeId) {
  */
 export function handleGameModeChange({ input, mode, label, getCurrentSettings, handleUpdate }) {
   const prev = !input.checked;
+  const revert = () => {
+    input.checked = prev;
+  };
   const updated = {
     ...(getCurrentSettings().gameModes ?? {}),
     [mode.id]: input.checked
@@ -69,29 +73,37 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
     handleUpdate(
       "gameModes",
       updated,
-      () => {
-        input.checked = prev;
-      },
+      revert,
       input
     )
   )
     .then(() => {
       showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+      return { success: true };
     })
-    .catch(() => {});
+    .catch((error) => ({ success: false, error }));
 
-  const navPromiseSource =
+  const navPromise =
     navigationModeId === null
       ? Promise.resolve()
-      : updateNavigationItemHidden(navigationModeId, !input.checked);
+      : updatePromise.then((result) => {
+          if (!result?.success) {
+            return;
+          }
 
-  const navPromise = navPromiseSource.catch((err) => {
-    console.error("Failed to update navigation item", err);
-    input.checked = prev;
-    showSettingsError();
-  });
+          return Promise.resolve(
+            updateNavigationItemHidden(navigationModeId, !input.checked)
+          ).catch((err) => {
+            console.error("Failed to update navigation item", err);
+            revert();
+            showSettingsError();
+          });
+        });
 
-  return Promise.all([updatePromise, navPromise]);
+  return Promise.all([
+    updatePromise.then(() => undefined),
+    navPromise
+  ]);
 }
 
 /**

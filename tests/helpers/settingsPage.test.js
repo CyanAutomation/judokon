@@ -146,6 +146,58 @@ describe("renderSettingsControls", () => {
     await testHarness.cleanup();
   });
 
+  it("skips navigation updates when persistence fails", async () => {
+    vi.resetModules();
+    const gameModes = [
+      { id: 1, name: "Classic", category: "mainMenu", order: 10 }
+    ];
+    const revertSpy = vi.fn();
+    const updateSetting = vi.fn().mockImplementation((key, value, revert) => {
+      if (typeof revert === "function") {
+        revertSpy();
+        revert();
+      }
+      return Promise.reject(new Error("persist failed"));
+    });
+    const updateNavigationItemHidden = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
+      updateSetting,
+      loadSettings: vi.fn(),
+      resetSettings: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      updateNavigationItemHidden,
+      loadNavigationItems: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
+    const testHarness = createSettingsHarness();
+    await testHarness.setup();
+    const { handleGameModeChange } = await import("../../src/helpers/settings/gameModeSwitches.js");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = false;
+    await handleGameModeChange({
+      input,
+      mode: gameModes[0],
+      label: gameModes[0].name,
+      getCurrentSettings: () => ({ gameModes: {} }),
+      handleUpdate: updateSetting
+    });
+    expect(updateSetting).toHaveBeenCalledWith(
+      "gameModes",
+      { [gameModes[0].id]: false },
+      expect.any(Function),
+      input
+    );
+    expect(revertSpy).toHaveBeenCalled();
+    expect(updateNavigationItemHidden).not.toHaveBeenCalled();
+    expect(input.checked).toBe(true);
+    await testHarness.cleanup();
+  });
+
   it("persists feature flag changes", async () => {
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
