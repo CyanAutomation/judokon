@@ -175,6 +175,7 @@ function init() {
         localStorage.setItem("battleCLI.shortcutsCollapsed", collapsed ? "1" : "0");
       } catch {}
       section.open = !collapsed;
+      section.hidden = collapsed;
       closeBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
       return true;
     };

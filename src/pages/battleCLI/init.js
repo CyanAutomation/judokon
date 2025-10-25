@@ -937,10 +937,6 @@ function updateCliShortcutsVisibility() {
     section.open = shouldBeOpen;
   }
 
-  // Synchronize hidden attribute with shouldBeOpen state
-  // Hidden when we want them closed but ONLY if they're not currently open
-  section.hidden = !shouldBeOpen && !section.open;
-
   syncShortcutsButtonState(section.open);
   updateShortcutsFallback(enabled);
   updateControlsHint();
@@ -3091,6 +3087,8 @@ export async function setupFlags() {
   updateControlsHint();
   if (shortcutsDetails) {
     syncShortcutsButtonState(shortcutsDetails.open);
+    // Set hidden attribute based on open state so tests can verify visibility
+    shortcutsDetails.hidden = !shortcutsDetails.open;
   }
   const close = byId("cli-shortcuts-close");
   close?.addEventListener("click", (event) => {
