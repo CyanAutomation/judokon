@@ -66,7 +66,13 @@ vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
 }));
 
 function populateCards() {
-  document.getElementById("next-round-timer").textContent = "Time Left: 10s";
+  const timer = document.getElementById("next-round-timer");
+  if (timer) {
+    const label = timer.querySelector('[data-part="label"]');
+    const value = timer.querySelector('[data-part="value"]');
+    if (label) label.textContent = "Time Left:";
+    if (value) value.textContent = "10s";
+  }
   document.getElementById("player-card").innerHTML =
     '<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>';
   document.getElementById("opponent-card").innerHTML =

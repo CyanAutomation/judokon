@@ -38,6 +38,7 @@ import { updateDebugPanel as updateDebugPanelImpl, setDebugPanelEnabled } from "
 export { updateDebugPanelImpl as updateDebugPanel };
 
 import { runWhenIdle } from "./idleCallback.js";
+import { writeScoreDisplay } from "./scoreDisplay.js";
 import { bindUIHelperEventHandlersDynamic } from "./uiEventHandlers.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { getCurrentSeed } from "../testModeUtils.js";
@@ -139,7 +140,7 @@ export function applyBattleFeatureFlags(battleArea, banner) {
   return testModeEnabled;
 }
 
-export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";
+export const INITIAL_SCOREBOARD_TEXT = "You: 0 Opponent: 0";
 
 /**
  * Ensure the scoreboard has initial text.
@@ -151,7 +152,9 @@ export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";
 export let syncScoreDisplay = () => {
   try {
     const el = document.querySelector("header #score-display");
-    if (el && !el.textContent) el.textContent = INITIAL_SCOREBOARD_TEXT;
+    if (el && !el.textContent) {
+      writeScoreDisplay(0, 0);
+    }
   } catch {}
 };
 

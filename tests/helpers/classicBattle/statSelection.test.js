@@ -120,24 +120,37 @@ describe("classicBattle stat selection", () => {
     expect(btn.style.backgroundColor).toBe("");
   });
 
+  function readScore() {
+    const player = document.querySelector(
+      'header #score-display [data-side="player"] [data-part="value"]'
+    );
+    const opponent = document.querySelector(
+      'header #score-display [data-side="opponent"] [data-part="value"]'
+    );
+    return {
+      player: player ? player.textContent : null,
+      opponent: opponent ? opponent.textContent : null
+    };
+  }
+
   describe.each([
     {
       playerValue: 3,
       opponentValue: 3,
       expectedMessage: /Tie/,
-      expectedScore: "You: 0\nOpponent: 0"
+      expectedScore: { player: "0", opponent: "0" }
     },
     {
       playerValue: 5,
       opponentValue: 3,
       expectedMessage: /You win the round/,
-      expectedScore: "You: 1\nOpponent: 0"
+      expectedScore: { player: "1", opponent: "0" }
     },
     {
       playerValue: 3,
       opponentValue: 5,
       expectedMessage: /Opponent wins the round/,
-      expectedScore: "You: 0\nOpponent: 1"
+      expectedScore: { player: "0", opponent: "1" }
     }
   ])(
     "handles outcome when player=$playerValue and opponent=$opponentValue",
@@ -152,7 +165,7 @@ describe("classicBattle stat selection", () => {
         expect(document.querySelector("header #round-message").textContent).toMatch(
           expectedMessage
         );
-        expect(document.querySelector("header #score-display").textContent).toBe(expectedScore);
+        expect(readScore()).toEqual(expectedScore);
       });
     }
   );

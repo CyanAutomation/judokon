@@ -55,13 +55,25 @@ describe("scoreboard readiness badge reflection", () => {
     left.className = "scoreboard-left";
     left.innerHTML = `
       <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
-      <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+      <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
+        <span data-part="label">Time Left:</span>
+        <span data-part="value">0s</span>
+      </p>
       <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
     `;
     const right = document.createElement("div");
     right.className = "scoreboard-right";
     right.innerHTML = `
-      <p id="score-display" aria-live="polite" aria-atomic="true"></p>
+      <p id="score-display" aria-live="polite" aria-atomic="true">
+        <span data-side="player">
+          <span data-part="label">You:</span>
+          <span data-part="value">0</span>
+        </span>
+        <span data-side="opponent">
+          <span data-part="label">Opponent:</span>
+          <span data-part="value">0</span>
+        </span>
+      </p>
       <span id="next-ready-badge" aria-hidden="true" hidden></span>
     `;
     const controls = document.createElement("div");

@@ -5,6 +5,19 @@ import { setupClassicBattleHooks } from "./setupTestEnv.js";
 describe("classicBattle stat selection timing", () => {
   const getEnv = setupClassicBattleHooks();
 
+  function readScoreValues() {
+    const player = document.querySelector(
+      'header #score-display [data-side="player"] [data-part="value"]'
+    );
+    const opponent = document.querySelector(
+      'header #score-display [data-side="opponent"] [data-part="value"]'
+    );
+    return {
+      player: player ? player.textContent : null,
+      opponent: opponent ? opponent.textContent : null
+    };
+  }
+
   beforeEach(() => {
     try {
       if (typeof window !== "undefined" && window.__disableSnackbars)
@@ -13,9 +26,21 @@ describe("classicBattle stat selection timing", () => {
     document.body.innerHTML = `
       <header>
         <p id="round-message"></p>
-        <p id="next-round-timer"></p>
+        <p id="next-round-timer">
+          <span data-part="label">Time Left:</span>
+          <span data-part="value">0s</span>
+        </p>
         <p id="round-counter"></p>
-        <p id="score-display"></p>
+        <p id="score-display">
+          <span data-side="player">
+            <span data-part="label">You:</span>
+            <span data-part="value">0</span>
+          </span>
+          <span data-side="opponent">
+            <span data-part="label">Opponent:</span>
+            <span data-part="value">0</span>
+          </span>
+        </p>
       </header>
       <div id="player-card"></div>
       <div id="opponent-card"></div>
@@ -37,9 +62,8 @@ describe("classicBattle stat selection timing", () => {
     const pending = battleMod.__triggerRoundTimeoutNow(store);
     await timerSpy.runAllTimersAsync();
     await pending;
-    const score = document.querySelector("header #score-display").textContent;
     const msg = document.querySelector("header #round-message").textContent;
-    expect(score).toBe("You: 1\nOpponent: 0");
+    expect(readScoreValues()).toEqual({ player: "1", opponent: "0" });
     // Ensure we surfaced the win message; cooldown drift hints must not overwrite it
     expect(msg).toMatch(/win the round/i);
   });

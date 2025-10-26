@@ -28,6 +28,19 @@ let getRandomJudokaMock;
 let renderMock;
 let currentFlags;
 
+function readScoreValues() {
+  const player = document.querySelector(
+    'header #score-display [data-side="player"] [data-part="value"]'
+  );
+  const opponent = document.querySelector(
+    'header #score-display [data-side="opponent"] [data-part="value"]'
+  );
+  return {
+    player: player ? player.textContent : null,
+    opponent: opponent ? opponent.textContent : null
+  };
+}
+
 beforeEach(() => {
   // Reset fallback scores for clean test state
   resetFallbackScores();
@@ -102,7 +115,7 @@ describe("classicBattle match end", () => {
     expect(cancelBtn).not.toBeNull();
     cancelBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("header #round-message").textContent).toBe("Ready");
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
+    expect(readScoreValues()).toEqual({ player: "0", opponent: "0" });
   });
 
   it("ends the match when player reaches required wins", async () => {
@@ -110,9 +123,10 @@ describe("classicBattle match end", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await playerWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
-    expect(document.querySelector("header #score-display").textContent).toBe(
-      `You: ${CLASSIC_BATTLE_POINTS_TO_WIN}\nOpponent: 0`
-    );
+    expect(readScoreValues()).toEqual({
+      player: String(CLASSIC_BATTLE_POINTS_TO_WIN),
+      opponent: "0"
+    });
     expect(document.querySelector("header #round-message").textContent).toMatch(/win the match/i);
   });
 
@@ -121,9 +135,10 @@ describe("classicBattle match end", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await opponentWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
-    expect(document.querySelector("header #score-display").textContent).toBe(
-      `You: 0\nOpponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
-    );
+    expect(readScoreValues()).toEqual({
+      player: "0",
+      opponent: String(CLASSIC_BATTLE_POINTS_TO_WIN)
+    });
     expect(document.querySelector("header #round-message").textContent).toMatch(
       /opponent wins the match/i
     );
@@ -134,8 +149,8 @@ describe("classicBattle match end", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await playerWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
-    const scoreBefore = document.querySelector("header #score-display").textContent;
+    const scoreBefore = readScoreValues();
     await playRound(battleMod, store, 5, 3);
-    expect(document.querySelector("header #score-display").textContent).toBe(scoreBefore);
+    expect(readScoreValues()).toEqual(scoreBefore);
   });
 });

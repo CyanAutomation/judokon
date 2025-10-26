@@ -1,5 +1,15 @@
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
 import { onFrame, cancel } from "../utils/scheduler.js";
+
+function createScoreMarkup(player, opponent) {
+  const safePlayer = Number.isFinite(player) ? player : Number(player) || 0;
+  const safeOpponent = Number.isFinite(opponent) ? opponent : Number(opponent) || 0;
+  return (
+    `<span data-side="player"><span data-part="label">You:</span> <span data-part="value">${safePlayer}</span></span>` +
+    "\n" +
+    `<span data-side="opponent"><span data-part="label">Opponent:</span> <span data-part="value">${safeOpponent}</span></span>`
+  );
+}
 export class ScoreboardView {
   constructor(model, { rootEl, messageEl, timerEl, roundCounterEl, scoreEl } = {}) {
     this.model = model;
@@ -82,10 +92,48 @@ export class ScoreboardView {
    */
   updateTimer(seconds) {
     if (!this.timerEl) return;
-    if (typeof seconds === "number") {
-      this.timerEl.textContent = `Time Left: ${seconds}s`;
-    } else {
+    const doc = this.timerEl.ownerDocument || (typeof document !== "undefined" ? document : null);
+    let label = this.timerEl.querySelector('[data-part="label"]');
+    let value = this.timerEl.querySelector('[data-part="value"]');
+    if ((!label || !value) && doc?.createElement) {
       this.timerEl.textContent = "";
+      label = doc.createElement("span");
+      label.dataset.part = "label";
+      value = doc.createElement("span");
+      value.dataset.part = "value";
+      this.timerEl.append(label, doc.createTextNode(" "), value);
+    }
+    if (typeof seconds === "number" && Number.isFinite(seconds)) {
+      const clamped = Math.max(0, seconds);
+      if (label) {
+        label.textContent = "Time Left:";
+      }
+      if (value) {
+        value.textContent = `${clamped}s`;
+      } else {
+        this.timerEl.textContent = `Time Left: ${clamped}s`;
+      }
+      const separator = label?.nextSibling;
+      if (label && value) {
+        if (!separator || separator.nodeType !== 3) {
+          this.timerEl.insertBefore((doc || document).createTextNode(" "), value);
+        } else if (!/\s/.test(separator.textContent || "")) {
+          separator.textContent = " ";
+        }
+      }
+    } else {
+      if (label) {
+        label.textContent = "";
+        const separator = label.nextSibling;
+        if (separator && separator.nodeType === 3) {
+          this.timerEl.removeChild(separator);
+        }
+      }
+      if (value) {
+        value.textContent = "";
+      } else {
+        this.timerEl.textContent = "";
+      }
     }
   }
 
@@ -112,7 +160,7 @@ export class ScoreboardView {
     try {
       const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
       if (IS_VITEST) {
-        this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span>\n<span data-side="opponent">Opponent: ${opponent}</span>`;
+        this.scoreEl.innerHTML = createScoreMarkup(player, opponent);
         return;
       }
     } catch {}
@@ -122,7 +170,7 @@ export class ScoreboardView {
       reduce = !!shouldReduceMotionSync();
     } catch {}
     if (reduce) {
-      this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span>\n<span data-side="opponent">Opponent: ${opponent}</span>`;
+      this.scoreEl.innerHTML = createScoreMarkup(player, opponent);
       return;
     }
     // Immediate set for determinism, optional animate when prior spans exist
@@ -136,7 +184,7 @@ export class ScoreboardView {
         cancel(this._scoreRaf);
         this._scoreRaf = null;
       }
-      this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
+      this.scoreEl.innerHTML = createScoreMarkup(endVals.p, endVals.o);
       // Force DOM update before querying for the newly inserted spans.
       const forceLayout = this.scoreEl.offsetHeight;
       void forceLayout;
@@ -157,7 +205,7 @@ export class ScoreboardView {
     const duration = 400;
     const id = ++this._scoreAnimId;
     // Set final text immediately for determinism; animate as a cosmetic overlay
-    this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
+    this.scoreEl.innerHTML = createScoreMarkup(endVals.p, endVals.o);
     const t0 = performance.now();
     const step = (t) => {
       if (id !== this._scoreAnimId) return;
@@ -165,7 +213,7 @@ export class ScoreboardView {
       const k = Math.min(1, (now - t0) / duration);
       // No-op write once at end to keep DOM in sync; content already set above
       if (k >= 1) {
-        this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
+        this.scoreEl.innerHTML = createScoreMarkup(endVals.p, endVals.o);
       }
       if (k >= 1) {
         cancel(this._scoreRaf);

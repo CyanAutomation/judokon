@@ -10,6 +10,7 @@ import { resolveDelay } from "./timerUtils.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
+import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundStore } from "./roundStore.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
@@ -278,7 +279,14 @@ function clearNextRoundTimerFallback() {
     if (typeof document !== "undefined") {
       const timerEl = document.getElementById("next-round-timer");
       if (timerEl) {
-        timerEl.textContent = "";
+        const valueSpan = timerEl.querySelector('[data-part="value"]');
+        if (valueSpan) valueSpan.textContent = "";
+        const labelSpan = timerEl.querySelector('[data-part="label"]');
+        if (labelSpan) labelSpan.textContent = "";
+        const separator = labelSpan?.nextSibling;
+        if (separator && separator.nodeType === 3) {
+          timerEl.removeChild(separator);
+        }
       }
     }
   } catch {}
@@ -664,8 +672,7 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
       }
 
       if (result && scoreEl) {
-        scoreEl.innerHTML = "";
-        scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
+        writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
       }
     }
   } catch {}
@@ -695,10 +702,7 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
   } catch {}
 
   try {
-    const el = document.getElementById("score-display");
-    if (el) {
-      el.innerHTML = `<span data-side=\"player\">You: ${playerScore}</span>\n<span data-side=\"opponent\">Opponent: ${opponentScore}</span>`;
-    }
+    writeScoreDisplay(playerScore, opponentScore);
   } catch {}
 
   try {
