@@ -51,8 +51,26 @@
             <div class="modern-header__theme-toggle" role="group" aria-label="Display mode">
               <span class="modern-header__theme-label" id="header-theme-toggle-label">Theme</span>
               <div class="modern-header__theme-controls" aria-labelledby="header-theme-toggle-label">
-                <label class="modern-header__theme-pill" for="display-mode-light">Light</label>
-                <label class="modern-header__theme-pill" for="display-mode-dark">Dark</label>
+                <label class="modern-header__theme-pill" for="header-display-mode-light">
+                  <input
+                    type="radio"
+                    class="modern-header__theme-input visually-hidden"
+                    name="header-display-mode"
+                    value="light"
+                    id="header-display-mode-light"
+                  />
+                  Light
+                </label>
+                <label class="modern-header__theme-pill" for="header-display-mode-dark">
+                  <input
+                    type="radio"
+                    class="modern-header__theme-input visually-hidden"
+                    name="header-display-mode"
+                    value="dark"
+                    id="header-display-mode-dark"
+                  />
+                  Dark
+                </label>
               </div>
               <a class="modern-header__anchor" href="#display-settings-container">More options</a>
             </div>

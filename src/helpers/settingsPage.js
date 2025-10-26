@@ -194,6 +194,7 @@ function createControlsRefs() {
     soundToggle: document.getElementById("sound-toggle"),
     motionToggle: document.getElementById("motion-toggle"),
     displayRadios: document.querySelectorAll('input[name="display-mode"]'),
+    headerThemeRadios: document.querySelectorAll('input[name="header-display-mode"]'),
     typewriterToggle: document.getElementById("typewriter-toggle"),
     tooltipsToggle: document.getElementById("tooltips-toggle"),
     cardOfTheDayToggle: document.getElementById("card-of-the-day-toggle"),

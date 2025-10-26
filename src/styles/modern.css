@@ -165,16 +165,16 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: clamp(var(--space-sm), 4vw, var(--space-lg));
+  gap: clamp(0.5rem, 4vw, 1.5rem);
   width: min(1120px, 100%);
   margin: 0 auto;
-  padding: clamp(var(--space-xs), 1.5vh, var(--space-sm)) clamp(var(--space-sm), 5vw, var(--space-xl));
+  padding: clamp(0.25rem, 1.5vh, 0.5rem) clamp(0.5rem, 5vw, 2rem);
 }
 
 .theme-modern .modern-header__branding {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 0.5rem;
   font-family: var(--font-family-heading);
   font-weight: var(--modern-font-weight-semibold);
   letter-spacing: var(--modern-letter-spacing-wide);
@@ -185,11 +185,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xs);
+  padding: 0.25rem;
   border-radius: var(--modern-radius-pill);
   transition:
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .theme-modern .modern-header__logo-link:hover,
@@ -211,7 +211,7 @@
 .theme-modern .modern-header__breadcrumb ol {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 0.5rem;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -232,7 +232,7 @@
 
 .theme-modern .modern-header__breadcrumb li + li::before {
   content: "/";
-  margin-inline: var(--space-xs);
+  margin-inline: 0.25rem;
   color: color-mix(in srgb, var(--modern-color-text-muted) 70%, transparent);
 }
 
@@ -244,7 +244,7 @@
 .theme-modern .modern-header__theme-toggle {
   display: grid;
   grid-template-columns: auto;
-  gap: var(--space-xs);
+  gap: 0.25rem;
   text-align: right;
 }
 
@@ -259,14 +259,14 @@
 .theme-modern .modern-header__theme-controls {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 0.25rem;
 }
 
 .theme-modern .modern-header__theme-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--space-xs) + 2px) var(--space-sm);
+  padding: calc(0.25rem + 2px) 0.75rem;
   border-radius: var(--modern-radius-pill);
   border: 1px solid color-mix(in srgb, var(--modern-color-border) 60%, transparent);
   background: color-mix(in srgb, var(--modern-color-surface) 92%, transparent);
@@ -274,10 +274,10 @@
   font-size: var(--modern-font-size-xs);
   cursor: pointer;
   transition:
-    color var(--transition-fast),
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .theme-modern .modern-header__theme-pill:hover,
@@ -288,15 +288,15 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--modern-color-primary) 22%, transparent);
 }
 
-.theme-modern:not([data-theme]) .modern-header__theme-pill[for="display-mode-light"],
-.theme-modern[data-theme="light"] .modern-header__theme-pill[for="display-mode-light"] {
+.theme-modern:not([data-theme]) .modern-header__theme-pill[for="header-display-mode-light"],
+.theme-modern[data-theme="light"] .modern-header__theme-pill[for="header-display-mode-light"] {
   background: var(--modern-color-primary);
   border-color: var(--modern-color-primary);
   color: var(--modern-color-text-inverted);
   box-shadow: var(--modern-shadow-sm);
 }
 
-.theme-modern[data-theme="dark"] .modern-header__theme-pill[for="display-mode-dark"] {
+.theme-modern[data-theme="dark"] .modern-header__theme-pill[for="header-display-mode-dark"] {
   background: var(--modern-color-secondary);
   border-color: var(--modern-color-secondary);
   color: var(--modern-color-text-inverted);
@@ -318,7 +318,7 @@
 .theme-modern .modern-hero {
   position: relative;
   margin: 0 auto var(--space-xl);
-  padding: clamp(var(--space-lg), 6vw, var(--space-xxl));
+  padding: clamp(var(--space-lg), 6vw, var(--space-xl));
   background: linear-gradient(
       135deg,
       color-mix(in srgb, var(--modern-color-primary) 12%, transparent) 0%,
