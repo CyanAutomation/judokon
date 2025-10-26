@@ -1,5 +1,9 @@
 import { vi } from "vitest";
 
+/**
+ * Different path specifiers for the round timer module to handle various
+ * import contexts and relative path resolutions in different test environments.
+ */
 const ROUND_TIMER_SPECIFIERS = [
   "../../../src/helpers/timers/createRoundTimer.js",
   "../../src/helpers/timers/createRoundTimer.js",
