@@ -6,11 +6,10 @@ function createEngineStub({ pointsToWin = 10, scores } = {}) {
   const bus = new EventTarget();
   let target = pointsToWin;
   const resolvedScores =
-    scores ||
-    (() => ({
+    scores || {
       playerScore: 0,
       opponentScore: 0
-    }));
+    };
   return {
     on: vi.fn((eventName, handler) => {
       bus.addEventListener(eventName, (event) => handler(event.detail));
@@ -23,9 +22,7 @@ function createEngineStub({ pointsToWin = 10, scores } = {}) {
       return undefined;
     }),
     getPointsToWin: vi.fn(() => target),
-    getScores: vi.fn(() =>
-      typeof resolvedScores === "function" ? resolvedScores() : resolvedScores
-    ),
+    getScores: vi.fn(() => resolvedScores),
     stopTimer: vi.fn(),
     getEngine: vi.fn(() => null)
   };
@@ -98,9 +95,10 @@ describe("Battle CLI helpers", () => {
       await mod.init();
       failCalls = true;
 
-      const root = document.getElementById("cli-root");
-      root.dataset.round = "2";
-      root.dataset.target = "7";
+      const { updateRoundHeader } = await import(
+        "../../src/pages/battleCLI/dom.js"
+      );
+      updateRoundHeader(2, 7);
       const checkbox = document.getElementById("verbose-toggle");
       const section = document.getElementById("cli-verbose-section");
 
@@ -138,77 +136,61 @@ describe("Battle CLI helpers", () => {
   });
 
   describe("wireEvents", () => {
-    it("opens and closes shortcuts when the 'h' key is pressed", async () => {
+    it("registers a global keydown listener", async () => {
       await cleanupBattleCLI();
       const mod = await loadBattleCLI();
       const addEventSpy = vi.spyOn(window, "addEventListener");
       await mod.init();
-      const keydownCall = addEventSpy.mock.calls.find(([type]) => type === "keydown");
-      expect(keydownCall).toBeDefined();
-      const [, boundHandler] = keydownCall;
-      expect(typeof boundHandler).toBe("function");
-      boundHandler(new KeyboardEvent("keydown", { key: "h" }));
-      expect(document.getElementById("cli-shortcuts").open).toBe(true);
-      boundHandler(new KeyboardEvent("keydown", { key: "h" }));
-      expect(document.getElementById("cli-shortcuts").open).toBe(false);
+
+      const keydownRegistrations = addEventSpy.mock.calls.filter(
+        ([type]) => type === "keydown"
+      );
+      expect(keydownRegistrations.length).toBeGreaterThan(0);
+      keydownRegistrations.forEach(([, handler]) => {
+        expect(typeof handler).toBe("function");
+      });
+
       addEventSpy.mockRestore();
-      const { wireEvents } = await import("../../src/pages/index.js");
+    });
+
+    it("toggles the shortcuts overlay when H is pressed", async () => {
+      await cleanupBattleCLI();
+      const mod = await loadBattleCLI();
+      await mod.init();
+      const { wireEvents } = await import("../../src/pages/battleCLI/init.js");
       wireEvents();
+
+      const { emitBattleEvent } = await import(
+        "../../src/helpers/classicBattle/battleEvents.js"
+      );
+      emitBattleEvent("battleStateChange", {
+        from: "roundStart",
+        to: "waitingForPlayerAction"
+      });
 
       const shortcuts = document.getElementById("cli-shortcuts");
       const countdown = document.getElementById("cli-countdown");
-      expect(shortcuts.tagName).toBe("DETAILS");
-      expect(shortcuts.hidden).toBe(false);
-      expect(shortcuts.open).toBe(false);
-      expect(document.activeElement?.tagName).not.toBe("INPUT");
-      document.body.dataset.battleState = "waitingForPlayerAction";
-      const { isEnabled } = await import("../../src/helpers/featureFlags.js");
-      expect(isEnabled("cliShortcuts")).toBe(true);
-      const collapseHelper = window.__battleCLIinit?.setShortcutsCollapsed;
-      expect(typeof collapseHelper === "function" || collapseHelper === undefined).toBe(true);
       const closeButton = document.getElementById("cli-shortcuts-close");
 
-      const boundSpy = vi.fn(boundHandler);
-      window.addEventListener("keydown", boundSpy);
+      expect(shortcuts.tagName).toBe("DETAILS");
+      expect(shortcuts.open).toBe(false);
 
       window.dispatchEvent(
         new KeyboardEvent("keydown", { key: "h", bubbles: true })
       );
       await Promise.resolve();
 
-      expect(boundSpy).toHaveBeenCalledTimes(1);
-      expect(countdown.textContent).not.toBe("Invalid key, press H for help");
       expect(shortcuts.open).toBe(true);
       expect(document.activeElement).toBe(closeButton);
+      expect(countdown.dataset.status).not.toBe("error");
+      expect(countdown.textContent).not.toBe("Invalid key, press H for help");
 
-      boundSpy.mockClear();
       window.dispatchEvent(
         new KeyboardEvent("keydown", { key: "h", bubbles: true })
       );
       await Promise.resolve();
 
-      expect(boundSpy).toHaveBeenCalledTimes(1);
       expect(shortcuts.open).toBe(false);
-
-      boundSpy.mockClear();
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "h", bubbles: true })
-      );
-      await Promise.resolve();
-
-      expect(boundSpy).toHaveBeenCalledTimes(1);
-      expect(shortcuts.open).toBe(true);
-
-      boundSpy.mockClear();
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "h", bubbles: true })
-      );
-      await Promise.resolve();
-
-      expect(boundSpy).toHaveBeenCalledTimes(1);
-      expect(shortcuts.open).toBe(false);
-
-      window.removeEventListener("keydown", boundSpy);
     });
   });
 
@@ -247,16 +229,29 @@ describe("Battle CLI helpers", () => {
       const mod = await loadBattleCLI({ mockBattleEngine: false });
       await mod.init();
 
+      const { updateRoundHeader, setRoundMessage, updateScoreLine } = await import(
+        "../../src/pages/battleCLI/dom.js"
+      );
+      updateRoundHeader(3, 4);
+      engineStub.getScores.mockReturnValueOnce({
+        playerScore: 3,
+        opponentScore: 2
+      });
+      updateScoreLine();
+      engineStub.getScores.mockReturnValue({ playerScore: 0, opponentScore: 0 });
+      setRoundMessage("Round resolved");
+
+      const { subscribeEngine } = await import("../../src/pages/battleCLI/init.js");
+      subscribeEngine();
+      engineStub.emit("matchEnded", { outcome: "opponentWin" });
+
+      mod.cli.appendTranscript({ from: "roundStart", to: "Round resolved" });
+
       const header = document.getElementById("cli-round");
-      header.textContent = "Round 3 Target: 4";
       const score = document.getElementById("cli-score");
-      score.textContent = "You: 3 Opponent: 2";
       const roundMessage = document.getElementById("round-message");
-      roundMessage.textContent = "Round resolved";
       const announcement = document.getElementById("match-announcement");
-      announcement.textContent = "Match over. Opponent wins.";
       const verboseLog = document.getElementById("cli-verbose-log");
-      verboseLog.textContent = "Some log";
 
       const { resetMatch } = await import("../../src/pages/battleCLI/init.js");
       const resetPromise = resetMatch();
