@@ -1,0 +1,141 @@
+/**
+ * Modern theme design tokens.
+ *
+ * Usage:
+ * 1. Import after `base.css` to make the aliases available.
+ * 2. Wrap the target DOM subtree in an element with the `.theme-modern` class.
+ * 3. Toggle `[data-theme]` attributes inside that subtree to reuse the shared mode selectors.
+ */
+
+:root {
+  --font-family-sans: "Inter", "Open Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-family-display: "Work Sans", "Russo One", "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Code", "Source Code Pro", monospace;
+}
+
+.theme-modern {
+  /* Palette */
+  --modern-color-background: #f4f6fb;
+  --modern-color-surface: #ffffff;
+  --modern-color-surface-muted: #e9edfb;
+  --modern-color-border: rgba(15, 23, 42, 0.08);
+  --modern-color-primary: #2563eb;
+  --modern-color-primary-soft: #3b82f6;
+  --modern-color-secondary: #8b5cf6;
+  --modern-color-accent: #14b8a6;
+  --modern-color-text: #0f172a;
+  --modern-color-text-muted: #475569;
+  --modern-color-text-inverted: #f8fafc;
+  --modern-color-focus-ring: #c7d2fe;
+
+  /* Radii */
+  --modern-radius-sm: 8px;
+  --modern-radius-md: 12px;
+  --modern-radius-lg: 20px;
+  --modern-radius-full: 9999px;
+
+  /* Shadows */
+  --modern-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --modern-shadow-md: 0 8px 30px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08);
+  --modern-shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.16);
+
+  /* Typography scale */
+  --modern-font-size-xs: 0.75rem;
+  --modern-font-size-sm: 0.875rem;
+  --modern-font-size-md: 1rem;
+  --modern-font-size-lg: 1.25rem;
+  --modern-font-size-xl: 1.5rem;
+  --modern-font-size-2xl: clamp(2rem, 4vw, 2.5rem);
+  --modern-font-weight-regular: 400;
+  --modern-font-weight-medium: 500;
+  --modern-font-weight-semibold: 600;
+  --modern-font-weight-bold: 700;
+  --modern-letter-spacing-tight: -0.01em;
+  --modern-letter-spacing-wide: 0.08em;
+
+  /* Map shared tokens */
+  --color-background: var(--modern-color-background);
+  --color-surface: var(--modern-color-surface);
+  --color-tertiary: var(--modern-color-surface-muted);
+  --color-border: var(--modern-color-border);
+  --color-primary: var(--modern-color-primary);
+  --color-secondary: var(--modern-color-secondary);
+  --color-text: var(--modern-color-text);
+  --color-text-muted: var(--modern-color-text-muted);
+  --color-text-inverted: var(--modern-color-text-inverted);
+  --link-color: var(--modern-color-primary);
+  --focus-outline-color: var(--modern-color-focus-ring);
+  --button-bg: var(--modern-color-primary);
+  --button-hover-bg: var(--modern-color-primary-soft);
+  --button-active-bg: color-mix(in srgb, var(--modern-color-primary) 82%, black 18%);
+  --button-text-color: var(--modern-color-text-inverted);
+  --button-disabled-bg: color-mix(in srgb, var(--modern-color-text-muted) 32%, var(--modern-color-surface) 68%);
+  --button-disabled-pattern: none;
+  --switch-off-bg: color-mix(in srgb, var(--modern-color-text-muted) 28%, var(--modern-color-surface) 72%);
+  --switch-on-bg: color-mix(in srgb, var(--modern-color-primary) 70%, white 30%);
+  --color-slider-dot: color-mix(in srgb, var(--modern-color-text) 20%, transparent);
+  --color-slider-active: var(--modern-color-primary);
+  --color-border-strong: color-mix(in srgb, var(--modern-color-text) 12%, transparent);
+  --shadow-base: var(--modern-shadow-sm);
+  --shadow-hover: var(--modern-shadow-md);
+  --radius-sm: var(--modern-radius-sm);
+  --radius-md: var(--modern-radius-md);
+  --radius-lg: var(--modern-radius-lg);
+  --radius-pill: var(--modern-radius-full);
+  --font-small: var(--modern-font-size-sm);
+  --font-medium: var(--modern-font-size-md);
+  --font-large: var(--modern-font-size-lg);
+  --font-extra-large: var(--modern-font-size-2xl);
+  --font-family-base: var(--font-family-sans);
+  --font-family-heading: var(--font-family-display);
+  --font-weight-regular: var(--modern-font-weight-regular);
+  --font-weight-medium: var(--modern-font-weight-medium);
+  --font-weight-semibold: var(--modern-font-weight-semibold);
+  --font-weight-bold: var(--modern-font-weight-bold);
+}
+
+.theme-modern[data-theme="dark"],
+.theme-modern [data-theme="dark"] {
+  --modern-color-background: #0f172a;
+  --modern-color-surface: #111827;
+  --modern-color-surface-muted: #1e293b;
+  --modern-color-border: rgba(148, 163, 184, 0.24);
+  --modern-color-primary: #3b82f6;
+  --modern-color-primary-soft: #60a5fa;
+  --modern-color-secondary: #a855f7;
+  --modern-color-accent: #22d3ee;
+  --modern-color-text: #e2e8f0;
+  --modern-color-text-muted: #94a3b8;
+  --modern-color-text-inverted: #0f172a;
+  --modern-color-focus-ring: rgba(96, 165, 250, 0.6);
+  --shadow-base: 0 14px 35px rgba(2, 6, 23, 0.45);
+  --shadow-hover: 0 22px 55px rgba(2, 6, 23, 0.6);
+  --button-disabled-bg: color-mix(in srgb, var(--modern-color-text-muted) 40%, var(--modern-color-surface) 60%);
+  --switch-off-bg: color-mix(in srgb, var(--modern-color-text-muted) 32%, var(--modern-color-background) 68%);
+  --switch-on-bg: color-mix(in srgb, var(--modern-color-primary) 70%, var(--modern-color-surface) 30%);
+  --color-slider-dot: color-mix(in srgb, var(--modern-color-text) 35%, transparent);
+}
+
+.theme-modern[data-theme="retro"],
+.theme-modern [data-theme="retro"] {
+  --modern-color-background: #05140d;
+  --modern-color-surface: #05140d;
+  --modern-color-surface-muted: #05140d;
+  --modern-color-border: #4ae38f;
+  --modern-color-primary: #9dff8a;
+  --modern-color-primary-soft: #86f071;
+  --modern-color-secondary: #9dff8a;
+  --modern-color-accent: #36f1cd;
+  --modern-color-text: #9dff8a;
+  --modern-color-text-muted: #6ddb5f;
+  --modern-color-text-inverted: #031f12;
+  --modern-color-focus-ring: rgba(77, 227, 143, 0.6);
+  --shadow-base: none;
+  --shadow-hover: none;
+  --button-hover-bg: color-mix(in srgb, var(--modern-color-primary) 75%, black 25%);
+  --switch-off-bg: color-mix(in srgb, var(--modern-color-text) 18%, var(--modern-color-background) 82%);
+  --switch-on-bg: var(--modern-color-primary);
+  --color-slider-dot: var(--modern-color-text);
+  --color-slider-active: var(--modern-color-primary);
+  --link-color: var(--modern-color-primary);
+}
