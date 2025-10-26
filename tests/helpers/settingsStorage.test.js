@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  updateSetting,
-  resetSettings,
-  saveSettings
-} from "../../src/helpers/settingsStorage.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
+import { updateSetting, resetSettings, saveSettings } from "../../src/helpers/settingsStorage.js";
 import { getCachedSettings, resetCache } from "../../src/helpers/settingsCache.js";
 import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
@@ -52,15 +49,17 @@ describe("updateSetting", () => {
 });
 
 describe("resetSettings", () => {
+  let timerControl;
+
   beforeEach(() => {
     resetSettings();
     localStorage.clear();
     resetCache();
-    vi.useFakeTimers();
+    timerControl = useCanonicalTimers();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timerControl.cleanup();
   });
 
   it("cancels a pending debounced save so defaults persist", async () => {
@@ -70,10 +69,7 @@ describe("resetSettings", () => {
     });
 
     // Simulate a pre-existing custom value to verify the reset overwrites it.
-    localStorage.setItem(
-      "settings",
-      JSON.stringify({ ...DEFAULT_SETTINGS, sound: true })
-    );
+    localStorage.setItem("settings", JSON.stringify({ ...DEFAULT_SETTINGS, sound: true }));
 
     resetSettings();
 

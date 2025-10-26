@@ -148,9 +148,7 @@ describe("battleCLI points select", () => {
     const selectSpy = vi.spyOn(select, "addEventListener");
     const checkboxSpy = vi.spyOn(checkbox, "addEventListener");
     await mod.init();
-    const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/battleEngineFacade.js"
-    );
+    const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
 
     const selectChange = getListener(selectSpy, "change");
     select.value = "10";

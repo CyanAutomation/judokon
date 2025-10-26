@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { flushTooltipOverlayDebugWork } from "../../src/helpers/tooltipOverlayDebug.js";
 import { createTooltipHarness } from "./integrationHarness.js";
 
 const harness = createTooltipHarness();
@@ -253,6 +252,8 @@ describe("initTooltips", () => {
     el.dataset.tooltipId = "stat.test";
     document.body.appendChild(el);
     await initTooltips();
+    const overlayDebug = await import("../../src/helpers/tooltipOverlayDebug.js");
+    await overlayDebug.flushTooltipOverlayDebugWork();
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
   });
 
@@ -271,6 +272,8 @@ describe("initTooltips", () => {
     el.dataset.tooltipId = "stat.test";
     document.body.appendChild(el);
     await initTooltips();
+    const overlayDebug = await import("../../src/helpers/tooltipOverlayDebug.js");
+    await overlayDebug.flushTooltipOverlayDebugWork();
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
   });
 

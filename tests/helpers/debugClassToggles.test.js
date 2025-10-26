@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe("debug DOM class toggles", () => {
-  it("applies the tooltip overlay class when enabled", () => {
+  it("applies the tooltip overlay class when enabled", async () => {
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
     expect(getDebugState().tooltipOverlayDebug).toBe(false);
 
@@ -132,27 +132,19 @@ describe("feature flag debug toggles integration", () => {
   });
 
   it("coalesces rapid toggles into a single DOM pass", async () => {
-    const debugPerf = await import("../../src/helpers/debugFlagPerformance.js");
-    const spy = vi
-      .spyOn(debugPerf, "measureDebugFlagToggle")
-      .mockImplementation((_flag, action) => {
-        if (typeof action === "function") {
-          return action();
-        }
-        return action;
-      });
-
+    const attrSpy = vi.spyOn(document.body, "setAttribute");
     toggleTooltipOverlayDebug(true);
     toggleTooltipOverlayDebug(true);
     toggleTooltipOverlayDebug(false);
 
     await flushTooltipOverlayDebugWork();
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(attrSpy).toHaveBeenCalledTimes(1);
+    expect(attrSpy).toHaveBeenCalledWith("data-feature-tooltip-overlay-debug", "disabled");
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
     expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
 
-    spy.mockRestore();
+    attrSpy.mockRestore();
   });
 
   it("omits hidden feature flag toggles from settings UI", () => {

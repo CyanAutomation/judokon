@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 vi.mock("../../src/helpers/debugFlagPerformance.js", () => ({
   measureDebugFlagToggle: vi.fn((_flag, action) => {
@@ -71,7 +72,7 @@ describe("toggleLayoutDebugPanel", () => {
   });
 
   it("coalesces rapid enable toggles into a single outline run", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     globalThis.requestIdleCallback = undefined;
     globalThis.cancelIdleCallback = undefined;
     globalThis.requestAnimationFrame = (cb) => {

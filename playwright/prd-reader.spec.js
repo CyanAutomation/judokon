@@ -33,9 +33,7 @@ test.describe("PRD Reader page", () => {
 
     // Navigate forward to second document
     await page.keyboard.press("ArrowRight");
-    await expect
-      .poll(getDocId)
-      .not.toBe(originalDocId);
+    await expect.poll(getDocId).not.toBe(originalDocId);
     hasOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
@@ -77,9 +75,7 @@ test.describe("PRD Reader page", () => {
 
     await page.keyboard.press("ArrowDown");
     await expect(container).toBeFocused();
-    await expect
-      .poll(getDocId)
-      .not.toBe(initialDocId);
+    await expect.poll(getDocId).not.toBe(initialDocId);
     const afterDownDocId = await getDocId();
     expect(afterDownDocId).not.toBe(initialDocId);
 
