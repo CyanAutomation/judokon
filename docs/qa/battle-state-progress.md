@@ -2,6 +2,10 @@
 
 The `battleStateProgress` flag renders a persistent list of match states in Classic Battle so QA can monitor state-machine transitions. The list lives below the battle area and surfaces a rich set of data attributes for automation.
 
+## Layout cues refresher
+
+Classic Battle now tints the local player column with a subtle wash of `--color-secondary` and the opponent column with a complementary `--color-primary` accent. The contrast remains AA-compliant in light and dark themes, so testers can continue to rely on body text and badge colors when validating the state list against the surrounding layout.
+
 ## Enablement Steps
 
 1. Toggle **Battle State Progress** on in Settings → Advanced, or inject `window.__FF_OVERRIDES = { battleStateProgress: true }` before loading `battleClassic.html`.
