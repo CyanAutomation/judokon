@@ -180,9 +180,24 @@ export async function loadBattleCLI(options = {}) {
     SNACKBAR_REMOVE_MS: 3000,
     SNACKBAR_FADE_MS: 2500
   }));
-  vi.doMock("../../../src/helpers/classicBattle/autoSelectStat.js", () => ({
-    autoSelectStat: vi.fn()
-  }));
+  vi.doMock("../../../src/helpers/classicBattle/autoSelectStat.js", () => {
+    const autoSelectStat = vi.fn(async () => {
+      const markerId = "auto-select-marker";
+      let marker = document.getElementById(markerId);
+      if (!marker) {
+        marker = document.createElement("div");
+        marker.id = markerId;
+        marker.dataset.triggerCount = "0";
+        document.body.appendChild(marker);
+      }
+      const nextCount = Number(marker.dataset.triggerCount || "0") + 1;
+      marker.dataset.triggerCount = String(nextCount);
+      marker.textContent = `auto-select:${nextCount}`;
+    });
+    return {
+      autoSelectStat
+    };
+  });
   vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
     skipRoundCooldownIfEnabled: vi.fn(),
     updateBattleStateBadge: vi.fn()
