@@ -35,6 +35,15 @@ describe("initFeatureFlags", () => {
 });
 
 describe("enableFlag", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
   it("swallows persistence rejection to avoid unhandled rejections", async () => {
     vi.resetModules();
     const unhandled = [];
@@ -60,7 +69,7 @@ describe("enableFlag", () => {
 
       featureFlagsModule.enableFlag(flagName);
 
-      await Promise.resolve();
+      await vi.runAllTimersAsync();
 
       expect(featureFlagsModule.isEnabled(flagName)).toBe(true);
       expect(unhandled).toHaveLength(0);
