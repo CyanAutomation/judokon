@@ -134,7 +134,7 @@ body {
   box-shadow: 0 0 0 5px color-mix(in srgb, #000000 65%, var(--color-text-inverted));
 }
 
-.logo { 
+.logo {
   height: 100%;
   max-height: var(--logo-max-height);
   width: auto;
@@ -143,7 +143,11 @@ body {
 }
 
 .theme-modern .header {
-  background-color: color-mix(in srgb, var(--modern-color-surface) 90%, var(--modern-color-surface-muted) 10%);
+  background-color: color-mix(
+    in srgb,
+    var(--modern-color-surface) 90%,
+    var(--modern-color-surface-muted) 10%
+  );
   background-image: linear-gradient(
     135deg,
     color-mix(in srgb, var(--modern-color-primary) 12%, transparent) 0%,
