@@ -644,6 +644,15 @@ export function createTestCarousel(options = {}) {
   const container = document.createElement("div");
   const wrapper = document.createElement("div");
 
+  if (options.supportsScrollEnd === false) {
+    Object.defineProperty(container, "onscrollend", {
+      configurable: true,
+      enumerable: true,
+      value: undefined,
+      writable: true
+    });
+  }
+
   // Mock scrollTo function
   container.scrollTo = vi.fn((opts) => {
     if (typeof opts === "object") container.scrollLeft = opts.left ?? 0;
@@ -718,6 +727,8 @@ export function createTestCarousel(options = {}) {
       // State access
       getCurrentPage: () => controller?.currentPage ?? 0,
       getPageCounter: () => wrapper.querySelector(".page-counter")?.textContent,
+      isLeftDisabled: () => controller?.leftBtn?.disabled ?? false,
+      isRightDisabled: () => controller?.rightBtn?.disabled ?? false,
 
       // Controller methods
       setPage: (page) => controller?.setPage(page),
