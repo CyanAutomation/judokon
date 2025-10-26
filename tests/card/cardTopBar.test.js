@@ -161,4 +161,53 @@ describe("createFlagImage", () => {
     expect(img?.getAttribute("alt")).toBe("Unknown flag");
     expect(img?.getAttribute("aria-label")).toBe("Unknown flag");
   });
+
+  it("falls back to the placeholder source a single time when the image errors", () => {
+    const addListenerSpy = vi.spyOn(HTMLImageElement.prototype, "addEventListener");
+    const removeListenerSpy = vi.spyOn(HTMLImageElement.prototype, "removeEventListener");
+
+    const flagImage = createFlagImage(flagUrl, "France");
+    const img = flagImage.querySelector("img");
+    expect(img).toBeInstanceOf(HTMLImageElement);
+
+    const errorListenerCall = addListenerSpy.mock.calls.find(([eventName]) => eventName === "error");
+    expect(errorListenerCall?.[2]).toEqual({ once: true });
+
+    const errorHandler = errorListenerCall?.[1];
+    expect(typeof errorHandler).toBe("function");
+
+    img?.dispatchEvent(new Event("error"));
+
+    expect(removeListenerSpy).toHaveBeenCalledWith("error", errorHandler);
+    expect(img?.getAttribute("src")).toBe("../assets/countryFlags/placeholder-flag.png");
+
+    img?.dispatchEvent(new Event("error"));
+    expect(img?.getAttribute("src")).toBe("../assets/countryFlags/placeholder-flag.png");
+  });
+
+  it("does not recurse when the placeholder source is unavailable", () => {
+    const addListenerSpy = vi.spyOn(HTMLImageElement.prototype, "addEventListener");
+    const removeListenerSpy = vi.spyOn(HTMLImageElement.prototype, "removeEventListener");
+
+    const flagImage = createFlagImage(null, "France");
+    const img = flagImage.querySelector("img");
+    expect(img).toBeInstanceOf(HTMLImageElement);
+
+    const errorListenerCall = addListenerSpy.mock.calls.find(([eventName]) => eventName === "error");
+    const errorHandler = errorListenerCall?.[1];
+    expect(typeof errorHandler).toBe("function");
+
+    if (!img || !errorHandler) {
+      throw new Error("Missing error handler or image element");
+    }
+
+    const setAttributeSpy = vi.spyOn(img, "setAttribute");
+
+    errorHandler.call(img, new Event("error"));
+
+    expect(removeListenerSpy).toHaveBeenCalledWith("error", errorHandler);
+
+    const srcUpdates = setAttributeSpy.mock.calls.filter(([attribute]) => attribute === "src");
+    expect(srcUpdates.length).toBe(0);
+  });
 });
