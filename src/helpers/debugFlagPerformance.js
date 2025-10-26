@@ -8,17 +8,46 @@ function now() {
   return Date.now();
 }
 
+function isTruthyFlag(value) {
+  if (value === true) return true;
+  if (value === false || value == null) return false;
+  const normalized = String(value).trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "on" || normalized === "yes";
+}
+
+function callBooleanFactory(maybeFn) {
+  if (typeof maybeFn !== "function") return false;
+  try {
+    return Boolean(maybeFn());
+  } catch {
+    return false;
+  }
+}
+
+function shouldLogDebugFlagPerf() {
+  if (typeof window !== "undefined") {
+    if (window.__DEBUG_PERF__ === true) return true;
+    if (window.__LOG_DEBUG_FLAG_PERF__ === true) return true;
+  }
+  if (typeof process !== "undefined" && process.env) {
+    const { DEBUG_PERF, DEBUG_PERF_LOGS } = process.env;
+    if (isTruthyFlag(DEBUG_PERF) || isTruthyFlag(DEBUG_PERF_LOGS)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function isProfilingEnabled() {
   if (typeof window !== "undefined") {
     if (window.__PROFILE_DEBUG_FLAGS__ === true) return true;
-    if (typeof window.__profileDebugFlags === "function") {
-      try {
-        if (window.__profileDebugFlags()) return true;
-      } catch {}
-    }
+    if (window.__DEBUG_PERF__ === true) return true;
+    if (callBooleanFactory(window.__profileDebugFlags)) return true;
+    if (callBooleanFactory(window.__debugPerf)) return true;
   }
   if (typeof process !== "undefined" && process.env) {
-    if (process.env.DEBUG_FLAG_PERF === "1") return true;
+    const { DEBUG_FLAG_PERF, DEBUG_PERF } = process.env;
+    if (isTruthyFlag(DEBUG_FLAG_PERF) || isTruthyFlag(DEBUG_PERF)) return true;
   }
   return false;
 }
@@ -36,17 +65,17 @@ function recordMetric(entry) {
     while (window.__DEBUG_FLAG_METRICS__.length > MAX_METRICS) {
       window.__DEBUG_FLAG_METRICS__.shift();
     }
-    if (window.__LOG_DEBUG_FLAG_PERF__ === true && typeof console !== "undefined") {
-      try {
-        console.info(
-          "[debugFlagPerf]",
-          entry.flag,
-          "duration:",
-          `${entry.duration.toFixed(2)}ms`,
-          entry.metadata || ""
-        );
-      } catch {}
-    }
+  }
+  if (shouldLogDebugFlagPerf() && typeof console !== "undefined") {
+    try {
+      console.info(
+        "[debugFlagPerf]",
+        entry.flag,
+        "duration:",
+        `${entry.duration.toFixed(2)}ms`,
+        entry.metadata || ""
+      );
+    } catch {}
   }
 }
 

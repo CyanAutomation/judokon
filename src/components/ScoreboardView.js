@@ -95,14 +95,22 @@ export class ScoreboardView {
     const doc = this.timerEl.ownerDocument || (typeof document !== "undefined" ? document : null);
     let label = this.timerEl.querySelector('[data-part="label"]');
     let value = this.timerEl.querySelector('[data-part="value"]');
+    
+    // If we need to rebuild, ensure a clean slate with no text nodes
     if ((!label || !value) && doc?.createElement) {
-      this.timerEl.textContent = "";
+      // Remove all child nodes to ensure clean structure
+      while (this.timerEl.firstChild) {
+        this.timerEl.removeChild(this.timerEl.firstChild);
+      }
       label = doc.createElement("span");
       label.dataset.part = "label";
       value = doc.createElement("span");
       value.dataset.part = "value";
-      this.timerEl.append(label, doc.createTextNode(" "), value);
+      this.timerEl.appendChild(label);
+      this.timerEl.appendChild(doc.createTextNode(" "));
+      this.timerEl.appendChild(value);
     }
+    
     if (typeof seconds === "number" && Number.isFinite(seconds)) {
       const clamped = Math.max(0, seconds);
       if (label) {
@@ -117,7 +125,7 @@ export class ScoreboardView {
       if (label && value) {
         if (!separator || separator.nodeType !== 3) {
           this.timerEl.insertBefore((doc || document).createTextNode(" "), value);
-        } else if (!/\s/.test(separator.textContent || "")) {
+        } else {
           separator.textContent = " ";
         }
       }

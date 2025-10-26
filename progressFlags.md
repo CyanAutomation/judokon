@@ -35,10 +35,10 @@
 ### Debug Flags Performance (🟠)
 
 - **Gap**: Enabling every debug flag keeps `toggleLayoutDebugPanel` and `toggleTooltipOverlayDebug` in the critical path without any throttling or profiling.
+- **Progress (2025-10-26)**: Added a `DEBUG_PERF` guard to debug flag instrumentation so toggles record buffered durations and optionally log to the console when profiling is enabled (`src/helpers/debugFlagPerformance.js`).
 - **Next steps**:
-  1. Add lightweight performance logging behind a `DEBUG_PERF` guard to measure render cost.
-  2. Evaluate moving heavy selectors to idle callbacks or requestAnimationFrame batches.
-  3. Consider flag-level rate limiting so toggling multiple debug options does not repeatedly rescan the DOM.
+  1. Evaluate moving heavy selectors to idle callbacks or requestAnimationFrame batches.
+  2. Consider flag-level rate limiting so toggling multiple debug options does not repeatedly rescan the DOM.
 
 ## Observations & Questions
 
@@ -58,6 +58,8 @@
 - `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
 - `npx playwright test playwright/battle-classic/battle-state-progress.spec.js`
 - `npx playwright test playwright/cli-layout.spec.js`
+- 2025-10-26 – `npx vitest run tests/helpers/debugFlagPerformance.test.js` ✅
+- 2025-10-26 – `npx playwright test playwright/battle-classic/feature-flags.spec.js --grep "test mode banner hides when flag disabled"` ❌ (banner remained visible; investigate pre-existing visibility regression)
 
 ## References
 
