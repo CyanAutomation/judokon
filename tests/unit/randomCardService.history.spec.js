@@ -9,6 +9,18 @@ describe("createHistoryManager", () => {
     const second = { id: 2 };
     const third = { id: 3 };
 
+    const nullHistory = manager.add(null);
+    expect(nullHistory).toEqual([]);
+    nullHistory.push({ id: 999 });
+    expect(nullHistory).toEqual([{ id: 999 }]);
+    expect(manager.get()).toEqual([]);
+
+    const undefinedHistory = manager.add(undefined);
+    expect(undefinedHistory).toEqual([]);
+    undefinedHistory.push({ id: 1000 });
+    expect(undefinedHistory).toEqual([{ id: 1000 }]);
+    expect(manager.get()).toEqual([]);
+
     const initialHistory = manager.add(first);
     expect(initialHistory).toEqual([first]);
 
