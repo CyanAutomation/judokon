@@ -81,7 +81,12 @@ async function loadTooltips() {
     cachedData = flattenTooltips(data || {});
     return cachedData;
   } catch (error) {
-    debugLog("Tooltip data promise rejected; clearing cache for retry.", error);
+    const operationContext = tooltipDataPromise ? "await" : "initial";
+    debugLog(
+      "Tooltip data loading failed; clearing cache for retry. Operation:",
+      operationContext,
+      error
+    );
     tooltipDataPromise = undefined;
     cachedData = undefined;
     throw error;
