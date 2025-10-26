@@ -37,6 +37,8 @@ import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardSta
 import { getSetting } from "./settingsCache.js";
 
 const historyTogglePlacementRegistry = new WeakMap();
+let randomJudokaPageInitialized = false;
+let randomJudokaInitPromise = null;
 
 /**
  * Floats the history toggle button inside the dialog panel to keep it accessible.
@@ -658,13 +660,30 @@ export async function setupRandomJudokaPage() {
  * await Promise.all([setup, nav])
  */
 export async function initRandomJudokaPage() {
-  const setup = setupRandomJudokaPage();
-  let nav = Promise.resolve();
-  try {
-    const maybe = typeof window !== "undefined" ? window.navReadyPromise : null;
-    if (maybe && typeof maybe.then === "function") nav = maybe;
-  } catch {}
-  await Promise.all([setup, nav.catch?.(() => {}) || nav]);
+  if (randomJudokaPageInitialized) {
+    return randomJudokaInitPromise ?? Promise.resolve();
+  }
+
+  if (randomJudokaInitPromise) {
+    return randomJudokaInitPromise;
+  }
+
+  randomJudokaInitPromise = (async () => {
+    const setup = setupRandomJudokaPage();
+    let nav = Promise.resolve();
+    try {
+      const maybe = typeof window !== "undefined" ? window.navReadyPromise : null;
+      if (maybe && typeof maybe.then === "function") nav = maybe;
+    } catch {}
+
+    await Promise.all([setup, nav.catch?.(() => {}) || nav]);
+    randomJudokaPageInitialized = true;
+  })().catch((error) => {
+    randomJudokaInitPromise = null;
+    throw error;
+  });
+
+  return randomJudokaInitPromise;
 }
 /**
  * Initializes the Random Judoka page after the DOM is ready and navigation

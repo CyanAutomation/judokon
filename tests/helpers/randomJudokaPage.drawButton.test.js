@@ -163,4 +163,55 @@ describe("randomJudokaPage draw button", () => {
     expect(errorEl?.textContent).toMatch(/Unable to load judoka data/);
     fetchSpy.mockRestore();
   });
+
+  it("does not duplicate controls when initialized twice", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const readyCallbacks = [];
+    vi.doMock("../../src/helpers/domReady.js", () => ({
+      onDomReady: (fn) => {
+        readyCallbacks.push(fn);
+      }
+    }));
+
+    const generateRandomCard = vi.fn().mockResolvedValue({ name: "Test Judoka" });
+    const fetchJson = vi.fn().mockResolvedValue([]);
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const loadGokyoLookup = vi.fn().mockResolvedValue({});
+    const renderJudokaCard = vi.fn().mockResolvedValue();
+    const applyMotionPreference = vi.fn();
+    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({
+      generateRandomCard,
+      loadGokyoLookup,
+      renderJudokaCard
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync
+    }));
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+
+    const { initRandomJudokaPage, randomJudokaReadyPromise } = await import(
+      "../../src/helpers/randomJudokaPage.js"
+    );
+
+    await initRandomJudokaPage();
+    expect(readyCallbacks).toHaveLength(1);
+    readyCallbacks.forEach((fn) => fn());
+
+    await randomJudokaReadyPromise;
+
+    expect(document.querySelectorAll("#draw-card-btn")).toHaveLength(1);
+    expect(document.querySelectorAll("#toggle-history-btn")).toHaveLength(1);
+    expect(document.querySelectorAll("#history-panel")).toHaveLength(1);
+  });
 });
