@@ -187,6 +187,8 @@ Classic battle pages rely on specific element IDs so helper scripts can attach l
 | `quit-match-button`     | `data-testid="quit-match"`                            | Triggers the quit match flow.                                                                                              |
 | `battle-state-progress` | `data-testid="battle-state-progress"` (optional)      | Optional list tracking match state transitions; pre-populates from the current state and remaps interrupts to core states. |
 
+The primary scoreboard elements (`#round-message`, `#next-round-timer`, `#round-counter`, `#score-display`, `#battle-state-badge`, and `#test-mode-banner`) live inside a `.battle-status-header` container. The numeric/timer/status metrics are grouped within a `.battle-status-metrics` wrapper so the header can present them in responsive columns without changing the canonical IDs or ARIA roles.
+
 ### Data attributes and test hooks
 
 Every required ID must expose a matching `data-testid` so automation can bind to a stable attribute without relying on CSS or copy. The `next-button` additionally requires `data-role="next-round"` so helper scripts can detect the control even when markup is rearranged. These hooks are enforced in the DOM tests at `tests/pages/battlePages.dom.test.js`.
