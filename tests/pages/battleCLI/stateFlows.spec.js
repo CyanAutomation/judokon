@@ -19,10 +19,6 @@ function getRoundMessageText() {
   return document.getElementById("round-message")?.textContent ?? "";
 }
 
-async function getBattleEventsModule() {
-  return import("../../../src/helpers/classicBattle/battleEvents.js");
-}
-
 describe("battleCLI state flows", () => {
   afterEach(async () => {
     await cleanupBattleCLI();
@@ -30,10 +26,13 @@ describe("battleCLI state flows", () => {
 
   it("reflects scoreboard messages from the event bus", async () => {
     await setupBattleCLI();
-    const eventsMod = await getBattleEventsModule();
+    const eventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const { emitBattleEvent } = eventsMod;
     const domMod = await import("../../../src/pages/battleCLI/dom.js");
-    const setRoundMessageSpy = vi.spyOn(domMod, "setRoundMessage");
+    const { withMutedConsole } = await import("../../utils/console.js");
+    const setRoundMessageSpy = await withMutedConsole(() =>
+      vi.spyOn(domMod, "setRoundMessage")
+    );
 
     expect(document.getElementById("round-message")).toBeTruthy();
     expect(eventsMod.onBattleEvent).toHaveBeenCalledWith(
@@ -67,7 +66,9 @@ describe("battleCLI state flows", () => {
 
   it("announces stat selection stalls when auto-select disabled", async () => {
     await setupBattleCLI({ autoSelect: false });
-    const { emitBattleEvent } = await getBattleEventsModule();
+    const { emitBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
 
     emitBattleEvent("statSelectionStalled");
     expect(getBottomLineText()).toBe("Stat selection stalled. Pick a stat.");
@@ -75,7 +76,9 @@ describe("battleCLI state flows", () => {
 
   it("updates state badge and bottom line on round transitions", async () => {
     await setupBattleCLI({ autoSelect: false });
-    const { emitBattleEvent } = await getBattleEventsModule();
+    const { emitBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
     const uiHelpers = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     const orchestratorHandlers = await import(
       "../../../src/helpers/classicBattle/orchestratorHandlers.js"
@@ -103,8 +106,8 @@ describe("battleCLI state flows", () => {
 
     it("shows countdown ticks and emits finish", async () => {
       await setupBattleCLI();
-      const { emitBattleEvent } = await getBattleEventsModule();
       const eventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+      const { emitBattleEvent } = eventsMod;
       const emitSpy = vi.spyOn(eventsMod, "emitBattleEvent");
 
       emitBattleEvent("countdownStart", { duration: 2 });
@@ -122,11 +125,9 @@ describe("battleCLI state flows", () => {
   });
 
   it("builds play-again controls after match over and restarts on click", async () => {
-    await setupBattleCLI();
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      "<a data-testid=\"home-link\" href=\"/index.html\"></a>"
-    );
+    await setupBattleCLI({
+      html: '<a data-testid="home-link" href="/index.html"></a>'
+    });
     const log = document.getElementById("cli-verbose-log");
     if (log) {
       log.textContent = "old";
@@ -145,8 +146,6 @@ describe("battleCLI state flows", () => {
     expect(document.getElementById("return-to-lobby-link")?.getAttribute("href")).toContain("index.html");
 
     playAgain?.click();
-    await Promise.resolve();
-    await Promise.resolve();
     await startClicked;
 
     expect(log?.textContent).toBe("");
