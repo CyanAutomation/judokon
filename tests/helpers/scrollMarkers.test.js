@@ -1,13 +1,16 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import * as carouselBuilder from "../../src/helpers/carouselBuilder.js";
 import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
 
 const { addScrollMarkers, initScrollMarkers } = carouselBuilder;
 const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+let timers;
 
 afterEach(() => {
   setScheduler(realScheduler);
-  vi.useRealTimers();
+  timers?.cleanup();
+  timers = undefined;
   globalThis.requestAnimationFrame = originalRequestAnimationFrame;
 });
 
@@ -128,7 +131,7 @@ describe("addScrollMarkers", () => {
 
 describe("initScrollMarkers", () => {
   it("falls back to scheduler timeouts when requestAnimationFrame is missing", () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     globalThis.requestAnimationFrame = undefined;
 
     const fallbackScheduler = {
