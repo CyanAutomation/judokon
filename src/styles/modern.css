@@ -38,6 +38,9 @@
   --modern-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
   --modern-shadow-md: 0 8px 30px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08);
   --modern-shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.16);
+  --modern-shadow-color-ambient: rgba(15, 23, 42, 0.16);
+  --modern-shadow-color-strong: rgba(15, 23, 42, 0.22);
+  --modern-shadow-color-accent: rgba(37, 99, 235, 0.26);
 
   /* Typography scale */
   --modern-font-size-xs: 0.75rem;
@@ -192,9 +195,17 @@
 .theme-modern .modern-header {
   display: flex;
   align-items: center;
-  background: color-mix(in srgb, var(--modern-color-surface) 92%, var(--modern-color-surface-muted) 8%);
+  background-color: color-mix(
+    in srgb,
+    var(--modern-color-surface) 90%,
+    var(--modern-color-surface-muted) 10%
+  );
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--modern-color-primary) 12%, transparent) 0%,
+    color-mix(in srgb, var(--modern-color-secondary) 8%, transparent) 100%
+  );
   color: var(--modern-color-text);
-  border-bottom: 1px solid var(--modern-color-border);
   box-shadow: var(--modern-shadow-sm);
 }
 
@@ -352,26 +363,48 @@
   text-decoration: underline;
 }
 
+.theme-modern .settings-main {
+  display: grid;
+  gap: clamp(var(--space-lg), 4vw, var(--space-xxl));
+}
+
 .theme-modern .modern-hero {
   position: relative;
-  margin: 0 auto var(--space-xl);
-  padding: clamp(var(--space-lg), 6vw, var(--space-xl));
-  background: linear-gradient(
+  padding: clamp(var(--space-xl), 6vw, var(--space-xxl));
+  background:
+    linear-gradient(
       135deg,
-      color-mix(in srgb, var(--modern-color-primary) 12%, transparent) 0%,
-      color-mix(in srgb, var(--modern-color-secondary) 8%, transparent) 100%
+      color-mix(in srgb, var(--modern-color-primary) 14%, transparent) 0%,
+      color-mix(in srgb, var(--modern-color-accent) 8%, transparent) 100%
     ),
     var(--modern-color-surface);
+  border: 1px solid color-mix(in srgb, var(--modern-color-border) 65%, transparent);
   border-radius: var(--modern-radius-lg);
   box-shadow: var(--modern-shadow-md);
   overflow: hidden;
 }
 
+.theme-modern .modern-hero::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -25%;
+  inset-inline-end: -12%;
+  inline-size: clamp(160px, 32vw, 280px);
+  block-size: clamp(160px, 32vw, 280px);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--modern-color-secondary) 35%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .theme-modern .modern-hero__content {
   display: grid;
-  gap: var(--space-md);
-  max-width: 620px;
+  gap: clamp(var(--space-md), 2vw, var(--space-xl));
   color: var(--modern-color-text);
+  font-family: var(--font-family-sans);
 }
 
 .theme-modern .modern-hero__eyebrow {
@@ -382,17 +415,10 @@
   color: var(--modern-color-text-muted);
 }
 
-.theme-modern .modern-hero .settings-header {
-  margin: 0;
-  text-align: left;
-  font-family: var(--font-family-heading);
-  font-size: var(--modern-font-size-2xl);
-}
-
 .theme-modern .modern-hero__description {
-  font-size: var(--modern-font-size-md);
-  color: var(--modern-color-text-muted);
-  max-width: 56ch;
+  color: color-mix(in srgb, var(--modern-color-text) 72%, var(--modern-color-text-muted) 28%);
+  font-size: clamp(var(--modern-font-size-md), 2vw, var(--modern-font-size-lg));
+  line-height: 1.6;
 }
 
 .theme-modern .modern-hero__actions {
@@ -402,48 +428,116 @@
 }
 
 .theme-modern .modern-hero__cta {
+  font-family: var(--font-family-sans);
+  font-weight: var(--modern-font-weight-semibold);
   box-shadow: var(--modern-shadow-sm);
 }
 
 .theme-modern .modern-card {
-  margin: 0 auto var(--space-lg);
-  padding: var(--space-sm) var(--space-sm) var(--space-lg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin: 0;
+  padding: clamp(var(--space-lg), 4vw, var(--space-xl));
   background: var(--modern-color-surface);
-  border: 1px solid var(--modern-color-border);
+  border: 1px solid color-mix(in srgb, var(--modern-color-border) 55%, transparent);
   border-radius: var(--modern-radius-lg);
   box-shadow: var(--modern-shadow-sm);
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
 }
 
 .theme-modern .modern-card:last-of-type {
-  margin-bottom: calc(var(--space-xl) + env(safe-area-inset-bottom));
+  margin-bottom: 0;
+}
+
+.theme-modern .modern-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--modern-color-primary) 10%, transparent) 0%,
+    transparent 55%
+  );
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+
+.theme-modern .modern-card:hover,
+.theme-modern .modern-card:focus-within {
+  box-shadow: var(--modern-shadow-md);
+  transform: translateY(-4px);
+}
+
+.theme-modern .modern-card:hover::before,
+.theme-modern .modern-card:focus-within::before {
+  opacity: 1;
 }
 
 .theme-modern .modern-card details {
   margin: 0;
 }
 
-.theme-modern .modern-card .settings-section summary {
-  background: transparent;
-  border: none;
+.theme-modern .settings-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(var(--space-lg), 4vw, var(--space-xxl));
+  padding-block-end: calc(
+    var(--space-xl) + var(--footer-height) + env(safe-area-inset-bottom) + var(--space-md)
+  );
+}
+
+.theme-modern .settings-section summary {
+  font-family: var(--font-family-sans);
+  font-weight: var(--modern-font-weight-semibold);
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  letter-spacing: var(--modern-letter-spacing-tight);
+  color: color-mix(in srgb, var(--modern-color-text) 90%, var(--modern-color-text-muted) 10%);
+  background: color-mix(in srgb, var(--modern-color-surface-muted) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--modern-color-border) 65%, transparent);
+  border-radius: var(--modern-radius-md);
+  padding-block: clamp(var(--space-sm), 2vh, var(--space-md));
+  padding-inline: clamp(var(--space-md), 3vw, var(--space-lg));
   box-shadow: none;
-  padding: var(--space-md) var(--space-lg);
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease;
+}
+
+.theme-modern .settings-section summary::after {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-1px);
+  transform-origin: center;
+  transition: transform 220ms ease;
+}
+
+.theme-modern .settings-section[open] summary::after,
+.theme-modern .settings-section--open summary::after {
+  transform: rotate(225deg) translateY(1px);
+}
+
+.theme-modern .settings-section summary:hover,
+.theme-modern .settings-section summary:focus-visible {
+  background: color-mix(in srgb, var(--modern-color-surface-muted) 75%, transparent);
+  border-color: color-mix(in srgb, var(--modern-color-border) 85%, transparent);
   color: var(--modern-color-text);
 }
 
-.theme-modern .modern-card .settings-section summary:hover {
-  background: color-mix(in srgb, var(--modern-color-surface-muted) 55%, transparent);
-  box-shadow: none;
-}
-
-.theme-modern .modern-card .settings-section summary::after {
-  color: var(--modern-color-text-muted);
-}
-
 .theme-modern .modern-card .settings-form fieldset {
-  border: none;
-  background: color-mix(in srgb, var(--modern-color-surface-muted) 85%, transparent);
+  background: color-mix(in srgb, var(--modern-color-surface-muted) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--modern-color-border) 45%, transparent);
+  border-radius: var(--modern-radius-md);
+  padding: clamp(var(--space-md), 3vw, var(--space-lg));
   box-shadow: none;
-  padding: var(--space-lg);
 }
 
 .theme-modern .modern-card .settings-form fieldset > * + * {
@@ -460,6 +554,25 @@
 
 .theme-modern .modern-card .centered-button-container {
   padding-top: var(--space-md);
+}
+
+.theme-modern .settings-form legend,
+.theme-modern .settings-form label,
+.theme-modern .settings-form p,
+.theme-modern .settings-form a {
+  font-family: var(--font-family-sans);
+  color: color-mix(in srgb, var(--modern-color-text) 88%, var(--modern-color-text-muted) 12%);
+}
+
+.theme-modern .settings-form a {
+  font-weight: var(--modern-font-weight-medium);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 65%, transparent);
+}
+
+.theme-modern .settings-form a:hover,
+.theme-modern .settings-form a:focus-visible {
+  text-decoration-thickness: 3px;
 }
 
 @media (max-width: 768px) {
@@ -486,5 +599,39 @@
 
   .theme-modern .modern-card {
     padding-inline: var(--space-md);
+  }
+}
+
+@media (min-width: 960px) {
+  .theme-modern .settings-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-modern .modern-card {
+    transition: box-shadow 0.01ms linear;
+  }
+
+  .theme-modern .modern-card,
+  .theme-modern .modern-card:hover,
+  .theme-modern .modern-card:focus-within {
+    transform: none;
+  }
+
+  .theme-modern .modern-card::before {
+    transition: none;
+  }
+
+  .theme-modern .settings-section summary::after,
+  .theme-modern .switch .slider,
+  .theme-modern .switch .slider::before {
+    transition-duration: 0.01ms;
+  }
+
+  .theme-modern .switch:hover,
+  .theme-modern .switch:focus-within {
+    background: color-mix(in srgb, var(--modern-color-surface-muted) 45%, transparent);
   }
 }
