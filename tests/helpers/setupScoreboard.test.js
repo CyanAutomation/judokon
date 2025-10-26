@@ -110,7 +110,24 @@ describe("setupScoreboard", () => {
     expect(controls.pauseTimer).toHaveBeenCalled();
     Object.defineProperty(document, "hidden", { value: false, configurable: true });
     window.dispatchEvent(new Event("focus"));
-    expect(controls.resumeTimer).toHaveBeenCalled();
+    expect(controls.resumeTimer).toHaveBeenCalledTimes(1);
+  });
+
+  it("resumes when visibility becomes visible without focus", async () => {
+    const scheduler = createMockScheduler();
+    const controls = createControls();
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+
+    mod.setupScoreboard(controls, scheduler);
+
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(controls.pauseTimer).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    expect(controls.resumeTimer).toHaveBeenCalledTimes(1);
   });
 
   it("reuses visibility listeners when setupScoreboard runs multiple times", async () => {

@@ -19,7 +19,8 @@ const visibilityListeners = {
   controls: undefined,
   handleVisibilityChange: undefined,
   handleFocus: undefined,
-  attached: false
+  attached: false,
+  wasHidden: undefined
 };
 
 /**
@@ -413,20 +414,36 @@ function ensureVisibilityListeners(controls) {
     return;
   }
 
+  visibilityListeners.wasHidden = Boolean(document.hidden);
+
   const handleVisibilityChange = () => {
     try {
       const active = visibilityListeners.controls;
-      if (document.hidden && active && typeof active.pauseTimer === "function") {
-        active.pauseTimer();
+      const wasHidden = visibilityListeners.wasHidden === true;
+      const currentlyHidden = Boolean(document.hidden);
+
+      if (currentlyHidden) {
+        if (active && typeof active.pauseTimer === "function") {
+          active.pauseTimer();
+        }
+      } else if (wasHidden && active && typeof active.resumeTimer === "function") {
+        active.resumeTimer();
       }
+
+      visibilityListeners.wasHidden = currentlyHidden;
     } catch {}
   };
 
   const handleFocus = () => {
     try {
       const active = visibilityListeners.controls;
-      if (!document.hidden && active && typeof active.resumeTimer === "function") {
+      const shouldResume =
+        !document.hidden && visibilityListeners.wasHidden === true && active &&
+        typeof active.resumeTimer === "function";
+
+      if (shouldResume) {
         active.resumeTimer();
+        visibilityListeners.wasHidden = false;
       }
     } catch {}
   };
@@ -451,6 +468,7 @@ function detachVisibilityListeners() {
     visibilityListeners.handleFocus = undefined;
     visibilityListeners.controls = undefined;
     visibilityListeners.attached = false;
+    visibilityListeners.wasHidden = undefined;
     return;
   }
 
@@ -467,6 +485,7 @@ function detachVisibilityListeners() {
   visibilityListeners.handleFocus = undefined;
   visibilityListeners.controls = undefined;
   visibilityListeners.attached = false;
+  visibilityListeners.wasHidden = undefined;
 }
 
 /**
