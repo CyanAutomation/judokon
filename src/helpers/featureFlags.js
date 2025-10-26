@@ -124,7 +124,10 @@ export function enableFlag(flag) {
   } catch {}
   // Fire-and-forget persistence; ignore errors in hot paths.
   try {
-    setFlag(flag, true);
+    const persistence = setFlag(flag, true);
+    if (typeof persistence?.catch === "function") {
+      persistence.catch(() => {});
+    }
   } catch {}
 }
 
