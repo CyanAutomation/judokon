@@ -51,7 +51,6 @@
   gap: var(--space-md);
   width: 100%;
   border: 1px solid var(--color-border);
-  border: 1px solid color-mix(in srgb, var(--color-border) 65%, transparent);
   transition:
     background-color var(--transition-fast),
     border-color var(--transition-fast),
@@ -60,22 +59,36 @@
 
 #battle-area .player-slot .slot-surface {
   background-color: var(--color-surface);
-  background-color: color-mix(in srgb, var(--color-surface) 86%, var(--color-secondary) 14%);
   border-color: var(--color-border);
-  border-color: color-mix(in srgb, var(--color-secondary) 45%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-secondary) 18%, transparent) inset,
-    var(--shadow-base);
+  box-shadow: var(--shadow-base);
 }
 
 #battle-area .opponent-slot .slot-surface {
   background-color: var(--color-surface);
-  background-color: color-mix(in srgb, var(--color-surface) 86%, var(--color-primary) 14%);
   border-color: var(--color-border);
-  border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent) inset,
-    var(--shadow-base);
+  box-shadow: var(--shadow-base);
+}
+
+@supports (color: color-mix(in srgb, black 50%, white 50%)) {
+  #battle-area .battle-slot .slot-surface {
+    border-color: color-mix(in srgb, var(--color-border) 65%, transparent);
+  }
+
+  #battle-area .player-slot .slot-surface {
+    background-color: color-mix(in srgb, var(--color-surface) 86%, var(--color-secondary) 14%);
+    border-color: color-mix(in srgb, var(--color-secondary) 45%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-secondary) 18%, transparent) inset,
+      var(--shadow-base);
+  }
+
+  #battle-area .opponent-slot .slot-surface {
+    background-color: color-mix(in srgb, var(--color-surface) 86%, var(--color-primary) 14%);
+    border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent) inset,
+      var(--shadow-base);
+  }
 }
 
 #battle-area .player-slot,
@@ -440,9 +453,7 @@
 .mystery-icon {
   width: 50%;
   height: 50%;
-  fill: var(--color-text-secondary);
   fill: color-mix(in srgb, var(--color-text) 52%, var(--color-text-secondary) 48%);
-  color: var(--color-text-secondary);
   color: color-mix(in srgb, var(--color-text) 52%, var(--color-text-secondary) 48%);
   opacity: 0.92;
 }
