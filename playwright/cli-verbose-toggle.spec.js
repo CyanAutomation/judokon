@@ -1,13 +1,11 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 test.describe("Battle CLI verbose toggle", () => {
   test("updates verbose UI immediately and remains in sync", async ({ page }) => {
-    await page.addInitScript(() => {
-      try {
-        localStorage.clear();
-      } catch {}
-    });
+    const app = await configureApp(page, {});
     await page.goto("/src/pages/battleCLI.html");
+    await app.applyRuntime();
 
     const indicator = page.locator("#verbose-indicator");
     const verboseSection = page.locator("#cli-verbose-section");

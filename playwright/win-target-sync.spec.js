@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 async function openSettingsPanel(page) {
   const settings = page.locator("#cli-settings");
@@ -19,10 +20,12 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   ];
 
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
+    const app = await configureApp(page, {
+      testMode: "disable",
+      requireRoundSelectModal: true
     });
     await page.goto("/src/pages/battleCLI.html");
+    await app.applyRuntime();
     await expect(page.locator("dialog.modal")).toBeVisible();
   });
 

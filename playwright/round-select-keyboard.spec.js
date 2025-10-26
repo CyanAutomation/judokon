@@ -1,19 +1,15 @@
 import { test, expect } from "@playwright/test";
+import { configureApp } from "./fixtures/appConfig.js";
 
 test.describe("Round Select Modal - Keyboard Navigation", () => {
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage to force the round select modal to appear
-    await page.addInitScript(() => {
-      localStorage.clear();
-      // Ensure the modal shows in test environment
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      // Prevent auto-start conditions
-      delete window.location.search;
-      // Disable test mode that would skip modal
-      window.__TEST_MODE_ENABLED = false;
+    const app = await configureApp(page, {
+      testMode: "disable",
+      requireRoundSelectModal: true
     });
 
     await page.goto("/src/pages/battleCLI.html");
+    await app.applyRuntime();
     await page.waitForSelector("dialog.modal", { state: "visible", timeout: 10000 });
   });
 
