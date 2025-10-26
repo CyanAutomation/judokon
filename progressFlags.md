@@ -40,8 +40,8 @@
 - **Progress (2025-10-26)**: Added a `DEBUG_PERF` guard to debug flag instrumentation so toggles record buffered durations and optionally log to the console when profiling is enabled (`src/helpers/debugFlagPerformance.js`).
 - **Progress (2025-10-26)**: Deferred layout debug panel DOM scans to idle/animation frames with cancellation + test flush helpers to reduce synchronous jank (`src/helpers/layoutDebugPanel.js`, `tests/helpers/layoutDebugPanel.test.js`).
 - **Next steps**:
-  1. Extend the idle scheduling pattern to `toggleTooltipOverlayDebug` for parity.
-  2. Pipe aggregated debug flag metrics to a developer HUD so regressions surface during playtests.
+  1. Extend the idle scheduling + rate-limiting pattern to `toggleTooltipOverlayDebug` so both debug surfaces avoid hot-path scans.
+  2. Pipe aggregated `DEBUG_PERF` metrics to a lightweight developer HUD so playtest sessions surface regressions in real time.
 
 ## Observations & Questions
 
