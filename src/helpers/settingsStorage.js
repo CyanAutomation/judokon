@@ -261,13 +261,15 @@ export function updateSetting(key, value) {
  * Reset all settings to their default values.
  *
  * @pseudocode
- * 1. Overwrite `SETTINGS_KEY` in `localStorage` with `DEFAULT_SETTINGS`.
- * 2. Ignore errors if `localStorage` is unavailable or write fails.
- * 3. Reset the cache and return the defaults.
+ * 1. Cancel any pending debounced save to avoid stale writes executing afterward.
+ * 2. Overwrite `SETTINGS_KEY` in `localStorage` with `DEFAULT_SETTINGS`.
+ * 3. Ignore errors if `localStorage` is unavailable or the write fails.
+ * 4. Reset the cache and return the defaults.
  *
  * @returns {import("../config/settingsDefaults.js").Settings} The default settings object.
  */
 export function resetSettings() {
+  debouncedSave.cancel();
   try {
     if (typeof localStorage !== "undefined") {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULT_SETTINGS));
