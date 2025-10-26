@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap");
+
 @font-face {
   font-family: "Russo One";
   src: url("../assets/fonts/RussoOneRegular.woff2") format("woff2");
@@ -17,6 +19,42 @@
 @font-face {
   font-family: "Open Sans";
   src: url("../assets/fonts/OpenSans600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: local("Inter"),
+    url("https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTc2mGk8.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: local("Inter Medium"), local("Inter-Medium"),
+    url("https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTt2y5E8.woff2") format("woff2");
+  font-weight: 500 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  src: local("Work Sans"),
+    url("https://fonts.gstatic.com/s/worksans/v18/QGYyz_MVcBeNP4NJtEtqUg.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  src: local("Work Sans SemiBold"), local("WorkSans-SemiBold"),
+    url("https://fonts.gstatic.com/s/worksans/v18/QGY2z_MVcBeNP4NjuGObc9E.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
