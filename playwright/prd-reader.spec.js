@@ -26,10 +26,16 @@ test.describe("PRD Reader page", () => {
     );
     expect(hasOverflow).toBe(false);
     await expect(container).not.toHaveText("");
+    const getDocId = () => container.getAttribute("data-rendered-doc");
+    const originalDocId = await getDocId();
+    expect(originalDocId).not.toBeNull();
     const original = await container.innerHTML();
 
     // Navigate forward to second document
     await page.keyboard.press("ArrowRight");
+    await expect
+      .poll(getDocId)
+      .not.toBe(originalDocId);
     hasOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
@@ -39,6 +45,7 @@ test.describe("PRD Reader page", () => {
 
     // Navigate back to first document
     await page.keyboard.press("ArrowLeft");
+    await expect.poll(getDocId).toBe(originalDocId);
     const afterPrev = await page.locator("#prd-content").innerHTML();
     expect(afterPrev).toBe(original);
   });
@@ -61,27 +68,26 @@ test.describe("PRD Reader page", () => {
     const radios = page.locator(".sidebar-list input[type='radio']");
     const container = page.locator("#prd-content");
     await expect(container).not.toHaveText("");
-    const initial = await container.innerHTML();
+    const getDocId = () => container.getAttribute("data-rendered-doc");
+    const initialDocId = await getDocId();
+    expect(initialDocId).not.toBeNull();
 
     await radios.first().focus();
     await expect(radios.first()).toBeFocused();
 
     await page.keyboard.press("ArrowDown");
     await expect(container).toBeFocused();
-
-    // Wait for async content loading to complete
-    await page.waitForTimeout(100);
-
-    const afterDown = await container.innerHTML();
-    expect(afterDown).not.toBe(initial);
+    await expect
+      .poll(getDocId)
+      .not.toBe(initialDocId);
+    const afterDownDocId = await getDocId();
+    expect(afterDownDocId).not.toBe(initialDocId);
 
     await page.keyboard.press("ArrowRight");
     await expect(container).toBeFocused();
-
-    // Wait for async content loading
-    await page.waitForTimeout(100);
-
-    const afterNext = await container.innerHTML();
-    expect(afterNext).not.toBe("");
+    await expect.poll(getDocId).toBe(initialDocId);
+    const afterNextDocId = await getDocId();
+    expect(afterNextDocId).toBe(initialDocId);
+    await expect(container).not.toHaveText("");
   });
 });

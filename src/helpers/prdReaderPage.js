@@ -205,6 +205,8 @@ export function renderDocument(state, index) {
   const { container, titles, taskStats, titleEl, summaryEl, documents, DOMPurify } = state;
   cleanupTooltips?.();
   container.innerHTML = DOMPurify.sanitize(documents[index] || "");
+  const baseName = state.baseNames?.[index] ?? "";
+  container.setAttribute("data-rendered-doc", baseName);
   container.classList.remove("fade-in");
   void container.offsetWidth;
   container.classList.add("fade-in");
