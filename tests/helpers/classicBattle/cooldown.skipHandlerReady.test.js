@@ -157,4 +157,48 @@ describe("skip handler clears fallback timer", () => {
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(2);
     expect(warnSpy).not.toHaveBeenCalled();
   });
+
+  it("cancels fallback timers using provided cancel handles", async () => {
+    const fallbackEntries = [];
+    vi.doMock("../../../src/helpers/classicBattle/setupFallbackTimer.js", () => ({
+      setupFallbackTimer: (ms, cb) => {
+        const entry = {
+          id: 0,
+          canceled: false,
+          fired: false,
+          cancelSpy: vi.fn()
+        };
+        const delay = Math.max(ms, 5);
+        entry.id = setTimeout(() => {
+          entry.fired = true;
+          cb();
+        }, delay);
+        entry.cancelSpy.mockImplementation(() => {
+          entry.canceled = true;
+          clearTimeout(entry.id);
+        });
+        fallbackEntries.push(entry);
+        return entry.cancelSpy;
+      }
+    }));
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const { skipCurrentPhase } = await import("../../../src/helpers/classicBattle/skipHandler.js");
+    startCooldown({}, scheduler);
+    expect(fallbackEntries.length).toBeGreaterThan(0);
+    expect(fallbackEntries).toHaveLength(1);
+    skipCurrentPhase();
+    await vi.advanceTimersByTimeAsync(0);
+    const FALLBACK_DELAY_MS = 20;
+    await vi.advanceTimersByTimeAsync(FALLBACK_DELAY_MS);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith("[test] skip: stop nextRoundTimer");
+    fallbackEntries.forEach((entry) => {
+      expect(entry.cancelSpy).toHaveBeenCalledTimes(1);
+      expect(entry.canceled).toBe(true);
+      expect(entry.fired).toBe(false);
+    });
+    vi.doUnmock("../../../src/helpers/classicBattle/setupFallbackTimer.js");
+  });
 });

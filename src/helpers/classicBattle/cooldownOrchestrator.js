@@ -26,6 +26,88 @@ function createErrorContext(operation, context = {}) {
   return { scope: ERROR_SCOPE, operation, ...context };
 }
 
+function assignFallbackHandle(runtime, handle) {
+  runtime.fallbackCancel = null;
+  runtime.fallbackSchedulerControl = null;
+  runtime.fallbackHandle =
+    typeof handle === "function" || (handle && typeof handle === "object") ? handle : null;
+  runtime.fallbackId = null;
+  if (!handle) return;
+  if (typeof handle === "function") {
+    runtime.fallbackCancel = handle;
+    return;
+  }
+  if (Array.isArray(handle)) {
+    const [idCandidate, schedulerCandidate] = handle;
+    if (idCandidate !== undefined) runtime.fallbackId = idCandidate;
+    if (schedulerCandidate && typeof schedulerCandidate.clearTimeout === "function") {
+      runtime.fallbackSchedulerControl = schedulerCandidate;
+    }
+    if (schedulerCandidate && typeof schedulerCandidate.cancel === "function") {
+      runtime.fallbackCancel = () => schedulerCandidate.cancel(idCandidate);
+    }
+    return;
+  }
+  if (typeof handle === "object") {
+    if (typeof handle.cancel === "function") {
+      runtime.fallbackCancel = () => handle.cancel();
+    }
+    if (typeof handle.clear === "function") {
+      runtime.fallbackCancel = () => handle.clear();
+    }
+    if (typeof handle.clearTimeout === "function") {
+      runtime.fallbackSchedulerControl = handle;
+    }
+    if (typeof handle.scheduler === "object" && typeof handle.scheduler.clearTimeout === "function") {
+      runtime.fallbackSchedulerControl = handle.scheduler;
+    }
+    if (handle.id !== undefined) {
+      runtime.fallbackId = handle.id;
+    } else if (handle.timerId !== undefined) {
+      runtime.fallbackId = handle.timerId;
+    }
+    return;
+  }
+  runtime.fallbackId = handle;
+}
+
+function clearFallbackTimer(runtime) {
+  const hasId = runtime.fallbackId !== null && runtime.fallbackId !== undefined;
+  if (typeof runtime.fallbackCancel === "function") {
+    safeRound(
+      "wireCooldownTimer.fallbackCancel",
+      () => {
+        runtime.fallbackCancel?.();
+      },
+      { suppressInProduction: true }
+    );
+  } else if (
+    runtime.fallbackSchedulerControl &&
+    hasId &&
+    typeof runtime.fallbackSchedulerControl.clearTimeout === "function"
+  ) {
+    safeRound(
+      "wireCooldownTimer.fallbackScheduler.clear",
+      () => {
+        runtime.fallbackSchedulerControl.clearTimeout(runtime.fallbackId);
+      },
+      { suppressInProduction: true }
+    );
+  } else if (hasId) {
+    safeRound(
+      "wireCooldownTimer.fallback.clearTimeout",
+      () => {
+        clearTimeout(runtime.fallbackId);
+      },
+      { suppressInProduction: true }
+    );
+  }
+  runtime.fallbackCancel = null;
+  runtime.fallbackSchedulerControl = null;
+  runtime.fallbackHandle = null;
+  runtime.fallbackId = null;
+}
+
 /**
  * @summary Execute a function with shared error handling context.
  * @param {string} operation - Operation name for diagnostics.
@@ -767,6 +849,9 @@ export function instantiateCooldownTimer(
     registerSkipHandler,
     expired: false,
     fallbackId: null,
+    fallbackHandle: null,
+    fallbackCancel: null,
+    fallbackSchedulerControl: null,
     schedulerFallbackId: null,
     finalizePromise: null,
     promptWait: {
@@ -850,10 +935,7 @@ export function createExpirationDispatcher({
     return runPromise;
   };
   controls.resolveReady = function wrappedResolveReady(...args) {
-    if (runtime.fallbackId) {
-      clearTimeout(runtime.fallbackId);
-      runtime.fallbackId = null;
-    }
+    clearFallbackTimer(runtime);
     safeRound(
       "wireCooldownTimer.resolveReady.clearSchedulerFallback",
       () => {
@@ -916,10 +998,7 @@ export function registerSkipHandlerForTimer({ runtime, controls, btn, handleExpi
       () => console.warn("[test] skip: stop nextRoundTimer"),
       { suppressInProduction: true }
     );
-    if (runtime.fallbackId) {
-      clearTimeout(runtime.fallbackId);
-      runtime.fallbackId = null;
-    }
+    clearFallbackTimer(runtime);
     safeRound(
       "wireCooldownTimer.skip.clearSchedulerFallback",
       () => {
@@ -968,7 +1047,7 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
             console.debug(`[TEST DEBUG] scheduling fallback timer ms=${ms}`);
           } catch {}
         }
-        runtime.fallbackId = runtime.fallbackScheduler(ms, () => {
+        const handle = runtime.fallbackScheduler(ms, () => {
           safeRound(
             "wireCooldownTimer.fallback.clearSchedulerTimeout",
             () => {
@@ -982,8 +1061,13 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
             },
             { suppressInProduction: true }
           );
+          runtime.fallbackCancel = null;
+          runtime.fallbackSchedulerControl = null;
+          runtime.fallbackHandle = null;
+          runtime.fallbackId = null;
           onExpired();
         });
+        assignFallbackHandle(runtime, handle);
       };
       const hasCustomScheduler =
         runtime.scheduler && typeof runtime.scheduler.setTimeout === "function";
@@ -999,12 +1083,7 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
               }
               safeRound(
                 "wireCooldownTimer.scheduler.clearFallbackTimer",
-                () => {
-                  if (runtime.fallbackId) {
-                    clearTimeout(runtime.fallbackId);
-                    runtime.fallbackId = null;
-                  }
-                },
+                () => clearFallbackTimer(runtime),
                 { suppressInProduction: true }
               );
               onExpired();
@@ -1015,7 +1094,7 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
               safeRound(
                 "wireCooldownTimer.scheduleFallbackTimer.recover",
                 () => {
-                  if (!runtime.fallbackId) {
+                  if (!runtime.fallbackHandle && runtime.fallbackId == null) {
                     scheduleFallbackTimer();
                   }
                 },
@@ -1030,7 +1109,7 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
           ? "wireCooldownTimer.scheduleFallbackTimer.withScheduler"
           : "wireCooldownTimer.scheduleFallbackTimer",
         () => {
-          if (!runtime.fallbackId) {
+          if (!runtime.fallbackHandle && runtime.fallbackId == null) {
             scheduleFallbackTimer();
           }
         },
