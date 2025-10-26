@@ -21,21 +21,22 @@ let inspectorEnabled = false;
  * 3. Define an asynchronous `handleClick` function for the button's click event:
  *    a. If `isBuilt` is true, simply remove the "hidden" class from `container` and return.
  *    b. If `container` is missing, log an error to the console and return.
- *    c. Otherwise, attempt to fetch `judoka.json` and `gokyo.json` data.
- *    d. Initialize an empty array `validJudoka`.
- *    e. If `judokaData` is an array, iterate through each `judoka` entry:
+ *    c. If a build is in progress (`buildPromise`), await that promise, reveal `container`, and return.
+ *    d. Otherwise, attempt to fetch `judoka.json` and `gokyo.json` data.
+ *    e. Initialize an empty array `validJudoka`.
+ *    f. If `judokaData` is an array, iterate through each `judoka` entry:
  *       i. Attempt to validate the `judoka` entry using `validateData`.
  *       ii. If validation succeeds, push the `judoka` to `validJudoka`.
  *       iii. If validation fails, catch the error and log a message indicating the invalid entry was skipped.
- *    f. If `judokaData` is not an array, log an error.
- *    g. Validate `gokyoData` using `validateData`.
- *    h. Build the carousel using `buildCardCarousel` with the `validJudoka` and `gokyoData`.
- *    i. Append the created `carousel` to the `container`.
- *    j. Remove the "hidden" class from `container` to reveal it.
- *    k. If a `.card-carousel` element is found within the `carousel`, initialize scroll markers using `initScrollMarkers`.
- *    l. Set `isBuilt` to `true`.
- *    m. Log a debug message indicating the carousel was displayed on demand.
- *    n. Catch any errors that occur during the fetch, validation, or carousel building process and log them.
+ *    g. If `judokaData` is not an array, log an error.
+ *    h. Validate `gokyoData` using `validateData`.
+ *    i. Build the carousel using `buildCardCarousel` with the `validJudoka` and `gokyoData`.
+ *    j. Append the created `carousel` to the `container`.
+ *    k. Remove the "hidden" class from `container` to reveal it.
+ *    l. If a `.card-carousel` element is found within the `carousel`, initialize scroll markers using `initScrollMarkers`.
+ *    m. Set `isBuilt` to `true`.
+ *    n. Log a debug message indicating the carousel was displayed on demand.
+ *    o. Catch any errors that occur during the fetch, validation, or carousel building process and log them.
  * 4. Add the `handleClick` function as an event listener for the "click" event on the `button`.
  * 5. Return the `handleClick` function for optional manual invocation.
  *
@@ -63,6 +64,7 @@ export function setupCarouselToggle(button, container) {
     }
 
     if (buildPromise) {
+      // Reuse the in-flight build so concurrent clicks await the same work.
       try {
         await buildPromise;
         container.classList.remove("hidden");
@@ -72,8 +74,7 @@ export function setupCarouselToggle(button, container) {
       return;
     }
 
-    try {
-      const currentBuild = (async () => {
+    const currentBuild = (async () => {
         const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
         const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
 
@@ -106,14 +107,16 @@ export function setupCarouselToggle(button, container) {
         debugLog("Carousel displayed on demand.");
       })();
 
-      buildPromise = currentBuild;
+    buildPromise = currentBuild;
+
+    try {
       await currentBuild;
+    } catch (error) {
+      console.error("Failed to build carousel:", error);
+    } finally {
       if (buildPromise === currentBuild) {
         buildPromise = null;
       }
-    } catch (error) {
-      console.error("Failed to build carousel:", error);
-      buildPromise = null;
     }
   };
 

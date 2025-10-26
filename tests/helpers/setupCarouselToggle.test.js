@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { DATA_DIR } from "../../src/helpers/constants.js";
 
 function createCarousel() {
   const wrapper = document.createElement("div");
@@ -48,6 +49,7 @@ describe("setupCarouselToggle", () => {
     expect(buildCardCarousel).toHaveBeenCalledTimes(1);
   });
 
+  // Rapid clicks should reuse the original build promise instead of triggering duplicates.
   it("awaits an in-flight build when clicks happen rapidly", async () => {
     const button = document.createElement("button");
     const container = document.createElement("div");
@@ -80,12 +82,18 @@ describe("setupCarouselToggle", () => {
     const secondClick = handleClick();
 
     await Promise.resolve();
+    expect(container.classList.contains("hidden")).toBe(true);
 
     resolveBuild(createCarousel());
 
-    await Promise.all([firstClick, secondClick]);
+    const results = await Promise.all([firstClick, secondClick]);
 
+    expect(results).toEqual([undefined, undefined]);
     expect(fetchJson).toHaveBeenCalledTimes(2);
+    expect(fetchJson.mock.calls).toEqual([
+      [`${DATA_DIR}judoka.json`],
+      [`${DATA_DIR}gokyo.json`]
+    ]);
     expect(container.classList.contains("hidden")).toBe(false);
     expect(buildCardCarousel).toHaveBeenCalledTimes(1);
   });
