@@ -10,8 +10,15 @@
  * when Test Mode is enabled. Override the cooldown for manual testing by
  * setting `window.__NEXT_ROUND_COOLDOWN_MS`.
  */
+const DEFAULT_SEED = 1;
+
 let active = false;
-let seed = 1;
+let seed = DEFAULT_SEED;
+
+const normalizeSeed = (value) => {
+  const numericSeed = Number(value);
+  return Number.isFinite(numericSeed) ? numericSeed : DEFAULT_SEED;
+};
 
 /**
  * Enable or disable deterministic test mode.
@@ -42,13 +49,13 @@ let seed = 1;
  * @param {number} [initialSeed=1] - Seed to use when a boolean flag is passed.
  * @returns {void}
  */
-export function setTestMode(enableOrOptions, initialSeed = 1) {
+export function setTestMode(enableOrOptions, initialSeed = DEFAULT_SEED) {
   if (typeof enableOrOptions === "object") {
     active = Boolean(enableOrOptions.enabled);
-    seed = Number(enableOrOptions.seed) || 1;
+    seed = normalizeSeed(enableOrOptions.seed);
   } else {
     active = Boolean(enableOrOptions);
-    seed = initialSeed;
+    seed = normalizeSeed(initialSeed);
   }
 
   // Set global flag for other modules to detect test mode
