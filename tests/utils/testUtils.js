@@ -137,62 +137,417 @@ export function createBattleCardContainers() {
  * 6. Append all created elements to the fragment.
  * 7. Return the fragment.
  */
-export function createSettingsDom() {
-  const fragment = document.createDocumentFragment();
+function createHeaderStub() {
+  const header = document.createElement("header");
+  header.className = "modern-header";
+  header.setAttribute("role", "banner");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "modern-header__theme-toggle";
+  wrapper.setAttribute("role", "group");
+  wrapper.setAttribute("aria-label", "Display mode");
+
+  const createOption = (value, tabIndex) => {
+    const label = document.createElement("label");
+    label.className = "modern-header__theme-pill";
+    label.htmlFor = `header-display-mode-${value}`;
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "header-display-mode";
+    input.value = value;
+    input.id = `header-display-mode-${value}`;
+    input.className = "modern-header__theme-input";
+    input.tabIndex = tabIndex;
+    if (value === "light") {
+      input.checked = true;
+    }
+
+    label.append(input, document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
+    return label;
+  };
+
+  wrapper.append(createOption("light", 0), createOption("dark", -1));
+  header.append(wrapper);
+  return header;
+}
+
+function createHeroStub() {
+  const hero = document.createElement("section");
+  hero.className = "modern-hero";
+  hero.setAttribute("aria-labelledby", "settings-page-title");
+
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "modern-hero__eyebrow";
+  eyebrow.textContent = "Personalize your dojo";
+
+  const heading = document.createElement("h1");
+  heading.id = "settings-page-title";
+  heading.className = "settings-header";
+  heading.textContent = "Settings";
+
+  const description = document.createElement("p");
+  description.className = "modern-hero__description";
+  description.textContent = "Tailor JU-DO-KON! to your play style.";
+
+  hero.append(eyebrow, heading, description);
+  return hero;
+}
+
+function createSaveStatus() {
   const saveStatus = document.createElement("p");
   saveStatus.id = "settings-save-status";
   saveStatus.hidden = true;
-  const soundToggle = document.createElement("input");
-  soundToggle.id = "sound-toggle";
-  soundToggle.type = "checkbox";
-  const motionToggle = document.createElement("input");
-  motionToggle.id = "motion-toggle";
-  motionToggle.type = "checkbox";
-  const typewriterToggle = document.createElement("input");
-  typewriterToggle.id = "typewriter-toggle";
-  typewriterToggle.type = "checkbox";
-  const tooltipsToggle = document.createElement("input");
-  tooltipsToggle.id = "tooltips-toggle";
-  tooltipsToggle.type = "checkbox";
-  const cardOfTheDayToggle = document.createElement("input");
-  cardOfTheDayToggle.id = "card-of-the-day-toggle";
-  cardOfTheDayToggle.type = "checkbox";
-  const fullNavigationMapToggle = document.createElement("input");
-  fullNavigationMapToggle.id = "full-navigation-map-toggle";
-  fullNavigationMapToggle.type = "checkbox";
-  const displayLight = document.createElement("input");
-  displayLight.id = "display-mode-light";
-  displayLight.type = "radio";
-  displayLight.name = "display-mode";
-  displayLight.value = "light";
-  const displayDark = document.createElement("input");
-  displayDark.id = "display-mode-dark";
-  displayDark.type = "radio";
-  displayDark.name = "display-mode";
-  displayDark.value = "dark";
-  const gameModeToggleContainer = document.createElement("section");
-  gameModeToggleContainer.id = "game-mode-toggle-container";
+  saveStatus.setAttribute("role", "status");
+  saveStatus.setAttribute("aria-live", "polite");
+  saveStatus.setAttribute("aria-atomic", "true");
+  return saveStatus;
+}
 
-  const featureFlagsContainer = document.createElement("section");
-  featureFlagsContainer.id = "feature-flags-container";
-  featureFlagsContainer.className = "game-mode-toggle-container settings-form";
+function createSectionCard({ sectionId, summaryText, open = false }) {
+  const card = document.createElement("div");
+  card.className = "modern-card";
 
-  const resetButton = document.createElement("button");
-  resetButton.id = "reset-settings-button";
-  fragment.append(
-    saveStatus,
-    soundToggle,
-    motionToggle,
-    typewriterToggle,
-    tooltipsToggle,
-    cardOfTheDayToggle,
-    fullNavigationMapToggle,
-    displayLight,
-    displayDark,
-    gameModeToggleContainer,
-    featureFlagsContainer,
-    resetButton
+  const details = document.createElement("details");
+  details.className = "settings-section";
+  details.dataset.sectionId = sectionId;
+  details.open = open;
+
+  const summary = document.createElement("summary");
+  summary.textContent = summaryText;
+  details.append(summary);
+  card.append(details);
+  return { card, details };
+}
+
+function createToggleItem({
+  id,
+  label,
+  name,
+  descId,
+  descText,
+  tooltipId,
+  defaultChecked = false
+}) {
+  const item = document.createElement("div");
+  item.className = "settings-item";
+
+  const labelEl = document.createElement("label");
+  labelEl.className = "switch";
+  labelEl.htmlFor = id;
+
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.id = id;
+  input.name = name;
+  input.setAttribute("aria-label", label);
+  if (descId) {
+    input.setAttribute("aria-describedby", descId);
+  }
+  if (tooltipId) {
+    input.dataset.tooltipId = tooltipId;
+  }
+  if (defaultChecked) {
+    input.checked = true;
+  }
+
+  const slider = document.createElement("div");
+  slider.className = "slider round";
+
+  const textSpan = document.createElement("span");
+  textSpan.textContent = label;
+
+  labelEl.append(input, slider, textSpan);
+
+  const description = document.createElement("p");
+  description.className = "settings-description";
+  if (descId) {
+    description.id = descId;
+  }
+  if (descText) {
+    description.textContent = descText;
+  }
+
+  item.append(labelEl, description);
+  return item;
+}
+
+function createDisplayCard() {
+  const { card, details } = createSectionCard({
+    sectionId: "display",
+    summaryText: "Display Settings",
+    open: true
+  });
+  const fieldset = document.createElement("fieldset");
+  fieldset.id = "display-settings-container";
+  fieldset.className = "game-mode-toggle-container settings-form";
+
+  const group = document.createElement("div");
+  group.className = "settings-item display-mode-group";
+  group.setAttribute("role", "radiogroup");
+  group.setAttribute("aria-label", "Display Mode");
+
+  const flex = document.createElement("div");
+  flex.className = "display-mode-flex";
+
+  const createOption = (value, checked, tabIndex) => {
+    const optionLabel = document.createElement("label");
+    optionLabel.className = "display-mode-option";
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.id = `display-mode-${value}`;
+    input.name = "display-mode";
+    input.value = value;
+    input.tabIndex = tabIndex;
+    if (checked) {
+      input.checked = true;
+    }
+
+    const preview = document.createElement("span");
+    preview.className = `theme-preview-card theme-preview-card--${value}`;
+    preview.setAttribute("aria-hidden", "true");
+
+    const header = document.createElement("span");
+    header.className = "theme-preview-card__header";
+    const body = document.createElement("span");
+    body.className = "theme-preview-card__body";
+    const chipA = document.createElement("span");
+    chipA.className = "theme-preview-card__chip";
+    const chipB = document.createElement("span");
+    chipB.className = "theme-preview-card__chip";
+    body.append(chipA, chipB);
+    preview.append(header, body);
+
+    const name = document.createElement("span");
+    name.className = "theme-preview-name";
+    name.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+
+    optionLabel.append(input, preview, name);
+    return optionLabel;
+  };
+
+  flex.append(createOption("light", true, 0), createOption("dark", false, -1));
+  group.append(flex);
+  fieldset.append(group);
+  details.append(fieldset);
+  return card;
+}
+
+function createGeneralCard() {
+  const { card, details } = createSectionCard({
+    sectionId: "general",
+    summaryText: "General Settings",
+    open: true
+  });
+  const fieldset = document.createElement("fieldset");
+  fieldset.id = "general-settings-container";
+  fieldset.className = "game-mode-toggle-container settings-form";
+
+  [
+    {
+      id: "sound-toggle",
+      label: "Sound",
+      name: "sound",
+      descId: "sound-desc",
+      descText: "Enable or mute game audio.",
+      tooltipId: "settings.sound",
+      defaultChecked: true
+    },
+    {
+      id: "motion-toggle",
+      label: "Motion Effects",
+      name: "motion",
+      descId: "motion-desc",
+      descText: "Disable animations for a calmer interface.",
+      tooltipId: "settings.motionEffects",
+      defaultChecked: true
+    },
+    {
+      id: "typewriter-toggle",
+      label: "Typewriter Effect",
+      name: "typewriter",
+      descId: "typewriter-desc",
+      descText: "Animate dialog text letter by letter.",
+      tooltipId: "settings.typewriterEffect",
+      defaultChecked: true
+    },
+    {
+      id: "tooltips-toggle",
+      label: "Tooltips",
+      name: "tooltips",
+      descId: "tooltips-desc",
+      descText: "Show inline explanations for controls.",
+      tooltipId: "settings.tooltips",
+      defaultChecked: true
+    },
+    {
+      id: "card-of-the-day-toggle",
+      label: "Card of the Day",
+      name: "cardOfTheDay",
+      descId: "card-of-the-day-desc",
+      descText: "Display a rotating featured card.",
+      tooltipId: "settings.showCardOfTheDay"
+    },
+    {
+      id: "full-navigation-map-toggle",
+      label: "Full Navigation Map",
+      name: "fullNavigationMap",
+      descId: "full-navigation-map-desc",
+      descText: "Display an overlay linking to every page.",
+      tooltipId: "settings.fullNavigationMap"
+    }
+  ].forEach((config) => {
+    fieldset.append(createToggleItem(config));
+  });
+
+  details.append(fieldset);
+  return card;
+}
+
+function createGameModesCard() {
+  const { card, details } = createSectionCard({
+    sectionId: "gameModes",
+    summaryText: "Game Modes"
+  });
+  const fieldset = document.createElement("fieldset");
+  fieldset.id = "game-mode-toggle-container";
+  fieldset.className = "game-mode-toggle-container settings-form";
+  fieldset.setAttribute("aria-label", "Game Mode Selector");
+  details.append(fieldset);
+  return card;
+}
+
+function createAdvancedSearch() {
+  const searchWrapper = document.createElement("div");
+  searchWrapper.className = "advanced-settings-search";
+
+  const label = document.createElement("label");
+  label.className = "visually-hidden";
+  label.setAttribute("for", "advanced-settings-search");
+  label.textContent = "Search feature flags";
+
+  const input = document.createElement("input");
+  input.type = "search";
+  input.id = "advanced-settings-search";
+  input.placeholder = "Search feature flags";
+  input.autocomplete = "off";
+  input.setAttribute("aria-describedby", "advanced-settings-search-status");
+
+  const empty = document.createElement("p");
+  empty.id = "advanced-settings-no-results";
+  empty.className = "settings-description";
+  empty.hidden = true;
+  empty.textContent = "No feature flags match your search.";
+
+  const status = document.createElement("span");
+  status.id = "advanced-settings-search-status";
+  status.className = "visually-hidden";
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+
+  searchWrapper.append(label, input, empty, status);
+  return searchWrapper;
+}
+
+function createAdvancedFieldset() {
+  const fieldset = document.createElement("fieldset");
+  fieldset.id = "feature-flags-container";
+  fieldset.className = "game-mode-toggle-container settings-form";
+  return fieldset;
+}
+
+function createResetButtonRow() {
+  const item = document.createElement("div");
+  item.className = "settings-item";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "centered-button-container u-flex u-justify-center";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = "reset-settings-button";
+  button.textContent = "Restore Defaults";
+
+  wrapper.append(button);
+  item.append(wrapper);
+  return item;
+}
+
+function createAdvancedCard() {
+  const { card, details } = createSectionCard({
+    sectionId: "advanced",
+    summaryText: "Advanced Settings"
+  });
+
+  const search = createAdvancedSearch();
+  const fieldset = createAdvancedFieldset();
+
+  details.append(search, fieldset);
+  return card;
+}
+
+function createLinksCard() {
+  const { card, details } = createSectionCard({
+    sectionId: "links",
+    summaryText: "Links"
+  });
+  const fieldset = document.createElement("fieldset");
+  fieldset.id = "links-container";
+  fieldset.className = "settings-form";
+
+  const list = document.createElement("ul");
+  list.className = "settings-links-list settings-links-grid";
+
+  [
+    { id: "changelog-link", text: "View Change Log" },
+    { id: "prdviewer-link", text: "View PRD Documents" },
+    { id: "mockupviewer-link", text: "View Design Mockups" },
+    { id: "tooltipviewer-link", text: "View Tooltip Descriptions" },
+    { id: "vectorSearch-link", text: "Vector Search for RAG" }
+  ].forEach(({ id, text }) => {
+    const item = document.createElement("li");
+    item.className = "settings-item";
+    const link = document.createElement("a");
+    link.id = id;
+    link.href = "#";
+    link.textContent = text;
+    item.append(link);
+    list.append(item);
+  });
+
+  fieldset.append(list, createResetButtonRow());
+  details.append(fieldset);
+  return card;
+}
+
+function createErrorPopup() {
+  const popup = document.createElement("div");
+  popup.id = "settings-error-popup";
+  popup.className = "settings-error-popup";
+  popup.setAttribute("role", "alert");
+  popup.setAttribute("aria-live", "assertive");
+  popup.style.display = "none";
+  return popup;
+}
+
+export function createSettingsDom() {
+  const fragment = document.createDocumentFragment();
+  fragment.append(createHeaderStub(), createHeroStub());
+
+  const form = document.createElement("form");
+  form.id = "settings-form";
+  form.className = "settings-form";
+
+  form.append(
+    createDisplayCard(),
+    createGeneralCard(),
+    createGameModesCard(),
+    createAdvancedCard(),
+    createLinksCard()
   );
+
+  fragment.append(createSaveStatus(), form, createErrorPopup());
   return fragment;
 }
 

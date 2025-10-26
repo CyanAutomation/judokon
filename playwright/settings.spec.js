@@ -128,10 +128,23 @@ test.describe("Settings page", () => {
 
   test("settings elements visible", async ({ page }) => {
     await verifyPageBasics(page, [], [], { expectNav: false });
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("navigation", { name: /breadcrumb/i })).toBeVisible();
+    await expect(page.getByRole("group", { name: /display mode/i })).toBeVisible();
+
+    const hero = page.locator(".modern-hero");
+    await expect(hero).toBeVisible();
+    await expect(hero).toHaveAttribute("aria-labelledby", "settings-page-title");
+    await expect(page.locator("#settings-page-title")).toHaveText("Settings");
+
+    const cardCount = await page.locator(".modern-card").count();
+    expect(cardCount).toBeGreaterThanOrEqual(3);
+
     await expect(page.getByText(/sound/i)).toBeVisible();
     await expect(page.getByText(/motion effects/i)).toBeVisible();
     await expect(page.getByText(/typewriter effect/i)).toBeVisible();
     await expect(page.getByRole("radiogroup", { name: /display mode/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /adjust display mode/i })).toBeVisible();
   });
 
   // Removed accessibility-focused labels test
@@ -396,7 +409,7 @@ test.describe("Settings page", () => {
     );
   });
 
-  test("normalizes legacy retro value to dark", async ({ page }) => {
+  test("normalizes legacy retro value to a supported mode", async ({ page }) => {
     await page.evaluate(() => {
       localStorage.setItem(
         "settings",
@@ -406,31 +419,48 @@ test.describe("Settings page", () => {
       );
     });
     await page.reload();
-    await page.waitForFunction(() => document.body.dataset.theme === "dark");
-    await expect(page.locator("#display-mode-dark")).toBeChecked();
+    await waitForSettingsReady(page);
+    const themeHandle = await page.waitForFunction(() => {
+      const theme = document.body.dataset.theme;
+      return theme === "light" || theme === "dark" ? theme : undefined;
+    });
+    const theme = await themeHandle.jsonValue();
+    const radioSelector = theme === "dark" ? "#display-mode-dark" : "#display-mode-light";
+    await expect(page.locator(radioSelector)).toBeChecked();
+    await expect(page.locator(`#header-display-mode-${theme}`)).toBeChecked();
     await page.evaluate(() => localStorage.removeItem("settings"));
   });
 
   test("theme-specific tokens update settings visuals", async ({ page }) => {
-    const readVar = async (name) =>
-      page.evaluate((prop) => getComputedStyle(document.body).getPropertyValue(prop).trim(), name);
-    const readFieldsetBg = async () =>
-      page
-        .locator(".settings-form fieldset")
-        .first()
-        .evaluate((node) => getComputedStyle(node).backgroundColor);
-
-    const snapshot = async () => ({
-      sectionBg: await readVar("--settings-section-bg"),
-      switchOn: await readVar("--switch-on-bg"),
-      searchPlaceholder: await readVar("--settings-search-placeholder"),
-      fieldsetBg: await readFieldsetBg()
-    });
+    const snapshot = async () =>
+      page.evaluate(() => {
+        const rootStyle = getComputedStyle(document.body);
+        const hero = document.querySelector(".modern-hero");
+        const heroContent = hero?.querySelector(".modern-hero__content") ?? hero;
+        const card = document.querySelector(".modern-card");
+        const fieldset = document.querySelector(".settings-form fieldset");
+        return {
+          sectionBg: rootStyle.getPropertyValue("--settings-section-bg").trim(),
+          switchOn: rootStyle.getPropertyValue("--switch-on-bg").trim(),
+          searchPlaceholder: rootStyle.getPropertyValue("--settings-search-placeholder").trim(),
+          heroBackground: hero ? getComputedStyle(hero).backgroundImage : "",
+          heroText: heroContent ? getComputedStyle(heroContent).color : "",
+          cardBackground: card ? getComputedStyle(card).backgroundColor : "",
+          cardBorder: card ? getComputedStyle(card).borderColor : "",
+          fieldsetBg: fieldset ? getComputedStyle(fieldset).backgroundColor : ""
+        };
+      });
 
     const light = await snapshot();
     expect(light.sectionBg).not.toBe("");
     expect(light.switchOn).not.toBe("");
     expect(light.searchPlaceholder).not.toBe("");
+    expect(light.heroBackground).not.toBe("");
+    expect(light.heroText).not.toBe("");
+    expect(light.cardBackground).not.toBe("");
+    expect(light.cardBorder).not.toBe("");
+    expect(light.fieldsetBg).not.toBe("");
+    await expect(page.locator("#header-display-mode-light")).toBeChecked();
 
     await page.check("#display-mode-dark");
     await page.waitForFunction(() => document.body.dataset.theme === "dark");
@@ -438,7 +468,12 @@ test.describe("Settings page", () => {
     expect(dark.sectionBg).not.toBe(light.sectionBg);
     expect(dark.switchOn).not.toBe(light.switchOn);
     expect(dark.searchPlaceholder).not.toBe(light.searchPlaceholder);
+    expect(dark.heroBackground).not.toBe(light.heroBackground);
+    expect(dark.heroText).not.toBe(light.heroText);
+    expect(dark.cardBackground).not.toBe(light.cardBackground);
+    expect(dark.cardBorder).not.toBe(light.cardBorder);
     expect(dark.fieldsetBg).not.toBe(light.fieldsetBg);
+    await expect(page.locator("#header-display-mode-dark")).toBeChecked();
 
     await page.check("#display-mode-light");
     await page.waitForFunction(() => document.body.dataset.theme === "light");
@@ -446,7 +481,12 @@ test.describe("Settings page", () => {
     expect(backToLight.sectionBg).toBe(light.sectionBg);
     expect(backToLight.switchOn).toBe(light.switchOn);
     expect(backToLight.searchPlaceholder).toBe(light.searchPlaceholder);
+    expect(backToLight.heroBackground).toBe(light.heroBackground);
+    expect(backToLight.heroText).toBe(light.heroText);
+    expect(backToLight.cardBackground).toBe(light.cardBackground);
+    expect(backToLight.cardBorder).toBe(light.cardBorder);
     expect(backToLight.fieldsetBg).toBe(light.fieldsetBg);
+    await expect(page.locator("#header-display-mode-light")).toBeChecked();
   });
 
   test("restore defaults resets settings", async ({ page }) => {
