@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
-import { setupFlags } from "../../src/pages/index.js";
 
 describe("battleCLI verbose mode visibility", () => {
   beforeEach(async () => {
@@ -14,55 +13,67 @@ describe("battleCLI verbose mode visibility", () => {
   it("shows verbose section and sets focus when verbose is enabled", async () => {
     const mod = await loadBattleCLI();
     await mod.init();
-    const { toggleVerbose } = await setupFlags();
 
-    // Get the verbose elements
     const checkbox = document.getElementById("verbose-toggle");
     const section = document.getElementById("cli-verbose-section");
     const log = document.getElementById("cli-verbose-log");
+    const indicator = document.getElementById("verbose-indicator");
 
     expect(checkbox).toBeTruthy();
     expect(section).toBeTruthy();
     expect(log).toBeTruthy();
+    expect(indicator).toBeTruthy();
 
-    // Initially, verbose should be disabled
     expect(checkbox.checked).toBe(false);
     expect(section.hidden).toBe(true);
     expect(section.getAttribute("aria-expanded")).toBe("false");
+    expect(indicator.style.display).toBe("none");
 
-    // Enable verbose using the internal toggle helper
-    await toggleVerbose(true);
+    checkbox.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
 
-    // Now verbose section should be visible and expanded
     expect(checkbox.checked).toBe(true);
     expect(section.hidden).toBe(false);
     expect(section.getAttribute("aria-expanded")).toBe("true");
-
-    // The log should have focus
     expect(document.activeElement).toBe(log);
+    expect(indicator.style.display).toBe("inline");
+    expect(indicator.getAttribute("aria-hidden")).toBe("false");
   });
 
-  it("hides verbose section when verbose is disabled", async () => {
+  it("responds to feature flag change events", async () => {
     const mod = await loadBattleCLI();
     await mod.init();
-    const { toggleVerbose } = await setupFlags();
 
-    // Get the verbose elements
     const checkbox = document.getElementById("verbose-toggle");
     const section = document.getElementById("cli-verbose-section");
+    const emitter = mod.featureFlagsEmitter;
+    const setMockFlag = mod.setMockFlag;
 
-    // Enable verbose first
-    await toggleVerbose(true);
+    expect(checkbox).toBeTruthy();
+    expect(section).toBeTruthy();
+    expect(emitter).toBeInstanceOf(EventTarget);
+    expect(typeof setMockFlag).toBe("function");
 
-    expect(checkbox.checked).toBe(true);
-    expect(section.hidden).toBe(false);
-
-    // Disable verbose
-    await toggleVerbose(false);
-
-    // Now verbose section should be hidden
-    expect(checkbox.checked).toBe(false);
     expect(section.hidden).toBe(true);
     expect(section.getAttribute("aria-expanded")).toBe("false");
+
+    setMockFlag("cliVerbose", true);
+    emitter.dispatchEvent(
+      new CustomEvent("change", { detail: { flag: "cliVerbose" } })
+    );
+
+    expect(section.hidden).toBe(false);
+    expect(section.getAttribute("aria-expanded")).toBe("true");
+    expect(checkbox.checked).toBe(true);
+
+    setMockFlag("cliVerbose", false);
+    emitter.dispatchEvent(
+      new CustomEvent("change", { detail: { flag: "cliVerbose" } })
+    );
+
+    expect(section.hidden).toBe(true);
+    expect(section.getAttribute("aria-expanded")).toBe("false");
+    expect(checkbox.checked).toBe(false);
   });
 });

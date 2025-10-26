@@ -75,6 +75,12 @@ export async function loadBattleCLI(options = {}) {
       })
     );
   });
+  const setMockFlag = (flag, value) => {
+    if (flag in flagState) {
+      flagState[flag] = value;
+    }
+  };
+
   vi.doMock("../../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags,
     isEnabled,
@@ -199,7 +205,10 @@ export async function loadBattleCLI(options = {}) {
   if (html) {
     document.body.insertAdjacentHTML("beforeend", html);
   }
-  return cli;
+  return Object.assign(cli, {
+    featureFlagsEmitter: emitter,
+    setMockFlag
+  });
 }
 
 /**
