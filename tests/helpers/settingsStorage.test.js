@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { updateSetting, resetSettings } from "../../src/helpers/settingsStorage.js";
+import {
+  updateSetting,
+  resetSettings,
+  saveSettings
+} from "../../src/helpers/settingsStorage.js";
 import { getCachedSettings, resetCache } from "../../src/helpers/settingsCache.js";
+import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 /**
  * @vitest-environment jsdom
@@ -43,6 +48,41 @@ describe("updateSetting", () => {
     const stored = JSON.parse(localStorage.getItem("settings"));
     expect(stored.sound).toBe(false);
     expect(stored.motionEffects).toBe(false);
+  });
+});
+
+describe("resetSettings", () => {
+  beforeEach(() => {
+    resetSettings();
+    localStorage.clear();
+    resetCache();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("cancels a pending debounced save so defaults persist", async () => {
+    const pendingSave = saveSettings({
+      ...DEFAULT_SETTINGS,
+      sound: false
+    });
+
+    // Simulate a pre-existing custom value to verify the reset overwrites it.
+    localStorage.setItem(
+      "settings",
+      JSON.stringify({ ...DEFAULT_SETTINGS, sound: true })
+    );
+
+    resetSettings();
+
+    await expect(pendingSave).rejects.toMatchObject({ name: "DebounceError" });
+
+    vi.runAllTimers();
+
+    expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
+    expect(getCachedSettings()).toEqual(DEFAULT_SETTINGS);
   });
 });
 
