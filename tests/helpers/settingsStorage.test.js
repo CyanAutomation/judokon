@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { updateSetting, resetSettings } from "../../src/helpers/settingsStorage.js";
 import { getCachedSettings, resetCache } from "../../src/helpers/settingsCache.js";
 
@@ -47,6 +47,17 @@ describe("updateSetting", () => {
 });
 
 describe("getSettingsSchema", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
   it("retries after a rejection by clearing the cached promise", async () => {
     const fetchMock = vi
       .fn()
@@ -57,6 +68,7 @@ describe("getSettingsSchema", () => {
       });
     vi.stubGlobal("fetch", fetchMock);
 
+    // Reset module state so the module-level settingsSchemaPromise starts undefined.
     vi.resetModules();
 
     let restoreImporter;
@@ -77,6 +89,9 @@ describe("getSettingsSchema", () => {
 
       await expect(getSettingsSchema()).rejects.toThrow("import failure");
 
+      // Wait for the retry-clearing timeout to run before attempting again.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
       const schema = await getSettingsSchema();
       expect(schema).toEqual({ title: "schema-from-fetch" });
 
@@ -86,9 +101,6 @@ describe("getSettingsSchema", () => {
       if (typeof restoreImporter === "function") {
         restoreImporter();
       }
-      vi.unstubAllGlobals();
-      vi.clearAllMocks();
-      vi.resetModules();
     }
   });
 });
