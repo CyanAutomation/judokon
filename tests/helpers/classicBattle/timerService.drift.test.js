@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createTimerServiceHarness } from "../integrationHarness.js";
-import { createTimerNodes } from "./domUtils.js";
+import { createTimerNodes, createRoundMessage, createSnackbarContainer } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 import { createDriftStarter } from "./driftStarter.js";
 
@@ -42,47 +42,99 @@ describe("timerService drift handling", () => {
 
   it("startCooldown shows fallback on drift", async () => {
     vi.resetModules();
-    const showMessage = vi.fn();
-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
-      showMessage,
-      showTemporaryMessage: () => () => {},
-      showAutoSelect: vi.fn(),
-      clearTimer: vi.fn(),
-      updateTimer: vi.fn(),
-      updateRoundCounter: vi.fn(),
-      clearRoundCounter: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-      enableNextRoundButton: vi.fn(),
-      disableNextRoundButton: vi.fn(),
-      syncScoreDisplay: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
-      updateDebugPanel: vi.fn()
-    }));
+    vi.doUnmock("../../../src/helpers/setupScoreboard.js");
+    vi.doUnmock("../../../src/helpers/showSnackbar.js");
+    const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
+    const showMessage = vi.spyOn(scoreboard, "showMessage");
+    const snackbar = await import("../../../src/helpers/showSnackbar.js");
+    const showSnack = vi.spyOn(snackbar, "showSnackbar");
     const cool = createDriftStarter();
     const startCoolDown = cool.starter;
     vi.doMock("../../../src/helpers/battleEngineFacade.js", async () => {
       const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
       return { ...actual, startCoolDown, requireEngine: () => ({ startCoolDown }) };
     });
+    const driftHandlers = new Set();
+    vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
+      createRoundTimer: () => ({
+        on: vi.fn((event, handler) => {
+          if (event === "drift") {
+            driftHandlers.add(handler);
+          }
+          if (event === "tick") {
+            handler(3);
+          }
+          return () => {
+            if (event === "drift") {
+              driftHandlers.delete(handler);
+            }
+          };
+        }),
+        off: vi.fn((event, handler) => {
+          if (event === "drift") {
+            driftHandlers.delete(handler);
+          }
+        }),
+        start: vi.fn(),
+        stop: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn()
+      })
+    }));
+    vi.doMock("../../../src/helpers/timerUtils.js", () => ({
+      getDefaultTimer: () => 30
+    }));
     const mod = await import("../../../src/helpers/classicBattle/roundManager.js");
     const scheduler = createMockScheduler();
-    createTimerNodes();
+    document.body.innerHTML = "";
+    const header = document.createElement("header");
+    header.className = "battle-header";
+    document.body.appendChild(header);
+    const messageEl = createRoundMessage();
+    const { nextButton, nextRoundTimer } = createTimerNodes();
+    createSnackbarContainer();
+    header.append(messageEl, nextRoundTimer, nextButton);
+    const scoreboardComponent = await import("../../../src/components/Scoreboard.js");
+    scoreboardComponent.resetScoreboard();
+    scoreboardComponent.initScoreboard(header);
     mod.startCooldown({}, scheduler);
+    showMessage.mockClear();
+    showSnack.mockClear();
     scheduler.tick(0);
-    cool.triggerDrift(1);
-    // Cooldown drift displays a non-intrusive fallback; may use snackbar
-    // when a round result message is present. Accept scoreboard fallback too.
-    const usedScoreboard = showMessage.mock.calls.some((c) => c[0] === "Waiting…");
-    const snackbar = await import("../../../src/helpers/showSnackbar.js");
-    const showSnack = vi.spyOn(snackbar, "showSnackbar");
-    // Trigger another drift tick to allow snackbar path in environments
-    // where the round message is present.
-    cool.triggerDrift(1);
-    const usedSnackbar = showSnack.mock.calls.some((c) => c[0] === "Waiting…");
-    // In test environment, drift may not trigger message display
-    expect(usedScoreboard || usedSnackbar || true).toBe(true);
+    const scoreboardRegion = nextRoundTimer.closest("header");
+    expect(scoreboardRegion).toBeInstanceOf(HTMLElement);
+    const scoreboardHasMessage = scoreboardRegion?.contains(messageEl);
+    expect(scoreboardHasMessage).toBe(true);
+    expect(messageEl.textContent).toBe("");
+    const triggerDrift = (remaining) => {
+      for (const handler of driftHandlers) {
+        handler(remaining);
+      }
+    };
+    triggerDrift(1);
+    expect(showMessage).toHaveBeenCalledWith("Waiting…");
+    expect(showSnack).not.toHaveBeenCalled();
+    expect(messageEl.textContent).toBe("Waiting…");
+    const container = document.getElementById("snackbar-container");
+    expect(container).toBeInstanceOf(HTMLElement);
+    const snackbarBeforeFallback = container?.querySelector(".snackbar");
+    expect(snackbarBeforeFallback?.textContent).toBe("Opponent is choosing…");
+    messageEl.textContent = "Round resolved";
+    showSnack.mockClear();
+    triggerDrift(1);
+    expect(showSnack).toHaveBeenCalledWith("Waiting…");
+    const activeSnackbar = container?.querySelector(".snackbar");
+    expect(activeSnackbar?.textContent).toBe("Waiting…");
+    for (const specifier of [
+      "../../../src/helpers/timers/createRoundTimer.js",
+      "../../src/helpers/timers/createRoundTimer.js",
+      "/src/helpers/timers/createRoundTimer.js",
+      "src/helpers/timers/createRoundTimer.js"
+    ]) {
+      try {
+        vi.doUnmock(specifier);
+      } catch {}
+    }
     // Factory restarts cooldown timer on each drift (initial + 2 drifts)
     // In Vitest, fallback timer is used instead of engine
     expect(startCoolDown).toHaveBeenCalledTimes(0);
