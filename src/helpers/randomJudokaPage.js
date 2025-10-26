@@ -660,8 +660,8 @@ export async function setupRandomJudokaPage() {
  * await Promise.all([setup, nav])
  */
 export async function initRandomJudokaPage() {
-  if (randomJudokaPageInitialized) {
-    return randomJudokaInitPromise ?? Promise.resolve();
+  if (randomJudokaPageInitialized && randomJudokaInitPromise) {
+    return randomJudokaInitPromise;
   }
 
   if (randomJudokaInitPromise) {
@@ -680,6 +680,7 @@ export async function initRandomJudokaPage() {
     randomJudokaPageInitialized = true;
   })().catch((error) => {
     randomJudokaInitPromise = null;
+    randomJudokaPageInitialized = false;
     throw error;
   });
 
