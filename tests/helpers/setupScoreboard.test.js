@@ -113,6 +113,43 @@ describe("setupScoreboard", () => {
     expect(controls.resumeTimer).toHaveBeenCalled();
   });
 
+  it("reuses visibility listeners when setupScoreboard runs multiple times", async () => {
+    const scheduler = createMockScheduler();
+    const firstControls = createControls();
+    const secondControls = createControls();
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+
+    mod.setupScoreboard(firstControls, scheduler);
+    mod.setupScoreboard(secondControls, scheduler);
+
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(firstControls.pauseTimer).not.toHaveBeenCalled();
+    expect(secondControls.pauseTimer).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+    window.dispatchEvent(new Event("focus"));
+    expect(firstControls.resumeTimer).not.toHaveBeenCalled();
+    expect(secondControls.resumeTimer).toHaveBeenCalledTimes(1);
+  });
+
+  it("exposes cleanup helper for visibility listeners", async () => {
+    const scheduler = createMockScheduler();
+    const controls = createControls();
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+
+    mod.setupScoreboard(controls, scheduler);
+    mod.cleanupScoreboard();
+
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(controls.pauseTimer).not.toHaveBeenCalled();
+
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+    window.dispatchEvent(new Event("focus"));
+    expect(controls.resumeTimer).not.toHaveBeenCalled();
+  });
+
   it("logs helper failures once and falls back to noop", async () => {
     vi.resetModules();
     const stub = createScoreboardStub({

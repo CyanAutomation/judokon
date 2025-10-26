@@ -15,6 +15,12 @@ const headerClearanceObserverKey = Symbol("headerClearanceObserver");
 const loggedWarnings = new Set();
 const loggedErrors = new Set();
 const sharedScoreboardModule = scoreboardModule;
+const visibilityListeners = {
+  controls: undefined,
+  handleVisibilityChange: undefined,
+  handleFocus: undefined,
+  attached: false
+};
 
 /**
  * Log a warning or error exactly once.
@@ -386,34 +392,90 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
   const headerTarget = domAvailable ? document.querySelector("header") : null;
   runHelper("initScoreboard", getScoreboardMethod("initScoreboard"), [headerTarget, safeControls]);
 
-  if (domAvailable) {
-    observeHeaderClearance(headerTarget);
-  }
-
   if (!domAvailable) {
     return;
   }
 
-  // Handle visibility changes for timer pause/resume
+  observeHeaderClearance(headerTarget);
+  ensureVisibilityListeners(safeControls);
+  reflectNextButtonReadiness();
+}
+
+/**
+ * Ensure visibility and focus listeners are registered exactly once.
+ *
+ * @param {object} controls - Timer control callbacks.
+ * @returns {void}
+ */
+function ensureVisibilityListeners(controls) {
+  visibilityListeners.controls = controls;
+  if (visibilityListeners.attached) {
+    return;
+  }
+
+  const handleVisibilityChange = () => {
+    try {
+      const active = visibilityListeners.controls;
+      if (document.hidden && active && typeof active.pauseTimer === "function") {
+        active.pauseTimer();
+      }
+    } catch {}
+  };
+
+  const handleFocus = () => {
+    try {
+      const active = visibilityListeners.controls;
+      if (!document.hidden && active && typeof active.resumeTimer === "function") {
+        active.resumeTimer();
+      }
+    } catch {}
+  };
+
   try {
-    const handleVisibilityChange = () => {
-      if (document.hidden && safeControls.pauseTimer) {
-        safeControls.pauseTimer();
-      }
-    };
-
-    const handleFocus = () => {
-      if (!document.hidden && safeControls.resumeTimer) {
-        safeControls.resumeTimer();
-      }
-    };
-
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("focus", handleFocus);
+    visibilityListeners.handleVisibilityChange = handleVisibilityChange;
+    visibilityListeners.handleFocus = handleFocus;
+    visibilityListeners.attached = true;
   } catch {}
+}
+
+/**
+ * Remove registered visibility and focus listeners.
+ *
+ * @returns {void}
+ */
+function detachVisibilityListeners() {
+  if (!visibilityListeners.attached) {
+    visibilityListeners.handleVisibilityChange = undefined;
+    visibilityListeners.handleFocus = undefined;
+    visibilityListeners.controls = undefined;
+    visibilityListeners.attached = false;
+    return;
+  }
 
   try {
-    // Passively reflect Next button readiness to the badge without announcements.
+    if (visibilityListeners.handleVisibilityChange) {
+      document.removeEventListener("visibilitychange", visibilityListeners.handleVisibilityChange);
+    }
+    if (visibilityListeners.handleFocus) {
+      window.removeEventListener("focus", visibilityListeners.handleFocus);
+    }
+  } catch {}
+
+  visibilityListeners.handleVisibilityChange = undefined;
+  visibilityListeners.handleFocus = undefined;
+  visibilityListeners.controls = undefined;
+  visibilityListeners.attached = false;
+}
+
+/**
+ * Synchronize the Next button readiness badge with the button state.
+ *
+ * @returns {void}
+ */
+function reflectNextButtonReadiness() {
+  try {
     const nextButton = document.getElementById("next-button");
     const badge = document.getElementById("next-ready-badge");
     if (nextButton && badge) {
@@ -431,6 +493,28 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
       });
     }
   } catch {}
+}
+
+/**
+ * Detach scoreboard lifecycle listeners and clear stored controls.
+ *
+ * @pseudocode
+ * 1. Attempt to remove the visibility and focus listeners when attached.
+ * 2. Reset cached listener references and active controls.
+ * 3. Leave the module ready for a future `setupScoreboard` call.
+ *
+ * @returns {void}
+ */
+export function cleanupScoreboard() {
+  visibilityListeners.controls = undefined;
+  if (!domAvailable) {
+    visibilityListeners.handleVisibilityChange = undefined;
+    visibilityListeners.handleFocus = undefined;
+    visibilityListeners.attached = false;
+    return;
+  }
+
+  detachVisibilityListeners();
 }
 
 /**
