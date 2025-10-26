@@ -396,15 +396,26 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
 
   // Handle visibility changes for timer pause/resume
   try {
+    let pausedByVisibility = false;
+
     const handleVisibilityChange = () => {
-      if (document.hidden && safeControls.pauseTimer) {
-        safeControls.pauseTimer();
+      if (document.hidden) {
+        if (!pausedByVisibility && safeControls.pauseTimer) {
+          safeControls.pauseTimer();
+          pausedByVisibility = true;
+        }
+        return;
+      }
+
+      if (pausedByVisibility && safeControls.resumeTimer) {
+        safeControls.resumeTimer();
+        pausedByVisibility = false;
       }
     };
 
     const handleFocus = () => {
-      if (!document.hidden && safeControls.resumeTimer) {
-        safeControls.resumeTimer();
+      if (!document.hidden) {
+        handleVisibilityChange();
       }
     };
 

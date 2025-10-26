@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createScoreboardHeader } from "../utils/testUtils.js";
 import { createMockScheduler } from "./mockScheduler.js";
 import { withMutedConsole } from "../utils/console.js";
@@ -16,6 +16,10 @@ describe("setupScoreboard", () => {
     vi.resetModules();
     document.body.innerHTML = "";
     document.body.appendChild(createScoreboardHeader());
+  });
+
+  afterEach(() => {
+    Reflect.deleteProperty(document, "hidden");
   });
 
   function createControls() {
@@ -105,12 +109,41 @@ describe("setupScoreboard", () => {
     const controls = createControls();
     const mod = await import("../../src/helpers/setupScoreboard.js");
     mod.setupScoreboard(controls, scheduler);
-    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => true
+    });
     document.dispatchEvent(new Event("visibilitychange"));
-    expect(controls.pauseTimer).toHaveBeenCalled();
-    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+    expect(controls.pauseTimer).toHaveBeenCalledTimes(1);
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => false
+    });
+    document.dispatchEvent(new Event("visibilitychange"));
     window.dispatchEvent(new Event("focus"));
-    expect(controls.resumeTimer).toHaveBeenCalled();
+    expect(controls.resumeTimer).toHaveBeenCalledTimes(1);
+  });
+
+  it("resumes when visibility changes back to visible without focus", async () => {
+    const scheduler = createMockScheduler();
+    const controls = createControls();
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+    mod.setupScoreboard(controls, scheduler);
+
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => true
+    });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(controls.pauseTimer).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => false
+    });
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    expect(controls.resumeTimer).toHaveBeenCalledTimes(1);
   });
 
   it("logs helper failures once and falls back to noop", async () => {
