@@ -175,7 +175,7 @@ export function createCountdownTimer(
             if (typeof onExpired === "function") await onExpired();
           }
         },
-        Math.max(0, Math.floor(remaining) * 1000)
+        Math.max(0, Math.ceil(remaining * 1000))
       );
     } catch (error) {
       if (typeof console !== "undefined") {
