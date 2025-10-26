@@ -52,18 +52,68 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   } = controls;
   const displayRadioArray = displayRadios ? Array.from(displayRadios) : [];
   const headerRadioArray = headerThemeRadios ? Array.from(headerThemeRadios) : [];
-  const syncHeaderRadios = () => {
+  const syncHeaderRadios = (modeOverride) => {
     if (!headerRadioArray.length) {
       return;
     }
     const selectedDisplay = displayRadioArray.find((radio) => radio.checked);
-    const fallbackHeader = headerRadioArray.find((radio) => radio.checked) ?? headerRadioArray[0];
-    const targetValue = (selectedDisplay ?? fallbackHeader)?.value;
+    const currentSettings = getCurrentSettings();
+    const targetValue =
+      modeOverride ??
+      selectedDisplay?.value ??
+      normalizeDisplayMode(currentSettings.displayMode) ??
+      headerRadioArray[0]?.value ??
+      "light";
     headerRadioArray.forEach((radio, index) => {
       const isMatch = targetValue ? radio.value === targetValue : index === 0;
       radio.checked = isMatch;
       radio.tabIndex = isMatch ? 0 : -1;
     });
+  };
+  const applyDisplayRadioSelection = (selectedRadio, eventTarget) => {
+    if (!selectedRadio) {
+      return;
+    }
+    const currentSettings = getCurrentSettings();
+    const previous =
+      normalizeDisplayMode(currentSettings.displayMode) ?? displayRadioArray[0]?.value ?? "light";
+    const mode = selectedRadio.value;
+    displayRadioArray.forEach((radio) => {
+      const isSelected = radio === selectedRadio;
+      radio.checked = isSelected;
+      radio.tabIndex = isSelected ? 0 : -1;
+    });
+    syncHeaderRadios(mode);
+    withViewTransition(() => {
+      applyDisplayMode(mode);
+    });
+    const target = eventTarget ?? selectedRadio;
+    Promise.resolve(
+      handleUpdate(
+        "displayMode",
+        mode,
+        () => {
+          const prevRadio = displayRadioArray.find((radio) => radio.value === previous);
+          if (prevRadio) {
+            prevRadio.checked = true;
+          }
+          displayRadioArray.forEach((radio) => {
+            radio.tabIndex = radio.value === previous ? 0 : -1;
+          });
+          withViewTransition(() => {
+            applyDisplayMode(previous);
+          });
+          syncHeaderRadios(previous);
+        },
+        target
+      )
+    )
+      .then(() => {
+        const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+        showSnackbar(`${label} mode enabled`);
+        syncHeaderRadios(mode);
+      })
+      .catch(() => {});
   };
   soundToggle?.addEventListener("change", (e) => {
     const prev = !soundToggle.checked;
@@ -105,41 +155,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     displayRadios.forEach((radio) => {
       radio.addEventListener("change", (e) => {
         if (!radio.checked) return;
-        const previous =
-          normalizeDisplayMode(getCurrentSettings().displayMode) ??
-          (displayRadios[0] ? displayRadios[0].value : "light");
-        const mode = radio.value;
-        displayRadios.forEach((r) => {
-          r.tabIndex = r === radio ? 0 : -1;
-        });
-        syncHeaderRadios();
-        withViewTransition(() => {
-          applyDisplayMode(mode);
-        });
-        Promise.resolve(
-          handleUpdate(
-            "displayMode",
-            mode,
-            () => {
-              const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
-              if (prevRadio) prevRadio.checked = true;
-              displayRadios.forEach((r) => {
-                r.tabIndex = r.value === previous ? 0 : -1;
-              });
-              withViewTransition(() => {
-                applyDisplayMode(previous);
-              });
-              syncHeaderRadios();
-            },
-            e.target
-          )
-        )
-          .then(() => {
-            const label = mode.charAt(0).toUpperCase() + mode.slice(1);
-            showSnackbar(`${label} mode enabled`);
-            syncHeaderRadios();
-          })
-          .catch(() => {});
+        applyDisplayRadioSelection(radio, e.target);
       });
     });
   }
@@ -151,9 +167,9 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
         if (matchingDisplay) {
           if (!matchingDisplay.checked) {
             matchingDisplay.checked = true;
-            matchingDisplay.dispatchEvent(new Event("change", { bubbles: true }));
+            applyDisplayRadioSelection(matchingDisplay, headerRadio);
           } else {
-            syncHeaderRadios();
+            syncHeaderRadios(matchingDisplay.value);
           }
           return;
         }
