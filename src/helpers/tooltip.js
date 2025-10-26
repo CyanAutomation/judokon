@@ -76,9 +76,16 @@ async function loadTooltips() {
       }
     })();
   }
-  const data = await tooltipDataPromise;
-  cachedData = flattenTooltips(data || {});
-  return cachedData;
+  try {
+    const data = await tooltipDataPromise;
+    cachedData = flattenTooltips(data || {});
+    return cachedData;
+  } catch (error) {
+    debugLog("Tooltip data promise rejected; clearing cache for retry.", error);
+    tooltipDataPromise = undefined;
+    cachedData = undefined;
+    throw error;
+  }
 }
 
 /**
