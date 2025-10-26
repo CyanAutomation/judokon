@@ -44,6 +44,43 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     return { mod, runtimeInit };
   }
 
+  function createMicrotaskCapture() {
+    const originalResolve = Promise.resolve.bind(Promise);
+    const scheduledTasks = [];
+    let captureNext = false;
+
+    const promiseSpy = vi.spyOn(Promise, "resolve").mockImplementation((value) => {
+      const promise = originalResolve(value);
+      if (!captureNext) {
+        return promise;
+      }
+      return {
+        then(onFulfilled, onRejected) {
+          if (typeof onFulfilled === "function") {
+            scheduledTasks.push(onFulfilled);
+            captureNext = false;
+          }
+          return promise.then(onFulfilled, onRejected);
+        },
+        catch(onRejected) {
+          return promise.catch(onRejected);
+        },
+        finally(onFinally) {
+          return promise.finally(onFinally);
+        }
+      };
+    });
+
+    return {
+      promiseSpy,
+      scheduledTasks,
+      captureNext: () => captureNext,
+      setCaptureNext(value) {
+        captureNext = value;
+      }
+    };
+  }
+
   beforeEach(() => {
     resetCliState();
   });
@@ -134,32 +171,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     expect(statEl).toBeTruthy();
     expect(cliState.roundResolving).toBe(false);
 
-    const originalResolve = Promise.resolve.bind(Promise);
-    const scheduledTasks = [];
-    let captureNext = false;
-    const promiseSpy = vi.spyOn(Promise, "resolve").mockImplementation((value) => {
-      const promise = originalResolve(value);
-      if (!captureNext) {
-        return promise;
-      }
-      return {
-        then(onFulfilled, onRejected) {
-          if (typeof onFulfilled === "function") {
-            scheduledTasks.push(onFulfilled);
-            captureNext = false;
-          }
-          return promise.then(onFulfilled, onRejected);
-        },
-        catch(onRejected) {
-          return promise.catch(onRejected);
-        },
-        finally(onFinally) {
-          return promise.finally(onFinally);
-        }
-      };
-    });
+    const { promiseSpy, scheduledTasks, setCaptureNext } = createMicrotaskCapture();
     try {
-      captureNext = true;
+      setCaptureNext(true);
       const handled = runtimeInit.handleWaitingForPlayerActionKey("1");
 
       expect(handled).toBe(true);
@@ -198,32 +212,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     expect(statEl?.classList.contains("selected")).toBe(false);
     expect(cliState.roundResolving).toBe(false);
 
-    const originalResolve = Promise.resolve.bind(Promise);
-    const scheduledTasks = [];
-    let captureNext = false;
-    const promiseSpy = vi.spyOn(Promise, "resolve").mockImplementation((value) => {
-      const promise = originalResolve(value);
-      if (!captureNext) {
-        return promise;
-      }
-      return {
-        then(onFulfilled, onRejected) {
-          if (typeof onFulfilled === "function") {
-            scheduledTasks.push(onFulfilled);
-            captureNext = false;
-          }
-          return promise.then(onFulfilled, onRejected);
-        },
-        catch(onRejected) {
-          return promise.catch(onRejected);
-        },
-        finally(onFinally) {
-          return promise.finally(onFinally);
-        }
-      };
-    });
+    const { promiseSpy, scheduledTasks, setCaptureNext } = createMicrotaskCapture();
     try {
-      captureNext = true;
+      setCaptureNext(true);
       onKeyDown(new KeyboardEvent("keydown", { key: "1", bubbles: true, cancelable: true }));
 
       const scheduledTask = scheduledTasks.shift();
