@@ -145,7 +145,7 @@ export function createFlagImage(finalFlagUrl, countryName) {
 
   const flagImg = document.createElement("img");
 
-  flagImg.src = finalFlagUrl || PLACEHOLDER_FLAG_URL;
+  flagImg.setAttribute("src", finalFlagUrl || PLACEHOLDER_FLAG_URL);
 
   const safeCountryName = countryName ? countryName : "Unknown";
   // Set alt attribute directly; the browser will handle any necessary escaping
@@ -155,7 +155,18 @@ export function createFlagImage(finalFlagUrl, countryName) {
 
   flagImg.setAttribute("loading", "lazy");
 
-  flagImg.setAttribute("onerror", `this.src='${PLACEHOLDER_FLAG_URL}'`);
+  const handleFlagError = () => {
+    flagImg.removeEventListener("error", handleFlagError);
+
+    const currentSrc = flagImg.getAttribute("src");
+    if (currentSrc === PLACEHOLDER_FLAG_URL) {
+      return;
+    }
+
+    flagImg.setAttribute("src", PLACEHOLDER_FLAG_URL);
+  };
+
+  flagImg.addEventListener("error", handleFlagError, { once: true });
 
   flagContainer.setAttribute("aria-label", altText);
 
