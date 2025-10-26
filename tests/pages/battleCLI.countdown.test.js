@@ -2,6 +2,18 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
+/**
+ * Advance fake timers and flush pending async callbacks for deterministic tests.
+ *
+ * @pseudocode
+ * 1. Advance the provided timers by the requested milliseconds.
+ * 2. If the timers expose `runOnlyPendingTimersAsync`, await its completion.
+ *
+ * @param {{ advanceTimersByTimeAsync: Function, runOnlyPendingTimersAsync?: Function }} timers
+ *   Fake timers instance returned from `useCanonicalTimers`.
+ * @param {number} ms Milliseconds to advance the timers.
+ * @returns {Promise<void>} Resolves when timers and pending callbacks finish.
+ */
 async function advanceTimersAndFlushPending(timers, ms) {
   await timers.advanceTimersByTimeAsync(ms);
   if (typeof timers.runOnlyPendingTimersAsync === "function") {
