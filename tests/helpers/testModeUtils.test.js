@@ -44,8 +44,12 @@ describe("testModeUtils", () => {
     expect(getCurrentSeed()).toBe(-3);
   });
 
-  it("falls back to the default seed when an invalid value is provided", () => {
-    setTestMode({ enabled: true, seed: Number.NaN });
-    expect(getCurrentSeed()).toBe(1);
+  it("falls back to the default seed when invalid values are provided", () => {
+    const invalidSeeds = [Number.NaN, Infinity, undefined, null];
+
+    for (const invalidSeed of invalidSeeds) {
+      setTestMode({ enabled: true, seed: invalidSeed });
+      expect(getCurrentSeed()).toBe(1);
+    }
   });
 });

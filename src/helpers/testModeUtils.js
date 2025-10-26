@@ -16,21 +16,14 @@ let active = false;
 let seed = DEFAULT_SEED;
 
 const normalizeSeed = (value) => {
+  if (value === null || value === undefined) {
+    return DEFAULT_SEED;
+  }
+
   const numericSeed = Number(value);
   return Number.isFinite(numericSeed) ? numericSeed : DEFAULT_SEED;
 };
 
-/**
- * Enable or disable deterministic test mode.
- *
- * @pseudocode
- * if input is object:
- *   active = Boolean(input.enabled)
- *   seed = Number(input.seed) or 1
- * else:
- *   active = Boolean(enable)
- *   seed = initialSeed or 1
- */
 /**
  * Enable or disable deterministic Test Mode.
  *
@@ -40,10 +33,10 @@ const normalizeSeed = (value) => {
  * @pseudocode
  * if input is object:
  *   active = Boolean(input.enabled)
- *   seed = Number(input.seed) or 1
+ *   seed = normalizeSeed(input.seed)
  * else:
  *   active = Boolean(enable)
- *   seed = initialSeed or 1
+ *   seed = normalizeSeed(initialSeed)
  *
  * @param {boolean|{enabled?: boolean, seed?: number}} enableOrOptions - Flag or options object.
  * @param {number} [initialSeed=1] - Seed to use when a boolean flag is passed.
@@ -64,14 +57,6 @@ export function setTestMode(enableOrOptions, initialSeed = DEFAULT_SEED) {
   }
 }
 
-/**
- * Check whether deterministic Test Mode is active.
- *
- * @pseudocode
- * 1. Return the current boolean flag that indicates Test Mode activation.
- *
- * @returns {boolean} True when test mode is enabled.
- */
 /**
  * Check whether deterministic Test Mode is active.
  *
