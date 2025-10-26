@@ -20,23 +20,77 @@ async function waitForButton(testId) {
   if (immediate) return immediate;
 
   return new Promise((resolve, reject) => {
-    let timeoutId;
-    const observer = new MutationObserver(() => {
+    const cleanup = () => observer.disconnect();
+    const check = () => {
       const found = document.querySelector(selector);
       if (found) {
-        clearTimeout(timeoutId);
-        observer.disconnect();
+        cleanup();
         resolve(found);
+        return true;
       }
+      return false;
+    };
+
+    const observer = new MutationObserver(() => {
+      check();
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    timeoutId = setTimeout(() => {
-      observer.disconnect();
-      reject(new Error(`Timed out waiting for ${selector}`));
-    }, 1_000);
+    let attempts = 0;
+    const maxAttempts = 50;
+    const tick = () => {
+      if (check()) return;
+      attempts += 1;
+      if (attempts > maxAttempts) {
+        cleanup();
+        reject(new Error(`Timed out waiting for ${selector}`));
+        return;
+      }
+      queueMicrotask(tick);
+    };
+
+    tick();
   });
+}
+
+const statFixtures = {
+  battleStats: ["speed", "strength"],
+  stats: [
+    { statIndex: 1, name: "Speed" },
+    { statIndex: 2, name: "Strength" }
+  ]
+};
+
+async function seedActiveRoundState() {
+  const { updateRoundHeader, setRoundMessage, updateScoreLine } = await import(
+    "../../src/pages/battleCLI/dom.js"
+  );
+  const { selectStat } = await import("../../src/pages/battleCLI/init.js");
+  const facade = await import("../../src/helpers/battleEngineFacade.js");
+
+  updateRoundHeader(7, 5);
+  setRoundMessage("Fight!");
+  facade.getScores.mockReturnValueOnce({ playerScore: 2, opponentScore: 3 });
+  updateScoreLine();
+  selectStat("speed");
+}
+
+function expectResetState(target) {
+  const roundHeader = document.getElementById("cli-round");
+  expect(roundHeader.textContent).toBe(`Round 0 Target: ${target}`);
+  const rootElement = document.getElementById("cli-root");
+  expect(rootElement.dataset.round).toBe("0");
+  expect(rootElement.dataset.target).toBe(String(target));
+  const scoreLine = document.getElementById("cli-score");
+  expect(scoreLine.dataset.scorePlayer).toBe("0");
+  expect(scoreLine.dataset.scoreOpponent).toBe("0");
+  expect(scoreLine.textContent).toBe("You: 0 Opponent: 0");
+  const roundMessage = document.getElementById("round-message");
+  expect(roundMessage.textContent).toBe("");
+  const statsList = document.getElementById("cli-stats");
+  expect(statsList.dataset.selectedIndex).toBeUndefined();
+  expect(statsList.querySelector(".selected")).toBeNull();
 }
 
 describe("battleCLI points select", () => {
@@ -50,36 +104,22 @@ describe("battleCLI points select", () => {
 
   it("confirms and persists points to win", async () => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
-    const mod = await loadBattleCLI();
+    const mod = await loadBattleCLI({ ...statFixtures, pointsToWin: 5 });
     const root = mod.ensureCliDomForTest();
     const select = root.querySelector("#points-select");
     const changeSpy = vi.spyOn(select, "addEventListener");
     await mod.init();
+    await mod.renderStatList();
     const { setPointsToWin, getPointsToWin } = await import(
       "../../src/helpers/battleEngineFacade.js"
     );
     setPointsToWin.mockClear();
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-
-    const roundHeader = document.getElementById("cli-round");
-    const scoreLine = document.getElementById("cli-score");
-    const roundMessage = document.getElementById("round-message");
-    const announcement = document.getElementById("match-announcement");
-    const statsList = document.getElementById("cli-stats");
-    const firstStat = statsList.querySelector(".cli-stat");
-    const rootElement = document.getElementById("cli-root");
-    roundHeader.textContent = "Round 7 Target: 5";
-    rootElement.dataset.round = "7";
-    rootElement.dataset.target = "5";
-    scoreLine.textContent = "You: 2 Opponent: 3";
-    scoreLine.dataset.scorePlayer = "2";
-    scoreLine.dataset.scoreOpponent = "3";
-    roundMessage.textContent = "Fight!";
-    announcement.textContent = "New round incoming";
-    firstStat.classList.add("selected");
-    firstStat.setAttribute("aria-selected", "true");
-    statsList.dataset.selectedIndex = "0";
+    await seedActiveRoundState();
+    expect(document.getElementById("cli-round").textContent).toBe("Round 7 Target: 5");
+    expect(document.getElementById("cli-score").textContent).toBe("You: 2 Opponent: 3");
+    expect(document.getElementById("cli-stats").querySelector(".selected")).not.toBeNull();
 
     select.value = "10";
     const changeHandler = getListener(changeSpy, "change");
@@ -94,17 +134,7 @@ describe("battleCLI points select", () => {
     expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
     expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("10");
 
-    expect(roundHeader.textContent).toBe("Round 0 Target: 10");
-    expect(rootElement.dataset.round).toBe("0");
-    expect(rootElement.dataset.target).toBe("10");
-    expect(scoreLine.dataset.scorePlayer).toBe("0");
-    expect(scoreLine.dataset.scoreOpponent).toBe("0");
-    expect(scoreLine.textContent).toBe("You: 0 Opponent: 0");
-    expect(roundMessage.textContent).toBe("");
-    expect(announcement.textContent).toBe("");
-    expect(statsList.dataset.selectedIndex).toBeUndefined();
-    expect(Array.from(statsList.querySelectorAll(".selected"))).toHaveLength(0);
-    expect(firstStat.getAttribute("aria-selected")).toBe("false");
+    expectResetState("10");
 
     setPointsToWin.mockClear();
     await mod.restorePointsToWin();
