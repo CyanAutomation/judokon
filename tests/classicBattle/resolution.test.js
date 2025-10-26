@@ -88,7 +88,18 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     setupScoreboard: vi.fn(),
     updateScore: vi.fn((player, opponent) => {
       const el = document.getElementById("score-display");
-      if (el) el.textContent = `You: ${player} Opponent: ${opponent}`;
+      if (!el) return;
+      // Clear existing content and rebuild with proper DOM structure
+      el.innerHTML = "";
+      const playerSpan = document.createElement("span");
+      playerSpan.dataset.side = "player";
+      playerSpan.innerHTML = `<span data-part="label">You:</span> <span data-part="value">${player}</span>`;
+      const opponentSpan = document.createElement("span");
+      opponentSpan.dataset.side = "opponent";
+      opponentSpan.innerHTML = `<span data-part="label">Opponent:</span> <span data-part="value">${opponent}</span>`;
+      el.appendChild(playerSpan);
+      el.appendChild(document.createTextNode("\n"));
+      el.appendChild(opponentSpan);
     }),
     updateRoundCounter: vi.fn()
   };

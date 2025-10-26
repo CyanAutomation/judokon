@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { flushTooltipOverlayDebugWork } from "../../src/helpers/tooltipOverlayDebug.js";
 import { createTooltipHarness } from "./integrationHarness.js";
 
 const harness = createTooltipHarness();

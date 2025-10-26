@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { toggleTooltipOverlayDebug } from "../../src/helpers/tooltipOverlayDebug.js";
+import {
+  toggleTooltipOverlayDebug,
+  flushTooltipOverlayDebugWork
+} from "../../src/helpers/tooltipOverlayDebug.js";
 import { renderFeatureFlagSwitches } from "../../src/helpers/settings/featureFlagSwitches.js";
 import { getDebugState, resetDebugState } from "../../src/helpers/debugState.js";
 
@@ -19,12 +22,14 @@ describe("debug DOM class toggles", () => {
     expect(getDebugState().tooltipOverlayDebug).toBe(false);
 
     toggleTooltipOverlayDebug(true);
+    await flushTooltipOverlayDebugWork();
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
     expect(getDebugState().tooltipOverlayDebug).toBe(true);
     expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("enabled");
 
     toggleTooltipOverlayDebug(false);
+    await flushTooltipOverlayDebugWork();
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
     expect(getDebugState().tooltipOverlayDebug).toBe(false);
@@ -84,6 +89,7 @@ describe("feature flag debug toggles integration", () => {
 
     await Promise.resolve();
     await Promise.resolve();
+    await flushTooltipOverlayDebugWork();
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
     expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("enabled");
@@ -104,6 +110,7 @@ describe("feature flag debug toggles integration", () => {
 
     await Promise.resolve();
     await Promise.resolve();
+    await flushTooltipOverlayDebugWork();
 
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
     expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
@@ -122,6 +129,30 @@ describe("feature flag debug toggles integration", () => {
       { key: "featureFlags", tooltip: true },
       { key: "featureFlags", tooltip: false }
     ]);
+  });
+
+  it("coalesces rapid toggles into a single DOM pass", async () => {
+    const debugPerf = await import("../../src/helpers/debugFlagPerformance.js");
+    const spy = vi
+      .spyOn(debugPerf, "measureDebugFlagToggle")
+      .mockImplementation((_flag, action) => {
+        if (typeof action === "function") {
+          return action();
+        }
+        return action;
+      });
+
+    toggleTooltipOverlayDebug(true);
+    toggleTooltipOverlayDebug(true);
+    toggleTooltipOverlayDebug(false);
+
+    await flushTooltipOverlayDebugWork();
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
+    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
+
+    spy.mockRestore();
   });
 
   it("omits hidden feature flag toggles from settings UI", () => {
