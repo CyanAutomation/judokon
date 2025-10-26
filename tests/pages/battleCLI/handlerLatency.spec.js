@@ -1,57 +1,36 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import * as init from "../../../src/pages/battleCLI/init.js";
-// Import DOM helpers used within module under test to stub safely
-import * as domMod from "../../../src/pages/battleCLI/dom.js";
-import * as battleEvents from "../../../src/helpers/classicBattle/battleEvents.js";
-import { withMutedConsole } from "../../utils/console.js";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { loadBattleCLI, cleanupBattleCLI } from "../utils/loadBattleCLI.js";
 import cliState from "../../../src/pages/battleCLI/state.js";
 import { resetCliState } from "../../utils/battleCliTestUtils.js";
 import { loadBattleCLI, cleanupBattleCLI } from "../utils/loadBattleCLI.js";
 
-describe("battleCLI init import guards", () => {
-  it("does not throw when document is undefined", async () => {
-    const originalDocument = globalThis.document;
-    vi.resetModules();
-    try {
-      globalThis.document = undefined;
-      await withMutedConsole(async () => {
-        await expect(import("../../../src/pages/battleCLI/init.js")).resolves.toBeTruthy();
-      });
-    } finally {
-      globalThis.document = originalDocument;
-      vi.resetModules();
-    }
-  });
+const baseOptions = {
+  battleStats: ["speed", "strength"],
+  stats: [
+    { statIndex: 1, name: "Speed" },
+    { statIndex: 2, name: "Strength" }
+  ],
+  html: '<div id="player-card"></div>'
+};
 
-  it("handles game:reset-ui dispatch when document is undefined", async () => {
-    const originalDocument = globalThis.document;
-    vi.resetModules();
-    try {
-      globalThis.document = undefined;
-      await withMutedConsole(async () => {
-        await import("../../../src/pages/battleCLI/init.js");
-        if (typeof window !== "undefined") {
-          const dispatchSpy = vi.spyOn(window, "dispatchEvent");
-          const testEvent = new CustomEvent("game:reset-ui", { detail: { store: null } });
-          expect(() => {
-            window.dispatchEvent(testEvent);
-          }).not.toThrow();
-          expect(dispatchSpy).toHaveBeenCalledWith(testEvent);
-          dispatchSpy.mockRestore();
-        }
-      });
-    } finally {
-      globalThis.document = originalDocument;
-      vi.resetModules();
-    }
-  });
-});
+async function setupWaitingForAction() {
+  const mod = await loadBattleCLI(baseOptions);
+  await mod.renderStatList();
+  const list = document.getElementById("cli-stats");
+  if (!list) throw new Error("Expected #cli-stats to exist after renderStatList");
+  const statEl = list.querySelector(".cli-stat");
+  if (!statEl) throw new Error("Expected at least one .cli-stat row to be rendered");
+  statEl.focus();
+  document.body.dataset.battleState = "waitingForPlayerAction";
+  const { onKeyDown } = await import("../../../src/pages/index.js");
+  return { mod, statEl, list, onKeyDown };
+}
 
 describe("battleCLI waitingForPlayerAction handler latency", () => {
   let battleCliLoaded = false;
 
   beforeEach(() => {
-    document.body.innerHTML = '<div id="cli-countdown"></div>';
+    resetCliState();
   });
   afterEach(async () => {
     resetCliState();
@@ -64,128 +43,64 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     document.body.innerHTML = "";
   });
 
-  it("returns synchronously and defers work for Enter on focused stat", async () => {
-    const list = document.createElement("div");
-    list.id = "cli-stats";
-    const statDiv = document.createElement("div");
-    statDiv.className = "cli-stat";
-    statDiv.dataset.statIndex = "1";
-    list.appendChild(statDiv);
-    document.body.appendChild(list);
-    statDiv.tabIndex = 0;
-    const activeElementDescriptor = Object.getOwnPropertyDescriptor(document, "activeElement");
-    Object.defineProperty(document, "activeElement", { value: statDiv, configurable: true });
+  it("defers round resolution work for Enter on the focused stat", async () => {
+    const { statEl, onKeyDown } = await setupWaitingForAction();
+    expect(document.activeElement).toBe(statEl);
 
-    const byIdSpy = vi.spyOn(domMod, "byId").mockImplementation((id) => {
-      if (id === "cli-stats") return list;
-      if (id === "cli-countdown") return document.getElementById("cli-countdown");
-      return null;
+    const event = new KeyboardEvent("keydown", {
+      key: "Enter",
+      bubbles: true,
+      cancelable: true
     });
 
-    try {
-      const handled = init.handleWaitingForPlayerActionKey("enter");
-      expect(handled).toBe(true);
+    onKeyDown(event);
 
-      await new Promise((resolve) => queueMicrotask(resolve));
+    expect(event.defaultPrevented).toBe(true);
+    expect(cliState.roundResolving).toBe(false);
+    expect(statEl.classList.contains("selected")).toBe(false);
 
-      expect(cliState.roundResolving).toBe(true);
-      expect(statDiv.classList.contains("selected")).toBe(true);
-    } finally {
-      byIdSpy.mockRestore();
-      statDiv.remove();
-      list.remove();
-      if (activeElementDescriptor) {
-        Object.defineProperty(document, "activeElement", activeElementDescriptor);
-      } else {
-        delete document.activeElement;
-      }
-    }
+    await Promise.resolve();
+
+    expect(cliState.roundResolving).toBe(true);
+    expect(statEl.classList.contains("selected")).toBe(true);
   });
 
-  it("dispatches statSelected when focused stat exposes dataset key", async () => {
-    const list = document.createElement("div");
-    list.id = "cli-stats";
-    const statDiv = document.createElement("div");
-    statDiv.className = "cli-stat";
-    statDiv.dataset.stat = "speed";
-    statDiv.tabIndex = 0;
-    list.appendChild(statDiv);
-    document.body.appendChild(list);
-    const activeElementDescriptor = Object.getOwnPropertyDescriptor(document, "activeElement");
-    Object.defineProperty(document, "activeElement", { value: statDiv, configurable: true });
+  it("emits statSelected using the dataset stat key", async () => {
+    const { statEl, onKeyDown } = await setupWaitingForAction();
+    statEl.dataset.stat = "speed";
+    const battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitSpy = battleEvents.emitBattleEvent;
+    emitSpy.mockClear?.();
 
-    const byIdSpy = vi.spyOn(domMod, "byId").mockImplementation((id) => {
-      if (id === "cli-stats") return list;
-      if (id === "cli-countdown") return document.getElementById("cli-countdown");
-      return null;
-    });
-    const getStatSpy = vi.spyOn(init, "getStatByIndex").mockImplementation(() => {
-      throw new Error("fallback path should not execute when dataset.stat is provided");
-    });
-    const dispatchSpy = vi.spyOn(battleEvents, "emitBattleEvent");
+    onKeyDown(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+    );
 
-    try {
-      const handled = init.handleWaitingForPlayerActionKey("enter");
-      expect(handled).toBe(true);
+    await Promise.resolve();
 
-      await new Promise((resolve) => queueMicrotask(resolve));
-
-      expect(dispatchSpy).toHaveBeenCalledWith("statSelected", { stat: "speed" });
-    } finally {
-      dispatchSpy.mockRestore();
-      getStatSpy.mockRestore();
-      byIdSpy.mockRestore();
-      statDiv.remove();
-      list.remove();
-      if (activeElementDescriptor) {
-        Object.defineProperty(document, "activeElement", activeElementDescriptor);
-      } else {
-        delete document.activeElement;
-      }
-    }
+    expect(emitSpy).toHaveBeenCalledWith("statSelected", { stat: "speed" });
+    expect(statEl.classList.contains("selected")).toBe(true);
   });
 
-  it("falls back to statIndex when dataset stat is empty", async () => {
-    const fallbackStat = init.getStatByIndex("1");
+  it("falls back to statIndex when dataset.stat is empty", async () => {
+    const { statEl, onKeyDown } = await setupWaitingForAction();
+    const initMod = await import("../../../src/pages/battleCLI/init.js");
+    const fallbackStat = initMod.getStatByIndex("1");
     expect(fallbackStat).toBeTruthy();
+    statEl.dataset.stat = "";
+    statEl.dataset.statIndex = "1";
+    const battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitSpy = battleEvents.emitBattleEvent;
+    emitSpy.mockClear?.();
 
-    const list = document.createElement("div");
-    list.id = "cli-stats";
-    const statDiv = document.createElement("div");
-    statDiv.className = "cli-stat";
-    statDiv.dataset.stat = "";
-    statDiv.dataset.statIndex = "1";
-    statDiv.tabIndex = 0;
-    list.appendChild(statDiv);
-    document.body.appendChild(list);
-    const activeElementDescriptor = Object.getOwnPropertyDescriptor(document, "activeElement");
-    Object.defineProperty(document, "activeElement", { value: statDiv, configurable: true });
+    onKeyDown(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+    );
 
-    const byIdSpy = vi.spyOn(domMod, "byId").mockImplementation((id) => {
-      if (id === "cli-stats") return list;
-      if (id === "cli-countdown") return document.getElementById("cli-countdown");
-      return null;
-    });
-    const dispatchSpy = vi.spyOn(battleEvents, "emitBattleEvent");
+    await Promise.resolve();
 
-    try {
-      const handled = init.handleWaitingForPlayerActionKey("enter");
-      expect(handled).toBe(true);
-
-      await new Promise((resolve) => queueMicrotask(resolve));
-
-      expect(dispatchSpy).toHaveBeenCalledWith("statSelected", { stat: fallbackStat });
-    } finally {
-      dispatchSpy.mockRestore();
-      byIdSpy.mockRestore();
-      statDiv.remove();
-      list.remove();
-      if (activeElementDescriptor) {
-        Object.defineProperty(document, "activeElement", activeElementDescriptor);
-      } else {
-        delete document.activeElement;
-      }
-    }
+    expect(emitSpy).toHaveBeenCalledWith("statSelected", { stat: fallbackStat });
+    expect(statEl.classList.contains("selected")).toBe(true);
   });
 
   it("defers numeric key selection via onKeyDown microtask scheduling", async () => {

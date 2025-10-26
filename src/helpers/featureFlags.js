@@ -92,12 +92,17 @@ export function isEnabled(flag) {
  */
 export async function setFlag(flag, value) {
   const settings = await loadSettings();
+  const rawFlags = settings.featureFlags;
+  const currentFlags =
+    rawFlags && typeof rawFlags === "object" && !Array.isArray(rawFlags)
+      ? rawFlags
+      : {};
   if (!Object.hasOwn(DEFAULT_SETTINGS.featureFlags, flag)) {
     console.warn(`Unknown feature flag: ${flag}`);
   }
   const updatedFlags = {
-    ...settings.featureFlags,
-    [flag]: { ...(settings.featureFlags[flag] || {}), enabled: value }
+    ...currentFlags,
+    [flag]: { ...(currentFlags[flag] || {}), enabled: value }
   };
   const updated = await updateSetting("featureFlags", updatedFlags);
   cachedFlags = updated.featureFlags || {};

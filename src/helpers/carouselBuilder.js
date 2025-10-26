@@ -6,6 +6,7 @@ import { setupFocusHandlers } from "./carousel/focus.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
 import { CAROUSEL_SWIPE_THRESHOLD } from "./constants.js";
 import { createSpinner } from "../components/Spinner.js";
+import { getScheduler } from "./scheduler.js";
 /**
  * Adds scroll markers to indicate the user's position in the carousel.
  *
@@ -80,12 +81,14 @@ function addScrollMarkers(container, wrapper) {
 /**
  * Initialize scroll markers after the carousel is attached to the document.
  *
- * Schedules `addScrollMarkers` in `requestAnimationFrame` so that layout
- * measurements (offsetWidth, clientWidth) are stable.
+ * Schedules `addScrollMarkers` for the next animation frame (or a timeout
+ * fallback) so that layout measurements (offsetWidth, clientWidth) are stable.
  *
  * @pseudocode
  * 1. Verify `container` and `wrapper` are provided; return early if missing.
- * 2. Schedule `addScrollMarkers(container, wrapper)` via `requestAnimationFrame`.
+ * 2. Resolve a `requestAnimationFrame` implementation when available.
+ * 3. Fallback to a shared scheduler timeout when RAF is unavailable.
+ * 4. Schedule `addScrollMarkers(container, wrapper)` with the resolved function.
  *
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
@@ -93,7 +96,26 @@ function addScrollMarkers(container, wrapper) {
  */
 export function initScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
-  requestAnimationFrame(() => addScrollMarkers(container, wrapper));
+  const scheduler = typeof getScheduler === "function" ? getScheduler() : undefined;
+
+  const globalRequestFrame =
+    typeof globalThis !== "undefined" && typeof globalThis.requestAnimationFrame === "function"
+      ? globalThis.requestAnimationFrame.bind(globalThis)
+      : null;
+
+  const schedulerRequestFrame =
+    scheduler && typeof scheduler.requestAnimationFrame === "function"
+      ? scheduler.requestAnimationFrame.bind(scheduler)
+      : null;
+
+  const scheduleNextFrame =
+    globalRequestFrame ??
+    schedulerRequestFrame ??
+    (scheduler && typeof scheduler.setTimeout === "function"
+      ? (callback) => scheduler.setTimeout(callback, 0)
+      : (callback) => setTimeout(callback, 0));
+
+  scheduleNextFrame(() => addScrollMarkers(container, wrapper));
 }
 
 /**

@@ -34,6 +34,56 @@ describe("initFeatureFlags", () => {
   });
 });
 
+describe("setFlag", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("persists updates when settings.featureFlags is null", async () => {
+    vi.resetModules();
+    const [flagName] = Object.keys(DEFAULT_SETTINGS.featureFlags);
+    if (!flagName) {
+      throw new Error("DEFAULT_SETTINGS.featureFlags must define at least one flag for this test.");
+    }
+
+    const loadSettings = vi.fn().mockResolvedValue({
+      ...DEFAULT_SETTINGS,
+      featureFlags: null
+    });
+    const updateSetting = vi.fn().mockImplementation(async (key, flags) => {
+      expect(key).toBe("featureFlags");
+      return {
+        ...DEFAULT_SETTINGS,
+        featureFlags: flags
+      };
+    });
+    const setCachedSettings = vi.fn();
+
+    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+    vi.doMock("../../src/helpers/settingsCache.js", () => ({ setCachedSettings }));
+
+    try {
+      const { setFlag } = await import("../../src/helpers/featureFlags.js");
+      const result = await setFlag(flagName, true);
+
+      expect(loadSettings).toHaveBeenCalledTimes(1);
+      expect(updateSetting).toHaveBeenCalledWith(
+        "featureFlags",
+        expect.objectContaining({
+          [flagName]: expect.objectContaining({ enabled: true })
+        })
+      );
+      expect(result.featureFlags[flagName].enabled).toBe(true);
+    } finally {
+      vi.doUnmock("../../src/config/loadSettings.js");
+      vi.doUnmock("../../src/helpers/settingsStorage.js");
+      vi.doUnmock("../../src/helpers/settingsCache.js");
+    }
+  });
+});
+
 describe("enableFlag", () => {
   beforeEach(() => {
     vi.useFakeTimers();
