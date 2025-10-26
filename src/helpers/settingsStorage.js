@@ -131,10 +131,7 @@ export async function getSettingsSchema() {
     })();
 
     settingsSchemaPromise = loadPromise.catch((error) => {
-      debugLog(
-        "Failed to load settings schema; clearing cached promise for retry.",
-        error
-      );
+      debugLog("Failed to load settings schema; clearing cached promise for retry.", error);
       setTimeout(() => {
         settingsSchemaPromise = undefined;
       }, 0);

@@ -75,37 +75,37 @@ export function setupCarouselToggle(button, container) {
     }
 
     const currentBuild = (async () => {
-        const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
-        const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
+      const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+      const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
 
-        const validJudoka = [];
-        if (Array.isArray(judokaData)) {
-          for (const judoka of judokaData) {
-            try {
-              validateData(judoka, "judoka");
-              validJudoka.push(judoka);
-            } catch (error) {
-              console.error("Invalid judoka entry skipped:", error);
-            }
+      const validJudoka = [];
+      if (Array.isArray(judokaData)) {
+        for (const judoka of judokaData) {
+          try {
+            validateData(judoka, "judoka");
+            validJudoka.push(judoka);
+          } catch (error) {
+            console.error("Invalid judoka entry skipped:", error);
           }
-        } else {
-          console.error("Judoka data is not an array.");
         }
+      } else {
+        console.error("Judoka data is not an array.");
+      }
 
-        validateData(gokyoData, "gokyo");
+      validateData(gokyoData, "gokyo");
 
-        const carousel = await buildCardCarousel(validJudoka, gokyoData);
-        container.appendChild(carousel);
-        container.classList.remove("hidden");
+      const carousel = await buildCardCarousel(validJudoka, gokyoData);
+      container.appendChild(carousel);
+      container.classList.remove("hidden");
 
-        const containerEl = carousel.querySelector(".card-carousel");
-        if (containerEl) {
-          initScrollMarkers(containerEl, carousel);
-        }
+      const containerEl = carousel.querySelector(".card-carousel");
+      if (containerEl) {
+        initScrollMarkers(containerEl, carousel);
+      }
 
-        isBuilt = true;
-        debugLog("Carousel displayed on demand.");
-      })();
+      isBuilt = true;
+      debugLog("Carousel displayed on demand.");
+    })();
 
     buildPromise = currentBuild;
 

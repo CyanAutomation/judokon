@@ -90,10 +90,7 @@ describe("setupCarouselToggle", () => {
 
     expect(results).toEqual([undefined, undefined]);
     expect(fetchJson).toHaveBeenCalledTimes(2);
-    expect(fetchJson.mock.calls).toEqual([
-      [`${DATA_DIR}judoka.json`],
-      [`${DATA_DIR}gokyo.json`]
-    ]);
+    expect(fetchJson.mock.calls).toEqual([[`${DATA_DIR}judoka.json`], [`${DATA_DIR}gokyo.json`]]);
     expect(container.classList.contains("hidden")).toBe(false);
     expect(buildCardCarousel).toHaveBeenCalledTimes(1);
   });

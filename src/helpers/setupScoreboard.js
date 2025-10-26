@@ -438,7 +438,9 @@ function ensureVisibilityListeners(controls) {
     try {
       const active = visibilityListeners.controls;
       const shouldResume =
-        !document.hidden && visibilityListeners.wasHidden === true && active &&
+        !document.hidden &&
+        visibilityListeners.wasHidden === true &&
+        active &&
         typeof active.resumeTimer === "function";
 
       if (shouldResume) {

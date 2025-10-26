@@ -30,15 +30,10 @@ describe("battleCLI state flows", () => {
     const { emitBattleEvent } = eventsMod;
     const domMod = await import("../../../src/pages/battleCLI/dom.js");
     const { withMutedConsole } = await import("../../utils/console.js");
-    const setRoundMessageSpy = await withMutedConsole(() =>
-      vi.spyOn(domMod, "setRoundMessage")
-    );
+    const setRoundMessageSpy = await withMutedConsole(() => vi.spyOn(domMod, "setRoundMessage"));
 
     expect(document.getElementById("round-message")).toBeTruthy();
-    expect(eventsMod.onBattleEvent).toHaveBeenCalledWith(
-      "roundResolved",
-      expect.any(Function)
-    );
+    expect(eventsMod.onBattleEvent).toHaveBeenCalledWith("roundResolved", expect.any(Function));
     emitBattleEvent("roundResolved", {
       result: { message: "Ready to fight", playerScore: 1, opponentScore: 0 },
       stat: "speed",
@@ -66,9 +61,7 @@ describe("battleCLI state flows", () => {
 
   it("announces stat selection stalls when auto-select disabled", async () => {
     await setupBattleCLI({ autoSelect: false });
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
 
     emitBattleEvent("statSelectionStalled");
     expect(getBottomLineText()).toBe("Stat selection stalled. Pick a stat.");
@@ -76,9 +69,7 @@ describe("battleCLI state flows", () => {
 
   it("updates state badge and bottom line on round transitions", async () => {
     await setupBattleCLI({ autoSelect: false });
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const uiHelpers = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     const orchestratorHandlers = await import(
       "../../../src/helpers/classicBattle/orchestratorHandlers.js"
@@ -143,7 +134,9 @@ describe("battleCLI state flows", () => {
     emitBattleEvent("matchOver");
     const playAgain = document.getElementById("play-again-button");
     expect(playAgain).toBeTruthy();
-    expect(document.getElementById("return-to-lobby-link")?.getAttribute("href")).toContain("index.html");
+    expect(document.getElementById("return-to-lobby-link")?.getAttribute("href")).toContain(
+      "index.html"
+    );
 
     playAgain?.click();
     await startClicked;

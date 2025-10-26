@@ -1,10 +1,6 @@
 // @vitest-environment node
 import { afterEach, describe, it, expect, vi } from "vitest";
-import {
-  getCurrentSeed,
-  seededRandom,
-  setTestMode,
-} from "../../src/helpers/testModeUtils.js";
+import { getCurrentSeed, seededRandom, setTestMode } from "../../src/helpers/testModeUtils.js";
 
 describe("testModeUtils", () => {
   afterEach(() => {

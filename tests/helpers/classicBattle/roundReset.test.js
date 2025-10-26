@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { roundOverEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import {
   __resetBattleEventTarget,
-  emitBattleEvent,
+  emitBattleEvent
 } from "../../../src/helpers/classicBattle/battleEvents.js";
 
 describe("classicBattle round reset", () => {

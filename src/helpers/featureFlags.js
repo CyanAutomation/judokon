@@ -94,9 +94,7 @@ export async function setFlag(flag, value) {
   const settings = await loadSettings();
   const rawFlags = settings.featureFlags;
   const currentFlags =
-    rawFlags && typeof rawFlags === "object" && !Array.isArray(rawFlags)
-      ? rawFlags
-      : {};
+    rawFlags && typeof rawFlags === "object" && !Array.isArray(rawFlags) ? rawFlags : {};
   if (!Object.hasOwn(DEFAULT_SETTINGS.featureFlags, flag)) {
     console.warn(`Unknown feature flag: ${flag}`);
   }

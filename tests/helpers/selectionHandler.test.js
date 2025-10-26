@@ -145,7 +145,9 @@ describe("handleStatSelection helpers", () => {
     const globalClear = vi.spyOn(global, "clearTimeout");
 
     const schedulerModule = await import("../../src/helpers/scheduler.js");
-    const getSchedulerSpy = vi.spyOn(schedulerModule, "getScheduler").mockReturnValue(fakeScheduler);
+    const getSchedulerSpy = vi
+      .spyOn(schedulerModule, "getScheduler")
+      .mockReturnValue(fakeScheduler);
 
     try {
       const { handleStatSelectionTimeout } = await import(

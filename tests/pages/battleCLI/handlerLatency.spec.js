@@ -123,9 +123,7 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     const emitSpy = battleEvents.emitBattleEvent;
     emitSpy.mockClear?.();
 
-    onKeyDown(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
-    );
+    onKeyDown(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
 
     await Promise.resolve();
 
@@ -144,9 +142,7 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     const emitSpy = battleEvents.emitBattleEvent;
     emitSpy.mockClear?.();
 
-    onKeyDown(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
-    );
+    onKeyDown(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
 
     await Promise.resolve();
 

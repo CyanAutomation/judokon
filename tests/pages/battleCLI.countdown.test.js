@@ -70,7 +70,9 @@ describe("battleCLI countdown", () => {
 
     await advanceTimersAndFlushPending(timers, 2000);
 
-    const stalledCalls = emitSpy.mock.calls.filter(([eventName]) => eventName === "statSelectionStalled");
+    const stalledCalls = emitSpy.mock.calls.filter(
+      ([eventName]) => eventName === "statSelectionStalled"
+    );
     expect(stalledCalls).toHaveLength(1);
     emitSpy.mockRestore();
   });

@@ -5,11 +5,10 @@ import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 function createEngineStub({ pointsToWin = 10, scores } = {}) {
   const bus = new EventTarget();
   let target = pointsToWin;
-  const resolvedScores =
-    scores || {
-      playerScore: 0,
-      opponentScore: 0
-    };
+  const resolvedScores = scores || {
+    playerScore: 0,
+    opponentScore: 0
+  };
   return {
     on: vi.fn((eventName, handler) => {
       bus.addEventListener(eventName, (event) => handler(event.detail));
@@ -95,9 +94,7 @@ describe("Battle CLI helpers", () => {
       await mod.init();
       failCalls = true;
 
-      const { updateRoundHeader } = await import(
-        "../../src/pages/battleCLI/dom.js"
-      );
+      const { updateRoundHeader } = await import("../../src/pages/battleCLI/dom.js");
       updateRoundHeader(2, 7);
       const checkbox = document.getElementById("verbose-toggle");
       const section = document.getElementById("cli-verbose-section");
@@ -142,9 +139,7 @@ describe("Battle CLI helpers", () => {
       const addEventSpy = vi.spyOn(window, "addEventListener");
       await mod.init();
 
-      const keydownRegistrations = addEventSpy.mock.calls.filter(
-        ([type]) => type === "keydown"
-      );
+      const keydownRegistrations = addEventSpy.mock.calls.filter(([type]) => type === "keydown");
       expect(keydownRegistrations.length).toBeGreaterThan(0);
       keydownRegistrations.forEach(([, handler]) => {
         expect(typeof handler).toBe("function");
@@ -160,9 +155,7 @@ describe("Battle CLI helpers", () => {
       const { wireEvents } = await import("../../src/pages/battleCLI/init.js");
       wireEvents();
 
-      const { emitBattleEvent } = await import(
-        "../../src/helpers/classicBattle/battleEvents.js"
-      );
+      const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
       emitBattleEvent("battleStateChange", {
         from: "roundStart",
         to: "waitingForPlayerAction"
@@ -175,9 +168,7 @@ describe("Battle CLI helpers", () => {
       expect(shortcuts.tagName).toBe("DETAILS");
       expect(shortcuts.open).toBe(false);
 
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "h", bubbles: true })
-      );
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "h", bubbles: true }));
       await Promise.resolve();
 
       expect(shortcuts.open).toBe(true);
@@ -185,9 +176,7 @@ describe("Battle CLI helpers", () => {
       expect(countdown.dataset.status).not.toBe("error");
       expect(countdown.textContent).not.toBe("Invalid key, press H for help");
 
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "h", bubbles: true })
-      );
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "h", bubbles: true }));
       await Promise.resolve();
 
       expect(shortcuts.open).toBe(false);

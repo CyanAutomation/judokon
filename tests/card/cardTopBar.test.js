@@ -181,7 +181,9 @@ describe("createFlagImage", () => {
       const img = flagImage.querySelector("img");
       expect(img).toBeInstanceOf(HTMLImageElement);
 
-      const errorListenerCall = addListenerSpy.mock.calls.find(([eventName]) => eventName === "error");
+      const errorListenerCall = addListenerSpy.mock.calls.find(
+        ([eventName]) => eventName === "error"
+      );
       expect(errorListenerCall?.[2]).toEqual({ once: true });
 
       await new Promise((resolve) => {
@@ -191,7 +193,8 @@ describe("createFlagImage", () => {
       expect(img?.getAttribute("src")).toBe("../assets/countryFlags/placeholder-flag.png");
 
       const placeholderUpdates = setAttributeSpy.mock.calls.filter(
-        ([attribute, value]) => attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
+        ([attribute, value]) =>
+          attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
       );
       expect(placeholderUpdates).toHaveLength(1);
 
@@ -199,7 +202,8 @@ describe("createFlagImage", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       const placeholderUpdatesAfterRetry = setAttributeSpy.mock.calls.filter(
-        ([attribute, value]) => attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
+        ([attribute, value]) =>
+          attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
       );
       expect(placeholderUpdatesAfterRetry).toHaveLength(1);
     } finally {
@@ -231,7 +235,8 @@ describe("createFlagImage", () => {
       });
 
       const srcUpdates = setAttributeSpy.mock.calls.filter(
-        ([attribute, value]) => attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
+        ([attribute, value]) =>
+          attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
       );
       expect(srcUpdates).toHaveLength(1);
     } finally {

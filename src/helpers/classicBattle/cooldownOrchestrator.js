@@ -72,7 +72,10 @@ function assignFallbackHandle(runtime, handle) {
     if (typeof handle.clearTimeout === "function") {
       runtime.fallbackSchedulerControl = handle;
     }
-    if (typeof handle.scheduler === "object" && typeof handle.scheduler.clearTimeout === "function") {
+    if (
+      typeof handle.scheduler === "object" &&
+      typeof handle.scheduler.clearTimeout === "function"
+    ) {
       runtime.fallbackSchedulerControl = handle.scheduler;
     }
     if (handle.id !== undefined) {

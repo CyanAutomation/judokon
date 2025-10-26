@@ -163,7 +163,9 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     headerRadioArray.forEach((headerRadio) => {
       headerRadio.addEventListener("change", () => {
         if (!headerRadio.checked) return;
-        const matchingDisplay = displayRadioArray.find((radio) => radio.value === headerRadio.value);
+        const matchingDisplay = displayRadioArray.find(
+          (radio) => radio.value === headerRadio.value
+        );
         if (matchingDisplay) {
           if (!matchingDisplay.checked) {
             matchingDisplay.checked = true;

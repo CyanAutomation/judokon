@@ -299,11 +299,8 @@ function clearNextRoundTimerFallback() {
 function collectSelectionSchedulers(store) {
   const candidates = [];
   if (store && typeof store === "object") {
-    const {
-      selectionTimeoutScheduler,
-      statTimeoutScheduler,
-      autoSelectScheduler
-    } = /** @type {Record<string, any>} */ (store);
+    const { selectionTimeoutScheduler, statTimeoutScheduler, autoSelectScheduler } =
+      /** @type {Record<string, any>} */ (store);
     if (selectionTimeoutScheduler) candidates.push(selectionTimeoutScheduler);
     if (statTimeoutScheduler) candidates.push(statTimeoutScheduler);
     if (autoSelectScheduler) candidates.push(autoSelectScheduler);

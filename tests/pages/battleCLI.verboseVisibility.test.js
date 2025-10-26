@@ -57,18 +57,14 @@ describe("battleCLI verbose mode visibility", () => {
     expect(section.getAttribute("aria-expanded")).toBe("false");
 
     setMockFlag("cliVerbose", true);
-    emitter.dispatchEvent(
-      new CustomEvent("change", { detail: { flag: "cliVerbose" } })
-    );
+    emitter.dispatchEvent(new CustomEvent("change", { detail: { flag: "cliVerbose" } }));
 
     expect(section.hidden).toBe(false);
     expect(section.getAttribute("aria-expanded")).toBe("true");
     expect(checkbox.checked).toBe(true);
 
     setMockFlag("cliVerbose", false);
-    emitter.dispatchEvent(
-      new CustomEvent("change", { detail: { flag: "cliVerbose" } })
-    );
+    emitter.dispatchEvent(new CustomEvent("change", { detail: { flag: "cliVerbose" } }));
 
     expect(section.hidden).toBe(true);
     expect(section.getAttribute("aria-expanded")).toBe("false");
