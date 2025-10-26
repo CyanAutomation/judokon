@@ -80,6 +80,7 @@ function ensureFlushableState() {
 
 function applyFallbackState(state) {
   appliedState = state;
+  pendingState = null;
   ensureFlushableState();
 }
 
@@ -108,7 +109,16 @@ export function toggleTooltipOverlayDebug(enabled) {
     applyFallbackState(nextState);
     return;
   }
-  if (!pendingRunTask && nextState === appliedState) {
+  const bodyHasOverlay = document.body.classList.contains("tooltip-overlay-debug");
+  const attrState = document.body.getAttribute("data-feature-tooltip-overlay-debug");
+  const desiredAttr = nextState ? "enabled" : "disabled";
+  if (
+    !pendingRunTask &&
+    nextState === appliedState &&
+    bodyHasOverlay === nextState &&
+    attrState === desiredAttr
+  ) {
+    pendingState = null;
     ensureFlushableState();
     return;
   }
