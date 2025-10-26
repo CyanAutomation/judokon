@@ -168,7 +168,16 @@ export class ScoreboardView {
       return m ? Number(m[1]) : 0;
     };
     const startVals = { p: parse(playerSpan), o: parse(opponentSpan) };
-    if (startVals.p === endVals.p && startVals.o === endVals.o) return;
+    // Always rebuild for deterministic, clean HTML structure
+    this.scoreEl.innerHTML = createScoreMarkup(endVals.p, endVals.o);
+    if (startVals.p === endVals.p && startVals.o === endVals.o) {
+      // No animation needed; content already set above
+      if (this._scoreRaf) {
+        cancel(this._scoreRaf);
+        this._scoreRaf = null;
+      }
+      return;
+    }
     const duration = 400;
     const id = ++this._scoreAnimId;
     // Set final text immediately for determinism; animate as a cosmetic overlay

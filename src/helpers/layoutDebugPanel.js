@@ -1,11 +1,15 @@
 import { measureDebugFlagToggle } from "./debugFlagPerformance.js";
 
+const RATE_LIMIT_INTERVAL_MS = 120;
+
 let enabledState = false;
 const DEFAULT_SELECTORS = ["body *:not(script):not(style)"];
 
 let pendingTaskCancel = null;
 let pendingResolve = null;
 let pendingPromise = Promise.resolve();
+let pendingSelectorList = null;
+let lastOutlineAt = 0;
 
 function toSelectorList(selectors) {
   if (Array.isArray(selectors)) {
@@ -39,42 +43,68 @@ function cancelPendingTask() {
     pendingResolve();
   }
   pendingResolve = null;
+  pendingSelectorList = null;
+  pendingPromise = Promise.resolve();
+}
+
+function scheduleIdleWork(run) {
+  if (typeof requestIdleCallback === "function") {
+    const idleId = requestIdleCallback(run);
+    pendingTaskCancel = () => cancelIdleCallback(idleId);
+    return;
+  }
+  if (typeof requestAnimationFrame === "function") {
+    const frameId = requestAnimationFrame(run);
+    pendingTaskCancel = () => cancelAnimationFrame(frameId);
+    return;
+  }
+  const timeoutId = setTimeout(run, 16);
+  pendingTaskCancel = () => clearTimeout(timeoutId);
 }
 
 function scheduleOutlineRender(selectorList) {
-  cancelPendingTask();
+  const clonedSelectors = selectorList.slice();
+  if (pendingTaskCancel) {
+    pendingSelectorList = clonedSelectors;
+    return pendingPromise;
+  }
+
+  pendingSelectorList = clonedSelectors;
+  const now = Date.now();
+  const delay = Math.max(0, lastOutlineAt + RATE_LIMIT_INTERVAL_MS - now);
+
   pendingPromise = new Promise((resolve) => {
     pendingResolve = resolve;
 
-    const run = () => {
+    const runTask = () => {
       pendingTaskCancel = null;
       pendingResolve = null;
+      const activeSelectors = pendingSelectorList ? pendingSelectorList.slice() : clonedSelectors;
+      pendingSelectorList = null;
       measureDebugFlagToggle(
         "layoutDebugPanel",
         () => {
           clearOutlines();
-          applyOutlines(selectorList);
+          applyOutlines(activeSelectors);
         },
-        { selectors: selectorList.length }
+        { selectors: activeSelectors.length }
       );
+      lastOutlineAt = Date.now();
       resolve();
     };
 
-    if (typeof requestIdleCallback === "function") {
-      const id = requestIdleCallback(run);
-      pendingTaskCancel = () => cancelIdleCallback(id);
+    if (delay > 0) {
+      const delayId = setTimeout(() => {
+        pendingTaskCancel = null;
+        scheduleIdleWork(runTask);
+      }, delay);
+      pendingTaskCancel = () => clearTimeout(delayId);
       return;
     }
 
-    if (typeof requestAnimationFrame === "function") {
-      const id = requestAnimationFrame(run);
-      pendingTaskCancel = () => cancelAnimationFrame(id);
-      return;
-    }
-
-    const timeout = setTimeout(run, 16);
-    pendingTaskCancel = () => clearTimeout(timeout);
+    scheduleIdleWork(runTask);
   });
+
   return pendingPromise;
 }
 

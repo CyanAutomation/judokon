@@ -30,6 +30,7 @@
 - **Opponent Delay Messaging** – Classic Battle reuses the same delay copy that was previously CLI-only (`src/pages/battleClassic.init.js:701`), with shared UI handlers (`src/helpers/classicBattle/uiEventHandlers.js:92`).
 - **CLI Shortcuts Guidance** – When `cliShortcuts` is disabled, a footer fallback keeps keyboard tips visible and aligned with the new live-region copy (`src/pages/battleCLI/init.js:1720`, `src/pages/battleCLI.html:200`), with coverage in `tests/pages/battleCLI.onKeyDown.test.js:198` and `playwright/cli-layout.spec.js`.
 - **Test Mode Banner Visibility** – Hidden state now collapses the banner when `enableTestMode` is off by adding explicit `[hidden]` overrides with `!important` in the shared styles (`src/styles/battleClassic.css:210`, `src/styles/battle.css:113`), verified by `playwright/battle-classic/feature-flags.spec.js`.
+- **Layout Debug Panel Scheduling** – Layout outlines now defer to idle/animation frames with rate limiting to avoid repeated synchronous scans when flags toggle in quick succession (`src/helpers/layoutDebugPanel.js`, `tests/helpers/layoutDebugPanel.test.js`).
 
 ## Items Requiring Follow-Up
 
@@ -39,7 +40,8 @@
 - **Progress (2025-10-26)**: Added a `DEBUG_PERF` guard to debug flag instrumentation so toggles record buffered durations and optionally log to the console when profiling is enabled (`src/helpers/debugFlagPerformance.js`).
 - **Progress (2025-10-26)**: Deferred layout debug panel DOM scans to idle/animation frames with cancellation + test flush helpers to reduce synchronous jank (`src/helpers/layoutDebugPanel.js`, `tests/helpers/layoutDebugPanel.test.js`).
 - **Next steps**:
-  1. Consider flag-level rate limiting so toggling multiple debug options does not repeatedly rescan the DOM.
+  1. Extend the idle scheduling pattern to `toggleTooltipOverlayDebug` for parity.
+  2. Pipe aggregated debug flag metrics to a developer HUD so regressions surface during playtests.
 
 ## Observations & Questions
 

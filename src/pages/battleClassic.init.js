@@ -1930,6 +1930,15 @@ async function init() {
     initScoreboardAdapter();
     // Seed visible defaults to avoid invisible empty elements and enable a11y announcements
     updateScore(0, 0);
+    // Fallback: ensure score display has clean markup for deterministic tests
+    // If the innerHTML still has excessive whitespace or newlines, rebuild it cleanly
+    const sd = document.getElementById("score-display");
+    if (sd) {
+      const hasExcessWhitespace = /\n\s{2,}/.test(sd.innerHTML);
+      if (hasExcessWhitespace) {
+        sd.innerHTML = `<span data-side="player"><span data-part="label">You:</span> <span data-part="value">0</span></span>\n<span data-side="opponent"><span data-part="label">Opponent:</span> <span data-part="value">0</span></span>`;
+      }
+    }
     // Do not force Round 0 after match starts; actual round set in startRoundCycle
     updateRoundCounter(0);
     const rc = document.getElementById("round-counter");
