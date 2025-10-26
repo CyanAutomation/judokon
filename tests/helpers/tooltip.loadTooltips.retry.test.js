@@ -20,7 +20,6 @@ vi.mock("../../src/helpers/debug.js", () => ({
 
 describe("loadTooltips", () => {
   beforeEach(() => {
-    vi.resetModules();
     fetchJsonMock.mockReset();
     importJsonModuleMock.mockReset();
     debugLogMock.mockReset();
