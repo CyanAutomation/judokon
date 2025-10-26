@@ -1,196 +1,273 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 
-vi.mock("../../src/helpers/classicBattle/testHooks.js", () => ({}));
+import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
-let setupFlags;
-let wireEvents;
-let subscribeEngine;
-let engineFacadeMock;
-let featureFlagsMock;
-let updateRoundHeaderMock;
-
-describe("Battle CLI Helpers", () => {
-  beforeEach(async () => {
-    window.__TEST__ = true;
-    let verboseFlag = false;
-    featureFlagsMock = {
-      initFeatureFlags: vi.fn().mockResolvedValue(undefined),
-      isEnabled: vi.fn((flag) => {
-        if (flag === "cliVerbose") return verboseFlag;
-        return flag === "cliShortcuts";
-      }),
-      setFlag: vi.fn(async (flag, value) => {
-        if (flag === "cliVerbose") {
-          verboseFlag = !!value;
-          featureFlagsMock.featureFlagsEmitter.dispatchEvent(
-            new CustomEvent("change", { detail: { flag } })
-          );
-        }
-        return undefined;
-      }),
-      featureFlagsEmitter: new EventTarget()
-    };
-
-    updateRoundHeaderMock = vi.fn();
-
-    engineFacadeMock = {
-      getPointsToWin: vi.fn(),
-      setPointsToWin: vi.fn(),
-      on: vi.fn()
-    };
-
-    vi.doMock("../../src/helpers/featureFlags.js", () => featureFlagsMock);
-    vi.doMock("../../src/pages/battleCLI/dom.js", () => ({
-      byId: (id) => document.getElementById(id),
-      updateRoundHeader: updateRoundHeaderMock,
-      setRoundMessage: (msg) => {
-        const node = document.getElementById("round-message");
-        if (node) node.textContent = msg;
-      },
-      updateScoreLine: vi.fn(),
-      clearVerboseLog: vi.fn(),
-      ensureVerboseScrollHandling: vi.fn(),
-      refreshVerboseScrollIndicators: vi.fn()
+function createEngineStub({ pointsToWin = 10, scores } = {}) {
+  const bus = new EventTarget();
+  let target = pointsToWin;
+  const resolvedScores =
+    scores ||
+    (() => ({
+      playerScore: 0,
+      opponentScore: 0
     }));
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => engineFacadeMock);
+  return {
+    on: vi.fn((eventName, handler) => {
+      bus.addEventListener(eventName, (event) => handler(event.detail));
+    }),
+    emit(eventName, detail) {
+      bus.dispatchEvent(new CustomEvent(eventName, { detail }));
+    },
+    setPointsToWin: vi.fn((value) => {
+      target = value;
+      return undefined;
+    }),
+    getPointsToWin: vi.fn(() => target),
+    getScores: vi.fn(() =>
+      typeof resolvedScores === "function" ? resolvedScores() : resolvedScores
+    ),
+    stopTimer: vi.fn(),
+    getEngine: vi.fn(() => null)
+  };
+}
 
-    const { battleCLI } = await import("../../src/pages/index.js");
-    battleCLI.ensureCliDomForTest({ reset: true });
+function mockEngineFacade(overrides) {
+  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    setPointsToWin: overrides.setPointsToWin,
+    getPointsToWin: overrides.getPointsToWin,
+    getScores: overrides.getScores,
+    stopTimer: overrides.stopTimer,
+    on: overrides.on,
+    emit: overrides.emit,
+    getEngine: overrides.getEngine
+  }));
+}
 
-    ({ setupFlags, wireEvents, subscribeEngine } = await import(
-      "../../src/pages/battleCLI/init.js"
-    ));
-  });
-
-  afterEach(() => {
-    vi.resetModules();
-    vi.clearAllMocks();
-    vi.restoreAllMocks();
-    delete window.__TEST__;
+describe("Battle CLI helpers", () => {
+  afterEach(async () => {
+    await cleanupBattleCLI();
   });
 
   describe("setupFlags", () => {
-    it("toggles the verbose section when the checkbox is clicked", async () => {
-      const { toggleVerbose } = await setupFlags();
-      const verboseSection = document.getElementById("cli-verbose-section");
+    it("reveals verbose UI when the checkbox is toggled", async () => {
+      const mod = await loadBattleCLI({ verbose: false });
+      await mod.init();
 
-      expect(verboseSection.hidden).toBe(true);
+      const checkbox = document.getElementById("verbose-toggle");
+      const section = document.getElementById("cli-verbose-section");
+      const log = document.getElementById("cli-verbose-log");
+      const header = document.getElementById("cli-round");
 
-      await toggleVerbose(true);
-      expect(featureFlagsMock.setFlag.mock.calls.at(-1)).toEqual(["cliVerbose", true]);
-      expect(verboseSection.hidden).toBe(false);
+      expect(section.hidden).toBe(true);
+      expect(section.getAttribute("aria-expanded")).toBe("false");
+      const initialHeader = header.textContent;
 
-      await toggleVerbose(false);
-      expect(featureFlagsMock.setFlag.mock.calls.at(-1)).toEqual(["cliVerbose", false]);
-      expect(verboseSection.hidden).toBe(true);
+      checkbox.click();
+      await Promise.resolve();
+
+      expect(section.hidden).toBe(false);
+      expect(section.getAttribute("aria-expanded")).toBe("true");
+      expect(document.activeElement).toBe(log);
+      expect(header.textContent).toBe(initialHeader);
+
+      checkbox.click();
+      await Promise.resolve();
+
+      expect(section.hidden).toBe(true);
+      expect(section.getAttribute("aria-expanded")).toBe("false");
     });
 
-    it("keeps the verbose UI responsive when the engine facade throws", async () => {
-      engineFacadeMock.getPointsToWin.mockImplementation(() => {
-        throw new Error("boom");
+    it("restores the previous header when engine facade calls fail", async () => {
+      const engineStub = createEngineStub({ pointsToWin: 11 });
+      let failCalls = false;
+      engineStub.getPointsToWin.mockImplementation(() => {
+        if (failCalls) {
+          throw new Error("boom");
+        }
+        return 11;
       });
-      engineFacadeMock.setPointsToWin.mockImplementation(() => {
-        throw new Error("boom");
+      engineStub.setPointsToWin.mockImplementation(() => {
+        if (failCalls) {
+          throw new Error("boom");
+        }
+        return undefined;
       });
+      mockEngineFacade(engineStub);
+
+      const mod = await loadBattleCLI({ mockBattleEngine: false, verbose: false });
+      await mod.init();
+      failCalls = true;
+
       const root = document.getElementById("cli-root");
-      root.dataset.target = "7";
       root.dataset.round = "2";
+      root.dataset.target = "7";
+      const checkbox = document.getElementById("verbose-toggle");
+      const section = document.getElementById("cli-verbose-section");
 
-      const { toggleVerbose } = await setupFlags();
-      const verboseSection = document.getElementById("cli-verbose-section");
+      checkbox.click();
+      await Promise.resolve();
 
-      expect(verboseSection.hidden).toBe(true);
-
-      await toggleVerbose(true);
-
-      expect(engineFacadeMock.setPointsToWin).not.toHaveBeenCalled();
-      expect(verboseSection.hidden).toBe(false);
-      const lastCall = updateRoundHeaderMock.mock.calls.at(-1);
-      expect(lastCall).toEqual([2, 7]);
+      expect(section.hidden).toBe(false);
+      const header = document.getElementById("cli-round");
+      expect(header.textContent).toBe("Round 2 Target: 7");
     });
 
-    it("toggles the verbose UI when the engine facade is unavailable", async () => {
-      engineFacadeMock.getPointsToWin = undefined;
-      engineFacadeMock.setPointsToWin = undefined;
+    it("toggles verbose UI when the engine facade is unavailable", async () => {
+      const engineStub = {
+        on: undefined,
+        emit: undefined,
+        setPointsToWin: undefined,
+        getPointsToWin: undefined,
+        getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
+        stopTimer: vi.fn(),
+        getEngine: vi.fn(() => null)
+      };
+      mockEngineFacade(engineStub);
 
-      const { toggleVerbose } = await setupFlags();
-      const verboseSection = document.getElementById("cli-verbose-section");
+      const mod = await loadBattleCLI({ mockBattleEngine: false, verbose: false });
+      await mod.init();
 
-      expect(verboseSection.hidden).toBe(true);
+      const checkbox = document.getElementById("verbose-toggle");
+      const section = document.getElementById("cli-verbose-section");
 
-      await toggleVerbose(true);
+      checkbox.click();
+      await Promise.resolve();
 
-      expect(verboseSection.hidden).toBe(false);
+      expect(section.hidden).toBe(false);
     });
   });
 
   describe("wireEvents", () => {
-    it("toggles the help section when the 'h' key is pressed", async () => {
-      await setupFlags();
-      const addEventListenerSpy = vi.spyOn(window, "addEventListener");
+    it("opens and closes shortcuts when the 'h' key is pressed", async () => {
+      await cleanupBattleCLI();
+      const mod = await loadBattleCLI();
+      const addEventSpy = vi.spyOn(window, "addEventListener");
+      await mod.init();
+      const keydownCall = addEventSpy.mock.calls.find(([type]) => type === "keydown");
+      expect(keydownCall).toBeDefined();
+      const [, boundHandler] = keydownCall;
+      expect(typeof boundHandler).toBe("function");
+      boundHandler(new KeyboardEvent("keydown", { key: "h" }));
+      expect(document.getElementById("cli-shortcuts").open).toBe(true);
+      boundHandler(new KeyboardEvent("keydown", { key: "h" }));
+      expect(document.getElementById("cli-shortcuts").open).toBe(false);
+      addEventSpy.mockRestore();
+      const { wireEvents } = await import("../../src/pages/index.js");
       wireEvents();
-      const keydownCall = addEventListenerSpy.mock.calls.find(
-        ([eventName]) => eventName === "keydown"
+
+      const shortcuts = document.getElementById("cli-shortcuts");
+      const countdown = document.getElementById("cli-countdown");
+      expect(shortcuts.tagName).toBe("DETAILS");
+      expect(shortcuts.hidden).toBe(false);
+      expect(shortcuts.open).toBe(false);
+      expect(document.activeElement?.tagName).not.toBe("INPUT");
+      document.body.dataset.battleState = "waitingForPlayerAction";
+      const { isEnabled } = await import("../../src/helpers/featureFlags.js");
+      expect(isEnabled("cliShortcuts")).toBe(true);
+      const collapseHelper = window.__battleCLIinit?.setShortcutsCollapsed;
+      expect(typeof collapseHelper === "function" || collapseHelper === undefined).toBe(true);
+      const closeButton = document.getElementById("cli-shortcuts-close");
+
+      const boundSpy = vi.fn(boundHandler);
+      window.addEventListener("keydown", boundSpy);
+
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "h", bubbles: true })
       );
-      if (!keydownCall) {
-        throw new Error("Expected keydown event listener to be registered");
-      }
-      const keydownHandler = keydownCall[1];
-      const shortcutsSection = document.getElementById("cli-shortcuts");
-      expect(shortcutsSection.open).toBe(false);
+      await Promise.resolve();
 
-      const keydownEvent = new KeyboardEvent("keydown", { key: "h" });
-      keydownHandler(keydownEvent);
+      expect(boundSpy).toHaveBeenCalledTimes(1);
+      expect(countdown.textContent).not.toBe("Invalid key, press H for help");
+      expect(shortcuts.open).toBe(true);
+      expect(document.activeElement).toBe(closeButton);
 
-      expect(shortcutsSection.open).toBe(true);
+      boundSpy.mockClear();
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "h", bubbles: true })
+      );
+      await Promise.resolve();
+
+      expect(boundSpy).toHaveBeenCalledTimes(1);
+      expect(shortcuts.open).toBe(false);
+
+      boundSpy.mockClear();
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "h", bubbles: true })
+      );
+      await Promise.resolve();
+
+      expect(boundSpy).toHaveBeenCalledTimes(1);
+      expect(shortcuts.open).toBe(true);
+
+      boundSpy.mockClear();
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "h", bubbles: true })
+      );
+      await Promise.resolve();
+
+      expect(boundSpy).toHaveBeenCalledTimes(1);
+      expect(shortcuts.open).toBe(false);
+
+      window.removeEventListener("keydown", boundSpy);
     });
   });
 
   describe("subscribeEngine", () => {
-    it("updates the timer display on a timerTick engine event", async () => {
-      await setupFlags();
+    it("updates countdown and match messaging when engine events fire", async () => {
+      const engineStub = createEngineStub();
+      mockEngineFacade(engineStub);
+
+      const mod = await loadBattleCLI({ mockBattleEngine: false });
+      await mod.init();
+      const { subscribeEngine } = await import("../../src/pages/battleCLI/init.js");
       subscribeEngine();
 
-      const timerTickCallback = engineFacadeMock.on.mock.calls.find(
-        (call) => call[0] === "timerTick"
-      )[1];
-      const countdownDisplay = document.getElementById("cli-countdown");
-      expect(countdownDisplay.textContent).toBe("");
-
-      timerTickCallback({ remaining: 5, phase: "round" });
-
-      expect(countdownDisplay.textContent).toBe("Time remaining: 5");
-    });
-
-    it("displays the match ended message on a matchEnded engine event", async () => {
-      await setupFlags();
-      subscribeEngine();
-
-      const matchEndedCallback = engineFacadeMock.on.mock.calls.find(
-        (call) => call[0] === "matchEnded"
-      )[1];
+      const countdown = document.getElementById("cli-countdown");
       const roundMessage = document.getElementById("round-message");
-      const matchAnnouncement = document.getElementById("match-announcement");
+      const announcement = document.getElementById("match-announcement");
+
+      expect(countdown.textContent).toBe("");
       expect(roundMessage.textContent).toBe("");
-      expect(matchAnnouncement.textContent).toBe("");
+      expect(announcement.textContent).toBe("");
 
-      matchEndedCallback({ outcome: "playerWin" });
+      engineStub.emit("timerTick", { remaining: 5, phase: "round" });
+      expect(countdown.textContent).toBe("Time remaining: 5");
 
-      expect(roundMessage.textContent).toContain("Match over: playerWin");
-      expect(matchAnnouncement.textContent).toBe("Match over. You win!");
+      engineStub.emit("matchEnded", { outcome: "playerWin" });
+      expect(roundMessage.textContent).toBe("Match over: playerWin");
+      expect(announcement.textContent).toBe("Match over. You win!");
     });
   });
 
   describe("resetMatch", () => {
-    it("synchronously resets round counter to 0", async () => {
-      const initModule = await import("../../src/pages/battleCLI/init.js");
-      const { resetMatch } = initModule;
+    it("resets visible state synchronously", async () => {
+      const engineStub = createEngineStub({ pointsToWin: 9 });
+      mockEngineFacade(engineStub);
 
-      // Call resetMatch
-      await resetMatch();
+      const mod = await loadBattleCLI({ mockBattleEngine: false });
+      await mod.init();
 
-      // Assert that updateRoundHeader was called with 0 synchronously
-      expect(updateRoundHeaderMock).toHaveBeenCalledWith(0, undefined);
+      const header = document.getElementById("cli-round");
+      header.textContent = "Round 3 Target: 4";
+      const score = document.getElementById("cli-score");
+      score.textContent = "You: 3 Opponent: 2";
+      const roundMessage = document.getElementById("round-message");
+      roundMessage.textContent = "Round resolved";
+      const announcement = document.getElementById("match-announcement");
+      announcement.textContent = "Match over. Opponent wins.";
+      const verboseLog = document.getElementById("cli-verbose-log");
+      verboseLog.textContent = "Some log";
+
+      const { resetMatch } = await import("../../src/pages/battleCLI/init.js");
+      const resetPromise = resetMatch();
+
+      expect(header.textContent).toBe("Round 0 Target: 9");
+      expect(score.textContent).toBe("You: 0 Opponent: 0");
+      expect(roundMessage.textContent).toBe("");
+      expect(verboseLog.textContent).toBe("");
+      expect(document.getElementById("cli-root").dataset.round).toBe("0");
+
+      await resetPromise;
     });
   });
 });
