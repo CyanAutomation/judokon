@@ -87,12 +87,17 @@
 .battle-status-header {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-sm);
-  background-color: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  margin: var(--space-lg);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md);
+  background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 18%, transparent) 0%,
+      color-mix(in srgb, var(--color-surface) 92%, var(--color-primary) 8%) 100%
+    ),
+    var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  margin: var(--space-md) var(--space-lg);
   box-shadow: var(--shadow-base);
   text-align: center;
   color: var(--color-text);
@@ -109,7 +114,19 @@
   font-weight: 800;
   letter-spacing: 0.01em;
   line-height: 1.2;
-  margin-bottom: var(--space-md);
+  grid-column: 1 / -1;
+}
+
+.battle-status-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-sm);
+  align-items: stretch;
+  justify-items: center;
+}
+
+.battle-status-metrics > * {
+  width: 100%;
 }
 
 .battle-status-header #next-round-timer,
@@ -119,6 +136,14 @@
   font-size: var(--font-medium);
   font-weight: 500;
   line-height: 1.4;
+}
+
+.battle-status-header #battle-state-badge,
+.battle-status-header #test-mode-banner {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .stat-selection {
@@ -315,8 +340,12 @@
   }
 
   .battle-status-header {
-    margin: var(--space-lg) var(--space-sm);
+    margin: var(--space-md) var(--space-sm);
     padding: var(--space-md);
+  }
+
+  .battle-status-metrics {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 }
 

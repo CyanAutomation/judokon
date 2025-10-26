@@ -961,6 +961,15 @@ function mountScaffoldDom() {
     header.appendChild(statusContainer);
   }
 
+  let metricsContainer = statusContainer.querySelector(".battle-status-metrics");
+  if (!metricsContainer) {
+    metricsContainer = document.createElement("div");
+    metricsContainer.className = "battle-status-metrics";
+    metricsContainer.setAttribute("role", "group");
+    metricsContainer.setAttribute("aria-label", "Battle status");
+    statusContainer.appendChild(metricsContainer);
+  }
+
   ensureElement(
     "round-message",
     "p",
@@ -988,7 +997,7 @@ function mountScaffoldDom() {
         el.textContent = "";
       }
     },
-    statusContainer
+    metricsContainer
   );
 
   ensureElement(
@@ -1002,7 +1011,7 @@ function mountScaffoldDom() {
         el.textContent = "Round 0";
       }
     },
-    statusContainer
+    metricsContainer
   );
 
   ensureElement(
@@ -1017,7 +1026,7 @@ function mountScaffoldDom() {
         el.textContent = "You: 0 Opponent: 0";
       }
     },
-    statusContainer
+    metricsContainer
   );
 
   ensureElement(
@@ -1031,7 +1040,7 @@ function mountScaffoldDom() {
         badge.textContent = "";
       }
     },
-    statusContainer
+    metricsContainer
   );
 
   ensureElement("next-button", "button", (btn) => {
@@ -1281,8 +1290,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(scoreDisplay?.textContent).toContain("You: 2");
     expect(scoreDisplay?.textContent).toContain("Opponent: 1");
     const badge = document.getElementById("battle-state-badge");
+    const metrics = badge?.parentElement;
     const header = document.querySelector("header");
-    expect(badge?.parentElement?.classList.contains("battle-status-header")).toBe(true);
+    expect(metrics?.classList.contains("battle-status-metrics")).toBe(true);
+    expect(metrics?.parentElement?.classList.contains("battle-status-header")).toBe(true);
     expect(header?.contains(badge ?? null)).toBe(true);
   });
 
