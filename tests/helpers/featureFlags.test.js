@@ -33,3 +33,44 @@ describe("initFeatureFlags", () => {
     }
   });
 });
+
+describe("enableFlag", () => {
+  it("swallows persistence rejection to avoid unhandled rejections", async () => {
+    vi.resetModules();
+    const unhandled = [];
+    const captureUnhandled = (reason) => {
+      unhandled.push(reason);
+    };
+    process.on("unhandledRejection", captureUnhandled);
+
+    const loadSettings = vi.fn().mockResolvedValue({
+      ...DEFAULT_SETTINGS,
+      featureFlags: { ...DEFAULT_SETTINGS.featureFlags }
+    });
+    const updateSetting = vi.fn().mockRejectedValue(new Error("persist failed"));
+    const setCachedSettings = vi.fn();
+
+    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+    vi.doMock("../../src/helpers/settingsCache.js", () => ({ setCachedSettings }));
+
+    try {
+      const featureFlagsModule = await import("../../src/helpers/featureFlags.js");
+      const flagName = Object.keys(DEFAULT_SETTINGS.featureFlags)[0] || "enableTestMode";
+
+      featureFlagsModule.enableFlag(flagName);
+
+      await Promise.resolve();
+
+      expect(featureFlagsModule.isEnabled(flagName)).toBe(true);
+      expect(unhandled).toHaveLength(0);
+      expect(loadSettings).toHaveBeenCalledTimes(1);
+      expect(updateSetting).toHaveBeenCalledWith("featureFlags", expect.any(Object));
+    } finally {
+      process.removeListener("unhandledRejection", captureUnhandled);
+      vi.doUnmock("../../src/config/loadSettings.js");
+      vi.doUnmock("../../src/helpers/settingsStorage.js");
+      vi.doUnmock("../../src/helpers/settingsCache.js");
+    }
+  });
+});
