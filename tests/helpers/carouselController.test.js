@@ -97,6 +97,58 @@ describe("CarouselController (Enhanced Natural Interactions)", () => {
     expect(carousel.testApi.getPageCounter()).toBe("Page 2 of 3");
   });
 
+  it("restores scroll sync via fallback when scrollend is unavailable", async () => {
+    vi.useFakeTimers();
+    try {
+      carousel = createTestCarousel({
+        clientWidth: 100,
+        scrollWidth: 300,
+        supportsScrollEnd: false
+      });
+      await carousel.testApi.initialize();
+
+      expect(carousel.testApi.getCurrentPage()).toBe(0);
+      expect(carousel.testApi.getPageCounter()).toBe("Page 1 of 3");
+      expect(carousel.testApi.isLeftDisabled()).toBe(true);
+      expect(carousel.testApi.isRightDisabled()).toBe(false);
+
+      carousel.testApi.setPage(2);
+
+      expect(carousel.testApi.getPageCounter()).toBe("Page 3 of 3");
+      expect(carousel.testApi.isRightDisabled()).toBe(true);
+
+      carousel.testApi.simulateScroll(0);
+      expect(carousel.testApi.getCurrentPage()).toBe(2);
+
+      await vi.advanceTimersByTimeAsync(75);
+
+      carousel.testApi.simulateScroll(100);
+
+      expect(carousel.testApi.getCurrentPage()).toBe(1);
+      expect(carousel.testApi.getPageCounter()).toBe("Page 2 of 3");
+      expect(carousel.testApi.isRightDisabled()).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels pending fallback timers on consecutive setPage calls", async () => {
+    vi.useFakeTimers();
+    const clearSpy = vi.spyOn(globalThis, "clearTimeout");
+    try {
+      carousel = createTestCarousel({ supportsScrollEnd: false });
+      await carousel.testApi.initialize();
+
+      carousel.testApi.setPage(1);
+      carousel.testApi.setPage(2);
+
+      expect(clearSpy).toHaveBeenCalled();
+    } finally {
+      clearSpy.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
   it("properly destroys listeners when component is cleaned up", async () => {
     carousel = createTestCarousel();
     await carousel.testApi.initialize();

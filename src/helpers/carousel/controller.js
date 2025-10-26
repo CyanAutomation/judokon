@@ -29,6 +29,11 @@ export class CarouselController {
     this._attachRafId = null;
     this._resizeTimer = null;
     this._suppressScrollSync = false;
+    const globalTarget = typeof window !== "undefined" ? window : globalThis;
+    this._supportsScrollEnd =
+      typeof this.container?.onscrollend !== "undefined" ||
+      (typeof globalTarget !== "undefined" && typeof globalTarget?.ScrollendEvent === "function");
+    this._scrollReleaseCleanup = null;
     this._listeners = [];
 
     // Build UI and wire events
@@ -70,6 +75,7 @@ export class CarouselController {
     if (this._rafId) cancelAnimationFrame(this._rafId);
     if (this._attachRafId) cancelAnimationFrame(this._attachRafId);
     clearTimeout(this._resizeTimer);
+    this._clearScrollRelease();
     this.leftBtn?.remove();
     this.rightBtn?.remove();
     this.markersRoot?.remove();
@@ -146,10 +152,9 @@ export class CarouselController {
    * 2. Clamp the provided `index` to ensure it is within the valid range of pages (0 to `pageCount - 1`).
    * 3. Update `this.currentPage` with the clamped index.
    * 4. Calculate the `left` scroll position by multiplying the clamped index by `pageWidth`.
-   * 5. Set `this._suppressScrollSync` to `true` to temporarily disable scroll event synchronization, preventing conflicts with programmatic scrolling.
+   * 5. Call `_scheduleScrollSyncRelease()` to temporarily suppress scroll sync and plan the release via `scrollend` or a timer fallback.
    * 6. Programmatically scroll the `this.container` to the calculated `left` position with `behavior: "auto"` for instant scrolling.
-   * 7. Attach a one-time `scrollend` listener to clear `this._suppressScrollSync` once scrolling finishes and remove the listener.
-   * 8. Call `this.update()` to refresh the carousel's UI, including button states and markers.
+   * 7. Call `this.update()` to refresh the carousel's UI, including button states and markers.
    *
    * @param {number} index - The 0-based index of the page to set.
    * @returns {void}
@@ -162,15 +167,63 @@ export class CarouselController {
     // Instant scroll prevents animation queues from causing drift.
     // Suppress scroll event sync while performing programmatic scroll to
     // avoid intermediary scroll calculations from overriding the target page.
-    this._suppressScrollSync = true;
+    this._scheduleScrollSyncRelease();
     this.container.scrollTo({ left, behavior: "auto" });
-    // Listen for the scroll to fully end before re-enabling scroll sync.
-    const release = () => {
-      this._suppressScrollSync = false;
-      this.container.removeEventListener("scrollend", release);
-    };
-    this.container.addEventListener("scrollend", release);
     this.update();
+  }
+
+  /**
+   * Clears any pending scroll sync release handlers or timers and re-enables sync.
+   *
+   * @pseudocode
+   * 1. If a cleanup function is registered, invoke it to cancel pending work.
+   * 2. Reset the cleanup reference to avoid duplicate cancellations.
+   * 3. Ensure scroll synchronization is re-enabled.
+   *
+   * @returns {void}
+   */
+  _clearScrollRelease() {
+    if (this._scrollReleaseCleanup) {
+      this._scrollReleaseCleanup();
+      this._scrollReleaseCleanup = null;
+    }
+    this._suppressScrollSync = false;
+  }
+
+  /**
+   * Schedules scroll sync restoration via `scrollend` or a timer fallback.
+   *
+   * @pseudocode
+   * 1. Cancel any existing release handlers via `_clearScrollRelease`.
+   * 2. Set `_suppressScrollSync` to true for the in-flight programmatic scroll.
+   * 3. If `scrollend` is supported, attach a one-time listener to restore sync.
+   * 4. Otherwise, create a short timeout to restore sync and store its cleanup.
+   *
+   * @returns {void}
+   */
+  _scheduleScrollSyncRelease() {
+    this._clearScrollRelease();
+    this._suppressScrollSync = true;
+
+    if (this._supportsScrollEnd) {
+      const onScrollEnd = () => {
+        this._scrollReleaseCleanup = null;
+        this._suppressScrollSync = false;
+      };
+      this.container.addEventListener("scrollend", onScrollEnd, { once: true });
+      this._scrollReleaseCleanup = () => {
+        this.container.removeEventListener("scrollend", onScrollEnd);
+      };
+      return;
+    }
+
+    const timerId = setTimeout(() => {
+      this._scrollReleaseCleanup = null;
+      this._suppressScrollSync = false;
+    }, 60);
+    this._scrollReleaseCleanup = () => {
+      clearTimeout(timerId);
+    };
   }
 
   /**
