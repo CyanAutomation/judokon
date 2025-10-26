@@ -1,18 +1,14 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 test.describe("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() =>
-      localStorage.setItem(
-        "settings",
-        JSON.stringify({
-          typewriterEffect: false,
-          featureFlags: { enableTestMode: { enabled: true } }
-        })
-      )
-    );
+    const app = await configureApp(page, {
+      settings: { typewriterEffect: false }
+    });
     await page.goto("/src/pages/meditation.html");
+    await app.applyRuntime();
     await page.evaluate(() => window.quoteReadyPromise);
   });
 

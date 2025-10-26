@@ -1,15 +1,19 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 test.describe("Battle CLI - Restart", () => {
   test("should be able to restart a match", async ({ page }) => {
     await withMutedConsole(async () => {
-      // Set points to win to 1 to end the match quickly
-      await page.addInitScript(() => {
-        localStorage.setItem("battle.pointsToWin", "1");
+      const app = await configureApp(page, {
+        battle: { pointsToWin: 1 }
       });
 
       await page.goto("/src/pages/battleCLI.html?autostart=1");
+      await app.applyRuntime();
+      await expect
+        .poll(() => page.evaluate(() => window.__TEST_API?.engine?.getPointsToWin?.()))
+        .toBe(1);
 
       // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");

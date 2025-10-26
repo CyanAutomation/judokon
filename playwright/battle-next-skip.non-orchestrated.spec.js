@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
-import { NEXT_ROUND_COOLDOWN_MS } from "./fixtures/nextRoundCooldown.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 /**
  * Verify that the Next button can skip the cooldown when no orchestrator is running.
@@ -15,23 +15,13 @@ import { NEXT_ROUND_COOLDOWN_MS } from "./fixtures/nextRoundCooldown.js";
 
 test("skips cooldown without orchestrator", async ({ page }) => {
   await withMutedConsole(async () => {
-    await page.addInitScript(
-      ({ cooldown }) => {
-        window.__NEXT_ROUND_COOLDOWN_MS = cooldown;
-        const existingOverrides =
-          window.__FF_OVERRIDES && typeof window.__FF_OVERRIDES === "object"
-            ? window.__FF_OVERRIDES
-            : {};
-        window.__FF_OVERRIDES = {
-          ...existingOverrides,
-          showRoundSelectModal: true
-        };
-      },
-      { cooldown: NEXT_ROUND_COOLDOWN_MS }
-    );
+    const app = await configureApp(page, {
+      testMode: "disable",
+      requireRoundSelectModal: true
+    });
 
-    // Navigate to actual battle page instead of replacing body HTML
     await page.goto("/src/pages/battleClassic.html");
+    await app.applyRuntime();
 
     // Wait for page initialization and choose a match length to start the battle
     await page.getByRole("dialog").waitFor();
@@ -49,6 +39,7 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     await page.getByRole("button", { name: /power/i }).click();
 
     // Wait for cooldown to complete and next button to be ready
+    await page.evaluate(() => window.__TEST_API?.timers?.skipCooldown?.());
     await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
     // Click next button

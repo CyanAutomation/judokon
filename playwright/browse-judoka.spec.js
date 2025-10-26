@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 import { waitForBrowseReady } from "./fixtures/waits.js";
+import { createDeferredResponse } from "./fixtures/appConfig.js";
 // Use the same dataset the app fetches via route fixtures to avoid mismatches
 import judoka from "../tests/fixtures/judoka.json" with { type: "json" };
 import countryCodeMapping from "../src/data/countryCodeMapping.json" with { type: "json" };
@@ -51,17 +52,25 @@ test.describe("Browse Judoka screen", () => {
 
   test("filters judoka by country and resets", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
+    const panel = page.getByRole("region", {
+      name: /country filter panel/i,
+      hidden: true
+    });
 
     const { cardCount: initialCount } = await waitForBrowseReady(page);
     const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
     await expect(allCards).toHaveCount(initialCount);
 
     await toggle.click();
+    await expect(panel).toBeVisible();
     await page.addStyleTag({
       content: ".country-flag-slide-track { animation: none !important; }"
     });
     const japanOption = page.locator("label.flag-button", { hasText: "Japan" });
     await japanOption.click();
+    await expect(panel).toBeHidden();
+    await toggle.click();
+    await expect(panel).toBeVisible();
     const japanRadio = page.getByRole("radio", { name: "Japan" });
     await expect(japanRadio).toBeChecked();
 
@@ -70,7 +79,6 @@ test.describe("Browse Judoka screen", () => {
     const flag = filteredCards.first().locator(".card-top-bar img");
     await expect(flag).toHaveAttribute("alt", /Japan flag/i);
 
-    await toggle.click();
     const allOption = page.locator("label.flag-button", { hasText: "All" });
     await allOption.click();
     const allRadio = page.getByRole("radio", { name: "All" });
@@ -125,28 +133,6 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("shows loading spinner", async ({ page }) => {
-    let resolveJudokaResponse = () => {
-      throw new Error("Judoka response released before interception");
-    };
-    let judokaReleased = false;
-    let judokaResponseTimeoutId;
-    const releaseJudokaResponse = () => {
-      if (judokaReleased) {
-        // Prevent double-release to avoid race conditions where Playwright retries the route handler.
-        return;
-      }
-      judokaReleased = true;
-      clearTimeout(judokaResponseTimeoutId);
-      resolveJudokaResponse();
-    };
-    const judokaResponseReady = new Promise((resolve, reject) => {
-      resolveJudokaResponse = resolve;
-      judokaResponseTimeoutId = setTimeout(
-        () => reject(new Error("Judoka response timeout after 10s")),
-        10_000
-      );
-    });
-
     await page.route("**/src/helpers/classicBattle/opponentPromptTracker.js", async (route) => {
       const response = await route.fetch();
       let body = await response.text();
@@ -168,13 +154,16 @@ test.describe("Browse Judoka screen", () => {
       });
     });
 
-    await page.route("**/src/data/judoka.json", async (route) => {
-      await judokaResponseReady;
-      await route.fulfill({
-        contentType: "application/json",
-        body: JSON.stringify(judoka.slice(0, 5))
-      });
-    });
+    const judokaGate = await createDeferredResponse(
+      page,
+      "**/src/data/judoka.json",
+      async (route) => {
+        await route.fulfill({
+          contentType: "application/json",
+          body: JSON.stringify(judoka.slice(0, 5))
+        });
+      }
+    );
 
     await page.route("**/src/data/gokyo.json", async (route) => {
       await route.fulfill({
@@ -184,22 +173,17 @@ test.describe("Browse Judoka screen", () => {
     });
 
     try {
-      await page.addInitScript(() => {
-        // Force spinner to appear immediately for deterministic testing. This flag is set only in Playwright.
-        window.__showSpinnerImmediately__ = true;
-      });
       await page.goto("/src/pages/browseJudoka.html");
 
       const spinner = page.locator(".loading-spinner");
       await expect(spinner).toBeVisible();
 
-      releaseJudokaResponse();
+      judokaGate.release();
 
       await waitForBrowseReady(page);
       await expect(spinner).toBeHidden();
     } finally {
-      releaseJudokaResponse();
-      await page.unroute("**/src/data/judoka.json");
+      await judokaGate.cancel();
       await page.unroute("**/src/data/gokyo.json");
       await page.unroute("**/src/helpers/classicBattle/opponentPromptTracker.js");
     }
