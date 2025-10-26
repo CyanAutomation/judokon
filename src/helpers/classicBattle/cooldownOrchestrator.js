@@ -26,6 +26,21 @@ function createErrorContext(operation, context = {}) {
   return { scope: ERROR_SCOPE, operation, ...context };
 }
 
+/**
+ * @summary Assign a fallback timer handle to runtime state with polymorphic support.
+ * @param {object} runtime - Runtime state object to update.
+ * @param {Function|object|Array|number|null} handle - Timer handle in various formats.
+ * @returns {void}
+ * @pseudocode
+ * 1. Reset stored fallback metadata to their default null values.
+ * 2. Persist the original handle reference for debugging visibility.
+ * 3. Exit early when the provided handle is falsy.
+ * 4. Treat function handles as direct cancellation callbacks.
+ * 5. Support tuple handles by extracting their identifier and scheduler helpers.
+ * 6. Detect object handles with cancel/clear methods or scheduler metadata.
+ * 7. Fall back to clearTimeout when the handle exposes no explicit cancel hook.
+ * 8. Store primitive handles as identifiers for the global clearTimeout API.
+ */
 function assignFallbackHandle(runtime, handle) {
   runtime.fallbackCancel = null;
   runtime.fallbackSchedulerControl = null;
@@ -51,8 +66,7 @@ function assignFallbackHandle(runtime, handle) {
   if (typeof handle === "object") {
     if (typeof handle.cancel === "function") {
       runtime.fallbackCancel = () => handle.cancel();
-    }
-    if (typeof handle.clear === "function") {
+    } else if (typeof handle.clear === "function") {
       runtime.fallbackCancel = () => handle.clear();
     }
     if (typeof handle.clearTimeout === "function") {
@@ -66,11 +80,26 @@ function assignFallbackHandle(runtime, handle) {
     } else if (handle.timerId !== undefined) {
       runtime.fallbackId = handle.timerId;
     }
+    if (runtime.fallbackCancel == null && runtime.fallbackId == null) {
+      runtime.fallbackCancel = () => clearTimeout(handle);
+      runtime.fallbackId = handle;
+    }
     return;
   }
   runtime.fallbackId = handle;
 }
 
+/**
+ * @summary Clear fallback timer using the appropriate cancellation method.
+ * @param {object} runtime - Runtime state containing fallback timer metadata.
+ * @returns {void}
+ * @pseudocode
+ * 1. Determine whether an identifier has been stored for the fallback timer.
+ * 2. Prefer invoking a stored cancellation callback when available.
+ * 3. Otherwise, clear the timer through a scheduler controller when both exist.
+ * 4. Fall back to the global clearTimeout API when only an identifier is stored.
+ * 5. Reset all fallback-related runtime fields to their default null state.
+ */
 function clearFallbackTimer(runtime) {
   const hasId = runtime.fallbackId !== null && runtime.fallbackId !== undefined;
   if (typeof runtime.fallbackCancel === "function") {

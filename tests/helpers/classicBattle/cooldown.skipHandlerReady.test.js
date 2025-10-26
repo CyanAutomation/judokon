@@ -185,7 +185,6 @@ describe("skip handler clears fallback timer", () => {
     const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
     const { skipCurrentPhase } = await import("../../../src/helpers/classicBattle/skipHandler.js");
     startCooldown({}, scheduler);
-    expect(fallbackEntries.length).toBeGreaterThan(0);
     expect(fallbackEntries).toHaveLength(1);
     skipCurrentPhase();
     await vi.advanceTimersByTimeAsync(0);
