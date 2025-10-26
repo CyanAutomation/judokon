@@ -14,7 +14,9 @@ describe("vectorSearch loader helpers", () => {
 
   afterEach(() => {
     delete global.window;
+    delete process.env.RAG_FORCE_JSON;
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("loads offline embeddings", async () => {
@@ -79,5 +81,30 @@ describe("vectorSearch loader helpers", () => {
     const { loadManifestEmbeddings } = await import("../../../src/helpers/vectorSearch/loader.js");
     const result = await loadManifestEmbeddings();
     expect(result).toBeNull();
+  });
+
+  it("retries loading embeddings after transient failure", async () => {
+    process.env.RAG_FORCE_JSON = "1";
+    global.window = {};
+    const { fetchJson } = await import("../../../src/helpers/dataUtils.js");
+    fetchJson.mockReset();
+    fetchJson
+      .mockRejectedValueOnce(new Error("single-file fail"))
+      .mockRejectedValueOnce(new Error("manifest fail"))
+      .mockResolvedValue(sample);
+
+    const loaderModule = await import("../../../src/helpers/vectorSearch/loader.js");
+
+    const firstResult = await loaderModule.loadEmbeddings();
+    expect(firstResult).toBeNull();
+    expect(fetchJson).toHaveBeenCalledTimes(2);
+
+    const secondResult = await loaderModule.loadEmbeddings();
+    expect(secondResult).toEqual(sample);
+    expect(fetchJson).toHaveBeenCalledTimes(3);
+
+    const cachedResult = await loaderModule.loadEmbeddings();
+    expect(cachedResult).toBe(secondResult);
+    expect(fetchJson).toHaveBeenCalledTimes(3);
   });
 });
