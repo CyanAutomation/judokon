@@ -216,7 +216,7 @@
 }
 
 .battle-status-header #test-mode-banner[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .stat-selection {

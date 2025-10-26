@@ -94,16 +94,16 @@ export class ScoreboardView {
     if (!this.timerEl) return;
     let label = this.timerEl.querySelector('[data-part="label"]');
     let value = this.timerEl.querySelector('[data-part="value"]');
-    
+
     if (typeof seconds === "number" && Number.isFinite(seconds)) {
       const clamped = Math.max(0, seconds);
-      
+
       // If we don't have the expected structure, rebuild it
       if (!label || !value) {
         this.timerEl.innerHTML = `<span data-part="label">Time Left:</span> <span data-part="value">${clamped}s</span>`;
         return;
       }
-      
+
       // Update existing structure
       label.textContent = "Time Left:";
       value.textContent = `${clamped}s`;

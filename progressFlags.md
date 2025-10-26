@@ -29,6 +29,7 @@
 - **Settings Accessibility** – General toggles and feature-flag switches emit `<label>` + `aria-describedby` pairs (`src/pages/settings.html:130`, `src/helpers/settings/featureFlagSwitches.js:66`), and focus styles are defined in `src/styles/settings.css:222`.
 - **Opponent Delay Messaging** – Classic Battle reuses the same delay copy that was previously CLI-only (`src/pages/battleClassic.init.js:701`), with shared UI handlers (`src/helpers/classicBattle/uiEventHandlers.js:92`).
 - **CLI Shortcuts Guidance** – When `cliShortcuts` is disabled, a footer fallback keeps keyboard tips visible and aligned with the new live-region copy (`src/pages/battleCLI/init.js:1720`, `src/pages/battleCLI.html:200`), with coverage in `tests/pages/battleCLI.onKeyDown.test.js:198` and `playwright/cli-layout.spec.js`.
+- **Test Mode Banner Visibility** – Hidden state now collapses the banner when `enableTestMode` is off by adding explicit `[hidden]` overrides with `!important` in the shared styles (`src/styles/battleClassic.css:210`, `src/styles/battle.css:113`), verified by `playwright/battle-classic/feature-flags.spec.js`.
 
 ## Items Requiring Follow-Up
 
@@ -59,7 +60,7 @@
 - `npx playwright test playwright/battle-classic/battle-state-progress.spec.js`
 - `npx playwright test playwright/cli-layout.spec.js`
 - 2025-10-26 – `npx vitest run tests/helpers/debugFlagPerformance.test.js` ✅
-- 2025-10-26 – `npx playwright test playwright/battle-classic/feature-flags.spec.js --grep "test mode banner hides when flag disabled"` ❌ (banner remained visible; investigate pre-existing visibility regression)
+- 2025-10-26 – `npx playwright test playwright/battle-classic/feature-flags.spec.js --grep "test mode banner hides when flag disabled"` ✅
 
 ## References
 
