@@ -131,6 +131,49 @@ describe("handleStatSelection helpers", () => {
     spy.mockRestore();
   });
 
+  it("uses the injected scheduler to clear stat selection timers", async () => {
+    const handles = [];
+    const fakeScheduler = {
+      setTimeout: vi.fn((callback, delay) => {
+        const handle = { callback, delay, id: handles.length + 1 };
+        handles.push(handle);
+        return handle;
+      }),
+      clearTimeout: vi.fn()
+    };
+
+    const globalClear = vi.spyOn(global, "clearTimeout");
+
+    const schedulerModule = await import("../../src/helpers/scheduler.js");
+    const getSchedulerSpy = vi.spyOn(schedulerModule, "getScheduler").mockReturnValue(fakeScheduler);
+
+    try {
+      const { handleStatSelectionTimeout } = await import(
+        "../../src/helpers/classicBattle/autoSelectHandlers.js"
+      );
+
+      const statHandle = fakeScheduler.setTimeout(() => {}, 2500);
+      store.statTimeoutId = statHandle;
+
+      handleStatSelectionTimeout(store, () => {}, 1000);
+      const autoSelectHandle = store.autoSelectId;
+
+      cleanupTimers(store);
+
+      expect(fakeScheduler.clearTimeout).toHaveBeenCalledWith(statHandle);
+      expect(fakeScheduler.clearTimeout).toHaveBeenCalledWith(autoSelectHandle);
+      expect(globalClear).not.toHaveBeenCalled();
+      expect(store.statTimeoutId).toBeNull();
+      expect(store.autoSelectId).toBeNull();
+      expect(store.selectionTimeoutScheduler).toBeNull();
+      expect(store.statTimeoutScheduler).toBeNull();
+      expect(store.autoSelectScheduler).toBeNull();
+    } finally {
+      getSchedulerSpy.mockRestore();
+      globalClear.mockRestore();
+    }
+  });
+
   it("should not call resolveRoundDirect when orchestrator handles the event", async () => {
     const { resolveRound } = await import("../../src/helpers/classicBattle/roundResolver.js");
     dispatchBattleEvent.mockResolvedValue(true); // Simulate orchestrator handling it
