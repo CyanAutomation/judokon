@@ -3,6 +3,7 @@ import { createTimerServiceHarness } from "../integrationHarness.js";
 import { createTimerNodes, createRoundMessage, createSnackbarContainer } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 import { createDriftStarter } from "./driftStarter.js";
+import { cleanupRoundTimerMocks } from "./timerModuleCleanup.js";
 
 const harness = createTimerServiceHarness();
 
@@ -125,16 +126,7 @@ describe("timerService drift handling", () => {
     expect(showSnack).toHaveBeenCalledWith("Waiting…");
     const activeSnackbar = container?.querySelector(".snackbar");
     expect(activeSnackbar?.textContent).toBe("Waiting…");
-    for (const specifier of [
-      "../../../src/helpers/timers/createRoundTimer.js",
-      "../../src/helpers/timers/createRoundTimer.js",
-      "/src/helpers/timers/createRoundTimer.js",
-      "src/helpers/timers/createRoundTimer.js"
-    ]) {
-      try {
-        vi.doUnmock(specifier);
-      } catch {}
-    }
+    cleanupRoundTimerMocks();
     // Factory restarts cooldown timer on each drift (initial + 2 drifts)
     // In Vitest, fallback timer is used instead of engine
     expect(startCoolDown).toHaveBeenCalledTimes(0);
