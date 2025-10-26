@@ -165,6 +165,35 @@
   line-height: 1.4;
 }
 
+.battle-status-header #next-round-timer,
+.battle-status-header #score-display {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.battle-status-header #score-display [data-side] {
+  display: inline-flex;
+  align-items: baseline;
+  gap: calc(var(--space-2xs) / 2);
+}
+
+.battle-status-header #next-round-timer [data-part="label"],
+.battle-status-header #score-display [data-part="label"] {
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--color-text) 80%, var(--color-primary) 20%);
+}
+
+.battle-status-header #next-round-timer [data-part="value"],
+.battle-status-header #score-display [data-part="value"] {
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-primary) 70%, var(--color-text) 30%);
+}
+
 .battle-status-header #battle-state-badge,
 .battle-status-header #test-mode-banner {
   display: inline-flex;

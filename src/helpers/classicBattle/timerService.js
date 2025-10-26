@@ -129,6 +129,55 @@ function readEngineNextRound() {
   }
 }
 
+function ensureLabelValueSpacing(container, labelSpan, valueSpan) {
+  if (!container || !labelSpan || !valueSpan) return;
+  const doc = container.ownerDocument || (typeof document !== "undefined" ? document : null);
+  if (!doc) return;
+  const labelText = String(labelSpan.textContent || "").trim();
+  const valueText = String(valueSpan.textContent || "").trim();
+  const separator = labelSpan.nextSibling;
+  if (!labelText || !valueText) {
+    if (separator && separator.nodeType === 3) {
+      container.removeChild(separator);
+    }
+    return;
+  }
+  const needsSpace = !separator || separator.nodeType !== 3;
+  if (needsSpace) {
+    container.insertBefore(doc.createTextNode(" "), valueSpan);
+  } else if (!/\s/.test(separator.textContent || "")) {
+    separator.textContent = " ";
+  }
+}
+
+function updateTimerElement(container, valueText, { labelText = "Time Left:" } = {}) {
+  if (!container) return;
+  const labelSpan = container.querySelector('[data-part="label"]');
+  const valueSpan = container.querySelector('[data-part="value"]');
+  if (valueSpan) {
+    if (!labelSpan && labelText) {
+      try {
+        const doc = container.ownerDocument || (typeof document !== "undefined" ? document : null);
+        if (doc?.createElement) {
+          const createdLabel = doc.createElement("span");
+          createdLabel.dataset.part = "label";
+          createdLabel.textContent = labelText;
+          container.insertBefore(createdLabel, container.firstChild);
+          ensureLabelValueSpacing(container, createdLabel, valueSpan);
+          return updateTimerElement(container, valueText, { labelText });
+        }
+      } catch {}
+    }
+    if (labelSpan) {
+      labelSpan.textContent = valueText ? labelText : "";
+    }
+    valueSpan.textContent = valueText;
+    ensureLabelValueSpacing(container, container.querySelector('[data-part="label"]'), valueSpan);
+  } else {
+    container.textContent = valueText ? `${labelText} ${valueText}` : "";
+  }
+}
+
 /**
  * Write the round number to the round counter element.
  *
@@ -720,7 +769,7 @@ export function primeTimerDisplay({
       ? root.getElementById("next-round-timer")
       : root.querySelector("#next-round-timer");
     if (el) {
-      el.textContent = `Time Left: ${duration}s`;
+      updateTimerElement(el, `${duration}s`);
     }
   } catch {}
 }
@@ -772,9 +821,9 @@ export function configureTimerCallbacks(
         if (el) {
           if (typeof remaining === "number") {
             const clamped = Math.max(0, Number.isFinite(remaining) ? remaining : 0);
-            el.textContent = `Time Left: ${clamped}s`;
+            updateTimerElement(el, `${clamped}s`);
           } else {
-            el.textContent = "";
+            updateTimerElement(el, "");
           }
         }
       } catch {}

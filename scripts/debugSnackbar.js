@@ -17,7 +17,13 @@ import { chromium } from "playwright";
   await page.evaluate(() => window.__resetForTest && window.__resetForTest());
   // Apply tie round as tests do
   await page.evaluate(() => {
-    document.getElementById("next-round-timer").textContent = "Time Left: 3s";
+    const timer = document.getElementById("next-round-timer");
+    if (timer) {
+      const label = timer.querySelector('[data-part="label"]');
+      const value = timer.querySelector('[data-part="value"]');
+      if (label) label.textContent = "Time Left:";
+      if (value) value.textContent = "3s";
+    }
     document.getElementById("player-card").innerHTML =
       `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =

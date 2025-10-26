@@ -9,7 +9,10 @@ describe("roundUI auto-advance chain", () => {
     document.body.innerHTML = `
       <div id="snackbar-container" role="status"></div>
       <p id="round-message" role="status"></p>
-      <p id="next-round-timer" data-testid="next-round-timer"></p>
+      <p id="next-round-timer" data-testid="next-round-timer">
+        <span data-part="label">Time Left:</span>
+        <span data-part="value">0s</span>
+      </p>
       <button id="next-button" disabled data-role="next-round">Next</button>
     `;
 

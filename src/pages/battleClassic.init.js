@@ -38,6 +38,35 @@ import { domStateListener } from "../helpers/classicBattle/stateTransitionListen
 import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
+
+function updateTimerFallback(value) {
+  try {
+    const el = document.getElementById("next-round-timer");
+    if (!el) return;
+    const valueSpan = el.querySelector('[data-part="value"]');
+    const labelSpan = el.querySelector('[data-part="label"]');
+    if (valueSpan) {
+      const hasValue = typeof value === "string" && value.length > 0;
+      valueSpan.textContent = value;
+      if (labelSpan) {
+        labelSpan.textContent = hasValue ? "Time Left:" : "";
+      }
+      const separator = labelSpan?.nextSibling;
+      if (hasValue) {
+        if (!separator || separator.nodeType !== 3) {
+          const doc = el.ownerDocument || document;
+          el.insertBefore(doc.createTextNode(" "), valueSpan);
+        } else if (!/\s/.test(separator.textContent || "")) {
+          separator.textContent = " ";
+        }
+      } else if (separator && separator.nodeType === 3) {
+        el.removeChild(separator);
+      }
+    } else {
+      el.textContent = value ? `Time Left: ${value}` : "";
+    }
+  } catch {}
+}
 import { t } from "../helpers/i18n.js";
 import {
   showSelectionPrompt,
@@ -1517,8 +1546,8 @@ async function beginSelectionTimer(store) {
     const timer = createCountdownTimer(dur, {
       onTick: (remaining) => {
         try {
-          const el = document.getElementById("next-round-timer");
-          if (el) el.textContent = remaining > 0 ? `Time Left: ${remaining}s` : "";
+          const clamped = remaining > 0 ? `${remaining}s` : "";
+          updateTimerFallback(clamped);
         } catch (err) {
           console.debug("battleClassic: onTick DOM update failed", err);
         }
@@ -1537,9 +1566,11 @@ async function beginSelectionTimer(store) {
           console.debug("battleClassic: computeRoundResult (vitest) failed", err);
         }
         try {
-          const scoreEl = document.getElementById("score-display");
-          if (scoreEl && result) {
-            scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+          if (result) {
+            syncScoreboardDisplay(
+              Number(result.playerScore) || 0,
+              Number(result.opponentScore) || 0
+            );
           }
         } catch {}
         if (result) {
@@ -1581,9 +1612,8 @@ async function beginSelectionTimer(store) {
       );
       // Defensive direct DOM update to satisfy E2E in case adapter binding fails
       try {
-        const scoreEl = document.getElementById("score-display");
-        if (scoreEl && result) {
-          scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+        if (result) {
+          syncScoreboardDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
         }
       } catch {}
       if (result) {
@@ -1618,14 +1648,26 @@ async function beginSelectionTimer(store) {
       try {
         const btn = document.getElementById("next-button");
         const scoreEl = document.getElementById("score-display");
-        const needsScore = scoreEl && /You:\s*0\s*Opponent:\s*0/.test(scoreEl.textContent || "");
+        const playerValue = scoreEl
+          ?.querySelector('[data-side="player"] [data-part="value"]')
+          ?.textContent?.trim();
+        const opponentValue = scoreEl
+          ?.querySelector('[data-side="opponent"] [data-part="value"]')
+          ?.textContent?.trim();
+        const needsScore =
+          scoreEl && playerValue !== undefined && opponentValue !== undefined
+            ? playerValue === "0" && opponentValue === "0"
+            : scoreEl && /You:\s*0\s*Opponent:\s*0/.test(scoreEl?.textContent || "");
         const notReady = btn && (btn.disabled || btn.getAttribute("data-next-ready") !== "true");
         if (needsScore || notReady) {
           const { playerVal, opponentVal } = resolveStatValues(store, "speed");
           const result = await computeRoundResult(store, "speed", playerVal, opponentVal);
           try {
-            if (scoreEl && result) {
-              scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+            if (result) {
+              syncScoreboardDisplay(
+                Number(result.playerScore) || 0,
+                Number(result.opponentScore) || 0
+              );
             }
           } catch {}
           if (result) {

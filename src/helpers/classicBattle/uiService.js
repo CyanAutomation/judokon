@@ -16,6 +16,7 @@ import {
   DEFAULT_PROMPT_POLL_INTERVAL_MS
 } from "./opponentPromptWaiter.js";
 import { isOpponentPromptReady } from "./opponentPromptTracker.js";
+import { writeScoreDisplay } from "./scoreDisplay.js";
 
 /** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
 let activeCountdown = null;
@@ -60,32 +61,12 @@ export function syncScoreDisplay() {
   }
   // Always ensure the DOM reflects current scores as a robust fallback
   try {
-    const el = document.getElementById("score-display");
-    if (el) {
-      // Prefer spans with explicit data-side attributes so other scoreboard
-      // code can recognize them. Remove any stray text nodes (for example
-      // the static scaffold 'You: 0 Opponent: 0') and render two spans.
-      let playerSpan = el.querySelector('span[data-side="player"]');
-      let opponentSpan = el.querySelector('span[data-side="opponent"]');
-      if (!playerSpan || !opponentSpan) {
-        // Clear existing content (text nodes or otherwise) and recreate
-        // canonical children: <span data-side="player">..</span>\n<span data-side="opponent">..</span>
-        el.textContent = "";
-        playerSpan = document.createElement("span");
-        playerSpan.setAttribute("data-side", "player");
-        opponentSpan = document.createElement("span");
-        opponentSpan.setAttribute("data-side", "opponent");
-        el.append(playerSpan, document.createTextNode("\n"), opponentSpan);
+    writeScoreDisplay(playerScore, opponentScore);
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      const el = document.getElementById("score-display");
+      if (el) {
+        console.log("[DEBUG] syncScoreDisplay updated DOM:", el.textContent);
       }
-      playerSpan.textContent = `You: ${playerScore}`;
-      opponentSpan.textContent = `Opponent: ${opponentScore}`;
-
-      // Debug logging for tests
-      try {
-        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-          console.log("[DEBUG] syncScoreDisplay updated DOM:", el.textContent);
-        }
-      } catch {}
     }
   } catch {}
 }

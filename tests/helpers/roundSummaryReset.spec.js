@@ -5,7 +5,11 @@ import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js
 describe("Round summary cleanup on roundReset", () => {
   beforeEach(() => {
     document.body.innerHTML =
-      '<div class="modal" id="dummy-modal"></div><div id="score-display">You: 1 Opponent: 0</div>';
+      '<div class="modal" id="dummy-modal"></div>' +
+      '<div id="score-display">' +
+      '<span data-side="player"><span data-part="label">You:</span> <span data-part="value">1</span></span>' +
+      '<span data-side="opponent"><span data-part="label">Opponent:</span> <span data-part="value">0</span></span>' +
+      "</div>";
     bindUIServiceEventHandlersOnce();
   });
   afterEach(() => {

@@ -1,5 +1,6 @@
 import { STATS, handleStatSelection } from "../battleEngineFacade.js";
 import { seededRandom } from "../testModeUtils.js";
+import { writeScoreDisplay } from "../classicBattle/scoreDisplay.js";
 
 /**
  * Choose an opponent stat based on difficulty and available values.
@@ -105,10 +106,7 @@ export function evaluateRound(playerVal, opponentVal) {
           messageEl.textContent = message;
         }
         if (scoreEl) {
-          // Ensure the element has the expected text content structure
-          // even if syncScoreDisplay creates spans
-          scoreEl.innerHTML = "";
-          scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
+          writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
         }
       }
     } catch (e) {
@@ -149,9 +147,7 @@ export function evaluateRound(playerVal, opponentVal) {
           fallbackOpponentScore
         });
         if (scoreEl) {
-          // Ensure the element has the expected text content structure
-          scoreEl.innerHTML = "";
-          scoreEl.textContent = `You: ${fallbackPlayerScore}\nOpponent: ${fallbackOpponentScore}`;
+          writeScoreDisplay(fallbackPlayerScore, fallbackOpponentScore);
         }
 
         if (messageEl && message) {

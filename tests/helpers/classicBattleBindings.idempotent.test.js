@@ -51,11 +51,23 @@ describe("__ensureClassicBattleBindings idempotency", () => {
       <header class="header battle-header">
         <div id="scoreboard-left">
           <p id="round-message"></p>
-          <p id="next-round-timer"></p>
+          <p id="next-round-timer">
+            <span data-part="label">Time Left:</span>
+            <span data-part="value">0s</span>
+          </p>
           <p id="round-counter"></p>
         </div>
         <div id="scoreboard-right">
-          <p id="score-display"><span>You: 0</span><span>Opponent: 0</span></p>
+          <p id="score-display">
+            <span data-side="player">
+              <span data-part="label">You:</span>
+              <span data-part="value">0</span>
+            </span>
+            <span data-side="opponent">
+              <span data-part="label">Opponent:</span>
+              <span data-part="value">0</span>
+            </span>
+          </p>
         </div>
       </header>
       <main>

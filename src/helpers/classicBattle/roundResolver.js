@@ -9,6 +9,7 @@ import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
 import { resolveDelay } from "./timerUtils.js";
 import * as sb from "../setupScoreboard.js";
+import { writeScoreDisplay } from "./scoreDisplay.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -115,8 +116,7 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
         }
 
         if (scoreEl) {
-          scoreEl.innerHTML = "";
-          scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
+          writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
           console.log("[DEBUG] Set score in evaluateOutcome:", scoreEl.textContent);
         }
       }
@@ -209,7 +209,7 @@ export async function updateScoreboard(result) {
     try {
       const scoreEl = document.querySelector("header #score-display");
       if (scoreEl) {
-        scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+        writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
       }
     } catch {}
   }
@@ -218,7 +218,7 @@ export async function updateScoreboard(result) {
   try {
     const scoreEl = document.querySelector("header #score-display");
     if (scoreEl) {
-      scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+      writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
     }
   } catch {}
 

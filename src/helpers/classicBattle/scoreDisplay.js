@@ -12,6 +12,62 @@ function normalizeScores(playerScore, opponentScore) {
   };
 }
 
+function ensureScoreSpacing(container, firstSpan, secondSpan, doc) {
+  if (!firstSpan || !secondSpan) return;
+  const separator = firstSpan.nextSibling;
+  if (!separator || separator.nodeType !== 3) {
+    container.insertBefore(doc.createTextNode(" "), secondSpan);
+  } else if (!/\s/.test(separator.textContent || "")) {
+    separator.textContent = " ";
+  }
+}
+
+function ensureSideSpacing(sideSpan, doc) {
+  if (!sideSpan) return null;
+  const label = sideSpan.querySelector('[data-part="label"]');
+  const value = sideSpan.querySelector('[data-part="value"]');
+  if (!label || !value) return { label, value };
+  const separator = label.nextSibling;
+  if (!separator || separator.nodeType !== 3) {
+    sideSpan.insertBefore(doc.createTextNode(" "), value);
+  } else if (!/\s/.test(separator.textContent || "")) {
+    separator.textContent = " ";
+  }
+  return { label, value };
+}
+
+function ensureScoreNode(container, side, labelText, doc) {
+  if (!container || !doc?.createElement) {
+    return { value: null };
+  }
+
+  let sideSpan = container.querySelector(`[data-side="${side}"]`);
+  if (!sideSpan) {
+    sideSpan = doc.createElement("span");
+    sideSpan.dataset.side = side;
+    container.appendChild(sideSpan);
+  }
+
+  let label = sideSpan.querySelector('[data-part="label"]');
+  if (!label) {
+    label = doc.createElement("span");
+    label.dataset.part = "label";
+    sideSpan.insertBefore(label, sideSpan.firstChild);
+  }
+  label.textContent = labelText;
+
+  let value = sideSpan.querySelector('[data-part="value"]');
+  if (!value) {
+    value = doc.createElement("span");
+    value.dataset.part = "value";
+    sideSpan.appendChild(value);
+  }
+
+  ensureSideSpacing(sideSpan, doc);
+
+  return { sideSpan, value };
+}
+
 function renderScoreDisplay(playerScore, opponentScore) {
   if (typeof document === "undefined") {
     return;
@@ -22,16 +78,28 @@ function renderScoreDisplay(playerScore, opponentScore) {
     return;
   }
 
-  const playerSpan = document.createElement("span");
-  playerSpan.dataset.side = "player";
-  playerSpan.textContent = `You: ${playerScore}`;
+  const doc = scoreEl.ownerDocument || document;
+  const { sideSpan: playerSpan, value: playerValue } = ensureScoreNode(
+    scoreEl,
+    "player",
+    "You:",
+    doc
+  );
+  const { sideSpan: opponentSpan, value: opponentValue } = ensureScoreNode(
+    scoreEl,
+    "opponent",
+    "Opponent:",
+    doc
+  );
 
-  const opponentSpan = document.createElement("span");
-  opponentSpan.dataset.side = "opponent";
-  opponentSpan.textContent = `Opponent: ${opponentScore}`;
+  if (playerValue) {
+    playerValue.textContent = String(playerScore);
+  }
+  if (opponentValue) {
+    opponentValue.textContent = String(opponentScore);
+  }
 
-  const separator = document.createTextNode(" ");
-  scoreEl.replaceChildren(playerSpan, separator, opponentSpan);
+  ensureScoreSpacing(scoreEl, playerSpan, opponentSpan, doc);
 }
 
 /**

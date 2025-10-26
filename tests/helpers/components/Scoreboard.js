@@ -28,6 +28,13 @@ export function createScoreboard(container) {
   timerEl.setAttribute("aria-atomic", "true");
   timerEl.setAttribute("role", "status");
   timerEl.setAttribute("data-testid", "next-round-timer");
+  const timerLabel = document.createElement("span");
+  timerLabel.dataset.part = "label";
+  timerLabel.textContent = "Time Left:";
+  const timerValue = document.createElement("span");
+  timerValue.dataset.part = "value";
+  timerValue.textContent = "0s";
+  timerEl.append(timerLabel, document.createTextNode(" "), timerValue);
 
   const roundCounterEl = document.createElement("p");
   roundCounterEl.id = "round-counter";
@@ -41,6 +48,27 @@ export function createScoreboard(container) {
   scoreEl.setAttribute("aria-atomic", "true");
   scoreEl.setAttribute("role", "status");
   scoreEl.setAttribute("data-testid", "score-display");
+  const playerSpan = document.createElement("span");
+  playerSpan.dataset.side = "player";
+  const playerLabel = document.createElement("span");
+  playerLabel.dataset.part = "label";
+  playerLabel.textContent = "You:";
+  const playerValue = document.createElement("span");
+  playerValue.dataset.part = "value";
+  playerValue.textContent = "0";
+  playerSpan.append(playerLabel, document.createTextNode(" "), playerValue);
+
+  const opponentSpan = document.createElement("span");
+  opponentSpan.dataset.side = "opponent";
+  const opponentLabel = document.createElement("span");
+  opponentLabel.dataset.part = "label";
+  opponentLabel.textContent = "Opponent:";
+  const opponentValue = document.createElement("span");
+  opponentValue.dataset.part = "value";
+  opponentValue.textContent = "0";
+  opponentSpan.append(opponentLabel, document.createTextNode(" "), opponentValue);
+
+  scoreEl.append(playerSpan, document.createTextNode("\n"), opponentSpan);
 
   // Append elements to container
   container.append(messageEl, timerEl, roundCounterEl, scoreEl);

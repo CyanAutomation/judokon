@@ -34,8 +34,20 @@ export function createScoreboardHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
     <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
-    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-    <p id="score-display" aria-live="off" aria-atomic="true"></p>
+    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
+      <span data-part="label">Time Left:</span>
+      <span data-part="value">0s</span>
+    </p>
+    <p id="score-display" aria-live="off" aria-atomic="true">
+      <span data-side="player">
+        <span data-part="label">You:</span>
+        <span data-part="value">0</span>
+      </span>
+      <span data-side="opponent">
+        <span data-part="label">Opponent:</span>
+        <span data-part="value">0</span>
+      </span>
+    </p>
   `;
   return header;
 }
@@ -57,8 +69,20 @@ export function createBattleHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
     <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
-    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-    <p id="score-display" aria-live="off" aria-atomic="true"></p>
+    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
+      <span data-part="label">Time Left:</span>
+      <span data-part="value">0s</span>
+    </p>
+    <p id="score-display" aria-live="off" aria-atomic="true">
+      <span data-side="player">
+        <span data-part="label">You:</span>
+        <span data-part="value">0</span>
+      </span>
+      <span data-side="opponent">
+        <span data-part="label">Opponent:</span>
+        <span data-part="value">0</span>
+      </span>
+    </p>
   `;
   return header;
 }
