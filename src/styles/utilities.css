@@ -8,6 +8,18 @@
   display: none;
 }
 
+.u-flex {
+  display: flex;
+}
+
+.u-justify-center {
+  justify-content: center;
+}
+
+.u-align-center {
+  align-items: center;
+}
+
 /* Visually hide content but keep it accessible to screen readers */
 .visually-hidden {
   position: absolute !important;
