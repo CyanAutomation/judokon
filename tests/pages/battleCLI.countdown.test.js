@@ -2,6 +2,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
+async function advanceTimersAndFlushPending(timers, ms) {
+  await timers.advanceTimersByTimeAsync(ms);
+  if (typeof timers.runOnlyPendingTimersAsync === "function") {
+    await timers.runOnlyPendingTimersAsync();
+  }
+}
+
 describe("battleCLI countdown", () => {
   let timers;
   beforeEach(() => {
@@ -28,10 +35,7 @@ describe("battleCLI countdown", () => {
     expect(countdown.dataset.remainingTime).toBe("3");
     expect(countdown.textContent).toContain("3");
 
-    await timers.advanceTimersByTimeAsync(3000);
-    if (typeof timers.runOnlyPendingTimersAsync === "function") {
-      await timers.runOnlyPendingTimersAsync();
-    }
+    await advanceTimersAndFlushPending(timers, 3000);
 
     const marker = document.getElementById("auto-select-marker");
     expect(marker?.dataset.triggerCount).toBe("1");
@@ -52,10 +56,7 @@ describe("battleCLI countdown", () => {
 
     mod.startSelectionCountdown(2);
 
-    await timers.advanceTimersByTimeAsync(2000);
-    if (typeof timers.runOnlyPendingTimersAsync === "function") {
-      await timers.runOnlyPendingTimersAsync();
-    }
+    await advanceTimersAndFlushPending(timers, 2000);
 
     const stalledCalls = emitSpy.mock.calls.filter(([eventName]) => eventName === "statSelectionStalled");
     expect(stalledCalls).toHaveLength(1);
@@ -83,10 +84,7 @@ describe("battleCLI countdown", () => {
     expect(countdown.textContent).toContain("4");
     expect(countdown.style.color).toBe("rgb(255, 204, 0)");
 
-    await timers.advanceTimersByTimeAsync(4000);
-    if (typeof timers.runOnlyPendingTimersAsync === "function") {
-      await timers.runOnlyPendingTimersAsync();
-    }
+    await advanceTimersAndFlushPending(timers, 4000);
 
     expect(countdown.textContent).toBe("");
     expect(countdown.dataset.remainingTime).toBeUndefined();

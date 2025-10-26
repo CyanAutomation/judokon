@@ -190,9 +190,17 @@ export async function loadBattleCLI(options = {}) {
         marker.dataset.triggerCount = "0";
         document.body.appendChild(marker);
       }
-      const nextCount = Number(marker.dataset.triggerCount || "0") + 1;
-      marker.dataset.triggerCount = String(nextCount);
-      marker.textContent = `auto-select:${nextCount}`;
+      try {
+        const nextCount = Number(marker.dataset.triggerCount || "0") + 1;
+        marker.dataset.triggerCount = String(nextCount);
+        marker.textContent = `auto-select:${nextCount}`;
+      } catch (error) {
+        throw new Error(
+          `Failed to update auto-select marker: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      }
     });
     return {
       autoSelectStat
