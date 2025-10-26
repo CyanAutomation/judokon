@@ -50,6 +50,7 @@ describe("testModeUtils", () => {
     for (const invalidSeed of invalidSeeds) {
       setTestMode({ enabled: true, seed: invalidSeed });
       expect(getCurrentSeed()).toBe(1);
+      setTestMode(false);
     }
   });
 });
