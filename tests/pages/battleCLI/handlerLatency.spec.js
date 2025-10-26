@@ -74,7 +74,6 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     return {
       promiseSpy,
       scheduledTasks,
-      captureNext: () => captureNext,
       setCaptureNext(value) {
         captureNext = value;
       }
