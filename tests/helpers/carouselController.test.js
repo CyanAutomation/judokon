@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { createTestCarousel, interactions } from "../utils/componentTestUtils.js";
 
 if (typeof TouchEvent === "undefined") {
@@ -98,7 +99,7 @@ describe("CarouselController (Enhanced Natural Interactions)", () => {
   });
 
   it("restores scroll sync via fallback when scrollend is unavailable", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     try {
       carousel = createTestCarousel({
         clientWidth: 100,
@@ -128,12 +129,12 @@ describe("CarouselController (Enhanced Natural Interactions)", () => {
       expect(carousel.testApi.getPageCounter()).toBe("Page 2 of 3");
       expect(carousel.testApi.isRightDisabled()).toBe(false);
     } finally {
-      vi.useRealTimers();
+      timers.cleanup();
     }
   });
 
   it("cancels pending fallback timers on consecutive setPage calls", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const clearSpy = vi.spyOn(globalThis, "clearTimeout");
     try {
       carousel = createTestCarousel({ supportsScrollEnd: false });
@@ -145,7 +146,7 @@ describe("CarouselController (Enhanced Natural Interactions)", () => {
       expect(clearSpy).toHaveBeenCalled();
     } finally {
       clearSpy.mockRestore();
-      vi.useRealTimers();
+      timers.cleanup();
     }
   });
 

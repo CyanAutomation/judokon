@@ -248,6 +248,7 @@ describe("Battle CLI helpers", () => {
       expect(header.textContent).toBe("Round 0 Target: 9");
       expect(score.textContent).toBe("You: 0 Opponent: 0");
       expect(roundMessage.textContent).toBe("");
+      expect(announcement.textContent).toBe("");
       expect(verboseLog.textContent).toBe("");
       expect(document.getElementById("cli-root").dataset.round).toBe("0");
 
