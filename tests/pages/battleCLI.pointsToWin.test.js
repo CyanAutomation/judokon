@@ -1,43 +1,20 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
-import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
-function getListener(spy, type) {
-  const entry = spy.mock.calls.find(([eventType]) => eventType === type);
-  if (!entry) {
-    throw new Error(`Expected ${type} listener to be registered`);
+async function flushMicrotasks() {
+  for (let i = 0; i < 5; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.resolve();
   }
-  const listener = entry.find((param, index) => index > 0 && typeof param === "function");
-  if (!listener) {
-    throw new Error(`Expected ${type} listener to be a function`);
-  }
-  return listener;
+  await new Promise((resolve) => {
+    // Use zero-delay timeout to advance queued tasks without relying on fake timers
+    setTimeout(resolve, 0);
+  });
 }
 
 describe("battleCLI points select", () => {
-  let confirmSpy;
-  let clickConfirm;
-
-  beforeEach(() => {
-    const machine = { dispatch: vi.fn() };
-    debugHooks.exposeDebugState(
-      "getClassicBattleMachine",
-      vi.fn(() => machine)
-    );
-    window.__TEST_MACHINE__ = machine;
-    // Hook into modal confirm button for new modal-based confirmation
-    confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-    clickConfirm = async () => {
-      const btn = document.querySelector('[data-testid="confirm-points-to-win"]');
-      if (btn) btn.click();
-    };
-  });
-
   afterEach(async () => {
-    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
-    delete window.__TEST_MACHINE__;
-    confirmSpy.mockRestore();
     await cleanupBattleCLI();
   });
 
@@ -46,31 +23,89 @@ describe("battleCLI points select", () => {
     const mod = await loadBattleCLI();
     const root = mod.ensureCliDomForTest();
     const select = root.querySelector("#points-select");
-    const changeSpy = vi.spyOn(select, "addEventListener");
     await mod.init();
+    const header = document.getElementById("cli-round");
+    const roundMessage = document.getElementById("round-message");
+    const verboseLog = document.getElementById("cli-verbose-log");
+    const scoreLine = document.getElementById("cli-score");
+    const statsList = document.getElementById("cli-stats");
+
+    expect(root).toBeInstanceOf(HTMLElement);
+    expect(select).toBeInstanceOf(HTMLSelectElement);
+    expect(header).toBeInstanceOf(HTMLElement);
+    expect(roundMessage).toBeInstanceOf(HTMLElement);
+    expect(verboseLog).toBeInstanceOf(HTMLElement);
+    expect(scoreLine).toBeInstanceOf(HTMLElement);
+    expect(statsList).toBeInstanceOf(HTMLElement);
+
+    expect(select.value).toBe("5");
+
+    // Preload DOM with non-default state so resetMatch effects are observable
+    if (roundMessage) {
+      roundMessage.textContent = "Victory!";
+    }
+    if (verboseLog) {
+      verboseLog.textContent = "Previous log";
+    }
+    if (scoreLine) {
+      scoreLine.dataset.scorePlayer = "3";
+      scoreLine.dataset.scoreOpponent = "1";
+      scoreLine.textContent = "You: 3 Opponent: 1";
+    }
+    if (statsList) {
+      statsList.dataset.selectedIndex = "1";
+      const firstStat = statsList.querySelector(".cli-stat");
+      firstStat?.classList.add("selected");
+      firstStat?.setAttribute("aria-selected", "true");
+    }
+    if (root) {
+      root.dataset.round = "4";
+      root.dataset.target = "20";
+    }
+    if (header) {
+      header.textContent = "Round 4 Target: 20";
+    }
+
+    const initModule = await import("../../src/pages/battleCLI/init.js");
+    const resetSpy = vi.spyOn(initModule, "resetMatch");
     const { setPointsToWin, getPointsToWin } = await import(
       "../../src/helpers/battleEngineFacade.js"
     );
-    setPointsToWin.mockClear();
-
-    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+    expect(getPointsToWin()).toBe(5);
+    const initialCallCount = setPointsToWin.mock.calls.length;
 
     select.value = "10";
-    const changeHandler = getListener(changeSpy, "change");
-    const p = Promise.resolve().then(() => clickConfirm());
-    await changeHandler(new Event("change"));
-    await p;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
 
-    // Legacy confirm no longer used; ensure modal confirm occurred by side effects
-    expect(setPointsToWin).toHaveBeenCalledWith(10);
-    expect(getPointsToWin()).toBe(10);
-    expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
+    const confirmBtn = document.querySelector('[data-testid="confirm-points-to-win"]');
+    expect(confirmBtn).toBeInstanceOf(HTMLButtonElement);
+    confirmBtn?.click();
+
+    const resetResult = resetSpy.mock.results.at(-1)?.value;
+    if (resetResult && typeof resetResult.then === "function") {
+      await resetResult;
+    }
+    await flushMicrotasks();
+
     expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("10");
+    expect(select.value).toBe("10");
+    expect(header?.textContent).toBe("Round 0 Target: 10");
+    expect(root?.dataset.round).toBe("0");
+    expect(root?.dataset.target).toBe("10");
+    expect(roundMessage?.textContent).toBe("");
+    expect(verboseLog?.textContent).toBe("");
+    expect(scoreLine.dataset.scorePlayer).toBe("0");
+    expect(scoreLine.dataset.scoreOpponent).toBe("0");
+    expect(scoreLine.textContent).toBe("You: 0 Opponent: 0");
+    expect(statsList?.dataset.selectedIndex).toBeUndefined();
+    expect(Array.from(statsList?.querySelectorAll(".selected") || [])).toHaveLength(0);
+    expect(document.querySelector('[data-testid="confirm-points-to-win"]')).toBeNull();
 
-    setPointsToWin.mockClear();
-    await mod.restorePointsToWin();
-    expect(setPointsToWin).toHaveBeenCalledWith(10);
-    confirmSpy.mockRestore();
+    expect(setPointsToWin.mock.calls.length).toBe(initialCallCount + 1);
+    expect(setPointsToWin.mock.calls.at(-1)).toEqual([10]);
+    expect(getPointsToWin()).toBe(10);
+
+    resetSpy.mockRestore();
   });
 
   it.each([5, 10])("selecting %i updates engine state and header", async (target) => {
@@ -78,70 +113,132 @@ describe("battleCLI points select", () => {
     const mod = await loadBattleCLI();
     const root = mod.ensureCliDomForTest();
     const select = root.querySelector("#points-select");
-    const changeSpy = vi.spyOn(select, "addEventListener");
-    const domModule = await import("../../src/pages/battleCLI/dom.js");
-    const updateRoundHeaderSpy = vi.spyOn(domModule, "updateRoundHeader");
     await mod.init();
+    const header = document.getElementById("cli-round");
+    expect(root).toBeInstanceOf(HTMLElement);
+    expect(select).toBeInstanceOf(HTMLSelectElement);
+    expect(header).toBeInstanceOf(HTMLElement);
+    const initModule = await import("../../src/pages/battleCLI/init.js");
+    const resetSpy = vi.spyOn(initModule, "resetMatch");
     const { setPointsToWin, getPointsToWin } = await import(
       "../../src/helpers/battleEngineFacade.js"
     );
-    setPointsToWin.mockClear();
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const initialCallCount = setPointsToWin.mock.calls.length;
 
     select.value = String(target);
-    updateRoundHeaderSpy.mockClear();
-    const changeHandler = getListener(changeSpy, "change");
-    const p2 = Promise.resolve().then(() => clickConfirm());
-    await changeHandler(new Event("change"));
-    await p2;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+
+    const confirmBtn = document.querySelector('[data-testid="confirm-points-to-win"]');
+    expect(confirmBtn).toBeInstanceOf(HTMLButtonElement);
+    confirmBtn?.click();
+
+    const resetResult = resetSpy.mock.results.at(-1)?.value;
+    if (resetResult && typeof resetResult.then === "function") {
+      await resetResult;
+    }
+    await flushMicrotasks();
 
     expect(getPointsToWin()).toBe(target);
-    expect(setPointsToWin).toHaveBeenCalledWith(target);
-    const lastHeaderCall = updateRoundHeaderSpy.mock.calls.at(-1);
-    expect(lastHeaderCall).toBeDefined();
-    expect(lastHeaderCall).toEqual([0, target]);
-    confirmSpy.mockRestore();
-    updateRoundHeaderSpy.mockRestore();
+    expect(setPointsToWin.mock.calls.length).toBe(initialCallCount + 1);
+    expect(setPointsToWin.mock.calls.at(-1)).toEqual([target]);
+    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe(String(target));
+    expect(select.value).toBe(String(target));
+    expect(header?.textContent).toBe(`Round 0 Target: ${target}`);
+    expect(root?.dataset.target).toBe(String(target));
+
+    resetSpy.mockRestore();
   });
 
-  it("keeps target after toggling verbose", async () => {
+  it("reverts selection when confirmation is cancelled", async () => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
     const mod = await loadBattleCLI();
     const root = mod.ensureCliDomForTest();
     const select = root.querySelector("#points-select");
-    const checkbox = root.querySelector("#verbose-toggle");
-    const selectSpy = vi.spyOn(select, "addEventListener");
-    const checkboxSpy = vi.spyOn(checkbox, "addEventListener");
-    const domModule = await import("../../src/pages/battleCLI/dom.js");
-    const updateRoundHeaderSpy = vi.spyOn(domModule, "updateRoundHeader");
     await mod.init();
+    const header = document.getElementById("cli-round");
+    expect(root).toBeInstanceOf(HTMLElement);
+    expect(select).toBeInstanceOf(HTMLSelectElement);
+    expect(header).toBeInstanceOf(HTMLElement);
+
+    const startingHeader = header.textContent;
     const { setPointsToWin, getPointsToWin } = await import(
       "../../src/helpers/battleEngineFacade.js"
     );
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const initialCallCount = setPointsToWin.mock.calls.length;
+    const initModule = await import("../../src/pages/battleCLI/init.js");
+    const resetSpy = vi.spyOn(initModule, "resetMatch");
 
-    const selectChange = getListener(selectSpy, "change");
-    select.value = "10";
-    const p3 = Promise.resolve().then(() => clickConfirm());
-    await selectChange(new Event("change"));
-    await p3;
-
+    expect(select.value).toBe("10");
     expect(getPointsToWin()).toBe(10);
 
-    setPointsToWin.mockClear();
-    updateRoundHeaderSpy.mockClear();
-    const checkboxChange = getListener(checkboxSpy, "change");
+    select.value = "3";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
 
-    checkbox.checked = true;
-    await checkboxChange(new Event("change"));
-    checkbox.checked = false;
-    await checkboxChange(new Event("change"));
+    const cancelBtn = document.querySelector('[data-testid="cancel-points-to-win"]');
+    expect(cancelBtn).toBeInstanceOf(HTMLButtonElement);
+    cancelBtn?.click();
 
-    expect(setPointsToWin.mock.calls.map(([value]) => value)).toEqual([10, 10]);
-    expect(updateRoundHeaderSpy.mock.calls.every(([, value]) => value === 10)).toBe(true);
-    expect(updateRoundHeaderSpy.mock.calls.length).toBeGreaterThan(0);
+    await flushMicrotasks();
 
-    confirmSpy.mockRestore();
-    updateRoundHeaderSpy.mockRestore();
+    expect(document.querySelector('[data-testid="cancel-points-to-win"]')).toBeNull();
+    expect(select.value).toBe("10");
+    expect(header.textContent).toBe(startingHeader);
+    expect(root.dataset.target).toBe("10");
+    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("10");
+    expect(getPointsToWin()).toBe(10);
+    expect(setPointsToWin.mock.calls.length).toBe(initialCallCount);
+    expect(resetSpy).not.toHaveBeenCalled();
+
+    resetSpy.mockRestore();
+  });
+
+  it("keeps target after toggling verbose", async () => {
+    localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
+    const mod = await loadBattleCLI();
+    const root = mod.ensureCliDomForTest();
+    const select = root.querySelector("#points-select");
+    await mod.init();
+    const header = document.getElementById("cli-round");
+    expect(root).toBeInstanceOf(HTMLElement);
+    expect(select).toBeInstanceOf(HTMLSelectElement);
+    expect(header).toBeInstanceOf(HTMLElement);
+
+    const initModule = await import("../../src/pages/battleCLI/init.js");
+    const resetSpy = vi.spyOn(initModule, "resetMatch");
+    const { getPointsToWin, setPointsToWin } = await import(
+      "../../src/helpers/battleEngineFacade.js"
+    );
+    const initialCallCount = setPointsToWin.mock.calls.length;
+
+    select.value = "10";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    const confirmBtn = document.querySelector('[data-testid="confirm-points-to-win"]');
+    expect(confirmBtn).toBeInstanceOf(HTMLButtonElement);
+    confirmBtn?.click();
+
+    const resetResult = resetSpy.mock.results.at(-1)?.value;
+    if (resetResult && typeof resetResult.then === "function") {
+      await resetResult;
+    }
+    await flushMicrotasks();
+
+    expect(getPointsToWin()).toBe(10);
+    expect(select.value).toBe("10");
+    expect(header?.textContent).toBe("Round 0 Target: 10");
+    expect(root?.dataset.target).toBe("10");
+    expect(setPointsToWin.mock.calls.length).toBe(initialCallCount + 1);
+    expect(setPointsToWin.mock.calls.at(-1)).toEqual([10]);
+
+    const { toggleVerbose } = await initModule.setupFlags();
+    await toggleVerbose(true);
+    await toggleVerbose(false);
+    await flushMicrotasks();
+
+    expect(select.value).toBe("10");
+    expect(header?.textContent).toBe("Round 0 Target: 10");
+    expect(root?.dataset.target).toBe("10");
+    expect(getPointsToWin()).toBe(10);
+
+    resetSpy.mockRestore();
   });
 });
