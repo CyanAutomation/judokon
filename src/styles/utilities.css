@@ -8,6 +8,10 @@
   display: none;
 }
 
+/*
+ * Flexbox utilities
+ * Use these helpers to compose layout alignment without bespoke styles.
+ */
 .u-flex {
   display: flex;
 }

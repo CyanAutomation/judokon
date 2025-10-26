@@ -44,11 +44,27 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     soundToggle,
     motionToggle,
     displayRadios,
+    headerThemeRadios,
     typewriterToggle,
     tooltipsToggle,
     cardOfTheDayToggle,
     fullNavigationMapToggle
   } = controls;
+  const displayRadioArray = displayRadios ? Array.from(displayRadios) : [];
+  const headerRadioArray = headerThemeRadios ? Array.from(headerThemeRadios) : [];
+  const syncHeaderRadios = () => {
+    if (!headerRadioArray.length) {
+      return;
+    }
+    const selectedDisplay = displayRadioArray.find((radio) => radio.checked);
+    const fallbackHeader = headerRadioArray.find((radio) => radio.checked) ?? headerRadioArray[0];
+    const targetValue = (selectedDisplay ?? fallbackHeader)?.value;
+    headerRadioArray.forEach((radio, index) => {
+      const isMatch = targetValue ? radio.value === targetValue : index === 0;
+      radio.checked = isMatch;
+      radio.tabIndex = isMatch ? 0 : -1;
+    });
+  };
   soundToggle?.addEventListener("change", (e) => {
     const prev = !soundToggle.checked;
     Promise.resolve(
@@ -96,6 +112,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
         displayRadios.forEach((r) => {
           r.tabIndex = r === radio ? 0 : -1;
         });
+        syncHeaderRadios();
         withViewTransition(() => {
           applyDisplayMode(mode);
         });
@@ -112,6 +129,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
               withViewTransition(() => {
                 applyDisplayMode(previous);
               });
+              syncHeaderRadios();
             },
             e.target
           )
@@ -119,8 +137,39 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
           .then(() => {
             const label = mode.charAt(0).toUpperCase() + mode.slice(1);
             showSnackbar(`${label} mode enabled`);
+            syncHeaderRadios();
           })
           .catch(() => {});
+      });
+    });
+  }
+  if (headerRadioArray.length) {
+    headerRadioArray.forEach((headerRadio) => {
+      headerRadio.addEventListener("change", () => {
+        if (!headerRadio.checked) return;
+        const matchingDisplay = displayRadioArray.find((radio) => radio.value === headerRadio.value);
+        if (matchingDisplay) {
+          if (!matchingDisplay.checked) {
+            matchingDisplay.checked = true;
+            matchingDisplay.dispatchEvent(new Event("change", { bubbles: true }));
+          } else {
+            syncHeaderRadios();
+          }
+          return;
+        }
+        withViewTransition(() => {
+          applyDisplayMode(headerRadio.value);
+        });
+        Promise.resolve(
+          handleUpdate(
+            "displayMode",
+            headerRadio.value,
+            () => {
+              syncHeaderRadios();
+            },
+            headerRadio
+          )
+        ).catch(() => {});
       });
     });
   }
@@ -194,4 +243,5 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       })
       .catch(() => {});
   });
+  syncHeaderRadios();
 }
