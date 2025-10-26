@@ -93,6 +93,8 @@ let settingsSchemaPromise;
  * 2. When provided, assign it to the internal importer; otherwise restore the default importer.
  * 3. Tests can inject a custom importer to simulate failures.
  *
+ * @internal
+ *
  * @param {() => Promise<{ default: object }>} [loader] Custom importer function.
  * @returns {void}
  */
@@ -129,8 +131,13 @@ export async function getSettingsSchema() {
     })();
 
     settingsSchemaPromise = loadPromise.catch((error) => {
-      debugLog("Failed to load settings schema; clearing cached promise for retry.", error);
-      settingsSchemaPromise = undefined;
+      debugLog(
+        "Failed to load settings schema; clearing cached promise for retry.",
+        error
+      );
+      setTimeout(() => {
+        settingsSchemaPromise = undefined;
+      }, 0);
       throw error;
     });
   }
