@@ -34,7 +34,7 @@ export class DebounceError extends Error {
  *   setTimeout?: typeof setTimeout,
  *   clearTimeout?: typeof clearTimeout
  * }} [options]
- * @returns {((...args: Parameters<F>) => Promise<ReturnType<F>>)&{flush: () => void}} Debounced function.
+ * @returns {((...args: Parameters<F>) => Promise<ReturnType<F>>)&{flush: () => void, cancel: () => void}} Debounced function.
  */
 /**
  * Create a debounced wrapper that returns a promise and supports flushing.
@@ -72,28 +72,33 @@ export function debounce(
 
   const run = () => {
     if (!pending) return;
-    const { resolve, reject, args } = pending;
+    const current = pending;
     pending = undefined;
     try {
-      resolve(fn(...args));
+      current.resolve(fn(...current.args));
     } catch (error) {
-      reject(error);
+      current.reject(error);
     }
+  };
+
+  const cancelPending = () => {
+    if (!pending) return;
+    const current = pending;
+    pending = undefined;
+    const error = new DebounceError();
+    if (suppressRejection) {
+      current.resolve();
+    } else {
+      current.reject(error);
+    }
+    onCancel?.(error);
   };
 
   const debounced = /** @type {any} */ (
     (...args) =>
       new Promise((resolve, reject) => {
         clear(timer);
-        if (pending) {
-          const error = new DebounceError();
-          if (suppressRejection) {
-            pending.resolve();
-          } else {
-            pending.reject(error);
-          }
-          onCancel?.(error);
-        }
+        cancelPending();
         pending = { resolve, reject, args };
         timer = set(() => {
           run();
@@ -103,7 +108,14 @@ export function debounce(
 
   debounced.flush = () => {
     clear(timer);
+    timer = undefined;
     run();
+  };
+
+  debounced.cancel = () => {
+    clear(timer);
+    timer = undefined;
+    cancelPending();
   };
 
   return debounced;
