@@ -92,55 +92,28 @@ export class ScoreboardView {
    */
   updateTimer(seconds) {
     if (!this.timerEl) return;
-    const doc = this.timerEl.ownerDocument || (typeof document !== "undefined" ? document : null);
     let label = this.timerEl.querySelector('[data-part="label"]');
     let value = this.timerEl.querySelector('[data-part="value"]');
     
-    // If we need to rebuild, ensure a clean slate with no text nodes
-    if ((!label || !value) && doc?.createElement) {
-      // Remove all child nodes to ensure clean structure
-      while (this.timerEl.firstChild) {
-        this.timerEl.removeChild(this.timerEl.firstChild);
-      }
-      label = doc.createElement("span");
-      label.dataset.part = "label";
-      value = doc.createElement("span");
-      value.dataset.part = "value";
-      this.timerEl.appendChild(label);
-      this.timerEl.appendChild(doc.createTextNode(" "));
-      this.timerEl.appendChild(value);
-    }
-    
     if (typeof seconds === "number" && Number.isFinite(seconds)) {
       const clamped = Math.max(0, seconds);
-      if (label) {
-        label.textContent = "Time Left:";
+      
+      // If we don't have the expected structure, rebuild it
+      if (!label || !value) {
+        this.timerEl.innerHTML = `<span data-part="label">Time Left:</span> <span data-part="value">${clamped}s</span>`;
+        return;
       }
-      if (value) {
-        value.textContent = `${clamped}s`;
-      } else {
-        this.timerEl.textContent = `Time Left: ${clamped}s`;
-      }
-      const separator = label?.nextSibling;
-      if (label && value) {
-        if (!separator || separator.nodeType !== 3) {
-          this.timerEl.insertBefore((doc || document).createTextNode(" "), value);
-        } else {
-          separator.textContent = " ";
-        }
-      }
+      
+      // Update existing structure
+      label.textContent = "Time Left:";
+      value.textContent = `${clamped}s`;
     } else {
-      if (label) {
+      // Clear the display
+      if (label && value) {
         label.textContent = "";
-        const separator = label.nextSibling;
-        if (separator && separator.nodeType === 3) {
-          this.timerEl.removeChild(separator);
-        }
-      }
-      if (value) {
         value.textContent = "";
       } else {
-        this.timerEl.textContent = "";
+        this.timerEl.innerHTML = "";
       }
     }
   }

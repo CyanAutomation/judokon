@@ -1285,14 +1285,9 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
     expect(document.getElementById("round-message")?.textContent).toBe("Fight!");
     expect(document.getElementById("round-counter")?.textContent).toBe("Round 5");
-    
-    // Debug: Check the parent containers
-    const timerEl = document.getElementById("next-round-timer");
-    const metricsContainer = timerEl?.parentElement;
-    console.log("metricsContainer childNodes.length:", metricsContainer?.childNodes.length);
-    console.log("metricsContainer.textContent:", JSON.stringify(metricsContainer?.textContent));
-    
-    expect(document.getElementById("next-round-timer")?.textContent).toBe("Time Left: 7s");
+    expect(
+      document.getElementById("next-round-timer")?.textContent?.replace(/\s+/g, " ").trim()
+    ).toBe("Time Left: 7s");
     const scoreDisplay = document.getElementById("score-display");
     expect(scoreDisplay?.textContent).toContain("You: 2");
     expect(scoreDisplay?.textContent).toContain("Opponent: 1");

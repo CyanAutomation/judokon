@@ -215,6 +215,10 @@
   text-align: center;
 }
 
+.battle-status-header #test-mode-banner[hidden] {
+  display: none;
+}
+
 .stat-selection {
   display: flex;
   flex-direction: column;

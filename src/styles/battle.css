@@ -118,6 +118,10 @@
   font-weight: bold;
   margin-top: var(--space-sm);
 }
+
+.test-mode-banner[hidden] {
+  display: none;
+}
 /* Disable hover enlargement for battle screen */
 #battle-area .judoka-card:hover,
 #battle-area .judoka-card:focus-visible {
