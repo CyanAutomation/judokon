@@ -67,14 +67,20 @@
   --focus-outline-color: var(--modern-color-focus-ring);
   --button-bg: var(--modern-color-primary);
   --button-hover-bg: var(--modern-color-primary-soft);
+  --button-active-bg: #1d4ed8;
   --button-active-bg: color-mix(in srgb, var(--modern-color-primary) 82%, black 18%);
   --button-text-color: var(--modern-color-text-inverted);
+  --button-disabled-bg: #c4c8cf;
   --button-disabled-bg: color-mix(in srgb, var(--modern-color-text-muted) 32%, var(--modern-color-surface) 68%);
   --button-disabled-pattern: none;
+  --switch-off-bg: #cbd2d8;
   --switch-off-bg: color-mix(in srgb, var(--modern-color-text-muted) 28%, var(--modern-color-surface) 72%);
+  --switch-on-bg: #6692f1;
   --switch-on-bg: color-mix(in srgb, var(--modern-color-primary) 70%, white 30%);
+  --color-slider-dot: rgba(15, 23, 42, 0.2);
   --color-slider-dot: color-mix(in srgb, var(--modern-color-text) 20%, transparent);
   --color-slider-active: var(--modern-color-primary);
+  --color-border-strong: rgba(15, 23, 42, 0.12);
   --color-border-strong: color-mix(in srgb, var(--modern-color-text) 12%, transparent);
   --shadow-base: var(--modern-shadow-sm);
   --shadow-hover: var(--modern-shadow-md);
@@ -110,17 +116,21 @@
   --modern-color-focus-ring: rgba(96, 165, 250, 0.6);
   --shadow-base: 0 14px 35px rgba(2, 6, 23, 0.45);
   --shadow-hover: 0 22px 55px rgba(2, 6, 23, 0.6);
+  --button-disabled-bg: #454f61;
   --button-disabled-bg: color-mix(in srgb, var(--modern-color-text-muted) 40%, var(--modern-color-surface) 60%);
+  --switch-off-bg: #394357;
   --switch-off-bg: color-mix(in srgb, var(--modern-color-text-muted) 32%, var(--modern-color-background) 68%);
+  --switch-on-bg: #2e62b7;
   --switch-on-bg: color-mix(in srgb, var(--modern-color-primary) 70%, var(--modern-color-surface) 30%);
+  --color-slider-dot: rgba(226, 232, 240, 0.35);
   --color-slider-dot: color-mix(in srgb, var(--modern-color-text) 35%, transparent);
 }
 
 .theme-modern[data-theme="retro"],
 .theme-modern [data-theme="retro"] {
   --modern-color-background: #05140d;
-  --modern-color-surface: #05140d;
-  --modern-color-surface-muted: #05140d;
+  --modern-color-surface: #061a0f;
+  --modern-color-surface-muted: #072010;
   --modern-color-border: #4ae38f;
   --modern-color-primary: #9dff8a;
   --modern-color-primary-soft: #86f071;
@@ -132,7 +142,9 @@
   --modern-color-focus-ring: rgba(77, 227, 143, 0.6);
   --shadow-base: none;
   --shadow-hover: none;
+  --button-hover-bg: #76bf67;
   --button-hover-bg: color-mix(in srgb, var(--modern-color-primary) 75%, black 25%);
+  --switch-off-bg: #203e23;
   --switch-off-bg: color-mix(in srgb, var(--modern-color-text) 18%, var(--modern-color-background) 82%);
   --switch-on-bg: var(--modern-color-primary);
   --color-slider-dot: var(--modern-color-text);
