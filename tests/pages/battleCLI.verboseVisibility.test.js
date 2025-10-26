@@ -29,9 +29,7 @@ describe("battleCLI verbose mode visibility", () => {
     expect(section.getAttribute("aria-expanded")).toBe("false");
     expect(indicator.style.display).toBe("none");
 
-    checkbox.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+    checkbox.click();
 
     expect(checkbox.checked).toBe(true);
     expect(section.hidden).toBe(false);
