@@ -168,7 +168,15 @@ export async function loadBattleCLI(options = {}) {
     SNACKBAR_FADE_MS: 2500
   }));
   vi.doMock("../../../src/helpers/classicBattle/autoSelectStat.js", () => ({
-    autoSelectStat: vi.fn()
+    autoSelectStat: vi.fn(async () => {
+      const countdown = document.getElementById("cli-countdown");
+      if (countdown) {
+        countdown.dataset.autoSelected = "true";
+        if (!countdown.textContent || /Time remaining:/i.test(countdown.textContent)) {
+          countdown.textContent = "Auto-selected";
+        }
+      }
+    })
   }));
   vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
     skipRoundCooldownIfEnabled: vi.fn(),
@@ -198,6 +206,10 @@ export async function loadBattleCLI(options = {}) {
   cli.ensureCliDomForTest({ reset: true });
   if (html) {
     document.body.insertAdjacentHTML("beforeend", html);
+  }
+  const countdown = document.getElementById("cli-countdown");
+  if (countdown) {
+    delete countdown.dataset.autoSelected;
   }
   return cli;
 }
