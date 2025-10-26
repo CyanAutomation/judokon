@@ -162,52 +162,80 @@ describe("createFlagImage", () => {
     expect(img?.getAttribute("aria-label")).toBe("Unknown flag");
   });
 
-  it("falls back to the placeholder source a single time when the image errors", () => {
+  it("falls back to the placeholder source a single time when the image errors", async () => {
+    const originalSetAttribute = HTMLImageElement.prototype.setAttribute;
+    const setAttributeSpy = vi.spyOn(HTMLImageElement.prototype, "setAttribute");
     const addListenerSpy = vi.spyOn(HTMLImageElement.prototype, "addEventListener");
-    const removeListenerSpy = vi.spyOn(HTMLImageElement.prototype, "removeEventListener");
 
-    const flagImage = createFlagImage(flagUrl, "France");
-    const img = flagImage.querySelector("img");
-    expect(img).toBeInstanceOf(HTMLImageElement);
+    setAttributeSpy.mockImplementation(function mockSetAttribute(name, value) {
+      originalSetAttribute.call(this, name, value);
+      if (name === "src" && value === flagUrl) {
+        queueMicrotask(() => {
+          this.dispatchEvent(new Event("error"));
+        });
+      }
+    });
 
-    const errorListenerCall = addListenerSpy.mock.calls.find(([eventName]) => eventName === "error");
-    expect(errorListenerCall?.[2]).toEqual({ once: true });
+    try {
+      const flagImage = createFlagImage(flagUrl, "France");
+      const img = flagImage.querySelector("img");
+      expect(img).toBeInstanceOf(HTMLImageElement);
 
-    const errorHandler = errorListenerCall?.[1];
-    expect(typeof errorHandler).toBe("function");
+      const errorListenerCall = addListenerSpy.mock.calls.find(([eventName]) => eventName === "error");
+      expect(errorListenerCall?.[2]).toEqual({ once: true });
 
-    img?.dispatchEvent(new Event("error"));
+      await new Promise((resolve) => {
+        img?.addEventListener("error", resolve, { once: true });
+      });
 
-    expect(removeListenerSpy).toHaveBeenCalledWith("error", errorHandler);
-    expect(img?.getAttribute("src")).toBe("../assets/countryFlags/placeholder-flag.png");
+      expect(img?.getAttribute("src")).toBe("../assets/countryFlags/placeholder-flag.png");
 
-    img?.dispatchEvent(new Event("error"));
-    expect(img?.getAttribute("src")).toBe("../assets/countryFlags/placeholder-flag.png");
+      const placeholderUpdates = setAttributeSpy.mock.calls.filter(
+        ([attribute, value]) => attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
+      );
+      expect(placeholderUpdates).toHaveLength(1);
+
+      img?.setAttribute("src", flagUrl);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const placeholderUpdatesAfterRetry = setAttributeSpy.mock.calls.filter(
+        ([attribute, value]) => attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
+      );
+      expect(placeholderUpdatesAfterRetry).toHaveLength(1);
+    } finally {
+      setAttributeSpy.mockRestore();
+      addListenerSpy.mockRestore();
+    }
   });
 
-  it("does not recurse when the placeholder source is unavailable", () => {
-    const addListenerSpy = vi.spyOn(HTMLImageElement.prototype, "addEventListener");
-    const removeListenerSpy = vi.spyOn(HTMLImageElement.prototype, "removeEventListener");
+  it("does not recurse when the placeholder source is unavailable", async () => {
+    const originalSetAttribute = HTMLImageElement.prototype.setAttribute;
+    const setAttributeSpy = vi.spyOn(HTMLImageElement.prototype, "setAttribute");
 
-    const flagImage = createFlagImage(null, "France");
-    const img = flagImage.querySelector("img");
-    expect(img).toBeInstanceOf(HTMLImageElement);
+    setAttributeSpy.mockImplementation(function mockSetAttribute(name, value) {
+      originalSetAttribute.call(this, name, value);
+      if (name === "src" && value === "../assets/countryFlags/placeholder-flag.png") {
+        queueMicrotask(() => {
+          this.dispatchEvent(new Event("error"));
+        });
+      }
+    });
 
-    const errorListenerCall = addListenerSpy.mock.calls.find(([eventName]) => eventName === "error");
-    const errorHandler = errorListenerCall?.[1];
-    expect(typeof errorHandler).toBe("function");
+    try {
+      const flagImage = createFlagImage(null, "France");
+      const img = flagImage.querySelector("img");
+      expect(img).toBeInstanceOf(HTMLImageElement);
 
-    if (!img || !errorHandler) {
-      throw new Error("Missing error handler or image element");
+      await new Promise((resolve) => {
+        img?.addEventListener("error", resolve, { once: true });
+      });
+
+      const srcUpdates = setAttributeSpy.mock.calls.filter(
+        ([attribute, value]) => attribute === "src" && value === "../assets/countryFlags/placeholder-flag.png"
+      );
+      expect(srcUpdates).toHaveLength(1);
+    } finally {
+      setAttributeSpy.mockRestore();
     }
-
-    const setAttributeSpy = vi.spyOn(img, "setAttribute");
-
-    errorHandler.call(img, new Event("error"));
-
-    expect(removeListenerSpy).toHaveBeenCalledWith("error", errorHandler);
-
-    const srcUpdates = setAttributeSpy.mock.calls.filter(([attribute]) => attribute === "src");
-    expect(srcUpdates.length).toBe(0);
   });
 });

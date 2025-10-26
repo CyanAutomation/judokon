@@ -156,8 +156,6 @@ export function createFlagImage(finalFlagUrl, countryName) {
   flagImg.setAttribute("loading", "lazy");
 
   const handleFlagError = () => {
-    flagImg.removeEventListener("error", handleFlagError);
-
     const currentSrc = flagImg.getAttribute("src");
     if (currentSrc === PLACEHOLDER_FLAG_URL) {
       return;
