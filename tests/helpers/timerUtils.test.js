@@ -19,4 +19,45 @@ describe("timerUtils", () => {
     expect(val1).toBe(20);
     expect(val2).toBe(20);
   });
+
+  it("delays fallback expiration for fractional durations", async () => {
+    const { createCountdownTimer } = await import("../../src/helpers/timerUtils.js");
+
+    const onTick = vi.fn();
+    const onExpired = vi.fn();
+    const cancel = vi.fn();
+    let fallbackDelay = 0;
+    let fallbackCallback;
+    const scheduler = {
+      setTimeout: vi.fn((cb, delay) => {
+        fallbackCallback = cb;
+        fallbackDelay = delay;
+        return "fallback";
+      }),
+      clearTimeout: vi.fn()
+    };
+
+    const timer = createCountdownTimer(0.5, {
+      onTick,
+      onExpired,
+      onSecondTick: () => 99,
+      cancel,
+      scheduler
+    });
+
+    timer.start();
+
+    expect(onTick).toHaveBeenCalledWith(0.5);
+    expect(fallbackDelay).toBe(500);
+    expect(typeof fallbackCallback).toBe("function");
+    expect(onExpired).not.toHaveBeenCalled();
+
+    await fallbackCallback();
+
+    expect(onTick).toHaveBeenLastCalledWith(0);
+    expect(onExpired).toHaveBeenCalledTimes(1);
+    expect(cancel).toHaveBeenCalledWith(99);
+
+    timer.stop();
+  });
 });
