@@ -22,6 +22,7 @@ export function getItem(key) {
         return JSON.parse(raw);
       }
       // When `localStorage` has no value, fall back to the in-memory store.
+      return memoryStore.get(key) ?? null;
     }
   } catch (err) {
     debugLog("storage.getItem failed", err);

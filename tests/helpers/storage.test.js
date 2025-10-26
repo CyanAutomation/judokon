@@ -22,9 +22,25 @@ describe("storage fallback behavior", () => {
     vi.spyOn(window.localStorage, "setItem").mockImplementation(() => {
       throw new Error("quota exceeded");
     });
-    vi.spyOn(window.localStorage, "getItem").mockReturnValue(null);
 
     setItem(key, value);
+
+    expect(getItem(key)).toEqual(value);
+  });
+
+  it("falls back to memory when localStorage returns null after a prior failure", () => {
+    const key = "storage:test:fallback-read";
+    const value = { message: "memory" };
+    usedKeys.add(key);
+
+    const setSpy = vi.spyOn(window.localStorage, "setItem");
+    setSpy.mockImplementationOnce(() => {
+      throw new Error("quota exceeded");
+    });
+
+    setItem(key, value);
+
+    setSpy.mockImplementation(() => {});
 
     expect(getItem(key)).toEqual(value);
   });
