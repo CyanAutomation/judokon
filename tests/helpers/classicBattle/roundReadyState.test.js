@@ -5,7 +5,6 @@ import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 describe("roundReadyState", () => {
   let timers;
   let originalDebugReader;
-  let stdoutSpy;
   let dispatchBattleEvent;
   let resetDispatchHistory;
   let setReadyDispatchedForCurrentCooldown;
@@ -16,7 +15,6 @@ describe("roundReadyState", () => {
   beforeEach(async () => {
     vi.resetModules();
     timers = useCanonicalTimers();
-    stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     originalDebugReader = globalThis.__classicBattleDebugRead;
 
     ({ dispatchBattleEvent, resetDispatchHistory } = await import(
@@ -38,7 +36,6 @@ describe("roundReadyState", () => {
     resetDispatchHistory();
     roundStore.reset();
     timers.cleanup();
-    stdoutSpy.mockRestore();
     if (originalDebugReader) {
       globalThis.__classicBattleDebugRead = originalDebugReader;
     } else {
