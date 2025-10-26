@@ -12,6 +12,7 @@ import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundStore } from "./roundStore.js";
+import { getScheduler } from "../scheduler.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -287,9 +288,55 @@ function clearNextRoundTimerFallback() {
         if (separator && separator.nodeType === 3) {
           timerEl.removeChild(separator);
         }
+        if (!valueSpan && !labelSpan) {
+          timerEl.textContent = "";
+        }
       }
     }
   } catch {}
+}
+
+function collectSelectionSchedulers(store) {
+  const candidates = [];
+  if (store && typeof store === "object") {
+    const {
+      selectionTimeoutScheduler,
+      statTimeoutScheduler,
+      autoSelectScheduler
+    } = /** @type {Record<string, any>} */ (store);
+    if (selectionTimeoutScheduler) candidates.push(selectionTimeoutScheduler);
+    if (statTimeoutScheduler) candidates.push(statTimeoutScheduler);
+    if (autoSelectScheduler) candidates.push(autoSelectScheduler);
+  }
+  try {
+    const active = getScheduler();
+    if (active) candidates.push(active);
+  } catch {}
+  return candidates;
+}
+
+function clearTimerHandle(handle, schedulers) {
+  if (!handle) {
+    return;
+  }
+
+  let schedulerProvidesClear = false;
+
+  for (const scheduler of schedulers) {
+    if (scheduler && typeof scheduler.clearTimeout === "function") {
+      schedulerProvidesClear = true;
+      try {
+        scheduler.clearTimeout(handle);
+        return;
+      } catch {}
+    }
+  }
+
+  if (!schedulerProvidesClear && typeof clearTimeout === "function") {
+    try {
+      clearTimeout(handle);
+    } catch {}
+  }
 }
 
 /**
@@ -334,14 +381,16 @@ export function cleanupTimers(store) {
     }
   } catch {}
   clearNextRoundTimerFallback();
-  try {
-    clearTimeout(store.statTimeoutId);
-  } catch {}
+  const schedulers = collectSelectionSchedulers(store);
+  clearTimerHandle(store?.statTimeoutId, schedulers);
   store.statTimeoutId = null;
-  try {
-    clearTimeout(store.autoSelectId);
-  } catch {}
+  clearTimerHandle(store?.autoSelectId, schedulers);
   store.autoSelectId = null;
+  if (store && typeof store === "object") {
+    if ("selectionTimeoutScheduler" in store) store.selectionTimeoutScheduler = null;
+    if ("statTimeoutScheduler" in store) store.statTimeoutScheduler = null;
+    if ("autoSelectScheduler" in store) store.autoSelectScheduler = null;
+  }
 }
 
 /**

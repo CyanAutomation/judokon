@@ -70,6 +70,11 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  */
 export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
   const scheduler = getScheduler();
+  if (store && typeof store === "object") {
+    store.selectionTimeoutScheduler = scheduler;
+    store.statTimeoutScheduler = scheduler;
+    store.autoSelectScheduler = scheduler;
+  }
   store.autoSelectId = scheduler.setTimeout(() => {
     if (store?.selectionMade) return;
 
