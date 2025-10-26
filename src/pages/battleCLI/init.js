@@ -670,6 +670,12 @@ export async function resetMatch() {
   updateScoreLine();
   setRoundMessage("");
   try {
+    const announcementEl = byId("match-announcement");
+    if (announcementEl) {
+      announcementEl.textContent = "";
+    }
+  } catch {}
+  try {
     const list = document.getElementById("cli-stats");
     list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
     list?.querySelectorAll(".cli-stat").forEach((el) => el.setAttribute("aria-selected", "false"));

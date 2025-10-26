@@ -3,45 +3,128 @@ import { measureDebugFlagToggle } from "./debugFlagPerformance.js";
 let enabledState = false;
 const DEFAULT_SELECTORS = ["body *:not(script):not(style)"];
 
+let pendingTaskCancel = null;
+let pendingResolve = null;
+let pendingPromise = Promise.resolve();
+
+function toSelectorList(selectors) {
+  if (Array.isArray(selectors)) {
+    return selectors.slice();
+  }
+  return DEFAULT_SELECTORS.slice();
+}
+
+function clearOutlines() {
+  document
+    .querySelectorAll(".layout-debug-outline")
+    .forEach((el) => el.classList.remove("layout-debug-outline"));
+}
+
+function applyOutlines(selectorList) {
+  selectorList.forEach((sel) => {
+    document.querySelectorAll(sel).forEach((el) => {
+      if (el.offsetParent !== null) {
+        el.classList.add("layout-debug-outline");
+      }
+    });
+  });
+}
+
+function cancelPendingTask() {
+  if (typeof pendingTaskCancel === "function") {
+    pendingTaskCancel();
+  }
+  pendingTaskCancel = null;
+  if (typeof pendingResolve === "function") {
+    pendingResolve();
+  }
+  pendingResolve = null;
+}
+
+function scheduleOutlineRender(selectorList) {
+  cancelPendingTask();
+  pendingPromise = new Promise((resolve) => {
+    pendingResolve = resolve;
+
+    const run = () => {
+      pendingTaskCancel = null;
+      pendingResolve = null;
+      measureDebugFlagToggle(
+        "layoutDebugPanel",
+        () => {
+          clearOutlines();
+          applyOutlines(selectorList);
+        },
+        { selectors: selectorList.length }
+      );
+      resolve();
+    };
+
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(run);
+      pendingTaskCancel = () => cancelIdleCallback(id);
+      return;
+    }
+
+    if (typeof requestAnimationFrame === "function") {
+      const id = requestAnimationFrame(run);
+      pendingTaskCancel = () => cancelAnimationFrame(id);
+      return;
+    }
+
+    const timeout = setTimeout(run, 16);
+    pendingTaskCancel = () => clearTimeout(timeout);
+  });
+  return pendingPromise;
+}
+
 /**
  * Toggles the visibility of a global layout debug panel, which outlines
  * visible DOM elements to aid in debugging layout issues.
  *
- * @summary This function applies or removes a CSS class to elements,
- * causing them to display a visual border, useful for inspecting page layout.
+ * @summary Applies or removes a CSS class to elements, highlighting the layout,
+ * and defers heavy DOM scans to an idle/animation frame to reduce jank.
  *
  * @pseudocode
- * 1. If `document.body` is not available (e.g., in a non-browser environment), exit early.
- * 2. Update the internal `enabledState` to reflect the new `enabled` value.
- * 3. Remove the `layout-debug-outline` class from all elements that currently have it, clearing any previous outlines.
- * 4. If `enabledState` is `true`:
- *    a. Iterate through each selector in the `selectors` array (defaulting to `DEFAULT_SELECTORS`).
- *    b. For each selector, query all matching elements in the document.
- *    c. For each matching element, if it is currently visible (i.e., `offsetParent` is not `null`), add the `layout-debug-outline` class to it.
+ * 1. Abort early when `document.body` is unavailable.
+ * 2. Update internal state and cancel any pending outline work.
+ * 3. When disabling, clear outlines immediately and resolve pending work.
+ * 4. When enabling, enqueue outline application on an idle/animation frame.
+ * 5. Return a promise that resolves once the outlines have been processed.
  *
- * @param {boolean} enabled - If `true`, enables the debug panel and outlines elements; if `false`, disables it and removes outlines.
- * @param {string[]} [selectors=DEFAULT_SELECTORS] - Optional. An array of CSS selectors specifying which elements to outline. Defaults to outlining all visible elements.
- * @returns {void}
+ * @param {boolean} enabled - Whether the debug panel should be active.
+ * @param {string[]} [selectors=DEFAULT_SELECTORS] - CSS selectors to outline.
+ * @returns {Promise<void>} Resolves when outline work has completed (or immediately when disabled).
  */
 export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
-  if (!document.body) return;
-  measureDebugFlagToggle(
-    "layoutDebugPanel",
-    () => {
-      enabledState = Boolean(enabled);
-      document
-        .querySelectorAll(".layout-debug-outline")
-        .forEach((el) => el.classList.remove("layout-debug-outline"));
-      if (enabledState) {
-        selectors.forEach((sel) => {
-          document.querySelectorAll(sel).forEach((el) => {
-            if (el.offsetParent !== null) {
-              el.classList.add("layout-debug-outline");
-            }
-          });
-        });
-      }
-    },
-    { selectors: Array.isArray(selectors) ? selectors.length : null }
-  );
+  if (typeof document === "undefined" || !document.body) {
+    return Promise.resolve();
+  }
+
+  enabledState = Boolean(enabled);
+
+  if (!enabledState) {
+    cancelPendingTask();
+    clearOutlines();
+    return Promise.resolve();
+  }
+
+  const selectorList = toSelectorList(selectors);
+  return scheduleOutlineRender(selectorList);
+}
+
+/**
+ * @returns {boolean} Current enabled state of the layout debug panel.
+ */
+export function isLayoutDebugPanelEnabled() {
+  return enabledState;
+}
+
+/**
+ * Await any pending outline work. Exposed for deterministic testing.
+ *
+ * @returns {Promise<void>}
+ */
+export function flushLayoutDebugPanelWork() {
+  return pendingPromise;
 }

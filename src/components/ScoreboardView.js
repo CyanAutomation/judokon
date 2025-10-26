@@ -87,34 +87,20 @@ export class ScoreboardView {
    *
    * @pseudocode
    * 1. Render `Time Left: {seconds}s` or clear when null.
-   * 2. Return void.
+   * 2. Rebuild innerHTML to avoid whitespace artifacts.
+   * 3. Return void.
    * @param {number|string} seconds - Seconds remaining.
    */
   updateTimer(seconds) {
     if (!this.timerEl) return;
-    let label = this.timerEl.querySelector('[data-part="label"]');
-    let value = this.timerEl.querySelector('[data-part="value"]');
 
     if (typeof seconds === "number" && Number.isFinite(seconds)) {
       const clamped = Math.max(0, seconds);
-
-      // If we don't have the expected structure, rebuild it
-      if (!label || !value) {
-        this.timerEl.innerHTML = `<span data-part="label">Time Left:</span> <span data-part="value">${clamped}s</span>`;
-        return;
-      }
-
-      // Update existing structure
-      label.textContent = "Time Left:";
-      value.textContent = `${clamped}s`;
+      // Always rebuild to avoid whitespace artifacts from original HTML
+      this.timerEl.innerHTML = `<span data-part="label">Time Left:</span> <span data-part="value">${clamped}s</span>`;
     } else {
       // Clear the display
-      if (label && value) {
-        label.textContent = "";
-        value.textContent = "";
-      } else {
-        this.timerEl.innerHTML = "";
-      }
+      this.timerEl.innerHTML = "";
     }
   }
 
