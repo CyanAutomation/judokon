@@ -75,6 +75,13 @@ export async function loadBattleCLI(options = {}) {
       })
     );
   });
+  /**
+   * Set a mock flag without emitting change events.
+   * Use for test setup; prefer setFlag() to simulate user interactions.
+   *
+   * @param {string} flag - The flag name to set.
+   * @param {boolean} value - The desired flag value.
+   */
   const setMockFlag = (flag, value) => {
     if (flag in flagState) {
       flagState[flag] = value;
