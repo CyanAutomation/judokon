@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 /**
@@ -85,13 +86,15 @@ describe("setFlag", () => {
 });
 
 describe("enableFlag", () => {
+  let timers;
+
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("swallows persistence rejection to avoid unhandled rejections", async () => {

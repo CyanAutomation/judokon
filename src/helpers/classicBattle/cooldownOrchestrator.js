@@ -22,6 +22,8 @@ import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 
 const ERROR_SCOPE = "classicBattle.roundManager";
 
+const isNil = (value) => value === null || value === undefined;
+
 function createErrorContext(operation, context = {}) {
   return { scope: ERROR_SCOPE, operation, ...context };
 }
@@ -83,7 +85,7 @@ function assignFallbackHandle(runtime, handle) {
     } else if (handle.timerId !== undefined) {
       runtime.fallbackId = handle.timerId;
     }
-    if (runtime.fallbackCancel == null && runtime.fallbackId == null) {
+    if (isNil(runtime.fallbackCancel) && isNil(runtime.fallbackId)) {
       runtime.fallbackCancel = () => clearTimeout(handle);
       runtime.fallbackId = handle;
     }
@@ -1126,7 +1128,7 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
               safeRound(
                 "wireCooldownTimer.scheduleFallbackTimer.recover",
                 () => {
-                  if (!runtime.fallbackHandle && runtime.fallbackId == null) {
+                  if (!runtime.fallbackHandle && isNil(runtime.fallbackId)) {
                     scheduleFallbackTimer();
                   }
                 },
@@ -1141,7 +1143,7 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
           ? "wireCooldownTimer.scheduleFallbackTimer.withScheduler"
           : "wireCooldownTimer.scheduleFallbackTimer",
         () => {
-          if (!runtime.fallbackHandle && runtime.fallbackId == null) {
+          if (!runtime.fallbackHandle && isNil(runtime.fallbackId)) {
             scheduleFallbackTimer();
           }
         },
