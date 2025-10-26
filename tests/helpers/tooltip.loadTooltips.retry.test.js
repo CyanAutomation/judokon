@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const fetchJsonMock = vi.hoisted(() => vi.fn());
 const importJsonModuleMock = vi.hoisted(() => vi.fn());
@@ -26,6 +26,10 @@ describe("loadTooltips", () => {
     debugLogMock.mockReset();
   });
 
+  afterEach(() => {
+    vi.resetModules();
+  });
+
   it("retries after a rejected tooltip data promise", async () => {
     fetchJsonMock
       .mockRejectedValueOnce(new Error("network down"))
@@ -38,8 +42,10 @@ describe("loadTooltips", () => {
     expect(fetchJsonMock).toHaveBeenCalledTimes(1);
     expect(importJsonModuleMock).toHaveBeenCalledTimes(1);
     expect(debugLogMock).toHaveBeenCalledTimes(2);
-    expect(debugLogMock.mock.calls[1][0]).toBe(
-      "Tooltip data promise rejected; clearing cache for retry."
+    expect(debugLogMock).toHaveBeenCalledWith(
+      "Tooltip data loading failed; clearing cache for retry. Operation:",
+      expect.any(String),
+      expect.any(Error)
     );
 
     await expect(getTooltips()).resolves.toEqual({ "retry.success": "Loaded" });
