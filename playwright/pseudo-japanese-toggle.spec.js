@@ -2,6 +2,7 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STORY_FIXTURE = path.resolve(__dirname, "../tests/fixtures/aesopsFables.json");
@@ -18,16 +19,11 @@ test.describe("Pseudo-Japanese toggle", () => {
     await page.route("**/src/data/aesopsMeta.json", (route) =>
       route.fulfill({ path: META_FIXTURE })
     );
-    await page.addInitScript(() =>
-      localStorage.setItem(
-        "settings",
-        JSON.stringify({
-          typewriterEffect: false,
-          featureFlags: { enableTestMode: { enabled: true } }
-        })
-      )
-    );
+    const app = await configureApp(page, {
+      settings: { typewriterEffect: false }
+    });
     await page.goto("/src/pages/meditation.html");
+    await app.applyRuntime();
     await page.evaluate(() => window.quoteReadyPromise);
   });
 

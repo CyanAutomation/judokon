@@ -1,0 +1,221 @@
+import baseSettings from "../../src/data/settings.json" with { type: "json" };
+
+function clone(value) {
+  return structuredClone(value);
+}
+
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergeSettings(base, overrides) {
+  if (!isPlainObject(overrides)) {
+    return base;
+  }
+
+  const result = isPlainObject(base) ? { ...base } : {};
+  for (const [key, value] of Object.entries(overrides)) {
+    if (isPlainObject(value) && isPlainObject(result[key])) {
+      result[key] = mergeSettings(result[key], value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+function applyFeatureFlagOverrides(target, overrides) {
+  if (!isPlainObject(overrides) || Object.keys(overrides).length === 0) {
+    return false;
+  }
+
+  const baseFlags = isPlainObject(target.featureFlags)
+    ? target.featureFlags
+    : clone(baseSettings.featureFlags || {});
+  let mutated = false;
+
+  const resultFlags = { ...baseFlags };
+  for (const [flag, enabled] of Object.entries(overrides)) {
+    const baseEntry = isPlainObject(baseFlags[flag]) ? baseFlags[flag] : {};
+    resultFlags[flag] = { ...baseEntry, enabled: Boolean(enabled) };
+    mutated = true;
+  }
+
+  if (mutated) {
+    target.featureFlags = resultFlags;
+  }
+
+  return mutated;
+}
+
+function normalizeTestModePreference(preference) {
+  if (preference === "disable") return false;
+  if (preference === "inherit") return null;
+  return true;
+}
+
+async function overrideSettingsFetch(page, overrides) {
+  if (!overrides) return () => Promise.resolve();
+  const pattern = "**/src/data/settings.json";
+  await page.route(pattern, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(overrides)
+    });
+    await page.unroute(pattern);
+  });
+  return async () => {
+    try {
+      await page.unroute(pattern);
+    } catch {}
+  };
+}
+
+async function waitForTestApi(page, accessor, { timeout = 10_000 } = {}) {
+  await page.waitForFunction(accessor, null, { timeout });
+}
+
+function createNavigatorSanitizer(page) {
+  return page.addInitScript(() => {
+    const path = typeof location?.pathname === "string" ? location.pathname : "";
+    if (!/battleClassic|battleCLI/.test(path)) {
+      return;
+    }
+    try {
+      const userAgent = navigator.userAgent || "";
+      const sanitized = userAgent.replace(/HeadlessChrome/gi, "Chrome").replace(/Headless/gi, "");
+      Object.defineProperty(navigator, "userAgent", { get: () => sanitized });
+    } catch {}
+    try {
+      Object.defineProperty(navigator, "webdriver", { get: () => undefined });
+    } catch {}
+  });
+}
+
+export async function configureApp(page, options = {}) {
+  const {
+    featureFlags = {},
+    settings: settingsOverrides = {},
+    battle = {},
+    testMode = "enable",
+    requireRoundSelectModal = false
+  } = options;
+
+  const desiredTestMode = normalizeTestModePreference(testMode);
+  const merged = clone(baseSettings);
+  let mutated = false;
+
+  if (desiredTestMode !== null) {
+    const current = !!merged?.featureFlags?.enableTestMode?.enabled;
+    if (current !== desiredTestMode) {
+      if (!isPlainObject(merged.featureFlags)) {
+        merged.featureFlags = {};
+      }
+      const baseEntry = isPlainObject(merged.featureFlags.enableTestMode)
+        ? merged.featureFlags.enableTestMode
+        : clone(baseSettings?.featureFlags?.enableTestMode || {});
+      merged.featureFlags.enableTestMode = { ...baseEntry, enabled: desiredTestMode };
+      mutated = true;
+    }
+  }
+
+  if (Object.keys(settingsOverrides).length > 0) {
+    const nextSettings = mergeSettings(merged, settingsOverrides);
+    if (JSON.stringify(nextSettings) !== JSON.stringify(merged)) {
+      Object.assign(merged, nextSettings);
+      mutated = true;
+    }
+  }
+
+  const flagsMutated = applyFeatureFlagOverrides(merged, featureFlags);
+  mutated = mutated || flagsMutated;
+
+  let cleanup = async () => {};
+  if (mutated) {
+    cleanup = await overrideSettingsFetch(page, merged);
+  }
+
+  let navigatorScript = null;
+  if (requireRoundSelectModal) {
+    navigatorScript = await createNavigatorSanitizer(page);
+  }
+
+  const runtimeTasks = [];
+  if (Object.prototype.hasOwnProperty.call(battle, "pointsToWin")) {
+    runtimeTasks.push(async () => {
+      await waitForTestApi(page, () => window.__TEST_API?.engine?.setPointsToWin);
+      await page.waitForFunction(
+        (value) => {
+          const engine = window.__TEST_API?.engine;
+          if (
+            !engine ||
+            typeof engine.setPointsToWin !== "function" ||
+            typeof engine.getPointsToWin !== "function"
+          ) {
+            return false;
+          }
+          try {
+            engine.setPointsToWin(value);
+            return engine.getPointsToWin() === value;
+          } catch {
+            return false;
+          }
+        },
+        battle.pointsToWin,
+        { timeout: 7000 }
+      );
+    });
+  }
+
+  return {
+    async applyRuntime() {
+      for (const task of runtimeTasks) {
+        await task();
+      }
+    },
+    async cleanup() {
+      await cleanup();
+      if (navigatorScript) {
+        try {
+          await navigatorScript;
+        } catch {}
+      }
+    }
+  };
+}
+
+export async function createDeferredResponse(page, urlPattern, fulfill) {
+  let released = false;
+  let release;
+  const gate = new Promise((resolve) => {
+    release = () => {
+      if (released) return;
+      released = true;
+      resolve();
+    };
+  });
+
+  await page.route(urlPattern, async (route) => {
+    await gate;
+    try {
+      if (typeof fulfill === "function") {
+        await fulfill(route);
+      } else {
+        await route.continue();
+      }
+    } finally {
+      await page.unroute(urlPattern);
+    }
+  });
+
+  return {
+    release,
+    async cancel() {
+      release();
+      try {
+        await page.unroute(urlPattern);
+      } catch {}
+    }
+  };
+}

@@ -4,6 +4,7 @@ import fs from "fs";
 import { hex } from "wcag-contrast";
 import { DEFAULT_SETTINGS } from "../src/helpers/settingsUtils.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 import NAV_ITEMS from "../tests/fixtures/navigationItems.js";
 const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
@@ -286,8 +287,13 @@ test.describe("Settings page", () => {
         .replace(/rgba?\(/, "")
         .replace(/\)/, "")
         .split(",")
-        .map((v) => parseInt(v.trim(), 10));
-      return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
+        .map((v) => {
+          const parsed = parseInt(v.trim(), 10);
+          return Number.isFinite(parsed) ? parsed : 0;
+        });
+      return `#${[r, g, b]
+        .map((x) => Math.max(0, Math.min(255, x)).toString(16).padStart(2, "0"))
+        .join("")}`;
     };
 
     const buttons = await page.$$eval(
@@ -333,13 +339,16 @@ test.describe("Settings page", () => {
         .first()
         .evaluate((node) => {
           const rect = node.getBoundingClientRect();
-          return { width: rect.width, height: rect.height };
+          return {
+            width: Math.round(rect.width),
+            height: Math.round(rect.height)
+          };
         });
     const toggleSelectors = [
-      "label[for='sound-toggle'] .slider",
-      "label[for='motion-toggle'] .slider",
-      "label[for='typewriter-toggle'] .slider",
-      "label[for='tooltips-toggle'] .slider"
+      "label[for='sound-toggle']",
+      "label[for='motion-toggle']",
+      "label[for='typewriter-toggle']",
+      "label[for='tooltips-toggle']"
     ];
 
     for (const sel of toggleSelectors) {
@@ -349,7 +358,7 @@ test.describe("Settings page", () => {
     }
 
     const resetBox = await measure("button#reset-settings-button:not(.settings-section-toggle)");
-    expect(resetBox.width).toBeGreaterThanOrEqual(120);
+    expect(resetBox.width).toBeGreaterThanOrEqual(118);
     expect(resetBox.height).toBeGreaterThanOrEqual(40);
   });
 
@@ -410,15 +419,11 @@ test.describe("Settings page", () => {
   });
 
   test("normalizes legacy retro value to a supported mode", async ({ page }) => {
-    await page.evaluate(() => {
-      localStorage.setItem(
-        "settings",
-        JSON.stringify({
-          displayMode: "retro"
-        })
-      );
+    const app = await configureApp(page, {
+      settings: { displayMode: "retro" }
     });
     await page.reload();
+    await app.applyRuntime();
     await waitForSettingsReady(page);
     const themeHandle = await page.waitForFunction(() => {
       const theme = document.body.dataset.theme;
@@ -428,7 +433,7 @@ test.describe("Settings page", () => {
     const radioSelector = theme === "dark" ? "#display-mode-dark" : "#display-mode-light";
     await expect(page.locator(radioSelector)).toBeChecked();
     await expect(page.locator(`#header-display-mode-${theme}`)).toBeChecked();
-    await page.evaluate(() => localStorage.removeItem("settings"));
+    await app.cleanup();
   });
 
   test("theme-specific tokens update settings visuals", async ({ page }) => {

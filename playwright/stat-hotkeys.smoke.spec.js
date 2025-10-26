@@ -1,8 +1,13 @@
 import { test, expect } from "@playwright/test";
+import { configureApp } from "./fixtures/appConfig.js";
 
 test.describe("Classic Battle – stat hotkeys", () => {
   test("pressing '1' selects the first stat", async ({ page }) => {
+    const app = await configureApp(page, {
+      featureFlags: { statHotkeys: true }
+    });
     await page.goto("/index.html");
+    await app.applyRuntime();
 
     const startBtn =
       (await page.$('[data-testid="start-classic"]')) ||
@@ -12,14 +17,6 @@ test.describe("Classic Battle – stat hotkeys", () => {
     // Wait for stat buttons to render
     const firstStat = page.locator("#stat-buttons button").first();
     await expect(firstStat).toBeVisible();
-
-    // Ensure hotkeys flag is enabled in case settings override
-    await page.evaluate(() => {
-      try {
-        window.__FEATURE_FLAGS__ = window.__FEATURE_FLAGS__ || {};
-        window.__FEATURE_FLAGS__.statHotkeys = true;
-      } catch {}
-    });
 
     // Focus body and press '1'
     await page.focus("body");
