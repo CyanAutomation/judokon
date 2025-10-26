@@ -18,7 +18,10 @@ export function getItem(key) {
   try {
     if (typeof localStorage !== "undefined") {
       const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : null;
+      if (raw) {
+        return JSON.parse(raw);
+      }
+      // When `localStorage` has no value, fall back to the in-memory store.
     }
   } catch (err) {
     debugLog("storage.getItem failed", err);
