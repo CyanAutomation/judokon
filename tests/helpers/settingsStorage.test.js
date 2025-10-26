@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { updateSetting, resetSettings } from "../../src/helpers/settingsStorage.js";
 import { getCachedSettings, resetCache } from "../../src/helpers/settingsCache.js";
 
@@ -42,5 +43,52 @@ describe("updateSetting", () => {
     const stored = JSON.parse(localStorage.getItem("settings"));
     expect(stored.sound).toBe(false);
     expect(stored.motionEffects).toBe(false);
+  });
+});
+
+describe("getSettingsSchema", () => {
+  it("retries after a rejection by clearing the cached promise", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("network unavailable"))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ title: "schema-from-fetch" })
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    vi.resetModules();
+
+    let restoreImporter;
+
+    try {
+      const module = await import("../../src/helpers/settingsStorage.js");
+      const { getSettingsSchema, __setSettingsSchemaImporter } = module;
+
+      let importAttempts = 0;
+      __setSettingsSchemaImporter(async () => {
+        importAttempts += 1;
+        if (importAttempts === 1) {
+          throw new Error("import failure");
+        }
+        return { default: { title: "schema-from-import" } };
+      });
+      restoreImporter = () => __setSettingsSchemaImporter(undefined);
+
+      await expect(getSettingsSchema()).rejects.toThrow("import failure");
+
+      const schema = await getSettingsSchema();
+      expect(schema).toEqual({ title: "schema-from-fetch" });
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(importAttempts).toBe(1);
+    } finally {
+      if (typeof restoreImporter === "function") {
+        restoreImporter();
+      }
+      vi.unstubAllGlobals();
+      vi.clearAllMocks();
+      vi.resetModules();
+    }
   });
 });

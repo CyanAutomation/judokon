@@ -1,4 +1,5 @@
 import { validateWithSchema } from "./dataUtils.js";
+import { debugLog } from "./debug.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 import { loadSettings as baseLoadSettings } from "../config/loadSettings.js";
 import { setCachedSettings, getCachedSettings } from "./settingsCache.js";
@@ -6,6 +7,8 @@ import { debounce } from "../utils/debounce.js";
 
 let setTimer = (...args) => setTimeout(...args);
 let clearTimer = (...args) => clearTimeout(...args);
+let loadSettingsSchemaModule = () =>
+  import("../schemas/settings.schema.json", { with: { type: "json" } });
 
 /**
  * Override timer functions used by the internal debounce.
@@ -82,6 +85,25 @@ export const flushSettingsSave = () => debouncedSave.flush();
 let settingsSchemaPromise;
 
 /**
+ * Override the schema importer used by {@link getSettingsSchema}.
+ *
+ * @private
+ * @pseudocode
+ * 1. Accept an optional `loader` function that returns the schema module promise.
+ * 2. When provided, assign it to the internal importer; otherwise restore the default importer.
+ * 3. Tests can inject a custom importer to simulate failures.
+ *
+ * @param {() => Promise<{ default: object }>} [loader] Custom importer function.
+ * @returns {void}
+ */
+export function __setSettingsSchemaImporter(loader) {
+  loadSettingsSchemaModule =
+    typeof loader === "function"
+      ? loader
+      : () => import("../schemas/settings.schema.json", { with: { type: "json" } });
+}
+
+/**
  * Lazily load the settings JSON schema.
  *
  * @pseudocode
@@ -94,7 +116,7 @@ let settingsSchemaPromise;
  */
 export async function getSettingsSchema() {
   if (!settingsSchemaPromise) {
-    settingsSchemaPromise = (async () => {
+    const loadPromise = (async () => {
       const base = typeof import.meta.url === "string" ? import.meta.url : undefined;
       try {
         const url = new URL("../schemas/settings.schema.json", base);
@@ -102,10 +124,15 @@ export async function getSettingsSchema() {
         if (!response.ok) throw new Error("Failed to fetch settings schema");
         return await response.json();
       } catch {
-        return (await import("../schemas/settings.schema.json", { with: { type: "json" } }))
-          .default;
+        return (await loadSettingsSchemaModule()).default;
       }
     })();
+
+    settingsSchemaPromise = loadPromise.catch((error) => {
+      debugLog("Failed to load settings schema; clearing cached promise for retry.", error);
+      settingsSchemaPromise = undefined;
+      throw error;
+    });
   }
   return settingsSchemaPromise;
 }
