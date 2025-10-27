@@ -57,6 +57,16 @@ function addScrollMarkers(container, wrapper) {
   counter.textContent = `Page 1 of ${pageCount}`;
   markers.appendChild(counter);
 
+  let liveRegion = wrapper.querySelector(".carousel-page-live");
+  if (!liveRegion) {
+    liveRegion = document.createElement("span");
+    liveRegion.className = "sr-only carousel-page-live";
+    liveRegion.setAttribute("aria-live", "polite");
+    liveRegion.setAttribute("aria-atomic", "true");
+    wrapper.appendChild(liveRegion);
+  }
+  liveRegion.textContent = `Page 1 of ${pageCount}`;
+
   wrapper.appendChild(markers);
 
   container.addEventListener("scroll", () => {
@@ -74,7 +84,13 @@ function addScrollMarkers(container, wrapper) {
     markers.querySelectorAll(".scroll-marker").forEach((marker, index) => {
       marker.classList.toggle("active", index === currentPage);
     });
-    counter.textContent = `Page ${currentPage + 1} of ${pageCount}`;
+    const message = `Page ${currentPage + 1} of ${pageCount}`;
+    counter.textContent = message;
+    if (liveRegion) {
+      liveRegion.textContent = message;
+      liveRegion.dataset.page = String(currentPage + 1);
+      liveRegion.dataset.pages = String(pageCount);
+    }
   });
 }
 

@@ -23,32 +23,39 @@ npm run test:battles:watch      # Watch mode during development
 npm run test:battles:cov        # With coverage report
 ```
 
-## Organization
+## Implementation: Hybrid Organization Approach
 
-### classic/ - Classic Battle Mode Tests
+**Tests remain in original locations** (preserving working imports), while **npm scripts
+provide organized access**:
 
-Tests for `src/pages/battleClassic.html` organized by feature:
+### Classic Battle Tests (29 files, 80 tests)
 
-- **battle-logic/** - Core game mechanics, timers, state management, scoring
-- **components/** - Classic-specific UI components (stat buttons, scoreboard, modals)
-- **integration/** - Full game flow and end-to-end scenarios
+Located in:
 
-### cli/ - CLI Battle Mode Tests
+- `tests/classicBattle/` - Main classic battle tests (16 files)
+- `tests/integration/battleClassic*.test.js` - Full game flow tests (2 files)
+- `tests/helpers/battle*.test.js` - Battle helper functions (11 files)
+- `tests/styles/battleContrast.test.js` - Accessibility tests (1 file)
 
-Tests for `src/pages/battleCLI.html` organized by feature:
+Access via: `npm run test:battles:classic`
 
-- **keybindings/** - Keyboard shortcuts, hotkeys, input handling
-- **display/** - Terminal rendering, verbose mode, scoreboard formatting
-- **compatibility/** - Seeds, points-to-win configuration, feature compatibility
-- **accessibility/** - Focus management, live regions, contrast compliance
+### CLI Battle Tests (29 files, 106 tests)
 
-### shared/ - Shared Components
+Located in:
 
-Tests for components used by both battle modes:
+- `tests/pages/battleCLI*.test.js` - CLI page tests (28 files)
+- `tests/styles/battleCLI.focusContrast.test.js` - Accessibility tests (1 file)
 
-- **scoreboard/** - Scoreboard component (used by both modes)
-- **modal/** - Modal dialog component
-- **configuration/** - Battle configuration and defaults
+Access via: `npm run test:battles:cli`
+
+### Shared Components (6 files, 7 tests)
+
+Located in:
+
+- `tests/helpers/battleScoreboard*.test.js` - Scoreboard tests (5 files)
+- `tests/config/battleDefaults.test.js` - Configuration tests (1 file)
+
+Access via: `npm run test:battles:shared`
 
 ## Test Coverage Goals
 

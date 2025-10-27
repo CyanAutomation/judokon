@@ -145,6 +145,8 @@ This phase addresses layout bugs on the judoka cards that hide information and v
       transition: transform 200ms ease-in-out;
     }
     ```
+    - Added an active-state rule that scales and elevates the focused card via `.is-active`/`[aria-current="true"]`, matching the PRD emphasis.
+    - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [ ] **Improve Page Markers:** Add a visually hidden `aria-live` region to `src/pages/browseJudoka.html` that is updated by the carousel logic in `src/game.js` or `src/helpers/browseJudokaPage.js` to announce "Page X of Y".
 
