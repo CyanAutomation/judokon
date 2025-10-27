@@ -28,7 +28,7 @@ const stateLogger = createComponentLogger("WaitingForPlayerAction");
  */
 export async function waitingForPlayerActionEnter(machine) {
   console.log("[DEBUG] waitingForPlayerActionEnter() called");
-  
+
   // Defensive: ensure selection state is reset when entering this state
   // This handles cases where state transitions are too fast for startRound to have completed
   const store = machine?.context?.store;
@@ -37,7 +37,17 @@ export async function waitingForPlayerActionEnter(machine) {
     store.__lastSelectionMade = false;
     store.playerChoice = null;
   }
-  
+
+  // Also reset the finalization flag
+  try {
+    if (typeof window !== "undefined") {
+      window.__classicBattleSelectionFinalized = false;
+      window.__classicBattleLastFinalizeContext = null;
+    }
+  } catch {
+    // Intentionally ignore window global availability errors
+  }
+
   // Debug logging for state handler entry
   logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
     hasStore: !!machine?.context?.store,

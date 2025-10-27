@@ -25,6 +25,7 @@
 - **Layout Debug Outlines** – `setupDisplaySettings` reapplies the flag on load (`src/helpers/setupDisplaySettings.js:26`) and the toggle helper adds/removes outlines as tested in `tests/helpers/layoutDebugPanel.test.js:9`.
 - **Skip Round Cooldown** – `skipRoundCooldownIfEnabled` skips the inter-round timer and mirrors DOM state (`src/helpers/classicBattle/uiHelpers.js:46`), while timer-service tests ensure the fast path stays deterministic (`tests/helpers/classicBattle/scheduleNextRound.test.js:454`).
 - **Battle State Progress** – The progress list now renders, marks readiness, and remaps interrupts (`src/helpers/battleStateProgress.js:80`); Playwright scenarios cover live state transitions (`playwright/battle-classic/battle-state-progress.spec.js:51`).
+- **Battle State Progress Terminology** – Docs now mirror the UI/tooltips naming; PRD references updated to “Battle State Progress” (`design/productRequirementsDocuments/prdBattleStateIndicator.md`, `design/productRequirementsDocuments/prdBattleScoreboard.md`, `design/productRequirementsDocuments/prdBattleEngine.md`).
 - **Auto-Select Progress** – Timeout-driven auto-select now routes through the test API helper, and the progress list is covered by a dedicated Playwright scenario (`src/helpers/testApi.js:1951`, `playwright/helpers/autoSelectHelper.js:1`, `playwright/battle-classic/battle-state-progress.spec.js:212`).
 - **Settings Accessibility** – General toggles and feature-flag switches emit `<label>` + `aria-describedby` pairs (`src/pages/settings.html:130`, `src/helpers/settings/featureFlagSwitches.js:66`), and focus styles are defined in `src/styles/settings.css:222`.
 - **Opponent Delay Messaging** – Classic Battle reuses the same delay copy that was previously CLI-only (`src/pages/battleClassic.init.js:701`), with shared UI handlers (`src/helpers/classicBattle/uiEventHandlers.js:92`).
@@ -50,7 +51,7 @@
 ## Observations & Questions
 
 - **Hidden `roundStore` Flag** – Still present as `hidden: true` in `src/data/settings.json`; confirm whether it should remain hidden or be retired.
-- **Terminology Drift** – UI labels use “Battle State Progress” while docs mention “Battle State Indicator”; align naming across tooltips, docs, and DOM.
+- **Terminology Drift** – ✅ Resolved (2025-10-28): PRDs now adopt “Battle State Progress” to match UI + tooltips.
 
 ## Opportunities for Improvement
 

@@ -2,7 +2,7 @@
 
 **Entry Point:** `src/helpers/battleScoreboard.js`
 **Used By:** Classic Battle (UI), Battle CLI, Battle Bandit, future modes
-**Related Docs:** \[prdBattleEngine.md], \[prdSnackbar.md], \[prdBattleStateIndicator.md]
+**Related Docs:** \[prdBattleEngine.md], \[prdSnackbar.md], \[prdBattleStateIndicator.md — Battle State Progress]
 
 ---
 

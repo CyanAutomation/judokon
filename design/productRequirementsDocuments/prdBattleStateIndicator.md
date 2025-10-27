@@ -1,6 +1,6 @@
-# PRD: Battle State Indicator
+# PRD: Battle State Progress
 
-**Entry Point:** `src/helpers/battleStateIndicator.js`
+**Entry Points:** Classic wrapper `src/helpers/battleStateProgress.js`; shared indicator utility `src/helpers/battleStateIndicator.js`
 **Used By:** Classic Battle (UI + CLI)
 **Authoritative Source of Truth:** \[prdBattleEngine.md] — FSM, events, and state catalog
 
@@ -8,7 +8,9 @@
 
 ## 1. TL;DR
 
-The **Battle State Indicator** is a **UI-only reflector** of the Battle Engine/Orchestrator finite-state machine (FSM).
+> Terminology note: Previously called “Battle State Indicator”. All UI copy, tooltips, and documentation now use **Battle State Progress** to reflect the same feature.
+
+The **Battle State Progress** experience is a **UI-only reflector** of the Battle Engine/Orchestrator finite-state machine (FSM).
 It renders a horizontal list of FSM states and exposes an ARIA live announcer for accessibility.
 
 The component provides **real-time visual and screen-reader feedback** about the current battle phase, ensuring players can track gameplay progress across all supported interfaces. It holds **no business logic** and **does not infer** or remap states.
@@ -101,10 +103,25 @@ Provided at init via `getCatalog()` or sticky event `control.state.catalog`.
 
 ## 6. Rendering Rules
 
-**Root element:**
-`<ul id="battle-state-indicator" data-flag="battleStateIndicator" aria-label="Battle progress">`
+**Root structure:**
+Classic markup provides:
 
-- Contains `<li>` for each `catalog.display.include` entry
+```html
+<section class="battle-state-progress-wrapper" data-feature-battle-state-progress="wrapper">
+  <ul
+    id="battle-state-progress"
+    class="battle-state-progress"
+    data-feature-battle-state-progress="list"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    aria-label="Battle state progress timeline"
+  ></ul>
+</section>
+```
+
+- `<li>` nodes render for each state in `catalog.display.include`.
+- Wrapper remains hidden when the feature flag is disabled.
 
 **Each `<li>` should have:**
 
@@ -113,16 +130,18 @@ Provided at init via `getCatalog()` or sticky event `control.state.catalog`.
 - (optional) `data-state-label="<label>"`
 - Active item: `.active` and `aria-current="step"`
 
-**Announcer region:**
-`<p id="battle-state-announcer" data-flag="battleStateAnnouncer" aria-live="polite" aria-atomic="true">`
+**Announcer region (CLI + shared component):**
 
-- Contains text: `State: <name>`
+`<p id="battle-state-announcer" data-flag="battleStateAnnouncer" aria-live="polite" aria-atomic="true">State: <name></p>`
 
-**Unknown states:**
+- Classic Battle relies on the existing announcer embedded in the HUD.
+- CLI mounts the announcer next to the indicator timeline.
 
-- Do not create `<li>`
-- Still update announcer
-- Add `data-unknown="true"` to root element
+**Unknown states (shared component):**
+
+- Do not create `<li>`.
+- Still update announcer text with the raw state.
+- Add `data-unknown="true"` to the root element for downstream tooling.
 
 ---
 
@@ -169,14 +188,14 @@ Provided at init via `getCatalog()` or sticky event `control.state.catalog`.
 
 ## 11. Acceptance Criteria (Gherkin)
 
-**Feature:** Battle State Indicator
+**Feature:** Battle State Progress
 
 **Background:**
 Given the orchestrator provides a StateCatalog version "v1"
 And the UI subscribes to "control.state.changed"
 
 **Scenario: Initial render**
-When the indicator initializes
+When the progress component initializes
 Then it renders `<li>` items in catalog.display.include order
 And no item is active until a state change arrives
 
@@ -190,7 +209,7 @@ And `getActiveState()` returns "cooldown"
 **Scenario: Catalog version update**
 Given the indicator has catalogVersion "v1"
 When a change arrives with catalogVersion "v2"
-Then the indicator reloads the new catalog
+Then the progress component reloads the new catalog
 
 **Scenario: Unknown state**
 When control.state.changed => { to: "interruptRound" }
@@ -206,10 +225,10 @@ Then `isReady` is false and no DOM rendered
 
 ## 12. Telemetry (Optional)
 
-- `indicator.render.ms`
-- `indicator.update.ms`
-- `indicator.unknown_state.count`
-- `indicator.catalog_reload.count`
+- `progress.render.ms`
+- `progress.update.ms`
+- `progress.unknown_state.count`
+- `progress.catalog_reload.count`
 
 ---
 

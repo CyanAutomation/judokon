@@ -165,7 +165,12 @@ function notifyMetricListeners() {
 }
 
 /**
- * Register a callback that receives updated debug flag metrics whenever they change.
+ * Register a listener for debug flag metrics snapshots.
+ *
+ * @pseudocode
+ * 1. Validate listener is a function.
+ * 2. Register listener in metrics listener set.
+ * 3. Return unsubscribe function.
  *
  * @param {(metrics: ReturnType<typeof getDebugFlagMetrics>) => void} listener
  *   Listener invoked with the latest metrics snapshot.
@@ -183,6 +188,10 @@ export function addDebugFlagMetricsListener(listener) {
 
 /**
  * Determine whether debug flag profiling is currently enabled.
+ *
+ * @pseudocode
+ * 1. Delegate to internal `isProfilingEnabled()` function.
+ * 2. Return boolean result.
  *
  * @returns {boolean}
  */
