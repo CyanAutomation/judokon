@@ -5,9 +5,9 @@
  * @returns {Promise<void>}
  */
 export async function triggerAutoSelect(page) {
-  const didTrigger = await page.evaluate(() => {
+  const didTrigger = await page.evaluate(async () => {
     try {
-      return window.__TEST_API?.autoSelect?.triggerAutoSelect?.() ?? false;
+      return (await window.__TEST_API?.autoSelect?.triggerAutoSelect?.()) ?? false;
     } catch {
       return false;
     }

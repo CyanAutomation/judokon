@@ -268,10 +268,13 @@ export function resetBindings() {
  * 1. Import helpers that compute stat values and perform selection.
  * 2. Stop any running engine timer to avoid overlapping expirations.
  * 3. Emit `roundTimeout` to inform listeners and start auto-selection.
- * 4. Dispatch the `timeout` state transition and await the auto-select task.
+ * 4. Dispatch the `timeout` state transition to allow DOM updates.
+ * 5. Await a microtask to let the DOM settle before continuing auto-select.
+ * 6. Run auto-select and await completion.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle store instance.
  * @returns {Promise<void>} Resolves after the timeout flow completes.
+ * @throws {Error} When the timeout event dispatch fails.
  */
 export async function triggerRoundTimeoutNow(store) {
   const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
@@ -292,16 +295,19 @@ export async function triggerRoundTimeoutNow(store) {
   try {
     emitBattleEvent("roundTimeout");
   } catch {}
-  // Mirror timerService ordering: kick off auto-select immediately to
-  // ensure `store.playerChoice` is set while the machine processes the
-  // timeout transition into roundDecision.
-  const selecting = (async () => {
-    try {
-      await autoSelectStat(onExpiredSelect, 0);
-    } catch {}
-  })();
-  await dispatchBattleEvent("timeout");
-  await selecting;
+  
+  const dispatchResult = await dispatchBattleEvent("timeout");
+  if (dispatchResult === false) {
+    throw new Error("Failed to dispatch timeout event: machine unavailable or transition rejected");
+  }
+  
+  // Allow microtasks to process so DOM updates are observable
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  
+  // Then complete the auto-select
+  try {
+    await autoSelectStat(onExpiredSelect, 0);
+  } catch {}
 }
 
 /**
