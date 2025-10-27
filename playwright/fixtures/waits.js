@@ -1,143 +1,353 @@
 // Common readiness waits for Playwright specs.
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
-import { ensureBrowseCarouselReady } from "../helpers/browseTestApi.js";
 // Keep these helpers minimal and robust for CI environments.
 
-/**
- * Wait until Classic Battle page signals readiness via an in-page promise.
- * @param {import('@playwright/test').Page} page
- */
-export async function waitForBattleReady(page) {
-  await page.waitForFunction(() => {
-    if (window.battleReadyPromise) return true;
-    const root = document.querySelector(".home-screen") || document.body;
-    if (root?.dataset?.ready === "true") return true;
-    const state = document.body?.dataset?.battleState;
-    if (typeof state === "string" && state.length > 0) return true;
-    const api = window.__TEST_API?.init?.waitForBattleReady;
-    return typeof api === "function";
-  });
-  await page.evaluate(async () => {
-    const isDomReady = () => {
-      const root = document.querySelector(".home-screen") || document.body;
-      if (root?.dataset?.ready === "true") {
-        return true;
-      }
-      const state = document.body?.dataset?.battleState;
-      return typeof state === "string" && state.length > 0;
-    };
+const WAIT_HELPER_ERROR_PREFIX = "wait-helper";
 
-    const ensureConsistentFlags = async () => {
-      const maxAttempts = 5;
-      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-        if (isDomReady()) {
-          return true;
+async function callTestApiMethod(page, pathSegments, args = []) {
+  if (!Array.isArray(pathSegments) || pathSegments.length === 0) {
+    throw new Error(`${WAIT_HELPER_ERROR_PREFIX}: invalid Test API path segments`);
+  }
+
+  const { ok, value, error } = await page.evaluate(
+    ({ segments, args: callArgs }) => {
+      const root = window.__TEST_API;
+      if (!root) {
+        return { ok: false, value: null, error: "window.__TEST_API unavailable" };
+      }
+
+      let context = root;
+      for (let index = 0; index < segments.length - 1; index += 1) {
+        context = context?.[segments[index]];
+        if (context === null || typeof context === "undefined") {
+          return {
+            ok: false,
+            value: null,
+            error: `__TEST_API segment missing: ${segments.slice(0, index + 1).join(".")}`
+          };
         }
-        await new Promise((resolve) => setTimeout(resolve, 50));
       }
-      return isDomReady();
-    };
 
-    if (isDomReady()) {
-      return;
-    }
-
-    if (window.battleReadyPromise) {
-      try {
-        await window.battleReadyPromise;
-      } catch {}
-      if (await ensureConsistentFlags()) {
-        return;
+      const fnName = segments[segments.length - 1];
+      const callable = context?.[fnName];
+      if (typeof callable !== "function") {
+        return { ok: false, value: null, error: `__TEST_API.${segments.join(".")} not callable` };
       }
-    }
 
-    const waitForBattleReady = window.__TEST_API?.init?.waitForBattleReady;
-    if (typeof waitForBattleReady === "function") {
-      try {
-        await waitForBattleReady();
-      } catch {}
-      if (await ensureConsistentFlags()) {
-        return;
-      }
-    }
-
-    if (await ensureConsistentFlags()) {
-      return;
-    }
-
-    await new Promise((resolve) => {
-      let timeoutId = null;
-      const handler = () => {
-        if (timeoutId !== null) {
-          clearTimeout(timeoutId);
-        }
-        document.removeEventListener("battle:init", handler);
-        resolve();
-      };
-      document.addEventListener("battle:init", handler, { once: true });
-      timeoutId = setTimeout(() => {
-        document.removeEventListener("battle:init", handler);
-        console.warn(
-          "[waitForBattleReady] Fallback timeout hit after 3000ms; using battle:init timeout"
+      return Promise.resolve()
+        .then(() => callable.apply(context, callArgs))
+        .then(
+          (result) => ({ ok: true, value: result ?? null, error: null }),
+          (thrown) => ({
+            ok: false,
+            value: null,
+            error:
+              thrown instanceof Error
+                ? thrown.message
+                : typeof thrown === "object" && thrown !== null && "message" in thrown
+                  ? String(thrown.message)
+                  : String(thrown ?? "Unknown error")
+          })
         );
-        resolve();
-      }, 3000);
-    });
+    },
+    { segments: pathSegments, args }
+  );
 
-    await ensureConsistentFlags();
+  return { ok, value, error };
+}
+
+async function readBattleReadinessDiagnostics(page) {
+  return await page.evaluate(() => {
+    const datasetReady = document.body?.dataset?.ready ?? null;
+    const datasetBattleState = document.body?.dataset?.battleState ?? null;
+    const apiState = (() => {
+      try {
+        return window.__TEST_API?.state?.getBattleState?.() ?? null;
+      } catch {
+        return null;
+      }
+    })();
+    const isReady = (() => {
+      try {
+        return window.__TEST_API?.init?.isBattleReady?.() ?? null;
+      } catch {
+        return null;
+      }
+    })();
+    const debugInfo = (() => {
+      try {
+        return window.__TEST_API?.inspect?.getDebugInfo?.() ?? null;
+      } catch {
+        return null;
+      }
+    })();
+
+    const machineState = debugInfo?.machine?.currentState ?? null;
+    const orchestratorAttached = Boolean(debugInfo?.store?.orchestrator ?? window.battleStore?.orchestrator);
+
+    return {
+      datasetReady,
+      datasetBattleState,
+      apiState,
+      machineState,
+      orchestratorAttached,
+      isReady,
+      timestamp: Date.now()
+    };
   });
+}
+
+function normalizeBrowseSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") {
+    return { isReady: false, cardCount: 0 };
+  }
+
+  const cardCount = Number(snapshot.cardCount);
+  return {
+    isReady: Boolean(snapshot.isReady),
+    cardCount: Number.isFinite(cardCount) ? cardCount : 0
+  };
+}
+
+async function readBrowseDiagnostics(page) {
+  return await page.evaluate(() => {
+    const container = document.querySelector("[data-testid='carousel-container']");
+    const cards = container ? Array.from(container.querySelectorAll(".judoka-card")).length : 0;
+    const busy = container?.getAttribute("aria-busy") ?? null;
+    const spinnerVisible = Boolean(document.querySelector(".loading-spinner"));
+    const initSnapshot = (() => {
+      try {
+        return window.__TEST_API?.init?.getBrowseReadySnapshot?.() ?? null;
+      } catch {
+        return null;
+      }
+    })();
+
+    return {
+      cards,
+      busy,
+      spinnerVisible,
+      initSnapshot,
+      timestamp: Date.now()
+    };
+  });
+}
+
+async function readBattleStateWindowDiagnostics(page) {
+  return await page.evaluate(() => {
+    const datasetState = document.body?.dataset?.battleState ?? null;
+    const previousState = document.body?.dataset?.prevBattleState ?? null;
+    const machineText = document.getElementById("machine-state")?.textContent ?? null;
+    const snapshot = (() => {
+      try {
+        return typeof window.getStateSnapshot === "function" ? window.getStateSnapshot() : null;
+      } catch {
+        return null;
+      }
+    })();
+    const apiState = (() => {
+      try {
+        return window.__TEST_API?.state?.getBattleState?.() ?? null;
+      } catch {
+        return null;
+      }
+    })();
+    const debugInfo = (() => {
+      try {
+        return window.__TEST_API?.inspect?.getDebugInfo?.() ?? null;
+      } catch {
+        return null;
+      }
+    })();
+    const logTail = Array.isArray(snapshot?.log)
+      ? snapshot.log.slice(-5).map((entry) => ({
+          from: entry?.from ?? null,
+          to: entry?.to ?? null,
+          event: entry?.event ?? null
+        }))
+      : [];
+
+    return {
+      datasetState,
+      previousState,
+      machineText,
+      snapshotState: snapshot?.state ?? null,
+      apiState,
+      machineState: debugInfo?.machine?.currentState ?? null,
+      logTail,
+      timestamp: Date.now()
+    };
+  });
+}
+
+async function captureBattleStateArtifacts(page, stateName) {
+  const artifacts = { screenshotPath: null, htmlPath: null, jsonPath: null };
+  try {
+    const outDir = path.resolve(process.cwd(), "test-results");
+    await mkdir(outDir, { recursive: true });
+    const ts = Date.now();
+    const base = `waitForBattleState-${stateName}-${ts}`;
+
+    try {
+      const shotPath = path.join(outDir, `${base}.png`);
+      await page.screenshot({ path: shotPath, fullPage: true });
+      artifacts.screenshotPath = shotPath;
+    } catch {}
+
+    try {
+      const html = await page.content();
+      if (html) {
+        const htmlPath = path.join(outDir, `${base}.html`);
+        await writeFile(htmlPath, html, "utf8");
+        artifacts.htmlPath = htmlPath;
+      }
+    } catch {}
+
+    try {
+      const windowState = await page.evaluate(() => {
+        try {
+          if (typeof window.getStateSnapshot === "function") {
+            const snap = window.getStateSnapshot();
+            return {
+              classicState: snap?.state ?? null,
+              stateLog: Array.isArray(snap?.log) ? snap.log.slice(-20) : null,
+              dataset: document.body?.dataset?.battleState ?? null,
+              prev: document.body?.dataset?.prevBattleState ?? null
+            };
+          }
+        } catch {}
+        return null;
+      });
+      if (windowState) {
+        const jsonPath = path.join(outDir, `${base}.json`);
+        await writeFile(jsonPath, JSON.stringify(windowState, null, 2), "utf8");
+        artifacts.jsonPath = jsonPath;
+      }
+    } catch {}
+  } catch {}
+
+  return artifacts;
+}
+
+async function collectBattleStateDiagnostics(page, stateName) {
+  const windowDiagnostics = await readBattleStateWindowDiagnostics(page);
+  const artifacts = await captureBattleStateArtifacts(page, stateName);
+  return { ...windowDiagnostics, ...artifacts };
+}
+
+/**
+ * Wait until Classic Battle page signals readiness via the Test API bridge.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {{ timeout?: number }} [options]
+ * @returns {Promise<{ ok: boolean, timedOut: boolean, reason: string | null, payload: unknown, diagnostics: object | null }>}
+ * Structured readiness payload from the Test API.
+ * @pseudocode
+ * 1. CALL the Test API bridge for `init.waitForBattleReady(timeout)`.
+ * 2. IF the API reports readiness, return a success payload.
+ * 3. OTHERWISE collect readiness diagnostics and return a structured failure payload.
+ */
+export async function waitForBattleReady(page, { timeout = 10_000 } = {}) {
+  const { ok, value, error } = await callTestApiMethod(page, ["init", "waitForBattleReady"], [timeout]);
+
+  if (!ok) {
+    const diagnostics = await readBattleReadinessDiagnostics(page);
+    return {
+      ok: false,
+      timedOut: false,
+      reason: error ?? "init.waitForBattleReady failed",
+      payload: null,
+      diagnostics
+    };
+  }
+
+  if (value === true) {
+    return {
+      ok: true,
+      timedOut: false,
+      reason: null,
+      payload: true,
+      diagnostics: null
+    };
+  }
+
+  const diagnostics = await readBattleReadinessDiagnostics(page);
+  return {
+    ok: false,
+    timedOut: true,
+    reason: "Battle readiness timed out via Test API",
+    payload: value ?? null,
+    diagnostics
+  };
 }
 
 /**
  * Wait until the Browse Judoka carousel publishes its readiness snapshot.
  * @param {import('@playwright/test').Page} page
  * @param {{ timeout?: number }} [options]
- * @returns {Promise<{ isReady: boolean, cardCount: number }>}
+ * @returns {Promise<{ ok: boolean, timedOut: boolean, reason: string | null, snapshot: { isReady: boolean, cardCount: number } | null, diagnostics: object | null }>}
+ * @pseudocode
+ * 1. CALL `init.waitForBrowseReady` through the Test API bridge with the provided timeout.
+ * 2. IF the snapshot reports readiness, resolve with success and the readiness payload.
+ * 3. OTHERWISE TRY `browse.whenCarouselReady`; if both fail, attach diagnostics and return failure.
  */
 export async function waitForBrowseReady(page, { timeout = 10_000 } = {}) {
-  // Browse readiness waits on image-heavy carousel hydration, so we allow extra headroom vs other waits.
-  await page.waitForFunction(
-    () =>
-      typeof window.__TEST_API?.init?.waitForBrowseReady === "function" ||
-      typeof window.__TEST_API?.browse?.whenCarouselReady === "function",
-    undefined,
-    { timeout }
-  );
-
-  try {
-    return await page.evaluate((limit) => {
-      const initApi = window.__TEST_API?.init;
-      if (typeof initApi?.waitForBrowseReady === "function") {
-        return initApi.waitForBrowseReady(limit);
-      }
-
-      const browseApi = window.__TEST_API?.browse;
-      if (typeof browseApi?.whenCarouselReady === "function") {
-        return Promise.race([
-          browseApi.whenCarouselReady(),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Browse readiness timed out")), limit)
-          )
-        ]);
-      }
-
-      throw new Error("Browse readiness API unavailable");
-    }, timeout);
-  } catch (primaryError) {
-    try {
-      // Browse readiness waits on image-heavy carousel hydration, so we allow extra headroom vs other waits.
-      return await ensureBrowseCarouselReady(page, { timeout });
-    } catch (error) {
-      const primaryMessage =
-        primaryError instanceof Error ? primaryError.message : String(primaryError);
-      throw new Error(
-        `waitForBrowseReady failed: ${
-          error instanceof Error ? error.message : String(error)
-        } (primary attempt: ${primaryMessage})`
-      );
+  const primary = await callTestApiMethod(page, ["init", "waitForBrowseReady"], [timeout]);
+  if (primary.ok) {
+    const snapshot = normalizeBrowseSnapshot(primary.value);
+    if (snapshot.isReady) {
+      return {
+        ok: true,
+        timedOut: false,
+        reason: null,
+        snapshot,
+        diagnostics: null
+      };
     }
+
+    const diagnostics = await readBrowseDiagnostics(page);
+    return {
+      ok: false,
+      timedOut: true,
+      reason: "Browse readiness timed out via init.waitForBrowseReady",
+      snapshot,
+      diagnostics
+    };
   }
+
+  const fallback = await callTestApiMethod(page, ["browse", "whenCarouselReady"], [{ timeout }]);
+  if (fallback.ok) {
+    const snapshot = normalizeBrowseSnapshot(fallback.value);
+    if (snapshot.isReady) {
+      return {
+        ok: true,
+        timedOut: false,
+        reason: null,
+        snapshot,
+        diagnostics: null
+      };
+    }
+
+    const diagnostics = await readBrowseDiagnostics(page);
+    return {
+      ok: false,
+      timedOut: true,
+      reason: "Browse readiness timed out via browse.whenCarouselReady",
+      snapshot,
+      diagnostics
+    };
+  }
+
+  const diagnostics = await readBrowseDiagnostics(page);
+  return {
+    ok: false,
+    timedOut: false,
+    reason:
+      fallback.error ?? primary.error ?? "Browse readiness Test API is unavailable in this context",
+    snapshot: null,
+    diagnostics
+  };
 }
 
 /**
@@ -149,115 +359,48 @@ export async function waitForSettingsReady(page) {
 }
 
 /**
- * Wait for the Classic Battle machine to reach a specific state.
- * This implementation uses a DOM-based fallback: the page writes the
- * current state to <body data-battle-state="...">. Avoid calling into
- * in-page helpers which can cause page.evaluate crashes in some CI
- * environments.
+ * Wait for the Classic Battle machine to reach a specific state via the Test API.
  *
  * @param {import('@playwright/test').Page} page
  * @param {string} stateName
  * @param {number} [timeout=10000]
+ * @returns {Promise<{ ok: boolean, timedOut: boolean, reason: string | null, state: string | null, diagnostics: object | null }>}
+ * @pseudocode
+ * 1. CALL `state.waitForBattleState` through the Test API bridge.
+ * 2. IF the state resolves, return a success payload.
+ * 3. OTHERWISE capture window diagnostics and artifact paths, returning a structured failure payload.
  */
 export async function waitForBattleState(page, stateName, timeout = 10000) {
-  // Prefer Playwright-side polling to avoid long-lived evaluate sessions
-  // that can be torn down when the test ends and produce noisy "Test ended" errors.
-  try {
-    await page.waitForFunction(
-      (s) => {
-        const d = document.body?.dataset?.battleState || null;
-        let w = null;
-        try {
-          if (typeof window.getStateSnapshot === "function") {
-            w = window.getStateSnapshot().state;
-          }
-          if (!w) {
-            w =
-              window.__TEST_API?.state?.getBattleState?.() ||
-              window.__TEST_API?.inspect?.getDebugInfo?.()?.machine?.currentState ||
-              null;
-          }
-        } catch {}
-        return d === s || w === s;
-      },
-      stateName,
-      { timeout }
-    );
-    return;
-  } catch {
-    // Fall through to diagnostics below.
-  }
-  // Timed out: include page-side diagnostics
-  let snapshot = "";
-  try {
-    const info = await page.evaluate(async () => {
-      const d = document.body?.dataset?.battleState || null;
-      let snap = { state: null, log: [] };
-      try {
-        if (typeof window.getStateSnapshot === "function") {
-          snap = window.getStateSnapshot();
-        }
-      } catch {}
-      const el = document.getElementById("machine-state");
-      const t = el ? el.textContent : null;
-      const prev = document.body?.dataset?.prevBattleState || null;
-      const log = Array.isArray(snap.log) ? snap.log.slice(-5) : [];
-      return { dataset: d, windowState: snap.state, machineText: t, prev, log };
-    });
-    const tail = Array.isArray(info.log)
-      ? info.log.map((e) => `${e.from || "null"}->${e.to}(${e.event || "init"})`).join(",")
-      : "";
-    snapshot = ` (dataset=${info.dataset} window=${info.windowState} machine=${info.machineText} prev=${info.prev} log=[${tail}])`;
-  } catch {}
-  // Try to save helpful artifacts to test-results/ for offline inspection.
-  try {
-    const outDir = path.resolve(process.cwd(), "test-results");
-    await mkdir(outDir, { recursive: true });
-    const ts = Date.now();
-    // Screenshot
-    try {
-      const shotPath = path.join(outDir, `waitForBattleState-${stateName}-${ts}.png`);
-      await page.screenshot({ path: shotPath, fullPage: true }).catch(() => {});
-      snapshot += ` screenshot=${shotPath}`;
-    } catch {}
-    // HTML dump
-    try {
-      const html = await page.content().catch(() => null);
-      if (html) {
-        const htmlPath = path.join(outDir, `waitForBattleState-${stateName}-${ts}.html`);
-        await writeFile(htmlPath, html, "utf8").catch(() => {});
-        snapshot += ` html=${htmlPath}`;
-      }
-    } catch {}
-    // Window-side JSON snapshot
-    try {
-      const win = await page
-        .evaluate(async () => {
-          try {
-            if (typeof window.getStateSnapshot === "function") {
-              const snap = window.getStateSnapshot();
-              return {
-                classicState: snap.state,
-                stateLog: Array.isArray(snap.log) ? snap.log.slice(-20) : null,
-                dataset: document.body?.dataset?.battleState || null,
-                prev: document.body?.dataset?.prevBattleState || null
-              };
-            }
-            return null;
-          } catch {
-            return null;
-          }
-        })
-        .catch(() => null);
-      if (win) {
-        const jsonPath = path.join(outDir, `waitForBattleState-${stateName}-${ts}.json`);
-        await writeFile(jsonPath, JSON.stringify(win, null, 2), "utf8").catch(() => {});
-        snapshot += ` json=${jsonPath}`;
-      }
-    } catch {}
-  } catch {}
+  const result = await callTestApiMethod(page, ["state", "waitForBattleState"], [stateName, timeout]);
 
-  throw new Error(`Timed out waiting for battle state "${stateName}"${snapshot}`);
+  if (result.ok && result.value === true) {
+    return {
+      ok: true,
+      timedOut: false,
+      reason: null,
+      state: stateName,
+      diagnostics: null
+    };
+  }
+
+  const diagnostics = await collectBattleStateDiagnostics(page, stateName);
+  if (!result.ok) {
+    return {
+      ok: false,
+      timedOut: false,
+      reason: result.error ?? `waitForBattleState failed for "${stateName}"`,
+      state: diagnostics.apiState ?? diagnostics.datasetState ?? null,
+      diagnostics
+    };
+  }
+
+  return {
+    ok: false,
+    timedOut: true,
+    reason: `Timed out waiting for battle state "${stateName}" via Test API`,
+    state: diagnostics.apiState ?? diagnostics.datasetState ?? null,
+    diagnostics
+  };
 }
 
 /**

@@ -12,6 +12,15 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 const EXPECTED_COUNTRY_SLIDE_COUNT =
   new Set(judoka.map((j) => j.countryCode).filter((code) => countryCodeMapping[code])).size + 1; // include 'All' slide
 
+async function expectBrowseReadiness(page, options) {
+  const readiness = await waitForBrowseReady(page, options);
+  expect(
+    readiness.ok,
+    readiness.reason ?? "waitForBrowseReady should resolve with a ready snapshot via Test API"
+  ).toBe(true);
+  return readiness;
+}
+
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -42,7 +51,7 @@ test.describe("Browse Judoka screen", () => {
       hidden: true
     });
 
-    await waitForBrowseReady(page);
+    await expectBrowseReadiness(page);
     await expect(panel).toBeHidden();
     await toggle.click();
     await expect(panel).toBeVisible();
@@ -57,7 +66,8 @@ test.describe("Browse Judoka screen", () => {
       hidden: true
     });
 
-    const { cardCount: initialCount } = await waitForBrowseReady(page);
+    const readiness = await expectBrowseReadiness(page);
+    const initialCount = readiness.snapshot?.cardCount ?? 0;
     const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
     await expect(allCards).toHaveCount(initialCount);
 
@@ -89,7 +99,7 @@ test.describe("Browse Judoka screen", () => {
 
   test("displays country flags", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
-    await waitForBrowseReady(page);
+    await expectBrowseReadiness(page);
     await toggle.click();
     const slides = page.locator("#country-list .slide");
     await slides.first().waitFor();
@@ -107,7 +117,7 @@ test.describe("Browse Judoka screen", () => {
     );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
-    await waitForBrowseReady(page);
+    await expectBrowseReadiness(page);
     const container = page.locator('[data-testid="carousel"]');
 
     await container.focus();
@@ -180,7 +190,7 @@ test.describe("Browse Judoka screen", () => {
 
       judokaGate.release();
 
-      await waitForBrowseReady(page);
+      await expectBrowseReadiness(page);
       await expect(spinner).toBeHidden();
     } finally {
       await judokaGate.cancel();

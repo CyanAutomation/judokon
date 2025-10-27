@@ -1,6 +1,15 @@
 import { test, expect } from "@playwright/test";
 import { waitForBattleState } from "../fixtures/waits.js";
 
+async function expectBattleStateReady(page, stateName, timeout) {
+  const result = await waitForBattleState(page, stateName, timeout);
+  expect(
+    result.ok,
+    result.reason ?? `waitForBattleState should resolve state "${stateName}" via Test API`
+  ).toBe(true);
+  return result;
+}
+
 test.describe("Classic Battle keyboard navigation", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -19,7 +28,7 @@ test.describe("Classic Battle keyboard navigation", () => {
   test("should allow tab navigation to stat buttons and keyboard activation", async ({ page }) => {
     // Wait for stat buttons to be enabled via battle state readiness
     const statButtons = page.getByTestId("stat-button");
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await expectBattleStateReady(page, "waitingForPlayerAction");
     const statButtonCount = await statButtons.count();
     const firstStatButton = statButtons.first();
     const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
@@ -82,7 +91,7 @@ test.describe("Classic Battle keyboard navigation", () => {
     // Wait for stat buttons to be enabled
     const statButtons = page.getByTestId("stat-button");
     const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await expectBattleStateReady(page, "waitingForPlayerAction");
     await expect(statButtons.first()).toBeEnabled();
 
     // Verify the naturally focused button displays the expected outline
@@ -97,7 +106,7 @@ test.describe("Classic Battle keyboard navigation", () => {
   test("should have proper ARIA labels on stat buttons", async ({ page }) => {
     // Check ARIA labels on stat buttons
     const statButtons = page.getByTestId("stat-button");
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await expectBattleStateReady(page, "waitingForPlayerAction");
     const ariaLabelPatterns = ["Power", "Speed", "Technique"].map(
       (stat) => new RegExp(`^(Select ${stat} stat for battle|${stat})$`, "i")
     );
