@@ -41,7 +41,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
   - Flags are alphabetized by their displayed country name.
 
 - **Actionable Fixes:**
-  - [ ] **Disable Horizontal Scrolling (CSS):** In `src/styles/layout.css` or `src/styles/navbar.css`, modify the styles for `.country-flag-slide-track` (or `#country-list`) to prevent horizontal scrolling and allow wrapping.
+  - [x] **Disable Horizontal Scrolling (CSS):** In `src/styles/layout.css` or `src/styles/navbar.css`, modify the styles for `.country-flag-slide-track` (or `#country-list`) to prevent horizontal scrolling and allow wrapping.
 
     ```css
     /* In src/styles/layout.css or a more specific stylesheet */
@@ -54,6 +54,8 @@ This phase addresses the highest-priority bugs preventing users from filtering t
     ```
 
     **Rationale:** `overflow-x: hidden` is critical to prevent the accidental mouse-wheel gesture that currently breaks the component.
+    - Implemented by wrapping and hiding horizontal overflow on `.country-flag-slide-track` in `src/styles/layout.css`.
+    - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [ ] **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
 

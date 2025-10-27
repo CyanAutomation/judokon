@@ -206,8 +206,13 @@ body {
 }
 
 .country-flag-slider .country-flag-slide-track {
-  animation: scroll var(--slide-track-speed) linear infinite;
+  /* Keep flags visible without relying on the marquee animation */
+  animation: none;
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: flex-start;
+  overflow-x: hidden;
 }
 
 .country-flag-slider .slide {

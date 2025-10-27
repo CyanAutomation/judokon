@@ -86,6 +86,8 @@ describe("onNextButtonClick cooldown guard", () => {
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     await vi.runAllTimersAsync();
     expect(consoleMocks.warn).toHaveBeenCalledTimes(1);
+    // Reset button state before second click (advanceWhenReady leaves button disabled)
+    btn.disabled = false;
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     await vi.runAllTimersAsync();
