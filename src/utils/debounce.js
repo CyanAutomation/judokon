@@ -3,7 +3,7 @@
  *
  * @pseudocode
  * 1. Maintain internal `timer` and `pending` (resolve, reject, args).
- * 2. Return a new function that returns a promise and exposes `flush`.
+ * 2. Return a new function that returns a promise and exposes `flush` and `cancel`.
  * 3. On each call:
  *    - Clear the existing `timer`.
  *    - If a pending promise exists:
@@ -47,13 +47,14 @@ export class DebounceError extends Error {
  * 3. Schedule `fn` to run after `delay`; resolve or reject the pending promise
  *    with `fn`'s result or thrown error.
  * 4. Provide `.flush()` to synchronously run any pending invocation immediately.
+ * 5. Provide `.cancel()` to clear the timer without invoking `fn`.
  *
  * @param {Function} fn - Function to debounce.
  * @param {number} delay - Milliseconds to wait before invoking `fn`.
  * @param {object} [options] - Optional settings.
  * @param {boolean} [options.suppressRejection] - Resolve previous pending promise instead of rejecting.
  * @param {(error: DebounceError) => void} [options.onCancel] - Callback invoked when a pending call is canceled.
- * @returns {Function & {flush: () => void}} Debounced function returning a Promise and exposing `.flush()`.
+ * @returns {Function & {flush: () => void, cancel: () => void}} Debounced function returning a Promise and exposing `.flush()` and `.cancel()`.
  */
 export function debounce(
   fn,

@@ -40,6 +40,14 @@ const historyTogglePlacementRegistry = new WeakMap();
 let randomJudokaPageInitialized = false;
 let randomJudokaInitPromise = null;
 
+function signalRandomJudokaReady(resolve) {
+  if (document.body?.getAttribute("data-random-judoka-ready") !== "true") {
+    document.body?.setAttribute("data-random-judoka-ready", "true");
+    document.dispatchEvent(new CustomEvent("random-judoka-ready", { bubbles: true }));
+  }
+  resolve();
+}
+
 /**
  * Floats the history toggle button inside the dialog panel to keep it accessible.
  *
@@ -660,8 +668,8 @@ export async function setupRandomJudokaPage() {
  * await Promise.all([setup, nav])
  */
 export async function initRandomJudokaPage() {
-  if (randomJudokaPageInitialized && randomJudokaInitPromise) {
-    return randomJudokaInitPromise;
+  if (randomJudokaPageInitialized) {
+    return randomJudokaInitPromise ?? Promise.resolve();
   }
 
   if (randomJudokaInitPromise) {
@@ -724,10 +732,10 @@ export async function initRandomJudokaPage() {
  */
 export const randomJudokaReadyPromise = new Promise((resolve) => {
   onDomReady(() => {
-    initRandomJudokaPage().then(() => {
-      document.body?.setAttribute("data-random-judoka-ready", "true");
-      document.dispatchEvent(new CustomEvent("random-judoka-ready", { bubbles: true }));
-      resolve();
+    const initPromise = randomJudokaInitPromise ?? initRandomJudokaPage();
+
+    (initPromise ?? Promise.resolve()).then(() => {
+      signalRandomJudokaReady(resolve);
     });
   });
 });

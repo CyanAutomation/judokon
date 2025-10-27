@@ -54,10 +54,9 @@ const SAVE_DELAY_MS = IS_TEST ? 10 : 100;
 
 const debouncedSave = debounce(
   (settings) => {
-    if (typeof localStorage === "undefined") {
-      throw new Error("localStorage unavailable");
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     }
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   },
   SAVE_DELAY_MS,
   { setTimeout: (...args) => setTimer(...args), clearTimeout: (...args) => clearTimer(...args) }
@@ -147,13 +146,16 @@ export async function getSettingsSchema() {
  *
  * @pseudocode
  * 1. Invoke `debouncedSave` with `settings`.
- * 2. Return the resulting promise so callers can handle failures.
+ * 2. When the debounced write resolves, refresh the in-memory cache via `setCachedSettings`.
+ * 3. Return the resulting promise so callers can handle failures.
  *
  * @param {import("../config/settingsDefaults.js").Settings} settings - Settings object to save.
  * @returns {Promise<void>} Resolves when the write completes.
  */
 export function saveSettings(settings) {
-  return debouncedSave(settings);
+  return debouncedSave(settings).then(() => {
+    setCachedSettings(settings);
+  });
 }
 
 /**
@@ -269,7 +271,9 @@ export function updateSetting(key, value) {
  * @returns {import("../config/settingsDefaults.js").Settings} The default settings object.
  */
 export function resetSettings() {
-  debouncedSave.cancel();
+  if (typeof debouncedSave.cancel === "function") {
+    debouncedSave.cancel();
+  }
   try {
     if (typeof localStorage !== "undefined") {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULT_SETTINGS));

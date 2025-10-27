@@ -68,6 +68,7 @@ describe("randomJudokaPage draw button", () => {
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
+    document.body?.removeAttribute("data-random-judoka-ready");
 
     const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
     await initRandomJudokaPage();
@@ -199,5 +200,6 @@ describe("randomJudokaPage draw button", () => {
     expect(document.querySelectorAll("#draw-card-btn")).toHaveLength(1);
     expect(document.querySelectorAll("#toggle-history-btn")).toHaveLength(1);
     expect(document.querySelectorAll("#history-panel")).toHaveLength(1);
+    expect(document.body?.getAttribute("data-random-judoka-ready")).toBe("true");
   });
 });
