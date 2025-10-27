@@ -71,7 +71,6 @@ describe("BattleEngine timer pause/resume and drift correction", () => {
     engine.resumeTimer();
     expect(engine.timer.resume).toHaveBeenCalled();
   });
-
 });
 
 describe("BattleEngine handleTimerDrift restart paths", () => {

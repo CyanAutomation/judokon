@@ -575,15 +575,16 @@ export class BattleEngine {
    * @param {number} driftAmount - Amount of drift detected in seconds.
    */
   handleTimerDrift(remainingTime) {
-    const category = typeof this.timer.getActiveCategory === "function"
-      ? this.timer.getActiveCategory()
-      : null;
+    const category =
+      typeof this.timer.getActiveCategory === "function" ? this.timer.getActiveCategory() : null;
     const onTick = this.timer.onTickCb;
     const onExpired = this.timer.onExpiredCb;
     this.stopTimer();
     this.lastTimerDrift = remainingTime;
     const restartRound = category !== "coolDownTimer";
-    const restart = restartRound ? this.timer.startRound.bind(this.timer) : this.timer.startCoolDown.bind(this.timer);
+    const restart = restartRound
+      ? this.timer.startRound.bind(this.timer)
+      : this.timer.startCoolDown.bind(this.timer);
     restart(onTick, onExpired, remainingTime, (r) => this.handleTimerDrift(r));
   }
 
