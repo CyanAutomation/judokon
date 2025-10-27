@@ -102,5 +102,14 @@ export function setScheduler(newScheduler) {
   if (!newScheduler || typeof newScheduler.setTimeout !== "function") {
     throw new Error("Invalid scheduler object provided");
   }
-  currentScheduler = newScheduler;
+
+  const schedulerWithFallback =
+    typeof newScheduler.clearTimeout === "function"
+      ? newScheduler
+      : {
+          ...newScheduler,
+          clearTimeout: realScheduler.clearTimeout
+        };
+
+  currentScheduler = schedulerWithFallback;
 }
