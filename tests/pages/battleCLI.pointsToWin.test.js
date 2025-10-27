@@ -4,7 +4,6 @@ import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 async function flushMicrotasks() {
   for (let i = 0; i < 5; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     await Promise.resolve();
   }
   await new Promise((resolve) => {
@@ -20,10 +19,19 @@ describe("battleCLI points select", () => {
 
   it("confirms and persists points to win", async () => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
-    const mod = await loadBattleCLI();
+    const mod = await loadBattleCLI({
+      battleStats: ["speed", "strength"],
+      stats: [
+        { statIndex: 1, name: "Speed" },
+        { statIndex: 2, name: "Strength" }
+      ],
+      html: '<div id="player-card"></div>'
+    });
     const root = mod.ensureCliDomForTest();
     const select = root.querySelector("#points-select");
     await mod.init();
+    await mod.renderStatList();
+    const initModule = await import("../../src/pages/battleCLI/init.js");
     const header = document.getElementById("cli-round");
     const roundMessage = document.getElementById("round-message");
     const verboseLog = document.getElementById("cli-verbose-log");
@@ -40,33 +48,24 @@ describe("battleCLI points select", () => {
 
     expect(select.value).toBe("5");
 
-    // Preload DOM with non-default state so resetMatch effects are observable
-    if (roundMessage) {
-      roundMessage.textContent = "Victory!";
-    }
-    if (verboseLog) {
-      verboseLog.textContent = "Previous log";
-    }
-    if (scoreLine) {
-      scoreLine.dataset.scorePlayer = "3";
-      scoreLine.dataset.scoreOpponent = "1";
-      scoreLine.textContent = "You: 3 Opponent: 1";
-    }
-    if (statsList) {
-      statsList.dataset.selectedIndex = "1";
-      const firstStat = statsList.querySelector(".cli-stat");
-      firstStat?.classList.add("selected");
-      firstStat?.setAttribute("aria-selected", "true");
-    }
-    if (root) {
-      root.dataset.round = "4";
-      root.dataset.target = "20";
-    }
-    if (header) {
-      header.textContent = "Round 4 Target: 20";
-    }
+    // Establish non-default state using public helpers so resetMatch effects are observable
+    const { updateRoundHeader } = await import("../../src/pages/battleCLI/dom.js");
+    updateRoundHeader(4, 20);
+    initModule.selectStat("speed");
+    mod.handleRoundResolved({
+      detail: {
+        result: {
+          message: "Victory!",
+          playerScore: 3,
+          opponentScore: 1
+        },
+        stat: "speed",
+        playerVal: 5,
+        opponentVal: 2
+      }
+    });
+    mod.cli.appendTranscript("Previous log");
 
-    const initModule = await import("../../src/pages/battleCLI/init.js");
     const resetSpy = vi.spyOn(initModule, "resetMatch");
     const { setPointsToWin, getPointsToWin } = await import(
       "../../src/helpers/battleEngineFacade.js"
