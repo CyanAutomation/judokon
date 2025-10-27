@@ -84,7 +84,9 @@ async function readBattleReadinessDiagnostics(page) {
     })();
 
     const machineState = debugInfo?.machine?.currentState ?? null;
-    const orchestratorAttached = Boolean(debugInfo?.store?.orchestrator ?? window.battleStore?.orchestrator);
+    const orchestratorAttached = Boolean(
+      debugInfo?.store?.orchestrator ?? window.battleStore?.orchestrator
+    );
 
     return {
       datasetReady,
@@ -249,7 +251,11 @@ async function collectBattleStateDiagnostics(page, stateName) {
  * 3. OTHERWISE collect readiness diagnostics and return a structured failure payload.
  */
 export async function waitForBattleReady(page, { timeout = 10_000 } = {}) {
-  const { ok, value, error } = await callTestApiMethod(page, ["init", "waitForBattleReady"], [timeout]);
+  const { ok, value, error } = await callTestApiMethod(
+    page,
+    ["init", "waitForBattleReady"],
+    [timeout]
+  );
 
   if (!ok) {
     const diagnostics = await readBattleReadinessDiagnostics(page);
@@ -371,7 +377,11 @@ export async function waitForSettingsReady(page) {
  * 3. OTHERWISE capture window diagnostics and artifact paths, returning a structured failure payload.
  */
 export async function waitForBattleState(page, stateName, timeout = 10000) {
-  const result = await callTestApiMethod(page, ["state", "waitForBattleState"], [stateName, timeout]);
+  const result = await callTestApiMethod(
+    page,
+    ["state", "waitForBattleState"],
+    [stateName, timeout]
+  );
 
   if (result.ok && result.value === true) {
     return {
