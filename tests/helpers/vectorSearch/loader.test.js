@@ -99,10 +99,19 @@ describe("vectorSearch loader helpers", () => {
     const firstResult = await withMutedConsole(() => loaderModule.loadEmbeddings());
     expect(firstResult).toBeNull();
     expect(fetchJson).toHaveBeenCalledTimes(2);
+    expect(fetchJson.mock.calls.map(([url]) => url)).toEqual([
+      expect.stringContaining("client_embeddings.json"),
+      expect.stringContaining("client_embeddings.manifest.json")
+    ]);
 
     const secondResult = await loaderModule.loadEmbeddings();
     expect(secondResult).toEqual(sample);
     expect(fetchJson).toHaveBeenCalledTimes(3);
+    expect(fetchJson.mock.calls.map(([url]) => url)).toEqual([
+      expect.stringContaining("client_embeddings.json"),
+      expect.stringContaining("client_embeddings.manifest.json"),
+      expect.stringContaining("client_embeddings.json")
+    ]);
 
     const cachedResult = await loaderModule.loadEmbeddings();
     expect(cachedResult).toBe(secondResult);

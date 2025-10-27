@@ -126,7 +126,7 @@ export async function loadEmbeddings() {
       for (const fn of loaders) {
         try {
           const result = await fn();
-          if (result) return result;
+          if (Array.isArray(result)) return result;
         } catch (err) {
           errors.push(err);
         }
