@@ -144,4 +144,27 @@ describe("classicBattle stat selection flag reset", () => {
     expect(document.body.hasAttribute("data-stat-selected")).toBe(false);
     expect(button.classList.contains("selected")).toBe(false);
   });
+
+  it("clears body selection attribute when roundReset event fires", async () => {
+    const { bindUIServiceEventHandlersOnce } = await import(
+      "../../../src/helpers/classicBattle/uiService.js"
+    );
+    const { emitBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+
+    document.body.innerHTML = '<div class="modal" id="round-summary"></div>';
+    const modal = document.getElementById("round-summary");
+    modal.close = vi.fn();
+
+    document.body.setAttribute("data-stat-selected", "true");
+    bindUIServiceEventHandlersOnce();
+
+    await withMutedConsole(async () => {
+      emitBattleEvent("roundReset");
+    });
+
+    expect(document.body.hasAttribute("data-stat-selected")).toBe(false);
+    expect(modal.close).toHaveBeenCalled();
+  });
 });
