@@ -27,6 +27,43 @@
   --modern-color-text-muted: #475569;
   --modern-color-text-inverted: #f8fafc;
   --modern-color-focus-ring: #c7d2fe;
+  --modern-hero-visual-surface: color-mix(
+    in srgb,
+    var(--modern-color-surface) 92%,
+    var(--modern-color-surface-muted) 8%
+  );
+  --modern-hero-visual-border: color-mix(
+    in srgb,
+    var(--modern-color-border) 75%,
+    transparent
+  );
+  --modern-hero-chip-bg: color-mix(
+    in srgb,
+    var(--modern-color-primary) 16%,
+    var(--modern-color-surface) 84%
+  );
+  --modern-hero-chip-bg-strong: color-mix(
+    in srgb,
+    var(--modern-color-primary) 28%,
+    var(--modern-color-surface) 72%
+  );
+  --modern-hero-chip-bg-accent: color-mix(
+    in srgb,
+    var(--modern-color-accent) 24%,
+    var(--modern-color-surface) 76%
+  );
+  --modern-hero-chip-text: var(--modern-color-text);
+  --modern-hero-chip-text-inverted: var(--modern-color-text-inverted);
+  --modern-hero-accent-gradient: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--modern-color-secondary) 42%, transparent) 0%,
+    color-mix(in srgb, var(--modern-color-primary) 38%, transparent) 100%
+  );
+  --modern-hero-accent-glow: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--modern-color-accent) 28%, transparent) 0%,
+    transparent 80%
+  );
 
   /* Radii */
   --modern-radius-sm: 8px;
@@ -160,6 +197,43 @@
   --modern-color-text-muted: #94a3b8;
   --modern-color-text-inverted: #0f172a;
   --modern-color-focus-ring: rgba(96, 165, 250, 0.6);
+  --modern-hero-visual-surface: color-mix(
+    in srgb,
+    var(--modern-color-surface) 88%,
+    var(--modern-color-surface-muted) 12%
+  );
+  --modern-hero-visual-border: color-mix(
+    in srgb,
+    var(--modern-color-border) 80%,
+    transparent
+  );
+  --modern-hero-chip-bg: color-mix(
+    in srgb,
+    var(--modern-color-primary) 32%,
+    var(--modern-color-surface) 68%
+  );
+  --modern-hero-chip-bg-strong: color-mix(
+    in srgb,
+    var(--modern-color-secondary) 42%,
+    var(--modern-color-surface) 58%
+  );
+  --modern-hero-chip-bg-accent: color-mix(
+    in srgb,
+    var(--modern-color-accent) 38%,
+    var(--modern-color-surface) 62%
+  );
+  --modern-hero-chip-text: var(--modern-color-text);
+  --modern-hero-chip-text-inverted: var(--modern-color-text-inverted);
+  --modern-hero-accent-gradient: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--modern-color-secondary) 54%, transparent) 0%,
+    color-mix(in srgb, var(--modern-color-primary) 42%, transparent) 100%
+  );
+  --modern-hero-accent-glow: linear-gradient(
+    200deg,
+    color-mix(in srgb, var(--modern-color-accent) 46%, transparent) 0%,
+    transparent 85%
+  );
   --shadow-base: 0 14px 35px rgba(2, 6, 23, 0.45);
   --shadow-hover: 0 22px 55px rgba(2, 6, 23, 0.6);
   --button-disabled-bg: #454f61;
@@ -182,6 +256,43 @@
   --modern-color-text-muted: #6ddb5f;
   --modern-color-text-inverted: #031f12;
   --modern-color-focus-ring: rgba(77, 227, 143, 0.6);
+  --modern-hero-visual-surface: color-mix(
+    in srgb,
+    var(--modern-color-surface) 92%,
+    var(--modern-color-background) 8%
+  );
+  --modern-hero-visual-border: color-mix(
+    in srgb,
+    var(--modern-color-border) 65%,
+    transparent
+  );
+  --modern-hero-chip-bg: color-mix(
+    in srgb,
+    var(--modern-color-primary) 32%,
+    var(--modern-color-background) 68%
+  );
+  --modern-hero-chip-bg-strong: color-mix(
+    in srgb,
+    var(--modern-color-primary) 48%,
+    var(--modern-color-background) 52%
+  );
+  --modern-hero-chip-bg-accent: color-mix(
+    in srgb,
+    var(--modern-color-accent) 42%,
+    var(--modern-color-background) 58%
+  );
+  --modern-hero-chip-text: var(--modern-color-text);
+  --modern-hero-chip-text-inverted: var(--modern-color-text-inverted);
+  --modern-hero-accent-gradient: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--modern-color-secondary) 52%, transparent) 0%,
+    color-mix(in srgb, var(--modern-color-primary) 46%, transparent) 100%
+  );
+  --modern-hero-accent-glow: linear-gradient(
+    200deg,
+    color-mix(in srgb, var(--modern-color-accent) 48%, transparent) 0%,
+    transparent 85%
+  );
   --shadow-base: none;
   --shadow-hover: none;
   --button-hover-bg: #76bf67;
@@ -400,7 +511,11 @@
 
 .theme-modern .modern-hero {
   position: relative;
+  display: grid;
+  gap: clamp(var(--space-lg), 4vw, var(--space-xxl));
   padding: clamp(var(--space-xl), 6vw, var(--space-xxl));
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
   background:
     linear-gradient(
       135deg,
@@ -412,6 +527,16 @@
   border-radius: var(--modern-radius-lg);
   box-shadow: var(--modern-shadow-md);
   overflow: hidden;
+}
+
+.theme-modern .modern-hero__layout {
+  display: contents;
+}
+
+@media (min-width: 720px) {
+  .theme-modern .modern-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.65fr);
+  }
 }
 
 .theme-modern .modern-hero::after {
@@ -435,6 +560,123 @@
   gap: clamp(var(--space-md), 2vw, var(--space-xl));
   color: var(--modern-color-text);
   font-family: var(--font-family-sans);
+}
+
+.theme-modern .modern-hero__visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: clamp(var(--space-md), 4vw, var(--space-xl));
+}
+
+.theme-modern .modern-hero__visual::before,
+.theme-modern .modern-hero__visual::after {
+  content: "";
+  position: absolute;
+  inline-size: clamp(160px, 32vw, 260px);
+  block-size: clamp(160px, 32vw, 260px);
+  border-radius: 32px;
+  background: var(--modern-hero-accent-gradient);
+  filter: blur(0.5px);
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.theme-modern .modern-hero__visual::before {
+  inset-block-end: clamp(-36px, -6vw, -16px);
+  inset-inline-end: clamp(-28px, -4vw, -12px);
+}
+
+.theme-modern .modern-hero__visual::after {
+  inset-block-start: clamp(-40px, -6vw, -18px);
+  inset-inline-start: clamp(-30px, -4vw, -16px);
+  background: var(--modern-hero-accent-glow);
+  border-radius: 999px;
+  filter: blur(26px);
+  opacity: 0.65;
+}
+
+.theme-modern .modern-hero-preview {
+  position: relative;
+  display: grid;
+  gap: var(--space-md);
+  padding: clamp(var(--space-lg), 4vw, var(--space-xl));
+  background: var(--modern-hero-visual-surface);
+  border: 1px solid var(--modern-hero-visual-border);
+  border-radius: var(--modern-radius-lg);
+  box-shadow: var(--modern-shadow-md);
+  max-inline-size: clamp(260px, 38vw, 320px);
+  z-index: 1;
+}
+
+.theme-modern .modern-hero-preview__card {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.theme-modern .modern-hero-preview__header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-family-sans);
+  font-size: var(--modern-font-size-sm);
+  font-weight: var(--modern-font-weight-medium);
+  color: color-mix(in srgb, var(--modern-color-text) 85%, var(--modern-color-text-muted) 15%);
+}
+
+.theme-modern .modern-hero-preview__title {
+  text-transform: uppercase;
+  letter-spacing: var(--modern-letter-spacing-wide);
+  font-size: var(--modern-font-size-xs);
+}
+
+.theme-modern .modern-hero-preview__dot {
+  inline-size: 12px;
+  block-size: 12px;
+  border-radius: 999px;
+  background: var(--modern-hero-chip-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--modern-color-border) 40%, transparent);
+}
+
+.theme-modern .modern-hero-preview__dot--primary {
+  background: var(--modern-hero-chip-bg-strong);
+}
+
+.theme-modern .modern-hero-preview__dot--accent {
+  background: var(--modern-hero-chip-bg-accent);
+}
+
+.theme-modern .modern-hero-preview__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.theme-modern .modern-hero-preview-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding-block: 0.35rem;
+  padding-inline: 0.85rem;
+  border-radius: var(--modern-radius-full);
+  font-size: var(--modern-font-size-xs);
+  font-weight: var(--modern-font-weight-medium);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--modern-hero-chip-bg);
+  color: var(--modern-hero-chip-text);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 35%, transparent);
+}
+
+.theme-modern .modern-hero-preview-chip--dark {
+  background: var(--modern-hero-chip-bg-strong);
+  color: var(--modern-hero-chip-text-inverted);
+}
+
+.theme-modern .modern-hero-preview-chip--accent {
+  background: var(--modern-hero-chip-bg-accent);
 }
 
 .theme-modern .modern-hero__eyebrow {
