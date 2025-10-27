@@ -135,6 +135,11 @@ export async function loadEmbeddings() {
       return null;
     })();
   }
-  cachedEmbeddings = await embeddingsPromise;
-  return cachedEmbeddings;
+  const result = await embeddingsPromise;
+  if (Array.isArray(result)) {
+    cachedEmbeddings = result;
+    return cachedEmbeddings;
+  }
+  embeddingsPromise = undefined;
+  return null;
 }
