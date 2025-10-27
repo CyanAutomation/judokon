@@ -14,11 +14,14 @@ function mockQuitMatch() {
   window.location.href = "http://localhost/index.html";
 }
 
-vi.mock("../../../src/helpers/featureFlags.js", () => ({
-  isEnabled: vi.fn().mockReturnValue(false),
-  featureFlagsEmitter: new EventTarget(),
-  initFeatureFlags: vi.fn()
-}));
+vi.mock("../../../src/helpers/featureFlags.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/featureFlags.js");
+  return {
+    isEnabled: actual.isEnabled,
+    featureFlagsEmitter: new EventTarget(),
+    initFeatureFlags: vi.fn()
+  };
+});
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({ setupScoreboard: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/skipHandler.js");

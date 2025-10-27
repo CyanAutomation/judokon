@@ -42,8 +42,10 @@
 - **Progress (2025-10-27)**: Introduced a floating developer HUD that renders aggregated `DEBUG_PERF` metrics in real time and now initializes alongside the Settings page when profiling is enabled (`src/helpers/debugFlagHud.js`, `src/helpers/settingsPage.js`, `tests/helpers/debugFlagHud.test.js`).
 - **Progress (2025-10-27)**: HUD bootstraps on Classic Battle and CLI entry points so runtime toggles surface metrics without visiting Settings first (`src/pages/battleClassic.init.js`, `src/pages/battleCLI/init.js`, `playwright/battle-classic/feature-flags.spec.js`, `playwright/cli-layout.spec.js`).
 - **Progress (2025-10-27)**: HUD now highlights slow toggles, tags entries exceeding configurable thresholds, and emits `debug-flag-hud:alert` events for automation hooks (`src/helpers/debugFlagHud.js`, `tests/helpers/debugFlagHud.test.js`, `playwright/settings.spec.js`).
+- **Progress (2025-10-27)**: Alert history persists across the session and can be exported via copy/download for post-run inspection (`src/helpers/debugFlagHud.js`, `tests/helpers/debugFlagHud.test.js`, `playwright/settings.spec.js`).
 - **Next steps**:
-  1. Persist alert history for post-run inspection (e.g., download JSON or copy-to-clipboard).
+  1. Surface alert history summaries directly in the HUD (e.g., collapsible history list with timestamps).
+  2. Pipe exported alert artifacts into automated regression dashboards for long-term tracking.
 
 ## Observations & Questions
 
