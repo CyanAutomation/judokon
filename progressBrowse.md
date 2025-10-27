@@ -57,7 +57,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
     - Implemented by wrapping and hiding horizontal overflow on `.country-flag-slide-track` in `src/styles/layout.css`.
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
-  - [ ] **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
+  - [x] **Implement Filtering Logic (JavaScript):** In `src/helpers/browse/setupCountryFilter.js`, ensure the event handler correctly identifies the selected country and triggers a data update for the carousel.
 
     ```javascript
     // In src/helpers/browse/setupCountryFilter.js
@@ -69,6 +69,9 @@ This phase addresses the highest-priority bugs preventing users from filtering t
       window.dispatchEvent(new CustomEvent("filterByCountry", { detail: { countryCode } }));
     }
     ```
+    - Updated `setupCountryFilter` to resolve the clicked flag radio, synthesize a native click for pointer targets, and route filtering through a shared `input` listener so both pointer and keyboard interactions re-render the carousel.
+    - Added an interaction test (`tests/helpers/browseJudokaPage.test.js`) that exercises flag clicks and keyboard-driven filtering.
+    - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [ ] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
 

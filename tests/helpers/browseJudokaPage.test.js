@@ -338,12 +338,11 @@ describe("browseJudokaPage helpers", () => {
     expect(render).toHaveBeenCalled();
     expect(render.mock.calls.at(-1)?.[0]).toEqual([{ id: 1, country: "Japan" }]);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
     render.mockClear();
     panel.open = true;
     brazilRadio.checked = true;
     japanRadio.checked = false;
-    brazilRadio.dispatchEvent(new Event("change", { bubbles: true }));
+    brazilRadio.dispatchEvent(new Event("input", { bubbles: true }));
     await Promise.resolve();
 
     expect(render).toHaveBeenCalledTimes(1);

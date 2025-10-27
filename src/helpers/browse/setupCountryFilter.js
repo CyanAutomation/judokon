@@ -180,7 +180,6 @@ export function setupCountryFilter(
     adapter ??
     createCountryFilterAdapter(listContainer, toggleButton, panel, carouselEl, ariaLiveEl);
   const controller = createCountryFilterController(judokaList, render, resolvedAdapter);
-  let skipNextChange = false;
   const resolveRadioFromTarget = (target) => {
     if (!listContainer || !(target instanceof Element)) {
       return null;
@@ -205,37 +204,24 @@ export function setupCountryFilter(
     void controller.clear();
   });
 
-  listContainer?.addEventListener?.("change", (event) => {
+  listContainer?.addEventListener?.("input", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement) || target.type !== "radio") {
-      return;
-    }
-    if (skipNextChange) {
-      skipNextChange = false;
       return;
     }
     void controller.select(target);
   });
 
   listContainer?.addEventListener?.("click", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.type === "radio") {
+      return;
+    }
     const radio = resolveRadioFromTarget(event.target);
     if (!radio) {
       return;
     }
-    skipNextChange = true;
-    const radios = resolvedAdapter.getRadios?.() ?? [];
-    for (const input of radios) {
-      input.checked = input === radio;
-    }
-    void controller.select(radio).finally(() => {
-      if (typeof setTimeout === "function") {
-        setTimeout(() => {
-          skipNextChange = false;
-        }, 0);
-      } else {
-        skipNextChange = false;
-      }
-    });
+    radio.click();
   });
 
   return controller;

@@ -1,0 +1,322 @@
+Battle Pages Test Centralization Plan
+=====================================
+
+PURPOSE
+-------
+Organize all unit and integration tests for src/pages/battleClassic.html and
+src/pages/battleCLI.html into a central regression testing suite to prevent
+regressions on these critical pages.
+
+Status: Planning phase
+Owner: AI Agent / Development Team
+
+
+EXECUTIVE SUMMARY
+-----------------
+
+JU-DO-KON! has 336+ unit tests scattered across multiple directories. Tests for
+the two critical battle pages are distributed across multiple locations:
+
+- tests/classicBattle/ (15+ files)
+- tests/pages/battleCLI.*.test.js (20+ files)
+- tests/helpers/battle*.test.js (10+ files)
+- tests/components/ (5+ relevant files)
+- tests/integration/ (2 files)
+- tests/config/ (1 file)
+- tests/styles/ (2 files)
+- playwright/battle-classic/ (20+ E2E tests)
+- playwright/cli*.spec.js (5+ E2E tests)
+
+This plan centralizes these tests into a clear structure with automated
+regression testing capabilities.
+
+
+CURRENT TEST INVENTORY
+----------------------
+
+Classic Battle Tests (battleClassic.html):
+  - Battle Logic: 15 files in tests/classicBattle/
+  - Battle Helpers: 8 files in tests/helpers/battle*.test.js
+  - Components: 3 files in tests/components/Scoreboard*.test.js
+  - Config: 1 file in tests/config/battleDefaults.test.js
+  - Styles: 1 file in tests/styles/battleContrast.test.js
+  - Integration: 1 file in tests/integration/battleClassic.integration.test.js
+  - E2E: 20+ files in playwright/battle-classic/
+  
+  Total: ~29 unit/integration files + 20+ E2E files
+
+CLI Battle Tests (battleCLI.html):
+  - Page Tests: 20+ files in tests/pages/battleCLI.*.test.js
+  - CLI Logic: 2 files in tests/cli/
+  - Styles: 1 file in tests/styles/battleCLI.focusContrast.test.js
+  - E2E: 5+ files in playwright/battle-cli*.spec.js
+  
+  Total: ~23 unit files + 5+ E2E files
+
+Shared Components:
+  - Components: 5 files in tests/components/
+  - Configuration: 1 file in tests/config/
+
+
+PROPOSED FOLDER STRUCTURE
+-------------------------
+
+Create tests/battles-regressions/ as the central hub:
+
+tests/battles-regressions/
+├── README.md                          (Regression suite documentation)
+├── classic/
+│   ├── README.md                      (Classic battle test guide)
+│   ├── battle-logic/                  (Game mechanics, timers, scoring)
+│   │   ├── bootstrap.test.js
+│   │   ├── round-select.test.js
+│   │   ├── timer.test.js
+│   │   └── (other battle logic tests)
+│   ├── components/                    (Classic-specific UI components)
+│   │   ├── scoreboard.test.js
+│   │   ├── stat-buttons.test.js
+│   │   └── (other component tests)
+│   ├── integration/                   (Full game flow tests)
+│   │   └── end-to-end.test.js
+│   └── playwright/                    (E2E browser tests - reference folder)
+│       └── README.md                  (Links to playwright/battle-classic/)
+│
+├── cli/
+│   ├── README.md                      (CLI battle test guide)
+│   ├── keybindings/                   (Keyboard shortcuts, hotkeys)
+│   │   ├── shortcuts.test.js
+│   │   ├── focus-navigation.test.js
+│   │   └── (other keybinding tests)
+│   ├── display/                       (CLI-specific formatting)
+│   │   ├── verbose-mode.test.js
+│   │   ├── scoreboard-rendering.test.js
+│   │   └── (other display tests)
+│   ├── compatibility/                 (CLI feature compatibility)
+│   │   ├── seed-validation.test.js
+│   │   ├── points-to-win.test.js
+│   │   └── (other compatibility tests)
+│   └── accessibility/                 (Accessibility for CLI)
+│       ├── focus-contrast.test.js
+│       ├── live-regions.test.js
+│       └── (other accessibility tests)
+│
+└── shared/
+    ├── README.md                      (Shared component guide)
+    ├── scoreboard/
+    │   ├── scoreboard.test.js
+    │   ├── scoreboard-model.test.js
+    │   └── (other scoreboard tests)
+    ├── modal/
+    │   ├── modal-dialog.test.js
+    │   └── (other modal tests)
+    └── configuration/
+        ├── battle-defaults.test.js
+        └── (other config tests)
+
+
+MIGRATION STRATEGY
+------------------
+
+Phase 1: Setup (Week 1)
+  - Create folder structure
+  - Create README documentation
+  - Add npm scripts to package.json
+  - Create vitest configuration for regression tests
+  - Update AGENTS.md
+
+Phase 2: Gradual Migration (Weeks 2-4)
+  - Migrate tests/classicBattle/ → tests/battles-regressions/classic/battle-logic/
+  - Migrate tests/pages/battleCLI.*.test.js → tests/battles-regressions/cli/
+  - Migrate shared components → tests/battles-regressions/shared/
+  - Migrate integration tests → tests/battles-regressions/classic/integration/
+
+Phase 3: Documentation & Cleanup (Week 5)
+  - Update test imports in migrated files
+  - Remove old directories
+  - Verify all tests pass in new locations
+  - Update Playwright test references
+
+
+NPM SCRIPTS TO ADD
+------------------
+
+Add these scripts to package.json:
+
+  "test:battles": "vitest run tests/battles-regressions/"
+  "test:battles:classic": "vitest run tests/battles-regressions/classic/"
+  "test:battles:cli": "vitest run tests/battles-regressions/cli/"
+  "test:battles:shared": "vitest run tests/battles-regressions/shared/"
+  "test:battles:watch": "vitest tests/battles-regressions/"
+  "test:battles:cov": "vitest run tests/battles-regressions/ --coverage"
+
+Usage Examples:
+  npm run test:battles           # Run all battle regression tests
+  npm run test:battles:classic   # Run only Classic Battle tests
+  npm run test:battles:cli       # Run only CLI Battle tests
+  npm run test:battles:shared    # Run only Shared component tests
+  npm run test:battles:watch     # Watch mode during development
+  npm run test:battles:cov       # Generate coverage report
+
+
+WHAT GETS TESTED
+----------------
+
+Classic Battle Regression Suite validates:
+  - Game initialization and bootstrap
+  - Round selection and validation
+  - Stat selection and keyboard shortcuts
+  - Timer functionality (countdown, auto-advance, cooldown)
+  - Scoring and round resolution
+  - Opponent message handling
+  - End-of-match modal
+  - Replay functionality
+  - Feature flag integration
+  - Accessibility (keyboard navigation, ARIA)
+
+CLI Battle Regression Suite validates:
+  - CLI initialization and prompt rendering
+  - Keyboard shortcuts and hotkeys
+  - Number input validation
+  - Verbose mode toggling
+  - Seed validation
+  - Points-to-win configuration
+  - Scoreboard rendering
+  - Focus management
+  - Accessibility (live regions, contrast)
+  - Shared features (timer, scoring)
+
+Shared Components Regression Suite validates:
+  - Scoreboard rendering (both battle modes)
+  - Modal component behavior
+  - Stats panel display
+  - Battle configuration
+
+
+AGENTS.MD UPDATES
+-----------------
+
+Add a new section to AGENTS.md under "Testing" or create a subsection:
+
+### Battle Pages Regression Testing
+
+When working on src/pages/battleClassic.html or src/pages/battleCLI.html:
+
+Before submission, run the full regression suite:
+  npm run test:battles
+
+Specific suites:
+  npm run test:battles:classic   # Classic Battle mode only
+  npm run test:battles:cli       # CLI Battle mode only
+  npm run test:battles:shared    # Shared components only
+  npm run test:battles:cov       # With coverage report
+
+Test Suite Location:
+  tests/battles-regressions/classic/  - Classic Battle tests
+  tests/battles-regressions/cli/      - CLI Battle tests
+  tests/battles-regressions/shared/   - Shared component tests
+
+Key Directories:
+  Path                                   Purpose
+  -----                                  -------
+  tests/battles-regressions/             Central regression test hub
+  tests/battles-regressions/classic/     Classic Battle tests
+  tests/battles-regressions/cli/         CLI Battle tests
+  tests/battles-regressions/shared/      Shared component tests
+  playwright/battle-classic/             E2E browser tests
+  playwright/battle-cli*.spec.js         CLI E2E tests
+
+Integration with main test suite:
+  npm run test:ci                  # Includes battle regression tests
+  npm run test:battles            # Battle tests only (faster feedback)
+  npm run test:battles:watch      # Watch mode during development
+
+
+IMPLEMENTATION CHECKLIST
+------------------------
+
+Phase 1: Setup
+  [ ] Create folder structure: tests/battles-regressions/{classic,cli,shared}
+  [ ] Create README.md files for each subdirectory
+  [ ] Add npm scripts to package.json (6 scripts total)
+  [ ] Create vitest.battles-regressions.config.js (optional)
+  [ ] Update AGENTS.md with new regression testing section
+  [ ] Update playwright/README.md to cross-reference regression suite
+
+Phase 2: Migration
+  [ ] Migrate tests/classicBattle/ → tests/battles-regressions/classic/battle-logic/
+  [ ] Migrate tests/pages/battleCLI.*.test.js → tests/battles-regressions/cli/
+  [ ] Migrate shared components → tests/battles-regressions/shared/
+  [ ] Migrate integration tests → tests/battles-regressions/classic/integration/
+  [ ] Update all test imports in migrated files
+
+Phase 3: Cleanup
+  [ ] Verify all tests pass in new locations
+  [ ] Run full test suite: npm run test:ci
+  [ ] Run battle suite: npm run test:battles
+  [ ] Verify coverage metrics
+  [ ] Remove old directory references from tooling
+  [ ] Update CI/CD pipeline to include new test suites
+  [ ] Document in project README
+
+
+SUCCESS CRITERIA
+----------------
+
+✓ All battle page tests run with single command: npm run test:battles
+✓ Clear file organization makes it obvious what tests cover which page
+✓ New contributors can easily find and add tests for battle pages
+✓ Regression suite provides confidence before deployment
+✓ AGENTS.md clearly documents the testing structure
+✓ No test functionality is lost during migration
+✓ All tests pass in new locations
+✓ CI/CD pipeline includes regression testing
+
+
+BENEFITS OF THIS APPROACH
+-------------------------
+
+1. Centralized Location
+   - All battle page tests in one logical location
+   - Easy for developers to find tests related to their changes
+   - Clear organization by page and feature
+
+2. Single Test Command
+   - npm run test:battles runs all critical regression tests
+   - Faster feedback than running entire test suite
+   - Can be run before commits and in CI/CD
+
+3. Regression Prevention
+   - Catch issues with critical pages early
+   - Clear documentation of what's tested
+   - Easy to add new tests to prevent future regressions
+
+4. Scalability
+   - Pattern can be extended to other critical pages
+   - Existing tests don't need to move immediately
+   - Gradual migration reduces risk
+
+5. Team Clarity
+   - Obvious what tests are most important
+   - New team members can focus on critical functionality
+   - Clear entry point for understanding page testing
+
+
+QUESTIONS FOR DISCUSSION
+------------------------
+
+1. Scope of migration: Should we migrate immediately or gradually over 2-3 weeks?
+2. Playwright tests: Should we create parallel playwright/battles-regressions/ for E2E tests?
+3. CI/CD integration: Should regression suite be mandatory before all PRs merge?
+4. Coverage targets: What minimum coverage should the regression suite maintain?
+5. Naming: Does tests/battles-regressions/ feel like the right name, or prefer tests/battles-critical/?
+
+
+NOTES
+-----
+
+- This plan is non-destructive and can be implemented gradually
+- Existing imports won't break; tests will continue to work in old locations
+- New tests should go directly into tests/battles-regressions/
+- Consider using symlinks for tests that serve double purpose
+- Backward compatibility maintained throughout migration
+- Can extend pattern to other critical pages in future
