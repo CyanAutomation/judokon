@@ -69,6 +69,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
       window.dispatchEvent(new CustomEvent("filterByCountry", { detail: { countryCode } }));
     }
     ```
+
     - Updated `setupCountryFilter` to resolve the clicked flag radio, synthesize a native click for pointer targets, and route filtering through a shared `input` listener so both pointer and keyboard interactions re-render the carousel.
     - Added an interaction test (`tests/helpers/browseJudokaPage.test.js`) that exercises flag clicks and keyboard-driven filtering.
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
@@ -90,6 +91,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
       a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" })
     );
     ```
+
     - Swapped the raw string comparison for an `Intl.Collator`-backed comparator so country names (including diacritics) are ordered predictably.
     - Extended `populateCountryList` tests to cover accent-sensitive ordering and verified the list renders `All`, `Austria`, `Côte d'Ivoire`, `Japan` as expected.
     - Validation: `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
@@ -133,6 +135,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
       overflow: hidden; /* Prevent horizontal scroll */
     }
     ```
+
     - Added a desktop-only block that tightens `.card-stats` padding/typography and removes vertical overflow while keeping cards responsive.
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
@@ -145,6 +148,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
       transition: transform 200ms ease-in-out;
     }
     ```
+
     - Added an active-state rule that scales and elevates the focused card via `.is-active`/`[aria-current="true"]`, matching the PRD emphasis.
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
