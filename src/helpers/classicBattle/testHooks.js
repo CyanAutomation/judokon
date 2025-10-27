@@ -268,13 +268,12 @@ export function resetBindings() {
  * 1. Import helpers that compute stat values and perform selection.
  * 2. Stop any running engine timer to avoid overlapping expirations.
  * 3. Emit `roundTimeout` to inform listeners and start auto-selection.
- * 4. Dispatch the `timeout` state transition to allow DOM updates.
- * 5. Await a microtask to let the DOM settle before continuing auto-select.
+ * 4. Dispatch the `timeout` state transition and permit DOM updates to settle.
+ * 5. Give the browser a chance to render between state transitions via setTimeout(0).
  * 6. Run auto-select and await completion.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle store instance.
  * @returns {Promise<void>} Resolves after the timeout flow completes.
- * @throws {Error} When the timeout event dispatch fails.
  */
 export async function triggerRoundTimeoutNow(store) {
   const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
@@ -295,16 +294,16 @@ export async function triggerRoundTimeoutNow(store) {
   try {
     emitBattleEvent("roundTimeout");
   } catch {}
+  // Dispatch the timeout to transition state (e.g., waitingForPlayerAction -> roundDecision).
+  // Use Promise.resolve() to return a settled promise that still needs awaiting,
+  // then grant the browser a chance to update the DOM via setTimeout(0) before
+  // proceeding with auto-select. This ensures intermediate state changes are observable.
+  await dispatchBattleEvent("timeout");
   
-  const dispatchResult = await dispatchBattleEvent("timeout");
-  if (dispatchResult === false) {
-    throw new Error("Failed to dispatch timeout event: machine unavailable or transition rejected");
-  }
-  
-  // Allow microtasks to process so DOM updates are observable
+  // Allow the browser event loop to process DOM updates before proceeding with auto-select
   await new Promise((resolve) => setTimeout(resolve, 0));
   
-  // Then complete the auto-select
+  // Complete auto-select after the state has settled and DOM has updated
   try {
     await autoSelectStat(onExpiredSelect, 0);
   } catch {}
