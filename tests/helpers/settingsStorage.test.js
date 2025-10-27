@@ -113,7 +113,7 @@ describe("saveSettings", () => {
     expect(JSON.parse(localStorage.getItem("settings")).sound).toBe(false);
   });
 
-  it("updates the cache even when localStorage is unavailable", async () => {
+  it("rejects and leaves the cache unchanged when localStorage is unavailable", async () => {
     const originalStorage = globalThis.localStorage;
     Object.defineProperty(globalThis, "localStorage", {
       value: undefined,
@@ -127,14 +127,9 @@ describe("saveSettings", () => {
     };
 
     const pending = saveSettings(nextSettings);
-    flushSettingsSave();
 
-    await pending;
-
-    expect(getCachedSettings()).toEqual({
-      ...DEFAULT_SETTINGS,
-      motionEffects: false
-    });
+    await expect(pending).rejects.toThrow("localStorage unavailable");
+    expect(getCachedSettings()).toEqual(DEFAULT_SETTINGS);
 
     Object.defineProperty(globalThis, "localStorage", {
       value: originalStorage,
