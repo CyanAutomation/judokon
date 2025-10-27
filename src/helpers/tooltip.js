@@ -6,6 +6,7 @@ import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { debugLog } from "./debug.js";
+import { isEnabled } from "./featureFlags.js";
 
 let tooltipDataPromise;
 let cachedData;
@@ -274,7 +275,13 @@ export async function initTooltips(root = globalThis.document) {
   let overlay = false;
   try {
     const settings = await loadSettings();
-    overlay = Boolean(settings.featureFlags?.tooltipOverlayDebug?.enabled);
+    // Try isEnabled first (respects window.__FF_OVERRIDES), then fall back to loaded settings
+    overlay = isEnabled("tooltipOverlayDebug");
+    // If isEnabled returns false but settings have it enabled, use settings
+    // (this handles unit tests that mock loadSettings but don't call initFeatureFlags)
+    if (!overlay && settings.featureFlags?.tooltipOverlayDebug?.enabled) {
+      overlay = true;
+    }
     if (!settings.tooltips) {
       toggleTooltipOverlayDebug(false);
       notifyReady();
