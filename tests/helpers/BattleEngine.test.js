@@ -12,6 +12,7 @@ import {
 } from "../../src/helpers/constants.js";
 import {
   startRoundTimer,
+  startCoolDownTimer,
   pauseTimer as pauseEngineTimer,
   resumeTimer as resumeEngineTimer
 } from "../../src/helpers/battle/engineTimer.js";
@@ -48,13 +49,6 @@ describe("BattleEngine robustness scenarios", () => {
     expect(engine.timer.resume).toHaveBeenCalled();
   });
 
-  it("handles timer drift", () => {
-    engine.timer.stop = vi.fn();
-    engine.handleTimerDrift(5);
-    expect(engine.lastTimerDrift).toBe(5);
-    expect(engine.timer.stop).toHaveBeenCalled();
-  });
-
   it("handles error injection", () => {
     engine.handleError = vi.fn();
     engine.injectError("Injected error");
@@ -78,11 +72,97 @@ describe("BattleEngine timer pause/resume and drift correction", () => {
     expect(engine.timer.resume).toHaveBeenCalled();
   });
 
-  it("detects and handles timer drift", () => {
-    engine.timer.stop = vi.fn();
+});
+
+describe("BattleEngine handleTimerDrift restart paths", () => {
+  let engine;
+  let startRoundMock;
+  let startCoolDownMock;
+
+  beforeEach(() => {
+    engine = new BattleEngine();
+    startRoundMock = vi
+      .spyOn(engine.timer, "startRound")
+      .mockImplementation(async function (onTick, onExpired, duration) {
+        this.currentTimer = { stop: vi.fn(), pause: vi.fn(), resume: vi.fn() };
+        this.remaining = duration;
+        this.paused = false;
+        this.onTickCb = onTick;
+        this.onExpiredCb = onExpired;
+        this.activeCategory = "roundTimer";
+        this.pauseOnHiddenSetting = true;
+      });
+    startCoolDownMock = vi
+      .spyOn(engine.timer, "startCoolDown")
+      .mockImplementation(async function (onTick, onExpired, duration) {
+        this.currentTimer = { stop: vi.fn(), pause: vi.fn(), resume: vi.fn() };
+        this.remaining = duration;
+        this.paused = false;
+        this.onTickCb = onTick;
+        this.onExpiredCb = onExpired;
+        this.activeCategory = "coolDownTimer";
+        this.pauseOnHiddenSetting = false;
+      });
+  });
+
+  it("restarts the round timer after drift and keeps round behaviour", async () => {
+    const tickSpy = vi.fn();
+    const expiredSpy = vi.fn();
+    const timerTickSpy = vi.fn();
+    engine.on("timerTick", timerTickSpy);
+
+    await startRoundTimer(engine, tickSpy, expiredSpy, 10, (r) => engine.handleTimerDrift(r));
+    expect(startRoundMock).toHaveBeenCalledTimes(1);
+    expect(engine.timer.getActiveCategory()).toBe("roundTimer");
+
+    const firstTickHandler = engine.timer.onTickCb;
+    const firstExpiredHandler = engine.timer.onExpiredCb;
+    engine.timer.onTickCb(9);
+    expect(timerTickSpy).toHaveBeenLastCalledWith({ remaining: 9, phase: "round" });
+    timerTickSpy.mockClear();
+
+    const stopSpy = vi.spyOn(engine.timer.currentTimer, "stop");
+    engine.handleTimerDrift(8);
+    expect(stopSpy).toHaveBeenCalled();
+    expect(engine.lastTimerDrift).toBe(8);
+    expect(startRoundMock).toHaveBeenCalledTimes(2);
+    expect(startCoolDownMock).not.toHaveBeenCalled();
+    expect(engine.timer.onTickCb).toBe(firstTickHandler);
+    expect(engine.timer.onExpiredCb).toBe(firstExpiredHandler);
+    expect(engine.timer.getState().pauseOnHidden).toBe(true);
+
+    engine.timer.onTickCb(7);
+    expect(timerTickSpy).toHaveBeenLastCalledWith({ remaining: 7, phase: "round" });
+  });
+
+  it("restarts the cooldown timer after drift and keeps cooldown behaviour", async () => {
+    const tickSpy = vi.fn();
+    const expiredSpy = vi.fn();
+    const timerTickSpy = vi.fn();
+    engine.on("timerTick", timerTickSpy);
+
+    await startCoolDownTimer(engine, tickSpy, expiredSpy, 5, (r) => engine.handleTimerDrift(r));
+    expect(startCoolDownMock).toHaveBeenCalledTimes(1);
+    expect(engine.timer.getActiveCategory()).toBe("coolDownTimer");
+
+    const firstTickHandler = engine.timer.onTickCb;
+    const firstExpiredHandler = engine.timer.onExpiredCb;
+    engine.timer.onTickCb(4);
+    expect(timerTickSpy).toHaveBeenLastCalledWith({ remaining: 4, phase: "cooldown" });
+    timerTickSpy.mockClear();
+
+    const stopSpy = vi.spyOn(engine.timer.currentTimer, "stop");
     engine.handleTimerDrift(3);
+    expect(stopSpy).toHaveBeenCalled();
     expect(engine.lastTimerDrift).toBe(3);
-    expect(engine.timer.stop).toHaveBeenCalled();
+    expect(startCoolDownMock).toHaveBeenCalledTimes(2);
+    expect(startRoundMock).not.toHaveBeenCalled();
+    expect(engine.timer.onTickCb).toBe(firstTickHandler);
+    expect(engine.timer.onExpiredCb).toBe(firstExpiredHandler);
+    expect(engine.timer.getState().pauseOnHidden).toBe(false);
+
+    engine.timer.onTickCb(2);
+    expect(timerTickSpy).toHaveBeenLastCalledWith({ remaining: 2, phase: "cooldown" });
   });
 });
 
