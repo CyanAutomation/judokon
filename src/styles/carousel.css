@@ -96,12 +96,13 @@ body[data-test-disable-animations] .judoka-card {
   }
 }
 
-
 /* Active card emphasis */
 .card-carousel .judoka-card[aria-current="true"],
 .card-carousel .judoka-card.is-active {
   transform: scale(1.1);
   z-index: 2;
-  transition: transform 180ms ease-in-out, box-shadow 180ms ease-in-out;
+  transition:
+    transform 180ms ease-in-out,
+    box-shadow 180ms ease-in-out;
   box-shadow: var(--shadow-hover);
 }

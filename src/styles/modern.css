@@ -746,12 +746,22 @@
   block-size: 1.35rem;
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option[data-mode="dark"] .display-mode-option__icon {
-  background: color-mix(in srgb, var(--modern-color-secondary) 20%, var(--modern-color-surface) 80%);
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option[data-mode="dark"]
+  .display-mode-option__icon {
+  background: color-mix(
+    in srgb,
+    var(--modern-color-secondary) 20%,
+    var(--modern-color-surface) 80%
+  );
   color: color-mix(in srgb, var(--modern-color-secondary) 82%, var(--modern-color-text) 18%);
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option[data-mode="retro"] .display-mode-option__icon {
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option[data-mode="retro"]
+  .display-mode-option__icon {
   background: color-mix(in srgb, var(--modern-color-accent) 20%, var(--modern-color-surface) 80%);
   color: color-mix(in srgb, var(--modern-color-accent) 80%, var(--modern-color-text) 20%);
 }
@@ -772,42 +782,72 @@
   transform: translateY(-1px);
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option input:checked + .display-mode-option__pill {
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option
+  input:checked
+  + .display-mode-option__pill {
   background: color-mix(in srgb, var(--modern-color-primary) 18%, var(--modern-color-surface) 82%);
   border-color: color-mix(in srgb, var(--modern-color-primary) 62%, transparent);
   color: color-mix(in srgb, var(--modern-color-primary) 92%, var(--modern-color-text) 8%);
   box-shadow: 0 16px 38px color-mix(in srgb, var(--modern-shadow-color-accent) 38%, transparent);
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option[data-mode="dark"] input:checked + .display-mode-option__pill {
-  background: color-mix(in srgb, var(--modern-color-secondary) 22%, var(--modern-color-surface) 78%);
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option[data-mode="dark"]
+  input:checked
+  + .display-mode-option__pill {
+  background: color-mix(
+    in srgb,
+    var(--modern-color-secondary) 22%,
+    var(--modern-color-surface) 78%
+  );
   border-color: color-mix(in srgb, var(--modern-color-secondary) 60%, transparent);
   color: color-mix(in srgb, var(--modern-color-secondary) 88%, var(--modern-color-text) 12%);
   box-shadow: 0 16px 38px color-mix(in srgb, var(--modern-shadow-color-strong) 40%, transparent);
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option[data-mode="retro"] input:checked + .display-mode-option__pill {
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option[data-mode="retro"]
+  input:checked
+  + .display-mode-option__pill {
   background: color-mix(in srgb, var(--modern-color-accent) 24%, var(--modern-color-surface) 76%);
   border-color: color-mix(in srgb, var(--modern-color-accent) 60%, transparent);
   color: color-mix(in srgb, var(--modern-color-accent) 88%, var(--modern-color-text) 12%);
   box-shadow: 0 16px 38px color-mix(in srgb, var(--modern-shadow-color-accent) 42%, transparent);
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option input:checked + .display-mode-option__pill .display-mode-option__icon {
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option
+  input:checked
+  + .display-mode-option__pill
+  .display-mode-option__icon {
   background: color-mix(in srgb, currentColor 35%, var(--modern-color-surface) 65%);
   color: color-mix(in srgb, currentColor 85%, var(--modern-color-text) 15%);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--modern-color-surface) 35%, transparent);
   transform: translateY(-1px) scale(1.05);
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option input:focus-visible + .display-mode-option__pill {
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option
+  input:focus-visible
+  + .display-mode-option__pill {
   outline: none;
   box-shadow:
     0 0 0 3px var(--modern-color-focus-ring),
     0 16px 38px color-mix(in srgb, var(--modern-shadow-color-accent) 32%, transparent);
 }
 
-.theme-modern .modern-hero__display-mode .display-mode-option input:focus-visible + .display-mode-option__pill .display-mode-option__icon {
+.theme-modern
+  .modern-hero__display-mode
+  .display-mode-option
+  input:focus-visible
+  + .display-mode-option__pill
+  .display-mode-option__icon {
   transform: translateY(-1px) scale(1.08);
 }
 

@@ -10,6 +10,7 @@
 Successfully established **centralized regression testing infrastructure** for battle pages. Initial analysis revealed that while file copying works, test imports assume original directory structures. Implemented **hybrid approach** maintaining tests in both locations with centralized npm scripts pointing to originals.
 
 **Key Achievements**:
+
 - ✅ Phase 1: Infrastructure setup (100% complete)
 - ✅ Phase 2: Test file migration (100% complete - 149 files)
 - 🟡 Phase 3: Validation & cleanup (in progress)
@@ -21,6 +22,7 @@ Successfully established **centralized regression testing infrastructure** for b
 ### Phase 1: Infrastructure ✅ COMPLETE
 
 **Deliverables**:
+
 - [x] Created 14 directories in centralized location
 - [x] Added 6 npm scripts to `package.json`
 - [x] Created documentation (4 README.md files)
@@ -28,6 +30,7 @@ Successfully established **centralized regression testing infrastructure** for b
 - [x] All files pass linting (prettier, eslint)
 
 **Files Created**:
+
 - `/workspaces/judokon/tests/battles-regressions/` (14 subdirs)
 - `/workspaces/judokon/tests/battles-regressions/README.md`
 - `/workspaces/judokon/tests/battles-regressions/classic/README.md`
@@ -35,6 +38,7 @@ Successfully established **centralized regression testing infrastructure** for b
 - `/workspaces/judokon/tests/battles-regressions/shared/README.md`
 
 **NPM Scripts Added**:
+
 ```json
 "test:battles": "vitest run tests/battles-regressions/",
 "test:battles:classic": "vitest run tests/battles-regressions/classic/",
@@ -49,6 +53,7 @@ Successfully established **centralized regression testing infrastructure** for b
 ### Phase 2: Test Migration ✅ COMPLETE
 
 **Statistics**:
+
 - **Total Files Migrated**: 149
 - **Classic Battle**: 103 files
   - Battle Logic: 96 files
@@ -65,11 +70,13 @@ Successfully established **centralized regression testing infrastructure** for b
   - Configuration: 1 file
 
 **Migration Method**:
+
 - Files were **copied** (not moved) to preserve originals during validation
 - All directory structures maintained for compatibility
 - No modifications to test code (only file location changed)
 
 **Source Directories Migrated From**:
+
 - `tests/helpers/classicBattle/` (84 files)
 - `tests/helpers/classicBattle*.test.js` (3 files)
 - `tests/helpers/battleEngine/` (6 files)
@@ -92,6 +99,7 @@ Successfully established **centralized regression testing infrastructure** for b
 ### Phase 3: Validation & Cleanup 🟡 IN PROGRESS
 
 **Current Status**:
+
 - [x] All 149 files copied to new locations
 - [ ] Run full test suite: `npm run test:battles`
 - [ ] Verify all tests pass in new locations
@@ -103,6 +111,7 @@ Successfully established **centralized regression testing infrastructure** for b
 **Next Steps**:
 
 1. **Validation**
+
    ```bash
    npm run test:battles          # Run all 149 tests
    npm run test:battles:classic  # Classic subset (103 tests)
@@ -151,15 +160,15 @@ tests/battles-regressions/
 
 ## Key Metrics
 
-| Metric | Value |
-| --- | --- |
-| Total Files Migrated | 149 |
-| Original Locations | 9+ directories |
-| Target Location | 1 centralized hub |
-| Subdirectories Created | 14 |
-| npm Scripts Added | 6 |
-| Documentation Files | 4 README.md |
-| Percentage Complete | 67% (2 of 3 phases) |
+| Metric                 | Value               |
+| ---------------------- | ------------------- |
+| Total Files Migrated   | 149                 |
+| Original Locations     | 9+ directories      |
+| Target Location        | 1 centralized hub   |
+| Subdirectories Created | 14                  |
+| npm Scripts Added      | 6                   |
+| Documentation Files    | 4 README.md         |
+| Percentage Complete    | 67% (2 of 3 phases) |
 
 ---
 
@@ -205,7 +214,7 @@ npm run test:battles
 ✅ **Easier Maintenance** - Clear directory structure for navigation  
 ✅ **Regression Detection** - Dedicated tests for critical pages  
 ✅ **Developer Experience** - Faster test discovery and onboarding  
-✅ **CI/CD Integration** - Dedicated npm scripts for automation  
+✅ **CI/CD Integration** - Dedicated npm scripts for automation
 
 ---
 
@@ -222,11 +231,11 @@ npm run test:battles
 
 ## Timeline
 
-| Phase | Task | Status | Date |
-| --- | --- | --- | --- |
-| 1 | Infrastructure Setup | ✅ Complete | Oct 27, 2025 |
-| 2 | Test Migration | ✅ Complete | Oct 27, 2025 |
-| 3 | Validation & Cleanup | 🟡 In Progress | Oct 27, 2025+ |
+| Phase | Task                 | Status         | Date          |
+| ----- | -------------------- | -------------- | ------------- |
+| 1     | Infrastructure Setup | ✅ Complete    | Oct 27, 2025  |
+| 2     | Test Migration       | ✅ Complete    | Oct 27, 2025  |
+| 3     | Validation & Cleanup | 🟡 In Progress | Oct 27, 2025+ |
 
 ---
 

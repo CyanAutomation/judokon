@@ -611,12 +611,7 @@ export function createSettingsDom() {
   form.id = "settings-form";
   form.className = "settings-form";
 
-  form.append(
-    createGeneralCard(),
-    createGameModesCard(),
-    createAdvancedCard(),
-    createLinksCard()
-  );
+  form.append(createGeneralCard(), createGameModesCard(), createAdvancedCard(), createLinksCard());
 
   fragment.append(createSaveStatus(), form, createErrorPopup());
   return fragment;
