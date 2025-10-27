@@ -97,6 +97,30 @@ describe("handleStatSelection helpers", () => {
     expect(store.selectionMade).toBe(true);
   });
 
+  it("preserves delayOpponentMessage overrides when feature flag enabled", async () => {
+    const previousOverrides = window.__FF_OVERRIDES;
+    window.__FF_OVERRIDES = { ...(previousOverrides || {}), opponentDelayMessage: true };
+
+    try {
+      await handleStatSelection(store, "power", {
+        playerVal: 1,
+        opponentVal: 2,
+        delayOpponentMessage: false
+      });
+    } finally {
+      if (previousOverrides === undefined) {
+        delete window.__FF_OVERRIDES;
+      } else {
+        window.__FF_OVERRIDES = previousOverrides;
+      }
+    }
+
+    const statSelectedCall = emitBattleEvent.mock.calls.find(
+      ([eventName]) => eventName === "statSelected"
+    );
+    expect(statSelectedCall?.[1]?.opts?.delayOpponentMessage).toBe(false);
+  });
+
   it("applies test-mode shortcuts", async () => {
     document.body.innerHTML = `
       <div id="next-round-timer">123</div>

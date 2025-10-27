@@ -145,9 +145,20 @@ export function createBattleEngine(config = {}) {
     config.forceCreate ||
     (typeof window !== "undefined" && window.__ENGINE_CONFIG?.forceCreate) ||
     (typeof requireEngine !== "function" ? false : false); // Always create fresh in test mode
+  const isProcessTestEnv =
+    typeof window === "undefined" &&
+    typeof process !== "undefined" &&
+    Boolean(
+      process?.env?.VITEST ||
+        process?.env?.NODE_ENV === "test" ||
+        process?.env?.JEST_WORKER_ID ||
+        process?.env?.BABEL_ENV === "test"
+    );
   // Check if we're in test mode and force create if so
   const isTest =
-    typeof window !== "undefined" && (window.__TEST__ || window.__ENGINE_CONFIG?.forceCreate);
+    (typeof window !== "undefined" &&
+      (window.__TEST__ || window.__ENGINE_CONFIG?.forceCreate)) ||
+    isProcessTestEnv;
   const currentEngine = typeof window !== "undefined" ? battleEngines.get(window) : battleEngine;
   if (currentEngine && !forceCreate && !isTest) {
     logger.log("battleEngineFacade: returning existing engine instance");
