@@ -24,7 +24,7 @@ function mergeSettings(base, overrides) {
   return result;
 }
 
-function deepEqual(a, b) {
+function deepEqual(a, b, visited = new WeakMap()) {
   if (a === b) {
     return true;
   }
@@ -37,12 +37,28 @@ function deepEqual(a, b) {
     return false;
   }
 
-  if (Array.isArray(a) || Array.isArray(b)) {
-    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
+  const aIsArray = Array.isArray(a);
+  const bIsArray = Array.isArray(b);
+  if (aIsArray !== bIsArray) {
+    return false;
+  }
+
+  const cachedForA = visited.get(a);
+  if (cachedForA?.has(b)) {
+    return true;
+  }
+  if (cachedForA) {
+    cachedForA.add(b);
+  } else {
+    visited.set(a, new WeakSet([b]));
+  }
+
+  if (aIsArray) {
+    if (a.length !== b.length) {
       return false;
     }
     for (let i = 0; i < a.length; i += 1) {
-      if (!deepEqual(a[i], b[i])) {
+      if (!deepEqual(a[i], b[i], visited)) {
         return false;
       }
     }
@@ -59,7 +75,7 @@ function deepEqual(a, b) {
     if (!Object.hasOwn(b, key)) {
       return false;
     }
-    if (!deepEqual(a[key], b[key])) {
+    if (!deepEqual(a[key], b[key], visited)) {
       return false;
     }
   }
@@ -136,6 +152,40 @@ function createNavigatorSanitizer(page) {
   });
 }
 
+function createTestModeDisableScript() {
+  return () => {
+    try {
+      const raw = localStorage.getItem("settings");
+      const parsed = raw ? JSON.parse(raw) : {};
+      const next =
+        parsed && typeof parsed === "object" && !Array.isArray(parsed) ? { ...parsed } : {};
+      const featureFlags =
+        next.featureFlags &&
+        typeof next.featureFlags === "object" &&
+        !Array.isArray(next.featureFlags)
+          ? { ...next.featureFlags }
+          : {};
+      const currentEntry =
+        featureFlags.enableTestMode &&
+        typeof featureFlags.enableTestMode === "object" &&
+        !Array.isArray(featureFlags.enableTestMode)
+          ? { ...featureFlags.enableTestMode }
+          : {};
+
+      // Force the enableTestMode flag off while preserving other stored properties.
+      featureFlags.enableTestMode = { ...currentEntry, enabled: false };
+      next.featureFlags = featureFlags;
+
+      localStorage.setItem("settings", JSON.stringify(next));
+    } catch {
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
+      );
+    }
+  };
+}
+
 export async function configureApp(page, options = {}) {
   const {
     featureFlags = {},
@@ -188,32 +238,7 @@ export async function configureApp(page, options = {}) {
   let testModeScript = null;
 
   if (desiredTestMode === false) {
-    testModeScript = await page.addInitScript(() => {
-      try {
-        const raw = localStorage.getItem("settings");
-        const parsed = raw ? JSON.parse(raw) : {};
-        const flagsSource =
-          parsed && typeof parsed === "object" && !Array.isArray(parsed.featureFlags)
-            ? parsed.featureFlags
-            : {};
-        const featureFlags = { ...flagsSource };
-        const entrySource =
-          featureFlags.enableTestMode &&
-          typeof featureFlags.enableTestMode === "object" &&
-          !Array.isArray(featureFlags.enableTestMode)
-            ? featureFlags.enableTestMode
-            : {};
-        const entry = { ...entrySource };
-        featureFlags.enableTestMode = { ...entry, enabled: false };
-        const next = { ...parsed, featureFlags };
-        localStorage.setItem("settings", JSON.stringify(next));
-      } catch {
-        localStorage.setItem(
-          "settings",
-          JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
-        );
-      }
-    });
+    testModeScript = await page.addInitScript(createTestModeDisableScript());
   }
 
   if ("pointsToWin" in battle) {
