@@ -19,6 +19,17 @@ function mockTimerController(overrides = {}) {
   return { ...timerImpl, timerControllerMock };
 }
 
+/**
+ * Temporarily overrides process environment variables for the duration of a callback.
+ * @param {Record<string, string | undefined>} overrides Environment variable overrides. Use `undefined` to delete variables.
+ * @param {Function} callback Function to execute with the overridden environment.
+ * @returns {*} The result of the callback, with proper cleanup for both sync and async functions.
+ * @pseudocode
+ * 1. Capture the original values for each override key.
+ * 2. Apply each override, deleting variables when the value is `undefined`.
+ * 3. Execute the callback and track whether it returns a promise.
+ * 4. Restore the original values after the callback completes or throws.
+ */
 function withProcessEnv(overrides, callback) {
   const originalValues = {};
   const entries = Object.entries(overrides);
