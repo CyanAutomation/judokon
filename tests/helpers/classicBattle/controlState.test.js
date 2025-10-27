@@ -78,6 +78,9 @@ describe("classicBattle battle control state", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    if (typeof window !== "undefined") {
+      delete window.__FF_OVERRIDES;
+    }
   });
 
   it("enable/disable helpers toggle button state", async () => {
@@ -182,35 +185,38 @@ describe("classicBattle battle control state", () => {
   });
 
   it("triggers stat selection via keyboard hotkeys", async () => {
+    if (typeof window !== "undefined") {
+      window.__FF_OVERRIDES = { statHotkeys: true };
+    }
     const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
-    const { isEnabled } = await import("../../../src/helpers/featureFlags.js");
-    isEnabled.mockReturnValue(true);
     const btn = document.querySelector("#stat-buttons button");
     const clickSpy = vi.spyOn(btn, "click");
     const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
     btn.disabled = false;
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }));
     expect(clickSpy).toHaveBeenCalledTimes(1);
     detach();
   });
 
   it("ignores hotkeys when feature disabled", async () => {
+    if (typeof window !== "undefined") {
+      window.__FF_OVERRIDES = { statHotkeys: false };
+    }
     const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
-    const { isEnabled } = await import("../../../src/helpers/featureFlags.js");
-    isEnabled.mockReturnValue(false);
     const btn = document.querySelector("#stat-buttons button");
     const clickSpy = vi.spyOn(btn, "click");
     const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
     btn.disabled = false;
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }));
     expect(clickSpy).not.toHaveBeenCalled();
     detach();
   });
 
   it("ignores hotkeys when focus is in input", async () => {
+    if (typeof window !== "undefined") {
+      window.__FF_OVERRIDES = { statHotkeys: true };
+    }
     const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
-    const { isEnabled } = await import("../../../src/helpers/featureFlags.js");
-    isEnabled.mockReturnValue(true);
     const btn = document.querySelector("#stat-buttons button");
     const clickSpy = vi.spyOn(btn, "click");
     const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
@@ -218,7 +224,7 @@ describe("classicBattle battle control state", () => {
     const input = document.createElement("input");
     document.body.appendChild(input);
     input.focus();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }));
     expect(clickSpy).not.toHaveBeenCalled();
     detach();
   });

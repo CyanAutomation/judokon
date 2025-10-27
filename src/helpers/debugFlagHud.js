@@ -82,11 +82,25 @@ const HUD_STYLES = `
     font-size: 12px;
     opacity: 0.75;
   }
+  #${HUD_ID}[data-alert-active="true"] {
+    border-color: rgba(255, 102, 102, 0.6);
+    box-shadow: 0 12px 32px rgba(255, 64, 64, 0.35);
+  }
+  #${HUD_ID} li.debug-flag-hud__alert {
+    color: #ffecec;
+    background: rgba(255, 64, 64, 0.18);
+  }
+  #${HUD_ID} li.debug-flag-hud__alert::before {
+    content: "⚠ ";
+    font-size: 12px;
+  }
 `;
+const DEFAULT_ALERT_THRESHOLD_MS = 16;
 let hudRoot = null;
 let hudList = null;
 let hudEmpty = null;
 let unsubscribeMetrics = null;
+let lastAlertFlags = new Set();
 
 function ensureStyleSheet() {
   if (typeof document === "undefined") return;
@@ -163,20 +177,87 @@ function formatDuration(value) {
   return `${value.toFixed(1)}ms`;
 }
 
+function resolveAlertThreshold() {
+  let threshold = DEFAULT_ALERT_THRESHOLD_MS;
+  if (typeof window !== "undefined") {
+    const candidate = window.__DEBUG_FLAG_ALERT_THRESHOLD__;
+    if (candidate !== undefined && candidate !== null) {
+      const parsed = Number(candidate);
+      if (!Number.isNaN(parsed) && parsed >= 0) {
+        threshold = parsed;
+      }
+    }
+  }
+  if (typeof process !== "undefined" && process.env) {
+    const envValue = process.env.DEBUG_FLAG_ALERT_THRESHOLD;
+    if (envValue) {
+      const parsed = Number(envValue);
+      if (!Number.isNaN(parsed) && parsed >= 0) {
+        threshold = parsed;
+      }
+    }
+  }
+  return threshold;
+}
+
+function setsEqual(a, b) {
+  if (a.size !== b.size) return false;
+  for (const value of a) {
+    if (!b.has(value)) return false;
+  }
+  return true;
+}
+
+function dispatchAlertEvent(flags, threshold) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent("debug-flag-hud:alert", {
+      detail: {
+        flags: flags.slice(),
+        thresholdMs: threshold
+      }
+    })
+  );
+}
+
 function renderHud(metrics) {
   if (!hudList || !hudEmpty) return;
   hudList.textContent = "";
   if (!Array.isArray(metrics) || metrics.length === 0) {
     hudEmpty.hidden = false;
+    if (hudRoot) {
+      hudRoot.setAttribute("data-alert-active", "false");
+    }
+    if (lastAlertFlags.size > 0) {
+      lastAlertFlags = new Set();
+      dispatchAlertEvent([], resolveAlertThreshold());
+    }
     return;
   }
   hudEmpty.hidden = true;
   const summary = summarizeMetrics(metrics);
+  const threshold = resolveAlertThreshold();
+  const alertFlags = new Set();
+  summary.forEach((entry) => {
+    if (threshold >= 0 && (entry.last >= threshold || entry.max >= threshold || entry.avg >= threshold)) {
+      alertFlags.add(entry.flag);
+    }
+  });
   summary.slice(0, 8).forEach((entry) => {
     const item = document.createElement("li");
+    if (alertFlags.has(entry.flag)) {
+      item.classList.add("debug-flag-hud__alert");
+    }
     item.innerHTML = `<strong>${entry.flag}</strong><br>avg ${formatDuration(entry.avg)} • last ${formatDuration(entry.last)} • max ${formatDuration(entry.max)} • n=${entry.count}`;
     hudList.appendChild(item);
   });
+  if (hudRoot) {
+    hudRoot.setAttribute("data-alert-active", alertFlags.size > 0 ? "true" : "false");
+  }
+  if (!setsEqual(lastAlertFlags, alertFlags)) {
+    lastAlertFlags = new Set(alertFlags);
+    dispatchAlertEvent(Array.from(alertFlags), threshold);
+  }
 }
 
 function attachHud() {

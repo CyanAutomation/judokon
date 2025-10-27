@@ -10,12 +10,14 @@ describe("debugFlagHud", () => {
     resetDebugFlagMetrics();
     document.body.innerHTML = "";
     window.__DEBUG_PERF__ = true;
+    window.__DEBUG_FLAG_ALERT_THRESHOLD__ = 1000;
   });
 
   afterEach(() => {
     teardownDebugFlagHud();
     resetDebugFlagMetrics();
     delete window.__DEBUG_PERF__;
+    delete window.__DEBUG_FLAG_ALERT_THRESHOLD__;
   });
 
   it("does not render entries until metrics exist", () => {
@@ -51,5 +53,28 @@ describe("debugFlagHud", () => {
     expect(list?.children.length).toBe(0);
     const emptyState = hud?.querySelector("[data-debug-flag-hud='empty']");
     expect(emptyState?.hidden).toBe(false);
+  });
+
+  it("raises alerts when metrics exceed threshold", async () => {
+    window.__DEBUG_FLAG_ALERT_THRESHOLD__ = 0;
+    const alerts = [];
+    const listener = (event) => {
+      alerts.push(event.detail);
+    };
+    window.addEventListener("debug-flag-hud:alert", listener);
+
+    initDebugFlagHud();
+    measureDebugFlagToggle("layoutDebugPanel", () => {});
+
+    await Promise.resolve();
+
+    const hud = document.getElementById("debug-flag-performance-hud");
+    expect(hud?.dataset.alertActive).toBe("true");
+    const highlightedItems = hud?.querySelectorAll(".debug-flag-hud__alert") ?? [];
+    expect(highlightedItems.length).toBeGreaterThan(0);
+    expect(alerts.length).toBeGreaterThan(0);
+    expect(alerts.at(-1)?.flags).toContain("layoutDebugPanel");
+
+    window.removeEventListener("debug-flag-hud:alert", listener);
   });
 });
