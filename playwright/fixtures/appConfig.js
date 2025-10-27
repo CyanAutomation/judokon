@@ -24,6 +24,49 @@ function mergeSettings(base, overrides) {
   return result;
 }
 
+function deepEqual(a, b) {
+  if (a === b) {
+    return true;
+  }
+
+  const isObjectLike = (value) => value !== null && typeof value === "object";
+  const aIsCollection = Array.isArray(a) || isObjectLike(a);
+  const bIsCollection = Array.isArray(b) || isObjectLike(b);
+
+  if (!aIsCollection || !bIsCollection) {
+    return false;
+  }
+
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i += 1) {
+      if (!deepEqual(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) {
+    return false;
+  }
+
+  for (const key of aKeys) {
+    if (!Object.hasOwn(b, key)) {
+      return false;
+    }
+    if (!deepEqual(a[key], b[key])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function applyFeatureFlagOverrides(target, overrides) {
   if (!isPlainObject(overrides) || Object.keys(overrides).length === 0) {
     return false;
@@ -122,7 +165,7 @@ export async function configureApp(page, options = {}) {
 
   if (Object.keys(settingsOverrides).length > 0) {
     const nextSettings = mergeSettings(merged, settingsOverrides);
-    if (JSON.stringify(nextSettings) !== JSON.stringify(merged)) {
+    if (!deepEqual(nextSettings, merged)) {
       Object.assign(merged, nextSettings);
       mutated = true;
     }
@@ -142,7 +185,38 @@ export async function configureApp(page, options = {}) {
   }
 
   const runtimeTasks = [];
-  if (Object.prototype.hasOwnProperty.call(battle, "pointsToWin")) {
+  let testModeScript = null;
+
+  if (desiredTestMode === false) {
+    testModeScript = await page.addInitScript(() => {
+      try {
+        const raw = localStorage.getItem("settings");
+        const parsed = raw ? JSON.parse(raw) : {};
+        const flagsSource =
+          parsed && typeof parsed === "object" && !Array.isArray(parsed.featureFlags)
+            ? parsed.featureFlags
+            : {};
+        const featureFlags = { ...flagsSource };
+        const entrySource =
+          featureFlags.enableTestMode &&
+          typeof featureFlags.enableTestMode === "object" &&
+          !Array.isArray(featureFlags.enableTestMode)
+            ? featureFlags.enableTestMode
+            : {};
+        const entry = { ...entrySource };
+        featureFlags.enableTestMode = { ...entry, enabled: false };
+        const next = { ...parsed, featureFlags };
+        localStorage.setItem("settings", JSON.stringify(next));
+      } catch {
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
+        );
+      }
+    });
+  }
+
+  if ("pointsToWin" in battle) {
     runtimeTasks.push(async () => {
       await waitForTestApi(page, () => window.__TEST_API?.engine?.setPointsToWin);
       await page.waitForFunction(
@@ -179,6 +253,11 @@ export async function configureApp(page, options = {}) {
       if (navigatorScript) {
         try {
           await navigatorScript;
+        } catch {}
+      }
+      if (testModeScript) {
+        try {
+          await testModeScript;
         } catch {}
       }
     }
