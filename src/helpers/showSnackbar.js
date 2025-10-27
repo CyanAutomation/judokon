@@ -212,8 +212,8 @@ export function updateSnackbar(message) {
   const scheduler = getScheduler();
   const container = doc.getElementById("snackbar-container");
   if (!container) {
-    scheduler.clearTimeout(fadeId);
-    scheduler.clearTimeout(removeId);
+    safeClearTimeout(scheduler, fadeId);
+    safeClearTimeout(scheduler, removeId);
     resetState();
     return;
   }
