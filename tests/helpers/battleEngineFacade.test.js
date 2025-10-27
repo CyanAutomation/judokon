@@ -119,6 +119,7 @@ describe("battleEngineFacade timer interactions", () => {
     expect(resume).toHaveBeenCalled();
 
     expect(getTimerState()).toEqual({ remaining: 0, paused: false });
+    expect(getState).toHaveBeenCalled();
   });
 });
 
