@@ -297,6 +297,9 @@ export function resetStatButtons(
   try {
     trace("resetStatButtons:begin");
   } catch {}
+  try {
+    document.body?.removeAttribute?.("data-stat-selected");
+  } catch {}
   const usingFakeTimers = detectFakeTimers();
 
   const enablePromises = [];

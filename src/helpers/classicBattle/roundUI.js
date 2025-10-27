@@ -604,6 +604,9 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     if (!IS_VITEST) console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`);
   } catch {}
   try {
+    document.body?.removeAttribute?.("data-stat-selected");
+  } catch {}
+  try {
     scoreboardApi?.showMessage?.(result.message || "", { outcome: true });
   } catch {}
   try {
