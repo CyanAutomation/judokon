@@ -165,6 +165,9 @@ function bindUIServiceEventHandlers() {
       if (modalEl?.close) modalEl.close();
       // Clear scoreboard messages
       scoreboard.clearMessage?.();
+      try {
+        document.body?.removeAttribute?.("data-stat-selected");
+      } catch {}
       // Broadcast a UI reset for components that subscribe
       emitBattleEvent("ui.roundReset");
     } catch {}
