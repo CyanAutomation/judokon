@@ -472,7 +472,7 @@ describe("browseJudokaPage helpers", () => {
     expect(controller.setPage).toHaveBeenCalledWith(0);
     const noResults = carouselEl.querySelector(".no-results-message");
     expect(noResults).not.toBeNull();
-    expect(noResults?.textContent).toBe("No judoka available for this country");
+    expect(noResults?.textContent).toBe("No judoka found");
     expect(liveRegion.textContent).toBe("Showing 0 judoka for Canada");
 
     render.mockClear();

@@ -60,7 +60,7 @@ export function createCountryFilterAdapter(
       message.className = "no-results-message";
       message.setAttribute("role", "status");
       message.setAttribute("aria-live", "polite");
-      message.textContent = "No judoka available for this country";
+      message.textContent = "No judoka found";
       carouselEl.appendChild(message);
     },
     getButtonValue(button) {
