@@ -148,10 +148,10 @@ class RoundStore {
   /**
    * Set the selected stat for the current round.
    * @param {string} stat - Selected stat name
-   * @param {{ emitLegacyEvent?: boolean }} [options]
+   * @param {{ emitLegacyEvent?: boolean, opts?: Record<string, any> }} [options]
    */
   setSelectedStat(stat, options = {}) {
-    const { emitLegacyEvent = true } =
+    const { emitLegacyEvent = true, opts = {} } =
       typeof options === "object" && options !== null ? options : {};
 
     this.currentRound.selectedStat = stat;
@@ -164,7 +164,7 @@ class RoundStore {
     if (emitLegacyEvent) {
       // Preserve backward compatibility for legacy listeners unless callers
       // explicitly opt out (e.g., the selection handler which emits upstream).
-      emitBattleEvent("statSelected", { stat });
+      emitBattleEvent("statSelected", { stat, opts });
     }
   }
 

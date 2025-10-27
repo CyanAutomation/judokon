@@ -144,6 +144,9 @@ export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
 }
 
 /**
+ * @pseudocode
+ * 1. Return the cached enabled state for the layout debug panel.
+ *
  * @returns {boolean} Current enabled state of the layout debug panel.
  */
 export function isLayoutDebugPanelEnabled() {
@@ -152,6 +155,10 @@ export function isLayoutDebugPanelEnabled() {
 
 /**
  * Await any pending outline work. Exposed for deterministic testing.
+ *
+ * @pseudocode
+ * 1. Return the promise tracking pending outline work for the debug panel.
+ * 2. Callers await the promise to ensure deferred DOM operations have finished.
  *
  * @returns {Promise<void>}
  */

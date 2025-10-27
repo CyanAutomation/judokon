@@ -9,6 +9,7 @@ let pendingState = null;
 let pendingTaskCancel = null;
 let pendingRunTask = null;
 let pendingPromise = Promise.resolve();
+let pendingResolve = null;
 let lastToggleAt = 0;
 
 function scheduleIdle(runTask) {
@@ -26,11 +27,25 @@ function scheduleIdle(runTask) {
   pendingTaskCancel = () => clearTimeout(timeoutId);
 }
 
-function runToggleTask() {
-  const state = pendingState ?? appliedState;
+function resetPendingPromise() {
+  pendingPromise = Promise.resolve();
+  pendingResolve = null;
   pendingState = null;
+}
+
+function cancelPendingWork() {
+  if (typeof pendingTaskCancel === "function") {
+    pendingTaskCancel();
+  }
   pendingTaskCancel = null;
   pendingRunTask = null;
+  if (typeof pendingResolve === "function") {
+    pendingResolve();
+  }
+  resetPendingPromise();
+}
+
+function applyOverlayState(state) {
   measureDebugFlagToggle(
     "tooltipOverlayDebug",
     () => {
@@ -43,21 +58,33 @@ function runToggleTask() {
     { enabled: state ? 1 : 0 }
   );
   appliedState = state;
+  pendingState = null;
   lastToggleAt = Date.now();
-  pendingPromise = Promise.resolve();
+}
+
+function runToggleTask() {
+  const state = pendingState ?? appliedState;
+  pendingTaskCancel = null;
+  pendingRunTask = null;
+  const resolve = pendingResolve;
+  pendingResolve = null;
+  applyOverlayState(state);
+  if (typeof resolve === "function") {
+    resolve();
+  }
+  resetPendingPromise();
 }
 
 function scheduleToggleTask() {
   if (pendingRunTask) {
-    return;
+    return pendingPromise;
   }
   const now = Date.now();
   const delay = Math.max(0, lastToggleAt + RATE_LIMIT_INTERVAL_MS - now);
   pendingPromise = new Promise((resolve) => {
+    pendingResolve = resolve;
     const execute = () => {
-      pendingRunTask = null;
       runToggleTask();
-      resolve();
     };
     pendingRunTask = execute;
     if (delay > 0) {
@@ -70,18 +97,13 @@ function scheduleToggleTask() {
     }
     scheduleIdle(execute);
   });
-}
-
-function ensureFlushableState() {
-  if (!pendingRunTask) {
-    pendingPromise = Promise.resolve();
-  }
+  return pendingPromise;
 }
 
 function applyFallbackState(state) {
+  cancelPendingWork();
   appliedState = state;
-  pendingState = null;
-  ensureFlushableState();
+  lastToggleAt = Date.now();
 }
 
 /**
@@ -90,7 +112,9 @@ function applyFallbackState(state) {
  * @pseudocode
  * 1. Persist the desired state to the shared debug registry.
  * 2. If `document` or `document.body` is unavailable, log the recorded state and exit.
- * 3. Otherwise toggle the "tooltip-overlay-debug" class on `document.body`.
+ * 3. When disabling, cancel any pending work and synchronously remove the overlay markers.
+ * 4. When enabling (or re-applying), enqueue the DOM mutation on an idle frame with rate limiting.
+ * 5. Resolve pending work promises so deterministic tests can flush the scheduled toggle.
  *
  * @param {boolean} enabled - Whether the overlay should be enabled.
  * @returns {void}
@@ -112,14 +136,18 @@ export function toggleTooltipOverlayDebug(enabled) {
   const bodyHasOverlay = document.body.classList.contains("tooltip-overlay-debug");
   const attrState = document.body.getAttribute("data-feature-tooltip-overlay-debug");
   const desiredAttr = nextState ? "enabled" : "disabled";
+  if (!nextState) {
+    cancelPendingWork();
+    applyOverlayState(false);
+    return;
+  }
   if (
     !pendingRunTask &&
     nextState === appliedState &&
     bodyHasOverlay === nextState &&
     attrState === desiredAttr
   ) {
-    pendingState = null;
-    ensureFlushableState();
+    resetPendingPromise();
     return;
   }
   scheduleToggleTask();
@@ -127,6 +155,10 @@ export function toggleTooltipOverlayDebug(enabled) {
 
 /**
  * Await or immediately execute any pending overlay debug work.
+ *
+ * @pseudocode
+ * 1. If a toggle task is queued, cancel its timer and execute it immediately.
+ * 2. Return the promise representing pending work so callers can await completion.
  *
  * @returns {Promise<void>} Resolves once pending work completes.
  */

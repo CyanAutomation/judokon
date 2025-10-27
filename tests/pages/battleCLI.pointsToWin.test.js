@@ -57,9 +57,7 @@ async function waitForButton(testId) {
     const maxAttempts = 50;
     const scheduleTick = () => {
       clearScheduled();
-      scheduledId = hasSetImmediate
-        ? setImmediate(tick)
-        : setTimeout(tick, 0);
+      scheduledId = hasSetImmediate ? setImmediate(tick) : setTimeout(tick, 0);
     };
 
     const tick = () => {

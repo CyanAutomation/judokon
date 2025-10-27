@@ -738,6 +738,9 @@ export function registerRoundStartErrorHandler(retryFn) {
  * @returns {void}
  */
 export function selectStat(store, stat) {
+  try {
+    console.log("[selectStat] Called with stat:", stat);
+  } catch {}
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
@@ -780,6 +783,13 @@ export function selectStat(store, stat) {
     try {
       showSnackbar(`You Picked: ${label}`);
     } catch {}
+  } else if (delayOpponentMessage) {
+    // When opponent delay is enabled, show the opponent choosing message
+    try {
+      const opponentMsg =
+        typeof t === "function" ? t("ui.opponentChoosing") : "Opponent is choosing…";
+      showSnackbar(opponentMsg);
+    } catch {}
   }
 }
 
@@ -800,13 +810,24 @@ const STAT_BUTTON_HANDLER_KEY = "__classicBattleStatHandler";
 
 function registerStatButtonClickHandler(container, store) {
   if (!container || container[STAT_BUTTON_HANDLER_KEY]) return;
+  try {
+    console.log("[registerStatButtonClickHandler] Registering handler for container:", container);
+  } catch {}
   const handler = (event) => {
     const target = event?.target;
     if (!target || typeof target.closest !== "function") return;
     const btn = target.closest("button[data-stat]");
-    if (!btn || btn.disabled) return;
+    if (!btn || btn.disabled) {
+      try {
+        console.log("[stat button handler] Button not found or disabled:", btn, btn?.disabled);
+      } catch {}
+      return;
+    }
     const stat = btn.dataset?.stat;
     if (!stat) return;
+    try {
+      console.log("[stat button handler] Calling selectStat with stat:", stat);
+    } catch {}
     try {
       selectStat(store, stat);
     } catch (error) {

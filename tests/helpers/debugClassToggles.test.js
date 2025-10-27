@@ -136,6 +136,8 @@ describe("feature flag debug toggles integration", () => {
     toggleTooltipOverlayDebug(true);
     toggleTooltipOverlayDebug(true);
     toggleTooltipOverlayDebug(false);
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
+    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
 
     await flushTooltipOverlayDebugWork();
 

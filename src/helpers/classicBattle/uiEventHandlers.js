@@ -83,6 +83,9 @@ export function bindUIHelperEventHandlersDynamic() {
 
   onBattleEvent("statSelected", async (e) => {
     try {
+      console.log("[uiEventHandlers] statSelected event received");
+    } catch {}
+    try {
       scoreboard.clearTimer?.();
     } catch {}
     try {
@@ -91,6 +94,17 @@ export function bindUIHelperEventHandlersDynamic() {
       const opts = hasOpts ? detail.opts || {} : {};
       const flagEnabled = isEnabled("opponentDelayMessage");
       const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
+
+      try {
+        console.log(
+          "[uiEventHandlers] flagEnabled:",
+          flagEnabled,
+          "shouldDelay:",
+          shouldDelay,
+          "opts.delayOpponentMessage:",
+          opts.delayOpponentMessage
+        );
+      } catch {}
 
       clearOpponentSnackbarTimeout();
       clearFallbackPromptTimer();
