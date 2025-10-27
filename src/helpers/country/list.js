@@ -43,7 +43,12 @@ export async function fetchActiveCountries() {
     if (!byName.has(e.country)) byName.set(e.country, e.code);
   }
 
-  const activeCountries = [...byName.keys()].sort((a, b) => a.localeCompare(b));
+  let compare = (a, b) => a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
+  if (typeof Intl !== "undefined" && typeof Intl.Collator === "function") {
+    const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+    compare = collator.compare.bind(collator);
+  }
+  const activeCountries = [...byName.keys()].sort(compare);
   const nameToCode = new Map(activeCountries.map((name) => [name, byName.get(name)]));
 
   return { activeCountries, nameToCode };

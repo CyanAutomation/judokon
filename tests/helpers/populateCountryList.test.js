@@ -24,8 +24,8 @@ describe("populateCountryList", () => {
   it("renders countries found in judoka.json alphabetically", async () => {
     const judoka = [
       { id: 1, firstname: "A", surname: "B", country: "Japan" },
-      { id: 2, firstname: "C", surname: "D", country: "Brazil" },
-      { id: 3, firstname: "E", surname: "F", country: "Japan" }
+      { id: 2, firstname: "C", surname: "D", country: "Austria" },
+      { id: 3, firstname: "E", surname: "F", country: "Côte d'Ivoire" }
     ];
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
@@ -33,8 +33,8 @@ describe("populateCountryList", () => {
     }));
 
     const mapping = {
-      br: { country: "Brazil", code: "br", active: true },
-      ca: { country: "Canada", code: "ca", active: true },
+      at: { country: "Austria", code: "at", active: true },
+      ci: { country: "Côte d'Ivoire", code: "ci", active: true },
       jp: { country: "Japan", code: "jp", active: true }
     };
     loadCountryMapping.mockResolvedValue(mapping);
@@ -46,7 +46,7 @@ describe("populateCountryList", () => {
 
     const labels = container.querySelectorAll("label.flag-button");
     const names = [...labels].map((s) => s.querySelector("p").textContent);
-    expect(names).toEqual(["All", "Brazil", "Japan"]);
+    expect(names).toEqual(["All", "Austria", "Côte d'Ivoire", "Japan"]);
     const radios = container.querySelectorAll('input[type="radio"][name="country-filter"]');
     expect(radios[0].checked).toBe(true);
   });

@@ -73,7 +73,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
     - Added an interaction test (`tests/helpers/browseJudokaPage.test.js`) that exercises flag clicks and keyboard-driven filtering.
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
-  - [ ] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
+  - [x] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
 
     ```javascript
     // In src/helpers/country/list.js, before creating buttons
@@ -81,6 +81,9 @@ This phase addresses the highest-priority bugs preventing users from filtering t
       a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" })
     );
     ```
+    - Swapped the raw string comparison for an `Intl.Collator`-backed comparator so country names (including diacritics) are ordered predictably.
+    - Extended `populateCountryList` tests to cover accent-sensitive ordering and verified the list renders `All`, `Austria`, `Côte d'Ivoire`, `Japan` as expected.
+    - Validation: `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
 - **Verification:**
   - Confirm no horizontal scrollbar appears on the flag panel at any viewport size.

@@ -1,0 +1,172 @@
+============================================================================
+BATTLE PAGES TEST CENTRALIZATION PLAN - EXECUTIVE SUMMARY
+============================================================================
+
+OBJECTIVE
+---------
+Centralize all unit tests for battleClassic.html and battleCLI.html into a
+single test directory structure accessible via npm run test:battles
+
+
+CURRENT SITUATION
+-----------------
+Tests are scattered across 9+ directories (~52 unit/integration test files):
+
+  Classic Battle Tests (~29 files):
+    tests/classicBattle/              15 files
+    tests/helpers/battle*.test.js      8 files
+    tests/components/Scoreboard*.js    3 files
+    tests/config/battleDefaults.js     1 file
+    tests/styles/battleContrast.js     1 file
+    tests/integration/battleClassic.js 1 file
+
+  CLI Battle Tests (~23 files):
+    tests/pages/battleCLI.*.test.js    20 files
+    tests/cli/                         2 files
+    tests/styles/battleCLI.*.js        1 file
+
+  Shared Components (~6 files):
+    tests/components/ (various)        5 files
+    tests/config/ (various)            1 file
+
+
+PROPOSED SOLUTION
+-----------------
+Create tests/battles-regressions/ directory with organized subdirectories:
+
+  tests/battles-regressions/
+  ├── classic/                  (Tests for battleClassic.html)
+  │   ├── battle-logic/         (Timers, state, scoring)
+  │   ├── components/           (UI components)
+  │   └── integration/          (Full game flow)
+  ├── cli/                      (Tests for battleCLI.html)
+  │   ├── keybindings/          (Hotkeys, shortcuts)
+  │   ├── display/              (Rendering, formatting)
+  │   ├── compatibility/        (Seeds, points-to-win)
+  │   └── accessibility/        (Focus, live regions)
+  └── shared/                   (Reusable components)
+      ├── scoreboard/
+      ├── modal/
+      └── configuration/
+
+
+NPM SCRIPTS
+-----------
+Add to package.json:
+
+  npm run test:battles          # Run all battle regression tests
+  npm run test:battles:classic  # Classic battle tests only
+  npm run test:battles:cli      # CLI battle tests only
+  npm run test:battles:shared   # Shared component tests only
+  npm run test:battles:watch    # Watch mode
+  npm run test:battles:cov      # Coverage report
+
+
+IMPLEMENTATION TIMELINE
+-----------------------
+Phase 1: Setup (1 week)
+  - Create folder structure
+  - Add npm scripts
+  - Update AGENTS.md
+
+Phase 2: Gradual Migration (2-3 weeks)
+  - Move tests from old locations
+  - Update import paths
+  - Verify all tests pass
+
+Phase 3: Cleanup (1 week)
+  - Remove old directories
+  - Update CI/CD
+  - Final validation
+
+
+KEY BENEFITS
+------------
+✓ Single command for critical regression testing
+✓ Clear organization for developers
+✓ Easy to add new tests
+✓ Faster feedback than running full suite
+✓ Prevents regressions on critical pages
+✓ Extensible pattern for future pages
+
+
+TEST COVERAGE AREAS
+-------------------
+Classic Battle:
+  - Initialization and bootstrap
+  - Round selection
+  - Stat selection and hotkeys
+  - Timer mechanics
+  - Scoring and win conditions
+  - Modals and UI
+  - Accessibility
+
+CLI Battle:
+  - Terminal rendering
+  - Hotkeys and shortcuts
+  - Input validation
+  - Verbose mode
+  - Seeds and configuration
+  - Focus management
+  - Accessibility
+
+Shared:
+  - Scoreboard component
+  - Modal component
+  - Stats panel
+  - Configuration
+
+
+AGENTSMD DOCUMENTATION
+----------------------
+Add section documenting:
+  - When to run: before submitting changes to battle pages
+  - How to run: npm run test:battles (and variants)
+  - Where tests are: tests/battles-regressions/{classic,cli,shared}/
+  - What gets tested: features of each page
+  - Integration: how it fits with main test suite
+
+
+RISK MITIGATION
+---------------
+- Non-destructive: old tests stay in place during migration
+- Gradual: can move tests incrementally
+- Backward compatible: no breaking changes to existing tests
+- Extensible: pattern works for other critical pages
+
+
+QUESTIONS FOR TEAM
+------------------
+1. Immediate or gradual migration?
+2. Include Playwright E2E tests in separate regression structure?
+3. Make regression tests mandatory in CI/CD?
+4. Target coverage percentage?
+5. Preferred folder name: battles-regressions or battles-critical?
+
+
+FILES CREATED
+-------------
+- BATTLE_PAGES_TEST_CENTRALIZATION_PLAN.txt  (Detailed plan)
+
+These files provide:
+  - Complete planning document
+  - Current test inventory
+  - Step-by-step implementation guide
+  - Migration checklist
+  - Success criteria
+
+
+NEXT STEPS
+----------
+1. Review plan with development team
+2. Answer questions above
+3. Get approval to proceed
+4. Begin Phase 1 implementation
+5. Create PR with folder structure and scripts
+6. Execute gradual migration
+7. Update documentation
+
+
+============================================================================
+For detailed implementation guide, see: BATTLE_PAGES_TEST_CENTRALIZATION_PLAN.txt
+============================================================================

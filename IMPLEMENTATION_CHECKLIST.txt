@@ -1,0 +1,283 @@
+IMPLEMENTATION CHECKLIST
+========================
+
+Use this checklist to track implementation progress of the battle pages
+test centralization plan.
+
+
+PHASE 1: SETUP (Week 1)
+========================
+
+Folder Structure Creation
+  [ ] Create tests/battles-regressions/
+  [ ] Create tests/battles-regressions/classic/
+  [ ] Create tests/battles-regressions/classic/battle-logic/
+  [ ] Create tests/battles-regressions/classic/components/
+  [ ] Create tests/battles-regressions/classic/integration/
+  [ ] Create tests/battles-regressions/cli/
+  [ ] Create tests/battles-regressions/cli/keybindings/
+  [ ] Create tests/battles-regressions/cli/display/
+  [ ] Create tests/battles-regressions/cli/compatibility/
+  [ ] Create tests/battles-regressions/cli/accessibility/
+  [ ] Create tests/battles-regressions/shared/
+  [ ] Create tests/battles-regressions/shared/scoreboard/
+  [ ] Create tests/battles-regressions/shared/modal/
+  [ ] Create tests/battles-regressions/shared/configuration/
+
+Documentation Files
+  [ ] Create tests/battles-regressions/README.md
+  [ ] Create tests/battles-regressions/classic/README.md
+  [ ] Create tests/battles-regressions/cli/README.md
+  [ ] Create tests/battles-regressions/shared/README.md
+
+NPM Scripts Addition
+  [ ] Add "test:battles" script to package.json
+  [ ] Add "test:battles:classic" script to package.json
+  [ ] Add "test:battles:cli" script to package.json
+  [ ] Add "test:battles:shared" script to package.json
+  [ ] Add "test:battles:watch" script to package.json
+  [ ] Add "test:battles:cov" script to package.json
+  [ ] Verify scripts work: npm run test:battles
+
+AGENTS.md Documentation
+  [ ] Add Battle Pages Regression Testing section to AGENTS.md
+  [ ] Include quick start commands
+  [ ] Include test suite organization table
+  [ ] Include what gets tested for each page
+  [ ] Include integration with main test suite
+  [ ] Include before-PR-submit checklist
+  [ ] Include task contract example
+  [ ] Add links to detailed plan documents
+
+Additional Documentation
+  [ ] Update README.md (if necessary)
+  [ ] Update playwright/README.md to cross-reference battle tests
+  [ ] Add note about regression testing to CONTRIBUTING.md
+
+Phase 1 Verification
+  [ ] Run: npx prettier . --check
+  [ ] Run: npx eslint .
+  [ ] Run: npm run check:jsdoc
+  [ ] Verify folder structure is correct
+  [ ] Verify all documentation is clear
+
+
+PHASE 2: GRADUAL MIGRATION (Weeks 2-4)
+========================================
+
+Migrate Classic Battle Tests
+  [ ] List all files in tests/classicBattle/
+  [ ] Move tests/classicBattle/*.js → tests/battles-regressions/classic/battle-logic/
+  [ ] Update import paths in migrated files
+  [ ] Run: npm run test:battles:classic (verify all pass)
+  [ ] List all battle-related tests in tests/helpers/
+  [ ] Move tests/helpers/battle*.js → tests/battles-regressions/classic/battle-logic/
+  [ ] Update import paths
+  [ ] Run: npm run test:battles:classic (verify all pass)
+  [ ] Move tests/components/Scoreboard*.js → tests/battles-regressions/shared/scoreboard/
+  [ ] Update import paths
+  [ ] Run: npm run test:battles:shared (verify all pass)
+  [ ] Move tests/integration/battleClassic.* → tests/battles-regressions/classic/integration/
+  [ ] Update import paths
+  [ ] Run: npm run test:battles:classic (verify all pass)
+
+Migrate CLI Battle Tests
+  [ ] List all files in tests/pages/battleCLI.*.test.js
+  [ ] Categorize by feature (keybindings, display, compatibility, accessibility)
+  [ ] Move to appropriate tests/battles-regressions/cli/* subdirectory
+  [ ] Update import paths in all migrated files
+  [ ] Move tests/cli/*.js → tests/battles-regressions/cli/
+  [ ] Update import paths
+  [ ] Run: npm run test:battles:cli (verify all pass)
+  [ ] Move tests/styles/battleCLI.* → tests/battles-regressions/cli/accessibility/
+  [ ] Update import paths
+  [ ] Run: npm run test:battles:cli (verify all pass)
+
+Migrate Shared Components
+  [ ] Move tests/components/Modal.* → tests/battles-regressions/shared/modal/
+  [ ] Move tests/components/StatsPanel.* → tests/battles-regressions/shared/
+  [ ] Move tests/config/battleDefaults.* → tests/battles-regressions/shared/configuration/
+  [ ] Update all import paths
+  [ ] Run: npm run test:battles:shared (verify all pass)
+
+Migration Verification
+  [ ] Run: npm run test:battles (all phases pass)
+  [ ] Run: npm run test:battles:classic
+  [ ] Run: npm run test:battles:cli
+  [ ] Run: npm run test:battles:shared
+  [ ] Verify coverage is maintained: npm run test:battles:cov
+  [ ] Check for any unused or orphaned test files
+  [ ] Verify no duplicate tests exist
+
+
+PHASE 3: CLEANUP & FINALIZATION (Week 5)
+=========================================
+
+Code Quality
+  [ ] Run: npx prettier . --check
+  [ ] Run: npx eslint .
+  [ ] Run: npm run check:jsdoc
+  [ ] Verify no console warnings in test output
+  [ ] Fix any linting issues found
+
+Test Execution & Validation
+  [ ] Run: npm run test:battles (all pass)
+  [ ] Run: npm run test:ci (full suite passes)
+  [ ] Run: npm run test:battles:watch (watch mode works)
+  [ ] Run: npm run test:battles:cov (coverage report generated)
+  [ ] Run: npm run test:screenshot (playwright tests work)
+
+Remove Old Directory References
+  [ ] Delete empty tests/classicBattle/ directory (if fully migrated)
+  [ ] Delete unused tests/cli/ directory (if fully migrated)
+  [ ] Clean up any dangling imports or references
+  [ ] Update any test import aliases if used
+  [ ] Remove any duplicate/moved files from old locations
+
+CI/CD Integration
+  [ ] Update GitHub Actions to include test:battles job (if desired)
+  [ ] Add pre-commit hook check for battle tests (if desired)
+  [ ] Update PR template to mention running test:battles
+  [ ] Verify CI pipeline runs battle tests
+  [ ] Test that CI fails appropriately if tests fail
+
+Documentation Final Review
+  [ ] Review AGENTS.md updates for accuracy
+  [ ] Review README files in each subdirectory
+  [ ] Verify all commands work as documented
+  [ ] Check for any broken links
+  [ ] Update project README if needed
+
+Final Verification
+  [ ] Run full test suite: npm run test:ci
+  [ ] Run battle suite: npm run test:battles
+  [ ] Check git status for any uncommitted changes
+  [ ] Verify folder structure matches plan
+  [ ] Confirm all npm scripts work
+
+
+BEFORE COMMITTING
+=================
+
+Quality Checks
+  [ ] All tests pass locally
+  [ ] Linting passes: npx prettier . --check && npx eslint .
+  [ ] JSDoc valid: npm run check:jsdoc
+  [ ] No unsilenced console logs
+  [ ] Coverage metrics acceptable
+
+Documentation
+  [ ] AGENTS.md is updated and clear
+  [ ] README files are present and informative
+  [ ] BATTLE_PAGES_TEST_CENTRALIZATION_PLAN.txt provided for reference
+  [ ] BATTLE_TEST_PLAN_EXECUTIVE_SUMMARY.txt provided for overview
+
+Test Coverage
+  [ ] New tests pass: npm run test:battles
+  [ ] No regressions in existing tests: npm run test:ci
+  [ ] Coverage maintained or improved
+
+Commit Message
+  [ ] Clear description of changes
+  [ ] Reference to planning documents
+  [ ] Mention: "Centralizes battle page regression testing"
+  [ ] Link to PR/issue if applicable
+
+
+POST-IMPLEMENTATION
+===================
+
+Team Communication
+  [ ] Announce new npm scripts to team
+  [ ] Share AGENTS.md update
+  [ ] Train team on using test:battles
+  [ ] Set expectations for future battle page changes
+
+Monitoring
+  [ ] Watch for test failures in first week
+  [ ] Ensure CI pipeline runs tests
+  [ ] Monitor test execution times
+  [ ] Collect feedback from team
+
+Documentation Updates (Ongoing)
+  [ ] Update CONTRIBUTING.md if needed
+  [ ] Add notes to team wiki/docs
+  [ ] Document common workflows
+  [ ] Create issue templates if desired
+
+Future Enhancements
+  [ ] Consider extending pattern to other critical pages
+  [ ] Evaluate coverage targets
+  [ ] Consider adding performance benchmarks
+  [ ] Evaluate if Playwright tests should have similar structure
+
+
+TESTING THE IMPLEMENTATION
+===========================
+
+Before declaring success, test these scenarios:
+
+Basic Command Tests
+  [ ] npm run test:battles runs without error
+  [ ] npm run test:battles:classic runs without error
+  [ ] npm run test:battles:cli runs without error
+  [ ] npm run test:battles:shared runs without error
+  [ ] npm run test:battles:watch starts without error
+  [ ] npm run test:battles:cov generates coverage report
+
+New Test Addition Workflow
+  [ ] Create new test in tests/battles-regressions/classic/
+  [ ] Verify it runs with npm run test:battles:classic
+  [ ] Verify it's included in npm run test:battles
+  [ ] Verify it's included in npm run test:ci
+
+Developer Workflows
+  [ ] Developer can run tests for specific page they're working on
+  [ ] Developer can watch tests while working
+  [ ] Developer can generate coverage report
+  [ ] Developer can run full suite before commit
+
+
+SUCCESS CRITERIA
+================
+
+Implementation is successful when:
+
+✓ Folder structure exists as planned
+✓ All npm scripts work correctly
+✓ All tests pass in new locations
+✓ AGENTS.md is updated with new testing documentation
+✓ Old directories are cleaned up
+✓ No regressions in existing tests
+✓ CI/CD pipeline includes battle tests
+✓ Team can run: npm run test:battles
+✓ Test coverage is maintained or improved
+✓ Documentation is clear and complete
+
+
+NOTES
+=====
+
+- Dates are estimates; adjust based on actual progress
+- Can parallelize some tasks to speed up implementation
+- Keep daily backups during migration phase
+- Have rollback plan ready if issues arise
+- Test thoroughly in staging environment first
+
+
+TRACKING PROGRESS
+=================
+
+Date Started: ________________
+Phase 1 Complete: ___________
+Phase 2 Complete: ___________
+Phase 3 Complete: ___________
+Date Finished: ______________
+
+Notes/Issues:
+
+
+Approvals:
+  Technical Review: _________________ Date: _____
+  QA Review: ________________________ Date: _____
+  Team Lead: ________________________ Date: _____
