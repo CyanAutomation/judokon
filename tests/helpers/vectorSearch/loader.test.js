@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { withMutedConsole } from "../../utils/console.js";
 import { sample, setupMockDataset } from "./mockDataset.js";
 
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
@@ -95,7 +96,7 @@ describe("vectorSearch loader helpers", () => {
 
     const loaderModule = await import("../../../src/helpers/vectorSearch/loader.js");
 
-    const firstResult = await loaderModule.loadEmbeddings();
+    const firstResult = await withMutedConsole(() => loaderModule.loadEmbeddings());
     expect(firstResult).toBeNull();
     expect(fetchJson).toHaveBeenCalledTimes(2);
 
