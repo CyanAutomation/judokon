@@ -461,8 +461,7 @@ export async function advanceWhenReady(btn, resolveReady) {
     return;
   }
   setSkipHandler(null);
-  // Restore button state after successful dispatch to allow subsequent clicks
-  btn.disabled = wasDisabled;
+  // Leave the button disabled; the cooldown flow will re-enable it as needed.
 }
 
 /**
