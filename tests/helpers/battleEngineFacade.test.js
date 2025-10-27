@@ -19,6 +19,48 @@ function mockTimerController(overrides = {}) {
   return { ...timerImpl, timerControllerMock };
 }
 
+function withProcessEnv(overrides, callback) {
+  const originalValues = {};
+  const entries = Object.entries(overrides);
+
+  for (const [key] of entries) {
+    originalValues[key] = process.env[key];
+  }
+
+  for (const [key, value] of entries) {
+    if (value === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = value;
+    }
+  }
+
+  const restore = () => {
+    for (const [key] of entries) {
+      const originalValue = originalValues[key];
+      if (originalValue === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = originalValue;
+      }
+    }
+  };
+
+  try {
+    const result = callback();
+
+    if (result && typeof result.then === "function") {
+      return result.finally(restore);
+    }
+
+    restore();
+    return result;
+  } catch (error) {
+    restore();
+    throw error;
+  }
+}
+
 const originalWindow = global.window;
 
 beforeEach(() => {
@@ -85,44 +127,21 @@ describe("createBattleEngine environment isolation", () => {
     const { timerControllerMock } = mockTimerController();
     const { createBattleEngine } = await import("../../src/helpers/battleEngineFacade.js");
 
-    const originalNodeEnv = process.env.NODE_ENV;
-    const originalVitest = process.env.VITEST;
-    const originalJestWorkerId = process.env.JEST_WORKER_ID;
-    const originalBabelEnv = process.env.BABEL_ENV;
+    withProcessEnv(
+      {
+        NODE_ENV: "test",
+        VITEST: "true",
+        JEST_WORKER_ID: undefined,
+        BABEL_ENV: undefined
+      },
+      () => {
+        const firstEngine = createBattleEngine();
+        const secondEngine = createBattleEngine();
 
-    process.env.NODE_ENV = "test";
-    process.env.VITEST = "true";
-    delete process.env.JEST_WORKER_ID;
-    delete process.env.BABEL_ENV;
-
-    try {
-      const firstEngine = createBattleEngine();
-      const secondEngine = createBattleEngine();
-
-      expect(secondEngine).not.toBe(firstEngine);
-      expect(timerControllerMock).toHaveBeenCalledTimes(2);
-    } finally {
-      if (originalNodeEnv === undefined) {
-        delete process.env.NODE_ENV;
-      } else {
-        process.env.NODE_ENV = originalNodeEnv;
+        expect(secondEngine).not.toBe(firstEngine);
+        expect(timerControllerMock).toHaveBeenCalledTimes(2);
       }
-      if (originalVitest === undefined) {
-        delete process.env.VITEST;
-      } else {
-        process.env.VITEST = originalVitest;
-      }
-      if (originalJestWorkerId === undefined) {
-        delete process.env.JEST_WORKER_ID;
-      } else {
-        process.env.JEST_WORKER_ID = originalJestWorkerId;
-      }
-      if (originalBabelEnv === undefined) {
-        delete process.env.BABEL_ENV;
-      } else {
-        process.env.BABEL_ENV = originalBabelEnv;
-      }
-    }
+    );
   });
 });
 
