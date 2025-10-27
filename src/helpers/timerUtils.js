@@ -166,6 +166,7 @@ export function createCountdownTimer(
     // Hard fallback to ensure expiration even if the scheduler never ticks
     // in certain test environments.
     try {
+      const fallbackDelayMs = Math.max(0, Math.ceil(Math.max(remaining, 0) * 1000));
       hardTimeoutId = activeScheduler.setTimeout(
         async () => {
           if (subId !== null) {
@@ -175,7 +176,7 @@ export function createCountdownTimer(
             if (typeof onExpired === "function") await onExpired();
           }
         },
-        Math.max(0, Math.ceil(remaining * 1000))
+        fallbackDelayMs
       );
     } catch (error) {
       if (typeof console !== "undefined") {

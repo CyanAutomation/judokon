@@ -21,6 +21,7 @@ describe("timerUtils", () => {
   });
 
   it("delays fallback expiration for fractional durations", async () => {
+    vi.useFakeTimers();
     const { createCountdownTimer } = await import("../../src/helpers/timerUtils.js");
 
     const onTick = vi.fn();
@@ -59,5 +60,6 @@ describe("timerUtils", () => {
     expect(cancel).toHaveBeenCalledWith(99);
 
     timer.stop();
+    vi.useRealTimers();
   });
 });
