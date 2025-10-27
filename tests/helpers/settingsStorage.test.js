@@ -137,7 +137,7 @@ describe("saveSettings", () => {
     }
   });
 
-  it("resolves and updates the cache when localStorage is unavailable", async () => {
+  it("rejects yet still updates the cache when localStorage is unavailable", async () => {
     const originalStorage = globalThis.localStorage;
     Object.defineProperty(globalThis, "localStorage", {
       value: undefined,
@@ -150,7 +150,9 @@ describe("saveSettings", () => {
       motionEffects: false
     };
 
-    await expect(saveSettings(nextSettings)).resolves.toBeUndefined();
+    await expect(saveSettings(nextSettings)).rejects.toThrow(
+      "localStorage unavailable"
+    );
     expect(getCachedSettings()).toEqual({
       ...DEFAULT_SETTINGS,
       motionEffects: false
