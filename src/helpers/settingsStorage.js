@@ -145,14 +145,19 @@ export async function getSettingsSchema() {
  * Rapid successive saves will cancel prior promises.
  *
  * @pseudocode
- * 1. Invoke `debouncedSave` with `settings`.
- * 2. When the debounced write resolves, refresh the in-memory cache via `setCachedSettings`.
- * 3. Return the resulting promise so callers can handle failures.
+ * 1. Throw if `localStorage` is unavailable.
+ * 2. Invoke `debouncedSave` with `settings`.
+ * 3. When the debounced write resolves, refresh the in-memory cache via `setCachedSettings`.
+ * 4. Return the resulting promise so callers can handle failures.
  *
  * @param {import("../config/settingsDefaults.js").Settings} settings - Settings object to save.
  * @returns {Promise<void>} Resolves when the write completes.
+ * @throws {Error} When localStorage is unavailable.
  */
 export function saveSettings(settings) {
+  if (typeof localStorage === "undefined") {
+    return Promise.reject(new Error("localStorage unavailable"));
+  }
   return debouncedSave(settings).then(() => {
     setCachedSettings(settings);
   });
