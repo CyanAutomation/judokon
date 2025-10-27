@@ -25,6 +25,28 @@ describe("setScheduler", () => {
     expect(clearSpy).toHaveBeenCalled();
   });
 
+  it("retains prototype methods when injecting clearTimeout fallback", () => {
+    const setSpy = vi.fn().mockReturnValue("token");
+
+    class PrototypeScheduler {
+      setTimeout(...args) {
+        return setSpy(...args);
+      }
+    }
+
+    const schedulerInstance = new PrototypeScheduler();
+
+    expect(() => setScheduler(schedulerInstance)).not.toThrow();
+
+    const scheduler = getScheduler();
+    const callback = () => {};
+    const token = scheduler.setTimeout(callback, 25);
+
+    expect(setSpy).toHaveBeenCalledWith(callback, 25);
+    expect(token).toBe("token");
+    expect(scheduler.clearTimeout).toBe(realScheduler.clearTimeout);
+  });
+
   it("allows schedulers without RAF when clearTimeout exists", () => {
     const nextScheduler = {
       setTimeout: vi.fn(),
