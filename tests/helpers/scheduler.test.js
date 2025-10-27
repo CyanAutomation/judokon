@@ -61,8 +61,6 @@ describe("setScheduler", () => {
   });
 
   it("throws when setTimeout is missing", () => {
-    expect(() => setScheduler({ clearTimeout: () => {} })).toThrow(
-      /Invalid scheduler object/
-    );
+    expect(() => setScheduler({ clearTimeout: () => {} })).toThrow(/Invalid scheduler object/);
   });
 });
