@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { withMutedConsole } from "../../utils/console.js";
-import { bindUIServiceEventHandlersOnce } from "../../../src/helpers/classicBattle/uiService.js";
-import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 
 vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
@@ -81,6 +79,13 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   handleReplay: vi.fn(async () => {}),
   isOrchestrated: () => false
 }));
+
+const { bindUIServiceEventHandlersOnce } = await import(
+  "../../../src/helpers/classicBattle/uiService.js"
+);
+const { emitBattleEvent } = await import(
+  "../../../src/helpers/classicBattle/battleEvents.js"
+);
 
 describe("classicBattle stat selection flag reset", () => {
   beforeEach(() => {
