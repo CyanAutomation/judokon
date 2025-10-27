@@ -393,6 +393,7 @@ svg {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  gap: 0;
   /* border: 2px solid red; */
 }
 
@@ -430,6 +431,29 @@ svg {
 
 .card-stats .stat span {
   text-align: right;
+}
+
+@media (min-width: 1024px) {
+  .judoka-card {
+    overflow-y: hidden;
+  }
+
+  .judoka-card .card-stats {
+    flex: 0 0 auto;
+    padding: var(--space-small);
+    overflow: hidden;
+    line-height: 1.3;
+  }
+
+  .judoka-card .card-stats ul {
+    gap: var(--space-xs, 0.25rem);
+  }
+
+  .judoka-card .card-stats li {
+    padding: 6px var(--space-xs, 0.25rem);
+    font-size: clamp(0.9rem, 1.05vw, var(--font-medium));
+    line-height: 1.3;
+  }
 }
 
 .signature-move-container {

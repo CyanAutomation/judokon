@@ -119,7 +119,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
   - Carousel page markers have a clear active state and are announced by screen readers.
 
 - **Actionable Fixes:**
-  - [ ] **Fix Card Scrolling (CSS):** In `src/styles/card.css`, adjust the card layout for desktop viewports.
+  - [x] **Fix Card Scrolling (CSS):** In `src/styles/card.css`, adjust the card layout for desktop viewports.
 
     ```css
     /* In src/styles/card.css, inside a @media (min-width: 1024px) block */
@@ -133,6 +133,8 @@ This phase addresses layout bugs on the judoka cards that hide information and v
       overflow: hidden; /* Prevent horizontal scroll */
     }
     ```
+    - Added a desktop-only block that tightens `.card-stats` padding/typography and removes vertical overflow while keeping cards responsive.
+    - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [ ] **Increase Center Card Scale (CSS):** In `src/styles/carousel.css`, increase the scale transform for the active card.
 
