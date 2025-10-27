@@ -140,6 +140,7 @@ export async function loadEmbeddings() {
     cachedEmbeddings = result;
     return cachedEmbeddings;
   }
+  // Reset promise so callers can retry loading after a transient failure.
   embeddingsPromise = undefined;
   return null;
 }
