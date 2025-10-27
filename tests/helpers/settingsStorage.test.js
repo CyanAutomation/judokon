@@ -80,6 +80,8 @@ describe("resetSettings", () => {
 
     await expect(pendingSave).rejects.toMatchObject({ name: "DebounceError" });
 
+    expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
+
     vi.runAllTimers();
 
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
