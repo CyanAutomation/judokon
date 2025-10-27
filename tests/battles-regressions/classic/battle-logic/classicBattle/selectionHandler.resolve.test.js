@@ -1,0 +1,104 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+  STATS: ["power"],
+  stopTimer: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+  dispatchBattleEvent: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
+  resolveRound: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
+  getCardStatValue: vi.fn()
+}));
+vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
+  getBattleState: vi.fn()
+}));
+
+import { handleStatSelection } from "../../../src/helpers/classicBattle.js";
+
+describe("handleStatSelection resolution", () => {
+  let store;
+  let dispatchMock;
+  let resolveMock;
+  let getBattleState;
+
+  beforeEach(async () => {
+    store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
+    dispatchMock = (await import("../../../src/helpers/classicBattle/eventDispatcher.js"))
+      .dispatchBattleEvent;
+    resolveMock = (await import("../../../src/helpers/classicBattle/roundResolver.js"))
+      .resolveRound;
+    getBattleState = (await import("../../../src/helpers/classicBattle/eventBus.js"))
+      .getBattleState;
+    getBattleState.mockReturnValue(null);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("resolves round and dispatches roundResolved", async () => {
+    resolveMock.mockImplementation(async (s) => {
+      s.playerChoice = null;
+      return "direct";
+    });
+    const result = await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+    expect(resolveMock).toHaveBeenCalled();
+    expect(dispatchMock).toHaveBeenCalledWith("roundResolved");
+    expect(result).toBe("direct");
+    expect(store.playerChoice).toBeNull();
+  });
+
+  it("still resolves when dispatch throws", async () => {
+    dispatchMock.mockRejectedValue(new Error("fail"));
+    resolveMock.mockImplementation(async (s) => {
+      s.playerChoice = null;
+      return "direct";
+    });
+    const result = await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+    expect(resolveMock).toHaveBeenCalled();
+    expect(dispatchMock).toHaveBeenCalledWith("roundResolved");
+    expect(result).toBe("direct");
+    expect(store.playerChoice).toBeNull();
+  });
+
+  it("skips direct resolution when machine handles round", async () => {
+    dispatchMock.mockImplementation(async (event) => {
+      if (event === "statSelected") {
+        store.playerChoice = null;
+      }
+    });
+    getBattleState.mockReturnValue("roundDecision");
+    const result = await handleStatSelection(store, "power", {
+      playerVal: 1,
+      opponentVal: 2
+    });
+    expect(resolveMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalledWith("roundResolved");
+    expect(result).toBeUndefined();
+    expect(store.playerChoice).toBeNull();
+  });
+
+  it("skips direct resolution when machine clears playerChoice but state unknown", async () => {
+    dispatchMock.mockImplementation(async (event) => {
+      if (event === "statSelected") {
+        store.playerChoice = null;
+      }
+    });
+    getBattleState.mockReturnValue(null);
+    const result = await handleStatSelection(store, "power", {
+      playerVal: 1,
+      opponentVal: 2
+    });
+    expect(resolveMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalledWith("roundResolved");
+    expect(result).toBeUndefined();
+    expect(store.playerChoice).toBeNull();
+  });
+});
