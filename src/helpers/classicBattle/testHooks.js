@@ -299,10 +299,10 @@ export async function triggerRoundTimeoutNow(store) {
   // then grant the browser a chance to update the DOM via setTimeout(0) before
   // proceeding with auto-select. This ensures intermediate state changes are observable.
   await dispatchBattleEvent("timeout");
-  
+
   // Allow the browser event loop to process DOM updates before proceeding with auto-select
   await new Promise((resolve) => setTimeout(resolve, 0));
-  
+
   // Complete auto-select after the state has settled and DOM has updated
   try {
     await autoSelectStat(onExpiredSelect, 0);
