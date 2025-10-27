@@ -1,5 +1,6 @@
 const MAX_METRICS = 50;
 const metricsBuffer = [];
+const metricListeners = new Set();
 
 function now() {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
@@ -77,6 +78,7 @@ function recordMetric(entry) {
       );
     } catch {}
   }
+  notifyMetricListeners();
 }
 
 /**
@@ -141,4 +143,49 @@ export function resetDebugFlagMetrics() {
   if (typeof window !== "undefined" && Array.isArray(window.__DEBUG_FLAG_METRICS__)) {
     window.__DEBUG_FLAG_METRICS__.length = 0;
   }
+  notifyMetricListeners();
+}
+
+function notifyMetricListeners() {
+  if (metricListeners.size === 0) return;
+  const snapshot = getDebugFlagMetrics();
+  metricListeners.forEach((listener) => {
+    if (typeof listener !== "function") {
+      metricListeners.delete(listener);
+      return;
+    }
+    try {
+      listener(snapshot);
+    } catch (error) {
+      if (typeof console !== "undefined" && console.warn) {
+        console.warn("[debugFlagPerf] listener error", error);
+      }
+    }
+  });
+}
+
+/**
+ * Register a callback that receives updated debug flag metrics whenever they change.
+ *
+ * @param {(metrics: ReturnType<typeof getDebugFlagMetrics>) => void} listener
+ *   Listener invoked with the latest metrics snapshot.
+ * @returns {() => void} Unsubscribe function.
+ */
+export function addDebugFlagMetricsListener(listener) {
+  if (typeof listener !== "function") {
+    return () => {};
+  }
+  metricListeners.add(listener);
+  return () => {
+    metricListeners.delete(listener);
+  };
+}
+
+/**
+ * Determine whether debug flag profiling is currently enabled.
+ *
+ * @returns {boolean}
+ */
+export function isDebugFlagProfilingEnabled() {
+  return isProfilingEnabled();
 }

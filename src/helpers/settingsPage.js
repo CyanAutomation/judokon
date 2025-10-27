@@ -18,6 +18,7 @@ import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
 import { showSnackbar } from "./showSnackbar.js";
+import { initDebugFlagHud } from "./debugFlagHud.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -82,6 +83,7 @@ if (typeof window !== "undefined") {
 
 let errorPopupTimeoutId;
 let saveStatusTimeoutId;
+let debugHudHandle;
 
 /**
  * Build a notifier that surfaces transient save feedback in the live region.
@@ -387,6 +389,10 @@ async function initializeSettingsPage() {
     return;
   }
   renderWithFallbacks(data);
+
+  if (!debugHudHandle) {
+    debugHudHandle = initDebugFlagHud();
+  }
 
   if (typeof window !== "undefined") {
     const searchInput = document.getElementById("advanced-settings-search");

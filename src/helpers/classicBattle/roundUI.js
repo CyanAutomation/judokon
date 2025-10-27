@@ -510,6 +510,12 @@ export function handleRoundStartedEvent(event, deps = {}) {
       emitBattleEvent("statButtons:enable");
       if (!IS_VITEST) console.log("INFO: handleRoundStartedEvent -> ensured stat buttons enabled");
     } catch {}
+  } else {
+    // Defensive: if event details are missing, still try to enable buttons
+    try {
+      enableStatButtons?.();
+      emitBattleEvent("statButtons:enable");
+    } catch {}
   }
 }
 

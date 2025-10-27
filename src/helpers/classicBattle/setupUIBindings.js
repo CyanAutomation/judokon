@@ -57,6 +57,13 @@ export async function setupUIBindings(view) {
 
   setupNextButton();
   const statButtonControls = initStatButtons(store);
+  
+  // Ensure stat buttons are enabled when UI bindings are set up
+  // This handles cases where the round select modal is bypassed
+  try {
+    statButtonControls?.enable();
+  } catch {}
+  
   onBattleEvent("statButtons:enable", () => {
     statButtonControls?.enable();
     // Focus the first stat button for keyboard navigation
