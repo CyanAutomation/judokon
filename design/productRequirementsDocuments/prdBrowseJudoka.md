@@ -83,7 +83,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 - Using keyboard arrow keys (left/right) moves focus to the previous/next card, and the focused card is visually highlighted and enlarged.
 - The Country Flag Picker panel appears below the top bar, is accessible via keyboard and screen reader, and supports closing with Escape.
 - Country flags are displayed alphabetically, with alt-text and aria-labels for accessibility.
-- If no judoka exist for a selected country, display “No judoka available for this country.”
+- If no judoka exist for a selected country, display "No judoka found".”
 - If a flag asset fails to load, display a fallback flag icon.
 - The clear filter icon resets the filter to show all judoka.
 - The country picker supports minimum tap target size (44x44px) and color contrast per WCAG 2.1 AA.

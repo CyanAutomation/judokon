@@ -65,7 +65,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - Each radio label includes alt-text and an `aria-label` (e.g., "Filter by {country}") for accessibility while keeping the radio inputs visually hidden.
 - The picker supports keyboard navigation: Tab/Shift+Tab to move between flags, Enter/Space to select, and Escape to close the panel.
 - The panel appears below the persistent top bar so the first row of countries is fully visible.
-- If no judoka exist for a selected country, an empty state message is shown ("No judoka available for this country").
+- If no judoka exist for a selected country, an empty state message is shown ("No judoka found").
 - If a flag asset fails to load, a generic fallback flag icon is displayed.
 - For collections larger than 50 countries, virtual scrolling or paging is implemented to prevent UI overload.
 - Progressive flag loading is used on slow networks to prioritize interactivity.
@@ -119,7 +119,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ## Edge Cases and Failure States
 
-- If no judoka exist for a selected country, show an empty state message (“No judoka available for this country”).
+- If no judoka exist for a selected country, show an empty state message ("No judoka found").
 - If a flag asset fails to load, display a generic fallback flag icon.
 - For collections larger than 50 countries, implement virtual scrolling or paging to prevent UI overload.
 - On slow networks, implement graceful degradation with progressive flag loading to prioritize interactivity.
