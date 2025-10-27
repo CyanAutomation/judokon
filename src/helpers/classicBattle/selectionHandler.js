@@ -409,7 +409,7 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
     IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
   const eventOpts = {
     ...opts,
-    delayOpponentMessage: !forceDirectResolution
+    delayOpponentMessage: opts?.delayOpponentMessage ?? !forceDirectResolution
   };
   try {
     document.body?.setAttribute?.("data-stat-selected", "true");
