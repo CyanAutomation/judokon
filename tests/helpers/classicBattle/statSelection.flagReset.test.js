@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { withMutedConsole } from "../../utils/console.js";
 import { bindUIServiceEventHandlersOnce } from "../../../src/helpers/classicBattle/uiService.js";
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
@@ -83,14 +84,16 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
 }));
 
 describe("classicBattle stat selection flag reset", () => {
+  let timers;
+
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     document.body.innerHTML = "";
     document.body.removeAttribute("data-stat-selected");
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
     vi.clearAllMocks();
   });
 
