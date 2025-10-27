@@ -66,6 +66,8 @@ export class TimerController {
     this.cancel = cancel;
     this.scheduler = scheduler;
     this.driftId = null;
+    this.activeCategory = null;
+    this.pauseOnHiddenSetting = false;
   }
 
   async #start(category, onTick, onExpired, duration, pauseOnHidden, onDrift) {
@@ -91,6 +93,8 @@ export class TimerController {
     this.paused = false;
     this.onTickCb = onTick;
     this.onExpiredCb = onExpired;
+    this.activeCategory = category;
+    this.pauseOnHiddenSetting = Boolean(pauseOnHidden);
     const start = Date.now();
     let pausedAt = null;
     let pausedMs = 0;
@@ -211,13 +215,40 @@ export class TimerController {
       this.cancel(this.driftId);
       this.driftId = null;
     }
+    this.activeCategory = null;
+    this.pauseOnHiddenSetting = false;
   }
 
+  /**
+   * Provide a snapshot of the active timer state.
+   *
+   * @pseudocode
+   * 1. Return an object containing `remaining`, `paused`, `category`, and `pauseOnHidden`.
+   *
+   * @returns {{remaining: number, paused: boolean, category: "roundTimer"|"coolDownTimer"|null, pauseOnHidden: boolean}}
+   */
   getState() {
-    return { remaining: this.remaining, paused: this.paused };
+    return {
+      remaining: this.remaining,
+      paused: this.paused,
+      category: this.activeCategory,
+      pauseOnHidden: this.pauseOnHiddenSetting
+    };
   }
 
   hasActiveTimer() {
     return Boolean(this.currentTimer);
+  }
+
+  /**
+   * Report which category the active countdown represents.
+   *
+   * @pseudocode
+   * 1. Return the cached `activeCategory` string or `null` when idle.
+   *
+   * @returns {"roundTimer"|"coolDownTimer"|null}
+   */
+  getActiveCategory() {
+    return this.activeCategory;
   }
 }
