@@ -173,9 +173,17 @@ function createHeaderStub() {
 }
 
 function createHeroStub() {
+  const createSvgElement = (name) => document.createElementNS("http://www.w3.org/2000/svg", name);
+
   const hero = document.createElement("section");
   hero.className = "modern-hero";
   hero.setAttribute("aria-labelledby", "settings-page-title");
+
+  const layout = document.createElement("div");
+  layout.className = "modern-hero__layout";
+
+  const content = document.createElement("div");
+  content.className = "modern-hero__content";
 
   const eyebrow = document.createElement("p");
   eyebrow.className = "modern-hero__eyebrow";
@@ -190,7 +198,133 @@ function createHeroStub() {
   description.className = "modern-hero__description";
   description.textContent = "Tailor JU-DO-KON! to your play style.";
 
-  hero.append(eyebrow, heading, description);
+  const actions = document.createElement("div");
+  actions.className = "modern-hero__actions";
+  const cta = document.createElement("a");
+  cta.className = "primary-button modern-hero__cta";
+  cta.href = "#display-settings-container";
+  cta.textContent = "Adjust display mode";
+  actions.append(cta);
+
+  const fieldset = document.createElement("fieldset");
+  fieldset.id = "display-settings-container";
+  fieldset.className = "modern-hero__display-mode game-mode-toggle-container settings-form";
+  fieldset.setAttribute("aria-describedby", "modern-hero-preview-description");
+
+  const legend = document.createElement("legend");
+  legend.className = "modern-hero__display-mode-legend";
+  legend.textContent = "Display mode";
+
+  const group = document.createElement("div");
+  group.className = "settings-item display-mode-group";
+  group.setAttribute("role", "radiogroup");
+  group.setAttribute("aria-label", "Display Mode");
+
+  const flex = document.createElement("div");
+  flex.className = "display-mode-flex";
+
+  const createOption = (value, tabIndex) => {
+    const optionLabel = document.createElement("label");
+    optionLabel.className = "display-mode-option";
+    optionLabel.dataset.mode = value;
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.id = `display-mode-${value}`;
+    input.name = "display-mode";
+    input.value = value;
+    input.tabIndex = tabIndex;
+    input.setAttribute("form", "settings-form");
+    if (value === "light") {
+      input.checked = true;
+    }
+
+    const pill = document.createElement("span");
+    pill.className = "display-mode-option__pill";
+
+    const iconWrapper = document.createElement("span");
+    iconWrapper.className = "display-mode-option__icon";
+    iconWrapper.setAttribute("aria-hidden", "true");
+
+    const svg = createSvgElement("svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("focusable", "false");
+    svg.setAttribute("aria-hidden", "true");
+    svg.classList.add("display-mode-option__icon-svg");
+
+    if (value === "dark") {
+      const path = createSvgElement("path");
+      path.setAttribute("d", "M15.5 3.5a8 8 0 1 0 5 13.86A8.5 8.5 0 0 1 15.5 3.5Z");
+      path.setAttribute("fill", "currentColor");
+      svg.append(path);
+    } else {
+      const circle = createSvgElement("circle");
+      circle.setAttribute("cx", "12");
+      circle.setAttribute("cy", "12");
+      circle.setAttribute("r", "4.5");
+      circle.setAttribute("fill", "currentColor");
+      svg.append(circle);
+
+      const lines = [
+        ["12", "2.2", "12", "5"],
+        ["12", "19", "12", "21.8"],
+        ["4.22", "4.22", "6.2", "6.2"],
+        ["17.8", "17.8", "19.78", "19.78"],
+        ["2.2", "12", "5", "12"],
+        ["19", "12", "21.8", "12"],
+        ["4.22", "19.78", "6.2", "17.8"],
+        ["17.8", "6.2", "19.78", "4.22"]
+      ];
+      lines.forEach(([x1, y1, x2, y2]) => {
+        const line = createSvgElement("line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("stroke", "currentColor");
+        line.setAttribute("stroke-width", "1.6");
+        line.setAttribute("stroke-linecap", "round");
+        line.setAttribute("fill", "none");
+        svg.append(line);
+      });
+    }
+
+    iconWrapper.append(svg);
+
+    const labelText = document.createElement("span");
+    labelText.className = "display-mode-option__label";
+    labelText.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+
+    pill.append(iconWrapper, labelText);
+    optionLabel.append(input, pill);
+    return optionLabel;
+  };
+
+  flex.append(createOption("light", 0), createOption("dark", -1));
+  group.append(flex);
+  fieldset.append(legend, group);
+
+  const previewDescription = document.createElement("p");
+  previewDescription.id = "modern-hero-preview-description";
+  previewDescription.className = "visually-hidden";
+  previewDescription.textContent =
+    "Visual preview of the available display mode themes: light, dark, and retro.";
+
+  const visual = document.createElement("div");
+  visual.className = "modern-hero__visual";
+  visual.setAttribute("aria-hidden", "true");
+
+  const preview = document.createElement("div");
+  preview.className = "modern-hero-preview";
+
+  const previewCard = document.createElement("div");
+  previewCard.className = "modern-hero-preview__card";
+  preview.append(previewCard);
+  visual.append(preview);
+
+  content.append(eyebrow, heading, description, actions, fieldset);
+  layout.append(content, previewDescription, visual);
+  hero.append(layout);
   return hero;
 }
 
@@ -270,68 +404,6 @@ function createToggleItem({
 
   item.append(labelEl, description);
   return item;
-}
-
-function createDisplayCard() {
-  const { card, details } = createSectionCard({
-    sectionId: "display",
-    summaryText: "Display Settings",
-    open: true
-  });
-  const fieldset = document.createElement("fieldset");
-  fieldset.id = "display-settings-container";
-  fieldset.className = "game-mode-toggle-container settings-form";
-
-  const group = document.createElement("div");
-  group.className = "settings-item display-mode-group";
-  group.setAttribute("role", "radiogroup");
-  group.setAttribute("aria-label", "Display Mode");
-
-  const flex = document.createElement("div");
-  flex.className = "display-mode-flex";
-
-  const createOption = (value, checked, tabIndex) => {
-    const optionLabel = document.createElement("label");
-    optionLabel.className = "display-mode-option";
-
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.id = `display-mode-${value}`;
-    input.name = "display-mode";
-    input.value = value;
-    input.tabIndex = tabIndex;
-    if (checked) {
-      input.checked = true;
-    }
-
-    const preview = document.createElement("span");
-    preview.className = `theme-preview-card theme-preview-card--${value}`;
-    preview.setAttribute("aria-hidden", "true");
-
-    const header = document.createElement("span");
-    header.className = "theme-preview-card__header";
-    const body = document.createElement("span");
-    body.className = "theme-preview-card__body";
-    const chipA = document.createElement("span");
-    chipA.className = "theme-preview-card__chip";
-    const chipB = document.createElement("span");
-    chipB.className = "theme-preview-card__chip";
-    body.append(chipA, chipB);
-    preview.append(header, body);
-
-    const name = document.createElement("span");
-    name.className = "theme-preview-name";
-    name.textContent = value.charAt(0).toUpperCase() + value.slice(1);
-
-    optionLabel.append(input, preview, name);
-    return optionLabel;
-  };
-
-  flex.append(createOption("light", true, 0), createOption("dark", false, -1));
-  group.append(flex);
-  fieldset.append(group);
-  details.append(fieldset);
-  return card;
 }
 
 function createGeneralCard() {
@@ -540,7 +612,6 @@ export function createSettingsDom() {
   form.className = "settings-form";
 
   form.append(
-    createDisplayCard(),
     createGeneralCard(),
     createGameModesCard(),
     createAdvancedCard(),
