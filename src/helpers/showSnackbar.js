@@ -10,7 +10,7 @@
  * @param {string} message - Text content to display in the snackbar.
  */
 import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "./constants.js";
-import { getScheduler } from "./scheduler.js";
+import { getScheduler, realScheduler } from "./scheduler.js";
 
 let bar;
 let fadeId;
@@ -88,10 +88,22 @@ function resetState() {
   removeId = undefined;
 }
 
+function safeClearTimeout(scheduler, handle) {
+  if (!scheduler) {
+    realScheduler.clearTimeout(handle);
+    return;
+  }
+  if (typeof scheduler.clearTimeout === "function") {
+    scheduler.clearTimeout(handle);
+    return;
+  }
+  realScheduler.clearTimeout(handle);
+}
+
 function resetTimers() {
   const scheduler = getScheduler();
-  scheduler.clearTimeout(fadeId);
-  scheduler.clearTimeout(removeId);
+  safeClearTimeout(scheduler, fadeId);
+  safeClearTimeout(scheduler, removeId);
   const doc = ensureDomOrReset();
   if (!doc) {
     return;
@@ -152,8 +164,8 @@ export function showSnackbar(message) {
   } catch {}
   const scheduler = getScheduler();
   const requestFrame = getSafeRequestAnimationFrame(scheduler);
-  scheduler.clearTimeout(fadeId);
-  scheduler.clearTimeout(removeId);
+  safeClearTimeout(scheduler, fadeId);
+  safeClearTimeout(scheduler, removeId);
   const container = doc.getElementById("snackbar-container");
   if (!container) {
     resetState();
@@ -200,8 +212,8 @@ export function updateSnackbar(message) {
   const scheduler = getScheduler();
   const container = doc.getElementById("snackbar-container");
   if (!container) {
-    scheduler.clearTimeout(fadeId);
-    scheduler.clearTimeout(removeId);
+    safeClearTimeout(scheduler, fadeId);
+    safeClearTimeout(scheduler, removeId);
     resetState();
     return;
   }

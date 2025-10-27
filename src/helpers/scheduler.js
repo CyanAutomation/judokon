@@ -102,5 +102,12 @@ export function setScheduler(newScheduler) {
   if (!newScheduler || typeof newScheduler.setTimeout !== "function") {
     throw new Error("Invalid scheduler object provided");
   }
+
+  if (typeof newScheduler.clearTimeout !== "function") {
+    Object.assign(newScheduler, {
+      clearTimeout: realScheduler.clearTimeout
+    });
+  }
+
   currentScheduler = newScheduler;
 }
