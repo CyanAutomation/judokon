@@ -583,7 +583,7 @@ export class BattleEngine {
       ? this.timer.hasActiveTimer()
       : Boolean(category);
 
-    if (!category || !hasActiveTimer) {
+    if (!hasActiveTimer) {
       this.lastTimerDrift = remainingTime;
       return;
     }
