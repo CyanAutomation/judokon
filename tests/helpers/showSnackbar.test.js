@@ -120,4 +120,31 @@ describe("showSnackbar", () => {
       timers.cleanup();
     }
   });
+
+  it("falls back to real clearTimeout when scheduler omits it", () => {
+    const timers = useCanonicalTimers();
+    const container = document.getElementById("snackbar-container");
+    const schedulerWithoutClear = {
+      setTimeout: (...args) => realScheduler.setTimeout(...args),
+      requestAnimationFrame: undefined,
+      cancelAnimationFrame: undefined
+    };
+
+    const clearSpy = vi.spyOn(globalThis, "clearTimeout");
+    setScheduler(schedulerWithoutClear);
+
+    try {
+      expect(() => showSnackbar("No clear")).not.toThrow();
+      expect(clearSpy).toHaveBeenCalled();
+      updateSnackbar("Still fine");
+      vi.advanceTimersByTime(SNACKBAR_REMOVE_MS);
+      expect(container.children).toHaveLength(0);
+    } finally {
+      clearSpy.mockRestore();
+      try {
+        setScheduler(realScheduler);
+      } catch {}
+      timers.cleanup();
+    }
+  });
 });

@@ -81,13 +81,6 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   isOrchestrated: () => false
 }));
 
-const { bindUIServiceEventHandlersOnce } = await import(
-  "../../../src/helpers/classicBattle/uiService.js"
-);
-const { emitBattleEvent } = await import(
-  "../../../src/helpers/classicBattle/battleEvents.js"
-);
-
 describe("classicBattle stat selection flag reset", () => {
   let timers;
 

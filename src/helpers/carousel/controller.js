@@ -332,6 +332,15 @@ export class CarouselController {
     counter.setAttribute("aria-live", "polite");
     root.appendChild(counter);
 
+    let liveRegion = this.wrapper.querySelector(".carousel-page-live");
+    if (!liveRegion) {
+      liveRegion = document.createElement("span");
+      liveRegion.className = "sr-only carousel-page-live";
+      liveRegion.setAttribute("aria-live", "polite");
+      liveRegion.setAttribute("aria-atomic", "true");
+      this.wrapper.appendChild(liveRegion);
+    }
+
     return root;
   }
 
@@ -355,6 +364,13 @@ export class CarouselController {
     const markers = this.markersRoot.querySelectorAll(".scroll-marker");
     markers.forEach((m, i) => m.classList.toggle("active", i === this.currentPage));
     const counter = this.markersRoot.querySelector(".page-counter");
-    if (counter) counter.textContent = `Page ${this.currentPage + 1} of ${pageCount}`;
+    const message = `Page ${this.currentPage + 1} of ${pageCount}`;
+    if (counter) counter.textContent = message;
+    const live = this.wrapper.querySelector(".carousel-page-live");
+    if (live) {
+      live.textContent = message;
+      live.dataset.page = String(this.currentPage + 1);
+      live.dataset.pages = String(pageCount);
+    }
   }
 }
