@@ -739,6 +739,168 @@ logger.fatal("Database connection pool exhausted", {
 
 ---
 
+## 🎯 Battle Pages Regression Testing
+
+When making changes to `src/pages/battleClassic.html` or `src/pages/battleCLI.html`, run the centralized regression test suite to ensure no regressions on these critical pages.
+
+### Quick Validation
+
+```bash
+# Full battle pages regression suite
+npm run test:battles
+
+# Specific page tests
+npm run test:battles:classic   # Classic Battle mode only
+npm run test:battles:cli       # CLI Battle mode only
+npm run test:battles:shared    # Shared components only
+
+# Development workflows
+npm run test:battles:watch     # Watch mode during development
+npm run test:battles:cov       # Generate coverage report
+```
+
+### Test Suite Organization
+
+Battle page tests are centralized in `tests/battles-regressions/` with clear organization by page and feature:
+
+| Path                                 | Purpose                   |
+| ------------------------------------ | ------------------------- |
+| `tests/battles-regressions/classic/` | Classic Battle mode tests |
+| `tests/battles-regressions/cli/`     | CLI Battle mode tests     |
+| `tests/battles-regressions/shared/`  | Shared component tests    |
+| `playwright/battle-classic/`         | Classic Battle E2E tests  |
+| `playwright/battle-cli*.spec.js`     | CLI Battle E2E tests      |
+
+### What Gets Tested
+
+**Classic Battle (battleClassic.html):**
+
+- Game initialization and bootstrap
+- Round selection and validation
+- Stat selection and keyboard shortcuts
+- Timer functionality (countdown, auto-advance, cooldown)
+- Scoring and round resolution
+- Opponent message handling
+- End-of-match modal and replay
+- Feature flag integration
+- Accessibility (keyboard navigation, ARIA)
+
+**CLI Battle (battleCLI.html):**
+
+- CLI initialization and prompt rendering
+- Keyboard shortcuts and hotkeys
+- Number input validation
+- Verbose mode toggling and display
+- Seed validation
+- Points-to-win configuration
+- Scoreboard rendering
+- Focus management and navigation
+- Accessibility (live regions, contrast)
+
+**Shared Components:**
+
+- Scoreboard rendering (both modes)
+- Modal component behavior
+- Stats panel display
+- Battle configuration and defaults
+
+### Integration with Main Test Suite
+
+```bash
+npm run test:ci                 # Full suite (includes battles)
+npm run test:battles            # Battles only (faster feedback)
+npm run test                    # Watch all tests
+npm run test:watch              # Watch all tests
+npm run test:battles:watch      # Watch battles only
+```
+
+### Before Submitting PR
+
+Verify these commands pass when changing battle pages:
+
+```bash
+# 1. Run battle regression tests
+npm run test:battles
+
+# 2. Run with coverage to check if new tests added
+npm run test:battles:cov
+
+# 3. Run full test suite before submitting
+npm run test:ci
+```
+
+### Task Contract for Battle Page Changes
+
+```json
+{
+  "inputs": ["src/pages/battleClassic.html | src/pages/battleCLI.html"],
+  "outputs": [
+    "tests/battles-regressions/classic/* | tests/battles-regressions/cli/*",
+    "tests/battles-regressions/shared/* (if shared components modified)"
+  ],
+  "success": [
+    "npm run test:battles: PASS",
+    "eslint: PASS",
+    "jsdoc: PASS",
+    "no_unsilenced_console",
+    "all new logic covered by tests"
+  ],
+  "errorMode": "ask_on_regression_failure"
+}
+```
+
+### Key Validation Commands
+
+```bash
+# Essential before commit (from core validation)
+npm run check:jsdoc && npx prettier . --check && npx eslint .
+
+# Battle pages specific
+npm run test:battles
+
+# Full validation
+npm run test:ci && npm run check:contrast
+```
+
+### Common Workflows
+
+**When fixing a bug in Classic Battle:**
+
+```bash
+npm run test:battles:classic    # Fast feedback
+npm run test:battles:watch      # Watch during development
+npm run test:ci                 # Final validation
+```
+
+**When adding a feature to CLI Battle:**
+
+```bash
+# Create test first, implement, verify (TDD workflow)
+npm run test:battles:cli:watch
+npm run test:battles:cli        # Final check
+```
+
+**When refactoring shared components:**
+
+```bash
+npm run test:battles:shared
+npm run test:battles            # All battle tests affected
+npm run test:ci                 # Full suite
+```
+
+### Documentation
+
+Complete plan and guidelines available in:
+
+- `BATTLE_PAGES_TEST_CENTRALIZATION_PLAN.txt` (detailed implementation guide)
+- `BATTLE_TEST_PLAN_EXECUTIVE_SUMMARY.txt` (overview)
+- `tests/battles-regressions/README.md` (test suite guide)
+- `tests/battles-regressions/classic/README.md` (classic tests)
+- `tests/battles-regressions/cli/README.md` (CLI tests)
+- `tests/battles-regressions/shared/README.md` (shared components)
+
+---
+
 ## 🛠 Validation Commands
 
 **Complete command reference:** [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) | [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference)
