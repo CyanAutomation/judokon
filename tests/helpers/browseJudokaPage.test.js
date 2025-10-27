@@ -308,16 +308,30 @@ describe("browseJudokaPage helpers", () => {
     root.appendChild(panel);
 
     const carouselEl = document.createElement("div");
+    const wrapper = document.createElement("div");
+    wrapper.className = "carousel-container";
     const liveRegion = document.createElement("div");
     liveRegion.className = "carousel-aria-live";
-    carouselEl.appendChild(liveRegion);
+    const cardContainer = document.createElement("div");
+    cardContainer.className = "card-carousel";
+    cardContainer.scrollLeft = 120;
+    cardContainer.scrollTo = vi.fn(({ left }) => {
+      cardContainer.scrollLeft = left;
+    });
+    const controller = { setPage: vi.fn() };
+    wrapper._carouselController = controller;
+    wrapper.append(liveRegion, cardContainer);
+    carouselEl.appendChild(wrapper);
     root.appendChild(carouselEl);
 
     const judokaList = [
       { id: 1, country: "Japan" },
       { id: 2, country: "Brazil" }
     ];
-    const render = vi.fn();
+    const render = vi.fn().mockImplementation(async () => ({
+      carousel: wrapper,
+      containerEl: cardContainer
+    }));
 
     setupCountryFilter(
       listContainer,
@@ -337,7 +351,14 @@ describe("browseJudokaPage helpers", () => {
     expect(panel.open).toBe(false);
     expect(render).toHaveBeenCalled();
     expect(render.mock.calls.at(-1)?.[0]).toEqual([{ id: 1, country: "Japan" }]);
+    expect(controller.setPage).toHaveBeenCalledTimes(1);
+    expect(controller.setPage).toHaveBeenCalledWith(0);
+    expect(cardContainer.scrollLeft).toBe(0);
+    expect(cardContainer.scrollTo).toHaveBeenCalled();
 
+    controller.setPage.mockClear();
+    cardContainer.scrollTo.mockClear();
+    cardContainer.scrollLeft = 200;
     render.mockClear();
     panel.open = true;
     brazilRadio.checked = true;
@@ -347,6 +368,10 @@ describe("browseJudokaPage helpers", () => {
 
     expect(render).toHaveBeenCalledTimes(1);
     expect(render).toHaveBeenLastCalledWith([{ id: 2, country: "Brazil" }]);
+    expect(controller.setPage).toHaveBeenCalledTimes(1);
+    expect(controller.setPage).toHaveBeenCalledWith(0);
+    expect(cardContainer.scrollLeft).toBe(0);
+    expect(cardContainer.scrollTo).toHaveBeenCalled();
 
     root.remove();
   });

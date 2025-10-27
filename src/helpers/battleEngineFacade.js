@@ -156,8 +156,7 @@ export function createBattleEngine(config = {}) {
     );
   // Check if we're in test mode and force create if so
   const isTest =
-    (typeof window !== "undefined" &&
-      (window.__TEST__ || window.__ENGINE_CONFIG?.forceCreate)) ||
+    (typeof window !== "undefined" && (window.__TEST__ || window.__ENGINE_CONFIG?.forceCreate)) ||
     isProcessTestEnv;
   const currentEngine = typeof window !== "undefined" ? battleEngines.get(window) : battleEngine;
   if (currentEngine && !forceCreate && !isTest) {

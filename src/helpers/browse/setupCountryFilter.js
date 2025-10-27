@@ -9,6 +9,7 @@ import { toggleCountryPanel } from "../countryPanel.js";
  * @property {(button: HTMLInputElement | null) => string} getButtonValue - Read the country value associated with a radio.
  * @property {() => HTMLInputElement[]} getRadios - List the available country filter radio inputs.
  * @property {() => HTMLInputElement | null} getDefaultRadio - Return the "all countries" radio input if present.
+ * @property {() => void} resetCarouselPosition - Snap the carousel back to the first page.
  */
 
 /**
@@ -76,6 +77,29 @@ export function createCountryFilterAdapter(
         listContainer?.querySelector?.('input[type="radio"][name="country-filter"][value="all"]') ??
         null
       );
+    },
+    resetCarouselPosition() {
+      if (!carouselEl) return;
+      const wrapper = carouselEl.querySelector?.(".carousel-container");
+      if (!wrapper) return;
+      const controller = wrapper._carouselController;
+      const cardContainer = wrapper.querySelector?.(".card-carousel");
+
+      if (cardContainer) {
+        if (typeof cardContainer.scrollTo === "function") {
+          cardContainer.scrollTo({ left: 0, behavior: "auto" });
+        } else {
+          cardContainer.scrollLeft = 0;
+        }
+      }
+
+      if (controller && typeof controller.setPage === "function") {
+        try {
+          controller.setPage(0);
+        } catch {
+          // Ignore controller errors; resetting scroll is best-effort.
+        }
+      }
     }
   };
 }
@@ -116,6 +140,7 @@ export function createCountryFilterController(judokaList, render, adapter) {
         defaultRadio.checked = true;
       }
       await render(judokaList);
+      adapter.resetCarouselPosition?.();
       adapter.updateLiveRegion?.(judokaList.length, toLabel("all"));
       adapter.removeNoResultsMessage?.();
       adapter.closePanel?.();
@@ -134,6 +159,7 @@ export function createCountryFilterController(judokaList, render, adapter) {
       const filtered =
         value === "all" ? judokaList : judokaList.filter((judoka) => judoka.country === value);
       await render(filtered);
+      adapter.resetCarouselPosition?.();
       adapter.updateLiveRegion?.(filtered.length, toLabel(value));
       adapter.removeNoResultsMessage?.();
       if (filtered.length === 0) {
@@ -184,7 +210,11 @@ export function setupCountryFilter(
     if (!listContainer || !(target instanceof Element)) {
       return null;
     }
-    if (target instanceof HTMLInputElement && target.type === "radio" && target.name === "country-filter") {
+    if (
+      target instanceof HTMLInputElement &&
+      target.type === "radio" &&
+      target.name === "country-filter"
+    ) {
       return target;
     }
     const label = target.closest?.("label.flag-button");

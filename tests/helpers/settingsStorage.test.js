@@ -150,9 +150,7 @@ describe("saveSettings", () => {
       motionEffects: false
     };
 
-    await expect(saveSettings(nextSettings)).rejects.toThrow(
-      "localStorage unavailable"
-    );
+    await expect(saveSettings(nextSettings)).rejects.toThrow("localStorage unavailable");
     expect(getCachedSettings()).toEqual({
       ...DEFAULT_SETTINGS,
       motionEffects: false

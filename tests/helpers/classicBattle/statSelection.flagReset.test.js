@@ -149,9 +149,7 @@ describe("classicBattle stat selection flag reset", () => {
     const { bindUIServiceEventHandlersOnce } = await import(
       "../../../src/helpers/classicBattle/uiService.js"
     );
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
 
     document.body.innerHTML = '<div class="modal" id="round-summary"></div>';
     const modal = document.getElementById("round-summary");
