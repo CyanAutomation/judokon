@@ -94,12 +94,55 @@ const HUD_STYLES = `
     content: "⚠ ";
     font-size: 12px;
   }
+  #${HUD_ID} details.debug-flag-hud__history {
+    border-top: 1px solid rgba(245, 251, 255, 0.08);
+    background: rgba(245, 251, 255, 0.04);
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  #${HUD_ID} details.debug-flag-hud__history summary {
+    cursor: pointer;
+    list-style: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #${HUD_ID} details.debug-flag-hud__history summary::-webkit-details-marker {
+    display: none;
+  }
+  #${HUD_ID} details.debug-flag-hud__history[data-recent="true"] summary::after {
+    content: "●";
+    color: #ff8282;
+    font-size: 10px;
+  }
+  #${HUD_ID} details.debug-flag-hud__history ol {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    max-height: 120px;
+    overflow-y: auto;
+    line-height: 1.4;
+  }
+  #${HUD_ID} details.debug-flag-hud__history li {
+    margin-bottom: 6px;
+  }
+  #${HUD_ID} details.debug-flag-hud__history li:last-child {
+    margin-bottom: 0;
+  }
+  #${HUD_ID} .debug-flag-hud__history-empty {
+    margin-top: 8px;
+    opacity: 0.7;
+  }
 `;
 const DEFAULT_ALERT_THRESHOLD_MS = 16;
 const MAX_ALERT_HISTORY = 100;
+const ALERT_HISTORY_RENDER_LIMIT = 5;
 let hudRoot = null;
 let hudList = null;
 let hudEmpty = null;
+let hudHistorySection = null;
+let hudHistoryList = null;
+let hudHistoryEmpty = null;
 let unsubscribeMetrics = null;
 let lastAlertFlags = new Set();
 const alertHistory =
@@ -139,6 +182,11 @@ function createHudRoot() {
     </header>
     <div class="debug-flag-hud__empty" data-debug-flag-hud="empty">No debug flag metrics recorded.</div>
     <ul data-debug-flag-hud="list"></ul>
+    <details class="debug-flag-hud__history" data-debug-flag-hud="history">
+      <summary>Alert history</summary>
+      <div class="debug-flag-hud__history-empty" data-debug-flag-hud="history-empty">No alert history recorded.</div>
+      <ol data-debug-flag-hud="history-list"></ol>
+    </details>
     <footer>
       <button type="button" data-debug-flag-hud="export">Copy Alerts</button>
       <button type="button" data-debug-flag-hud="clear">Clear</button>
@@ -149,6 +197,9 @@ function createHudRoot() {
   const exportBtn = root.querySelector("[data-debug-flag-hud='export']");
   hudList = root.querySelector("[data-debug-flag-hud='list']");
   hudEmpty = root.querySelector("[data-debug-flag-hud='empty']");
+  hudHistorySection = root.querySelector("[data-debug-flag-hud='history']");
+  hudHistoryList = root.querySelector("[data-debug-flag-hud='history-list']");
+  hudHistoryEmpty = root.querySelector("[data-debug-flag-hud='history-empty']");
   closeBtn?.addEventListener("click", teardownDebugFlagHud);
   clearBtn?.addEventListener("click", () => {
     resetDebugFlagMetrics();
@@ -194,6 +245,72 @@ function summarizeMetrics(metrics) {
 
 function formatDuration(value) {
   return `${value.toFixed(1)}ms`;
+}
+
+function formatTimestamp(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "unknown time";
+  }
+  return date.toISOString();
+}
+
+function getRecentAlertHistory() {
+  const start = Math.max(0, alertHistory.length - ALERT_HISTORY_RENDER_LIMIT);
+  return alertHistory.slice(start).reverse();
+}
+
+function formatHistoryMetrics(metrics) {
+  if (!Array.isArray(metrics) || metrics.length === 0) {
+    return "";
+  }
+  return metrics
+    .map(
+      (metric) =>
+        `${metric.flag}: avg ${formatDuration(metric.avg)} • max ${formatDuration(metric.max)} • last ${formatDuration(metric.last)} • n=${metric.count}`
+    )
+    .join(" | ");
+}
+
+function renderAlertHistorySection(expandOnLatest = false) {
+  if (!hudHistoryList || !hudHistoryEmpty) {
+    return;
+  }
+  const entries = getRecentAlertHistory();
+  hudHistoryList.textContent = "";
+  if (entries.length === 0) {
+    hudHistoryEmpty.hidden = false;
+    if (hudHistorySection) {
+      hudHistorySection.open = false;
+      hudHistorySection.removeAttribute("data-recent");
+    }
+    return;
+  }
+  hudHistoryEmpty.hidden = true;
+  entries.forEach((entry) => {
+    const item = document.createElement("li");
+    const threshold = Number.isFinite(entry.thresholdMs)
+      ? formatDuration(Number(entry.thresholdMs))
+      : "n/a";
+    const metricsLabel = formatHistoryMetrics(entry.metrics);
+    const flagsLabel =
+      metricsLabel ||
+      (Array.isArray(entry.flags) && entry.flags.length > 0 ? entry.flags.join(", ") : "");
+    const parts = [`${formatTimestamp(entry.timestamp)}`, `threshold ${threshold}`];
+    if (flagsLabel) {
+      parts.push(flagsLabel);
+    }
+    item.textContent = parts.join(" • ");
+    hudHistoryList.appendChild(item);
+  });
+  if (hudHistorySection) {
+    if (expandOnLatest) {
+      hudHistorySection.open = true;
+      hudHistorySection.setAttribute("data-recent", "true");
+    } else {
+      hudHistorySection.removeAttribute("data-recent");
+    }
+  }
 }
 
 function resolveAlertThreshold() {
@@ -262,9 +379,11 @@ function recordAlertHistory(summary, alertFlags, threshold) {
   while (alertHistory.length > MAX_ALERT_HISTORY) {
     alertHistory.shift();
   }
+  renderAlertHistorySection(true);
 }
 
 function renderHud(metrics) {
+  renderAlertHistorySection(false);
   if (!hudList || !hudEmpty) return;
   hudList.textContent = "";
   if (!Array.isArray(metrics) || metrics.length === 0) {
@@ -374,6 +493,9 @@ export function teardownDebugFlagHud() {
   hudRoot = null;
   hudList = null;
   hudEmpty = null;
+  hudHistorySection = null;
+  hudHistoryList = null;
+  hudHistoryEmpty = null;
 }
 
 function setExportStatus(status) {

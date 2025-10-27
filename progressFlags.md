@@ -43,9 +43,9 @@
 - **Progress (2025-10-27)**: HUD bootstraps on Classic Battle and CLI entry points so runtime toggles surface metrics without visiting Settings first (`src/pages/battleClassic.init.js`, `src/pages/battleCLI/init.js`, `playwright/battle-classic/feature-flags.spec.js`, `playwright/cli-layout.spec.js`).
 - **Progress (2025-10-27)**: HUD now highlights slow toggles, tags entries exceeding configurable thresholds, and emits `debug-flag-hud:alert` events for automation hooks (`src/helpers/debugFlagHud.js`, `tests/helpers/debugFlagHud.test.js`, `playwright/settings.spec.js`).
 - **Progress (2025-10-27)**: Alert history persists across the session and can be exported via copy/download for post-run inspection (`src/helpers/debugFlagHud.js`, `tests/helpers/debugFlagHud.test.js`, `playwright/settings.spec.js`).
+- **Progress (2025-10-28)**: Surfaced a collapsible alert-history summary inside the HUD that auto-expands on new alerts and shows recent thresholds/flag metrics (`src/helpers/debugFlagHud.js`, `tests/helpers/debugFlagHud.test.js`, `playwright/settings.spec.js`).
 - **Next steps**:
-  1. Surface alert history summaries directly in the HUD (e.g., collapsible history list with timestamps).
-  2. Pipe exported alert artifacts into automated regression dashboards for long-term tracking.
+  1. Pipe exported alert artifacts into automated regression dashboards for long-term tracking.
 
 ## Observations & Questions
 

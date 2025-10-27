@@ -96,6 +96,23 @@ describe("debugFlagHud", () => {
     window.removeEventListener("debug-flag-hud:alert", listener);
   });
 
+  it("surfaces recent alert history entries inside the HUD", async () => {
+    window.__DEBUG_FLAG_ALERT_THRESHOLD__ = 0;
+    initDebugFlagHud();
+    measureDebugFlagToggle("layoutDebugPanel", () => {});
+
+    await Promise.resolve();
+
+    const hud = document.getElementById("debug-flag-performance-hud");
+    const history = hud?.querySelector("[data-debug-flag-hud='history']");
+    const list = hud?.querySelector("[data-debug-flag-hud='history-list']");
+    expect(history).toBeTruthy();
+    expect(list?.children.length).toBeGreaterThan(0);
+    const historyText = list?.textContent || "";
+    expect(historyText).toContain("layoutDebugPanel");
+    expect(history?.open).toBe(true);
+  });
+
   it("exports alert history to clipboard when available", async () => {
     window.__DEBUG_FLAG_ALERT_THRESHOLD__ = 0;
     const writeText = vi.fn().mockResolvedValue();

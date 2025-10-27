@@ -28,6 +28,16 @@ const stateLogger = createComponentLogger("WaitingForPlayerAction");
  */
 export async function waitingForPlayerActionEnter(machine) {
   console.log("[DEBUG] waitingForPlayerActionEnter() called");
+  
+  // Defensive: ensure selection state is reset when entering this state
+  // This handles cases where state transitions are too fast for startRound to have completed
+  const store = machine?.context?.store;
+  if (store) {
+    store.selectionMade = false;
+    store.__lastSelectionMade = false;
+    store.playerChoice = null;
+  }
+  
   // Debug logging for state handler entry
   logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
     hasStore: !!machine?.context?.store,
@@ -43,7 +53,6 @@ export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
 
   // timer:startStatSelection - Start round timer with timeout callback
-  const store = machine?.context?.store;
   if (store) {
     stateLogger.info("Starting stat selection timer", {
       store: {

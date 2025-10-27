@@ -441,6 +441,16 @@ export async function advanceWhenReady(btn, resolveReady) {
     }
     throw error;
   }
+  // If manual click from cooldown and ready wasn't dispatched due to state tracking,
+  // force dispatch ready to unblock the next round
+  if (!dispatched && state === "cooldown") {
+    try {
+      await dispatchBattleEvent("ready");
+      dispatched = true;
+    } catch {
+      // Silently ignore dispatch errors
+    }
+  }
   if (!dispatched) {
     btn.disabled = wasDisabled;
     if (hadNextReady) {
