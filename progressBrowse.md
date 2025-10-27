@@ -76,6 +76,10 @@ This phase addresses the highest-priority bugs preventing users from filtering t
     - Added `resetCarouselPosition` to the country filter adapter so it snaps `.card-carousel` to the origin and instructs the `CarouselController` to `setPage(0)`.
     - Invoked the reset during both `select` and `clear` flows, with unit coverage validating controller calls and scroll offsets (`tests/helpers/browseJudokaPage.test.js`).
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
+  - [x] **No Results Messaging (JavaScript):** Surface an accessible, deduplicated "no judoka available" state whenever the filtered roster is empty.
+    - Reused the adapter to append a single `.no-results-message`, reset the carousel, and update the aria-live region so screen readers announce the zero-count state.
+    - Added regression coverage that exercises empty results, verifies the message copy, ensures it clears on subsequent selections, and confirms the live region text (`tests/helpers/browseJudokaPage.test.js`).
+    - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [x] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
 
