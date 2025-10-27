@@ -269,7 +269,9 @@ export function updateSetting(key, value) {
  * @returns {import("../config/settingsDefaults.js").Settings} The default settings object.
  */
 export function resetSettings() {
-  debouncedSave.cancel();
+  if (typeof debouncedSave.cancel === "function") {
+    debouncedSave.cancel();
+  }
   try {
     if (typeof localStorage !== "undefined") {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULT_SETTINGS));
