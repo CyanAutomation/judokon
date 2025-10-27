@@ -69,6 +69,7 @@
 - 2025-10-26 – `npx vitest run tests/helpers/debugFlagPerformance.test.js` ✅
 - 2025-10-26 – `npx vitest run tests/helpers/layoutDebugPanel.test.js` ✅
 - 2025-10-26 – `npx playwright test playwright/battle-classic/feature-flags.spec.js --grep "test mode banner hides when flag disabled"` ✅
+- 2025-10-28 – Terminology alignment for Battle State Progress verified (docs/tooltips/UI in sync)
 
 ## References
 
