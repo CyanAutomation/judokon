@@ -262,6 +262,96 @@ describe("browseJudokaPage helpers", () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it("filters the carousel when a flag label is clicked", async () => {
+    vi.resetModules();
+    const { setupCountryFilter } = await import("../../src/helpers/browse/setupCountryFilter.js");
+
+    const root = document.createElement("div");
+    document.body.appendChild(root);
+
+    const listContainer = document.createElement("div");
+    listContainer.id = "country-list";
+    const fieldset = document.createElement("fieldset");
+    fieldset.dataset.countryFilter = "";
+    listContainer.appendChild(fieldset);
+    root.appendChild(listContainer);
+
+    const makeOption = (value, labelText, checked = false) => {
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = "country-filter";
+      input.id = `country-filter-${value.toLowerCase()}`;
+      input.value = value;
+      input.checked = checked;
+      const label = document.createElement("label");
+      label.className = "flag-button";
+      label.setAttribute("for", input.id);
+      const text = document.createElement("span");
+      text.textContent = labelText;
+      label.appendChild(text);
+      fieldset.append(input, label);
+      return { input, label };
+    };
+
+    makeOption("all", "All", true);
+    const { input: japanRadio, label: japanLabel } = makeOption("Japan", "Japan");
+    const { input: brazilRadio } = makeOption("Brazil", "Brazil");
+
+    const clearButton = document.createElement("button");
+    const toggleButton = document.createElement("button");
+    const panel = document.createElement("details");
+    panel.className = "country-panel";
+    panel.open = true;
+    const panelContent = document.createElement("div");
+    panelContent.className = "country-panel__content";
+    panel.appendChild(panelContent);
+    root.appendChild(panel);
+
+    const carouselEl = document.createElement("div");
+    const liveRegion = document.createElement("div");
+    liveRegion.className = "carousel-aria-live";
+    carouselEl.appendChild(liveRegion);
+    root.appendChild(carouselEl);
+
+    const judokaList = [
+      { id: 1, country: "Japan" },
+      { id: 2, country: "Brazil" }
+    ];
+    const render = vi.fn();
+
+    setupCountryFilter(
+      listContainer,
+      clearButton,
+      judokaList,
+      render,
+      toggleButton,
+      panel,
+      carouselEl,
+      liveRegion
+    );
+
+    japanLabel.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(japanRadio.checked).toBe(true);
+    expect(panel.open).toBe(false);
+    expect(render).toHaveBeenCalled();
+    expect(render.mock.calls.at(-1)?.[0]).toEqual([{ id: 1, country: "Japan" }]);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    render.mockClear();
+    panel.open = true;
+    brazilRadio.checked = true;
+    japanRadio.checked = false;
+    brazilRadio.dispatchEvent(new Event("change", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(render).toHaveBeenLastCalledWith([{ id: 2, country: "Brazil" }]);
+
+    root.remove();
+  });
+
   it("renders a fallback card when judoka data fails to load", async () => {
     vi.resetModules();
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});

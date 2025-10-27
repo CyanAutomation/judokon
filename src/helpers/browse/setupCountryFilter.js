@@ -180,6 +180,26 @@ export function setupCountryFilter(
     adapter ??
     createCountryFilterAdapter(listContainer, toggleButton, panel, carouselEl, ariaLiveEl);
   const controller = createCountryFilterController(judokaList, render, resolvedAdapter);
+  let skipNextChange = false;
+  const resolveRadioFromTarget = (target) => {
+    if (!listContainer || !(target instanceof Element)) {
+      return null;
+    }
+    if (target instanceof HTMLInputElement && target.type === "radio" && target.name === "country-filter") {
+      return target;
+    }
+    const label = target.closest?.("label.flag-button");
+    if (!label) {
+      return null;
+    }
+    const forId = label.getAttribute("for");
+    if (forId) {
+      const radio = listContainer.querySelector?.(`#${forId}`);
+      return radio instanceof HTMLInputElement ? radio : null;
+    }
+    const nestedRadio = label.querySelector?.('input[type="radio"][name="country-filter"]');
+    return nestedRadio instanceof HTMLInputElement ? nestedRadio : null;
+  };
 
   clearButton?.addEventListener?.("click", () => {
     void controller.clear();
@@ -190,7 +210,32 @@ export function setupCountryFilter(
     if (!(target instanceof HTMLInputElement) || target.type !== "radio") {
       return;
     }
+    if (skipNextChange) {
+      skipNextChange = false;
+      return;
+    }
     void controller.select(target);
+  });
+
+  listContainer?.addEventListener?.("click", (event) => {
+    const radio = resolveRadioFromTarget(event.target);
+    if (!radio) {
+      return;
+    }
+    skipNextChange = true;
+    const radios = resolvedAdapter.getRadios?.() ?? [];
+    for (const input of radios) {
+      input.checked = input === radio;
+    }
+    void controller.select(radio).finally(() => {
+      if (typeof setTimeout === "function") {
+        setTimeout(() => {
+          skipNextChange = false;
+        }, 0);
+      } else {
+        skipNextChange = false;
+      }
+    });
   });
 
   return controller;
