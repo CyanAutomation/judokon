@@ -39,9 +39,10 @@
 - **Gap**: Enabling every debug flag keeps `toggleLayoutDebugPanel` and `toggleTooltipOverlayDebug` in the critical path without any throttling or profiling.
 - **Progress (2025-10-26)**: Added a `DEBUG_PERF` guard to debug flag instrumentation so toggles record buffered durations and optionally log to the console when profiling is enabled (`src/helpers/debugFlagPerformance.js`).
 - **Progress (2025-10-26)**: Deferred layout debug panel DOM scans to idle/animation frames with cancellation + test flush helpers to reduce synchronous jank (`src/helpers/layoutDebugPanel.js`, `tests/helpers/layoutDebugPanel.test.js`).
+- **Progress (2025-10-27)**: Introduced a floating developer HUD that renders aggregated `DEBUG_PERF` metrics in real time and now initializes alongside the Settings page when profiling is enabled (`src/helpers/debugFlagHud.js`, `src/helpers/settingsPage.js`, `tests/helpers/debugFlagHud.test.js`).
 - **Next steps**:
-  1. Extend the idle scheduling + rate-limiting pattern to `toggleTooltipOverlayDebug` so both debug surfaces avoid hot-path scans.
-  2. Pipe aggregated `DEBUG_PERF` metrics to a lightweight developer HUD so playtest sessions surface regressions in real time.
+  1. Surface the HUD on non-settings entry points (e.g., Classic Battle, CLI) whenever profiling is active so runtime toggles remain observable.
+  2. Add alert thresholds or export hooks that highlight metrics exceeding predefined budgets to catch regressions faster.
 
 ## Observations & Questions
 

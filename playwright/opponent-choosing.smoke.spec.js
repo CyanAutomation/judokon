@@ -13,6 +13,15 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     const firstStat = page.locator("#stat-buttons button").first();
     await expect(firstStat).toBeVisible();
 
+    // Wait for battle state to transition to waitingForPlayerAction so buttons are enabled
+    await page.waitForFunction(
+      () => {
+        const state = window.__TEST_API?.state?.getBattleState?.();
+        return state === "waitingForPlayerAction";
+      },
+      { timeout: 5000 }
+    );
+
     // Click a stat to trigger the opponent choosing state
     await firstStat.click();
 
