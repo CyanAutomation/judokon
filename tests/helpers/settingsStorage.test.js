@@ -141,6 +141,28 @@ describe("saveSettings", () => {
       configurable: true
     });
   });
+
+  it("reflects new values in the cache immediately after resolving", async () => {
+    const timers = useCanonicalTimers();
+    try {
+      const nextSettings = {
+        ...DEFAULT_SETTINGS,
+        subtitles: false
+      };
+
+      const pending = saveSettings(nextSettings);
+
+      await timers.runAllTimersAsync();
+      await pending;
+
+      expect(getCachedSettings()).toEqual({
+        ...DEFAULT_SETTINGS,
+        subtitles: false
+      });
+    } finally {
+      timers.cleanup();
+    }
+  });
 });
 
 describe("getSettingsSchema", () => {
