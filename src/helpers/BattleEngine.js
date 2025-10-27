@@ -574,14 +574,14 @@ export class BattleEngine {
    * 4. Optionally notify UI or test harness.
    *
    * @param {number} driftAmount - Amount of drift detected in seconds.
-  */
+   */
   handleTimerDrift(remainingTime) {
-    const category = typeof this.timer.getActiveCategory === "function"
-      ? this.timer.getActiveCategory()
-      : null;
-    const hasActiveTimer = typeof this.timer.hasActiveTimer === "function"
-      ? this.timer.hasActiveTimer()
-      : Boolean(category);
+    const category =
+      typeof this.timer.getActiveCategory === "function" ? this.timer.getActiveCategory() : null;
+    const hasActiveTimer =
+      typeof this.timer.hasActiveTimer === "function"
+        ? this.timer.hasActiveTimer()
+        : Boolean(category);
 
     if (!hasActiveTimer) {
       this.lastTimerDrift = remainingTime;
