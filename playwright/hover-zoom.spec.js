@@ -53,7 +53,11 @@ async function movePointerAwayFromCards(page) {
 
 async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
   await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-  await waitForBrowseReady(page);
+  const readiness = await waitForBrowseReady(page);
+  expect(
+    readiness.ok,
+    readiness.reason ?? "waitForBrowseReady should report browse readiness via Test API"
+  ).toBe(true);
   await ensureBrowseCarouselReady(page);
 
   if (disableAnimations) {
