@@ -24,6 +24,15 @@ function mergeSettings(base, overrides) {
   return result;
 }
 
+/**
+ * Performs deep equality comparison between two values with circular reference protection.
+ *
+ * @param {*} a - First value to compare.
+ * @param {*} b - Second value to compare.
+ * @param {WeakMap<object, WeakSet<object>>} visited - Internal tracking for circular references (do not pass manually).
+ * @returns {boolean} True if values are deeply equal.
+ * @pseudocode deepEqual(a, b)
+ */
 function deepEqual(a, b, visited = new WeakMap()) {
   if (a === b) {
     return true;
@@ -47,11 +56,22 @@ function deepEqual(a, b, visited = new WeakMap()) {
   if (cachedForA?.has(b)) {
     return true;
   }
-  if (cachedForA) {
-    cachedForA.add(b);
-  } else {
-    visited.set(a, new WeakSet([b]));
+  const cachedForB = visited.get(b);
+  if (cachedForB?.has(a)) {
+    return true;
   }
+
+  const ensurePair = (first, second) => {
+    let visitedForFirst = visited.get(first);
+    if (!visitedForFirst) {
+      visitedForFirst = new WeakSet();
+      visited.set(first, visitedForFirst);
+    }
+    visitedForFirst.add(second);
+  };
+
+  ensurePair(a, b);
+  ensurePair(b, a);
 
   if (aIsArray) {
     if (a.length !== b.length) {
@@ -157,20 +177,12 @@ function createTestModeDisableScript() {
     try {
       const raw = localStorage.getItem("settings");
       const parsed = raw ? JSON.parse(raw) : {};
-      const next =
-        parsed && typeof parsed === "object" && !Array.isArray(parsed) ? { ...parsed } : {};
-      const featureFlags =
-        next.featureFlags &&
-        typeof next.featureFlags === "object" &&
-        !Array.isArray(next.featureFlags)
-          ? { ...next.featureFlags }
-          : {};
-      const currentEntry =
-        featureFlags.enableTestMode &&
-        typeof featureFlags.enableTestMode === "object" &&
-        !Array.isArray(featureFlags.enableTestMode)
-          ? { ...featureFlags.enableTestMode }
-          : {};
+      const cloneIfPlainObject = (value) =>
+        value && typeof value === "object" && !Array.isArray(value) ? { ...value } : {};
+
+      const next = cloneIfPlainObject(parsed);
+      const featureFlags = cloneIfPlainObject(next.featureFlags);
+      const currentEntry = cloneIfPlainObject(featureFlags.enableTestMode);
 
       // Force the enableTestMode flag off while preserving other stored properties.
       featureFlags.enableTestMode = { ...currentEntry, enabled: false };
