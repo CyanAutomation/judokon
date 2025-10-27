@@ -568,15 +568,25 @@ export class BattleEngine {
    * Respond to timer drift by resetting the timer and logging the event.
    *
    * @pseudocode
-   * 1. Stop the timer and optionally restart it.
-   * 2. Log the drift amount for diagnostics.
-   * 3. Optionally notify UI or test harness.
+   * 1. Determine whether a timer is active; if not, record drift and exit.
+   * 2. Stop the timer and optionally restart it.
+   * 3. Log the drift amount for diagnostics.
+   * 4. Optionally notify UI or test harness.
    *
    * @param {number} driftAmount - Amount of drift detected in seconds.
-   */
+  */
   handleTimerDrift(remainingTime) {
-    const category =
-      typeof this.timer.getActiveCategory === "function" ? this.timer.getActiveCategory() : null;
+    const category = typeof this.timer.getActiveCategory === "function"
+      ? this.timer.getActiveCategory()
+      : null;
+    const hasActiveTimer = typeof this.timer.hasActiveTimer === "function"
+      ? this.timer.hasActiveTimer()
+      : Boolean(category);
+
+    if (!category || !hasActiveTimer) {
+      this.lastTimerDrift = remainingTime;
+      return;
+    }
     const onTick = this.timer.onTickCb;
     const onExpired = this.timer.onExpiredCb;
     this.stopTimer();
