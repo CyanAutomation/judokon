@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
-import { updateSetting, resetSettings, saveSettings } from "../../src/helpers/settingsStorage.js";
+import {
+  updateSetting,
+  resetSettings,
+  saveSettings,
+  flushSettingsSave
+} from "../../src/helpers/settingsStorage.js";
 import { getCachedSettings, resetCache } from "../../src/helpers/settingsCache.js";
 import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
@@ -79,6 +84,60 @@ describe("resetSettings", () => {
 
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
     expect(getCachedSettings()).toEqual(DEFAULT_SETTINGS);
+  });
+});
+
+describe("saveSettings", () => {
+  beforeEach(() => {
+    resetCache();
+    localStorage.clear();
+  });
+
+  it("updates the cache after the debounced write resolves", async () => {
+    const nextSettings = {
+      ...DEFAULT_SETTINGS,
+      sound: false
+    };
+
+    const pending = saveSettings(nextSettings);
+    flushSettingsSave();
+
+    await pending;
+
+    expect(getCachedSettings()).toEqual({
+      ...DEFAULT_SETTINGS,
+      sound: false
+    });
+    expect(JSON.parse(localStorage.getItem("settings")).sound).toBe(false);
+  });
+
+  it("updates the cache even when localStorage is unavailable", async () => {
+    const originalStorage = globalThis.localStorage;
+    Object.defineProperty(globalThis, "localStorage", {
+      value: undefined,
+      configurable: true
+    });
+    resetCache();
+
+    const nextSettings = {
+      ...DEFAULT_SETTINGS,
+      motionEffects: false
+    };
+
+    const pending = saveSettings(nextSettings);
+    flushSettingsSave();
+
+    await pending;
+
+    expect(getCachedSettings()).toEqual({
+      ...DEFAULT_SETTINGS,
+      motionEffects: false
+    });
+
+    Object.defineProperty(globalThis, "localStorage", {
+      value: originalStorage,
+      configurable: true
+    });
   });
 });
 
