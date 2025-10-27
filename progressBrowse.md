@@ -78,7 +78,7 @@ This phase addresses the highest-priority bugs preventing users from filtering t
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
   - [x] **No Results Messaging (JavaScript):** Surface an accessible, deduplicated "no judoka available" state whenever the filtered roster is empty.
     - Reused the adapter to append a single `.no-results-message`, reset the carousel, and update the aria-live region so screen readers announce the zero-count state.
-    - Added regression coverage that exercises empty results, verifies the message copy, ensures it clears on subsequent selections, and confirms the live region text (`tests/helpers/browseJudokaPage.test.js`).
+    - Added regression coverage that exercises empty results, verifies the copy ("No judoka found"), ensures it clears on subsequent selections, and confirms the live region text (`tests/helpers/browseJudokaPage.test.js`).
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [x] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
