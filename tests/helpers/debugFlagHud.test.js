@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { initDebugFlagHud, teardownDebugFlagHud } from "../../src/helpers/debugFlagHud.js";
 import {
   measureDebugFlagToggle,
@@ -6,11 +6,21 @@ import {
 } from "../../src/helpers/debugFlagPerformance.js";
 
 describe("debugFlagHud", () => {
+  let originalClipboard;
+
   beforeEach(() => {
     resetDebugFlagMetrics();
     document.body.innerHTML = "";
     window.__DEBUG_PERF__ = true;
     window.__DEBUG_FLAG_ALERT_THRESHOLD__ = 1000;
+    if (Array.isArray(window.__DEBUG_FLAG_ALERT_HISTORY__)) {
+      window.__DEBUG_FLAG_ALERT_HISTORY__.length = 0;
+    }
+    originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, "clipboard", {
+      value: originalClipboard,
+      configurable: true
+    });
   });
 
   afterEach(() => {
@@ -18,6 +28,14 @@ describe("debugFlagHud", () => {
     resetDebugFlagMetrics();
     delete window.__DEBUG_PERF__;
     delete window.__DEBUG_FLAG_ALERT_THRESHOLD__;
+    if (originalClipboard === undefined) {
+      delete navigator.clipboard;
+    } else {
+      Object.defineProperty(navigator, "clipboard", {
+        value: originalClipboard,
+        configurable: true
+      });
+    }
   });
 
   it("does not render entries until metrics exist", () => {
@@ -76,5 +94,33 @@ describe("debugFlagHud", () => {
     expect(alerts.at(-1)?.flags).toContain("layoutDebugPanel");
 
     window.removeEventListener("debug-flag-hud:alert", listener);
+  });
+
+  it("exports alert history to clipboard when available", async () => {
+    window.__DEBUG_FLAG_ALERT_THRESHOLD__ = 0;
+    const writeText = vi.fn().mockResolvedValue();
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true
+    });
+
+    initDebugFlagHud();
+    measureDebugFlagToggle("layoutDebugPanel", () => {});
+
+    await Promise.resolve();
+
+    const hud = document.getElementById("debug-flag-performance-hud");
+    const exportBtn = hud?.querySelector("[data-debug-flag-hud='export']");
+    expect(exportBtn).toBeTruthy();
+
+    exportBtn?.dispatchEvent(new Event("click"));
+
+    expect(writeText).toHaveBeenCalledTimes(1);
+    const payload = writeText.mock.calls[0][0];
+    expect(payload).toContain("layoutDebugPanel");
+    expect(window.__DEBUG_FLAG_ALERT_HISTORY__?.length).toBeGreaterThan(0);
+    await vi.waitFor(() => {
+      expect(hud?.dataset.exportStatus).toBe("copied");
+    });
   });
 });

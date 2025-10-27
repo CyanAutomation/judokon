@@ -96,11 +96,19 @@ const HUD_STYLES = `
   }
 `;
 const DEFAULT_ALERT_THRESHOLD_MS = 16;
+const MAX_ALERT_HISTORY = 100;
 let hudRoot = null;
 let hudList = null;
 let hudEmpty = null;
 let unsubscribeMetrics = null;
 let lastAlertFlags = new Set();
+const alertHistory =
+  typeof window !== "undefined" && Array.isArray(window.__DEBUG_FLAG_ALERT_HISTORY__)
+    ? window.__DEBUG_FLAG_ALERT_HISTORY__
+    : [];
+if (typeof window !== "undefined") {
+  window.__DEBUG_FLAG_ALERT_HISTORY__ = alertHistory;
+}
 
 function ensureStyleSheet() {
   if (typeof document === "undefined") return;
@@ -132,16 +140,27 @@ function createHudRoot() {
     <div class="debug-flag-hud__empty" data-debug-flag-hud="empty">No debug flag metrics recorded.</div>
     <ul data-debug-flag-hud="list"></ul>
     <footer>
+      <button type="button" data-debug-flag-hud="export">Copy Alerts</button>
       <button type="button" data-debug-flag-hud="clear">Clear</button>
     </footer>
   `;
   const closeBtn = root.querySelector("[data-debug-flag-hud='close']");
   const clearBtn = root.querySelector("[data-debug-flag-hud='clear']");
+  const exportBtn = root.querySelector("[data-debug-flag-hud='export']");
   hudList = root.querySelector("[data-debug-flag-hud='list']");
   hudEmpty = root.querySelector("[data-debug-flag-hud='empty']");
   closeBtn?.addEventListener("click", teardownDebugFlagHud);
   clearBtn?.addEventListener("click", () => {
     resetDebugFlagMetrics();
+  });
+  exportBtn?.addEventListener("click", () => {
+    exportAlertHistory()
+      .then((result) => {
+        setExportStatus(result ? "copied" : "empty");
+      })
+      .catch(() => {
+        setExportStatus("failed");
+      });
   });
   return root;
 }
@@ -220,6 +239,31 @@ function dispatchAlertEvent(flags, threshold) {
   );
 }
 
+function recordAlertHistory(summary, alertFlags, threshold) {
+  if (alertFlags.size === 0) {
+    return;
+  }
+  const metricsForFlags = summary
+    .filter((entry) => alertFlags.has(entry.flag))
+    .map((entry) => ({
+      flag: entry.flag,
+      count: entry.count,
+      avg: entry.avg,
+      max: entry.max,
+      last: entry.last
+    }));
+  const record = {
+    timestamp: Date.now(),
+    thresholdMs: threshold,
+    flags: Array.from(alertFlags),
+    metrics: metricsForFlags
+  };
+  alertHistory.push(record);
+  while (alertHistory.length > MAX_ALERT_HISTORY) {
+    alertHistory.shift();
+  }
+}
+
 function renderHud(metrics) {
   if (!hudList || !hudEmpty) return;
   hudList.textContent = "";
@@ -256,6 +300,9 @@ function renderHud(metrics) {
   }
   if (!setsEqual(lastAlertFlags, alertFlags)) {
     lastAlertFlags = new Set(alertFlags);
+    if (alertFlags.size > 0) {
+      recordAlertHistory(summary, alertFlags, threshold);
+    }
     dispatchAlertEvent(Array.from(alertFlags), threshold);
   }
 }
@@ -324,4 +371,55 @@ export function teardownDebugFlagHud() {
   hudRoot = null;
   hudList = null;
   hudEmpty = null;
+}
+
+function setExportStatus(status) {
+  if (!hudRoot) return;
+  hudRoot.setAttribute("data-export-status", status);
+}
+
+function fallbackDownload(payload) {
+  if (typeof document === "undefined" || typeof URL === "undefined") {
+    return false;
+  }
+  try {
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `debug-flag-alerts-${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (error) {
+    if (typeof console !== "undefined" && console.warn) {
+      console.warn("[debugFlagPerf] Failed to download alert history", error);
+    }
+    return false;
+  }
+}
+
+function writeToClipboard(payload) {
+  if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard
+      .writeText(payload)
+      .then(() => true)
+      .catch(() => false);
+  }
+  return Promise.resolve(false);
+}
+
+function exportAlertHistory() {
+  if (alertHistory.length === 0) {
+    return Promise.resolve(false);
+  }
+  const payload = JSON.stringify(alertHistory, null, 2);
+  return writeToClipboard(payload).then((copied) => {
+    if (copied) {
+      return true;
+    }
+    return Promise.resolve(fallbackDownload(payload));
+  });
 }

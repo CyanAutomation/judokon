@@ -189,9 +189,14 @@ describe("classicBattle battle control state", () => {
       window.__FF_OVERRIDES = { statHotkeys: true };
     }
     const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
+    const { enableStatButtons } = await import("../../../src/helpers/classicBattle/statButtons.js");
     const btn = document.querySelector("#stat-buttons button");
-    const clickSpy = vi.spyOn(btn, "click");
-    const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
+    const container = document.getElementById("stat-buttons");
+    const buttons = Array.from(container.querySelectorAll("button"));
+    const clickSpy = vi.fn();
+    btn.addEventListener("click", clickSpy);
+    enableStatButtons(buttons, container);
+    const detach = wireStatHotkeys(buttons);
     btn.disabled = false;
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }));
     expect(clickSpy).toHaveBeenCalledTimes(1);
@@ -204,7 +209,8 @@ describe("classicBattle battle control state", () => {
     }
     const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
     const btn = document.querySelector("#stat-buttons button");
-    const clickSpy = vi.spyOn(btn, "click");
+    const clickSpy = vi.fn();
+    btn.addEventListener("click", clickSpy);
     const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
     btn.disabled = false;
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }));
@@ -218,7 +224,8 @@ describe("classicBattle battle control state", () => {
     }
     const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
     const btn = document.querySelector("#stat-buttons button");
-    const clickSpy = vi.spyOn(btn, "click");
+    const clickSpy = vi.fn();
+    btn.addEventListener("click", clickSpy);
     const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
     btn.disabled = false;
     const input = document.createElement("input");
