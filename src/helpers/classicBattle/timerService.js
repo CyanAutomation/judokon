@@ -461,6 +461,8 @@ export async function advanceWhenReady(btn, resolveReady) {
     return;
   }
   setSkipHandler(null);
+  // Restore button state after successful dispatch to allow subsequent clicks
+  btn.disabled = wasDisabled;
 }
 
 /**
