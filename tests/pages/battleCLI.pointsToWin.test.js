@@ -24,7 +24,7 @@ async function waitForButton(testId) {
     let scheduledId = null;
     let observer;
     const clearScheduled = () => {
-      if (scheduledId == null) return;
+      if (scheduledId === null) return;
       if (hasSetImmediate) {
         clearImmediate(scheduledId);
       } else {

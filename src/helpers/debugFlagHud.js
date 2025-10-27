@@ -283,7 +283,10 @@ function renderHud(metrics) {
   const threshold = resolveAlertThreshold();
   const alertFlags = new Set();
   summary.forEach((entry) => {
-    if (threshold >= 0 && (entry.last >= threshold || entry.max >= threshold || entry.avg >= threshold)) {
+    if (
+      threshold >= 0 &&
+      (entry.last >= threshold || entry.max >= threshold || entry.avg >= threshold)
+    ) {
       alertFlags.add(entry.flag);
     }
   });

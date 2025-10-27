@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 beforeEach(() => {
   vi.resetModules();
@@ -21,7 +22,7 @@ describe("timerUtils", () => {
   });
 
   it("delays fallback expiration for fractional durations", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     const { createCountdownTimer } = await import("../../src/helpers/timerUtils.js");
 
     const onTick = vi.fn();

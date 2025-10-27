@@ -14,10 +14,20 @@ function mockQuitMatch() {
   window.location.href = "http://localhost/index.html";
 }
 
-vi.mock("../../../src/helpers/featureFlags.js", async () => {
-  const actual = await vi.importActual("../../../src/helpers/featureFlags.js");
+vi.mock("../../../src/helpers/featureFlags.js", () => {
+  // Smart mock that respects __FF_OVERRIDES like the real implementation
   return {
-    isEnabled: actual.isEnabled,
+    isEnabled: vi.fn((flag) => {
+      try {
+        const w = typeof window !== "undefined" ? window : null;
+        const o = w && w.__FF_OVERRIDES;
+        if (o && Object.prototype.hasOwnProperty.call(o, flag)) {
+          return !!o[flag];
+        }
+      } catch {}
+      // Default behavior: return false for all flags (can be overridden via __FF_OVERRIDES)
+      return false;
+    }),
     featureFlagsEmitter: new EventTarget(),
     initFeatureFlags: vi.fn()
   };
@@ -84,6 +94,7 @@ describe("classicBattle battle control state", () => {
     if (typeof window !== "undefined") {
       delete window.__FF_OVERRIDES;
     }
+    document.body.innerHTML = "";
   });
 
   it("enable/disable helpers toggle button state", async () => {
