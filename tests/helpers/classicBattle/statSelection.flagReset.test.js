@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { withMutedConsole } from "../../utils/console.js";
+import { bindUIServiceEventHandlersOnce } from "../../../src/helpers/classicBattle/uiService.js";
+import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 
 vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
@@ -146,14 +148,7 @@ describe("classicBattle stat selection flag reset", () => {
   });
 
   it("clears body selection attribute when roundReset event fires", async () => {
-    const { bindUIServiceEventHandlersOnce } = await import(
-      "../../../src/helpers/classicBattle/uiService.js"
-    );
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
-
-    document.body.innerHTML = '<div class="modal" id="round-summary"></div>';
+    document.body.innerHTML = "<div class=\"modal\" id=\"round-summary\"></div>";
     const modal = document.getElementById("round-summary");
     modal.close = vi.fn();
 
@@ -165,6 +160,7 @@ describe("classicBattle stat selection flag reset", () => {
     });
 
     expect(document.body.hasAttribute("data-stat-selected")).toBe(false);
+    // The round reset handler also closes the modal to return to stat selection UI.
     expect(modal.close).toHaveBeenCalled();
   });
 });
