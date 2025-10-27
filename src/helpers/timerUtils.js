@@ -167,17 +167,14 @@ export function createCountdownTimer(
     // in certain test environments.
     try {
       const fallbackDelayMs = Math.max(0, Math.ceil(Math.max(remaining, 0) * 1000));
-      hardTimeoutId = activeScheduler.setTimeout(
-        async () => {
-          if (subId !== null) {
-            // Timer still running; stop and expire once.
-            stop();
-            if (typeof onTick === "function") onTick(0);
-            if (typeof onExpired === "function") await onExpired();
-          }
-        },
-        fallbackDelayMs
-      );
+      hardTimeoutId = activeScheduler.setTimeout(async () => {
+        if (subId !== null) {
+          // Timer still running; stop and expire once.
+          stop();
+          if (typeof onTick === "function") onTick(0);
+          if (typeof onExpired === "function") await onExpired();
+        }
+      }, fallbackDelayMs);
     } catch (error) {
       if (typeof console !== "undefined") {
         console.error("Timer fallback failed", error);

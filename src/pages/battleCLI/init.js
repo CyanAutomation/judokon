@@ -27,6 +27,7 @@ import {
   setFlag,
   featureFlagsEmitter
 } from "../../helpers/featureFlags.js";
+import { initDebugFlagHud } from "../../helpers/debugFlagHud.js";
 import {
   skipRoundCooldownIfEnabled,
   updateBattleStateBadge
@@ -3059,6 +3060,7 @@ export async function setupFlags() {
   try {
     await initFeatureFlags();
   } catch {}
+  initDebugFlagHud();
   ensureVerboseScrollHandling();
   refreshVerboseScrollIndicators();
   try {

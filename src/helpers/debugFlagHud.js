@@ -213,11 +213,7 @@ function clearSubscription() {
  * 4. Return a destroy handle for tests to clean up subscriptions and DOM.
  */
 export function initDebugFlagHud() {
-  if (
-    typeof document === "undefined" ||
-    !document.body ||
-    !isDebugFlagProfilingEnabled()
-  ) {
+  if (typeof document === "undefined" || !document.body || !isDebugFlagProfilingEnabled()) {
     return { destroy: () => {} };
   }
   hudRoot = createHudRoot();

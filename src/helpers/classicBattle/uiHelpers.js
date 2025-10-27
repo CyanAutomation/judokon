@@ -779,7 +779,7 @@ export function selectStat(store, stat) {
       : { playerVal, opponentVal };
     Promise.resolve(handleStatSelection(store, stat, selectionOptions)).catch(() => {});
   } catch {}
-  
+
   // Display snackbar feedback
   if (shouldDisplaySelectionSnackbar(store, delayOpponentMessage)) {
     try {
@@ -817,46 +817,22 @@ const STAT_BUTTON_HANDLER_KEY = "__classicBattleStatHandler";
 
 function registerStatButtonClickHandler(container, store) {
   if (!container || container[STAT_BUTTON_HANDLER_KEY]) return;
-  try {
-    console.log("[registerStatButtonClickHandler] Registering handler for container:", container);
-  } catch {}
   const handler = (event) => {
-    try {
-      console.log("[stat button handler] Click event received:", event);
-    } catch {}
     const target = event?.target;
     if (!target || typeof target.closest !== "function") {
-      try {
-        console.log("[stat button handler] Invalid target:", target);
-      } catch {}
       return;
     }
     const btn = target.closest("button[data-stat]");
-    try {
-      console.log("[stat button handler] Found button:", btn, "disabled:", btn?.disabled);
-    } catch {}
     if (!btn) {
-      try {
-        console.log("[stat button handler] No button found");
-      } catch {}
       return;
     }
     if (btn.disabled) {
-      try {
-        console.log("[stat button handler] Button is disabled, ignoring click");
-      } catch {}
       return;
     }
     const stat = btn.dataset?.stat;
     if (!stat) {
-      try {
-        console.log("[stat button handler] No stat attribute");
-      } catch {}
       return;
     }
-    try {
-      console.log("[stat button handler] Calling selectStat with stat:", stat);
-    } catch {}
     try {
       selectStat(store, stat);
     } catch (error) {

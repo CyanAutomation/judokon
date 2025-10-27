@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  initDebugFlagHud,
-  teardownDebugFlagHud
-} from "../../src/helpers/debugFlagHud.js";
+import { initDebugFlagHud, teardownDebugFlagHud } from "../../src/helpers/debugFlagHud.js";
 import {
   measureDebugFlagToggle,
   resetDebugFlagMetrics

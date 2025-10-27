@@ -504,18 +504,6 @@ export function handleRoundStartedEvent(event, deps = {}) {
   } catch {}
   if (store && typeof roundNumber === "number") {
     applyRoundUiFn(store, roundNumber);
-    // Final guard to ensure buttons are interactive at round start
-    try {
-      enableStatButtons?.();
-      emitBattleEvent("statButtons:enable");
-      if (!IS_VITEST) console.log("INFO: handleRoundStartedEvent -> ensured stat buttons enabled");
-    } catch {}
-  } else {
-    // Defensive: if event details are missing, still try to enable buttons
-    try {
-      enableStatButtons?.();
-      emitBattleEvent("statButtons:enable");
-    } catch {}
   }
 }
 

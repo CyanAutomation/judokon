@@ -38,6 +38,7 @@ import { domStateListener } from "../helpers/classicBattle/stateTransitionListen
 import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
+import { initDebugFlagHud } from "../helpers/debugFlagHud.js";
 
 function updateTimerFallback(value) {
   try {
@@ -1918,6 +1919,8 @@ async function init() {
     await initFeatureFlags();
     // Re-assert badge text after async flag init in case any early writers changed it
     ensureLobbyBadge();
+    // Surface debug flag metrics in battle views when profiling is active
+    initDebugFlagHud();
 
     // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
     setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
