@@ -72,6 +72,10 @@ This phase addresses the highest-priority bugs preventing users from filtering t
     - Updated `setupCountryFilter` to resolve the clicked flag radio, synthesize a native click for pointer targets, and route filtering through a shared `input` listener so both pointer and keyboard interactions re-render the carousel.
     - Added an interaction test (`tests/helpers/browseJudokaPage.test.js`) that exercises flag clicks and keyboard-driven filtering.
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
+  - [x] **Reset Carousel Index After Filtering (JavaScript):** Ensure the judoka carousel snaps back to the first page whenever the filter changes or clears.
+    - Added `resetCarouselPosition` to the country filter adapter so it snaps `.card-carousel` to the origin and instructs the `CarouselController` to `setPage(0)`.
+    - Invoked the reset during both `select` and `clear` flows, with unit coverage validating controller calls and scroll offsets (`tests/helpers/browseJudokaPage.test.js`).
+    - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/populateCountryList.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [x] **Alphabetize Flags (JavaScript):** In `src/helpers/country/list.js`, sort the country data before rendering the flag buttons.
 
