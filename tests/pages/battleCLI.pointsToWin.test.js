@@ -20,7 +20,23 @@ async function waitForButton(testId) {
   if (immediate) return immediate;
 
   return new Promise((resolve, reject) => {
-    const cleanup = () => observer.disconnect();
+    const hasSetImmediate = typeof setImmediate === "function";
+    let scheduledId = null;
+    let observer;
+    const clearScheduled = () => {
+      if (scheduledId == null) return;
+      if (hasSetImmediate) {
+        clearImmediate(scheduledId);
+      } else {
+        clearTimeout(scheduledId);
+      }
+      scheduledId = null;
+    };
+
+    const cleanup = () => {
+      observer.disconnect();
+      clearScheduled();
+    };
     const check = () => {
       const found = document.querySelector(selector);
       if (found) {
@@ -31,7 +47,7 @@ async function waitForButton(testId) {
       return false;
     };
 
-    const observer = new MutationObserver(() => {
+    observer = new MutationObserver(() => {
       check();
     });
 
@@ -39,7 +55,15 @@ async function waitForButton(testId) {
 
     let attempts = 0;
     const maxAttempts = 50;
+    const scheduleTick = () => {
+      clearScheduled();
+      scheduledId = hasSetImmediate
+        ? setImmediate(tick)
+        : setTimeout(tick, 0);
+    };
+
     const tick = () => {
+      clearScheduled();
       if (check()) return;
       attempts += 1;
       if (attempts > maxAttempts) {
@@ -47,10 +71,10 @@ async function waitForButton(testId) {
         reject(new Error(`Timed out waiting for ${selector}`));
         return;
       }
-      queueMicrotask(tick);
+      scheduleTick();
     };
 
-    tick();
+    scheduleTick();
   });
 }
 
