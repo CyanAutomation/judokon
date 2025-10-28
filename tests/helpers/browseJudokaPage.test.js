@@ -585,4 +585,79 @@ describe("browseJudokaPage helpers", () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+  it("surfaces a message when fallback judoka cannot be loaded", async () => {
+    vi.resetModules();
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const fetchJson = vi.fn((url) => {
+      if (url.includes("judoka.json")) {
+        return Promise.reject(new Error("fail"));
+      }
+      return Promise.resolve([]);
+    });
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
+      buildCardCarousel: vi.fn(),
+      initScrollMarkers: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/judokaUtils.js", () => ({
+      getFallbackJudoka: vi.fn(async () => {
+        throw new Error("fallback fail");
+      })
+    }));
+
+    const container = {
+      replaceChildren: vi.fn(),
+      querySelector: vi.fn(() => null)
+    };
+
+    const runtime = {
+      carouselContainer: container,
+      ensurePanelHidden: vi.fn(),
+      setupToggle: vi.fn(),
+      createSpinnerController: vi.fn(() => ({
+        show: vi.fn(),
+        remove: vi.fn()
+      })),
+      renderCarousel: vi.fn(async () => ({ carousel: {}, containerEl: {} })),
+      appendErrorMessage: vi.fn(),
+      appendNoResultsMessage: vi.fn(),
+      appendRetryButton: vi.fn(),
+      markReady: vi.fn()
+    };
+
+    let retryHandler;
+    const retryButton = { disabled: false };
+    runtime.appendRetryButton.mockImplementation((handler) => {
+      retryHandler = handler;
+      return retryButton;
+    });
+
+    const { setupBrowseJudokaPage } = await import("../../src/helpers/browseJudokaPage.js");
+
+    await setupBrowseJudokaPage({ runtime });
+
+    expect(runtime.renderCarousel).not.toHaveBeenCalled();
+    expect(container.replaceChildren).toHaveBeenCalledTimes(1);
+    expect(runtime.appendNoResultsMessage).toHaveBeenCalledTimes(1);
+    expect(runtime.appendErrorMessage).toHaveBeenCalledTimes(1);
+    expect(runtime.appendRetryButton).toHaveBeenCalledWith(expect.any(Function));
+
+    fetchJson.mockImplementation((url) => {
+      if (url.includes("judoka.json")) {
+        return Promise.resolve([{ id: 9, country: "FR" }]);
+      }
+      return Promise.resolve([]);
+    });
+
+    await retryHandler?.();
+
+    expect(runtime.renderCarousel).toHaveBeenLastCalledWith([{ id: 9, country: "FR" }], []);
+    expect(retryButton.disabled).toBe(false);
+    expect(runtime.appendErrorMessage).toHaveBeenCalledTimes(1);
+
+    consoleErrorSpy.mockRestore();
+  });
 });

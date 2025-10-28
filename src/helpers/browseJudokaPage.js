@@ -219,6 +219,56 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
     return { allJudoka: judokaRes.value, gokyoData };
   }
 
+  async function renderFallbackOrMessage() {
+    try {
+      const fallback = await getFallbackJudoka();
+      await pageRuntime.renderCarousel([fallback], []);
+      return true;
+    } catch (fallbackError) {
+      console.error("Error building fallback judoka:", fallbackError);
+      const container = pageRuntime.carouselContainer;
+      if (container?.replaceChildren) {
+        container.replaceChildren();
+      } else if (container && "innerHTML" in container) {
+        container.innerHTML = "";
+      }
+      const hasMessage = Boolean(container?.querySelector?.(".no-results-message"));
+      if (!hasMessage) {
+        pageRuntime.appendNoResultsMessage?.();
+      }
+      return false;
+    }
+  }
+
+  async function handleDataLoadFailure(error, { spinner, clearForcedSpinner }) {
+    pageRuntime.markReady?.();
+    spinner.remove?.();
+    clearForcedSpinner?.();
+
+    console.error("Error building the carousel:", error);
+
+    await renderFallbackOrMessage();
+    pageRuntime.appendErrorMessage?.();
+
+    let retryButton = null;
+    retryButton = pageRuntime.appendRetryButton?.(async () => {
+      if (!retryButton) {
+        return;
+      }
+      retryButton.disabled = true;
+      try {
+        const data = await loadData();
+        await pageRuntime.renderCarousel(data.allJudoka, data.gokyoData);
+      } catch (err) {
+        console.error("Error during retry:", err);
+        await renderFallbackOrMessage();
+        pageRuntime.appendErrorMessage?.();
+      } finally {
+        retryButton.disabled = false;
+      }
+    });
+  }
+
   async function init() {
     const forceSpinner =
       new URLSearchParams(globalThis.location?.search || "").has("forceSpinner") ||
@@ -231,51 +281,26 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
           remove() {}
         };
     spinner.show?.();
+    const clearForcedSpinner = () => {
+      if (forceSpinner) {
+        delete globalThis.__forceSpinner__;
+        delete globalThis.__showSpinnerImmediately__;
+      }
+    };
     try {
       const { allJudoka, gokyoData } = await loadData();
       const render = (list) => pageRuntime.renderCarousel(list, gokyoData);
       await pageRuntime.renderCarousel(allJudoka, gokyoData);
       pageRuntime.markReady?.();
       spinner.remove?.();
-      if (forceSpinner) {
-        delete globalThis.__forceSpinner__;
-        delete globalThis.__showSpinnerImmediately__;
-      }
+      clearForcedSpinner();
       if (allJudoka.length === 0) {
         pageRuntime.appendNoResultsMessage?.();
       }
 
       pageRuntime.setupCountryFilter?.(allJudoka, render);
     } catch (error) {
-      pageRuntime.markReady?.();
-      spinner.remove?.();
-      if (forceSpinner) {
-        delete globalThis.__forceSpinner__;
-        delete globalThis.__showSpinnerImmediately__;
-      }
-      console.error("Error building the carousel:", error);
-
-      const fallback = await getFallbackJudoka();
-      await pageRuntime.renderCarousel([fallback], []);
-
-      pageRuntime.appendErrorMessage?.();
-
-      const retryButton = pageRuntime.appendRetryButton?.(async () => {
-        if (!retryButton) {
-          return;
-        }
-        retryButton.disabled = true;
-        try {
-          const data = await loadData();
-          await pageRuntime.renderCarousel(data.allJudoka, data.gokyoData);
-        } catch (err) {
-          console.error("Error during retry:", err);
-          const fallbackRetry = await getFallbackJudoka();
-          await pageRuntime.renderCarousel([fallbackRetry], []);
-        } finally {
-          retryButton.disabled = false;
-        }
-      });
+      await handleDataLoadFailure(error, { spinner, clearForcedSpinner });
       return;
     }
   }

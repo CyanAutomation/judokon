@@ -190,7 +190,9 @@ This phase addresses layout bugs on the judoka cards that hide information and v
 
 - **Issue:** No visible error handling for network failures.
 - **Actionable Fixes:**
-  - [ ] **Add Error Handling:** In `src/helpers/browseJudokaPage.js`, add a `.catch()` block to the data fetching logic to render an error message if the judoka roster fails to load.
+  - [x] **Add Error Handling:** In `src/helpers/browseJudokaPage.js`, add a `.catch()` block to the data fetching logic to render an error message if the judoka roster fails to load.
+    - Centralized failure handling via `renderFallbackOrMessage` and `handleDataLoadFailure`, ensuring fallback rendering is wrapped in its own try/catch so we now surface an accessible "no results" message even if the fallback judoka request fails.
+    - Added regression coverage in `tests/helpers/browseJudokaPage.test.js` to verify both the existing fallback flow and the new fallback-failure path, then ran `npx vitest run tests/helpers/browseJudokaPage.test.js` and `npx playwright test playwright/browse-judoka.spec.js`.
   - [ ] **Add Test IDs:** Add `data-testid` attributes to key interactive elements like filter controls, the carousel, and cards to create more resilient Playwright tests.
 
 ---
