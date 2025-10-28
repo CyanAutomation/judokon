@@ -444,18 +444,7 @@ describe.sequential("classicBattle card selection", () => {
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
-    await vi.resetModules();
-    // Force the JudokaCard module to return a non-HTMLElement deterministically
-    vi.doMock("../../../src/components/JudokaCard.js", () => {
-      return {
-        JudokaCard: vi.fn().mockImplementation(() => ({
-          render: vi.fn(async () => "nope")
-        }))
-      };
-    });
-
-    vi.resetModules();
-
+    // Import and test the renderJudokaCard function directly
     const { withMutedConsole } = await import("../../utils/console.js");
     let errorMessageDetected = false;
 
@@ -467,19 +456,16 @@ describe.sequential("classicBattle card selection", () => {
         }
       };
 
-      const { drawCards, _resetForTest } = await import(
-        "../../../src/helpers/classicBattle/cardSelection.js"
-      );
-      _resetForTest();
-      fetchJsonMock.mockImplementation(async (path) => {
-        if (path.includes("judoka")) {
-          return [{ id: 1, name: "Renderless", stats: { power: 8 }, isHidden: false }];
-        }
-        return [];
-      });
-
       try {
-        await drawCards();
+        // Import after setting up console.error override
+        const { renderJudokaCard } = await import("../../../src/helpers/randomCard.js");
+
+        const container = document.getElementById("opponent-card");
+        const judoka = { id: 1, name: "Renderless", stats: { power: 8 } };
+        const gokyoLookup = {};
+
+        // renderJudokaCard will use the mocked renderMock which returns "nope"
+        await renderJudokaCard(judoka, gokyoLookup, container, false, false);
       } finally {
         console.error = originalError;
       }
