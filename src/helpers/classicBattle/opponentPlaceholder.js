@@ -4,6 +4,17 @@ export const OPPONENT_CARD_CONTAINER_ARIA_LABEL = "Opponent card";
 export const OPPONENT_PLACEHOLDER_ARIA_LABEL = "Mystery opponent card";
 export const OPPONENT_PLACEHOLDER_ID = "mystery-card-placeholder";
 
+/**
+ * @summary Resolve a document reference for DOM operations.
+ *
+ * @pseudocode
+ * 1. Return `documentRef` when it implements `createElement`.
+ * 2. Otherwise fall back to the global `document` when available.
+ * 3. Return `null` if no suitable document reference exists.
+ *
+ * @param {Document|null|undefined} documentRef - Possible document reference to validate.
+ * @returns {Document|null} Valid document instance or null when unavailable.
+ */
 function resolveDocument(documentRef) {
   if (documentRef && typeof documentRef.createElement === "function") {
     return documentRef;
@@ -14,6 +25,18 @@ function resolveDocument(documentRef) {
   return null;
 }
 
+/**
+ * @summary Create a mystery opponent card placeholder element.
+ *
+ * @pseudocode
+ * 1. Resolve the active document context via `resolveDocument()`.
+ * 2. Construct a div container with placeholder styling and ARIA metadata.
+ * 3. Build the SVG mystery icon and append it to the container.
+ * 4. Return the fully assembled placeholder element or null when unavailable.
+ *
+ * @param {Document|null|undefined} documentRef - Document reference used to create elements.
+ * @returns {HTMLElement|null} Placeholder element or null when document access fails.
+ */
 export function createOpponentCardPlaceholder(documentRef) {
   const doc = resolveDocument(documentRef);
   if (!doc) return null;
@@ -39,6 +62,19 @@ export function createOpponentCardPlaceholder(documentRef) {
   return placeholder;
 }
 
+/**
+ * @summary Apply the opponent placeholder to the specified container.
+ *
+ * @pseudocode
+ * 1. Exit early when `container` is missing.
+ * 2. Resolve the document context, preferring the provided override.
+ * 3. Create the placeholder element and clear existing non-debug contents.
+ * 4. Restore the debug panel (if present), append the placeholder, and set ARIA metadata.
+ *
+ * @param {HTMLElement|null|undefined} container - Target container that receives the placeholder.
+ * @param {{ documentRef?: Document|null }} [options] - Optional document override.
+ * @returns {HTMLElement|null} The applied placeholder element or null when no update occurs.
+ */
 export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
   if (!container) return null;
 
