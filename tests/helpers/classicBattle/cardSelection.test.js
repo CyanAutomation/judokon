@@ -444,11 +444,8 @@ describe.sequential("classicBattle card selection", () => {
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
-    // Override the renderMock to return a non-HTMLElement
-    const originalRenderMock = mocks.renderMock;
-    mocks.renderMock = vi.fn(async () => "nope");
-
-    // Import and test the renderJudokaCard function directly
+    // Test the actual renderJudokaCard code path by using vi.importActual
+    // to get the REAL randomCard module functions
     const { withMutedConsole } = await import("../../utils/console.js");
     const errors = [];
 
@@ -459,22 +456,29 @@ describe.sequential("classicBattle card selection", () => {
       };
 
       try {
-        // Import after setting up console.error override
-        const { renderJudokaCard } = await import("../../../src/helpers/randomCard.js");
+        // Mock JudokaCard to return a non-element FIRST
+        vi.doMock("../../../src/components/JudokaCard.js", () => ({
+          JudokaCard: vi.fn().mockImplementation(() => ({
+            render: vi.fn(async () => "nope")
+          }))
+        }));
+
+        vi.resetModules();
+
+        // Now import to get the version with the mocked JudokaCard
+        const randomCardModuleReloaded = await import("../../../src/helpers/randomCard.js");
+        const renderJudokaCardWithMock = randomCardModuleReloaded.renderJudokaCard;
 
         const container = document.getElementById("opponent-card");
         const judoka = { id: 1, name: "Renderless", stats: { power: 8 } };
         const gokyoLookup = {};
 
-        // renderJudokaCard will use the mocked renderMock which returns "nope"
-        await renderJudokaCard(judoka, gokyoLookup, container, false, false);
+        // This should log the error when render() returns "nope"
+        await renderJudokaCardWithMock(judoka, gokyoLookup, container, false, false);
       } finally {
         console.error = originalError;
       }
     });
-
-    // Restore the original mock
-    mocks.renderMock = originalRenderMock;
 
     expect(errors).toContain("JudokaCard did not render an HTMLElement");
     const container = document.getElementById("opponent-card");

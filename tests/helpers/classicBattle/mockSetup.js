@@ -21,43 +21,7 @@ const mocks = {
 };
 
 vi.mock("../../../src/helpers/randomCard.js", () => ({
-  generateRandomCard: (...args) => mocks.generateRandomCardMock(...args),
-  renderJudokaCard: async (
-    judoka,
-    gokyoLookup,
-    containerEl,
-    prefersReducedMotion,
-    enableInspector
-  ) => {
-    // Import here to use the current mocks (like JudokaCard)
-    const { JudokaCard } = await import("../../../src/components/JudokaCard.js");
-
-    if (!containerEl) {
-      throw new Error("renderJudokaCard: containerEl is required but was not provided.");
-    }
-    try {
-      const card = await new JudokaCard(judoka, gokyoLookup, { enableInspector }).render();
-      if (!card || !(card instanceof HTMLElement)) {
-        console.error("JudokaCard did not render an HTMLElement");
-        containerEl.innerHTML = "";
-        return false;
-      }
-
-      try {
-        containerEl.innerHTML = "";
-        containerEl.appendChild(card);
-        return true;
-      } catch (displayError) {
-        console.error("Error displaying card:", displayError);
-        containerEl.innerHTML = "";
-        return false;
-      }
-    } catch (error) {
-      console.error("Error rendering card:", error);
-      containerEl.innerHTML = "";
-      return false;
-    }
-  }
+  generateRandomCard: (...args) => mocks.generateRandomCardMock(...args)
 }));
 
 vi.mock("../../../src/helpers/cardUtils.js", () => ({
@@ -66,12 +30,7 @@ vi.mock("../../../src/helpers/cardUtils.js", () => ({
 
 vi.mock("../../../src/components/JudokaCard.js", () => {
   mocks.renderMock = vi.fn();
-  mocks.JudokaCardMock = vi.fn().mockImplementation(() => ({
-    get render() {
-      // Dynamic getter so that changes to mocks.renderMock are reflected
-      return mocks.renderMock;
-    }
-  }));
+  mocks.JudokaCardMock = vi.fn().mockImplementation(() => ({ render: mocks.renderMock }));
   return { JudokaCard: mocks.JudokaCardMock };
 });
 
