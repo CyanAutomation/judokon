@@ -67,15 +67,18 @@ function floatHistoryToggleButton(historyPanel, toggleHistoryBtn) {
   }
 
   const rect = toggleHistoryBtn.getBoundingClientRect();
+  const panelRect = historyPanel.getBoundingClientRect();
+  const offsetTop = rect.top - panelRect.top;
+  const offsetLeft = rect.left - panelRect.left;
 
   placement.placeholder.style.display = "inline-block";
   placement.placeholder.style.width = `${rect.width}px`;
   placement.placeholder.style.height = `${rect.height}px`;
 
   toggleHistoryBtn.dataset.historyToggleFloating = "true";
-  toggleHistoryBtn.style.position = "fixed";
-  toggleHistoryBtn.style.top = `${rect.top}px`;
-  toggleHistoryBtn.style.left = `${rect.left}px`;
+  toggleHistoryBtn.style.position = "absolute";
+  toggleHistoryBtn.style.top = `${offsetTop}px`;
+  toggleHistoryBtn.style.left = `${offsetLeft}px`;
   toggleHistoryBtn.style.width = `${rect.width}px`;
   toggleHistoryBtn.style.height = `${rect.height}px`;
   toggleHistoryBtn.style.zIndex = "var(--z-index-floating-toggle, 101)";
