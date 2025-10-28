@@ -24,10 +24,7 @@
   justify-items: center;
   align-items: flex-start;
   gap: var(--space-md);
-  padding-top: max(
-    var(--space-lg),
-    var(--header-clearance, calc(var(--header-height) + env(safe-area-inset-top)))
-  );
+  padding-top: var(--space-lg);
 }
 
 #battle-area > .battle-slot {
