@@ -444,8 +444,10 @@ describe.sequential("classicBattle card selection", () => {
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
-    // Test the actual renderJudokaCard code path by using vi.importActual
-    // to get the REAL randomCard module functions
+    // Reset modules completely first
+    await vi.resetModules();
+
+    // Setup console to capture errors
     const { withMutedConsole } = await import("../../utils/console.js");
     const errors = [];
 
@@ -456,25 +458,34 @@ describe.sequential("classicBattle card selection", () => {
       };
 
       try {
-        // Mock JudokaCard to return a non-element FIRST
+        // Mock JudokaCard to return a non-element BEFORE importing anything
         vi.doMock("../../../src/components/JudokaCard.js", () => ({
           JudokaCard: vi.fn().mockImplementation(() => ({
             render: vi.fn(async () => "nope")
           }))
         }));
 
+        // Also mock randomCard.js to pass through the real exports while using the mocked JudokaCard
+        vi.doMock("../../../src/helpers/randomCard.js", async (importOriginal) => {
+          const actual = await importOriginal();
+          return {
+            ...actual
+            // renderJudokaCard will use the mocked JudokaCard from above
+          };
+        });
+
+        // Reset modules to apply both mocks
         vi.resetModules();
 
-        // Now import to get the version with the mocked JudokaCard
-        const randomCardModuleReloaded = await import("../../../src/helpers/randomCard.js");
-        const renderJudokaCardWithMock = randomCardModuleReloaded.renderJudokaCard;
+        // Now import randomCard which will use the mocked JudokaCard
+        const { renderJudokaCard } = await import("../../../src/helpers/randomCard.js");
 
         const container = document.getElementById("opponent-card");
         const judoka = { id: 1, name: "Renderless", stats: { power: 8 } };
         const gokyoLookup = {};
 
         // This should log the error when render() returns "nope"
-        await renderJudokaCardWithMock(judoka, gokyoLookup, container, false, false);
+        await renderJudokaCard(judoka, gokyoLookup, container, false, false);
       } finally {
         console.error = originalError;
       }
