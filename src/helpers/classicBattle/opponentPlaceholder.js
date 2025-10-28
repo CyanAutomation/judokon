@@ -57,4 +57,3 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
 
   return placeholder;
 }
-

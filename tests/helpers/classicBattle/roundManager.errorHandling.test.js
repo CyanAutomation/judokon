@@ -157,6 +157,8 @@ describe("roundManager error handling integration", () => {
       drawCards: vi.fn().mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} })
     }));
 
+    vi.resetModules();
+
     const { startRound, createBattleStore } = await import(
       "../../../src/helpers/classicBattle/roundManager.js"
     );

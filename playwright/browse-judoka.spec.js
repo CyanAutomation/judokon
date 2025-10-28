@@ -78,10 +78,7 @@ test.describe("Browse Judoka screen", () => {
     await page.addStyleTag({
       content: ".country-flag-slide-track { animation: none !important; }"
     });
-    const japanOption = page
-      .getByTestId(COUNTRY_FLAG_OPTION)
-      .filter({ hasText: "Japan" })
-      .first();
+    const japanOption = page.getByTestId(COUNTRY_FLAG_OPTION).filter({ hasText: "Japan" }).first();
     await japanOption.click();
     await expect(panel).toBeHidden();
     await toggle.click();
@@ -94,10 +91,7 @@ test.describe("Browse Judoka screen", () => {
     const flag = filteredCards.first().locator(".card-top-bar img");
     await expect(flag).toHaveAttribute("alt", /Japan flag/i);
 
-    const allOption = page
-      .getByTestId(COUNTRY_FLAG_OPTION)
-      .filter({ hasText: "All" })
-      .first();
+    const allOption = page.getByTestId(COUNTRY_FLAG_OPTION).filter({ hasText: "All" }).first();
     await allOption.click();
     const allRadio = page.getByRole("radio", { name: "All" });
     await expect(allRadio).toBeChecked();
