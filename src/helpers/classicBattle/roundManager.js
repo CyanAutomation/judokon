@@ -17,7 +17,6 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
 import { setNextButtonFinalizedState } from "./uiHelpers.js";
-import { applyOpponentCardPlaceholder } from "./opponentPlaceholder.js";
 import {
   createExpirationTelemetryEmitter,
   createMachineReader,
@@ -85,7 +84,10 @@ function enterStoreGuard(store, token) {
     release() {
       try {
         delete store[token];
-      } catch {}
+      } catch (error) {
+        // Cleanup is best-effort; ignore deletion errors.
+        void error;
+      }
     }
   };
 }
@@ -384,7 +386,10 @@ export async function startRound(store, onRoundStart) {
     const payload = { ...cards, roundNumber };
     try {
       delete store[LAST_ROUND_RESULT];
-    } catch {}
+    } catch (error) {
+      // Hidden store housekeeping failures should not interrupt round start.
+      void error;
+    }
     setHiddenStoreValue(store, ACTIVE_ROUND_PAYLOAD, payload);
     return payload;
   } finally {
@@ -1230,7 +1235,10 @@ export function _resetForTest(store) {
       delete store[ROUND_RESOLUTION_GUARD];
       delete store[LAST_ROUND_RESULT];
       delete store[Symbol.for("classicBattle.selectionInFlight")];
-    } catch {}
+    } catch (error) {
+      // Ignore cleanup errors when clearing residual round state.
+      void error;
+    }
     try {
       if (typeof window !== "undefined") {
         window.__classicBattleSelectionFinalized = false;
