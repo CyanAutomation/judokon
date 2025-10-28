@@ -428,7 +428,7 @@ svg {
 
 @media (min-width: 1024px) {
   .judoka-card {
-    overflow-y: hidden;
+    overflow-y: visible;
   }
 
   .judoka-card .card-stats {
