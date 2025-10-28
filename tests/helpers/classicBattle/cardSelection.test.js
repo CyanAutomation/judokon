@@ -444,16 +444,18 @@ describe.sequential("classicBattle card selection", () => {
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
+    // Override the renderMock to return a non-HTMLElement
+    const originalRenderMock = mocks.renderMock;
+    mocks.renderMock = vi.fn(async () => "nope");
+
     // Import and test the renderJudokaCard function directly
     const { withMutedConsole } = await import("../../utils/console.js");
-    let errorMessageDetected = false;
+    const errors = [];
 
     await withMutedConsole(async () => {
       const originalError = console.error;
       console.error = (...args) => {
-        if (args[0] === "JudokaCard did not render an HTMLElement") {
-          errorMessageDetected = true;
-        }
+        errors.push(args[0]);
       };
 
       try {
@@ -471,7 +473,10 @@ describe.sequential("classicBattle card selection", () => {
       }
     });
 
-    expect(errorMessageDetected).toBe(true);
+    // Restore the original mock
+    mocks.renderMock = originalRenderMock;
+
+    expect(errors).toContain("JudokaCard did not render an HTMLElement");
     const container = document.getElementById("opponent-card");
     expect(container.innerHTML).toBe("");
   });

@@ -66,7 +66,12 @@ vi.mock("../../../src/helpers/cardUtils.js", () => ({
 
 vi.mock("../../../src/components/JudokaCard.js", () => {
   mocks.renderMock = vi.fn();
-  mocks.JudokaCardMock = vi.fn().mockImplementation(() => ({ render: mocks.renderMock }));
+  mocks.JudokaCardMock = vi.fn().mockImplementation(() => ({
+    get render() {
+      // Dynamic getter so that changes to mocks.renderMock are reflected
+      return mocks.renderMock;
+    }
+  }));
   return { JudokaCard: mocks.JudokaCardMock };
 });
 
