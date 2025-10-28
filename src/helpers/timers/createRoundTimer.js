@@ -70,6 +70,11 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     const total = Number(dur) || 0;
     const useEngine = typeof starter === "function";
     if (useEngine) {
+      if (Number.isFinite(total)) {
+        currentRemaining = total < 0 ? 0 : total;
+      } else {
+        currentRemaining = 0;
+      }
       try {
         return starter(emitTick, emitExpired, total, handleDrift);
       } catch {
@@ -115,6 +120,7 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   function emitTick(remaining) {
+    // Synchronize currentRemaining with engine-driven ticks for accurate pause/resume
     const normalized = Number(remaining);
     if (Number.isFinite(normalized)) {
       currentRemaining = normalized < 0 ? 0 : normalized;

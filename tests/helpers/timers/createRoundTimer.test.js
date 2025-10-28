@@ -110,6 +110,114 @@ describe("createRoundTimer events", () => {
     expect(expired).toHaveBeenCalledTimes(1);
   });
 
+  it("treats pause and resume as no-ops when remaining time is 0", () => {
+    const starterCalls = [];
+    const expired = vi.fn();
+    const starter = vi.fn((onTick, onExpired, total) => {
+      starterCalls.push({ onTick, onExpired, total });
+    });
+    const timer = createRoundTimer({ starter });
+    timer.on("expired", expired);
+
+    timer.start(2);
+    expect(starter).toHaveBeenCalledTimes(1);
+    const firstCall = starterCalls[0];
+
+    firstCall.onTick(2);
+    firstCall.onTick(0);
+
+    timer.pause();
+    timer.resume();
+
+    expect(starter).toHaveBeenCalledTimes(1);
+
+    firstCall.onExpired();
+    expect(expired).toHaveBeenCalledTimes(1);
+  });
+
+  it("resumes correctly across multiple pause cycles", () => {
+    const events = [];
+    const timer = createRoundTimer();
+    timer.on("tick", (r) => events.push(["tick", r]));
+    timer.on("expired", () => events.push(["expired"]));
+
+    timer.start(4);
+    expect(events).toEqual([["tick", 4]]);
+
+    timers.advanceTimersByTime(1000);
+    expect(events).toEqual([
+      ["tick", 4],
+      ["tick", 3]
+    ]);
+
+    timer.pause();
+    timers.advanceTimersByTime(5000);
+    expect(events).toEqual([
+      ["tick", 4],
+      ["tick", 3]
+    ]);
+
+    timer.resume();
+    timers.runOnlyPendingTimers();
+    expect(events).toEqual([
+      ["tick", 4],
+      ["tick", 3],
+      ["tick", 2]
+    ]);
+
+    timer.pause();
+    timers.advanceTimersByTime(5000);
+    expect(events).toEqual([
+      ["tick", 4],
+      ["tick", 3],
+      ["tick", 2]
+    ]);
+
+    timer.resume();
+    timers.runOnlyPendingTimers();
+    expect(events).toEqual([
+      ["tick", 4],
+      ["tick", 3],
+      ["tick", 2],
+      ["tick", 1]
+    ]);
+
+    timers.runAllTimers();
+    expect(events).toEqual([
+      ["tick", 4],
+      ["tick", 3],
+      ["tick", 2],
+      ["tick", 1],
+      ["expired"]
+    ]);
+  });
+
+  it("supports pausing immediately after start before engine ticks", () => {
+    const starterCalls = [];
+    const starter = vi.fn((onTick, onExpired, total) => {
+      starterCalls.push({ onTick, onExpired, total });
+    });
+    const expired = vi.fn();
+    const timer = createRoundTimer({ starter });
+    timer.on("expired", expired);
+
+    timer.start(5);
+    expect(starter).toHaveBeenCalledTimes(1);
+
+    timer.pause();
+    timer.resume();
+
+    expect(starter).toHaveBeenCalledTimes(2);
+    const resumedCall = starterCalls[1];
+    expect(resumedCall.total).toBe(5);
+
+    resumedCall.onTick(5);
+    resumedCall.onTick(4);
+    resumedCall.onExpired();
+
+    expect(expired).toHaveBeenCalledTimes(1);
+  });
+
   it("supports pause and resume", () => {
     const events = [];
     const timer = createRoundTimer();
