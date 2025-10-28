@@ -87,11 +87,16 @@ export async function setupClassicBattlePage() {
   setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
 
   // Ensure scoreboard layout helpers initialize before the modal mounts so
-  // header clearance is reflected on first paint. Subsequent calls are
-  // guarded within `setupScoreboard`.
+  // header clearance is reflected on first paint. The later call inside
+  // `startCallback` rebinds timer controls after the modal resolves; duplicate
+  // invocations are safe because `setupScoreboard` is idempotent.
   try {
     setupScoreboard({});
-  } catch {}
+  } catch (error) {
+    if (typeof console !== "undefined" && typeof console.warn === "function") {
+      console.warn("[classicBattle.bootstrap] Early scoreboard setup failed:", error);
+    }
+  }
 
   await initRoundSelectModal(startCallback);
 
