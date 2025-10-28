@@ -93,7 +93,7 @@ grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded wa
 
 Notes:
 
-- The model is expected under `src/models/minilm`. The preflight will fail if strict offline is enabled and files are missing.
+- The model is expected under `models/minilm`. The preflight will fail if strict offline is enabled and files are missing.
 - Keep tests free of unsuppressed `console.warn/error`. Use `withMutedConsole` or spies as needed.
 
 ### Animation Scheduler Guidelines

@@ -93,8 +93,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       let hint = "";
       if (errorMessage.includes("strict offline mode")) {
-        hint =
-          "Hint: Provide a local MiniLM at src/models/minilm or run: npm run rag:prepare:models";
+        hint = "Hint: Provide a local MiniLM at models/minilm or run: npm run rag:prepare:models";
       } else if (
         /enet(?:unreach|down|reset|refused)/i.test(errorMessage) ||
         errorMessage.includes("fetch failed")
