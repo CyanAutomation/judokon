@@ -54,7 +54,7 @@ function signalRandomJudokaReady(resolve) {
  * @pseudocode
  * 1. Look up the placement registration for the provided dialog.
  * 2. Mirror the toggle button's size on the placeholder and reveal it.
- * 3. Absolutely position the toggle button via fixed positioning inside the dialog.
+ * 3. Absolutely position the toggle button inside the dialog using calculated offsets.
  * 4. Append the toggle button into the dialog so it remains clickable.
  *
  * @param {HTMLDialogElement} historyPanel - The dialog panel element.
