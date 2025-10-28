@@ -103,9 +103,7 @@ export function onEngineCreated(listener) {
   }
   engineCreatedListeners.add(listener);
   const currentEngine =
-    typeof window !== "undefined"
-      ? battleEngines.get(window) ?? battleEngine
-      : battleEngine;
+    typeof window !== "undefined" ? (battleEngines.get(window) ?? battleEngine) : battleEngine;
   if (currentEngine) {
     invokeEngineCreatedListener(listener, currentEngine);
   }
@@ -127,9 +125,7 @@ export function onEngineCreated(listener) {
  */
 export function requireEngine() {
   const engine =
-    typeof window !== "undefined"
-      ? battleEngines.get(window) ?? battleEngine
-      : battleEngine;
+    typeof window !== "undefined" ? (battleEngines.get(window) ?? battleEngine) : battleEngine;
   if (!engine) {
     // Provide a clear error for consumers that call helpers before
     // initialization.
