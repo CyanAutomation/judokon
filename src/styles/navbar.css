@@ -30,7 +30,7 @@
 .filter-bar button,
 .filter-bar summary,
 .filter-bar input[type="checkbox"] {
-  padding: 0.3rem 0.3rem;
+  padding: 0;
   border-radius: var(--radius-md);
   background: var(--button-bg);
   color: var(--button-text-color);
@@ -41,6 +41,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-sizing: border-box;
+}
+
+.filter-bar button,
+.filter-bar summary {
+  padding: calc((var(--touch-target-size, 44px) - 24px) / 2);
 }
 
 #country-panel {
@@ -65,7 +71,6 @@
 #country-toggle {
   width: var(--touch-target-size, 48px);
   height: var(--touch-target-size, 48px);
-  padding: 0;
 }
 
 #layout-mode-toggle {
@@ -268,6 +273,8 @@
   cursor: pointer;
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
+  padding: calc((var(--touch-target-size, 44px) - 24px) / 2);
+  box-sizing: border-box;
   transition:
     border-color 150ms ease-in-out,
     outline-color 150ms ease-in-out;
@@ -285,12 +292,17 @@
 
 .clear-filter-button {
   margin: 1rem auto 0;
-  padding: 0.3rem 0.3rem;
+  padding: calc((var(--touch-target-size, 44px) - 24px) / 2);
   background: var(--button-bg);
   color: var(--button-text-color);
   border: none;
   border-radius: var(--radius-md);
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-size, 44px);
+  min-height: var(--touch-target-size, 44px);
+  box-sizing: border-box;
 }
 
 .retry-button {

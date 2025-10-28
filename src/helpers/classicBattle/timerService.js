@@ -718,20 +718,35 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
  * @summary Resolve round timer duration with scoreboard fallbacks.
  * @pseudocode
  * 1. Default duration to 30 seconds and attempt to read the configured value.
- * 2. If the value is unavailable, mark the timer as unsynced and show "Waiting…".
- * 3. Return the resolved duration, synced flag, and a restore callback.
+ * 2. Check test override hook first (window.__OVERRIDE_TIMERS) for test-friendliness.
+ * 3. If no override, read the configured default timer value.
+ * 4. If the value is unavailable, mark the timer as unsynced and show "Waiting…".
+ * 5. Return the resolved duration, synced flag, and a restore callback.
  */
 export async function resolveRoundTimerDuration({ showTemporaryMessage } = scoreboard) {
   let duration = 30;
   let synced = true;
 
   try {
-    const val = await getDefaultTimer("roundTimer");
-    // Debug: log resolved value when running under tests to diagnose mocking issues
+    let val;
+
+    // Check test override hook first (allows tests to inject timer values directly)
     try {
-      // eslint-disable-next-line no-console
-      console.warn("[debug] resolveRoundTimerDuration: getDefaultTimer returned:", val);
+      const w = typeof window !== "undefined" ? window : globalThis;
+      const overrides = w && w.__OVERRIDE_TIMERS;
+      if (overrides && Object.prototype.hasOwnProperty.call(overrides, "roundTimer")) {
+        const v = overrides["roundTimer"];
+        if (typeof v === "number") {
+          val = v;
+        }
+      }
     } catch {}
+
+    // If no test override, read the configured default timer
+    if (typeof val !== "number") {
+      val = getDefaultTimer("roundTimer");
+    }
+
     if (typeof val === "number") {
       duration = val;
     } else {

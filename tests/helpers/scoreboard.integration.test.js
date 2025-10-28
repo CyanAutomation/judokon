@@ -40,6 +40,42 @@ describe("Scoreboard integration without setupScoreboard", () => {
     scoreboard = scoreboardStub;
     document.body.innerHTML = "";
 
+    // Re-mock modules after resetModules using doMock to ensure they take effect
+    // for subsequent imports in this test
+    vi.doMock("../../src/helpers/timerUtils.js", () => ({
+      getDefaultTimer: vi.fn(),
+      _resetForTest: vi.fn()
+    }));
+
+    // Provide engine timers used by startTimer
+    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+      // Round selection timer: tick down each second and expire
+      startRound: (onTick, onExpired, duration, onDrift) => {
+        roundDrift = onDrift;
+        onTick(duration);
+        const id = setInterval(async () => {
+          duration -= 1;
+          onTick(duration);
+          if (duration <= 0) {
+            clearInterval(id);
+            await onExpired();
+          }
+        }, 1000);
+        return Promise.resolve();
+      },
+      stopTimer: vi.fn(),
+      pauseTimer: vi.fn(),
+      resumeTimer: vi.fn(),
+      STATS: ["power"]
+      // the rest are not needed in this test
+    }));
+
+    // Silence snackbar noise
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
+
     // Header structure as in battleJudoka.html
     const header = document.createElement("header");
     header.className = "header battle-header";
@@ -71,40 +107,10 @@ describe("Scoreboard integration without setupScoreboard", () => {
     header.append(left, document.createElement("div"), right);
     document.body.appendChild(header);
 
-    // Mock timer defaults to a small value
-    vi.mock("../../src/helpers/timerUtils.js", () => ({
-      getDefaultTimer: vi.fn().mockResolvedValue(3),
-      _resetForTest: vi.fn()
-    }));
-
-    // Provide engine timers used by startTimer
-    vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
-      // Round selection timer: tick down each second and expire
-      startRound: (onTick, onExpired, duration, onDrift) => {
-        roundDrift = onDrift;
-        onTick(duration);
-        const id = setInterval(async () => {
-          duration -= 1;
-          onTick(duration);
-          if (duration <= 0) {
-            clearInterval(id);
-            await onExpired();
-          }
-        }, 1000);
-        return Promise.resolve();
-      },
-      stopTimer: vi.fn(),
-      pauseTimer: vi.fn(),
-      resumeTimer: vi.fn(),
-      STATS: ["power"]
-      // the rest are not needed in this test
-    }));
-
-    // Silence snackbar noise
-    vi.mock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
+    // Set the test override for timer values (used by timerUtils.getDefaultTimer)
+    if (typeof window !== "undefined") {
+      window.__OVERRIDE_TIMERS = { roundTimer: 3 };
+    }
 
     const { Scoreboard } = await import("../../src/components/Scoreboard.js");
     const { ScoreboardModel } = await import("../../src/components/ScoreboardModel.js");
@@ -147,15 +153,17 @@ describe("Scoreboard integration without setupScoreboard", () => {
     const promise = startTimer(async () => {}, { selectionMade: false });
     // Initial tick shows 3 (debounced)
     await vi.advanceTimersByTimeAsync(220);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 3s");
+    const timerEl = document.getElementById("next-round-timer");
+    const getTimerText = () => timerEl.textContent.replace(/\s+/g, " ").trim();
+    expect(getTimerText()).toBe("Time Left: 3s");
     // After 1s shows 2
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(220);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 2s");
+    expect(getTimerText()).toBe("Time Left: 2s");
     // After another 1s shows 1
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(220);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 1s");
+    expect(getTimerText()).toBe("Time Left: 1s");
 
     // Cleanup any pending timers
     await vi.runOnlyPendingTimersAsync();

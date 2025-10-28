@@ -168,7 +168,7 @@ This phase addresses layout bugs on the judoka cards that hide information and v
   - **JavaScript:** `src/helpers/browse/setupCountryToggle.js`
 
 - **Actionable Fixes:**
-  - [ ] **Increase Tap Target Size (CSS):** In `src/styles/navbar.css`, use padding to increase the hit area of icon buttons without changing the visual size.
+  - [x] **Increase Tap Target Size (CSS):** In `src/styles/navbar.css`, use padding to increase the hit area of icon buttons without changing the visual size.
 
     ```css
     .flag-button,
@@ -178,6 +178,9 @@ This phase addresses layout bugs on the judoka cards that hide information and v
       box-sizing: content-box; /* Ensure padding adds to the size */
     }
     ```
+
+    - Added a shared padding formula (`calc((var(--touch-target-size, 44px) - 24px) / 2)`) to `.filter-bar` icon buttons, flag toggles, and the clear-filter control so every pointer target now measures ≥44px while preserving the 24px glyph size.
+    - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
   - [ ] **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
 
