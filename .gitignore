@@ -44,6 +44,7 @@ Thumbs.db
 # Large model artifacts and caches
 models/
 src/models/
+minilm_temp/
 client_embeddings.json
 offline_rag_metadata.json
 
