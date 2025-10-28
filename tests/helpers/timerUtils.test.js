@@ -128,4 +128,60 @@ describe("timerUtils", () => {
       timers.cleanup();
     }
   });
+
+  it("preserves hard timeout when elapsed time exceeds remaining", async () => {
+    const timers = useCanonicalTimers();
+
+    try {
+      const { createCountdownTimer } = await import("../../src/helpers/timerUtils.js");
+
+      const cancel = vi.fn();
+      const onSecondTick = vi.fn(() => "subscription");
+      let nextTimeoutId = 1;
+      let fallbackTimeoutId = 0;
+      const fallbackDelays = [];
+      const scheduler = {
+        setTimeout: vi.fn((cb, delay) => {
+          const id = nextTimeoutId++;
+          if (delay === 2000) {
+            fallbackTimeoutId = id;
+            fallbackDelays.push(delay);
+          }
+          return id;
+        }),
+        clearTimeout: vi.fn((id) => {
+          if (id === fallbackTimeoutId) {
+            fallbackTimeoutId = 0;
+          }
+        })
+      };
+
+      const timer = createCountdownTimer(2, {
+        onSecondTick,
+        cancel,
+        scheduler
+      });
+
+      timer.start();
+
+      expect(fallbackDelays).toContain(2000);
+
+      const originalNow = Date.now();
+      vi.setSystemTime(originalNow + 5000);
+
+      timer.pause();
+
+      expect(scheduler.clearTimeout).toHaveBeenCalledWith(expect.any(Number));
+      expect(fallbackTimeoutId).toBe(0);
+
+      timer.resume();
+
+      expect(fallbackDelays).toEqual([2000, 2000]);
+
+      timer.stop();
+      vi.setSystemTime(originalNow);
+    } finally {
+      timers.cleanup();
+    }
+  });
 });
