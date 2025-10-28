@@ -441,13 +441,7 @@ export async function drawCards(options = {}) {
   opponentJudoka = opponent;
 
   await placeholderRenderer({
-    container: opponentContainer,
-    allJudoka,
-    opponentJudoka: opponent,
-    lookup,
-    enableInspector,
-    fallbackProvider,
-    qaLogger
+    container: opponentContainer
   });
 
   return { playerJudoka, opponentJudoka: opponent };
