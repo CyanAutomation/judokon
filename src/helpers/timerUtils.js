@@ -86,6 +86,8 @@ export function createCountdownTimer(
   let cancelFn = cancel;
   let paused = false;
   let hardTimeoutId = 0;
+  let hardTimeoutRemainingMs = 0;
+  let hardTimeoutArmedAt = 0;
   let manualIntervalId = 0;
   let manualCheckId = 0;
   const activeScheduler =
@@ -165,21 +167,7 @@ export function createCountdownTimer(
     }
     // Hard fallback to ensure expiration even if the scheduler never ticks
     // in certain test environments.
-    try {
-      const fallbackDelayMs = Math.max(0, Math.ceil(Math.max(remaining, 0) * 1000));
-      hardTimeoutId = activeScheduler.setTimeout(async () => {
-        if (subId !== null) {
-          // Timer still running; stop and expire once.
-          stop();
-          if (typeof onTick === "function") onTick(0);
-          if (typeof onExpired === "function") await onExpired();
-        }
-      }, fallbackDelayMs);
-    } catch (error) {
-      if (typeof console !== "undefined") {
-        console.error("Timer fallback failed", error);
-      }
-    }
+    scheduleHardTimeout(Math.max(0, Math.ceil(Math.max(remaining, 0) * 1000)));
     if (pauseOnHidden && typeof document !== "undefined") {
       document.addEventListener("visibilitychange", handleVisibility);
     }
@@ -204,6 +192,22 @@ export function createCountdownTimer(
       }
       manualCheckId = 0;
     }
+    clearHardTimeout();
+    if (pauseOnHidden && typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    }
+  }
+
+  function captureHardTimeoutRemaining() {
+    if (!hardTimeoutId || hardTimeoutRemainingMs <= 0) return;
+    const elapsed = Date.now() - hardTimeoutArmedAt;
+    if (Number.isFinite(elapsed) && elapsed > 0) {
+      hardTimeoutRemainingMs = Math.max(0, hardTimeoutRemainingMs - elapsed);
+    }
+    hardTimeoutArmedAt = 0;
+  }
+
+  function clearHardTimeout({ preserveRemaining = false } = {}) {
     if (hardTimeoutId) {
       try {
         clearTimeoutFn.call(activeScheduler, hardTimeoutId);
@@ -212,17 +216,53 @@ export function createCountdownTimer(
       }
       hardTimeoutId = 0;
     }
-    if (pauseOnHidden && typeof document !== "undefined") {
-      document.removeEventListener("visibilitychange", handleVisibility);
+    if (!preserveRemaining) {
+      hardTimeoutRemainingMs = 0;
+    }
+    hardTimeoutArmedAt = 0;
+  }
+
+  function scheduleHardTimeout(delayMs) {
+    clearHardTimeout();
+    if (!(delayMs > 0)) {
+      hardTimeoutRemainingMs = 0;
+      return;
+    }
+    try {
+      hardTimeoutRemainingMs = delayMs;
+      hardTimeoutArmedAt = Date.now();
+      hardTimeoutId = activeScheduler.setTimeout(handleHardTimeout, delayMs);
+    } catch (error) {
+      hardTimeoutId = 0;
+      hardTimeoutRemainingMs = 0;
+      hardTimeoutArmedAt = 0;
+      if (typeof console !== "undefined") {
+        console.error("Timer fallback failed", error);
+      }
+    }
+  }
+
+  async function handleHardTimeout() {
+    if (subId !== null) {
+      stop();
+      if (typeof onTick === "function") onTick(0);
+      if (typeof onExpired === "function") await onExpired();
     }
   }
 
   function pause() {
+    if (paused) return;
     paused = true;
+    captureHardTimeoutRemaining();
+    clearHardTimeout({ preserveRemaining: true });
   }
 
   function resume() {
+    if (!paused) return;
     paused = false;
+    if (hardTimeoutRemainingMs > 0 && subId !== null) {
+      scheduleHardTimeout(hardTimeoutRemainingMs);
+    }
   }
 
   return { start, stop, pause, resume };

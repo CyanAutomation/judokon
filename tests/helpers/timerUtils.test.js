@@ -63,4 +63,69 @@ describe("timerUtils", () => {
     timer.stop();
     vi.useRealTimers();
   });
+
+  it("does not expire while paused until resumed", async () => {
+    const timers = useCanonicalTimers();
+    const setIntervalSpy = vi.spyOn(globalThis, "setInterval").mockImplementation(() => 1);
+    const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval").mockImplementation(() => {});
+
+    try {
+      const { createCountdownTimer } = await import("../../src/helpers/timerUtils.js");
+
+      const onExpired = vi.fn();
+      const onTick = vi.fn();
+      const cancel = vi.fn();
+
+      let nextSchedulerId = 1;
+      const pendingTimeouts = new Map();
+      const scheduler = {
+        setTimeout: vi.fn((cb, delay) => {
+          const timeoutHandle = setTimeout(cb, delay);
+          const id = nextSchedulerId++;
+          pendingTimeouts.set(id, timeoutHandle);
+          return id;
+        }),
+        clearTimeout: vi.fn((id) => {
+          if (pendingTimeouts.has(id)) {
+            const handle = pendingTimeouts.get(id);
+            pendingTimeouts.delete(id);
+            clearTimeout(handle);
+          } else {
+            clearTimeout(id);
+          }
+        })
+      };
+
+      const timer = createCountdownTimer(1.5, {
+        onTick,
+        onExpired,
+        onSecondTick: () => "sub",
+        cancel,
+        scheduler
+      });
+
+      timer.start();
+
+      await timers.advanceTimersByTimeAsync(400);
+      timer.pause();
+
+      expect(onExpired).not.toHaveBeenCalled();
+      expect(scheduler.clearTimeout).toHaveBeenCalled();
+
+      await timers.advanceTimersByTimeAsync(6000);
+      expect(onExpired).not.toHaveBeenCalled();
+
+      timer.resume();
+
+      await timers.advanceTimersByTimeAsync(1099);
+      expect(onExpired).not.toHaveBeenCalled();
+
+      await timers.advanceTimersByTimeAsync(1);
+      expect(onExpired).toHaveBeenCalledTimes(1);
+    } finally {
+      setIntervalSpy.mockRestore();
+      clearIntervalSpy.mockRestore();
+      timers.cleanup();
+    }
+  });
 });
