@@ -114,6 +114,10 @@ function setHiddenStoreValue(store, token, value) {
   });
 }
 
+/**
+ * @summary Get the opponent card container element from the DOM.
+ * @returns {HTMLElement|null} The opponent card container or null if not found.
+ */
 function getOpponentCardContainer() {
   if (typeof document === "undefined") return null;
   try {
@@ -123,6 +127,11 @@ function getOpponentCardContainer() {
   }
 }
 
+/**
+ * @summary Determine whether the container currently holds a rendered opponent card.
+ * @param {HTMLElement|null} container - The container to inspect.
+ * @returns {boolean} True when a real opponent card is present.
+ */
 function hasRealOpponentCard(container) {
   if (!container || typeof container.querySelector !== "function") return false;
   try {
@@ -132,6 +141,11 @@ function hasRealOpponentCard(container) {
   }
 }
 
+/**
+ * @summary Determine whether the container has an opponent placeholder element.
+ * @param {HTMLElement|null} container - The container to inspect.
+ * @returns {boolean} True when a placeholder element exists.
+ */
 function hasOpponentPlaceholder(container) {
   if (!container || typeof container.querySelector !== "function") return false;
   try {
@@ -141,9 +155,14 @@ function hasOpponentPlaceholder(container) {
   }
 }
 
+/**
+ * @summary Hide the opponent container when a real opponent card is visible.
+ * @param {HTMLElement|null} container - The container to potentially hide.
+ * @returns {HTMLElement|null} The container reference for chaining.
+ */
 function hideOpponentCardIfRealVisible(container) {
   if (!container) return null;
-  if (hasRealOpponentCard(container) && !hasOpponentPlaceholder(container)) {
+  if (hasRealOpponentCard(container)) {
     try {
       container.classList.add("opponent-hidden");
     } catch {}
@@ -155,6 +174,10 @@ function hideOpponentCardIfRealVisible(container) {
   return container;
 }
 
+/**
+ * @summary Ensure the opponent placeholder remains visible when no real card is rendered.
+ * @param {HTMLElement|null} container - The container whose visibility should be adjusted.
+ */
 function ensureOpponentPlaceholderVisibility(container) {
   if (!container) return;
   if (hasOpponentPlaceholder(container) && !hasRealOpponentCard(container)) {
@@ -364,7 +387,7 @@ export async function startRound(store, onRoundStart) {
     const activeContainer =
       opponentContainer && opponentContainer.isConnected
         ? opponentContainer
-        : getOpponentCardContainer();
+        : getOpponentCardContainer(); // Fallback if element was disconnected during async operations
     ensureOpponentPlaceholderVisibility(activeContainer);
     store.currentPlayerJudoka = cards.playerJudoka || null;
     store.currentOpponentJudoka = cards.opponentJudoka || null;

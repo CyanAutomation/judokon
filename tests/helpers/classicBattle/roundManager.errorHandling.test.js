@@ -189,6 +189,13 @@ describe("roundManager error handling integration", () => {
     expect(getElementByIdSpy).toHaveBeenCalledWith("opponent-card");
     expect(mockElement.classList.add).toHaveBeenCalledWith("opponent-hidden");
     expect(mockElement.classList.remove).toHaveBeenCalledWith("opponent-hidden");
+    expect(mockElement.state).toBe("placeholder");
+
+    const [addOrder] = mockElement.classList.add.mock.invocationCallOrder || [];
+    const [removeOrder] = mockElement.classList.remove.mock.invocationCallOrder || [];
+    expect(addOrder).toBeDefined();
+    expect(removeOrder).toBeDefined();
+    expect(addOrder).toBeLessThan(removeOrder);
 
     getElementByIdSpy.mockRestore();
   });
