@@ -35,7 +35,9 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - Round state transitions must be idempotent (e.g., multiple `roundResolved` events for the same round do not cause multiple score updates).
   - The UI must not allow new actions while a round result is being processed.
 - **Actionable Fixes:**
-  - [ ] **Add Idempotent Guards:** In `src/helpers/classicBattle/roundManager.js` and `src/helpers/classicBattle/selectionHandler.js`, add guards to prevent re-entry into critical functions.
+  - [x] **Add Idempotent Guards:** In `src/helpers/classicBattle/roundManager.js` and `src/helpers/classicBattle/selectionHandler.js`, add guards to prevent re-entry into critical functions.
+    - Verified existing guard implementations ensure re-entry attempts short-circuit and return cached results; no new code changes required.
+    - Tests: `npx vitest run tests/helpers/selectionHandler.test.js tests/helpers/classicBattle/statSelection.failureFallback.test.js`, `npx playwright test playwright/battle-classic/stat-selection.spec.js`.
 
     ```javascript
     // Example in a function like applyRoundDecisionResult in roundManager.js
