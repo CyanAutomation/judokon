@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { setScheduler, getScheduler, realScheduler } from "../../src/helpers/scheduler.js";
 
 describe("setScheduler", () => {
@@ -9,20 +10,24 @@ describe("setScheduler", () => {
   });
 
   it("falls back to real clearTimeout when scheduler omits it", () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const clearSpy = vi.spyOn(globalThis, "clearTimeout");
 
-    setScheduler({
-      setTimeout: (...args) => realScheduler.setTimeout(...args),
-      requestAnimationFrame: undefined,
-      cancelAnimationFrame: undefined
-    });
+    try {
+      setScheduler({
+        setTimeout: (...args) => realScheduler.setTimeout(...args),
+        requestAnimationFrame: undefined,
+        cancelAnimationFrame: undefined
+      });
 
-    const scheduler = getScheduler();
-    const timerId = scheduler.setTimeout(() => {}, 50);
-    scheduler.clearTimeout(timerId);
+      const scheduler = getScheduler();
+      const timerId = scheduler.setTimeout(() => {}, 50);
+      scheduler.clearTimeout(timerId);
 
-    expect(clearSpy).toHaveBeenCalled();
+      expect(clearSpy).toHaveBeenCalled();
+    } finally {
+      timers.cleanup();
+    }
   });
 
   it("retains prototype methods when injecting clearTimeout fallback", () => {
