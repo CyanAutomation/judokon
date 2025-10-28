@@ -1,6 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 import { exposeDebugState, readDebugState } from "../../../src/helpers/classicBattle/debugHooks.js";
+import { OPPONENT_PLACEHOLDER_ID } from "../../../src/helpers/classicBattle/opponentPlaceholder.js";
 
 async function withErrorHandlingEnv(nodeEnv, callback) {
   const original = process.env.NODE_ENV;
@@ -148,13 +149,32 @@ describe("roundManager error handling integration", () => {
     }
   });
 
-  it("hides opponent card at start of round", async () => {
-    const mockElement = { classList: { add: vi.fn() } };
+  it("hides the previous opponent card but keeps the placeholder visible", async () => {
+    const mockElement = {
+      state: "real",
+      isConnected: true,
+      classList: {
+        add: vi.fn(),
+        remove: vi.fn()
+      },
+      querySelector: vi.fn(function query(selector) {
+        if (selector === ".judoka-card") {
+          return this.state === "real" ? {} : null;
+        }
+        if (selector === `#${OPPONENT_PLACEHOLDER_ID}`) {
+          return this.state === "placeholder" ? {} : null;
+        }
+        return null;
+      })
+    };
     const getElementByIdSpy = vi.spyOn(document, "getElementById").mockReturnValue(mockElement);
 
-    // Mock drawCards to avoid rendering
+    // Mock drawCards to avoid rendering while simulating placeholder swap
     vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
-      drawCards: vi.fn().mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} })
+      drawCards: vi.fn().mockImplementation(async () => {
+        mockElement.state = "placeholder";
+        return { playerJudoka: {}, opponentJudoka: {} };
+      })
     }));
 
     vi.resetModules();
@@ -168,6 +188,46 @@ describe("roundManager error handling integration", () => {
 
     expect(getElementByIdSpy).toHaveBeenCalledWith("opponent-card");
     expect(mockElement.classList.add).toHaveBeenCalledWith("opponent-hidden");
+    expect(mockElement.classList.remove).toHaveBeenCalledWith("opponent-hidden");
+
+    getElementByIdSpy.mockRestore();
+  });
+
+  it("keeps the opponent container visible when only the placeholder is present", async () => {
+    const mockElement = {
+      state: "placeholder",
+      isConnected: true,
+      classList: {
+        add: vi.fn(),
+        remove: vi.fn()
+      },
+      querySelector: vi.fn(function query(selector) {
+        if (selector === ".judoka-card") {
+          return null;
+        }
+        if (selector === `#${OPPONENT_PLACEHOLDER_ID}`) {
+          return {};
+        }
+        return null;
+      })
+    };
+    const getElementByIdSpy = vi.spyOn(document, "getElementById").mockReturnValue(mockElement);
+
+    vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
+      drawCards: vi.fn().mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} })
+    }));
+
+    vi.resetModules();
+
+    const { startRound, createBattleStore } = await import(
+      "../../../src/helpers/classicBattle/roundManager.js"
+    );
+    const store = createBattleStore();
+
+    await startRound(store);
+
+    expect(mockElement.classList.add).not.toHaveBeenCalledWith("opponent-hidden");
+    expect(mockElement.classList.remove).toHaveBeenCalledWith("opponent-hidden");
 
     getElementByIdSpy.mockRestore();
   });

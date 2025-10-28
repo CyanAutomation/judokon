@@ -54,6 +54,7 @@ import {
 } from "./roundReadyState.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
+import { OPPONENT_PLACEHOLDER_ID } from "./opponentPlaceholder.js";
 
 const READY_DISPATCHER_IDENTITY_SYMBOL =
   typeof Symbol === "function"
@@ -111,6 +112,56 @@ function setHiddenStoreValue(store, token, value) {
     writable: true,
     value
   });
+}
+
+function getOpponentCardContainer() {
+  if (typeof document === "undefined") return null;
+  try {
+    return document.getElementById("opponent-card");
+  } catch {
+    return null;
+  }
+}
+
+function hasRealOpponentCard(container) {
+  if (!container || typeof container.querySelector !== "function") return false;
+  try {
+    return !!container.querySelector(".judoka-card");
+  } catch {
+    return false;
+  }
+}
+
+function hasOpponentPlaceholder(container) {
+  if (!container || typeof container.querySelector !== "function") return false;
+  try {
+    return !!container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
+  } catch {
+    return false;
+  }
+}
+
+function hideOpponentCardIfRealVisible(container) {
+  if (!container) return null;
+  if (hasRealOpponentCard(container) && !hasOpponentPlaceholder(container)) {
+    try {
+      container.classList.add("opponent-hidden");
+    } catch {}
+    return container;
+  }
+  try {
+    container.classList.remove("opponent-hidden");
+  } catch {}
+  return container;
+}
+
+function ensureOpponentPlaceholderVisibility(container) {
+  if (!container) return;
+  if (hasOpponentPlaceholder(container) && !hasRealOpponentCard(container)) {
+    try {
+      container.classList.remove("opponent-hidden");
+    } catch {}
+  }
 }
 
 function readReadyDispatcherSignature(candidate) {
@@ -305,16 +356,16 @@ export async function startRound(store, onRoundStart) {
     } catch {
       // Intentionally ignore window global availability errors when resetting selection metadata.
     }
-    // Hide opponent card at start of round to prevent premature reveal
-    try {
-      const opponentCard = document.getElementById("opponent-card");
-      if (opponentCard) opponentCard.classList.add("opponent-hidden");
-    } catch {
-      // Ignore DOM errors
-    }
+    // Hide opponent card at start of round to prevent premature reveal when a real card is present
+    const opponentContainer = hideOpponentCardIfRealVisible(getOpponentCardContainer());
     // Propagate scheduler from store.context if present
     const scheduler = store?.context?.scheduler || store?.scheduler;
     const cards = await drawCards();
+    const activeContainer =
+      opponentContainer && opponentContainer.isConnected
+        ? opponentContainer
+        : getOpponentCardContainer();
+    ensureOpponentPlaceholderVisibility(activeContainer);
     store.currentPlayerJudoka = cards.playerJudoka || null;
     store.currentOpponentJudoka = cards.opponentJudoka || null;
     persistLastJudokaStats(store, cards.playerJudoka, cards.opponentJudoka);
