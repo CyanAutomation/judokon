@@ -100,18 +100,18 @@ body[data-test-disable-animations] .judoka-card {
 /* Active card emphasis */
 .card-carousel .judoka-card[aria-current="true"],
 .card-carousel .judoka-card.is-active {
-  --carousel-active-scale: 1.12;
+  --carousel-active-scale: 1.16;
   transform: scale(var(--carousel-active-scale));
   z-index: 2;
   transition:
-    transform 180ms ease-in-out,
-    box-shadow 180ms ease-in-out;
+    transform 220ms ease-in-out,
+    box-shadow 220ms ease-in-out;
   box-shadow: var(--shadow-hover);
 }
 
 @media (max-width: 600px) {
   .card-carousel .judoka-card[aria-current="true"],
   .card-carousel .judoka-card.is-active {
-    --carousel-active-scale: 1.08; /* Prevent crowding on narrow screens */
+    --carousel-active-scale: 1.1; /* Prevent crowding on narrow screens */
   }
 }

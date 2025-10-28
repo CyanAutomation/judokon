@@ -171,9 +171,7 @@ describe("timerUtils", () => {
       expect(onTick).toHaveBeenCalledTimes(1);
       expect(onTick).toHaveBeenCalledWith(2);
       expect(onExpired).not.toHaveBeenCalled();
-      expect(
-        scheduler.setTimeout.mock.calls.some(([, delay]) => delay === 2000)
-      ).toBe(true);
+      expect(scheduler.setTimeout.mock.calls.some(([, delay]) => delay === 2000)).toBe(true);
       expect(fallbackDelays[0]).toBe(2000);
 
       // Simulate unrealistic time jump (5s elapsed when only 2s remain)

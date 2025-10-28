@@ -727,6 +727,11 @@ export async function resolveRoundTimerDuration({ showTemporaryMessage } = score
 
   try {
     const val = await getDefaultTimer("roundTimer");
+    // Debug: log resolved value when running under tests to diagnose mocking issues
+    try {
+      // eslint-disable-next-line no-console
+      console.warn("[debug] resolveRoundTimerDuration: getDefaultTimer returned:", val);
+    } catch {}
     if (typeof val === "number") {
       duration = val;
     } else {

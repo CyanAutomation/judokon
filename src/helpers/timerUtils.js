@@ -20,6 +20,10 @@ import { realScheduler } from "./scheduler.js";
 export function getDefaultTimer(category) {
   // Test hook: allow Playwright or other harnesses to override timers globally.
   try {
+    // eslint-disable-next-line no-console
+    console.warn("[debug] timerUtils.getDefaultTimer called for category:", category);
+  } catch {}
+  try {
     const w = typeof window !== "undefined" ? window : globalThis;
     const overrides = w && w.__OVERRIDE_TIMERS;
     if (overrides && Object.prototype.hasOwnProperty.call(overrides, category)) {
