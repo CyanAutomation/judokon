@@ -612,21 +612,20 @@ svg {
 }
 
 /* Animate debug panel disclosure (details-based inspector only) */
-details {
+.debug-panel {
   overflow: hidden;
   transition: opacity var(--transition-fast);
 }
 
-details[open] {
+.debug-panel[open] {
   opacity: 1;
 }
 
-details:not([open]) {
+.debug-panel:not([open]) {
   opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  details,
   .debug-panel {
     transition: none;
   }
