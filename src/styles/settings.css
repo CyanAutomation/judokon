@@ -116,8 +116,12 @@
   box-shadow: var(--shadow-base);
 }
 
-.settings-form fieldset > * + * {
+.settings-form fieldset > * + *:not(.game-mode-toggle-container) {
   margin-top: var(--space-md);
+}
+
+.settings-form .game-mode-toggle-container > * {
+  margin-top: 0;
 }
 
 .settings-form fieldset:last-of-type {
