@@ -136,6 +136,8 @@ describe("timerUtils", () => {
       const { createCountdownTimer } = await import("../../src/helpers/timerUtils.js");
 
       const cancel = vi.fn();
+      const onTick = vi.fn();
+      const onExpired = vi.fn();
       const onSecondTick = vi.fn(() => "subscription");
       let nextTimeoutId = 1;
       let fallbackTimeoutId = 0;
@@ -157,6 +159,8 @@ describe("timerUtils", () => {
       };
 
       const timer = createCountdownTimer(2, {
+        onTick,
+        onExpired,
         onSecondTick,
         cancel,
         scheduler
@@ -164,8 +168,15 @@ describe("timerUtils", () => {
 
       timer.start();
 
-      expect(fallbackDelays).toContain(2000);
+      expect(onTick).toHaveBeenCalledTimes(1);
+      expect(onTick).toHaveBeenCalledWith(2);
+      expect(onExpired).not.toHaveBeenCalled();
+      expect(
+        scheduler.setTimeout.mock.calls.some(([, delay]) => delay === 2000)
+      ).toBe(true);
+      expect(fallbackDelays[0]).toBe(2000);
 
+      // Simulate unrealistic time jump (5s elapsed when only 2s remain)
       const originalNow = Date.now();
       vi.setSystemTime(originalNow + 5000);
 
@@ -174,9 +185,14 @@ describe("timerUtils", () => {
       expect(scheduler.clearTimeout).toHaveBeenCalledWith(expect.any(Number));
       expect(fallbackTimeoutId).toBe(0);
 
+      const callCountBeforeResume = scheduler.setTimeout.mock.calls.length;
       timer.resume();
 
+      expect(scheduler.setTimeout.mock.calls.length).toBe(callCountBeforeResume + 1);
+      expect(scheduler.setTimeout.mock.calls.at(-1)[1]).toBe(2000);
       expect(fallbackDelays).toEqual([2000, 2000]);
+      expect(onTick).toHaveBeenCalledTimes(1);
+      expect(onExpired).not.toHaveBeenCalled();
 
       timer.stop();
       vi.setSystemTime(originalNow);
