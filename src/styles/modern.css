@@ -927,7 +927,7 @@
   margin: 0;
 }
 
-.theme-modern .settings-form {
+.theme-modern form.settings-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: clamp(var(--space-lg), 4vw, var(--space-xxl));
@@ -976,7 +976,7 @@
   color: var(--modern-color-text);
 }
 
-.theme-modern .modern-card .settings-form fieldset {
+.theme-modern .modern-card form.settings-form fieldset {
   background: color-mix(in srgb, var(--modern-color-surface-muted) 70%, transparent);
   border: 1px solid color-mix(in srgb, var(--modern-color-border) 45%, transparent);
   border-radius: var(--modern-radius-md);
@@ -984,11 +984,11 @@
   box-shadow: none;
 }
 
-.theme-modern .modern-card .settings-form fieldset > * + * {
+.theme-modern .modern-card form.settings-form fieldset > * + * {
   margin-top: var(--space-md);
 }
 
-.theme-modern .modern-card .settings-form fieldset:last-of-type {
+.theme-modern .modern-card form.settings-form fieldset:last-of-type {
   margin-bottom: 0;
 }
 
@@ -1000,22 +1000,22 @@
   padding-top: var(--space-md);
 }
 
-.theme-modern .settings-form legend,
-.theme-modern .settings-form label,
-.theme-modern .settings-form p,
-.theme-modern .settings-form a {
+.theme-modern form.settings-form legend,
+.theme-modern form.settings-form label,
+.theme-modern form.settings-form p,
+.theme-modern form.settings-form a {
   font-family: var(--font-family-sans);
   color: color-mix(in srgb, var(--modern-color-text) 88%, var(--modern-color-text-muted) 12%);
 }
 
-.theme-modern .settings-form a {
+.theme-modern form.settings-form a {
   font-weight: var(--modern-font-weight-medium);
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, currentColor 65%, transparent);
 }
 
-.theme-modern .settings-form a:hover,
-.theme-modern .settings-form a:focus-visible {
+.theme-modern form.settings-form a:hover,
+.theme-modern form.settings-form a:focus-visible {
   text-decoration-thickness: 3px;
 }
 
@@ -1047,7 +1047,7 @@
 }
 
 @media (min-width: 960px) {
-  .theme-modern .settings-form {
+  .theme-modern form.settings-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
   }
