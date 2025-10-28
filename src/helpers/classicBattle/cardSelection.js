@@ -8,9 +8,8 @@ import { DATA_DIR } from "../constants.js";
 import { showMessage as scoreboardShowMessage, showTemporaryMessage } from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
-import { JudokaCard } from "../../components/JudokaCard.js";
 import { getFallbackJudoka } from "../judokaUtils.js";
-import { setupLazyPortraits } from "../lazyPortrait.js";
+import { applyOpponentCardPlaceholder } from "./opponentPlaceholder.js";
 
 let judokaData = null;
 let gokyoLookup = null;
@@ -333,93 +332,19 @@ export async function selectOpponentJudoka({
 }
 
 /**
- * @summary Render the opponent placeholder card while preserving debug UI.
+ * @summary Reset the opponent card container to the static mystery placeholder.
  *
  * @pseudocode
- * 1. Resolve the placeholder judoka from explicit input, dataset, opponent, or fallback provider.
- * 2. Instantiate a `JudokaCard` via the provided factory and ensure it renders an HTMLElement.
- * 3. Replace the container contents (preserving debug panel) and attach lazy portrait observers when supported.
+ * 1. Exit early when `container` is missing.
+ * 2. Delegate to `applyOpponentCardPlaceholder()` to replace the DOM contents.
  *
- * @param {{
- *   container?: HTMLElement|null,
- *   allJudoka?: object[],
- *   opponentJudoka?: object|null,
- *   placeholderJudoka?: object|null,
- *   lookup?: object|null,
- *   enableInspector?: boolean,
- *   fallbackProvider?: () => Promise<object>,
- *   qaLogger?: (message: string) => void,
- *   cardFactory?: (judoka: object, lookup: object|null, options: {useObscuredStats: boolean, enableInspector: boolean}) => { render?: () => Promise<HTMLElement>|HTMLElement },
- *   lazyPortraitSetup?: (cardEl: HTMLElement) => void
- * }} [options]
+ * @param {{ container?: HTMLElement|null }} [options] - Placeholder rendering options.
  * @returns {Promise<void>}
  */
-export async function renderOpponentPlaceholder({
-  container,
-  allJudoka = [],
-  opponentJudoka = null,
-  placeholderJudoka = null,
-  lookup = gokyoLookup,
-  enableInspector = false,
-  fallbackProvider = getFallbackJudoka,
-  qaLogger = qaInfo,
-  cardFactory = (judoka, lookupArg, options) => new JudokaCard(judoka, lookupArg, options),
-  lazyPortraitSetup = setupLazyPortraits
-} = {}) {
+export async function renderOpponentPlaceholder({ container } = {}) {
   if (!container) return;
 
-  const debugPanel = container.querySelector("#debug-panel");
-  const dataset = Array.isArray(allJudoka) ? allJudoka : [];
-
-  let target = placeholderJudoka;
-  if (!target) target = dataset.find((j) => j && j.id === 1) || null;
-  if (!target && opponentJudoka) target = opponentJudoka;
-
-  if (!target && typeof fallbackProvider === "function") {
-    try {
-      target = await fallbackProvider();
-      if (target && typeof qaLogger === "function") {
-        try {
-          qaLogger("Using fallback judoka for opponent placeholder");
-        } catch {}
-      }
-    } catch {
-      return;
-    }
-  }
-
-  if (!target) return;
-
-  try {
-    const cardCreator =
-      typeof cardFactory === "function"
-        ? cardFactory
-        : (judoka, lookupArg, options) => new JudokaCard(judoka, lookupArg, options);
-    const cardInstance = cardCreator(target, lookup ?? gokyoLookup, {
-      useObscuredStats: true,
-      enableInspector
-    });
-
-    if (!cardInstance || typeof cardInstance.render !== "function") return;
-
-    const rendered = await cardInstance.render();
-    if (!(rendered && typeof rendered === "object" && rendered.nodeType === 1)) {
-      console.error("JudokaCard did not render an HTMLElement");
-      return;
-    }
-
-    container.innerHTML = "";
-    if (debugPanel) container.appendChild(debugPanel);
-    container.appendChild(rendered);
-
-    if (typeof IntersectionObserver !== "undefined" && typeof lazyPortraitSetup === "function") {
-      try {
-        lazyPortraitSetup(rendered);
-      } catch {}
-    }
-  } catch (error) {
-    console.debug("Error rendering JudokaCard placeholder:", error);
-  }
+  applyOpponentCardPlaceholder(container);
 }
 
 /**
@@ -469,9 +394,7 @@ export async function drawCards(options = {}) {
     fallbackProvider = getFallbackJudoka,
     loadSettingsFn = loadSettings,
     inspectorFlagReader = () => isEnabled("enableCardInspector"),
-    qaLogger = qaInfo,
-    cardFactory,
-    lazyPortraitSetup
+    qaLogger = qaInfo
   } = options;
 
   let allJudoka = [];
@@ -524,9 +447,7 @@ export async function drawCards(options = {}) {
     lookup,
     enableInspector,
     fallbackProvider,
-    qaLogger,
-    cardFactory,
-    lazyPortraitSetup
+    qaLogger
   });
 
   return { playerJudoka, opponentJudoka: opponent };

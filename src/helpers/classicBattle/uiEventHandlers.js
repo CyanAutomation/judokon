@@ -12,6 +12,10 @@ import {
   getOpponentPromptMinDuration
 } from "./opponentPromptTracker.js";
 import { isEnabled } from "../featureFlags.js";
+import {
+  OPPONENT_CARD_CONTAINER_ARIA_LABEL,
+  OPPONENT_PLACEHOLDER_ID
+} from "./opponentPlaceholder.js";
 
 let opponentSnackbarId = 0;
 
@@ -74,8 +78,13 @@ export function bindUIHelperEventHandlersDynamic() {
     try {
       // Reveal the opponent card by removing the hidden class
       if (container) container.classList.remove("opponent-hidden");
-      // Clear the mystery card placeholder
-      if (container) container.innerHTML = "";
+      if (container) {
+        const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
+        if (placeholder) placeholder.remove();
+        try {
+          container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
+        } catch {}
+      }
       const j = await getOpponentCardData();
       if (j) await renderOpponentCard(j, container);
     } catch {}

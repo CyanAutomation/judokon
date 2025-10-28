@@ -34,6 +34,12 @@ async function completeFirstRound(document, testApi) {
   const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
   expect(statButtons.length).toBeGreaterThan(0);
 
+  const opponentCard = document.getElementById("opponent-card");
+  expect(opponentCard).not.toBeNull();
+  expect(opponentCard?.classList.contains("opponent-hidden")).toBe(false);
+  const placeholder = opponentCard?.querySelector("#mystery-card-placeholder");
+  expect(placeholder).not.toBeNull();
+
   let reachedRoundDecision = false;
   await withMutedConsole(async () => {
     statButtons[0].click();
@@ -108,6 +114,7 @@ describe("Battle Classic opponent placeholder integration", () => {
 
     const opponentCard = document.getElementById("opponent-card");
     expect(opponentCard).not.toBeNull();
+    expect(opponentCard?.classList.contains("opponent-hidden")).toBe(false);
 
     const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
@@ -144,5 +151,6 @@ describe("Battle Classic opponent placeholder integration", () => {
     const revealedCard = revealedContainer?.querySelector(".judoka-card");
     expect(revealedCard).not.toBeNull();
     expect(revealedCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
+    expect(opponentCard?.getAttribute("aria-label")).toBe("Opponent card");
   });
 });

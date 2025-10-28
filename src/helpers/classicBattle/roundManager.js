@@ -17,6 +17,7 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
 import { setNextButtonFinalizedState } from "./uiHelpers.js";
+import { applyOpponentCardPlaceholder } from "./opponentPlaceholder.js";
 import {
   createExpirationTelemetryEmitter,
   createMachineReader,
