@@ -4,6 +4,7 @@
 // internal setTimeout-based countdown keeps tests operational.
 import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
 import { realScheduler } from "./scheduler.js";
+import { createFallbackCountdownTimer } from "./fallbackCountdown.js";
 
 let cachedTimerUtils = null;
 
@@ -98,129 +99,19 @@ export class TimerController {
     const start = Date.now();
     let pausedAt = null;
     let pausedMs = 0;
+    const schedulerForFallback = this.scheduler || realScheduler;
     const createTimer =
       timerUtils && "createCountdownTimer" in timerUtils
         ? timerUtils.createCountdownTimer
-        : (
-            d,
-            {
-              onTick: t,
-              onExpired: e,
-              pauseOnHidden: shouldPauseOnHidden,
-              onSecondTick: _onSecondTick,
-              cancel: _cancelSubscription,
-              scheduler: providedScheduler
-            } = {}
-          ) => {
-            void _onSecondTick;
-            void _cancelSubscription;
-            // Fallback for tests that partially mock `timerUtils` without
-            // `createCountdownTimer`.
-            let remaining = d;
-            let id = 0;
-            let paused = false;
-            let visibilityListenerAttached = false;
-            const activeScheduler =
-              providedScheduler && typeof providedScheduler.setTimeout === "function"
-                ? providedScheduler
-                : thisScheduler;
-            const setTimeoutFn =
-              activeScheduler && typeof activeScheduler.setTimeout === "function"
-                ? activeScheduler.setTimeout.bind(activeScheduler)
-                : thisScheduler.setTimeout.bind(thisScheduler);
-            const clearTimeoutFn =
-              activeScheduler && typeof activeScheduler.clearTimeout === "function"
-                ? activeScheduler.clearTimeout.bind(activeScheduler)
-                : thisScheduler.clearTimeout.bind(thisScheduler);
-
-            function scheduleNextTick() {
-              id = setTimeoutFn(tick, 1000);
-            }
-
-            function clearTimeoutSafe() {
-              if (!id) return;
-              try {
-                clearTimeoutFn(id);
-              } catch {
-                clearTimeoutFn(id);
-              }
-              id = 0;
-            }
-
-            function removeVisibilityListener() {
-              if (!visibilityListenerAttached) return;
-              if (typeof document === "undefined") return;
-              try {
-                document.removeEventListener("visibilitychange", handleVisibility);
-              } catch {}
-              visibilityListenerAttached = false;
-            }
-
-            function addVisibilityListener() {
-              if (!shouldPauseOnHidden || visibilityListenerAttached) return;
-              if (typeof document === "undefined") return;
-              try {
-                document.addEventListener("visibilitychange", handleVisibility);
-                visibilityListenerAttached = true;
-              } catch {}
-            }
-
-            function tick() {
-              if (paused) return;
-              remaining -= 1;
-              if (typeof t === "function") t(remaining);
-              if (remaining <= 0) {
-                clearTimeoutSafe();
-                removeVisibilityListener();
-                if (typeof e === "function") e();
-              } else {
-                scheduleNextTick();
-              }
-            }
-
-            function handleVisibility() {
-              if (typeof document === "undefined") return;
-              if (document.hidden) {
-                pause();
-              } else {
-                resume();
-              }
-            }
-
-            function start() {
-              stop();
-              remaining = d;
-              paused = false;
-              if (typeof t === "function") t(remaining);
-              scheduleNextTick();
-              addVisibilityListener();
-            }
-
-            function stop() {
-              clearTimeoutSafe();
-              paused = false;
-              removeVisibilityListener();
-            }
-
-            function pause() {
-              clearTimeoutSafe();
-              paused = true;
-            }
-
-            function resume() {
-              if (!paused) return;
-              paused = false;
-              if (remaining > 0 && !id) {
-                scheduleNextTick();
-              }
-            }
-
-            return { start, stop, pause, resume };
-          };
+        : (d, options = {}) =>
+            createFallbackCountdownTimer(d, {
+              ...options,
+              fallbackScheduler: schedulerForFallback
+            });
 
     // Use the injected scheduler (or realScheduler) for the fallback timers so
     // tests can inject a mock scheduler or the test helpers can replace timers.
-    const thisScheduler = this.scheduler || realScheduler;
+    const thisScheduler = schedulerForFallback;
 
     this.currentTimer = createTimer(duration, {
       onTick: (r) => {

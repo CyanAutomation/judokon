@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { FALLBACK_VISIBILITY_RESUME_DELAY_MS } from "../../src/helpers/fallbackCountdown.js";
 
 const TIMER_UTILS_PATH = "../../src/helpers/timerUtils.js";
 
@@ -180,14 +181,23 @@ describe("TimerController fallback countdown", () => {
       const resumeEntry = scheduled.entries().next().value;
       expect(resumeEntry).toBeDefined();
       const [resumedId, resumedTask] = resumeEntry;
-      expect(resumedTask.delay).toBe(1000);
+      expect(resumedTask.delay).toBe(FALLBACK_VISIBILITY_RESUME_DELAY_MS);
 
       scheduled.delete(resumedId);
       resumedTask.cb();
 
+      expect(scheduler.setTimeout).toHaveBeenCalledTimes(4);
+      const finalEntry = scheduled.entries().next().value;
+      expect(finalEntry).toBeDefined();
+      const [finalId, finalTask] = finalEntry;
+      expect(finalTask.delay).toBe(1000);
+
+      scheduled.delete(finalId);
+      finalTask.cb();
+
       expect(ticks).toEqual([2, 1, 0]);
       expect(onExpired).toHaveBeenCalledTimes(1);
-      expect(scheduler.clearTimeout).toHaveBeenCalledWith(resumedId);
+      expect(scheduler.clearTimeout).toHaveBeenCalledWith(finalId);
     } finally {
       controller.stop();
       globalThis.setTimeout = originalSetTimeout;
