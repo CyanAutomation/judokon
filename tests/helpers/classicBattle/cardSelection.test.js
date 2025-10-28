@@ -82,6 +82,61 @@ describe.sequential("classicBattle card selection", () => {
     expect(getOpponentJudoka()).toEqual(expect.objectContaining({ id: 2 }));
   });
 
+  it("uses the provided cardFactory and lazy portrait setup", async () => {
+    fetchJsonMock.mockImplementation(async (path) => {
+      if (path.includes("judoka")) {
+        return [
+          {
+            id: 1,
+            firstname: "Player",
+            surname: "One",
+            stats: { power: 6 },
+            isHidden: false
+          }
+        ];
+      }
+      if (path.includes("gokyo")) {
+        return [{ id: 101, name: "O Soto Gari" }];
+      }
+      return [];
+    });
+
+    const cardElement = document.createElement("article");
+    const cardFactory = vi.fn().mockResolvedValue(cardElement);
+    const lazyPortraitSetup = vi.fn();
+    applyMockSetup({
+      fetchJsonMock,
+      generateRandomCardMock,
+      getRandomJudokaMock,
+      renderMock
+    });
+
+    const { drawCards, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    const result = await drawCards({ cardFactory, lazyPortraitSetup });
+
+    expect(cardFactory).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1 }),
+      {},
+      { useObscuredStats: true, enableInspector: false }
+    );
+    expect(lazyPortraitSetup).toHaveBeenCalledWith(cardElement);
+    const playerContainer = document.getElementById("player-card");
+    expect(playerContainer?.firstChild).toBe(cardElement);
+    expect(generateRandomCardMock).toHaveBeenCalledWith(
+      [expect.objectContaining({ id: 1, isHidden: false })],
+      null,
+      playerContainer,
+      false,
+      expect.any(Function),
+      { enableInspector: false, skipRender: true }
+    );
+    expect(result.playerJudoka).toEqual(expect.objectContaining({ id: 1 }));
+  });
+
   it("falls back when only the player judoka is available", async () => {
     const qaLogger = vi.fn();
     const fallbackProvider = vi.fn().mockResolvedValue({ id: 99 });
@@ -160,7 +215,7 @@ describe.sequential("classicBattle card selection", () => {
       expect.anything(),
       false,
       expect.any(Function),
-      { enableInspector: false, skipRender: false }
+      { enableInspector: false, skipRender: true }
     );
     expect(getRandomJudokaMock).toHaveBeenCalledWith([
       expect.objectContaining({ id: 2, isHidden: false })
