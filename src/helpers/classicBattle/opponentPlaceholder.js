@@ -70,6 +70,7 @@ export function createOpponentCardPlaceholder(documentRef) {
  * 2. Resolve the document context, preferring the provided override.
  * 3. Create the placeholder element and clear existing non-debug contents.
  * 4. Restore the debug panel (if present), append the placeholder, and set ARIA metadata.
+ * 5. Ensure the opponent card container is visible by removing the `opponent-hidden` class.
  *
  * @param {HTMLElement|null|undefined} container - Target container that receives the placeholder.
  * @param {{ documentRef?: Document|null }} [options] - Optional document override.
@@ -90,11 +91,15 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
   const targetContainer =
     container?.id === "opponent-card"
       ? container
-      : doc?.getElementById?.("opponent-card") ?? null;
+      : doc?.getElementById("opponent-card");
   if (targetContainer?.classList?.contains("opponent-hidden")) {
     try {
       targetContainer.classList.remove("opponent-hidden");
-    } catch {}
+    } catch (error) {
+      if (typeof console !== "undefined" && typeof console.debug === "function") {
+        console.debug("Failed to remove opponent-hidden class:", error?.message ?? error);
+      }
+    }
   }
 
   try {
