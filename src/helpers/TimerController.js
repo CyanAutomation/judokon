@@ -101,47 +101,121 @@ export class TimerController {
     const createTimer =
       timerUtils && "createCountdownTimer" in timerUtils
         ? timerUtils.createCountdownTimer
-        : (d, { onTick: t, onExpired: e } = {}) => {
+        : (
+            d,
+            {
+              onTick: t,
+              onExpired: e,
+              pauseOnHidden: shouldPauseOnHidden,
+              onSecondTick: _onSecondTick,
+              cancel: _cancelSubscription,
+              scheduler: providedScheduler
+            } = {}
+          ) => {
+            void _onSecondTick;
+            void _cancelSubscription;
             // Fallback for tests that partially mock `timerUtils` without
             // `createCountdownTimer`.
             let remaining = d;
             let id = 0;
             let paused = false;
-            const tick = () => {
+            let visibilityListenerAttached = false;
+            const activeScheduler =
+              providedScheduler && typeof providedScheduler.setTimeout === "function"
+                ? providedScheduler
+                : thisScheduler;
+            const setTimeoutFn =
+              activeScheduler && typeof activeScheduler.setTimeout === "function"
+                ? activeScheduler.setTimeout.bind(activeScheduler)
+                : thisScheduler.setTimeout.bind(thisScheduler);
+            const clearTimeoutFn =
+              activeScheduler && typeof activeScheduler.clearTimeout === "function"
+                ? activeScheduler.clearTimeout.bind(activeScheduler)
+                : thisScheduler.clearTimeout.bind(thisScheduler);
+
+            function scheduleNextTick() {
+              id = setTimeoutFn(tick, 1000);
+            }
+
+            function clearTimeoutSafe() {
+              if (!id) return;
+              try {
+                clearTimeoutFn(id);
+              } catch {
+                clearTimeoutFn(id);
+              }
+              id = 0;
+            }
+
+            function removeVisibilityListener() {
+              if (!visibilityListenerAttached) return;
+              if (typeof document === "undefined") return;
+              try {
+                document.removeEventListener("visibilitychange", handleVisibility);
+              } catch {}
+              visibilityListenerAttached = false;
+            }
+
+            function addVisibilityListener() {
+              if (!shouldPauseOnHidden || visibilityListenerAttached) return;
+              if (typeof document === "undefined") return;
+              try {
+                document.addEventListener("visibilitychange", handleVisibility);
+                visibilityListenerAttached = true;
+              } catch {}
+            }
+
+            function tick() {
               if (paused) return;
               remaining -= 1;
               if (typeof t === "function") t(remaining);
               if (remaining <= 0) {
-                if (id) thisScheduler.clearTimeout(id);
-                id = 0;
+                clearTimeoutSafe();
+                removeVisibilityListener();
                 if (typeof e === "function") e();
               } else {
-                id = thisScheduler.setTimeout(tick, 1000);
+                scheduleNextTick();
               }
-            };
-            return {
-              start() {
-                if (id) thisScheduler.clearTimeout(id);
-                remaining = d;
-                paused = false;
-                if (typeof t === "function") t(remaining);
-                id = thisScheduler.setTimeout(tick, 1000);
-              },
-              stop() {
-                if (id) thisScheduler.clearTimeout(id);
-                id = 0;
-              },
-              pause() {
-                if (id) thisScheduler.clearTimeout(id);
-                id = 0;
-                paused = true;
-              },
-              resume() {
-                if (!paused) return;
-                paused = false;
-                if (remaining > 0 && !id) id = thisScheduler.setTimeout(tick, 1000);
+            }
+
+            function handleVisibility() {
+              if (typeof document === "undefined") return;
+              if (document.hidden) {
+                pause();
+              } else {
+                resume();
               }
-            };
+            }
+
+            function start() {
+              stop();
+              remaining = d;
+              paused = false;
+              if (typeof t === "function") t(remaining);
+              scheduleNextTick();
+              addVisibilityListener();
+            }
+
+            function stop() {
+              clearTimeoutSafe();
+              paused = false;
+              removeVisibilityListener();
+            }
+
+            function pause() {
+              clearTimeoutSafe();
+              paused = true;
+            }
+
+            function resume() {
+              if (!paused) return;
+              paused = false;
+              if (remaining > 0 && !id) {
+                scheduleNextTick();
+              }
+            }
+
+            return { start, stop, pause, resume };
           };
 
     // Use the injected scheduler (or realScheduler) for the fallback timers so
