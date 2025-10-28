@@ -278,7 +278,7 @@ Track usage against the shared success metrics for RAG-enabled workflows:
    npm run rag:prepare:models -- --from-dir /path/to/minilm
    ```
 
-   These commands hydrate `src/models/minilm` with the quantized extractor files used by the query encoder.
+   These commands hydrate `models/minilm` with the quantized extractor files used by the query encoder.
 
 2. **Build compact offline assets**
 
