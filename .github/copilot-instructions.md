@@ -220,7 +220,7 @@ You **MUST** use RAG as your first step for questions related to:
 
 ### Offline Usage (Agents)
 
-- Strict offline (no network): set `RAG_STRICT_OFFLINE=1` so model/CDN downloads are not attempted. Ensure `src/models/minilm` exists; hydrate via `npm run rag:prepare:models` (or `--from-dir <path>` if you already have the files).
+- Strict offline (no network): set `RAG_STRICT_OFFLINE=1` so model/CDN downloads are not attempted. Ensure `models/minilm` exists; hydrate via `npm run rag:prepare:models` (or `--from-dir <path>` if you already have the files).
 - Lexical fallback (optional, degraded): if the model is unavailable, set `RAG_ALLOW_LEXICAL_FALLBACK=1` or pass `{ allowLexicalFallback: true }` to `queryRag(...)` to use sparse lexical scoring against the offline corpus. Keep this feature-gated to avoid silent regressions.
 - Provenance: prefer `withProvenance: true` and include the provided `contextPath` and `rationale` in your outputs.
 
@@ -235,7 +235,7 @@ If you encounter errors related to model loading or "Local model not found", you
 npm run rag:prepare:models
 ```
 
-This command will download the necessary model files into `src/models/minilm`.
+This command will download the necessary model files into `models/minilm`.
 
 **2. Verify Model Files:**
 You can manually check if the RAG model files are present and accounted for using the following command:
