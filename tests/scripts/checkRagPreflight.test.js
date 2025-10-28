@@ -85,9 +85,7 @@ describe("checkRagPreflight", () => {
     }, ["error"]);
 
     expect(warnSpy).toHaveBeenCalledOnce();
-    expect(warnSpy.mock.calls[0][0]).toMatch(
-      /Offline model files missing in models\/minilm \(/
-    );
+    expect(warnSpy.mock.calls[0][0]).toMatch(/Offline model files missing in models\/minilm \(/);
     expect(warnSpy.mock.calls[0][0]).toMatch(
       /npm run rag:prepare:models -- --from-dir \/path\/to\/minilm/
     );
@@ -118,7 +116,9 @@ describe("checkRagPreflight", () => {
     expect(res.errors).toEqual([]);
     expect(warnSpy).toHaveBeenCalledOnce();
     const warning = warnSpy.mock.calls[0][0];
-    expect(warning).toMatch(/Model file appears truncated in models\/minilm: .*model_quantized\.onnx/);
+    expect(warning).toMatch(
+      /Model file appears truncated in models\/minilm: .*model_quantized\.onnx/
+    );
     expect(warning).toMatch(/npm run rag:prepare:models -- --from-dir \/path\/to\/minilm/);
   });
 
