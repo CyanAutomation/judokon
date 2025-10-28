@@ -8,7 +8,12 @@ function mockTimerController(overrides = {}) {
     pause: vi.fn(),
     resume: vi.fn(),
     stop: vi.fn(),
-    getState: vi.fn().mockReturnValue({ remaining: 0, paused: false }),
+    getState: vi.fn().mockReturnValue({
+      remaining: 0,
+      paused: false,
+      category: null,
+      pauseOnHidden: false
+    }),
     hasActiveTimer: vi.fn(),
     ...overrides
   };
@@ -129,7 +134,7 @@ describe("battleEngineFacade timer interactions", () => {
     resumeTimer();
     expect(resume).toHaveBeenCalled();
 
-    expect(getTimerState()).toEqual({ remaining: 0, paused: false });
+    expect(getTimerState()).toMatchObject({ remaining: 0, paused: false });
     expect(getState).toHaveBeenCalled();
   });
 });

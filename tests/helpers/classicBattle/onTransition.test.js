@@ -22,7 +22,12 @@ const engineMock = {
   getRoundsPlayed: () => 0,
   getScores: () => ({ playerScore: 0, opponentScore: 0 }),
   getSeed: () => 1,
-  getTimerState: () => ({ remaining: 30, paused: false })
+  getTimerState: () => ({
+    remaining: 30,
+    paused: false,
+    category: "roundTimer",
+    pauseOnHidden: false
+  })
 };
 
 vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({

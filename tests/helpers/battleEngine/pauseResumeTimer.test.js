@@ -48,13 +48,13 @@ describe("pauseTimer/resumeTimer", () => {
     timerApi.tick();
     timerApi.tick();
     pauseTimer();
-    expect(getTimerState()).toEqual({ remaining: 3, paused: true });
+    expect(getTimerState()).toMatchObject({ remaining: 3, paused: true });
 
     timerApi.tick();
-    expect(getTimerState()).toEqual({ remaining: 3, paused: true });
+    expect(getTimerState()).toMatchObject({ remaining: 3, paused: true });
 
     resumeTimer();
     timerApi.tick();
-    expect(getTimerState()).toEqual({ remaining: 2, paused: false });
+    expect(getTimerState()).toMatchObject({ remaining: 2, paused: false });
   });
 });
