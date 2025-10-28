@@ -132,22 +132,20 @@ svg {
   /* Override the global touch target to maintain 10% proportions */
   --touch-target-size: 44px;
   width: var(--card-width);
-  height: var(--card-height);
   min-height: var(--card-height);
-  max-height: var(--card-height);
-  aspect-ratio: 2 / 3;
+  height: auto;
   border: 12px solid var(--card-border-color);
   border-radius: var(--radius-lg);
   background-color: var(--card-bg-color);
   box-shadow: var(--shadow-base);
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: visible;
   display: grid;
   grid-template-rows:
-    calc(var(--card-height) * 0.14)
-    calc(var(--card-height) * 0.42)
-    calc(var(--card-height) * 0.34)
-    calc(var(--card-height) * 0.1);
+    0.14fr
+    0.42fr
+    0.34fr
+    minmax(var(--touch-target-size), 0.1fr); /* Keep signature band at least touch-target tall */
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out;
