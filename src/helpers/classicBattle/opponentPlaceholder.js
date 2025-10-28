@@ -87,6 +87,16 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
   if (debugPanel) container.appendChild(debugPanel);
   container.appendChild(placeholder);
 
+  const targetContainer =
+    container?.id === "opponent-card"
+      ? container
+      : doc?.getElementById?.("opponent-card") ?? null;
+  if (targetContainer?.classList?.contains("opponent-hidden")) {
+    try {
+      targetContainer.classList.remove("opponent-hidden");
+    } catch {}
+  }
+
   try {
     container.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
   } catch {}
