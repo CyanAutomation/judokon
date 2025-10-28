@@ -18,6 +18,7 @@ function createJudokaCardButton(judoka, cardType, inspectorState) {
   judokaCard.setAttribute("tabindex", "0");
   judokaCard.classList.add(judoka.gender === "female" ? "female-card" : "male-card");
   judokaCard.setAttribute("data-feature-card-inspector", inspectorState);
+  judokaCard.dataset.testid = "judoka-card-button";
   return judokaCard;
 }
 
@@ -25,6 +26,7 @@ function createCardContainer(judoka, inspectorState) {
   const cardContainer = document.createElement("div");
   cardContainer.className = "card-container";
   cardContainer.setAttribute("data-feature-card-inspector", inspectorState);
+  cardContainer.dataset.testid = "judoka-card";
   try {
     cardContainer.dataset.cardJson = JSON.stringify(judoka);
   } catch {

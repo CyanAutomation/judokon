@@ -62,6 +62,7 @@ function ensureRadioGroup(container) {
     container.appendChild(fieldset);
   }
   fieldset.dataset.countryFilter = "";
+  fieldset.dataset.testid = "country-filter-group";
   fieldset.classList.add("country-filter-group");
 
   let legend = fieldset.querySelector("legend");
@@ -104,6 +105,12 @@ function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt }) {
     fieldset.appendChild(input);
   }
   input.value = value;
+  input.dataset.testid = "country-filter-radio";
+  if (rawValue) {
+    input.setAttribute("data-country-value", rawValue);
+  } else {
+    input.removeAttribute("data-country-value");
+  }
   if (ariaLabel) {
     input.setAttribute("aria-label", ariaLabel);
   } else {
@@ -116,6 +123,12 @@ function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt }) {
     labelEl.className = "flag-button slide";
     labelEl.setAttribute("for", id);
     fieldset.appendChild(labelEl);
+  }
+  labelEl.dataset.testid = "country-flag-option";
+  if (rawValue) {
+    labelEl.setAttribute("data-country-value", rawValue);
+  } else {
+    labelEl.removeAttribute("data-country-value");
   }
 
   labelEl.replaceChildren();
@@ -130,12 +143,12 @@ function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt }) {
 
   labelEl.append(flagImg, textEl);
 
-  return { input, flagImg };
+  return { input, flagImg, labelEl };
 }
 
 function renderAllButton(container) {
   const fieldset = ensureRadioGroup(container);
-  const { input, flagImg } = createRadioOption(fieldset, {
+  const { input, flagImg, labelEl } = createRadioOption(fieldset, {
     value: "all",
     label: "All",
     ariaLabel: "Show all countries",
@@ -143,6 +156,8 @@ function renderAllButton(container) {
   });
   flagImg.src = "https://flagcdn.com/w320/vu.png";
   input.checked = true;
+  input.setAttribute("data-country-code", "all");
+  labelEl.setAttribute("data-country-code", "all");
   return fieldset;
 }
 
@@ -187,7 +202,7 @@ function initLazyFlagLoader(scrollContainer) {
 
 async function renderCountryBatch(fieldset, countries, nameToCode, imageObserver) {
   for (const countryName of countries) {
-    const { flagImg } = createRadioOption(fieldset, {
+    const { input, flagImg, labelEl } = createRadioOption(fieldset, {
       value: countryName,
       label: countryName,
       ariaLabel: `Filter by ${countryName}`,
@@ -196,6 +211,13 @@ async function renderCountryBatch(fieldset, countries, nameToCode, imageObserver
     try {
       const code = nameToCode.get(countryName);
       const flagUrl = await getFlagUrl(code);
+      if (code) {
+        labelEl.setAttribute("data-country-code", code);
+        input.setAttribute("data-country-code", code);
+      } else {
+        labelEl.removeAttribute("data-country-code");
+        input.removeAttribute("data-country-code");
+      }
       if (imageObserver) {
         flagImg.dataset.src = flagUrl;
         imageObserver.observe(flagImg);
@@ -205,6 +227,8 @@ async function renderCountryBatch(fieldset, countries, nameToCode, imageObserver
     } catch (error) {
       console.warn(`Failed to load flag for ${countryName}:`, error);
       flagImg.src = "https://flagcdn.com/w320/vu.png";
+      labelEl.removeAttribute("data-country-code");
+      input.removeAttribute("data-country-code");
     }
   }
 }
