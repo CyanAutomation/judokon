@@ -20,7 +20,12 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
 }));
 
 const engineMock = {
-  getTimerState: () => ({ remaining: 30, paused: false })
+  getTimerState: () => ({
+    remaining: 30,
+    paused: false,
+    category: "roundTimer",
+    pauseOnHidden: false
+  })
 };
 
 vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({

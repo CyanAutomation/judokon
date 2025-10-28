@@ -58,7 +58,12 @@ describe("classic battle timer state exposure", () => {
     vi.resetModules();
     debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
     document.body.innerHTML = "";
-    timerState = { remaining: 30, paused: false };
+    timerState = {
+      remaining: 30,
+      paused: false,
+      category: "roundTimer",
+      pauseOnHidden: false
+    };
     store = {};
     orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     await orchestrator.initClassicBattleOrchestrator({});
@@ -72,7 +77,7 @@ describe("classic battle timer state exposure", () => {
 
   it("mirrors timer state on window", async () => {
     await machine.dispatch("stateA");
-    expect(debugHooks.readDebugState("classicBattleTimerState")).toEqual({
+    expect(debugHooks.readDebugState("classicBattleTimerState")).toMatchObject({
       remaining: 30,
       paused: false
     });
