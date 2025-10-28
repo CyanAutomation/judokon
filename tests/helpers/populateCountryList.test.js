@@ -44,11 +44,17 @@ describe("populateCountryList", () => {
     const container = document.createElement("div");
     await populateCountryList(container);
 
-    const labels = container.querySelectorAll("label.flag-button");
+    const labels = container.querySelectorAll('[data-testid="country-flag-option"]');
     const names = [...labels].map((s) => s.querySelector("p").textContent);
     expect(names).toEqual(["All", "Austria", "Côte d'Ivoire", "Japan"]);
-    const radios = container.querySelectorAll('input[type="radio"][name="country-filter"]');
+    expect(labels[0]).toHaveAttribute("data-country-code", "all");
+    expect(labels[1]).toHaveAttribute("data-country-code", "at");
+    expect(labels[2]).toHaveAttribute("data-country-code", "ci");
+    expect(labels[3]).toHaveAttribute("data-country-code", "jp");
+    const radios = container.querySelectorAll('[data-testid="country-filter-radio"]');
     expect(radios[0].checked).toBe(true);
+    expect(radios[0]).toHaveAttribute("data-country-code", "all");
+    expect(radios[1]).toHaveAttribute("data-country-code", "at");
   });
 
   it("keeps radios adjacent to flag buttons for native keyboard behavior", async () => {
@@ -74,6 +80,7 @@ describe("populateCountryList", () => {
 
     const fieldset = container.querySelector("fieldset[data-country-filter]");
     expect(fieldset).not.toBeNull();
+    expect(fieldset).toHaveAttribute("data-testid", "country-filter-group");
 
     const legend = fieldset?.querySelector("legend.sr-only");
     expect(legend).not.toBeNull();

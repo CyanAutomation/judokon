@@ -129,7 +129,7 @@ export async function prepareLocalModel(options = {}) {
     const localModelDir = path.join(cacheDir, "minilm");
     env.allowLocalModels = true;
     env.cacheDir = cacheDir;
-    env.localModelPath = destDir;
+    env.localModelPath = destRoot;
     // Prepare dest directories to allow caching to land in-place
     await ensureDir(cacheDir);
     await ensureDir(localModelDir);

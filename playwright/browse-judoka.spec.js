@@ -8,6 +8,8 @@ import countryCodeMapping from "../src/data/countryCodeMapping.json" with { type
 import gokyo from "../tests/fixtures/gokyo.json" with { type: "json" };
 
 const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
+const COUNTRY_FLAG_OPTION = "country-flag-option";
+const JUDOKA_CARD = "judoka-card";
 
 const EXPECTED_COUNTRY_SLIDE_COUNT =
   new Set(judoka.map((j) => j.countryCode).filter((code) => countryCodeMapping[code])).size + 1; // include 'All' slide
@@ -68,7 +70,7 @@ test.describe("Browse Judoka screen", () => {
 
     const readiness = await expectBrowseReadiness(page);
     const initialCount = readiness.snapshot?.cardCount ?? 0;
-    const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
+    const allCards = page.getByTestId(JUDOKA_CARD);
     await expect(allCards).toHaveCount(initialCount);
 
     await toggle.click();
@@ -76,7 +78,10 @@ test.describe("Browse Judoka screen", () => {
     await page.addStyleTag({
       content: ".country-flag-slide-track { animation: none !important; }"
     });
-    const japanOption = page.locator("label.flag-button", { hasText: "Japan" });
+    const japanOption = page
+      .getByTestId(COUNTRY_FLAG_OPTION)
+      .filter({ hasText: "Japan" })
+      .first();
     await japanOption.click();
     await expect(panel).toBeHidden();
     await toggle.click();
@@ -84,12 +89,15 @@ test.describe("Browse Judoka screen", () => {
     const japanRadio = page.getByRole("radio", { name: "Japan" });
     await expect(japanRadio).toBeChecked();
 
-    const filteredCards = page.locator("[data-testid=carousel-container] .judoka-card");
+    const filteredCards = page.getByTestId(JUDOKA_CARD);
     await expect(filteredCards).toHaveCount(1);
     const flag = filteredCards.first().locator(".card-top-bar img");
     await expect(flag).toHaveAttribute("alt", /Japan flag/i);
 
-    const allOption = page.locator("label.flag-button", { hasText: "All" });
+    const allOption = page
+      .getByTestId(COUNTRY_FLAG_OPTION)
+      .filter({ hasText: "All" })
+      .first();
     await allOption.click();
     const allRadio = page.getByRole("radio", { name: "All" });
     await expect(allRadio).toBeChecked();
@@ -101,7 +109,7 @@ test.describe("Browse Judoka screen", () => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
     await expectBrowseReadiness(page);
     await toggle.click();
-    const slides = page.locator("#country-list .slide");
+    const slides = page.getByTestId(COUNTRY_FLAG_OPTION);
     await slides.first().waitFor();
 
     const slideCount = await slides.count();

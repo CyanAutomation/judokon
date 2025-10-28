@@ -193,7 +193,9 @@ This phase addresses layout bugs on the judoka cards that hide information and v
   - [x] **Add Error Handling:** In `src/helpers/browseJudokaPage.js`, add a `.catch()` block to the data fetching logic to render an error message if the judoka roster fails to load.
     - Centralized failure handling via `renderFallbackOrMessage` and `handleDataLoadFailure`, ensuring fallback rendering is wrapped in its own try/catch so we now surface an accessible "no results" message even if the fallback judoka request fails.
     - Added regression coverage in `tests/helpers/browseJudokaPage.test.js` to verify both the existing fallback flow and the new fallback-failure path, then ran `npx vitest run tests/helpers/browseJudokaPage.test.js` and `npx playwright test playwright/browse-judoka.spec.js`.
-  - [ ] **Add Test IDs:** Add `data-testid` attributes to key interactive elements like filter controls, the carousel, and cards to create more resilient Playwright tests.
+  - [x] **Add Test IDs:** Add `data-testid` attributes to key interactive elements like filter controls, the carousel, and cards to create more resilient Playwright tests.
+    - Annotated the country filter fieldset, radios, and flag labels (`country-filter-group`, `country-filter-radio`, `country-flag-option`) plus carousel card containers/buttons (`judoka-card`, `judoka-card-button`) to stabilize query selectors without impacting existing class-based logic.
+    - Updated `playwright/browse-judoka.spec.js` and `tests/helpers/populateCountryList.test.js` to rely on the new test IDs and verified coverage with `npx vitest run tests/helpers/populateCountryList.test.js`, `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx vitest run tests/helpers/cardBuilder.test.js`, and `npx playwright test playwright/browse-judoka.spec.js`.
 
 ---
 
