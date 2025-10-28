@@ -94,9 +94,8 @@ describe("loadSettings", () => {
       })
     );
     localStorage.setItem("settings", JSON.stringify({ nested: { arr: [3] } }));
-    // Import after resetting modules and setting up the mock
-    const { loadSettings: loadSettingsFunc } = await import("../../src/config/loadSettings.js");
-    const settings = await loadSettingsFunc();
+    const { loadSettings } = await import("../../src/config/loadSettings.js");
+    const settings = await loadSettings();
     expect(settings).toEqual({ items: [2, 3], nested: { a: 1, b: 2, arr: [3] } });
   });
 
@@ -114,9 +113,8 @@ describe("loadSettings", () => {
         })
       );
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      // Import after resetting modules and setting up the mock
-      const { loadSettings: loadSettingsFunc } = await import("../../src/config/loadSettings.js");
-      const settings = await loadSettingsFunc();
+      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const settings = await loadSettings();
       expect(settings.nested).toEqual({ a: 1, b: 2 });
       expect(warnSpy).not.toHaveBeenCalled();
       warnSpy.mockRestore();
