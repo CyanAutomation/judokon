@@ -116,10 +116,13 @@
   box-shadow: var(--shadow-base);
 }
 
-.settings-form fieldset > * + *:not(.game-mode-toggle-container) {
+.settings-form fieldset > .settings-control + .settings-control,
+.settings-form fieldset > label + label,
+.settings-form fieldset > .switch + .switch {
   margin-top: var(--space-md);
 }
 
+/* Reset margin for game mode toggle container children - grid gaps handle spacing */
 .settings-form .game-mode-toggle-container > * {
   margin-top: 0;
 }
