@@ -8,6 +8,7 @@ import { DATA_DIR } from "../constants.js";
 import { showMessage as scoreboardShowMessage, showTemporaryMessage } from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
+import { JudokaCard } from "../../components/JudokaCard.js";
 import { getFallbackJudoka } from "../judokaUtils.js";
 import { applyOpponentCardPlaceholder } from "./opponentPlaceholder.js";
 
@@ -28,6 +29,11 @@ export class JudokaDataLoadError extends Error {
 
 export const CARD_RETRY_EVENT = "classicBattle:retryCardDraw";
 export const LOAD_ERROR_EXIT_EVENT = "classicBattle:loadErrorExit";
+
+async function defaultCardFactory(judoka, lookup, options) {
+  const card = new JudokaCard(judoka, lookup, options);
+  return await card.render();
+}
 
 /**
  * Display QA information messages during test mode.
@@ -394,7 +400,9 @@ export async function drawCards(options = {}) {
     fallbackProvider = getFallbackJudoka,
     loadSettingsFn = loadSettings,
     inspectorFlagReader = () => isEnabled("enableCardInspector"),
-    qaLogger = qaInfo
+    qaLogger = qaInfo,
+    cardFactory = defaultCardFactory,
+    lazyPortraitSetup
   } = options;
 
   let allJudoka = [];
@@ -419,7 +427,7 @@ export async function drawCards(options = {}) {
   const enableInspector = !!inspectorFlagReader();
 
   let playerJudoka = null;
-  const skipRender = !playerContainer;
+  const skipRender = true;
   await cardGenerator(
     available,
     null,
@@ -430,6 +438,29 @@ export async function drawCards(options = {}) {
     },
     { enableInspector, skipRender }
   );
+
+  if (playerJudoka && playerContainer) {
+    playerContainer.innerHTML = "";
+    try {
+      const cardElement = await cardFactory(playerJudoka, lookup, {
+        useObscuredStats: true,
+        enableInspector
+      });
+
+      if (cardElement instanceof HTMLElement) {
+        playerContainer.replaceChildren(cardElement);
+        if (typeof lazyPortraitSetup === "function") {
+          lazyPortraitSetup(cardElement);
+        }
+      } else if (cardElement != null) {
+        console.error("Card factory did not return an HTMLElement");
+        playerContainer.innerHTML = "";
+      }
+    } catch (error) {
+      console.error("Failed to render player card:", error);
+      playerContainer.innerHTML = "";
+    }
+  }
 
   const opponent = await selectOpponentJudoka({
     availableJudoka: available,
