@@ -1,0 +1,1 @@
+../../../helpers/scoreboard.adapter.test.js

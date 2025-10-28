@@ -11,7 +11,7 @@ This directory contains tests for components shared between classic and CLI batt
 ## Note on Test Location
 
 Tests remain in their original locations to preserve working imports:
-- Scoreboard tests: `tests/helpers/battleScoreboard*.test.js`
+- Scoreboard tests: `tests/helpers/scoreboard.*.test.js`
 - Modal tests: `tests/components/Modal.dialog.test.js`
 - Configuration tests: `tests/config/battleDefaults.test.js`
 

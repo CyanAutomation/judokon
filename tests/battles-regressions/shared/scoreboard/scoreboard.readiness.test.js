@@ -1,0 +1,1 @@
+../../../helpers/scoreboard.readiness.test.js
