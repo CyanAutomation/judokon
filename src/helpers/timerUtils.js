@@ -201,8 +201,15 @@ export function createCountdownTimer(
   function captureHardTimeoutRemaining() {
     if (!hardTimeoutId || hardTimeoutRemainingMs <= 0) return;
     const elapsed = Date.now() - hardTimeoutArmedAt;
-    if (Number.isFinite(elapsed) && elapsed > 0) {
-      hardTimeoutRemainingMs = Math.max(0, hardTimeoutRemainingMs - elapsed);
+    if (
+      Number.isFinite(elapsed) &&
+      elapsed >= 0 &&
+      elapsed <= hardTimeoutRemainingMs
+    ) {
+      hardTimeoutRemainingMs = Math.max(
+        0,
+        hardTimeoutRemainingMs - elapsed,
+      );
     }
     hardTimeoutArmedAt = 0;
   }
