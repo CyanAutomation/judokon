@@ -182,16 +182,9 @@ This phase addresses layout bugs on the judoka cards that hide information and v
     - Added a shared padding formula (`calc((var(--touch-target-size, 44px) - 24px) / 2)`) to `.filter-bar` icon buttons, flag toggles, and the clear-filter control so every pointer target now measures ≥44px while preserving the 24px glyph size.
     - Validation: `npx vitest run tests/helpers/browseJudokaPage.test.js`, `npx playwright test playwright/browse-judoka.spec.js`.
 
-  - [ ] **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
-
-    ```javascript
-    // In src/helpers/browse/setupCountryToggle.js
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && isPanelOpen()) {
-        closePanel(); // Assuming a closePanel function exists
-      }
-    });
-    ```
+  - [x] **Add Keyboard Navigation (JavaScript):** In `src/helpers/browse/setupCountryToggle.js`, add an event listener to handle the `Escape` key.
+    - Registered a document-level capture listener that reuses the toggle controller's Escape handling so the panel now closes regardless of focus location, while preserving the existing panel listener for bubbling events.
+    - Updated `tests/helpers/browseJudokaPage.test.js` to assert the document hook and reran `npx vitest run tests/helpers/browseJudokaPage.test.js` plus `npx playwright test playwright/browse-judoka.spec.js`.
 
 ### Phase 4: Low - Polish & Robustness
 

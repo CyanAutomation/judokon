@@ -59,10 +59,16 @@ describe("browseJudokaPage helpers", () => {
     const toggleButton = {
       addEventListener: vi.fn()
     };
+    const documentEvents = [];
     const panel = {
       addEventListener: vi.fn((event, handler) => {
         panelEvents.push({ event, handler });
-      })
+      }),
+      ownerDocument: {
+        addEventListener: vi.fn((event, handler) => {
+          documentEvents.push({ event, handler });
+        })
+      }
     };
 
     const loaded = setupCountryToggle(toggleButton, panel, null, { adapter });
@@ -70,6 +76,11 @@ describe("browseJudokaPage helpers", () => {
     expect(toggleButton.addEventListener).not.toHaveBeenCalled();
     expect(panel.addEventListener).toHaveBeenCalledWith("toggle", expect.any(Function));
     expect(panel.addEventListener).toHaveBeenCalledWith("keydown", expect.any(Function));
+    expect(panel.ownerDocument.addEventListener).toHaveBeenCalledWith(
+      "keydown",
+      expect.any(Function),
+      { capture: true }
+    );
 
     open = true;
     const toggleHandler = panelEvents.find(({ event }) => event === "toggle");
@@ -80,6 +91,12 @@ describe("browseJudokaPage helpers", () => {
     const keydownHandler = panelEvents.find(({ event }) => event === "keydown");
     keydownHandler.handler({ key: "Escape" });
     expect(adapter.closePanel).toHaveBeenCalledTimes(2);
+
+    expect(documentEvents).toHaveLength(1);
+    const docKeydownHandler = documentEvents[0]?.handler;
+    open = true;
+    docKeydownHandler?.({ key: "Escape" });
+    expect(adapter.closePanel).toHaveBeenCalledTimes(3);
 
     expect(loaded()).toBe(true);
   });

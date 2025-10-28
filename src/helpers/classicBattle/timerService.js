@@ -759,7 +759,10 @@ export async function resolveRoundTimerDuration({ showTemporaryMessage } = score
   let restore = () => {};
   if (!synced && typeof showTemporaryMessage === "function") {
     try {
-      restore = showTemporaryMessage(t("ui.waiting"));
+      const result = showTemporaryMessage(t("ui.waiting"));
+      if (typeof result === "function") {
+        restore = result;
+      }
     } catch {
       restore = () => {};
     }

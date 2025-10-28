@@ -116,9 +116,13 @@ export function createCountryToggleController(adapter) {
 export function setupCountryToggle(toggleButton, panel, listContainer, { adapter } = {}) {
   const resolvedAdapter = adapter ?? createCountryToggleAdapter(toggleButton, panel, listContainer);
   const controller = createCountryToggleController(resolvedAdapter);
+  const ownerDocument = panel?.ownerDocument ?? toggleButton?.ownerDocument ?? document;
 
   panel?.addEventListener?.("toggle", controller.handleToggle);
   panel?.addEventListener?.("keydown", controller.handleKeydown);
+  if (ownerDocument) {
+    ownerDocument.addEventListener("keydown", controller.handleKeydown, { capture: true });
+  }
 
   return controller.countriesLoaded;
 }
