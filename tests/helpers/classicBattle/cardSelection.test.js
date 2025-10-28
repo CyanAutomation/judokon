@@ -454,6 +454,8 @@ describe.sequential("classicBattle card selection", () => {
       };
     });
 
+    vi.resetModules();
+
     const { withMutedConsole } = await import("../../utils/console.js");
     let errorMessageDetected = false;
 

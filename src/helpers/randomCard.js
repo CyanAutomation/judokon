@@ -190,7 +190,8 @@ export async function renderJudokaCard(
   }
   try {
     const card = await new JudokaCard(judoka, gokyoLookup, { enableInspector }).render();
-    if (!card) {
+    if (!card || !(card instanceof HTMLElement)) {
+      console.error("JudokaCard did not render an HTMLElement");
       containerEl.innerHTML = "";
       return false;
     }
