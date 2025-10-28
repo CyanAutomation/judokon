@@ -1,1 +1,0 @@
-../../../config/loadSettings.test.js

@@ -1,1 +1,0 @@
-../../../config/dataDir.test.js
