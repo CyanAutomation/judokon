@@ -183,13 +183,7 @@ describe("createRoundTimer events", () => {
     ]);
 
     timers.runAllTimers();
-    expect(events).toEqual([
-      ["tick", 4],
-      ["tick", 3],
-      ["tick", 2],
-      ["tick", 1],
-      ["expired"]
-    ]);
+    expect(events).toEqual([["tick", 4], ["tick", 3], ["tick", 2], ["tick", 1], ["expired"]]);
   });
 
   it("supports pausing immediately after start before engine ticks", () => {
