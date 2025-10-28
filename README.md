@@ -135,8 +135,10 @@ For contributor-specific guidance, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 **Quick validation (essential checks):**
 ```bash
-npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
+npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run lint:css && npx vitest run && npx playwright test && npm run check:contrast
 ```
+
+Run `npm run lint:css` independently to validate styles in `src/styles/**/*.css` with Stylelint before committing or deploying updates.
 
 This suite includes a DOM regression test (`tests/pages/battleJudoka.dom.test.js`) that loads `battleJudoka.html` and fails if required IDs (`next-button`, `stat-help`, `quit-match-button`, `stat-buttons`) are missing.
 
