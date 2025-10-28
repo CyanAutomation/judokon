@@ -77,12 +77,14 @@ function mergeKnown(base, override, defaults, path = []) {
  * 3. Parse `localStorage` overrides and merge.
  * 4. Return merged `settings`.
  *
+ * @param {{ defaults?: import("./settingsDefaults.js").Settings }} [options]
+ * `defaults` - Optional defaults override used primarily for tests.
  * @returns {Promise<import("./settingsDefaults.js").Settings>} Resolved settings object.
  */
-export async function loadSettings() {
-  // Load defaults at runtime so test-time mocks (vi.doMock) are honored.
-  const { DEFAULT_SETTINGS } = await import("./settingsDefaults.js");
-  let settings = structuredClone(DEFAULT_SETTINGS);
+export async function loadSettings(options = {}) {
+  const defaults =
+    options?.defaults ?? (await import("./settingsDefaults.js")).DEFAULT_SETTINGS;
+  let settings = structuredClone(defaults);
 
   try {
     const base = typeof import.meta.url === "string" ? import.meta.url : undefined;
@@ -90,7 +92,7 @@ export async function loadSettings() {
     const response = await fetch(url);
     if (response.ok) {
       const fetched = await response.json();
-      settings = mergeKnown(settings, fetched, DEFAULT_SETTINGS);
+      settings = mergeKnown(settings, fetched, defaults);
     }
   } catch {
     // Ignore fetch failures or invalid JSON
@@ -101,7 +103,7 @@ export async function loadSettings() {
       const raw = localStorage.getItem(SETTINGS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        settings = mergeKnown(settings, parsed, DEFAULT_SETTINGS);
+        settings = mergeKnown(settings, parsed, defaults);
       }
     }
   } catch {
@@ -113,8 +115,8 @@ export async function loadSettings() {
       if (normalizedDisplayMode !== settings.displayMode) {
         settings = { ...settings, displayMode: normalizedDisplayMode };
       }
-    } else if (DEFAULT_SETTINGS?.displayMode) {
-      const defaultMode = normalizeDisplayMode(DEFAULT_SETTINGS.displayMode) ?? "light";
+    } else if (defaults?.displayMode) {
+      const defaultMode = normalizeDisplayMode(defaults.displayMode) ?? "light";
       console.warn(
         `Unknown display mode "${settings.displayMode}" encountered. Falling back to "${defaultMode}".`
       );
