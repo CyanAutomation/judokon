@@ -1,0 +1,12 @@
+node_modules/
+models/
+minilm_temp/
+rag_model/
+playwright-report/
+coverage/
+reports/
+.DS_Store
+.tmp/
+.tmp*
+.nyc_output/
+dist/
