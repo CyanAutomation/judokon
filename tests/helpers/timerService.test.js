@@ -29,7 +29,7 @@ vi.mock("../../src/helpers/testModeUtils.js", () => ({
 }));
 
 vi.mock("../../src/helpers/timerUtils.js", () => ({
-  getDefaultTimer: () => Promise.resolve(2)
+  getDefaultTimer: () => 2
 }));
 
 vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({

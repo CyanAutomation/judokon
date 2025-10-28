@@ -60,6 +60,56 @@ const READY_DISPATCHER_IDENTITY_SYMBOL =
     ? Symbol.for("classicBattle.readyDispatcherIdentity")
     : "__classicBattle_readyDispatcherIdentity__";
 
+const hasOwn = Object.prototype.hasOwnProperty;
+const ROUND_START_GUARD = Symbol.for("classicBattle.startRoundGuard");
+const ACTIVE_ROUND_PAYLOAD = Symbol.for("classicBattle.activeRoundPayload");
+const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
+const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
+
+function enterStoreGuard(store, token) {
+  if (!store || typeof store !== "object") {
+    return { entered: true, release() {} };
+  }
+  if (hasOwn.call(store, token)) {
+    return { entered: false, release() {} };
+  }
+  Object.defineProperty(store, token, {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: true
+  });
+  return {
+    entered: true,
+    release() {
+      try {
+        delete store[token];
+      } catch {}
+    }
+  };
+}
+
+function getHiddenStoreValue(store, token) {
+  if (!store || typeof store !== "object") return undefined;
+  return store[token];
+}
+
+function setHiddenStoreValue(store, token, value) {
+  if (!store || typeof store !== "object") {
+    return;
+  }
+  if (hasOwn.call(store, token)) {
+    store[token] = value;
+    return;
+  }
+  Object.defineProperty(store, token, {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value
+  });
+}
+
 function readReadyDispatcherSignature(candidate) {
   if (typeof candidate !== "function") return undefined;
   const identitySymbol = READY_DISPATCHER_IDENTITY_SYMBOL;
@@ -234,95 +284,111 @@ export async function handleReplay(store) {
  * @returns {Promise<ReturnType<typeof drawCards> & { roundNumber: number }>} Drawn card data augmented with the round number.
  */
 export async function startRound(store, onRoundStart) {
-  store.selectionMade = false;
-  store.__lastSelectionMade = false;
-  store.playerChoice = null;
-  try {
-    if (typeof window !== "undefined") {
-      window.__classicBattleSelectionFinalized = false;
-      window.__classicBattleLastFinalizeContext = null;
-    }
-  } catch {
-    // Intentionally ignore window global availability errors when resetting selection metadata.
+  const guard = enterStoreGuard(store, ROUND_START_GUARD);
+  if (!guard.entered) {
+    const cached = getHiddenStoreValue(store, ACTIVE_ROUND_PAYLOAD);
+    return cached ?? null;
   }
-  // Hide opponent card at start of round to prevent premature reveal
+
   try {
-    const opponentCard = document.getElementById("opponent-card");
-    if (opponentCard) opponentCard.classList.add("opponent-hidden");
-  } catch {
-    // Ignore DOM errors
-  }
-  // Propagate scheduler from store.context if present
-  const scheduler = store?.context?.scheduler || store?.scheduler;
-  const cards = await drawCards();
-  store.currentPlayerJudoka = cards.playerJudoka || null;
-  store.currentOpponentJudoka = cards.opponentJudoka || null;
-  persistLastJudokaStats(store, cards.playerJudoka, cards.opponentJudoka);
-  safeRound(
-    "startRound.syncScoreDisplay",
-    () => {
-      const scores = typeof battleEngine.getScores === "function" ? battleEngine.getScores() : null;
-      if (!scores || typeof scores !== "object") {
-        writeScoreDisplay(0, 0);
-        return;
+    store.selectionMade = false;
+    store.__lastSelectionMade = false;
+    store.playerChoice = null;
+    try {
+      if (typeof window !== "undefined") {
+        window.__classicBattleSelectionFinalized = false;
+        window.__classicBattleLastFinalizeContext = null;
       }
-      const rawPlayer =
-        typeof scores.playerScore !== "undefined" ? scores.playerScore : scores.player;
-      const rawOpponent =
-        typeof scores.opponentScore !== "undefined" ? scores.opponentScore : scores.opponent;
-      syncScoreboardDisplay(rawPlayer, rawOpponent);
-    },
-    { suppressInProduction: true }
-  );
-  let roundNumber = 1;
-  safeRound(
-    "startRound.resolveRoundNumber",
-    () => {
-      const fn = battleEngine.getRoundsPlayed;
-      const played = typeof fn === "function" ? Number(fn()) : 0;
-      if (Number.isFinite(played)) roundNumber = played + 1;
-      try {
-        if (typeof window !== "undefined") {
-          const rounds = Array.isArray(window.__roundNumbers) ? window.__roundNumbers : [];
-          rounds.push({ played, roundNumber, at: Date.now() });
-          window.__roundNumbers = rounds;
+    } catch {
+      // Intentionally ignore window global availability errors when resetting selection metadata.
+    }
+    // Hide opponent card at start of round to prevent premature reveal
+    try {
+      const opponentCard = document.getElementById("opponent-card");
+      if (opponentCard) opponentCard.classList.add("opponent-hidden");
+    } catch {
+      // Ignore DOM errors
+    }
+    // Propagate scheduler from store.context if present
+    const scheduler = store?.context?.scheduler || store?.scheduler;
+    const cards = await drawCards();
+    store.currentPlayerJudoka = cards.playerJudoka || null;
+    store.currentOpponentJudoka = cards.opponentJudoka || null;
+    persistLastJudokaStats(store, cards.playerJudoka, cards.opponentJudoka);
+    safeRound(
+      "startRound.syncScoreDisplay",
+      () => {
+        const scores =
+          typeof battleEngine.getScores === "function" ? battleEngine.getScores() : null;
+        if (!scores || typeof scores !== "object") {
+          writeScoreDisplay(0, 0);
+          return;
         }
+        const rawPlayer =
+          typeof scores.playerScore !== "undefined" ? scores.playerScore : scores.player;
+        const rawOpponent =
+          typeof scores.opponentScore !== "undefined" ? scores.opponentScore : scores.opponent;
+        syncScoreboardDisplay(rawPlayer, rawOpponent);
+      },
+      { suppressInProduction: true }
+    );
+    let roundNumber = 1;
+    safeRound(
+      "startRound.resolveRoundNumber",
+      () => {
+        const fn = battleEngine.getRoundsPlayed;
+        const played = typeof fn === "function" ? Number(fn()) : 0;
+        if (Number.isFinite(played)) roundNumber = played + 1;
+        try {
+          if (typeof window !== "undefined") {
+            const rounds = Array.isArray(window.__roundNumbers) ? window.__roundNumbers : [];
+            rounds.push({ played, roundNumber, at: Date.now() });
+            window.__roundNumbers = rounds;
+          }
+        } catch {
+          // Ignore telemetry aggregation failures; round start flow should continue.
+        }
+      },
+      { suppressInProduction: true }
+    );
+    if (typeof onRoundStart === "function") {
+      safeRound("startRound.onRoundStart", () => onRoundStart(store, roundNumber), {
+        suppressInProduction: true
+      });
+    }
+    try {
+      if (typeof console !== "undefined" && !process?.env?.VITEST)
+        console.debug(`classicBattle.trace emit:roundStarted t=${Date.now()} round=${roundNumber}`);
+    } catch {
+      /* ignore logging errors to preserve round start flow */
+    }
+    emitBattleEvent("roundStarted", { store, roundNumber });
+    // Synchronise centralized store
+    try {
+      try {
+        roundStore.setRoundNumber(roundNumber);
       } catch {
-        // Ignore telemetry aggregation failures; round start flow should continue.
+        /* keep behaviour stable on failure */
       }
-    },
-    { suppressInProduction: true }
-  );
-  if (typeof onRoundStart === "function") {
-    safeRound("startRound.onRoundStart", () => onRoundStart(store, roundNumber), {
-      suppressInProduction: true
-    });
-  }
-  try {
-    if (typeof console !== "undefined" && !process?.env?.VITEST)
-      console.debug(`classicBattle.trace emit:roundStarted t=${Date.now()} round=${roundNumber}`);
-  } catch {
-    /* ignore logging errors to preserve round start flow */
-  }
-  emitBattleEvent("roundStarted", { store, roundNumber });
-  // Synchronise centralized store
-  try {
-    try {
-      roundStore.setRoundNumber(roundNumber);
+      try {
+        roundStore.setRoundState("roundStart", "startRound");
+      } catch {
+        /* ignore */
+      }
     } catch {
-      /* keep behaviour stable on failure */
+      /* defensive: featureFlags may not be initialised in some test harnesses */
     }
+    // Attach scheduler to store for downstream use
+    if (scheduler) store.scheduler = scheduler;
+    const payload = { ...cards, roundNumber };
     try {
-      roundStore.setRoundState("roundStart", "startRound");
-    } catch {
-      /* ignore */
-    }
-  } catch {
-    /* defensive: featureFlags may not be initialised in some test harnesses */
+      delete store[LAST_ROUND_RESULT];
+    } catch {}
+    setHiddenStoreValue(store, ACTIVE_ROUND_PAYLOAD, payload);
+    return payload;
+  } finally {
+    guard.release();
   }
-  // Attach scheduler to store for downstream use
-  if (scheduler) store.scheduler = scheduler;
-  return { ...cards, roundNumber };
 }
 
 /**
@@ -1157,6 +1223,13 @@ export function _resetForTest(store) {
     store.__lastSelectionMade = false;
     // Reset any prior player stat selection
     store.playerChoice = null;
+    try {
+      delete store[ROUND_START_GUARD];
+      delete store[ACTIVE_ROUND_PAYLOAD];
+      delete store[ROUND_RESOLUTION_GUARD];
+      delete store[LAST_ROUND_RESULT];
+      delete store[Symbol.for("classicBattle.selectionInFlight")];
+    } catch {}
     try {
       if (typeof window !== "undefined") {
         window.__classicBattleSelectionFinalized = false;

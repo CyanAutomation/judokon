@@ -15,6 +15,57 @@ import { roundStore } from "./roundStore.js";
 import { getScheduler } from "../scheduler.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
+const hasOwn = Object.prototype.hasOwnProperty;
+const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
+const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
+const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
+
+function enterGuard(store, token) {
+  if (!store || typeof store !== "object") {
+    return { entered: true, release() {} };
+  }
+  if (hasOwn.call(store, token)) {
+    return { entered: false, release() {} };
+  }
+  Object.defineProperty(store, token, {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: true
+  });
+  return {
+    entered: true,
+    release() {
+      try {
+        delete store[token];
+      } catch {}
+    }
+  };
+}
+
+function setHiddenStoreValue(store, token, value) {
+  if (!store || typeof store !== "object") {
+    return;
+  }
+  if (hasOwn.call(store, token)) {
+    store[token] = value;
+    return;
+  }
+  Object.defineProperty(store, token, {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value
+  });
+}
+
+function getHiddenStoreValue(store, token) {
+  if (!store || typeof store !== "object") {
+    return undefined;
+  }
+  return store[token];
+}
+
 /**
  * Determine whether the classic battle orchestrator is actively managing state.
  *
@@ -695,67 +746,77 @@ export async function resolveWithFallback(
  * @returns {Promise<ReturnType<typeof resolveRound>>} Resolution result.
  */
 export async function syncResultDisplay(store, stat, playerVal, opponentVal, opts) {
-  try {
-    const shouldForceSnackbar = opts?.forceOpponentPrompt === true;
-    if ((IS_VITEST || shouldForceSnackbar) && !opts?.delayOpponentMessage) {
-      showSnackbar(t("ui.opponentChoosing"));
-    }
-  } catch {}
-
-  if (store && typeof store === "object" && opts?.delayOpponentMessage === true) {
-    store.__delayOpponentMessage = true;
+  const guard = enterGuard(store, ROUND_RESOLUTION_GUARD);
+  if (!guard.entered) {
+    return getHiddenStoreValue(store, LAST_ROUND_RESULT) ?? null;
   }
 
-  const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
-
   try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const messageEl = document.querySelector("header #round-message");
-      const scoreEl = document.querySelector("header #score-display");
-
-      if (result && result.message && messageEl) {
-        messageEl.textContent = result.message;
-      }
-
-      if (result && scoreEl) {
-        writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
-      }
-    }
-  } catch {}
-
-  let playerScore = Number(result?.playerScore);
-  let opponentScore = Number(result?.opponentScore);
-  const scoresAreNumbers = Number.isFinite(playerScore) && Number.isFinite(opponentScore);
-
-  if (!scoresAreNumbers) {
     try {
-      const engineScores = getScores();
-      playerScore = Number(engineScores?.playerScore);
-      opponentScore = Number(engineScores?.opponentScore);
-      playerScore = Number.isFinite(playerScore) ? playerScore : 0;
-      opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
-    } catch {
-      playerScore = 0;
-      opponentScore = 0;
+      const shouldForceSnackbar = opts?.forceOpponentPrompt === true;
+      if ((IS_VITEST || shouldForceSnackbar) && !opts?.delayOpponentMessage) {
+        showSnackbar(t("ui.opponentChoosing"));
+      }
+    } catch {}
+
+    if (store && typeof store === "object" && opts?.delayOpponentMessage === true) {
+      store.__delayOpponentMessage = true;
     }
+
+    const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
+    setHiddenStoreValue(store, LAST_ROUND_RESULT, result);
+
+    try {
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        const messageEl = document.querySelector("header #round-message");
+        const scoreEl = document.querySelector("header #score-display");
+
+        if (result && result.message && messageEl) {
+          messageEl.textContent = result.message;
+        }
+
+        if (result && scoreEl) {
+          writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
+        }
+      }
+    } catch {}
+
+    let playerScore = Number(result?.playerScore);
+    let opponentScore = Number(result?.opponentScore);
+    const scoresAreNumbers = Number.isFinite(playerScore) && Number.isFinite(opponentScore);
+
+    if (!scoresAreNumbers) {
+      try {
+        const engineScores = getScores();
+        playerScore = Number(engineScores?.playerScore);
+        opponentScore = Number(engineScores?.opponentScore);
+        playerScore = Number.isFinite(playerScore) ? playerScore : 0;
+        opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
+      } catch {
+        playerScore = 0;
+        opponentScore = 0;
+      }
+    }
+
+    playerScore = Number.isFinite(playerScore) ? playerScore : 0;
+    opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
+
+    try {
+      scoreboard.updateScore(playerScore, opponentScore);
+    } catch {}
+
+    try {
+      writeScoreDisplay(playerScore, opponentScore);
+    } catch {}
+
+    try {
+      await dispatchBattleEvent("roundResolved");
+    } catch {}
+
+    return result;
+  } finally {
+    guard.release();
   }
-
-  playerScore = Number.isFinite(playerScore) ? playerScore : 0;
-  opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
-
-  try {
-    scoreboard.updateScore(playerScore, opponentScore);
-  } catch {}
-
-  try {
-    writeScoreDisplay(playerScore, opponentScore);
-  } catch {}
-
-  try {
-    await dispatchBattleEvent("roundResolved");
-  } catch {}
-
-  return result;
 }
 
 /**
@@ -796,33 +857,46 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
  * @returns {Promise<void>}
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
-  const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
-  if (!values) {
-    return;
+  const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
+  if (!guard.entered) {
+    try {
+      emitBattleEvent("input.ignored", { kind: "selectionInProgress" });
+    } catch {}
+    return getHiddenStoreValue(store, LAST_ROUND_RESULT);
   }
 
-  ({ playerVal, opponentVal } = values);
+  try {
+    const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
+    if (!values) {
+      return;
+    }
 
-  const handledByOrchestrator = await dispatchStatSelected(
-    store,
-    stat,
-    playerVal,
-    opponentVal,
-    opts
-  );
+    ({ playerVal, opponentVal } = values);
 
-  const handled = await resolveWithFallback(
-    store,
-    stat,
-    playerVal,
-    opponentVal,
-    opts,
-    handledByOrchestrator
-  );
+    const handledByOrchestrator = await dispatchStatSelected(
+      store,
+      stat,
+      playerVal,
+      opponentVal,
+      opts
+    );
 
-  if (handled) {
-    return;
+    const handled = await resolveWithFallback(
+      store,
+      stat,
+      playerVal,
+      opponentVal,
+      opts,
+      handledByOrchestrator
+    );
+
+    if (handled) {
+      return;
+    }
+
+    const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
+    return result;
+  } finally {
+    guard.release();
   }
-
-  return syncResultDisplay(store, stat, playerVal, opponentVal, opts);
 }
