@@ -653,7 +653,6 @@ details#cli-shortcuts {
   position: static; /* participate in normal flow */
   margin: 0; /* align with other .cli-block sections */
   background: transparent; /* `.cli-block` provides visible background/border */
-  max-width: 760px;
   width: 100%;
 }
 
