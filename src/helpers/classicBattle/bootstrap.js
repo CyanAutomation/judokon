@@ -85,6 +85,14 @@ export async function setupClassicBattlePage() {
   }
 
   setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
+
+  // Ensure scoreboard layout helpers initialize before the modal mounts so
+  // header clearance is reflected on first paint. Subsequent calls are
+  // guarded within `setupScoreboard`.
+  try {
+    setupScoreboard({});
+  } catch {}
+
   await initRoundSelectModal(startCallback);
 
   if (typeof window !== "undefined") {
