@@ -12,6 +12,7 @@ import { readFile, stat } from "node:fs/promises";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.join(rootDir, "src");
+const minilmDir = path.join(rootDir, "models", "minilm");
 
 const MODEL_THRESHOLD_CONFIG = [
   { relPath: "config.json", envKey: "RAG_CONFIG_MIN_BYTES", defaultBytes: 400 },
@@ -54,7 +55,7 @@ function formatBytes(bytes) {
 
 export async function checkStrictOfflineModel(env = process.env) {
   const strict = env?.RAG_STRICT_OFFLINE === "1";
-  const modelDir = path.join(srcDir, "models", "minilm");
+  const modelDir = minilmDir;
   const missing = [];
   const undersized = [];
   const statFailures = [];
@@ -93,7 +94,7 @@ export async function checkStrictOfflineModel(env = process.env) {
     const guidance = `Run "${MODEL_PREP_COMMAND}" to download MiniLM model artifacts.`;
     const truncatedMessages = undersized.map(
       ({ relPath, size, minBytes }) =>
-        `Model file appears truncated: ${relPath} (${formatBytes(size)} < ${formatBytes(minBytes)}).`
+        `Model file appears truncated in models/minilm: ${relPath} (${formatBytes(size)} < ${formatBytes(minBytes)}).`
     );
     const failureMessages = [...truncatedMessages, ...statFailures];
 
@@ -119,7 +120,7 @@ export async function checkStrictOfflineModel(env = process.env) {
   }
 
   console.warn(
-    `Offline model files missing (${missing.join(", ")}). ` +
+    `Offline model files missing in models/minilm (${missing.join(", ")}). ` +
       `Run "${MODEL_PREP_COMMAND}" or enable RAG_STRICT_OFFLINE=1 to skip offline validation.`
   );
 
