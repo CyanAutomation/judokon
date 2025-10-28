@@ -76,7 +76,7 @@ describe("prepareLocalModel", () => {
     expect(res.ok).toBe(true);
     expect(res.source).toBe("transformers");
     expect(env.cacheDir).toBe(cacheDir);
-    expect(env.localModelPath).toBe(destDir);
+    expect(env.localModelPath).toBe(destRoot);
     // Ensure hydrated files were written into the expected cache directory
     const hydratedFiles = [
       "config.json",
@@ -132,7 +132,7 @@ describe("prepareLocalModel", () => {
     expect(res.ok).toBe(true);
     expect(res.source).toBe("transformers");
     expect(env.cacheDir).toBe(cacheDir);
-    expect(env.localModelPath).toBe(destDir);
+    expect(env.localModelPath).toBe(destRoot);
 
     const expected = [
       "config.json",
