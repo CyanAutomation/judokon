@@ -23,7 +23,7 @@ import queryRag from "../src/helpers/queryRag.js";
     const lowered = String(err?.message || err).toLowerCase();
     if (lowered.includes("strict offline mode")) {
       console.error(
-        "Hint: provide a local MiniLM at src/models/minilm or run: npm run rag:prepare:models"
+        "Hint: provide a local MiniLM at models/minilm or run: npm run rag:prepare:models"
       );
     } else if (
       /enet(?:unreach|down|reset|refused)/i.test(lowered) ||
