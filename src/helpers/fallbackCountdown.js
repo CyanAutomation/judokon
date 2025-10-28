@@ -52,9 +52,9 @@ export function createFallbackCountdownTimer(
     resumeVisibilityDelayMs = FALLBACK_VISIBILITY_RESUME_DELAY_MS
   } = {}
 ) {
-  const compatibilityHandlers = [_onSecondTick, _cancelSubscription];
   // Evaluate preserved handlers to avoid unused warnings while keeping API compatibility.
-  compatibilityHandlers.some(Boolean);
+  void _onSecondTick;
+  void _cancelSubscription;
 
   const activeScheduler =
     providedScheduler && typeof providedScheduler.setTimeout === "function"
@@ -95,10 +95,9 @@ export function createFallbackCountdownTimer(
     if (!id) return;
     try {
       clearTimeoutFn(id);
-    } catch (error) {
-      if (typeof console !== "undefined" && typeof console.warn === "function") {
-        console.warn("Timer cleanup failed:", error);
-      }
+    } catch {
+      // Silently handle cleanup failures to avoid exposing internal state.
+      // Timer cleanup failed - continue silently.
     }
     id = 0;
   }
