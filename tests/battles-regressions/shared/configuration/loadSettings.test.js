@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { withAllowedConsole } from "../utils/console.js";
+import { withAllowedConsole } from "../../../utils/console.js";
 
 /**
  * @fileoverview
@@ -25,7 +25,7 @@ describe("loadSettings", () => {
       })
     );
     localStorage.setItem("settings", JSON.stringify({ sound: true }));
-    const { loadSettings } = await import("../../src/config/loadSettings.js");
+    const { loadSettings } = await import("../../../../src/config/loadSettings.js");
     const settings = await loadSettings();
     expect(settings.sound).toBe(true);
     expect(settings.typewriterEffect).toBe(true);
@@ -41,7 +41,7 @@ describe("loadSettings", () => {
       })
     );
     localStorage.setItem("settings", "{ not valid");
-    const { loadSettings } = await import("../../src/config/loadSettings.js");
+    const { loadSettings } = await import("../../../../src/config/loadSettings.js");
     const settings = await loadSettings();
     expect(settings.sound).toBe(false);
   });
@@ -73,7 +73,7 @@ describe("loadSettings", () => {
     await withAllowedConsole(async () => {
       setup();
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const { loadSettings } = await import("../../../../src/config/loadSettings.js");
       const settings = await loadSettings();
       expect(settings.bogus).toBeUndefined();
       expect(warnSpy).toHaveBeenCalledWith('Unknown setting "bogus" ignored');
@@ -83,7 +83,7 @@ describe("loadSettings", () => {
 
   it("deeply merges nested objects and replaces arrays", async () => {
     vi.resetModules();
-    vi.doMock("../../src/config/settingsDefaults.js", () => ({
+    vi.doMock("../../../../src/config/settingsDefaults.js", () => ({
       DEFAULT_SETTINGS: { items: [1], nested: { a: 1, arr: [1] } }
     }));
     vi.stubGlobal(
@@ -94,7 +94,7 @@ describe("loadSettings", () => {
       })
     );
     localStorage.setItem("settings", JSON.stringify({ nested: { arr: [3] } }));
-    const { loadSettings } = await import("../../src/config/loadSettings.js");
+    const { loadSettings } = await import("../../../../src/config/loadSettings.js");
     const settings = await loadSettings();
     expect(settings).toEqual({ items: [2, 3], nested: { a: 1, b: 2, arr: [3] } });
   });
@@ -102,7 +102,7 @@ describe("loadSettings", () => {
   it("allows nested overrides with unknown keys", async () => {
     await withAllowedConsole(async () => {
       vi.resetModules();
-      vi.doMock("../../src/config/settingsDefaults.js", () => ({
+      vi.doMock("../../../../src/config/settingsDefaults.js", () => ({
         DEFAULT_SETTINGS: { nested: { a: 1 } }
       }));
       vi.stubGlobal(
@@ -113,7 +113,7 @@ describe("loadSettings", () => {
         })
       );
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const { loadSettings } = await import("../../../../src/config/loadSettings.js");
       const settings = await loadSettings();
       expect(settings.nested).toEqual({ a: 1, b: 2 });
       expect(warnSpy).not.toHaveBeenCalled();
