@@ -61,21 +61,28 @@ const battleEngines = new WeakMap();
 /** @type {Set<(engine: IBattleEngine|null) => void>} */
 const engineCreatedListeners = new Set();
 
+function shouldLogEngineListenerErrors() {
+  return (
+    (typeof process !== "undefined" && process?.env?.NODE_ENV !== "production") ||
+    (typeof window !== "undefined" && window.__TEST__)
+  );
+}
+
+function invokeEngineCreatedListener(listener, engine) {
+  try {
+    listener(engine);
+  } catch (error) {
+    if (shouldLogEngineListenerErrors()) {
+      console.warn("Engine creation listener failed:", error);
+    }
+  }
+}
+
 function notifyEngineCreated(engine) {
   if (engineCreatedListeners.size === 0) return;
 
-  const shouldLogErrors =
-    (typeof process !== "undefined" && process?.env?.NODE_ENV !== "production") ||
-    (typeof window !== "undefined" && window.__TEST__);
-
   for (const listener of engineCreatedListeners) {
-    try {
-      listener(engine);
-    } catch (error) {
-      if (shouldLogErrors) {
-        console.warn("Engine creation listener failed:", error);
-      }
-    }
+    invokeEngineCreatedListener(listener, engine);
   }
 }
 
@@ -95,6 +102,11 @@ export function onEngineCreated(listener) {
     return () => {};
   }
   engineCreatedListeners.add(listener);
+  const currentEngine =
+    typeof window !== "undefined" ? battleEngines.get(window) || battleEngine : battleEngine;
+  if (currentEngine) {
+    invokeEngineCreatedListener(listener, currentEngine);
+  }
   return () => {
     engineCreatedListeners.delete(listener);
   };
