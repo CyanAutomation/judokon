@@ -128,27 +128,26 @@ svg {
     and keeps the focused card fully visible.
   */
   --card-width: clamp(200px, 60vw, 260px);
+  --card-height: calc(var(--card-width) * 1.5);
   /* Override the global touch target to maintain 10% proportions */
   --touch-target-size: 44px;
   width: var(--card-width);
-  min-height: calc(var(--card-width) * 1.5);
-  /* Allow taller bios/stats to expand the card instead of forcing internal scrollbars */
-  height: auto;
+  height: var(--card-height);
+  min-height: var(--card-height);
+  max-height: var(--card-height);
+  aspect-ratio: 2 / 3;
   border: 12px solid var(--card-border-color);
   border-radius: var(--radius-lg);
   background-color: var(--card-bg-color);
   box-shadow: var(--shadow-base);
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: hidden;
   display: grid;
   grid-template-rows:
-    minmax(calc(var(--card-width) * 0.2), auto)
-    /* 41% */
-    minmax(calc(var(--card-width) * 0.6), auto)
-    /* 37% */
-    minmax(calc(var(--card-width) * 0.5), auto)
-    /* max(10%, var(--touch-target-size)); */
-    auto;
+    calc(var(--card-height) * 0.14)
+    calc(var(--card-height) * 0.42)
+    calc(var(--card-height) * 0.34)
+    calc(var(--card-height) * 0.1);
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out;
@@ -261,8 +260,6 @@ svg {
   align-items: center;
   padding: var(--space-medium) var(--space-small);
   flex-direction: row;
-  flex: 0 0 calc(var(--card-width) * 0.2);
-  height: calc(var(--card-width) * 0.2);
   min-height: var(--touch-target-size, 44px);
   box-sizing: border-box;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
@@ -325,9 +322,8 @@ svg {
   align-items: flex-start;
   width: 100%;
   /* height: 42%; */
-  flex: 0 0 42%;
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: hidden;
   margin-bottom: 0;
   /* border: 2px solid red; */
   background: linear-gradient(
@@ -379,7 +375,6 @@ svg {
   flex-direction: column;
   /* Stats area ~38.67% of card height accounting for padding */
   /* height: 38.67%; */
-  flex: 0 0 38.67%;
   /* flex: 0 0 40%; */
   /* border: 2px solid red; */
 }
@@ -439,7 +434,6 @@ svg {
   }
 
   .judoka-card .card-stats {
-    flex: 0 0 auto;
     padding: var(--space-small);
     overflow: hidden;
     line-height: 1.3;
@@ -466,7 +460,6 @@ svg {
   line-height: max(15%, var(--touch-target-size));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
-  flex: 0 0 20%;
   box-sizing: border-box;
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
   justify-content: center;
