@@ -17,6 +17,7 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
 import { setNextButtonFinalizedState } from "./uiHelpers.js";
+import { applyOpponentCardPlaceholder } from "./opponentPlaceholder.js";
 import {
   createExpirationTelemetryEmitter,
   createMachineReader,
@@ -245,10 +246,13 @@ export async function startRound(store, onRoundStart) {
   } catch {
     // Intentionally ignore window global availability errors when resetting selection metadata.
   }
-  // Hide opponent card at start of round to prevent premature reveal
+  // Reset opponent card container with the placeholder for the new round
   try {
     const opponentCard = document.getElementById("opponent-card");
-    if (opponentCard) opponentCard.classList.add("opponent-hidden");
+    if (opponentCard) {
+      applyOpponentCardPlaceholder(opponentCard);
+      opponentCard.classList.remove("opponent-hidden");
+    }
   } catch {
     // Ignore DOM errors
   }
