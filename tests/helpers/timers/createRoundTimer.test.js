@@ -80,6 +80,36 @@ describe("createRoundTimer events", () => {
     expect(onDriftFail).toHaveBeenCalledTimes(1);
   });
 
+  it("preserves remaining time when resuming engine starter", () => {
+    const starterCalls = [];
+    const starter = vi.fn((onTick, onExpired, total) => {
+      starterCalls.push({ onTick, onExpired, total });
+    });
+    const timer = createRoundTimer({ starter });
+    const expired = vi.fn();
+    timer.on("expired", expired);
+
+    timer.start(5);
+    expect(starter).toHaveBeenCalledTimes(1);
+    const firstCall = starterCalls[0];
+    firstCall.onTick(5);
+    firstCall.onTick(4);
+
+    timer.pause();
+    timer.resume();
+
+    expect(starter).toHaveBeenCalledTimes(2);
+    const secondCall = starterCalls[1];
+    expect(secondCall.total).toBe(4);
+
+    secondCall.onTick(4);
+    secondCall.onTick(3);
+    expect(expired).not.toHaveBeenCalled();
+
+    secondCall.onExpired();
+    expect(expired).toHaveBeenCalledTimes(1);
+  });
+
   it("supports pause and resume", () => {
     const events = [];
     const timer = createRoundTimer();

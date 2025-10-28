@@ -115,6 +115,12 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   function emitTick(remaining) {
+    const normalized = Number(remaining);
+    if (Number.isFinite(normalized)) {
+      currentRemaining = normalized < 0 ? 0 : normalized;
+    } else {
+      currentRemaining = 0;
+    }
     emit("tick", remaining);
   }
 
