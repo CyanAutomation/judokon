@@ -28,11 +28,11 @@ const supportsEvent = typeof Event === "function";
  *
  * @pseudocode
  * 1. Construct a basic `Event` with the "change" type.
- * 2. Attempt to define the `detail` property using `Object.defineProperty` for a consistent descriptor.
+ * 2. Attempt to define the `detail` property using `Object.defineProperty` with configurable and enumerable flags to match native `CustomEvent.detail` behavior.
  * 3. Fall back to direct assignment when defining the property fails (e.g., older browsers).
  * 4. Return the enhanced `Event` instance.
  *
- * @param {Record<string, unknown>} detail - The detail payload to attach to the event.
+ * @param {any} detail - The detail payload to attach to the event.
  * @returns {Event} Event object carrying the provided detail payload.
  */
 function createEventWithDetail(detail) {
