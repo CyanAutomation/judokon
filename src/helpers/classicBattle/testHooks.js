@@ -311,8 +311,14 @@ export async function triggerRoundTimeoutNow(store, options = {}) {
     const autoSelectPromise = autoSelectStat(onExpiredSelect, 0);
     if (awaitCompletion) {
       await autoSelectPromise;
-    } else if (autoSelectPromise && typeof autoSelectPromise.then === "function") {
-      autoSelectPromise.catch(() => {});
+    } else {
+      try {
+        if (autoSelectPromise && typeof autoSelectPromise.then === "function") {
+          autoSelectPromise.catch(() => {});
+        }
+      } catch {
+        // Ignore synchronous errors when not awaiting completion
+      }
     }
   } catch {}
 }

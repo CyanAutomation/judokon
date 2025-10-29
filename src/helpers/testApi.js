@@ -2457,6 +2457,8 @@ const testApi = {
     /**
      * Force the stat selection timer to expire when auto-select is enabled.
      *
+     * @param {{ awaitCompletion?: boolean }} [options] - Optional behavior overrides.
+     * @param {boolean} [options.awaitCompletion=true] - Whether to await auto-select completion.
      * @returns {Promise<boolean>} Resolves true when the auto-select flow runs.
      */
     async triggerAutoSelect(options) {
