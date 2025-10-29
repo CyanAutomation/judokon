@@ -46,7 +46,7 @@ describe("Classic Battle event dispatcher stdout guard", () => {
 
     exposeDebugState("getClassicBattleMachine", () => machine);
 
-    const consoleError = vi.spyOn(console, "error");
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const result = await withProcessStdoutDisabled(() => dispatchBattleEvent("ready"));
 
