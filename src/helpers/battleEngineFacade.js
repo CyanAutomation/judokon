@@ -396,7 +396,15 @@ export const getCurrentStats = () => {
  *
  * @returns {number}
  */
-export const getRoundsPlayed = () => requireEngine().getRoundsPlayed();
+export const getRoundsPlayed = () => {
+  const result = requireEngine().getRoundsPlayed();
+  if (typeof window !== "undefined" && window.__DEBUG_ROUNDS_SYNC) {
+    try {
+      console.log("[DEBUG getRoundsPlayed]", result);
+    } catch {}
+  }
+  return result;
+};
 
 /**
  * Query whether the match has ended.
