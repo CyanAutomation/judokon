@@ -673,9 +673,11 @@ function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
           if (!previous || typeof previous !== "object") {
             continue;
           }
-          return previous.to === ROUND_OVER_STATE;
+          if (previous.to === ROUND_OVER_STATE) {
+            return true;
+          }
         }
-        return false;
+        break;
       }
       if (entry.to === ROUND_OVER_STATE) {
         return true;
@@ -1001,3 +1003,7 @@ export async function waitForRoundsPlayed(page, expectedRounds, options = {}) {
     throw error;
   }
 }
+
+export const __TEST_ONLY__ = {
+  cooldownImmediatelyFollowsRoundOver
+};
