@@ -20,9 +20,15 @@ import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 export const featureFlagsEmitter = new EventTarget();
 
 const supportsCustomEvent = typeof CustomEvent === "function";
+const supportsEvent = typeof Event === "function";
 
 /**
  * Safely dispatch a change notification to feature flag listeners.
+ *
+ * @pseudocode
+ * 1. Check if `CustomEvent` is available to construct a DOM-style event with `detail` payload.
+ * 2. Otherwise fall back to `Event` (if available) and attach a `detail` property manually.
+ * 3. Dispatch the event when `featureFlagsEmitter.dispatchEvent` exists, rethrowing unexpected errors.
  *
  * @param {Record<string, unknown>} detail
  * @returns {void}
@@ -30,13 +36,31 @@ const supportsCustomEvent = typeof CustomEvent === "function";
 function dispatchFeatureFlagChange(detail) {
   const event = supportsCustomEvent
     ? new CustomEvent("change", { detail })
-    : { type: "change", detail };
+    : supportsEvent
+      ? (() => {
+          const fallback = new Event("change");
+          try {
+            Object.defineProperty(fallback, "detail", {
+              value: detail,
+              configurable: true,
+              enumerable: true
+            });
+          } catch {
+            // Some environments expose writable properties, fall back to direct assignment.
+            fallback.detail = detail;
+          }
+          return fallback;
+        })()
+      : { type: "change", detail };
 
   if (typeof featureFlagsEmitter.dispatchEvent === "function") {
     try {
       featureFlagsEmitter.dispatchEvent(event);
-    } catch {
+    } catch (error) {
       // In environments without DOM-style events, dispatchEvent may reject non-Event payloads.
+      if (!(error instanceof TypeError)) {
+        throw error;
+      }
     }
   }
 }

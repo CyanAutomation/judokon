@@ -64,7 +64,15 @@ describe("initFeatureFlags", () => {
 
       const dispatchSpy = vi
         .spyOn(featureFlagsEmitter, "dispatchEvent")
-        .mockImplementation(() => true);
+        .mockImplementation((event) => {
+          // Verify that fallback event structure is used when CustomEvent is unavailable
+          expect(typeof CustomEvent).not.toBe("function");
+          if (typeof Event === "function") {
+            expect(event).toBeInstanceOf(Event);
+          }
+          expect(event.constructor).not.toBe(CustomEvent);
+          return true;
+        });
 
       await initFeatureFlags();
 
@@ -74,6 +82,7 @@ describe("initFeatureFlags", () => {
       expect(dispatchSpy).toHaveBeenCalled();
       for (const [event] of dispatchSpy.mock.calls) {
         expect(event).toMatchObject({ type: "change", detail: expect.any(Object) });
+        expect(event.detail).toHaveProperty("flag");
       }
     } finally {
       if (originalDescriptor) {
