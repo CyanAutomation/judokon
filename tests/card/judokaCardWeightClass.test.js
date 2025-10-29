@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { createPortraitSection } from "../../src/helpers/cardSections.js";
 import * as cardRender from "../../src/helpers/cardRender.js";
 import * as cardTopBar from "../../src/helpers/cardTopBar.js";
+import { withMutedConsole } from "../utils/console.js";
 
 const judoka = {
   id: 1,
@@ -42,11 +43,7 @@ describe("createPortraitSection", () => {
     });
     const fallbackElement = document.createElement("div");
     vi.spyOn(cardTopBar, "createNoDataContainer").mockReturnValue(fallbackElement);
-    const { withMutedConsole } = await import("../utils/console.js");
-
-    const result = await withMutedConsole(async () => {
-      return createPortraitSection(judoka);
-    });
+    const result = await withMutedConsole(() => createPortraitSection(judoka));
 
     expect(cardRender.generateCardPortrait).toHaveBeenCalledWith(judoka);
     expect(cardTopBar.createNoDataContainer).toHaveBeenCalledTimes(1);
