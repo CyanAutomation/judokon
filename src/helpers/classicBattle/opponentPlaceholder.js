@@ -96,8 +96,8 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
     try {
       targetContainer.classList.remove("opponent-hidden");
     } catch (error) {
-      if (typeof console !== "undefined" && typeof console.debug === "function") {
-        console.debug("Failed to remove opponent-hidden class:", error?.message ?? error);
+      if (typeof console !== "undefined" && typeof console.warn === "function") {
+        console.warn("Failed to remove opponent-hidden class:", error?.message ?? error);
       }
     }
   }
