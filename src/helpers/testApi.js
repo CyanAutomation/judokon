@@ -25,6 +25,7 @@ import {
   requireEngine,
   setPointsToWin as facadeSetPointsToWin
 } from "./battleEngineFacade.js";
+import { setTestMode } from "./testModeUtils.js";
 
 const FRAME_DELAY_MS = 16;
 
@@ -470,6 +471,100 @@ const stateApi = {
         intervalId = setInterval(checkIfSatisfied, 50);
         timeoutId = setTimeout(() => cleanup(false), timeout);
       }
+    });
+  },
+
+  /**
+   * Wait until both the player and opponent expose at least one finite stat value.
+   * @param {number} timeout - Timeout window in milliseconds.
+   * @returns {Promise<boolean>} Resolves true when stats become available.
+   */
+  async waitForRoundStats(timeout = 5000) {
+    const readStatsReady = () => {
+      try {
+        const store = inspectionApi.getBattleStore();
+        const playerStats = store?.currentPlayerJudoka?.stats ?? null;
+        const opponentStats = store?.currentOpponentJudoka?.stats ?? null;
+        if (!playerStats || !opponentStats) {
+          return false;
+        }
+
+        const keys = Array.from(
+          new Set([
+            ...Object.keys(playerStats ?? {}),
+            ...Object.keys(opponentStats ?? {})
+          ])
+        );
+        if (keys.length === 0) {
+          return false;
+        }
+
+        const readValue = (stats, key) => {
+          if (!stats || typeof stats !== "object") {
+            return Number.NaN;
+          }
+
+          const normalizedKey = String(key).trim();
+          const direct = stats[key];
+          if (Number.isFinite(Number(direct))) {
+            return Number(direct);
+          }
+
+          const lower = normalizedKey.toLowerCase();
+          if (lower !== key && Number.isFinite(Number(stats[lower]))) {
+            return Number(stats[lower]);
+          }
+
+          return Number.NaN;
+        };
+
+        let playerReady = false;
+        let opponentReady = false;
+        for (const key of keys) {
+          const playerValue = readValue(playerStats, key);
+          const opponentValue = readValue(opponentStats, key);
+          if (Number.isFinite(playerValue)) {
+            playerReady = true;
+          }
+          if (Number.isFinite(opponentValue)) {
+            opponentReady = true;
+          }
+          if (playerReady && opponentReady) {
+            return true;
+          }
+        }
+
+        return playerReady && opponentReady;
+      } catch {
+        return false;
+      }
+    };
+
+    if (readStatsReady()) {
+      return true;
+    }
+
+    return await new Promise((resolve) => {
+      const startTime = Date.now();
+      const intervalId = setInterval(() => {
+        if (readStatsReady()) {
+          clearInterval(intervalId);
+          clearTimeout(timeoutId);
+          resolve(true);
+          return;
+        }
+
+        if (Date.now() - startTime > timeout) {
+          clearInterval(intervalId);
+          clearTimeout(timeoutId);
+          resolve(false);
+        }
+      }, 50);
+
+      const timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
+        resolve(false);
+      }, timeout);
     });
   },
 
@@ -1094,6 +1189,52 @@ const engineApi = {
       }
       return null;
     }
+  },
+
+  /**
+   * Wait for the engine to report the requested points-to-win target.
+   * @param {number} target - Desired points-to-win value.
+   * @param {number} timeout - Timeout window in milliseconds.
+   * @returns {Promise<boolean>} Resolves true when the target is observed.
+   */
+  async waitForPointsToWin(target, timeout = 5000) {
+    const desired = Number(target);
+    if (!Number.isFinite(desired)) {
+      return false;
+    }
+
+    const readCurrent = () => {
+      try {
+        const current = this.getPointsToWin();
+        return typeof current === "number" && Number.isFinite(current) ? current : null;
+      } catch {
+        return null;
+      }
+    };
+
+    if (readCurrent() === desired) {
+      return true;
+    }
+
+    return await new Promise((resolve) => {
+      const startTime = Date.now();
+      const check = () => {
+        const current = readCurrent();
+        if (current === desired) {
+          resolve(true);
+          return;
+        }
+
+        if (Date.now() - startTime > timeout) {
+          resolve(false);
+          return;
+        }
+
+        setTimeout(check, 50);
+      };
+
+      check();
+    });
   }
 };
 
@@ -1298,6 +1439,165 @@ const initApi = {
 
       check();
     });
+  },
+
+  /**
+   * Apply deterministic configuration for classic battle scenarios.
+   * @param {{
+   *   roundTimerMs?: number|null,
+   *   cooldownMs?: number|null,
+   *   showRoundSelectModal?: boolean,
+   *   enableTestMode?: boolean,
+   *   seed?: number|null,
+   *   pointsToWin?: number|null,
+   *   confirmPointsToWin?: boolean,
+   *   pointsToWinConfirmTimeout?: number,
+   *   battleReadyTimeout?: number
+   * }} [options]
+   * @returns {Promise<{ ok: boolean, applied: object, errors: string[] }>}
+   */
+  async configureClassicBattle(options = {}) {
+    const {
+      roundTimerMs,
+      cooldownMs,
+      showRoundSelectModal = true,
+      enableTestMode = true,
+      seed = null,
+      pointsToWin = null,
+      confirmPointsToWin = true,
+      pointsToWinConfirmTimeout = 5000,
+      battleReadyTimeout = 10000
+    } = options ?? {};
+
+    const result = {
+      ok: true,
+      applied: {
+        timers: false,
+        cooldown: false,
+        featureFlag: false,
+        testMode: false,
+        pointsToWin: false
+      },
+      errors: []
+    };
+
+    const recordError = (message) => {
+      result.ok = false;
+      if (message) {
+        result.errors.push(String(message));
+      }
+    };
+
+    const globalTarget =
+      typeof window !== "undefined" && window ? window : typeof globalThis !== "undefined" ? globalThis : null;
+
+    if (roundTimerMs !== undefined) {
+      try {
+        if (roundTimerMs === null) {
+          if (globalTarget?.__OVERRIDE_TIMERS) {
+            delete globalTarget.__OVERRIDE_TIMERS.roundTimer;
+          }
+        } else {
+          const numeric = Number(roundTimerMs);
+          if (!Number.isFinite(numeric) || numeric < 0) {
+            throw new Error(`Invalid roundTimerMs value: ${roundTimerMs}`);
+          }
+          const existing =
+            globalTarget && typeof globalTarget.__OVERRIDE_TIMERS === "object"
+              ? { ...globalTarget.__OVERRIDE_TIMERS }
+              : {};
+          existing.roundTimer = numeric;
+          if (globalTarget) {
+            globalTarget.__OVERRIDE_TIMERS = existing;
+          }
+        }
+        result.applied.timers = true;
+      } catch (error) {
+        recordError(error?.message ?? "roundTimerMs configuration failed");
+      }
+    }
+
+    if (cooldownMs !== undefined) {
+      try {
+        if (cooldownMs === null) {
+          if (globalTarget && Object.prototype.hasOwnProperty.call(globalTarget, "__NEXT_ROUND_COOLDOWN_MS")) {
+            delete globalTarget.__NEXT_ROUND_COOLDOWN_MS;
+          }
+        } else {
+          const numeric = Number(cooldownMs);
+          if (!Number.isFinite(numeric) || numeric < 0) {
+            throw new Error(`Invalid cooldownMs value: ${cooldownMs}`);
+          }
+          if (globalTarget) {
+            globalTarget.__NEXT_ROUND_COOLDOWN_MS = numeric;
+          }
+        }
+        result.applied.cooldown = true;
+      } catch (error) {
+        recordError(error?.message ?? "cooldown override failed");
+      }
+    }
+
+    try {
+      if (globalTarget) {
+        const overrides =
+          typeof globalTarget.__FF_OVERRIDES === "object" && globalTarget.__FF_OVERRIDES !== null
+            ? { ...globalTarget.__FF_OVERRIDES }
+            : {};
+        if (showRoundSelectModal) {
+          overrides.showRoundSelectModal = true;
+        } else {
+          delete overrides.showRoundSelectModal;
+        }
+        globalTarget.__FF_OVERRIDES = overrides;
+      }
+      result.applied.featureFlag = true;
+    } catch (error) {
+      recordError(error?.message ?? "feature flag override failed");
+    }
+
+    if (enableTestMode !== undefined || seed !== undefined) {
+      try {
+        const numericSeed = seed === null || seed === undefined ? undefined : Number(seed);
+        const resolvedSeed = Number.isFinite(numericSeed) ? numericSeed : undefined;
+        setTestMode({ enabled: enableTestMode !== false, seed: resolvedSeed });
+        if (globalTarget) {
+          globalTarget.__TEST_MODE = { enabled: enableTestMode !== false, seed: resolvedSeed };
+        }
+        result.applied.testMode = true;
+      } catch (error) {
+        recordError(error?.message ?? "test mode configuration failed");
+      }
+    }
+
+    if (typeof pointsToWin === "number" && Number.isFinite(pointsToWin)) {
+      const ready = await this.waitForBattleReady(battleReadyTimeout);
+      if (!ready) {
+        recordError("battle did not become ready before applying pointsToWin");
+      } else {
+        try {
+          const applied = engineApi.setPointsToWin(pointsToWin);
+          if (!applied) {
+            recordError("engine.setPointsToWin returned false");
+          } else {
+            result.applied.pointsToWin = true;
+            if (confirmPointsToWin !== false && typeof engineApi.waitForPointsToWin === "function") {
+              const confirmed = await engineApi.waitForPointsToWin(
+                pointsToWin,
+                pointsToWinConfirmTimeout
+              );
+              if (!confirmed) {
+                recordError("Timed out confirming pointsToWin");
+              }
+            }
+          }
+        } catch (error) {
+          recordError(error?.message ?? "pointsToWin configuration failed");
+        }
+      }
+    }
+
+    return result;
   },
 
   /**
@@ -1580,6 +1880,118 @@ const inspectionApi = {
       }
       return null;
     }
+  },
+
+  /**
+   * Compute a stat comparison for the active round.
+   * @returns {Array<{ key: string, normalizedKey: string, player: number, opponent: number, delta: number }>}
+   */
+  getRoundStatComparison() {
+    try {
+      const store = this.getBattleStore();
+      const playerStats = store?.currentPlayerJudoka?.stats ?? null;
+      const opponentStats = store?.currentOpponentJudoka?.stats ?? null;
+      if (!playerStats || !opponentStats) {
+        return [];
+      }
+
+      const keys = Array.from(
+        new Set([
+          ...Object.keys(playerStats ?? {}),
+          ...Object.keys(opponentStats ?? {})
+        ])
+      );
+
+      const readValue = (stats, key) => {
+        if (!stats || typeof stats !== "object") {
+          return Number.NaN;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(stats, key)) {
+          const direct = Number(stats[key]);
+          if (Number.isFinite(direct)) {
+            return direct;
+          }
+        }
+
+        const normalizedKey = String(key).trim().toLowerCase();
+        if (
+          normalizedKey &&
+          Object.prototype.hasOwnProperty.call(stats, normalizedKey) &&
+          Number.isFinite(Number(stats[normalizedKey]))
+        ) {
+          return Number(stats[normalizedKey]);
+        }
+
+        return Number.NaN;
+      };
+
+      const comparisons = [];
+      for (const key of keys) {
+        const canonicalKey = String(key ?? "").trim();
+        if (!canonicalKey) {
+          continue;
+        }
+
+        const playerValue = readValue(playerStats, canonicalKey);
+        const opponentValue = readValue(opponentStats, canonicalKey);
+        if (!Number.isFinite(playerValue) || !Number.isFinite(opponentValue)) {
+          continue;
+        }
+
+        comparisons.push({
+          key: canonicalKey,
+          normalizedKey: canonicalKey.toLowerCase(),
+          player: playerValue,
+          opponent: opponentValue,
+          delta: playerValue - opponentValue
+        });
+      }
+
+      return comparisons.sort((a, b) => b.delta - a.delta);
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("testApi.inspect.getRoundStatComparison failed", error);
+      }
+      return [];
+    }
+  },
+
+  /**
+   * Determine which stat currently favours the player.
+   * @param {{ requirePositiveDelta?: boolean }} [options]
+   * @returns {{ key: string|null, normalizedKey: string|null, player: number|null, opponent: number|null, delta: number|null }}
+   */
+  pickAdvantagedStatKey(options = {}) {
+    const { requirePositiveDelta = false } = options ?? {};
+    const comparisons = this.getRoundStatComparison();
+    if (!comparisons.length) {
+      return { key: null, normalizedKey: null, player: null, opponent: null, delta: null };
+    }
+
+    const positive = comparisons.find((entry) => entry.delta > 0);
+    const candidate = positive ?? comparisons[0];
+    if (!candidate) {
+      return { key: null, normalizedKey: null, player: null, opponent: null, delta: null };
+    }
+
+    if (requirePositiveDelta && !(candidate.delta > 0)) {
+      return {
+        key: null,
+        normalizedKey: candidate.normalizedKey ?? null,
+        player: candidate.player ?? null,
+        opponent: candidate.opponent ?? null,
+        delta: candidate.delta ?? null
+      };
+    }
+
+    return {
+      key: candidate.key ?? null,
+      normalizedKey: candidate.normalizedKey ?? null,
+      player: candidate.player ?? null,
+      opponent: candidate.opponent ?? null,
+      delta: candidate.delta ?? null
+    };
   },
 
   /**
