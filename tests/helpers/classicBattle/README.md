@@ -21,6 +21,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `timerService.nextRound.test.js`: manages cooldown and Next button interaction.
 - `nextButton.countdownFinished.test.js`: emits `countdownFinished` on Next clicks, even without the button.
 - `timerStateExposure.test.js`: exposes timer state to window and DOM.
+- `debugPanel.hud.test.js`: mounts the battle debug HUD, verifies accessible affordances, and exercises clipboard export from the integrated panel.
 - `commonMocks.js`: scheduler and motion utility mocks shared across suites.
 - `setupTestEnv.js`: exposes `setupClassicBattleHooks()` to wire DOM and mocks.
 - `mockSetup.js`: shared mock helper to reduce duplication.
@@ -51,3 +52,9 @@ const getEnv = setupClassicBattleHooks();
 ### Helpers
 
 Use `playRounds(selectStat, times)` from `playRounds.js` when a suite requires repeating the same stat selection multiple times.
+
+### Debug HUD workflow
+
+- When modifying the battle debug layout, run `npx vitest run tests/helpers/classicBattle/debugPanel.hud.test.js` to ensure the HUD remains accessible and the copy affordance still routes through the user-facing button.
+- The HUD test mounts the real panel via `setDebugPanelEnabled(true)` so layout changes that move the copy button, summary text, or status region will surface immediately.
+- Keep clipboard interactions wired through the button element—manual dispatching bypasses focus management and can mask regression in the disclosure UI.
