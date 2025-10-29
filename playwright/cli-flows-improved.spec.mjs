@@ -412,8 +412,8 @@ test.describe("CLI Battle Interface", () => {
       await ensureBattleReady(page);
 
       const shortcutsSection = page.locator("#cli-shortcuts");
-      await expect(shortcutsSection).toBeHidden();
-      await expect(shortcutsSection).toHaveAttribute("hidden");
+      await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", false);
     });
 
     testWithConsole("shortcuts panel can be toggled", async ({ page }) => {
@@ -423,16 +423,20 @@ test.describe("CLI Battle Interface", () => {
       const shortcutsBody = page.locator("#cli-shortcuts-body");
       const closeButton = page.locator("#cli-shortcuts-close");
 
-      await expect(shortcutsSection).toBeHidden();
+      await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", false);
       await page.locator("#cli-main").click();
       await page.keyboard.press("h");
 
       await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", true);
       await expect(shortcutsBody).toBeVisible();
       await expect(closeButton).toHaveAttribute("aria-expanded", "true");
 
       await closeButton.click();
-      await expect(shortcutsSection).toBeHidden();
+      await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", false);
+      await expect(shortcutsSection).not.toHaveAttribute("open");
       await expect(shortcutsBody).toBeHidden();
       await expect(closeButton).toHaveAttribute("aria-expanded", "false");
     });
@@ -441,11 +445,13 @@ test.describe("CLI Battle Interface", () => {
       await startBattle(page);
 
       const shortcutsSection = page.locator("#cli-shortcuts");
-      await expect(shortcutsSection).toBeHidden();
+      await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", false);
 
       await page.locator("#cli-main").click();
       await page.keyboard.press("h");
       await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", true);
 
       const helpList = page.locator("#cli-help");
       await expect(helpList).toContainText("[1–5] Select Stat");
@@ -454,21 +460,27 @@ test.describe("CLI Battle Interface", () => {
       await expect(helpList).toContainText("[H] Toggle Help");
 
       await page.locator("#cli-shortcuts-close").click();
-      await expect(shortcutsSection).toBeHidden();
+      await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", false);
+      await expect(shortcutsSection).not.toHaveAttribute("open");
     });
 
     testWithConsole("H key toggles help", async ({ page }) => {
       await startBattle(page);
 
       const shortcutsSection = page.locator("#cli-shortcuts");
-      await expect(shortcutsSection).toBeHidden();
+      await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", false);
 
       await page.locator("#cli-main").click();
       await page.keyboard.press("h");
       await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", true);
 
       await page.keyboard.press("h");
-      await expect(shortcutsSection).toBeHidden();
+      await expect(shortcutsSection).toBeVisible();
+      await expect(shortcutsSection).toHaveJSProperty("open", false);
+      await expect(shortcutsSection).not.toHaveAttribute("open");
     });
   });
 
