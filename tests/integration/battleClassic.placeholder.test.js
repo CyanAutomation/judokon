@@ -37,6 +37,7 @@ async function completeFirstRound(document, testApi) {
   const opponentCard = document.getElementById("opponent-card");
   expect(opponentCard).not.toBeNull();
   expect(opponentCard?.classList.contains("opponent-hidden")).toBe(false);
+  expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
   const placeholder = opponentCard?.querySelector("#mystery-card-placeholder");
   expect(placeholder).not.toBeNull();
 
@@ -152,5 +153,6 @@ describe("Battle Classic opponent placeholder integration", () => {
     expect(revealedCard).not.toBeNull();
     expect(revealedCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
     expect(opponentCard?.getAttribute("aria-label")).toBe("Opponent card");
+    expect(opponentCard?.classList.contains("is-obscured")).toBe(false);
   });
 });

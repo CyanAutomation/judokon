@@ -19,6 +19,7 @@ import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { getBattleStore } from "../utils/battleStoreAccess.js";
+import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
@@ -354,51 +355,52 @@ describe("Battle Classic Page Integration", () => {
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
     expect(testApi?.state?.waitForBattleState).toBeTypeOf("function");
+    expect(testApi?.state?.waitForRoundsPlayed).toBeTypeOf("function");
 
-    let reachedPlayerAction = false;
-    await withMutedConsole(async () => {
-      roundButtons[0].click();
-      reachedPlayerAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
-    });
-    expect(reachedPlayerAction).toBe(true);
+    const { resetOpponentDelay, setOpponentDelayToZero } = setupOpponentDelayControl(testApi);
+    setOpponentDelayToZero();
 
-    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    expect(statButtons.length).toBeGreaterThan(0);
-
-    const resetOpponentDelay = () => {
-      if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
-        testApi.timers.setOpponentResolveDelay(null);
-      }
-    };
-
-    if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
-      testApi.timers.setOpponentResolveDelay(0);
-    }
-
-    let reachedRoundDecision = false;
     try {
+      let reachedPlayerAction = false;
+      await withMutedConsole(async () => {
+        roundButtons[0].click();
+        reachedPlayerAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
+      });
+      expect(reachedPlayerAction).toBe(true);
+
+      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+      expect(statButtons.length).toBeGreaterThan(0);
+
+      let reachedRoundDecision = false;
       await withMutedConsole(async () => {
         statButtons[0].click();
+        await Promise.resolve();
+        expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
+        expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();
         reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
       });
+      expect(reachedRoundDecision).toBe(true);
+
+      const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
+      expect(roundCompleted).toBe(true);
+
+      await new Promise((resolve) => {
+        if (typeof window.requestAnimationFrame === "function") {
+          window.requestAnimationFrame(() => resolve());
+        } else {
+          setTimeout(resolve, 0);
+        }
+      });
+
+      expect(opponentCard?.classList.contains("is-obscured")).toBe(false);
+      expect(opponentCard.querySelector("#mystery-card-placeholder")).toBeNull();
+      const revealedContainer = opponentCard.querySelector(".card-container");
+      expect(revealedContainer).not.toBeNull();
+      const revealedCard = revealedContainer?.querySelector(".judoka-card");
+      expect(revealedCard).not.toBeNull();
+      expect(revealedCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
     } finally {
       resetOpponentDelay();
     }
-    expect(reachedRoundDecision).toBe(true);
-
-    await new Promise((resolve) => {
-      if (typeof window.requestAnimationFrame === "function") {
-        window.requestAnimationFrame(() => resolve());
-      } else {
-        setTimeout(resolve, 0);
-      }
-    });
-
-    expect(opponentCard.querySelector("#mystery-card-placeholder")).toBeNull();
-    const revealedContainer = opponentCard.querySelector(".card-container");
-    expect(revealedContainer).not.toBeNull();
-    const revealedCard = revealedContainer?.querySelector(".judoka-card");
-    expect(revealedCard).not.toBeNull();
-    expect(revealedCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
   });
 });

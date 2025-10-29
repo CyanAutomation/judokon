@@ -434,6 +434,27 @@
   display: none;
 }
 
+#opponent-card.is-obscured {
+  position: relative;
+}
+
+#opponent-card.is-obscured .card-container,
+#opponent-card.is-obscured .judoka-card {
+  pointer-events: none;
+}
+
+#opponent-card.is-obscured .judoka-card {
+  visibility: hidden;
+}
+
+#opponent-card.is-obscured #mystery-card-placeholder {
+  display: flex;
+}
+
+#opponent-card:not(.is-obscured) #mystery-card-placeholder {
+  display: none;
+}
+
 /* Mystery Card styles */
 #opponent-card {
   /* Ensure container provides space for the placeholder */

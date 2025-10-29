@@ -69,20 +69,29 @@ export const test = base.extend({
 
       try {
         await waitForTestApi(page);
-      } catch {
+      } catch (error) {
+        await page.evaluate((err) => {
+          window.__battleCliResetCompleted = { ok: false, error: err };
+        }, String(error));
         return;
       }
 
       try {
-        await page.evaluate(() => {
+        const result = await page.evaluate(async () => {
           const initApi = window.__TEST_API?.init;
           if (typeof initApi?.resetBattleCliModuleState === "function") {
-            return initApi.resetBattleCliModuleState();
+            return await initApi.resetBattleCliModuleState();
           }
-          return null;
+          return { ok: false, reason: "resetBattleCliModuleState not available" };
         });
-      } catch {
-        // Silently ignore errors during reset
+        // Store the result in a flag so tests can verify the reset completed
+        await page.evaluate((res) => {
+          window.__battleCliResetCompleted = res;
+        }, result);
+      } catch (error) {
+        await page.evaluate((err) => {
+          window.__battleCliResetCompleted = { ok: false, error: err };
+        }, String(error));
       }
     });
 

@@ -8,6 +8,12 @@ function buildCliUrl(query = "") {
   return `${CLI_PATH}${suffix}`;
 }
 
+async function waitForBattleCliReset(page, timeout = 5000) {
+  return page.waitForFunction(() => window.__battleCliResetCompleted !== undefined, {
+    timeout
+  });
+}
+
 async function getBattleCliModuleResetCount(page, defaultValue = -1) {
   return await page.evaluate(
     (fallback) => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? fallback,
@@ -50,11 +56,21 @@ test.describe("battleCliFixture", () => {
     await page.goto(buildCliUrl("autostart=1"));
     await waitForTestApi(page);
 
-    // Wait for the reset handler to complete by polling the counter
-    await page.waitForFunction(
-      () => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? 0 > 0,
-      { timeout: 5000 }
-    );
+    // Debug: check what's available before waiting for reset
+    const beforeReset = await page.evaluate(() => ({
+      hasBattleCliInit: typeof window.__battleCLIinit !== "undefined",
+      hasResetModuleState: typeof window.__battleCLIinit?.__resetModuleState === "function",
+      battleCliInitKeys: Object.keys(window.__battleCLIinit || {}),
+      hasTestApi: typeof window.__TEST_API !== "undefined",
+      hasInitApi: typeof window.__TEST_API?.init !== "undefined",
+      hasResetMethod: typeof window.__TEST_API?.init?.resetBattleCliModuleState === "function"
+    }));
+    console.log("Before reset wait:", JSON.stringify(beforeReset, null, 2));
+
+    await waitForBattleCliReset(page);
+
+    const resetResult = await page.evaluate(() => window.__battleCliResetCompleted);
+    console.log("First reset result:", JSON.stringify(resetResult, null, 2));
 
     const initialCount = await getBattleCliModuleResetCount(page, 0);
     expect(initialCount).toBeGreaterThan(0);
@@ -65,14 +81,14 @@ test.describe("battleCliFixture", () => {
     );
     expect(resetCount).toBe(0);
 
+    // Reset the completed flag before navigating again
+    await page.evaluate(() => {
+      delete window.__battleCliResetCompleted;
+    });
+
     await page.goto(buildCliUrl("autostart=1&seed=first"));
     await waitForTestApi(page);
-
-    // Wait for the reset handler to complete
-    await page.waitForFunction(
-      () => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? 0 > 0,
-      { timeout: 5000 }
-    );
+    await waitForBattleCliReset(page);
 
     const afterFirstNavigation = await getBattleCliModuleResetCount(page);
     expect(afterFirstNavigation).toBe(1);
@@ -85,15 +101,13 @@ test.describe("battleCliFixture", () => {
     });
 
     await resetBattleCliModuleResetCounter(page);
+    await page.evaluate(() => {
+      delete window.__battleCliResetCompleted;
+    });
 
     await page.goto(buildCliUrl("autostart=1&seed=second"));
     await waitForTestApi(page);
-
-    // Wait for the reset handler to complete
-    await page.waitForFunction(
-      () => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? 0 > 0,
-      { timeout: 5000 }
-    );
+    await waitForBattleCliReset(page);
 
     const afterSecondNavigation = await getBattleCliModuleResetCount(page);
     expect(afterSecondNavigation).toBe(1);

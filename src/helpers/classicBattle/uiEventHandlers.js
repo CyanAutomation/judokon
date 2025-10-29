@@ -40,6 +40,61 @@ function clearFallbackPromptTimer() {
   } catch {}
 }
 
+function waitForNextFrame() {
+  return new Promise((resolve) => {
+    try {
+      if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(() => resolve());
+        return;
+      }
+    } catch {}
+    try {
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(() => resolve());
+        return;
+      }
+    } catch {}
+    setTimeout(resolve, 0);
+  });
+}
+
+async function revealOpponentCardAfterResolution() {
+  const container = document.getElementById("opponent-card");
+  if (!container) {
+    pendingOpponentCardData = null;
+    return;
+  }
+  let cardData = pendingOpponentCardData;
+  if (!cardData) {
+    try {
+      cardData = await getOpponentCardData();
+    } catch {
+      cardData = null;
+    }
+  }
+  if (cardData) {
+    try {
+      await renderOpponentCard(cardData, container);
+    } catch {
+      pendingOpponentCardData = null;
+      return;
+    }
+    await waitForNextFrame();
+    try {
+      const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
+      if (placeholder) placeholder.remove();
+    } catch {}
+    try {
+      container.classList.remove("is-obscured");
+      container.classList.remove("opponent-hidden");
+    } catch {}
+    try {
+      container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
+    } catch {}
+  }
+  pendingOpponentCardData = null;
+}
+
 function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
   try {
     showSnackbar(t("ui.opponentChoosing"));
@@ -164,6 +219,7 @@ export function bindUIHelperEventHandlersDynamic() {
 
   onBattleEvent("roundResolved", async (e) => {
     clearOpponentSnackbarTimeout();
+    await revealOpponentCardAfterResolution();
     const { store, stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;
     try {

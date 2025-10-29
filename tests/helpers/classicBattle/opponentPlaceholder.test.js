@@ -31,6 +31,7 @@ describe("applyOpponentCardPlaceholder", () => {
 
     expect(placeholder).not.toBeNull();
     expect(container.classList.contains("opponent-hidden")).toBe(false);
+    expect(container.classList.contains("is-obscured")).toBe(true);
     expect(container.querySelector("#debug-panel")).not.toBeNull();
     expect(container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`)).toBe(placeholder);
   });
@@ -43,6 +44,7 @@ describe("applyOpponentCardPlaceholder", () => {
 
     expect(placeholder).not.toBeNull();
     expect(container?.classList.contains("opponent-hidden")).toBe(false);
+    expect(container?.classList.contains("is-obscured")).toBe(true);
     expect(container?.querySelector("#debug-panel")).not.toBeNull();
     expect(container?.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`)).toBe(placeholder);
   });
