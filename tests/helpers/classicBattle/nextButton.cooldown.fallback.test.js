@@ -38,7 +38,9 @@ describe("Next button cooldown fallback", () => {
   });
 
   it("restores readiness and exits cooldown when timer controls are missing", async () => {
-    const { createBattleStore } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const { createBattleStore } = await import(
+      "../../../src/helpers/classicBattle/roundManager.js"
+    );
     const store = createBattleStore();
     store.transitions = [];
 
@@ -50,7 +52,9 @@ describe("Next button cooldown fallback", () => {
     battleEvents.onBattleEvent("battleStateChange", transitionRecorder);
     cleanupTasks.push(() => battleEvents.offBattleEvent("battleStateChange", transitionRecorder));
 
-    const { onNextButtonClick } = await import("../../../src/helpers/classicBattle/timerService.js");
+    const { onNextButtonClick } = await import(
+      "../../../src/helpers/classicBattle/timerService.js"
+    );
     const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     const { markNextReady } = await import(
       "../../../src/helpers/classicBattle/cooldownOrchestrator.js"
@@ -60,8 +64,9 @@ describe("Next button cooldown fallback", () => {
     expect(safeGetSnapshot().state).toBe("cooldown");
 
     const resolveReady = vi.fn();
-    const dispatchSpy = vi.spyOn(dispatcher, "dispatchBattleEvent").mockImplementation(
-      async (eventName, payload) => {
+    const dispatchSpy = vi
+      .spyOn(dispatcher, "dispatchBattleEvent")
+      .mockImplementation(async (eventName, payload) => {
         if (eventName === "ready") {
           const button = document.getElementById("next-button");
           markNextReady(button);
@@ -73,8 +78,7 @@ describe("Next button cooldown fallback", () => {
           });
         }
         return true;
-      }
-    );
+      });
 
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady });
 
