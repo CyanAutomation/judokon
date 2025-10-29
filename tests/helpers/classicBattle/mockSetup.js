@@ -11,12 +11,17 @@ const debugLog = (...args) => {
 
 debugLog("[TEST DEBUG] mockSetup.js top-level loaded");
 
+const setupLazyPortraitsMock = vi.fn();
+const markSignatureMoveReadyMock = vi.fn();
+
 const mocks = {
   fetchJsonMock: undefined,
   generateRandomCardMock: undefined,
   getRandomJudokaMock: undefined,
   renderMock: undefined,
   JudokaCardMock: undefined,
+  setupLazyPortraitsMock,
+  markSignatureMoveReadyMock,
   currentFlags: {}
 };
 
@@ -30,9 +35,19 @@ vi.mock("../../../src/helpers/cardUtils.js", () => ({
 
 vi.mock("../../../src/components/JudokaCard.js", () => {
   mocks.renderMock = vi.fn();
-  mocks.JudokaCardMock = vi.fn().mockImplementation(() => ({ render: mocks.renderMock }));
+  mocks.JudokaCardMock = vi
+    .fn()
+    .mockImplementation(() => ({ render: (...args) => mocks.renderMock(...args) }));
   return { JudokaCard: mocks.JudokaCardMock };
 });
+
+vi.mock("../../../src/helpers/lazyPortrait.js", () => ({
+  setupLazyPortraits: setupLazyPortraitsMock
+}));
+
+vi.mock("../../../src/helpers/signatureMove.js", () => ({
+  markSignatureMoveReady: markSignatureMoveReadyMock
+}));
 
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
   fetchJson: (...args) => mocks.fetchJsonMock(...args),
@@ -56,13 +71,23 @@ export function applyMockSetup({
   generateRandomCardMock,
   getRandomJudokaMock,
   renderMock,
-  currentFlags
+  currentFlags,
+  setupLazyPortraitsMock,
+  markSignatureMoveReadyMock
 } = {}) {
   mocks.fetchJsonMock = fetchJsonMock;
   mocks.generateRandomCardMock = generateRandomCardMock;
   mocks.getRandomJudokaMock = getRandomJudokaMock;
   mocks.renderMock = renderMock;
   mocks.currentFlags = currentFlags ?? {};
+  mocks.setupLazyPortraitsMock.mockReset();
+  mocks.markSignatureMoveReadyMock.mockReset();
+  if (setupLazyPortraitsMock) {
+    mocks.setupLazyPortraitsMock.mockImplementation((...args) => setupLazyPortraitsMock(...args));
+  }
+  if (markSignatureMoveReadyMock) {
+    mocks.markSignatureMoveReadyMock.mockImplementation((...args) => markSignatureMoveReadyMock(...args));
+  }
   return mocks;
 }
 
