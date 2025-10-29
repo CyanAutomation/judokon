@@ -7,7 +7,10 @@
 export async function triggerAutoSelect(page) {
   const didTrigger = await page.evaluate(async () => {
     try {
-      return (await window.__TEST_API?.autoSelect?.triggerAutoSelect?.()) ?? false;
+      return (
+        (await window.__TEST_API?.autoSelect?.triggerAutoSelect?.({ awaitCompletion: false })) ??
+        false
+      );
     } catch {
       return false;
     }

@@ -2009,12 +2009,12 @@ const testApi = {
      *
      * @returns {Promise<boolean>} Resolves true when the auto-select flow runs.
      */
-    async triggerAutoSelect() {
+    async triggerAutoSelect(options) {
       try {
         const store = inspectionApi.getBattleStore();
         if (!store) return false;
         const { triggerRoundTimeoutNow } = await import("./classicBattle/testHooks.js");
-        await triggerRoundTimeoutNow(store);
+        await triggerRoundTimeoutNow(store, options);
         return true;
       } catch {
         return false;
