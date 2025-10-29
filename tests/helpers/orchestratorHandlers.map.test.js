@@ -1,171 +1,183 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setupClassicBattleDom } from "../helpers/classicBattle/utils.js";
+
+const ORCHESTRATOR_PATH = "../../src/helpers/classicBattle/orchestrator.js";
+const BATTLE_EVENTS_PATH = "../../src/helpers/classicBattle/battleEvents.js";
+const ROUND_DECISION_HELPERS_PATH =
+  "../../src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js";
+
+function createStateTable() {
+  return [
+    {
+      name: "waitingForMatchStart",
+      type: "initial",
+      triggers: [{ on: "startClicked", target: "waitingForPlayerAction" }]
+    },
+    {
+      name: "waitingForPlayerAction",
+      triggers: [
+        { on: "statSelected", target: "roundDecision" },
+        { on: "interrupt", target: "waitingForMatchStart" }
+      ]
+    },
+    {
+      name: "roundDecision",
+      triggers: [{ on: "interrupt", target: "waitingForMatchStart" }]
+    }
+  ];
+}
+
+async function initMachine({ store = { selectionMade: false, roundsPlayed: 0 } } = {}) {
+  const stateTable = createStateTable();
+  const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
+    ORCHESTRATOR_PATH
+  );
+  await initClassicBattleOrchestrator({ store, stateTable });
+  return { machine: getBattleStateMachine(), store };
+}
+
+async function registerEventSpies(...eventNames) {
+  const events = await import(BATTLE_EVENTS_PATH);
+  events.__resetBattleEventTarget();
+  const subscriptions = [];
+  const spies = new Map();
+  for (const name of eventNames) {
+    const spy = vi.fn();
+    const handler = (event) => spy(event?.detail);
+    events.onBattleEvent(name, handler);
+    subscriptions.push([name, handler]);
+    spies.set(name, spy);
+  }
+  return {
+    spies,
+    cleanup: () => {
+      for (const [name, handler] of subscriptions) {
+        events.offBattleEvent(name, handler);
+      }
+    }
+  };
+}
 
 describe("stateHandlers map", () => {
+  let domEnv;
+
   beforeEach(() => {
-    vi.resetModules();
-    document.body.innerHTML = `
-      <main>
-        <div data-role="player-card"></div>
-        <div data-role="opponent-card"></div>
-      </main>
-    `;
+    domEnv = setupClassicBattleDom();
   });
 
-  it("drives the orchestrator through player action and round decision states", async () => {
-    const cancelSelectionSpy = vi.fn();
-    const resolveSelectionMock = vi.fn(async () => {
-      throw new Error("timeout");
+  afterEach(() => {
+    domEnv?.timerSpy?.clearAllTimers?.();
+    domEnv?.restoreRAF?.();
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it("exposes the handlers defined in the stateHandlers table", async () => {
+    const { stateHandlers, getOnEnterHandler, getOnExitHandler } = await import(
+      "../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+
+    Object.entries(stateHandlers).forEach(([state, handlers]) => {
+      if (handlers.onEnter) {
+        expect(getOnEnterHandler(state)).toBe(handlers.onEnter);
+      } else {
+        expect(getOnEnterHandler(state)).toBeUndefined();
+      }
+      if (handlers.onExit) {
+        expect(getOnExitHandler(state)).toBe(handlers.onExit);
+      } else {
+        expect(getOnExitHandler(state)).toBeUndefined();
+      }
     });
-    const guardSelectionResolutionMock = vi.fn(() => cancelSelectionSpy);
-
-    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
-      clearMessage: vi.fn(),
-      showMessage: vi.fn(),
-      updateTimer: vi.fn(),
-      clearTimer: vi.fn(),
-      updateRoundCounter: vi.fn(),
-      clearRoundCounter: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/classicBattle/debugPanel.js", () => ({
-      updateDebugPanel: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/classicBattle/isStateTransition.js", () => ({
-      isStateTransition: () => false,
-      default: () => false
-    }));
-    vi.doMock("../../src/helpers/classicBattle/debugLogger.js", () => ({
-      logStateTransition: vi.fn(),
-      logEventEmit: vi.fn(),
-      logTimerOperation: vi.fn(),
-      logError: vi.fn(),
-      logPerformance: vi.fn(),
-      logStateHandlerEnter: vi.fn(),
-      logStateHandlerExit: vi.fn(),
-      logUIInteraction: vi.fn(),
-      logBattleError: vi.fn(),
-      createComponentLogger: () => ({
-        info: vi.fn(),
-        debug: vi.fn(),
-        event: vi.fn()
-      })
-    }));
-    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
-      startTimer: vi.fn(() => Promise.resolve())
-    }));
-    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection: vi.fn(() => Promise.resolve())
-    }));
-    vi.doMock("../../src/helpers/classicBattle/cardStatUtils.js", () => ({
-      getCardStatValue: vi.fn(() => 10)
-    }));
-    vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
-      getOpponentJudoka: vi.fn(() => ({ stats: { speed: 9 } }))
-    }));
-    vi.doMock("../../src/helpers/classicBattle/guard.js", () => ({
-      guard: (fn) => {
-        try {
-          return fn();
-        } catch {
-          return undefined;
-        }
-      },
-      guardAsync: async (fn) => fn()
-    }));
-    vi.doMock("../../src/helpers/classicBattle/handleRoundError.js", () => ({
-      handleRoundError: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js", () => ({
-      recordEntry: vi.fn(),
-      resolveSelectionIfPresent: resolveSelectionMock,
-      awaitPlayerChoice: vi.fn(),
-      guardSelectionResolution: guardSelectionResolutionMock,
-      schedulePostResolveWatchdog: vi.fn()
-    }));
-
-    const roundDecisionModule = await import(
-      "../../src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js"
-    );
-    const roundDecisionEnterSpy = vi.spyOn(roundDecisionModule, "roundDecisionEnter");
-
-    const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    events.__resetBattleEventTarget();
-    const enableSpy = vi.fn();
-    const messageSpy = vi.fn();
-    const debugSpy = vi.fn();
-    const transitions = [];
-    const enableHandler = (event) => enableSpy(event.detail);
-    const messageHandler = (event) => messageSpy(event.detail);
-    const transitionHandler = (event) => transitions.push(event.detail);
-    events.onBattleEvent("statButtons:enable", enableHandler);
-    events.onBattleEvent("scoreboardShowMessage", messageHandler);
-    events.onBattleEvent("debugPanelUpdate", debugSpy);
-    events.onBattleEvent("battleStateChange", transitionHandler);
-
-    // Sanity check that event wiring is active before running the scenario.
-    events.emitBattleEvent("scoreboardShowMessage", "sanity-check");
-    expect(messageSpy).toHaveBeenCalledWith("sanity-check");
-    messageSpy.mockReset();
-
-    const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
-      "../../src/helpers/classicBattle/orchestrator.js"
-    );
-
-    const stateTable = [
-      {
-        name: "waitingForMatchStart",
-        type: "initial",
-        triggers: [{ on: "startClicked", target: "waitingForPlayerAction" }]
-      },
-      {
-        name: "waitingForPlayerAction",
-        triggers: [
-          { on: "statSelected", target: "roundDecision" },
-          { on: "interrupt", target: "waitingForMatchStart" }
-        ]
-      },
-      {
-        name: "roundDecision",
-        triggers: [{ on: "interrupt", target: "waitingForMatchStart" }]
-      }
-    ];
-
-    const store = { selectionMade: false, roundsPlayed: 0 };
-    await initClassicBattleOrchestrator({ store, stateTable });
-    const machine = getBattleStateMachine();
-
-    expect(machine?.getState()).toBe("waitingForMatchStart");
-    expect(machine?.context?.store).toBe(store);
-
-    await machine.dispatch("startClicked");
-    expect(machine.getState()).toBe("waitingForPlayerAction");
-    expect(enableSpy).toHaveBeenCalledTimes(1);
-
-    const transitionResult = await machine.dispatch("statSelected");
-
-    expect(transitionResult).toBe(true);
-
-    expect(transitions.some((detail) => detail?.to === "roundDecision")).toBe(true);
-    expect(roundDecisionEnterSpy).toHaveBeenCalled();
-    expect(guardSelectionResolutionMock).toHaveBeenCalled();
-    expect(resolveSelectionMock).toHaveBeenCalled();
-    expect(cancelSelectionSpy).toHaveBeenCalled();
-    expect(messageSpy).toHaveBeenCalledWith("No selection detected. Interrupting round.");
-    expect(debugSpy).toHaveBeenCalled();
-    expect(machine.getState()).toBe("waitingForMatchStart");
-
-    roundDecisionEnterSpy.mockRestore();
-    events.offBattleEvent("statButtons:enable", enableHandler);
-    events.offBattleEvent("scoreboardShowMessage", messageHandler);
-    events.offBattleEvent("debugPanelUpdate", debugSpy);
-    events.offBattleEvent("battleStateChange", transitionHandler);
   });
 
-  it("returns undefined for unknown state", () => {
-    return import("../../src/helpers/classicBattle/orchestratorHandlers.js").then(
-      ({ getOnEnterHandler, getOnExitHandler }) => {
-        expect(getOnEnterHandler("missing")).toBeUndefined();
-        expect(getOnExitHandler("missing")).toBeUndefined();
-      }
+  it("enables player interaction when waitingForPlayerAction is entered", async () => {
+    const { spies, cleanup } = await registerEventSpies(
+      "statButtons:enable",
+      "battleStateChange"
     );
+    const timerModule = await import("../../src/helpers/classicBattle/timerService.js");
+    vi.spyOn(timerModule, "startTimer").mockResolvedValue(undefined);
+    const selectionModule = await import(
+      "../../src/helpers/classicBattle/selectionHandler.js"
+    );
+    vi.spyOn(selectionModule, "handleStatSelection").mockResolvedValue(undefined);
+
+    const { machine } = await initMachine();
+
+    try {
+      expect(machine.getState()).toBe("waitingForMatchStart");
+      await machine.dispatch("startClicked");
+
+      const enableSpy = spies.get("statButtons:enable");
+      const transitionSpy = spies.get("battleStateChange");
+
+      expect(machine.getState()).toBe("waitingForPlayerAction");
+      expect(enableSpy).toHaveBeenCalledTimes(1);
+      expect(transitionSpy.mock.calls.map(([detail]) => detail)).toContainEqual(
+        expect.objectContaining({ to: "waitingForPlayerAction", from: "waitingForMatchStart" })
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("handles round decision timeout by interrupting the match", async () => {
+    const { spies, cleanup } = await registerEventSpies(
+      "battleStateChange",
+      "scoreboardShowMessage",
+      "debugPanelUpdate"
+    );
+    const helpers = await import(ROUND_DECISION_HELPERS_PATH);
+    const cancelSelectionSpy = vi.fn();
+    vi.spyOn(helpers, "recordEntry").mockImplementation(() => {});
+    vi.spyOn(helpers, "resolveSelectionIfPresent").mockResolvedValue(false);
+    vi.spyOn(helpers, "awaitPlayerChoice").mockRejectedValue(new Error("timeout"));
+    vi.spyOn(helpers, "guardSelectionResolution").mockImplementation(() => cancelSelectionSpy);
+    vi.spyOn(helpers, "schedulePostResolveWatchdog").mockImplementation(() => {});
+
+    const timerModule = await import("../../src/helpers/classicBattle/timerService.js");
+    vi.spyOn(timerModule, "startTimer").mockResolvedValue(undefined);
+    const selectionModule = await import(
+      "../../src/helpers/classicBattle/selectionHandler.js"
+    );
+    vi.spyOn(selectionModule, "handleStatSelection").mockResolvedValue(undefined);
+
+    const { machine, store } = await initMachine();
+
+    try {
+      await machine.dispatch("startClicked");
+      const result = await machine.dispatch("statSelected");
+
+      const transitionSpy = spies.get("battleStateChange");
+
+      expect(result).toBe(true);
+      expect(cancelSelectionSpy).toHaveBeenCalled();
+      expect(helpers.resolveSelectionIfPresent).toHaveBeenCalledWith(store);
+      expect(helpers.awaitPlayerChoice).toHaveBeenCalledWith(store);
+      expect(spies.get("scoreboardShowMessage")).toHaveBeenCalledWith(
+        "No selection detected. Interrupting round."
+      );
+      expect(spies.get("debugPanelUpdate")).toHaveBeenCalled();
+      const transitionDetails = transitionSpy.mock.calls.map(([detail]) => detail);
+      expect(transitionDetails).toContainEqual(
+        expect.objectContaining({ to: "roundDecision", from: "waitingForPlayerAction" })
+      );
+      expect(transitionDetails).toContainEqual(
+        expect.objectContaining({ to: "waitingForMatchStart", from: "roundDecision" })
+      );
+      expect(machine.getState()).toBe("waitingForMatchStart");
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("returns undefined for unknown state", async () => {
+    const { getOnEnterHandler, getOnExitHandler } = await import(
+      "../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    expect(getOnEnterHandler("missing")).toBeUndefined();
+    expect(getOnExitHandler("missing")).toBeUndefined();
   });
 });
