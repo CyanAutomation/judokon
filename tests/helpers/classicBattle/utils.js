@@ -4,6 +4,16 @@ import { installRAFMock } from "../rafMock.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBattle/orchestrator.js";
 
+export const renderStatsMarkup = (stats) => `
+      <ul>
+        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
+        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
+        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
+        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
+        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
+      </ul>
+    `;
+
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
   if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
@@ -64,7 +74,8 @@ export function setupClassicBattleDom() {
     }
     return [];
   });
-  const mockPlayerJudoka = {
+
+const mockPlayerJudoka = {
     id: "player-judoka",
     name: "Mock Player",
     stats: { power: 5, speed: 4, technique: 3, kumikata: 4, newaza: 3 }
@@ -76,30 +87,14 @@ export function setupClassicBattleDom() {
   };
   const generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
     const { stats } = mockPlayerJudoka;
-    container.innerHTML = `
-      <ul>
-        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
-        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
-        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
-        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
-        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
-      </ul>
-    `;
+    container.innerHTML = renderStatsMarkup(stats);
     if (cb) cb(mockPlayerJudoka);
   });
   const getRandomJudokaMock = vi.fn(() => mockOpponentJudoka);
   const renderMock = vi.fn(async (judoka) => {
     const el = document.createElement("div");
     const stats = judoka?.stats ?? mockOpponentJudoka.stats;
-    el.innerHTML = `
-      <ul>
-        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
-        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
-        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
-        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
-        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
-      </ul>
-    `;
+    el.innerHTML = renderStatsMarkup(stats);
     return el;
   });
   const currentFlags = { autoSelect: { enabled: true } };
