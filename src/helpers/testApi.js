@@ -1983,11 +1983,49 @@ const cliApi = {
       }
     }
 
+    const readCurrentState = () => {
+      try {
+        return stateApi.getBattleState();
+      } catch (error) {
+        logDevDebug("[completeRound] Failed to read battle state", error);
+        return null;
+      }
+    };
+
+    let finalState;
+
+    if (outcomeEvent) {
+      finalState = readCurrentState();
+    } else {
+      const timeoutMs = 2_000;
+      const start = Date.now();
+      const transitionalStates = new Set(["roundDecision", "roundOver"]);
+
+      finalState = readCurrentState();
+
+      if (transitionalStates.has(finalState)) {
+        do {
+          await waitForNextFrame();
+          finalState = readCurrentState();
+          if (finalState && !transitionalStates.has(finalState)) {
+            break;
+          }
+        } while (Date.now() - start < timeoutMs);
+
+        if (transitionalStates.has(finalState)) {
+          logDevDebug("[completeRound] Timed out waiting for post-round state", {
+            timeoutMs,
+            lastState: finalState
+          });
+        }
+      }
+    }
+
     return {
       detail,
       outcomeEvent,
       outcomeDispatched,
-      finalState: stateApi.getBattleState(),
+      finalState: finalState ?? readCurrentState(),
       dispatched: resolution?.dispatched ?? false,
       emitted: resolution?.emitted ?? false
     };
