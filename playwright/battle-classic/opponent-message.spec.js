@@ -144,19 +144,16 @@ async function getDispatchedEvents(page) {
 
 test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest("shows mystery placeholder pre-reveal before stat selection", async ({ page }) => {
-    const domState = await page.evaluate(() => {
-      const container = document.getElementById("opponent-card");
-      const placeholder = document.getElementById("mystery-card-placeholder");
-      const hasHidden = !!container && container.classList.contains("opponent-hidden");
-      return {
-        containerExists: Boolean(container),
-        hasHidden,
-        hasPlaceholder: Boolean(placeholder)
-      };
-    });
+    const opponentCard = page.locator("#opponent-card");
+    await expect(opponentCard).toHaveCount(1);
 
-    expect(domState.containerExists).toBe(true);
-    expect(domState.hasPlaceholder || domState.hasHidden === true).toBe(true);
+    const placeholder = opponentCard.locator("#mystery-card-placeholder");
+    await expect(placeholder).toHaveCount(1);
+
+    const hasHiddenClass = await opponentCard.evaluate((node) =>
+      node.classList.contains("opponent-hidden")
+    );
+    expect(hasHiddenClass).toBe(false);
   });
 
   runMessageTest(
@@ -165,10 +162,22 @@ test.describe("Classic Battle Opponent Messages", () => {
       const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
-      const placeholder = page.locator("#mystery-card-placeholder");
+      const opponentCard = page.locator("#opponent-card");
+
+      const placeholder = opponentCard.locator("#mystery-card-placeholder");
       await expect(placeholder).toHaveCount(0, { timeout: 4_000 });
 
-      const opponentCard = page.locator("#opponent-card");
+      await expect
+        .poll(
+          async () =>
+            !(await opponentCard.evaluate((node) =>
+              node.classList.contains("opponent-hidden")
+            )),
+          { timeout: 4_000,
+            message: "Expected opponent card to lose hidden class after reveal" }
+        )
+        .toBe(true);
+
       await expect
         .poll(async () => (await opponentCard.innerHTML()).trim().length > 0, {
           timeout: 4_000,
