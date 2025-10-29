@@ -485,7 +485,7 @@ export async function drawCards(options = {}) {
         } else {
           setupLazyPortraits(cardElement);
         }
-      } else if (cardElement != null) {
+      } else if (cardElement !== null) {
         console?.error?.("Card factory did not return an HTMLElement");
         clearPlayerContainer();
       } else {

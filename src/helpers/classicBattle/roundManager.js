@@ -165,12 +165,16 @@ function hideOpponentCardIfRealVisible(container) {
   if (hasRealOpponentCard(container)) {
     try {
       container.classList.add("opponent-hidden");
-    } catch {}
+    } catch {
+      // Silently ignore errors when modifying classList
+    }
     return container;
   }
   try {
     container.classList.remove("opponent-hidden");
-  } catch {}
+  } catch {
+    // Silently ignore errors when modifying classList
+  }
   return container;
 }
 
@@ -183,7 +187,9 @@ function ensureOpponentPlaceholderVisibility(container) {
   if (hasOpponentPlaceholder(container) && !hasRealOpponentCard(container)) {
     try {
       container.classList.remove("opponent-hidden");
-    } catch {}
+    } catch {
+      // Silently ignore errors when modifying classList
+    }
   }
 }
 

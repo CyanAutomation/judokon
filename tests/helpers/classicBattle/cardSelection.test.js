@@ -24,7 +24,7 @@ describe.sequential("classicBattle card selection", () => {
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
     renderMock = vi.fn(async () => document.createElement("div"));
-    const appliedMocks = applyMockSetup({
+    applyMockSetup({
       fetchJsonMock,
       generateRandomCardMock,
       getRandomJudokaMock,
@@ -62,7 +62,7 @@ describe.sequential("classicBattle card selection", () => {
       return callCount === 1 ? { id: 1 } : { id: 2 };
     });
     renderMock = vi.fn(async () => document.createElement("div"));
-    const appliedMocks = applyMockSetup({
+    applyMockSetup({
       fetchJsonMock,
       generateRandomCardMock,
       getRandomJudokaMock,
