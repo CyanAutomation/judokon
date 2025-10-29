@@ -1426,7 +1426,8 @@ async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
   if (!btn || btn.disabled) return;
   const container =
-    document.getElementById("stat-buttons") ?? (btn instanceof HTMLElement ? btn.parentElement : null);
+    document.getElementById("stat-buttons") ??
+    (btn instanceof HTMLElement ? btn.parentElement : null);
   const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
   const targets = buttons.length > 0 ? buttons : [btn];
   disableStatButtons(targets, container ?? undefined);

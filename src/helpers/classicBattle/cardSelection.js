@@ -302,7 +302,9 @@ export async function selectOpponentJudoka({
   playerJudoka = null,
   randomJudoka = getRandomJudoka,
   fallbackProvider = getFallbackJudoka,
-  qaLogger = qaInfo
+  qaLogger = qaInfo,
+  onCandidateAccepted,
+  onCandidateRejected
 } = {}) {
   const pool = Array.isArray(availableJudoka) ? availableJudoka : [];
   const pickRandom = () => {
@@ -320,6 +322,7 @@ export async function selectOpponentJudoka({
     let attempts = 0;
     const maxAttempts = Math.max(pool.length || 0, 5);
     while (selection?.id === playerJudoka.id && attempts < maxAttempts) {
+      onCandidateRejected?.(selection, { reason: "sameAsPlayer" });
       selection = pickRandom();
       attempts += 1;
     }
@@ -329,7 +332,10 @@ export async function selectOpponentJudoka({
     }
   }
 
-  if (selection) return selection;
+  if (selection) {
+    onCandidateAccepted?.(selection, { isFallback: false });
+    return selection;
+  }
 
   if (typeof fallbackProvider === "function") {
     try {
@@ -343,12 +349,19 @@ export async function selectOpponentJudoka({
           );
         } catch {}
       }
+      if (fallback) {
+        onCandidateAccepted?.(fallback, { isFallback: true });
+      } else {
+        onCandidateRejected?.(null, { reason: "fallbackUnavailable" });
+      }
       return fallback || null;
     } catch {
+      onCandidateRejected?.(null, { reason: "fallbackError" });
       return null;
     }
   }
 
+  onCandidateRejected?.(null, { reason: "noCandidate" });
   return null;
 }
 
@@ -420,7 +433,8 @@ export async function drawCards(options = {}) {
     inspectorFlagReader = () => isEnabled("enableCardInspector"),
     qaLogger = qaInfo,
     cardFactory = defaultCardFactory,
-    lazyPortraitSetup
+    lazyPortraitSetup,
+    opponentSelectionHooks = {}
   } = options;
 
   let allJudoka = [];
@@ -505,7 +519,9 @@ export async function drawCards(options = {}) {
     playerJudoka,
     randomJudoka,
     fallbackProvider,
-    qaLogger
+    qaLogger,
+    onCandidateAccepted: opponentSelectionHooks.onCandidateAccepted,
+    onCandidateRejected: opponentSelectionHooks.onCandidateRejected
   });
   opponentJudoka = opponent;
 
