@@ -1,32 +1,37 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+vi.mock("../../src/vendor/marked.esm.js", () => ({
+  marked: {
+    parse: vi.fn(),
+  },
+}));
+
 import { markdownToHtml } from "../../src/helpers/markdownToHtml.js";
 import { marked } from "../../src/vendor/marked.esm.js";
 
+const parseMock = marked.parse;
+
 describe("markdownToHtml", () => {
-  it("converts headings", () => {
-    const md = "# Title";
-    expect(markdownToHtml(md)).toBe(marked.parse(md));
+  beforeEach(() => {
+    parseMock.mockReset();
   });
 
-  it("converts bold text", () => {
-    const md = "**bold** text";
-    expect(markdownToHtml(md)).toBe(marked.parse(md));
-  });
-
-  it("converts lists", () => {
-    const md = "- one\n- two";
-    expect(markdownToHtml(md)).toBe(marked.parse(md));
-  });
-
-  it("converts tables", () => {
-    const md = "| a | b |\n| --- | --- |\n| c | d |";
-    expect(markdownToHtml(md)).toBe(marked.parse(md));
-  });
-
-  it("handles empty or null input", () => {
+  it("returns an empty string without invoking marked.parse for falsy inputs", () => {
     expect(markdownToHtml("")).toBe("");
     expect(markdownToHtml(null)).toBe("");
-    expect(markdownToHtml()).toBe("");
+    expect(markdownToHtml(undefined)).toBe("");
+
+    expect(marked.parse).not.toHaveBeenCalled();
+  });
+
+  it("delegates to marked.parse for text input and surfaces the returned HTML", () => {
+    const md = "# Title";
+    const html = "<h1>Title</h1>";
+    parseMock.mockReturnValueOnce(html);
+
+    expect(markdownToHtml(md)).toBe(html);
+    expect(marked.parse).toHaveBeenCalledTimes(1);
+    expect(marked.parse).toHaveBeenCalledWith(md);
   });
 });
