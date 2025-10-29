@@ -566,6 +566,14 @@ export async function startRound(store, onRoundStart) {
     store.currentPlayerJudoka = cards.playerJudoka || null;
     store.currentOpponentJudoka = cards.opponentJudoka || null;
     persistLastJudokaStats(store, cards.playerJudoka, cards.opponentJudoka);
+    try {
+      queueMicrotask(() => {
+        try {
+          store.selectionMade = false;
+          store.__lastSelectionMade = false;
+        } catch {}
+      });
+    } catch {}
     safeRound(
       "startRound.syncScoreDisplay",
       () => {

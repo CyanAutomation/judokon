@@ -864,6 +864,21 @@ async function applySelectionResult(store, result) {
       }
     }
 
+    // DEBUG: Log getRoundsPlayed result and sync logic
+    if (typeof window !== "undefined" && window.__DEBUG_ROUNDS_SYNC) {
+      try {
+        console.log("[DEBUG] applySelectionResult sync:", {
+          getRoundsPlayed: getRoundsPlayed(),
+          engineRounds,
+          storeRoundsBefore: store.roundsPlayed,
+          matchEnded,
+          isOrchestrated: isOrchestratorActive(store)
+        });
+      } catch (e) {
+        console.error("[DEBUG] Failed to log sync:", e);
+      }
+    }
+
     if (engineRounds === null && !matchEnded && !isOrchestratorActive(store)) {
       const previous = Number(store.roundsPlayed);
       engineRounds = Number.isFinite(previous) ? previous + 1 : 1;
@@ -871,6 +886,12 @@ async function applySelectionResult(store, result) {
 
     if (Number.isFinite(engineRounds)) {
       store.roundsPlayed = engineRounds;
+      // DEBUG: Log after sync
+      if (typeof window !== "undefined" && window.__DEBUG_ROUNDS_SYNC) {
+        try {
+          console.log("[DEBUG] applySelectionResult synced to:", engineRounds);
+        } catch {}
+      }
     }
   }
   if (!matchEnded) {

@@ -100,6 +100,12 @@ export class ClassicBattleController extends EventTarget {
     }
     if (typeof startRoundRef === "function") {
       await startRoundRef(store);
+      if (store && typeof store === "object") {
+        try {
+          store.selectionMade = false;
+          store.__lastSelectionMade = false;
+        } catch {}
+      }
     } else {
       return;
     }
