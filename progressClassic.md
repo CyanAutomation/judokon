@@ -82,7 +82,9 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - The opponent card placeholder must remain visible until the player has selected a stat.
   - All stat buttons must be disabled immediately after a player makes a choice.
 - **Actionable Fixes:**
-  - [ ] **Ensure Placeholder Visibility:** In `src/pages/battleClassic.init.js`, ensure the logic that reveals the opponent's card is strictly tied to an event that fires _after_ the player's selection is confirmed. Add a CSS class like `.is-obscured` to the opponent card container and only remove it upon the `roundResolved` event.
+  - [x] **Ensure Placeholder Visibility:** In `src/pages/battleClassic.init.js`, ensure the logic that reveals the opponent's card is strictly tied to an event that fires _after_ the player's selection is confirmed. Add a CSS class like `.is-obscured` to the opponent card container and only remove it upon the `roundResolved` event.
+    - Applied the `.is-obscured` state when rendering the mystery placeholder and deferred card reveal logic to the `roundResolved` handler so the placeholder persists until the result is available. (`src/helpers/classicBattle/opponentPlaceholder.js`, `src/helpers/classicBattle/cardSelection.js`, `src/pages/battleClassic.init.js`, `src/helpers/classicBattle/uiEventHandlers.js`, `src/styles/battleClassic.css`)
+    - Tests: `npx vitest run tests/helpers/classicBattle/opponentPlaceholder.test.js tests/integration/battleClassic.integration.test.js tests/integration/battleClassic.placeholder.test.js`, `npx playwright test playwright/battle-classic/opponent-reveal.spec.js`.
   - [x] **Immediate Button Disabling:** (Covered in Phase 1) Ensure the `disableStatButtons` function is called at the very beginning of the `handleStatButtonClick` handler.
 
 ### Phase 3: Medium - Gameplay Polish

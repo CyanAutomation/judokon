@@ -55,22 +55,7 @@ test.describe("battleCliFixture", () => {
   test("invokes the Battle CLI reset helper after each navigation", async ({ page }) => {
     await page.goto(buildCliUrl("autostart=1"));
     await waitForTestApi(page);
-
-    // Debug: check what's available before waiting for reset
-    const beforeReset = await page.evaluate(() => ({
-      hasBattleCliInit: typeof window.__battleCLIinit !== "undefined",
-      hasResetModuleState: typeof window.__battleCLIinit?.__resetModuleState === "function",
-      battleCliInitKeys: Object.keys(window.__battleCLIinit || {}),
-      hasTestApi: typeof window.__TEST_API !== "undefined",
-      hasInitApi: typeof window.__TEST_API?.init !== "undefined",
-      hasResetMethod: typeof window.__TEST_API?.init?.resetBattleCliModuleState === "function"
-    }));
-    console.log("Before reset wait:", JSON.stringify(beforeReset, null, 2));
-
     await waitForBattleCliReset(page);
-
-    const resetResult = await page.evaluate(() => window.__battleCliResetCompleted);
-    console.log("First reset result:", JSON.stringify(resetResult, null, 2));
 
     const initialCount = await getBattleCliModuleResetCount(page, 0);
     expect(initialCount).toBeGreaterThan(0);

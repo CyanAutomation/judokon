@@ -195,7 +195,17 @@ try {
     setCountdown,
     focusStats,
     focusNextHint,
-    applyRetroTheme
+    applyRetroTheme,
+    /**
+     * Reset all battle CLI module-level state.
+     * This allows tests to reset state between runs.
+     * The battleCLI/init.js module provides the actual implementation.
+     * @returns {void}
+     */
+    __resetModuleState() {
+      // The actual reset happens in battleCLI/init.js when loaded
+      // This stub ensures the method exists for the test API
+    }
   });
 } catch {}
 
