@@ -22,6 +22,21 @@ export const featureFlagsEmitter = new EventTarget();
 const supportsCustomEvent = typeof CustomEvent === "function";
 const supportsEvent = typeof Event === "function";
 
+function createEventWithDetail(detail) {
+  const fallback = new Event("change");
+  try {
+    Object.defineProperty(fallback, "detail", {
+      value: detail,
+      configurable: true,
+      enumerable: true
+    });
+  } catch {
+    // Some environments expose writable properties, fall back to direct assignment.
+    fallback.detail = detail;
+  }
+  return fallback;
+}
+
 /**
  * Safely dispatch a change notification to feature flag listeners.
  *
@@ -37,20 +52,7 @@ function dispatchFeatureFlagChange(detail) {
   const event = supportsCustomEvent
     ? new CustomEvent("change", { detail })
     : supportsEvent
-      ? (() => {
-          const fallback = new Event("change");
-          try {
-            Object.defineProperty(fallback, "detail", {
-              value: detail,
-              configurable: true,
-              enumerable: true
-            });
-          } catch {
-            // Some environments expose writable properties, fall back to direct assignment.
-            fallback.detail = detail;
-          }
-          return fallback;
-        })()
+      ? createEventWithDetail(detail)
       : { type: "change", detail };
 
   if (typeof featureFlagsEmitter.dispatchEvent === "function") {
