@@ -8,7 +8,6 @@ This directory contains the complete test suite for JU-DO-KON!, including unit t
 tests/
 ├── setup/                 # Test setup and configuration
 │   ├── fakeTimers.js      # Canonical fake timers helper
-│   ├── fakeTimers.test.js # Tests for fake timers helper
 │   └── jsdom-polyfills.js # JSDOM environment setup
 ├── helpers/               # Test helper utilities
 │   ├── rafMock.js         # Animation frame mocking helper
