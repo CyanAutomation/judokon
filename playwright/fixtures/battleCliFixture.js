@@ -21,6 +21,7 @@
  */
 
 import { test as base } from "@playwright/test";
+import { waitForTestApi } from "../helpers/battleStateHelper.js";
 
 /**
  * Extended test fixture that ensures battle CLI tests run with isolated state.
@@ -56,21 +57,29 @@ export const test = base.extend({
     });
 
     // POST-NAVIGATION: After page loads, reset module state by calling the init function
-    page.on("framenavigated", async () => {
-      try {
-        // Give the page a moment to initialize
-        await new Promise((resolve) => setTimeout(resolve, 50));
+    page.on("framenavigated", async (frame) => {
+      if (frame !== page.mainFrame()) {
+        return;
+      }
 
+      const navigatedUrl = frame.url();
+      if (!navigatedUrl || navigatedUrl === "about:blank") {
+        return;
+      }
+
+      try {
+        await waitForTestApi(page);
+      } catch {
+        return;
+      }
+
+      try {
         await page.evaluate(() => {
-          // After page load,  call the reset function if available
-          // This ensures all module-level vars are in a clean state for tests
-          if (
-            typeof window !== "undefined" &&
-            window.__battleCLIinit &&
-            typeof window.__battleCLIinit.__resetModuleState === "function"
-          ) {
-            window.__battleCLIinit.__resetModuleState();
+          const initApi = window.__TEST_API?.init;
+          if (typeof initApi?.resetBattleCliModuleState === "function") {
+            return initApi.resetBattleCliModuleState();
           }
+          return null;
         });
       } catch {
         // Silently ignore errors during reset
