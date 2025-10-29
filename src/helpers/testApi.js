@@ -1238,6 +1238,8 @@ function resetBrowseReadySnapshot() {
 }
 
 // Component initialization API
+let battleCliModuleResetCount = 0;
+
 const initApi = {
   /**
    * Check if battle components are fully initialized
@@ -1386,6 +1388,59 @@ const initApi = {
    */
   __resetBrowseReadySnapshot() {
     resetBrowseReadySnapshot();
+  },
+
+  /**
+   * Attempt to reset the Battle CLI module state via exposed helpers.
+   *
+   * @returns {Promise<{ ok: boolean, count: number, reason: string | null }>} Result metadata.
+   */
+  async resetBattleCliModuleState() {
+    if (typeof window === "undefined") {
+      return { ok: false, count: battleCliModuleResetCount, reason: "window unavailable" };
+    }
+
+    const init = window.__battleCLIinit;
+    if (!init || typeof init.__resetModuleState !== "function") {
+      return {
+        ok: false,
+        count: battleCliModuleResetCount,
+        reason: "__battleCLIinit.__resetModuleState unavailable"
+      };
+    }
+
+    try {
+      await Promise.resolve(init.__resetModuleState());
+      battleCliModuleResetCount += 1;
+      return { ok: true, count: battleCliModuleResetCount, reason: null };
+    } catch (error) {
+      const reason =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" && error !== null && "message" in error
+            ? String(error.message)
+            : String(error ?? "unknown error");
+      return { ok: false, count: battleCliModuleResetCount, reason };
+    }
+  },
+
+  /**
+   * Read how many times the Battle CLI module reset helper has executed.
+   *
+   * @returns {number} Invocation count.
+   */
+  getBattleCliModuleResetCount() {
+    return battleCliModuleResetCount;
+  },
+
+  /**
+   * Internal helper for tests to reset the Battle CLI module reset counter.
+   *
+   * @returns {number} The reset count (always 0).
+   */
+  __resetBattleCliModuleResetCount() {
+    battleCliModuleResetCount = 0;
+    return battleCliModuleResetCount;
   },
 
   /**

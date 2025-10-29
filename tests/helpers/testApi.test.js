@@ -14,6 +14,7 @@ const originalViewportApi = window.__VIEWPORT_API;
 const originalOpponentDelay = window.__OPPONENT_RESOLVE_DELAY_MS;
 const originalWebdriverDescriptor = Object.getOwnPropertyDescriptor(window.navigator, "webdriver");
 const originalUserAgentDescriptor = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
+const originalBattleCliInit = window.__battleCLIinit;
 
 function setNavigatorWebdriver(value) {
   try {
@@ -58,6 +59,7 @@ describe("testApi.isTestMode", () => {
     restoreWindowProperty("__INIT_API", undefined);
     restoreWindowProperty("__INSPECT_API", undefined);
     restoreWindowProperty("__VIEWPORT_API", undefined);
+    restoreWindowProperty("__battleCLIinit", undefined);
     delete window.__OPPONENT_RESOLVE_DELAY_MS;
     delete window.__initCalled;
 
@@ -88,6 +90,7 @@ describe("testApi.isTestMode", () => {
     restoreWindowProperty("__INIT_API", originalInitApi);
     restoreWindowProperty("__INSPECT_API", originalInspectApi);
     restoreWindowProperty("__VIEWPORT_API", originalViewportApi);
+    restoreWindowProperty("__battleCLIinit", originalBattleCliInit);
 
     if (originalOpponentDelay === undefined) {
       delete window.__OPPONENT_RESOLVE_DELAY_MS;
@@ -170,6 +173,7 @@ describe("initApi readiness gating", () => {
     delete window.battleStore;
     delete window.battleReadyPromise;
     delete window.__initCalled;
+    delete window.__battleCLIinit;
 
     const mod = await import("../../src/helpers/testApi.js");
     initApi = mod.getTestAPI().init;
@@ -195,6 +199,7 @@ describe("initApi readiness gating", () => {
     restoreWindowProperty("__INIT_API", originalInitApi);
     restoreWindowProperty("__INSPECT_API", originalInspectApi);
     restoreWindowProperty("__VIEWPORT_API", originalViewportApi);
+    restoreWindowProperty("__battleCLIinit", originalBattleCliInit);
 
     delete window.battleStore;
     delete window.battleReadyPromise;
@@ -236,5 +241,35 @@ describe("initApi readiness gating", () => {
     vi.advanceTimersByTime(100);
     await expect(readyPromise).resolves.toBe(true);
     expect(resolutionSpy).toHaveBeenCalledWith(true);
+  });
+
+  it("indicates when the Battle CLI reset helper is unavailable", async () => {
+    const result = await initApi.resetBattleCliModuleState();
+
+    expect(result).toEqual({
+      ok: false,
+      count: 0,
+      reason: "__battleCLIinit.__resetModuleState unavailable"
+    });
+  });
+
+  it("tracks Battle CLI module reset executions", async () => {
+    const resetSpy = vi.fn();
+    window.__battleCLIinit = { __resetModuleState: resetSpy };
+
+    const first = await initApi.resetBattleCliModuleState();
+    expect(resetSpy).toHaveBeenCalledTimes(1);
+    expect(first).toEqual({ ok: true, count: 1, reason: null });
+
+    const second = await initApi.resetBattleCliModuleState();
+    expect(resetSpy).toHaveBeenCalledTimes(2);
+    expect(second).toEqual({ ok: true, count: 2, reason: null });
+
+    const resetCount = initApi.__resetBattleCliModuleResetCount();
+    expect(resetCount).toBe(0);
+
+    const third = await initApi.resetBattleCliModuleState();
+    expect(resetSpy).toHaveBeenCalledTimes(3);
+    expect(third).toEqual({ ok: true, count: 1, reason: null });
   });
 });
