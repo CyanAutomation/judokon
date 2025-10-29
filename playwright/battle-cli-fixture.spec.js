@@ -8,52 +8,58 @@ function buildCliUrl(query = "") {
   return `${CLI_PATH}${suffix}`;
 }
 
+async function getBattleCliModuleResetCount(page, defaultValue = -1) {
+  return await page.evaluate(
+    (fallback) =>
+      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? fallback,
+    defaultValue
+  );
+}
+
+async function validateResetHelper(page) {
+  return await page.evaluate(() =>
+    window.__TEST_API?.init?.resetBattleCliModuleState?.()
+  );
+}
+
+async function resetCounterBetweenChecks(page) {
+  await page.evaluate(() =>
+    window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.()
+  );
+}
+
 test.describe("battleCliFixture", () => {
   test("invokes the Battle CLI reset helper after each navigation", async ({ page }) => {
     await page.goto(buildCliUrl("autostart=1"));
     await waitForTestApi(page);
 
-    const initialCount = await page.evaluate(() =>
-      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? 0
-    );
+    const initialCount = await getBattleCliModuleResetCount(page, 0);
     expect(initialCount).toBeGreaterThan(0);
 
-    await page.evaluate(() => window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.());
-    const resetCount = await page.evaluate(() =>
-      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
-    );
+    await resetCounterBetweenChecks(page);
+    const resetCount = await getBattleCliModuleResetCount(page);
     expect(resetCount).toBe(0);
 
     await page.goto(buildCliUrl("autostart=1&seed=first"));
     await waitForTestApi(page);
-    const afterFirstNavigation = await page.evaluate(() =>
-      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
-    );
+    const afterFirstNavigation = await getBattleCliModuleResetCount(page);
     expect(afterFirstNavigation).toBe(1);
 
-    const firstNavigationResetResult = await page.evaluate(() =>
-      window.__TEST_API?.init?.resetBattleCliModuleState?.()
-    );
+    const firstNavigationResetResult = await validateResetHelper(page);
     expect(firstNavigationResetResult).toMatchObject({
       ok: true,
       count: 2,
       reason: null
     });
 
-    await page.evaluate(() =>
-      window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.()
-    );
+    await resetCounterBetweenChecks(page);
 
     await page.goto(buildCliUrl("autostart=1&seed=second"));
     await waitForTestApi(page);
-    const afterSecondNavigation = await page.evaluate(() =>
-      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
-    );
+    const afterSecondNavigation = await getBattleCliModuleResetCount(page);
     expect(afterSecondNavigation).toBe(1);
 
-    const secondNavigationResetResult = await page.evaluate(() =>
-      window.__TEST_API?.init?.resetBattleCliModuleState?.()
-    );
+    const secondNavigationResetResult = await validateResetHelper(page);
     expect(secondNavigationResetResult).toMatchObject({
       ok: true,
       count: 2,
