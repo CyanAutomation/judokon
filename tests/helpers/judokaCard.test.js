@@ -89,4 +89,12 @@ describe("JudokaCard", () => {
     card.remove();
     warn.mockRestore();
   });
+
+  it("does not throw when document is unavailable", () => {
+    vi.stubGlobal("document", undefined);
+
+    expect(() => toggleInspectorPanels(true)).not.toThrow();
+
+    vi.unstubAllGlobals();
+  });
 });

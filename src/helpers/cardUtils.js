@@ -1,6 +1,7 @@
 import { createInspectorPanel } from "./inspector/createInspectorPanel.js";
 import { debugLog } from "./debug.js";
 import { seededRandom } from "./testModeUtils.js";
+import { recordDebugState } from "./debugState.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
 import { JudokaCard } from "../components/JudokaCard.js";
@@ -205,36 +206,49 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
  * @returns {void}
  */
 export function toggleInspectorPanels(enable) {
-  document.querySelectorAll(".card-container").forEach((container) => {
-    let featureState = enable ? "enabled" : "disabled";
-    const existing = container.querySelector(".debug-panel");
-    const card = container.querySelector(".judoka-card");
-    if (enable) {
-      if (!existing) {
-        const json = container.dataset.cardJson;
-        if (!json || !card) return;
-        let data;
-        try {
-          data = JSON.parse(json);
-        } catch (error) {
-          console.warn("Invalid card JSON:", error);
-          container.setAttribute("data-feature-card-inspector", "error");
-          card?.setAttribute("data-feature-card-inspector", "error");
-          return;
+  const nextState = Boolean(enable);
+  recordDebugState("cardInspector", nextState);
+
+  if (typeof document === "undefined" || typeof document.querySelectorAll !== "function") {
+    return;
+  }
+
+  try {
+    document.querySelectorAll(".card-container").forEach((container) => {
+      let featureState = nextState ? "enabled" : "disabled";
+      const existing = container.querySelector(".debug-panel");
+      const card = container.querySelector(".judoka-card");
+      if (nextState) {
+        if (!existing) {
+          const json = container.dataset.cardJson;
+          if (!json || !card) return;
+          let data;
+          try {
+            data = JSON.parse(json);
+          } catch (error) {
+            console.warn("Invalid card JSON:", error);
+            container.setAttribute("data-feature-card-inspector", "error");
+            card?.setAttribute("data-feature-card-inspector", "error");
+            return;
+          }
+          const panel = createInspectorPanel(container, data);
+          container.appendChild(panel);
+          featureState = "enabled";
+        } else {
+          featureState = "enabled";
         }
-        const panel = createInspectorPanel(container, data);
-        container.appendChild(panel);
-        featureState = "enabled";
-      } else {
-        featureState = "enabled";
+      } else if (existing) {
+        existing.remove();
+        container.removeAttribute("data-inspector");
       }
-    } else if (existing) {
-      existing.remove();
-      container.removeAttribute("data-inspector");
+      container.setAttribute("data-feature-card-inspector", featureState);
+      if (card) {
+        card.setAttribute("data-feature-card-inspector", featureState);
+      }
+    });
+  } catch (error) {
+    if (typeof console !== "undefined") {
+      console.warn("[cardInspector] Failed to toggle inspector panels:", error);
     }
-    container.setAttribute("data-feature-card-inspector", featureState);
-    if (card) {
-      card.setAttribute("data-feature-card-inspector", featureState);
-    }
-  });
+  }
 }
