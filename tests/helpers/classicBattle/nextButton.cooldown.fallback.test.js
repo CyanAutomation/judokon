@@ -11,9 +11,7 @@ describe("Next button cooldown fallback", () => {
     cleanupTasks = [];
     battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
     __setStateSnapshot({ state: null, prev: null, event: null, log: [] });
-    cleanupTasks.push(() =>
-      __setStateSnapshot({ state: null, prev: null, event: null, log: [] })
-    );
+    cleanupTasks.push(() => __setStateSnapshot({ state: null, prev: null, event: null, log: [] }));
     const transitionListeners = await import(
       "../../../src/helpers/classicBattle/stateTransitionListeners.js"
     );
