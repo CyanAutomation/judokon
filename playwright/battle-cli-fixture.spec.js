@@ -16,16 +16,34 @@ async function getBattleCliModuleResetCount(page, defaultValue = -1) {
   );
 }
 
+/**
+ * Validates the reset helper by invoking the Battle CLI module state reset.
+ * @param {import("@playwright/test").Page} page - The Playwright page object.
+ * @returns {Promise<{ ok: boolean, count: number, reason: string | null }>} Reset result object.
+ * @pseudocode Call window.__TEST_API.init.resetBattleCliModuleState and return the result
+ */
 async function validateResetHelper(page) {
-  return await page.evaluate(() =>
-    window.__TEST_API?.init?.resetBattleCliModuleState?.()
-  );
+  return await page.evaluate(() => {
+    if (!window.__TEST_API?.init?.resetBattleCliModuleState) {
+      throw new Error("resetBattleCliModuleState method not available in TEST_API");
+    }
+    return window.__TEST_API.init.resetBattleCliModuleState();
+  });
 }
 
-async function resetCounterBetweenChecks(page) {
-  await page.evaluate(() =>
-    window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.()
-  );
+/**
+ * Resets the Battle CLI module reset counter between test checks.
+ * @param {import("@playwright/test").Page} page - The Playwright page object.
+ * @returns {Promise<void>}
+ * @pseudocode Call window.__TEST_API.init.__resetBattleCliModuleResetCount to clear counter
+ */
+async function resetBattleCliModuleResetCounter(page) {
+  await page.evaluate(() => {
+    if (!window.__TEST_API?.init?.__resetBattleCliModuleResetCount) {
+      throw new Error("__resetBattleCliModuleResetCount method not available in TEST_API");
+    }
+    window.__TEST_API.init.__resetBattleCliModuleResetCount();
+  });
 }
 
 test.describe("battleCliFixture", () => {
@@ -36,7 +54,7 @@ test.describe("battleCliFixture", () => {
     const initialCount = await getBattleCliModuleResetCount(page, 0);
     expect(initialCount).toBeGreaterThan(0);
 
-    await resetCounterBetweenChecks(page);
+    await resetBattleCliModuleResetCounter(page);
     const resetCount = await page.evaluate(() =>
       window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
     );
@@ -54,7 +72,7 @@ test.describe("battleCliFixture", () => {
       reason: null
     });
 
-    await resetCounterBetweenChecks(page);
+    await resetBattleCliModuleResetCounter(page);
 
     await page.goto(buildCliUrl("autostart=1&seed=second"));
     await waitForTestApi(page);
