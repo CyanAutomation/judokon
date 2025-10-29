@@ -418,7 +418,8 @@ async function displayCard({
   timers,
   fallbackDelayMs = 2000
 }) {
-  const stateMachine = createDrawCardStateMachine(drawButton);
+  const stateMachine =
+    drawButton.drawStateMachine || (drawButton.drawStateMachine = createDrawCardStateMachine(drawButton));
 
   return new Promise(async (resolve) => {
     let resolved = false;
@@ -576,6 +577,7 @@ export async function setupRandomJudokaPage() {
     const randomJudokaApi = testApi.randomJudoka || (testApi.randomJudoka = {});
     randomJudokaApi.setDrawButtonLabel = (labelText) => {
       if (typeof labelText !== "string" || !labelText.trim()) return;
+      drawButton.dataset.drawButtonIdleLabel = labelText;
       updateDrawButtonLabel(drawButton, labelText);
     };
     /**

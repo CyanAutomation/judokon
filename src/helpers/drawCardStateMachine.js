@@ -55,6 +55,14 @@ export function updateDrawButtonLabel(drawButton, text) {
  * @returns {{currentState: string, transition: (nextState: string) => void}}
  * @throws {Error} If transition is invalid (e.g., SUCCESS → DRAWING)
  */
+function getIdleLabel(drawButton) {
+  const override = drawButton?.dataset?.drawButtonIdleLabel;
+  if (typeof override === "string" && override.trim()) {
+    return override;
+  }
+  return "Draw Card!";
+}
+
 export function createDrawCardStateMachine(drawButton) {
   let currentState = "IDLE";
 
@@ -64,7 +72,7 @@ export function createDrawCardStateMachine(drawButton) {
         drawButton.disabled = false;
         drawButton.removeAttribute("aria-disabled");
         drawButton.classList.remove("is-loading");
-        updateDrawButtonLabel(drawButton, "Draw Card!");
+        updateDrawButtonLabel(drawButton, getIdleLabel(drawButton));
         drawButton.removeAttribute("aria-busy");
       }
     },
