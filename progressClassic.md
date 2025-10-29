@@ -53,15 +53,19 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
     }
     ```
 
-  - [ ] **Synchronously Disable UI:** In `src/helpers/classicBattle/statButtons.js` or `selectionHandler.js`, disable buttons immediately on click, not after an async operation.
+  - [x] **Synchronously Disable UI:** In `src/helpers/classicBattle/statButtons.js` or `selectionHandler.js`, disable buttons immediately on click, not after an async operation.
+    - Updated `handleStatButtonClick` to always disable the clicked button and its siblings synchronously, even if the stat container lookup fails, by falling back to the button's parent element. (`src/pages/battleClassic.init.js:1427`)
+    - Tests: `npx vitest run tests/helpers/classicBattle/statSelection.test.js tests/helpers/classicBattle/statDoubleClick.test.js tests/helpers/classicBattle/statButtons.state.test.js`, `npx playwright test playwright/battle-classic/stat-selection.spec.js`.
 
     ```javascript
     // In handleStatButtonClick within battleClassic.init.js
     function handleStatButtonClick(store, stat, btn) {
       if (!btn || btn.disabled) return; // Already handled
-      const container = document.getElementById("stat-buttons");
-      const buttons = container.querySelectorAll("button[data-stat]");
-      disableStatButtons(buttons, container); // Disable synchronously
+      const container =
+        document.getElementById("stat-buttons") ?? (btn instanceof HTMLElement ? btn.parentElement : null);
+      const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
+      const targets = buttons.length > 0 ? buttons : [btn];
+      disableStatButtons(targets, container ?? undefined); // Disable synchronously
 
       // ... rest of the async logic ...
     }
@@ -79,7 +83,7 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - All stat buttons must be disabled immediately after a player makes a choice.
 - **Actionable Fixes:**
   - [ ] **Ensure Placeholder Visibility:** In `src/pages/battleClassic.init.js`, ensure the logic that reveals the opponent's card is strictly tied to an event that fires _after_ the player's selection is confirmed. Add a CSS class like `.is-obscured` to the opponent card container and only remove it upon the `roundResolved` event.
-  - [ ] **Immediate Button Disabling:** (Covered in Phase 1) Ensure the `disableStatButtons` function is called at the very beginning of the `handleStatButtonClick` handler.
+  - [x] **Immediate Button Disabling:** (Covered in Phase 1) Ensure the `disableStatButtons` function is called at the very beginning of the `handleStatButtonClick` handler.
 
 ### Phase 3: Medium - Gameplay Polish
 

@@ -1425,11 +1425,11 @@ function handleRoundCounterFallback(visibleRound) {
 async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
   if (!btn || btn.disabled) return;
-  const container = document.getElementById("stat-buttons");
+  const container =
+    document.getElementById("stat-buttons") ?? (btn instanceof HTMLElement ? btn.parentElement : null);
   const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
-  if (buttons.length > 0) {
-    disableStatButtons(buttons, container);
-  }
+  const targets = buttons.length > 0 ? buttons : [btn];
+  disableStatButtons(targets, container ?? undefined);
 
   const delayOverride = prepareUiBeforeSelection();
   const { playerVal, opponentVal } = resolveStatValues(store, stat);
