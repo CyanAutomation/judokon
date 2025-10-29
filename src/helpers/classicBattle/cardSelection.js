@@ -10,6 +10,8 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { getFallbackJudoka } from "../judokaUtils.js";
+import { setupLazyPortraits } from "../lazyPortrait.js";
+import { markSignatureMoveReady } from "../signatureMove.js";
 import { applyOpponentCardPlaceholder } from "./opponentPlaceholder.js";
 
 let judokaData = null;
@@ -30,6 +32,19 @@ export class JudokaDataLoadError extends Error {
 export const CARD_RETRY_EVENT = "classicBattle:retryCardDraw";
 export const LOAD_ERROR_EXIT_EVENT = "classicBattle:loadErrorExit";
 
+/**
+ * @summary Create and render a JudokaCard using the default card factory.
+ *
+ * @pseudocode
+ * 1. Instantiate a `JudokaCard` with the provided judoka, lookup, and options.
+ * 2. Render the card asynchronously to produce an HTMLElement container.
+ * 3. Return the rendered element so callers can append it to the DOM.
+ *
+ * @param {object} judoka - The judoka data object.
+ * @param {object} lookup - The gokyo lookup map.
+ * @param {object} options - Rendering options forwarded to `JudokaCard`.
+ * @returns {Promise<HTMLElement>} Resolves with the rendered card element.
+ */
 async function defaultCardFactory(judoka, lookup, options) {
   const card = new JudokaCard(judoka, lookup, options);
   return await card.render();
@@ -427,7 +442,7 @@ export async function drawCards(options = {}) {
   const enableInspector = !!inspectorFlagReader();
 
   let playerJudoka = null;
-  const skipRender = true;
+  const skipRender = !playerContainer;
   await cardGenerator(
     available,
     null,
@@ -440,25 +455,47 @@ export async function drawCards(options = {}) {
   );
 
   if (playerJudoka && playerContainer) {
-    playerContainer.innerHTML = "";
+    const clearPlayerContainer = () => {
+      try {
+        playerContainer.replaceChildren();
+      } catch {
+        playerContainer.innerHTML = "";
+      }
+    };
+
     try {
       const cardElement = await cardFactory(playerJudoka, lookup, {
         useObscuredStats: true,
         enableInspector
       });
 
-      if (cardElement instanceof HTMLElement) {
+      const isElement =
+        cardElement instanceof HTMLElement ||
+        (cardElement && typeof cardElement === "object" && cardElement.nodeType === Node.ELEMENT_NODE);
+
+      if (isElement) {
         playerContainer.replaceChildren(cardElement);
+        if (cardElement.querySelector(".signature-move-container")) {
+          markSignatureMoveReady();
+        }
         if (typeof lazyPortraitSetup === "function") {
           lazyPortraitSetup(cardElement);
+        } else {
+          setupLazyPortraits(cardElement);
         }
       } else if (cardElement != null) {
-        console.error("Card factory did not return an HTMLElement");
-        playerContainer.innerHTML = "";
+        if (typeof console !== "undefined" && typeof console.error === "function") {
+          console.error("Card factory did not return an HTMLElement");
+        }
+        clearPlayerContainer();
+      } else {
+        clearPlayerContainer();
       }
     } catch (error) {
-      console.error("Failed to render player card:", error);
-      playerContainer.innerHTML = "";
+      if (typeof console !== "undefined" && typeof console.error === "function") {
+        console.error("Failed to render player card", error);
+      }
+      clearPlayerContainer();
     }
   }
 
