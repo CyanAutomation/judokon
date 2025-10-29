@@ -48,12 +48,11 @@ Located in:
 
 Access via: `npm run test:battles:cli`
 
-### Shared Components (6 files, 7 tests)
+### Shared Components (5 files, 6 tests)
 
 Located in:
 
 - `tests/helpers/battleScoreboard*.test.js` - Scoreboard tests (5 files)
-- `tests/config/battleDefaults.test.js` - Configuration tests (1 file)
 
 Access via: `npm run test:battles:shared`
 
