@@ -50,30 +50,3 @@ export function runAfterFrames(n, fn) {
   requestAnimationFrame(() => runAfterFrames(n - 1, fn));
 }
 
-/**
- * Run a work function with a time budget per frame, yielding to the next frame if budget is exceeded.
- *
- * @param {Function} workFn - Function that performs work and returns true if more work remains, false if done.
- * @param {number} budgetMs - Time budget in milliseconds per frame.
- * @returns {void}
- * @pseudocode
- * 1. Record the start time for the current frame.
- * 2. Execute work function repeatedly until it returns false or budget is exceeded.
- * 3. If more work remains, schedule continuation on the next animation frame.
- */
-export function withFrameBudget(workFn, budgetMs = 5) {
-  const start = performance.now();
-  let hasMoreWork = true;
-  let timedOut = false;
-
-  while (hasMoreWork && !timedOut) {
-    hasMoreWork = workFn();
-    if (!hasMoreWork) break;
-    timedOut = performance.now() - start >= budgetMs;
-  }
-
-  if (hasMoreWork && timedOut) {
-    // More work remains, schedule next frame
-    requestAnimationFrame(() => withFrameBudget(workFn, budgetMs));
-  }
-}
