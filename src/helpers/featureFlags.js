@@ -22,6 +22,19 @@ export const featureFlagsEmitter = new EventTarget();
 const supportsCustomEvent = typeof CustomEvent === "function";
 const supportsEvent = typeof Event === "function";
 
+/**
+ * Create an Event instance with an attached `detail` payload when
+ * `CustomEvent` support is unavailable.
+ *
+ * @pseudocode
+ * 1. Construct a basic `Event` with the "change" type.
+ * 2. Attempt to define the `detail` property using `Object.defineProperty` for a consistent descriptor.
+ * 3. Fall back to direct assignment when defining the property fails (e.g., older browsers).
+ * 4. Return the enhanced `Event` instance.
+ *
+ * @param {Record<string, unknown>} detail - The detail payload to attach to the event.
+ * @returns {Event} Event object carrying the provided detail payload.
+ */
 function createEventWithDetail(detail) {
   const fallback = new Event("change");
   try {
