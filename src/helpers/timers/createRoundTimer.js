@@ -58,6 +58,7 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   function start(dur, { resetRetries = true } = {}) {
+    paused = false;
     if (resetRetries) {
       retries = 0;
     }
@@ -150,6 +151,8 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   function stop() {
+    paused = false;
+    pausedRemaining = 0;
     if (fallbackTimeoutId !== null) {
       try {
         clearTimeout(fallbackTimeoutId);

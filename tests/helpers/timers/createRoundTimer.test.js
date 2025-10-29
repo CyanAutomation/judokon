@@ -228,4 +228,26 @@ describe("createRoundTimer events", () => {
     timers.runAllTimers(); // Should resume and complete
     expect(events).toEqual([["tick", 3], ["tick", 2], ["tick", 1], ["expired"]]);
   });
+
+  it("restarts cleanly after pause then stop", () => {
+    const events = [];
+    const timer = createRoundTimer();
+    timer.on("tick", (r) => events.push(["tick", r]));
+    timer.on("expired", () => events.push(["expired"]));
+
+    timer.start(3);
+    expect(events).toEqual([["tick", 3]]);
+
+    timer.pause();
+    timer.stop();
+
+    timer.start(2);
+    expect(events).toEqual([["tick", 3], ["tick", 2]]);
+
+    timers.advanceTimersByTime(1000);
+    expect(events).toEqual([["tick", 3], ["tick", 2], ["tick", 1]]);
+
+    timers.runAllTimers();
+    expect(events).toEqual([["tick", 3], ["tick", 2], ["tick", 1], ["expired"]]);
+  });
 });
