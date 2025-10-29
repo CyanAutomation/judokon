@@ -366,6 +366,9 @@ export async function renderOpponentPlaceholder({ container } = {}) {
   if (!container) return;
 
   applyOpponentCardPlaceholder(container);
+  try {
+    container.classList.add("is-obscured");
+  } catch {}
 }
 
 /**

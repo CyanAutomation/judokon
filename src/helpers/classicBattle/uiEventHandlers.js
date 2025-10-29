@@ -13,11 +13,14 @@ import {
 } from "./opponentPromptTracker.js";
 import { isEnabled } from "../featureFlags.js";
 import {
+  applyOpponentCardPlaceholder,
   OPPONENT_CARD_CONTAINER_ARIA_LABEL,
+  OPPONENT_PLACEHOLDER_ARIA_LABEL,
   OPPONENT_PLACEHOLDER_ID
 } from "./opponentPlaceholder.js";
 
 let opponentSnackbarId = 0;
+let pendingOpponentCardData = null;
 
 function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
@@ -76,17 +79,21 @@ export function bindUIHelperEventHandlersDynamic() {
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
-      // Reveal the opponent card by removing the hidden class
-      if (container) container.classList.remove("opponent-hidden");
-      if (container) {
-        const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
-        if (placeholder) placeholder.remove();
-        try {
-          container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
-        } catch {}
+      pendingOpponentCardData = await getOpponentCardData();
+    } catch {
+      pendingOpponentCardData = null;
+    }
+    try {
+      if (container && !container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`)) {
+        applyOpponentCardPlaceholder(container);
       }
-      const j = await getOpponentCardData();
-      if (j) await renderOpponentCard(j, container);
+    } catch {}
+    try {
+      if (container) {
+        container.classList.add("is-obscured");
+        container.classList.remove("opponent-hidden");
+        container.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
+      }
     } catch {}
   });
 

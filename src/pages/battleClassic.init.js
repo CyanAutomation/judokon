@@ -1927,7 +1927,10 @@ async function init() {
 
     // Ensure opponent card area remains visible so the Mystery placeholder shows pre-reveal
     const opponentCard = document.getElementById("opponent-card");
-    if (opponentCard) opponentCard.classList.remove("opponent-hidden");
+    if (opponentCard) {
+      opponentCard.classList.remove("opponent-hidden");
+      opponentCard.classList.add("is-obscured");
+    }
 
     // Initialize scoreboard adapter to handle display.score.update events
     initScoreboardAdapter();

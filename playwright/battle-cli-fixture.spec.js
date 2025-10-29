@@ -50,6 +50,12 @@ test.describe("battleCliFixture", () => {
     await page.goto(buildCliUrl("autostart=1"));
     await waitForTestApi(page);
 
+    // Wait for the reset handler to complete by polling the counter
+    await page.waitForFunction(
+      () => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? 0 > 0,
+      { timeout: 5000 }
+    );
+
     const initialCount = await getBattleCliModuleResetCount(page, 0);
     expect(initialCount).toBeGreaterThan(0);
 
@@ -61,6 +67,13 @@ test.describe("battleCliFixture", () => {
 
     await page.goto(buildCliUrl("autostart=1&seed=first"));
     await waitForTestApi(page);
+
+    // Wait for the reset handler to complete
+    await page.waitForFunction(
+      () => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? 0 > 0,
+      { timeout: 5000 }
+    );
+
     const afterFirstNavigation = await getBattleCliModuleResetCount(page);
     expect(afterFirstNavigation).toBe(1);
 
@@ -75,6 +88,13 @@ test.describe("battleCliFixture", () => {
 
     await page.goto(buildCliUrl("autostart=1&seed=second"));
     await waitForTestApi(page);
+
+    // Wait for the reset handler to complete
+    await page.waitForFunction(
+      () => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? 0 > 0,
+      { timeout: 5000 }
+    );
+
     const afterSecondNavigation = await getBattleCliModuleResetCount(page);
     expect(afterSecondNavigation).toBe(1);
 
