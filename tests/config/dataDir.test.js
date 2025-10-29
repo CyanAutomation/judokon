@@ -7,8 +7,23 @@ describe("resolveDataDir", () => {
     expect(result).toBe("https://example.com/src/data/");
   });
 
+  it("resolves file scheme URLs already within /src", () => {
+    const result = resolveDataDir("file:///app/src/helpers/constants.js");
+    expect(result).toBe("file:///app/src/data/");
+  });
+
   it("prefixes /src when module outside src", () => {
     const result = resolveDataDir("https://example.com/helpers/constants.js");
     expect(result).toBe("https://example.com/src/data/");
+  });
+
+  it("falls back to resolving relative paths for non-http schemes", () => {
+    const result = resolveDataDir("file:///app/helpers/constants.js");
+    expect(result).toBe("file:///app/data/");
+  });
+
+  it("accepts URL instances in addition to string inputs", () => {
+    const moduleUrl = "https://example.com/src/helpers/constants.js";
+    expect(resolveDataDir(moduleUrl)).toBe(resolveDataDir(new URL(moduleUrl)));
   });
 });
