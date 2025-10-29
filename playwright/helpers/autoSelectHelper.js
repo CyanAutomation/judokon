@@ -8,6 +8,8 @@ export async function triggerAutoSelect(page) {
   const didTrigger = await page.evaluate(async () => {
     try {
       return (
+        // Use awaitCompletion: false to allow Playwright tests to continue
+        // awaiting roundOver state independently after timeout transition
         (await window.__TEST_API?.autoSelect?.triggerAutoSelect?.({ awaitCompletion: false })) ??
         false
       );
