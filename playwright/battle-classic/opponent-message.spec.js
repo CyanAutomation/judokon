@@ -156,7 +156,8 @@ test.describe("Classic Battle Opponent Messages", () => {
     });
 
     expect(domState.containerExists).toBe(true);
-    expect(domState.hasPlaceholder || domState.hasHidden === true).toBe(true);
+    expect(domState.hasPlaceholder).toBe(true);
+    expect(domState.hasHidden).toBe(false);
   });
 
   runMessageTest(
@@ -196,15 +197,28 @@ test.describe("Classic Battle Opponent Messages", () => {
     "opponent card remains hidden until reveal",
     async ({ page }) => {
       const opponentCard = page.locator("#opponent-card");
-      await expect(opponentCard).toHaveClass(/opponent-hidden/);
+      const placeholder = page.locator("#mystery-card-placeholder");
+
+      await expect(placeholder).toHaveCount(1);
+      const initiallyHidden = await opponentCard.evaluate((node) =>
+        node.classList.contains("opponent-hidden")
+      );
+      expect(initiallyHidden).toBe(false);
 
       const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
-      await expect(opponentCard).toHaveClass(/opponent-hidden/);
+      await expect(placeholder).toHaveCount(1);
 
       await ensureRoundResolved(page);
 
+      await expect(placeholder).toHaveCount(0, { timeout: 4_000 });
+      await expect
+        .poll(async () => (await opponentCard.innerHTML()).trim().length > 0, {
+          timeout: 4_000,
+          message: "Expected opponent card content after reveal"
+        })
+        .toBe(true);
       await expect
         .poll(
           async () =>
@@ -228,7 +242,13 @@ test.describe("Classic Battle Opponent Messages", () => {
           await firstStat.click();
 
           const opponentCard = page.locator("#opponent-card");
-          await expect(opponentCard).toHaveClass(/opponent-hidden/);
+          const placeholder = page.locator("#mystery-card-placeholder");
+
+          await expect(placeholder).toHaveCount(1);
+          const initiallyHidden = await opponentCard.evaluate((node) =>
+            node.classList.contains("opponent-hidden")
+          );
+          expect(initiallyHidden).toBe(false);
 
           await page.evaluate(async () => {
             const api = window.__TEST_API;
@@ -238,6 +258,13 @@ test.describe("Classic Battle Opponent Messages", () => {
             await api.cli.resolveRound();
           });
 
+          await expect(placeholder).toHaveCount(0, { timeout: 4_000 });
+          await expect
+            .poll(async () => (await opponentCard.innerHTML()).trim().length > 0, {
+              timeout: 4_000,
+              message: "Expected opponent card content after CLI reveal"
+            })
+            .toBe(true);
           await expect
             .poll(
               async () =>
