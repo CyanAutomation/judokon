@@ -116,8 +116,13 @@ test.describe("Settings page", () => {
     await waitForSettingsReady(page);
   });
 
+  const VALID_SECTION_IDS = new Set(["general", "gameModes", "advanced", "links"]);
+
   async function openSections(page, ids) {
     for (const id of ids) {
+      if (!VALID_SECTION_IDS.has(id)) {
+        throw new Error(`Unknown settings section id: ${id}`);
+      }
       const details = page.locator(`details[data-section-id="${id}"]`);
       const isOpen = await details.evaluate((el) => el.open);
       if (!isOpen) {
@@ -131,7 +136,10 @@ test.describe("Settings page", () => {
     await verifyPageBasics(page, [], [], { expectNav: false });
     await expect(page.getByRole("banner")).toBeVisible();
     await expect(page.getByRole("navigation", { name: /breadcrumb/i })).toBeVisible();
-    await expect(page.getByRole("group", { name: /display mode/i })).toBeVisible();
+    const displayGroups = page.getByRole("group", { name: /display mode/i });
+    await expect(displayGroups).toHaveCount(2);
+    await expect(displayGroups.first()).toBeVisible();
+    await expect(displayGroups.nth(1)).toBeVisible();
 
     const hero = page.locator(".modern-hero");
     await expect(hero).toBeVisible();
@@ -180,7 +188,7 @@ test.describe("Settings page", () => {
   });*/
 
   test("tab order follows expected sequence", async ({ page }) => {
-    await openSections(page, ["display", "general", "gameModes", "advanced"]);
+    await openSections(page, ["general", "gameModes", "advanced"]);
     const { flagLabels, expectedLabels } = getLabelData();
 
     const renderedFlagCount = await page
@@ -332,7 +340,7 @@ test.describe("Settings page", () => {
   });
 
   test("controls meet 44px touch target size", async ({ page }) => {
-    await openSections(page, ["display", "general", "links"]);
+    await openSections(page, ["general", "links"]);
     const measure = async (selector) =>
       page
         .locator(selector)
@@ -401,9 +409,12 @@ test.describe("Settings page", () => {
       );
 
     const initialState = await snapshot();
-    expect(initialState.find((section) => section.id === "display")?.open).toBe(true);
-    expect(initialState.find((section) => section.id === "general")?.open).toBe(true);
-    expect(initialState.find((section) => section.id === "advanced")?.open).toBe(false);
+    const stateFor = (id) => initialState.find((section) => section.id === id)?.open;
+
+    expect(stateFor("general")).toBe(true);
+    expect(stateFor("gameModes")).toBe(false);
+    expect(stateFor("advanced")).toBe(false);
+    expect(stateFor("links")).toBe(false);
 
     const advancedSummary = page.locator('details[data-section-id="advanced"] summary');
     await advancedSummary.click();
