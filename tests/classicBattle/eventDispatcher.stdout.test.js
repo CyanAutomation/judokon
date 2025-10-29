@@ -1,53 +1,61 @@
-import { describe, it, expect, vi } from "vitest";
-import { useCanonicalTimers } from "../setup/fakeTimers.js";
-import { withMutedConsole } from "../utils/console.js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-import {
-  dispatchBattleEvent,
-  resetDispatchHistory
-} from "../../src/helpers/classicBattle/eventDispatcher.js";
+import { createBattleCLIHandlersHarness } from "../helpers/integrationHarness.js";
+import { withProcessStdoutDisabled } from "../utils/process.js";
 
 describe("Classic Battle event dispatcher stdout guard", () => {
-  it("does not throw when process.stdout is unavailable", async () => {
-    const timers = useCanonicalTimers();
+  const harness = createBattleCLIHandlersHarness();
 
-    const originalDescriptor = Object.getOwnPropertyDescriptor(process, "stdout");
-    Object.defineProperty(process, "stdout", {
-      value: undefined,
-      configurable: true,
-      writable: true
-    });
+  beforeEach(async () => {
+    await harness.setup();
+  });
 
+  afterEach(async () => {
+    if (harness.timerControl) {
+      vi.advanceTimersByTime(50);
+      await vi.runAllTimersAsync();
+    }
+    if (typeof window !== "undefined") {
+      const debugMap = window.__classicBattleDebugMap;
+      if (debugMap && typeof debugMap.clear === "function") {
+        debugMap.clear();
+      }
+    }
+    harness.cleanup();
+  });
+
+  it("logs debug fallback when stdout is unavailable during dispatch failures", async () => {
+    const { exposeDebugState } = await harness.importModule(
+      "../../src/helpers/classicBattle/debugHooks.js"
+    );
+    const { dispatchBattleEvent } = await harness.importModule(
+      "../../src/helpers/classicBattle/eventDispatcher.js"
+    );
+    const battleEvents = await harness.importModule(
+      "../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const emitBattleEvent = vi.spyOn(battleEvents, "emitBattleEvent");
+
+    const machineError = new Error("machine dispatch failed");
     const machine = {
-      dispatch: vi.fn(async () => "dispatched"),
+      dispatch: vi.fn(async () => {
+        throw machineError;
+      }),
       getState: vi.fn(() => "cooldown")
     };
 
-    globalThis.__classicBattleDebugRead = (token) => {
-      if (token === "getClassicBattleMachine") {
-        return () => machine;
-      }
-      return undefined;
-    };
+    exposeDebugState("getClassicBattleMachine", () => machine);
 
-    try {
-      await withMutedConsole(async () => {
-        await expect(dispatchBattleEvent("ready")).resolves.toBe("dispatched");
-        await expect(dispatchBattleEvent("ready")).resolves.toBe(true);
-        expect(machine.dispatch).toHaveBeenCalledTimes(1);
-        resetDispatchHistory("ready");
-        resetDispatchHistory();
-      });
-    } finally {
-      vi.advanceTimersByTime(25);
-      await vi.runAllTimersAsync();
-      timers.cleanup();
-      if (originalDescriptor) {
-        Object.defineProperty(process, "stdout", originalDescriptor);
-      } else {
-        delete process.stdout;
-      }
-      delete globalThis.__classicBattleDebugRead;
-    }
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await withProcessStdoutDisabled(() => dispatchBattleEvent("ready"));
+
+    expect(result).toBe(false);
+    expect(consoleError).toHaveBeenCalledWith(
+      "Error dispatching battle event:",
+      "ready",
+      machineError
+    );
+    expect(emitBattleEvent).toHaveBeenCalledWith("debugPanelUpdate");
   });
 });
