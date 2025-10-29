@@ -223,6 +223,6 @@ When adding new helpers:
 ## Related Files
 
 - `domFactory.js`: Core DOM factories and utilities
-- Helper validations: Covered by the helper-focused suites in `tests/helpers/` (for example, `scrollButtonState.test.js`)
+- Helper validations: Covered by helper-focused suites in `tests/helpers/` (e.g., `scrollButtonState.test.js`, `domFactory.js` usage in component tests)
 - `rafMock.js`: RequestAnimationFrame mocking utilities
 - `src/utils/scheduler.js`: Scheduler with test controller API
