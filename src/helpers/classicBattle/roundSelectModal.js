@@ -102,30 +102,28 @@ async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, s
   const bypassForTests = !showModalInTest && (isTestModeEnabled() || isPlaywright);
 
   if (autoStartRequested || bypassForTests) {
-    let resolvedTarget = null;
-
-    if (typeof getPointsToWin === "function") {
-      try {
-        const engineTarget = Number(getPointsToWin());
-        if (Number.isFinite(engineTarget) && engineTarget > 0) {
-          resolvedTarget = engineTarget;
-        }
-      } catch {}
-    }
-
-    if (resolvedTarget === null) {
-      resolvedTarget = loadPersistedSelection();
-    }
-
-    if (resolvedTarget === null) {
-      resolvedTarget = DEFAULT_POINTS_TO_WIN;
-    }
-
+    const resolvedTarget = resolveWinTarget();
     await startRound(resolvedTarget, onStart, emitEvents);
     return true;
   }
 
   return false;
+}
+
+function resolveWinTarget() {
+  try {
+    const engineTarget = Number(getPointsToWin());
+    if (Number.isFinite(engineTarget) && engineTarget > 0) {
+      return engineTarget;
+    }
+  } catch {}
+
+  const persistedTarget = loadPersistedSelection();
+  if (persistedTarget !== null) {
+    return persistedTarget;
+  }
+
+  return DEFAULT_POINTS_TO_WIN;
 }
 
 function loadPersistedSelection() {
