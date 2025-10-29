@@ -1,256 +1,180 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import { waitForModalOpen } from "../fixtures/waits.js";
-import { waitForRoundStats } from "../helpers/battleStateHelper.js";
 
-function escapeCssIdentifier(identifier) {
-  if (typeof identifier !== "string" || identifier.length === 0) {
-    return "";
-  }
+const STAT_GROUP_ARIA_LABEL = /choose a stat/i;
 
-  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
-    return CSS.escape(identifier);
-  }
-
-  return identifier.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
+function escapeRegExp(value) {
+  return String(value ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-async function waitForBattleInitialization(page) {
-  const getBattleStoreReady = () =>
-    page.evaluate(() => {
-      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-      return Boolean(store && typeof store === "object");
-    });
-
-  await expect.poll(getBattleStoreReady, { timeout: 20000 }).toBeTruthy();
+function formatStatLabel(rawKey) {
+  return String(rawKey ?? "")
+    .split(/[_\s-]+/)
+    .filter((segment) => segment.length > 0)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
 }
 
-async function applyQuickWinTarget(page, { waitForEngine = true, timeout = 5000 } = {}) {
-  await page.evaluate(async () => {
-    // Use the injected fixture function
-    if (window.testFixtures?.classicQuickWin?.apply) {
-      await window.testFixtures.classicQuickWin.apply();
-    } else {
-      const store = window.battleStore;
-      const engine = store?.engine;
-      if (engine && typeof engine.setPointsToWin === "function") {
-        try {
-          engine.setPointsToWin(1);
-        } catch {}
-      }
+async function waitForTestApiBootstrap(page, { timeout = 10000 } = {}) {
+  await page.waitForFunction(
+    () => typeof window !== "undefined" && !!window.__TEST_API?.init?.waitForBattleReady,
+    null,
+    { timeout }
+  );
+}
+
+async function configureClassicBattle(page, config = {}) {
+  const outcome = await page.evaluate(async (options) => {
+    const api = window.__TEST_API?.init;
+    if (!api?.configureClassicBattle) {
+      return { ok: false, reason: "configureClassicBattle unavailable" };
     }
-  });
+    try {
+      const result = await api.configureClassicBattle(options);
+      const messages = Array.isArray(result?.errors) ? result.errors.filter(Boolean) : [];
+      return {
+        ok: result?.ok !== false,
+        reason: messages.length ? messages.join(", ") : null
+      };
+    } catch (error) {
+      return { ok: false, reason: error?.message ?? "configureClassicBattle failed" };
+    }
+  }, config);
 
-  if (!waitForEngine) {
-    return;
+  if (!outcome?.ok) {
+    throw new Error(outcome?.reason ?? "Failed to configure classic battle state via Test API");
   }
-
-  const ensureTargetApplied = () =>
-    page.evaluate(async () => {
-      // Use the injected fixture function
-      if (window.testFixtures?.classicQuickWin?.readTarget) {
-        return window.testFixtures.classicQuickWin.readTarget();
-      } else {
-        const store = window.battleStore;
-        const engine = store?.engine;
-        if (engine && typeof engine.getPointsToWin === "function") {
-          try {
-            return Number(engine.getPointsToWin());
-          } catch {}
-        }
-        return null;
-      }
-    });
-
-  await expect.poll(ensureTargetApplied, { timeout }).toBeTruthy();
 }
 
 async function prepareClassicBattle(page, { seed = 42, cooldown = 500 } = {}) {
-  await page.addInitScript(
-    ({ cooldownMs, rngSeed }) => {
-      window.__OVERRIDE_TIMERS = { roundTimer: 3 };
-      window.__NEXT_ROUND_COOLDOWN_MS = cooldownMs;
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      window.__TEST_MODE = { enabled: true, seed: rngSeed };
-    },
-    { cooldownMs: cooldown, rngSeed: seed }
-  );
+  await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
+  await waitForTestApiBootstrap(page);
+  await configureClassicBattle(page, {
+    roundTimerMs: 3,
+    cooldownMs: cooldown,
+    showRoundSelectModal: true,
+    enableTestMode: true,
+    seed,
+    pointsToWin: 1
+  });
 
-  // Inject classicQuickWin fixture functions
-  await page.addInitScript(`
-    let facadePromise = null;
-    let facade = null;
-
-    async function ensureFacade() {
-      if (!facadePromise) {
-        facadePromise = import("/src/helpers/battleEngineFacade.js")
-          .then((module) => {
-            facade = module;
-            return module;
-          })
-          .catch((error) => {
-            try {
-              console.warn("[test] quick win facade import failed", error);
-            } catch {}
-            facadePromise = null;
-            return null;
-          });
-      }
-      return facadePromise;
-    }
-
-    async function apply() {
-      const facade = await ensureFacade();
-      if (!facade || typeof facade.setPointsToWin !== "function") {
-        return false;
-      }
-      try {
-        facade.setPointsToWin(1);
-        if (typeof facade.getPointsToWin === "function") {
-          const current = Number(facade.getPointsToWin());
-          if (current !== 1) {
-            facade.setPointsToWin(1);
-            return Number(facade.getPointsToWin()) === 1;
-          }
-          return true;
-        }
-        return true;
-      } catch (error) {
-        try {
-          console.warn("[test] quick win apply failed", error);
-        } catch {}
-        return false;
-      }
-    }
-
-    function readTarget() {
-      try {
-        if (facade && typeof facade.getPointsToWin === "function") {
-          return Number(facade.getPointsToWin());
-        }
-      } catch {}
+  const battleReady = await page.evaluate(async (limit) => {
+    const initApi = window.__TEST_API?.init;
+    if (!initApi?.waitForBattleReady) {
       return null;
     }
+    return await initApi.waitForBattleReady(limit);
+  }, 10000);
 
-    window.testFixtures = window.testFixtures || {};
-    window.testFixtures.classicQuickWin = { apply, readTarget };
-  `);
+  if (battleReady === false) {
+    throw new Error("Battle did not report ready state within the allotted time.");
+  }
+}
 
-  await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
-  await waitForBattleInitialization(page);
-  await applyQuickWinTarget(page, { waitForEngine: false });
+async function waitForRoundStatsViaApi(page, { timeout = 5000 } = {}) {
+  const result = await page.evaluate(async ({ limit }) => {
+    const stateApi = window.__TEST_API?.state;
+    if (!stateApi?.waitForRoundStats) {
+      return { ok: false, reason: "state.waitForRoundStats unavailable" };
+    }
+    const ok = await stateApi.waitForRoundStats(limit);
+    return { ok, reason: ok ? null : "round stats timeout" };
+  }, { limit: timeout });
+
+  if (!result?.ok) {
+    throw new Error(result?.reason ?? "Round stats did not become available");
+  }
+}
+
+async function applyQuickWinTarget(page, { confirm = true, timeout = 5000 } = {}) {
+  const outcome = await page.evaluate(async ({ shouldConfirm, confirmTimeout }) => {
+    const engineApi = window.__TEST_API?.engine;
+    if (!engineApi?.setPointsToWin) {
+      return { ok: false, reason: "engine.setPointsToWin unavailable" };
+    }
+    const applied = engineApi.setPointsToWin(1);
+    if (!applied) {
+      return { ok: false, reason: "engine.setPointsToWin returned false" };
+    }
+    if (!shouldConfirm || typeof engineApi.waitForPointsToWin !== "function") {
+      return { ok: true, reason: null };
+    }
+    const confirmed = await engineApi.waitForPointsToWin(1, confirmTimeout);
+    return confirmed
+      ? { ok: true, reason: null }
+      : { ok: false, reason: "points-to-win confirmation timeout" };
+  }, { shouldConfirm: confirm, confirmTimeout: timeout });
+
+  if (!outcome?.ok) {
+    throw new Error(outcome?.reason ?? "Failed to apply quick-win target");
+  }
 }
 
 async function selectAdvantagedStat(page) {
-  await waitForRoundStats(page);
+  await waitForRoundStatsViaApi(page);
 
-  const statKey = await page.evaluate(() => {
-    const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-    if (!store || typeof store !== "object") {
-      return null;
+  const selection = await page.evaluate(() => {
+    const inspectApi = window.__TEST_API?.inspect;
+    if (!inspectApi?.pickAdvantagedStatKey) {
+      return { key: null, normalizedKey: null };
     }
-    const player = store.currentPlayerJudoka;
-    const opponent = store.currentOpponentJudoka;
-    if (!player?.stats || !opponent?.stats) {
-      return null;
+    try {
+      return inspectApi.pickAdvantagedStatKey();
+    } catch (error) {
+      return { key: null, normalizedKey: null, reason: error?.message ?? "pick failed" };
     }
-
-    const playerStats = player.stats;
-    const opponentStats = opponent.stats;
-    const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    const keys = Array.from(
-      new Set([...Object.keys(playerStats ?? {}), ...Object.keys(opponentStats ?? {})])
-    );
-
-    let bestNormalized = null;
-    let bestDelta = Number.NEGATIVE_INFINITY;
-
-    const readStatValue = (stats, key) => {
-      if (!stats || typeof stats !== "object") {
-        return Number.NaN;
-      }
-      const normalizedKey = String(key).trim().toLowerCase();
-      const direct = stats[key];
-      if (Number.isFinite(Number(direct))) {
-        return Number(direct);
-      }
-      if (normalizedKey !== key && Number.isFinite(Number(stats[normalizedKey]))) {
-        return Number(stats[normalizedKey]);
-      }
-      return Number.NaN;
-    };
-
-    for (const key of keys) {
-      const normalized = String(key).trim().toLowerCase();
-      const playerValue = readStatValue(playerStats, key);
-      const opponentValue = readStatValue(opponentStats, key);
-
-      if (!Number.isFinite(playerValue) || !Number.isFinite(opponentValue)) {
-        continue;
-      }
-
-      const delta = playerValue - opponentValue;
-      if (delta > bestDelta) {
-        bestDelta = delta;
-        bestNormalized = normalized;
-      }
-    }
-
-    if (bestNormalized && Number.isFinite(bestDelta) && bestDelta > 0) {
-      for (const button of buttons) {
-        const datasetValue = button.getAttribute("data-stat") ?? button.dataset?.stat;
-        if (typeof datasetValue === "string" && datasetValue.trim()) {
-          if (datasetValue.trim().toLowerCase() === bestNormalized) {
-            return datasetValue.trim();
-          }
-        }
-      }
-      return bestNormalized;
-    }
-
-    const firstButton = buttons[0] ?? null;
-    if (!firstButton) {
-      return null;
-    }
-    const datasetValue = firstButton.getAttribute("data-stat") ?? firstButton.dataset?.stat;
-    if (typeof datasetValue === "string" && datasetValue.trim()) {
-      return datasetValue.trim();
-    }
-    return null;
   });
 
-  const statButtons = page.locator("#stat-buttons button[data-stat]");
-  await expect(statButtons.first()).toBeVisible();
-
-  if (typeof statKey === "string" && statKey) {
-    const normalizedStat = statKey.trim().toLowerCase();
-    const targetIndex = await statButtons.evaluateAll((buttons, target) => {
-      const normalize = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
-      const desired = normalize(target);
-      if (!desired) {
-        return -1;
-      }
-      for (let index = 0; index < buttons.length; index += 1) {
-        const button = buttons[index];
-        const datasetValue = button.getAttribute("data-stat") ?? button.dataset?.stat;
-        if (normalize(datasetValue) === desired) {
-          return index;
-        }
-      }
-      return -1;
-    }, normalizedStat);
-
-    if (Number.isInteger(targetIndex) && targetIndex >= 0) {
-      const statButton = statButtons.nth(targetIndex);
-      await expect(statButton).toBeEnabled();
-      await statButton.click();
-      return;
+  const normalizedKey = (() => {
+    if (typeof selection?.normalizedKey === "string" && selection.normalizedKey.trim()) {
+      return selection.normalizedKey.trim();
     }
+    if (typeof selection?.key === "string" && selection.key.trim()) {
+      return selection.key.trim().toLowerCase();
+    }
+    return null;
+  })();
+
+  const statGroup = page.getByRole("group", { name: STAT_GROUP_ARIA_LABEL });
+  await expect(statGroup).toBeVisible();
+
+  if (normalizedKey) {
+    const label = formatStatLabel(normalizedKey);
+    const statButton = statGroup.getByRole("button", {
+      name: new RegExp(`^${escapeRegExp(label)}$`, "i")
+    });
+    await expect(statButton).toBeVisible();
+    await expect(statButton).toBeEnabled();
+    await statButton.click();
+    return;
   }
 
-  const fallbackButton = statButtons.first();
+  const fallbackButton = statGroup.getByRole("button").first();
+  await expect(fallbackButton).toBeVisible();
   await expect(fallbackButton).toBeEnabled();
   await fallbackButton.click();
+}
+
+async function ensureRoundStarted(page) {
+  const roundButton = page.locator("#round-select-2");
+  if ((await roundButton.count()) > 0) {
+    await expect(roundButton).toBeVisible();
+    await expect(roundButton).toBeEnabled();
+    await roundButton.click();
+  }
+
+  await page
+    .evaluate(async () => {
+      const stateApi = window.__TEST_API?.state;
+      if (!stateApi?.waitForBattleState) {
+        return null;
+      }
+      if (stateApi.getBattleState?.() === "waitingForPlayerAction") {
+        return true;
+      }
+      return await stateApi.waitForBattleState("waitingForPlayerAction", 10000);
+    })
+    .catch(() => null);
 }
 
 async function resolveMatchFromCurrentRound(
@@ -317,11 +241,8 @@ test.describe("Classic Battle End Game Flow", () => {
         await prepareClassicBattle(page, { seed: 5 });
 
         // Start match
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-
-        // Wait for cards and stat buttons
-        await page.waitForSelector("#stat-buttons button[data-stat]");
 
         // Resolve the round using the deterministic stat selection helper
         const match = await resolveMatchFromCurrentRound(page);
@@ -335,13 +256,12 @@ test.describe("Classic Battle End Game Flow", () => {
         expectDecisiveFinalScore(scores);
 
         // Confirm the match end modal is presented to the user
-        await waitForModalOpen(page);
         const matchEndModal = page.locator("#match-end-modal").first();
         await expect(matchEndModal).toBeVisible();
 
         // Wait for and verify end modal appears
         const matchEndTitle = page.locator("#match-end-title").first();
-        await matchEndTitle.waitFor({ state: "visible" });
+        await expect(matchEndTitle).toBeVisible();
         await expect(matchEndTitle).toHaveText("Match Over");
 
         // Verify modal has replay and quit buttons
@@ -358,9 +278,8 @@ test.describe("Classic Battle End Game Flow", () => {
         await prepareClassicBattle(page);
 
         // Start and complete match
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-        await page.waitForSelector("#stat-buttons button[data-stat]");
 
         const match = await resolveMatchFromCurrentRound(page);
         const { scores } = match;
@@ -387,9 +306,8 @@ test.describe("Classic Battle End Game Flow", () => {
         await prepareClassicBattle(page);
 
         // Complete a match first
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-        await page.waitForSelector("#stat-buttons button[data-stat]");
 
         const match = await resolveMatchFromCurrentRound(page);
         const { scores } = match;
@@ -417,26 +335,11 @@ test.describe("Classic Battle End Game Flow", () => {
         if ((await replayButton.count()) > 0) {
           await expect(replayButton).toBeVisible();
 
-          await waitForModalOpen(page);
-
           // Test replay functionality if button is available
           await expect(replayButton).toBeEnabled();
           await replayButton.focus();
-          const activeButtonId = await page.evaluate(() => {
-            if (typeof document === "undefined") return null;
-            const active = document.activeElement;
-            return typeof active?.id === "string" && active.id.trim().length > 0
-              ? active.id.trim()
-              : null;
-          });
-
-          const focusTarget =
-            typeof activeButtonId === "string" && activeButtonId
-              ? page.locator(`#${escapeCssIdentifier(activeButtonId)}`)
-              : replayButton;
-
-          await expect(focusTarget).toBeFocused();
-          await focusTarget.press("Enter");
+          await expect(replayButton).toBeFocused();
+          await replayButton.press("Enter");
 
           // Verify page remains functional after replay
           await expect(page.locator("body")).toBeVisible();
@@ -450,9 +353,8 @@ test.describe("Classic Battle End Game Flow", () => {
         const errors = [];
         page.on("pageerror", (error) => errors.push(error));
 
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-        await page.waitForSelector("#stat-buttons button[data-stat]");
 
         const match = await resolveMatchFromCurrentRound(page);
         const { scores } = match;
@@ -480,12 +382,8 @@ test.describe("Classic Battle End Game Flow", () => {
       withMutedConsole(async () => {
         await prepareClassicBattle(page);
 
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-        await page.waitForSelector("#stat-buttons button[data-stat]");
-
-        // Select a stat to complete the round and trigger match end
-        await waitForRoundStats(page);
         const match = await resolveMatchFromCurrentRound(page, {
           statSelector: selectAdvantagedStat
         });
@@ -493,19 +391,14 @@ test.describe("Classic Battle End Game Flow", () => {
         expectDecisiveFinalScore(match.scores);
 
         // Wait for match to complete and modal to appear
-        await waitForModalOpen(page);
+        const matchEndModal = page.locator("#match-end-modal");
+        await expect(matchEndModal).toBeVisible();
 
-        // Get match result from the modal context
-        const scores = await page.evaluate(() => {
-          const desc = document.getElementById("match-end-desc");
-          if (!desc || !desc.textContent) return null;
-          const match = desc.textContent.match(/\((\d+)-(\d+)\)/);
-          if (!match) return null;
-          return { player: parseInt(match[1]), opponent: parseInt(match[2]) };
-        });
-
-        expect(scores).toBeTruthy();
-        expectDecisiveFinalScore(scores);
+        const scores = match.scores;
+        const modalDescription = page.locator("#match-end-desc");
+        await expect(modalDescription).toContainText(
+          `(${scores.player}-${scores.opponent})`
+        );
 
         // Verify score display is clear and readable
         const scoreDisplay = page.locator("#score-display");
@@ -524,12 +417,8 @@ test.describe("Classic Battle End Game Flow", () => {
       withMutedConsole(async () => {
         await prepareClassicBattle(page);
 
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-        await page.waitForSelector("#stat-buttons button[data-stat]");
-
-        // Select a stat to complete the round and trigger match end
-        await waitForRoundStats(page);
         const match = await resolveMatchFromCurrentRound(page, {
           statSelector: selectAdvantagedStat
         });
@@ -537,18 +426,14 @@ test.describe("Classic Battle End Game Flow", () => {
         expectDecisiveFinalScore(match.scores);
 
         // Wait for match to complete
-        await page.waitForSelector("#match-end-modal", { timeout: 5000 });
+        const matchEndModal = page.locator("#match-end-modal");
+        await expect(matchEndModal).toBeVisible();
 
-        // Get scores from the modal
-        const scores = await page.evaluate(() => {
-          const desc = document.getElementById("match-end-desc");
-          if (!desc || !desc.textContent) return null;
-          const match = desc.textContent.match(/\((\d+)-(\d+)\)/);
-          if (!match) return null;
-          return { player: parseInt(match[1]), opponent: parseInt(match[2]) };
-        });
-
-        expect(scores).toBeTruthy();
+        const scores = match.scores;
+        const modalDescription = page.locator("#match-end-desc");
+        await expect(modalDescription).toContainText(
+          `(${scores.player}-${scores.opponent})`
+        );
         expectDecisiveFinalScore(scores);
 
         // Verify interface remains stable with modal present
@@ -571,9 +456,8 @@ test.describe("Classic Battle End Game Flow", () => {
         const errors = [];
         page.on("pageerror", (error) => errors.push(error));
 
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-        await page.waitForSelector("#stat-buttons button[data-stat]");
 
         const match = await resolveMatchFromCurrentRound(page);
         const { scores } = match;
@@ -592,9 +476,8 @@ test.describe("Classic Battle End Game Flow", () => {
         await prepareClassicBattle(page, { cooldown: 300 });
 
         // Complete first match
-        await page.click("#round-select-2");
+        await ensureRoundStarted(page);
         await applyQuickWinTarget(page);
-        await page.waitForSelector("#stat-buttons button[data-stat]");
         const match = await resolveMatchFromCurrentRound(page);
         const { scores } = match;
         expect(match.timedOut).toBe(false);
@@ -613,21 +496,18 @@ test.describe("Classic Battle End Game Flow", () => {
     await prepareClassicBattle(page);
 
     // Start and complete match
-    await page.click("#round-select-2");
+    await ensureRoundStarted(page);
     await applyQuickWinTarget(page);
-    await page.waitForSelector("#stat-buttons button[data-stat]");
 
     const match = await resolveMatchFromCurrentRound(page);
     expect(match.timedOut).toBe(false);
 
     // Confirm the match end modal is presented to the user
-    await waitForModalOpen(page);
     const matchEndModal = page.locator("#match-end-modal").first();
     await expect(matchEndModal).toBeVisible();
 
     // Wait for and verify end modal appears
     const matchEndTitle = page.locator("#match-end-title").first();
-    await matchEndTitle.waitFor({ state: "visible" });
     await expect(matchEndTitle).toHaveText("Match Over");
 
     // Verify modal has replay and quit buttons

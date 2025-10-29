@@ -196,22 +196,25 @@ test.describe("Classic Battle Opponent Messages", () => {
     "opponent card remains hidden until reveal",
     async ({ page }) => {
       const opponentCard = page.locator("#opponent-card");
-      await expect(opponentCard).toHaveClass(/opponent-hidden/);
+      const mysteryPlaceholder = opponentCard.locator("#mystery-card-placeholder");
+      await expect(opponentCard).toHaveAttribute("aria-label", "Mystery opponent card");
+      await expect(mysteryPlaceholder).toHaveCount(1);
 
       const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
-      await expect(opponentCard).toHaveClass(/opponent-hidden/);
+      await expect(opponentCard).toHaveAttribute("aria-label", "Mystery opponent card");
+      await expect(mysteryPlaceholder).toHaveCount(1);
 
       await ensureRoundResolved(page);
 
       await expect
         .poll(
-          async () =>
-            await opponentCard.evaluate((node) => node.classList.contains("opponent-hidden")),
+          async () => await opponentCard.getAttribute("aria-label"),
           { timeout: 4_000 }
         )
-        .toBe(false);
+        .toBe("Opponent card");
+      await expect(mysteryPlaceholder).toHaveCount(0);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
     },
     { resolveDelay: 50, nextRoundCooldown: 2_000 }
@@ -228,7 +231,9 @@ test.describe("Classic Battle Opponent Messages", () => {
           await firstStat.click();
 
           const opponentCard = page.locator("#opponent-card");
-          await expect(opponentCard).toHaveClass(/opponent-hidden/);
+          const mysteryPlaceholder = opponentCard.locator("#mystery-card-placeholder");
+          await expect(opponentCard).toHaveAttribute("aria-label", "Mystery opponent card");
+          await expect(mysteryPlaceholder).toHaveCount(1);
 
           await page.evaluate(async () => {
             const api = window.__TEST_API;
@@ -240,11 +245,11 @@ test.describe("Classic Battle Opponent Messages", () => {
 
           await expect
             .poll(
-              async () =>
-                await opponentCard.evaluate((node) => node.classList.contains("opponent-hidden")),
+              async () => await opponentCard.getAttribute("aria-label"),
               { timeout: 4_000 }
             )
-            .toBe(false);
+            .toBe("Opponent card");
+          await expect(mysteryPlaceholder).toHaveCount(0);
           await confirmRoundResolved(page, {
             timeout: 3_000,
             message: 'Expected battle state to be "roundOver" after CLI resolveRound'

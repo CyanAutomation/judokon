@@ -7,32 +7,34 @@ import "./commonMocks.js";
 /**
  * Build a scoreboard header matching the Classic Battle layout.
  */
+const SCOREBOARD_HEADER_TEMPLATE = `
+  <div class="scoreboard-left" id="scoreboard-left">
+    <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
+    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
+      <span data-part="label">Time Left:</span>
+      <span data-part="value">0s</span>
+    </p>
+    <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <div class="scoreboard-gap"></div>
+  <div class="scoreboard-right" id="scoreboard-right">
+    <p id="score-display" aria-live="polite" aria-atomic="true" role="status">
+      <span data-side="player">
+        <span data-part="label">You:</span>
+        <span data-part="value">0</span>
+      </span>
+      <span data-side="opponent">
+        <span data-part="label">Opponent:</span>
+        <span data-part="value">0</span>
+      </span>
+    </p>
+  </div>
+`;
+
 function mountScoreboardHeader() {
   const header = document.createElement("header");
   header.className = "header battle-header";
-  header.innerHTML = `
-    <div class="scoreboard-left" id="scoreboard-left">
-      <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
-      <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
-        <span data-part="label">Time Left:</span>
-        <span data-part="value">0s</span>
-      </p>
-      <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
-    </div>
-    <div class="scoreboard-gap"></div>
-    <div class="scoreboard-right" id="scoreboard-right">
-      <p id="score-display" aria-live="polite" aria-atomic="true" role="status">
-        <span data-side="player">
-          <span data-part="label">You:</span>
-          <span data-part="value">0</span>
-        </span>
-        <span data-side="opponent">
-          <span data-part="label">Opponent:</span>
-          <span data-part="value">0</span>
-        </span>
-      </p>
-    </div>
-  `;
+  header.innerHTML = SCOREBOARD_HEADER_TEMPLATE;
   return header;
 }
 
@@ -45,6 +47,19 @@ describe.sequential("ClassicBattleController.startRound", () => {
   let roundStore;
   /** @type {import('../../../src/helpers/classicBattle/battleEvents.js')} */
   let battleEvents;
+
+  /** @type {import("../../../src/types.js").Judoka | undefined} */
+  let playerJudoka;
+  /** @type {import("../../../src/types.js").Judoka | undefined} */
+  let opponentJudoka;
+  /** @type {import('vitest').Mock | undefined} */
+  let renderMock;
+  /** @type {import('vitest').Mock | undefined} */
+  let generateRandomCardMock;
+  /** @type {import('vitest').Mock | undefined} */
+  let fetchJsonMock;
+  /** @type {import('vitest').Mock | undefined} */
+  let getRandomJudokaMock;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -74,20 +89,20 @@ describe.sequential("ClassicBattleController.startRound", () => {
     snackbar.setAttribute("aria-live", "polite");
     document.body.appendChild(snackbar);
 
-    const playerJudoka = {
+    playerJudoka = {
       id: "player-judoka",
       name: "Test Player",
       stats: { power: 5, speed: 4, technique: 3, kumikata: 4, newaza: 2 },
       isHidden: false
     };
-    const opponentJudoka = {
+    opponentJudoka = {
       id: "opponent-judoka",
       name: "Test Opponent",
       stats: { power: 3, speed: 2, technique: 2, kumikata: 1, newaza: 1 },
       isHidden: false
     };
 
-    const fetchJsonMock = vi.fn(async (path) => {
+    fetchJsonMock = vi.fn(async (path) => {
       if (String(path).includes("judoka")) {
         return [playerJudoka, opponentJudoka];
       }
@@ -99,17 +114,27 @@ describe.sequential("ClassicBattleController.startRound", () => {
       }
       return [];
     });
-    const generateRandomCardMock = vi.fn(async (_data, _lookup, container, _prefetch, cb) => {
-      container.innerHTML = `<article class="judoka-card" data-testid="player-card"><h2>${playerJudoka.name}</h2></article>`;
-      cb?.(playerJudoka);
+    generateRandomCardMock = vi.fn(async (_data, _lookup, container, _prefetch, cb) => {
+      const cardElement = document.createElement("article");
+      cardElement.className = "judoka-card";
+      cardElement.setAttribute("data-testid", "player-card");
+      const heading = document.createElement("h2");
+      heading.textContent = playerJudoka?.name ?? "";
+      cardElement.appendChild(heading);
+      container.replaceChildren(cardElement);
+      if (cb && playerJudoka) {
+        cb(playerJudoka);
+      }
     });
-    const renderMock = vi.fn(async () => {
+    renderMock = vi.fn(async () => {
       const el = document.createElement("article");
       el.className = "judoka-card";
-      el.innerHTML = `<h2>${opponentJudoka.name}</h2>`;
+      const heading = document.createElement("h2");
+      heading.textContent = opponentJudoka?.name ?? "";
+      el.appendChild(heading);
       return el;
     });
-    const getRandomJudokaMock = vi.fn(() => opponentJudoka);
+    getRandomJudokaMock = vi.fn(() => opponentJudoka);
 
     applyMockSetup({
       fetchJsonMock,
@@ -169,11 +194,10 @@ describe.sequential("ClassicBattleController.startRound", () => {
     );
     const waitForOpponentCard = vi.fn(async () => {
       const container = document.getElementById("opponent-card");
-      if (container && !container.querySelector(".judoka-card")) {
-        const card = document.createElement("article");
-        card.className = "judoka-card";
-        card.textContent = "Opponent ready";
-        container.appendChild(card);
+      if (!container || container.querySelector(".judoka-card")) return;
+      const card = await renderMock?.(opponentJudoka);
+      if (card instanceof HTMLElement) {
+        container.replaceChildren(card);
       }
     });
     const controller = new ClassicBattleController({ waitForOpponentCard });

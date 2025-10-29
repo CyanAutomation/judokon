@@ -60,6 +60,16 @@ describe("ClassicBattleController.init", () => {
   let featureFlagsEmitter;
   /** @type {((event: Event) => void)[]} */
   let registeredFlagListeners;
+  /**
+   * @param {ReturnType<typeof vi.spyOn>} addListenerSpy
+   */
+  const registerFlagChangeListeners = (addListenerSpy) => {
+    const extractedListeners = (addListenerSpy?.mock?.calls || [])
+      .filter(([eventName, handler]) => eventName === "change" && typeof handler === "function")
+      .map(([, handler]) => /** @type {(event: Event) => void} */ (handler));
+    registeredFlagListeners.push(...extractedListeners);
+    addListenerSpy?.mockRestore?.();
+  };
 
   beforeEach(async () => {
     vi.resetModules();
@@ -124,12 +134,7 @@ describe("ClassicBattleController.init", () => {
 
     await initPromise;
 
-    for (const [eventName, handler] of addListenerSpy.mock.calls) {
-      if (eventName === "change" && typeof handler === "function") {
-        registeredFlagListeners.push(handler);
-      }
-    }
-    addListenerSpy.mockRestore();
+    registerFlagChangeListeners(addListenerSpy);
 
     expect(isTestModeEnabled()).toBe(true);
     expect(getCurrentSeed()).toBe(1);
@@ -150,12 +155,7 @@ describe("ClassicBattleController.init", () => {
 
     await controller.init();
 
-    for (const [eventName, handler] of addListenerSpy.mock.calls) {
-      if (eventName === "change" && typeof handler === "function") {
-        registeredFlagListeners.push(handler);
-      }
-    }
-    addListenerSpy.mockRestore();
+    registerFlagChangeListeners(addListenerSpy);
 
     expect(isTestModeEnabled()).toBe(false);
     expect(getCurrentSeed()).toBe(1);
