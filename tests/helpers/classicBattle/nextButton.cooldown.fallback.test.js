@@ -1,14 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { __setStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
 
 describe("Next button cooldown fallback", () => {
   /** @type {Array<() => void>} */
   let cleanupTasks;
-  /** @type {Awaited<ReturnType<typeof import("../../../src/helpers/classicBattle/battleEvents.js")>>>} */
+  /** @type {import("../../../src/helpers/classicBattle/battleEvents.js")} */
   let battleEvents;
 
   beforeEach(async () => {
     cleanupTasks = [];
     battleEvents = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    __setStateSnapshot({ state: null, prev: null, event: null, log: [] });
+    cleanupTasks.push(() =>
+      __setStateSnapshot({ state: null, prev: null, event: null, log: [] })
+    );
     const transitionListeners = await import(
       "../../../src/helpers/classicBattle/stateTransitionListeners.js"
     );
