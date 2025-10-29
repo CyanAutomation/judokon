@@ -1,6 +1,6 @@
 import { createButton } from "../../components/Button.js";
 import { createModal } from "../../components/Modal.js";
-import { setPointsToWin } from "../battleEngineFacade.js";
+import { getPointsToWin, setPointsToWin } from "../battleEngineFacade.js";
 import { initTooltips } from "../tooltip.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent } from "./battleEvents.js";
@@ -102,7 +102,26 @@ async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, s
   const bypassForTests = !showModalInTest && (isTestModeEnabled() || isPlaywright);
 
   if (autoStartRequested || bypassForTests) {
-    await startRound(DEFAULT_POINTS_TO_WIN, onStart, emitEvents);
+    let resolvedTarget = null;
+
+    if (typeof getPointsToWin === "function") {
+      try {
+        const engineTarget = Number(getPointsToWin());
+        if (Number.isFinite(engineTarget) && engineTarget > 0) {
+          resolvedTarget = engineTarget;
+        }
+      } catch {}
+    }
+
+    if (resolvedTarget === null) {
+      resolvedTarget = loadPersistedSelection();
+    }
+
+    if (resolvedTarget === null) {
+      resolvedTarget = DEFAULT_POINTS_TO_WIN;
+    }
+
+    await startRound(resolvedTarget, onStart, emitEvents);
     return true;
   }
 
