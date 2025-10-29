@@ -1,6 +1,19 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import "./commonMocks.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
+import { stallRecoveryJudokaFixtures } from "./stallRecoveryJudokaFixtures.js";
+
+const [playerFixture, opponentFixture] = stallRecoveryJudokaFixtures;
+
+const renderStatsMarkup = (stats) => `
+      <ul>
+        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
+        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
+        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
+        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
+        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
+      </ul>
+    `;
 
 describe("classicBattle stat selection timing", () => {
   const getEnv = setupClassicBattleHooks();
@@ -54,11 +67,13 @@ describe("classicBattle stat selection timing", () => {
     const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await battleMod.startRound(store, battleMod.applyRoundUI);
+    store.currentPlayerJudoka = playerFixture;
+    store.currentOpponentJudoka = opponentFixture;
+    store.lastPlayerStats = { ...playerFixture.stats };
+    store.lastOpponentStats = { ...opponentFixture.stats };
+    document.getElementById("player-card").innerHTML = renderStatsMarkup(playerFixture.stats);
+    document.getElementById("opponent-card").innerHTML = renderStatsMarkup(opponentFixture.stats);
     const pending = battleMod.__triggerRoundTimeoutNow(store);
     await timerSpy.runAllTimersAsync();
     await pending;
@@ -81,10 +96,8 @@ describe("classicBattle stat selection timing", () => {
       "Stat selection stalled. Pick a stat or wait for auto-pick."
     );
     expect(document.querySelector("header #round-message").textContent).toBe("");
-    document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    document.getElementById("player-card").innerHTML = renderStatsMarkup(playerFixture.stats);
+    document.getElementById("opponent-card").innerHTML = renderStatsMarkup(opponentFixture.stats);
     {
       const playerVal = battleMod.getCardStatValue(document.getElementById("player-card"), "power");
       const opponentVal = battleMod.getCardStatValue(

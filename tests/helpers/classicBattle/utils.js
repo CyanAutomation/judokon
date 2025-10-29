@@ -64,14 +64,42 @@ export function setupClassicBattleDom() {
     }
     return [];
   });
+  const mockPlayerJudoka = {
+    id: "player-judoka",
+    name: "Mock Player",
+    stats: { power: 5, speed: 4, technique: 3, kumikata: 4, newaza: 3 }
+  };
+  const mockOpponentJudoka = {
+    id: "opponent-judoka",
+    name: "Mock Opponent",
+    stats: { power: 3, speed: 2, technique: 2, kumikata: 1, newaza: 1 }
+  };
   const generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
-    container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    if (cb) cb({ id: 1 });
+    const { stats } = mockPlayerJudoka;
+    container.innerHTML = `
+      <ul>
+        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
+        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
+        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
+        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
+        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
+      </ul>
+    `;
+    if (cb) cb(mockPlayerJudoka);
   });
-  const getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
-  const renderMock = vi.fn(async () => {
+  const getRandomJudokaMock = vi.fn(() => mockOpponentJudoka);
+  const renderMock = vi.fn(async (judoka) => {
     const el = document.createElement("div");
-    el.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    const stats = judoka?.stats ?? mockOpponentJudoka.stats;
+    el.innerHTML = `
+      <ul>
+        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
+        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
+        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
+        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
+        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
+      </ul>
+    `;
     return el;
   });
   const currentFlags = { autoSelect: { enabled: true } };
