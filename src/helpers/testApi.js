@@ -2331,7 +2331,8 @@ const cliApi = {
    * @param {{
    *   outcomeEvent?: string|null,
    *   expireSelection?: boolean,
-   *   opponentResolveDelayMs?: number|undefined
+   *   opponentResolveDelayMs?: number|undefined,
+   *   autoWaitTimeoutMs?: number|undefined
    * }} [options]
    * @returns {Promise<{
    *   detail: object,
@@ -2349,7 +2350,12 @@ const cliApi = {
    * return detail + dispatch flags + current battle state
    */
   async completeRound(roundInput = {}, options = {}) {
-    const { outcomeEvent = null, expireSelection = true, opponentResolveDelayMs } = options ?? {};
+    const {
+      outcomeEvent = null,
+      expireSelection = true,
+      opponentResolveDelayMs,
+      autoWaitTimeoutMs
+    } = options ?? {};
 
     if (expireSelection && typeof timerApi.expireSelectionTimer === "function") {
       try {
@@ -2409,7 +2415,7 @@ const cliApi = {
     if (outcomeEvent) {
       finalState = readCurrentState();
     } else {
-      const timeoutMs = 2_000;
+      const timeoutMs = autoWaitTimeoutMs ?? 2_000;
       const start = Date.now();
       const transitionalStates = new Set(["roundDecision", "roundOver"]);
 
