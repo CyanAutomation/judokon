@@ -5,6 +5,16 @@ import { createBattleHeader, createBattleCardContainers } from "../../utils/test
 import { applyMockSetup } from "./mockSetup.js";
 import { stallRecoveryJudokaFixtures } from "./stallRecoveryJudokaFixtures.js";
 
+const renderStatsMarkup = (stats) => `
+      <ul>
+        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
+        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
+        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
+        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
+        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
+      </ul>
+    `;
+
 vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/timerService.js");
   return {
@@ -27,6 +37,8 @@ let fetchJsonMock;
 let generateRandomCardMock;
 let getRandomJudokaMock;
 let renderMock;
+let playerJudoka;
+let opponentJudoka;
 
 describe("classicBattle stalled stat selection recovery", () => {
   let timers;
@@ -36,6 +48,7 @@ describe("classicBattle stalled stat selection recovery", () => {
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
     timers = useCanonicalTimers();
+    [playerJudoka, opponentJudoka] = stallRecoveryJudokaFixtures;
     fetchJsonMock = vi.fn(async (path) => {
       if (typeof path === "string" && path.endsWith("judoka.json")) {
         return stallRecoveryJudokaFixtures;
@@ -43,13 +56,14 @@ describe("classicBattle stalled stat selection recovery", () => {
       return [];
     });
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
-      container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-      if (cb) cb({ id: 1 });
+      container.innerHTML = renderStatsMarkup(playerJudoka.stats);
+      if (cb) cb(playerJudoka);
     });
-    getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
-    renderMock = vi.fn(async () => {
+    getRandomJudokaMock = vi.fn(() => opponentJudoka);
+    renderMock = vi.fn(async (judoka) => {
       const el = document.createElement("div");
-      el.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+      const stats = judoka?.stats ?? opponentJudoka.stats;
+      el.innerHTML = renderStatsMarkup(stats);
       return el;
     });
     applyMockSetup({
@@ -82,6 +96,12 @@ describe("classicBattle stalled stat selection recovery", () => {
     store.forceDirectResolution = true;
     battleMod._resetForTest(store);
     await battleMod.startRound(store, battleMod.applyRoundUI);
+    store.currentPlayerJudoka = playerJudoka;
+    store.currentOpponentJudoka = opponentJudoka;
+    store.lastPlayerStats = { ...playerJudoka.stats };
+    store.lastOpponentStats = { ...opponentJudoka.stats };
+    document.getElementById("player-card").innerHTML = renderStatsMarkup(playerJudoka.stats);
+    document.getElementById("opponent-card").innerHTML = renderStatsMarkup(opponentJudoka.stats);
     await battleMod.__triggerStallPromptNow(store);
     expect(document.querySelector("header #round-message").textContent).toMatch(/stalled/i);
     timers.advanceTimersByTime(5000);

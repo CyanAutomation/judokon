@@ -37,7 +37,9 @@ vi.mock("../../../src/components/JudokaCard.js", () => {
   mocks.renderMock = vi.fn();
   mocks.JudokaCardMock = vi
     .fn()
-    .mockImplementation(() => ({ render: (...args) => mocks.renderMock(...args) }));
+    .mockImplementation((judoka, ...ctorArgs) => ({
+      render: (...args) => mocks.renderMock(judoka, ...ctorArgs, ...args)
+    }));
   return { JudokaCard: mocks.JudokaCardMock };
 });
 
