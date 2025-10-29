@@ -6,14 +6,12 @@ This directory contains tests for components shared between classic and CLI batt
 
 - **scoreboard/** - Scoreboard component tests (accessible from original location)
 - **modal/** - Modal dialog component tests (accessible from original location)
-- **configuration/** - Default configuration tests (accessible from original location)
 
 ## Note on Test Location
 
 Tests remain in their original locations to preserve working imports:
 - Scoreboard tests: `tests/helpers/scoreboard.*.test.js`
 - Modal tests: `tests/components/Modal.dialog.test.js`
-- Configuration tests: `tests/config/battleDefaults.test.js`
 
 This centralized directory documents the shared component test organization.
 
@@ -34,7 +32,6 @@ npm run test:battles:cov
 
 - Scoreboard rendering and behavior
 - Modal dialog functionality
-- Battle configuration defaults
 
 ## See Also
 
