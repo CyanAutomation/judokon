@@ -82,8 +82,7 @@ function mergeKnown(base, override, defaults, path = []) {
  * @returns {Promise<import("./settingsDefaults.js").Settings>} Resolved settings object.
  */
 export async function loadSettings(options = {}) {
-  const defaults =
-    options?.defaults ?? (await import("./settingsDefaults.js")).DEFAULT_SETTINGS;
+  const defaults = options?.defaults ?? (await import("./settingsDefaults.js")).DEFAULT_SETTINGS;
   let settings = structuredClone(defaults);
 
   try {

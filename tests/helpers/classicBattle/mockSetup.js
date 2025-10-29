@@ -35,11 +35,9 @@ vi.mock("../../../src/helpers/cardUtils.js", () => ({
 
 vi.mock("../../../src/components/JudokaCard.js", () => {
   mocks.renderMock = vi.fn();
-  mocks.JudokaCardMock = vi
-    .fn()
-    .mockImplementation((judoka, ...ctorArgs) => ({
-      render: (...args) => mocks.renderMock(judoka, ...ctorArgs, ...args)
-    }));
+  mocks.JudokaCardMock = vi.fn().mockImplementation((judoka, ...ctorArgs) => ({
+    render: (...args) => mocks.renderMock(judoka, ...ctorArgs, ...args)
+  }));
   return { JudokaCard: mocks.JudokaCardMock };
 });
 
@@ -88,7 +86,9 @@ export function applyMockSetup({
     mocks.setupLazyPortraitsMock.mockImplementation((...args) => setupLazyPortraitsMock(...args));
   }
   if (markSignatureMoveReadyMock) {
-    mocks.markSignatureMoveReadyMock.mockImplementation((...args) => markSignatureMoveReadyMock(...args));
+    mocks.markSignatureMoveReadyMock.mockImplementation((...args) =>
+      markSignatureMoveReadyMock(...args)
+    );
   }
   return mocks;
 }

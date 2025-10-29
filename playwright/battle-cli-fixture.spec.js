@@ -10,8 +10,7 @@ function buildCliUrl(query = "") {
 
 async function getBattleCliModuleResetCount(page, defaultValue = -1) {
   return await page.evaluate(
-    (fallback) =>
-      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? fallback,
+    (fallback) => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? fallback,
     defaultValue
   );
 }
@@ -55,8 +54,8 @@ test.describe("battleCliFixture", () => {
     expect(initialCount).toBeGreaterThan(0);
 
     await resetBattleCliModuleResetCounter(page);
-    const resetCount = await page.evaluate(() =>
-      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
+    const resetCount = await page.evaluate(
+      () => window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
     );
     expect(resetCount).toBe(0);
 

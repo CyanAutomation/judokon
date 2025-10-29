@@ -471,7 +471,9 @@ export async function drawCards(options = {}) {
 
       const isElement =
         cardElement instanceof HTMLElement ||
-        (cardElement && typeof cardElement === "object" && cardElement.nodeType === Node.ELEMENT_NODE);
+        (cardElement &&
+          typeof cardElement === "object" &&
+          cardElement.nodeType === Node.ELEMENT_NODE);
 
       if (isElement) {
         playerContainer.replaceChildren(cardElement);

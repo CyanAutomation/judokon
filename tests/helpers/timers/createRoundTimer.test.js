@@ -242,10 +242,17 @@ describe("createRoundTimer events", () => {
     timer.stop();
 
     timer.start(2);
-    expect(events).toEqual([["tick", 3], ["tick", 2]]);
+    expect(events).toEqual([
+      ["tick", 3],
+      ["tick", 2]
+    ]);
 
     timers.advanceTimersByTime(1000);
-    expect(events).toEqual([["tick", 3], ["tick", 2], ["tick", 1]]);
+    expect(events).toEqual([
+      ["tick", 3],
+      ["tick", 2],
+      ["tick", 1]
+    ]);
 
     timers.runAllTimers();
     expect(events).toEqual([["tick", 3], ["tick", 2], ["tick", 1], ["expired"]]);

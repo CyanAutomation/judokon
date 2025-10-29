@@ -11,7 +11,6 @@ describe("cooldownImmediatelyFollowsRoundOver helper", () => {
   });
 
   it("returns true when cooldown follows roundOver after intermediate entries", () => {
-
     const log = [
       { to: "roundOver", from: "resolveRound" },
       { to: "opponentReveal", from: "roundOver" },

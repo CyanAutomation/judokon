@@ -29,9 +29,7 @@ function createStateTable() {
 
 async function initMachine({ store = { selectionMade: false, roundsPlayed: 0 } } = {}) {
   const stateTable = createStateTable();
-  const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
-    ORCHESTRATOR_PATH
-  );
+  const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(ORCHESTRATOR_PATH);
   await initClassicBattleOrchestrator({ store, stateTable });
   return { machine: getBattleStateMachine(), store };
 }
@@ -93,15 +91,10 @@ describe("stateHandlers map", () => {
   });
 
   it("enables player interaction when waitingForPlayerAction is entered", async () => {
-    const { spies, cleanup } = await registerEventSpies(
-      "statButtons:enable",
-      "battleStateChange"
-    );
+    const { spies, cleanup } = await registerEventSpies("statButtons:enable", "battleStateChange");
     const timerModule = await import("../../src/helpers/classicBattle/timerService.js");
     vi.spyOn(timerModule, "startTimer").mockResolvedValue(undefined);
-    const selectionModule = await import(
-      "../../src/helpers/classicBattle/selectionHandler.js"
-    );
+    const selectionModule = await import("../../src/helpers/classicBattle/selectionHandler.js");
     vi.spyOn(selectionModule, "handleStatSelection").mockResolvedValue(undefined);
 
     const { machine } = await initMachine();
@@ -139,9 +132,7 @@ describe("stateHandlers map", () => {
 
     const timerModule = await import("../../src/helpers/classicBattle/timerService.js");
     vi.spyOn(timerModule, "startTimer").mockResolvedValue(undefined);
-    const selectionModule = await import(
-      "../../src/helpers/classicBattle/selectionHandler.js"
-    );
+    const selectionModule = await import("../../src/helpers/classicBattle/selectionHandler.js");
     vi.spyOn(selectionModule, "handleStatSelection").mockResolvedValue(undefined);
 
     const { machine, store } = await initMachine();

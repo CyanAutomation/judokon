@@ -24,16 +24,12 @@ describe("resolveDataDir", () => {
 
   it("accepts URL instances in addition to string inputs", () => {
     const moduleUrl = "https://example.com/src/helpers/constants.js";
-    expect(resolveDataDir(new URL(moduleUrl))).toBe(
-      "https://example.com/src/data/",
-    );
+    expect(resolveDataDir(new URL(moduleUrl))).toBe("https://example.com/src/data/");
   });
 
   it("accepts URL instances for modules outside /src", () => {
     const moduleUrl = "https://example.com/helpers/constants.js";
-    expect(resolveDataDir(new URL(moduleUrl))).toBe(
-      "https://example.com/src/data/",
-    );
+    expect(resolveDataDir(new URL(moduleUrl))).toBe("https://example.com/src/data/");
   });
 
   it("accepts URL instances for file scheme URLs within /src", () => {

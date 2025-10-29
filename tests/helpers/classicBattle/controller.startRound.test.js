@@ -167,7 +167,9 @@ describe.sequential("ClassicBattleController.startRound", () => {
 
     const scoreboardModule = await import("../../../src/helpers/setupScoreboard.js");
     scoreboardModule.setupScoreboard({ pauseTimer: vi.fn(), resumeTimer: vi.fn() });
-    const scoreboardAdapter = await import("../../../src/helpers/classicBattle/scoreboardAdapter.js");
+    const scoreboardAdapter = await import(
+      "../../../src/helpers/classicBattle/scoreboardAdapter.js"
+    );
     disposeScoreboard = scoreboardAdapter.initScoreboardAdapter();
     await scoreboardAdapter.whenScoreboardReady();
 
@@ -252,4 +254,3 @@ describe.sequential("ClassicBattleController.startRound", () => {
     expect(errorEvents[0]).toBe(failure);
   });
 });
-

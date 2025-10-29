@@ -89,9 +89,7 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
   container.appendChild(placeholder);
 
   const targetContainer =
-    container?.id === "opponent-card"
-      ? container
-      : doc?.getElementById("opponent-card");
+    container?.id === "opponent-card" ? container : doc?.getElementById("opponent-card");
   if (targetContainer?.classList?.contains("opponent-hidden")) {
     try {
       targetContainer.classList.remove("opponent-hidden");

@@ -490,10 +490,7 @@ const stateApi = {
         }
 
         const keys = Array.from(
-          new Set([
-            ...Object.keys(playerStats ?? {}),
-            ...Object.keys(opponentStats ?? {})
-          ])
+          new Set([...Object.keys(playerStats ?? {}), ...Object.keys(opponentStats ?? {})])
         );
         if (keys.length === 0) {
           return false;
@@ -1491,7 +1488,11 @@ const initApi = {
     };
 
     const globalTarget =
-      typeof window !== "undefined" && window ? window : typeof globalThis !== "undefined" ? globalThis : null;
+      typeof window !== "undefined" && window
+        ? window
+        : typeof globalThis !== "undefined"
+          ? globalThis
+          : null;
 
     if (roundTimerMs !== undefined) {
       try {
@@ -1522,7 +1523,10 @@ const initApi = {
     if (cooldownMs !== undefined) {
       try {
         if (cooldownMs === null) {
-          if (globalTarget && Object.prototype.hasOwnProperty.call(globalTarget, "__NEXT_ROUND_COOLDOWN_MS")) {
+          if (
+            globalTarget &&
+            Object.prototype.hasOwnProperty.call(globalTarget, "__NEXT_ROUND_COOLDOWN_MS")
+          ) {
             delete globalTarget.__NEXT_ROUND_COOLDOWN_MS;
           }
         } else {
@@ -1583,7 +1587,10 @@ const initApi = {
             recordError("engine.setPointsToWin returned false");
           } else {
             result.applied.pointsToWin = true;
-            if (confirmPointsToWin !== false && typeof engineApi.waitForPointsToWin === "function") {
+            if (
+              confirmPointsToWin !== false &&
+              typeof engineApi.waitForPointsToWin === "function"
+            ) {
               const confirmed = await engineApi.waitForPointsToWin(
                 pointsToWin,
                 pointsToWinConfirmTimeout
@@ -1951,10 +1958,7 @@ const inspectionApi = {
       }
 
       const keys = Array.from(
-        new Set([
-          ...Object.keys(playerStats ?? {}),
-          ...Object.keys(opponentStats ?? {})
-        ])
+        new Set([...Object.keys(playerStats ?? {}), ...Object.keys(opponentStats ?? {})])
       );
 
       const readValue = (stats, key) => {

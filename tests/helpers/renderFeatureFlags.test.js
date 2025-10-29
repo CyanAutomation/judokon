@@ -59,7 +59,9 @@ describe("renderFeatureFlags", () => {
     staleItem.dataset.testState = "stale";
     featureFlagsContainer.appendChild(staleItem);
 
-    const generalItemsBefore = document.querySelectorAll("#general-settings-container .settings-item").length;
+    const generalItemsBefore = document.querySelectorAll(
+      "#general-settings-container .settings-item"
+    ).length;
 
     await withMutedConsole(() =>
       renderFeatureFlags(currentSettings, getCurrentSettings, handleUpdate, tooltipMap)
@@ -76,9 +78,9 @@ describe("renderFeatureFlags", () => {
     expect(featureFlagsContainer.dataset.testRendered).toBe("true");
     expect(featureFlagsContainer.dataset.testFlagCount).toBe("2");
     expect(featureFlagsContainer.querySelector('[data-test-state="stale"]')).toBeNull();
-    expect(
-      document.querySelectorAll("#general-settings-container .settings-item").length
-    ).toBe(generalItemsBefore);
+    expect(document.querySelectorAll("#general-settings-container .settings-item").length).toBe(
+      generalItemsBefore
+    );
     expect(reapplyAdvancedSettingsFilterMock).toHaveBeenCalledTimes(1);
   });
 

@@ -75,7 +75,7 @@ export function setupClassicBattleDom() {
     return [];
   });
 
-const mockPlayerJudoka = {
+  const mockPlayerJudoka = {
     id: "player-judoka",
     name: "Mock Player",
     stats: { power: 5, speed: 4, technique: 3, kumikata: 4, newaza: 3 }

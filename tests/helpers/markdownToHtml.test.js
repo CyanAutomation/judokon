@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../../src/vendor/marked.esm.js", () => ({
   marked: {
-    parse: vi.fn(),
-  },
+    parse: vi.fn()
+  }
 }));
 
 import { markdownToHtml } from "../../src/helpers/markdownToHtml.js";

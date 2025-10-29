@@ -49,4 +49,3 @@ export function runAfterFrames(n, fn) {
   }
   requestAnimationFrame(() => runAfterFrames(n - 1, fn));
 }
-

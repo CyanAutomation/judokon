@@ -72,14 +72,17 @@ async function prepareClassicBattle(page, { seed = 42, cooldown = 500 } = {}) {
 }
 
 async function waitForRoundStatsViaApi(page, { timeout = 5000 } = {}) {
-  const result = await page.evaluate(async ({ limit }) => {
-    const stateApi = window.__TEST_API?.state;
-    if (!stateApi?.waitForRoundStats) {
-      return { ok: false, reason: "state.waitForRoundStats unavailable" };
-    }
-    const ok = await stateApi.waitForRoundStats(limit);
-    return { ok, reason: ok ? null : "round stats timeout" };
-  }, { limit: timeout });
+  const result = await page.evaluate(
+    async ({ limit }) => {
+      const stateApi = window.__TEST_API?.state;
+      if (!stateApi?.waitForRoundStats) {
+        return { ok: false, reason: "state.waitForRoundStats unavailable" };
+      }
+      const ok = await stateApi.waitForRoundStats(limit);
+      return { ok, reason: ok ? null : "round stats timeout" };
+    },
+    { limit: timeout }
+  );
 
   if (!result?.ok) {
     throw new Error(result?.reason ?? "Round stats did not become available");
@@ -87,23 +90,26 @@ async function waitForRoundStatsViaApi(page, { timeout = 5000 } = {}) {
 }
 
 async function applyQuickWinTarget(page, { confirm = true, timeout = 5000 } = {}) {
-  const outcome = await page.evaluate(async ({ shouldConfirm, confirmTimeout }) => {
-    const engineApi = window.__TEST_API?.engine;
-    if (!engineApi?.setPointsToWin) {
-      return { ok: false, reason: "engine.setPointsToWin unavailable" };
-    }
-    const applied = engineApi.setPointsToWin(1);
-    if (!applied) {
-      return { ok: false, reason: "engine.setPointsToWin returned false" };
-    }
-    if (!shouldConfirm || typeof engineApi.waitForPointsToWin !== "function") {
-      return { ok: true, reason: null };
-    }
-    const confirmed = await engineApi.waitForPointsToWin(1, confirmTimeout);
-    return confirmed
-      ? { ok: true, reason: null }
-      : { ok: false, reason: "points-to-win confirmation timeout" };
-  }, { shouldConfirm: confirm, confirmTimeout: timeout });
+  const outcome = await page.evaluate(
+    async ({ shouldConfirm, confirmTimeout }) => {
+      const engineApi = window.__TEST_API?.engine;
+      if (!engineApi?.setPointsToWin) {
+        return { ok: false, reason: "engine.setPointsToWin unavailable" };
+      }
+      const applied = engineApi.setPointsToWin(1);
+      if (!applied) {
+        return { ok: false, reason: "engine.setPointsToWin returned false" };
+      }
+      if (!shouldConfirm || typeof engineApi.waitForPointsToWin !== "function") {
+        return { ok: true, reason: null };
+      }
+      const confirmed = await engineApi.waitForPointsToWin(1, confirmTimeout);
+      return confirmed
+        ? { ok: true, reason: null }
+        : { ok: false, reason: "points-to-win confirmation timeout" };
+    },
+    { shouldConfirm: confirm, confirmTimeout: timeout }
+  );
 
   if (!outcome?.ok) {
     throw new Error(outcome?.reason ?? "Failed to apply quick-win target");
@@ -396,9 +402,7 @@ test.describe("Classic Battle End Game Flow", () => {
 
         const scores = match.scores;
         const modalDescription = page.locator("#match-end-desc");
-        await expect(modalDescription).toContainText(
-          `(${scores.player}-${scores.opponent})`
-        );
+        await expect(modalDescription).toContainText(`(${scores.player}-${scores.opponent})`);
 
         // Verify score display is clear and readable
         const scoreDisplay = page.locator("#score-display");
@@ -431,9 +435,7 @@ test.describe("Classic Battle End Game Flow", () => {
 
         const scores = match.scores;
         const modalDescription = page.locator("#match-end-desc");
-        await expect(modalDescription).toContainText(
-          `(${scores.player}-${scores.opponent})`
-        );
+        await expect(modalDescription).toContainText(`(${scores.player}-${scores.opponent})`);
         expectDecisiveFinalScore(scores);
 
         // Verify interface remains stable with modal present

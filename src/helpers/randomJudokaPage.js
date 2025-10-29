@@ -419,7 +419,8 @@ async function displayCard({
   fallbackDelayMs = 2000
 }) {
   const stateMachine =
-    drawButton.drawStateMachine || (drawButton.drawStateMachine = createDrawCardStateMachine(drawButton));
+    drawButton.drawStateMachine ||
+    (drawButton.drawStateMachine = createDrawCardStateMachine(drawButton));
 
   return new Promise(async (resolve) => {
     let resolved = false;

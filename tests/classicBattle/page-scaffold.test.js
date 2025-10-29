@@ -1203,8 +1203,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("display.round.start", { roundNumber: 3 });
 
-    const roundDiff =
-      scoreboardMock.updateRoundCounter.mock.calls.length - initialRoundCalls;
+    const roundDiff = scoreboardMock.updateRoundCounter.mock.calls.length - initialRoundCalls;
     // Early scoreboard initialization may satisfy one of the downstream
     // listeners ahead of the round start event, so we only require at least one
     // additional update here.
@@ -1218,8 +1217,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     // Ensure any RAF-scheduled UI updates have run
     currentEnv.testController.advanceFrame();
 
-    const finalRoundDiff =
-      scoreboardMock.updateRoundCounter.mock.calls.length - initialRoundCalls;
+    const finalRoundDiff = scoreboardMock.updateRoundCounter.mock.calls.length - initialRoundCalls;
     expect(finalRoundDiff).toBeGreaterThanOrEqual(roundDiff);
     expect(finalRoundDiff).toBeGreaterThanOrEqual(1);
     expect(finalRoundDiff).toBeLessThanOrEqual(3);

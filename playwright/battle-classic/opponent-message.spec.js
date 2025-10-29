@@ -170,11 +170,8 @@ test.describe("Classic Battle Opponent Messages", () => {
       await expect
         .poll(
           async () =>
-            !(await opponentCard.evaluate((node) =>
-              node.classList.contains("opponent-hidden")
-            )),
-          { timeout: 4_000,
-            message: "Expected opponent card to lose hidden class after reveal" }
+            !(await opponentCard.evaluate((node) => node.classList.contains("opponent-hidden"))),
+          { timeout: 4_000, message: "Expected opponent card to lose hidden class after reveal" }
         )
         .toBe(true);
 
@@ -218,10 +215,7 @@ test.describe("Classic Battle Opponent Messages", () => {
       await ensureRoundResolved(page);
 
       await expect
-        .poll(
-          async () => await opponentCard.getAttribute("aria-label"),
-          { timeout: 4_000 }
-        )
+        .poll(async () => await opponentCard.getAttribute("aria-label"), { timeout: 4_000 })
         .toBe("Opponent card");
       await expect(mysteryPlaceholder).toHaveCount(0);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
@@ -253,10 +247,7 @@ test.describe("Classic Battle Opponent Messages", () => {
           });
 
           await expect
-            .poll(
-              async () => await opponentCard.getAttribute("aria-label"),
-              { timeout: 4_000 }
-            )
+            .poll(async () => await opponentCard.getAttribute("aria-label"), { timeout: 4_000 })
             .toBe("Opponent card");
           await expect(mysteryPlaceholder).toHaveCount(0);
           await confirmRoundResolved(page, {
