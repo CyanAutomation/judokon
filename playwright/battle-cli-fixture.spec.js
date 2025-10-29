@@ -37,7 +37,9 @@ test.describe("battleCliFixture", () => {
     expect(initialCount).toBeGreaterThan(0);
 
     await resetCounterBetweenChecks(page);
-    const resetCount = await getBattleCliModuleResetCount(page);
+    const resetCount = await page.evaluate(() =>
+      window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
+    );
     expect(resetCount).toBe(0);
 
     await page.goto(buildCliUrl("autostart=1&seed=first"));
