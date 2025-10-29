@@ -8,6 +8,18 @@ function buildCliUrl(query = "") {
   return `${CLI_PATH}${suffix}`;
 }
 
+async function validateResetHelper(page) {
+  return await page.evaluate(() =>
+    window.__TEST_API?.init?.resetBattleCliModuleState?.()
+  );
+}
+
+async function resetCounterBetweenChecks(page) {
+  await page.evaluate(() =>
+    window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.()
+  );
+}
+
 test.describe("battleCliFixture", () => {
   test("invokes the Battle CLI reset helper after each navigation", async ({ page }) => {
     await page.goto(buildCliUrl("autostart=1"));
@@ -18,7 +30,7 @@ test.describe("battleCliFixture", () => {
     );
     expect(initialCount).toBeGreaterThan(0);
 
-    await page.evaluate(() => window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.());
+    await resetCounterBetweenChecks(page);
     const resetCount = await page.evaluate(() =>
       window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
     );
@@ -31,18 +43,14 @@ test.describe("battleCliFixture", () => {
     );
     expect(afterFirstNavigation).toBe(1);
 
-    const firstNavigationResetResult = await page.evaluate(() =>
-      window.__TEST_API?.init?.resetBattleCliModuleState?.()
-    );
+    const firstNavigationResetResult = await validateResetHelper(page);
     expect(firstNavigationResetResult).toMatchObject({
       ok: true,
       count: 2,
       reason: null
     });
 
-    await page.evaluate(() =>
-      window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.()
-    );
+    await resetCounterBetweenChecks(page);
 
     await page.goto(buildCliUrl("autostart=1&seed=second"));
     await waitForTestApi(page);
@@ -51,9 +59,7 @@ test.describe("battleCliFixture", () => {
     );
     expect(afterSecondNavigation).toBe(1);
 
-    const secondNavigationResetResult = await page.evaluate(() =>
-      window.__TEST_API?.init?.resetBattleCliModuleState?.()
-    );
+    const secondNavigationResetResult = await validateResetHelper(page);
     expect(secondNavigationResetResult).toMatchObject({
       ok: true,
       count: 2,
