@@ -31,11 +31,33 @@ test.describe("battleCliFixture", () => {
     );
     expect(afterFirstNavigation).toBe(1);
 
+    const firstNavigationResetResult = await page.evaluate(() =>
+      window.__TEST_API?.init?.resetBattleCliModuleState?.()
+    );
+    expect(firstNavigationResetResult).toMatchObject({
+      ok: true,
+      count: 2,
+      reason: null
+    });
+
+    await page.evaluate(() =>
+      window.__TEST_API?.init?.__resetBattleCliModuleResetCount?.()
+    );
+
     await page.goto(buildCliUrl("autostart=1&seed=second"));
     await waitForTestApi(page);
     const afterSecondNavigation = await page.evaluate(() =>
       window.__TEST_API?.init?.getBattleCliModuleResetCount?.() ?? -1
     );
-    expect(afterSecondNavigation).toBe(2);
+    expect(afterSecondNavigation).toBe(1);
+
+    const secondNavigationResetResult = await page.evaluate(() =>
+      window.__TEST_API?.init?.resetBattleCliModuleState?.()
+    );
+    expect(secondNavigationResetResult).toMatchObject({
+      ok: true,
+      count: 2,
+      reason: null
+    });
   });
 });
