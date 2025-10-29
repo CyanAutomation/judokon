@@ -1,21 +1,23 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { rafDebounce, runAfterFrames } from "../../src/utils/rafUtils.js";
 
-const originalVitestEnv = process.env.VITEST;
+function flushAllFrames(queue) {
+  // Simulate the browser advancing RAF callbacks in order until the queue is empty.
+  while (queue.length > 0) {
+    const callback = queue.shift();
+    callback();
+  }
+}
 
 afterEach(() => {
-  if (originalVitestEnv === undefined) {
-    delete process.env.VITEST;
-  } else {
-    process.env.VITEST = originalVitestEnv;
-  }
-  vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("rafDebounce", () => {
   it("schedules work on the next frame and cancels previous requests", () => {
-    delete process.env.VITEST;
+    vi.stubEnv("VITEST", undefined);
 
     const rafCallbacks = [];
     const requestAnimationFrameStub = vi.fn((cb) => {
@@ -45,7 +47,7 @@ describe("rafDebounce", () => {
   });
 
   it("executes immediately when running under Vitest", () => {
-    process.env.VITEST = "1";
+    vi.stubEnv("VITEST", "1");
 
     const requestAnimationFrameStub = vi.fn();
     vi.stubGlobal("requestAnimationFrame", requestAnimationFrameStub);
@@ -88,12 +90,20 @@ describe("runAfterFrames", () => {
     expect(fn).not.toHaveBeenCalled();
     expect(requestAnimationFrameStub).toHaveBeenCalledTimes(1);
 
-    while (rafQueue.length > 0) {
-      const callback = rafQueue.shift();
-      callback();
-    }
+    flushAllFrames(rafQueue);
 
     expect(requestAnimationFrameStub).toHaveBeenCalledTimes(3);
     expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it("runs immediately when given a negative frame count", () => {
+    const requestAnimationFrameStub = vi.fn();
+    vi.stubGlobal("requestAnimationFrame", requestAnimationFrameStub);
+
+    const fn = vi.fn();
+    runAfterFrames(-2, fn);
+
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(requestAnimationFrameStub).not.toHaveBeenCalled();
   });
 });
