@@ -89,6 +89,44 @@ describe("randomJudokaPage draw button", () => {
     expect(button).not.toHaveAttribute("aria-busy");
   });
 
+  it("retains a custom draw button label across multiple draws", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const generateRandomCard = vi.fn().mockImplementation(async (_c, _g, container) => {
+      const card = document.createElement("div");
+      card.className = "card-container";
+      container.appendChild(card);
+    });
+
+    setupRandomJudokaCoreMocks({ generateRandomCard });
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+    document.body?.removeAttribute("data-random-judoka-ready");
+
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
+
+    const button = document.getElementById("draw-card-btn");
+    const label = () => button.querySelector(".button-label")?.textContent;
+
+    button.fallbackDelayMs = 0;
+    button.timers = { setTimeout: () => 0, clearTimeout: () => {} };
+
+    const { randomJudoka } = window.__TEST_API;
+    randomJudoka.setDrawButtonLabel("Custom Label");
+
+    expect(label()).toBe("Custom Label");
+
+    button.click();
+    await randomJudoka.resolveDrawPipeline();
+    expect(label()).toBe("Custom Label");
+
+    button.click();
+    await randomJudoka.resolveDrawPipeline();
+    expect(label()).toBe("Custom Label");
+  });
+
   it("re-enables draw button immediately when card markup is missing", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const originalRaf = globalThis.requestAnimationFrame;
