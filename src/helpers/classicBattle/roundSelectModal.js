@@ -110,6 +110,16 @@ async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, s
   return false;
 }
 
+/**
+ * Resolve the win target using the fallback chain.
+ *
+ * @pseudocode
+ * 1. Try to get engine target from getPointsToWin() and validate it's finite and positive.
+ * 2. If engine target is invalid, try to load persisted selection from storage.
+ * 3. If no persisted selection, return DEFAULT_POINTS_TO_WIN as final fallback.
+ *
+ * @returns {number} The resolved win target value.
+ */
 function resolveWinTarget() {
   try {
     const engineTarget = Number(getPointsToWin());
