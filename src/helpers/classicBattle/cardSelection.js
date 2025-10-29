@@ -484,17 +484,13 @@ export async function drawCards(options = {}) {
           setupLazyPortraits(cardElement);
         }
       } else if (cardElement != null) {
-        if (typeof console !== "undefined" && typeof console.error === "function") {
-          console.error("Card factory did not return an HTMLElement");
-        }
+        console?.error?.("Card factory did not return an HTMLElement");
         clearPlayerContainer();
       } else {
         clearPlayerContainer();
       }
     } catch (error) {
-      if (typeof console !== "undefined" && typeof console.error === "function") {
-        console.error("Failed to render player card", error);
-      }
+      console?.error?.("Failed to render player card", error);
       clearPlayerContainer();
     }
   }
