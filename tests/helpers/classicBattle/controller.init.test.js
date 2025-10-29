@@ -64,11 +64,11 @@ describe("ClassicBattleController.init", () => {
    * @param {ReturnType<typeof vi.spyOn>} addListenerSpy
    */
   const registerFlagChangeListeners = (addListenerSpy) => {
-    const extractedListeners = addListenerSpy.mock.calls
+    const extractedListeners = (addListenerSpy?.mock?.calls || [])
       .filter(([eventName, handler]) => eventName === "change" && typeof handler === "function")
       .map(([, handler]) => /** @type {(event: Event) => void} */ (handler));
     registeredFlagListeners.push(...extractedListeners);
-    addListenerSpy.mockRestore();
+    addListenerSpy?.mockRestore?.();
   };
 
   beforeEach(async () => {
