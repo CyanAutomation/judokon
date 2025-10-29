@@ -19,6 +19,28 @@ import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
  */
 export const featureFlagsEmitter = new EventTarget();
 
+const supportsCustomEvent = typeof CustomEvent === "function";
+
+/**
+ * Safely dispatch a change notification to feature flag listeners.
+ *
+ * @param {Record<string, unknown>} detail
+ * @returns {void}
+ */
+function dispatchFeatureFlagChange(detail) {
+  const event = supportsCustomEvent
+    ? new CustomEvent("change", { detail })
+    : { type: "change", detail };
+
+  if (typeof featureFlagsEmitter.dispatchEvent === "function") {
+    try {
+      featureFlagsEmitter.dispatchEvent(event);
+    } catch {
+      // In environments without DOM-style events, dispatchEvent may reject non-Event payloads.
+    }
+  }
+}
+
 let cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
 
 /**
@@ -49,7 +71,7 @@ export async function initFeatureFlags() {
     cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
     setCachedSettings(settings);
   }
-  featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
+  dispatchFeatureFlagChange({ flag: null });
   return settings;
 }
 
@@ -104,7 +126,7 @@ export async function setFlag(flag, value) {
   };
   const updated = await updateSetting("featureFlags", updatedFlags);
   cachedFlags = updated.featureFlags || {};
-  featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag, value } }));
+  dispatchFeatureFlagChange({ flag, value });
   return updated;
 }
 
@@ -156,7 +178,7 @@ if (typeof window !== "undefined") {
           } catch {
             // ignore cache update failures to avoid breaking storage sync
           }
-          featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
+          dispatchFeatureFlagChange({ flag: null });
           return;
         }
       } catch {

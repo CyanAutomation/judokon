@@ -33,6 +33,59 @@ describe("initFeatureFlags", () => {
       expect(isEnabled(flag)).toBe(DEFAULT_SETTINGS.featureFlags[flag].enabled);
     }
   });
+
+  it("does not throw when CustomEvent is unavailable", async () => {
+    vi.resetModules();
+    const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, "CustomEvent");
+    Object.defineProperty(globalThis, "CustomEvent", {
+      value: undefined,
+      configurable: true,
+      writable: true
+    });
+
+    const loadSettings = vi.fn().mockResolvedValue({
+      ...DEFAULT_SETTINGS,
+      featureFlags: { ...DEFAULT_SETTINGS.featureFlags }
+    });
+    const updateSetting = vi.fn().mockImplementation(async (key, flags) => ({
+      ...DEFAULT_SETTINGS,
+      featureFlags: flags
+    }));
+    const setCachedSettings = vi.fn();
+
+    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+    vi.doMock("../../src/helpers/settingsCache.js", () => ({ setCachedSettings }));
+
+    try {
+      const { initFeatureFlags, featureFlagsEmitter, setFlag } = await import(
+        "../../src/helpers/featureFlags.js"
+      );
+
+      const dispatchSpy = vi
+        .spyOn(featureFlagsEmitter, "dispatchEvent")
+        .mockImplementation(() => true);
+
+      await initFeatureFlags();
+
+      const [flagName] = Object.keys(DEFAULT_SETTINGS.featureFlags);
+      await setFlag(flagName, true);
+
+      expect(dispatchSpy).toHaveBeenCalled();
+      for (const [event] of dispatchSpy.mock.calls) {
+        expect(event).toMatchObject({ type: "change", detail: expect.any(Object) });
+      }
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(globalThis, "CustomEvent", originalDescriptor);
+      } else {
+        delete globalThis.CustomEvent;
+      }
+      vi.doUnmock("../../src/config/loadSettings.js");
+      vi.doUnmock("../../src/helpers/settingsStorage.js");
+      vi.doUnmock("../../src/helpers/settingsCache.js");
+    }
+  });
 });
 
 describe("setFlag", () => {
