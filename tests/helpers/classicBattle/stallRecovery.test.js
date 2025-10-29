@@ -4,16 +4,7 @@ import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 import { stallRecoveryJudokaFixtures } from "./stallRecoveryJudokaFixtures.js";
-
-const renderStatsMarkup = (stats) => `
-      <ul>
-        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
-        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
-        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
-        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
-        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
-      </ul>
-    `;
+import { renderStatsMarkup } from "./utils.js";
 
 vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/timerService.js");

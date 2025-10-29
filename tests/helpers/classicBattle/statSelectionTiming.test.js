@@ -2,18 +2,9 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import "./commonMocks.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 import { stallRecoveryJudokaFixtures } from "./stallRecoveryJudokaFixtures.js";
+import { renderStatsMarkup } from "./utils.js";
 
 const [playerFixture, opponentFixture] = stallRecoveryJudokaFixtures;
-
-const renderStatsMarkup = (stats) => `
-      <ul>
-        <li class="stat" data-stat="power"><strong>Power</strong> <span>${stats.power}</span></li>
-        <li class="stat" data-stat="speed"><strong>Speed</strong> <span>${stats.speed}</span></li>
-        <li class="stat" data-stat="technique"><strong>Technique</strong> <span>${stats.technique}</span></li>
-        <li class="stat" data-stat="kumikata"><strong>Kumikata</strong> <span>${stats.kumikata}</span></li>
-        <li class="stat" data-stat="newaza"><strong>Newaza</strong> <span>${stats.newaza}</span></li>
-      </ul>
-    `;
 
 describe("classicBattle stat selection timing", () => {
   const getEnv = setupClassicBattleHooks();
