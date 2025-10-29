@@ -24,7 +24,7 @@ describe("Classic Battle event dispatcher stdout guard", () => {
     harness.cleanup();
   });
 
-  it("logs debug fallback when stdout is unavailable during dispatch failures", async () => {
+  it("returns false and logs error when stdout unavailable during dispatch failures", async () => {
     const { exposeDebugState } = await harness.importModule(
       "../../src/helpers/classicBattle/debugHooks.js"
     );
