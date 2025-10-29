@@ -270,17 +270,20 @@ export function resetBindings() {
  * 3. Emit `roundTimeout` to inform listeners and start auto-selection.
  * 4. Dispatch the `timeout` state transition and permit DOM updates to settle.
  * 5. Give the browser a chance to render between state transitions via setTimeout(0).
- * 6. Run auto-select and await completion.
+ * 6. Run auto-select and (optionally) await completion.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle store instance.
- * @returns {Promise<void>} Resolves after the timeout flow completes.
+ * @param {{ awaitCompletion?: boolean }} [options] - Optional behaviour overrides.
+ * @returns {Promise<void>} Resolves after the timeout flow completes or once the timeout transition settles when awaiting is disabled.
  */
-export async function triggerRoundTimeoutNow(store) {
+export async function triggerRoundTimeoutNow(store, options = {}) {
   const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
   const { getCardStatValue } = await import("/src/helpers/classicBattle/cardStatUtils.js");
   const { handleStatSelection } = await import("/src/helpers/classicBattle/selectionHandler.js");
   const { dispatchBattleEvent } = await import("/src/helpers/classicBattle/eventDispatcher.js");
   const { autoSelectStat } = await import("/src/helpers/classicBattle/autoSelectStat.js");
+
+  const { awaitCompletion = true } = options || {};
 
   const onExpiredSelect = async (stat, opts) => {
     const selectionValues = deriveSelectionValues(stat, getCardStatValue, getOpponentJudoka);
@@ -305,7 +308,12 @@ export async function triggerRoundTimeoutNow(store) {
 
   // Complete auto-select after the state has settled and DOM has updated
   try {
-    await autoSelectStat(onExpiredSelect, 0);
+    const autoSelectPromise = autoSelectStat(onExpiredSelect, 0);
+    if (awaitCompletion) {
+      await autoSelectPromise;
+    } else if (autoSelectPromise && typeof autoSelectPromise.then === "function") {
+      autoSelectPromise.catch(() => {});
+    }
   } catch {}
 }
 
