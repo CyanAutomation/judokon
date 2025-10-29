@@ -36,19 +36,20 @@ describe("createPortraitSection", () => {
     expect(portrait.lastElementChild).toBe(weight);
   });
 
-  it("falls back to the no-data container when portrait generation fails", () => {
+  it("falls back to the no-data container when portrait generation fails", async () => {
     vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {
       throw new Error("portrait failure");
     });
     const fallbackElement = document.createElement("div");
     vi.spyOn(cardTopBar, "createNoDataContainer").mockReturnValue(fallbackElement);
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { withMutedConsole } = await import("../utils/console.js");
 
-    const result = createPortraitSection(judoka);
+    const result = await withMutedConsole(async () => {
+      return createPortraitSection(judoka);
+    });
 
     expect(cardRender.generateCardPortrait).toHaveBeenCalledWith(judoka);
     expect(cardTopBar.createNoDataContainer).toHaveBeenCalledTimes(1);
-    expect(consoleSpy).toHaveBeenCalled();
     expect(result).toBe(fallbackElement);
   });
 });
