@@ -7,6 +7,130 @@ import {
 import { completeRoundViaApi, dispatchBattleEvent } from "./helpers/battleApiHelper.js";
 
 test.describe("CLI Command History", () => {
+  test("completeRound without explicit outcome waits for cooldown", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    await page.waitForLoadState("domcontentloaded");
+
+    await waitForTestApi(page);
+
+    const battleReady = await page.evaluate(async (timeout) => {
+      const initApi = window.__TEST_API?.init ?? null;
+      const waitForBattleReady = initApi?.waitForBattleReady;
+      if (typeof waitForBattleReady !== "function") {
+        return {
+          ok: false,
+          reason: "init.waitForBattleReady unavailable on Test API"
+        };
+      }
+
+      try {
+        const ready = await waitForBattleReady.call(initApi, timeout);
+        return {
+          ok: ready === true,
+          reason: ready === true ? null : "waitForBattleReady returned false"
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          reason: error?.message ?? "waitForBattleReady threw"
+        };
+      }
+    }, 10_000);
+
+    expect(
+      battleReady.ok,
+      battleReady.reason ?? "Test API waitForBattleReady should report battle readiness"
+    ).toBe(true);
+
+    const currentStateResult = await getBattleStateWithErrorHandling(page);
+
+    expect(
+      currentStateResult.ok,
+      currentStateResult.reason ?? "Unable to resolve battle state via Test API"
+    ).toBe(true);
+
+    const { state: currentState } = currentStateResult;
+
+    if (currentState === "waitingForMatchStart" || currentState === "matchStart") {
+      const startClicked = await dispatchBattleEvent(page, "startClicked");
+      expect(
+        startClicked.ok,
+        startClicked.reason ??
+          `Failed to dispatch startClicked (result: ${startClicked.result ?? "unknown"})`
+      ).toBe(true);
+
+      await waitForBattleState(page, "cooldown", { timeout: 10_000, allowFallback: false });
+    }
+
+    const afterStartStateResult = await getBattleStateWithErrorHandling(page);
+
+    expect(
+      afterStartStateResult.ok,
+      afterStartStateResult.reason ?? "Unable to resolve battle state after startClicked"
+    ).toBe(true);
+
+    if (afterStartStateResult.state !== "waitingForPlayerAction") {
+      const readyForRound = await dispatchBattleEvent(page, "ready");
+      expect(
+        readyForRound.ok,
+        readyForRound.reason ??
+          `Failed to dispatch ready (result: ${readyForRound.result ?? "unknown"})`
+      ).toBe(true);
+    }
+
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      timeout: 10_000,
+      allowFallback: false
+    });
+
+    await page.keyboard.press("1");
+
+    await waitForBattleState(page, "roundDecision", {
+      timeout: 7_500,
+      allowFallback: false
+    });
+
+    const completion = await page.evaluate(async () => {
+      const cliApi = window.__TEST_API?.cli;
+      if (!cliApi || typeof cliApi.completeRound !== "function") {
+        return {
+          ok: false,
+          finalState: null,
+          reason: "cli.completeRound unavailable"
+        };
+      }
+
+      try {
+        const result = await cliApi.completeRound(
+          {},
+          { outcomeEvent: null, expireSelection: false }
+        );
+        return {
+          ok: true,
+          finalState: result?.finalState ?? null,
+          reason: null
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          finalState: null,
+          reason: error?.message ?? "completeRound threw"
+        };
+      }
+    });
+
+    expect(
+      completion.ok,
+      completion.reason ?? "cli.completeRound without outcome should resolve"
+    ).toBe(true);
+    expect(completion.finalState).toBe("cooldown");
+
+    await waitForBattleState(page, "cooldown", {
+      timeout: 7_500,
+      allowFallback: false
+    });
+  });
+
   test("should show stat selection history", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForLoadState("domcontentloaded");
