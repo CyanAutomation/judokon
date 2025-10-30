@@ -1,69 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import "./commonMocks.js";
-
-vi.mock("../../../src/helpers/battleEngineFacade.js", async () => {
-  const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
-  return {
-    ...actual,
-    stopTimer: vi.fn(),
-    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
-    handleStatSelection: vi.fn((playerVal, opponentVal) => ({
-      delta: playerVal - opponentVal,
-      outcome: playerVal > opponentVal ? "winPlayer" : playerVal < opponentVal ? "winOpponent" : "draw",
-      matchEnded: false,
-      playerScore: playerVal > opponentVal ? 1 : 0,
-      opponentScore: playerVal < opponentVal ? 1 : 0
-    }))
-  };
-});
-
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-  dispatchBattleEvent: vi.fn().mockResolvedValue(false)
-}));
-
-vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/promises.js", () => ({
-  getRoundResolvedPromise: vi.fn(() => Promise.resolve())
-}));
-
-vi.mock("../../../src/helpers/classicBattle/timerUtils.js", () => ({
-  resolveDelay: vi.fn(() => 0)
-}));
-
-vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
-  updateScore: vi.fn(),
-  clearTimer: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/scoreDisplay.js", () => ({
-  writeScoreDisplay: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/roundStore.js", () => ({
-  roundStore: { setSelectedStat: vi.fn() }
-}));
-
-vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
-  getBattleState: vi.fn(() => null)
-}));
-
-vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
-  resolveRound: vi.fn(async (_store, stat, playerVal, opponentVal) => ({
-    stat,
-    delta: playerVal - opponentVal,
-    outcome: playerVal > opponentVal ? "winPlayer" : playerVal < opponentVal ? "winOpponent" : "draw",
-    matchEnded: false,
-    playerScore: playerVal > opponentVal ? 1 : 0,
-    opponentScore: playerVal < opponentVal ? 1 : 0
-  }))
-}));
+import { roundResolverMock } from "./mocks/simulateOpponentStat.js";
+import { createStatButtonsHarness } from "../../utils/componentTestUtils.js";
 
 describe("simulateOpponentStat difficulty", () => {
   /**
@@ -72,7 +10,8 @@ describe("simulateOpponentStat difficulty", () => {
    * the distribution tests whenever the weighting algorithm changes so tuning
    * remains fast and intentional.
    */
-  const DISTRIBUTION_SAMPLE_SEEDS = Array.from({ length: 200 }, (_, index) => index + 1);
+  const DISTRIBUTION_SAMPLE_SIZE = Number.parseInt(process.env.TEST_SAMPLE_SIZE ?? "", 10) || 200;
+  const DISTRIBUTION_SAMPLE_SEEDS = Array.from({ length: DISTRIBUTION_SAMPLE_SIZE }, (_, index) => index + 1);
   const EASY_MIN_SHARE = 0.15;
   const EASY_MAX_SHARE = 0.3;
   const MEDIUM_ABOVE_AVERAGE_THRESHOLD = 0.7;
@@ -82,7 +21,6 @@ describe("simulateOpponentStat difficulty", () => {
   let createBattleStore;
   let stats;
   let statKeys;
-  let roundResolver;
   let setTestMode;
   let randomSpy;
 
@@ -93,10 +31,9 @@ describe("simulateOpponentStat difficulty", () => {
     ));
     ({ createBattleStore } = await import("../../../src/helpers/classicBattle/roundManager.js"));
     ({ STATS: statKeys } = await import("../../../src/helpers/battleEngineFacade.js"));
-    roundResolver = await import("../../../src/helpers/classicBattle/roundResolver.js");
     ({ setTestMode } = await import("../../../src/helpers/testModeUtils.js"));
     setTestMode(false);
-    roundResolver.resolveRound.mockClear();
+    roundResolverMock.resolveRound.mockClear();
   });
 
   afterEach(() => {
@@ -108,8 +45,15 @@ describe("simulateOpponentStat difficulty", () => {
       setTestMode(false);
     }
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
+  /**
+   * Samples stat choices across deterministic seeds for distribution analysis.
+   * @param {"easy"|"medium"|"hard"} difficulty - Difficulty level to test.
+   * @param {Record<string, number>} [sourceStats=stats] - Stat map to draw from.
+   * @returns {Map<string, number>} Count of selections by stat key.
+   */
   function sampleChoices(difficulty, sourceStats = stats) {
     const counts = new Map();
     try {
@@ -122,6 +66,15 @@ describe("simulateOpponentStat difficulty", () => {
       setTestMode(false);
     }
     return counts;
+  }
+
+  function validateDistribution(counts, expectedShares) {
+    const total = [...counts.values()].reduce((sum, value) => sum + value, 0);
+    for (const [key, { min, max }] of Object.entries(expectedShares)) {
+      const share = (counts.get(key) ?? 0) / total;
+      expect(share).toBeGreaterThanOrEqual(min);
+      expect(share).toBeLessThanOrEqual(max);
+    }
   }
 
   it("returns a random stat on easy", () => {
@@ -144,12 +97,10 @@ describe("simulateOpponentStat difficulty", () => {
 
   it("samples easy difficulty across seeds to keep distribution roughly uniform", () => {
     const counts = sampleChoices("easy");
-    const total = [...counts.values()].reduce((sum, value) => sum + value, 0);
-    for (const key of statKeys) {
-      const share = (counts.get(key) ?? 0) / total;
-      expect(share).toBeGreaterThanOrEqual(EASY_MIN_SHARE);
-      expect(share).toBeLessThanOrEqual(EASY_MAX_SHARE);
-    }
+    const expectedShares = Object.fromEntries(
+      statKeys.map((key) => [key, { min: EASY_MIN_SHARE, max: EASY_MAX_SHARE }])
+    );
+    validateDistribution(counts, expectedShares);
   });
 
   it("samples medium difficulty and requires above-average stats most of the time", () => {
@@ -179,14 +130,7 @@ describe("simulateOpponentStat difficulty", () => {
   });
 
   it("feeds the chosen stat through handleStatSelection to resolve the round", async () => {
-    document.body.innerHTML = `
-      <div id="stat-buttons"></div>
-      <header>
-        <div id="round-message"></div>
-        <div id="score-display"></div>
-      </header>
-    `;
-
+    const harness = await createStatButtonsHarness();
     const store = createBattleStore();
     store.currentPlayerJudoka = {
       stats: { power: 2, speed: 7, technique: 4, kumikata: 6, newaza: 3 }
@@ -195,22 +139,26 @@ describe("simulateOpponentStat difficulty", () => {
       stats: { power: 5, speed: 3, technique: 8, kumikata: 9, newaza: 10 }
     };
 
-    setTestMode({ enabled: true, seed: 11 });
-    const chosenStat = simulateOpponentStat(store.currentOpponentJudoka.stats, "medium");
-    setTestMode(false);
+    try {
+      setTestMode({ enabled: true, seed: 11 });
+      const chosenStat = simulateOpponentStat(store.currentOpponentJudoka.stats, "medium");
+      setTestMode(false);
 
-    const expectedPlayer = Number(store.currentPlayerJudoka.stats[chosenStat]);
-    const expectedOpponent = Number(store.currentOpponentJudoka.stats[chosenStat]);
+      const expectedPlayer = Number(store.currentPlayerJudoka.stats[chosenStat]);
+      const expectedOpponent = Number(store.currentOpponentJudoka.stats[chosenStat]);
 
-    const result = await handleStatSelection(store, chosenStat, { forceDirectResolution: true });
+      const result = await handleStatSelection(store, chosenStat, { forceDirectResolution: true });
 
-    expect(roundResolver.resolveRound).toHaveBeenCalledWith(
-      store,
-      chosenStat,
-      expectedPlayer,
-      expectedOpponent,
-      expect.objectContaining({ delayMs: 0 })
-    );
-    expect(result.delta).toBe(expectedPlayer - expectedOpponent);
+      expect(roundResolverMock.resolveRound).toHaveBeenCalledWith(
+        store,
+        chosenStat,
+        expectedPlayer,
+        expectedOpponent,
+        expect.objectContaining({ delayMs: 0 })
+      );
+      expect(result.delta).toBe(expectedPlayer - expectedOpponent);
+    } finally {
+      harness.cleanup();
+    }
   });
 });
