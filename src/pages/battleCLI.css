@@ -296,7 +296,7 @@ details.cli-settings:not([open]) > summary::after {
 /* Terminal-style separators with enhanced visual hierarchy */
 .ascii-sep {
   font-family: inherit;
-  color: #356f45; /* Balanced contrast for separators */
+  color: #419063; /* Elevated contrast for separators */
   padding: 8px 0;
   text-align: center;
   font-size: 12px;

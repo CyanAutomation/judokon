@@ -392,19 +392,25 @@ textarea:focus,
 
 ### 9. Color Contrast Refinements
 
-- [ ] **Issue**: While contrast meets WCAG standards, some text could be slightly more readable.
+- [x] **Issue**: While contrast meets WCAG standards, some text could be slightly more readable.
 - **Impact**: Minor readability improvements.
 - **Solution**: Slight color adjustments:
 
 ```css
 .cli-status {
-  color: #d6f5d6; /* Slightly brighter for better contrast */
+  color: #def6df; /* Brighter mint for stronger contrast */
 }
 
 .ascii-sep {
-  color: #2f5f2f; /* Slightly more visible separators */
+  color: #419063; /* Elevated contrast for separators */
 }
 ```
+
+- **Actions (2025-10-11):**
+  - Boosted the status badge text to a lighter mint and deepened separator strokes so the header scoreboard and ASCII dividers read cleanly against the dark terminal canvas.
+  - Moved the seed helper note description onto the enclosing fieldset to keep ARIA expectations stable after earlier settings changes.
+- **Outcome:** Score and round indicators pop with higher contrast, separators retain the terminal vibe while staying legible, and accessibility tests continue to pass.
+- **Validation:** `npx vitest run tests/pages/battleCLI.scoreboard.test.js`, `npx vitest run tests/pages/battleCLI.roundHeader.test.js`, `npx playwright test playwright/cli-flows-improved.spec.mjs`.
 
 ### 10. Touch Target Consistency
 
