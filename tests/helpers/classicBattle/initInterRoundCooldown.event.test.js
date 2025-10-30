@@ -133,6 +133,8 @@ describe("initInterRoundCooldown", () => {
     expect(timerInstance).toBeTruthy();
     const pauseSpy = timerInstance.pause;
     const resumeSpy = timerInstance.resume;
+    pauseSpy.mockClear();
+    resumeSpy.mockClear();
 
     const originalHiddenDescriptor = Object.getOwnPropertyDescriptor(document, "hidden");
     Object.defineProperty(document, "hidden", { configurable: true, value: true });
