@@ -137,6 +137,63 @@ describe("randomJudokaPage feature flags", () => {
     vi.doUnmock("../../src/helpers/settingsCache.js");
   });
 
+  it("respects feature flag overrides when provided", async () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    window.__FF_OVERRIDES = {
+      enableTestMode: true,
+      enableCardInspector: true,
+      tooltipOverlayDebug: true
+    };
+
+    const initFeatureFlags = vi.fn().mockResolvedValue({
+      motionEffects: true,
+      featureFlags: {
+        enableTestMode: { enabled: false },
+        enableCardInspector: { enabled: false },
+        tooltipOverlayDebug: { enabled: false }
+      }
+    });
+    const applyMotionPreference = vi.fn();
+    const toggleInspectorPanels = vi.fn();
+    const toggleTooltipOverlayDebug = vi.fn();
+    const setTestMode = vi.fn();
+
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags,
+      isEnabled: vi.fn(),
+      featureFlagsEmitter: new EventTarget()
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync: vi.fn().mockReturnValue(false)
+    }));
+    vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels }));
+    vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({ toggleTooltipOverlayDebug }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({
+      setTestMode,
+      isTestModeEnabled: () => false
+    }));
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
+
+    const { initFeatureFlagState } = await import("../../src/helpers/randomJudokaPage.js");
+    await initFeatureFlagState();
+
+    expect(setTestMode).toHaveBeenCalledWith(true);
+    expect(toggleInspectorPanels).toHaveBeenCalledWith(true);
+    expect(toggleTooltipOverlayDebug).toHaveBeenCalledWith(true);
+
+    delete window.__FF_OVERRIDES;
+    window.matchMedia = originalMatchMedia;
+    vi.resetModules();
+    vi.doUnmock("../../src/helpers/featureFlags.js");
+    vi.doUnmock("../../src/helpers/motionUtils.js");
+    vi.doUnmock("../../src/helpers/cardUtils.js");
+    vi.doUnmock("../../src/helpers/tooltipOverlayDebug.js");
+    vi.doUnmock("../../src/helpers/testModeUtils.js");
+    vi.doUnmock("../../src/helpers/domReady.js");
+  });
+
   it("storage event toggles card inspector", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
