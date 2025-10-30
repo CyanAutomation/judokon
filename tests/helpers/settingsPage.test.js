@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { createSettingsDom, resetDom } from "../utils/testUtils.js";
 import { createSettingsHarness } from "./integrationHarness.js";
+import { flushUnhandledRejections } from "../utils/flushUnhandledRejections.js";
 
 const baseSettings = {
   sound: true,
@@ -144,6 +145,43 @@ describe("renderSettingsControls", () => {
     });
     expect(updateNavigationItemHidden).toHaveBeenCalledWith(1, true);
     await testHarness.cleanup();
+  });
+
+  it("logs a warning when tooltip initialization fails", async () => {
+    vi.resetModules();
+    const tooltipError = new Error("tooltip init failed");
+    const unhandled = [];
+    const captureUnhandled = (reason) => {
+      unhandled.push(reason);
+    };
+    process.on("unhandledRejection", captureUnhandled);
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn().mockRejectedValue(tooltipError)
+    }));
+    const testHarness = createSettingsHarness();
+    await testHarness.setup();
+
+    try {
+      const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+
+      renderSettingsControls(baseSettings, [], tooltipMap);
+
+      await flushUnhandledRejections();
+
+      expect(unhandled).toHaveLength(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        "Failed to initialize tooltips for settings switches",
+        tooltipError
+      );
+    } finally {
+      warnSpy.mockRestore();
+      process.removeListener("unhandledRejection", captureUnhandled);
+      await testHarness.cleanup();
+    }
   });
 
   it("skips navigation updates when persistence fails", async () => {

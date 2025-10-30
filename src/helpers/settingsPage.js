@@ -228,18 +228,32 @@ function makeErrorPopupHandler(errorPopup) {
 function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
   let cleanupTooltips;
   return function renderSwitches(gameModes, tooltipMap) {
-    if (cleanupTooltips) {
-      cleanupTooltips();
-      cleanupTooltips = undefined;
-    }
+    const previousCleanup = cleanupTooltips;
+    cleanupTooltips = undefined;
+
+    void (async () => {
+      if (previousCleanup) {
+        try {
+          previousCleanup();
+        } catch (cleanupError) {
+          console.warn(
+            "Failed to clean up existing tooltips for settings switches",
+            cleanupError
+          );
+        }
+      }
+
+      try {
+        cleanupTooltips = await initTooltips();
+      } catch (error) {
+        console.warn("Failed to initialize tooltips for settings switches", error);
+      }
+    })();
     const current = getCurrentSettings();
     applyInitialControlValues(controls, current, tooltipMap);
     const next = syncDisplayMode(current, handleUpdate);
     renderGameModes(gameModes, getCurrentSettings, handleUpdate);
     renderFeatureFlags(next, getCurrentSettings, handleUpdate, tooltipMap);
-    initTooltips().then((fn) => {
-      cleanupTooltips = fn;
-    });
   };
 }
 
