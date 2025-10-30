@@ -34,7 +34,7 @@ import { preloadRandomCardData, createHistoryManager } from "./randomCardService
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
-import { getSetting } from "./settingsCache.js";
+import { getSetting, setCachedSettings } from "./settingsCache.js";
 
 const historyTogglePlacementRegistry = new WeakMap();
 let randomJudokaPageInitialized = false;
@@ -150,16 +150,23 @@ export async function initFeatureFlagState() {
         ? !window.matchMedia("(prefers-reduced-motion: reduce)").matches
         : true,
       featureFlags: {
+        enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false },
         tooltipOverlayDebug: { enabled: false }
       }
     };
+    try {
+      setCachedSettings(settings);
+    } catch {
+      // Ignore cache hydration errors to preserve fallback behaviour.
+    }
   }
 
-  setTestMode(isEnabled("enableTestMode"));
+  const featureFlags = settings.featureFlags || {};
+  setTestMode(featureFlags.enableTestMode?.enabled ?? false);
   applyMotionPreference(settings.motionEffects);
-  toggleInspectorPanels(isEnabled("enableCardInspector"));
-  toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
+  toggleInspectorPanels(featureFlags.enableCardInspector?.enabled ?? false);
+  toggleTooltipOverlayDebug(featureFlags.tooltipOverlayDebug?.enabled ?? false);
 
   const prefersReducedMotion =
     !settings.motionEffects ||
