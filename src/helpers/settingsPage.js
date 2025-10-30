@@ -29,6 +29,7 @@ import { syncDisplayMode } from "./settings/syncDisplayMode.js";
 import { renderGameModes } from "./settings/renderGameModes.js";
 import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
 import { setupAdvancedSettingsSearch } from "./settings/filterAdvancedSettings.js";
+import { warn } from "./logger.js";
 
 /**
  * Helper: create and return refs for settings controls and containers.
@@ -227,16 +228,18 @@ function makeErrorPopupHandler(errorPopup) {
 
 function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
   let cleanupTooltips;
+  let renderToken = 0;
   return function renderSwitches(gameModes, tooltipMap) {
     const previousCleanup = cleanupTooltips;
     cleanupTooltips = undefined;
+    const currentToken = ++renderToken;
 
-    void (async () => {
+    const runTooltipLifecycle = async () => {
       if (previousCleanup) {
         try {
           previousCleanup();
         } catch (cleanupError) {
-          console.warn(
+          warn(
             "Failed to clean up existing tooltips for settings switches",
             cleanupError
           );
@@ -244,16 +247,26 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
       }
 
       try {
-        cleanupTooltips = await initTooltips();
+        const newCleanup = await initTooltips();
+        if (renderToken === currentToken) {
+          cleanupTooltips = newCleanup;
+        } else if (typeof newCleanup === "function") {
+          try {
+            newCleanup();
+          } catch {
+            // Ignore cleanup failures for outdated renders.
+          }
+        }
       } catch (error) {
-        console.warn("Failed to initialize tooltips for settings switches", error);
+        warn("Failed to initialize tooltips for settings switches", error);
       }
-    })();
+    };
     const current = getCurrentSettings();
     applyInitialControlValues(controls, current, tooltipMap);
     const next = syncDisplayMode(current, handleUpdate);
     renderGameModes(gameModes, getCurrentSettings, handleUpdate);
     renderFeatureFlags(next, getCurrentSettings, handleUpdate, tooltipMap);
+    void runTooltipLifecycle();
   };
 }
 
