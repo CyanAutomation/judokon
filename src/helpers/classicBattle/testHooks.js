@@ -354,21 +354,24 @@ export async function triggerStallPromptNow(store) {
   // Surface the stall prompt immediately in tests to avoid waiting on timers.
   const stallMessage = "Stat selection stalled. Pick a stat or wait for auto-pick.";
   try {
-    const scoreboard = await import("../setupScoreboard.js");
-    if (typeof scoreboard?.showMessage === "function") {
-      scoreboard.showMessage(stallMessage);
+    // Import Scoreboard.js directly instead of setupScoreboard.js to avoid
+    // the initialization flag check that queues messages when setupScoreboard()
+    // hasn't been called (which is typical in tests that initialize via initScoreboard()).
+    const { showMessage } = await import("../../components/Scoreboard.js");
+    if (typeof showMessage === "function") {
+      showMessage(stallMessage);
     } else {
-      // showMessage not available from import, fallback to direct DOM
-      throw new Error("showMessage not available from setupScoreboard module");
+      // Fallback to direct DOM manipulation if showMessage is unavailable
+      const messageEl = document.getElementById("round-message");
+      if (messageEl) {
+        messageEl.textContent = stallMessage;
+      }
     }
   } catch {
-    // Fallback: set message directly in DOM when scoreboard isn't initialized
+    // Fallback: set message directly in DOM when scoreboard import fails
     const messageEl = document.getElementById("round-message");
     if (messageEl) {
       messageEl.textContent = stallMessage;
-      console.log("TEST DEBUG: Set message via fallback:", messageEl.textContent);
-    } else {
-      console.log("TEST DEBUG: round-message element not found!");
     }
   }
   try {
