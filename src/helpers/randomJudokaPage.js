@@ -168,14 +168,19 @@ export async function initFeatureFlagState() {
    * Resolves the initial enabled state for a feature flag with fallback hierarchy.
    *
    * @pseudocode
-   * 1. Check for window.__FF_OVERRIDES[flag] and return if present
-   * 2. Check settings.featureFlags[flag].enabled and return if valid
-   * 3. Fall back to DEFAULT_SETTINGS.featureFlags[flag].enabled
+   * 1. Validate flag parameter is a non-empty string
+   * 2. Check for window.__FF_OVERRIDES[flag] and return if present (with prototype pollution protection)
+   * 3. Check settings.featureFlags[flag].enabled and return if valid
+   * 4. Fall back to DEFAULT_SETTINGS.featureFlags[flag].enabled
    *
    * @param {string} flag - The feature flag name to resolve
    * @returns {boolean} The resolved enabled state for the flag
    */
   const resolveInitialFlagEnabled = (flag) => {
+    if (typeof flag !== "string" || !flag.trim()) {
+      return false;
+    }
+
     try {
       const overrides =
         typeof window !== "undefined" && window && typeof window.__FF_OVERRIDES === "object"
