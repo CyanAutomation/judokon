@@ -2289,11 +2289,14 @@ const cliApi = {
         "/src/helpers/classicBattle/roundResolver.js"
       );
       const { getStatValue } = await import("/src/helpers/battle/index.js");
-      const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
 
       const stat = store.playerChoice;
-      const playerCard = store.playerCard;
-      const opponentCard = getOpponentJudoka(store);
+      const playerCard =
+        store.playerCardEl ||
+        (store.playerCardEl = document.getElementById("player-card"));
+      const opponentCard =
+        store.opponentCardEl ||
+        (store.opponentCardEl = document.getElementById("opponent-card"));
 
       if (!playerCard || !opponentCard) {
         throw new Error("Missing player or opponent card");
