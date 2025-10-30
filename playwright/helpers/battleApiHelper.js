@@ -104,6 +104,42 @@ export async function completeRoundViaApi(page, roundInput = {}) {
 }
 
 /**
+ * Reads the rounds played counter via the Test API.
+ * @param {import("@playwright/test").Page} page
+ * @pseudocode
+ * 1. Evaluate in browser context
+ * 2. Check if Test API state getRoundsPlayed is available
+ * 3. Convert result to number and validate it's finite
+ * 4. Return valid number or null if unavailable/invalid
+ */
+export async function readRoundsPlayed(page) {
+  return await page.evaluate(() => {
+    const getRounds = window.__TEST_API?.state?.getRoundsPlayed;
+    if (typeof getRounds === "function") {
+      const value = Number(getRounds());
+      return Number.isFinite(value) ? value : null;
+    }
+    return null;
+  });
+}
+
+/**
+ * Reads the cooldown countdown value via the Test API.
+ * @param {import("@playwright/test").Page} page
+ * @pseudocode
+ * 1. Evaluate in browser context
+ * 2. Check if Test API timers getCountdown is available
+ * 3. Call getter function if available
+ * 4. Return countdown value or null if unavailable
+ */
+export async function readCountdown(page) {
+  return await page.evaluate(() => {
+    const getter = window.__TEST_API?.timers?.getCountdown;
+    return typeof getter === "function" ? getter() : null;
+  });
+}
+
+/**
  * Resolves the current battle state via the Test API.
  * @param {import("@playwright/test").Page} page
  * @pseudocode
