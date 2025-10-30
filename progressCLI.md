@@ -252,29 +252,89 @@ textarea:focus,
 
 ### 7. Loading State Enhancements
 
-- [ ] **Issue**: Skeleton placeholders are basic and could be more visually appealing.
+- [x] **Issue**: Skeleton placeholders are basic and could be more visually appealing.
 - **Impact**: Loading experience could be more polished.
 - **Solution**: Improve skeleton animation:
 
 ```css
 .cli-stat.skeleton {
-  opacity: 0.6;
-  background: linear-gradient(90deg, #1f1f1f 25%, #2f2f2f 50%, #1f1f1f 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  color: #4d754d;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(
+    90deg,
+    rgba(7, 20, 13, 0.95) 0%,
+    rgba(13, 33, 22, 0.96) 45%,
+    rgba(7, 20, 13, 0.95) 100%
+  );
+  background-size: 180% 100%;
+  animation: skeleton-bars 1.8s ease-in-out infinite;
+  border-color: rgba(60, 255, 155, 0.24);
+  color: #6fb889;
   font-style: italic;
 }
+.cli-stat.skeleton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 30%,
+    rgba(60, 255, 155, 0.3) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: skeleton-sheen 1.8s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.25;
+}
 
-@keyframes skeleton-loading {
+@keyframes skeleton-bars {
   0% {
-    background-position: 200% 0;
+    background-position: 180% 0;
   }
   100% {
-    background-position: -200% 0;
+    background-position: -80% 0;
+  }
+}
+
+@keyframes skeleton-sheen {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0.05;
+  }
+  35% {
+    opacity: 0.45;
+  }
+  65% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cli-stat.skeleton {
+    animation: none;
+    background-position: 0 0;
+  }
+
+  .cli-stat.skeleton::before {
+    animation: none;
+    opacity: 0.18;
+    transform: none;
   }
 }
 ```
+
+- **Actions (2025-10-11):**
+  - Replaced the flat shimmer with layered gradients and a sheen pseudo-element for `.cli-stat.skeleton`, tightened border contrast, and bumped placeholder text tone to feel active without overwhelming the terminal palette.
+  - Added motion sensitivity guardrails so `prefers-reduced-motion` visitors get a static placeholder while retaining layout stability.
+- **Outcome:** Skeleton tiles now pulse with a subtle green sweep that mirrors the live stat tiles, improving perceived responsiveness without introducing DOM churn.
+- **Validation:** `npx vitest run tests/cli/statDisplay.spec.js`, `npx vitest run tests/pages/battleCLI.init.test.js`, `npx playwright test playwright/cli-layout-assessment.spec.js`.
 
 ### 8. Responsive Breakpoint Optimization
 
