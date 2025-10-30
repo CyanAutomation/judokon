@@ -38,23 +38,6 @@ export function updateDrawButtonLabel(drawButton, text) {
   }
 }
 
-/**
- * Create a state machine for the draw card operation.
- *
- * @summary Encapsulates state transitions with UI side effects. All button state
- * changes are driven by state transitions, ensuring consistency.
- *
- * @pseudocode
- * 1. Initialize currentState to "IDLE"
- * 2. Define states map with onEnter handlers mutating button attributes
- * 3. Configure validTransitions adjacency list
- * 4. Implement transition() to validate and apply state changes
- * 5. Trigger initial state's onEnter and expose public API
- *
- * @param {HTMLElement} drawButton - The draw button element
- * @returns {{currentState: string, transition: (nextState: string) => void}}
- * @throws {Error} If transition is invalid (e.g., SUCCESS → DRAWING)
- */
 function getIdleLabel(drawButton) {
   const override = drawButton?.dataset?.drawButtonIdleLabel;
   if (typeof override === "string" && override.trim()) {
@@ -63,6 +46,23 @@ function getIdleLabel(drawButton) {
   return "Draw Card!";
 }
 
+/**
+ * Create a state machine for the draw card operation.
+ *
+ * @summary Encapsulates state transitions with UI side effects, keeping button
+ * semantics consistent regardless of which code path triggered the update.
+ *
+ * @pseudocode
+ * 1. Initialize currentState to "IDLE"
+ * 2. Build states map with onEnter handlers mutating button attributes
+ * 3. Describe allowed transitions for each state in validTransitions
+ * 4. Expose transition() that validates and applies state changes
+ * 5. Trigger the initial state's onEnter handler before returning the API
+ *
+ * @param {HTMLElement} drawButton - The draw button that reflects state changes.
+ * @returns {{currentState: string, transition: (nextState: string) => void}} API for interacting with the state machine.
+ * @throws {Error} If the requested transition is not permitted by the state graph.
+ */
 export function createDrawCardStateMachine(drawButton) {
   let currentState = "IDLE";
 
