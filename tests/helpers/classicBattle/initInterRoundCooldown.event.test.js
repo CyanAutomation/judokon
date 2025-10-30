@@ -120,4 +120,37 @@ describe("initInterRoundCooldown", () => {
     expect(getDisabledSetCount()).toBe(1);
     timers.cleanup();
   });
+
+  it("pauses and resumes the cooldown timer on visibility changes", async () => {
+    const { initInterRoundCooldown } = await import(
+      "../../../src/helpers/classicBattle/cooldowns.js"
+    );
+    await initInterRoundCooldown(machine, { scheduler });
+
+    const { createRoundTimer } = await import(
+      "../../../src/helpers/timers/createRoundTimer.js"
+    );
+    const timerInstance = createRoundTimer.mock.results[0].value;
+    const pauseSpy = timerInstance.pause;
+    const resumeSpy = timerInstance.resume;
+
+    const originalHiddenDescriptor = Object.getOwnPropertyDescriptor(document, "hidden");
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(pauseSpy).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(resumeSpy).toHaveBeenCalledTimes(1);
+
+    const expiredHandlerEntry = timerInstance.on.mock.calls.find(([evt]) => evt === "expired");
+    expect(expiredHandlerEntry).toBeTruthy();
+    expiredHandlerEntry[1]?.();
+
+    if (originalHiddenDescriptor) {
+      Object.defineProperty(document, "hidden", originalHiddenDescriptor);
+    } else {
+      delete document.hidden;
+    }
+  });
 });

@@ -57,10 +57,10 @@ export function mockCreateRoundTimer(options = {}) {
     moduleId
   } = options;
 
-  const factory = () => ({
-    createRoundTimer: () => {
+  const factory = () => {
+    const createRoundTimerMock = vi.fn(() => {
       const handlers = { tick: new Set(), expired: new Set() };
-      return {
+      const timer = {
         on: vi.fn((evt, fn) => handlers[evt]?.add(fn)),
         off: vi.fn((evt, fn) => handlers[evt]?.delete(fn)),
         start: vi.fn((dur) => {
@@ -96,8 +96,10 @@ export function mockCreateRoundTimer(options = {}) {
         pause: vi.fn(),
         resume: vi.fn()
       };
-    }
-  });
+      return timer;
+    });
+    return { createRoundTimer: createRoundTimerMock };
+  };
 
   const targets = moduleId
     ? [moduleId]
