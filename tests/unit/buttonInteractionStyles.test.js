@@ -22,19 +22,21 @@ describe("button interaction styles", () => {
   });
 
   it("respects reduced motion preferences", () => {
-    expect(buttonsCss).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*button::after/);
-    expect(buttonsCss).toMatch(/\.reduce-motion button::after/);
     expect(buttonsCss).toMatch(
-      /@media \(prefers-reduced-motion: reduce\)[\s\S]*button,\s*\n\s*\.primary-button\s*\{\s*transition:\s*none;/
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*button[\s\S]*?::after/
+    );
+    expect(buttonsCss).toMatch(/\.reduce-motion button[\s\S]*?::after/);
+    expect(buttonsCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*button[\s\S]*?,\s*\n\s*\.primary-button\s*\{\s*transition:\s*none;/
     );
     expect(buttonsCss).toMatch(
-      /@media \(prefers-reduced-motion: reduce\)[\s\S]*button:active,\s*\n\s*\.primary-button:active\s*\{\s*transform:\s*none;/
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*button[\s\S]*?:active[\s\S]*?,\s*\n\s*\.primary-button:active\s*\{\s*transform:\s*none;/
     );
     expect(buttonsCss).toMatch(
-      /\.reduce-motion button,\s*\n\s*\.reduce-motion \.primary-button\s*\{\s*transition:\s*none;/
+      /\.reduce-motion button[\s\S]*?,\s*\n\s*\.reduce-motion \.primary-button\s*\{\s*transition:\s*none;/
     );
     expect(buttonsCss).toMatch(
-      /\.reduce-motion button:active,\s*\n\s*\.reduce-motion \.primary-button:active\s*\{\s*transform:\s*none;/
+      /\.reduce-motion button[\s\S]*?:active[\s\S]*?,\s*\n\s*\.reduce-motion \.primary-button:active\s*\{\s*transform:\s*none;/
     );
   });
 });
