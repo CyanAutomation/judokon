@@ -124,7 +124,9 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - Stat hotkeys are only active when the `statHotkeys` feature flag is enabled in settings.
   - All timers pause when the page visibility state is "hidden".
 - **Actionable Fixes:**
-  - [ ] **Respect Hotkey Feature Flag:** In `src/helpers/classicBattle/statButtons.js`, modify `wireStatHotkeys` to check the feature flag before adding the event listener. Remove any logic that force-enables the flag.
+- [x] **Respect Hotkey Feature Flag:** In `src/helpers/classicBattle/statButtons.js`, modify `wireStatHotkeys` to check the feature flag before adding the event listener. Remove any logic that force-enables the flag.
+    - Added opt-in binding that only attaches the document-level key listener while `statHotkeys` is enabled and reacts to `featureFlagsEmitter` updates, keeping the handler detached when the feature is off.
+    - Extended hotkey unit coverage to verify disabled and runtime-toggle scenarios (`npx vitest run tests/helpers/statHotkeys.enabled.spec.js tests/helpers/classicBattle/controlState.test.js`) and re-ran the focused Playwright regression (`npx playwright test playwright/battle-classic/stat-hotkeys.smoke.spec.js`).
   - [ ] **Implement Timer Pausing:** In the core timer logic (e.g., `src/helpers/classicBattle/timerService.js`), add event listeners for the Page Visibility API.
 
     ```javascript
