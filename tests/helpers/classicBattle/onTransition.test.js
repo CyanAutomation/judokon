@@ -26,7 +26,7 @@ const engineMock = {
     remaining: 30,
     paused: false,
     category: "roundTimer",
-    pauseOnHidden: false
+    pauseOnHidden: true
   })
 };
 

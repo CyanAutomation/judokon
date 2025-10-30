@@ -417,6 +417,13 @@ function observeHeaderRemoval(header, disconnect) {
 /**
  * Safely execute a scoreboard helper, providing resilience and diagnostics.
  *
+ * @pseudocode
+ * 1. If DOM unavailable, log warning and return fallback.
+ * 2. If helper is available, execute it directly (don't queue).
+ * 3. If helper is unavailable and scoreboard uninitialized, queue the call.
+ * 4. If helper is unavailable and not queued, log and return fallback.
+ * 5. Execute with error handling.
+ *
  * @param {string} name - Helper identifier.
  * @param {Function|undefined} helper - Helper implementation.
  * @param {unknown[]} args - Arguments for the helper.
@@ -427,13 +434,16 @@ function runHelper(name, helper, args) {
     logOnce(loggedWarnings, "warn", "[scoreboard] DOM unavailable; scoreboard helpers disabled.");
     return fallbackValue(name);
   }
-  if (enqueueScoreboardCall(name, args)) {
-    return fallbackValue(name);
-  }
   if (typeof helper !== "function") {
+    // Helper not available; attempt to queue if scoreboard not yet initialized
+    if (enqueueScoreboardCall(name, args)) {
+      return fallbackValue(name);
+    }
+    // Not queued and not available
     logOnce(loggedWarnings, "warn", `[scoreboard] Missing helper "${name}".`);
     return fallbackValue(name);
   }
+  // Helper is available; execute it directly
   try {
     return helper(...args);
   } catch (error) {

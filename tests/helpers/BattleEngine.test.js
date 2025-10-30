@@ -100,7 +100,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
         this.onTickCb = onTick;
         this.onExpiredCb = onExpired;
         this.activeCategory = "coolDownTimer";
-        this.pauseOnHiddenSetting = false;
+        this.pauseOnHiddenSetting = true;
       });
   });
 
@@ -158,7 +158,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
     expect(startRoundMock).not.toHaveBeenCalled();
     expect(engine.timer.onTickCb).toBe(firstTickHandler);
     expect(engine.timer.onExpiredCb).toBe(firstExpiredHandler);
-    expect(engine.timer.getState().pauseOnHidden).toBe(false);
+    expect(engine.timer.getState().pauseOnHidden).toBe(true);
 
     engine.timer.onTickCb(2);
     expect(timerTickSpy).toHaveBeenLastCalledWith({ remaining: 2, phase: "cooldown" });

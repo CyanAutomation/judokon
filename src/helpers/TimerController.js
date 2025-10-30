@@ -158,7 +158,7 @@ export class TimerController {
   }
 
   startCoolDown(onTick, onExpired, duration, onDrift) {
-    return this.#start("coolDownTimer", onTick, onExpired, duration, false, onDrift);
+    return this.#start("coolDownTimer", onTick, onExpired, duration, true, onDrift);
   }
 
   pause() {

@@ -92,7 +92,9 @@ export function mockCreateRoundTimer(options = {}) {
           if (stopEmitsExpired) {
             emitExpired(handlers);
           }
-        })
+        }),
+        pause: vi.fn(),
+        resume: vi.fn()
       };
     }
   });

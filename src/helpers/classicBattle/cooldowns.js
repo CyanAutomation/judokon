@@ -213,7 +213,7 @@ export function setupInterRoundTimer({ timer, duration, onTick, onExpired }) {
  * @param {{clearTimeout?: typeof clearTimeout}} [options.scheduler]
  * @returns {{ finish: () => void, trackFallback: (id: ReturnType<typeof setTimeout>|null|undefined) => void }}
  */
-export function createCooldownCompletion({ machine, timer, button, scheduler }) {
+export function createCooldownCompletion({ machine, timer, button, scheduler, onCleanup }) {
   let completed = false;
   let fallbackId = null;
 
@@ -234,6 +234,11 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
     if (completed) return;
     completed = true;
     clearFallback();
+    if (typeof onCleanup === "function") {
+      try {
+        onCleanup();
+      } catch {}
+    }
     guard(() => timer?.stop?.());
     guard(() => setSkipHandler(null));
     const target = button || getNextButton();
@@ -308,6 +313,33 @@ function scheduleCooldownFallback({ duration, finish, scheduler }) {
   return setupFallbackTimer(ms, finish, scheduler);
 }
 
+function attachVisibilityPauseControls(timer, documentRef = typeof document !== "undefined" ? document : null) {
+  if (!timer || !documentRef || typeof documentRef.addEventListener !== "function") {
+    return () => {};
+  }
+
+  const handler = () => {
+    try {
+      if (documentRef.hidden) {
+        timer.pause?.();
+      } else {
+        timer.resume?.();
+      }
+    } catch {}
+  };
+
+  try {
+    documentRef.addEventListener("visibilitychange", handler);
+    handler();
+  } catch {}
+
+  return () => {
+    try {
+      documentRef.removeEventListener("visibilitychange", handler);
+    } catch {}
+  };
+}
+
 /**
  * @summary Orchestrate the inter-round cooldown timer and fallback completion flow.
  *
@@ -338,7 +370,8 @@ export async function initInterRoundCooldown(machine, options = {}) {
     machine,
     timer,
     button,
-    scheduler: options.scheduler
+    scheduler: options.scheduler,
+    onCleanup: attachVisibilityPauseControls(timer)
   });
 
   setupInterRoundTimer({
