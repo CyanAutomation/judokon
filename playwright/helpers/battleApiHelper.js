@@ -104,6 +104,32 @@ export async function completeRoundViaApi(page, roundInput = {}) {
 }
 
 /**
+ * Reads the rounds played counter via the Test API.
+ * @param {import("@playwright/test").Page} page
+ */
+export async function readRoundsPlayed(page) {
+  return await page.evaluate(() => {
+    const getRounds = window.__TEST_API?.state?.getRoundsPlayed;
+    if (typeof getRounds === "function") {
+      const value = Number(getRounds());
+      return Number.isFinite(value) ? value : null;
+    }
+    return null;
+  });
+}
+
+/**
+ * Reads the cooldown countdown value via the Test API.
+ * @param {import("@playwright/test").Page} page
+ */
+export async function readCountdown(page) {
+  return await page.evaluate(() => {
+    const getter = window.__TEST_API?.timers?.getCountdown;
+    return typeof getter === "function" ? getter() : null;
+  });
+}
+
+/**
  * Resolves the current battle state via the Test API.
  * @param {import("@playwright/test").Page} page
  * @pseudocode
