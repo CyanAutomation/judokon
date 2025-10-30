@@ -22,7 +22,7 @@ const visibilityListeners = {
   attached: false,
   wasHidden: undefined
 };
-const queueableHelpers = new Set(["showMessage", "clearMessage", "showTemporaryMessage"]);
+const queueableHelpers = new Set(["showMessage", "clearMessage"]);
 const pendingScoreboardCalls = [];
 let scoreboardInitialized = false;
 let isFlushingScoreboardQueue = false;

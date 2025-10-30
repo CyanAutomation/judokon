@@ -98,11 +98,8 @@ describe("setupScoreboard", () => {
     const mod = await import("../../src/helpers/setupScoreboard.js");
     mod.showMessage("Queued message");
     mod.clearMessage();
-    mod.showTemporaryMessage("temp");
-
     expect(stub.showMessage).not.toHaveBeenCalled();
     expect(stub.clearMessage).not.toHaveBeenCalled();
-    expect(stub.showTemporaryMessage).not.toHaveBeenCalled();
 
     document.body.appendChild(createScoreboardHeader());
     const scheduler = createMockScheduler();
@@ -116,7 +113,6 @@ describe("setupScoreboard", () => {
     );
     expect(stub.showMessage).toHaveBeenCalledWith("Queued message");
     expect(stub.clearMessage).toHaveBeenCalledTimes(1);
-    expect(stub.showTemporaryMessage).toHaveBeenCalledWith("temp");
   });
 
   it("calls initScoreboard with null when header missing", async () => {

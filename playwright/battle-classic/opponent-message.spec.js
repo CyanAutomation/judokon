@@ -138,10 +138,6 @@ async function withBattleEventCapture(page, eventNames, callback) {
   }
 }
 
-async function getDispatchedEvents(page) {
-  return await page.evaluate(() => window.__TEST_API?.__dispatchedEvents ?? []);
-}
-
 test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest("shows mystery placeholder pre-reveal before stat selection", async ({ page }) => {
     const opponentCard = page.locator("#opponent-card");
@@ -277,31 +273,33 @@ test.describe("Classic Battle Opponent Messages", () => {
       await setupStalledCliFallback(page);
 
       try {
-        const firstStat = page.locator(selectors.statButton()).first();
-        await firstStat.click();
+        await withBattleEventCapture(page, ["roundResolved"], async ({ getEvents }) => {
+          const firstStat = page.locator(selectors.statButton()).first();
+          await firstStat.click();
 
-        await ensureRoundResolved(page, { forceResolve: true });
+          await ensureRoundResolved(page, { forceResolve: true });
 
-        try {
-          await confirmRoundResolved(page, {
-            timeout: 3_000,
-            message: 'Expected battle state to resolve to "roundOver" after forced fallback'
-          });
-        } catch (error) {
-          let lastObservedBattleState = null;
           try {
-            lastObservedBattleState = await page.evaluate(
-              () => window.__TEST_API?.state?.getBattleState?.() ?? null
-            );
-          } catch {}
-          error.message = `${error.message}\nLast observed battle state: ${
-            lastObservedBattleState ?? "null"
-          }`;
-          throw error;
-        }
+            await confirmRoundResolved(page, {
+              timeout: 3_000,
+              message: 'Expected battle state to resolve to "roundOver" after forced fallback'
+            });
+          } catch (error) {
+            let lastObservedBattleState = null;
+            try {
+              lastObservedBattleState = await page.evaluate(
+                () => window.__TEST_API?.state?.getBattleState?.() ?? null
+              );
+            } catch {}
+            error.message = `${error.message}\nLast observed battle state: ${
+              lastObservedBattleState ?? "null"
+            }`;
+            throw error;
+          }
 
-        const dispatchedEvents = await getDispatchedEvents(page);
-        expect(dispatchedEvents).toContain("roundResolved");
+          const emittedEvents = await getEvents();
+          expect(emittedEvents).toContain("roundResolved");
+        });
       } finally {
         await cleanupStalledCliFallback(page);
       }
