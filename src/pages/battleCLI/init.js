@@ -2779,29 +2779,34 @@ function syncControlsHintVisibility(state) {
  * 1. Update state badge and remove transient Next button.
  * 2. Clear verbose log when match starts.
  * 3. Start or stop selection countdown depending on state.
- * 4. Show bottom line hint when waiting to continue.
+ * 4. Reset roundResolving flag when entering waitingForPlayerAction.
+ * 5. Show bottom line hint when waiting to continue.
  *
- * @param {string} state - New battle state.
+ * @param {string} battleState - New battle state.
  * @returns {void}
  */
-function updateUiForState(state) {
-  updateBattleStateBadge(state);
-  syncControlsHintVisibility(state);
+function updateUiForState(battleState) {
+  updateBattleStateBadge(battleState);
+  syncControlsHintVisibility(battleState);
   if (hasDocument) {
     try {
       document.getElementById("next-round-button")?.remove();
     } catch {}
   }
-  if (state === "matchStart") {
+  if (battleState === "matchStart") {
     clearVerboseLog();
   }
-  if (state === "waitingForPlayerAction") {
+  if (battleState === "waitingForPlayerAction") {
+    // Reset the CLI-specific roundResolving flag when entering player action state.
+    // This ensures stat selection is allowed even if a previous round's resolution
+    // event hasn't fully completed (edge case with fast state transitions in tests).
+    state.roundResolving = false;
     startSelectionCountdown(30);
     byId("cli-stats")?.focus();
   } else {
     stopSelectionCountdown();
   }
-  if (state === "roundOver" && !autoContinue) {
+  if (battleState === "roundOver" && !autoContinue) {
     showBottomLine("Press Enter to continue");
   }
 }
