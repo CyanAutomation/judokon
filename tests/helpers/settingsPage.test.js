@@ -156,7 +156,8 @@ describe("renderSettingsControls", () => {
     };
     process.on("unhandledRejection", captureUnhandled);
 
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    let warnSpy;
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       getTooltips: vi.fn().mockResolvedValue({}),
@@ -166,6 +167,8 @@ describe("renderSettingsControls", () => {
     await testHarness.setup();
 
     try {
+      const loggerModule = await import("../../src/helpers/logger.js");
+      warnSpy = vi.spyOn(loggerModule, "warn").mockImplementation(() => {});
       const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
 
       renderSettingsControls(baseSettings, [], tooltipMap);
@@ -178,7 +181,8 @@ describe("renderSettingsControls", () => {
         tooltipError
       );
     } finally {
-      warnSpy.mockRestore();
+      if (warnSpy) warnSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
       process.removeListener("unhandledRejection", captureUnhandled);
       await testHarness.cleanup();
     }
