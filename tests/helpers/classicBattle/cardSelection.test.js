@@ -282,7 +282,7 @@ describe.sequential("classicBattle card selection", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
-    
+
     // Verify that generateRandomCardMock receives only non-hidden judoka in the pool
     expect(generateRandomCardMock).toHaveBeenCalledWith(
       [expect.objectContaining({ id: 2, isHidden: false })],
@@ -292,7 +292,7 @@ describe.sequential("classicBattle card selection", () => {
       expect.any(Function),
       { enableInspector: false, skipRender: false }
     );
-    
+
     // Verify that both player and opponent are the only visible judoka (id: 2)
     // Since there's only one visible judoka, the opponent will fall back to getFallbackJudoka
     // which returns id: 0 (the hardcoded fallback)

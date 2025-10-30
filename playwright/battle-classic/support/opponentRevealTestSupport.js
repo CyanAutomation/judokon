@@ -3,8 +3,7 @@ import selectors from "../../helpers/selectors.js";
 import {
   waitForBattleState,
   waitForBattleReady,
-  getBattleStateWithErrorHandling,
-  triggerStateTransition
+  getBattleStateWithErrorHandling
 } from "../../helpers/battleStateHelper.js";
 
 export const MUTED_CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"];
@@ -331,7 +330,9 @@ async function manuallySyncBattleState(
 
       const eventCandidates = [];
       if (targetState === "roundOver") {
-        eventCandidates.push("roundResolved");
+        // Use actual state machine outcome events instead of "roundResolved" battle event
+        // The roundResolved event is emitted AFTER state transitions, not as a trigger
+        eventCandidates.push("outcome=winPlayer", "outcome=winOpponent", "outcome=draw");
       }
       if (typeof targetState === "string" && targetState) {
         eventCandidates.push(targetState);
@@ -512,7 +513,8 @@ async function manuallySyncBattleState(
 
 /**
  * @pseudocode
- * - trigger production roundResolved transition
+ * - trigger round resolution through resolveSelectionIfPresent helper
+ * - this properly evaluates the round, updates scores, and increments roundsPlayed
  * - inspect latest battle state and determine if manual sync is required
  * - when needed, force DOM + state API alignment to "roundOver" and verify sync
  *
@@ -522,7 +524,36 @@ async function manuallySyncBattleState(
  * @returns {Promise<{ resolved: boolean, stateAfterTransition: string | null | undefined }>}
  */
 async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
-  await triggerStateTransition(page, "roundResolved");
+  // Attempt to resolve the round through the proper resolution pipeline
+  // This calls resolveSelectionIfPresent which evaluates the round and updates roundsPlayed
+  await page
+    .evaluate(async () => {
+      try {
+        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+        if (!store || !store.playerChoice) {
+          return { success: false, reason: "no_selection" };
+        }
+
+        // Import and call resolveSelectionIfPresent from roundDecisionHelpers
+        // This properly evaluates the round including incrementing roundsPlayed
+        if (typeof window.resolveSelectionIfPresent === "function") {
+          await window.resolveSelectionIfPresent(store);
+          return { success: true };
+        }
+
+        // Fallback: trigger computeAndDispatchOutcome through the machine
+        const machine = window.__classicBattleMachine;
+        if (machine && typeof window.computeAndDispatchOutcome === "function") {
+          await window.computeAndDispatchOutcome(store, machine);
+          return { success: true };
+        }
+
+        return { success: false, reason: "helper_unavailable" };
+      } catch (error) {
+        return { success: false, reason: error.message, error: true };
+      }
+    })
+    .catch(() => ({ success: false }));
 
   let stateAfterTransition = await safeGetBattleState(page, stateAfterCli);
 

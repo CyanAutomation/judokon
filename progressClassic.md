@@ -134,5 +134,3 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
       }
     });
     ```
-
-
