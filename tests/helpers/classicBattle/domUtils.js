@@ -1,4 +1,5 @@
 import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
+import { clearMessage as clearScoreboardMessage } from "../../../src/helpers/setupScoreboard.js";
 
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
@@ -84,4 +85,27 @@ export function createTimerNodes() {
   nextRoundTimer.setAttribute("role", "status");
   document.body.append(nextButton, nextRoundTimer);
   return { nextButton, nextRoundTimer };
+}
+
+/**
+ * Clear the round message using the scoreboard helper when available.
+ *
+ * @pseudocode
+ * 1. Invoke `scoreboard.clearMessage()` via the helper to mirror production behaviour.
+ * 2. Fallback to direct DOM cleanup when the scoreboard has not been initialised.
+ */
+export function clearRoundMessage() {
+  try {
+    clearScoreboardMessage();
+  } catch {}
+
+  try {
+    if (typeof document === "undefined") return;
+    const el = document.getElementById("round-message");
+    if (!el) return;
+    el.textContent = "";
+    if (el.dataset && "outcome" in el.dataset) {
+      delete el.dataset.outcome;
+    }
+  } catch {}
 }

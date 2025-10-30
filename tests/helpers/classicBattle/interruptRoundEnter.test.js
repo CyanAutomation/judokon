@@ -1,7 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import "./commonMocks.js";
-import { createTimerNodes } from "./domUtils.js";
+import { createTimerNodes, clearRoundMessage } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
+import { initClassicBattleTest } from "./initClassicBattle.js";
+import {
+  initClassicBattleOrchestrator,
+  getBattleStateMachine,
+  dispatchBattleEvent
+} from "../../../src/helpers/classicBattle/orchestrator.js";
+import { onBattleEvent, offBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
+import { handleStatSelection } from "../../../src/helpers/classicBattle/selectionHandler.js";
 
 setupClassicBattleHooks();
 
@@ -9,25 +17,19 @@ async function setupInterruptHarness(storeOverrides = {}) {
   createTimerNodes();
 
   const baseStore = {
-    selectionMade: true,
-    playerChoice: "power",
-    __lastSelectionMade: true,
+    selectionMade: false,
+    playerChoice: null,
+    __lastSelectionMade: false,
     roundsPlayed: 1,
     ...storeOverrides
   };
 
-  const { initClassicBattleTest } = await import("./initClassicBattle.js");
   await initClassicBattleTest({ afterMock: true });
 
-  const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
-    "../../../src/helpers/classicBattle/orchestrator.js"
-  );
   await initClassicBattleOrchestrator({ store: baseStore });
 
   const machine = getBattleStateMachine();
-  const { onBattleEvent, offBattleEvent } = await import(
-    "../../../src/helpers/classicBattle/battleEvents.js"
-  );
+  const activeStore = machine?.context?.store ?? baseStore;
   const transitions = [];
   const scoreboardMessages = [];
   const recordTransition = (event) => {
@@ -44,24 +46,37 @@ async function setupInterruptHarness(storeOverrides = {}) {
     offBattleEvent("scoreboardShowMessage", recordMessage);
   };
 
-  return { store: baseStore, machine, transitions, scoreboardMessages, cleanup };
+  return { store: activeStore, machine, transitions, scoreboardMessages, cleanup };
 }
 
-async function dispatchSequence(machine, sequence) {
+async function dispatchEvents(sequence) {
   for (const step of sequence) {
     if (!step) continue;
     const [event, payload] = Array.isArray(step) ? step : [step, undefined];
-    await machine.dispatch(event, payload);
+    await dispatchBattleEvent(event, payload);
   }
+}
+
+async function advanceToWaitingForPlayerAction() {
+  await dispatchEvents(["startClicked"]);
+  await dispatchEvents(["ready"]);
+  await dispatchEvents(["cardsRevealed"]);
+}
+
+function beginSelection(store, stat) {
+  const playerStats = store?.currentPlayerJudoka?.stats ?? {};
+  const opponentStats = store?.currentOpponentJudoka?.stats ?? {};
+  const selectionPromise = handleStatSelection(store, stat, {
+    playerVal: playerStats[stat],
+    opponentVal: opponentStats[stat],
+    forceDirectResolution: true
+  });
+  return selectionPromise.catch(() => {});
 }
 
 describe.sequential("classic battle orchestrator interrupt flows", () => {
   beforeEach(() => {
-    // Ensure message element is clear before each scenario
-    const message = document.getElementById("round-message");
-    if (message) {
-      message.textContent = "";
-    }
+    clearRoundMessage();
   });
 
   afterEach(async () => {
@@ -76,14 +91,17 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
     const env = await setupInterruptHarness();
     const { store, machine, transitions, scoreboardMessages, cleanup } = env;
     try {
-      await dispatchSequence(machine, ["matchStart", "cooldown", "roundStart", "waitingForPlayerAction"]);
+      await advanceToWaitingForPlayerAction();
 
-      // Simulate that a selection was in progress before the interrupt.
-      store.selectionMade = true;
-      store.__lastSelectionMade = true;
-      store.playerChoice = "speed";
+      const selectionTask = beginSelection(store, "speed");
 
-      await machine.dispatch("interruptRound", { reason: "noSelection" });
+      expect(store.selectionMade).toBe(true);
+      expect(store.__lastSelectionMade).toBe(true);
+      expect(store.playerChoice).toBe("speed");
+
+      await dispatchBattleEvent("interrupt", { reason: "noSelection" });
+
+      await selectionTask;
 
       expect(scoreboardMessages).toContain("Round interrupted: noSelection");
 
@@ -104,13 +122,17 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
     const env = await setupInterruptHarness({ roundsPlayed: 3 });
     const { store, machine, transitions, scoreboardMessages, cleanup } = env;
     try {
-      await dispatchSequence(machine, ["matchStart"]);
+      await advanceToWaitingForPlayerAction();
 
-      store.selectionMade = true;
-      store.__lastSelectionMade = true;
-      store.playerChoice = "technique";
+      const selectionTask = beginSelection(store, "technique");
+
+      expect(store.selectionMade).toBe(true);
+      expect(store.__lastSelectionMade).toBe(true);
+      expect(store.playerChoice).toBe("technique");
 
       await machine.dispatch("interruptMatch", { reason: "fatal" });
+
+      await selectionTask;
 
       expect(scoreboardMessages).toContain("Match interrupted: fatal");
 
