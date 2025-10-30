@@ -414,7 +414,7 @@ textarea:focus,
 
 ### 10. Touch Target Consistency
 
-- [ ] **Issue**: While stats meet 44px minimum, other interactive elements should be reviewed.
+- [x] **Issue**: While stats meet 44px minimum, other interactive elements should be reviewed.
 - **Impact**: Touch interaction consistency.
 - **Solution**: Ensure all touch targets meet minimum sizes:
 
@@ -431,6 +431,12 @@ details.cli-settings > summary,
   justify-content: center;
 }
 ```
+
+- **Actions (2025-10-11):**
+  - Elevated `.button-reset` touch controls (e.g., the shortcuts close chip) to 44×44px flex boxes and bumped shortcut hint chips to the same minimum footprint for consistent tap targets across footer hints.
+  - Tweaked responsive padding so chips stay roomy on small screens without crowding the grid.
+- **Outcome:** All header summaries, footer controls, and hint chips now meet the 44px requirement, giving pointer and touch users predictable hit areas without altering the terminal styling.
+- **Validation:** `npx vitest run tests/pages/battleCLI.shortcuts.test.js`, `npx vitest run tests/pages/battleCLI.visibility.test.js`, `npx playwright test playwright/cli-layout-assessment.spec.js`.
 
 ## Additional Opportunities
 
