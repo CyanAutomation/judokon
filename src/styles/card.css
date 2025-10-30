@@ -191,6 +191,14 @@ svg {
   transform: scale(1.05); /* Match PRD max scale */
 }
 
+/* Keyboard focus fallback for browsers without :focus-visible */
+.judoka-card:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  transform: scale(1.05);
+  box-shadow: var(--shadow-hover);
+}
+
 /* Keyboard focus outline */
 .judoka-card:focus-visible {
   outline: 2px solid var(--color-primary);
@@ -199,9 +207,11 @@ svg {
   box-shadow: var(--shadow-hover);
 }
 
-/* Fallback for older browsers */
+/* Remove focus treatment for pointer interactions when :focus-visible is supported */
 .judoka-card:focus:not(:focus-visible) {
   outline: none;
+  transform: none;
+  box-shadow: var(--shadow-base);
 }
 
 /* Mystery section (simplified placeholder layout) */
