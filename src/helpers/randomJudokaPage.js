@@ -35,6 +35,7 @@ import { getFallbackJudoka } from "./judokaUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
 import { getSetting, setCachedSettings } from "./settingsCache.js";
+import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 const historyTogglePlacementRegistry = new WeakMap();
 let randomJudokaPageInitialized = false;
@@ -157,16 +158,35 @@ export async function initFeatureFlagState() {
     };
     try {
       setCachedSettings(settings);
-    } catch {
+    } catch (cacheError) {
       // Ignore cache hydration errors to preserve fallback behaviour.
+      console.warn("Failed to cache fallback settings:", cacheError);
     }
   }
 
-  const featureFlags = settings.featureFlags || {};
-  setTestMode(featureFlags.enableTestMode?.enabled ?? false);
+  const resolveInitialFlagEnabled = (flag) => {
+    try {
+      const overrides =
+        typeof window !== "undefined" && window && typeof window.__FF_OVERRIDES === "object"
+          ? window.__FF_OVERRIDES
+          : null;
+      if (overrides && Object.prototype.hasOwnProperty.call(overrides, flag)) {
+        return !!overrides[flag];
+      }
+    } catch {}
+
+    const flagEntry = settings?.featureFlags?.[flag];
+    if (flagEntry && typeof flagEntry === "object" && "enabled" in flagEntry) {
+      return !!flagEntry.enabled;
+    }
+
+    return DEFAULT_SETTINGS.featureFlags?.[flag]?.enabled ?? false;
+  };
+
+  setTestMode(resolveInitialFlagEnabled("enableTestMode"));
   applyMotionPreference(settings.motionEffects);
-  toggleInspectorPanels(featureFlags.enableCardInspector?.enabled ?? false);
-  toggleTooltipOverlayDebug(featureFlags.tooltipOverlayDebug?.enabled ?? false);
+  toggleInspectorPanels(resolveInitialFlagEnabled("enableCardInspector"));
+  toggleTooltipOverlayDebug(resolveInitialFlagEnabled("tooltipOverlayDebug"));
 
   const prefersReducedMotion =
     !settings.motionEffects ||
