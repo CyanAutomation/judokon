@@ -164,6 +164,17 @@ export async function initFeatureFlagState() {
     }
   }
 
+  /**
+   * Resolves the initial enabled state for a feature flag with fallback hierarchy.
+   *
+   * @pseudocode
+   * 1. Check for window.__FF_OVERRIDES[flag] and return if present
+   * 2. Check settings.featureFlags[flag].enabled and return if valid
+   * 3. Fall back to DEFAULT_SETTINGS.featureFlags[flag].enabled
+   *
+   * @param {string} flag - The feature flag name to resolve
+   * @returns {boolean} The resolved enabled state for the flag
+   */
   const resolveInitialFlagEnabled = (flag) => {
     try {
       const overrides =
