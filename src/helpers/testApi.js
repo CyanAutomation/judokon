@@ -2420,29 +2420,15 @@ const cliApi = {
     const resolution = await this.resolveRound(roundInput);
     const detail = resolution?.detail ?? {};
 
-    let outcomeDispatched = false;
-    if (outcomeEvent) {
-      const stateBeforeOutcome = stateApi.getBattleState();
+    const mapDispatchError = (error) => {
+      if (!error) return "Unknown dispatch error";
+      if (typeof error === "string") return error;
+      if (error instanceof Error) return error.message;
       try {
-        logDevDebug("[completeRound] About to dispatch outcome event", {
-          outcomeEvent,
-          stateBeforeResolve,
-          stateBeforeOutcome,
-          machine: stateApi.getBattleStateMachine()
-        });
-        const dispatched = await stateApi.dispatchBattleEvent(outcomeEvent, detail);
-        outcomeDispatched = dispatched !== false;
-        logDevDebug("[completeRound] Outcome dispatch result", {
-          outcomeEvent,
-          dispatched,
-          outcomeDispatched,
-          stateAfterOutcome: stateApi.getBattleState()
-        });
-      } catch (error) {
-        logDevDebug("[completeRound] Outcome dispatch error", { outcomeEvent, error });
-        outcomeDispatched = false;
-      }
-    }
+        return JSON.stringify(error);
+      } catch {}
+      return String(error);
+    };
 
     const readCurrentState = () => {
       try {
@@ -2453,22 +2439,113 @@ const cliApi = {
       }
     };
 
-    let finalState;
+    const mapOutcomeToEvent = (outcome) => {
+      if (typeof outcome !== "string" || outcome.length === 0) {
+        return null;
+      }
+      if (outcome === "winPlayer" || outcome === "matchWinPlayer") {
+        return "outcome=winPlayer";
+      }
+      if (outcome === "winOpponent" || outcome === "matchWinOpponent") {
+        return "outcome=winOpponent";
+      }
+      if (outcome === "draw") {
+        return "outcome=draw";
+      }
+      return null;
+    };
 
-    if (outcomeEvent) {
+    const detailOutcomeEvent =
+      typeof detail?.result?.outcomeEvent === "string" && detail?.result?.outcomeEvent?.length
+        ? detail.result.outcomeEvent
+        : null;
+    const derivedOutcomeEvent =
+      detailOutcomeEvent ?? mapOutcomeToEvent(detail?.result?.outcome ?? detail?.outcome);
+
+    let resolvedOutcomeEvent = outcomeEvent ?? derivedOutcomeEvent ?? null;
+    let outcomeDispatched = false;
+
+    if (resolvedOutcomeEvent) {
+      try {
+        const stateBeforeOutcome = stateApi.getBattleState();
+        logDevDebug("[completeRound] About to dispatch outcome event", {
+          outcomeEvent: resolvedOutcomeEvent,
+          stateBeforeResolve,
+          stateBeforeOutcome,
+          machine: stateApi.getBattleStateMachine()
+        });
+        const dispatched = await stateApi.dispatchBattleEvent(resolvedOutcomeEvent, detail);
+        outcomeDispatched = dispatched !== false;
+        logDevDebug("[completeRound] Outcome dispatch result", {
+          outcomeEvent: resolvedOutcomeEvent,
+          dispatched,
+          outcomeDispatched,
+          stateAfterOutcome: stateApi.getBattleState()
+        });
+
+        if (!outcomeEvent && outcomeDispatched) {
+          const postOutcomeState = readCurrentState();
+          if (postOutcomeState === "roundOver") {
+            const followupEvent = detail?.result?.matchEnded ? "matchPointReached" : "continue";
+            if (followupEvent) {
+              try {
+                await stateApi.dispatchBattleEvent(followupEvent, detail);
+              } catch (error) {
+                logDevDebug("[completeRound] Follow-up event dispatch error", {
+                  followupEvent,
+                  error: mapDispatchError(error)
+                });
+              }
+            }
+          }
+        }
+      } catch (error) {
+        logDevDebug("[completeRound] Outcome dispatch error", {
+          outcomeEvent: resolvedOutcomeEvent,
+          error
+        });
+        outcomeDispatched = false;
+      }
+    }
+
+    const successStates = new Set(["roundOver", "cooldown", "matchDecision", "matchOver"]);
+    const transitionalStates = new Set(["roundDecision", "roundOver"]);
+    let finalState = null;
+    let lastSuccessfulState = null;
+    let roundOverObserved = false;
+
+    const captureState = (state) => {
+      if (!state) {
+        return;
+      }
+      if (state === "roundOver") {
+        roundOverObserved = true;
+      }
+      if (successStates.has(state)) {
+        lastSuccessfulState = state;
+      }
+    };
+
+    if (resolvedOutcomeEvent) {
       // Wait for the outcome event to be processed and the state to stabilize
       const timeoutMs = autoWaitTimeoutMs ?? 2_000;
-      const start = Date.now();
-      const targetState = "roundOver";
+      const deadline = Date.now() + timeoutMs;
+      let timedOut = false;
 
-      finalState = readCurrentState();
-
-      while (finalState !== targetState && Date.now() - start < timeoutMs) {
-        await waitForNextFrame();
+      while (true) {
         finalState = readCurrentState();
+        captureState(finalState);
+        if (successStates.has(finalState)) {
+          break;
+        }
+        if (Date.now() >= deadline) {
+          timedOut = true;
+          break;
+        }
+        await waitForNextFrame();
       }
 
-      if (finalState !== targetState) {
+      if (timedOut && !successStates.has(finalState)) {
         logDevDebug("[completeRound] Timed out waiting for roundOver after outcome dispatch", {
           timeoutMs,
           finalState,
@@ -2477,34 +2554,40 @@ const cliApi = {
       }
     } else {
       const timeoutMs = autoWaitTimeoutMs ?? 2_000;
-      const start = Date.now();
-      const transitionalStates = new Set(["roundDecision", "roundOver"]);
+      const deadline = Date.now() + timeoutMs;
+      let timedOut = false;
 
-      finalState = readCurrentState();
-
-      if (transitionalStates.has(finalState)) {
-        do {
-          await waitForNextFrame();
-          finalState = readCurrentState();
-          if (finalState && !transitionalStates.has(finalState)) {
-            break;
-          }
-        } while (Date.now() - start < timeoutMs);
-
-        if (transitionalStates.has(finalState)) {
-          logDevDebug("[completeRound] Timed out waiting for post-round state", {
-            timeoutMs,
-            lastState: finalState
-          });
+      while (true) {
+        finalState = readCurrentState();
+        captureState(finalState);
+        if (!transitionalStates.has(finalState)) {
+          break;
         }
+        if (Date.now() >= deadline) {
+          timedOut = true;
+          break;
+        }
+        await waitForNextFrame();
+      }
+
+      if (timedOut && transitionalStates.has(finalState)) {
+        logDevDebug("[completeRound] Timed out waiting for post-round state", {
+          timeoutMs,
+          lastState: finalState,
+          roundOverObserved
+        });
       }
     }
 
+    const normalizedState = lastSuccessfulState ?? finalState ?? readCurrentState();
+    captureState(normalizedState);
+
     return {
       detail,
-      outcomeEvent,
+      outcomeEvent: resolvedOutcomeEvent,
       outcomeDispatched,
-      finalState: finalState ?? readCurrentState(),
+      finalState: normalizedState ?? null,
+      roundOverObserved,
       dispatched: resolution?.dispatched ?? false,
       emitted: resolution?.emitted ?? false
     };
