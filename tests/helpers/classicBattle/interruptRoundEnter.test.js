@@ -57,7 +57,7 @@ async function dispatchEvents(sequence) {
   }
 }
 
-async function advanceToWaitingForPlayerAction() {
+async function advanceToPlayerActionState() {
   await dispatchEvents(["startClicked"]);
   await dispatchEvents(["ready"]);
   await dispatchEvents(["cardsRevealed"]);
@@ -91,7 +91,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
     const env = await setupInterruptHarness();
     const { store, transitions, scoreboardMessages, cleanup } = env;
     try {
-      await advanceToWaitingForPlayerAction();
+      await advanceToPlayerActionState();
 
       const selectionTask = beginSelection(store, "speed");
 
@@ -122,7 +122,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
     const env = await setupInterruptHarness({ roundsPlayed: 3 });
     const { store, machine, transitions, scoreboardMessages, cleanup } = env;
     try {
-      await advanceToWaitingForPlayerAction();
+      await advanceToPlayerActionState();
 
       const selectionTask = beginSelection(store, "technique");
 
@@ -130,7 +130,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
       expect(store.__lastSelectionMade).toBe(true);
       expect(store.playerChoice).toBe("technique");
 
-      await machine.dispatch("interruptMatch", { reason: "fatal" });
+      await dispatchBattleEvent("interruptMatch", { reason: "fatal" });
 
       await selectionTask;
 
