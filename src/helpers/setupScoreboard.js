@@ -434,11 +434,12 @@ function runHelper(name, helper, args) {
     logOnce(loggedWarnings, "warn", "[scoreboard] DOM unavailable; scoreboard helpers disabled.");
     return fallbackValue(name);
   }
+  // Queue eligible helpers until the scoreboard has initialized.
+  if (enqueueScoreboardCall(name, args)) {
+    return fallbackValue(name);
+  }
   if (typeof helper !== "function") {
     // Helper not available; attempt to queue if scoreboard not yet initialized
-    if (enqueueScoreboardCall(name, args)) {
-      return fallbackValue(name);
-    }
     // Not queued and not available
     logOnce(loggedWarnings, "warn", `[scoreboard] Missing helper "${name}".`);
     return fallbackValue(name);
