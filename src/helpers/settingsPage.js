@@ -239,10 +239,7 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
         try {
           previousCleanup();
         } catch (cleanupError) {
-          warn(
-            "Failed to clean up existing tooltips for settings switches",
-            cleanupError
-          );
+          warn("Failed to clean up existing tooltips for settings switches", cleanupError);
         }
       }
 

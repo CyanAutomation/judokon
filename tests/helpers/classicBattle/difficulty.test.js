@@ -11,7 +11,10 @@ describe("simulateOpponentStat difficulty", () => {
    * remains fast and intentional.
    */
   const DISTRIBUTION_SAMPLE_SIZE = Number.parseInt(process.env.TEST_SAMPLE_SIZE ?? "", 10) || 200;
-  const DISTRIBUTION_SAMPLE_SEEDS = Array.from({ length: DISTRIBUTION_SAMPLE_SIZE }, (_, index) => index + 1);
+  const DISTRIBUTION_SAMPLE_SEEDS = Array.from(
+    { length: DISTRIBUTION_SAMPLE_SIZE },
+    (_, index) => index + 1
+  );
   const EASY_MIN_SHARE = 0.15;
   const EASY_MAX_SHARE = 0.3;
   const MEDIUM_ABOVE_AVERAGE_THRESHOLD = 0.7;
