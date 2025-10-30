@@ -2451,7 +2451,25 @@ const cliApi = {
     let finalState;
 
     if (outcomeEvent) {
+      // Wait for the outcome event to be processed and the state to stabilize
+      const timeoutMs = autoWaitTimeoutMs ?? 2_000;
+      const start = Date.now();
+      const targetState = "roundOver";
+
       finalState = readCurrentState();
+
+      while (finalState !== targetState && Date.now() - start < timeoutMs) {
+        await waitForNextFrame();
+        finalState = readCurrentState();
+      }
+
+      if (finalState !== targetState) {
+        logDevDebug("[completeRound] Timed out waiting for roundOver after outcome dispatch", {
+          timeoutMs,
+          finalState,
+          outcomeEvent
+        });
+      }
     } else {
       const timeoutMs = autoWaitTimeoutMs ?? 2_000;
       const start = Date.now();

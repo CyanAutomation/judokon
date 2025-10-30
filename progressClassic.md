@@ -127,7 +127,9 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
 - [x] **Respect Hotkey Feature Flag:** In `src/helpers/classicBattle/statButtons.js`, modify `wireStatHotkeys` to check the feature flag before adding the event listener. Remove any logic that force-enables the flag.
     - Added opt-in binding that only attaches the document-level key listener while `statHotkeys` is enabled and reacts to `featureFlagsEmitter` updates, keeping the handler detached when the feature is off.
     - Extended hotkey unit coverage to verify disabled and runtime-toggle scenarios (`npx vitest run tests/helpers/statHotkeys.enabled.spec.js tests/helpers/classicBattle/controlState.test.js`) and re-ran the focused Playwright regression (`npx playwright test playwright/battle-classic/stat-hotkeys.smoke.spec.js`).
-  - [ ] **Implement Timer Pausing:** In the core timer logic (e.g., `src/helpers/classicBattle/timerService.js`), add event listeners for the Page Visibility API.
+  - [x] **Implement Timer Pausing:** In the core timer logic (e.g., `src/helpers/classicBattle/timerService.js`), add event listeners for the Page Visibility API.
+    - Synced the inter-round cooldown orchestration and shared `TimerController` so both round and cooldown timers pause when the document is hidden, with clean teardown on completion.
+    - Added coverage to ensure visibility toggles invoke pause/resume and updated mocks/expectations to reflect the new default behavior (`npx vitest run tests/helpers/classicBattle/initInterRoundCooldown.event.test.js tests/helpers/BattleEngine.test.js tests/helpers/classicBattle/onTransition.helpers.test.js tests/helpers/classicBattle/onTransition.test.js tests/helpers/classicBattle/timerStateExposure.test.js`, `npx playwright test playwright/battle-classic/timer.spec.js playwright/battle-classic/timer-clearing.spec.js`).
 
     ```javascript
     document.addEventListener("visibilitychange", () => {

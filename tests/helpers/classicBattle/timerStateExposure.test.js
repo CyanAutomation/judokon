@@ -58,12 +58,12 @@ describe("classic battle timer state exposure", () => {
     vi.resetModules();
     debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
     document.body.innerHTML = "";
-  timerState = {
-    remaining: 30,
-    paused: false,
-    category: "roundTimer",
-    pauseOnHidden: true
-  };
+    timerState = {
+      remaining: 30,
+      paused: false,
+      category: "roundTimer",
+      pauseOnHidden: true
+    };
     store = {};
     orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     await orchestrator.initClassicBattleOrchestrator({});

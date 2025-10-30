@@ -313,7 +313,10 @@ function scheduleCooldownFallback({ duration, finish, scheduler }) {
   return setupFallbackTimer(ms, finish, scheduler);
 }
 
-function attachVisibilityPauseControls(timer, documentRef = typeof document !== "undefined" ? document : null) {
+function attachVisibilityPauseControls(
+  timer,
+  documentRef = typeof document !== "undefined" ? document : null
+) {
   if (!timer || !documentRef || typeof documentRef.addEventListener !== "function") {
     return () => {};
   }

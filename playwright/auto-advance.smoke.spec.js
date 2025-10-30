@@ -1,11 +1,7 @@
 // Playwright smoke test: verifies inter-round cooldown auto-advances
 import { test, expect } from "@playwright/test";
 import { waitForBattleReady, waitForBattleState } from "./helpers/battleStateHelper.js";
-import {
-  completeRoundViaApi,
-  readRoundsPlayed,
-  readCountdown
-} from "./helpers/battleApiHelper.js";
+import { completeRoundViaApi, readRoundsPlayed, readCountdown } from "./helpers/battleApiHelper.js";
 
 const WAIT_FOR_ADVANCE_TIMEOUT = 15_000;
 
