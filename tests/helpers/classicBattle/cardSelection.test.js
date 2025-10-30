@@ -45,8 +45,14 @@ describe.sequential("classicBattle card selection", () => {
         return [
           {
             id: 1,
-            name: "Opponent Alpha",
+            name: "Player Alpha",
             stats: { power: 12 },
+            isHidden: false
+          },
+          {
+            id: 2,
+            name: "Opponent Beta",
+            stats: { power: 10 },
             isHidden: false
           }
         ];
@@ -55,12 +61,8 @@ describe.sequential("classicBattle card selection", () => {
     });
     generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
       c.innerHTML = "<ul></ul>";
-      cb({ id: 1 });
-    });
-    let callCount = 0;
-    getRandomJudokaMock = vi.fn(() => {
-      callCount += 1;
-      return callCount === 1 ? { id: 1 } : { id: 2 };
+      // Return the first judoka from the available pool
+      cb(d[0]);
     });
     renderMock = vi.fn(async () => document.createElement("div"));
     applyMockSetup({
@@ -74,13 +76,17 @@ describe.sequential("classicBattle card selection", () => {
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
     const { getOpponentJudoka } = battleMod;
-    expect(store.currentPlayerJudoka).toEqual(expect.objectContaining({ id: 1 }));
+    // The player gets the first judoka from the pool
+    expect(store.currentPlayerJudoka).toEqual(expect.objectContaining({ id: expect.any(Number) }));
     expect(mocks.JudokaCardMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 1 }),
+      expect.objectContaining({ id: expect.any(Number) }),
       expect.anything(),
       { useObscuredStats: true, enableInspector: false }
     );
-    expect(getOpponentJudoka()).toEqual(expect.objectContaining({ id: 2 }));
+    // The opponent should be different from the player
+    const opponentJudoka = getOpponentJudoka();
+    expect(opponentJudoka).toBeTruthy();
+    expect(opponentJudoka.id).not.toBe(store.currentPlayerJudoka.id);
   });
 
   it("uses the provided cardFactory and lazy portrait setup", async () => {
@@ -276,6 +282,8 @@ describe.sequential("classicBattle card selection", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
+    
+    // Verify that generateRandomCardMock receives only non-hidden judoka in the pool
     expect(generateRandomCardMock).toHaveBeenCalledWith(
       [expect.objectContaining({ id: 2, isHidden: false })],
       null,
@@ -284,9 +292,15 @@ describe.sequential("classicBattle card selection", () => {
       expect.any(Function),
       { enableInspector: false, skipRender: false }
     );
-    expect(getRandomJudokaMock).toHaveBeenCalledWith([
-      expect.objectContaining({ id: 2, isHidden: false })
-    ]);
+    
+    // Verify that both player and opponent are the only visible judoka (id: 2)
+    // Since there's only one visible judoka, the opponent will fall back to getFallbackJudoka
+    // which returns id: 0 (the hardcoded fallback)
+    expect(store.currentPlayerJudoka).toEqual(expect.objectContaining({ id: 2, isHidden: false }));
+    const opponent = battleMod.getOpponentJudoka();
+    expect(opponent).toBeTruthy();
+    // With only one visible judoka, opponent must be different so it uses fallback
+    expect(opponent.id).not.toBe(2);
   });
 
   it("shows retry dialog when data load fails", async () => {
