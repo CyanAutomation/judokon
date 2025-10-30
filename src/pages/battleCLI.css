@@ -20,7 +20,23 @@
   outline-offset: 2px;
 }
 
-:focus {
+button:focus,
+input:focus,
+select:focus,
+details:focus,
+summary:focus,
+a:focus,
+textarea:focus,
+[tabindex]:focus {
+  outline: 3px solid #3cff9b;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px #050505,
+    0 0 0 4px #3cff9b;
+  border-radius: 3px;
+}
+
+:focus:not(:where(button, input, select, details, summary, a, textarea, [tabindex])) {
   outline: none;
   box-shadow:
     0 0 0 3px rgba(255, 209, 102, 0.12),

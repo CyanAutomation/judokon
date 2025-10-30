@@ -218,14 +218,20 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ### 6. Enhanced Focus Indicators
 
-- [ ] **Issue**: Focus indicators are good but could be more consistent across all interactive elements.
+- [x] **Issue**: Focus indicators are good but could be more consistent across all interactive elements.
 - **Impact**: Keyboard navigation experience could be improved.
-- **Solution**: Ensure all interactive elements have consistent focus styles:
+- **Action Taken (2025-10-11)**: Applied a shared CLI focus style to `button`, `input`, `select`, `details`, `summary`, `a`, `textarea`, and `tabindex` targets in `src/pages/battleCLI.css`, preserving existing specialized focus treatments for stat tiles while eliminating inconsistent outlines elsewhere.
+- **Validation**: `npx vitest run tests/cli/statDisplay.spec.js`; `npx playwright test playwright/cli-layout-assessment.spec.js`.
+- **Outcome**: Keyboard users now see the same high-contrast outline and inner halo across all actionable controls without regressions in layout-focused suites.
 
 ```css
+a:focus,
 button:focus,
+details:focus,
 input:focus,
 select:focus,
+summary:focus,
+textarea:focus,
 [tabindex]:focus {
   outline: 3px solid #3cff9b;
   outline-offset: 2px;

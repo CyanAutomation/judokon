@@ -2293,12 +2293,10 @@ const cliApi = {
       const stat = store.playerChoice;
       // Cache player card element for efficient repeated access
       const playerCard =
-        store.playerCardEl ||
-        (store.playerCardEl = document.getElementById("player-card"));
-      // Cache opponent card element for efficient repeated access  
+        store.playerCardEl || (store.playerCardEl = document.getElementById("player-card"));
+      // Cache opponent card element for efficient repeated access
       const opponentCard =
-        store.opponentCardEl ||
-        (store.opponentCardEl = document.getElementById("opponent-card"));
+        store.opponentCardEl || (store.opponentCardEl = document.getElementById("opponent-card"));
 
       if (!playerCard || !opponentCard) {
         throw new Error("Missing player or opponent card");
