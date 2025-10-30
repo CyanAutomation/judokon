@@ -65,6 +65,78 @@ describe("randomJudokaPage feature flags", () => {
     vi.doUnmock("../../src/helpers/domReady.js");
   });
 
+  it("applies fallback feature flag values when initialization fails", async () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockReturnValue({ matches: true });
+
+    const initFeatureFlags = vi.fn().mockRejectedValue(new Error("init failed"));
+    const isEnabled = vi.fn().mockReturnValue(true);
+    const applyMotionPreference = vi.fn();
+    const toggleInspectorPanels = vi.fn();
+    const toggleTooltipOverlayDebug = vi.fn();
+    const setTestMode = vi.fn();
+    const setCachedSettings = vi.fn();
+
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags,
+      isEnabled,
+      featureFlagsEmitter: new EventTarget()
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference,
+      shouldReduceMotionSync: vi.fn().mockReturnValue(false)
+    }));
+    vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels }));
+    vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({ toggleTooltipOverlayDebug }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({
+      setTestMode,
+      isTestModeEnabled: () => false
+    }));
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
+    vi.doMock("../../src/helpers/settingsCache.js", async () => {
+      const actual = await vi.importActual("../../src/helpers/settingsCache.js");
+      return {
+        ...actual,
+        setCachedSettings: setCachedSettings.mockImplementation((settings) =>
+          actual.setCachedSettings(settings)
+        )
+      };
+    });
+
+    const { initFeatureFlagState } = await import("../../src/helpers/randomJudokaPage.js");
+    const state = await initFeatureFlagState();
+
+    expect(initFeatureFlags).toHaveBeenCalled();
+    expect(isEnabled).not.toHaveBeenCalled();
+    expect(setCachedSettings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sound: true,
+        motionEffects: false,
+        featureFlags: expect.objectContaining({
+          enableTestMode: { enabled: false },
+          enableCardInspector: { enabled: false },
+          tooltipOverlayDebug: { enabled: false }
+        })
+      })
+    );
+    expect(setTestMode).toHaveBeenCalledWith(false);
+    expect(applyMotionPreference).toHaveBeenCalledWith(false);
+    expect(toggleInspectorPanels).toHaveBeenCalledWith(false);
+    expect(toggleTooltipOverlayDebug).toHaveBeenCalledWith(false);
+    expect(state.prefersReducedMotion).toBe(true);
+    expect(state.soundEnabled).toBe(true);
+
+    window.matchMedia = originalMatchMedia;
+    vi.resetModules();
+    vi.doUnmock("../../src/helpers/featureFlags.js");
+    vi.doUnmock("../../src/helpers/motionUtils.js");
+    vi.doUnmock("../../src/helpers/cardUtils.js");
+    vi.doUnmock("../../src/helpers/tooltipOverlayDebug.js");
+    vi.doUnmock("../../src/helpers/testModeUtils.js");
+    vi.doUnmock("../../src/helpers/domReady.js");
+    vi.doUnmock("../../src/helpers/settingsCache.js");
+  });
+
   it("storage event toggles card inspector", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
