@@ -259,26 +259,62 @@ async function safeGetBattleState(page, fallback = null) {
 }
 
 async function attemptCliResolution(page) {
-  await page
+  const result = await page
     .evaluate(async () => {
       try {
-        const api = window.__TEST_API;
-        if (!api) return false;
-
-        if (typeof api.cli?.resolveRound === "function") {
-          await api.cli.resolveRound();
-          return true;
+        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+        if (!store || !store.playerChoice) {
+          console.log("[attemptCliResolution] No store or playerChoice");
+          return { success: false, reason: "no_selection" };
         }
 
-        return false;
-      } catch {
-        return false;
+        // Import and call actual resolution logic
+        const { resolveRound } = await import("/src/helpers/classicBattle/roundResolver.js");
+        const { getStatValue } = await import("/src/helpers/battle/index.js");
+        const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
+
+        const stat = store.playerChoice;
+        const playerCard = store.playerCard;
+        const opponentCard = getOpponentJudoka(store);
+
+        console.log("[attemptCliResolution] Got cards", {
+          stat,
+          hasPlayerCard: !!playerCard,
+          hasOpponentCard: !!opponentCard
+        });
+
+        if (!playerCard || !opponentCard) {
+          return { success: false, reason: "missing_cards" };
+        }
+
+        const playerVal = getStatValue(playerCard, stat);
+        const opponentVal = getStatValue(opponentCard, stat);
+
+        console.log("[attemptCliResolution] Calling resolveRound", {
+          stat,
+          playerVal,
+          opponentVal
+        });
+
+        // Execute full resolution pipeline
+        await resolveRound(store, stat, playerVal, opponentVal);
+
+        console.log("[attemptCliResolution] Resolution complete");
+        return { success: true };
+      } catch (error) {
+        console.error("[attemptCliResolution] Error:", error);
+        return { success: false, reason: error.message || String(error) };
       }
     })
-    .catch(() => false);
+    .catch((error) => {
+      console.error("[attemptCliResolution page.evaluate] Error:", error);
+      return { success: false, reason: String(error) };
+    });
 
   const stateAfterCli = await safeGetBattleState(page);
   const resolved = stateAfterCli === ROUND_OVER_STATE;
+
+  console.log("[attemptCliResolution] Result:", { result, stateAfterCli, resolved });
 
   return { resolved, stateAfterCli };
 }
@@ -513,8 +549,9 @@ async function manuallySyncBattleState(
 
 /**
  * @pseudocode
- * - trigger round resolution through resolveSelectionIfPresent helper
- * - this properly evaluates the round, updates scores, and increments roundsPlayed
+ * - extract player choice and opponent stat from battle store
+ * - call roundResolver.resolveRound to execute full resolution pipeline
+ * - this properly evaluates round, updates scores, increments roundsPlayed, emits events
  * - inspect latest battle state and determine if manual sync is required
  * - when needed, force DOM + state API alignment to "roundOver" and verify sync
  *
@@ -524,8 +561,8 @@ async function manuallySyncBattleState(
  * @returns {Promise<{ resolved: boolean, stateAfterTransition: string | null | undefined }>}
  */
 async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
-  // Attempt to resolve the round through the proper resolution pipeline
-  // This calls resolveSelectionIfPresent which evaluates the round and updates roundsPlayed
+  // Execute the actual resolution logic (not just dispatch event)
+  // This calls resolveRound which increments roundsPlayed and emits events
   await page
     .evaluate(async () => {
       try {
@@ -534,26 +571,31 @@ async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
           return { success: false, reason: "no_selection" };
         }
 
-        // Import and call resolveSelectionIfPresent from roundDecisionHelpers
-        // This properly evaluates the round including incrementing roundsPlayed
-        if (typeof window.resolveSelectionIfPresent === "function") {
-          await window.resolveSelectionIfPresent(store);
-          return { success: true };
+        // Import roundResolver and call resolveRound to execute full pipeline
+        const { resolveRound } = await import("/src/helpers/classicBattle/roundResolver.js");
+        const { getStatValue } = await import("/src/helpers/battle/index.js");
+        const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
+
+        const stat = store.playerChoice;
+        const playerCard = store.playerCard;
+        const opponentCard = getOpponentJudoka(store);
+
+        if (!playerCard || !opponentCard) {
+          return { success: false, reason: "missing_cards" };
         }
 
-        // Fallback: trigger computeAndDispatchOutcome through the machine
-        const machine = window.__classicBattleMachine;
-        if (machine && typeof window.computeAndDispatchOutcome === "function") {
-          await window.computeAndDispatchOutcome(store, machine);
-          return { success: true };
-        }
+        const playerVal = getStatValue(playerCard, stat);
+        const opponentVal = getStatValue(opponentCard, stat);
 
-        return { success: false, reason: "helper_unavailable" };
+        // Execute full resolution: evaluates outcome, increments roundsPlayed, dispatches events
+        await resolveRound(store, stat, playerVal, opponentVal);
+
+        return { success: true };
       } catch (error) {
-        return { success: false, reason: error.message, error: true };
+        return { success: false, reason: error.message || String(error), error: true };
       }
     })
-    .catch(() => ({ success: false }));
+    .catch((error) => ({ success: false, reason: String(error) }));
 
   let stateAfterTransition = await safeGetBattleState(page, stateAfterCli);
 

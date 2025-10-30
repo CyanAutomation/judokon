@@ -89,6 +89,36 @@ describe("setupScoreboard", () => {
     expect(scoreSpy).toHaveBeenCalledWith(1, 2);
   });
 
+  it("queues messages until the scoreboard initializes", async () => {
+    vi.resetModules();
+    document.body.innerHTML = "";
+    const stub = createScoreboardStub();
+    vi.doMock("../../src/components/Scoreboard.js", () => stub);
+
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+    mod.showMessage("Queued message");
+    mod.clearMessage();
+    mod.showTemporaryMessage("temp");
+
+    expect(stub.showMessage).not.toHaveBeenCalled();
+    expect(stub.clearMessage).not.toHaveBeenCalled();
+    expect(stub.showTemporaryMessage).not.toHaveBeenCalled();
+
+    document.body.appendChild(createScoreboardHeader());
+    const scheduler = createMockScheduler();
+    const controls = createControls();
+
+    mod.setupScoreboard(controls, scheduler);
+
+    expect(stub.initScoreboard).toHaveBeenCalledWith(
+      document.querySelector("header"),
+      expect.objectContaining({ scheduler })
+    );
+    expect(stub.showMessage).toHaveBeenCalledWith("Queued message");
+    expect(stub.clearMessage).toHaveBeenCalledTimes(1);
+    expect(stub.showTemporaryMessage).toHaveBeenCalledWith("temp");
+  });
+
   it("calls initScoreboard with null when header missing", async () => {
     document.body.innerHTML = "";
     const scheduler = createMockScheduler();

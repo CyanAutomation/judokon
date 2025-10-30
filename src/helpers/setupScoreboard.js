@@ -22,6 +22,55 @@ const visibilityListeners = {
   attached: false,
   wasHidden: undefined
 };
+const queueableHelpers = new Set(["showMessage", "clearMessage", "showTemporaryMessage"]);
+const pendingScoreboardCalls = [];
+let scoreboardInitialized = false;
+let isFlushingScoreboardQueue = false;
+
+/**
+ * Determine whether a scoreboard helper invocation should be queued.
+ *
+ * @param {string} name - Helper identifier.
+ * @returns {boolean} True when the call should be deferred.
+ */
+function shouldQueueScoreboardCall(name) {
+  return domAvailable && !scoreboardInitialized && queueableHelpers.has(name);
+}
+
+/**
+ * Enqueue a scoreboard helper invocation until the scoreboard initializes.
+ *
+ * @param {string} name - Helper identifier.
+ * @param {unknown[]} args - Helper arguments.
+ * @returns {boolean} True when the call was queued.
+ */
+function enqueueScoreboardCall(name, args) {
+  if (!shouldQueueScoreboardCall(name) || isFlushingScoreboardQueue) {
+    return false;
+  }
+  pendingScoreboardCalls.push({ name, args });
+  return true;
+}
+
+/**
+ * Flush queued scoreboard helper invocations now that the scoreboard is ready.
+ *
+ * @returns {void}
+ */
+function flushQueuedScoreboardCalls() {
+  if (!domAvailable || pendingScoreboardCalls.length === 0 || isFlushingScoreboardQueue) {
+    return;
+  }
+  isFlushingScoreboardQueue = true;
+  try {
+    while (pendingScoreboardCalls.length > 0) {
+      const { name, args } = pendingScoreboardCalls.shift();
+      runHelper(name, getScoreboardMethod(name), args);
+    }
+  } finally {
+    isFlushingScoreboardQueue = false;
+  }
+}
 
 /**
  * Log a warning or error exactly once.
@@ -363,6 +412,9 @@ function runHelper(name, helper, args) {
     logOnce(loggedWarnings, "warn", "[scoreboard] DOM unavailable; scoreboard helpers disabled.");
     return fallbackValue(name);
   }
+  if (enqueueScoreboardCall(name, args)) {
+    return fallbackValue(name);
+  }
   if (typeof helper !== "function") {
     logOnce(loggedWarnings, "warn", `[scoreboard] Missing helper "${name}".`);
     return fallbackValue(name);
@@ -392,6 +444,8 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
   safeControls.scheduler = scheduler;
   const headerTarget = domAvailable ? document.querySelector("header") : null;
   runHelper("initScoreboard", getScoreboardMethod("initScoreboard"), [headerTarget, safeControls]);
+  scoreboardInitialized = true;
+  flushQueuedScoreboardCalls();
 
   if (!domAvailable) {
     return;

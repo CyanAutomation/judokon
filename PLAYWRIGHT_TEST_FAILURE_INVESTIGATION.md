@@ -40,33 +40,22 @@ The fundamental problem is that the test is trying to force deterministic round 
 
 ## Proper Solution
 
-The test helper should check if the round is actually in `roundDecision` state with a selection made. If so, the state machine should naturally progress. The issue might be:
+The test helper's fallback should use the same Test API method that the CLI resolution uses: `window.__TEST_API.cli.resolveRound()`. This method:
 
-1. The round isn't actually entering `roundDecision` state properly
-2. The `roundDecisionEnter` handler isn't completing (maybe waiting for player choice when one already exists)
-3. Timing issues with async resolution
+1. Calls `stateApi.dispatchBattleEvent("roundResolved", detail)` with proper payload
+2. Executes the full resolution pipeline via `resolveRoundForTest`
+3. Properly increments `roundsPlayed` counter
+4. Emits battle events and transitions state machine correctly
 
-### Investigation Needed
+### Fix Applied
 
-1. Check if clicking a stat properly sets `store.playerChoice` and triggers entry to `roundDecision`
-2. Verify that `resolveSelectionIfPresent` is being called in `roundDecisionEnter`
-3. Check if there are guards or conditions preventing natural resolution
-4. Look at why the CLI resolution method works but the fallback doesn't
+Updated `triggerRoundResolvedFallback` in `opponentRevealTestSupport.js` to:
 
-### Recommended Fix Approach
+1. Call `window.__TEST_API.cli.resolveRound()` directly (same as `attemptCliResolution`)
+2. Remove attempts to call non-existent window functions like `resolveSelectionIfPresent`
+3. Let the Test API handle the full resolution flow deterministically
 
-Instead of trying to forcibly transition states, the test should:
-
-1. Ensure selection is properly made (`store.playerChoice` is set)
-2. Ensure state machine is in `roundDecision` 
-3. Wait for natural resolution through the `roundDecisionEnter` handler
-4. If resolution is stalled, use the actual CLI API method that works
-
-The CLI resolution method (`api.cli.resolveRound()`) already works correctly. The fallback should either:
-
-- Wait longer for natural resolution
-- Call the proper resolution pipeline functions
-- Or simply fail the test if resolution doesn't happen naturally
+This ensures tests use the proper API rather than trying to access internal implementation details.
 
 ## Files Involved
 
