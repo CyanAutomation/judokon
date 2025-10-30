@@ -126,6 +126,11 @@ export async function readRoundsPlayed(page) {
 /**
  * Reads the cooldown countdown value via the Test API.
  * @param {import("@playwright/test").Page} page
+ * @pseudocode
+ * 1. Evaluate in browser context
+ * 2. Check if Test API timers getCountdown is available
+ * 3. Call getter function if available
+ * 4. Return countdown value or null if unavailable
  */
 export async function readCountdown(page) {
   return await page.evaluate(() => {
