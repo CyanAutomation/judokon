@@ -147,7 +147,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await expect(firstStat).toBeVisible();
       await firstStat.click();
 
-      await ensureRoundResolved(page, { forceResolve: true });
+      await ensureRoundResolved(page);
       await waitForRoundsPlayed(page, 1);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
@@ -164,7 +164,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await expect(secondStat).toBeVisible();
       await secondStat.click();
 
-      await ensureRoundResolved(page, { forceResolve: true });
+      await ensureRoundResolved(page);
       await waitForRoundsPlayed(page, 2);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
     }, MUTED_CONSOLE_LEVELS));
@@ -210,7 +210,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i);
 
-        await ensureRoundResolved(page, { forceResolve: true });
+        await ensureRoundResolved(page);
         await waitForRoundsPlayed(page, attempt + 1);
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 

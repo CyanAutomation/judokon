@@ -99,7 +99,9 @@ This phase addresses the root cause of most inconsistencies: asynchronous event 
   - A "Win/Loss/Draw" message is shown after every round.
   - All judoka cards drawn within a single match are unique.
 - **Actionable Fixes:**
-  - [ ] **Queue Scoreboard Messages:** In `src/helpers/setupScoreboard.js`, modify it to queue messages if the scoreboard is not yet initialized, ensuring no messages are dropped.
+  - [x] **Queue Scoreboard Messages:** In `src/helpers/setupScoreboard.js`, modify it to queue messages if the scoreboard is not yet initialized, ensuring no messages are dropped.
+    - Added deferred message caching that replays only the latest `showMessage` or `clearMessage` call once `setupScoreboard` completes so stale states are not reintroduced.
+    - Extended `tests/helpers/setupScoreboard.test.js` with coverage for queued show/clear behavior and reran targeted suites: `npx vitest run tests/helpers/setupScoreboard.test.js`, `npx playwright test playwright/battle-classic/round-flow.spec.js`.
   - [ ] **Implement Per-Match Deck:** In `src/helpers/classicBattle/roundManager.js`, create a shuffled, 25-card deck when a match starts. Draw from this deck for each round instead of using the global randomizer.
 
     ```javascript

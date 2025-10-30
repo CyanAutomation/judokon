@@ -908,7 +908,7 @@ export async function confirmRoundResolved(page, options = {}) {
 }
 
 export async function ensureRoundResolved(page, options = {}) {
-  const { deadline = 650, verifyTimeout = 3_000, forceResolve = false } = options;
+  const { deadline = 1500, verifyTimeout = 3_000, forceResolve = false } = options;
 
   if (!forceResolve) {
     try {
