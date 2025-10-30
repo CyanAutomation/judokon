@@ -1,4 +1,4 @@
-import { isEnabled } from "../featureFlags.js";
+import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
 
 /**
  * Normalize assorted button collections into a clean array of elements.
@@ -128,6 +128,50 @@ export function setStatButtonsEnabled(buttons, container, enable, resolveReady, 
   }
 }
 
+const HOTKEY_INPUT_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
+
+function exposeHotkeyTestHook(buttons) {
+  try {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const target = (window.__TEST__ = window.__TEST__ || {});
+    target.selectStatByIndex = (i) => {
+      const btn = buttons && buttons[i];
+      if (btn && !btn.disabled) {
+        btn.click();
+      }
+    };
+  } catch {}
+}
+
+function createHotkeyHandler(buttons) {
+  return (e) => {
+    if (!isEnabled("statHotkeys")) return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const active = document.activeElement;
+    if (active && HOTKEY_INPUT_TAGS.has(active.tagName)) return;
+    const idx = e.key >= "1" && e.key <= "5" ? Number(e.key) - 1 : -1;
+    const btn = buttons[idx];
+    if (btn && !btn.disabled) {
+      e.preventDefault();
+      btn.click();
+    }
+  };
+}
+
+function subscribeToFlagChanges(listener) {
+  if (!featureFlagsEmitter || typeof featureFlagsEmitter.addEventListener !== "function") {
+    return () => {};
+  }
+  featureFlagsEmitter.addEventListener("change", listener);
+  return () => {
+    try {
+      featureFlagsEmitter.removeEventListener("change", listener);
+    } catch {}
+  };
+}
+
 /**
  * Attach numeric hotkeys (1–5) to stat buttons and return a disposer.
  *
@@ -143,28 +187,50 @@ export function setStatButtonsEnabled(buttons, container, enable, resolveReady, 
  * @returns {() => void} Cleanup function to remove the event listener.
  */
 export function wireStatHotkeys(buttons) {
-  // Expose a deterministic test hook to trigger selection by index
-  try {
-    if (typeof window !== "undefined") {
-      window.__TEST__ = window.__TEST__ || {};
-      window.__TEST__.selectStatByIndex = (i) => {
-        const btn = buttons && buttons[i];
-        if (btn && !btn.disabled) btn.click();
-      };
+  exposeHotkeyTestHook(buttons);
+
+  const canBindHotkeys =
+    typeof document !== "undefined" && typeof document.addEventListener === "function";
+  if (!canBindHotkeys) {
+    return () => {};
+  }
+
+  const handler = createHotkeyHandler(buttons);
+  let handlerAttached = false;
+
+  const attachHotkeys = () => {
+    if (handlerAttached || !isEnabled("statHotkeys")) {
+      return;
     }
-  } catch {}
-  const handler = (e) => {
-    if (!isEnabled("statHotkeys")) return;
-    if (e.altKey || e.ctrlKey || e.metaKey) return;
-    const active = document.activeElement;
-    if (active && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) return;
-    const idx = e.key >= "1" && e.key <= "5" ? Number(e.key) - 1 : -1;
-    const btn = buttons[idx];
-    if (btn && !btn.disabled) {
-      e.preventDefault();
-      btn.click();
+    document.addEventListener("keydown", handler);
+    handlerAttached = true;
+  };
+
+  const detachHotkeys = () => {
+    if (!handlerAttached) {
+      return;
+    }
+    document.removeEventListener("keydown", handler);
+    handlerAttached = false;
+  };
+
+  const syncHotkeyBinding = () => {
+    if (isEnabled("statHotkeys")) {
+      attachHotkeys();
+    } else {
+      detachHotkeys();
     }
   };
-  document.addEventListener("keydown", handler);
-  return () => document.removeEventListener("keydown", handler);
+
+  syncHotkeyBinding();
+  const unsubscribe = subscribeToFlagChanges(() => {
+    try {
+      syncHotkeyBinding();
+    } catch {}
+  });
+
+  return () => {
+    detachHotkeys();
+    unsubscribe();
+  };
 }

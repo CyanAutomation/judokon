@@ -65,37 +65,57 @@ This ensures tests use the proper API rather than trying to access internal impl
 - `/workspaces/judokon/src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js` - Resolution logic
 - `/workspaces/judokon/src/helpers/BattleEngine.js` - Where `roundsPlayed` is incremented
 
-## ✅ Solution Implemented
+## ✅ Final Solution Implemented
 
-**Root Cause:** Tests were using `forceResolve: true` which triggered deterministic resolution code that bypassed the natural orchestrated battle flow. This caused multiple issues:
+**Root Cause:** The Test API's `cli.resolveRound()` method only dispatched "roundResolved" event without executing the actual resolution logic. This caused multiple issues:
 
-1. The Test API's `cli.resolveRound()` only dispatched "roundResolved" event without executing resolution logic
-2. The "roundResolved" event is a notification emitted AFTER resolution, not a trigger to START resolution
-3. Forcing resolution bypassed proper state machine transitions and counter updates
+1. Opponent cards weren't revealed during API-driven resolution
+2. `roundsPlayed` counter didn't increment
+3. State machine transitions didn't complete properly
+4. Tests relying on API resolution failed intermittently
 
-**Fix:** Removed `forceResolve: true` from test calls to `ensureRoundResolved()`, allowing rounds to resolve naturally through the orchestrated flow:
+**Fix:** Updated `src/helpers/testApi.js` to make `cli.resolveRound()` call the actual resolution logic from `src/helpers/classicBattle/roundResolver.js`:
 
 ```javascript
-// Before (broken):
-await ensureRoundResolved(page, { forceResolve: true });
+// Before (broken): Only dispatched events
+async resolveRound(eventLike = {}) {
+  const dispatch = (detail) => stateApi.dispatchBattleEvent("roundResolved", detail);
+  const emit = (detail) => emitBattleEvent("roundResolved", detail);
+  return resolveRoundForCliTest(eventLike, { dispatch, emit, ... });
+}
 
-// After (working):
-await ensureRoundResolved(page);
+// After (working): Executes full resolution pipeline
+async resolveRound(eventLike = {}) {
+  const store = window.battleStore;
+  const { resolveRound: resolveRoundLogic } = await import("/src/helpers/classicBattle/roundResolver.js");
+  // ... get stat values ...
+  const result = await resolveRoundLogic(store, stat, playerVal, opponentVal);
+  return { detail: { store, stat, playerVal, opponentVal, result }, dispatched: true, emitted: true };
+}
 ```
+
+**Additional Changes:**
+
+- Increased `ensureRoundResolved` default deadline from 650ms to 1500ms to accommodate round transitions
+- Updated `playwright/battle-classic/opponent-message.spec.js` to track emitted events instead of dispatched events
+- Removed unused `getDispatchedEvents` function
 
 **Why This Works:**
 
-- `ensureRoundResolved(page)` without options waits for battle state to become "roundOver" (650ms timeout)
-- This allows the natural resolution flow to execute:
-  1. User clicks stat button
-  2. State machine transitions to `roundDecision`
-  3. `roundDecisionEnter` handler calls `resolveSelectionIfPresent`
-  4. `resolveRound` executes full pipeline
-  5. `evaluateOutcome` → `engineFacade.handleStatSelection()` → increments `roundsPlayed`
-  6. `emitRoundResolved` emits "roundResolved" event
-  7. State transitions to `roundOver`
-- All counters update correctly, selection state resets properly
+- Test API now properly executes resolution:
+  1. Imports `resolveRound` from `roundResolver.js`
+  2. Gets player and opponent stat values
+  3. Calls `resolveRound(store, stat, playerVal, opponentVal)`
+  4. Executes full pipeline: `evaluateOutcome` → `engineFacade.handleStatSelection()` → increments `roundsPlayed`
+  5. Emits `opponentReveal` and `roundResolved` events
+  6. Transitions state machine to `roundOver`
+- All counters update correctly, opponent cards reveal, selection state resets properly
+- Both natural resolution (waiting for state changes) and API-driven resolution (via Test API) work correctly
 
-**Test Results:** ✅ Both tests now pass (21.1s runtime)
+**Test Results:** ✅ All 8 tests pass (53.2s runtime)
 
-**Lesson Learned:** Avoid bypassing orchestrated flows in tests. Testing through natural user interactions and waiting for state changes is more reliable than forcing internal state mutations.
+- `round-flow.spec.js:138` - opponent reveal state managed between rounds ✅
+- `round-flow.spec.js:192` - opponent reveal works with different stat selections ✅
+- `opponent-message.spec.js:31` - CLI resolveRound reveals opponent card ✅
+
+**Lesson Learned:** Test APIs should execute the same logic as production code, not just simulate events. This ensures deterministic testing without sacrificing correctness.

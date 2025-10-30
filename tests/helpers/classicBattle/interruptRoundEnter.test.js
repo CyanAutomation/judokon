@@ -120,7 +120,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
 
   it("returns to the lobby and resets the store when the match is interrupted", async () => {
     const env = await setupInterruptHarness({ roundsPlayed: 3 });
-    const { store, machine, transitions, scoreboardMessages, cleanup } = env;
+    const { store, transitions, scoreboardMessages, cleanup } = env;
     try {
       await advanceToPlayerActionState();
 
