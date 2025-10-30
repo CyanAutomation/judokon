@@ -89,7 +89,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
 
   it("restarts the round and clears selection state after an interrupt", async () => {
     const env = await setupInterruptHarness();
-    const { store, machine, transitions, scoreboardMessages, cleanup } = env;
+    const { store, transitions, scoreboardMessages, cleanup } = env;
     try {
       await advanceToWaitingForPlayerAction();
 

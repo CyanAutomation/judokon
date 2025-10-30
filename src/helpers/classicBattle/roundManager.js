@@ -571,9 +571,13 @@ export async function startRound(store, onRoundStart) {
         try {
           store.selectionMade = false;
           store.__lastSelectionMade = false;
-        } catch {}
+        } catch {
+          // Safely ignore any errors resetting selection state
+        }
       });
-    } catch {}
+    } catch {
+      // Safely ignore any errors during microtask scheduling
+    }
     safeRound(
       "startRound.syncScoreDisplay",
       () => {
