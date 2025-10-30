@@ -208,7 +208,7 @@ svg {
 }
 
 /* Remove focus treatment for pointer interactions when :focus-visible is supported */
-.judoka-card:focus:not(:focus-visible) {
+.judoka-card:focus:not(:focus-visible):not(:hover) {
   outline: none;
   transform: none;
   box-shadow: var(--shadow-base);
