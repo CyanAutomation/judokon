@@ -213,6 +213,7 @@ describe("setupScoreboard", () => {
       const restore = mod.showTemporaryMessage("Temp");
       expect(typeof restore).toBe("function");
       restore();
+      mod.setupScoreboard(createControls(), createMockScheduler());
     });
 
     const scoreboard = await import("../../src/components/Scoreboard.js");

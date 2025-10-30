@@ -65,6 +65,37 @@ This ensures tests use the proper API rather than trying to access internal impl
 - `/workspaces/judokon/src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js` - Resolution logic
 - `/workspaces/judokon/src/helpers/BattleEngine.js` - Where `roundsPlayed` is incremented
 
-## Status
+## ✅ Solution Implemented
 
-Currently attempted fixes have not resolved the issue. The fundamental problem is that we need the proper round resolution flow to execute, not just state transitions.
+**Root Cause:** Tests were using `forceResolve: true` which triggered deterministic resolution code that bypassed the natural orchestrated battle flow. This caused multiple issues:
+
+1. The Test API's `cli.resolveRound()` only dispatched "roundResolved" event without executing resolution logic
+2. The "roundResolved" event is a notification emitted AFTER resolution, not a trigger to START resolution
+3. Forcing resolution bypassed proper state machine transitions and counter updates
+
+**Fix:** Removed `forceResolve: true` from test calls to `ensureRoundResolved()`, allowing rounds to resolve naturally through the orchestrated flow:
+
+```javascript
+// Before (broken):
+await ensureRoundResolved(page, { forceResolve: true });
+
+// After (working):
+await ensureRoundResolved(page);
+```
+
+**Why This Works:**
+
+- `ensureRoundResolved(page)` without options waits for battle state to become "roundOver" (650ms timeout)
+- This allows the natural resolution flow to execute:
+  1. User clicks stat button
+  2. State machine transitions to `roundDecision`
+  3. `roundDecisionEnter` handler calls `resolveSelectionIfPresent`
+  4. `resolveRound` executes full pipeline
+  5. `evaluateOutcome` → `engineFacade.handleStatSelection()` → increments `roundsPlayed`
+  6. `emitRoundResolved` emits "roundResolved" event
+  7. State transitions to `roundOver`
+- All counters update correctly, selection state resets properly
+
+**Test Results:** ✅ Both tests now pass (21.1s runtime)
+
+**Lesson Learned:** Avoid bypassing orchestrated flows in tests. Testing through natural user interactions and waiting for state changes is more reliable than forcing internal state mutations.
