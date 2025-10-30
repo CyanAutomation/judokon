@@ -39,9 +39,6 @@ test.describe("Battle CLI - Play", () => {
       const statKey = await statButton.getAttribute("data-stat");
       expect(statKey, "stat button should expose a data-stat attribute").toBeTruthy();
 
-      // Set opponent resolve delay to 0 for deterministic testing
-      await page.evaluate(() => window.__TEST_API.timers.setOpponentResolveDelay(0));
-
       // Click the first stat button once the CLI reports it as actionable
       await waitForTestApi(page);
       await expect
@@ -137,6 +134,7 @@ test.describe("Battle CLI - Play", () => {
       }
 
       const { resolution } = roundCompletion;
+
       expect(resolution?.detail?.stat).toBe(statKey);
       // Note: outcomeDispatched may be false since we're relying on watchdog timer
       // to dispatch the outcome automatically, not manual dispatch.
