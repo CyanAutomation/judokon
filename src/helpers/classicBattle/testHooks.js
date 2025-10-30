@@ -355,12 +355,20 @@ export async function triggerStallPromptNow(store) {
   const stallMessage = "Stat selection stalled. Pick a stat or wait for auto-pick.";
   try {
     const scoreboard = await import("../setupScoreboard.js");
-    scoreboard.showMessage(stallMessage);
+    if (typeof scoreboard?.showMessage === "function") {
+      scoreboard.showMessage(stallMessage);
+    } else {
+      // showMessage not available from import, fallback to direct DOM
+      throw new Error("showMessage not available from setupScoreboard module");
+    }
   } catch {
     // Fallback: set message directly in DOM when scoreboard isn't initialized
     const messageEl = document.getElementById("round-message");
     if (messageEl) {
       messageEl.textContent = stallMessage;
+      console.log("TEST DEBUG: Set message via fallback:", messageEl.textContent);
+    } else {
+      console.log("TEST DEBUG: round-message element not found!");
     }
   }
   try {

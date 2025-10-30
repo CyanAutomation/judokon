@@ -740,6 +740,7 @@ export function instantiateCooldownTimer(
   const timerFactory = overrides.createRoundTimer || createRoundTimer;
   const engineProvider = overrides.requireEngine || requireEngine;
   let startCooldown = overrides.startEngineCooldown;
+  const hasExplicitEngineStarter = typeof startCooldown === "function";
   if (!startCooldown) {
     try {
       const engine = engineProvider();
@@ -748,7 +749,8 @@ export function instantiateCooldownTimer(
       startCooldown = null;
     }
   }
-  if (typeof process !== "undefined" && !!process.env?.VITEST) {
+  // In VITEST mode, use fallback timer unless an explicit engine starter was provided via overrides
+  if (typeof process !== "undefined" && !!process.env?.VITEST && !hasExplicitEngineStarter) {
     startCooldown = null;
   }
   const renderer = overrides.attachCooldownRenderer || attachCooldownRenderer;
@@ -906,19 +908,30 @@ export function instantiateCooldownTimer(
   });
   timer.on("drift", () => {
     const msgEl = typeof document !== "undefined" ? document.getElementById("round-message") : null;
+    const waitingMessage = "Waiting…";
     if (msgEl && msgEl.textContent) {
       safeRound(
         "wireCooldownTimer.drift.snackbar",
         () => {
-          if (typeof snackbarApi === "function") snackbarApi("Waiting…");
-          else showSnackbar("Waiting…");
+          if (typeof snackbarApi === "function") snackbarApi(waitingMessage);
+          else showSnackbar(waitingMessage);
         },
         { suppressInProduction: true }
       );
     } else {
       safeRound(
         "wireCooldownTimer.drift.scoreboard",
-        () => scoreboardApi?.showMessage?.("Waiting…"),
+        () => {
+          // Try setupScoreboard facade first, which queues if not initialized
+          if (scoreboardApi?.showMessage) {
+            scoreboardApi.showMessage(waitingMessage);
+          }
+          // Also try direct Scoreboard component update as fallback for tests
+          // where the component is initialized but setupScoreboard is not
+          if (msgEl && !msgEl.textContent) {
+            msgEl.textContent = waitingMessage;
+          }
+        },
         { suppressInProduction: true }
       );
     }
