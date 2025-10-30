@@ -1,5 +1,5 @@
 /* Button styles */
-button,
+button:not(.judoka-card),
 .primary-button {
   font-size: 1rem;
   font-family: "Open Sans", sans-serif;
@@ -21,7 +21,7 @@ button,
   will-change: transform, opacity;
 }
 
-button:hover,
+button:not(.judoka-card):hover,
 .primary-button:hover {
   background-color: var(--button-hover-bg);
   box-shadow: var(--shadow-base);
@@ -29,13 +29,13 @@ button:hover,
   opacity: 0.95;
 }
 
-button:active,
+button:not(.judoka-card):active,
 .primary-button:active {
   background-color: var(--button-active-bg);
   transform: scale(0.95);
 }
 
-button:disabled,
+button:not(.judoka-card):disabled,
 .primary-button:disabled {
   background: var(--button-disabled-bg);
   background-image: var(--button-disabled-pattern);
@@ -63,8 +63,8 @@ button:disabled,
   padding: 0 10vw;
 }
 
-button:focus,
-button:focus-visible,
+button:not(.judoka-card):focus,
+button:not(.judoka-card):focus-visible,
 .primary-button:focus,
 .primary-button:focus-visible,
 .secondary-button:focus,
@@ -74,7 +74,7 @@ button:focus-visible,
   text-decoration: underline;
 }
 
-button::after,
+button:not(.judoka-card)::after,
 .primary-button::after {
   content: "";
   position: absolute;
@@ -93,19 +93,19 @@ button::after,
   pointer-events: none;
 }
 
-button:active::after,
+button:not(.judoka-card):active::after,
 .primary-button:active::after {
   opacity: 0.4;
   transform: scale(1.45);
 }
 
-button:focus-visible::after,
+button:not(.judoka-card):focus-visible::after,
 .primary-button:focus-visible::after {
   opacity: 0.22;
   transform: scale(1.1);
 }
 
-button:active:focus-visible::after,
+button:not(.judoka-card):active:focus-visible::after,
 .primary-button:active:focus-visible::after {
   opacity: 0.45;
   transform: scale(1.55);
@@ -151,48 +151,48 @@ a:focus-visible {
     animation: none;
   }
 
-  button,
+  button:not(.judoka-card),
   .primary-button {
     transition: none;
   }
 
-  button::after,
+  button:not(.judoka-card)::after,
   .primary-button::after {
     transition: none;
   }
 
-  button:active,
+  button:not(.judoka-card):active,
   .primary-button:active {
     transform: none;
   }
 
-  button:active::after,
+  button:not(.judoka-card):active::after,
   .primary-button:active::after,
-  button:focus-visible::after,
+  button:not(.judoka-card):focus-visible::after,
   .primary-button:focus-visible::after {
     opacity: 0.2;
     transform: none;
   }
 }
 
-.reduce-motion button::after,
+.reduce-motion button:not(.judoka-card)::after,
 .reduce-motion .primary-button::after {
   transition: none;
 }
 
-.reduce-motion button,
+.reduce-motion button:not(.judoka-card),
 .reduce-motion .primary-button {
   transition: none;
 }
 
-.reduce-motion button:active,
+.reduce-motion button:not(.judoka-card):active,
 .reduce-motion .primary-button:active {
   transform: none;
 }
 
-.reduce-motion button:active::after,
+.reduce-motion button:not(.judoka-card):active::after,
 .reduce-motion .primary-button:active::after,
-.reduce-motion button:focus-visible::after,
+.reduce-motion button:not(.judoka-card):focus-visible::after,
 .reduce-motion .primary-button:focus-visible::after {
   opacity: 0.2;
   transform: none;

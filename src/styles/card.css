@@ -121,6 +121,7 @@ svg {
 
 .judoka-card {
   position: relative;
+  padding: 0;
   /*
     Fill roughly 60% of the viewport on small screens while
     maintaining a 260px size on larger displays.
@@ -149,6 +150,10 @@ svg {
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out;
+}
+
+.judoka-card::after {
+  content: none !important;
 }
 
 .judoka-card::before {
