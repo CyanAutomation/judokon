@@ -19,8 +19,7 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   mockCreateRoundTimer({
     scheduled: false,
     ticks: [],
-    expire: false,
-    moduleId: "../../../src/helpers/timers/createRoundTimer.js"
+    expire: false
   });
   return await import("../../../src/helpers/timers/createRoundTimer.js");
 });
@@ -61,10 +60,12 @@ describe("initInterRoundCooldown", () => {
       setTimeout: (cb, ms) => setTimeout(cb, ms),
       clearTimeout: (id) => clearTimeout(id)
     };
+    globalThis.__MOCK_ROUND_TIMERS = [];
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    delete globalThis.__MOCK_ROUND_TIMERS;
   });
 
   it("enables button and emits event", async () => {
@@ -127,10 +128,9 @@ describe("initInterRoundCooldown", () => {
     );
     await initInterRoundCooldown(machine, { scheduler });
 
-    const { createRoundTimer } = await import(
-      "../../../src/helpers/timers/createRoundTimer.js"
-    );
-    const timerInstance = createRoundTimer.mock.results[0].value;
+    const timers = globalThis.__MOCK_ROUND_TIMERS || [];
+    const timerInstance = timers.at(-1);
+    expect(timerInstance).toBeTruthy();
     const pauseSpy = timerInstance.pause;
     const resumeSpy = timerInstance.resume;
 

@@ -96,6 +96,12 @@ export function mockCreateRoundTimer(options = {}) {
         pause: vi.fn(),
         resume: vi.fn()
       };
+      try {
+        const store = globalThis.__MOCK_ROUND_TIMERS;
+        if (Array.isArray(store)) {
+          store.push(timer);
+        }
+      } catch {}
       return timer;
     });
     return { createRoundTimer: createRoundTimerMock };
