@@ -70,7 +70,6 @@ Transformers.js resolves model paths **relative to** `env.localModelPath`:
   - File actually at: `models/minilm/config.json` ✅
   - Result: **Successful load**
 
-
 ### Code Changes
 
 **File: `scripts/prepareLocalModel.mjs`** (1 line fix)
@@ -95,8 +94,6 @@ env.localModelPath = repo_root
        ↓
     ✅ Model files found and loaded successfully
 ```
-
-
 
 ---
 
@@ -126,7 +123,6 @@ npm run test -- tests/queryRag/
 # Full validation before commit
 npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run test:ci && npm run check:rag
 ```
-
 
 ### Verification Checklist
 
@@ -184,7 +180,6 @@ $ RAG_STRICT_OFFLINE=1 queryRag('tooltip')
 ✅ No network required
 ✅ Offline mode works reliably
 ```
-
 
 ---
 

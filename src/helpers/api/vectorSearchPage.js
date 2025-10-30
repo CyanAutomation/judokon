@@ -189,9 +189,7 @@ export async function getExtractor() {
             );
           }
           const details = placeholderAssets.map(({ asset }) => asset.label).join(", ");
-          const placeholderError = new Error(
-            `MiniLM assets appear to be placeholders: ${details}`
-          );
+          const placeholderError = new Error(`MiniLM assets appear to be placeholders: ${details}`);
           throw createHydrationGuidanceError(placeholderError);
         } else {
           extractor = await pipeline("feature-extraction", modelDir, { quantized: true });

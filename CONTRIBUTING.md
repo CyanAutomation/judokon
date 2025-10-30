@@ -96,6 +96,76 @@ Notes:
 - The model is expected under `models/minilm`. The preflight will fail if strict offline is enabled and files are missing.
 - Keep tests free of unsuppressed `console.warn/error`. Use `withMutedConsole` or spies as needed.
 
+### Offline RAG Setup & Troubleshooting
+
+**Complete offline RAG guide:** See [docs/RAG_MODEL_PATHS.md](./docs/RAG_MODEL_PATHS.md) for detailed path resolution, troubleshooting, and advanced setup.
+
+**Health check:**
+
+```bash
+npm run rag:health
+```
+
+This provides comprehensive diagnostics including local model status, configuration validation, RAG functionality test, and offline mode readiness.
+
+**Validate configuration:**
+
+```bash
+npm run validate:rag:config
+```
+
+Ensures both the preparation script and loader use consistent path configuration for model resolution.
+
+**Development workflow for offline mode:**
+
+1. **First time setup:**
+
+   ```bash
+   npm run rag:prepare:models
+   npm run rag:health
+   ```
+
+2. **During development:**
+
+   ```bash
+   # Run tests with offline mode enabled (fails fast if model missing)
+   RAG_STRICT_OFFLINE=1 npm run test -- tests/queryRag/
+   ```
+
+3. **Troubleshooting:**
+
+   ```bash
+   # Full health diagnostic
+   npm run rag:health
+
+   # Check if files exist with correct sizes
+   npm run check:rag
+
+   # Validate path configuration
+   npm run validate:rag:config
+
+   # Re-prepare if issues found
+   npm run rag:prepare:models -- --force
+   ```
+
+**For air-gapped environments:**
+
+```bash
+# On machine with internet: prepare and transport
+npm run rag:prepare:models
+cp -r models/minilm /transport/path/
+
+# On offline machine: hydrate from transported files
+npm run rag:prepare:models -- --from-dir /transport/path/minilm
+```
+
+**Key points:**
+
+- Always run `npm run rag:health` after setup to verify everything works
+- Use `RAG_STRICT_OFFLINE=1` during development to catch offline mode issues early
+- Configuration must match: both scripts should reference repository root for `env.localModelPath`
+- Model files in `models/minilm/` should total ~23 MB; files < minimum size indicate incomplete download
+
 ### Animation Scheduler Guidelines
 
 - Use `requestAnimationFrame` for one‑shot UI updates (e.g., toggling a class on the next frame).

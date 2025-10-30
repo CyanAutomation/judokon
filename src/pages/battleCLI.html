@@ -110,7 +110,7 @@
                 />
               </div>
             </fieldset>
-            <fieldset class="cli-settings-group">
+            <fieldset class="cli-settings-group" aria-describedby="cli-seed-hint">
               <legend class="cli-settings-group__title">Advanced</legend>
               <p class="cli-settings-group__hint" id="cli-seed-hint">
                 Provide a seed to replay the same matchup. Leave blank for random battles.
@@ -123,7 +123,7 @@
                     type="number"
                     inputmode="numeric"
                     aria-label="Deterministic seed (optional)"
-                    aria-describedby="seed-error cli-seed-hint"
+                    aria-describedby="seed-error"
                     class="seed-input"
                   />
                   <div id="seed-error" class="seed-error"></div>
