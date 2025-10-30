@@ -2797,10 +2797,11 @@ function updateUiForState(battleState) {
     clearVerboseLog();
   }
   if (battleState === "waitingForPlayerAction") {
-    // Reset the CLI-specific roundResolving flag when entering player action state.
-    // This ensures stat selection is allowed even if a previous round's resolution
-    // event hasn't fully completed (edge case with fast state transitions in tests).
+    // Reset the CLI-specific state flags when entering player action state.
+    // This ensures stat selection is allowed even if a previous round's handlers
+    // haven't fully completed (edge case with fast state transitions in tests).
     state.roundResolving = false;
+    selectionApplying = false;
     startSelectionCountdown(30);
     byId("cli-stats")?.focus();
   } else {

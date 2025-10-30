@@ -22,6 +22,11 @@ test.describe("Battle CLI - Play", () => {
         .poll(() => page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null))
         .toBe("waitingForPlayerAction");
 
+      // Also ensure the DOM attribute is set (used by click handler)
+      await expect
+        .poll(() => page.evaluate(() => document.body?.dataset?.battleState ?? null))
+        .toBe("waitingForPlayerAction");
+
       // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");
       await expect(statsContainer).toBeVisible();
@@ -72,6 +77,14 @@ test.describe("Battle CLI - Play", () => {
         .toBe("ready");
 
       await statButton.click();
+
+      // Wait for the snackbar to confirm the stat was selected
+      // This ensures selectStat() has completed before we call completeRound()
+      const statName = statKey.charAt(0).toUpperCase() + statKey.slice(1);
+      await expect(page.locator("#snackbar-container .snackbar")).toHaveText(
+        `You Picked: ${statName}`,
+        { timeout: 2000 }
+      );
 
       // Complete the round immediately (don't wait for intermediate state)
       // The state machine will auto-progress via watchdog timers, so we complete
