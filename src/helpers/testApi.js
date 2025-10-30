@@ -2291,9 +2291,11 @@ const cliApi = {
       const { getStatValue } = await import("/src/helpers/battle/index.js");
 
       const stat = store.playerChoice;
+      // Cache player card element for efficient repeated access
       const playerCard =
         store.playerCardEl ||
         (store.playerCardEl = document.getElementById("player-card"));
+      // Cache opponent card element for efficient repeated access  
       const opponentCard =
         store.opponentCardEl ||
         (store.opponentCardEl = document.getElementById("opponent-card"));
