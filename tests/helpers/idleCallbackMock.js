@@ -1,6 +1,27 @@
 import { vi } from "vitest";
 
 /**
+ * @typedef {Object} IdleDeadline
+ * @property {boolean} didTimeout
+ * @property {() => number} timeRemaining
+ */
+
+/**
+ * @typedef {Object} FlushOptions
+ * @property {boolean} [didTimeout=false]
+ * @property {number | ((elapsed: number) => number)} [timeRemaining=50]
+ * @property {(error: unknown) => void} [onTimeRemainingError]
+ * @property {boolean} [suppressTimeRemainingErrors=false]
+ */
+
+/**
+ * @typedef {Object} FlushResult
+ * @property {number} id
+ * @property {number} elapsed
+ * @property {IdleDeadline} deadline
+ */
+
+/**
  * Install a deterministic requestIdleCallback/cancelIdleCallback mock.
  * Provides utilities to flush idle tasks with synthetic deadlines and
  * restores the original globals when finished.
@@ -8,8 +29,8 @@ import { vi } from "vitest";
  * @returns {{
  *   requestIdleCallback: ReturnType<typeof vi.fn>,
  *   cancelIdleCallback: ReturnType<typeof vi.fn>,
- *   flushNext: (options?: { didTimeout?: boolean, timeRemaining?: number | ((elapsed: number) => number) }) => ({ id: number, elapsed: number, deadline: { didTimeout: boolean, timeRemaining: () => number } } | null),
- *   flushAll: (options?: { didTimeout?: boolean, timeRemaining?: number | ((elapsed: number) => number) }) => Array<{ id: number, elapsed: number, deadline: { didTimeout: boolean, timeRemaining: () => number } }>,
+ *   flushNext: (options?: FlushOptions) => (FlushResult | null),
+ *   flushAll: (options?: FlushOptions) => Array<FlushResult>,
  *   getScheduledCount: () => number,
  *   restore: () => void
  * }}
@@ -34,15 +55,26 @@ export function installIdleCallbackMock() {
   target.cancelIdleCallback = cancelIdleCallback;
 
   const buildDeadline = (options, elapsed) => {
-    const { didTimeout = false, timeRemaining = 50 } = options ?? {};
+    const {
+      didTimeout = false,
+      timeRemaining = 50,
+      onTimeRemainingError,
+      suppressTimeRemainingErrors = false
+    } = options ?? {};
     if (typeof timeRemaining === "function") {
       return {
         didTimeout,
         timeRemaining: () => {
           try {
             return timeRemaining(elapsed);
-          } catch {
-            return 0;
+          } catch (error) {
+            if (typeof onTimeRemainingError === "function") {
+              onTimeRemainingError(error);
+            }
+            if (suppressTimeRemainingErrors) {
+              return 0;
+            }
+            throw error;
           }
         }
       };
@@ -78,21 +110,22 @@ export function installIdleCallbackMock() {
   const restore = () => {
     scheduled.clear();
     nextId = 1;
-    if (typeof originalRequestIdleCallback === "function") {
-      target.requestIdleCallback = originalRequestIdleCallback;
-    } else if (originalRequestIdleCallback === undefined) {
-      delete target.requestIdleCallback;
-    } else {
-      target.requestIdleCallback = originalRequestIdleCallback;
-    }
+    const restoreProperty = (propName, originalValue) => {
+      if (typeof originalValue === "function") {
+        target[propName] = originalValue;
+        return;
+      }
 
-    if (typeof originalCancelIdleCallback === "function") {
-      target.cancelIdleCallback = originalCancelIdleCallback;
-    } else if (originalCancelIdleCallback === undefined) {
-      delete target.cancelIdleCallback;
-    } else {
-      target.cancelIdleCallback = originalCancelIdleCallback;
-    }
+      if (originalValue === undefined) {
+        delete target[propName];
+        return;
+      }
+
+      target[propName] = originalValue;
+    };
+
+    restoreProperty("requestIdleCallback", originalRequestIdleCallback);
+    restoreProperty("cancelIdleCallback", originalCancelIdleCallback);
   };
 
   return {
