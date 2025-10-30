@@ -67,17 +67,29 @@ export async function completeRoundViaApi(page, roundInput = {}) {
 
       try {
         const options = {
-          outcomeEvent: input?.outcomeEvent ?? "outcome=winPlayer",
           opponentResolveDelayMs: input?.opponentResolveDelayMs ?? 0,
           ...(input?.options ?? {})
         };
 
+        if (Object.prototype.hasOwnProperty.call(input ?? {}, "outcomeEvent")) {
+          options.outcomeEvent = input.outcomeEvent;
+        }
+
         const resolution = cliApi.completeRound(input ?? {}, options);
         const normalizeResolution = (result) => {
+          const finalState = result?.finalState ?? null;
+          const roundOverSeen = result?.roundOverObserved === true;
+          const ok =
+            roundOverSeen ||
+            finalState === "roundOver" ||
+            finalState === "cooldown" ||
+            finalState === "matchDecision" ||
+            finalState === "matchOver";
           resolve({
-            ok: result?.finalState === "roundOver",
+            ok,
             reason: null,
-            finalState: result?.finalState ?? null
+            finalState,
+            roundOverObserved: roundOverSeen
           });
         };
 
