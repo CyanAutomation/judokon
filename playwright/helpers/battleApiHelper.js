@@ -106,6 +106,11 @@ export async function completeRoundViaApi(page, roundInput = {}) {
 /**
  * Reads the rounds played counter via the Test API.
  * @param {import("@playwright/test").Page} page
+ * @pseudocode
+ * 1. Evaluate in browser context
+ * 2. Check if Test API state getRoundsPlayed is available
+ * 3. Convert result to number and validate it's finite
+ * 4. Return valid number or null if unavailable/invalid
  */
 export async function readRoundsPlayed(page) {
   return await page.evaluate(() => {
