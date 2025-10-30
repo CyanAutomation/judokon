@@ -338,19 +338,57 @@ textarea:focus,
 
 ### 8. Responsive Breakpoint Optimization
 
-- [ ] **Issue**: Current breakpoints (720px, 420px) could be optimized for modern device sizes.
+- [x] **Issue**: Current breakpoints (720px, 420px) could be optimized for modern device sizes.
 - **Impact**: Layout may not adapt perfectly to all devices.
 - **Solution**: Consider additional breakpoints:
 
 ```css
 @media (max-width: 640px) {
-  /* Small tablet optimizations */
+  .cli-settings-body {
+    gap: 12px;
+    padding: 0 12px 12px;
+  }
+
+  .cli-settings-group {
+    padding: 10px 12px 12px;
+    gap: 6px;
+  }
+
+  .cli-settings-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cli-settings-row select,
+  .cli-settings-row input[type="number"] {
+    width: 100%;
+  }
+
+  #cli-stats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
 }
 
 @media (max-width: 360px) {
-  /* Small phone optimizations */
+  .cli-settings-group {
+    padding: 8px 10px 10px;
+  }
+
+  .cli-settings-group legend {
+    font-size: 10px;
+  }
+
+  #cli-stats {
+    grid-template-columns: 1fr;
+  }
 }
 ```
+
+- **Actions (2025-10-11):**
+  - Implemented tablet breakpoint refinements so settings groups collapse into stacked rows, controls expand to full width, and the stat grid reflows gracefully at ≤640px.
+  - Tuned the smallest breakpoint (≤360px) to tighten padding, shrink legend typography, and lock the stat grid to a single column for narrow phones.
+- **Outcome:** The CLI scales smoothly from desktop down to small phones with consistent spacing and typography, avoiding clipped controls and cramped settings panels.
+- **Validation:** `npx vitest run tests/pages/battleCLI.visibility.test.js`, `npx vitest run tests/pages/battleCLI.shortcuts.test.js`, `npx playwright test playwright/cli-layout.spec.js`.
 
 ### 9. Color Contrast Refinements
 

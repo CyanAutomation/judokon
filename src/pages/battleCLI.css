@@ -296,7 +296,7 @@ details.cli-settings:not([open]) > summary::after {
 /* Terminal-style separators with enhanced visual hierarchy */
 .ascii-sep {
   font-family: inherit;
-  color: #2f5f2f; /* Slightly more visible separators */
+  color: #356f45; /* Balanced contrast for separators */
   padding: 8px 0;
   text-align: center;
   font-size: 12px;
@@ -575,7 +575,7 @@ details.cli-settings:not([open]) > summary::after {
   white-space: pre;
   gap: 4px; /* Consistent 8px rhythm */
   font-size: 13px; /* Slightly smaller for hierarchy */
-  color: #d6f5d6; /* Slightly brighter for better contrast */
+  color: #def6df; /* Brighter mint for stronger contrast */
 }
 .cli-status > div {
   line-height: 1.2;
@@ -957,9 +957,92 @@ details.cli-settings > summary {
 }
 
 @media (max-width: 640px) {
-  /* Small tablet optimizations */
+  .cli-main {
+    padding: 12px;
+  }
+
+  .cli-settings-body {
+    gap: 12px;
+    padding: 0 12px 12px;
+  }
+
+  .cli-settings-group {
+    padding: 10px 12px 12px;
+    gap: 6px;
+  }
+
+  .cli-settings-group legend {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  .cli-settings-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 6px 0;
+  }
+
+  .cli-settings-row label {
+    min-width: 100%;
+    font-size: 12px;
+  }
+
+  .cli-settings-row select,
+  .cli-settings-row input[type="number"] {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .cli-settings-row input[type="checkbox"] {
+    align-self: flex-start;
+  }
+
+  #cli-stats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+  }
+
+  .cli-controls-hint__items {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 360px) {
-  /* Small phone optimizations */
+  .cli-main {
+    padding: 10px;
+  }
+
+  .cli-title {
+    font-size: 13px;
+  }
+
+  .cli-settings-body {
+    padding: 0 10px 10px;
+  }
+
+  .cli-settings-group {
+    padding: 8px 10px 10px;
+  }
+
+  .cli-settings-group legend {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .cli-settings-row label {
+    font-size: 11px;
+  }
+
+  #cli-stats {
+    grid-template-columns: 1fr;
+  }
+
+  #cli-controls-hint {
+    padding: 12px;
+  }
+
+  #cli-controls-hint .cli-controls-hint__item {
+    padding: 6px 8px;
+  }
 }

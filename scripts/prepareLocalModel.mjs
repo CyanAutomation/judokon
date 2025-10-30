@@ -130,6 +130,11 @@ export async function prepareLocalModel(options = {}) {
     env.allowLocalModels = true;
     env.cacheDir = cacheDir;
     env.localModelPath = destRoot;
+    console.log(`[RAG] Preparing local model with configuration:`);
+    console.log(`  - Repository root (localModelPath): ${destRoot}`);
+    console.log(`  - Cache directory: ${cacheDir}`);
+    console.log(`  - Model will be resolved as: ${path.join(destRoot, "models/minilm")}`);
+    console.log(`  - Allow local models: true`);
     // Prepare dest directories to allow caching to land in-place
     await ensureDir(cacheDir);
     await ensureDir(localModelDir);

@@ -103,6 +103,7 @@ export async function getExtractor() {
 
         env.allowLocalModels = true;
         env.localModelPath = rootDir;
+        console.debug(`[RAG] Configuring local model resolution with localModelPath=${rootDir}`);
 
         try {
           const workerPath = nodeRequire.resolve(
@@ -120,6 +121,9 @@ export async function getExtractor() {
         const modelDir = "models/minilm";
         const modelDirAbs = resolve(rootDir, modelDir);
         const strictOffline = process?.env?.RAG_STRICT_OFFLINE === "1";
+        console.debug(
+          `[RAG] Checking for local model at: ${modelDirAbs} (strict offline: ${strictOffline})`
+        );
 
         const assetDescriptors = [
           { label: "config.json", path: resolve(modelDirAbs, "config.json"), minBytes: 50 },
@@ -165,7 +169,8 @@ export async function getExtractor() {
 
         if (missingAssets.length > 0) {
           if (strictOffline) {
-            throw new Error(STRICT_OFFLINE_MESSAGE);
+            const missingPaths = missingAssets.map(({ asset }) => `    - ${asset.path}`).join("\n");
+            throw new Error(`${STRICT_OFFLINE_MESSAGE}\n\nMissing files:\n${missingPaths}`);
           }
           const details = missingAssets.map(({ asset }) => asset.label).join(", ");
           console.warn(
@@ -176,10 +181,17 @@ export async function getExtractor() {
           });
         } else if (placeholderAssets.length > 0) {
           if (strictOffline) {
-            throw new Error(STRICT_OFFLINE_MESSAGE);
+            const placeholderPaths = placeholderAssets
+              .map(({ asset, info }) => `    - ${asset.path} (${info?.size || 0} bytes)`)
+              .join("\n");
+            throw new Error(
+              `${STRICT_OFFLINE_MESSAGE}\n\nFiles appear to be placeholders:\n${placeholderPaths}`
+            );
           }
           const details = placeholderAssets.map(({ asset }) => asset.label).join(", ");
-          const placeholderError = new Error(`MiniLM assets appear to be placeholders: ${details}`);
+          const placeholderError = new Error(
+            `MiniLM assets appear to be placeholders: ${details}`
+          );
           throw createHydrationGuidanceError(placeholderError);
         } else {
           extractor = await pipeline("feature-extraction", modelDir, { quantized: true });
