@@ -23,9 +23,9 @@ const visibilityListeners = {
   wasHidden: undefined
 };
 const queueableHelpers = new Set(["showMessage", "clearMessage"]);
-const pendingScoreboardCalls = [];
+let pendingShowMessageArgs = null;
+let pendingClearMessageArgs = null;
 let scoreboardInitialized = false;
-let isFlushingScoreboardQueue = false;
 
 /**
  * Determine whether a scoreboard helper invocation should be queued.
@@ -45,11 +45,21 @@ function shouldQueueScoreboardCall(name) {
  * @returns {boolean} True when the call was queued.
  */
 function enqueueScoreboardCall(name, args) {
-  if (!shouldQueueScoreboardCall(name) || isFlushingScoreboardQueue) {
+  if (!shouldQueueScoreboardCall(name)) {
     return false;
   }
-  pendingScoreboardCalls.push({ name, args });
-  return true;
+  const clonedArgs = Array.isArray(args) ? [...args] : [];
+  if (name === "showMessage") {
+    pendingShowMessageArgs = clonedArgs;
+    pendingClearMessageArgs = null;
+    return true;
+  }
+  if (name === "clearMessage") {
+    pendingClearMessageArgs = clonedArgs;
+    pendingShowMessageArgs = null;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -58,17 +68,22 @@ function enqueueScoreboardCall(name, args) {
  * @returns {void}
  */
 function flushQueuedScoreboardCalls() {
-  if (!domAvailable || pendingScoreboardCalls.length === 0 || isFlushingScoreboardQueue) {
+  if (!domAvailable) {
+    pendingShowMessageArgs = null;
+    pendingClearMessageArgs = null;
     return;
   }
-  isFlushingScoreboardQueue = true;
-  try {
-    while (pendingScoreboardCalls.length > 0) {
-      const { name, args } = pendingScoreboardCalls.shift();
-      runHelper(name, getScoreboardMethod(name), args);
-    }
-  } finally {
-    isFlushingScoreboardQueue = false;
+  if (pendingShowMessageArgs) {
+    const args = pendingShowMessageArgs;
+    pendingShowMessageArgs = null;
+    pendingClearMessageArgs = null;
+    runHelper("showMessage", getScoreboardMethod("showMessage"), args);
+    return;
+  }
+  if (pendingClearMessageArgs) {
+    const args = pendingClearMessageArgs;
+    pendingClearMessageArgs = null;
+    runHelper("clearMessage", getScoreboardMethod("clearMessage"), args);
   }
 }
 

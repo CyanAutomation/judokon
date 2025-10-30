@@ -96,8 +96,8 @@ describe("setupScoreboard", () => {
     vi.doMock("../../src/components/Scoreboard.js", () => stub);
 
     const mod = await import("../../src/helpers/setupScoreboard.js");
-    mod.showMessage("Queued message");
     mod.clearMessage();
+    mod.showMessage("Queued message");
     expect(stub.showMessage).not.toHaveBeenCalled();
     expect(stub.clearMessage).not.toHaveBeenCalled();
 
@@ -112,7 +112,31 @@ describe("setupScoreboard", () => {
       expect.objectContaining({ scheduler })
     );
     expect(stub.showMessage).toHaveBeenCalledWith("Queued message");
+    expect(stub.clearMessage).not.toHaveBeenCalled();
+  });
+
+  it("replays the last clearMessage call after initialization", async () => {
+    vi.resetModules();
+    document.body.innerHTML = "";
+    const stub = createScoreboardStub();
+    vi.doMock("../../src/components/Scoreboard.js", () => stub);
+
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+    mod.showMessage("First");
+    mod.clearMessage();
+
+    document.body.appendChild(createScoreboardHeader());
+    const scheduler = createMockScheduler();
+    const controls = createControls();
+
+    mod.setupScoreboard(controls, scheduler);
+
+    expect(stub.initScoreboard).toHaveBeenCalledWith(
+      document.querySelector("header"),
+      expect.objectContaining({ scheduler })
+    );
     expect(stub.clearMessage).toHaveBeenCalledTimes(1);
+    expect(stub.showMessage).not.toHaveBeenCalledWith("First");
   });
 
   it("calls initScoreboard with null when header missing", async () => {
