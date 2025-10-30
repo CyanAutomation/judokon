@@ -82,42 +82,54 @@
           <summary class="cli-settings-summary" data-testid="settings-summary">
             <span class="fw-600">Match Settings</span>
           </summary>
-          <div id="cli-settings-body">
-            <div class="cli-settings-row">
-              <label for="points-select">Win target:</label>
-              <select
-                id="points-select"
-                aria-label="Points to win"
-                data-tooltip-id="settings.pointsToWin"
-              >
-                <option value="3">3</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-              </select>
-            </div>
-            <div class="cli-settings-row">
-              <label for="verbose-toggle">Verbose:</label>
-              <input
-                id="verbose-toggle"
-                type="checkbox"
-                aria-label="Toggle verbose logging"
-                data-flag="cliVerbose"
-              />
-            </div>
-            <div class="cli-settings-row">
-              <label for="seed-input">Seed:</label>
-              <div class="d-flex flex-col">
-                <input
-                  id="seed-input"
-                  type="number"
-                  inputmode="numeric"
-                  aria-label="Deterministic seed (optional)"
-                  aria-describedby="seed-error"
-                  class="seed-input"
-                />
-                <div id="seed-error" class="seed-error"></div>
+          <div id="cli-settings-body" class="cli-settings-body">
+            <fieldset class="cli-settings-group">
+              <legend class="cli-settings-group__title">Match rules</legend>
+              <div class="cli-settings-row">
+                <label for="points-select">Win target:</label>
+                <select
+                  id="points-select"
+                  aria-label="Points to win"
+                  data-tooltip-id="settings.pointsToWin"
+                >
+                  <option value="3">3</option>
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                </select>
               </div>
-            </div>
+            </fieldset>
+            <fieldset class="cli-settings-group">
+              <legend class="cli-settings-group__title">Display &amp; logging</legend>
+              <div class="cli-settings-row">
+                <label for="verbose-toggle">Verbose:</label>
+                <input
+                  id="verbose-toggle"
+                  type="checkbox"
+                  aria-label="Toggle verbose logging"
+                  data-flag="cliVerbose"
+                />
+              </div>
+            </fieldset>
+            <fieldset class="cli-settings-group">
+              <legend class="cli-settings-group__title">Advanced</legend>
+              <p class="cli-settings-group__hint" id="cli-seed-hint">
+                Provide a seed to replay the same matchup. Leave blank for random battles.
+              </p>
+              <div class="cli-settings-row">
+                <label for="seed-input">Seed:</label>
+                <div class="d-flex flex-col">
+                  <input
+                    id="seed-input"
+                    type="number"
+                    inputmode="numeric"
+                    aria-label="Deterministic seed (optional)"
+                    aria-describedby="seed-error cli-seed-hint"
+                    class="seed-input"
+                  />
+                  <div id="seed-error" class="seed-error"></div>
+                </div>
+              </div>
+            </fieldset>
           </div>
         </details>
 

@@ -140,7 +140,7 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
 
 ### 4. Settings Section Organization
 
-- [ ] **Issue**: The settings section (`#cli-settings-body`) has basic styling but could benefit from better visual hierarchy.
+- [x] **Issue**: The settings section (`#cli-settings-body`) has basic styling but could benefit from better visual hierarchy.
 - **Impact**: Settings may be harder to scan quickly.
 - **Solution**: Add better spacing and grouping:
 
@@ -163,6 +163,12 @@ Based on audit of `src/pages/battleCLI.html` and related CSS files using Playwri
   font-weight: 500;
 }
 ```
+
+- **Actions (2025-10-11):**
+  - Introduced `fieldset` groupings with legends and helper copy to clarify match, display, and advanced controls in `battleCLI.html`.
+  - Added `.cli-settings-body`, `.cli-settings-group`, and `.cli-settings-group__hint` styling to reinforce grouping, contrast, and spacing while retaining the terminal aesthetic.
+- **Outcome:** The settings drawer now reads as three clearly labeled blocks, with optional seed guidance surfaced inline. Visual the grouping works at 320px widths without overflow.
+- **Validation:** `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`, `npx vitest run tests/pages/battleCLI.verboseWinTarget.test.js`, `npx playwright test playwright/cli-verbose-toggle.spec.js`.
 
 ### 5. Verbose Log Enhancements
 
