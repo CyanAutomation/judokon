@@ -32,10 +32,11 @@ describe.sequential("classicBattle card selection", () => {
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     // Clear timers then fully reset DOM and module state between tests
     timers.cleanup();
     resetDom();
+    await vi.resetModules();
   });
 
   it("draws a different card for the opponent", async () => {
