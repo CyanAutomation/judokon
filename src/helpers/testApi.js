@@ -2261,33 +2261,67 @@ const cliApi = {
    * @param {object} [eventLike]
    * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
    * @pseudocode
-   * dispatch = detail => stateApi.dispatchBattleEvent("roundResolved", detail)
-   * emitOpponentReveal = detail => emitBattleEvent("opponentReveal", detail)
-   * emit = detail => emitBattleEvent("roundResolved", detail)
-   * getStore = () => window.battleStore when available
-   * return resolveRoundForCliTest(eventLike, { dispatch, emitOpponentReveal, emit, getStore })
+   * get battle store and player choice
+   * import roundResolver and call resolveRound with proper values
+   * this executes full resolution pipeline including opponent reveal
+   * return resolution details
    */
   async resolveRound(eventLike = {}) {
-    const dispatch = (detail) => stateApi.dispatchBattleEvent("roundResolved", detail);
-    const emitOpponentReveal = (detail) => emitBattleEvent("opponentReveal", detail);
-    const emit = (detail) => emitBattleEvent("roundResolved", detail);
-    const getStore = () => {
-      try {
-        return typeof window !== "undefined" ? window.battleStore : null;
-      } catch (error) {
-        if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
-          console.debug("Failed to access battleStore:", error);
-        }
-        return null;
-      }
-    };
+    try {
+      const store = typeof window !== "undefined" ? window.battleStore : null;
+      if (!store || !store.playerChoice) {
+        // Fall back to event-only resolution if no selection made
+        const dispatch = (detail) => stateApi.dispatchBattleEvent("roundResolved", detail);
+        const emitOpponentReveal = (detail) => emitBattleEvent("opponentReveal", detail);
+        const emit = (detail) => emitBattleEvent("roundResolved", detail);
+        const getStore = () => store;
 
-    return resolveRoundForCliTest(eventLike, {
-      dispatch,
-      emitOpponentReveal,
-      emit,
-      getStore
-    });
+        return resolveRoundForCliTest(eventLike, {
+          dispatch,
+          emitOpponentReveal,
+          emit,
+          getStore
+        });
+      }
+
+      // Import and call actual resolution logic
+      const { resolveRound: resolveRoundLogic } = await import(
+        "/src/helpers/classicBattle/roundResolver.js"
+      );
+      const { getStatValue } = await import("/src/helpers/battle/index.js");
+      const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
+
+      const stat = store.playerChoice;
+      const playerCard = store.playerCard;
+      const opponentCard = getOpponentJudoka(store);
+
+      if (!playerCard || !opponentCard) {
+        throw new Error("Missing player or opponent card");
+      }
+
+      const playerVal = getStatValue(playerCard, stat);
+      const opponentVal = getStatValue(opponentCard, stat);
+
+      // Execute full resolution: evaluates outcome, increments roundsPlayed, emits events
+      const result = await resolveRoundLogic(store, stat, playerVal, opponentVal);
+
+      return {
+        detail: {
+          store,
+          stat,
+          playerVal,
+          opponentVal,
+          result
+        },
+        dispatched: true,
+        emitted: true
+      };
+    } catch (error) {
+      if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+        console.error("Failed to resolve round:", error);
+      }
+      throw error;
+    }
   },
 
   /**
