@@ -743,6 +743,8 @@ logger.fatal("Database connection pool exhausted", {
 
 When making changes to `src/pages/battleClassic.html` or `src/pages/battleCLI.html`, run the centralized regression test suite to ensure no regressions on these critical pages.
 
+**Related sections:** For general Classic Battle test patterns, see [⚔️ Classic Battle Testing](#️-classic-battle-testing). For Playwright interaction patterns, see [🎭 Playwright Test Quality Standards](#-playwright-test-quality-standards).
+
 ### Quick Validation
 
 ```bash
@@ -804,6 +806,15 @@ Battle page tests are centralized in `tests/battles-regressions/` with clear org
 - Stats panel display
 - Battle configuration and defaults
 
+### What's NOT Included in Battle Tests
+
+These battle-specific tests focus on page workflows and user interactions. Other test categories cover:
+
+- **General UI component tests** — See `tests/components/`
+- **Data validation tests** — See `tests/data/`
+- **Helper function tests (non-battle)** — See `tests/helpers/`
+- **Utility and library tests** — See other test directories
+
 ### Integration with Main Test Suite
 
 ```bash
@@ -862,6 +873,15 @@ npm run test:battles
 npm run test:ci && npm run check:contrast
 ```
 
+### Debugging Test Failures
+
+If battle tests fail after your changes:
+
+1. **Identify which test failed:** Run `npm run test:battles:watch` to watch and locate the failing test
+2. **Verify it's not flaky:** Run the test again with `npm run test:battles` to confirm the failure is consistent
+3. **Review your changes:** Compare your modifications to the affected page (battleClassic.html or battleCLI.html)
+4. **Check dependencies:** If you changed files in `tests/battles-regressions/shared/`, both Classic and CLI tests may be affected
+
 ### Common Workflows
 
 **When fixing a bug in Classic Battle:**
@@ -876,7 +896,7 @@ npm run test:ci                 # Final validation
 
 ```bash
 # Create test first, implement, verify (TDD workflow)
-npm run test:battles:cli:watch
+npm run test:battles:watch      # Watch mode during development
 npm run test:battles:cli        # Final check
 ```
 
