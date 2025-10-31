@@ -630,6 +630,80 @@ const stateApi = {
   },
 
   /**
+   * Wait for stat buttons to become ready for selection.
+   * @param {number} timeout - Timeout in milliseconds
+   * @returns {Promise<boolean>} Resolves true when ready, false on timeout
+   */
+  async waitForStatButtonsReady(timeout = 5000) {
+    const startTime = Date.now();
+
+    const getContainer = () =>
+      document.querySelector("[data-testid='stat-buttons']") ?? document.getElementById("stat-buttons");
+
+    const buttonsInteractive = () => {
+      try {
+        const container = getContainer();
+        if (!container || container.dataset?.buttonsReady !== "true") {
+          return false;
+        }
+
+        const buttons = Array.from(
+          container.querySelectorAll("[data-testid='stat-button'], button[data-stat]")
+        );
+        if (buttons.length === 0) {
+          return false;
+        }
+
+        return buttons.some((button) => {
+          const ariaDisabled =
+            typeof button.getAttribute === "function" ? button.getAttribute("aria-disabled") : null;
+          return button.disabled !== true && ariaDisabled !== "true";
+        });
+      } catch {
+        return false;
+      }
+    };
+
+    if (buttonsInteractive()) {
+      return true;
+    }
+
+    try {
+      const hydration = window.statButtonsReadyPromise;
+      if (hydration && typeof hydration.then === "function") {
+        const hydrationResult = await Promise.race([
+          Promise.resolve(hydration)
+            .then(() => true)
+            .catch(() => false),
+          new Promise((resolve) => setTimeout(() => resolve(false), timeout))
+        ]);
+
+        if (hydrationResult && buttonsInteractive()) {
+          return true;
+        }
+      }
+    } catch {}
+
+    return await new Promise((resolve) => {
+      const check = () => {
+        if (buttonsInteractive()) {
+          resolve(true);
+          return;
+        }
+
+        if (Date.now() - startTime > timeout) {
+          resolve(false);
+          return;
+        }
+
+        setTimeout(check, 50);
+      };
+
+      check();
+    });
+  },
+
+  /**
    * Wait for the Next button to be marked ready and enabled.
    * @param {number} timeout - Timeout in milliseconds
    * @returns {Promise<boolean>} Resolves true when ready, false on timeout
