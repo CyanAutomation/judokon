@@ -31,7 +31,25 @@ describe("queryRag offline mode with local MiniLM model", () => {
    */
   it("loads local MiniLM model when models/minilm/ directory exists", async () => {
     // Mock fs to verify stat() calls check the correct path
-    const statMock = vi.fn().mockResolvedValue({ size: 1024 });
+    const statMock = vi.fn(async (probedPath) => {
+      if (probedPath.endsWith(path.join("onnx", "model_quantized.onnx"))) {
+        return { size: 600_000 };
+      }
+
+      if (probedPath.endsWith("tokenizer.json")) {
+        return { size: 12_000 };
+      }
+
+      if (probedPath.endsWith("tokenizer_config.json")) {
+        return { size: 1_500 };
+      }
+
+      if (probedPath.endsWith("config.json")) {
+        return { size: 600 };
+      }
+
+      return { size: 8_192 };
+    });
     vi.doMock("fs/promises", () => ({
       stat: statMock,
       mkdir: vi.fn().mockResolvedValue(undefined),
