@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { resolveFeatureFlagEnabled, waitForFeatureFlagState } from "../helpers/featureFlagHelper.js";
 
 test.describe("enableTestMode feature flag", () => {
   test("test mode flag sets data-test-mode on battle-area when enabled", async ({ page }) => {
@@ -10,15 +11,11 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for the battle-area element to exist and have the test-mode marker
-    await page.waitForFunction(
-      () => document.getElementById("battle-area")?.getAttribute("data-test-mode") === "true",
-      { timeout: 5000 }
-    );
+    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", true);
+    expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(true);
 
     const battleArea = page.locator("#battle-area");
-    const testModeMarker = await battleArea.getAttribute("data-test-mode");
-    expect(testModeMarker).toBe("true");
+    await expect(battleArea).toHaveAttribute("data-test-mode", "true");
   });
 
   test("test mode banner announces active seed when enabled", async ({ page }) => {
@@ -30,19 +27,10 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
+    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", true);
+    expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(true);
+
     const banner = page.locator("#test-mode-banner");
-
-    await expect
-      .poll(async () => ({
-        hidden: await banner.getAttribute("hidden"),
-        marker: await banner.getAttribute("data-feature-test-mode"),
-        text: (await banner.textContent())?.trim()
-      }))
-      .toMatchObject({
-        hidden: null,
-        marker: "banner"
-      });
-
     await expect(banner).toBeVisible();
     await expect(banner).toHaveAttribute("data-feature-test-mode", "banner");
     await expect(banner).toHaveText(/^Test Mode active \(seed \d+\)$/);
@@ -57,10 +45,13 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
+    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", false);
+    expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(false);
+
     const battleArea = page.locator("#battle-area");
-    await expect.poll(async () => await battleArea.getAttribute("data-test-mode")).toBeNull();
+    await expect(battleArea).not.toHaveAttribute("data-test-mode", "true");
     const testModeMarker = await battleArea.getAttribute("data-test-mode");
-    expect(testModeMarker).not.toBe("true");
+    expect(testModeMarker).toBeNull();
   });
 
   test("test mode banner hides when flag disabled", async ({ page }) => {
@@ -72,21 +63,15 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
+    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", false);
+    expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(false);
+
     const banner = page.locator("#test-mode-banner");
-
-    await expect
-      .poll(async () => ({
-        hidden: await banner.getAttribute("hidden"),
-        hasMarker: await banner.getAttribute("data-feature-test-mode"),
-        text: (await banner.textContent())?.trim()
-      }))
-      .toEqual({
-        hidden: "",
-        hasMarker: null,
-        text: ""
-      });
-
     await expect(banner).toBeHidden();
+    await expect(banner).not.toHaveAttribute("data-feature-test-mode", "banner");
+    const hidden = await banner.getAttribute("hidden");
+    expect(hidden).toBe("");
+    await expect(banner).toHaveText("");
   });
 });
 
@@ -100,14 +85,10 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for the feature marker to be applied
-    await page.waitForFunction(
-      () => document.body?.getAttribute("data-feature-battle-state-badge") === "enabled",
-      { timeout: 5000 }
-    );
+    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", true);
+    expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(true);
 
-    const bodyMarker = await page.locator("body").getAttribute("data-feature-battle-state-badge");
-    expect(bodyMarker).toBe("enabled");
+    await expect(page.locator("body")).toHaveAttribute("data-feature-battle-state-badge", "enabled");
   });
 
   test("body reflects badge disabled state with DOM marker", async ({ page }) => {
@@ -119,14 +100,10 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for the feature marker to be applied
-    await page.waitForFunction(
-      () => document.body?.getAttribute("data-feature-battle-state-badge") === "disabled",
-      { timeout: 5000 }
-    );
+    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", false);
+    expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(false);
 
-    const bodyMarker = await page.locator("body").getAttribute("data-feature-battle-state-badge");
-    expect(bodyMarker).toBe("disabled");
+    await expect(page.locator("body")).toHaveAttribute("data-feature-battle-state-badge", "disabled");
   });
 
   test("badge element appears when enabled", async ({ page }) => {
@@ -138,8 +115,8 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for the badge to appear
-    await page.waitForSelector("#battle-state-badge", { timeout: 5000 });
+    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", true);
+    expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(true);
 
     const badge = page.locator("#battle-state-badge");
     await expect(badge).toBeVisible();
@@ -154,10 +131,10 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    await expect(page.locator("body")).toHaveAttribute(
-      "data-feature-battle-state-badge",
-      "disabled"
-    );
+    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", false);
+    expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(false);
+
+    await expect(page.locator("body")).toHaveAttribute("data-feature-battle-state-badge", "disabled");
 
     const badge = page.locator("#battle-state-badge");
     await expect(badge).toHaveCount(0);
@@ -174,16 +151,12 @@ test.describe("tooltipOverlayDebug feature flag", () => {
 
     await page.goto("/src/pages/tooltipViewer.html");
 
-    // Wait for the flag to be applied
-    await page.waitForFunction(
-      () => document.body?.classList.contains("tooltip-overlay-debug") === true,
-      { timeout: 5000 }
-    );
+    const snapshot = await waitForFeatureFlagState(page, "tooltipOverlayDebug", true);
+    expect(resolveFeatureFlagEnabled(snapshot, "tooltipOverlayDebug")).toBe(true);
 
-    // Verify the body has the debug class
-    const hasDebugClass = await page
-      .locator("body")
-      .evaluate((el) => el.classList.contains("tooltip-overlay-debug"));
+    const body = page.locator("body");
+    await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "enabled");
+    const hasDebugClass = await body.evaluate((el) => el.classList.contains("tooltip-overlay-debug"));
     expect(hasDebugClass).toBe(true);
   });
 
@@ -197,10 +170,12 @@ test.describe("tooltipOverlayDebug feature flag", () => {
     await page.goto("/src/pages/tooltipViewer.html");
 
     const body = page.locator("body");
+    const snapshot = await waitForFeatureFlagState(page, "tooltipOverlayDebug", false);
+    expect(resolveFeatureFlagEnabled(snapshot, "tooltipOverlayDebug")).toBe(false);
+
     await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "disabled");
-    await expect
-      .poll(() => body.evaluate((el) => el.classList.contains("tooltip-overlay-debug")))
-      .toBe(false);
+    const hasDebugClass = await body.evaluate((el) => el.classList.contains("tooltip-overlay-debug"));
+    expect(hasDebugClass).toBe(false);
   });
 });
 
@@ -214,10 +189,10 @@ test.describe("enableCardInspector feature flag", () => {
 
     await page.goto("/src/pages/randomJudoka.html");
 
+    const snapshot = await waitForFeatureFlagState(page, "enableCardInspector", true);
+    expect(resolveFeatureFlagEnabled(snapshot, "enableCardInspector")).toBe(true);
+
     await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");
-    await expect
-      .poll(() => page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null))
-      .toBe(true);
   });
 
   test("card inspector flag override disabled correctly on page", async ({ page }) => {
@@ -229,9 +204,9 @@ test.describe("enableCardInspector feature flag", () => {
 
     await page.goto("/src/pages/randomJudoka.html");
 
+    const snapshot = await waitForFeatureFlagState(page, "enableCardInspector", false);
+    expect(resolveFeatureFlagEnabled(snapshot, "enableCardInspector")).toBe(false);
+
     await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");
-    await expect
-      .poll(() => page.evaluate(() => window.__FF_OVERRIDES?.enableCardInspector ?? null))
-      .toBe(false);
   });
 });

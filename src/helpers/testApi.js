@@ -12,10 +12,12 @@
  * 5. Expose component state inspection helpers
  */
 
+import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
+import { getCachedSettings } from "./settingsCache.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
 import { isDevelopmentEnvironment } from "./environment.js";
 import {
@@ -1865,6 +1867,90 @@ let lastBattleState = null;
 
 // Component inspection API
 const inspectionApi = {
+  /**
+   * Get a snapshot of the current feature flag states.
+   * @returns {Record<string, { enabled: boolean, stored: boolean, override?: boolean }>}
+   */
+  getFeatureFlags() {
+    try {
+      const cached = typeof getCachedSettings === "function" ? getCachedSettings() : null;
+      const defaultFlags =
+        DEFAULT_SETTINGS &&
+        typeof DEFAULT_SETTINGS === "object" &&
+        DEFAULT_SETTINGS !== null &&
+        !Array.isArray(DEFAULT_SETTINGS.featureFlags)
+          ? DEFAULT_SETTINGS.featureFlags || {}
+          : {};
+      const cachedFlags =
+        cached &&
+        typeof cached === "object" &&
+        cached !== null &&
+        !Array.isArray(cached) &&
+        typeof cached.featureFlags === "object" &&
+        cached.featureFlags !== null
+          ? cached.featureFlags
+          : {};
+      let overrides = {};
+      try {
+        if (
+          typeof window !== "undefined" &&
+          window.__FF_OVERRIDES &&
+          typeof window.__FF_OVERRIDES === "object"
+        ) {
+          overrides = window.__FF_OVERRIDES;
+        }
+      } catch {}
+
+      const flagNames = Array.from(
+        new Set([
+          ...Object.keys(defaultFlags || {}),
+          ...Object.keys(cachedFlags || {}),
+          ...Object.keys(overrides || {})
+        ])
+      );
+
+      const snapshot = {};
+      for (const flagName of flagNames) {
+        if (!flagName) {
+          continue;
+        }
+
+        const storedEntry = cachedFlags?.[flagName] ?? defaultFlags?.[flagName] ?? null;
+        const storedEnabled =
+          storedEntry && typeof storedEntry === "object" && !Array.isArray(storedEntry)
+            ? storedEntry.enabled
+            : defaultFlags?.[flagName]?.enabled;
+        const normalizedStored = storedEnabled === true || storedEnabled === false;
+        const hasOverride = Object.prototype.hasOwnProperty.call(overrides, flagName);
+        const overrideValue = hasOverride ? overrides[flagName] : undefined;
+        const enabled = hasOverride
+          ? !!overrideValue
+          : normalizedStored
+            ? storedEnabled
+            : !!defaultFlags?.[flagName]?.enabled;
+
+        snapshot[flagName] = {
+          enabled,
+          stored: normalizedStored ? storedEnabled : !!defaultFlags?.[flagName]?.enabled
+        };
+
+        if (hasOverride) {
+          snapshot[flagName].override = !!overrideValue;
+        }
+      }
+
+      return snapshot;
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        try {
+          if (typeof console !== "undefined" && typeof console.debug === "function") {
+            console.debug("testApi.inspect.getFeatureFlags failed", error);
+          }
+        } catch {}
+      }
+      return {};
+    }
+  },
   /**
    * Get battle store state for inspection
    * @returns {object|null} Battle store or null
