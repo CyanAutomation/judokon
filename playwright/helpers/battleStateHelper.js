@@ -3,6 +3,7 @@
  */
 
 export const STAT_WAIT_TIMEOUT_MS = 5_000;
+export const MATCH_COMPLETION_TIMEOUT_MS = 30_000;
 
 /**
  * Safely read the current battle state via the Test API, returning a structured result.
@@ -114,6 +115,57 @@ export async function waitForBattleReady(page, options = {}) {
 }
 
 /**
+ * Configure the Classic Battle environment using the Test API helper.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {object} battleConfig - Configuration options for the battle setup
+ * @param {object} [options] - Options object
+ * @param {number} [options.timeout=10_000] - Timeout in ms
+ * @returns {Promise<{ok: boolean, errors: string[]}>} Configuration result
+ */
+export async function configureClassicBattle(page, battleConfig = {}, options = {}) {
+  const { timeout = 10_000 } = options;
+
+  await waitForTestApi(page, { timeout });
+
+  const result = await page.evaluate(
+    async ({ config, waitTimeout }) => {
+      try {
+        const initApi = window.__TEST_API?.init;
+        if (!initApi || typeof initApi.configureClassicBattle !== "function") {
+          return { ok: false, errors: ["configureClassicBattle unavailable"] };
+        }
+
+        const { battleReadyTimeout, ...rest } = config ?? {};
+        const configuration = {
+          ...rest,
+          battleReadyTimeout: battleReadyTimeout ?? waitTimeout
+        };
+
+        const outcome = await initApi.configureClassicBattle(configuration);
+        const messages = Array.isArray(outcome?.errors) ? outcome.errors.filter(Boolean) : [];
+        const ok = outcome?.ok !== false && messages.length === 0;
+
+        return { ok, errors: messages };
+      } catch (error) {
+        return {
+          ok: false,
+          errors: [error instanceof Error ? error.message : String(error ?? "unknown error")]
+        };
+      }
+    },
+    { config: battleConfig, waitTimeout: timeout }
+  );
+
+  if (!result?.ok) {
+    const messages = Array.isArray(result?.errors) ? result.errors.filter(Boolean) : [];
+    const reason = messages.length > 0 ? messages.join(", ") : "Classic battle configuration failed";
+    throw new Error(reason);
+  }
+
+  return result;
+}
+
+/**
  * Wait for battle state using Test API instead of DOM polling.
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {string} expectedState - The state to wait for
@@ -157,6 +209,157 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   }
 
   await page.waitForSelector(`[data-battle-state="${expectedState}"]`, { timeout });
+}
+
+/**
+ * Wait for stat buttons to report ready using the Test API helper when available.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {object} options - Options object
+ * @param {number} [options.timeout=STAT_WAIT_TIMEOUT_MS] - Timeout in ms
+ * @param {boolean} [options.allowFallback=true] - Allow DOM fallback when Test API unavailable
+ * @returns {Promise<void>}
+ */
+export async function waitForStatButtonsReady(page, options = {}) {
+  const { timeout = STAT_WAIT_TIMEOUT_MS, allowFallback = true } = options;
+
+  await waitForTestApi(page, { timeout });
+
+  const apiStatus = await page.evaluate(
+    ({ waitTimeout }) => {
+      try {
+        const stateApi = window.__TEST_API?.state;
+        if (stateApi && typeof stateApi.waitForStatButtonsReady === "function") {
+          return stateApi.waitForStatButtonsReady.call(stateApi, waitTimeout);
+        }
+      } catch {}
+      return null;
+    },
+    { waitTimeout: timeout }
+  );
+
+  if (apiStatus === true) {
+    return;
+  }
+
+  if (apiStatus === false) {
+    if (!allowFallback) {
+      throw new Error(`Stat buttons did not report ready within ${timeout}ms via Test API`);
+    }
+  } else if (apiStatus === null && !allowFallback) {
+    throw new Error("Test API waitForStatButtonsReady unavailable and fallback disabled");
+  }
+
+  if (!allowFallback) {
+    return;
+  }
+
+  const fallbackSelector =
+    '#stat-buttons[data-buttons-ready="true"], [data-testid="stat-buttons"][data-buttons-ready="true"]';
+
+  const handle = await page.waitForSelector(fallbackSelector, { timeout });
+  await handle?.dispose();
+}
+
+/**
+ * Wait for match completion payload using the Test API when available.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {object} options - Options object
+ * @param {number} [options.timeout=MATCH_COMPLETION_TIMEOUT_MS] - Timeout in ms
+ * @param {boolean} [options.allowFallback=false] - Allow DOM fallback when Test API unavailable
+ * @returns {Promise<object>} Match completion payload
+ */
+export async function waitForMatchCompletion(page, options = {}) {
+  const { timeout = MATCH_COMPLETION_TIMEOUT_MS, allowFallback = false } = options;
+
+  await waitForTestApi(page, { timeout });
+
+  const payload = await page.evaluate(
+    ({ waitTimeout }) => {
+      try {
+        const stateApi = window.__TEST_API?.state;
+        if (stateApi && typeof stateApi.waitForMatchCompletion === "function") {
+          return stateApi.waitForMatchCompletion.call(stateApi, waitTimeout);
+        }
+      } catch {}
+      return null;
+    },
+    { waitTimeout: timeout }
+  );
+
+  if (payload && typeof payload === "object" && payload !== null && "timedOut" in payload) {
+    return payload;
+  }
+
+  if (!allowFallback) {
+    throw new Error("Test API waitForMatchCompletion unavailable and fallback disabled");
+  }
+
+  await page.waitForSelector("#match-end-modal", { timeout });
+
+  return {
+    eventName: "match.concluded",
+    detail: null,
+    scores: null,
+    winner: null,
+    reason: null,
+    elapsedMs: timeout,
+    timedOut: false,
+    dom: null
+  };
+}
+
+/**
+ * Set the Classic Battle points-to-win target using the Test API.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {number} pointsToWin - Target number of points required to win the match
+ * @param {object} [options] - Options object
+ * @param {number} [options.timeout=5_000] - Timeout in ms
+ * @param {boolean} [options.confirm=true] - Confirm target via waitForPointsToWin when available
+ * @returns {Promise<void>}
+ */
+export async function setPointsToWin(page, pointsToWin, options = {}) {
+  const { timeout = 5_000, confirm = true } = options;
+
+  if (!Number.isFinite(Number(pointsToWin))) {
+    throw new Error(`Invalid pointsToWin value: ${pointsToWin}`);
+  }
+
+  await waitForTestApi(page, { timeout });
+
+  const result = await page.evaluate(
+    async ({ targetPoints, waitTimeout, shouldConfirm }) => {
+      try {
+        const engineApi = window.__TEST_API?.engine;
+        if (!engineApi || typeof engineApi.setPointsToWin !== "function") {
+          return { ok: false, reason: "engine.setPointsToWin unavailable" };
+        }
+
+        const applied = engineApi.setPointsToWin(targetPoints);
+        if (!applied) {
+          return { ok: false, reason: "engine.setPointsToWin returned false" };
+        }
+
+        if (shouldConfirm && typeof engineApi.waitForPointsToWin === "function") {
+          const confirmed = await engineApi.waitForPointsToWin(targetPoints, waitTimeout);
+          if (!confirmed) {
+            return { ok: false, reason: "Timed out confirming pointsToWin" };
+          }
+        }
+
+        return { ok: true, reason: null };
+      } catch (error) {
+        return {
+          ok: false,
+          reason: error instanceof Error ? error.message : String(error ?? "unknown error")
+        };
+      }
+    },
+    { targetPoints: Number(pointsToWin), waitTimeout: timeout, shouldConfirm: confirm !== false }
+  );
+
+  if (!result?.ok) {
+    throw new Error(result?.reason ?? "Failed to set points-to-win target");
+  }
 }
 
 /**
