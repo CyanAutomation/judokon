@@ -163,6 +163,21 @@ describe("queryRag offline mode with local MiniLM model", () => {
   it("uses lexical fallback when RAG_ALLOW_LEXICAL_FALLBACK=1 and model unavailable", async () => {
     process.env.RAG_ALLOW_LEXICAL_FALLBACK = "1";
 
+    const lexicalDataset = [
+      {
+        id: "lexical-hit",
+        text: "Offline tooltip instructions are documented for judges",
+        sparseVector: { offline: 1, tooltip: 2, instructions: 1 },
+        tags: ["docs", "tooltip"],
+        source: "docs/offline-tooltip.md"
+      }
+    ];
+
+    const vectorSearchModule = await import("../../src/helpers/vectorSearch/index.js");
+    const loadEmbeddingsSpy = vi
+      .spyOn(vectorSearchModule.default, "loadEmbeddings")
+      .mockResolvedValue(lexicalDataset);
+
     // Ensure model loading fails
     vi.doMock("fs/promises", () => ({
       stat: vi.fn(async () => {
@@ -184,10 +199,15 @@ describe("queryRag offline mode with local MiniLM model", () => {
 
     const { default: queryRag } = await import("../../src/helpers/queryRag.js");
 
-    // Should fall back to lexical without error
-    const results = await queryRag("tooltip");
-    expect(results).toBeDefined();
-    expect(results.length).toBeGreaterThan(0);
+    try {
+      // Should fall back to lexical without error
+      const results = await queryRag("tooltip");
+      expect(results).toBeDefined();
+      expect(results.length).toBeGreaterThan(0);
+      expect(results[0].id).toBe("lexical-hit");
+    } finally {
+      loadEmbeddingsSpy.mockRestore();
+    }
   });
 
   /**
