@@ -1,8 +1,130 @@
 import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
+import { buildFeatureFlagSnapshot } from "../../src/helpers/featureFlagSnapshot.js";
 
 const DEFAULT_TIMEOUT = 5000;
 const POLL_INTERVAL_MS = 50;
 const DEFAULT_FLAG_MAP = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.featureFlags || {}));
+const BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE = `(${buildFeatureFlagSnapshot.toString()})`;
+
+let callbackCounter = 0;
+
+function browserComputeFeatureFlagSnapshot({ defaults, buildSnapshotSource }) {
+  const resolveBuilder = () => {
+    if (
+      typeof window !== "undefined" &&
+      window.__PW_BUILD_FEATURE_FLAG_SNAPSHOT &&
+      typeof window.__PW_BUILD_FEATURE_FLAG_SNAPSHOT === "function"
+    ) {
+      return window.__PW_BUILD_FEATURE_FLAG_SNAPSHOT;
+    }
+    try {
+      const fn = eval(buildSnapshotSource);
+      if (typeof fn === "function") {
+        if (typeof window !== "undefined") {
+          window.__PW_BUILD_FEATURE_FLAG_SNAPSHOT = fn;
+        }
+        return fn;
+      }
+    } catch {}
+    return null;
+  };
+
+  const buildSnapshot = resolveBuilder();
+  const safeDefaults =
+    defaults && typeof defaults === "object" && !Array.isArray(defaults) ? defaults : {};
+
+  try {
+    const inspectApi =
+      (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
+      (typeof window !== "undefined" && window.__INSPECT_API) ||
+      null;
+    if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
+      const snapshot = inspectApi.getFeatureFlags();
+      if (snapshot && typeof snapshot === "object") {
+        return snapshot;
+      }
+    }
+  } catch {}
+
+  let persisted = {};
+  try {
+    const raw =
+      typeof window !== "undefined" &&
+      typeof window.localStorage !== "undefined" &&
+      typeof window.localStorage.getItem === "function"
+        ? window.localStorage.getItem("settings")
+        : null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.featureFlags === "object" && parsed.featureFlags !== null) {
+        persisted = parsed.featureFlags;
+      }
+    }
+  } catch {}
+
+  let overrides = {};
+  try {
+    if (
+      typeof window !== "undefined" &&
+      window.__FF_OVERRIDES &&
+      typeof window.__FF_OVERRIDES === "object"
+    ) {
+      overrides = window.__FF_OVERRIDES;
+    }
+  } catch {}
+
+  if (buildSnapshot) {
+    try {
+      return buildSnapshot({
+        defaults: safeDefaults,
+        persisted,
+        overrides
+      });
+    } catch {}
+  }
+
+  const names = Array.from(
+    new Set([
+      ...Object.keys(safeDefaults),
+      ...Object.keys(persisted || {}),
+      ...Object.keys(overrides || {})
+    ])
+  );
+  const snapshot = {};
+  for (const name of names) {
+    if (!name) {
+      continue;
+    }
+
+    const storedEntry = persisted?.[name];
+    const defaultEntry = safeDefaults?.[name];
+    const storedEnabled =
+      storedEntry && typeof storedEntry === "object" && !Array.isArray(storedEntry)
+        ? storedEntry.enabled
+        : defaultEntry?.enabled;
+    const storedBoolean = storedEnabled === true || storedEnabled === false;
+    const hasOverride = Object.prototype.hasOwnProperty.call(overrides, name);
+    const overrideValue = hasOverride ? overrides[name] : undefined;
+    const enabled = hasOverride
+      ? !!overrideValue
+      : storedBoolean
+        ? storedEnabled
+        : !!defaultEntry?.enabled;
+
+    snapshot[name] = {
+      enabled,
+      stored: storedBoolean ? storedEnabled : !!defaultEntry?.enabled
+    };
+
+    if (hasOverride) {
+      snapshot[name].override = !!overrideValue;
+    }
+  }
+
+  return snapshot;
+}
+
+const COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE = `(${browserComputeFeatureFlagSnapshot.toString()})`;
 
 /**
  * Normalize timeout values passed to helper functions.
@@ -56,95 +178,46 @@ export function resolveFeatureFlagEnabled(snapshot, flagName) {
  * @returns {Promise<Record<string, any> | null>}
  */
 export async function getFeatureFlagsSnapshot(page) {
-  return page.evaluate(({ defaults }) => {
-    const readOverrides = () => {
+  return page.evaluate(
+    ({ defaults, computeSnapshotSource, buildSnapshotSource }) => {
       try {
-        if (
+        const computeSnapshot =
           typeof window !== "undefined" &&
-          window.__FF_OVERRIDES &&
-          typeof window.__FF_OVERRIDES === "object"
-        ) {
-          return window.__FF_OVERRIDES;
-        }
-      } catch {}
-      return {};
-    };
+          window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT &&
+          typeof window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT === "function"
+            ? window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT
+            : (() => {
+                try {
+                  const fn = eval(computeSnapshotSource);
+                  if (typeof fn === "function") {
+                    if (typeof window !== "undefined") {
+                      window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT = fn;
+                    }
+                    return fn;
+                  }
+                } catch {}
+                return null;
+              })();
 
-    const computeSnapshotFromSources = () => {
-      let persisted = {};
-      try {
-        const raw =
-          typeof window !== "undefined" &&
-          typeof window.localStorage !== "undefined" &&
-          typeof window.localStorage.getItem === "function"
-            ? window.localStorage.getItem("settings")
-            : null;
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed.featureFlags === "object" && parsed.featureFlags !== null) {
-            persisted = parsed.featureFlags;
+        if (computeSnapshot) {
+          const snapshot = computeSnapshot({
+            defaults,
+            buildSnapshotSource
+          });
+          if (snapshot && typeof snapshot === "object") {
+            return snapshot;
           }
         }
       } catch {}
 
-      const overrides = readOverrides();
-      const names = Array.from(
-        new Set([
-          ...Object.keys(defaults || {}),
-          ...Object.keys(persisted || {}),
-          ...Object.keys(overrides || {})
-        ])
-      );
-
-      const snapshot = {};
-      for (const name of names) {
-        if (!name) {
-          continue;
-        }
-
-        const storedEntry = persisted?.[name];
-        const defaultEntry = defaults?.[name];
-        const storedEnabled =
-          storedEntry && typeof storedEntry === "object" && !Array.isArray(storedEntry)
-            ? storedEntry.enabled
-            : defaultEntry?.enabled;
-        const storedBoolean = storedEnabled === true || storedEnabled === false;
-        const hasOverride = Object.prototype.hasOwnProperty.call(overrides, name);
-        const overrideValue = hasOverride ? overrides[name] : undefined;
-        const enabled = hasOverride
-          ? !!overrideValue
-          : storedBoolean
-            ? storedEnabled
-            : !!defaultEntry?.enabled;
-
-        snapshot[name] = {
-          enabled,
-          stored: storedBoolean ? storedEnabled : !!defaultEntry?.enabled
-        };
-
-        if (hasOverride) {
-          snapshot[name].override = !!overrideValue;
-        }
-      }
-
-      return snapshot;
-    };
-
-    try {
-      const inspectApi =
-        (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
-        (typeof window !== "undefined" && window.__INSPECT_API) ||
-        null;
-      if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
-        const snapshot = inspectApi.getFeatureFlags();
-        if (snapshot && typeof snapshot === "object") {
-          return snapshot;
-        }
-      }
-    } catch {}
-
-    return computeSnapshotFromSources();
-  }, { defaults: DEFAULT_FLAG_MAP });
+      return {};
+    },
+    {
+      defaults: DEFAULT_FLAG_MAP,
+      computeSnapshotSource: COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE,
+      buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE
+    }
+  );
 }
 
 /**
@@ -167,7 +240,9 @@ function delay(ms) {
  * @returns {Promise<Record<string, any> | null>}
  */
 async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
-  const callbackName = `__pwFeatureFlags_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const callbackName = `__pwFeatureFlags_${++callbackCounter}_${Math.random()
+    .toString(36)
+    .slice(2)}`;
 
   const cleanup = async () => {
     try {
@@ -234,98 +309,43 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
 
   let subscribed = false;
   try {
-    subscribed = await page.evaluate(({ callbackName, defaults }) => {
-      const computeSnapshot = () => {
-        try {
-          const inspectApi =
-            (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
-            (typeof window !== "undefined" && window.__INSPECT_API) ||
-            null;
-          if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
-            const snapshot = inspectApi.getFeatureFlags();
-            if (snapshot && typeof snapshot === "object") {
-              return snapshot;
-            }
-          }
-        } catch {}
-
-        let persisted = {};
-        try {
-          const raw =
-            typeof window !== "undefined" &&
-            typeof window.localStorage !== "undefined" &&
-            typeof window.localStorage.getItem === "function"
-              ? window.localStorage.getItem("settings")
-              : null;
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && typeof parsed.featureFlags === "object" && parsed.featureFlags !== null) {
-              persisted = parsed.featureFlags;
-            }
-          }
-        } catch {}
-
-        let overrides = {};
-        try {
+    subscribed = await page.evaluate(
+      ({ callbackName, defaults, computeSnapshotSource, buildSnapshotSource }) => {
+        const resolveCompute = () => {
           if (
             typeof window !== "undefined" &&
-            window.__FF_OVERRIDES &&
-            typeof window.__FF_OVERRIDES === "object"
+            window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT &&
+            typeof window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT === "function"
           ) {
-            overrides = window.__FF_OVERRIDES;
+            return window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT;
           }
-        } catch {}
+          try {
+            const fn = eval(computeSnapshotSource);
+            if (typeof fn === "function") {
+              if (typeof window !== "undefined") {
+                window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT = fn;
+              }
+              return fn;
+            }
+          } catch {}
+          return null;
+        };
 
-        const names = Array.from(
-          new Set([
-            ...Object.keys(defaults || {}),
-            ...Object.keys(persisted || {}),
-            ...Object.keys(overrides || {})
-          ])
-        );
+        const computeSnapshot = resolveCompute();
 
-        const snapshot = {};
-        for (const name of names) {
-          if (!name) {
-            continue;
+        const emitSnapshot = () => {
+          try {
+            const snapshot = computeSnapshot
+              ? computeSnapshot({
+                  defaults,
+                  buildSnapshotSource
+                })
+              : null;
+            window[callbackName]?.({ snapshot });
+          } catch {
+            window[callbackName]?.({ snapshot: null });
           }
-
-          const storedEntry = persisted?.[name];
-          const defaultEntry = defaults?.[name];
-          const storedEnabled =
-            storedEntry && typeof storedEntry === "object" && !Array.isArray(storedEntry)
-              ? storedEntry.enabled
-              : defaultEntry?.enabled;
-          const storedBoolean = storedEnabled === true || storedEnabled === false;
-          const hasOverride = Object.prototype.hasOwnProperty.call(overrides, name);
-          const overrideValue = hasOverride ? overrides[name] : undefined;
-          const enabled = hasOverride
-            ? !!overrideValue
-            : storedBoolean
-              ? storedEnabled
-              : !!defaultEntry?.enabled;
-
-          snapshot[name] = {
-            enabled,
-            stored: storedBoolean ? storedEnabled : !!defaultEntry?.enabled
-          };
-
-          if (hasOverride) {
-            snapshot[name].override = !!overrideValue;
-          }
-        }
-
-        return snapshot;
-      };
-
-      const emitSnapshot = () => {
-        try {
-          const snapshot = computeSnapshot();
-          window[callbackName]?.({ snapshot });
-        } catch {
-          window[callbackName]?.({ snapshot: null });
-        }
-      };
+        };
 
       const inspectApi =
         (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
@@ -346,7 +366,14 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
       emitter.addEventListener("change", handler);
       emitSnapshot();
       return true;
-    }, { callbackName, defaults: DEFAULT_FLAG_MAP });
+      },
+      {
+        callbackName,
+        defaults: DEFAULT_FLAG_MAP,
+        computeSnapshotSource: COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE,
+        buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE
+      }
+    );
   } catch (error) {
     finalize(null, error instanceof Error ? error : new Error(String(error ?? "subscribe failed")));
     return waitPromise;
