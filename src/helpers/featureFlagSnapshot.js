@@ -33,7 +33,9 @@ export function buildFeatureFlagSnapshot(options = {}) {
     const normalizedPersisted = isPlainObject(persistedEntry) ? persistedEntry.enabled : persistedEntry;
     const normalizedDefault = isPlainObject(defaultEntry) ? defaultEntry.enabled : defaultEntry;
     const storedIsBoolean = typeof normalizedPersisted === "boolean";
-    const storedEnabled = storedIsBoolean ? normalizedPersisted : normalizedDefault;
+    const normalizedDefaultBoolean =
+      typeof normalizedDefault === "boolean" ? normalizedDefault : !!normalizedDefault;
+    const storedEnabled = storedIsBoolean ? normalizedPersisted : normalizedDefaultBoolean;
     const hasOverride = Object.prototype.hasOwnProperty.call(overrideFlags, flagName);
     const overrideValue = hasOverride ? overrideFlags[flagName] : undefined;
 
@@ -45,12 +47,8 @@ export function buildFeatureFlagSnapshot(options = {}) {
 
     snapshot[flagName] = {
       enabled,
-      stored: typeof normalizedDefault === "boolean" ? normalizedDefault : !!normalizedDefault
+      stored: storedEnabled
     };
-
-    if (storedIsBoolean) {
-      snapshot[flagName].stored = normalizedPersisted;
-    }
 
     if (hasOverride) {
       snapshot[flagName].override = !!overrideValue;
