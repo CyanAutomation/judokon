@@ -1,9 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { waitForBattleReady, waitForBattleState } from "./helpers/battleStateHelper.js";
 import { completeRoundViaApi } from "./helpers/battleApiHelper.js";
+import { configureApp } from "./fixtures/appConfig.js";
 
 const CLASSIC_BATTLE_URL = "/src/pages/battleClassic.html";
 const WAIT_TIMEOUT = 7_500;
+const MATCH_COMPLETION_MAX_ROUNDS = 10;
 
 async function launchQuickClassicBattle(page) {
   await page.addInitScript(() => {
@@ -43,32 +45,43 @@ test.describe("Classic Battle – API helpers", () => {
   });
 
   test("completeRoundViaApi reports success when match ends on resolution", async ({ page }) => {
+    const app = await configureApp(page, {
+      battle: { pointsToWin: 1 }
+    });
+
     await launchQuickClassicBattle(page);
-    const matchEndStates = new Set(["matchDecision", "matchOver"]);
-    let completion = null;
 
-    for (let roundIndex = 0; roundIndex < 5; roundIndex += 1) {
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: WAIT_TIMEOUT });
+    try {
+      await app.applyRuntime();
+      const matchEndStates = new Set(["matchDecision", "matchOver"]);
+      let completion = null;
 
-      const firstStatButton = page.getByTestId("stat-button").first();
-      await expect(firstStatButton).toBeVisible();
-      await firstStatButton.click();
+      // Loop up to MATCH_COMPLETION_MAX_ROUNDS rounds; pointsToWin=1 ends after the
+      // first decisive result, but draws may require additional attempts.
+      for (let roundIndex = 0; roundIndex < MATCH_COMPLETION_MAX_ROUNDS; roundIndex += 1) {
+        await waitForBattleState(page, "waitingForPlayerAction", { timeout: WAIT_TIMEOUT });
 
-      completion = await completeRoundViaApi(page, {
-        outcomeEvent: "outcome=winPlayer",
-        options: { expireSelection: false }
-      });
+        const firstStatButton = page.getByTestId("stat-button").first();
+        await expect(firstStatButton).toBeVisible();
+        await firstStatButton.click();
 
-      expect(completion.ok).toBe(true);
+        completion = await completeRoundViaApi(page, {
+          options: { expireSelection: false }
+        });
 
-      if (matchEndStates.has(completion.finalState)) {
-        break;
+        expect(completion.ok).toBe(true);
+
+        if (matchEndStates.has(completion.finalState)) {
+          break;
+        }
+
+        await waitForBattleState(page, "waitingForPlayerAction", { timeout: WAIT_TIMEOUT });
       }
 
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: WAIT_TIMEOUT });
+      expect(completion).not.toBeNull();
+      expect(matchEndStates.has(completion.finalState)).toBe(true);
+    } finally {
+      await app.cleanup();
     }
-
-    expect(completion).not.toBeNull();
-    expect(matchEndStates.has(completion.finalState)).toBe(true);
   });
 });
