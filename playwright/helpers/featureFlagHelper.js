@@ -4,11 +4,67 @@ import { buildFeatureFlagSnapshot } from "../../src/helpers/featureFlagSnapshot.
 const DEFAULT_TIMEOUT = 5000;
 const POLL_INTERVAL_MS = 50;
 const DEFAULT_FLAG_MAP = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.featureFlags || {}));
-const BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE = `(${buildFeatureFlagSnapshot.toString()})`;
+
+function instantiateBrowserFunction(source, cacheProperty) {
+  if (typeof source !== "string" || !source.trim()) {
+    return null;
+  }
+
+  let factory;
+  try {
+    // eslint-disable-next-line no-new-func
+    factory = new Function(`return (${source});`);
+  } catch {
+    return null;
+  }
+
+  let candidate;
+  try {
+    candidate = factory();
+  } catch {
+    return null;
+  }
+
+  if (typeof candidate !== "function") {
+    return null;
+  }
+
+  if (
+    cacheProperty &&
+    typeof window !== "undefined" &&
+    window &&
+    typeof window === "object"
+  ) {
+    try {
+      window[cacheProperty] = candidate;
+    } catch {}
+  }
+
+  return candidate;
+}
+
+const INSTANTIATE_BROWSER_FUNCTION_SOURCE = `(${instantiateBrowserFunction.toString()})`;
+const BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE = buildFeatureFlagSnapshot.toString();
 
 let callbackCounter = 0;
 
-function browserComputeFeatureFlagSnapshot({ defaults, buildSnapshotSource }) {
+function browserComputeFeatureFlagSnapshot({ defaults, buildSnapshotSource, instantiateSource }) {
+  const loadInstantiate = () => {
+    if (typeof instantiateSource !== "string") {
+      return null;
+    }
+    try {
+      // eslint-disable-next-line no-new-func
+      const factory = new Function(`return (${instantiateSource});`);
+      const candidate = factory();
+      return typeof candidate === "function" ? candidate : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const instantiate = loadInstantiate();
+
   const resolveBuilder = () => {
     if (
       typeof window !== "undefined" &&
@@ -17,114 +73,96 @@ function browserComputeFeatureFlagSnapshot({ defaults, buildSnapshotSource }) {
     ) {
       return window.__PW_BUILD_FEATURE_FLAG_SNAPSHOT;
     }
+    if (!instantiate) {
+      return null;
+    }
+    return instantiate(buildSnapshotSource, "__PW_BUILD_FEATURE_FLAG_SNAPSHOT");
+  };
+
+  const safeDefaults =
+    defaults && typeof defaults === "object" && !Array.isArray(defaults) ? defaults : {};
+  const buildSnapshot = resolveBuilder();
+
+  const readInspectSnapshot = () => {
     try {
-      const fn = eval(buildSnapshotSource);
-      if (typeof fn === "function") {
-        if (typeof window !== "undefined") {
-          window.__PW_BUILD_FEATURE_FLAG_SNAPSHOT = fn;
+      const inspectApi =
+        (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
+        (typeof window !== "undefined" && window.__INSPECT_API) ||
+        null;
+      if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
+        const snapshot = inspectApi.getFeatureFlags();
+        if (snapshot && typeof snapshot === "object") {
+          return snapshot;
         }
-        return fn;
       }
     } catch {}
     return null;
   };
 
-  const buildSnapshot = resolveBuilder();
-  const safeDefaults =
-    defaults && typeof defaults === "object" && !Array.isArray(defaults) ? defaults : {};
-
-  try {
-    const inspectApi =
-      (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
-      (typeof window !== "undefined" && window.__INSPECT_API) ||
-      null;
-    if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
-      const snapshot = inspectApi.getFeatureFlags();
-      if (snapshot && typeof snapshot === "object") {
-        return snapshot;
-      }
-    }
-  } catch {}
-
-  let persisted = {};
-  try {
-    const raw =
-      typeof window !== "undefined" &&
-      typeof window.localStorage !== "undefined" &&
-      typeof window.localStorage.getItem === "function"
-        ? window.localStorage.getItem("settings")
-        : null;
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed.featureFlags === "object" && parsed.featureFlags !== null) {
-        persisted = parsed.featureFlags;
-      }
-    }
-  } catch {}
-
-  let overrides = {};
-  try {
-    if (
-      typeof window !== "undefined" &&
-      window.__FF_OVERRIDES &&
-      typeof window.__FF_OVERRIDES === "object"
-    ) {
-      overrides = window.__FF_OVERRIDES;
-    }
-  } catch {}
-
-  if (buildSnapshot) {
+  const readPersistedFeatureFlags = () => {
     try {
-      return buildSnapshot({
+      const raw =
+        typeof window !== "undefined" &&
+        typeof window.localStorage !== "undefined" &&
+        typeof window.localStorage.getItem === "function"
+          ? window.localStorage.getItem("settings")
+          : null;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.featureFlags === "object" && parsed.featureFlags !== null) {
+          return parsed.featureFlags;
+        }
+      }
+    } catch {}
+    return {};
+  };
+
+  const readOverrides = () => {
+    try {
+      if (
+        typeof window !== "undefined" &&
+        window.__FF_OVERRIDES &&
+        typeof window.__FF_OVERRIDES === "object"
+      ) {
+        return window.__FF_OVERRIDES;
+      }
+    } catch {}
+    return {};
+  };
+
+  const buildSnapshotSafely = (builder, persisted, overrides) => {
+    if (!builder) {
+      return null;
+    }
+    try {
+      const snapshot = builder({
         defaults: safeDefaults,
         persisted,
         overrides
       });
-    } catch {}
+      return snapshot && typeof snapshot === "object" ? snapshot : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const inspectSnapshot = readInspectSnapshot();
+  if (inspectSnapshot) {
+    return inspectSnapshot;
   }
 
-  const names = Array.from(
-    new Set([
-      ...Object.keys(safeDefaults),
-      ...Object.keys(persisted || {}),
-      ...Object.keys(overrides || {})
-    ])
-  );
-  const snapshot = {};
-  for (const name of names) {
-    if (!name) {
-      continue;
-    }
+  const persisted = readPersistedFeatureFlags();
+  const overrides = readOverrides();
 
-    const storedEntry = persisted?.[name];
-    const defaultEntry = safeDefaults?.[name];
-    const storedEnabled =
-      storedEntry && typeof storedEntry === "object" && !Array.isArray(storedEntry)
-        ? storedEntry.enabled
-        : defaultEntry?.enabled;
-    const storedBoolean = storedEnabled === true || storedEnabled === false;
-    const hasOverride = Object.prototype.hasOwnProperty.call(overrides, name);
-    const overrideValue = hasOverride ? overrides[name] : undefined;
-    const enabled = hasOverride
-      ? !!overrideValue
-      : storedBoolean
-        ? storedEnabled
-        : !!defaultEntry?.enabled;
-
-    snapshot[name] = {
-      enabled,
-      stored: storedBoolean ? storedEnabled : !!defaultEntry?.enabled
-    };
-
-    if (hasOverride) {
-      snapshot[name].override = !!overrideValue;
-    }
+  const computed = buildSnapshotSafely(buildSnapshot, persisted, overrides);
+  if (computed) {
+    return computed;
   }
 
-  return snapshot;
+  return {};
 }
 
-const COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE = `(${browserComputeFeatureFlagSnapshot.toString()})`;
+const COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE = browserComputeFeatureFlagSnapshot.toString();
 
 /**
  * Normalize timeout values passed to helper functions.
@@ -179,30 +217,44 @@ export function resolveFeatureFlagEnabled(snapshot, flagName) {
  */
 export async function getFeatureFlagsSnapshot(page) {
   return page.evaluate(
-    ({ defaults, computeSnapshotSource, buildSnapshotSource }) => {
-      try {
-        const computeSnapshot =
+    ({ defaults, computeSnapshotSource, buildSnapshotSource, instantiateSource }) => {
+      const loadInstantiate = () => {
+        if (typeof instantiateSource !== "string") {
+          return null;
+        }
+        try {
+          // eslint-disable-next-line no-new-func
+          const factory = new Function(`return (${instantiateSource});`);
+          const candidate = factory();
+          return typeof candidate === "function" ? candidate : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const instantiate = loadInstantiate();
+
+      const resolveCompute = () => {
+        if (
           typeof window !== "undefined" &&
           window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT &&
           typeof window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT === "function"
-            ? window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT
-            : (() => {
-                try {
-                  const fn = eval(computeSnapshotSource);
-                  if (typeof fn === "function") {
-                    if (typeof window !== "undefined") {
-                      window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT = fn;
-                    }
-                    return fn;
-                  }
-                } catch {}
-                return null;
-              })();
+        ) {
+          return window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT;
+        }
+        if (!instantiate) {
+          return null;
+        }
+        return instantiate(computeSnapshotSource, "__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT");
+      };
 
+      try {
+        const computeSnapshot = resolveCompute();
         if (computeSnapshot) {
           const snapshot = computeSnapshot({
             defaults,
-            buildSnapshotSource
+            buildSnapshotSource,
+            instantiateSource
           });
           if (snapshot && typeof snapshot === "object") {
             return snapshot;
@@ -215,7 +267,8 @@ export async function getFeatureFlagsSnapshot(page) {
     {
       defaults: DEFAULT_FLAG_MAP,
       computeSnapshotSource: COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE,
-      buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE
+      buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE,
+      instantiateSource: INSTANTIATE_BROWSER_FUNCTION_SOURCE
     }
   );
 }
@@ -240,9 +293,7 @@ function delay(ms) {
  * @returns {Promise<Record<string, any> | null>}
  */
 async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
-  const callbackName = `__pwFeatureFlags_${++callbackCounter}_${Math.random()
-    .toString(36)
-    .slice(2)}`;
+  const callbackName = `__pwFeatureFlags_${++callbackCounter}`;
 
   const cleanup = async () => {
     try {
@@ -310,7 +361,29 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
   let subscribed = false;
   try {
     subscribed = await page.evaluate(
-      ({ callbackName, defaults, computeSnapshotSource, buildSnapshotSource }) => {
+      ({
+        callbackName,
+        defaults,
+        computeSnapshotSource,
+        buildSnapshotSource,
+        instantiateSource
+      }) => {
+        const loadInstantiate = () => {
+          if (typeof instantiateSource !== "string") {
+            return null;
+          }
+          try {
+            // eslint-disable-next-line no-new-func
+            const factory = new Function(`return (${instantiateSource});`);
+            const candidate = factory();
+            return typeof candidate === "function" ? candidate : null;
+          } catch {
+            return null;
+          }
+        };
+
+        const instantiate = loadInstantiate();
+
         const resolveCompute = () => {
           if (
             typeof window !== "undefined" &&
@@ -319,16 +392,10 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
           ) {
             return window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT;
           }
-          try {
-            const fn = eval(computeSnapshotSource);
-            if (typeof fn === "function") {
-              if (typeof window !== "undefined") {
-                window.__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT = fn;
-              }
-              return fn;
-            }
-          } catch {}
-          return null;
+          if (!instantiate) {
+            return null;
+          }
+          return instantiate(computeSnapshotSource, "__PW_COMPUTE_FEATURE_FLAG_SNAPSHOT");
         };
 
         const computeSnapshot = resolveCompute();
@@ -338,7 +405,8 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
             const snapshot = computeSnapshot
               ? computeSnapshot({
                   defaults,
-                  buildSnapshotSource
+                  buildSnapshotSource,
+                  instantiateSource
                 })
               : null;
             window[callbackName]?.({ snapshot });
@@ -371,7 +439,8 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
         callbackName,
         defaults: DEFAULT_FLAG_MAP,
         computeSnapshotSource: COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE,
-        buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE
+        buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE,
+        instantiateSource: INSTANTIATE_BROWSER_FUNCTION_SOURCE
       }
     );
   } catch (error) {
