@@ -685,22 +685,25 @@ const stateApi = {
       }
     } catch {}
 
+    const remaining = Math.max(0, timeout - (Date.now() - startTime));
+    if (remaining === 0) {
+      return buttonsInteractive();
+    }
+
     return await new Promise((resolve) => {
-      const check = () => {
+      const deadline = Date.now() + remaining;
+      const intervalId = setInterval(() => {
         if (buttonsInteractive()) {
+          clearInterval(intervalId);
           resolve(true);
           return;
         }
 
-        if (Date.now() - startTime > timeout) {
+        if (Date.now() >= deadline) {
+          clearInterval(intervalId);
           resolve(false);
-          return;
         }
-
-        setTimeout(check, 50);
-      };
-
-      check();
+      }, 50);
     });
   },
 
