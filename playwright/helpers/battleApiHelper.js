@@ -71,7 +71,7 @@ export async function completeRoundViaApi(page, roundInput = {}) {
           ...(input?.options ?? {})
         };
 
-        if (Object.prototype.hasOwnProperty.call(input ?? {}, "outcomeEvent")) {
+        if (Object.hasOwn(input ?? {}, "outcomeEvent")) {
           options.outcomeEvent = input.outcomeEvent;
         }
 
