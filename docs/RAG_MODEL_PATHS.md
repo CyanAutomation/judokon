@@ -29,15 +29,15 @@ Both the model preparation script and the loader set the same configuration:
 **Preparation Script** (`scripts/prepareLocalModel.mjs`):
 
 ```javascript
-const destRoot = path.resolve(__dirname, "..");  // Repository root
-env.localModelPath = destRoot;                   // Set to repo root
+const destRoot = path.resolve(__dirname, ".."); // Repository root
+env.localModelPath = destRoot; // Set to repo root
 ```
 
 **Loader** (`src/helpers/api/vectorSearchPage.js`):
 
 ```javascript
-const rootDir = resolve(moduleDir, "..", "..", "..");  // Repository root
-env.localModelPath = rootDir;                          // Set to repo root
+const rootDir = resolve(moduleDir, "..", "..", ".."); // Repository root
+env.localModelPath = rootDir; // Set to repo root
 ```
 
 ### Step 2: Model Resolution
@@ -106,11 +106,11 @@ judokon/
 
    ```javascript
    // ✅ Correct
-   env.localModelPath = destRoot;  // or rootDir - both are repo root
+   env.localModelPath = destRoot; // or rootDir - both are repo root
 
    // ❌ Incorrect
-   env.localModelPath = "models/minilm";  // relative path
-   env.localModelPath = destDir;          // wrong variable
+   env.localModelPath = "models/minilm"; // relative path
+   env.localModelPath = destDir; // wrong variable
    ```
 
 ### Issue 2: Model files are placeholders (wrong size)
@@ -243,7 +243,7 @@ If you have limited network access:
    ```bash
    # On source machine with internet
    npm run rag:prepare:models
-   
+
    # Copy the models/minilm directory to target
    cp -r models/minilm /path/to/transport/
    ```
@@ -266,23 +266,23 @@ If you have limited network access:
 
 ### In `scripts/prepareLocalModel.mjs`
 
-| Variable | Value | Purpose |
-|----------|-------|---------|
-| `__dirname` | `scripts/` | Directory of this file |
-| `rootDir` (aliased as `destRoot`) | Repository root | Base for all paths |
-| `destDir` | `models/minilm` | Where model files land |
-| `cacheDir` | `models/` | Cache directory for Transformers.js |
-| `env.localModelPath` | `rootDir` | ✅ **Correct** - repo root |
+| Variable                          | Value           | Purpose                             |
+| --------------------------------- | --------------- | ----------------------------------- |
+| `__dirname`                       | `scripts/`      | Directory of this file              |
+| `rootDir` (aliased as `destRoot`) | Repository root | Base for all paths                  |
+| `destDir`                         | `models/minilm` | Where model files land              |
+| `cacheDir`                        | `models/`       | Cache directory for Transformers.js |
+| `env.localModelPath`              | `rootDir`       | ✅ **Correct** - repo root          |
 
 ### In `src/helpers/api/vectorSearchPage.js`
 
-| Variable | Value | Purpose |
-|----------|-------|---------|
-| `moduleDir` | `src/helpers/api/` | Directory of this file |
-| `rootDir` | Repository root | Base for all paths |
-| `modelDir` | `models/minilm` | Relative path to model |
-| `modelDirAbs` | `<rootDir>/models/minilm` | Absolute path |
-| `env.localModelPath` | `rootDir` | ✅ **Correct** - repo root |
+| Variable             | Value                     | Purpose                    |
+| -------------------- | ------------------------- | -------------------------- |
+| `moduleDir`          | `src/helpers/api/`        | Directory of this file     |
+| `rootDir`            | Repository root           | Base for all paths         |
+| `modelDir`           | `models/minilm`           | Relative path to model     |
+| `modelDirAbs`        | `<rootDir>/models/minilm` | Absolute path              |
+| `env.localModelPath` | `rootDir`                 | ✅ **Correct** - repo root |
 
 ---
 
