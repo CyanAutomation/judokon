@@ -488,12 +488,7 @@ details.cli-settings:not([open]) > summary::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 30%,
-    rgba(60, 255, 155, 0.3) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(90deg, transparent 30%, rgba(60, 255, 155, 0.3) 50%, transparent 70%);
   transform: translateX(-120%);
   animation: skeleton-sheen 1.8s ease-in-out infinite;
   pointer-events: none;
