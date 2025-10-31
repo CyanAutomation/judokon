@@ -175,19 +175,27 @@ describe("queryRag offline mode with local MiniLM model", () => {
     });
 
     // Mock offline corpus for lexical search
-    vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+    const vectorSearchPath = "../../src/helpers/api/vectorSearchPage.js";
+    vi.doMock(vectorSearchPath, () => ({
       searchVectorDatabase: vi.fn(async () => {
         // Simulate lexical search results
         return [{ id: "1", text: "tooltip example", score: 0.5, source: "lexical" }];
       })
     }));
 
-    const { default: queryRag } = await import("../../src/helpers/queryRag.js");
+    try {
+      const { default: queryRag } = await import("../../src/helpers/queryRag.js");
 
-    // Should fall back to lexical without error
-    const results = await queryRag("tooltip");
-    expect(results).toBeDefined();
-    expect(results.length).toBeGreaterThan(0);
+      // Should fall back to lexical without error
+      const results = await queryRag("tooltip");
+      expect(results).toBeDefined();
+      expect(results.length).toBeGreaterThan(0);
+    } finally {
+      vi.doUnmock("fs/promises");
+      vi.doUnmock("@xenova/transformers");
+      vi.doUnmock(vectorSearchPath);
+      vi.resetModules();
+    }
   });
 
   /**
