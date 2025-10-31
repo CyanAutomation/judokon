@@ -5,6 +5,32 @@
 export const STAT_WAIT_TIMEOUT_MS = 5_000;
 export const MATCH_COMPLETION_TIMEOUT_MS = 30_000;
 
+function isValidMatchCompletionPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return false;
+  }
+
+  const { eventName, timedOut, elapsedMs, dom } = payload;
+
+  if (typeof timedOut !== "boolean") {
+    return false;
+  }
+
+  if (typeof eventName !== "string" || eventName.trim().length === 0) {
+    return false;
+  }
+
+  if ("elapsedMs" in payload && !Number.isFinite(Number(elapsedMs))) {
+    return false;
+  }
+
+  if (timedOut === false && dom !== null && typeof dom !== "object") {
+    return false;
+  }
+
+  return true;
+}
+
 /**
  * Safely read the current battle state via the Test API, returning a structured result.
  * @pseudocode
@@ -271,6 +297,7 @@ export async function waitForStatButtonsReady(page, options = {}) {
 export async function waitForMatchCompletion(page, options = {}) {
   const { timeout = MATCH_COMPLETION_TIMEOUT_MS, allowFallback = false } = options;
 
+  const startTime = Date.now();
   await waitForTestApi(page, { timeout });
 
   const payload = await page.evaluate(
@@ -286,7 +313,7 @@ export async function waitForMatchCompletion(page, options = {}) {
     { waitTimeout: timeout }
   );
 
-  if (payload && typeof payload === "object" && payload !== null && "timedOut" in payload) {
+  if (isValidMatchCompletionPayload(payload)) {
     return payload;
   }
 
@@ -294,15 +321,17 @@ export async function waitForMatchCompletion(page, options = {}) {
     throw new Error("Test API waitForMatchCompletion unavailable and fallback disabled");
   }
 
-  await page.waitForSelector("#match-end-modal", { timeout });
+  const remainingTimeout = Math.max(0, timeout - (Date.now() - startTime));
+  const selectorTimeout = Math.max(1, remainingTimeout);
+  await page.waitForSelector("#match-end-modal", { timeout: selectorTimeout });
 
   return {
     eventName: "match.concluded",
     detail: null,
     scores: null,
     winner: null,
-    reason: null,
-    elapsedMs: timeout,
+    reason: "fallback-dom-polling",
+    elapsedMs: Date.now() - startTime,
     timedOut: false,
     dom: null
   };

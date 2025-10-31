@@ -6,6 +6,7 @@ import {
   waitForMatchCompletion,
   waitForRoundStats,
   waitForStatButtonsReady,
+  waitForNextButtonReady,
   setPointsToWin
 } from "../helpers/battleStateHelper.js";
 
@@ -20,53 +21,50 @@ const BENIGN_MESSAGE_PATTERNS = {
 
 const STAT_GROUP_ARIA_LABEL = /choose a stat/i;
 
-function escapeRegExp(value) {
-  return String(value ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+async function waitForStateOrMatch(page, state, matchCompletionPromise, options, isMatchComplete) {
+  const statePromise = waitForBattleState(page, state, options);
 
-function formatStatLabel(rawKey) {
-  return String(rawKey ?? "")
-    .split(/[_\s-]+/)
-    .filter((segment) => segment.length > 0)
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(" ");
+  try {
+    const result = await Promise.race([
+      statePromise.then(() => "state"),
+      matchCompletionPromise.then(() => "matchComplete")
+    ]);
+
+    if (result === "matchComplete") {
+      await statePromise.catch(() => {});
+    }
+
+    return result;
+  } catch (error) {
+    await matchCompletionPromise.catch(() => {});
+    if (typeof isMatchComplete === "function" && isMatchComplete()) {
+      return "matchComplete";
+    }
+    throw error;
+  }
 }
 
 async function selectDecisiveStat(page) {
   await waitForRoundStats(page, { timeout: 10_000 });
 
-  const selection = await page.evaluate(() => {
-    const inspectApi = window.__TEST_API?.inspect;
-    if (!inspectApi || typeof inspectApi.pickAdvantagedStatKey !== "function") {
-      return { key: null, normalizedKey: null };
-    }
-    try {
-      return inspectApi.pickAdvantagedStatKey();
-    } catch (error) {
-      return { key: null, normalizedKey: null, reason: error instanceof Error ? error.message : String(error ?? "pick failed") };
-    }
-  });
-
-  const normalizedKey = (() => {
-    if (typeof selection?.normalizedKey === "string" && selection.normalizedKey.trim()) {
-      return selection.normalizedKey.trim();
-    }
-    if (typeof selection?.key === "string" && selection.key.trim()) {
-      return selection.key.trim().toLowerCase();
-    }
-    return null;
-  })();
+  const matchModal = page.locator("#match-end-modal");
+  if (await matchModal.isVisible()) {
+    return;
+  }
 
   const statGroup = page.getByRole("group", { name: STAT_GROUP_ARIA_LABEL });
   await expect(statGroup).toBeVisible();
 
-  if (normalizedKey) {
-    const label = formatStatLabel(normalizedKey);
-    const statButton = statGroup.getByRole("button", { name: new RegExp(`^${escapeRegExp(label)}$`, "i") });
-    await expect(statButton).toBeVisible();
-    await expect(statButton).toBeEnabled();
-    await statButton.click();
-    return;
+  const statButtons = statGroup.locator("[data-testid='stat-button']");
+  const buttonCount = await statButtons.count();
+
+  for (let index = 0; index < buttonCount; index += 1) {
+    const candidate = statButtons.nth(index);
+    await expect(candidate).toBeVisible();
+    if (await candidate.isEnabled()) {
+      await candidate.click();
+      return;
+    }
   }
 
   const fallbackButton = statGroup.getByRole("button").first();
@@ -110,9 +108,7 @@ test.describe("Classic Battle page", () => {
         roundTimerMs: 0,
         cooldownMs: 0,
         enableTestMode: true,
-        showRoundSelectModal: true,
-        pointsToWin: 1,
-        confirmPointsToWin: true
+        showRoundSelectModal: true
       },
       { timeout: 10_000 }
     );
@@ -127,34 +123,26 @@ test.describe("Classic Battle page", () => {
     const matchCompletionPromise = waitForMatchCompletion(page, {
       timeout: 28_000,
       allowFallback: false
-    }).then((payload) => {
-      matchCompleted = true;
-      return payload;
-    });
+    })
+      .then((payload) => {
+        matchCompleted = true;
+        return payload;
+      })
+      .catch((error) => {
+        matchCompleted = true;
+        throw error;
+      });
 
     for (let i = 0; i < 30 && !matchCompleted; i += 1) {
-
-      const waitForPlayerActionPromise = waitForBattleState(page, "waitingForPlayerAction", {
-        timeout: 18_000,
-        allowFallback: false
-      }).then(
-        () => "waitingForPlayerAction",
-        async (error) => {
-          await matchCompletionPromise.catch(() => {});
-          if (matchCompleted) {
-            return "matchComplete";
-          }
-          throw error;
-        }
+      const nextActionState = await waitForStateOrMatch(
+        page,
+        "waitingForPlayerAction",
+        matchCompletionPromise,
+        { timeout: 18_000, allowFallback: false },
+        () => matchCompleted
       );
 
-      const nextActionState = await Promise.race([
-        waitForPlayerActionPromise,
-        matchCompletionPromise.then(() => "matchComplete")
-      ]);
-
       if (nextActionState === "matchComplete") {
-        await waitForPlayerActionPromise.catch(() => {});
         break;
       }
 
@@ -162,58 +150,29 @@ test.describe("Classic Battle page", () => {
 
       await selectDecisiveStat(page);
 
-      const waitForRoundOverPromise = waitForBattleState(page, "roundOver", {
-        timeout: 18_000,
-        allowFallback: false
-      }).then(
-        () => "roundOver",
-        async (error) => {
-          await matchCompletionPromise.catch(() => {});
-          if (matchCompleted) {
-            return "matchComplete";
-          }
-          throw error;
-        }
+      const roundResolutionState = await waitForStateOrMatch(
+        page,
+        "roundOver",
+        matchCompletionPromise,
+        { timeout: 18_000, allowFallback: false },
+        () => matchCompleted
       );
 
-      const roundResolutionState = await Promise.race([
-        waitForRoundOverPromise,
-        matchCompletionPromise.then(() => "matchComplete")
-      ]);
-
       if (roundResolutionState === "matchComplete") {
-        await waitForRoundOverPromise.catch(() => {});
         break;
       }
+
+      await waitForNextButtonReady(page, { timeout: 10_000 });
+
+      const nextButton = page.getByTestId("next-button");
+      await expect(nextButton).toBeVisible();
+      await expect(nextButton).toBeEnabled();
+      await nextButton.click();
     }
 
     const matchResult = await matchCompletionPromise;
     expect(matchResult).toBeTruthy();
     expect(matchResult.timedOut).toBe(false);
-
-    if (matchResult?.dom?.modal?.visible !== true) {
-      await page.evaluate(async () => {
-        const stateApi = window.__TEST_API?.state;
-        if (!stateApi) {
-          return;
-        }
-
-        if (typeof stateApi.triggerStateTransition === "function") {
-          try {
-            stateApi.triggerStateTransition("finalize");
-            return;
-          } catch {}
-        }
-
-        if (typeof stateApi.dispatchBattleEvent === "function") {
-          try {
-            await stateApi.dispatchBattleEvent("finalize");
-          } catch {}
-        }
-      });
-
-      await waitForBattleState(page, "matchOver", { timeout: 10_000, allowFallback: false }).catch(() => {});
-    }
 
     await expect(page.locator("#match-end-modal")).toBeVisible({ timeout: 15_000 });
 
