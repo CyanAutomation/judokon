@@ -241,16 +241,34 @@ describe("queryRag offline mode with local MiniLM model", () => {
   it("provides diagnostic info including model source when requested", async () => {
     const mockResults = [{ id: "1", text: "test", score: 0.9, source: "test" }];
 
+    const extractorFn = vi.fn(async () => ({
+      data: new Float32Array([0.1, 0.2, 0.3])
+    }));
+
     vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
-      getExtractor: vi.fn(async () => vi.fn()),
+      getExtractor: vi.fn(async () => extractorFn),
       searchVectorDatabase: vi.fn(async () => mockResults)
+    }));
+
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        expandQueryWithSynonyms: vi.fn(async (query) => `${query} expanded`),
+        findMatches: vi.fn(async () => mockResults),
+        loadEmbeddings: vi.fn(),
+        fetchContextById: vi.fn(),
+        CURRENT_EMBEDDING_VERSION: "test"
+      }
     }));
 
     const { default: queryRag } = await import("../../src/helpers/queryRag.js");
     const results = await queryRag("test", { withDiagnostics: true });
 
-    expect(results).toBeDefined();
+    expect(Array.isArray(results)).toBe(true);
+    expect(results).toHaveLength(mockResults.length);
+    expect(results[0]).toEqual(mockResults[0]);
     expect(results.diagnostics).toBeDefined();
+    expect(results.diagnostics.expandedQuery).toBe("test expanded");
+    expect(results.diagnostics.multiIntentApplied).toBe(false);
     expect(results.diagnostics.timingMs).toBeGreaterThan(0);
   });
 });
