@@ -13,6 +13,7 @@
  */
 
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
+import { buildFeatureFlagSnapshot } from "./featureFlagSnapshot.js";
 import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
@@ -1901,45 +1902,11 @@ const inspectionApi = {
         }
       } catch {}
 
-      const flagNames = Array.from(
-        new Set([
-          ...Object.keys(defaultFlags || {}),
-          ...Object.keys(cachedFlags || {}),
-          ...Object.keys(overrides || {})
-        ])
-      );
-
-      const snapshot = {};
-      for (const flagName of flagNames) {
-        if (!flagName) {
-          continue;
-        }
-
-        const storedEntry = cachedFlags?.[flagName] ?? defaultFlags?.[flagName] ?? null;
-        const storedEnabled =
-          storedEntry && typeof storedEntry === "object" && !Array.isArray(storedEntry)
-            ? storedEntry.enabled
-            : defaultFlags?.[flagName]?.enabled;
-        const normalizedStored = storedEnabled === true || storedEnabled === false;
-        const hasOverride = Object.prototype.hasOwnProperty.call(overrides, flagName);
-        const overrideValue = hasOverride ? overrides[flagName] : undefined;
-        const enabled = hasOverride
-          ? !!overrideValue
-          : normalizedStored
-            ? storedEnabled
-            : !!defaultFlags?.[flagName]?.enabled;
-
-        snapshot[flagName] = {
-          enabled,
-          stored: normalizedStored ? storedEnabled : !!defaultFlags?.[flagName]?.enabled
-        };
-
-        if (hasOverride) {
-          snapshot[flagName].override = !!overrideValue;
-        }
-      }
-
-      return snapshot;
+      return buildFeatureFlagSnapshot({
+        defaults: defaultFlags,
+        persisted: cachedFlags,
+        overrides
+      });
     } catch (error) {
       if (isDevelopmentEnvironment()) {
         try {
