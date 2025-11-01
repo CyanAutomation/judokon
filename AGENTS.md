@@ -47,6 +47,7 @@ The JU-DO-KON! project includes a Model Context Protocol (MCP) server that expos
 Semantic search over the entire JU-DO-KON! vector database including game rules, development standards, and code patterns.
 
 **Usage**:
+
 ```javascript
 // Search for documentation on battle mechanics
 const result = await mcp.call("query_rag", {
@@ -62,19 +63,21 @@ const result = await mcp.call("query_rag", {
 Search for judoka with optional filtering by country, rarity, or weight class.
 
 **Input Schema**:
+
 ```json
 {
-  "query": "string (required)",      // Search query
-  "topK": "integer (1-50, default 8)",  // Max results
+  "query": "string (required)", // Search query
+  "topK": "integer (1-50, default 8)", // Max results
   "filters": {
-    "country": "string (optional)",    // Filter by country
+    "country": "string (optional)", // Filter by country
     "rarity": "enum (Common|Epic|Legendary)",
-    "weightClass": "string (optional)"  // e.g., '+100', '-60'
+    "weightClass": "string (optional)" // e.g., '+100', '-60'
   }
 }
 ```
 
 **Examples**:
+
 ```javascript
 // Find the most powerful judoka
 const result1 = await mcp.call("judokon.search", {
@@ -102,6 +105,7 @@ const result3 = await mcp.call("judokon.search", {
 ```
 
 **Response Format**:
+
 ```json
 {
   "results": [
@@ -134,13 +138,15 @@ const result3 = await mcp.call("judokon.search", {
 Retrieve the complete judoka record by ID.
 
 **Input Schema**:
+
 ```json
 {
-  "id": "string | number (required)"  // Judoka ID (numeric or string)
+  "id": "string | number (required)" // Judoka ID (numeric or string)
 }
 ```
 
 **Examples**:
+
 ```javascript
 // Fetch by numeric ID
 const result1 = await mcp.call("judokon.getById", {
@@ -154,6 +160,7 @@ const result2 = await mcp.call("judokon.getById", {
 ```
 
 **Response Format (Found)**:
+
 ```json
 {
   "found": true,
@@ -180,6 +187,7 @@ const result2 = await mcp.call("judokon.getById", {
 ```
 
 **Response Format (Not Found)**:
+
 ```json
 {
   "found": false,
@@ -225,12 +233,16 @@ const transport = new StdioClientTransport({
   command: process
 });
 
-const client = new Client({
-  name: "my-judokon-app",
-  version: "1.0.0"
-}, {
-  capabilities: {}
-}, transport);
+const client = new Client(
+  {
+    name: "my-judokon-app",
+    version: "1.0.0"
+  },
+  {
+    capabilities: {}
+  },
+  transport
+);
 
 await client.connect();
 
@@ -258,7 +270,7 @@ if (candidates.results.length > 0) {
   const fullRecord = await mcp.call("judokon.getById", {
     id: candidates.results[0].id
   });
-  console.log(fullRecord.bio);  // Display full biography
+  console.log(fullRecord.bio); // Display full biography
 }
 ```
 
@@ -289,7 +301,7 @@ const heavyweights = await mcp.call("judokon.search", {
 });
 
 // Compare stats
-heavyweights.results.forEach(j => {
+heavyweights.results.forEach((j) => {
   console.log(`${j.name}: Power=${j.stats.power}, Speed=${j.stats.speed}`);
 });
 ```
@@ -335,9 +347,10 @@ npm run rag:mcp
 #### Validate Tool Availability
 
 Once connected, list available tools:
+
 ```javascript
 const tools = await mcp.listTools();
-console.log(tools);  // Should show query_rag, judokon.search, judokon.getById
+console.log(tools); // Should show query_rag, judokon.search, judokon.getById
 ```
 
 #### Test Query
@@ -345,7 +358,7 @@ console.log(tools);  // Should show query_rag, judokon.search, judokon.getById
 ```javascript
 // Simple test query
 const test = await mcp.call("judokon.getById", { id: 0 });
-console.log(test);  // Should return first judoka record
+console.log(test); // Should return first judoka record
 ```
 
 ### Extensibility
@@ -584,12 +597,12 @@ This project contains a high-performance vector database with over 2,300 indexed
 
 ### 💡 Success Examples from Production
 
-**Query:** `"tooltip content validation requirements"`  
-**Result:** Found PRD with validation rules (25 seconds saved)  
+**Query:** `"tooltip content validation requirements"`
+**Result:** Found PRD with validation rules (25 seconds saved)
 **Outcome:** Accurate implementation matching established patterns
 
-**Query:** `"weight category definitions data structure"`  
-**Result:** Found exact JSON structure (15 seconds saved)  
+**Query:** `"weight category definitions data structure"`
+**Result:** Found exact JSON structure (15 seconds saved)
 **Outcome:** Correct implementation on first attempt
 
 ### 📋 Quick Reference
@@ -1409,8 +1422,8 @@ CI pipeline green
 
 ## 📊 Machine-Readable Ruleset
 
-**Schema Version**: 1.0.0  
-**Last Updated**: September 11, 2025  
+**Schema Version**: 1.0.0
+**Last Updated**: September 11, 2025
 **Validation**: This JSON should validate against standard schema checkers
 
 ### Version History
@@ -1599,3 +1612,4 @@ This JSON ruleset can be programmatically parsed for:
   ]
 }
 ```
+````
