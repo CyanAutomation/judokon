@@ -136,6 +136,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["query"]
         }
+      },
+      {
+        name: "judokon.getById",
+        description: "Fetch the complete judoka record by ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: {
+              type: ["string", "number"],
+              description: "Judoka ID (numeric or string format)"
+            }
+          },
+          required: ["id"]
+        }
       }
     ]
   };
@@ -205,6 +219,52 @@ async function handleJudokonSearch(query, topK = 8, filters = {}) {
   };
 }
 
+/**
+ * Handle judokon.getById tool requests
+ * @param {string|number} id - Judoka ID
+ * @returns {Promise<Object>} Judoka record or error
+ */
+async function handleJudokonGetById(id) {
+  // Normalize ID to string for lookup
+  const normalizedId = String(id);
+
+  // Try direct lookup
+  let judoka = judokaById.get(normalizedId);
+
+  // If not found, try numeric conversion
+  if (!judoka && !Number.isNaN(Number(id))) {
+    judoka = judokaById.get(String(Number(id)));
+  }
+
+  if (!judoka) {
+    return { found: false, id: normalizedId, message: "Judoka not found" };
+  }
+
+  return {
+    found: true,
+    id: judoka.id,
+    firstname: judoka.firstname,
+    surname: judoka.surname,
+    name: `${judoka.firstname} ${judoka.surname}`,
+    country: judoka.country,
+    countryCode: judoka.countryCode,
+    weightClass: judoka.weightClass,
+    category: judoka.category,
+    rarity: judoka.rarity,
+    gender: judoka.gender,
+    stats: judoka.stats,
+    bio: judoka.bio,
+    profileUrl: judoka.profileUrl,
+    signatureMoveId: judoka.signatureMoveId,
+    cardCode: judoka.cardCode,
+    matchesWon: judoka.matchesWon,
+    matchesLost: judoka.matchesLost,
+    matchesDrawn: judoka.matchesDrawn,
+    isHidden: judoka.isHidden,
+    lastUpdated: judoka.lastUpdated
+  };
+}
+
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
@@ -260,6 +320,78 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             type: "text",
             text: `Search failed: ${error.message || error}`
+          }
+        ],
+        isError: true
+      };
+    }
+  }
+
+  if (name === "judokon.getById") {
+    const { id } = args;
+
+    if (id === undefined || id === null) {
+      throw new Error("ID parameter is required");
+    }
+
+    try {
+      const result = await handleJudokonGetById(id);
+
+      if (!result.found) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Judoka not found with ID: ${result.id}`
+            }
+          ]
+        };
+      }
+
+      const {
+        name,
+        rarity,
+        country,
+        weightClass,
+        stats,
+        bio,
+        category,
+        gender,
+        profileUrl,
+        cardCode
+      } = result;
+
+      const statsText =
+        stats && Object.values(stats).some((v) => v > 0)
+          ? `Power=${stats.power}, Speed=${stats.speed}, Technique=${stats.technique}, Kumikata=${stats.kumikata}, Newaza=${stats.newaza}`
+          : "Stats not available";
+
+      const bioText = bio ? `\n\n${bio}` : "";
+      const profileLink = profileUrl ? `\n[Full Profile](${profileUrl})` : "";
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `**${name}** (${rarity})\n\n` +
+              `Country: ${country}\n` +
+              `Weight Class: ${weightClass}\n` +
+              `Gender: ${gender}\n` +
+              `Category: ${category}\n` +
+              `Stats: ${statsText}\n` +
+              `Card Code: ${cardCode}` +
+              bioText +
+              profileLink
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Judokon getById failed:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Lookup failed: ${error.message || error}`
           }
         ],
         isError: true
