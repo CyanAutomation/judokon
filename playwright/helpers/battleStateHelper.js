@@ -184,7 +184,8 @@ export async function configureClassicBattle(page, battleConfig = {}, options = 
 
   if (!result?.ok) {
     const messages = Array.isArray(result?.errors) ? result.errors.filter(Boolean) : [];
-    const reason = messages.length > 0 ? messages.join(", ") : "Classic battle configuration failed";
+    const reason =
+      messages.length > 0 ? messages.join(", ") : "Classic battle configuration failed";
     throw new Error(reason);
   }
 

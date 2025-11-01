@@ -30,7 +30,9 @@ export function buildFeatureFlagSnapshot(options = {}) {
 
     const defaultEntry = defaultFlags[flagName];
     const persistedEntry = persistedFlags[flagName];
-    const normalizedPersisted = isPlainObject(persistedEntry) ? persistedEntry.enabled : persistedEntry;
+    const normalizedPersisted = isPlainObject(persistedEntry)
+      ? persistedEntry.enabled
+      : persistedEntry;
     const normalizedDefault = isPlainObject(defaultEntry) ? defaultEntry.enabled : defaultEntry;
     const storedIsBoolean = typeof normalizedPersisted === "boolean";
     const normalizedDefaultBoolean =

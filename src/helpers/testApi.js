@@ -639,7 +639,8 @@ const stateApi = {
     const startTime = Date.now();
 
     const getContainer = () =>
-      document.querySelector("[data-testid='stat-buttons']") ?? document.getElementById("stat-buttons");
+      document.querySelector("[data-testid='stat-buttons']") ??
+      document.getElementById("stat-buttons");
 
     const buttonsInteractive = () => {
       try {

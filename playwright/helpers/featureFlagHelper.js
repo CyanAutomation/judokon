@@ -18,7 +18,6 @@ function instantiateBrowserFunction(source, cacheProperty) {
 
   let factory;
   try {
-    // eslint-disable-next-line no-new-func
     factory = new Function(`return (${source});`);
   } catch {
     return null;
@@ -35,12 +34,7 @@ function instantiateBrowserFunction(source, cacheProperty) {
     return null;
   }
 
-  if (
-    cacheProperty &&
-    typeof window !== "undefined" &&
-    window &&
-    typeof window === "object"
-  ) {
+  if (cacheProperty && typeof window !== "undefined" && window && typeof window === "object") {
     try {
       window[cacheProperty] = candidate;
     } catch {}
@@ -64,7 +58,6 @@ function browserComputeFeatureFlagSnapshot({ defaults, buildSnapshotSource, inst
       return null;
     }
     try {
-      // eslint-disable-next-line no-new-func
       const factory = new Function(`return (${instantiateSource});`);
       const candidate = factory();
       return typeof candidate === "function" ? candidate : null;
@@ -233,7 +226,6 @@ export async function getFeatureFlagsSnapshot(page) {
           return null;
         }
         try {
-          // eslint-disable-next-line no-new-func
           const factory = new Function(`return (${instantiateSource});`);
           const candidate = factory();
           return typeof candidate === "function" ? candidate : null;
@@ -307,23 +299,26 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
 
   const cleanup = async () => {
     try {
-      await page.evaluate(({ callbackName }) => {
-        try {
-          const registry = window.__PW_FEATURE_FLAG_HANDLERS;
-          const entry = registry?.[callbackName];
-          if (entry?.emitter && typeof entry.emitter.removeEventListener === "function") {
-            entry.emitter.removeEventListener("change", entry.handler);
+      await page.evaluate(
+        ({ callbackName }) => {
+          try {
+            const registry = window.__PW_FEATURE_FLAG_HANDLERS;
+            const entry = registry?.[callbackName];
+            if (entry?.emitter && typeof entry.emitter.removeEventListener === "function") {
+              entry.emitter.removeEventListener("change", entry.handler);
+            }
+            if (registry && Object.prototype.hasOwnProperty.call(registry, callbackName)) {
+              delete registry[callbackName];
+            }
+          } catch {}
+          try {
+            delete window[callbackName];
+          } catch {
+            window[callbackName] = undefined;
           }
-          if (registry && Object.prototype.hasOwnProperty.call(registry, callbackName)) {
-            delete registry[callbackName];
-          }
-        } catch {}
-        try {
-          delete window[callbackName];
-        } catch {
-          window[callbackName] = undefined;
-        }
-      }, { callbackName });
+        },
+        { callbackName }
+      );
     } catch {}
   };
 
@@ -364,7 +359,10 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
       }
     });
   } catch (error) {
-    finalize(null, error instanceof Error ? error : new Error(String(error ?? "exposeFunction failed")));
+    finalize(
+      null,
+      error instanceof Error ? error : new Error(String(error ?? "exposeFunction failed"))
+    );
     return waitPromise;
   }
 
@@ -383,7 +381,6 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
             return null;
           }
           try {
-            // eslint-disable-next-line no-new-func
             const factory = new Function(`return (${instantiateSource});`);
             const candidate = factory();
             return typeof candidate === "function" ? candidate : null;
@@ -425,25 +422,25 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
           }
         };
 
-      const inspectApi =
-        (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
-        (typeof window !== "undefined" && window.__INSPECT_API) ||
-        null;
-      const emitter =
-        inspectApi?.featureFlagsEmitter ||
-        (typeof window !== "undefined" ? window.featureFlagsEmitter : undefined);
-      if (!emitter || typeof emitter.addEventListener !== "function") {
+        const inspectApi =
+          (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
+          (typeof window !== "undefined" && window.__INSPECT_API) ||
+          null;
+        const emitter =
+          inspectApi?.featureFlagsEmitter ||
+          (typeof window !== "undefined" ? window.featureFlagsEmitter : undefined);
+        if (!emitter || typeof emitter.addEventListener !== "function") {
+          emitSnapshot();
+          return false;
+        }
+        const handler = () => {
+          emitSnapshot();
+        };
+        window.__PW_FEATURE_FLAG_HANDLERS = window.__PW_FEATURE_FLAG_HANDLERS || {};
+        window.__PW_FEATURE_FLAG_HANDLERS[callbackName] = { handler, emitter };
+        emitter.addEventListener("change", handler);
         emitSnapshot();
-        return false;
-      }
-      const handler = () => {
-        emitSnapshot();
-      };
-      window.__PW_FEATURE_FLAG_HANDLERS = window.__PW_FEATURE_FLAG_HANDLERS || {};
-      window.__PW_FEATURE_FLAG_HANDLERS[callbackName] = { handler, emitter };
-      emitter.addEventListener("change", handler);
-      emitSnapshot();
-      return true;
+        return true;
       },
       {
         callbackName,
@@ -542,4 +539,3 @@ export async function waitForFeatureFlagState(page, flagName, expectedEnabled, o
     `Timed out waiting for feature flag "${flagName}" to resolve to ${String(expectedEnabled)}.`
   );
 }
-

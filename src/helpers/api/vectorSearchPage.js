@@ -104,7 +104,9 @@ export async function getExtractor() {
         env.allowLocalModels = true;
         env.localModelPath = rootDir;
         env.cacheDir = `${rootDir}${sep}models`;
-        console.debug(`[RAG] Configuring local model resolution with localModelPath=${rootDir}, cacheDir=${env.cacheDir}`);
+        console.debug(
+          `[RAG] Configuring local model resolution with localModelPath=${rootDir}, cacheDir=${env.cacheDir}`
+        );
 
         try {
           const workerPath = nodeRequire.resolve(

@@ -1,6 +1,16 @@
 #!/bin/sh
-# Husky pre-commit: run JSDoc + @pseudocode checker
+# Husky pre-commit: run JSDoc + @pseudocode checker + RAG reminder for agents
 # To bypass locally: SKIP_CHECK_JSDOC=1 git commit -m "..."
+
+# 🚨 Agent Reminder
+echo ""
+echo "╔════════════════════════════════════════════════════════════════════════╗"
+echo "║ 🤖 AGENT REMINDER: RAG-FIRST POLICY                                    ║"
+echo "║ Before using grep/ripgrep/semantic_search, query RAG first!            ║"
+echo "║ See AGENTS.md → 🚨 RAG-First Policy section for details               ║"
+echo "║ Expected benefit: ~15x faster than manual exploration                  ║"
+echo "╚════════════════════════════════════════════════════════════════════════╝"
+echo ""
 
 SKIP_VAR_NAME=SKIP_CHECK_JSDOC
 # POSIX-safe indirect expansion: evaluate the named var's value

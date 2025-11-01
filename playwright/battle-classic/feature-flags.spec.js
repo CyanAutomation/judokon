@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { resolveFeatureFlagEnabled, waitForFeatureFlagState } from "../helpers/featureFlagHelper.js";
+import {
+  resolveFeatureFlagEnabled,
+  waitForFeatureFlagState
+} from "../helpers/featureFlagHelper.js";
 
 test.describe("enableTestMode feature flag", () => {
   test("test mode flag sets data-test-mode on battle-area when enabled", async ({ page }) => {
@@ -88,7 +91,10 @@ test.describe("battleStateBadge feature flag", () => {
     const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", true);
     expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(true);
 
-    await expect(page.locator("body")).toHaveAttribute("data-feature-battle-state-badge", "enabled");
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-feature-battle-state-badge",
+      "enabled"
+    );
   });
 
   test("body reflects badge disabled state with DOM marker", async ({ page }) => {
@@ -103,7 +109,10 @@ test.describe("battleStateBadge feature flag", () => {
     const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", false);
     expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(false);
 
-    await expect(page.locator("body")).toHaveAttribute("data-feature-battle-state-badge", "disabled");
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-feature-battle-state-badge",
+      "disabled"
+    );
   });
 
   test("badge element appears when enabled", async ({ page }) => {
@@ -134,7 +143,10 @@ test.describe("battleStateBadge feature flag", () => {
     const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", false);
     expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(false);
 
-    await expect(page.locator("body")).toHaveAttribute("data-feature-battle-state-badge", "disabled");
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-feature-battle-state-badge",
+      "disabled"
+    );
 
     const badge = page.locator("#battle-state-badge");
     await expect(badge).toHaveCount(0);
@@ -156,7 +168,9 @@ test.describe("tooltipOverlayDebug feature flag", () => {
 
     const body = page.locator("body");
     await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "enabled");
-    const hasDebugClass = await body.evaluate((el) => el.classList.contains("tooltip-overlay-debug"));
+    const hasDebugClass = await body.evaluate((el) =>
+      el.classList.contains("tooltip-overlay-debug")
+    );
     expect(hasDebugClass).toBe(true);
   });
 
@@ -174,7 +188,9 @@ test.describe("tooltipOverlayDebug feature flag", () => {
     expect(resolveFeatureFlagEnabled(snapshot, "tooltipOverlayDebug")).toBe(false);
 
     await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "disabled");
-    const hasDebugClass = await body.evaluate((el) => el.classList.contains("tooltip-overlay-debug"));
+    const hasDebugClass = await body.evaluate((el) =>
+      el.classList.contains("tooltip-overlay-debug")
+    );
     expect(hasDebugClass).toBe(false);
   });
 });
