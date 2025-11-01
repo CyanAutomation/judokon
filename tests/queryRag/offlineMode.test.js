@@ -39,29 +39,23 @@ describe("queryRag offline mode with local MiniLM model", () => {
     // Mock fs to verify stat() calls check the correct path
     const statMock = vi.fn(async (probedPath) => {
       const normalizedProbedPath = path.normalize(probedPath);
-      const normalizedOnnxPath = path.normalize(path.join("onnx", "model_quantized.onnx"));
-      const normalizedTokenizerPath = path.normalize("tokenizer.json");
-      const normalizedTokenizerConfigPath = path.normalize("tokenizer_config.json");
-      const normalizedConfigPath = path.normalize("config.json");
+      const fileSizeBySuffix = new Map([
+        [path.normalize(path.join("onnx", "model_quantized.onnx")), 1_200_000],
+        [path.normalize("tokenizer.json"), 180_000],
+        [path.normalize("tokenizer_config.json"), 24_000],
+        [path.normalize("config.json"), 6_400],
+        [path.normalize("special_tokens_map.json"), 8_000],
+        [path.normalize("vocab.json"), 320_000]
+      ]);
 
-      if (normalizedProbedPath.endsWith(normalizedOnnxPath)) {
-        return { size: 600_000 };
+      for (const [suffix, size] of fileSizeBySuffix) {
+        if (normalizedProbedPath.endsWith(suffix)) {
+          return { size };
+        }
       }
 
-      if (normalizedProbedPath.endsWith(normalizedTokenizerPath)) {
-        return { size: 12_000 };
-      }
-
-      if (normalizedProbedPath.endsWith(normalizedTokenizerConfigPath)) {
-        return { size: 1_500 };
-      }
-
-      if (normalizedProbedPath.endsWith(normalizedConfigPath)) {
-        return { size: 600 };
-      }
-
-      // Default fallback for other model files (vocab, special_tokens, etc.)
-      return { size: 8_192 };
+      // Default fallback for other ancillary files
+      return { size: 16_384 };
     });
     vi.doMock("fs/promises", () => ({
       stat: statMock,
