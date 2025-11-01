@@ -25,8 +25,6 @@ import {
 import {
   validateComparisonIds,
   validateJudokaForComparison,
-  // eslint-disable-next-line no-unused-vars
-  calculateStatDifferences,
   formatComparisonReport
 } from "../src/helpers/judokaComparison.js";
 import fs from "node:fs";
