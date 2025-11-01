@@ -1,6 +1,10 @@
 # 🤖 JU-DO-KON! Agent Guide
 
-**Purpose**: Define d---
+**Purpose**: Define deterministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.
+
+> **Note**: This is the authoritative agent guide. For general development setup, see [CONTRIBUTING.md](./CONTRIBUTING.md). For human-readable documentation, see [README.md](./README.md).
+>
+> **File Relationship**: This file (`AGENTS.md`) is the primary agent guide. The file `.github/copilot-instructions.md` contains Copilot-specific instructions and references this document. Both serve the same core purpose—use whichever is most accessible for your workflow.
 
 ## 🎯 Quick Reference Cards
 
@@ -19,6 +23,18 @@ src/config/settingsDefaults.js # Settings source of truth
 ### 📋 Task Contract Template
 
 ```json
+{
+  "inputs": ["src/file.js", "tests/file.test.js"],
+  "outputs": ["src/file.js", "tests/file.test.js"],
+  "success": [
+    "prettier: PASS",
+    "eslint: PASS",
+    "jsdoc: PASS",
+    "vitest: PASS",
+    "playwright: PASS",
+    "no_unsilenced_console"
+  ],
+  "errorMode": "ask_on_breaking_change",
   "verificationChecklist": [
     "prettier/eslint/jsdoc PASS",
     "vitest + playwright PASS",
@@ -371,10 +387,9 @@ Potential future tools that could be added:
 - **`judokon.listCountries`** — Get list of countries in database
 - **`judokon.statsByRarity`** — Analyze stat distributions by rarity level
 
-````
-```
+---
 
-### ✅ Essential Validation
+## ✅ Essential Validation
 
 ```bash
 # Core validation (run before commit)
@@ -455,7 +470,9 @@ const results = await queryRag("classic battle scoreboard rendering", {
 
 ---
 
-## 🗂️ Workflow Orderrministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository
+## 🗂️ Workflow Order
+
+Deterministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.
 
 **Audience**: AI Agents only. Human readability is not the priority.
 
@@ -1015,20 +1032,29 @@ rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional mod
 
 ---
 
-These examples should be used as guidance when configuring Sentry functionality within a project.
+## 🚨 Sentry Error Tracking
 
-# Error / Exception Tracking
+### When to Use Sentry Instrumentation
+
+Agents should add Sentry instrumentation when implementing:
+
+- Error handling and exception tracking in user-facing features
+- Performance-critical sections (battle engine, state management)
+- External API calls and data fetching operations
+- Custom business logic with non-obvious failure modes
+
+### Error / Exception Tracking
 
 Use `Sentry.captureException(error)` to capture an exception and log the error in Sentry.
 Use this in try catch blocks or areas where exceptions are expected
 
-# Tracing Examples
+### Tracing Examples
 
-Spans should be created for meaningful actions within an applications like button clicks, API calls, and function calls
-Use the `Sentry.startSpan` function to create a span
-Child spans can exist within a parent span
+Spans should be created for meaningful actions within an applications like button clicks, API calls, and function calls.
+Use the `Sentry.startSpan` function to create a span.
+Child spans can exist within a parent span.
 
-## Custom Span instrumentation in component actions
+#### Custom Span instrumentation in component actions
 
 Name custom spans with meaningful names and operations.
 Attach attributes based on relevant information and metrics from the request
@@ -1063,7 +1089,7 @@ function TestComponent() {
 }
 ```
 
-## Custom span instrumentation in API calls
+#### Custom span instrumentation in API calls
 
 Name custom spans with meaningful names and operations.
 Attach attributes based on relevant information and metrics from the request
@@ -1084,16 +1110,16 @@ async function fetchUserData(userId) {
 }
 ```
 
-# Logs
+### Logs
 
-Where logs are used, ensure Sentry is imported using `import * as Sentry from "@sentry/browser"`
-Enable logging in Sentry using `Sentry.init({ _experiments: { enableLogs: true } })`
-Reference the logger using `const { logger } = Sentry`
-Sentry offers a `consoleLoggingIntegration` that can be used to log specific console error types automatically without instrumenting the individual logger calls
+Where logs are used, ensure Sentry is imported using `import * as Sentry from "@sentry/browser"`.
+Enable logging in Sentry using `Sentry.init({ _experiments: { enableLogs: true } })`.
+Reference the logger using `const { logger } = Sentry`.
+Sentry offers a `consoleLoggingIntegration` that can be used to log specific console error types automatically without instrumenting the individual logger calls.
 
-## Configuration
+#### Configuration
 
-### Baseline
+##### Baseline
 
 ```javascript
 import * as Sentry from "@sentry/browser";
@@ -1107,7 +1133,7 @@ Sentry.init({
 });
 ```
 
-### Logger Integration
+##### Logger Integration
 
 ```javascript
 Sentry.init({
@@ -1119,7 +1145,7 @@ Sentry.init({
 });
 ```
 
-## Logger Examples
+##### Logger Examples
 
 `logger.fmt` is a template literal function that should be used to bring variables into the structured logs.
 
@@ -1151,7 +1177,15 @@ logger.fatal("Database connection pool exhausted", {
 
 When making changes to `src/pages/battleClassic.html` or `src/pages/battleCLI.html`, run the centralized regression test suite to ensure no regressions on these critical pages.
 
-**Related sections:** For general Classic Battle test patterns, see [⚔️ Classic Battle Testing](#️-classic-battle-testing). For Playwright interaction patterns, see [🎭 Playwright Test Quality Standards](#-playwright-test-quality-standards).
+**Related sections:** For general Classic Battle test patterns, see [⚔️ Classic Battle Testing](#-classic-battle-testing). For Playwright interaction patterns, see [🎭 Playwright Test Quality Standards](#-playwright-test-quality-standards).
+
+### When to Use This Section
+
+Use these guidelines whenever you modify:
+
+- `src/pages/battleClassic.html`
+- `src/pages/battleCLI.html`
+- `tests/battles-regressions/*` files
 
 ### Quick Validation
 
@@ -1337,9 +1371,16 @@ Complete plan and guidelines available in:
 **Essential validation (run before commit):**
 
 ```bash
+# Step 1: Data & RAG integrity
+npm run validate:data
+npm run rag:validate
+
+# Step 2: Code quality
 npx prettier . --check
 npx eslint .
 npm run check:jsdoc
+
+# Step 3: Tests
 npx vitest run
 npx playwright test
 npm run check:contrast
@@ -1366,6 +1407,9 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 
 # JSON validation
 npm run validate:data
+
+# RAG validation
+npm run rag:validate
 ```
 
 ---
@@ -1612,4 +1656,3 @@ This JSON ruleset can be programmatically parsed for:
   ]
 }
 ```
-````
