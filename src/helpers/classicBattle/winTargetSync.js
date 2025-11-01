@@ -38,9 +38,10 @@ function getCurrentRoundNumber() {
  */
 function updateRoundHeader(round, target) {
   try {
-    const header = byId("cli-round");
-    if (header) {
-      header.textContent = `Round ${round} Target: ${target}`;
+    const roundCounter = byId("round-counter");
+    if (roundCounter) {
+      roundCounter.textContent = `Round ${round} Target: ${target}`;
+      roundCounter.dataset.target = String(target);
     }
   } catch {}
 

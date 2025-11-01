@@ -206,36 +206,91 @@ export async function waitForBattleState(page, expectedState, options = {}) {
 
   await waitForTestApi(page, { timeout });
 
+  let apiCallError = null;
   const apiResult = await page.evaluate(
-    ({ state, waitTimeout }) => {
+    async ({ state, waitTimeout }) => {
       try {
         const stateApi = window.__TEST_API?.state;
-        if (stateApi && typeof stateApi.waitForBattleState === "function") {
-          return stateApi.waitForBattleState.call(stateApi, state, waitTimeout);
+        if (!stateApi) {
+          return { result: null, error: "stateApi not available" };
         }
-      } catch {}
-      return null;
+        if (typeof stateApi.waitForBattleState !== "function") {
+          return { result: null, error: "waitForBattleState not a function" };
+        }
+        // IMPORTANT: Must await the async waitForBattleState function
+        const result = await stateApi.waitForBattleState.call(stateApi, state, waitTimeout);
+        return { result, error: null };
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        return { result: null, error: errorMsg };
+      }
     },
     { state: expectedState, waitTimeout: timeout }
   );
 
-  if (apiResult === true) {
+  if (apiResult?.error) {
+    apiCallError = apiResult.error;
+  }
+
+  const actualApiResult = apiResult?.result;
+
+  if (actualApiResult === true) {
     return;
   }
 
-  if (apiResult === false) {
+  if (actualApiResult === false) {
     if (!allowFallback) {
       throw new Error(`Timed out waiting for battle state "${expectedState}" via Test API`);
     }
-  } else if (apiResult === null && !allowFallback) {
-    throw new Error(`Test API waitForBattleState unavailable for "${expectedState}"`);
+  } else if (actualApiResult === null && !allowFallback) {
+    const errorInfo = apiCallError ? ` (${apiCallError})` : "";
+    const msg = `Test API waitForBattleState unavailable for "${expectedState}"${errorInfo}`;
+    throw new Error(msg);
   }
 
   if (!allowFallback) {
     return;
   }
 
-  await page.waitForSelector(`[data-battle-state="${expectedState}"]`, { timeout });
+  // DOM fallback: check document.body.dataset.battleState
+  // This is the actual source of truth for battle state
+  const diagnostics = await page.evaluate(() => {
+    try {
+      return {
+        currentState: document.body?.dataset?.battleState,
+        testApiAvailable: !!window.__TEST_API,
+        stateApiAvailable: !!window.__TEST_API?.state,
+        hasWaitForBattleState: typeof window.__TEST_API?.state?.waitForBattleState === "function"
+      };
+    } catch {
+      return { error: "diagnostic check failed" };
+    }
+  });
+
+  if (diagnostics.error) {
+    throw new Error(
+      `Failed to get diagnostics for state "${expectedState}". API error: ${diagnostics.error}`
+    );
+  }
+
+  // Log diagnostics for debugging
+  if (!diagnostics.testApiAvailable || !diagnostics.stateApiAvailable) {
+    const msg = `Test API not fully available for state check. Diagnostics: ${JSON.stringify(diagnostics)}`;
+    console.warn(msg);
+  }
+
+  await page.waitForFunction(
+    (state) => {
+      try {
+        const currentState = document.body?.dataset?.battleState;
+        return currentState === state;
+      } catch {
+        return false;
+      }
+    },
+    expectedState,
+    { timeout }
+  );
 }
 
 /**

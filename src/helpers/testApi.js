@@ -2655,36 +2655,60 @@ const cliApi = {
       }
     };
 
-    // For test determinism, always wait specifically for "roundOver" state
-    // rather than settling for other success states like "cooldown"
-    const timeoutMs = autoWaitTimeoutMs ?? 2_000;
-    const deadline = Date.now() + timeoutMs;
-    let timedOut = false;
+    if (resolvedOutcomeEvent) {
+      // Wait for the outcome event to be processed and the state to stabilize
+      const timeoutMs = autoWaitTimeoutMs ?? 2_000;
+      const deadline = Date.now() + timeoutMs;
+      let timedOut = false;
 
-    while (true) {
-      finalState = readCurrentState();
-      captureState(finalState);
-      // Wait specifically for roundOver before considering the round complete
-      if (finalState === "roundOver") {
-        break;
+      while (true) {
+        finalState = readCurrentState();
+        captureState(finalState);
+        if (successStates.has(finalState)) {
+          break;
+        }
+        if (Date.now() >= deadline) {
+          timedOut = true;
+          break;
+        }
+        await waitForNextFrame();
       }
-      if (Date.now() >= deadline) {
-        timedOut = true;
-        break;
+
+      if (timedOut && !successStates.has(finalState)) {
+        logDevDebug("[completeRound] Timed out waiting for roundOver after outcome dispatch", {
+          timeoutMs,
+          finalState,
+          outcomeEvent
+        });
       }
-      await waitForNextFrame();
+    } else {
+      const timeoutMs = autoWaitTimeoutMs ?? 2_000;
+      const deadline = Date.now() + timeoutMs;
+      let timedOut = false;
+
+      while (true) {
+        finalState = readCurrentState();
+        captureState(finalState);
+        if (!transitionalStates.has(finalState)) {
+          break;
+        }
+        if (Date.now() >= deadline) {
+          timedOut = true;
+          break;
+        }
+        await waitForNextFrame();
+      }
+
+      if (timedOut && transitionalStates.has(finalState)) {
+        logDevDebug("[completeRound] Timed out waiting for post-round state", {
+          timeoutMs,
+          lastState: finalState,
+          roundOverObserved
+        });
+      }
     }
 
-    if (timedOut && finalState !== "roundOver") {
-      logDevDebug("[completeRound] Timed out waiting for roundOver state", {
-        timeoutMs,
-        finalState,
-        outcomeEvent: resolvedOutcomeEvent,
-        roundOverObserved
-      });
-    }
-
-    const normalizedState = finalState ?? readCurrentState();
+    const normalizedState = lastSuccessfulState ?? finalState ?? readCurrentState();
     captureState(normalizedState);
 
     return {

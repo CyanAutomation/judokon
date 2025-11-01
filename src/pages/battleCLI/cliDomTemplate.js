@@ -10,21 +10,31 @@ export const CLI_DOM_TEMPLATE = `
         <span id="battle-state-badge" data-flag="battleStateBadge" class="state-badge" style="display: none">State: -</span>
       </div>
       <div class="cli-status" aria-live="polite" aria-atomic="true">
-        <div id="cli-round">Round 0 Target: 10</div>
-        <div
-          id="cli-score"
+        <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
+          <span data-part="label">Time Left:</span>
+          <span data-part="value">0s</span>
+        </p>
+        <p id="round-counter" aria-live="polite" aria-atomic="true" data-testid="round-counter">
+          Round 0
+        </p>
+        <p
+          id="score-display"
           data-score-player="0"
           data-score-opponent="0"
           aria-live="polite"
           aria-atomic="true"
+          role="status"
+          data-testid="score-display"
         >
-          You: 0 Opponent: 0
-        </div>
-      </div>
-      <div class="standard-scoreboard-nodes" style="display: none" aria-hidden="true">
-        <p id="next-round-timer" aria-atomic="true" role="status"></p>
-        <p id="round-counter" aria-atomic="true">Round 0</p>
-        <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Opponent: 0</p>
+          <span data-side="player">
+            <span data-part="label">You:</span>
+            <span data-part="value">0</span>
+          </span>
+          <span data-side="opponent">
+            <span data-part="label">Opponent:</span>
+            <span data-part="value">0</span>
+          </span>
+        </p>
       </div>
     </header>
     <main id="cli-main" class="cli-main" role="main">
