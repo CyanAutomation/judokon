@@ -19,7 +19,7 @@ import { DATA_DIR } from "./constants.js";
  * @typedef {object} SynonymStats
  * @property {number} totalMappings - Number of individual entries in the synonym map.
  * @property {number} totalSynonyms - Total count of synonym values across all mappings.
- * @property {string|number} averageSynonymsPerMapping - Average synonyms per mapping (fixed decimal string when calculable).
+ * @property {string|0} averageSynonymsPerMapping - Average synonyms per mapping (fixed decimal string when calculable, 0 when no mappings).
  * @property {{ key: string, synonyms: string[] }[]} mappingExamples - Example synonym entries for debugging.
  */
 
