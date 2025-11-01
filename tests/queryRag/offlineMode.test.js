@@ -92,7 +92,8 @@ describe("queryRag offline mode with local MiniLM model", () => {
     expect(pipelineMock).toHaveBeenCalled();
     const call = pipelineMock.mock.calls[0];
     expect(call[0]).toBe("feature-extraction");
-    expect(call[1]).toContain("MiniLM");
+    // When loading locally, the model argument is a local path, not a model ID
+    expect(call[1]).toContain("models/minilm");
   });
 
   /**
