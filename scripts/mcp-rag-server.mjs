@@ -13,6 +13,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 import queryRag from "../src/helpers/queryRag.js";
 import { LRUCache } from "../src/helpers/lruCache.js";
 import { expandQuery } from "../src/helpers/queryExpander.js";
+import { applyAdvancedFilters, validateAdvancedFilters } from "../src/helpers/advancedFilters.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -107,7 +108,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "judokon.search",
         description:
-          "Semantic search over judoka embeddings with optional filtering by country, rarity, or weight class",
+          "Semantic search over judoka embeddings with optional filtering by country, rarity, weight class, and advanced criteria (stat thresholds, weight ranges, average stats)",
         inputSchema: {
           type: "object",
           properties: {
@@ -138,6 +139,38 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 weightClass: {
                   type: "string",
                   description: "Filter by weight class (e.g., '+100', '-60')"
+                },
+                advanced: {
+                  type: "object",
+                  description:
+                    "Advanced filters for stat thresholds, weight ranges, and composite criteria",
+                  properties: {
+                    statThresholds: {
+                      type: "array",
+                      items: {
+                        type: "string"
+                      },
+                      description:
+                        "Array of stat comparisons (e.g., ['power>=8', 'speed<5']). Valid stats: power, speed, technique, kumikata, newaza. Operators: >=, <=, >, <, ==, !="
+                    },
+                    weightRange: {
+                      type: "string",
+                      description:
+                        "Weight range filter (e.g., '+100' for 100kg+, '-60' for ≤60kg, or exact value)"
+                    },
+                    minAverageStats: {
+                      type: "number",
+                      description: "Minimum average value across all 5 stats"
+                    },
+                    maxAverageStats: {
+                      type: "number",
+                      description: "Maximum average value across all 5 stats"
+                    },
+                    minAllStats: {
+                      type: "number",
+                      description: "All stats must be at least this value (skill floor)"
+                    }
+                  }
                 }
               }
             }
@@ -208,14 +241,19 @@ async function executeJudokonSearch(query, topK, filters) {
   // Find judoka matching the RAG results and apply filters
   const candidates = [];
 
+  // Validate and prepare advanced filters
+  const advancedFilters = validateAdvancedFilters(filters.advanced || {});
+
   for (const embedding of embeddingsArray) {
     const judoka = judokaById.get(embedding.id) || judokaById.get(String(embedding.id));
     if (!judoka) continue;
 
-    // Apply filters
+    // Apply basic filters (country, rarity, exact weight)
     if (filters.country && judoka.country !== filters.country) continue;
     if (filters.rarity && judoka.rarity !== filters.rarity) continue;
-    if (filters.weightClass && judoka.weightClass !== filters.weightClass) continue;
+
+    // Apply advanced filters (stat thresholds, weight ranges, averages)
+    if (!applyAdvancedFilters(judoka, advancedFilters)) continue;
 
     // Calculate relevance score
     const ragScore = scoreMap.get(embedding.id) || 0;

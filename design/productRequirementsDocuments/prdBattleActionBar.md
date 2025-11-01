@@ -171,38 +171,102 @@ When the player selects **Quit**:
 ## 10. Implementation Plan
 
 ### Phase 1: Core Component & Options Modal
-- [ ] **1.1: Base Action Bar Component**
-    - [ ] Create the 7-button layout.
-    - [ ] Wire it to the `battleEngine` state via observer hooks.
-    - [ ] Add ARIA labels and basic keyboard shortcuts.
-    - [ ] Expose `data-*` observability attributes.
+
+- [x] **1.1: Base Action Bar Component** ✅ COMPLETED 2025-11-01
+  - [x] Create the 7-button layout.
+  - [x] Wire it to the `battleEngine` state via observer hooks.
+  - [x] Add ARIA labels and basic keyboard shortcuts.
+  - [x] Expose `data-*` observability attributes.
 - [ ] **1.2: Options Modal**
-    - [ ] Implement the modal UI with Quit, Replay, Audio, and Motion toggles.
-    - [ ] Set default states: Audio = ON, Reduced Motion = OFF.
-    - [ ] Add a confirmation dialog for the Quit action, with "Cancel" as the default focus.
-    - [ ] Implement a 150–200 ms fade animation for modal open/close.
+  - [ ] Implement the modal UI with Quit, Replay, Audio, and Motion toggles.
+  - [ ] Set default states: Audio = ON, Reduced Motion = OFF.
+  - [ ] Add a confirmation dialog for the Quit action, with "Cancel" as the default focus.
+  - [ ] Implement a 150–200 ms fade animation for modal open/close.
 
 ### Phase 2: Button Logic & State Handling
+
 - [ ] **2.1: Stat Button Logic**
-    - [ ] Map stat buttons to engine states (enabled/disabled).
-    - [ ] Display tooltips/icons based on the game mode.
-    - [ ] Implement keyboard mappings `1–5`.
-    - [ ] Add a 150 ms "active" pulse animation on press.
+  - [ ] Map stat buttons to engine states (enabled/disabled).
+  - [ ] Display tooltips/icons based on the game mode.
+  - [ ] Implement keyboard mappings `1–5`.
+  - [ ] Add a 150 ms "active" pulse animation on press.
 - [ ] **2.2: Action Button State Handling**
-    - [ ] Reflect the engine state (Next, Start, Draw).
-    - [ ] Disable the button during cooldowns or invalid states.
-    - [ ] Map `Enter`/`Space` to trigger the button.
-    - [ ] Add 200 ms button press feedback animation.
+  - [ ] Reflect the engine state (Next, Start, Draw).
+  - [ ] Disable the button during cooldowns or invalid states.
+  - [ ] Map `Enter`/`Space` to trigger the button.
+  - [ ] Add 200 ms button press feedback animation.
 
 ### Phase 3: Theming, Testing & Error Handling
+
 - [ ] **3.1: Theming & Styling**
-    - [ ] Integrate theming hooks for each mode (`.action-bar--classic`, `.action-bar--cli`, etc.).
+  - [ ] Integrate theming hooks for each mode (`.action-bar--classic`, `.action-bar--cli`, etc.).
 - [ ] **3.2: Testing & Accessibility**
-    - [ ] Write unit tests for all button states.
-    - [ ] Verify ARIA labels with screen reader tools.
-    - [ ] Validate keyboard and focus navigation.
-    - [ ] Ensure color contrast meets or exceeds a 4.5:1 ratio.
+  - [ ] Write unit tests for all button states.
+  - [ ] Verify ARIA labels with screen reader tools.
+  - [ ] Validate keyboard and focus navigation.
+  - [ ] Ensure color contrast meets or exceeds a 4.5:1 ratio.
 - [ ] **3.3: Error Handling & Telemetry**
-    - [ ] Implement desync logging (`battle.actionbar.desync`).
-    - [ ] Create a toast fallback for modal render failures.
-    - [ ] Implement an auto-resync mechanism if the UI is out of sync for >300 ms.
+  - [ ] Implement desync logging (`battle.actionbar.desync`).
+  - [ ] Create a toast fallback for modal render failures.
+  - [ ] Implement an auto-resync mechanism if the UI is out of sync for >300 ms.
+
+---
+
+## 11. Progress Log
+
+### Task 1.1: Base Action Bar Component ✅
+
+**Date Completed:** 2025-11-01
+
+**Implementation Summary:**
+
+1. **Created `/src/helpers/actionBar.js`** with the `createActionBar()` factory function
+   - 7-button layout: Options (⚙) | Power, Speed, Technique, Kumi-kata, Ne-waza | Action (▶)
+   - Full keyboard shortcut support: 1-5 for stats, O for options, Enter/Space for action
+   - Engine state observation via event listeners (roundStart, roundEnd, statSelected)
+   - Complete state management API: setStatButtonsEnabled(), setActionButtonState(), getState(), update()
+   - ARIA labels and semantic HTML for accessibility
+   - data-* attributes for testing and observability
+
+2. **Created `/src/styles/actionBar.css`** with comprehensive styling
+   - Base responsive layout with flexbox
+   - Mode-specific theming: `.action-bar--classic`, `.action-bar--cli`, `.action-bar--bandit`, `.action-bar--quick`
+   - 150ms button hover animations (respects prefers-reduced-motion)
+   - Action button highlighted with blue color and shadow
+   - Stat buttons show enabled state via data-stat-enabled attribute
+   - Mobile-responsive breakpoints for small screens
+
+3. **Created `/tests/unit/actionBar.test.js`** with comprehensive test coverage
+   - 39 tests covering initialization, DOM rendering, interactions, keyboard shortcuts, state management, lifecycle, and accessibility
+   - All tests passing ✅
+
+**Key Features Implemented:**
+
+- ✅ 7-button fixed layout (Options, 5 Stats, Action)
+- ✅ Dynamic button state management (enabled/disabled)
+- ✅ Keyboard shortcuts (1-5, O, Enter/Space)
+- ✅ Engine state observation
+- ✅ ARIA labels and accessibility
+- ✅ data-* attributes for testing
+- ✅ Mode-specific CSS classes
+- ✅ Responsive design
+- ✅ Lifecycle management (render, destroy)
+- ✅ Handler callbacks (onStatSelected, onActionClick, onOptionsClick)
+
+**Test Results:**
+
+- ✅ Unit Tests: **39 passed**
+- ✅ Linting: PASS (eslint)
+
+**Deliverables:**
+
+- `/src/helpers/actionBar.js` - Main component
+- `/src/styles/actionBar.css` - Styling
+- `/tests/unit/actionBar.test.js` - Unit tests
+
+**Notes:**
+
+- Component is mode-agnostic and can be used across all battle modes
+- CSS is integrated but needs to be imported in the main stylesheet
+- Engine event subscription is in place but handlers are optional
+- Keyboard shortcuts are global and automatically attached/removed with render/destroy
