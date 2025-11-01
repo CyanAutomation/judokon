@@ -1,111 +1,152 @@
+# Local RAG MCP Server Blueprint
 
-Observation: You can wrap your local RAG (e.g., `client_embeddings.json`, `judoka.json`, `synonyms.json`) as a **local MCP server** so any MCP-aware agent (e.g., Claude Desktop, other MCP runtimes) can call a `search` tool and get back ranked cards/snippets.
+This document outlines a blueprint for wrapping the JU-DO-KON! RAG data into a local Model Context Protocol (MCP) server. This allows any MCP-aware agent to perform semantic searches over the project's data, such as judoka profiles and embeddings.
 
-Here’s a minimal, practical blueprint tailored to JU-DO-KON!:
+## 1. Executive Summary
 
-# What you’ll expose to the agent
+The core idea is to expose our RAG capabilities (e.g., `client_embeddings.json`, `judoka.json`) through a standardized local server. An AI agent can then connect to this server and use dedicated tools for searching and retrieving information, making the system more modular and accessible.
 
-* **Tools**
+## 2. Proposed Architecture
 
-  * `judokon.search` → semantic search over your embeddings (`query`, `topK`, optional filters like `country`, `rarity`, `weightClass`).
-  * `judokon.getById` → fetch the full judoka record by `id`.
-  * (Optional) `judokon.random`, `judokon.resolveCode` for your custom card codes.
-* **Resources** (read-only)
+The MCP server will expose the following tools and resources to a connected agent.
 
-  * `judoka.json` (full roster)
-  * `client_embeddings.json` (vectors + ids + text chunks)
-  * `synonyms.json` (used to expand queries)
+### Tools
 
-# Suggested data shape (fits your repo)
+-   `judokon.search`: Performs semantic search over the judoka embeddings. It accepts a `query`, `topK`, and optional `filters` (e.g., `country`, `rarity`).
+-   `judokon.getById`: Fetches the complete record for a judoka by their unique `id`.
+-   *(Optional)*: Additional tools like `judokon.random` or `judokon.resolveCode` can be added for enhanced functionality.
 
-* `client_embeddings.json`:
+### Resources
 
-  ```json
-  {
-    "model": "MiniLM-L6-v2",
-    "dim": 384,
-    "items": [
-      {"id":"ABEGENENOU_63","text":"...", "embedding":[0.02, -0.11, ...]},
-      ...
-    ]
-  }
-  ```
-* `judoka.json`: your canonical card data keyed by `id`.
+The agent will have read-only access to the core data files:
 
-# TypeScript MCP server (drop-in example)
+-   `judoka.json`: The canonical database of all judoka.
+-   `client_embeddings.json`: Contains the vector embeddings and text chunks for search.
+-   `synonyms.json`: Used for query expansion to improve search results.
 
-> Directory: `tools/judokon-mcp/`
+## 3. Data Schema
 
-`package.json`
+The server will rely on the existing data structures within the project.
+
+-   **`client_embeddings.json`**:
+    ```json
+    {
+      "model": "MiniLM-L6-v2",
+      "dim": 384,
+      "items": [
+        {
+          "id": "ABEGENENOU_63",
+          "text": "...",
+          "embedding": [0.02, -0.11, ...]
+        }
+      ]
+    }
+    ```
+-   **`judoka.json`**: The existing array of judoka objects, keyed by `id`.
+
+## 4. Implementation Blueprint
+
+Here is a reference implementation for the MCP server using TypeScript.
+
+**Directory**: `tools/judokon-mcp/`
+
+### `package.json`
 
 ```json
 {
   "name": "judokon-mcp",
   "type": "module",
   "private": true,
-  "bin": { "judokon-mcp": "dist/index.js" },
-  "scripts": { "build": "tsc -p tsconfig.json", "start": "node dist/index.js" },
+  "bin": {
+    "judokon-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
     "fastest-levenshtein": "^1.0.16"
   },
-  "devDependencies": { "typescript": "^5.6.0" }
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
 }
 ```
 
-`tsconfig.json`
+### `tsconfig.json`
 
 ```json
 {
-  "compilerOptions": { "target": "ES2022", "module": "ES2022", "moduleResolution": "Bundler", "outDir": "dist", "strict": true },
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "strict": true
+  },
   "include": ["src"]
 }
 ```
 
-`src/index.ts`
+### `src/index.ts`
 
-```ts
+```typescript
 import { Server, Tool, ListResourcesResult, CallToolResult } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import fs from "node:fs";
 import path from "node:path";
 
+// --- Type Definitions ---
 type EmbItem = { id: string; text: string; embedding: number[]; };
 type EmbFile = { model: string; dim: number; items: EmbItem[]; };
 type Judoka = { id: string; name: string; country?: string; rarity?: "Common"|"Epic"|"Legendary"; weightClass?: number; [k: string]: any };
 
+// --- Utility Functions ---
 function loadJSON<T>(p: string): T {
   return JSON.parse(fs.readFileSync(p, "utf8")) as T;
 }
 
-function norm(vec: number[]) { return Math.sqrt(vec.reduce((s,v)=>s+v*v,0)); }
-function cosine(a: number[], b: number[]) {
-  let dot = 0; for (let i=0;i<a.length;i++) dot += a[i]*b[i];
+function norm(vec: number[]): number {
+  return Math.sqrt(vec.reduce((sum, val) => sum + val * val, 0));
+}
+
+function cosine(a: number[], b: number[]): number {
+  let dot = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+  }
   return dot / (norm(a) * norm(b) + 1e-12);
 }
 
-// Very small, local embedder shim — replace with your own embedder if you have it.
-// Here we do a hacky bag-of-words projection so the server is usable offline.
-// For best results, precompute a query encoder the same way you encoded docs.
-function pseudoEmbed(text: string, dim: number) {
+// A simplified local embedder. For best results, replace this with the actual
+// query encoder model used to generate the document embeddings.
+function pseudoEmbed(text: string, dim: number): number[] {
   const v = new Array(dim).fill(0);
-  for (const ch of text.toLowerCase()) v[(ch.codePointAt(0) ?? 0) % dim] += 1;
-  const n = norm(v); if (n>0) for (let i=0;i<dim;i++) v[i] /= n;
+  for (const ch of text.toLowerCase()) {
+    v[(ch.codePointAt(0) ?? 0) % dim] += 1;
+  }
+  const n = norm(v);
+  if (n > 0) {
+    for (let i = 0; i < dim; i++) {
+      v[i] /= n;
+    }
+  }
   return v;
 }
 
+// --- Data Loading ---
 const DATA_DIR = process.env.JUDOKON_DATA_DIR ?? path.resolve(process.cwd(), "../../src/data");
 const embeddingsPath = path.join(DATA_DIR, "client_embeddings.json");
-const judokaPath     = path.join(DATA_DIR, "judoka.json");
-const synonymsPath   = path.join(DATA_DIR, "synonyms.json");
+const judokaPath = path.join(DATA_DIR, "judoka.json");
+const synonymsPath = path.join(DATA_DIR, "synonyms.json");
 
 const emb: EmbFile = loadJSON<EmbFile>(embeddingsPath);
 const judokaList: Judoka[] = loadJSON<Judoka[]>(judokaPath);
-const synonymMap: Record<string,string[]> = fs.existsSync(synonymsPath) ? loadJSON(synonymsPath) : {};
-
+const synonymMap: Record<string, string[]> = fs.existsSync(synonymsPath) ? loadJSON(synonymsPath) : {};
 const byId = new Map(judokaList.map(j => [j.id, j]));
 
-function expandQuery(q: string) {
+function expandQuery(q: string): string {
   const terms = q.split(/\s+/);
   const expanded = new Set<string>([q]);
   for (const t of terms) {
@@ -114,6 +155,7 @@ function expandQuery(q: string) {
   return Array.from(expanded).join(" ");
 }
 
+// --- Server Initialization ---
 const server = new Server(
   {
     name: "judokon-mcp",
@@ -123,7 +165,7 @@ const server = new Server(
   new StdioServerTransport()
 );
 
-// Resources (so agents can “see” your datasets)
+// --- Resource Handler ---
 server.setListResourcesHandler(async (): Promise<ListResourcesResult> => ({
   resources: [
     { uri: `file://${embeddingsPath}`, name: "client_embeddings.json", mimeType: "application/json" },
@@ -132,7 +174,7 @@ server.setListResourcesHandler(async (): Promise<ListResourcesResult> => ({
   ].filter(r => fs.existsSync(new URL(r.uri)))
 }));
 
-// Tools
+// --- Tool Definitions ---
 const searchTool: Tool = {
   name: "judokon.search",
   description: "Semantic search over JU-DO-KON! embeddings.",
@@ -145,7 +187,7 @@ const searchTool: Tool = {
         type: "object",
         properties: {
           country: { type: "string" },
-          rarity: { type: "string", enum: ["Common","Epic","Legendary"] },
+          rarity: { type: "string", enum: ["Common", "Epic", "Legendary"] },
           weightClass: { type: "number" }
         }
       }
@@ -157,20 +199,23 @@ const searchTool: Tool = {
     const q = expandQuery(query);
     const qVec = pseudoEmbed(q, emb.dim);
 
-    // Score against embeddings
+    // 1. Score all items against the query vector
     const scored = emb.items.map(it => ({ it, score: cosine(qVec, it.embedding) }))
-      .sort((a,b) => b.score - a.score);
+      .sort((a, b) => b.score - a.score);
 
-    // Project to judoka, apply filters, dedupe by id
+    // 2. Project to judoka, apply filters, and deduplicate
     const seen = new Set<string>();
     const results: any[] = [];
-    for (const {it, score} of scored) {
+    for (const { it, score } of scored) {
       if (seen.has(it.id)) continue;
       const j = byId.get(it.id);
       if (!j) continue;
+
+      // Apply filters
       if (filters.country && j.country !== filters.country) continue;
       if (filters.rarity && j.rarity !== filters.rarity) continue;
       if (filters.weightClass && j.weightClass !== filters.weightClass) continue;
+
       results.push({
         id: it.id,
         name: j.name,
@@ -208,41 +253,49 @@ server.setTools([searchTool, getByIdTool]);
 server.start();
 ```
 
-Build & run:
+## 5. Setup and Deployment
+
+To run the server, navigate to the `tools/judokon-mcp` directory and execute the following commands:
 
 ```bash
-cd tools/judokon-mcp
-npm i
+# 1. Install dependencies
+npm install
+
+# 2. Build the TypeScript source
 npm run build
+
+# 3. Start the server
 judokon-mcp
 ```
 
-# Wire it into an agent (example: Claude Desktop)
+## 6. Agent Integration
 
-Add to your desktop config:
+To integrate this server with an MCP-aware agent (e.g., Claude Desktop), add the following to your client's configuration:
 
 ```json
 {
   "mcpServers": {
     "judokon": {
       "command": "judokon-mcp",
-      "env": { "JUDOKON_DATA_DIR": "/absolute/path/to/your/repo/src/data" }
+      "env": {
+        "JUDOKON_DATA_DIR": "/absolute/path/to/your/repo/src/data"
+      }
     }
   }
 }
 ```
 
-Restart the client; you’ll see a `judokon` tool with `judokon.search` and `judokon.getById`.
+After restarting the client, the `judokon.search` and `judokon.getById` tools will be available.
 
-# How your agent will use it (prompt snippets)
+### Example Agent Instructions
 
-* “Use `judokon.search` for semantic retrieval; then call `judokon.getById` on top hits to enrich answers.”
-* “Prefer `filters` to keep results on-topic (e.g., `country: 'FRA'`, `rarity: 'Legendary'`).”
-* “Return the **card id, name, country, rarity, weight class, and a 1-2 sentence rationale** for each pick.”
+-   "Use `judokon.search` for semantic retrieval; then call `judokon.getById` on top hits to enrich answers."
+-   "Prefer `filters` to keep results on-topic (e.g., `country: 'FRA'`, `rarity: 'Legendary'`)."
+-   "Return the **card id, name, country, rarity, weight class, and a 1-2 sentence rationale** for each pick."
 
-# Notes & options
+## 7. Advanced Considerations
 
-* **Query encoder**: the stub above will work, but for best quality use the *same* encoder you used for `client_embeddings.json`. Drop it into `pseudoEmbed()` (e.g., a tiny local ONNX model) or precompute a lightweight query-embedding service and call it locally.
-* **Speed**: With ~10k items you’re fine scanning in memory. If you grow, swap to an ANN library (e.g., HNSW) or LanceDB/SQLite-VSS.
-* **Security**: This server is local (stdio transport). No network I/O unless you add it.
-* **JU-DO-KON! niceties**: you can add tools like `judokon.resolveCode({ code })` that map your human-readable custom codes to a judoka `id`, or `judokon.browse({ offset, limit })` for paging.
+-   **Query Encoder**: The `pseudoEmbed` function is a placeholder. For production-quality results, replace it with the *same* encoder model used to generate `client_embeddings.json`.
+-   **Performance**: For larger datasets (~10k+ items), consider replacing the in-memory search with a dedicated Approximate Nearest Neighbor (ANN) library like HNSWlib, or a vector database like LanceDB/SQLite-VSS.
+-   **Security**: The server uses a `StdioServerTransport`, meaning it only communicates over standard I/O and does not open any network ports.
+-   **Extensibility**: You can easily add more JU-DO-KON-specific tools, such as `judokon.resolveCode({ code })` to map custom codes to a judoka `id`.

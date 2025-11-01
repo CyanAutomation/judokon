@@ -125,9 +125,9 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
     // Verify fallback updates work
     expect(document.getElementById("round-message").textContent).toBe("Fallback message");
-    expect(
-      document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim()
-    ).toBe("You: 1 Opponent: 0");
+    expect(document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim()).toBe(
+      "You: 1 Opponent: 0"
+    );
     expect(document.getElementById("round-counter").textContent).toBe("Round 2 Target: 3");
   });
 

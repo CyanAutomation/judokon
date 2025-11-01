@@ -141,9 +141,9 @@ describe("battleCLI points select", () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     await seedActiveRoundState();
     expect(document.getElementById("round-counter").textContent).toBe("Round 7 Target: 5");
-    expect(
-      document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim()
-    ).toBe("You: 2 Opponent: 3");
+    expect(document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim()).toBe(
+      "You: 2 Opponent: 3"
+    );
     expect(document.getElementById("cli-stats").querySelector(".selected")).not.toBeNull();
 
     select.value = "10";

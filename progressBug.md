@@ -1,5 +1,13 @@
 # Scoreboard Component Centralization
 
+## Progress Update – 2025-02-14
+
+- Replaced the CLI header markup and test template with the shared scoreboard nodes so the component can mount directly (`battleCLI.html`, `battleCLI/cliDomTemplate.js`).
+- Updated CLI helpers (`dom.js`, `winTargetSync.js`, `battleCLI.init.js`) to drive the shared scoreboard APIs and keep CLI datasets/targets in sync; removed legacy node handling.
+- Refreshed CLI-specific stylesheet rules to style the shared nodes and dropped the `.standard-scoreboard-nodes` wrapper.
+- Tests: `npm run test:battles:cli` ✅
+- Playwright: `npx playwright test playwright/cli-layout.spec.js` ⚠️ (local static server cannot bind to 127.0.0.1 due to EPERM even with escalated permissions; test not executed).
+
 ## Assessment and Evaluation
 
 The goal is to centralize the scoreboard component for use in both `battleClassic.html` and `battleCLI.html`.

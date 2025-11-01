@@ -136,7 +136,6 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
       expect(root.dataset.round).toBe("3");
       expect(root.dataset.target).toBe("5");
     }
-
   });
 
   it("falls back to engine target when updateRoundHeader receives undefined", async () => {

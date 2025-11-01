@@ -3383,7 +3383,6 @@ export async function init() {
 
       // Initialize PRD battle scoreboard adapter for canonical events
       initBattleScoreboardAdapter();
-
     } catch (error) {
       console.warn("Failed to initialize shared Scoreboard in CLI:", error);
     }
