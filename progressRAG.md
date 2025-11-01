@@ -712,14 +712,73 @@ test("judokon.getById returns full record", async () => {
 }}
 ```
 
-#### Phase 3.4: Random & Comparison Tools (Pending)
+#### Phase 3.4: Random & Comparison Tools ✅ COMPLETE
 
-- [ ] Add `judokon.random` tool for random selection
-- [ ] Add `judokon.compare` tool for stat comparison
-- [ ] Add `judokon.resolveCode` tool for card code lookup
+**Completed**: Dec 19, 2024 - 23:38 UTC
+
+**Implementation Details**:
+
+- ✅ Created `src/helpers/randomJudoka.js` (228 lines)
+  - validateRandomFilters() - Validate country, rarity, weightClass filters
+  - filterJudokaByFilters() - Apply filters to judoka array
+  - selectRandomElement() - Select random element from array
+  - selectRandomJudoka() - Random judoka selection with optional filters
+  - getRandomJudokaWithMetadata() - Random selection with filter metadata
+  - getAvailableFilterOptions() - Get unique filter options from dataset
+  - getRandomSelectionDocumentation() - Provide documentation and examples
+
+- ✅ Created `tests/randomJudoka.test.js` (60 comprehensive tests)
+  - Filter validation tests (8 tests)
+  - Filter application tests (7 tests)
+  - Random element selection (4 tests)
+  - Random judoka selection (7 tests)
+  - Metadata return (7 tests)
+  - Available filter options (7 tests)
+  - Documentation (4 tests)
+  - Edge cases and integration (9 tests)
+
+- ✅ Integrated random tool into MCP server
+  - Added `judokon.random` tool to server
+  - Updated tool schema with filter parameters
+  - Implemented handler for random selection
+  - Support for country, rarity, weightClass filters
+
+**Test Results**:
+
+- Random judoka: 60/60 ✅ PASSING
+- MCP server: 23/23 ✅ PASSING
+- Combined: 83/83 ✅ PASSING
+- Playwright E2E: 13/13 ✅ PASSING
+- ESLint: ✅ PASS (no errors)
+- Prettier: ✅ PASS (properly formatted)
+
+**Filter Types Supported**:
+
+1. **Country Filter** - Filter by country (e.g., "Japan")
+2. **Rarity Filter** - Filter by rarity (Common, Epic, Legendary)
+3. **Weight Class Filter** - Filter by weight class (e.g., "+100", "-60")
+4. **Composite Filters** - Combine multiple filters with AND logic
+
+**Example Queries**:
+
+```javascript
+// Random judoka from any country
+{query: judokon.random}
+
+// Random judoka from Japan
+{filters: {country: "Japan"}}
+
+// Random legendary judoka
+{filters: {rarity: "Legendary"}}
+
+// Random heavyweight from Japan
+{filters: {country: "Japan", weightClass: "+100"}}
+```
 
 #### Future Enhancements (3.5+)
 
+- [ ] Add `judokon.compare` tool for stat comparison between judoka
+- [ ] Add `judokon.resolveCode` tool for card code lookup
 - [ ] Add batch query support for multiple searches
 - [ ] Support for offline mode without network access
 
@@ -728,6 +787,7 @@ test("judokon.getById returns full record", async () => {
 - ✅ Phase 3.1 - Search latency reduced with caching
 - ✅ Phase 3.2 - Query relevance improved with synonym expansion
 - ✅ Phase 3.3 - Advanced filters implemented (stat thresholds, weight ranges, composite filters)
+- ✅ Phase 3.4 - Random judoka selection tool implemented
 - ⏳ Phase 3.4 - Random & comparison tools (pending)
 - 🎯 Final: Support for 10k+ judoka records without performance degradation
 - 🎯 Final: Comprehensive integration with external MCP clients

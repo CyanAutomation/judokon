@@ -14,6 +14,14 @@ import queryRag from "../src/helpers/queryRag.js";
 import { LRUCache } from "../src/helpers/lruCache.js";
 import { expandQuery } from "../src/helpers/queryExpander.js";
 import { applyAdvancedFilters, validateAdvancedFilters } from "../src/helpers/advancedFilters.js";
+import {
+  validateRandomFilters,
+  selectRandomJudoka,
+  // eslint-disable-next-line no-unused-vars
+  getRandomJudokaWithMetadata,
+  // eslint-disable-next-line no-unused-vars
+  getAvailableFilterOptions
+} from "../src/helpers/randomJudoka.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -190,6 +198,35 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             }
           },
           required: ["id"]
+        }
+      },
+      {
+        name: "judokon.random",
+        description:
+          "Select a random judoka from the database with optional filtering by country, rarity, or weight class",
+        inputSchema: {
+          type: "object",
+          properties: {
+            filters: {
+              type: "object",
+              description: "Optional filter criteria for random selection",
+              properties: {
+                country: {
+                  type: "string",
+                  description: "Filter by country (e.g., 'Japan')"
+                },
+                rarity: {
+                  type: "string",
+                  enum: ["Common", "Epic", "Legendary"],
+                  description: "Filter by judoka rarity"
+                },
+                weightClass: {
+                  type: "string",
+                  description: "Filter by weight class (e.g., '+100', '-60')"
+                }
+              }
+            }
+          }
         }
       }
     ]
@@ -495,6 +532,71 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             type: "text",
             text: `Lookup failed: ${error.message || error}`
+          }
+        ],
+        isError: true
+      };
+    }
+  }
+
+  if (name === "judokon.random") {
+    const { filters = {} } = args;
+
+    try {
+      const validatedFilters = validateRandomFilters(filters);
+      const selectedJudoka = selectRandomJudoka(judokaData, validatedFilters);
+
+      if (!selectedJudoka) {
+        const filterText =
+          Object.keys(validatedFilters).length > 0
+            ? ` matching filters: ${JSON.stringify(validatedFilters)}`
+            : "";
+        return {
+          content: [
+            {
+              type: "text",
+              text: `No judoka found${filterText}`
+            }
+          ]
+        };
+      }
+
+      const { firstname, surname, country, rarity, weightClass, stats, bio, gender, cardCode } =
+        selectedJudoka;
+
+      const statsText =
+        stats && Object.values(stats).some((v) => v > 0)
+          ? `Power=${stats.power}, Speed=${stats.speed}, Technique=${stats.technique}, Kumikata=${stats.kumikata}, Newaza=${stats.newaza}`
+          : "Stats not available";
+
+      const bioText = bio ? `\n\n${bio}` : "";
+      const filterSummary =
+        Object.keys(validatedFilters).length > 0
+          ? `\n(Selected with filters: ${JSON.stringify(validatedFilters)})`
+          : "\n(Randomly selected from all judoka)";
+
+      return {
+        content: [
+          {
+            type: "text",
+            text:
+              `**${firstname} ${surname}** (${rarity})${filterSummary}\n\n` +
+              `Country: ${country}\n` +
+              `Weight Class: ${weightClass}\n` +
+              `Gender: ${gender}\n` +
+              `Stats: ${statsText}\n` +
+              `Card Code: ${cardCode}` +
+              bioText
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Judokon random failed:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Random selection failed: ${error.message || error}`
           }
         ],
         isError: true
