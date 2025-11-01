@@ -52,7 +52,7 @@ describe("Battle CLI helpers", () => {
       const checkbox = document.getElementById("verbose-toggle");
       const section = document.getElementById("cli-verbose-section");
       const log = document.getElementById("cli-verbose-log");
-      const header = document.getElementById("cli-round");
+      const header = document.getElementById("round-counter");
 
       expect(section.hidden).toBe(true);
       expect(section.getAttribute("aria-expanded")).toBe("false");
@@ -103,7 +103,7 @@ describe("Battle CLI helpers", () => {
       await Promise.resolve();
 
       expect(section.hidden).toBe(false);
-      const header = document.getElementById("cli-round");
+      const header = document.getElementById("round-counter");
       expect(header.textContent).toBe("Round 2 Target: 7");
     });
 
@@ -236,8 +236,8 @@ describe("Battle CLI helpers", () => {
 
       mod.cli.appendTranscript({ from: "roundStart", to: "Round resolved" });
 
-      const header = document.getElementById("cli-round");
-      const score = document.getElementById("cli-score");
+      const header = document.getElementById("round-counter");
+      const score = document.getElementById("score-display");
       const roundMessage = document.getElementById("round-message");
       const announcement = document.getElementById("match-announcement");
       const verboseLog = document.getElementById("cli-verbose-log");
@@ -246,7 +246,7 @@ describe("Battle CLI helpers", () => {
       const resetPromise = resetMatch();
 
       expect(header.textContent).toBe("Round 0 Target: 9");
-      expect(score.textContent).toBe("You: 0 Opponent: 0");
+      expect(score.textContent.replace(/\s+/g, " ").trim()).toBe("You: 0 Opponent: 0");
       expect(roundMessage.textContent).toBe("");
       expect(announcement.textContent).toBe("");
       expect(verboseLog.textContent).toBe("");

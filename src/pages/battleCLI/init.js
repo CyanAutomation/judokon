@@ -3205,37 +3205,6 @@ function handleBattleStateChange({ from, to }) {
 }
 
 /**
- * Hide legacy CLI scoreboard nodes when the shared scoreboard replaces them.
- *
- * @summary Apply hidden state and descriptive ARIA labels to the legacy
- * scoreboard nodes after the shared scoreboard becomes active.
- *
- * @pseudocode
- * 1. Bail out when the DOM is unavailable.
- * 2. Iterate over the legacy node descriptors.
- * 3. Query each node by id; when found, hide it and set accessibility metadata.
- *
- * @returns {void}
- */
-function hideLegacyScoreboardElements() {
-  if (!hasDocument) return;
-
-  const legacyElements = [
-    { id: "cli-round", label: "Legacy round display (replaced by shared scoreboard)" },
-    { id: "cli-score", label: "Legacy score display (replaced by shared scoreboard)" }
-  ];
-
-  legacyElements.forEach(({ id, label }) => {
-    const element = document.getElementById(id);
-    if (!element) return;
-
-    element.style.display = "none";
-    element.setAttribute("aria-hidden", "true");
-    element.setAttribute("aria-label", label);
-  });
-}
-
-/**
  * Bind classic battle CLI interactions and lifecycle hooks to the page.
  *
  * @summary Install CLI-specific DOM bindings and lifecycle listeners so the
@@ -3403,8 +3372,6 @@ export async function init() {
   await resetPromise;
 
   if (hasDocument) {
-    let sharedScoreboardInitialized = false;
-
     // Phase 2: Initialize shared Scoreboard alongside CLI-specific logic
     try {
       // Setup shared Scoreboard component with timer controls
@@ -3417,20 +3384,8 @@ export async function init() {
       // Initialize PRD battle scoreboard adapter for canonical events
       initBattleScoreboardAdapter();
 
-      // Reveal standard scoreboard nodes (remove hidden state)
-      const standardNodes = document.querySelector(".standard-scoreboard-nodes");
-      if (standardNodes) {
-        standardNodes.style.display = "block";
-        standardNodes.removeAttribute("aria-hidden");
-      }
-
-      sharedScoreboardInitialized = true;
     } catch (error) {
       console.warn("Failed to initialize shared Scoreboard in CLI:", error);
-    }
-
-    if (sharedScoreboardInitialized) {
-      hideLegacyScoreboardElements();
     }
   }
 

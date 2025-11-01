@@ -204,11 +204,11 @@ test.describe("CLI Battle Interface", () => {
       await expect(title).toContainText("Classic Battle (CLI)");
       await expect(title.locator('[data-testid="home-link"]')).toBeVisible();
 
-      const roundDisplay = page.locator("#cli-round");
+      const roundDisplay = page.locator("#round-counter");
       await expect(roundDisplay).toContainText("Round");
       await expect(roundDisplay).toContainText("Target: 5");
 
-      const scoreDisplay = page.locator("#cli-score");
+      const scoreDisplay = page.locator("#score-display");
       await expect(scoreDisplay).toContainText("You: 0 Opponent: 0");
       await expect(scoreDisplay).toHaveAttribute("data-score-player", "0");
       await expect(scoreDisplay).toHaveAttribute("data-score-opponent", "0");

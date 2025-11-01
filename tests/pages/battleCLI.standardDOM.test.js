@@ -22,22 +22,25 @@ describe("battleCLI standard DOM nodes (Phase 1)", () => {
     expect(document.getElementById("score-display")).toBeTruthy();
   });
 
-  it("should have standard nodes properly hidden and aria-hidden", () => {
-    const container = document.querySelector(".standard-scoreboard-nodes");
-    expect(container).toBeTruthy();
-    expect(container.style.display).toBe("none");
-    expect(container.getAttribute("aria-hidden")).toBe("true");
+  it("should keep scoreboard nodes visible within the CLI header", () => {
+    const nodes = [
+      document.getElementById("next-round-timer"),
+      document.getElementById("round-counter"),
+      document.getElementById("score-display")
+    ];
+
+    nodes.forEach((node) => {
+      expect(node).toBeTruthy();
+      expect(node.getAttribute("aria-hidden")).not.toBe("true");
+      expect(window.getComputedStyle(node).display).not.toBe("none");
+    });
   });
 
-  it("should maintain existing CLI elements alongside standard ones", () => {
-    // Verify existing CLI elements still exist
-    expect(document.getElementById("cli-round")).toBeTruthy();
-    expect(document.getElementById("cli-score")).toBeTruthy();
+  it("should maintain CLI-specific attributes alongside shared nodes", () => {
     expect(document.getElementById("cli-countdown")).toBeTruthy();
-
-    // Verify both old and new coexist
-    expect(document.getElementById("cli-score")).toBeTruthy();
-    expect(document.getElementById("score-display")).toBeTruthy();
+    const score = document.getElementById("score-display");
+    expect(score.dataset.scorePlayer).toBe("0");
+    expect(score.dataset.scoreOpponent).toBe("0");
   });
 
   it("should have proper ARIA attributes on standard nodes", () => {
@@ -53,8 +56,9 @@ describe("battleCLI standard DOM nodes (Phase 1)", () => {
     // Round counter is atomic; live politeness is provided when rendered dynamically
     expect(counter.getAttribute("aria-atomic")).toBe("true");
 
-    expect(score.getAttribute("aria-live")).toBe("off");
+    expect(score.getAttribute("aria-live")).toBe("polite");
     expect(score.getAttribute("aria-atomic")).toBe("true");
+    expect(score.getAttribute("role")).toBe("status");
 
     expect(message.getAttribute("aria-live")).toBe("polite");
     expect(message.getAttribute("aria-atomic")).toBe("true");

@@ -39,7 +39,7 @@ describe("battleCLI accessibility live regions", () => {
     });
 
     expect(roundMessage?.textContent).toBe("You win! (Speed – You: 42 Opponent: 17)");
-    const scoreLine = document.getElementById("cli-score");
+    const scoreLine = document.getElementById("score-display");
     expect(scoreLine?.getAttribute("aria-live")).toBe("polite");
     expect(scoreLine?.dataset.scorePlayer).toBe("1");
     expect(scoreLine?.dataset.scoreOpponent).toBe("0");

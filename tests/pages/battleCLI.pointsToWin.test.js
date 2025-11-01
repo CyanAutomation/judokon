@@ -99,15 +99,16 @@ async function seedActiveRoundState() {
 }
 
 function expectResetState(target) {
-  const roundHeader = document.getElementById("cli-round");
+  const roundHeader = document.getElementById("round-counter");
   expect(roundHeader.textContent).toBe(`Round 0 Target: ${target}`);
+  expect(roundHeader.dataset.target).toBe(String(target));
   const rootElement = document.getElementById("cli-root");
   expect(rootElement.dataset.round).toBe("0");
   expect(rootElement.dataset.target).toBe(String(target));
-  const scoreLine = document.getElementById("cli-score");
+  const scoreLine = document.getElementById("score-display");
   expect(scoreLine.dataset.scorePlayer).toBe("0");
   expect(scoreLine.dataset.scoreOpponent).toBe("0");
-  expect(scoreLine.textContent).toBe("You: 0 Opponent: 0");
+  expect(scoreLine.textContent.replace(/\s+/g, " ").trim()).toBe("You: 0 Opponent: 0");
   const roundMessage = document.getElementById("round-message");
   expect(roundMessage.textContent).toBe("");
   const statsList = document.getElementById("cli-stats");
@@ -139,8 +140,10 @@ describe("battleCLI points select", () => {
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     await seedActiveRoundState();
-    expect(document.getElementById("cli-round").textContent).toBe("Round 7 Target: 5");
-    expect(document.getElementById("cli-score").textContent).toBe("You: 2 Opponent: 3");
+    expect(document.getElementById("round-counter").textContent).toBe("Round 7 Target: 5");
+    expect(
+      document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim()
+    ).toBe("You: 2 Opponent: 3");
     expect(document.getElementById("cli-stats").querySelector(".selected")).not.toBeNull();
 
     select.value = "10";
@@ -184,8 +187,9 @@ describe("battleCLI points select", () => {
 
     expect(getPointsToWin()).toBe(target);
     expect(setPointsToWin).toHaveBeenCalledWith(target);
-    const roundHeader = document.getElementById("cli-round");
+    const roundHeader = document.getElementById("round-counter");
     expect(roundHeader.textContent).toBe(`Round 0 Target: ${target}`);
+    expect(roundHeader.dataset.target).toBe(String(target));
     const rootElement = document.getElementById("cli-root");
     expect(rootElement.dataset.target).toBe(String(target));
     expect(rootElement.dataset.round).toBe("0");
@@ -220,8 +224,9 @@ describe("battleCLI points select", () => {
 
     const selectAfterToggle = document.getElementById("points-select");
     expect(selectAfterToggle.value).toBe("10");
-    const roundHeader = document.getElementById("cli-round");
+    const roundHeader = document.getElementById("round-counter");
     expect(roundHeader.textContent).toBe("Round 0 Target: 10");
+    expect(roundHeader.dataset.target).toBe("10");
     const rootElement = document.getElementById("cli-root");
     expect(rootElement.dataset.target).toBe("10");
     expect(rootElement.dataset.round).toBe("0");
@@ -253,8 +258,9 @@ describe("battleCLI points select", () => {
     expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("10");
     expect(getPointsToWin()).toBe(10);
     expect(setPointsToWin).not.toHaveBeenCalled();
-    const roundHeader = document.getElementById("cli-round");
+    const roundHeader = document.getElementById("round-counter");
     expect(roundHeader.textContent).toBe("Round 0 Target: 10");
+    expect(roundHeader.dataset.target).toBe("10");
     const rootElement = document.getElementById("cli-root");
     expect(rootElement.dataset.target).toBe("10");
   });

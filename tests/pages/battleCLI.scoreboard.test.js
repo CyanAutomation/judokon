@@ -63,7 +63,7 @@ describe("battleCLI scoreboard", () => {
     const { handlers } = await loadHandlers({ playerScore: 1, opponentScore: 0 });
     handlers.ensureCliDomForTest({ reset: true });
     handlers.handleRoundResolved({ detail: { result: { message: "Win" } } });
-    const el = document.getElementById("cli-score");
+    const el = document.getElementById("score-display");
     expect(el.dataset.scorePlayer).toBe("1");
     expect(el.dataset.scoreOpponent).toBe("0");
   });
@@ -78,7 +78,7 @@ describe("battleCLI scoreboard", () => {
     getScoresMock.mockReturnValue({ playerScore: 0, opponentScore: 1 });
     handlers.handleRoundResolved({ detail: { result: { message: "Loss" } } });
     handlers.handleRoundResolved({ detail: { result: { message: "Loss" } } });
-    const el = document.getElementById("cli-score");
+    const el = document.getElementById("score-display");
     expect(el.dataset.scorePlayer).toBe("0");
     expect(el.dataset.scoreOpponent).toBe("1");
   });
@@ -93,7 +93,7 @@ describe("battleCLI scoreboard", () => {
     getScoresMock.mockReturnValue({ playerScore: 0, opponentScore: 0 });
     handlers.handleRoundResolved({ detail: { result: { message: "Draw" } } });
     handlers.handleRoundResolved({ detail: { result: { message: "Draw" } } });
-    const el = document.getElementById("cli-score");
+    const el = document.getElementById("score-display");
     expect(el.dataset.scorePlayer).toBe("0");
     expect(el.dataset.scoreOpponent).toBe("0");
   });

@@ -68,11 +68,10 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
     updateScoreLine();
 
-    // Verify CLI element shows enhanced format when shared component works
-    const cliScore = document.getElementById("cli-score");
-    expect(cliScore.textContent).toBe("You: 3 Opponent: 2");
-    expect(cliScore.dataset.scorePlayer).toBe("3");
-    expect(cliScore.dataset.scoreOpponent).toBe("2");
+    const scoreDisplay = document.getElementById("score-display");
+    expect(scoreDisplay.textContent.replace(/\s+/g, " ").trim()).toBe("You: 3 Opponent: 2");
+    expect(scoreDisplay.dataset.scorePlayer).toBe("3");
+    expect(scoreDisplay.dataset.scoreOpponent).toBe("2");
   });
 
   it("should primarily use shared Scoreboard for round counter updates", async () => {
@@ -82,9 +81,9 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
     updateRoundHeader(4, 7);
 
-    // Verify CLI element shows target format for consistency
-    const cliRound = document.getElementById("cli-round");
-    expect(cliRound.textContent).toBe("Round 4 Target: 7");
+    const roundCounter = document.getElementById("round-counter");
+    expect(roundCounter.textContent).toBe("Round 4 Target: 7");
+    expect(roundCounter.dataset.target).toBe("7");
 
     // Verify root dataset still updated
     const root = document.getElementById("cli-root") || document.body;
@@ -126,8 +125,10 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
     // Verify fallback updates work
     expect(document.getElementById("round-message").textContent).toBe("Fallback message");
-    expect(document.getElementById("cli-score").textContent).toBe("You: 1 Opponent: 0");
-    expect(document.getElementById("cli-round").textContent).toBe("Round 2 Target: 3");
+    expect(
+      document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim()
+    ).toBe("You: 1 Opponent: 0");
+    expect(document.getElementById("round-counter").textContent).toBe("Round 2 Target: 3");
   });
 
   it("should prefer standard scoreboard elements in tests", async () => {
@@ -139,8 +140,7 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     expect(document.getElementById("next-round-timer")).toBeTruthy();
     expect(document.getElementById("round-message")).toBeTruthy();
 
-    // CLI elements should still exist but be secondary
-    expect(document.getElementById("cli-score")).toBeTruthy();
-    expect(document.getElementById("cli-round")).toBeTruthy();
+    // CLI countdown remains for compatibility
+    expect(document.getElementById("cli-countdown")).toBeTruthy();
   });
 });

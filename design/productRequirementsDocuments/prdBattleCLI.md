@@ -98,7 +98,7 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 | **P1** | Timer Display       | 1 Hz countdown; expiry behavior mirrors engine.                                                       |
 | **P1** | Outcome & Score     | Show Win/Loss/Draw with compared values; update score immediately.                                    |
 | **P1** | Accessibility Hooks | Announce via aria-live/role=status; logical focus order; visible focus ring.                          |
-| **P1** | Test Hooks          | Stable selectors (`#cli-root`, `#cli-countdown`, `#cli-score`, etc.); data-round/data-remaining-time. |
+| **P1** | Test Hooks          | Stable selectors (`#cli-root`, `#cli-countdown`, `#score-display`, etc.); data-round/data-remaining-time. |
 | **P2** | Settings            | Win target selector; persist via localStorage; invalid resets.                                        |
 | **P2** | Deterministic Seed  | Input/`?seed=` param; persist last seed; invalid fallback.                                            |
 | **P2** | Round Context       | Header shows “Round X” and win target; optional state badge.                                          |
@@ -196,7 +196,7 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 - Timer behavior: Countdown updates at 1 Hz; expiry triggers auto-select if `autoSelect` is enabled and mirrors engine behavior.
 - Outcome & score: Win/Loss/Draw states render correctly and scores update immediately after round resolution.
 - Accessibility: Screen reader announcements exist for prompts/timers/outcomes using `aria-live` regions; logical focus order is preserved; WCAG 2.1 AA checks pass in CI.
-- Test hooks: Stable selectors exist (`#cli-root`, `#cli-countdown`, `#cli-score`, `#snackbar-container`, `data-round`, `data-remaining-time`) and are used by Playwright tests.
+- Test hooks: Stable selectors exist (`#cli-root`, `#cli-countdown`, `#score-display`, `#snackbar-container`, `data-round`, `data-remaining-time`) and are used by Playwright tests.
 - Determinism: `?seed=` param produces repeatable runs; invalid seeds fall back to a deterministic default and are logged.
 - Settings persistence: Win target persists under `localStorage` key `battleCLI.pointsToWin` and restores on startup.
 - Observability: Verbose log mode shows timestamped transitions and can be toggled via `cliVerbose` feature flag; logs are silenced in CI.
