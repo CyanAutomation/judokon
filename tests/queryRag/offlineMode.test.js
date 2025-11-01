@@ -33,20 +33,24 @@ describe("queryRag offline mode with local MiniLM model", () => {
     // Mock fs to verify stat() calls check the correct path
     const statMock = vi.fn(async (probedPath) => {
       const normalizedProbedPath = path.normalize(probedPath);
+      const normalizedOnnxPath = path.normalize(path.join("onnx", "model_quantized.onnx"));
+      const normalizedTokenizerPath = path.normalize("tokenizer.json");
+      const normalizedTokenizerConfigPath = path.normalize("tokenizer_config.json");
+      const normalizedConfigPath = path.normalize("config.json");
 
-      if (normalizedProbedPath.endsWith(path.join("onnx", "model_quantized.onnx"))) {
+      if (normalizedProbedPath.endsWith(normalizedOnnxPath)) {
         return { size: 600_000 };
       }
 
-      if (normalizedProbedPath.endsWith("tokenizer.json")) {
+      if (normalizedProbedPath.endsWith(normalizedTokenizerPath)) {
         return { size: 12_000 };
       }
 
-      if (normalizedProbedPath.endsWith("tokenizer_config.json")) {
+      if (normalizedProbedPath.endsWith(normalizedTokenizerConfigPath)) {
         return { size: 1_500 };
       }
 
-      if (normalizedProbedPath.endsWith("config.json")) {
+      if (normalizedProbedPath.endsWith(normalizedConfigPath)) {
         return { size: 600 };
       }
 
