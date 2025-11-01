@@ -576,11 +576,57 @@ const result = await mcpClient.call_tool("judokon.search", {
 });
 ```
 
-#### Task 2: Add `judokon.getById` tool (Next)
+#### Task 2: Add `judokon.getById` tool — ✅ Complete
 
-**Status:** 📋 Planned
+**What was done:**
 
-#### Task 3: Create integration tests (After Task 2)
+- Extended `scripts/mcp-rag-server.mjs` with `judokon.getById` tool for direct judoka lookup
+- Added tool definition with input schema accepting numeric or string IDs
+- Implemented `handleJudokonGetById()` function with robust ID normalization
+- Added tool call handler that formats judoka data with stats and bio information
+- Extended test suite with comprehensive getById tests
+
+**Implementation details:**
+
+- **ID Normalization**: Supports both string and numeric IDs, normalizing to string for Map lookup
+- **Response Format**: Returns complete judoka record with formatted stats (Power, Speed, Technique, Kumikata, Newaza) and bio/profile link if available
+- **Error Handling**: Gracefully handles not-found cases and lookup errors
+
+**Files modified:**
+
+- `scripts/mcp-rag-server.mjs` — Added tool definition (lines 136-148), handler function (lines 227-274), and tool call handler (lines 330-398)
+- `tests/mcp-rag-server.test.js` — Added 8 new tests for getById functionality
+
+**Test Results:**
+
+```text
+Test Files:  1 passed (1)
+Tests:       23 passed (23) ← 16 from Task 1 + 7 new getById tests
+✅ All tests pass
+```
+
+**Test Coverage (getById):**
+
+- ✅ Retrieve judoka by numeric ID
+- ✅ Retrieve judoka by string ID
+- ✅ Return undefined for non-existent ID
+- ✅ Return all required judoka properties
+- ✅ Valid stats structure with numeric values
+- ✅ ID normalization (numeric to string)
+- ✅ Data preservation on lookup
+
+**Example usage:**
+
+```javascript
+// Fetch complete judoka record by ID
+const result = await mcpClient.call_tool("judokon.getById", { id: 42 });
+// Returns: { found: true, id: 42, name: "...", country: "...", stats: {...}, bio: "..." }
+
+// Also works with string IDs
+const result = await mcpClient.call_tool("judokon.getById", { id: "42" });
+```
+
+#### Task 3: Create integration tests (Next)
 
 **Status:** 📋 Planned
 

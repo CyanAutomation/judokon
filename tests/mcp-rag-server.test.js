@@ -192,4 +192,102 @@ describe("MCP RAG Server - judokon.search tool", () => {
       expect(embeddingsArray[0]).toHaveProperty("embedding");
     });
   });
+
+  describe("judokon.getById functionality", () => {
+    it("should retrieve a judoka by numeric ID", () => {
+      const testJudoka = judokaData[0];
+      expect(testJudoka).toBeDefined();
+
+      const looked = judokaById.get(String(testJudoka.id));
+      expect(looked).toBeDefined();
+      expect(looked.id).toBe(testJudoka.id);
+      expect(looked.firstname).toBe(testJudoka.firstname);
+      expect(looked.surname).toBe(testJudoka.surname);
+    });
+
+    it("should retrieve a judoka by string ID", () => {
+      const testJudoka = judokaData[1];
+      expect(testJudoka).toBeDefined();
+
+      const stringId = String(testJudoka.id);
+      const looked = judokaById.get(stringId);
+      expect(looked).toBeDefined();
+      expect(looked.id).toBe(testJudoka.id);
+    });
+
+    it("should return undefined for non-existent ID", () => {
+      const nonExistentId = "999999";
+      const looked = judokaById.get(nonExistentId);
+      expect(looked).toBeUndefined();
+    });
+
+    it("should return all required judoka properties", () => {
+      const testJudoka = judokaData[0];
+      const requiredFields = [
+        "id",
+        "firstname",
+        "surname",
+        "country",
+        "weightClass",
+        "gender",
+        "rarity",
+        "category",
+        "stats",
+        "cardCode"
+      ];
+
+      const looked = judokaById.get(String(testJudoka.id));
+      expect(looked).toBeDefined();
+
+      for (const field of requiredFields) {
+        expect(looked).toHaveProperty(field);
+      }
+    });
+
+    it("should have valid stats structure", () => {
+      const testJudoka = judokaData[0];
+      const looked = judokaById.get(String(testJudoka.id));
+
+      expect(looked.stats).toBeDefined();
+      expect(looked.stats).toHaveProperty("power");
+      expect(looked.stats).toHaveProperty("speed");
+      expect(looked.stats).toHaveProperty("technique");
+      expect(looked.stats).toHaveProperty("kumikata");
+      expect(looked.stats).toHaveProperty("newaza");
+
+      // Stats should be numbers or zero
+      const statKeys = ["power", "speed", "technique", "kumikata", "newaza"];
+      for (const key of statKeys) {
+        expect(typeof looked.stats[key]).toBe("number");
+        expect(looked.stats[key]).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it("should handle ID normalization (numeric to string)", () => {
+      const testJudoka = judokaData[0];
+      const numericId = testJudoka.id;
+      const stringId = String(numericId);
+
+      const lookedByNum = judokaById.get(stringId);
+      const lookedByStr = judokaById.get(stringId);
+
+      expect(lookedByNum).toBeDefined();
+      expect(lookedByStr).toBeDefined();
+      expect(lookedByNum.id).toBe(lookedByStr.id);
+    });
+
+    it("should preserve all judoka data on lookup", () => {
+      const testJudoka = judokaData[0];
+      const looked = judokaById.get(String(testJudoka.id));
+
+      // Verify key data is preserved
+      expect(looked.firstname).toBe(testJudoka.firstname);
+      expect(looked.surname).toBe(testJudoka.surname);
+      expect(looked.country).toBe(testJudoka.country);
+      expect(looked.rarity).toBe(testJudoka.rarity);
+      expect(looked.gender).toBe(testJudoka.gender);
+      expect(looked.weightClass).toBe(testJudoka.weightClass);
+      expect(looked.cardCode).toBe(testJudoka.cardCode);
+    });
+  });
 });

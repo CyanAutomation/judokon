@@ -373,7 +373,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [
           {
             type: "text",
-            text: `**${name}** (${rarity})\n\n` +
+            text:
+              `**${name}** (${rarity})\n\n` +
               `Country: ${country}\n` +
               `Weight Class: ${weightClass}\n` +
               `Gender: ${gender}\n` +
