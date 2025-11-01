@@ -23,6 +23,12 @@ describe("queryRag offline mode with local MiniLM model", () => {
     delete process.env.RAG_ALLOW_LEXICAL_FALLBACK;
     vi.clearAllMocks();
     vi.restoreAllMocks();
+    vi.doUnmock("../../src/helpers/api/vectorSearchPage.js");
+    vi.doUnmock("../../src/helpers/vectorSearch/index.js");
+    vi.doUnmock("../../src/helpers/queryRag.js");
+    vi.doUnmock("fs/promises");
+    vi.doUnmock("module");
+    vi.doUnmock("@xenova/transformers");
   });
 
   /**
@@ -113,8 +119,14 @@ describe("queryRag offline mode with local MiniLM model", () => {
         return vi.fn(async () => ({
           data: new Float32Array([0.1, 0.2, 0.3])
         }));
-      }),
-      searchVectorDatabase: vi.fn(async () => mockResults)
+      })
+    }));
+
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        expandQueryWithSynonyms: vi.fn(async (q) => q),
+        findMatches: vi.fn(async () => mockResults)
+      }
     }));
 
     const { default: queryRag } = await import("../../src/helpers/queryRag.js");
@@ -132,6 +144,9 @@ describe("queryRag offline mode with local MiniLM model", () => {
   it("fails with actionable error when local model missing in strict offline mode", async () => {
     process.env.RAG_STRICT_OFFLINE = "1";
 
+    // CRITICAL: Must reset modules BEFORE setting up mocks to ensure clean state
+    vi.resetModules();
+
     // Mock fs to simulate missing model files
     const statMock = vi.fn(async () => {
       throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
@@ -139,9 +154,30 @@ describe("queryRag offline mode with local MiniLM model", () => {
 
     vi.doMock("fs/promises", () => ({
       stat: statMock,
+      mkdir: vi.fn().mockResolvedValue(undefined),
+      cp: vi.fn().mockResolvedValue(undefined),
       access: vi.fn(async () => {
         throw new Error("Model not found");
       })
+    }));
+
+    // Mock module to prevent require resolution issues
+    vi.doMock("module", () => ({
+      createRequire: () => ({
+        resolve: () => {
+          throw new Error("Module not found");
+        }
+      })
+    }));
+
+    // Mock @xenova/transformers to prevent actual model loading attempts
+    vi.doMock("@xenova/transformers", () => ({
+      pipeline: vi.fn(async () => vi.fn()),
+      env: {
+        allowLocalModels: true,
+        localModelPath: undefined,
+        backends: { onnx: { wasm: {} } }
+      }
     }));
 
     const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
@@ -160,15 +196,28 @@ describe("queryRag offline mode with local MiniLM model", () => {
       .spyOn(global, "fetch")
       .mockRejectedValue(new Error("Network should not be called"));
 
-    // Mock fs as available
+    // Mock fs as available with proper file sizes
     vi.doMock("fs/promises", () => ({
-      stat: vi.fn().mockResolvedValue({ size: 1024 })
+      stat: vi.fn(async (filePath) => {
+        // Return appropriate sizes based on file type
+        if (filePath.endsWith(".onnx")) {
+          return { size: 600_000 }; // Large enough for model file
+        }
+        if (filePath.endsWith("tokenizer.json")) {
+          return { size: 12_000 }; // Large enough for tokenizer
+        }
+        return { size: 1_024 }; // Sufficient for config files
+      })
     }));
 
     // Mock transformers with successful local load
     vi.doMock("@xenova/transformers", () => ({
       pipeline: vi.fn(async () => vi.fn()),
-      env: { allowLocalModels: true, localModelPath: rootDir }
+      env: {
+        allowLocalModels: true,
+        localModelPath: rootDir,
+        backends: { onnx: { wasm: {} } }
+      }
     }));
 
     const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
