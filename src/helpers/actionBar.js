@@ -45,7 +45,7 @@ import logger from "./logger.js";
 /**
  * @typedef {object} ActionBarState
  * @property {boolean} statButtonsEnabled - Whether stat buttons currently accept input.
- * @property {string} actionState - Current action button state (start, next, draw, done).
+ * @property {"start"|"next"|"draw"|"done"} actionState - Current action button state (start, next, draw, done).
  * @property {boolean} actionButtonEnabled - Whether the action button is interactive.
  * @property {string} mode - Rendering mode currently applied to the component.
  */
