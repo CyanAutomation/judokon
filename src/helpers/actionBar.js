@@ -27,6 +27,40 @@
 import { STATS } from "./BattleEngine.js";
 import logger from "./logger.js";
 
+/**
+ * @typedef {object} ActionBarHandlers
+ * @property {(stat: string) => void} [onStatSelected] - Invoked when a stat button is pressed.
+ * @property {() => void} [onActionClick] - Invoked when the action button is pressed.
+ * @property {() => void} [onOptionsClick] - Invoked when the options button is pressed.
+ */
+
+/**
+ * @typedef {object} ActionBarOptions
+ * @property {IBattleEngine} engine - Active battle engine instance that emits round events.
+ * @property {"classic"|"cli"|"bandit"|"quick"} [mode="classic"] - Rendering mode that controls styling.
+ * @property {HTMLElement} [container=document.body] - Element that receives the rendered action bar.
+ * @property {ActionBarHandlers} [handlers={}] - Callback hooks for UI interactions.
+ */
+
+/**
+ * @typedef {object} ActionBarState
+ * @property {boolean} statButtonsEnabled - Whether stat buttons currently accept input.
+ * @property {string} actionState - Current action button state (start, next, draw, done).
+ * @property {boolean} actionButtonEnabled - Whether the action button is interactive.
+ * @property {string} mode - Rendering mode currently applied to the component.
+ */
+
+/**
+ * @typedef {object} ActionBarAPI
+ * @property {() => HTMLElement} render - Render the action bar and return the root element.
+ * @property {() => void} destroy - Tear down the component and listeners.
+ * @property {(state?: object) => void} update - Apply an explicit engine state snapshot.
+ * @property {(enabled: boolean) => void} setStatButtonsEnabled - Enable or disable stat selection controls.
+ * @property {(state: "start"|"next"|"draw"|"done", disabled?: boolean) => void} setActionButtonState - Update the action button state.
+ * @property {() => ActionBarState} getState - Snapshot the current internal state.
+ * @property {HTMLElement|null} element - Current DOM element reference or null when unrendered.
+ */
+
 const STAT_LABELS = {
   power: "Power",
   speed: "Speed",
@@ -38,15 +72,14 @@ const STAT_LABELS = {
 /**
  * Create a battle action bar component.
  *
- * @param {object} options - Configuration options.
- * @param {IBattleEngine} options.engine - The active battle engine instance.
- * @param {string} [options.mode="classic"] - Battle mode (classic, cli, bandit, quick).
- * @param {HTMLElement} [options.container] - Parent container. Defaults to body.
- * @param {object} [options.handlers={}] - Callback handlers.
- * @param {Function} [options.handlers.onStatSelected] - Called when a stat button is clicked.
- * @param {Function} [options.handlers.onActionClick] - Called when action button is clicked.
- * @param {Function} [options.handlers.onOptionsClick] - Called when options button is clicked.
- * @returns {object} ActionBar instance with methods: render(), destroy(), update()
+ * @param {ActionBarOptions} [options={}] - Configuration for rendering and callbacks.
+ * @returns {ActionBarAPI} Component instance exposing lifecycle and state helpers.
+ *
+ * @pseudocode
+ * 1. Validate required engine and mode inputs
+ * 2. Initialize internal state containers
+ * 3. Lazily construct DOM and subscribe to engine events on render()
+ * 4. Expose helpers for updating state and destroying listeners
  *
  * @throws {Error} If engine is not provided or mode is invalid.
  */

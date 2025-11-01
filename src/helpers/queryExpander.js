@@ -6,6 +6,23 @@
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
+/**
+ * @typedef {object} ExpandedQueryResult
+ * @property {string} original - Original query string provided by the caller.
+ * @property {string} expanded - Expanded query that includes synonym terms.
+ * @property {string[]} addedTerms - Synonym terms that were appended to the query.
+ * @property {number} synonymsUsed - Count of unique synonym terms that were added.
+ * @property {boolean} hasExpansion - Indicates whether any synonym terms were appended.
+ */
+
+/**
+ * @typedef {object} SynonymStats
+ * @property {number} totalMappings - Number of individual entries in the synonym map.
+ * @property {number} totalSynonyms - Total count of synonym values across all mappings.
+ * @property {string|number} averageSynonymsPerMapping - Average synonyms per mapping (fixed decimal string when calculable).
+ * @property {{ key: string, synonyms: string[] }[]} mappingExamples - Example synonym entries for debugging.
+ */
+
 let synonymsCache;
 
 /**
@@ -86,7 +103,13 @@ function findSynonymMatches(query, synonymMap) {
  * Expand a query with synonyms for improved search relevance
  * Uses Levenshtein distance (max 2 edits) for fuzzy matching
  * @param {string} query - Search query to expand
- * @returns {Promise<Object>} Result with original query, expanded query, and matched terms
+ * @returns {Promise<ExpandedQueryResult>} Result with original query, expanded query, and matched terms
+ *
+ * @pseudocode
+ * 1. Guard against empty inputs and return baseline result
+ * 2. Load cached synonym map from disk
+ * 3. Compute fuzzy synonym matches for the provided query
+ * 4. Merge original tokens with matched synonyms and report statistics
  */
 export async function expandQuery(query) {
   if (!query || typeof query !== "string") {
@@ -122,7 +145,12 @@ export async function expandQuery(query) {
 /**
  * Get statistics about available synonyms
  * Useful for debugging and monitoring
- * @returns {Promise<Object>} Statistics about synonym mappings
+ * @returns {Promise<SynonymStats>} Statistics about synonym mappings
+ *
+ * @pseudocode
+ * 1. Load synonym mappings from cache/disk
+ * 2. Derive counts for mappings and synonym totals
+ * 3. Calculate average synonyms per mapping and return sample entries
  */
 export async function getSynonymStats() {
   const synonymMap = await loadSynonyms();
