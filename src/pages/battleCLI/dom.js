@@ -188,12 +188,26 @@ export function updateScoreLine() {
     return;
   }
 
-  if (!sharedUpdated) {
-    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
-  }
-
   el.dataset.scorePlayer = String(playerScore);
   el.dataset.scoreOpponent = String(opponentScore);
+
+  const playerValueNode = el.querySelector('[data-side="player"] [data-part="value"]');
+  const opponentValueNode = el.querySelector('[data-side="opponent"] [data-part="value"]');
+
+  if (!sharedUpdated || !playerValueNode || !opponentValueNode) {
+    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
+    return;
+  }
+
+  const playerText = String(playerScore);
+  const opponentText = String(opponentScore);
+
+  if (playerValueNode.textContent !== playerText) {
+    playerValueNode.textContent = playerText;
+  }
+  if (opponentValueNode.textContent !== opponentText) {
+    opponentValueNode.textContent = opponentText;
+  }
 }
 
 /**

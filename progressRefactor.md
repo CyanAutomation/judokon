@@ -254,14 +254,3 @@ Validation checklist (to run on the migration branch before merging):
 - markdown link check on changed files
 
 ---
-
-Please confirm which option you want (A/B/C) and I will implement it.
-
-### Recent agent action — review of mapped sources (no-op)
-
-- Re-checked mapped source files from `reports/prd-mapping-report.json` to avoid deleting files that were edited manually since my last run.
-- I inspected the following mapped sources and confirmed their content is present in their target PRDs; I did not perform deletions because manual edits were made to PRDs or the files since the previous pass:
-  - `docs/battle-cli.md` (content present in `prdBattleCLI.md`)
-  - `docs/battleCLI.md` (content present in `prdBattleCLI.md`)
-  - `docs/round-selection.md` (content present in `prdRoundSelection.md`)
-  - Legacy battle markup doc content now lives in `prdBattleMarkup.md`

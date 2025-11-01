@@ -10,10 +10,7 @@ export const CLI_DOM_TEMPLATE = `
         <span id="battle-state-badge" data-flag="battleStateBadge" class="state-badge" style="display: none">State: -</span>
       </div>
       <div class="cli-status" aria-live="polite" aria-atomic="true">
-        <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status">
-          <span data-part="label">Time Left:</span>
-          <span data-part="value">0s</span>
-        </p>
+        <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
         <p id="round-counter" aria-live="polite" aria-atomic="true" data-testid="round-counter">
           Round 0
         </p>

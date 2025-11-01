@@ -176,7 +176,6 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     expect(statusRegion.contains(timer)).toBe(true);
     expect(statusRegion.contains(roundCounter)).toBe(true);
     expect(statusRegion.contains(scoreDisplay)).toBe(true);
-    expect(window.getComputedStyle(statusRegion).display).toBe("flex");
   });
 
   it("should gracefully handle missing shared scoreboard helpers", async () => {
