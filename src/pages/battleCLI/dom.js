@@ -79,7 +79,7 @@ export function updateRoundHeader(round, target) {
   }
 
   // Phase 3: Keep CLI element for visual consistency (not primary source)
-  const el = byId("cli-round");
+  const el = byId("round-counter");
   const root = byId("cli-root");
   let resolvedTarget = target;
   if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === "") {
@@ -106,6 +106,9 @@ export function updateRoundHeader(round, target) {
   if (el) {
     // Use clear format with space after colon: "Round 0 Target: 5"
     el.textContent = `Round ${round} Target: ${displayTarget}`;
+    try {
+      el.dataset.target = String(displayTarget);
+    } catch {}
   }
 
   if (root) {
@@ -180,18 +183,17 @@ export function updateScoreLine() {
   }
 
   // Phase 3: Keep CLI element for visual consistency (not primary source)
-  const el = byId("cli-score");
-  if (el && !sharedUpdated) {
-    // Only update CLI element if shared component failed
-    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
-    el.dataset.scorePlayer = String(playerScore);
-    el.dataset.scoreOpponent = String(opponentScore);
-  } else if (el) {
-    // Update to match shared component format
-    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
-    el.dataset.scorePlayer = String(playerScore);
-    el.dataset.scoreOpponent = String(opponentScore);
+  const el = byId("score-display");
+  if (!el) {
+    return;
   }
+
+  if (!sharedUpdated) {
+    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
+  }
+
+  el.dataset.scorePlayer = String(playerScore);
+  el.dataset.scoreOpponent = String(opponentScore);
 }
 
 /**

@@ -13,15 +13,15 @@
     "hidden": false,
     "text": "Home\n           |  Classic Battle (CLI)\n          State: —\n        \n        \n        \n          Round 0 of 0\n          \n            You: 0 Opponent: 0"
   },
-  "cli-round": {
-    "id": "cli-round",
+  "round-counter": {
+    "id": "round-counter",
     "role": null,
     "ariaLive": null,
     "hidden": false,
     "text": "Round 0 of 0"
   },
-  "cli-score": {
-    "id": "cli-score",
+  "score-display": {
+    "id": "score-display",
     "role": null,
     "ariaLive": null,
     "hidden": false,

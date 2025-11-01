@@ -120,7 +120,7 @@ body.scanlines::before {
   min-width: 18ch; /* reserve width for longest state (prevents wrap/jump) */
   box-sizing: border-box; /* include padding in fixed height */
   height: 64px; /* Slightly increased for better proportions */
-  position: relative; /* allow absolute-centering children like #cli-round */
+  position: relative; /* allow absolute-centering children like #round-counter */
   background: #040404;
 }
 .cli-title {
@@ -567,12 +567,12 @@ details.cli-settings:not([open]) > summary::after {
   justify-content: center;
   align-items: flex-end;
   text-align: right;
-  white-space: pre;
+  white-space: normal;
   gap: 4px; /* Consistent 8px rhythm */
   font-size: 13px; /* Slightly smaller for hierarchy */
   color: #def6df; /* Brighter mint for stronger contrast */
 }
-.cli-status > div {
+.cli-status > * {
   line-height: 1.2;
   margin: 0;
   padding: 0;
@@ -580,13 +580,33 @@ details.cli-settings:not([open]) > summary::after {
 /* Center the round indicator in the header on wide viewports. It is positioned
          absolutely so it visually sits in the header center while the status block
          remains right-aligned. On narrow screens we fall back to the normal flow. */
-#cli-round {
+#round-counter {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none; /* keep header controls usable underneath if present */
+}
+
+#score-display {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: normal;
+}
+
+#score-display span[data-side="player"],
+#score-display span[data-side="opponent"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#score-display span[data-part="label"] {
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 #cli-help {
   margin: 0;
@@ -927,7 +947,7 @@ details.cli-settings > summary {
   }
   /* Disable absolute centering on narrow screens so the round indicator
            participates in normal flow and avoids overlap with stacked header items. */
-  #cli-round {
+  #round-counter {
     position: static;
     transform: none;
     left: auto;
@@ -947,7 +967,7 @@ details.cli-settings > summary {
   #cli-controls-hint .cli-controls-hint__item {
     flex: 1 1 100%;
   }
-  #cli-score {
+  #score-display {
     font-size: 12px;
   }
 }

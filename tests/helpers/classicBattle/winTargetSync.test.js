@@ -10,9 +10,10 @@ function renderCliDom() {
   cliRoot.dataset.round = "3";
   cliRoot.dataset.target = "5";
 
-  const cliRound = document.createElement("div");
-  cliRound.id = "cli-round";
-  cliRound.textContent = "Round 3 Target: 5";
+  const roundCounter = document.createElement("p");
+  roundCounter.id = "round-counter";
+  roundCounter.textContent = "Round 3 Target: 5";
+  roundCounter.dataset.target = "5";
 
   const select = document.createElement("select");
   select.id = "points-select";
@@ -24,10 +25,10 @@ function renderCliDom() {
   });
   select.value = "5";
 
-  document.body.replaceChildren(cliRoot, cliRound, select);
+  document.body.replaceChildren(cliRoot, roundCounter, select);
   document.body.dataset.target = "5";
 
-  return { cliRoot, cliRound, select };
+  return { cliRoot, roundCounter, select };
 }
 
 describe("syncWinTargetDropdown", () => {
@@ -50,7 +51,7 @@ describe("syncWinTargetDropdown", () => {
     expect(select?.value).toBe("7");
     const options = Array.from(select?.options ?? []).map((option) => option.value);
     expect(options).toContain("7");
-    expect(document.getElementById("cli-round")?.textContent).toBe("Round 3 Target: 7");
+    expect(document.getElementById("round-counter")?.textContent).toBe("Round 3 Target: 7");
     expect(document.getElementById("cli-root")?.dataset.target).toBe("7");
   });
 
@@ -68,14 +69,14 @@ describe("syncWinTargetDropdown", () => {
     expect(select?.value).toBe("11");
     const options = Array.from(select?.options ?? []).map((option) => option.value);
     expect(options).toContain("11");
-    expect(document.getElementById("cli-round")?.textContent).toBe("Round 3 Target: 11");
+    expect(document.getElementById("round-counter")?.textContent).toBe("Round 3 Target: 11");
     expect(document.getElementById("cli-root")?.dataset.target).toBe("11");
   });
 
   it("ignores invalid targets that would not render in the dropdown", async () => {
     const battleFacade = await import("../../../src/helpers/battleEngineFacade.js");
     battleFacade.getPointsToWin.mockReturnValue(-3);
-    const header = document.getElementById("cli-round");
+    const header = document.getElementById("round-counter");
     if (header) {
       header.textContent = "Round 3 Target: 5";
     }
@@ -89,6 +90,6 @@ describe("syncWinTargetDropdown", () => {
     expect(select?.value).toBe("5");
     const options = Array.from(select?.options ?? []).map((option) => option.value);
     expect(options).not.toContain("-3");
-    expect(document.getElementById("cli-round")?.textContent).toBe("Round 3 Target: 5");
+    expect(document.getElementById("round-counter")?.textContent).toBe("Round 3 Target: 5");
   });
 });

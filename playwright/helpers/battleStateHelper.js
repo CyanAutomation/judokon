@@ -279,6 +279,12 @@ export async function waitForBattleState(page, expectedState, options = {}) {
     console.warn(msg);
   }
 
+  // Additional diagnostic: show what state we're actually in
+  if (diagnostics.currentState && diagnostics.currentState !== expectedState) {
+    const msg = `waitForBattleState("${expectedState}") but actual state is "${diagnostics.currentState}"`;
+    console.warn(msg);
+  }
+
   await page.waitForFunction(
     (state) => {
       try {

@@ -2663,9 +2663,9 @@ function handleRoundResolved(e) {
     const display = statDisplayNames[stat] || String(stat || "").toUpperCase();
     setRoundMessage(`${result.message} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
     updateScoreLine();
-    // Ensure cli-score is updated with the correct scores from the result
-    const cliScore = hasDocument ? document.getElementById("cli-score") : null;
-    if (cliScore) {
+    // Ensure the shared score display reflects the resolved scores
+    const scoreDisplay = hasDocument ? document.getElementById("score-display") : null;
+    if (scoreDisplay) {
       // Prefer explicit values from the result when available, otherwise
       // fall back to the canonical engine scores to avoid writing "undefined".
       let playerScore = result.playerScore;
@@ -2681,9 +2681,11 @@ function handleRoundResolved(e) {
       } catch {}
       playerScore = playerScore === undefined || playerScore === null ? 0 : playerScore;
       opponentScore = opponentScore === undefined || opponentScore === null ? 0 : opponentScore;
-      cliScore.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
-      cliScore.dataset.scorePlayer = String(playerScore);
-      cliScore.dataset.scoreOpponent = String(opponentScore);
+      if (!scoreDisplay.querySelector('[data-side="player"]')) {
+        scoreDisplay.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
+      }
+      scoreDisplay.dataset.scorePlayer = String(playerScore);
+      scoreDisplay.dataset.scoreOpponent = String(opponentScore);
     }
     // Add detailed info to verbose log if enabled
     if (isEnabled("cliVerbose")) {

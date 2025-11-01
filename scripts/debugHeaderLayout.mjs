@@ -12,8 +12,8 @@ async function run() {
     "#cli-header > .cli-title",
     "#cli-header > .cli-controls",
     "#cli-header > .cli-status",
-    "#cli-round",
-    "#cli-score"
+    "#round-counter",
+    "#score-display"
   ];
 
   for (const sel of selectors) {

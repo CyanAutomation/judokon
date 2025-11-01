@@ -53,7 +53,7 @@ async function run() {
     "#round-message",
     "#cli-countdown",
     "#cli-stats",
-    "#cli-score",
+    "#score-display",
     "#cli-shortcuts",
     "#cli-verbose-section"
   ];

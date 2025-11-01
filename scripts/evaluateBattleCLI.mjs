@@ -108,8 +108,8 @@ const htmlUrl = new URL("../src/pages/battleCLI.html", import.meta.url).href;
     const ids = [
       "cli-root",
       "cli-header",
-      "cli-round",
-      "cli-score",
+      "round-counter",
+      "score-display",
       "round-message",
       "cli-stats",
       "cli-controls-hint",
