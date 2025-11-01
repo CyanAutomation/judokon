@@ -5,6 +5,12 @@ const DEFAULT_TIMEOUT = 5000;
 const POLL_INTERVAL_MS = 50;
 const DEFAULT_FLAG_MAP = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.featureFlags || {}));
 
+/**
+ * Safely instantiate a function from source code using the Function constructor.
+ * @param {string} source - The function source code to instantiate.
+ * @param {string} [cacheProperty] - Optional window property used to cache the function.
+ * @returns {Function|null} The instantiated function or null when instantiation fails.
+ */
 function instantiateBrowserFunction(source, cacheProperty) {
   if (typeof source !== "string" || !source.trim()) {
     return null;
@@ -44,7 +50,11 @@ function instantiateBrowserFunction(source, cacheProperty) {
 }
 
 const INSTANTIATE_BROWSER_FUNCTION_SOURCE = `(${instantiateBrowserFunction.toString()})`;
-const BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE = buildFeatureFlagSnapshot.toString();
+const IS_PLAIN_OBJECT_SOURCE = `(value) => value !== null && typeof value === "object" && !Array.isArray(value);`;
+const BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE = `(() => {
+  const isPlainObject = ${IS_PLAIN_OBJECT_SOURCE};
+  return ${buildFeatureFlagSnapshot.toString()};
+})()`;
 
 let callbackCounter = 0;
 
