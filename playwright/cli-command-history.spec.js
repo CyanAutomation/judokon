@@ -224,10 +224,8 @@ test.describe("CLI Command History", () => {
 
     const resolution = await completeRoundViaApi(page);
     expect(resolution.ok, resolution.reason ?? "Failed to complete round via Test API").toBe(true);
-    await waitForBattleState(page, "roundOver");
-
-    const continueResult = await dispatchBattleEvent(page, "continue");
-    expect(continueResult.ok, continueResult.reason ?? "Failed to dispatch continue").toBe(true);
+    // completeRoundViaApi automatically dispatches the "continue" event after outcome,
+    // so the state machine should already be in cooldown or beyond. No manual dispatch needed.
 
     const readyForNextRound = await dispatchBattleEvent(page, "ready");
     expect(
