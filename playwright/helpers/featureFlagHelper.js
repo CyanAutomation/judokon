@@ -205,7 +205,7 @@ export function resolveFeatureFlagEnabled(snapshot, flagName) {
         if (normalized === "true") return true;
         if (normalized === "false") return false;
       }
-      if (enabled != null) {
+      if (enabled !== null) {
         return !!enabled;
       }
     }
