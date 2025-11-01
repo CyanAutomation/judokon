@@ -19,12 +19,346 @@ src/config/settingsDefaults.js # Settings source of truth
 ### 📋 Task Contract Template
 
 ```json
-{
-  "inputs": ["src/classicBattle.js", "tests/battle.test.js"],
-  "outputs": ["src/classicBattle.js", "tests/battle.test.js"],
-  "success": ["eslint: PASS", "vitest: PASS", "no_unsilenced_console"],
-  "errorMode": "ask_on_public_api_change"
+  "verificationChecklist": [
+    "prettier/eslint/jsdoc PASS",
+    "vitest + playwright PASS",
+    "no unsuppressed logs",
+    "tests: happy + edge",
+    "CI green"
+  ]
 }
+```
+
+---
+
+## 🔌 MCP Server Integration Guide
+
+### Overview
+
+The JU-DO-KON! project includes a Model Context Protocol (MCP) server that exposes powerful judoka search and data retrieval tools. This enables MCP-aware agents (Claude Desktop, GitHub Copilot, custom clients) to query the judoka database with semantic search and filtering capabilities.
+
+**Server Location**: `scripts/mcp-rag-server.mjs`  
+**Start Command**: `npm run rag:mcp`
+
+### Available Tools
+
+#### 1. `query_rag` — Documentation & Code Pattern Search
+
+Semantic search over the entire JU-DO-KON! vector database including game rules, development standards, and code patterns.
+
+**Usage**:
+```javascript
+// Search for documentation on battle mechanics
+const result = await mcp.call("query_rag", {
+  query: "classic battle countdown timer implementation"
+});
+// Returns: [{ id, text, score, source, tags, ... }, ...]
+```
+
+**When to use**: Questions about project architecture, development patterns, game rules, or implementation details.
+
+#### 2. `judokon.search` — Judoka Semantic Search
+
+Search for judoka with optional filtering by country, rarity, or weight class.
+
+**Input Schema**:
+```json
+{
+  "query": "string (required)",      // Search query
+  "topK": "integer (1-50, default 8)",  // Max results
+  "filters": {
+    "country": "string (optional)",    // Filter by country
+    "rarity": "enum (Common|Epic|Legendary)",
+    "weightClass": "string (optional)"  // e.g., '+100', '-60'
+  }
+}
+```
+
+**Examples**:
+```javascript
+// Find the most powerful judoka
+const result1 = await mcp.call("judokon.search", {
+  query: "strongest fighter",
+  topK: 5
+});
+
+// Find legendary judoka from Japan
+const result2 = await mcp.call("judokon.search", {
+  query: "powerful judoka",
+  topK: 10,
+  filters: {
+    country: "Japan",
+    rarity: "Legendary"
+  }
+});
+
+// Find lightweight specialists
+const result3 = await mcp.call("judokon.search", {
+  query: "agile speed specialist",
+  filters: {
+    weightClass: "-60"
+  }
+});
+```
+
+**Response Format**:
+```json
+{
+  "results": [
+    {
+      "id": 0,
+      "name": "Tatsuuma Ushiyama",
+      "country": "Vanuatu",
+      "countryCode": "vu",
+      "rarity": "Legendary",
+      "weightClass": "+100",
+      "stats": {
+        "power": 9,
+        "speed": 9,
+        "technique": 9,
+        "kumikata": 9,
+        "newaza": 9
+      },
+      "bio": "...",
+      "score": 0.95
+    }
+  ],
+  "query": "strongest fighter",
+  "topK": 5,
+  "count": 1
+}
+```
+
+#### 3. `judokon.getById` — Fetch Judoka Record
+
+Retrieve the complete judoka record by ID.
+
+**Input Schema**:
+```json
+{
+  "id": "string | number (required)"  // Judoka ID (numeric or string)
+}
+```
+
+**Examples**:
+```javascript
+// Fetch by numeric ID
+const result1 = await mcp.call("judokon.getById", {
+  id: 42
+});
+
+// Fetch by string ID
+const result2 = await mcp.call("judokon.getById", {
+  id: "42"
+});
+```
+
+**Response Format (Found)**:
+```json
+{
+  "found": true,
+  "id": 42,
+  "firstname": "Tatsuuma",
+  "surname": "Ushiyama",
+  "name": "Tatsuuma Ushiyama",
+  "country": "Vanuatu",
+  "countryCode": "vu",
+  "rarity": "Legendary",
+  "weightClass": "+100",
+  "gender": "male",
+  "category": "...",
+  "stats": {
+    "power": 9,
+    "speed": 9,
+    "technique": 9,
+    "kumikata": 9,
+    "newaza": 9
+  },
+  "bio": "...",
+  "cardCode": "..."
+}
+```
+
+**Response Format (Not Found)**:
+```json
+{
+  "found": false,
+  "id": "999999",
+  "message": "Judoka not found"
+}
+```
+
+### Setup Instructions
+
+#### 1. Claude Desktop Integration
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "judokon-rag": {
+      "command": "npm",
+      "args": ["run", "rag:mcp"],
+      "cwd": "/absolute/path/to/judokon"
+    }
+  }
+}
+```
+
+Then restart Claude Desktop. The tools will be available in the MCP menu.
+
+#### 2. Custom MCP Client
+
+```javascript
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { spawn } from "child_process";
+
+// Start the MCP server
+const process = spawn("npm", ["run", "rag:mcp"], {
+  cwd: "/path/to/judokon"
+});
+
+// Connect via stdio
+const transport = new StdioClientTransport({
+  command: process
+});
+
+const client = new Client({
+  name: "my-judokon-app",
+  version: "1.0.0"
+}, {
+  capabilities: {}
+}, transport);
+
+await client.connect();
+
+// Use the tools
+const results = await client.callTool("judokon.search", {
+  query: "strongest judoka",
+  topK: 5
+});
+```
+
+### Query Patterns & Best Practices
+
+#### Pattern 1: Multi-Step Search + Detail Lookup
+
+```javascript
+// First: Search for candidates
+const candidates = await mcp.call("judokon.search", {
+  query: "fast agile fighter",
+  filters: { rarity: "Legendary" },
+  topK: 3
+});
+
+// Then: Get full details for top result
+if (candidates.results.length > 0) {
+  const fullRecord = await mcp.call("judokon.getById", {
+    id: candidates.results[0].id
+  });
+  console.log(fullRecord.bio);  // Display full biography
+}
+```
+
+#### Pattern 2: Filtered Search by Criteria
+
+```javascript
+// Search with specific filters
+const japaneseEpicFighters = await mcp.call("judokon.search", {
+  query: "balanced judoka",
+  filters: {
+    country: "Japan",
+    rarity: "Epic"
+  },
+  topK: 10
+});
+```
+
+#### Pattern 3: Narrow Search with Weight Class
+
+```javascript
+// Find heavy specialists
+const heavyweights = await mcp.call("judokon.search", {
+  query: "powerful strong judoka",
+  filters: {
+    weightClass: "+100"
+  },
+  topK: 8
+});
+
+// Compare stats
+heavyweights.results.forEach(j => {
+  console.log(`${j.name}: Power=${j.stats.power}, Speed=${j.stats.speed}`);
+});
+```
+
+### Error Handling
+
+```javascript
+try {
+  const result = await mcp.call("judokon.search", {
+    query: "xyz___invalid",
+    topK: 5
+  });
+
+  if (result.results.length === 0) {
+    console.log("No matches found. Try different keywords or remove filters.");
+  }
+} catch (error) {
+  console.error("MCP Error:", error.message);
+  // Gracefully handle connection or parsing errors
+}
+```
+
+### Performance Considerations
+
+- **Search Latency**: ~100-200ms per query (including RAG encoding)
+- **Result Limit**: Maximum 50 results per query (topK parameter)
+- **Filter Efficiency**: Filters are applied post-search; use specific keywords for faster results
+- **Data Size**: ~5,900 embeddings indexed; in-memory search is O(n) complexity (acceptable for current dataset)
+
+### Debugging
+
+#### Check MCP Server Health
+
+```bash
+# Verify the server starts
+npm run rag:mcp
+
+# Check for errors in stderr; look for:
+# "Loaded X judoka records"
+# "Loaded Y embeddings"
+```
+
+#### Validate Tool Availability
+
+Once connected, list available tools:
+```javascript
+const tools = await mcp.listTools();
+console.log(tools);  // Should show query_rag, judokon.search, judokon.getById
+```
+
+#### Test Query
+
+```javascript
+// Simple test query
+const test = await mcp.call("judokon.getById", { id: 0 });
+console.log(test);  // Should return first judoka record
+```
+
+### Extensibility
+
+Potential future tools that could be added:
+
+- **`judokon.random`** — Select random judoka with optional filters
+- **`judokon.resolveCode`** — Map card codes to judoka records
+- **`judokon.compare`** — Compare stats between two judoka
+- **`judokon.listCountries`** — Get list of countries in database
+- **`judokon.statsByRarity`** — Analyze stat distributions by rarity level
+
+````
 ```
 
 ### ✅ Essential Validation
