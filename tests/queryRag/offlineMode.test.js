@@ -201,13 +201,13 @@ describe("queryRag offline mode with local MiniLM model", () => {
         id: "lex-1",
         text: "Tooltip offline fallback example",
         tags: ["docs"],
-        sparseVector: { tooltip: 2, offline: 1 }
+        sparseVector: { tooltip: 1.0, offline: 0.5, fallback: 0.3, example: 0.2 }
       }
     ];
     vi.doMock(vectorSearchIndexPath, () => ({
       default: {
         expandQueryWithSynonyms: vi.fn(async (query) => query),
-        findMatches: vi.fn(),
+        findMatches: vi.fn(async () => lexicalEntries),
         loadEmbeddings: vi.fn(async () => lexicalEntries),
         fetchContextById: vi.fn(),
         CURRENT_EMBEDDING_VERSION: "test"
