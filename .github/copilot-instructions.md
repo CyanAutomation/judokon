@@ -47,6 +47,67 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 
 ---
 
+## 🚨 RAG-First Policy (MANDATORY)
+
+**Before using `grep_search`, `file_search`, or `semantic_search`, ALWAYS ask yourself:**
+
+1. **Is this a How/Why/What/Where/Which question?** → Use `queryRag()` FIRST
+2. **Did RAG return weak results?** → Then use grep/ripgrep as fallback
+3. **Document your reasoning** → Cite RAG sources in commits/PRs
+
+### ⚡ When to Use RAG (Examples)
+
+✅ **"How should I add a new tooltip?"**
+→ RAG query: `"tooltip implementation data structure JSON format"`
+→ Expected result: PRD with exact structure + examples
+
+✅ **"Where is the battle timer implemented?"**
+→ RAG query: `"classic battle mode countdown timer phases implementation"`
+→ Expected result: File locations + code patterns
+
+✅ **"What is the structure of judoka.json?"**
+→ RAG query: `"judoka data structure schema format fields"`
+→ Expected result: Exact JSON format + validation rules
+
+✅ **"Why does stat selection timeout after 5 seconds?"**
+→ RAG query: `"stat selection timer cooldown timeout configuration"`
+→ Expected result: Design rationale + related code
+
+✅ **"How do I handle keyboard shortcuts in components?"**
+→ RAG query: `"keyboard event handling shortcuts component patterns"`
+→ Expected result: Established patterns + examples
+
+### 🔍 When grep/ripgrep is Appropriate (After RAG Fails)
+
+- Searching for specific variable/function names across codebase
+- Finding all usages of a deprecated API before removing it
+- Locating files that import a specific module
+- When RAG returns insufficient or zero results
+
+### 📊 Performance & Accuracy Baseline
+
+- **RAG speed**: ~2 seconds with 62.5% accuracy for implementation queries
+- **Manual grep speed**: 30+ seconds of exploration
+- **Recommended workflow**: Try RAG first (2 sec) → If weak, grep (30+ sec) = optimal speed
+
+### 🛠 RAG Query Tips
+
+```javascript
+// Good: Technical context + file types
+await queryRag("tooltip content validation requirements JSON format");
+
+// Good: Multi-intent queries (automatically split and re-ranked)
+await queryRag("navigation bar button transition duration styling");
+
+// With provenance tracking (recommended)
+const results = await queryRag("classic battle scoreboard rendering", {
+  withProvenance: true
+});
+// Include contextPath and rationale in PR descriptions
+```
+
+---
+
 ## 🗂️ Workflow Orderrministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository
 
 **Audience**: AI Agents only. Human readability is not the priority.
