@@ -653,11 +653,64 @@ test("judokon.getById returns full record", async () => {
 
 ---
 
-#### Phase 3.3: Advanced Filters (Pending)
+#### Phase 3.3: Advanced Filters ✅ COMPLETE
 
-- [ ] Support advanced filters (stat thresholds, weight ranges)
-- [ ] Range queries (e.g., "power >= 8")
-- [ ] Composite filters (e.g., country AND rarity)
+**Completed**: Dec 19, 2024 - 23:32 UTC
+
+**Implementation Details**:
+- ✅ Created `src/helpers/advancedFilters.js` (359 lines)
+  - parseWeightClass() - Parse "+100" or "-60" weight notation
+  - parseStatFilter() - Parse "power>=8" format with validation
+  - applyAdvancedFilters() - Apply all filter types with AND logic
+  - validateAdvancedFilters() - Sanitize and validate input
+  - getFilterDocumentation() - Provide schema and examples
+  
+- ✅ Created `tests/advancedFilters.test.js` (36 comprehensive tests)
+  - Stat threshold parsing (5 tests)
+  - Weight class parsing (4 tests)
+  - Stat threshold application (5 tests)
+  - Weight range application (3 tests)
+  - Average stats filtering (3 tests)
+  - Skill floor filtering (2 tests)
+  - Composite filters (3 tests)
+  - Validation and edge cases (8 tests)
+
+- ✅ Integrated advanced filters into MCP server
+  - Modified `scripts/mcp-rag-server.mjs` executeJudokonSearch()
+  - Updated inputSchema with advanced filter parameters
+  - Advanced filters applied after basic filters (country, rarity, weightClass)
+
+**Test Results**:
+- Advanced filters: 36/36 ✅ PASSING
+- MCP server: 23/23 ✅ PASSING
+- Playwright E2E: 13/13 ✅ PASSING
+- ESLint: ✅ PASS (no errors)
+- Prettier: ✅ PASS (properly formatted)
+- JSDoc: ✅ PASS (all public functions documented with @pseudocode)
+
+**Filter Types Supported**:
+1. **Stat Thresholds**: Array of comparisons (e.g., ["power>=8", "speed<5"])
+2. **Weight Range**: "+100" (100kg+), "-60" (≤60kg), or exact value
+3. **Average Stats**: Min/max average across all 5 stats
+4. **Skill Floor**: Minimum value for ALL stats
+
+**Example Queries**:
+```javascript
+// Stat thresholds
+{query: "fighter", filters: {advanced: {statThresholds: ["power>=8"]}}}
+
+// Weight ranges
+{query: "judoka", filters: {advanced: {weightRange: "+100"}}}
+
+// Composite filters
+{query: "balanced", filters: {
+  country: "Japan",
+  advanced: {
+    statThresholds: ["power>=7", "speed>=7"],
+    minAverageStats: 7.5
+  }
+}}
+```
 
 #### Phase 3.4: Random & Comparison Tools (Pending)
 
@@ -667,16 +720,15 @@ test("judokon.getById returns full record", async () => {
 
 #### Future Enhancements (3.5+)
 
-- [ ] Implement result ranking by user preferences
 - [ ] Add batch query support for multiple searches
-- [ ] Performance profiling and optimization
 - [ ] Support for offline mode without network access
 
 #### Success Criteria for Phase 3 (Overall)
 
 - ✅ Phase 3.1 - Search latency reduced with caching
 - ✅ Phase 3.2 - Query relevance improved with synonym expansion
-- ⏳ Phase 3.3-3.4 - Additional tools and features
+- ✅ Phase 3.3 - Advanced filters implemented (stat thresholds, weight ranges, composite filters)
+- ⏳ Phase 3.4 - Random & comparison tools (pending)
 - 🎯 Final: Support for 10k+ judoka records without performance degradation
 - 🎯 Final: Comprehensive integration with external MCP clients
 - 🎯 Final: Production-grade reliability and uptime

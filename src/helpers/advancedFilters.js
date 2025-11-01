@@ -7,6 +7,12 @@
  * Parse a weight range filter like "-60" or "+100"
  * @param {string} weightClass - Weight class string (e.g., "-60", "+100")
  * @returns {Object} Parsed weight info {operator, value}
+ * @pseudocode
+ * if weightClass matches pattern /^([+\-])?(\d+)$/:
+ *   if prefix is "+": return {operator: "gte", value}
+ *   if prefix is "-": return {operator: "lte", value}
+ *   otherwise: return {operator: "eq", value}
+ * return null if no match
  * @private
  */
 export function parseWeightClass(weightClass) {
@@ -37,6 +43,13 @@ export function parseWeightClass(weightClass) {
  * Parse a stat threshold filter like "power>=8" or "speed < 5"
  * @param {string} filter - Filter string (e.g., "power>=8", "technique < 5")
  * @returns {Object} Parsed filter {stat, operator, value} or null if invalid
+ * @pseudocode
+ * if filter matches pattern /^(\w+)\s*([><=!]+)\s*(\d+)$/:
+ *   extract stat, operator, value
+ *   if stat is in [power, speed, technique, kumikata, newaza]:
+ *     if operator is valid [>=, <=, >, <, ==, !=]:
+ *       return {stat, operator (normalized), value, description}
+ * return null if any validation fails
  * @private
  */
 export function parseStatFilter(filter) {
@@ -162,6 +175,11 @@ function evaluateWeightRange(judokaWeightClass, parsed) {
  * @param {Object} judoka - Judoka record
  * @param {Object} advancedFilters - Advanced filters object
  * @returns {boolean} True if judoka matches all filters
+ * @pseudocode
+ * for each filter type in [statThresholds, weightRange, minAverageStats, maxAverageStats, minAllStats]:
+ *   if filter is defined:
+ *     if judoka does not match this filter: return false
+ * return true (all filters passed with AND logic)
  */
 export function applyAdvancedFilters(judoka, advancedFilters) {
   if (!advancedFilters || Object.keys(advancedFilters).length === 0) {
@@ -234,6 +252,15 @@ export function applyAdvancedFilters(judoka, advancedFilters) {
  * Parse and validate advanced filters from input
  * @param {Object} filters - Raw filter input
  * @returns {Object} Validated advanced filters
+ * @pseudocode
+ * initialize validatedFilters = {}
+ * for each filter entry in filters:
+ *   if statThresholds: parse each filter, keep only valid ones
+ *   if weightRange: parse and include if valid
+ *   if minAverageStats: include if number in range [0, 10]
+ *   if maxAverageStats: include if number in range [0, 10]
+ *   if minAllStats: include if number in range [0, 10]
+ * return validatedFilters (all invalid entries removed)
  */
 export function validateAdvancedFilters(filters) {
   if (!filters || typeof filters !== "object") {
@@ -291,7 +318,14 @@ export function validateAdvancedFilters(filters) {
 
 /**
  * Get filter documentation and examples
- * @returns {Object} Filter documentation
+ * @returns {Object} Filter documentation with schema and examples for each filter type
+ * @pseudocode
+ * return documentation object containing:
+ *   - statThresholds: description, valid operators, valid stat names, examples
+ *   - weightRange: description, format, examples
+ *   - minAverageStats: description, example
+ *   - maxAverageStats: description, example
+ *   - minAllStats: description, example
  */
 export function getFilterDocumentation() {
   return {
