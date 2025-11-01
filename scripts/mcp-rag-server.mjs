@@ -22,6 +22,13 @@ import {
   // eslint-disable-next-line no-unused-vars
   getAvailableFilterOptions
 } from "../src/helpers/randomJudoka.js";
+import {
+  validateComparisonIds,
+  validateJudokaForComparison,
+  // eslint-disable-next-line no-unused-vars
+  calculateStatDifferences,
+  formatComparisonReport
+} from "../src/helpers/judokaComparison.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -227,6 +234,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               }
             }
           }
+        }
+      },
+      {
+        name: "judokon.compare",
+        description: "Compare stats and attributes between two judoka by ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id1: {
+              type: ["string", "number"],
+              description: "First judoka ID"
+            },
+            id2: {
+              type: ["string", "number"],
+              description: "Second judoka ID"
+            }
+          },
+          required: ["id1", "id2"]
         }
       }
     ]
@@ -597,6 +622,89 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             type: "text",
             text: `Random selection failed: ${error.message || error}`
+          }
+        ],
+        isError: true
+      };
+    }
+  }
+
+  if (name === "judokon.compare") {
+    const { id1, id2 } = args;
+
+    try {
+      // Validate comparison IDs
+      const idsValid = validateComparisonIds(id1, id2);
+      if (!idsValid.valid) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Comparison failed: ${idsValid.error}`
+            }
+          ],
+          isError: true
+        };
+      }
+
+      // Find judoka records
+      const judoka1 = judokaData.find((j) => j.id === Number(id1));
+      const judoka2 = judokaData.find((j) => j.id === Number(id2));
+
+      // Validate judoka exist and have stats
+      const recordsValid = validateJudokaForComparison(judoka1, judoka2);
+      if (!recordsValid.valid) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Comparison failed: ${recordsValid.error}`
+            }
+          ],
+          isError: true
+        };
+      }
+
+      // Generate comparison report
+      const report = formatComparisonReport(judoka1, judoka2);
+
+      // Format output text
+      const rankedDiffsText = report.rankedDifferences
+        .slice(0, 3)
+        .map((rd) => `${rd.stat}: ${rd.difference > 0 ? "+" : ""}${rd.difference}`)
+        .join(", ");
+
+      const advantagesText = report.summary.advantages.join(", ") || "None";
+      const disadvantagesText = report.summary.disadvantages.join(", ") || "None";
+
+      return {
+        content: [
+          {
+            type: "text",
+            text:
+              `**${report.title}**\n\n` +
+              `${report.judoka1Info}\n` +
+              `vs\n` +
+              `${report.judoka2Info}\n\n` +
+              `**Verdict**: ${report.comparisonText}\n` +
+              `**Margin**: ${report.summary.margin} total stats\n` +
+              `**Stats**: ${report.summary.judoka1Total} vs ${report.summary.judoka2Total}\n\n` +
+              `**Top Differences**: ${rankedDiffsText}\n` +
+              `**${report.judoka1Info.split(" (")[0]} Advantages**: ${advantagesText}\n` +
+              `**${report.judoka1Info.split(" (")[0]} Disadvantages**: ${disadvantagesText}\n\n` +
+              `**Stat-by-Stat**:\n${Object.entries(report.statDetails)
+                .map(([stat, detail]) => `• ${stat}: ${detail}`)
+                .join("\n")}`
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Judokon compare failed:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Comparison failed: ${error.message || error}`
           }
         ],
         isError: true

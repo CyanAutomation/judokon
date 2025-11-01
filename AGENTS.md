@@ -1037,6 +1037,7 @@ rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional mod
 ### When to Use Sentry Instrumentation
 
 Agents should add Sentry instrumentation when implementing:
+
 - Error handling and exception tracking in user-facing features
 - Performance-critical sections (battle engine, state management)
 - External API calls and data fetching operations
@@ -1047,13 +1048,13 @@ Agents should add Sentry instrumentation when implementing:
 Use `Sentry.captureException(error)` to capture an exception and log the error in Sentry.
 Use this in try catch blocks or areas where exceptions are expected
 
-# Tracing Examples
+### Tracing Examples
 
-Spans should be created for meaningful actions within an applications like button clicks, API calls, and function calls
-Use the `Sentry.startSpan` function to create a span
-Child spans can exist within a parent span
+Spans should be created for meaningful actions within an applications like button clicks, API calls, and function calls.
+Use the `Sentry.startSpan` function to create a span.
+Child spans can exist within a parent span.
 
-## Custom Span instrumentation in component actions
+#### Custom Span instrumentation in component actions
 
 Name custom spans with meaningful names and operations.
 Attach attributes based on relevant information and metrics from the request
@@ -1088,7 +1089,7 @@ function TestComponent() {
 }
 ```
 
-## Custom span instrumentation in API calls
+#### Custom span instrumentation in API calls
 
 Name custom spans with meaningful names and operations.
 Attach attributes based on relevant information and metrics from the request
@@ -1109,16 +1110,16 @@ async function fetchUserData(userId) {
 }
 ```
 
-# Logs
+### Logs
 
-Where logs are used, ensure Sentry is imported using `import * as Sentry from "@sentry/browser"`
-Enable logging in Sentry using `Sentry.init({ _experiments: { enableLogs: true } })`
-Reference the logger using `const { logger } = Sentry`
-Sentry offers a `consoleLoggingIntegration` that can be used to log specific console error types automatically without instrumenting the individual logger calls
+Where logs are used, ensure Sentry is imported using `import * as Sentry from "@sentry/browser"`.
+Enable logging in Sentry using `Sentry.init({ _experiments: { enableLogs: true } })`.
+Reference the logger using `const { logger } = Sentry`.
+Sentry offers a `consoleLoggingIntegration` that can be used to log specific console error types automatically without instrumenting the individual logger calls.
 
-## Configuration
+#### Configuration
 
-### Baseline
+##### Baseline
 
 ```javascript
 import * as Sentry from "@sentry/browser";
@@ -1132,7 +1133,7 @@ Sentry.init({
 });
 ```
 
-### Logger Integration
+##### Logger Integration
 
 ```javascript
 Sentry.init({
@@ -1144,7 +1145,7 @@ Sentry.init({
 });
 ```
 
-## Logger Examples
+##### Logger Examples
 
 `logger.fmt` is a template literal function that should be used to bring variables into the structured logs.
 
@@ -1181,6 +1182,7 @@ When making changes to `src/pages/battleClassic.html` or `src/pages/battleCLI.ht
 ### When to Use This Section
 
 Use these guidelines whenever you modify:
+
 - `src/pages/battleClassic.html`
 - `src/pages/battleCLI.html`
 - `tests/battles-regressions/*` files
@@ -1654,4 +1656,3 @@ This JSON ruleset can be programmatically parsed for:
   ]
 }
 ```
-````

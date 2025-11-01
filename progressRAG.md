@@ -658,6 +658,7 @@ test("judokon.getById returns full record", async () => {
 **Completed**: Dec 19, 2024 - 23:32 UTC
 
 **Implementation Details**:
+
 - ✅ Created `src/helpers/advancedFilters.js` (359 lines)
   - parseWeightClass() - Parse "+100" or "-60" weight notation
   - parseStatFilter() - Parse "power>=8" format with validation
@@ -681,6 +682,7 @@ test("judokon.getById returns full record", async () => {
   - Advanced filters applied after basic filters (country, rarity, weightClass)
 
 **Test Results**:
+
 - Advanced filters: 36/36 ✅ PASSING
 - MCP server: 23/23 ✅ PASSING
 - Playwright E2E: 13/13 ✅ PASSING
@@ -689,12 +691,14 @@ test("judokon.getById returns full record", async () => {
 - JSDoc: ✅ PASS (all public functions documented with @pseudocode)
 
 **Filter Types Supported**:
+
 1. **Stat Thresholds**: Array of comparisons (e.g., ["power>=8", "speed<5"])
 2. **Weight Range**: "+100" (100kg+), "-60" (≤60kg), or exact value
 3. **Average Stats**: Min/max average across all 5 stats
 4. **Skill Floor**: Minimum value for ALL stats
 
 **Example Queries**:
+
 ```javascript
 // Stat thresholds
 {query: "fighter", filters: {advanced: {statThresholds: ["power>=8"]}}}
@@ -850,6 +854,7 @@ npm run rag:validate
 #### Issue: "Loaded 0 judoka records"
 
 **Solution**: Verify `src/data/judoka.json` exists and is valid JSON
+
 ```bash
 cat src/data/judoka.json | jq . > /dev/null && echo "Valid JSON"
 ```
@@ -857,6 +862,7 @@ cat src/data/judoka.json | jq . > /dev/null && echo "Valid JSON"
 #### Issue: "Loaded 0 embeddings"
 
 **Solution**: Verify `src/data/client_embeddings.json` exists and contains embeddings
+
 ```bash
 cat src/data/client_embeddings.json | jq '.[] | .embedding | length' | head -1
 ```
@@ -864,6 +870,7 @@ cat src/data/client_embeddings.json | jq '.[] | .embedding | length' | head -1
 #### Issue: MCP server crashes on startup
 
 **Solution**: Check for missing dependencies
+
 ```bash
 npm install
 npm run rag:prepare:models
@@ -871,7 +878,8 @@ npm run rag:prepare:models
 
 #### Issue: Claude Desktop doesn't show tools
 
-**Solution**: 
+**Solution**:
+
 1. Verify config path is absolute (not relative)
 2. Restart Claude Desktop completely
 3. Check server logs: `npm run rag:mcp 2>&1 | grep -i error`
