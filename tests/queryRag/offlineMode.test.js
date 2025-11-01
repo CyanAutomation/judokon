@@ -33,29 +33,21 @@ describe("queryRag offline mode with local MiniLM model", () => {
     // Mock fs to verify stat() calls check the correct path
     const statMock = vi.fn(async (probedPath) => {
       const normalizedProbedPath = path.normalize(probedPath);
-      const normalizedOnnxPath = path.normalize(path.join("onnx", "model_quantized.onnx"));
-      const normalizedTokenizerPath = path.normalize("tokenizer.json");
-      const normalizedTokenizerConfigPath = path.normalize("tokenizer_config.json");
-      const normalizedConfigPath = path.normalize("config.json");
+      const expectedSizes = new Map([
+        [path.normalize(path.join("onnx", "model_quantized.onnx")), 3_100_000],
+        [path.normalize("tokenizer.json"), 820_000],
+        [path.normalize("tokenizer_config.json"), 12_000],
+        [path.normalize("config.json"), 1_200]
+      ]);
 
-      if (normalizedProbedPath.endsWith(normalizedOnnxPath)) {
-        return { size: 600_000 };
+      for (const [suffix, size] of expectedSizes.entries()) {
+        if (normalizedProbedPath.endsWith(suffix)) {
+          return { size };
+        }
       }
 
-      if (normalizedProbedPath.endsWith(normalizedTokenizerPath)) {
-        return { size: 12_000 };
-      }
-
-      if (normalizedProbedPath.endsWith(normalizedTokenizerConfigPath)) {
-        return { size: 1_500 };
-      }
-
-      if (normalizedProbedPath.endsWith(normalizedConfigPath)) {
-        return { size: 600 };
-      }
-
-      // Default fallback for other model files (vocab, special_tokens, etc.)
-      return { size: 8_192 };
+      // Default fallback for other model files (vocab, special_tokens, merges.txt, etc.)
+      return { size: 16_384 };
     });
     vi.doMock("fs/promises", () => ({
       stat: statMock,
@@ -80,19 +72,24 @@ describe("queryRag offline mode with local MiniLM model", () => {
       }
     }));
 
-    // Import after mocks are set
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
-    const extractor = await getExtractor();
+    try {
+      // Import after mocks are set
+      const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+      const extractor = await getExtractor();
 
-    // Verify extractor was created
-    expect(extractor).toBeDefined();
-    expect(typeof extractor).toBe("function");
+      // Verify extractor was created
+      expect(extractor).toBeDefined();
+      expect(typeof extractor).toBe("function");
 
-    // Verify pipeline was instantiated for feature-extraction
-    expect(pipelineMock).toHaveBeenCalled();
-    const call = pipelineMock.mock.calls[0];
-    expect(call[0]).toBe("feature-extraction");
-    expect(call[1]).toContain("MiniLM");
+      // Verify pipeline was instantiated for feature-extraction
+      expect(pipelineMock).toHaveBeenCalled();
+      const call = pipelineMock.mock.calls[0];
+      expect(call[0]).toBe("feature-extraction");
+      expect(call[1]).toMatch(/minilm$/i);
+    } finally {
+      vi.doUnmock("fs/promises");
+      vi.doUnmock("@xenova/transformers");
+    }
   });
 
   /**
@@ -116,12 +113,27 @@ describe("queryRag offline mode with local MiniLM model", () => {
       searchVectorDatabase: vi.fn(async () => mockResults)
     }));
 
-    const { default: queryRag } = await import("../../src/helpers/queryRag.js");
-    const results = await queryRag("tooltip system");
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        expandQueryWithSynonyms: vi.fn(async (query) => query),
+        findMatches: vi.fn(async () => mockResults),
+        loadEmbeddings: vi.fn(async () => mockResults),
+        fetchContextById: vi.fn(),
+        CURRENT_EMBEDDING_VERSION: "test"
+      }
+    }));
 
-    expect(results).toEqual(mockResults);
-    expect(results.length).toBe(2);
-    expect(results[0].score).toBeGreaterThan(results[1].score);
+    try {
+      const { default: queryRag } = await import("../../src/helpers/queryRag.js");
+      const results = await queryRag("tooltip system");
+
+      expect(results).toEqual(mockResults);
+      expect(results.length).toBe(2);
+      expect(results[0].score).toBeGreaterThan(results[1].score);
+    } finally {
+      vi.doUnmock("../../src/helpers/api/vectorSearchPage.js");
+      vi.doUnmock("../../src/helpers/vectorSearch/index.js");
+    }
   });
 
   /**
@@ -159,26 +171,46 @@ describe("queryRag offline mode with local MiniLM model", () => {
       .spyOn(global, "fetch")
       .mockRejectedValue(new Error("Network should not be called"));
 
-    // Mock fs as available
+    // Mock fs as available with realistic asset sizes
     vi.doMock("fs/promises", () => ({
-      stat: vi.fn().mockResolvedValue({ size: 1024 })
+      stat: vi.fn(async (probedPath) => {
+        const normalizedProbedPath = path.normalize(probedPath);
+        const expectedSizes = new Map([
+          [path.normalize(path.join("onnx", "model_quantized.onnx")), 3_100_000],
+          [path.normalize("tokenizer.json"), 820_000],
+          [path.normalize("tokenizer_config.json"), 12_000],
+          [path.normalize("config.json"), 1_200]
+        ]);
+
+        for (const [suffix, size] of expectedSizes.entries()) {
+          if (normalizedProbedPath.endsWith(suffix)) {
+            return { size };
+          }
+        }
+
+        return { size: 16_384 };
+      })
     }));
 
     // Mock transformers with successful local load
     vi.doMock("@xenova/transformers", () => ({
       pipeline: vi.fn(async () => vi.fn()),
-      env: { allowLocalModels: true, localModelPath: rootDir }
+      env: { allowLocalModels: true, localModelPath: rootDir, backends: { onnx: { wasm: {} } } }
     }));
 
-    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    try {
+      const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
 
-    // Should succeed without network
-    await expect(getExtractor()).resolves.toBeDefined();
+      // Should succeed without network
+      await expect(getExtractor()).resolves.toBeDefined();
 
-    // Verify fetch was not called
-    expect(fetchSpy).not.toHaveBeenCalled();
-
-    fetchSpy.mockRestore();
+      // Verify fetch was not called
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      vi.doUnmock("fs/promises");
+      vi.doUnmock("@xenova/transformers");
+    }
   });
 
   /**
