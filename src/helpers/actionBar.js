@@ -54,7 +54,7 @@ import logger from "./logger.js";
  * @typedef {object} ActionBarAPI
  * @property {() => HTMLElement} render - Render the action bar and return the root element.
  * @property {() => void} destroy - Tear down the component and listeners.
- * @property {(state?: object) => void} update - Apply an explicit engine state snapshot.
+ * @property {(state?: {statSelectionRequired?: boolean, actionState?: "start"|"next"|"draw"|"done", actionDisabled?: boolean}) => void} update - Apply an explicit engine state snapshot.
  * @property {(enabled: boolean) => void} setStatButtonsEnabled - Enable or disable stat selection controls.
  * @property {(state: "start"|"next"|"draw"|"done", disabled?: boolean) => void} setActionButtonState - Update the action button state.
  * @property {() => ActionBarState} getState - Snapshot the current internal state.
