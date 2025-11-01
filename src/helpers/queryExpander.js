@@ -108,7 +108,7 @@ function findSynonymMatches(query, synonymMap) {
  * @pseudocode
  * 1. Guard against empty inputs and return baseline result
  * 2. Load cached synonym map from disk
- * 3. Compute fuzzy synonym matches for the provided query
+ * 3. Compute fuzzy synonym matches for the provided query (max 2 Levenshtein edits)
  * 4. Merge original tokens with matched synonyms and report statistics
  */
 export async function expandQuery(query) {
