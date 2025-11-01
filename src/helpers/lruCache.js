@@ -19,6 +19,8 @@ export class LRUCache {
     this.cache = new Map();
     this.timestamps = new Map();
     this.accessCounts = new Map();
+    this.accessOrder = new Map(); // Counter for LRU eviction order
+    this.accessCounter = 0; // Incrementing counter for deterministic LRU
   }
 
   /**
@@ -65,6 +67,7 @@ export class LRUCache {
     // Update timestamp and access count on retrieval
     this.timestamps.set(key, Date.now());
     this.accessCounts.set(key, (this.accessCounts.get(key) || 0) + 1);
+    this.accessOrder.set(key, ++this.accessCounter); // Track access order
 
     return this.cache.get(key);
   }
@@ -83,6 +86,7 @@ export class LRUCache {
     this.cache.set(key, value);
     this.timestamps.set(key, Date.now());
     this.accessCounts.set(key, 0);
+    this.accessOrder.set(key, ++this.accessCounter); // Track access order on set
   }
 
   /**
@@ -91,11 +95,11 @@ export class LRUCache {
    */
   evictLRU() {
     let lruKey = null;
-    let lruTime = Infinity;
+    let lruOrder = Infinity;
 
-    for (const [key, timestamp] of this.timestamps.entries()) {
-      if (timestamp < lruTime) {
-        lruTime = timestamp;
+    for (const [key, order] of this.accessOrder.entries()) {
+      if (order < lruOrder) {
+        lruOrder = order;
         lruKey = key;
       }
     }
@@ -113,6 +117,7 @@ export class LRUCache {
     this.cache.delete(key);
     this.timestamps.delete(key);
     this.accessCounts.delete(key);
+    this.accessOrder.delete(key);
   }
 
   /**
@@ -122,6 +127,8 @@ export class LRUCache {
     this.cache.clear();
     this.timestamps.clear();
     this.accessCounts.clear();
+    this.accessOrder.clear();
+    this.accessCounter = 0;
   }
 
   /**

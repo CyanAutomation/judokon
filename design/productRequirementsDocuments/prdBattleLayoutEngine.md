@@ -18,18 +18,21 @@ Currently, battle modes hard-code their DOM/CSS positioning. This makes it diffi
 * Maintain consistency and reuse.
 * Validate layout drift via ASCII/CI snapshots.
 
+For example, the QA team recently struggled to detect layout regressions across modes due to missing CI snapshots and manual CSS overrides.
+
 A runtime layout engine decouples **UI placement** from **UI logic**, allowing for faster experimentation and unified observability.
 
 ---
 
 ## Goals
 
-* Support applying a JSON layout file at runtime.
+* Support applying a JSON layout file at runtime across 100% of current battle modes.
 * Standardise on a **grid system** (e.g., 60×24) with percent-based scaling.
 * Apply layouts deterministically via `data-layout-id` anchors.
 * Support **feature flag conditions** (e.g., “show scoreboard only if flag X enabled”).
 * Enable round-trip export/import to ASCII for auditability.
 * Fail gracefully if a layout is missing, invalid, or collides.
+* Ensure layout application completes within 50ms average runtime.
 
 ---
 
@@ -71,6 +74,7 @@ A runtime layout engine decouples **UI placement** from **UI logic**, allowing f
 * Given a disabled feature flag, the corresponding component is **not rendered/moved**.
 * Given an invalid layout, the engine **logs a warning and leaves default CSS intact**.
 * ASCII output matches expected token map when compared in CI.
+* Layout must be applied within **50ms** in 95% of cases.
 
 ---
 
@@ -82,9 +86,65 @@ A runtime layout engine decouples **UI placement** from **UI logic**, allowing f
 
 ---
 
+## Edge Cases / Failure States
+
+* **Missing Layout File**: Skip layout application and log warning.
+* **Invalid JSON Structure**: Log detailed validation errors, do not apply.
+* **Duplicate `data-layout-id`**: Log conflict and apply first defined rect.
+* **Nonexistent DOM Anchors**: Log and skip.
+* **Feature flag is undefined**: Treat as `false` and hide component.
+
+---
+
+## Design and UX Considerations
+
+* Layout grid abstraction should visually align to a reference ASCII rendering.
+* Example ASCII:
+
+```
++------------------------------------------------------------+
+|                       SCOREBOARD                           |
+|                                                            |
+| PLAYER HAND        ARENA VIEW         OPPONENT HAND       |
+|                                                            |
+|                       TIMER                               |
++------------------------------------------------------------+
+```
+
+* Ensure layout applies cleanly on different resolutions (e.g., 1080p, 1440p).
+* Do not reposition elements during window resizes (non-responsive by design).
+* Consider future expansion for mobile/tablet by extending the grid spec.
+
+---
+
 ## Open Questions
 
 * Should we allow multiple layouts per mode (variants)?
 * Should layouts be cached in localStorage for hot-swapping during playtests?
 
 ---
+
+## Tasks
+
+- [ ] 1.0 Implement Layout Engine Core
+  - [ ] 1.1 Create `applyLayout()` entry point.
+  - [ ] 1.2 Parse and validate JSON layout file.
+  - [ ] 1.3 Anchor elements using `[data-layout-id]`.
+  - [ ] 1.4 Apply grid-based rects and z-index as inline styles.
+
+- [ ] 2.0 Feature Flag Integration
+  - [ ] 2.1 Parse `visibleIf.featureFlag` from layout JSON.
+  - [ ] 2.2 Check runtime flag status and skip hidden elements.
+
+- [ ] 3.0 ASCII & JSON Export Functionality
+  - [ ] 3.1 Traverse current DOM layout.
+  - [ ] 3.2 Export positions to JSON.
+  - [ ] 3.3 Render ASCII grid for CI diffing.
+
+- [ ] 4.0 Layout Validation and Fallback
+  - [ ] 4.1 Validate layout schema using Ajv.
+  - [ ] 4.2 Log warning and fallback gracefully if layout fails.
+
+- [ ] 5.0 Debug Panel Logging
+  - [ ] 5.1 Log layout application success/failure.
+  - [ ] 5.2 Display ASCII snapshot in dev panel.

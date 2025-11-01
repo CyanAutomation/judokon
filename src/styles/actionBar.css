@@ -1,0 +1,260 @@
+/**
+ * Battle Action Bar Styles
+ *
+ * Layout:
+ * [ ⚙ Options ] [ Stat1 | Stat2 | Stat3 | Stat4 | Stat5 ] [ ▶ Action ]
+ *
+ * Theming:
+ * .action-bar--classic  (default, icon-based)
+ * .action-bar--cli      (text-based, monospace)
+ * .action-bar--bandit   (compact variant)
+ * .action-bar--quick    (minimal variant)
+ */
+
+.action-bar {
+  --action-bar-bg: var(--color-bg-secondary, #1a1a1a);
+  --action-bar-border: var(--color-border, #333);
+  --action-bar-button-height: 44px;
+  --action-bar-button-min-width: 48px;
+  --action-bar-gap: 0.5rem;
+  --action-bar-padding: 0.75rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--action-bar-gap);
+  padding: var(--action-bar-padding);
+  background-color: var(--action-bar-bg);
+  border-top: 1px solid var(--action-bar-border);
+  border-bottom: 1px solid var(--action-bar-border);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--action-bar-button-height);
+  font-family: inherit;
+  user-select: none;
+
+  /* Accessibility: ensure action bar is not cut off on small screens */
+  contain: layout style paint;
+}
+
+/* Individual button styling */
+.action-bar__button {
+  --button-bg: var(--color-button-bg, #2a2a2a);
+  --button-hover-bg: var(--color-button-hover-bg, #3a3a3a);
+  --button-active-bg: var(--color-button-active-bg, #4a4a4a);
+  --button-disabled-bg: var(--color-button-disabled-bg, #1a1a1a);
+  --button-text-color: var(--color-text, #fff);
+  --button-disabled-text-color: var(--color-text-muted, #666);
+  --button-focus-outline: 2px solid var(--color-focus, #0066cc);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--action-bar-button-height);
+  min-width: var(--action-bar-button-min-width);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--button-hover-bg);
+  border-radius: 4px;
+  background-color: var(--button-bg);
+  color: var(--button-text-color);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+  position: relative;
+
+  /* Remove default button styling */
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.action-bar__button:hover:not(:disabled) {
+  background-color: var(--button-hover-bg);
+  border-color: var(--button-active-bg);
+  transform: translateY(-2px);
+}
+
+.action-bar__button:focus-visible {
+  outline: var(--button-focus-outline);
+  outline-offset: 2px;
+}
+
+.action-bar__button:active:not(:disabled) {
+  background-color: var(--button-active-bg);
+  transform: translateY(0);
+}
+
+.action-bar__button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text-color);
+  border-color: var(--button-disabled-bg);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Pulse animation for active/pressed state (respects prefers-reduced-motion) */
+@media (prefers-reduced-motion: no-preference) {
+  .action-bar__button:active:not(:disabled)::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 2px solid var(--button-active-bg);
+    border-radius: 6px;
+    animation: pulse 150ms ease-out;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+/* Options button (leftmost) */
+.action-bar__button--options {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Stats group (center) */
+.action-bar__stats-group {
+  display: flex;
+  gap: calc(var(--action-bar-gap) / 2);
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+.action-bar__button--stat {
+  flex: 1;
+  min-width: 60px;
+  font-size: 12px;
+}
+
+/* Highlight enabled stat button */
+.action-bar__button--stat[data-stat-enabled="true"]:hover:not(:disabled) {
+  box-shadow: 0 0 8px rgba(0, 102, 204, 0.4);
+}
+
+/* Action button (rightmost) - highlighted */
+.action-bar__button--action {
+  --button-bg: var(--color-action-button-bg, #0066cc);
+  --button-hover-bg: var(--color-action-button-hover-bg, #0052a3);
+  --button-active-bg: var(--color-action-button-active-bg, #003d7a);
+  --button-text-color: #fff;
+
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.3);
+}
+
+.action-bar__button--action:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.5);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .action-bar__button {
+    transition: none;
+  }
+
+  .action-bar__button:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .action-bar__button:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Classic mode (default, icon + text) */
+.action-bar--classic {
+  /* Inherits all defaults */
+  /* No additional styling needed */
+}
+
+/* CLI mode (text-based, monospace) */
+.action-bar--cli {
+  --action-bar-bg: #000;
+  --action-bar-border: #333;
+  --button-bg: #1a1a1a;
+  --button-hover-bg: #2a2a2a;
+  --button-text-color: #0f0;
+  --button-disabled-text-color: #333;
+
+  font-family: "Courier New", monospace;
+}
+
+.action-bar--cli .action-bar__button {
+  font-family: "Courier New", monospace;
+  border: 1px solid var(--button-hover-bg);
+  background-color: var(--button-bg);
+  color: var(--button-text-color);
+}
+
+.action-bar--cli .action-bar__button[data-stat-enabled="true"] {
+  border-color: #0f0;
+}
+
+/* Bandit mode (compact) */
+.action-bar--bandit {
+  --action-bar-button-height: 40px;
+  --action-bar-button-min-width: 44px;
+  --action-bar-gap: 0.25rem;
+  --action-bar-padding: 0.5rem;
+}
+
+/* Quick mode (minimal) */
+.action-bar--quick {
+  --action-bar-button-height: 36px;
+  --action-bar-button-min-width: 40px;
+  --action-bar-gap: 0.25rem;
+  --action-bar-padding: 0.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .action-bar {
+    --action-bar-button-height: 40px;
+    --action-bar-gap: 0.25rem;
+    --action-bar-padding: 0.5rem;
+  }
+
+  .action-bar__button {
+    font-size: 12px;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .action-bar__button--stat {
+    min-width: 45px;
+    font-size: 11px;
+  }
+
+  .action-bar__stats-group {
+    gap: 0.25rem;
+  }
+}
+
+/* Accessibility: ensure visible focus indicators for keyboard navigation */
+.action-bar__button:focus-visible {
+  outline: var(--button-focus-outline);
+  outline-offset: 2px;
+  z-index: 10;
+}
+
+/* Data attributes are used for testing and observability (documented for reference):
+   - data-action-bar-mode: identifies the action bar mode
+   - data-action-button-type: identifies button type (options, stat, action)
+   - data-action-button-id: identifies specific button (power, speed, etc.)
+   - data-stat-enabled: tracks whether stat button is currently enabled
+   - data-action-state: tracks action button state (start, next, draw, done)
+*/

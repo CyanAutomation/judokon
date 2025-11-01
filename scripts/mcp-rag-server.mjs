@@ -11,6 +11,8 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import queryRag from "../src/helpers/queryRag.js";
+import { LRUCache } from "../src/helpers/lruCache.js";
+import { expandQuery } from "../src/helpers/queryExpander.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -61,8 +63,14 @@ const embeddingsArray = JSON.parse(fs.readFileSync(embeddingsPath, "utf8"));
 // eslint-disable-next-line no-unused-vars
 const embeddingsById = new Map(embeddingsArray.map((e) => [e.id, e]));
 
+// ============ Cache Setup ============
+
+// Initialize query cache (100 entries, 5-minute TTL)
+const queryCache = new LRUCache(100, 5 * 60 * 1000);
+
 console.error(`Loaded ${judokaData.length} judoka records`);
 console.error(`Loaded ${embeddingsArray.length} embeddings`);
+console.error(`Initialized query cache (100 entries, 5-minute TTL)`);
 
 const server = new Server(
   {
@@ -164,12 +172,30 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
  * @param {Object} filters - Optional filters (country, rarity, weightClass)
  * @returns {Promise<Object>} Search results
  */
-async function handleJudokonSearch(query, topK = 8, filters = {}) {
+/**
+ * Execute judoka search with query, filters, and result limit.
+ * This is the core search logic with query expansion (cache-agnostic).
+ * @param {string} query - Search query
+ * @param {number} topK - Result limit
+ * @param {Object} filters - Filter object
+ * @returns {Promise<Object>} Search results with expansion metadata
+ * @private
+ */
+async function executeJudokonSearch(query, topK, filters) {
+  // Expand query with synonyms for improved relevance
+  const expansion = await expandQuery(query);
+  const searchQuery = expansion.hasExpansion ? expansion.expanded : query;
+
   // Use queryRag to encode the query into the embedding space
-  const ragResults = await queryRag(query);
+  const ragResults = await queryRag(searchQuery);
 
   if (!ragResults || ragResults.length === 0) {
-    return { results: [], query, message: "No results found for query" };
+    return {
+      results: [],
+      query,
+      message: "No results found for query",
+      _expansion: expansion
+    };
   }
 
   // Extract IDs from RAG results and create a score map
@@ -215,7 +241,45 @@ async function handleJudokonSearch(query, topK = 8, filters = {}) {
     query,
     topK,
     filters: Object.keys(filters).length > 0 ? filters : null,
-    count: results.length
+    count: results.length,
+    _expansion: expansion
+  };
+}
+
+/**
+ * Handle judokon.search tool requests with caching.
+ * Checks cache first; on miss, executes search and caches result.
+ * @param {string} query - Search query
+ * @param {number} topK - Result limit
+ * @param {Object} filters - Filter object
+ * @returns {Promise<Object>} Search results with cache metadata
+ */
+async function handleJudokonSearch(query, topK = 8, filters = {}) {
+  // Generate deterministic cache key
+  const cacheKey = queryCache.generateKey(query, topK, filters);
+
+  // Check cache
+  const cached = queryCache.get(cacheKey);
+  if (cached) {
+    // Return cached result with metadata
+    return {
+      ...cached,
+      _cached: true,
+      _cacheKey: cacheKey
+    };
+  }
+
+  // Cache miss - execute search
+  const result = await executeJudokonSearch(query, topK, filters);
+
+  // Store in cache
+  queryCache.set(cacheKey, result);
+
+  // Return result with metadata
+  return {
+    ...result,
+    _cached: false,
+    _cacheKey: cacheKey
   };
 }
 
