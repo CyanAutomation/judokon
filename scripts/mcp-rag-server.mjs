@@ -11,6 +11,58 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import queryRag from "../src/helpers/queryRag.js";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// ============ Utility Functions ============
+
+/**
+ * Compute vector norm (magnitude)
+ * @param {number[]} vec
+ * @returns {number}
+ */
+function norm(vec) {
+  return Math.sqrt(vec.reduce((sum, val) => sum + val * val, 0));
+}
+
+/**
+ * Compute cosine similarity between two vectors
+ * @param {number[]} a
+ * @param {number[]} b
+ * @returns {number}
+ * @deprecated Not used in v1, reserved for future enhancements
+ */
+// eslint-disable-next-line no-unused-vars
+function cosine(a, b) {
+  let dot = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+  }
+  const aMag = norm(a);
+  const bMag = norm(b);
+  return dot / (aMag * bMag + 1e-12);
+}
+
+// ============ Data Loading ============
+
+// Load judoka data
+const judokaPath = path.join(__dirname, "../src/data/judoka.json");
+const judokaData = JSON.parse(fs.readFileSync(judokaPath, "utf8"));
+const judokaById = new Map(judokaData.map((j) => [String(j.id), j]));
+
+// Load embeddings (stored as array of {id, text, embedding} objects)
+const embeddingsPath = path.join(__dirname, "../src/data/client_embeddings.json");
+const embeddingsArray = JSON.parse(fs.readFileSync(embeddingsPath, "utf8"));
+
+// Create embeddings map for quick lookup (reserved for future use)
+// eslint-disable-next-line no-unused-vars
+const embeddingsById = new Map(embeddingsArray.map((e) => [e.id, e]));
+
+console.error(`Loaded ${judokaData.length} judoka records`);
+console.error(`Loaded ${embeddingsArray.length} embeddings`);
 
 const server = new Server(
   {
@@ -43,14 +95,177 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["query"]
         }
+      },
+      {
+        name: "judokon.search",
+        description:
+          "Semantic search over judoka embeddings with optional filtering by country, rarity, or weight class",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "Search query (e.g., 'powerful judoka from Japan')"
+            },
+            topK: {
+              type: "integer",
+              minimum: 1,
+              maximum: 50,
+              default: 8,
+              description: "Maximum number of results to return"
+            },
+            filters: {
+              type: "object",
+              description: "Optional filters to narrow search results",
+              properties: {
+                country: {
+                  type: "string",
+                  description: "Filter by country (e.g., 'Japan', 'France')"
+                },
+                rarity: {
+                  type: "string",
+                  enum: ["Common", "Epic", "Legendary"],
+                  description: "Filter by judoka rarity"
+                },
+                weightClass: {
+                  type: "string",
+                  description: "Filter by weight class (e.g., '+100', '-60')"
+                }
+              }
+            }
+          },
+          required: ["query"]
+        }
       }
     ]
   };
 });
 
+// ============ Tool Handlers ============
+
+/**
+ * Handle judokon.search tool requests
+ * @param {string} query - Search query string
+ * @param {number} topK - Maximum results to return
+ * @param {Object} filters - Optional filters (country, rarity, weightClass)
+ * @returns {Promise<Object>} Search results
+ */
+async function handleJudokonSearch(query, topK = 8, filters = {}) {
+  // Use queryRag to encode the query into the embedding space
+  const ragResults = await queryRag(query);
+
+  if (!ragResults || ragResults.length === 0) {
+    return { results: [], query, message: "No results found for query" };
+  }
+
+  // Extract IDs from RAG results and create a score map
+  const scoreMap = new Map();
+  ragResults.slice(0, 10).forEach((result, index) => {
+    // Extract ID from the text or source
+    scoreMap.set(result.id || String(index), (10 - index) / 10);
+  });
+
+  // Find judoka matching the RAG results and apply filters
+  const candidates = [];
+
+  for (const embedding of embeddingsArray) {
+    const judoka = judokaById.get(embedding.id) || judokaById.get(String(embedding.id));
+    if (!judoka) continue;
+
+    // Apply filters
+    if (filters.country && judoka.country !== filters.country) continue;
+    if (filters.rarity && judoka.rarity !== filters.rarity) continue;
+    if (filters.weightClass && judoka.weightClass !== filters.weightClass) continue;
+
+    // Calculate relevance score
+    const ragScore = scoreMap.get(embedding.id) || 0;
+    candidates.push({
+      id: judoka.id,
+      name: `${judoka.firstname} ${judoka.surname}`,
+      country: judoka.country,
+      countryCode: judoka.countryCode,
+      rarity: judoka.rarity,
+      weightClass: judoka.weightClass,
+      stats: judoka.stats,
+      bio: judoka.bio,
+      score: ragScore,
+      text: embedding.text
+    });
+  }
+
+  // Sort by score descending and limit to topK
+  const results = candidates.sort((a, b) => b.score - a.score).slice(0, topK);
+
+  return {
+    results,
+    query,
+    topK,
+    filters: Object.keys(filters).length > 0 ? filters : null,
+    count: results.length
+  };
+}
+
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+
+  if (name === "judokon.search") {
+    const { query, topK = 8, filters = {} } = args;
+
+    if (!query || typeof query !== "string") {
+      throw new Error("Query parameter is required and must be a string");
+    }
+
+    try {
+      const searchResults = await handleJudokonSearch(query, topK, filters);
+
+      if (searchResults.results.length === 0) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `No judoka found matching "${query}"${
+                Object.keys(filters).length > 0 ? ` with filters: ${JSON.stringify(filters)}` : ""
+              }`
+            }
+          ]
+        };
+      }
+
+      const resultsText = searchResults.results
+        .map((judoka, index) => {
+          return (
+            `**${index + 1}. ${judoka.name}** (${judoka.rarity})\n` +
+            `   Country: ${judoka.country}\n` +
+            `   Weight Class: ${judoka.weightClass}\n` +
+            `   Stats: Power=${judoka.stats?.power}, Speed=${judoka.stats?.speed}, ` +
+            `Technique=${judoka.stats?.technique}\n` +
+            `   Relevance: ${(judoka.score * 100).toFixed(0)}%`
+          );
+        })
+        .join("\n\n");
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Found ${searchResults.results.length} judoka matching "${query}":\n\n${resultsText}`
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Judokon search failed:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Search failed: ${error.message || error}`
+          }
+        ],
+        isError: true
+      };
+    }
+  }
 
   if (name === "query_rag") {
     const query = args.query;

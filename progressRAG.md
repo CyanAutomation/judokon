@@ -520,3 +520,82 @@ test("judokon.getById returns full record", async () => {
 - Verify results from Claude Desktop integration
 - Benchmark query latency and accuracy
 - Test fallback behavior when model unavailable
+
+---
+
+## 11. Implementation Progress
+
+### Phase 1 ✅ Complete — Validation and Planning
+
+- [x] Verified existing MCP RAG server (`scripts/mcp-rag-server.mjs`)
+- [x] Audited data schema (judoka.json, client_embeddings.json)
+- [x] Documented current architecture
+- [x] Planned judoka-specific tools
+
+### Phase 2 🚧 In Progress
+
+#### Task 1: Add `judokon.search` tool — ✅ Complete
+
+**What was done:**
+
+- Extended `scripts/mcp-rag-server.mjs` with semantic search over judoka embeddings
+- Added tool definition with input schema for `query`, `topK`, and optional `filters` (country, rarity, weightClass)
+- Implemented `handleJudokonSearch()` function using RAG results for relevance scoring
+- Loaded and indexed `judoka.json` and `client_embeddings.json` data
+
+**Files modified:**
+
+- `scripts/mcp-rag-server.mjs` — Added tool definition, data loading, search handler
+- `tests/mcp-rag-server.test.js` — Created comprehensive test suite
+
+**Test Results:**
+
+```text
+Test Files:  1 passed (1)
+Tests:       16 passed (16)
+✅ All tests pass
+```
+
+**Test Coverage:**
+
+- ✅ Data loading (judoka and embeddings)
+- ✅ Cosine similarity computation
+- ✅ Filter logic (country, rarity, weight class)
+- ✅ Multiple filter combinations
+- ✅ Judoka data integrity (required fields, valid stats, unique IDs)
+- ✅ Embedding data integrity (dimensions, valid magnitudes)
+
+**Example usage:**
+
+```javascript
+// Search for powerful judoka from Japan
+const result = await mcpClient.call_tool("judokon.search", {
+  query: "powerful judoka from Japan",
+  topK: 5,
+  filters: { country: "Japan", rarity: "Legendary" }
+});
+```
+
+#### Task 2: Add `judokon.getById` tool (Next)
+
+**Status:** 📋 Planned
+
+#### Task 3: Create integration tests (After Task 2)
+
+**Status:** 📋 Planned
+
+#### Task 4: Update agent instructions (Final)
+
+**Status:** 📋 Planned
+
+### Key Implementation Notes
+
+1. **Data Loading**: Embeddings are stored as a JSON array (not an object with `items` property). The MCP server loads ~5,900 embeddings into memory for fast search.
+
+2. **Search Algorithm**: Uses RAG (`queryRag`) function to encode queries into the embedding space, then scores judoka records based on RAG relevance and applies user-specified filters.
+
+3. **Filter Combinations**: Supports filtering by country, rarity, and weight class individually or in combination. Filters are applied with AND logic (all must match).
+
+4. **Performance**: Current approach is O(n) for each search, which is acceptable for ~200 judoka. For larger datasets, consider ANN libraries or caching.
+
+5. **Error Handling**: Graceful fallbacks if RAG query fails or no results found.
