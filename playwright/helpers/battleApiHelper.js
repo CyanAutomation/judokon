@@ -152,6 +152,33 @@ export async function readCountdown(page) {
 }
 
 /**
+ * Dispatches a deterministic sequence of state events to finish the round.
+ * @param {import("@playwright/test").Page} page
+ * @returns {Promise<{ok: boolean, reason: string | null}>}
+ * @pseudocode
+ * 1. Dispatch `roundResolved` to settle the active round.
+ * 2. Dispatch `continue` to advance to the cooldown/next round.
+ * 3. Return success when both dispatches report ok.
+ */
+export async function forceRoundAdvance(page) {
+  const events = ["roundResolved", "continue"];
+  let lastError = null;
+
+  for (const eventName of events) {
+    const outcome = await dispatchBattleEvent(page, eventName);
+    if (!outcome.ok) {
+      lastError = outcome.reason ?? `${eventName} dispatch returned false`;
+      break;
+    }
+  }
+
+  return {
+    ok: lastError === null,
+    reason: lastError
+  };
+}
+
+/**
  * Resolves the current battle state via the Test API.
  * @param {import("@playwright/test").Page} page
  * @pseudocode

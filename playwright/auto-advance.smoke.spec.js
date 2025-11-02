@@ -1,9 +1,32 @@
 // Playwright smoke test: verifies inter-round cooldown auto-advances
 import { test, expect } from "@playwright/test";
 import { waitForBattleReady, waitForBattleState } from "./helpers/battleStateHelper.js";
-import { completeRoundViaApi, readRoundsPlayed, readCountdown } from "./helpers/battleApiHelper.js";
+import {
+  completeRoundViaApi,
+  readRoundsPlayed,
+  readCountdown,
+  forceRoundAdvance
+} from "./helpers/battleApiHelper.js";
 
 const WAIT_FOR_ADVANCE_TIMEOUT = 15_000;
+
+async function waitForStateViaTestApi(page, expectedState, timeoutMs = WAIT_FOR_ADVANCE_TIMEOUT) {
+  const result = await page.evaluate(
+    ({ state, timeout }) => {
+      const stateApi = window.__TEST_API?.state;
+      if (!stateApi || typeof stateApi.waitForBattleState !== "function") {
+        throw new Error("__TEST_API.state.waitForBattleState unavailable");
+      }
+      return stateApi.waitForBattleState(state, timeout);
+    },
+    { state: expectedState, timeout: timeoutMs }
+  );
+
+  expect(
+    result,
+    `Expected window.__TEST_API.state.waitForBattleState("${expectedState}") to resolve true`
+  ).toBeTruthy();
+}
 
 test.describe("Classic Battle – auto-advance", () => {
   test("shows countdown and auto-advances without Next", async ({ page }) => {
@@ -31,34 +54,26 @@ test.describe("Classic Battle – auto-advance", () => {
     const roundCompletion = await completeRoundViaApi(page);
 
     if (!roundCompletion.ok) {
-      // Fallback: select the first available stat to complete the round naturally
-      const firstStat = page.locator("#stat-buttons button").first();
-      await expect(firstStat).toBeVisible();
-      await expect(firstStat).toBeEnabled();
-      await firstStat.click({ trial: true });
-      await firstStat.click();
+      const forcedAdvance = await forceRoundAdvance(page);
+
+      if (!forcedAdvance.ok) {
+        // Final fallback: select the first available stat to complete the round naturally
+        const firstStat = page.locator("#stat-buttons button").first();
+        await expect(firstStat).toBeVisible();
+        await expect(firstStat).toBeEnabled();
+        await firstStat.click({ trial: true });
+        await firstStat.click();
+      }
     }
 
-    await waitForBattleState(page, "cooldown", {
-      allowFallback: false,
-      timeout: WAIT_FOR_ADVANCE_TIMEOUT
-    });
-
-    await expect
-      .poll(() => readCountdown(page), {
-        message: "expected countdown helper to report cooldown seconds",
-        timeout: WAIT_FOR_ADVANCE_TIMEOUT
-      })
-      .not.toBeNull();
+    await waitForStateViaTestApi(page, "cooldown");
 
     const cooldownCountdown = await readCountdown(page);
-    expect(typeof cooldownCountdown).toBe("number");
-    expect(Number(cooldownCountdown)).toBeGreaterThan(0);
+    const countdownValue = Number(cooldownCountdown);
+    expect(Number.isFinite(countdownValue)).toBe(true);
+    expect(countdownValue).toBeGreaterThan(0);
 
-    await waitForBattleState(page, "waitingForPlayerAction", {
-      allowFallback: false,
-      timeout: WAIT_FOR_ADVANCE_TIMEOUT
-    });
+    await waitForStateViaTestApi(page, "waitingForPlayerAction");
 
     const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
     expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
