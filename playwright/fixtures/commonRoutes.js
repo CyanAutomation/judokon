@@ -59,6 +59,12 @@ export async function registerCommonRoutes(page) {
     page.route("https://flagcdn.com/**", (route) =>
       route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
     ),
+    page.route("https://js-de.sentry-cdn.com/**", (route) =>
+      route.fulfill({
+        contentType: "application/javascript",
+        body: ""
+      })
+    ),
     page.route("https://esm.sh/ajv@6*", (route) =>
       route.fulfill({ path: "src/vendor/ajv6.min.js" })
     ),
