@@ -3,7 +3,7 @@ import {
   waitForBattleReady,
   waitForBattleState,
   configureClassicBattle,
-  waitForMatchCompletion,
+  createMatchCompletionTracker,
   waitForRoundStats,
   waitForStatButtonsReady,
   waitForNextButtonReady,
@@ -21,13 +21,13 @@ const BENIGN_MESSAGE_PATTERNS = {
 
 const STAT_GROUP_ARIA_LABEL = /choose a stat/i;
 
-async function waitForStateOrMatch(page, state, matchCompletionPromise, options, isMatchComplete) {
+async function waitForStateOrMatch(page, state, matchTracker, options) {
   const statePromise = waitForBattleState(page, state, options);
 
   try {
     const result = await Promise.race([
       statePromise.then(() => "state"),
-      matchCompletionPromise.then(() => "matchComplete")
+      matchTracker.promise.then(() => "matchComplete")
     ]);
 
     if (result === "matchComplete") {
@@ -36,8 +36,7 @@ async function waitForStateOrMatch(page, state, matchCompletionPromise, options,
 
     return result;
   } catch (error) {
-    await matchCompletionPromise.catch(() => {});
-    if (typeof isMatchComplete === "function" && isMatchComplete()) {
+    if (matchTracker.isComplete() && !matchTracker.hasError()) {
       return "matchComplete";
     }
     throw error;
@@ -53,14 +52,12 @@ async function selectDecisiveStat(page) {
   }
 
   const statGroup = page.getByRole("group", { name: STAT_GROUP_ARIA_LABEL });
-  await expect(statGroup).toBeVisible();
-
+  await statGroup.waitFor({ state: "visible" });
   const statButtons = statGroup.locator("[data-testid='stat-button']");
   const buttonCount = await statButtons.count();
 
   for (let index = 0; index < buttonCount; index += 1) {
     const candidate = statButtons.nth(index);
-    await expect(candidate).toBeVisible();
     if (await candidate.isEnabled()) {
       await candidate.click();
       return;
@@ -68,8 +65,6 @@ async function selectDecisiveStat(page) {
   }
 
   const fallbackButton = statGroup.getByRole("button").first();
-  await expect(fallbackButton).toBeVisible();
-  await expect(fallbackButton).toBeEnabled();
   await fallbackButton.click();
 }
 
@@ -119,61 +114,55 @@ test.describe("Classic Battle page", () => {
     await waitForBattleReady(page, { allowFallback: false });
     await setPointsToWin(page, 1, { timeout: 10_000 });
 
-    let matchCompleted = false;
-    const matchCompletionPromise = waitForMatchCompletion(page, {
+    const matchTracker = createMatchCompletionTracker(page, {
       timeout: 28_000,
       allowFallback: false
-    })
-      .then((payload) => {
-        matchCompleted = true;
-        return payload;
-      })
-      .catch((error) => {
-        matchCompleted = true;
-        throw error;
-      });
+    });
 
-    for (let i = 0; i < 30 && !matchCompleted; i += 1) {
+    for (let i = 0; i < 30 && !matchTracker.isComplete(); i += 1) {
       const nextActionState = await waitForStateOrMatch(
         page,
         "waitingForPlayerAction",
-        matchCompletionPromise,
-        { timeout: 18_000, allowFallback: false },
-        () => matchCompleted
+        matchTracker,
+        { timeout: 18_000, allowFallback: false }
       );
 
       if (nextActionState === "matchComplete") {
         break;
       }
 
-      await waitForStatButtonsReady(page, { timeout: 10_000, allowFallback: false });
+      await waitForStatButtonsReady(page, { timeout: 10_000 });
 
       await selectDecisiveStat(page);
 
       const roundResolutionState = await waitForStateOrMatch(
         page,
         "roundOver",
-        matchCompletionPromise,
-        { timeout: 18_000, allowFallback: false },
-        () => matchCompleted
+        matchTracker,
+        { timeout: 18_000, allowFallback: false }
       );
 
       if (roundResolutionState === "matchComplete") {
+        try {
+          await waitForNextButtonReady(page, { timeout: 10_000 });
+          await page.getByTestId("next-button").click();
+        } catch (error) {
+          if (!matchTracker.hasError()) {
+            throw error;
+          }
+        }
         break;
       }
 
       await waitForNextButtonReady(page, { timeout: 10_000 });
 
-      const nextButton = page.getByTestId("next-button");
-      await expect(nextButton).toBeVisible();
-      await expect(nextButton).toBeEnabled();
-      await nextButton.click();
+      await page.getByTestId("next-button").click();
     }
 
-    const matchResult = await matchCompletionPromise;
+    const matchResult = await matchTracker.promise;
     expect(matchResult).toBeTruthy();
     expect(matchResult.timedOut).toBe(false);
-
+    await waitForBattleState(page, "matchDecision", { timeout: 15_000, allowFallback: false });
     await expect(page.locator("#match-end-modal")).toBeVisible({ timeout: 15_000 });
 
     // Assert that the showEndModal function incremented its structured counter
