@@ -135,12 +135,10 @@ test.describe("Classic Battle page", () => {
 
       await selectDecisiveStat(page);
 
-      const roundResolutionState = await waitForStateOrMatch(
-        page,
-        "roundOver",
-        matchTracker,
-        { timeout: 18_000, allowFallback: false }
-      );
+      const roundResolutionState = await waitForStateOrMatch(page, "roundOver", matchTracker, {
+        timeout: 18_000,
+        allowFallback: false
+      });
 
       if (roundResolutionState === "matchComplete") {
         try {
