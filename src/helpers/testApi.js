@@ -1033,7 +1033,7 @@ const timerApi = {
           return parseTimerValue(targetedMatch[1]);
         }
 
-        const fallbackMatch = text.match(/(\d+)/);
+        const fallbackMatch = text.match(/(\d+)s?/);
         if (!fallbackMatch) return null;
 
         return parseTimerValue(fallbackMatch[1]);

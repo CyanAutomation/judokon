@@ -201,7 +201,9 @@ export function cosineSimilarity(a, b) {
  *    a. Compute cosine similarity with `queryVector`.
  *    b. Normalize similarity from [-1,1] to [0,1].
  *    c. If any query term appears in the entry text, add a small bonus.
- *    d. Clamp the final score to at most 1.
+ *    d. If query contains a filename (e.g., "judoka.json", "Card.js") and entry
+ *       source matches that filename, add a significant filename boost.
+ *    e. Clamp the final score to at most 1.
  * 3. Sort entries in descending score order and return.
  *
  * @param {Array<Record<string, any>>} entries - Candidate entries with `embedding` and `text`.
@@ -212,6 +214,11 @@ export function cosineSimilarity(a, b) {
 export function scoreEntries(entries, queryVector, queryText) {
   const terms = String(queryText).toLowerCase().split(/\s+/).filter(Boolean);
   const dottedTerms = terms.filter((t) => t.includes("."));
+
+  // Extract filename from query (e.g., "judoka.json", "Card.js", "chunkConfig.js")
+  const filenameMatch = queryText.match(/\b[\w-]+\.(js|json|css|md)\b/i);
+  const queryFilename = filenameMatch ? filenameMatch[0].toLowerCase() : null;
+
   return entries
     .map((entry) => {
       const sim = cosineSimilarity(queryVector, entry.embedding);
@@ -227,10 +234,17 @@ export function scoreEntries(entries, queryVector, queryText) {
         exactMatchBonus = 0.2; // Higher bonus for code and data
       }
 
+      // Filename boost: if query explicitly mentions a filename and entry source matches
+      let filenameBonus = 0;
+      if (queryFilename && entry.source && entry.source.toLowerCase().includes(queryFilename)) {
+        filenameBonus = 0.4; // Strong boost for explicit filename matches
+      }
+
       const bonus =
         (hasTerm ? exactMatchBonus : 0) +
         (hasSectionHit ? SECTION_TITLE_BONUS : 0) +
-        (hasKeyPathHit ? KEYPATH_BONUS : 0);
+        (hasKeyPathHit ? KEYPATH_BONUS : 0) +
+        filenameBonus;
       return { score: Math.min(1, normalized + bonus), ...entry };
     })
     .sort((a, b) => b.score - a.score);

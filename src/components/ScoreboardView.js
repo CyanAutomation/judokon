@@ -96,10 +96,13 @@ export class ScoreboardView {
 
     if (typeof seconds === "number" && Number.isFinite(seconds)) {
       const clamped = Math.max(0, seconds);
+      // Set data-remaining-time attribute for test API
+      this.timerEl.setAttribute("data-remaining-time", String(clamped));
       // Always rebuild to avoid whitespace artifacts from original HTML
       this.timerEl.innerHTML = `<span data-part="label">Time Left:</span> <span data-part="value">${clamped}s</span>`;
     } else {
       // Clear the display
+      this.timerEl.removeAttribute("data-remaining-time");
       this.timerEl.innerHTML = "";
     }
   }
