@@ -1,9 +1,5 @@
 # PRD: Battle Action Bar
 
-**Owner:** Design Team
-**Status:** In Review
-**Last Updated:** 2025-11-01
-
 **Entry Point:** `src/helpers/actionBar.js`
 **Used By:** Classic Battle (UI + CLI), Battle Bandit, Battle Quick, future battle modes
 **Replaces:** Global bottom navigation / foot bar
@@ -19,7 +15,7 @@
 
 ## 1. Overview
 
-The **Battle Action Bar** is a mandatory, mode-agnostic interaction component that replaces the bottom navigation/foot bar in all battle modes. It provides players with a consistent control surface across battles while allowing mode-specific styling and tactile feedback.
+The **Battle Action Bar** is a mandatory, mode-agnostic interaction component that replaces a bottom navigation/foot bar in all battle modes. It provides players with a consistent control surface across battles while allowing mode-specific styling and tactile feedback.
 
 ### Structure
 
