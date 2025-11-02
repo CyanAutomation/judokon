@@ -30,5 +30,10 @@
   "weight class": ["weight category"],
   "weight classes": ["weight categories"],
   "update profile": ["update judoka"],
-  "design doc": ["prd", "product requirements document"]
+  "design doc": ["prd", "product requirements document"],
+  "card": ["component", "card component"],
+  "component": ["card", "element", "widget"],
+  "constants": ["configuration", "constants"],
+  "battle cli": ["cli", "command line"],
+  "accessibility": ["a11y", "wcag", "aria"]
 }

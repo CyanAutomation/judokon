@@ -1125,7 +1125,15 @@ function determineTags(relativePath, ext, isTest) {
     return tags;
   }
   if (ext === ".js" || ext === ".ts") {
-    return [isTest ? "test-code" : "code"];
+    const tags = [isTest ? "test-code" : "code"];
+    const file = path.basename(relativePath);
+    // Add semantic tags for specific implementation files
+    if (file === "Card.js") tags.push("component");
+    if (file === "chunkConfig.js") tags.push("constant", "config");
+    if (file === "featureFlags.js") tags.push("feature-flag", "config");
+    if (relativePath.includes("battleCLI")) tags.push("cli");
+    if (file === "game.js") tags.push("initialization", "entry-point");
+    return tags;
   }
   if (ext === ".css") {
     return ["styling", "css"];
@@ -1134,6 +1142,11 @@ function determineTags(relativePath, ext, isTest) {
   if (relativePath.startsWith("design/productRequirementsDocuments")) {
     tags.push("design-doc");
     const fileName = path.basename(relativePath);
+    // Add specific semantic tags for PRD documents
+    if (fileName === "prdBattleCLI.md") tags.push("cli", "battle");
+    if (fileName === "prdJudokaCard.md" || fileName.includes("Card")) {
+      tags.push("component", "card");
+    }
     if (fileName === "prdAIAgentWorkflows.md" || fileName === "prdVectorDatabaseRAG.md") {
       tags.push("agent-workflow");
     }
