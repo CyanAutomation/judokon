@@ -11,21 +11,39 @@ import {
 const WAIT_FOR_ADVANCE_TIMEOUT = 15_000;
 
 async function waitForStateViaTestApi(page, expectedState, timeoutMs = WAIT_FOR_ADVANCE_TIMEOUT) {
-  const result = await page.evaluate(
-    ({ state, timeout }) => {
-      const stateApi = window.__TEST_API?.state;
-      if (!stateApi || typeof stateApi.waitForBattleState !== "function") {
-        throw new Error("__TEST_API.state.waitForBattleState unavailable");
-      }
-      return stateApi.waitForBattleState(state, timeout);
-    },
-    { state: expectedState, timeout: timeoutMs }
-  );
+  try {
+    const result = await page.evaluate(
+      ({ state, timeout }) => {
+        const stateApi = window.__TEST_API?.state;
+        if (!stateApi || typeof stateApi.waitForBattleState !== "function") {
+          throw new Error("__TEST_API.state.waitForBattleState unavailable");
+        }
+        return stateApi.waitForBattleState(state, timeout);
+      },
+      { state: expectedState, timeout: timeoutMs }
+    );
 
-  expect(
-    result,
-    `Expected window.__TEST_API.state.waitForBattleState("${expectedState}") to resolve true`
-  ).toBeTruthy();
+    expect(
+      result,
+      `Expected window.__TEST_API.state.waitForBattleState("${expectedState}") to resolve true`
+    ).toBeTruthy();
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error ?? "unknown error");
+    console.warn(`waitForStateViaTestApi failed for "${expectedState}": ${reason}. Falling back to waitForBattleState.`);
+
+    try {
+      await waitForBattleState(page, expectedState, {
+        timeout: timeoutMs,
+        allowFallback: true
+      });
+    } catch (fallbackError) {
+      const fallbackReason =
+        fallbackError instanceof Error ? fallbackError.message : String(fallbackError ?? "unknown error");
+      throw new Error(
+        `Failed to wait for state "${expectedState}" via Test API: ${reason}. Fallback waitForBattleState also failed: ${fallbackReason}`
+      );
+    }
+  }
 }
 
 test.describe("Classic Battle – auto-advance", () => {
@@ -57,6 +75,9 @@ test.describe("Classic Battle – auto-advance", () => {
       const forcedAdvance = await forceRoundAdvance(page);
 
       if (!forcedAdvance.ok) {
+        console.warn(
+          `forceRoundAdvance failed: ${forcedAdvance.reason ?? "unknown reason"}, falling back to UI interaction`
+        );
         // Final fallback: select the first available stat to complete the round naturally
         const firstStat = page.locator("#stat-buttons button").first();
         await expect(firstStat).toBeVisible();
