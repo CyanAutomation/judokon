@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import {
   resolveFeatureFlagEnabled,
-  waitForFeatureFlagState
+  waitForFeatureFlagOverrides
 } from "../helpers/featureFlagHelper.js";
 
 test.describe("enableTestMode feature flag", () => {
@@ -14,7 +14,9 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", true);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      enableTestMode: true
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(true);
 
     const battleArea = page.locator("#battle-area");
@@ -30,7 +32,9 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", true);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      enableTestMode: true
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(true);
 
     const banner = page.locator("#test-mode-banner");
@@ -48,7 +52,9 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", false);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      enableTestMode: false
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(false);
 
     const battleArea = page.locator("#battle-area");
@@ -66,7 +72,9 @@ test.describe("enableTestMode feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "enableTestMode", false);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      enableTestMode: false
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "enableTestMode")).toBe(false);
 
     const banner = page.locator("#test-mode-banner");
@@ -88,7 +96,9 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", true);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      battleStateBadge: true
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(true);
 
     await expect(page.locator("body")).toHaveAttribute(
@@ -106,7 +116,9 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", false);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      battleStateBadge: false
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(false);
 
     await expect(page.locator("body")).toHaveAttribute(
@@ -124,7 +136,9 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", true);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      battleStateBadge: true
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(true);
 
     const badge = page.locator("#battle-state-badge");
@@ -140,7 +154,9 @@ test.describe("battleStateBadge feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "battleStateBadge", false);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      battleStateBadge: false
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "battleStateBadge")).toBe(false);
 
     await expect(page.locator("body")).toHaveAttribute(
@@ -163,7 +179,9 @@ test.describe("tooltipOverlayDebug feature flag", () => {
 
     await page.goto("/src/pages/tooltipViewer.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "tooltipOverlayDebug", true);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      tooltipOverlayDebug: true
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "tooltipOverlayDebug")).toBe(true);
 
     const body = page.locator("body");
@@ -184,7 +202,9 @@ test.describe("tooltipOverlayDebug feature flag", () => {
     await page.goto("/src/pages/tooltipViewer.html");
 
     const body = page.locator("body");
-    const snapshot = await waitForFeatureFlagState(page, "tooltipOverlayDebug", false);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      tooltipOverlayDebug: false
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "tooltipOverlayDebug")).toBe(false);
 
     await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "disabled");
@@ -205,7 +225,9 @@ test.describe("enableCardInspector feature flag", () => {
 
     await page.goto("/src/pages/randomJudoka.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "enableCardInspector", true);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      enableCardInspector: true
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "enableCardInspector")).toBe(true);
 
     await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");
@@ -220,7 +242,9 @@ test.describe("enableCardInspector feature flag", () => {
 
     await page.goto("/src/pages/randomJudoka.html");
 
-    const snapshot = await waitForFeatureFlagState(page, "enableCardInspector", false);
+    const snapshot = await waitForFeatureFlagOverrides(page, {
+      enableCardInspector: false
+    });
     expect(resolveFeatureFlagEnabled(snapshot, "enableCardInspector")).toBe(false);
 
     await expect(page.locator("body")).toHaveAttribute("data-random-judoka-ready", "true");

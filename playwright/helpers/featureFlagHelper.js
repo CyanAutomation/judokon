@@ -50,9 +50,32 @@ const BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE = `(() => {
   return ${buildFeatureFlagSnapshot.toString()};
 })()`;
 
+function readInspectFeatureFlagSnapshot() {
+  try {
+    const inspectApi =
+      (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
+      (typeof window !== "undefined" && window.__INSPECT_API) ||
+      null;
+    if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
+      const snapshot = inspectApi.getFeatureFlags();
+      if (snapshot && typeof snapshot === "object") {
+        return snapshot;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+const READ_INSPECT_FEATURE_FLAG_SNAPSHOT_SOURCE = `(${readInspectFeatureFlagSnapshot.toString()})`;
+
 let callbackCounter = 0;
 
-function browserComputeFeatureFlagSnapshot({ defaults, buildSnapshotSource, instantiateSource }) {
+function browserComputeFeatureFlagSnapshot({
+  defaults,
+  buildSnapshotSource,
+  instantiateSource,
+  readInspectSource
+}) {
   const loadInstantiate = () => {
     if (typeof instantiateSource !== "string") {
       return null;
@@ -82,21 +105,34 @@ function browserComputeFeatureFlagSnapshot({ defaults, buildSnapshotSource, inst
     return instantiate(buildSnapshotSource, "__PW_BUILD_FEATURE_FLAG_SNAPSHOT");
   };
 
+  const resolveReader = () => {
+    if (
+      typeof window !== "undefined" &&
+      window.__PW_READ_FEATURE_FLAG_SNAPSHOT &&
+      typeof window.__PW_READ_FEATURE_FLAG_SNAPSHOT === "function"
+    ) {
+      return window.__PW_READ_FEATURE_FLAG_SNAPSHOT;
+    }
+    if (!instantiate || typeof readInspectSource !== "string") {
+      return null;
+    }
+    return instantiate(readInspectSource, "__PW_READ_FEATURE_FLAG_SNAPSHOT");
+  };
+
   const safeDefaults =
     defaults && typeof defaults === "object" && !Array.isArray(defaults) ? defaults : {};
   const buildSnapshot = resolveBuilder();
+  const readInspect = resolveReader();
 
   const readInspectSnapshot = () => {
+    const reader = typeof readInspect === "function" ? readInspect : resolveReader();
+    if (typeof reader !== "function") {
+      return null;
+    }
     try {
-      const inspectApi =
-        (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
-        (typeof window !== "undefined" && window.__INSPECT_API) ||
-        null;
-      if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
-        const snapshot = inspectApi.getFeatureFlags();
-        if (snapshot && typeof snapshot === "object") {
-          return snapshot;
-        }
+      const snapshot = reader();
+      if (snapshot && typeof snapshot === "object") {
+        return snapshot;
       }
     } catch {}
     return null;
@@ -220,7 +256,13 @@ export function resolveFeatureFlagEnabled(snapshot, flagName) {
  */
 export async function getFeatureFlagsSnapshot(page) {
   return page.evaluate(
-    ({ defaults, computeSnapshotSource, buildSnapshotSource, instantiateSource }) => {
+    ({
+      defaults,
+      computeSnapshotSource,
+      buildSnapshotSource,
+      instantiateSource,
+      readInspectSource
+    }) => {
       const loadInstantiate = () => {
         if (typeof instantiateSource !== "string") {
           return null;
@@ -256,7 +298,8 @@ export async function getFeatureFlagsSnapshot(page) {
           const snapshot = computeSnapshot({
             defaults,
             buildSnapshotSource,
-            instantiateSource
+            instantiateSource,
+            readInspectSource
           });
           if (snapshot && typeof snapshot === "object") {
             return snapshot;
@@ -270,7 +313,8 @@ export async function getFeatureFlagsSnapshot(page) {
       defaults: DEFAULT_FLAG_MAP,
       computeSnapshotSource: COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE,
       buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE,
-      instantiateSource: INSTANTIATE_BROWSER_FUNCTION_SOURCE
+      instantiateSource: INSTANTIATE_BROWSER_FUNCTION_SOURCE,
+      readInspectSource: READ_INSPECT_FEATURE_FLAG_SNAPSHOT_SOURCE
     }
   );
 }
@@ -374,7 +418,8 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
         defaults,
         computeSnapshotSource,
         buildSnapshotSource,
-        instantiateSource
+        instantiateSource,
+        readInspectSource
       }) => {
         const loadInstantiate = () => {
           if (typeof instantiateSource !== "string") {
@@ -407,13 +452,49 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
 
         const computeSnapshot = resolveCompute();
 
+        const resolveReader = () => {
+          if (
+            typeof window !== "undefined" &&
+            window.__PW_READ_FEATURE_FLAG_SNAPSHOT &&
+            typeof window.__PW_READ_FEATURE_FLAG_SNAPSHOT === "function"
+          ) {
+            return window.__PW_READ_FEATURE_FLAG_SNAPSHOT;
+          }
+          if (!instantiate || typeof readInspectSource !== "string") {
+            return null;
+          }
+          return instantiate(readInspectSource, "__PW_READ_FEATURE_FLAG_SNAPSHOT");
+        };
+
+        const readInspect = resolveReader();
+
+        const readInspectSnapshot = () => {
+          const reader = typeof readInspect === "function" ? readInspect : resolveReader();
+          if (typeof reader !== "function") {
+            return null;
+          }
+          try {
+            const snapshot = reader();
+            if (snapshot && typeof snapshot === "object") {
+              return snapshot;
+            }
+          } catch {}
+          return null;
+        };
+
         const emitSnapshot = () => {
+          const inspectSnapshot = readInspectSnapshot();
+          if (inspectSnapshot && typeof inspectSnapshot === "object") {
+            window[callbackName]?.({ snapshot: inspectSnapshot });
+            return;
+          }
           try {
             const snapshot = computeSnapshot
               ? computeSnapshot({
                   defaults,
                   buildSnapshotSource,
-                  instantiateSource
+                  instantiateSource,
+                  readInspectSource
                 })
               : null;
             window[callbackName]?.({ snapshot });
@@ -447,7 +528,8 @@ async function subscribeToFeatureFlagChanges(page, predicate, deadline) {
         defaults: DEFAULT_FLAG_MAP,
         computeSnapshotSource: COMPUTE_FEATURE_FLAG_SNAPSHOT_SOURCE,
         buildSnapshotSource: BUILD_FEATURE_FLAG_SNAPSHOT_SOURCE,
-        instantiateSource: INSTANTIATE_BROWSER_FUNCTION_SOURCE
+        instantiateSource: INSTANTIATE_BROWSER_FUNCTION_SOURCE,
+        readInspectSource: READ_INSPECT_FEATURE_FLAG_SNAPSHOT_SOURCE
       }
     );
   } catch (error) {
@@ -538,4 +620,46 @@ export async function waitForFeatureFlagState(page, flagName, expectedEnabled, o
   throw new Error(
     `Timed out waiting for feature flag "${flagName}" to resolve to ${String(expectedEnabled)}.`
   );
+}
+
+/**
+ * Wait for a collection of feature flag overrides to resolve to their expected state.
+ * @param {import("@playwright/test").Page} page
+ * @param {Record<string, unknown>} overrides
+ * @param {{ timeout?: number }} [options]
+ * @returns {Promise<Record<string, any>>}
+ */
+export async function waitForFeatureFlagOverrides(page, overrides, options = {}) {
+  if (!overrides || typeof overrides !== "object") {
+    return getFeatureFlagsSnapshot(page);
+  }
+
+  const entries = Object.entries(overrides);
+  if (entries.length === 0) {
+    return getFeatureFlagsSnapshot(page);
+  }
+
+  let snapshot = null;
+
+  for (const [flagName, rawExpected] of entries) {
+    let expectedEnabled;
+    if (typeof rawExpected === "boolean") {
+      expectedEnabled = rawExpected;
+    } else if (typeof rawExpected === "string") {
+      const normalized = rawExpected.trim().toLowerCase();
+      if (normalized === "true") {
+        expectedEnabled = true;
+      } else if (normalized === "false") {
+        expectedEnabled = false;
+      } else {
+        expectedEnabled = Boolean(rawExpected);
+      }
+    } else {
+      expectedEnabled = Boolean(rawExpected);
+    }
+
+    snapshot = await waitForFeatureFlagState(page, flagName, expectedEnabled, options);
+  }
+
+  return snapshot ?? (await getFeatureFlagsSnapshot(page));
 }
