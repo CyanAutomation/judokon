@@ -304,48 +304,55 @@ export async function waitForBattleState(page, expectedState, options = {}) {
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {object} options - Options object
  * @param {number} [options.timeout=STAT_WAIT_TIMEOUT_MS] - Timeout in ms
- * @param {boolean} [options.allowFallback=true] - Allow DOM fallback when Test API unavailable
  * @returns {Promise<void>}
  */
 export async function waitForStatButtonsReady(page, options = {}) {
-  const { timeout = STAT_WAIT_TIMEOUT_MS, allowFallback = true } = options;
+  const { timeout = STAT_WAIT_TIMEOUT_MS } = options;
 
   await waitForTestApi(page, { timeout });
 
   const apiStatus = await page.evaluate(
-    ({ waitTimeout }) => {
+    async ({ waitTimeout }) => {
       try {
         const stateApi = window.__TEST_API?.state;
-        if (stateApi && typeof stateApi.waitForStatButtonsReady === "function") {
-          return stateApi.waitForStatButtonsReady.call(stateApi, waitTimeout);
+        if (!stateApi || typeof stateApi.waitForStatButtonsReady !== "function") {
+          return { status: "unavailable" };
         }
-      } catch {}
-      return null;
+
+        const ready = await stateApi.waitForStatButtonsReady.call(stateApi, waitTimeout);
+        if (ready === true) {
+          return { status: "ready" };
+        }
+
+        if (ready === false) {
+          return { status: "timeout" };
+        }
+
+        return { status: "unknown", value: ready };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error ?? "unknown error");
+        return { status: "error", message };
+      }
     },
     { waitTimeout: timeout }
   );
 
-  if (apiStatus === true) {
+  if (apiStatus?.status === "ready") {
     return;
   }
 
-  if (apiStatus === false) {
-    if (!allowFallback) {
-      throw new Error(`Stat buttons did not report ready within ${timeout}ms via Test API`);
-    }
-  } else if (apiStatus === null && !allowFallback) {
-    throw new Error("Test API waitForStatButtonsReady unavailable and fallback disabled");
-  }
+  const reason =
+    apiStatus?.status === "timeout"
+      ? `timed out after ${timeout}ms`
+      : apiStatus?.status === "unavailable"
+        ? "Test API waitForStatButtonsReady unavailable"
+        : apiStatus?.status === "error"
+          ? apiStatus.message
+          : apiStatus?.status === "unknown"
+            ? `Unexpected status: ${String(apiStatus.value)}`
+            : "Unknown error waiting for stat buttons";
 
-  if (!allowFallback) {
-    return;
-  }
-
-  const fallbackSelector =
-    '#stat-buttons[data-buttons-ready="true"], [data-testid="stat-buttons"][data-buttons-ready="true"]';
-
-  const handle = await page.waitForSelector(fallbackSelector, { timeout });
-  await handle?.dispose();
+  throw new Error(`Stat buttons did not report ready via Test API (${reason})`);
 }
 
 /**
@@ -396,6 +403,38 @@ export async function waitForMatchCompletion(page, options = {}) {
     elapsedMs: Date.now() - startTime,
     timedOut: false,
     dom: null
+  };
+}
+
+/**
+ * Create a reusable tracker that resolves when the match completion payload is available.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {object} [options] - Options object forwarded to waitForMatchCompletion
+ * @returns {{
+ *   promise: Promise<object>,
+ *   isComplete: () => boolean,
+ *   hasError: () => boolean
+ * }} Tracker utilities
+ */
+export function createMatchCompletionTracker(page, options = {}) {
+  let completed = false;
+  let errored = false;
+
+  const promise = waitForMatchCompletion(page, options)
+    .then((payload) => {
+      completed = true;
+      return payload;
+    })
+    .catch((error) => {
+      completed = true;
+      errored = true;
+      throw error;
+    });
+
+  return {
+    promise,
+    isComplete: () => completed,
+    hasError: () => errored
   };
 }
 
