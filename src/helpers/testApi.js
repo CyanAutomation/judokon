@@ -1068,7 +1068,7 @@ const timerApi = {
    * @returns {Promise<number|null>} Resolves with the observed countdown value when successful.
    */
   waitForCountdown(expectedValue, options) {
-    if (typeof timerApi.getCountdown !== "function") {
+    if (typeof this.getCountdown !== "function") {
       return Promise.reject(new Error("timerApi.getCountdown is not available."));
     }
 
@@ -1086,7 +1086,7 @@ const timerApi = {
             : 5_000;
 
     const normalizedPoll =
-      Number.isFinite(requestedPoll) && requestedPoll > 0 ? requestedPoll : 32;
+      Number.isFinite(requestedPoll) && requestedPoll > 0 ? requestedPoll : 50;
 
     const expectedProvided = typeof expectedValue !== "undefined";
     const parsedExpected = expectedProvided ? Number.parseInt(String(expectedValue), 10) : null;
@@ -1121,7 +1121,7 @@ const timerApi = {
 
       const readCountdownValue = () => {
         try {
-          return timerApi.getCountdown();
+          return this.getCountdown();
         } catch (error) {
           logDevDebug("[timers.waitForCountdown] Failed to read countdown", error);
           return null;
