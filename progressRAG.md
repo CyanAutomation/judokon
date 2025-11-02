@@ -665,7 +665,6 @@ test("judokon.getById returns full record", async () => {
   - applyAdvancedFilters() - Apply all filter types with AND logic
   - validateAdvancedFilters() - Sanitize and validate input
   - getFilterDocumentation() - Provide schema and examples
-  
 - ✅ Created `tests/advancedFilters.test.js` (36 comprehensive tests)
   - Stat threshold parsing (5 tests)
   - Weight class parsing (4 tests)
