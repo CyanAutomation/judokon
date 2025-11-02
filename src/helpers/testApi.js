@@ -1062,6 +1062,118 @@ const timerApi = {
   },
 
   /**
+   * Wait for the countdown to become available or reach a specific value.
+   * @param {number|string|undefined} expectedValue - Value to wait for. When undefined, waits for any countdown value.
+   * @param {{ timeoutMs?: number, pollIntervalMs?: number }|null} [options]
+   * @returns {Promise<number|null>} Resolves with the observed countdown value when successful.
+   */
+  waitForCountdown(expectedValue, options) {
+    if (typeof timerApi.getCountdown !== "function") {
+      return Promise.reject(new Error("timerApi.getCountdown is not available."));
+    }
+
+    const config = options ?? {};
+    const requestedTimeout = config.timeoutMs;
+    const requestedPoll = config.pollIntervalMs;
+
+    const normalizedTimeout =
+      requestedTimeout === undefined
+        ? 5_000
+        : requestedTimeout === Infinity
+          ? Infinity
+          : Number.isFinite(requestedTimeout) && requestedTimeout >= 0
+            ? requestedTimeout
+            : 5_000;
+
+    const normalizedPoll =
+      Number.isFinite(requestedPoll) && requestedPoll > 0 ? requestedPoll : 32;
+
+    const expectedProvided = typeof expectedValue !== "undefined";
+    const parsedExpected = expectedProvided ? Number.parseInt(String(expectedValue), 10) : null;
+    const hasNumericExpectation = expectedProvided && Number.isFinite(parsedExpected);
+
+    return new Promise((resolve, reject) => {
+      let lastObserved = null;
+      let settled = false;
+      let intervalId = null;
+      let timeoutId = null;
+
+      const cleanup = () => {
+        if (intervalId !== null) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      };
+
+      const settle = (callback) => (value) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        callback(value);
+      };
+
+      const resolveSafe = settle(resolve);
+      const rejectSafe = settle(reject);
+
+      const readCountdownValue = () => {
+        try {
+          return timerApi.getCountdown();
+        } catch (error) {
+          logDevDebug("[timers.waitForCountdown] Failed to read countdown", error);
+          return null;
+        }
+      };
+
+      const matchesExpectation = (value) => {
+        if (!expectedProvided) {
+          return value !== null;
+        }
+
+        if (value === null) {
+          return false;
+        }
+
+        return hasNumericExpectation ? value === parsedExpected : String(value) === String(expectedValue);
+      };
+
+      const checkValue = () => {
+        if (settled) return;
+        const current = readCountdownValue();
+        if (current !== undefined) {
+          lastObserved = current;
+        }
+
+        if (matchesExpectation(current ?? null)) {
+          resolveSafe(current ?? null);
+        }
+      };
+
+      if (normalizedTimeout !== Infinity) {
+        const timeoutMs = normalizedTimeout;
+        timeoutId = setTimeout(() => {
+          const baseMessage = expectedProvided
+            ? `Countdown did not reach ${String(expectedValue)}`
+            : "Countdown value did not become available";
+          const detail =
+            typeof lastObserved === "number"
+              ? `last observed ${lastObserved}`
+              : "last observed null";
+          const error = new Error(`${baseMessage} within ${timeoutMs}ms (${detail})`);
+          error.name = "TimeoutError";
+          rejectSafe(error);
+        }, timeoutMs);
+      }
+
+      intervalId = setInterval(checkValue, normalizedPoll);
+      checkValue();
+    });
+  },
+
+  /**
    * Skip cooldown immediately without waiting
    */
   skipCooldown() {
