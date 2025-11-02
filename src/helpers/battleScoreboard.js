@@ -116,19 +116,36 @@ export function initBattleScoreboardAdapter() {
   };
 
   // round.started → round counter
-  on("round.started", (e) => {
-    _cancelWaiting();
-    try {
-      const d = e?.detail || {};
-      const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
-      if (typeof n === "number" && n > _lastRoundIndex) {
-        updateRoundCounter(n);
-        _lastRoundIndex = n;
-      }
-      // Ensure root outcome resets to none at round start
-      showMessage("", { outcome: true, outcomeType: "none" });
-    } catch {}
-  });
+  // Skip in CLI mode (battleCLI handles its own round counter display with target info)
+  if (!document.getElementById("cli-countdown")) {
+    on("round.started", (e) => {
+      _cancelWaiting();
+      try {
+        const d = e?.detail || {};
+        const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
+        if (typeof n === "number" && n > _lastRoundIndex) {
+          updateRoundCounter(n);
+          _lastRoundIndex = n;
+        }
+        // Ensure root outcome resets to none at round start
+        showMessage("", { outcome: true, outcomeType: "none" });
+      } catch {}
+    });
+  } else {
+    // In CLI mode, still subscribe to round.started to clear messages and update outcome
+    on("round.started", (e) => {
+      _cancelWaiting();
+      try {
+        const d = e?.detail || {};
+        const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
+        if (typeof n === "number" && n > _lastRoundIndex) {
+          _lastRoundIndex = n;
+        }
+        // Ensure root outcome resets to none at round start (but don't update CLI counter)
+        showMessage("", { outcome: true, outcomeType: "none" });
+      } catch {}
+    });
+  }
 
   // round.timer.tick → header timer (seconds)
   // Skip timer updates in CLI mode (battleCLI handles its own timer display)
