@@ -25,7 +25,7 @@ export async function getCountdownValue(page) {
  */
 export async function waitForCountdownValue(page, expectedValue, options) {
   return await page.evaluate(
-    ({ value, opts }) => {
+    ({ expectedValue, options }) => {
       const timers = window.__TEST_API?.timers;
       if (!timers || typeof timers.waitForCountdown !== "function") {
         throw new Error(
@@ -33,8 +33,8 @@ export async function waitForCountdownValue(page, expectedValue, options) {
         );
       }
 
-      return timers.waitForCountdown.call(timers, value, opts ?? undefined);
+      return timers.waitForCountdown(expectedValue, options);
     },
-    { value: expectedValue, opts: options ?? undefined }
+    { expectedValue, options: options ?? undefined }
   );
 }

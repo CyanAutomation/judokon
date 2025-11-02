@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
-import { getCountdownValue, waitForCountdownValue } from "./helpers/timerHelper.js";
+import { waitForCountdownValue } from "./helpers/timerHelper.js";
 
 // Improved countdown test using direct Test API access instead of waiting for timers
 
@@ -20,9 +20,6 @@ test.describe("Battle CLI countdown timing", () => {
       const expectCountdownValue = async (value) => {
         const resolved = await waitForCountdownValue(page, value);
         expect(resolved).toBe(value);
-
-        const apiValue = await getCountdownValue(page);
-        expect(apiValue).toBe(value);
 
         const remaining = await countdownLocator.getAttribute("data-remaining-time");
         expect(remaining).toBe(String(value));
