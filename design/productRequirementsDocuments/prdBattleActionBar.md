@@ -8,6 +8,7 @@
 **Used By:** Classic Battle (UI + CLI), Battle Bandit, Battle Quick, future battle modes
 **Replaces:** Global bottom navigation / foot bar
 **Related Docs:**
+
 - `prdBattleClassic.md`
 - `prdBattleCLI.md`
 - `prdBattleBandit.md`
@@ -21,6 +22,7 @@
 The **Battle Action Bar** is a mandatory, mode-agnostic interaction component that replaces the bottom navigation/foot bar in all battle modes. It provides players with a consistent control surface across battles while allowing mode-specific styling and tactile feedback.
 
 ### Structure
+
 - **Leftmost:** Options button → opens modal with battle + global settings.
 - **Middle (5 buttons):** Direct mappings to judoka card stats (Power, Speed, Technique, Kumi-kata, Ne-waza). Always visible; enabled only when stat selection is required.
 - **Rightmost:** Action button → advances the match (Start, Draw, Next).
@@ -56,38 +58,39 @@ Previously, battle modes relied on the global bottom navigation bar, which provi
 
 ## 4. Functional Requirements
 
-| Priority | ID | Requirement | Details |
-|:---|:---|:---|:---|
-| **P1** | 1 | Render 7 buttons in a fixed order | Options, Stat1–5, Action. |
-| **P1** | 2 | Options button opens a modal | Modal contains: Quit (→ confirm then landing page), Replay, Audio toggle, Reduced Motion toggle. |
-| **P1** | 3 | Default states for options | Audio = ON, Reduced Motion = OFF. |
-| **P1** | 4 | Stat buttons map to judoka stats | Power, Speed, Technique, Kumi-kata, Ne-waza. |
-| **P1** | 5 | Stat buttons are conditionally enabled | Always visible, but only enabled when the battle engine state requires selection. |
-| **P1** | 7 | Action button updates dynamically | Label changes with engine state (e.g., Start, Draw, Next). MVP: “Next”. |
-| **P1** | 8 | Action button locks during cooldowns | Disabled/locked during cooldowns or invalid states. |
-| **P1** | 9 | Listen to engine state changes | Component must observe the engine/orchestrator and update the UI accordingly. |
-| **P1** | 10 | Expose observability hooks | Use `data-*` attributes (`data-action-state`, `data-options-open`, `data-stat-enabled`). |
-| **P2** | 11 | Theming via CSS hooks | `.action-bar--classic`, `.action-bar--cli`, `.action-bar--bandit`, `.action-bar--quick`. |
-| **P2** | 12 | Full accessibility support | ARIA labels for all buttons, keyboard shortcuts (`1–5` for stats, `O` for options, `Enter`/`Space` for action). |
-| **P2** | 13 | Responsive design | Works across screen sizes and modes (desktop-first, text-first in CLI). |
-| **P3** | 6 | Mode-specific tooltips/labels | Classic mode uses icons, CLI mode uses text labels. |
-| **P3** | 14 | Tactile feedback animations | Button presses and modal open/close animations use 150–200 ms transitions. |
+| Priority | ID  | Requirement                            | Details                                                                                                         |
+| :------- | :-- | :------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| **P1**   | 1   | Render 7 buttons in a fixed order      | Options, Stat1–5, Action.                                                                                       |
+| **P1**   | 2   | Options button opens a modal           | Modal contains: Quit (→ confirm then landing page), Replay, Audio toggle, Reduced Motion toggle.                |
+| **P1**   | 3   | Default states for options             | Audio = ON, Reduced Motion = OFF.                                                                               |
+| **P1**   | 4   | Stat buttons map to judoka stats       | Power, Speed, Technique, Kumi-kata, Ne-waza.                                                                    |
+| **P1**   | 5   | Stat buttons are conditionally enabled | Always visible, but only enabled when the battle engine state requires selection.                               |
+| **P1**   | 7   | Action button updates dynamically      | Label changes with engine state (e.g., Start, Draw, Next). MVP: “Next”.                                         |
+| **P1**   | 8   | Action button locks during cooldowns   | Disabled/locked during cooldowns or invalid states.                                                             |
+| **P1**   | 9   | Listen to engine state changes         | Component must observe the engine/orchestrator and update the UI accordingly.                                   |
+| **P1**   | 10  | Expose observability hooks             | Use `data-*` attributes (`data-action-state`, `data-options-open`, `data-stat-enabled`).                        |
+| **P2**   | 11  | Theming via CSS hooks                  | `.action-bar--classic`, `.action-bar--cli`, `.action-bar--bandit`, `.action-bar--quick`.                        |
+| **P2**   | 12  | Full accessibility support             | ARIA labels for all buttons, keyboard shortcuts (`1–5` for stats, `O` for options, `Enter`/`Space` for action). |
+| **P2**   | 13  | Responsive design                      | Works across screen sizes and modes (desktop-first, text-first in CLI).                                         |
+| **P3**   | 6   | Mode-specific tooltips/labels          | Classic mode uses icons, CLI mode uses text labels.                                                             |
+| **P3**   | 14  | Tactile feedback animations            | Button presses and modal open/close animations use 150–200 ms transitions.                                      |
 
 ---
 
 ## 5. Non-Functional Requirements
 
--   **Performance:** Lightweight with no animation bottlenecks.
--   **Resilience:** Must degrade gracefully if the engine state is missing (e.g., disabled buttons, placeholder labels).
--   **Testability:** Deterministic behavior in test environments.
--   **Maintainability:** Centralized logic in `actionBar.js`; no mode-specific forks.
--   **Telemetry:** Desync or state errors must log to the in-game console and trigger an analytics event `battle.actionbar.desync`.
+- **Performance:** Lightweight with no animation bottlenecks.
+- **Resilience:** Must degrade gracefully if the engine state is missing (e.g., disabled buttons, placeholder labels).
+- **Testability:** Deterministic behavior in test environments.
+- **Maintainability:** Centralized logic in `actionBar.js`; no mode-specific forks.
+- **Telemetry:** Desync or state errors must log to the in-game console and trigger an analytics event `battle.actionbar.desync`.
 
 ---
 
 ## 6. Acceptance Criteria
 
 ### Stat Button Enablement
+
 - **Given** I am in a battle mode
 - **When** the engine state requires stat selection
 - **Then** all five stat buttons must be enabled
@@ -95,27 +98,32 @@ Previously, battle modes relied on the global bottom navigation bar, which provi
 - **Then** the stat buttons must be visible but disabled
 
 ### Options Modal
+
 - **Given** I press the Options button
 - **Then** a modal must appear with a 150 ms fade-in animation
 - **And** it must include Quit, Replay, Audio toggle (default ON), and Reduced Motion toggle (default OFF)
 
 ### Quit Option
+
 - **Given** I select Quit in the Options modal
 - **Then** I must see a confirmation dialog with "Cancel" pre-selected
 - **And** confirming must return me to the Landing Page and reset the battle state
 
 ### Action Button Lock
+
 - **Given** I am in a cooldown state
 - **Then** the Action button must appear disabled (reduced opacity)
 - **And** pressing it must not trigger any state change
 
 ### Styling by Mode
+
 - **Given** I enter a Classic Battle
 - **Then** the Action Bar must have `.action-bar--classic` styling
 - **And** in CLI mode
 - **Then** the Action Bar must render as text-based with a monospace font
 
 ### Accessibility
+
 - **Given** I use a keyboard
 - **Then** pressing keys `1–5` must trigger the corresponding stat button
 - **And** pressing `O` must open the Options modal
@@ -140,20 +148,20 @@ Previously, battle modes relied on the global bottom navigation bar, which provi
 [ ⚙ Options ] [ Power ] [ Speed ] [ Technique ] [ Kumi-kata ] [ Ne-waza ] [ ▶ Next ]
 ```
 
--   **Left group:** 1 button (Options)
--   **Center group:** 5 stat buttons (equal width, centered)
--   **Right group:** 1 action button (highlighted)
+- **Left group:** 1 button (Options)
+- **Center group:** 5 stat buttons (equal width, centered)
+- **Right group:** 1 action button (highlighted)
 
 ### Design Tokens
 
--   **Base font:** 14–16 px
--   **Icon size:** 20–24 px
--   **Min button width:** 48 px (for touch targets)
--   **Hover/focus:** 150 ms color fade
--   **Modal fade-in/out:** 200 ms
--   **Color Contrast:** Must pass WCAG 2.1 AA (≥4.5:1).
--   **Focus Ring:** 2px blue outline, keyboard-only.
--   **Reduced Motion:** Respects `prefers-reduced-motion` system setting.
+- **Base font:** 14–16 px
+- **Icon size:** 20–24 px
+- **Min button width:** 48 px (for touch targets)
+- **Hover/focus:** 150 ms color fade
+- **Modal fade-in/out:** 200 ms
+- **Color Contrast:** Must pass WCAG 2.1 AA (≥4.5:1).
+- **Focus Ring:** 2px blue outline, keyboard-only.
+- **Reduced Motion:** Respects `prefers-reduced-motion` system setting.
 
 ---
 
@@ -226,7 +234,7 @@ When the player selects **Quit**:
    - Engine state observation via event listeners (roundStart, roundEnd, statSelected)
    - Complete state management API: setStatButtonsEnabled(), setActionButtonState(), getState(), update()
    - ARIA labels and semantic HTML for accessibility
-   - data-* attributes for testing and observability
+   - data-\* attributes for testing and observability
 
 2. **Created `/src/styles/actionBar.css`** with comprehensive styling
    - Base responsive layout with flexbox
@@ -247,7 +255,7 @@ When the player selects **Quit**:
 - ✅ Keyboard shortcuts (1-5, O, Enter/Space)
 - ✅ Engine state observation
 - ✅ ARIA labels and accessibility
-- ✅ data-* attributes for testing
+- ✅ data-\* attributes for testing
 - ✅ Mode-specific CSS classes
 - ✅ Responsive design
 - ✅ Lifecycle management (render, destroy)

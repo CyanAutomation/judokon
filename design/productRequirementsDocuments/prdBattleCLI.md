@@ -89,21 +89,21 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 
 ## Functional Requirements (Prioritized)
 
-| Prio   | Feature             | Requirement                                                                                           |
-| ------ | ------------------- | ----------------------------------------------------------------------------------------------------- |
-| **P1** | Engine Parity       | Reuse Classic Battle engine/state table verbatim; no forks.                                           |
-| **P1** | Text Renderer       | Render prompts, countdown, stat list (with numeric hotkeys), outcome, and score in monospace.         |
-| **P1** | Keyboard Controls   | `1–5` stat select; `Enter`/`Space` next; `H` help; `Q` quit; `Esc` close; input debounced per state.  |
-| **P1** | Pointer/Touch       | Stat rows clickable/tappable (≥44px); Next control after round.                                       |
-| **P1** | Timer Display       | 1 Hz countdown; expiry behavior mirrors engine.                                                       |
-| **P1** | Outcome & Score     | Show Win/Loss/Draw with compared values; update score immediately.                                    |
-| **P1** | Accessibility Hooks | Announce via aria-live/role=status; logical focus order; visible focus ring.                          |
+| Prio   | Feature             | Requirement                                                                                               |
+| ------ | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| **P1** | Engine Parity       | Reuse Classic Battle engine/state table verbatim; no forks.                                               |
+| **P1** | Text Renderer       | Render prompts, countdown, stat list (with numeric hotkeys), outcome, and score in monospace.             |
+| **P1** | Keyboard Controls   | `1–5` stat select; `Enter`/`Space` next; `H` help; `Q` quit; `Esc` close; input debounced per state.      |
+| **P1** | Pointer/Touch       | Stat rows clickable/tappable (≥44px); Next control after round.                                           |
+| **P1** | Timer Display       | 1 Hz countdown; expiry behavior mirrors engine.                                                           |
+| **P1** | Outcome & Score     | Show Win/Loss/Draw with compared values; update score immediately.                                        |
+| **P1** | Accessibility Hooks | Announce via aria-live/role=status; logical focus order; visible focus ring.                              |
 | **P1** | Test Hooks          | Stable selectors (`#cli-root`, `#cli-countdown`, `#score-display`, etc.); data-round/data-remaining-time. |
-| **P2** | Settings            | Win target selector; persist via localStorage; invalid resets.                                        |
-| **P2** | Deterministic Seed  | Input/`?seed=` param; persist last seed; invalid fallback.                                            |
-| **P2** | Round Context       | Header shows “Round X” and win target; optional state badge.                                          |
-| **P2** | Observability Mode  | Verbose log view echoing transitions and events.                                                      |
-| **P2** | Interrupt Handling  | Quit confirmation pauses timers; cancel resumes.                                                      |
+| **P2** | Settings            | Win target selector; persist via localStorage; invalid resets.                                            |
+| **P2** | Deterministic Seed  | Input/`?seed=` param; persist last seed; invalid fallback.                                                |
+| **P2** | Round Context       | Header shows “Round X” and win target; optional state badge.                                              |
+| **P2** | Observability Mode  | Verbose log view echoing transitions and events.                                                          |
+| **P2** | Interrupt Handling  | Quit confirmation pauses timers; cancel resumes.                                                          |
 
 ### Feature Flags
 

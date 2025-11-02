@@ -37,6 +37,7 @@ const apiResult = await page.evaluate(
 ```
 
 **Why This Is A Bug**:
+
 1. `stateApi.waitForBattleState()` is an **async function** that returns a `Promise<boolean>`
 2. Without `await`, the code returns the Promise object itself, not the resolved value
 3. The Promise object is not equal to `true` or `false`, so it's treated as `null`
@@ -44,6 +45,7 @@ const apiResult = await page.evaluate(
 5. The test times out waiting for a non-existent element
 
 **Test Flow Breakdown**:
+
 ```
 ✓ Test calls waitForBattleState(page, "roundOver")
 ✓ waitForBattleState calls page.evaluate() to run in browser
@@ -83,6 +85,7 @@ const apiResult = await page.evaluate(
 ```
 
 **Changes Made**:
+
 1. ✅ Added `async` keyword to the evaluate function
 2. ✅ Added `await` before `stateApi.waitForBattleState()` call
 3. ✅ Wrapped result in an object to return both result and error info
@@ -101,19 +104,19 @@ async waitForBattleState(stateName, timeout = 5000) {
       cleanup(true);
       return;
     }
-    
+
     // 2. Subscribes to battleStateChange events
     listener = (event) => {
       const nextState = event?.detail?.to ?? detail?.state ?? null;
       if (nextState === stateName) cleanup(true);
     };
-    
+
     // 3. Polls every 50ms as safety net
     pollId = setInterval(() => {
       if (currentMatches()) cleanup(true);
       else if (Date.now() - startTime > timeout) cleanup(false);
     }, 50);
-    
+
     // 4. Returns boolean: true=found, false=timeout
     timeoutId = setTimeout(() => cleanup(false), timeout);
   });
@@ -121,6 +124,7 @@ async waitForBattleState(stateName, timeout = 5000) {
 ```
 
 The function properly:
+
 - Listens for `battleStateChange` events from the battle orchestrator
 - Polls the current state every 50ms as a safety mechanism
 - Returns `true` when the state is found
@@ -137,6 +141,7 @@ After applying the fix, if the test still fails, it may indicate that `document.
 ### Investigation Path For Secondary Issue
 
 To debug further if needed:
+
 1. Check `src/pages/battleClassic.init.js` line 1019 where `broadcastBattleState("roundOver")` is called
 2. Verify that the condition leading to this call is being met in the test
 3. Add test diagnostics to capture actual state transitions
@@ -182,4 +187,3 @@ npm run test:battles
 2. **Test infrastructure is critical** - Helper functions must correctly interface with the application's APIs
 3. **Error diagnostics matter** - The improved error reporting helps identify similar issues in the future
 4. **Use actual source of truth for fallbacks** - The fallback selector should check the actual source of state (body dataset), not non-existent attributes
-

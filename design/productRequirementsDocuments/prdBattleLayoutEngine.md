@@ -14,9 +14,9 @@ The engine ensures layouts are **deterministic, resolution-agnostic, and feature
 
 Currently, battle modes hard-code their DOM/CSS positioning. This makes it difficult to:
 
-* Iterate on layouts across modes.
-* Maintain consistency and reuse.
-* Validate layout drift via ASCII/CI snapshots.
+- Iterate on layouts across modes.
+- Maintain consistency and reuse.
+- Validate layout drift via ASCII/CI snapshots.
 
 For example, the QA team recently struggled to detect layout regressions across modes due to missing CI snapshots and manual CSS overrides.
 
@@ -26,29 +26,29 @@ A runtime layout engine decouples **UI placement** from **UI logic**, allowing f
 
 ## Goals
 
-* Support applying a JSON layout file at runtime across 100% of current battle modes.
-* Standardise on a **grid system** (e.g., 60×24) with percent-based scaling.
-* Apply layouts deterministically via `data-layout-id` anchors.
-* Support **feature flag conditions** (e.g., “show scoreboard only if flag X enabled”).
-* Enable round-trip export/import to ASCII for auditability.
-* Fail gracefully if a layout is missing, invalid, or collides.
-* Ensure layout application completes within 50ms average runtime.
+- Support applying a JSON layout file at runtime across 100% of current battle modes.
+- Standardise on a **grid system** (e.g., 60×24) with percent-based scaling.
+- Apply layouts deterministically via `data-layout-id` anchors.
+- Support **feature flag conditions** (e.g., “show scoreboard only if flag X enabled”).
+- Enable round-trip export/import to ASCII for auditability.
+- Fail gracefully if a layout is missing, invalid, or collides.
+- Ensure layout application completes within 50ms average runtime.
 
 ---
 
 ## Non-Goals
 
-* Does not design layouts interactively (that belongs to the Editor PRD).
-* Does not cover responsive/mobile scaling beyond the grid abstraction.
-* Does not prescribe visual styles (CSS themes remain separate).
+- Does not design layouts interactively (that belongs to the Editor PRD).
+- Does not cover responsive/mobile scaling beyond the grid abstraction.
+- Does not prescribe visual styles (CSS themes remain separate).
 
 ---
 
 ## Personas
 
-* **Developer:** Wants to commit layout JSONs and review ASCII diffs in PRs.
-* **Designer:** Needs predictable application of visual layouts.
-* **QA Agent:** Runs automated tests to detect layout drift.
+- **Developer:** Wants to commit layout JSONs and review ASCII diffs in PRs.
+- **Designer:** Needs predictable application of visual layouts.
+- **QA Agent:** Runs automated tests to detect layout drift.
 
 ---
 
@@ -70,36 +70,36 @@ A runtime layout engine decouples **UI placement** from **UI logic**, allowing f
 
 ## Acceptance Criteria
 
-* Given a valid JSON layout, when `applyLayout()` is called, **all components move to the defined positions** without breaking page functionality.
-* Given a disabled feature flag, the corresponding component is **not rendered/moved**.
-* Given an invalid layout, the engine **logs a warning and leaves default CSS intact**.
-* ASCII output matches expected token map when compared in CI.
-* Layout must be applied within **50ms** in 95% of cases.
+- Given a valid JSON layout, when `applyLayout()` is called, **all components move to the defined positions** without breaking page functionality.
+- Given a disabled feature flag, the corresponding component is **not rendered/moved**.
+- Given an invalid layout, the engine **logs a warning and leaves default CSS intact**.
+- ASCII output matches expected token map when compared in CI.
+- Layout must be applied within **50ms** in 95% of cases.
 
 ---
 
 ## Constraints
 
-* Layouts live in `src/layouts/*.layout.json`.
-* Must run client-side only (no server).
-* Must support all current battle modes (Classic, Quick, CLI).
+- Layouts live in `src/layouts/*.layout.json`.
+- Must run client-side only (no server).
+- Must support all current battle modes (Classic, Quick, CLI).
 
 ---
 
 ## Edge Cases / Failure States
 
-* **Missing Layout File**: Skip layout application and log warning.
-* **Invalid JSON Structure**: Log detailed validation errors, do not apply.
-* **Duplicate `data-layout-id`**: Log conflict and apply first defined rect.
-* **Nonexistent DOM Anchors**: Log and skip.
-* **Feature flag is undefined**: Treat as `false` and hide component.
+- **Missing Layout File**: Skip layout application and log warning.
+- **Invalid JSON Structure**: Log detailed validation errors, do not apply.
+- **Duplicate `data-layout-id`**: Log conflict and apply first defined rect.
+- **Nonexistent DOM Anchors**: Log and skip.
+- **Feature flag is undefined**: Treat as `false` and hide component.
 
 ---
 
 ## Design and UX Considerations
 
-* Layout grid abstraction should visually align to a reference ASCII rendering.
-* Example ASCII:
+- Layout grid abstraction should visually align to a reference ASCII rendering.
+- Example ASCII:
 
 ```
 +------------------------------------------------------------+
@@ -111,16 +111,16 @@ A runtime layout engine decouples **UI placement** from **UI logic**, allowing f
 +------------------------------------------------------------+
 ```
 
-* Ensure layout applies cleanly on different resolutions (e.g., 1080p, 1440p).
-* Do not reposition elements during window resizes (non-responsive by design).
-* Consider future expansion for mobile/tablet by extending the grid spec.
+- Ensure layout applies cleanly on different resolutions (e.g., 1080p, 1440p).
+- Do not reposition elements during window resizes (non-responsive by design).
+- Consider future expansion for mobile/tablet by extending the grid spec.
 
 ---
 
 ## Open Questions
 
-* Should we allow multiple layouts per mode (variants)?
-* Should layouts be cached in localStorage for hot-swapping during playtests?
+- Should we allow multiple layouts per mode (variants)?
+- Should layouts be cached in localStorage for hot-swapping during playtests?
 
 ---
 

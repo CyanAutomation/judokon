@@ -34,6 +34,7 @@ The test fails because after dispatching the "ready" event from the cooldown sta
 ### Error Context Evidence
 
 The screenshot/page snapshot shows:
+
 - Battle is in Round 2
 - Stat selection UI is visible with a listbox "[active]" containing 5 stat options
 - Current state is likely still "cooldown" or stuck in an intermediate state
@@ -42,22 +43,29 @@ The screenshot/page snapshot shows:
 ### Potential Root Causes
 
 #### 1. **State Machine Transition Failure**
+
 The `ready` event dispatch may not be triggering the expected state transition:
+
 - `cooldown` → `roundStart` → `waitingForPlayerAction`
 
 Looking at the state handlers in `/src/helpers/classicBattle/stateHandlers/`:
+
 - `cooldownEnter.js` handles entering cooldown
 - `waitingForPlayerActionEnter.js` handles entering the expected state
 - The transition requires the orchestrator to process the "ready" event
 
 #### 2. **Test API Dispatch Not Reaching State Machine**
+
 The `dispatchBattleEvent(page, "ready")` call at line 232-234 may be:
+
 - Returning `ok: true` but not actually transitioning the state
 - Falling silently without triggering the orchestrator
 - Working in isolation but not affecting the DOM state attribute
 
 #### 3. **Missing Intermediate State Transition**
+
 The test directly waits for "waitingForPlayerAction" but the actual transition sequence is:
+
 1. cooldown
 2. (dispatch "ready")
 3. roundStart (intermediate state)
@@ -66,7 +74,9 @@ The test directly waits for "waitingForPlayerAction" but the actual transition s
 The test might need to wait for intermediate states or allow more time for the state machine to process the transition chain.
 
 #### 4. **History Navigation Breaking State Management**
+
 Looking at lines 245-260, after stat '2' is selected, the test performs history navigation:
+
 - `Control+ArrowUp` to go back in command history
 - These keyboard inputs may interfere with the battle state machine
 - The state machine might not properly handle history navigation while in selection mode
@@ -94,6 +104,7 @@ function advanceCooldown() {
 ```
 
 After "ready" is dispatched, the orchestrator should transition through:
+
 1. Exit cooldown state
 2. Enter roundStart state (configured via handlers)
 3. Exit roundStart state
@@ -102,6 +113,7 @@ After "ready" is dispatched, the orchestrator should transition through:
 ### Test API Helper (battleApiHelper.js)
 
 The `dispatchBattleEvent` function:
+
 ```javascript
 export async function dispatchBattleEvent(page, eventName) {
   return await page.evaluate((event) => {
@@ -120,6 +132,7 @@ export async function dispatchBattleEvent(page, eventName) {
 ### waitForBattleState Logic (battleStateHelper.js:200-300)
 
 The function:
+
 1. Calls `window.__TEST_API?.state?.waitForBattleState()` with a timeout
 2. If API returns true → success
 3. If API returns false and `allowFallback: false` → throw error
@@ -166,8 +179,9 @@ The actual problem is likely one of these:
 After `completeRoundViaApi`, the state machine might be in a state where it doesn't properly handle the subsequent "ready" event dispatch.
 
 Looking at the test flow:
+
 ```javascript
-const resolution = await completeRoundViaApi(page);  // Results in state transitions
+const resolution = await completeRoundViaApi(page); // Results in state transitions
 // ... dispatch continue ...
 // ... dispatch ready ...  ← This might not work because the machine is in wrong state
 ```
@@ -193,7 +207,7 @@ After dispatching "ready", wait for an intermediate state first:
 ```javascript
 await waitForBattleState(page, "roundStart", {
   timeout: 2_000,
-  allowFallback: true  // Relax strictness for intermediate states
+  allowFallback: true // Relax strictness for intermediate states
 });
 
 await waitForBattleState(page, "waitingForPlayerAction", {
@@ -209,7 +223,7 @@ Allow the test to use DOM fallback after Test API timeout:
 ```javascript
 await waitForBattleState(page, "waitingForPlayerAction", {
   timeout: BATTLE_READY_TIMEOUT_MS,
-  allowFallback: true  // ← Change from false to true
+  allowFallback: true // ← Change from false to true
 });
 ```
 
@@ -221,7 +235,7 @@ The transition from cooldown to waitingForPlayerAction might need more time:
 
 ```javascript
 await waitForBattleState(page, "waitingForPlayerAction", {
-  timeout: BATTLE_READY_TIMEOUT_MS * 1.5,  // 15 seconds instead of 10
+  timeout: BATTLE_READY_TIMEOUT_MS * 1.5, // 15 seconds instead of 10
   allowFallback: false
 });
 ```

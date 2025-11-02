@@ -2,18 +2,18 @@
 
 ## 🎯 What Was Fixed
 
-| # | Issue | Fix | Impact |
-|---|-------|-----|--------|
-| 1 | Truncated purpose: `Define d---` | Completed full purpose statement | Agents now know the document's purpose |
-| 2 | Malformed JSON template | Added complete, valid JSON structure | Agents can copy/paste task contracts |
-| 3 | No file relationship docs | Added cross-reference to copilot-instructions.md | Clarifies dual entry points |
-| 4 | Corrupted heading: `Orderrministic` | Fixed to clean `Workflow Order` | Proper document structure |
-| 5 | Incomplete TOC | Added Sentry & Battle Pages sections | Full navigation available |
-| 6 | Orphaned h1 headings in Sentry | Proper h2/h3/h4/h5 hierarchy | Consistent structure |
-| 7 | No Sentry context | Added "When to Use" section | Clear trigger conditions |
-| 8 | No Battle Pages context | Added "When to Use This Section" | Clear trigger conditions |
-| 9 | RAG validation hidden | Integrated into main workflow as Step 1 | Better visibility |
-| 10 | Malformed code fences | Cleaned end-of-file artifacts | Valid markdown |
+| #   | Issue                               | Fix                                              | Impact                                 |
+| --- | ----------------------------------- | ------------------------------------------------ | -------------------------------------- |
+| 1   | Truncated purpose: `Define d---`    | Completed full purpose statement                 | Agents now know the document's purpose |
+| 2   | Malformed JSON template             | Added complete, valid JSON structure             | Agents can copy/paste task contracts   |
+| 3   | No file relationship docs           | Added cross-reference to copilot-instructions.md | Clarifies dual entry points            |
+| 4   | Corrupted heading: `Orderrministic` | Fixed to clean `Workflow Order`                  | Proper document structure              |
+| 5   | Incomplete TOC                      | Added Sentry & Battle Pages sections             | Full navigation available              |
+| 6   | Orphaned h1 headings in Sentry      | Proper h2/h3/h4/h5 hierarchy                     | Consistent structure                   |
+| 7   | No Sentry context                   | Added "When to Use" section                      | Clear trigger conditions               |
+| 8   | No Battle Pages context             | Added "When to Use This Section"                 | Clear trigger conditions               |
+| 9   | RAG validation hidden               | Integrated into main workflow as Step 1          | Better visibility                      |
+| 10  | Malformed code fences               | Cleaned end-of-file artifacts                    | Valid markdown                         |
 
 ## 📊 Statistics
 
@@ -66,13 +66,13 @@ Step 3: Tests
 
 ### Document Quality Scores
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Completeness | 70% | 98% |
-| Clarity | 65% | 95% |
-| Structure | 60% | 92% |
-| Usability | 68% | 96% |
-| **Overall** | **66%** | **95%** |
+| Aspect       | Before  | After   |
+| ------------ | ------- | ------- |
+| Completeness | 70%     | 98%     |
+| Clarity      | 65%     | 95%     |
+| Structure    | 60%     | 92%     |
+| Usability    | 68%     | 96%     |
+| **Overall**  | **66%** | **95%** |
 
 ## 🎓 What Agents Should Know
 
@@ -84,14 +84,14 @@ Step 3: Tests
 
 ## 📍 Quick Links to Key Sections
 
-| Need | Location |
-|------|----------|
-| Quick start | Executive Summary (30-second read) |
-| RAG guidance | RAG Policy section with examples |
-| Validation | Validation Commands with 3-step flow |
-| Sentry | When to Use Sentry Instrumentation |
-| Battle Pages | When to Use This Section |
-| Rules | Machine-Readable Ruleset (JSON) |
+| Need         | Location                             |
+| ------------ | ------------------------------------ |
+| Quick start  | Executive Summary (30-second read)   |
+| RAG guidance | RAG Policy section with examples     |
+| Validation   | Validation Commands with 3-step flow |
+| Sentry       | When to Use Sentry Instrumentation   |
+| Battle Pages | When to Use This Section             |
+| Rules        | Machine-Readable Ruleset (JSON)      |
 
 ## ✨ Special Notes
 

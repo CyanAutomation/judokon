@@ -25,7 +25,6 @@ Successfully implemented `judokon.getById` tool for fetching complete judoka rec
 - **ID Normalization**: Robust support for both string and numeric IDs
   - Converts numeric IDs to strings for lookup
   - Maintains bidirectional Map entries for both formats
-  
 - **Complete Record Return**: Returns all judoka properties
   - Personal info: firstname, surname, country, gender
   - Game stats: Power, Speed, Technique, Kumikata, Newaza
