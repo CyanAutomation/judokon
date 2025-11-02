@@ -187,6 +187,14 @@ function wireScoreboardListeners() {
   registerListener("display.score.update", handleScoreUpdate);
   registerListener("display.autoSelect.show", handleAutoSelectShow);
   registerListener("display.tempMessage", handleTempMessage);
+  // Also listen to cooldown timer ticks to update the timer display during cooldown
+  registerListener("cooldown.timer.tick", (e) => {
+    const ms = Number(e?.detail?.remainingMs);
+    if (Number.isFinite(ms)) {
+      const seconds = Math.max(0, Math.round(ms / 1000));
+      handleTimerTick({ detail: { secondsRemaining: seconds } });
+    }
+  });
 }
 
 /**
