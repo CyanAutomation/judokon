@@ -147,16 +147,19 @@ export function initBattleScoreboardAdapter() {
     });
   }
 
-  // round.timer.tick → header timer (seconds)
+  // round.timer.tick and cooldown.timer.tick → header timer (seconds)
   // Skip timer updates in CLI mode (battleCLI handles its own timer display)
   if (!document.getElementById("cli-countdown")) {
-    on("round.timer.tick", (e) => {
+    const handleTimerTick = (e) => {
       _cancelWaiting();
       try {
         const ms = Number(e?.detail?.remainingMs);
         if (Number.isFinite(ms)) updateTimer(Math.max(0, Math.round(ms / 1000)));
       } catch {}
-    });
+    };
+
+    on("round.timer.tick", handleTimerTick);
+    on("cooldown.timer.tick", handleTimerTick);
   }
 
   // round.evaluated → scores (+ optional message)
