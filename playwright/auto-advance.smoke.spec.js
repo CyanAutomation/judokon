@@ -29,7 +29,9 @@ async function waitForStateViaTestApi(page, expectedState, timeoutMs = WAIT_FOR_
     ).toBeTruthy();
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error ?? "unknown error");
-    console.warn(`waitForStateViaTestApi failed for "${expectedState}": ${reason}. Falling back to waitForBattleState.`);
+    console.warn(
+      `waitForStateViaTestApi failed for "${expectedState}": ${reason}. Falling back to waitForBattleState.`
+    );
 
     try {
       await waitForBattleState(page, expectedState, {
@@ -38,7 +40,9 @@ async function waitForStateViaTestApi(page, expectedState, timeoutMs = WAIT_FOR_
       });
     } catch (fallbackError) {
       const fallbackReason =
-        fallbackError instanceof Error ? fallbackError.message : String(fallbackError ?? "unknown error");
+        fallbackError instanceof Error
+          ? fallbackError.message
+          : String(fallbackError ?? "unknown error");
       throw new Error(
         `Failed to wait for state "${expectedState}" via Test API: ${reason}. Fallback waitForBattleState also failed: ${fallbackReason}`
       );

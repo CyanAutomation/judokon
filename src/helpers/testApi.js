@@ -1085,8 +1085,7 @@ const timerApi = {
             ? requestedTimeout
             : 5_000;
 
-    const normalizedPoll =
-      Number.isFinite(requestedPoll) && requestedPoll > 0 ? requestedPoll : 50;
+    const normalizedPoll = Number.isFinite(requestedPoll) && requestedPoll > 0 ? requestedPoll : 50;
 
     const expectedProvided = typeof expectedValue !== "undefined";
     const parsedExpected = expectedProvided ? Number.parseInt(String(expectedValue), 10) : null;
@@ -1137,7 +1136,9 @@ const timerApi = {
           return false;
         }
 
-        return hasNumericExpectation ? value === parsedExpected : String(value) === String(expectedValue);
+        return hasNumericExpectation
+          ? value === parsedExpected
+          : String(value) === String(expectedValue);
       };
 
       const checkValue = () => {
