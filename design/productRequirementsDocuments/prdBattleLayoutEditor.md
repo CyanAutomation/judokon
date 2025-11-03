@@ -116,7 +116,7 @@ Each layout export includes `id`, `engineVersion`, and grid dimensions.
 
 ## UX & UI Considerations
 
-- Canvas shows faint grid lines with snapping every one grid unit.
+- Canvas shows faint grid lines with snapping every 1 grid unit.
 - Selected element highlights with resize handles and coordinate overlay.
 - Property Inspector on the right shows editable values.
 - ASCII preview appears in a modal or side panel with copy and download options.
