@@ -48,23 +48,23 @@ Currently, layout creation relies on manual JSON or CSS edits. This approach is 
 
 ## Functional Requirements
 
-| ID     | Requirement                                                   | Priority | Notes                                                                  |
-| ------ | ------------------------------------------------------------- | -------- | ---------------------------------------------------------------------- |
-| LED-1  | Provide a canvas overlay with visible component boxes.        | Must     | Aligns to a 60×24 grid.                                                |
-| LED-2  | Allow drag, resize, and z-order manipulation.                 | Must     | Snaps to grid lines.                                                   |
-| LED-3  | Load existing `.layout.js` module into editor.                | Must     | Uses dynamic ESM import.                                              |
-| LED-4  | Export layout as downloadable JSON file (`*.layout.json`).    | Must     | Can be converted to `.layout.js` for runtime use.                     |
-| LED-5  | Export ASCII preview with legend.                             | Must     | Matches Layout Engine format.                                         |
-| LED-6  | Import JSON or ASCII back into editor.                        | Should   | Preserves coordinate fidelity.                                        |
-| LED-7  | Apply layout live to battle preview iframe.                   | Should   | Uses `postMessage` to communicate with Layout Engine.                 |
-| LED-8  | Save draft layouts to `localStorage` per mode.                | Should   | Auto-saved on change.                                                 |
-| LED-9  | Toggle feature flags within the editor UI.                    | Could    | For conditional visibility testing.                                   |
-| LED-10 | Support keyboard shortcuts (nudge, snap toggle, duplicate).   | Could    | Improves productivity.                                                |
-| LED-11 | Provide a property inspector for selected region.             | Should   | Editable ID, x, y, w, h, z-index fields.                              |
-| LED-12 | Include alignment guides when elements align.                 | Should   | Visual snapping lines.                                                |
-| LED-13 | Allow “Reset to default layout” action.                       | Should   | Reloads baseline from `/src/layouts/*.layout.js`.                     |
-| LED-14 | Include layout metadata (id, engineVersion).                  | Must     | Required for version tracking.                                        |
-| LED-15 | Provide live schema validation with visual feedback.          | Should   | Highlights invalid properties in red.                                 |
+| ID     | Requirement                                                 | Priority | Notes                                                 |
+| ------ | ----------------------------------------------------------- | -------- | ----------------------------------------------------- |
+| LED-1  | Provide a canvas overlay with visible component boxes.      | Must     | Aligns to a 60×24 grid.                               |
+| LED-2  | Allow drag, resize, and z-order manipulation.               | Must     | Snaps to grid lines.                                  |
+| LED-3  | Load existing `.layout.js` module into editor.              | Must     | Uses dynamic ESM import.                              |
+| LED-4  | Export layout as downloadable JSON file (`*.layout.json`).  | Must     | Can be converted to `.layout.js` for runtime use.     |
+| LED-5  | Export ASCII preview with legend.                           | Must     | Matches Layout Engine format.                         |
+| LED-6  | Import JSON or ASCII back into editor.                      | Should   | Preserves coordinate fidelity.                        |
+| LED-7  | Apply layout live to battle preview iframe.                 | Should   | Uses `postMessage` to communicate with Layout Engine. |
+| LED-8  | Save draft layouts to `localStorage` per mode.              | Should   | Auto-saved on change.                                 |
+| LED-9  | Toggle feature flags within the editor UI.                  | Could    | For conditional visibility testing.                   |
+| LED-10 | Support keyboard shortcuts (nudge, snap toggle, duplicate). | Could    | Improves productivity.                                |
+| LED-11 | Provide a property inspector for selected region.           | Should   | Editable ID, x, y, w, h, z-index fields.              |
+| LED-12 | Include alignment guides when elements align.               | Should   | Visual snapping lines.                                |
+| LED-13 | Allow “Reset to default layout” action.                     | Should   | Reloads baseline from `/src/layouts/*.layout.js`.     |
+| LED-14 | Include layout metadata (id, engineVersion).                | Must     | Required for version tracking.                        |
+| LED-15 | Provide live schema validation with visual feedback.        | Should   | Highlights invalid properties in red.                 |
 
 ---
 
