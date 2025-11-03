@@ -3,7 +3,7 @@
  * @param {import("@playwright/test").Page} page
  * @param {string} methodName
  * @param {unknown[]} [args]
- * @returns {Promise<unknown>}
+ * @returns {Promise<unknown | null>}
  */
 async function callTimerApi(page, methodName, args = []) {
   if (!page) {
