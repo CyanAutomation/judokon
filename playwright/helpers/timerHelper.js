@@ -2,7 +2,7 @@
  * Invokes a timer helper method within the page's Test API context.
  * @param {import("@playwright/test").Page} page
  * @param {string} methodName
- * @param {unknown[]} [args]
+ * @param {unknown[]} [args] - Arguments to pass to the timer method
  * @returns {Promise<unknown | null>}
  */
 async function callTimerApi(page, methodName, args = []) {
