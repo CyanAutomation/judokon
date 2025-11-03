@@ -11,6 +11,9 @@ async function openSettingsPanel(page) {
   }
 }
 
+const roundCounterPattern = (points) =>
+  new RegExp(`^Round \\d+ Target: ${points}$`);
+
 test.describe("Round Selection - Win Target Synchronization", () => {
   const testCases = [
     { key: "1", points: "3", name: "Quick" },
@@ -50,9 +53,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       await expect(dropdown).toHaveValue(points);
 
       const roundCounter = page.locator("#round-counter");
-      await expect(roundCounter).toHaveText(
-        new RegExp(`^Round \\d+ Target: ${points}$`)
-      );
+      await expect(roundCounter).toHaveText(roundCounterPattern(points));
     });
   }
 
@@ -68,7 +69,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await expect(confirmButton).toBeHidden();
 
     await expect(page.locator("#round-counter")).toHaveText(
-      /^Round \d+ Target: 10$/
+      roundCounterPattern("10")
     );
     await expect(dropdown).toHaveValue("10");
     const revisit = await page.context().newPage();
@@ -94,7 +95,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       await revisit.keyboard.press("3");
       await expect(revisit.locator("dialog.modal")).toBeHidden();
       await expect(revisit.locator("#round-counter")).toHaveText(
-        /^Round \d+ Target: 10$/
+        roundCounterPattern("10")
       );
     } finally {
       await revisit.close();
