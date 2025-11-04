@@ -419,8 +419,84 @@ describe("judokaComparison - Documentation", () => {
   describe("getComparisonDocumentation", () => {
     it("should return documentation object", () => {
       const doc = getComparisonDocumentation();
-      expect(doc).toBeDefined();
-      expect(typeof doc).toBe("object");
+
+      const expectedDocumentation = {
+        description:
+          "Compare two judoka by ID, showing stat differences, advantages, disadvantages, and overall match-up analysis",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id1: {
+              type: ["string", "number"],
+              description: "First judoka ID"
+            },
+            id2: {
+              type: ["string", "number"],
+              description: "Second judoka ID"
+            }
+          },
+          required: ["id1", "id2"]
+        },
+        outputSchema: {
+          type: "object",
+          properties: {
+            title: { type: "string", description: "Comparison title" },
+            judoka1Info: { type: "string", description: "First judoka basic info" },
+            judoka2Info: { type: "string", description: "Second judoka basic info" },
+            comparisonText: {
+              type: "string",
+              description: "Human-readable comparison summary"
+            },
+            summary: {
+              type: "object",
+              properties: {
+                winner: { type: "string", description: "Winner or 'Tied'" },
+                margin: { type: "number", description: "Stat advantage margin" },
+                judoka1Total: { type: "number" },
+                judoka2Total: { type: "number" },
+                advantages: {
+                  type: "array",
+                  description: "Stats where judoka1 leads"
+                },
+                disadvantages: {
+                  type: "array",
+                  description: "Stats where judoka2 leads"
+                }
+              }
+            },
+            rankedDifferences: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  stat: { type: "string" },
+                  difference: { type: "number" }
+                }
+              },
+              description: "Stats ranked by largest differences"
+            },
+            statDetails: {
+              type: "object",
+              description: "Stat-by-stat comparison (val1 vs val2 [difference])"
+            }
+          }
+        },
+        examples: [
+          {
+            description: "Compare two judoka by ID",
+            input: { id1: 0, id2: 5 },
+            expectedOutput:
+              "Comparison report showing winner, stat advantages/disadvantages, and detailed breakdown"
+          },
+          {
+            description: "Compare string IDs",
+            input: { id1: "42", id2: "18" },
+            expectedOutput: "Same as numeric IDs (auto-converted)"
+          }
+        ]
+      };
+
+      expect(doc).toEqual(expectedDocumentation);
     });
 
     it("should include description", () => {
