@@ -378,7 +378,7 @@ const stateApi = {
   /**
    * Wait for the engine to report the desired number of completed rounds.
    * @param {number} targetRounds - Desired rounds played threshold.
-   * @param {number} timeout - Timeout window in milliseconds.
+   * @param {number} [timeout=5000] - Timeout window in milliseconds.
    * @returns {Promise<boolean>} Resolves true when threshold met, false on timeout.
    * @pseudocode
    * 1. Normalize the requested target and bail out early when invalid.
@@ -1433,7 +1433,7 @@ const engineApi = {
    * Mirrors the state API helper so Playwright tests can rely on either entry point.
    *
    * @param {number} targetRounds - Desired rounds played threshold.
-   * @param {number} timeout - Timeout window in milliseconds.
+   * @param {number} [timeout=5000] - Timeout window in milliseconds.
    * @returns {Promise<boolean>} Resolves true when threshold met, false on timeout.
    */
   async waitForRoundsPlayed(targetRounds, timeout = 5000) {
@@ -1481,7 +1481,7 @@ const engineApi = {
       return null;
     };
 
-    return await new Promise((resolve) => {
+    return new Promise((resolve) => {
       const startTime = Date.now();
       const deadline = startTime + timeout;
 
@@ -1501,14 +1501,17 @@ const engineApi = {
       };
 
       if (!checkIfSatisfied()) {
+        let timeoutId;
         const intervalId = setInterval(() => {
           if (checkIfSatisfied()) {
             clearInterval(intervalId);
-            clearTimeout(timeoutId);
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
           }
         }, 50);
 
-        const timeoutId = setTimeout(() => {
+        timeoutId = setTimeout(() => {
           clearInterval(intervalId);
           resolve(false);
         }, Math.max(0, deadline - Date.now()));
