@@ -40,19 +40,6 @@ describe("createScoreboard", () => {
     expect(scoreboard.element.children).toHaveLength(4);
   });
 
-  it("provides model and view instances", () => {
-    const scoreboard = createScoreboard();
-
-    expect(scoreboard.model).toBeDefined();
-    expect(scoreboard.view).toBeDefined();
-    // Model has updateScore and getState methods
-    expect(typeof scoreboard.model.updateScore).toBe("function");
-    expect(typeof scoreboard.model.getState).toBe("function");
-    // View has various update methods
-    expect(typeof scoreboard.view.showMessage).toBe("function");
-    expect(typeof scoreboard.view.updateTimer).toBe("function");
-  });
-
   it("renders state changes", () => {
     const scoreboard = createScoreboard();
 
@@ -75,24 +62,40 @@ describe("createScoreboard", () => {
     expect(roundEl.textContent).toBe("Round 3");
   });
 
-  it("provides helper methods for common updates", () => {
+  it("updates the DOM via public helpers", () => {
     const scoreboard = createScoreboard();
+    document.body.appendChild(scoreboard.element);
 
-    scoreboard.updateScore({ player: 5, opponent: 3 });
-    expect(scoreboard.getScore()).toEqual({ player: 5, opponent: 3 });
+    try {
+      scoreboard.updateScore({ player: 9, opponent: 4 });
+      expect(scoreboard.getScore()).toEqual({ player: 9, opponent: 4 });
 
-    scoreboard.updateTimer(45);
-    // Note: Timer state is not stored in model/view, so we can't verify the value
-    // but the method should not throw
-    expect(() => scoreboard.updateTimer(45)).not.toThrow();
+      const playerValue = scoreboard.element
+        .querySelector('#score-display [data-side="player"] [data-part="value"]')
+        ?.textContent;
+      const opponentValue = scoreboard.element
+        .querySelector('#score-display [data-side="opponent"] [data-part="value"]')
+        ?.textContent;
 
-    scoreboard.updateMessage("New round!");
-    // Message state is not stored, but method should not throw
-    expect(() => scoreboard.updateMessage("New round!")).not.toThrow();
+      expect(playerValue).toBe("9");
+      expect(opponentValue).toBe("4");
 
-    scoreboard.updateRound(2);
-    // Round state is not stored, but method should not throw
-    expect(() => scoreboard.updateRound(2)).not.toThrow();
+      scoreboard.updateTimer(42);
+      const timerEl = scoreboard.element.querySelector("#next-round-timer");
+      expect(timerEl?.textContent).toBe("Time Left: 42s");
+      expect(timerEl?.getAttribute("data-remaining-time")).toBe("42");
+
+      scoreboard.updateMessage("Fight on!");
+      const messageEl = scoreboard.element.querySelector("#round-message");
+      expect(messageEl?.textContent).toBe("Fight on!");
+
+      scoreboard.updateRound(3);
+      const roundEl = scoreboard.element.querySelector("#round-counter");
+      expect(roundEl?.textContent).toBe("Round 3");
+    } finally {
+      scoreboard.view.destroy();
+      scoreboard.element.remove();
+    }
   });
 
   it("provides getter methods for current state", () => {
