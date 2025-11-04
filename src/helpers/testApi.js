@@ -1426,6 +1426,94 @@ const engineApi = {
 
       check();
     });
+  },
+
+  /**
+   * Wait for the engine to report the desired number of completed rounds.
+   * Mirrors the state API helper so Playwright tests can rely on either entry point.
+   *
+   * @param {number} targetRounds - Desired rounds played threshold.
+   * @param {number} timeout - Timeout window in milliseconds.
+   * @returns {Promise<boolean>} Resolves true when threshold met, false on timeout.
+   */
+  async waitForRoundsPlayed(targetRounds, timeout = 5000) {
+    const desired = Number(targetRounds);
+    if (!Number.isFinite(desired) || desired < 0) {
+      return false;
+    }
+
+    if (stateApi && typeof stateApi.waitForRoundsPlayed === "function") {
+      try {
+        const satisfied = await stateApi.waitForRoundsPlayed(targetRounds, timeout);
+        if (satisfied) {
+          return true;
+        }
+      } catch (error) {
+        if (isDevelopmentEnvironment()) {
+          logDevDebug("[engine.waitForRoundsPlayed] state fallback failed", error);
+        }
+      }
+    }
+
+    const readCurrentRounds = () => {
+      const engineRounds = this.getRoundsPlayed();
+      if (typeof engineRounds === "number" && Number.isFinite(engineRounds)) {
+        return engineRounds;
+      }
+
+      try {
+        const inspectApi =
+          (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
+          (typeof window !== "undefined" && window.__INSPECT_API);
+        if (inspectApi && typeof inspectApi.getBattleSnapshot === "function") {
+          const snapshot = inspectApi.getBattleSnapshot();
+          const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
+          if (typeof fromSnapshot === "number") {
+            return fromSnapshot;
+          }
+        }
+      } catch (error) {
+        if (isDevelopmentEnvironment()) {
+          logDevDebug("[engine.waitForRoundsPlayed] inspect fallback failed", error);
+        }
+      }
+
+      return null;
+    };
+
+    return await new Promise((resolve) => {
+      const startTime = Date.now();
+      const deadline = startTime + timeout;
+
+      const checkIfSatisfied = () => {
+        const rounds = readCurrentRounds();
+        if (typeof rounds === "number" && rounds >= desired) {
+          resolve(true);
+          return true;
+        }
+
+        if (Date.now() >= deadline) {
+          resolve(false);
+          return true;
+        }
+
+        return false;
+      };
+
+      if (!checkIfSatisfied()) {
+        const intervalId = setInterval(() => {
+          if (checkIfSatisfied()) {
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+          }
+        }, 50);
+
+        const timeoutId = setTimeout(() => {
+          clearInterval(intervalId);
+          resolve(false);
+        }, Math.max(0, deadline - Date.now()));
+      }
+    });
   }
 };
 
