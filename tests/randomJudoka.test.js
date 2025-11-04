@@ -418,7 +418,7 @@ describe("Random Judoka Selection", () => {
     });
 
     afterEach(() => {
-      randomSpy?.mockRestore();
+      randomSpy.mockRestore();
     });
 
     it("should handle judoka with missing country", () => {
@@ -439,7 +439,7 @@ describe("Random Judoka Selection", () => {
 
       expect(firstSelection).toEqual(mockJudoka[0]);
       expect(secondSelection).toEqual(mockJudoka[2]);
-      expect(filteredSelection.country).toBe("Japan");
+      expect(filteredSelection).toEqual(mockJudoka[3]);
       expect(randomSpy).toHaveBeenCalledTimes(3);
     });
 
