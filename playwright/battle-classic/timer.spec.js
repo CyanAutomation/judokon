@@ -1,6 +1,18 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import { getCountdownValue, waitForCountdownValue } from "../helpers/timerHelper.js";
+import {
+  getCountdownValue,
+  waitForCountdownDecrease,
+} from "../helpers/timerHelper.js";
+
+/**
+ * Waits for the countdown to tick down at least once and returns the observed value.
+ * @param {import("@playwright/test").Page} page
+ * @param {number} initialValue
+ */
+async function waitForCountdownTick(page, initialValue) {
+  return await waitForCountdownDecrease(page, initialValue);
+}
 
 test.describe("Classic Battle timer", () => {
   test("displays and counts down selection timer after round selection", async ({ page }) => {
@@ -32,16 +44,13 @@ test.describe("Classic Battle timer", () => {
       await expect(timerLocator).toContainText(/Time Left: \d+s/);
 
       const initialCountdown = await getCountdownValue(page);
-      expect(initialCountdown).not.toBeNull();
       expect(typeof initialCountdown).toBe("number");
       expect(initialCountdown).toBeGreaterThan(0);
       const initialCountdownValue = /** @type {number} */ (initialCountdown);
       await expect(timerLocator).toContainText(new RegExp(`Time Left: ${initialCountdownValue}s`));
 
-      const decreasedCountdownTarget = Math.max(0, initialCountdownValue - 1);
-      const decreasedCountdown = await waitForCountdownValue(page, decreasedCountdownTarget);
+      const decreasedCountdown = await waitForCountdownTick(page, initialCountdownValue);
 
-      expect(decreasedCountdown).not.toBeNull();
       expect(typeof decreasedCountdown).toBe("number");
       expect(decreasedCountdown).toBeLessThan(initialCountdownValue);
 
