@@ -3,11 +3,87 @@ import selectors from "../../playwright/helpers/selectors";
 import { waitForBattleReady } from "../helpers/battleStateHelper.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 
+const ENGINE_WAIT_TIMEOUT_MS = 5_000;
+
+const captureEngineState = async (page) => {
+  return page.evaluate(() => {
+    const captureState = window.__PW_CLASSIC_BATTLE?.captureEngineState;
+    if (typeof captureState !== "function") {
+      return { ok: false, reason: "CAPTURE_HELPER_UNAVAILABLE" };
+    }
+    return captureState();
+  });
+};
+
 test.describe("Classic Battle replay", () => {
   test("Replay resets scoreboard after match end", async ({ page }) => {
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
+
+        const readScores = (engineApi) => {
+          if (engineApi && typeof engineApi.getScores === "function") {
+            try {
+              const scores = engineApi.getScores();
+              if (scores && typeof scores === "object") {
+                const player = Number(scores.player);
+                const opponent = Number(scores.opponent);
+                if (Number.isFinite(player) && Number.isFinite(opponent)) {
+                  return { player, opponent };
+                }
+              }
+            } catch (error) {
+              // Ignore engine score retrieval errors and fall back to inspect API.
+            }
+          }
+
+          const inspectApi = window.__TEST_API?.inspect;
+          const snapshot =
+            inspectApi && typeof inspectApi.getBattleSnapshot === "function"
+              ? inspectApi.getBattleSnapshot()
+              : null;
+          if (!snapshot || typeof snapshot !== "object") {
+            return null;
+          }
+          const player = Number(snapshot.playerScore ?? snapshot.player);
+          const opponent = Number(snapshot.opponentScore ?? snapshot.opponent);
+          if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
+            return null;
+          }
+          return { player, opponent };
+        };
+
+        const captureEngineState = () => {
+          const engineApi = window.__TEST_API?.engine;
+          if (!engineApi) {
+            return { ok: false, reason: "ENGINE_API_UNAVAILABLE" };
+          }
+
+          const scores = readScores(engineApi);
+          if (!scores) {
+            return { ok: false, reason: "SCORES_UNAVAILABLE" };
+          }
+
+          const roundsPlayed =
+            typeof engineApi.getRoundsPlayed === "function"
+              ? engineApi.getRoundsPlayed()
+              : null;
+
+          return {
+            ok: true,
+            scores,
+            roundsPlayed:
+              typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
+                ? roundsPlayed
+                : null
+          };
+        };
+
+        window.__PW_CLASSIC_BATTLE = {
+          ...(window.__PW_CLASSIC_BATTLE || {}),
+          readScores,
+          captureEngineState
+        };
       });
       await page.goto("/src/pages/battleClassic.html");
 
@@ -32,63 +108,7 @@ test.describe("Classic Battle replay", () => {
       // Start match
       await page.click("#round-select-2");
       // Capture initial engine-reported state, click, then assert score change via Test API
-      const initialEngineState = await page.evaluate(() => {
-        const engineApi = window.__TEST_API?.engine;
-        if (!engineApi) {
-          return { ok: false, reason: "ENGINE_API_UNAVAILABLE" };
-        }
-
-        const readScores = () => {
-          if (typeof engineApi.getScores !== "function") {
-            const inspectApi = window.__TEST_API?.inspect;
-            const snapshot =
-              inspectApi && typeof inspectApi.getBattleSnapshot === "function"
-                ? inspectApi.getBattleSnapshot()
-                : null;
-            if (!snapshot || typeof snapshot !== "object") {
-              return null;
-            }
-            const player = Number(snapshot.playerScore ?? snapshot.player);
-            const opponent = Number(snapshot.opponentScore ?? snapshot.opponent);
-            if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
-              return null;
-            }
-            return { player, opponent };
-          }
-          try {
-            const scores = engineApi.getScores();
-            if (!scores || typeof scores !== "object") {
-              return null;
-            }
-            const player = Number(scores.player);
-            const opponent = Number(scores.opponent);
-            if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
-              return null;
-            }
-            return { player, opponent };
-          } catch (error) {
-            return null;
-          }
-        };
-
-        const scores = readScores();
-        if (!scores || typeof scores !== "object") {
-          return { ok: false, reason: "INITIAL_SCORES_UNAVAILABLE" };
-        }
-
-        const roundsPlayed =
-          typeof engineApi.getRoundsPlayed === "function"
-            ? engineApi.getRoundsPlayed()
-            : null;
-
-        return {
-          ok: true,
-          scores,
-          roundsPlayed: typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
-            ? roundsPlayed
-            : null
-        };
-      });
+      const initialEngineState = await captureEngineState(page);
 
       if (!initialEngineState?.ok || !initialEngineState.scores) {
         const reason = initialEngineState?.reason ?? "UNKNOWN_ENGINE_STATE";
@@ -104,17 +124,13 @@ test.describe("Classic Battle replay", () => {
         await statButtons.nth(attempt).click();
         const waitResult = await page.evaluate(
           async ({ desiredRounds, waitTimeout }) => {
-            const engineApi = window.__TEST_API?.engine;
-            if (!engineApi) {
-              return { ok: false, reason: "ENGINE_API_UNAVAILABLE" };
-            }
-
-            if (typeof engineApi.waitForRoundsPlayed !== "function") {
+            const stateApi = window.__TEST_API?.state;
+            if (!stateApi || typeof stateApi.waitForRoundsPlayed !== "function") {
               return { ok: false, reason: "WAIT_HELPER_UNAVAILABLE" };
             }
 
             try {
-              const completed = await engineApi.waitForRoundsPlayed(desiredRounds, waitTimeout);
+              const completed = await stateApi.waitForRoundsPlayed(desiredRounds, waitTimeout);
               if (completed !== true) {
                 return {
                   ok: false,
@@ -125,54 +141,20 @@ test.describe("Classic Battle replay", () => {
                 };
               }
 
-              const readScores = () => {
-                if (typeof engineApi.getScores === "function") {
-                  try {
-                    const scores = engineApi.getScores();
-                    if (scores && typeof scores === "object") {
-                      const player = Number(scores.player);
-                      const opponent = Number(scores.opponent);
-                      if (Number.isFinite(player) && Number.isFinite(opponent)) {
-                        return { player, opponent };
-                      }
-                    }
-                  } catch {}
-                }
-
-                const inspectApi = window.__TEST_API?.inspect;
-                const snapshot =
-                  inspectApi && typeof inspectApi.getBattleSnapshot === "function"
-                    ? inspectApi.getBattleSnapshot()
-                    : null;
-                if (!snapshot || typeof snapshot !== "object") {
-                  return null;
-                }
-                const player = Number(snapshot.playerScore ?? snapshot.player);
-                const opponent = Number(snapshot.opponentScore ?? snapshot.opponent);
-                if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
-                  return null;
-                }
-                return { player, opponent };
-              };
-
-              const scores = readScores();
-              if (!scores) {
-                return { ok: false, reason: "SCORES_UNAVAILABLE" };
+              const captureState = window.__PW_CLASSIC_BATTLE?.captureEngineState;
+              if (typeof captureState !== "function") {
+                return { ok: false, reason: "CAPTURE_HELPER_UNAVAILABLE" };
               }
 
-              const roundsPlayed =
-                typeof engineApi.getRoundsPlayed === "function"
-                  ? engineApi.getRoundsPlayed()
-                  : null;
+              const engineState = captureState();
+              if (!engineState?.ok || !engineState.scores) {
+                return {
+                  ok: false,
+                  reason: engineState?.reason ?? "ENGINE_STATE_UNAVAILABLE"
+                };
+              }
 
-              return {
-                ok: true,
-                scores,
-                roundsPlayed:
-                  typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
-                    ? roundsPlayed
-                    : null
-              };
+              return engineState;
             } catch (error) {
               return {
                 ok: false,
@@ -180,7 +162,7 @@ test.describe("Classic Battle replay", () => {
               };
             }
           },
-          { desiredRounds: targetRounds, waitTimeout: 5_000 }
+          { desiredRounds: targetRounds, waitTimeout: ENGINE_WAIT_TIMEOUT_MS }
         );
 
         if (waitResult?.ok && waitResult.scores) {
@@ -194,7 +176,7 @@ test.describe("Classic Battle replay", () => {
         }
       }
       expect(finalEngineState?.scores).toBeDefined();
-      expect(finalEngineState?.scores).not.toEqual(initialEngineState.scores);
+      expect(finalEngineState.scores).not.toEqual(initialEngineState.scores);
       if (typeof finalEngineState?.roundsPlayed === "number") {
         expect(finalEngineState.roundsPlayed).toBeGreaterThanOrEqual(targetRounds);
       }
