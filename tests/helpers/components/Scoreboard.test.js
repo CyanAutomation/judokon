@@ -94,8 +94,8 @@ describe("createScoreboard", () => {
       const roundEl = scoreboard.element.querySelector("#round-counter");
       expect(roundEl?.textContent).toBe("Round 3");
     } finally {
-      scoreboard.element.remove();
       scoreboard.view.destroy();
+      scoreboard.element.remove();
     }
   });
 
