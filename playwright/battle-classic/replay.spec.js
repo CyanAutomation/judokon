@@ -31,39 +31,173 @@ test.describe("Classic Battle replay", () => {
 
       // Start match
       await page.click("#round-select-2");
-      // Capture initial score, click, then assert one-side increment by 1
-      const score = page.locator(selectors.scoreDisplay());
-      const initialText = (await score.textContent())?.trim();
-      let text = initialText || "";
+      // Capture initial engine-reported state, click, then assert score change via Test API
+      const initialEngineState = await page.evaluate(() => {
+        const engineApi = window.__TEST_API?.engine;
+        if (!engineApi) {
+          return { ok: false, reason: "ENGINE_API_UNAVAILABLE" };
+        }
+
+        const readScores = () => {
+          if (typeof engineApi.getScores !== "function") {
+            const inspectApi = window.__TEST_API?.inspect;
+            const snapshot =
+              inspectApi && typeof inspectApi.getBattleSnapshot === "function"
+                ? inspectApi.getBattleSnapshot()
+                : null;
+            if (!snapshot || typeof snapshot !== "object") {
+              return null;
+            }
+            const player = Number(snapshot.playerScore ?? snapshot.player);
+            const opponent = Number(snapshot.opponentScore ?? snapshot.opponent);
+            if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
+              return null;
+            }
+            return { player, opponent };
+          }
+          try {
+            const scores = engineApi.getScores();
+            if (!scores || typeof scores !== "object") {
+              return null;
+            }
+            const player = Number(scores.player);
+            const opponent = Number(scores.opponent);
+            if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
+              return null;
+            }
+            return { player, opponent };
+          } catch (error) {
+            return null;
+          }
+        };
+
+        const scores = readScores();
+        if (!scores || typeof scores !== "object") {
+          return { ok: false, reason: "INITIAL_SCORES_UNAVAILABLE" };
+        }
+
+        const roundsPlayed =
+          typeof engineApi.getRoundsPlayed === "function"
+            ? engineApi.getRoundsPlayed()
+            : null;
+
+        return {
+          ok: true,
+          scores,
+          roundsPlayed: typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
+            ? roundsPlayed
+            : null
+        };
+      });
+
+      if (!initialEngineState?.ok || !initialEngineState.scores) {
+        const reason = initialEngineState?.reason ?? "UNKNOWN_ENGINE_STATE";
+        throw new Error(`Unable to capture initial engine scores: ${reason}`);
+      }
+
+      const initialRoundsPlayed = initialEngineState.roundsPlayed ?? 0;
+      const targetRounds = initialRoundsPlayed + 1;
+      let finalEngineState = null;
       const statButtons = page.locator(selectors.statButton());
       const maxAttempts = Math.min(await statButtons.count(), 3);
-      const baselineText = initialText || "";
       for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         await statButtons.nth(attempt).click();
-        try {
-          const changedTextHandle = await page.waitForFunction(
-            ({ selector, initial }) => {
-              const current = document.querySelector(selector)?.textContent?.trim();
-              if (current && current !== initial) {
-                return current;
+        const waitResult = await page.evaluate(
+          async ({ desiredRounds, waitTimeout }) => {
+            const engineApi = window.__TEST_API?.engine;
+            if (!engineApi) {
+              return { ok: false, reason: "ENGINE_API_UNAVAILABLE" };
+            }
+
+            if (typeof engineApi.waitForRoundsPlayed !== "function") {
+              return { ok: false, reason: "WAIT_HELPER_UNAVAILABLE" };
+            }
+
+            try {
+              const completed = await engineApi.waitForRoundsPlayed(desiredRounds, waitTimeout);
+              if (completed !== true) {
+                return {
+                  ok: false,
+                  reason:
+                    completed === false
+                      ? `WAIT_TIMEOUT_ROUNDS_${desiredRounds}`
+                      : "WAIT_HELPER_UNEXPECTED_RESULT"
+                };
               }
-              return null;
-            },
-            { selector: selectors.scoreDisplay(), initial: baselineText },
-            { timeout: 5000 }
-          );
-          const maybeText = await changedTextHandle.jsonValue();
-          if (maybeText) {
-            text = maybeText;
-            break;
-          }
-        } catch (error) {
-          if (attempt === maxAttempts - 1) {
-            throw error;
-          }
+
+              const readScores = () => {
+                if (typeof engineApi.getScores === "function") {
+                  try {
+                    const scores = engineApi.getScores();
+                    if (scores && typeof scores === "object") {
+                      const player = Number(scores.player);
+                      const opponent = Number(scores.opponent);
+                      if (Number.isFinite(player) && Number.isFinite(opponent)) {
+                        return { player, opponent };
+                      }
+                    }
+                  } catch {}
+                }
+
+                const inspectApi = window.__TEST_API?.inspect;
+                const snapshot =
+                  inspectApi && typeof inspectApi.getBattleSnapshot === "function"
+                    ? inspectApi.getBattleSnapshot()
+                    : null;
+                if (!snapshot || typeof snapshot !== "object") {
+                  return null;
+                }
+                const player = Number(snapshot.playerScore ?? snapshot.player);
+                const opponent = Number(snapshot.opponentScore ?? snapshot.opponent);
+                if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
+                  return null;
+                }
+                return { player, opponent };
+              };
+
+              const scores = readScores();
+              if (!scores) {
+                return { ok: false, reason: "SCORES_UNAVAILABLE" };
+              }
+
+              const roundsPlayed =
+                typeof engineApi.getRoundsPlayed === "function"
+                  ? engineApi.getRoundsPlayed()
+                  : null;
+
+              return {
+                ok: true,
+                scores,
+                roundsPlayed:
+                  typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
+                    ? roundsPlayed
+                    : null
+              };
+            } catch (error) {
+              return {
+                ok: false,
+                reason: error instanceof Error ? error.message : String(error ?? "unknown")
+              };
+            }
+          },
+          { desiredRounds: targetRounds, waitTimeout: 5_000 }
+        );
+
+        if (waitResult?.ok && waitResult.scores) {
+          finalEngineState = waitResult;
+          break;
+        }
+
+        if (attempt === maxAttempts - 1) {
+          const reason = waitResult?.reason ?? "UNKNOWN_WAIT_FAILURE";
+          throw new Error(`Failed to observe score change via engine API: ${reason}`);
         }
       }
-      expect(text).not.toBe(initialText || "");
+      expect(finalEngineState?.scores).toBeDefined();
+      expect(finalEngineState?.scores).not.toEqual(initialEngineState.scores);
+      if (typeof finalEngineState?.roundsPlayed === "number") {
+        expect(finalEngineState.roundsPlayed).toBeGreaterThanOrEqual(targetRounds);
+      }
       const pointsBeforeReplay = await page.evaluate(() => {
         const engineApi = window.__TEST_API?.engine;
         if (!engineApi || typeof engineApi.getPointsToWin !== "function") return null;
