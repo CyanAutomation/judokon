@@ -37,6 +37,7 @@ test.describe("Classic Battle replay", () => {
             }
           }
 
+          // Fallback to inspect API when engine API is unavailable or fails
           const inspectApi = window.__TEST_API?.inspect;
           const snapshot =
             inspectApi && typeof inspectApi.getBattleSnapshot === "function"
@@ -124,13 +125,13 @@ test.describe("Classic Battle replay", () => {
         await statButtons.nth(attempt).click();
         const waitResult = await page.evaluate(
           async ({ desiredRounds, waitTimeout }) => {
-            const stateApi = window.__TEST_API?.state;
-            if (!stateApi || typeof stateApi.waitForRoundsPlayed !== "function") {
+            const engineApi = window.__TEST_API?.engine;
+            if (!engineApi || typeof engineApi.waitForRoundsPlayed !== "function") {
               return { ok: false, reason: "WAIT_HELPER_UNAVAILABLE" };
             }
 
             try {
-              const completed = await stateApi.waitForRoundsPlayed(desiredRounds, waitTimeout);
+              const completed = await engineApi.waitForRoundsPlayed(desiredRounds, waitTimeout);
               if (completed !== true) {
                 return {
                   ok: false,
