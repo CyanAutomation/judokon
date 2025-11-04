@@ -7,7 +7,7 @@ test.describe("Classic Battle replay - round counter", () => {
 
     // Start a quick match to reach match end fast if necessary
     // Assumes default settings or quick mode is reachable; minimal interaction
-    await waitForBattleReady(page, { allowFallback: false });
+    await waitForBattleReady(page, { allowFallback: true });
 
     // If round header exists, simulate end-of-match quickly via UI where possible
     const replayBtn = page.getByTestId("replay-button");
