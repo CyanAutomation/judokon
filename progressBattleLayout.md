@@ -18,3 +18,13 @@
 **Outcome:** Layout retrieval now prioritises static registry modules while safely falling back to inline scripts, surfacing validation issues without crashing the boot path.
 
 **Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js tests/helpers/layoutEngine/loadLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
+
+## Task 3.1 – Publish Layout Schema & Generated Typings
+
+- Added `design/specs/layoutSchema.v1.json` defining the canonical grid/region schema (bounds, rect requirements, feature-flag metadata).
+- Generated shared typings in `src/layouts/types.d.ts` for editor tooling and future codegen.
+- Hardened `validateLayoutDefinition` with region id dedupe, rect/bounds checks, and feature-flag validation; introduced focused Vitest coverage in `tests/helpers/layoutEngine/validateLayoutDefinition.test.js`.
+
+**Outcome:** Layout shape is now formally documented and enforced, aligning runtime validation with the published schema to prevent out-of-bounds regions or malformed metadata.
+
+**Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js tests/helpers/layoutEngine/loadLayout.test.js tests/helpers/layoutEngine/validateLayoutDefinition.test.js`; `npx playwright test playwright/cli-layout.spec.js`

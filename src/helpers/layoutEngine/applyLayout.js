@@ -110,6 +110,88 @@ export function validateLayoutDefinition(layout) {
 
   if (!Array.isArray(regions) || regions.length === 0) {
     errors.push("Layout regions must be a non-empty array.");
+  } else {
+    const seenRegionIds = new Set();
+    const gridCols = Number.isFinite(grid?.cols) ? grid.cols : null;
+    const gridRows = Number.isFinite(grid?.rows) ? grid.rows : null;
+
+    regions.forEach((region, index) => {
+      if (!region || typeof region !== "object") {
+        errors.push(`Layout region at index ${index} must be an object.`);
+        return;
+      }
+
+      const regionId = typeof region.id === "string" ? region.id.trim() : "";
+      if (!regionId) {
+        errors.push(`Layout region at index ${index} requires a valid string id.`);
+      } else if (seenRegionIds.has(regionId)) {
+        errors.push(`Layout region id '${regionId}' is duplicated.`);
+      } else {
+        seenRegionIds.add(regionId);
+      }
+
+      if (region.visibleIf && typeof region.visibleIf === "object") {
+        const flagId = region.visibleIf.featureFlag;
+        if (flagId != null && (typeof flagId !== "string" || !flagId.trim())) {
+          errors.push(
+            `Layout region '${regionId || index}' visibleIf.featureFlag must be a non-empty string.`
+          );
+        }
+      } else if (region.visibleIf != null) {
+        errors.push(`Layout region '${regionId || index}' visibleIf must be an object when present.`);
+      }
+
+      const rect = region.rect;
+      if (!rect || typeof rect !== "object") {
+        errors.push(`Layout region '${regionId || index}' requires a rect object.`);
+        return;
+      }
+
+      const { x, y, width, height } = rect;
+      const rectFields = [
+        ["x", x],
+        ["y", y],
+        ["width", width],
+        ["height", height],
+      ];
+
+      rectFields.forEach(([key, value]) => {
+        if (!Number.isFinite(value)) {
+          errors.push(`Layout region '${regionId || index}' rect.${key} must be a finite number.`);
+        } else if (value < 0) {
+          errors.push(`Layout region '${regionId || index}' rect.${key} cannot be negative.`);
+        }
+      });
+
+      if (Number.isFinite(width) && width === 0) {
+        errors.push(`Layout region '${regionId || index}' rect.width must be greater than zero.`);
+      }
+      if (Number.isFinite(height) && height === 0) {
+        errors.push(`Layout region '${regionId || index}' rect.height must be greater than zero.`);
+      }
+
+      if (
+        Number.isFinite(gridCols) &&
+        Number.isFinite(width) &&
+        Number.isFinite(x) &&
+        x + width > gridCols
+      ) {
+        errors.push(
+          `Layout region '${regionId || index}' width exceeds grid bounds (x + width > cols).`
+        );
+      }
+
+      if (
+        Number.isFinite(gridRows) &&
+        Number.isFinite(height) &&
+        Number.isFinite(y) &&
+        y + height > gridRows
+      ) {
+        errors.push(
+          `Layout region '${regionId || index}' height exceeds grid bounds (y + height > rows).`
+        );
+      }
+    });
   }
 
   return { errors };
