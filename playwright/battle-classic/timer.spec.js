@@ -1,55 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
-
-async function readCountdown(page) {
-  return page.evaluate(() => {
-    try {
-      const getter = window.__TEST_API?.timers?.getCountdown;
-      if (typeof getter !== "function") return null;
-      return getter();
-    } catch (error) {
-      console.warn("Failed to read countdown:", error);
-      return null;
-    }
-  });
-}
-
-async function waitForCountdownDecrease(page, initialValue, timeoutMs = 5000) {
-  const hasCountdownHelper = await page.evaluate(
-    () => typeof window.__TEST_API?.timers?.getCountdown === "function"
-  );
-
-  if (!hasCountdownHelper) {
-    throw new Error(
-      "__TEST_API.timers.getCountdown is not available; ensure timer helpers are exposed in the page context."
-    );
-  }
-
-  try {
-    const countdownHandle = await page.waitForFunction(
-      (initial) => {
-        const current = window.__TEST_API?.timers?.getCountdown?.();
-        return typeof current === "number" && current < initial ? current : undefined;
-      },
-      initialValue,
-      { timeout: timeoutMs, polling: "raf" }
-    );
-
-    const value = await countdownHandle.jsonValue();
-    await countdownHandle.dispose();
-    return /** @type {number} */ (value);
-  } catch (error) {
-    if (error instanceof Error && error.name === "TimeoutError") {
-      const lastSeen = await readCountdown(page);
-      const lastValue = typeof lastSeen === "number" ? lastSeen : "unavailable";
-      throw new Error(
-        `Countdown did not decrease below ${initialValue} within ${timeoutMs}ms (last observed ${lastValue})`
-      );
-    }
-
-    throw error;
-  }
-}
+import { getCountdownValue, waitForCountdownValue } from "../helpers/timerHelper.js";
 
 test.describe("Classic Battle timer", () => {
   test("displays and counts down selection timer after round selection", async ({ page }) => {
@@ -80,15 +31,18 @@ test.describe("Classic Battle timer", () => {
       const timerLocator = page.getByTestId("next-round-timer");
       await expect(timerLocator).toContainText(/Time Left: \d+s/);
 
-      const initialCountdown = await readCountdown(page);
+      const initialCountdown = await getCountdownValue(page);
       expect(initialCountdown).not.toBeNull();
       expect(typeof initialCountdown).toBe("number");
       expect(initialCountdown).toBeGreaterThan(0);
       const initialCountdownValue = /** @type {number} */ (initialCountdown);
       await expect(timerLocator).toContainText(new RegExp(`Time Left: ${initialCountdownValue}s`));
 
-      const decreasedCountdown = await waitForCountdownDecrease(page, initialCountdownValue);
+      const decreasedCountdownTarget = Math.max(0, initialCountdownValue - 1);
+      const decreasedCountdown = await waitForCountdownValue(page, decreasedCountdownTarget);
 
+      expect(decreasedCountdown).not.toBeNull();
+      expect(typeof decreasedCountdown).toBe("number");
       expect(decreasedCountdown).toBeLessThan(initialCountdownValue);
 
       await expect(timerLocator).toContainText(new RegExp(`Time Left: ${decreasedCountdown}s`));
@@ -109,7 +63,7 @@ test.describe("Classic Battle timer", () => {
       await page.goto("/src/pages/battleClassic.html");
 
       // Wait for modal and select Long battle (10 points)
-      await page.getByRole("dialog").waitFor();
+      await expect(page.getByRole("dialog")).toBeVisible();
       await page.getByRole("button", { name: "Long" }).click();
 
       // Verify timer starts for Long battle
