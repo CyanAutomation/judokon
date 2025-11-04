@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   validateRandomFilters,
   filterJudokaByFilters,
@@ -418,10 +418,22 @@ describe("Random Judoka Selection", () => {
     });
 
     it("should select from full dataset correctly", () => {
-      const result = selectRandomJudoka(mockJudoka);
-      expect(result).toBeDefined();
-      expect(result.id).toBeDefined();
-      expect(result.country).toBeDefined();
+      const randomSpy = vi
+        .spyOn(Math, "random")
+        .mockReturnValueOnce(0.05) // selects first judoka (index 0)
+        .mockReturnValueOnce(0.4) // selects third judoka (index 2)
+        .mockReturnValueOnce(0.6); // selects second filtered judoka (index 1 of Japanese judoka)
+
+      const firstSelection = selectRandomJudoka(mockJudoka);
+      const secondSelection = selectRandomJudoka(mockJudoka);
+      const filteredSelection = selectRandomJudoka(mockJudoka, { country: "Japan" });
+
+      expect(firstSelection).toEqual(mockJudoka[0]);
+      expect(secondSelection).toEqual(mockJudoka[2]);
+      expect(filteredSelection).toEqual(mockJudoka[3]);
+      expect(randomSpy).toHaveBeenCalledTimes(3);
+
+      randomSpy.mockRestore();
     });
 
     it("should work with single judoka", () => {
