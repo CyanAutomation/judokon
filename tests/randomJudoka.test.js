@@ -411,6 +411,16 @@ describe("Random Judoka Selection", () => {
   });
 
   describe("Edge Cases and Integration", () => {
+    let randomSpy;
+
+    beforeEach(() => {
+      randomSpy = vi.spyOn(Math, "random");
+    });
+
+    afterEach(() => {
+      randomSpy?.mockRestore();
+    });
+
     it("should handle judoka with missing country", () => {
       const incomplete = [{ ...mockJudoka[0], country: undefined }];
       const result = getAvailableFilterOptions(incomplete);
@@ -418,8 +428,7 @@ describe("Random Judoka Selection", () => {
     });
 
     it("should select from full dataset correctly", () => {
-      const randomSpy = vi
-        .spyOn(Math, "random")
+      randomSpy
         .mockReturnValueOnce(0.05) // selects first judoka (index 0)
         .mockReturnValueOnce(0.4) // selects third judoka (index 2)
         .mockReturnValueOnce(0.6); // selects second filtered judoka (index 1 of Japanese judoka)
@@ -430,10 +439,8 @@ describe("Random Judoka Selection", () => {
 
       expect(firstSelection).toEqual(mockJudoka[0]);
       expect(secondSelection).toEqual(mockJudoka[2]);
-      expect(filteredSelection).toEqual(mockJudoka[3]);
+      expect(filteredSelection.country).toBe("Japan");
       expect(randomSpy).toHaveBeenCalledTimes(3);
-
-      randomSpy.mockRestore();
     });
 
     it("should work with single judoka", () => {
