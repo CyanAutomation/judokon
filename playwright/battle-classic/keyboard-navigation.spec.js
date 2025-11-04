@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
-import { waitForBattleState } from "../fixtures/waits.js";
+import { waitForBattleState, waitForStatButtonsReady } from "../helpers/battleStateHelper.js";
 
-async function expectBattleStateReady(page, stateName, timeout) {
-  const result = await waitForBattleState(page, stateName, timeout);
-  expect(
-    result.ok,
-    result.reason ?? `waitForBattleState should resolve state "${stateName}" via Test API`
-  ).toBe(true);
-  return result;
+async function expectBattleStateReady(page, stateName, options) {
+  try {
+    await waitForBattleState(page, stateName, options);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error ?? "unknown error");
+    throw new Error(`waitForBattleState should resolve state "${stateName}" via Test API (${reason})`);
+  }
 }
 
 test.describe("Classic Battle keyboard navigation", () => {
@@ -58,29 +58,13 @@ test.describe("Classic Battle keyboard navigation", () => {
     await expect(thirdStatButton).toBeDisabled();
     await expect(disabledStatButtons).toHaveCount(statButtonCount);
 
-    // Confirm stat buttons remain disabled until the next round begins
-    await page.evaluate(() => {
-      window.__statButtonsDisabledViolation = false;
-    });
-    const cooldownWatch = await page.waitForFunction(
-      (expectedCount) => {
-        window.__statButtonsDisabledViolation ??= false;
-        const state = document.body?.dataset?.battleState || "";
-        const disabledCount = document.querySelectorAll(
-          '[data-testid="stat-button"].disabled'
-        ).length;
-        if (state !== "waitingForPlayerAction" && disabledCount !== expectedCount) {
-          window.__statButtonsDisabledViolation = true;
-        }
-        if (state === "waitingForPlayerAction") {
-          return { violation: window.__statButtonsDisabledViolation };
-        }
-        return null;
-      },
-      statButtonCount,
-      { polling: 100, timeout: 10000 }
-    );
-    expect(cooldownWatch?.violation ?? false).toBe(false);
+    // Confirm stat buttons remain disabled while the round resolves and cooldown runs
+    await waitForBattleState(page, "cooldown", { timeout: 10_000 });
+    await expect(disabledStatButtons).toHaveCount(statButtonCount);
+
+    // Await the next round readiness through battle state + stat button readiness helpers
+    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+    await waitForStatButtonsReady(page, { timeout: 10_000 });
 
     // Once the next round starts, the stat buttons should be interactive again
     await expect(thirdStatButton).toBeEnabled();
