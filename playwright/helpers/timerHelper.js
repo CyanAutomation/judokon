@@ -87,7 +87,9 @@ export async function waitForCountdownDecrease(page, baselineValue, options) {
         return nextValue;
       }
 
-      return baselineValue;
+      // Returning null allows expect.poll to continue retrying until a numeric value appears
+      // or until it times out, preventing an infinite loop when the countdown is unavailable.
+      return null;
     }, expectOptions)
     .toBeLessThan(baselineValue);
 
