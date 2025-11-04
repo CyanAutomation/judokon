@@ -40,12 +40,32 @@ describe("createStatsPanel", () => {
   });
 
   it("provides stat value lookup", async () => {
-    const panel = await createStatsPanel(mockStats);
+    const deterministicStats = {
+      power: 101,
+      speed: 82,
+      technique: 73,
+      kumikata: 64,
+      newaza: 55
+    };
 
-    // Note: getStatValue depends on actual stat loading, so we'll test the method exists
-    // The actual value lookup depends on the real StatsPanel implementation
-    // which loads stat names asynchronously
-    expect(typeof panel.getStatValue).toBe("function");
+    const panel = await createStatsPanel(deterministicStats);
+
+    const statElements = panel.getStatElements();
+
+    for (const [key, value] of Object.entries(deterministicStats)) {
+      const statElement = statElements.find((element) => {
+        const strong = element.querySelector("strong");
+        return strong?.dataset?.tooltipId === `stat.${key}`;
+      });
+
+      expect(statElement).toBeTruthy();
+
+      const label = statElement?.querySelector("strong")?.textContent?.trim() ?? "";
+      const renderedValue = statElement?.querySelector("span")?.textContent?.trim() ?? "";
+
+      expect(renderedValue).toBe(String(value));
+      expect(panel.getStatValue(label)).toBe(renderedValue);
+    }
   });
 
   it("tracks update calls with spy", async () => {
