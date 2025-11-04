@@ -8,7 +8,7 @@ async function setup() {
   return { mod };
 }
 
-describe("resolveRound headless delays", () => {
+describe("resolveRound", () => {
   let timers;
   beforeEach(() => {
     timers = useCanonicalTimers();
@@ -20,10 +20,8 @@ describe("resolveRound headless delays", () => {
     vi.restoreAllMocks();
   });
 
-  it("completes immediately in headless mode", async () => {
+  it("completes round resolution", async () => {
     const { mod } = await setup();
-    const { setHeadlessMode } = await import("../../../src/helpers/headlessMode.js");
-    setHeadlessMode(true);
     let resolved = false;
     const p = mod.resolveRound({}, "power", 1, 2).then(() => {
       resolved = true;
@@ -31,15 +29,13 @@ describe("resolveRound headless delays", () => {
     await vi.runAllTimersAsync();
     await p;
     expect(resolved).toBe(true);
-    setHeadlessMode(false);
   });
 
-  it("completes immediately when headless disabled in tests", async () => {
+  it("respects provided delay option", async () => {
     const { mod } = await setup();
-    const { setHeadlessMode } = await import("../../../src/helpers/headlessMode.js");
-    setHeadlessMode(false);
+    const delayMs = 250;
     let resolved = false;
-    const p = mod.resolveRound({}, "power", 1, 2).then(() => {
+    const p = mod.resolveRound({}, "power", 1, 2, { delayMs }).then(() => {
       resolved = true;
     });
     await vi.runAllTimersAsync();
