@@ -7,16 +7,14 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  *
  * @pseudocode
  * 1. Read `window.__NEXT_ROUND_COOLDOWN_MS` or default to 3000ms.
- * 2. If test mode is enabled via `utils.isTestModeEnabled()`, force cooldown to 1.
- * 3. Otherwise convert to whole seconds and clamp to \>=1.
+ * 2. If test mode is enabled via `utils.isTestModeEnabled()`, force cooldown to 1 second.
+ * 3. Otherwise convert to whole seconds and clamp to >=1.
  * 4. Log test mode state and resolved cooldown; wrap each warn in try.
  *
  * @param {{isTestModeEnabled: () => boolean}} [utils] - Test mode utilities (for injection).
  * @returns {number} Cooldown in seconds.
  */
 export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
-  // Note: Removed headless mode check (line previously: if (isHeadlessModeEnabled()) return 0;)
-  // as setHeadlessMode() is never called in the codebase, making it dead code.
   const overrideMs =
     typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
       ? window.__NEXT_ROUND_COOLDOWN_MS
