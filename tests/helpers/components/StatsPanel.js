@@ -34,17 +34,18 @@ export async function createStatsPanel(stats, options = {}) {
     return Array.from(panel.element.querySelectorAll("li"));
   };
 
-  const getStatValue = (statName) => {
+  const getStatValue = (statKey) => {
     const statElement = Array.from(panel.element.querySelectorAll("li")).find((li) => {
       const label = li.querySelector("strong");
-      return label && label.textContent.includes(statName);
+      return label?.dataset?.tooltipId === `stat.${statKey}`;
     });
 
-    if (statElement) {
-      const value = statElement.querySelector("span");
-      return value ? value.textContent : null;
+    if (!statElement) {
+      return null;
     }
-    return null;
+
+    const value = statElement.querySelector("span");
+    return value ? value.textContent : null;
   };
 
   return {

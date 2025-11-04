@@ -60,11 +60,15 @@ describe("createStatsPanel", () => {
 
       expect(statElement).toBeTruthy();
 
-      const label = statElement?.querySelector("strong")?.textContent?.trim() ?? "";
+      const strong = statElement?.querySelector("strong") ?? null;
+      expect(strong?.dataset?.tooltipId).toBe(`stat.${key}`);
+
+      const label = strong?.textContent?.trim() ?? "";
+      expect(label).not.toBe("");
       const renderedValue = statElement?.querySelector("span")?.textContent?.trim() ?? "";
 
       expect(renderedValue).toBe(String(value));
-      expect(panel.getStatValue(label)).toBe(renderedValue);
+      expect(panel.getStatValue(key)).toBe(renderedValue);
     }
   });
 
