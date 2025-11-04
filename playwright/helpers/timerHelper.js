@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 /**
  * Invokes a timer helper method within the page's Test API context.
  * @param {import("@playwright/test").Page} page
@@ -49,4 +51,45 @@ export async function waitForCountdownValue(page, expectedValue, options) {
   }
 
   return await callTimerApi(page, "waitForCountdown", args);
+}
+
+/**
+ * Waits for the countdown value to decrease below the provided baseline.
+ * @param {import("@playwright/test").Page} page
+ * @param {number} baselineValue
+ * @param {{ timeoutMs?: number, pollIntervalMs?: number }|null} [options]
+ * @returns {Promise<number>}
+ */
+export async function waitForCountdownDecrease(page, baselineValue, options) {
+  if (!Number.isFinite(baselineValue)) {
+    throw new Error("waitForCountdownDecrease requires a finite numeric baseline value.");
+  }
+
+  const pollOptions = options ?? {};
+  const expectOptions = {};
+
+  if (typeof pollOptions.timeoutMs === "number") {
+    expectOptions.timeout = pollOptions.timeoutMs;
+  }
+
+  if (typeof pollOptions.pollIntervalMs === "number" && pollOptions.pollIntervalMs > 0) {
+    expectOptions.intervals = [pollOptions.pollIntervalMs];
+  }
+
+  /** @type {number} */
+  let latestObserved = baselineValue;
+
+  await expect
+    .poll(async () => {
+      const nextValue = await getCountdownValue(page);
+      if (typeof nextValue === "number") {
+        latestObserved = nextValue;
+        return nextValue;
+      }
+
+      return baselineValue;
+    }, expectOptions)
+    .toBeLessThan(baselineValue);
+
+  return latestObserved;
 }
