@@ -89,7 +89,7 @@ function collectAnchors(root, regionId) {
   return Array.from(root.querySelectorAll(selector));
 }
 
-function validateLayout(layout) {
+export function validateLayoutDefinition(layout) {
   const errors = [];
   if (!layout || typeof layout !== "object") {
     errors.push("Layout definition must be an object.");
@@ -219,7 +219,7 @@ export function applyLayout(layoutDefinition, options = {}) {
     return finalizeResult(result, start);
   }
 
-  const { errors } = validateLayout(layoutDefinition);
+  const { errors } = validateLayoutDefinition(layoutDefinition);
   if (errors.length) {
     result.errors.push(...errors);
     errors.forEach((msg) => error(`layoutEngine.applyLayout: ${msg}`));
