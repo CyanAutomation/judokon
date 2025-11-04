@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { waitForBattleReady } from "../helpers/battleStateHelper.js";
 
 test.describe("Classic Battle replay - round counter", () => {
   test("Replay resets round counter to 1", async ({ page }) => {
@@ -6,7 +7,7 @@ test.describe("Classic Battle replay - round counter", () => {
 
     // Start a quick match to reach match end fast if necessary
     // Assumes default settings or quick mode is reachable; minimal interaction
-    await page.waitForSelector("[data-testid='replay-button']");
+    await waitForBattleReady(page, { allowFallback: false });
 
     // If round header exists, simulate end-of-match quickly via UI where possible
     const replayBtn = page.getByTestId("replay-button");
