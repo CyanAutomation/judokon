@@ -1,5 +1,4 @@
 import { evaluateRound as evaluateRoundApi, getOutcomeMessage } from "../api/battleUI.js";
-import { isHeadlessModeEnabled } from "../headlessMode.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
@@ -513,11 +512,10 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
 export async function resolveRound(store, stat, playerVal, opponentVal, opts = {}) {
   if (isResolving) return;
   isResolving = true;
-  const headless = isHeadlessModeEnabled();
   const {
     // Deterministic delay using seeded RNG when available
-    delayMs = headless ? 0 : resolveDelay(),
-    sleep = headless ? async () => {} : (ms) => new Promise((r) => setTimeout(r, ms))
+    delayMs = resolveDelay(),
+    sleep = (ms) => new Promise((r) => setTimeout(r, ms))
   } = opts;
   try {
     if (!stat) return;

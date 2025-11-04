@@ -216,10 +216,6 @@ describe("timerService next round handling", () => {
     const { computeNextRoundCooldown } = await import(
       "../../../src/helpers/timers/computeNextRoundCooldown.js"
     );
-    const { setHeadlessMode } = await import("../../../src/helpers/headlessMode.js");
-    setHeadlessMode(true);
-    expect(computeNextRoundCooldown()).toBe(0);
-    setHeadlessMode(false);
     expect(computeNextRoundCooldown()).toBeGreaterThanOrEqual(1);
     vi.restoreAllMocks();
   });

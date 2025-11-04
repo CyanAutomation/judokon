@@ -29,19 +29,17 @@ Note on Next button behavior:
 - The `Next` button advances only during the inter-round cooldown. Clicking it cancels any remaining cooldown and immediately starts the next round, regardless of the `skipRoundCooldown` setting.
 - It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
 
-### Headless & Test Modes
+### Test Mode
 
-For simulation runs without UI waits, enable headless mode:
+For deterministic RNG in simulation runs:
 
 ```js
-import { setHeadlessMode } from "./src/helpers/headlessMode.js";
 import { setTestMode } from "./src/helpers/testModeUtils.js";
 
-setHeadlessMode(true); // zero delays
 setTestMode(true); // deterministic RNG
 ```
 
-Headless mode forces cooldowns to `0` and skips opponent reveal sleeps. Test mode remains responsible for seeding randomness and enforces a minimum one-second cooldown when headless mode is off. Disable headless mode to restore normal pacing.
+Test mode seeds randomness and enforces a minimum one-second cooldown. Disable test mode to restore normal randomness.
 
 Stat selections now dispatch events and rely on the state machine for round resolution. `handleStatSelection` performs direct resolution only when the orchestrator is absent (e.g., certain tests or CLI utilities).
 
