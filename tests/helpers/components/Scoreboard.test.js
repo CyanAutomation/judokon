@@ -65,16 +65,17 @@ describe("createScoreboard", () => {
   it("updates the DOM via public helpers", () => {
     const scoreboard = createScoreboard();
     document.body.appendChild(scoreboard.element);
+    expect(document.body.contains(scoreboard.element)).toBe(true);
 
     try {
       scoreboard.updateScore({ player: 9, opponent: 4 });
       expect(scoreboard.getScore()).toEqual({ player: 9, opponent: 4 });
 
       const playerValue = scoreboard.element
-        .querySelector('#score-display [data-side="player"] [data-part="value"]')
+        .querySelector('[data-testid="score-display"] [data-testid="player-score-value"]')
         ?.textContent;
       const opponentValue = scoreboard.element
-        .querySelector('#score-display [data-side="opponent"] [data-part="value"]')
+        .querySelector('[data-testid="score-display"] [data-testid="opponent-score-value"]')
         ?.textContent;
 
       expect(playerValue).toBe("9");
@@ -93,8 +94,8 @@ describe("createScoreboard", () => {
       const roundEl = scoreboard.element.querySelector("#round-counter");
       expect(roundEl?.textContent).toBe("Round 3");
     } finally {
-      scoreboard.view.destroy();
       scoreboard.element.remove();
+      scoreboard.view.destroy();
     }
   });
 

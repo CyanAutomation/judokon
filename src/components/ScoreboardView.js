@@ -5,9 +5,13 @@ function createScoreMarkup(player, opponent) {
   const safePlayer = Number.isFinite(player) ? player : Number(player) || 0;
   const safeOpponent = Number.isFinite(opponent) ? opponent : Number(opponent) || 0;
   return (
-    `<span data-side="player"><span data-part="label">You:</span> <span data-part="value">${safePlayer}</span></span>` +
+    `<span data-side="player" data-testid="player-score">` +
+    `<span data-part="label">You:</span> <span data-part="value" data-testid="player-score-value">${safePlayer}</span>` +
+    `</span>` +
     "\n" +
-    `<span data-side="opponent"><span data-part="label">Opponent:</span> <span data-part="value">${safeOpponent}</span></span>`
+    `<span data-side="opponent" data-testid="opponent-score">` +
+    `<span data-part="label">Opponent:</span> <span data-part="value" data-testid="opponent-score-value">${safeOpponent}</span>` +
+    `</span>`
   );
 }
 export class ScoreboardView {

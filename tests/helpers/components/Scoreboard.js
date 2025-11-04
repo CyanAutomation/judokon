@@ -50,21 +50,25 @@ export function createScoreboard(container) {
   scoreEl.setAttribute("data-testid", "score-display");
   const playerSpan = document.createElement("span");
   playerSpan.dataset.side = "player";
+  playerSpan.setAttribute("data-testid", "player-score");
   const playerLabel = document.createElement("span");
   playerLabel.dataset.part = "label";
   playerLabel.textContent = "You:";
   const playerValue = document.createElement("span");
   playerValue.dataset.part = "value";
+  playerValue.setAttribute("data-testid", "player-score-value");
   playerValue.textContent = "0";
   playerSpan.append(playerLabel, document.createTextNode(" "), playerValue);
 
   const opponentSpan = document.createElement("span");
   opponentSpan.dataset.side = "opponent";
+  opponentSpan.setAttribute("data-testid", "opponent-score");
   const opponentLabel = document.createElement("span");
   opponentLabel.dataset.part = "label";
   opponentLabel.textContent = "Opponent:";
   const opponentValue = document.createElement("span");
   opponentValue.dataset.part = "value";
+  opponentValue.setAttribute("data-testid", "opponent-score-value");
   opponentValue.textContent = "0";
   opponentSpan.append(opponentLabel, document.createTextNode(" "), opponentValue);
 
