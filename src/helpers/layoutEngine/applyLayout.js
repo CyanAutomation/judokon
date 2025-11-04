@@ -89,6 +89,24 @@ function collectAnchors(root, regionId) {
   return Array.from(root.querySelectorAll(selector));
 }
 
+/**
+ * Validates the structure of a layout definition payload before applying it.
+ *
+ * @summary Ensures the grid information is present, every region has a unique
+ * identifier, and the rectangle metadata stays within the declared grid
+ * bounds. Any violations are returned as human readable error strings so the
+ * caller can surface them in logs or telemetry.
+ *
+ * @pseudocode
+ * 1. Fail fast if the layout, grid, or regions collection are missing.
+ * 2. Validate grid dimensions are positive finite numbers.
+ * 3. Iterate regions to check identifiers, visibility predicates, and rect coordinates.
+ * 4. Collect boundary violations whenever the rect exceeds the grid dimensions.
+ * 5. Return an errors array summarizing all discovered issues.
+ *
+ * @param {object} layout - Raw layout configuration returned from a module or inline script.
+ * @returns {{ errors: string[] }} An object containing any validation error messages.
+ */
 export function validateLayoutDefinition(layout) {
   const errors = [];
   if (!layout || typeof layout !== "object") {
@@ -207,36 +225,6 @@ function annotateRoot(root, layoutId, grid) {
   root.style.setProperty("--layout-grid-rows", `${grid.rows}`);
 }
 
-/**
- * Applies grid-based layout regions to DOM anchors within a battle layout root.
- *
- * @summary Resolves the target root element, validates the layout payload, and
- * applies inline transforms (top/left/width/height/z-index) to anchors marked
- * with matching `data-layout-id` attributes. Regions gated by feature flags are
- * hidden by toggling the `hidden` attribute and `data-layout-visibility`.
- *
- * @pseudocode
- * 1. Resolve the target root element from options or fall back to `#battleRoot`.
- * 2. Validate the layout payload; abort early when critical fields are missing.
- * 3. Annotate the root with layout metadata and grid variables.
- * 4. Iterate regions, resolve matching anchors, and apply inline positioning.
- * 5. Toggle visibility based on `visibleIf.featureFlag`.
- * 6. Return telemetry capturing applied/skipped regions and duration.
- *
- * @param {object} layoutDefinition - The layout module export to apply.
- * @param {object} [options] - Configuration for feature flags, root resolution, and logging.
- * @param {Element|string} [options.root] - DOM element or selector for the layout root.
- * @param {Function} [options.isFeatureFlagEnabled] - Feature flag resolver.
- * @param {object} [options.logger] - Logger with `warn`/`error`.
- * @returns {{
- *   appliedLayoutId: string,
- *   appliedRegions: string[],
- *   skippedRegions: string[],
- *   missingAnchors: string[],
- *   durationMs: number,
- *   errors: string[]
- * }} Telemetry describing the outcome.
- */
 function finalizeResult(result, start) {
   const stop = getNow();
   result.durationMs = stop - start;
@@ -275,6 +263,36 @@ function processRegion(region, root, grid, resolver, warn, result) {
   }
 }
 
+/**
+ * Applies grid-based layout regions to DOM anchors within a battle layout root.
+ *
+ * @summary Resolves the target root element, validates the layout payload, and
+ * applies inline transforms (top/left/width/height/z-index) to anchors marked
+ * with matching `data-layout-id` attributes. Regions gated by feature flags are
+ * hidden by toggling the `hidden` attribute and `data-layout-visibility`.
+ *
+ * @pseudocode
+ * 1. Resolve the target root element from options or fall back to `#battleRoot`.
+ * 2. Validate the layout payload; abort early when critical fields are missing.
+ * 3. Annotate the root with layout metadata and grid variables.
+ * 4. Iterate regions, resolve matching anchors, and apply inline positioning.
+ * 5. Toggle visibility based on `visibleIf.featureFlag`.
+ * 6. Return telemetry capturing applied/skipped regions and duration.
+ *
+ * @param {object} layoutDefinition - The layout module export to apply.
+ * @param {object} [options] - Configuration for feature flags, root resolution, and logging.
+ * @param {Element|string} [options.root] - DOM element or selector for the layout root.
+ * @param {Function} [options.isFeatureFlagEnabled] - Feature flag resolver.
+ * @param {{ warn?: Function, error?: Function }} [options.logger] - Logger for warnings and errors.
+ * @returns {{
+ *   appliedLayoutId: string,
+ *   appliedRegions: string[],
+ *   skippedRegions: string[],
+ *   missingAnchors: string[],
+ *   durationMs: number,
+ *   errors: string[]
+ * }} Telemetry describing the outcome.
+ */
 export function applyLayout(layoutDefinition, options = {}) {
   const start = getNow();
   const {
