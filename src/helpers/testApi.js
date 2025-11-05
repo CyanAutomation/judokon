@@ -1511,10 +1511,13 @@ const engineApi = {
           }
         }, 50);
 
-        timeoutId = setTimeout(() => {
-          clearInterval(intervalId);
-          resolve(false);
-        }, Math.max(0, deadline - Date.now()));
+        timeoutId = setTimeout(
+          () => {
+            clearInterval(intervalId);
+            resolve(false);
+          },
+          Math.max(0, deadline - Date.now())
+        );
       }
     });
   }

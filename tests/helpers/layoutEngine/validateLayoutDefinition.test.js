@@ -7,9 +7,9 @@ const baseLayout = {
   regions: [
     {
       id: "arena",
-      rect: { x: 0, y: 1, width: 6, height: 4 },
-    },
-  ],
+      rect: { x: 0, y: 1, width: 6, height: 4 }
+    }
+  ]
 };
 
 describe("validateLayoutDefinition", () => {
@@ -23,8 +23,8 @@ describe("validateLayoutDefinition", () => {
       ...baseLayout,
       regions: [
         { id: "arena", rect: { x: 0, y: 0, width: 3, height: 3 } },
-        { id: "arena", rect: { x: 3, y: 0, width: 3, height: 3 } },
-      ],
+        { id: "arena", rect: { x: 3, y: 0, width: 3, height: 3 } }
+      ]
     };
     const { errors } = validateLayoutDefinition(layout);
     expect(errors).toContain("Layout region id 'arena' is duplicated.");
@@ -36,9 +36,9 @@ describe("validateLayoutDefinition", () => {
       regions: [
         {
           id: "scoreboard",
-          rect: { x: 8, y: 0, width: 4, height: 2 },
-        },
-      ],
+          rect: { x: 8, y: 0, width: 4, height: 2 }
+        }
+      ]
     };
     const { errors } = validateLayoutDefinition(layout);
     expect(errors).toContain(
@@ -53,9 +53,9 @@ describe("validateLayoutDefinition", () => {
         {
           id: "scoreboard",
           rect: { x: 0, y: 0, width: 3, height: 2 },
-          visibleIf: { featureFlag: "" },
-        },
-      ],
+          visibleIf: { featureFlag: "" }
+        }
+      ]
     };
     const { errors } = validateLayoutDefinition(layout);
     expect(errors).toContain(

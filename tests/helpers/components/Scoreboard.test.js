@@ -71,12 +71,12 @@ describe("createScoreboard", () => {
       scoreboard.updateScore({ player: 9, opponent: 4 });
       expect(scoreboard.getScore()).toEqual({ player: 9, opponent: 4 });
 
-      const playerValue = scoreboard.element
-        .querySelector('[data-testid="score-display"] [data-testid="player-score-value"]')
-        ?.textContent;
-      const opponentValue = scoreboard.element
-        .querySelector('[data-testid="score-display"] [data-testid="opponent-score-value"]')
-        ?.textContent;
+      const playerValue = scoreboard.element.querySelector(
+        '[data-testid="score-display"] [data-testid="player-score-value"]'
+      )?.textContent;
+      const opponentValue = scoreboard.element.querySelector(
+        '[data-testid="score-display"] [data-testid="opponent-score-value"]'
+      )?.textContent;
 
       expect(playerValue).toBe("9");
       expect(opponentValue).toBe("4");

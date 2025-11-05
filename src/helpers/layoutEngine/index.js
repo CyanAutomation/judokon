@@ -1,11 +1,11 @@
 import {
   applyLayout as applyLayoutImpl,
-  validateLayoutDefinition as validateLayoutDefinitionImpl,
+  validateLayoutDefinition as validateLayoutDefinitionImpl
 } from "./applyLayout.js";
 import { loadLayout as loadLayoutImpl } from "./loadLayout.js";
 import {
   getLayoutModule as getLayoutModuleImpl,
-  layoutRegistry as layoutRegistryImpl,
+  layoutRegistry as layoutRegistryImpl
 } from "./layoutRegistry.js";
 
 /**
