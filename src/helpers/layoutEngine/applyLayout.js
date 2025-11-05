@@ -39,7 +39,7 @@ function toPercent(value, total) {
 
 function ensureArray(value) {
   if (Array.isArray(value)) return value;
-  if (value == null) return [];
+  if (value === null || value === undefined) return [];
   return [value];
 }
 
@@ -48,7 +48,7 @@ function shouldRenderRegion(region, isFeatureFlagEnabled) {
   if (!flagId) return true;
   try {
     return Boolean(isFeatureFlagEnabled(flagId));
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -150,13 +150,19 @@ export function validateLayoutDefinition(layout) {
 
       if (region.visibleIf && typeof region.visibleIf === "object") {
         const flagId = region.visibleIf.featureFlag;
-        if (flagId != null && (typeof flagId !== "string" || !flagId.trim())) {
+        if (
+          flagId !== undefined &&
+          flagId !== null &&
+          (typeof flagId !== "string" || !flagId.trim())
+        ) {
           errors.push(
             `Layout region '${regionId || index}' visibleIf.featureFlag must be a non-empty string.`
           );
         }
-      } else if (region.visibleIf != null) {
-        errors.push(`Layout region '${regionId || index}' visibleIf must be an object when present.`);
+      } else if (region.visibleIf !== null && region.visibleIf !== undefined) {
+        errors.push(
+          `Layout region '${regionId || index}' visibleIf must be an object when present.`
+        );
       }
 
       const rect = region.rect;
@@ -170,7 +176,7 @@ export function validateLayoutDefinition(layout) {
         ["x", x],
         ["y", y],
         ["width", width],
-        ["height", height],
+        ["height", height]
       ];
 
       rectFields.forEach(([key, value]) => {
@@ -295,11 +301,7 @@ function processRegion(region, root, grid, resolver, warn, result) {
  */
 export function applyLayout(layoutDefinition, options = {}) {
   const start = getNow();
-  const {
-    root: rootOrSelector,
-    isFeatureFlagEnabled = () => true,
-    logger = {},
-  } = options;
+  const { root: rootOrSelector, isFeatureFlagEnabled = () => true, logger = {} } = options;
   const warn = typeof logger.warn === "function" ? logger.warn : () => {};
   const error = typeof logger.error === "function" ? logger.error : () => {};
 
@@ -309,7 +311,7 @@ export function applyLayout(layoutDefinition, options = {}) {
     skippedRegions: [],
     missingAnchors: [],
     durationMs: 0,
-    errors: [],
+    errors: []
   };
 
   const root = resolveRoot(rootOrSelector);
