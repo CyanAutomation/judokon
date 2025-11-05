@@ -1017,10 +1017,12 @@ async function getFiles() {
       "offline_rag_metadata.json"
     ].includes(base);
   });
-  const jsFiles = await glob(["src/**/*.{js,ts}", "tests/**/*.{js,ts}"], {
-    cwd: rootDir,
-    ignore: ["**/node_modules/**", "src/data/**"]
-  });
+  const jsFiles = (
+    await glob(["src/**/*.{js,ts}", "tests/**/*.{js,ts}"], {
+      cwd: rootDir,
+      ignore: ["**/node_modules/**", "src/data/**"]
+    })
+  ).filter((f) => !f.endsWith(".d.ts"));
   const cssFiles = await glob("src/styles/**/*.css", { cwd: rootDir });
   return Array.from(
     new Set([...designDocs, ...readmes, ...overviewDocs, ...dataFiles, ...jsFiles, ...cssFiles])
@@ -1271,6 +1273,10 @@ async function generate() {
     const text = await readFile(fullPath, "utf8");
     const base = path.basename(relativePath);
     const ext = path.extname(relativePath);
+
+    // Defensive check: skip .d.ts files
+    if (relativePath.endsWith(".d.ts")) continue;
+
     const isDataJs = relativePath.startsWith("src/data/") && ext === ".js";
     const isJson = ext === ".json";
     const isMarkdown = ext === ".md";
