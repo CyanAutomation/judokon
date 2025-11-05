@@ -20,9 +20,9 @@ describe("applyLayout", () => {
         {
           id: "arena",
           rect: { x: 2, y: 4, width: 5, height: 10 },
-          zIndex: 7,
-        },
-      ],
+          zIndex: 7
+        }
+      ]
     };
     const logger = { warn: vi.fn(), error: vi.fn() };
 
@@ -52,9 +52,9 @@ describe("applyLayout", () => {
         {
           id: "scoreboard",
           rect: { x: 0, y: 0, width: 8, height: 2 },
-          visibleIf: { featureFlag: "feature.scoreboard" },
-        },
-      ],
+          visibleIf: { featureFlag: "feature.scoreboard" }
+        }
+      ]
     };
     const logger = { warn: vi.fn(), error: vi.fn() };
     const resolver = vi.fn().mockReturnValue(false);
@@ -62,7 +62,7 @@ describe("applyLayout", () => {
     const result = applyLayout(layout, {
       root,
       logger,
-      isFeatureFlagEnabled: resolver,
+      isFeatureFlagEnabled: resolver
     });
     const anchor = root.querySelector('[data-layout-id="scoreboard"]');
 
@@ -81,13 +81,13 @@ describe("applyLayout", () => {
       regions: [
         {
           id: "arena",
-          rect: { x: 0, y: 0, width: 4, height: 4 },
+          rect: { x: 0, y: 0, width: 4, height: 4 }
         },
         {
           id: "scoreboard",
-          rect: { x: 0, y: 0, width: 2, height: 1 },
-        },
-      ],
+          rect: { x: 0, y: 0, width: 2, height: 1 }
+        }
+      ]
     };
     const logger = { warn: vi.fn(), error: vi.fn() };
 

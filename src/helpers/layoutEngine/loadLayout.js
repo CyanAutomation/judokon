@@ -31,7 +31,7 @@ function resolveInlineFallback(modeId, options, logger) {
   if (!doc) {
     return {
       layout: null,
-      error: "Document unavailable while attempting to read inline fallback.",
+      error: "Document unavailable while attempting to read inline fallback."
     };
   }
 
@@ -105,7 +105,7 @@ export function loadLayout(modeId, options = {}) {
       layout: null,
       source: "none",
       usedFallback: false,
-      errors: [errorMessage],
+      errors: [errorMessage]
     };
   }
 
@@ -120,7 +120,7 @@ export function loadLayout(modeId, options = {}) {
         source: "registry",
         usedFallback: false,
         errors,
-        module: registryOutcome.module,
+        module: registryOutcome.module
       };
     }
     validationErrors.forEach((message) =>
@@ -140,7 +140,7 @@ export function loadLayout(modeId, options = {}) {
         layout: fallbackOutcome.layout,
         source: "inline-fallback",
         usedFallback: true,
-        errors,
+        errors
       };
     }
     validationErrors.forEach((message) =>
@@ -155,7 +155,7 @@ export function loadLayout(modeId, options = {}) {
     layout: null,
     source: "none",
     usedFallback: true,
-    errors,
+    errors
   };
 }
 

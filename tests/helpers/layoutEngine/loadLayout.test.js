@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../../src/helpers/layoutEngine/layoutRegistry.js", () => {
   return {
-    getLayoutModule: vi.fn(),
+    getLayoutModule: vi.fn()
   };
 });
 
@@ -12,7 +12,7 @@ const { loadLayout } = await import("../../../src/helpers/layoutEngine/loadLayou
 function createLogger() {
   return {
     warn: vi.fn(),
-    error: vi.fn(),
+    error: vi.fn()
   };
 }
 
@@ -26,7 +26,7 @@ describe("loadLayout", () => {
     const layout = {
       id: "registry-layout",
       grid: { cols: 10, rows: 10 },
-      regions: [{ id: "arena", rect: { x: 0, y: 0, width: 10, height: 10 } }],
+      regions: [{ id: "arena", rect: { x: 0, y: 0, width: 10, height: 10 } }]
     };
     getLayoutModule.mockReturnValue(layout);
     const logger = createLogger();
@@ -44,7 +44,7 @@ describe("loadLayout", () => {
     const fallbackLayout = {
       id: "fallback-layout",
       grid: { cols: 6, rows: 6 },
-      regions: [{ id: "arena", rect: { x: 0, y: 0, width: 6, height: 6 } }],
+      regions: [{ id: "arena", rect: { x: 0, y: 0, width: 6, height: 6 } }]
     };
     getLayoutModule.mockReturnValue(undefined);
     document.body.innerHTML = `
@@ -83,7 +83,7 @@ describe("loadLayout", () => {
       "Layout grid is required.",
       "Layout regions must be a non-empty array.",
       "Layout grid is required.",
-      "Layout regions must be a non-empty array.",
+      "Layout regions must be a non-empty array."
     ]);
     expect(logger.warn).toHaveBeenCalledTimes(4);
   });
@@ -99,7 +99,7 @@ describe("loadLayout", () => {
     expect(result.usedFallback).toBe(true);
     expect(result.errors).toEqual([
       "Layout module not found in registry.",
-      "Inline fallback script tag not found.",
+      "Inline fallback script tag not found."
     ]);
   });
 });

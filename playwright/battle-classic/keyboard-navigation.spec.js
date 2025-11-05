@@ -6,7 +6,9 @@ async function expectBattleStateReady(page, stateName, options) {
     await waitForBattleState(page, stateName, options);
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error ?? "unknown error");
-    throw new Error(`waitForBattleState should resolve state "${stateName}" via Test API (${reason})`);
+    throw new Error(
+      `waitForBattleState should resolve state "${stateName}" via Test API (${reason})`
+    );
   }
 }
 
