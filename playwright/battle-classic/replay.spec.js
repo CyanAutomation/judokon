@@ -32,7 +32,7 @@ test.describe("Classic Battle replay", () => {
                   return { player, opponent };
                 }
               }
-            } catch (error) {
+            } catch {
               // Ignore engine score retrieval errors and fall back to inspect API.
             }
           }
@@ -66,9 +66,7 @@ test.describe("Classic Battle replay", () => {
           }
 
           const roundsPlayed =
-            typeof engineApi.getRoundsPlayed === "function"
-              ? engineApi.getRoundsPlayed()
-              : null;
+            typeof engineApi.getRoundsPlayed === "function" ? engineApi.getRoundsPlayed() : null;
 
           return {
             ok: true,
