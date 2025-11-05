@@ -32,17 +32,26 @@ else
   echo "JSDoc check passed"
 fi
 
-# RAG Model Check
+# RAG Model Check and Auto-Repair
 echo "Running RAG model file check..."
 set +e
 npm run check:rag
 rag_status=$?
 set -e
 if [ $rag_status -ne 0 ]; then
-  printf "\nRAG model check failed (non-blocking). Please run 'npm run rag:prepare:models' to fix.\n"
-  echo "This hook will not block commits, but it's recommended to fix the RAG model files."
+  printf "\nRAG model files corrupted or missing. Attempting auto-repair...\n"
+  set +e
+  npm run rag:prepare:models -- --force
+  repair_status=$?
+  set -e
+  if [ $repair_status -eq 0 ]; then
+    echo "✅ RAG model files repaired successfully"
+  else
+    printf "\nWARNING: Auto-repair failed. Please run 'npm run rag:prepare:models -- --force' manually.\n"
+    echo "This hook will not block commits."
+  fi
 else
-  echo "RAG model check passed"
+  echo "✅ RAG model check passed"
 fi
 
 exit 0
