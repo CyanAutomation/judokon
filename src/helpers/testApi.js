@@ -1500,8 +1500,8 @@ const engineApi = {
         return false;
       };
 
+      let timeoutId;
       if (!checkIfSatisfied()) {
-        let timeoutId;
         const intervalId = setInterval(() => {
           if (checkIfSatisfied()) {
             clearInterval(intervalId);
