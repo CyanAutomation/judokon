@@ -49,7 +49,7 @@ page.route("https://js-de.sentry-cdn.com/**", (route) =>
     contentType: "application/javascript",
     body: ""
   })
-)
+);
 ```
 
 ## Solution

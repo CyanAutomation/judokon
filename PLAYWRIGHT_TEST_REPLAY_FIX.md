@@ -40,7 +40,7 @@ const readScores = (engineApi) => {
     const scores = engineApi.getScores();
     // scores is null because round state hasn't reached "waitingForPlayerAction" yet
   }
-  
+
   // Fallback to inspect API
   const inspectApi = window.__TEST_API?.inspect;
   const snapshot = inspectApi?.getBattleSnapshot?.();
@@ -103,7 +103,7 @@ await page.click("#round-select-2");
 // Later in the loop:
 for (let i = 0; i < iterations; i++) {
   if (i > 0) {
-    await waitForRoundStats(page);  // ← Ensures stats are loaded
+    await waitForRoundStats(page); // ← Ensures stats are loaded
   }
   // ... perform actions ...
 }
