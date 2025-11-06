@@ -7,45 +7,10 @@ const ENGINE_WAIT_TIMEOUT_MS = 5_000;
 
 test.describe("Classic Battle replay", () => {
   test("Replay resets scoreboard after match end", async ({ page }) => {
-    // Capture console logs from the page
-    const consoleLogs = [];
-    page.on("console", (msg) => {
-      const text = msg.text();
-      console.log("[BROWSER CONSOLE]", text); // Log everything
-      if (text.includes("[REPLAY DEBUG]")) {
-        consoleLogs.push(text);
-      }
-    });
-
-    // TEMPORARILY REMOVED withMutedConsole TO SEE LOGS
-    // await withMutedConsole(async () => {
-    {
+    await withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
         window.__OPPONENT_RESOLVE_DELAY_MS = 500; // 500ms delay before opponent reveals choice
-
-        // Wrap _resetForTest to see when/if it's called
-        setTimeout(() => {
-          const engine = window.__TEST_API?.engine;
-          if (engine && engine.constructor && engine.constructor.prototype) {
-            const originalReset = engine.constructor.prototype._resetForTest;
-            if (originalReset) {
-              console.log("[REPLAY DEBUG] Wrapping _resetForTest method");
-              engine.constructor.prototype._resetForTest = function () {
-                console.log(
-                  "[REPLAY DEBUG] _resetForTest CALLED, roundsPlayed BEFORE:",
-                  this.roundsPlayed
-                );
-                const result = originalReset.call(this);
-                console.log(
-                  "[REPLAY DEBUG] _resetForTest COMPLETED, roundsPlayed AFTER:",
-                  this.roundsPlayed
-                );
-                return result;
-              };
-            }
-          }
-        }, 100);
 
         const readScores = (engineApi) => {
           if (engineApi && typeof engineApi.getScores === "function") {
@@ -243,10 +208,6 @@ test.describe("Classic Battle replay", () => {
       // Add a small delay to allow DOM updates to settle
       await page.waitForTimeout(100);
       
-      // Check the round counter text directly
-      const roundCounterText = await page.locator(selectors.roundCounter()).textContent();
-      console.log("Round counter text after replay:", roundCounterText);
-      
       const engineStateAfterReplay = await page.evaluate(() => {
         const engineApi = window.__TEST_API?.engine;
         if (!engineApi) {
@@ -262,13 +223,7 @@ test.describe("Classic Battle replay", () => {
       expect(engineStateAfterReplay?.roundsPlayed).toBeLessThanOrEqual(1);
       expect(engineStateAfterReplay?.pointsToWin).toBe(pointsBeforeReplay);
       
-      // Print all captured replay debug logs BEFORE the failing assertion
-      console.log("\n=== REPLAY DEBUG LOGS (" + consoleLogs.length + " total) ===");
-      consoleLogs.forEach((log) => console.log(log));
-      console.log("=========================\n");
-      
       await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
-    }
-    // }, ["log", "info", "warn", "error", "debug"]); // TEMPORARILY COMMENTED OUT
+    }, ["log", "info", "warn", "error", "debug"]);
   });
 });

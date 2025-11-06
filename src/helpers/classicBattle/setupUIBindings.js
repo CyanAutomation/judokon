@@ -1,5 +1,4 @@
 import { setupScoreboard } from "../setupScoreboard.js";
-import { syncScoreboardDisplay } from "./scoreDisplay.js";
 import { initQuitButton } from "./quitButton.js";
 import { initInterruptHandlers } from "./interruptHandlers.js";
 import {
@@ -12,6 +11,7 @@ import { onBattleEvent } from "./battleEvents.js";
 import { initBattleStateProgress } from "../battleStateProgress.js";
 import { isEnabled } from "../featureFlags.js";
 import { initTooltips } from "../tooltip.js";
+import { handleReplay } from "./roundManager.js";
 
 /**
  * Wire up DOM bindings for the classic battle view.
@@ -31,8 +31,8 @@ export async function setupUIBindings(view) {
   setupScoreboard(view.controller.timerControls);
   initQuitButton(store);
   initInterruptHandlers(store);
-  const applyReplayScoreReset = () => {
-    syncScoreboardDisplay(0, 0);
+  const applyReplayScoreReset = async () => {
+    await handleReplay(store);
   };
   document.addEventListener(
     "click",

@@ -454,8 +454,13 @@ export async function handleReplay(store) {
   resetMatchDeckState(store);
 
   const resetEngine = () => {
+    console.log(
+      "[REPLAY DEBUG] resetEngine - typeof resetBattleEnginePreservingConfig:",
+      typeof battleEngine.resetBattleEnginePreservingConfig
+    );
     try {
       if (typeof battleEngine.resetBattleEnginePreservingConfig === "function") {
+        console.log("[REPLAY DEBUG] Calling battleEngine.resetBattleEnginePreservingConfig()");
         battleEngine.resetBattleEnginePreservingConfig();
         console.log(
           "[REPLAY DEBUG] Engine reset, roundsPlayed:",
@@ -465,7 +470,9 @@ export async function handleReplay(store) {
         );
         return;
       }
+      console.log("[REPLAY DEBUG] resetBattleEnginePreservingConfig is not a function, using fallback");
     } catch (error) {
+      console.log("[REPLAY DEBUG] resetBattleEnginePreservingConfig threw error:", error);
       try {
         logger.warn("resetBattleEnginePreservingConfig failed, using fallback", error);
       } catch {
@@ -473,6 +480,7 @@ export async function handleReplay(store) {
       }
     }
 
+    console.log("[REPLAY DEBUG] Using createBattleEngine fallback");
     createBattleEngine({ forceCreate: true });
   };
 
