@@ -21,15 +21,19 @@ The MiniLM embedding model files occasionally become corrupted, appearing as "st
 ## Root Causes
 
 ### 1. **Interrupted Downloads**
+
 When the Xenova/transformers library downloads model files and the process is interrupted (network failure, process crash, disk full), it can leave stub files or metadata-only files in the cache directory (`models/Xenova/all-MiniLM-L6-v2/`).
 
 ### 2. **Stale Cache Reuse**
+
 The `populateFromCache()` function copies files from the Xenova cache to `models/minilm/`. If the source cache is corrupted, the destination becomes corrupted too.
 
 ### 3. **Multiple Concurrent Processes**
+
 Race conditions can occur if multiple processes try to download/cache the model simultaneously, causing partial writes.
 
 ### 4. **Filesystem Issues**
+
 Rare cases of incomplete file writes due to system resource constraints or filesystem issues.
 
 ## Prevention & Detection
@@ -89,10 +93,10 @@ User runs: npm run rag:prepare:models
 ```javascript
 // File size thresholds for detection
 const isSuspiciouslySmall = (filename, size) => {
-  if (filename.endsWith('.onnx')) return size < 1000000;  // < 1 MB = stub
-  if (filename === 'tokenizer.json') return size < 100000; // < 100 KB = stub
-  if (filename === 'config.json') return size < 400;       // < 400 bytes = stub
-  if (filename === 'tokenizer_config.json') return size < 300; // < 300 bytes = stub
+  if (filename.endsWith(".onnx")) return size < 1000000; // < 1 MB = stub
+  if (filename === "tokenizer.json") return size < 100000; // < 100 KB = stub
+  if (filename === "config.json") return size < 400; // < 400 bytes = stub
+  if (filename === "tokenizer_config.json") return size < 300; // < 300 bytes = stub
   return false;
 };
 ```
@@ -183,23 +187,27 @@ This ensures the RAG system is working and model files are valid.
 Watch for these warning signs:
 
 ### In Pre-commit Hook Output
+
 ```
 Pre-flight: Checking for corrupted Xenova cache...
   Detected corrupted Xenova cache (stub files), removing...
 ```
 
 ### In npm Output
+
 ```
 [RAG] Xenova cache is corrupted. Removing stale cache to force clean re-download...
 ```
 
 ### In Test Failures
+
 ```
 Model file is missing or empty after hydration attempt
 File size mismatch after copy
 ```
 
 If these appear frequently, check:
+
 - Disk space availability
 - Network stability (if downloading from CDN)
 - Filesystem health

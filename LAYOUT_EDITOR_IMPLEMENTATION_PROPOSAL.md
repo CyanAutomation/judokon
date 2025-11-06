@@ -12,13 +12,13 @@ This document proposes a phased implementation strategy for the Layout Editor (`
 
 ## Accuracy Audit (2025-02-14)
 
-| Check | Result | Evidence / Follow-up |
-| --- | --- | --- |
-| Layout Editor assets exist today | ❌ `src/pages` and `src/components` do not contain any `layoutEditor*` entries; this proposal remains net-new work. | `ls src/pages`, `ls src/components` |
-| Layout data access pattern | ✅ `src/helpers/layoutEngine/loadLayout.js` already resolves layouts via the generated registry with inline JSON fallback. The editor should call this helper instead of duplicating registry parsing. | `src/helpers/layoutEngine/loadLayout.js` |
-| Registry shape | ❌ The registry is a plain object, not a `Map`. There is no `.get`/`.keys` API, so the editor must use `Object.keys(layoutRegistry)` or `getLayoutModule()`. | `src/helpers/layoutEngine/layoutRegistry.js` |
-| Validation utilities | ✅ `validateLayoutDefinition` is exported from `src/helpers/layoutEngine/applyLayout.js` and should be reused for both import-time and live validation. | `src/helpers/layoutEngine/applyLayout.js` |
-| Battle preview targets | ✅ `battleClassic.html` and `battleCLI.html` exist under `src/pages`; they can be loaded inside the preview iframe. | `src/pages/battleClassic.html`, `src/pages/battleCLI.html` |
+| Check                            | Result                                                                                                                                                                                                 | Evidence / Follow-up                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Layout Editor assets exist today | ❌ `src/pages` and `src/components` do not contain any `layoutEditor*` entries; this proposal remains net-new work.                                                                                    | `ls src/pages`, `ls src/components`                        |
+| Layout data access pattern       | ✅ `src/helpers/layoutEngine/loadLayout.js` already resolves layouts via the generated registry with inline JSON fallback. The editor should call this helper instead of duplicating registry parsing. | `src/helpers/layoutEngine/loadLayout.js`                   |
+| Registry shape                   | ❌ The registry is a plain object, not a `Map`. There is no `.get`/`.keys` API, so the editor must use `Object.keys(layoutRegistry)` or `getLayoutModule()`.                                           | `src/helpers/layoutEngine/layoutRegistry.js`               |
+| Validation utilities             | ✅ `validateLayoutDefinition` is exported from `src/helpers/layoutEngine/applyLayout.js` and should be reused for both import-time and live validation.                                                | `src/helpers/layoutEngine/applyLayout.js`                  |
+| Battle preview targets           | ✅ `battleClassic.html` and `battleCLI.html` exist under `src/pages`; they can be loaded inside the preview iframe.                                                                                    | `src/pages/battleClassic.html`, `src/pages/battleCLI.html` |
 
 The remainder of the document has been updated to reflect these findings—most notably by reusing `loadLayout()` for registry access and by explicitly calling out that the referenced files are deliverables rather than existing assets.
 
@@ -61,6 +61,7 @@ Visual Feedback (highlight errors, update DOM)
 ## Phase 1: Core Editor UI & Grid Foundation (Week 1-2)
 
 ### Goals
+
 - Implement canvas overlay with visible grid
 - Load layout data from existing Layout Engine
 - Enable drag-resize with grid snapping
@@ -69,150 +70,155 @@ Visual Feedback (highlight errors, update DOM)
 ### Deliverables
 
 #### 1.1 HTML Structure & Styling
+
 **File:** `src/pages/layoutEditor.html`
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JU-DO-KON! Layout Editor</title>
-  <link rel="stylesheet" href="../styles/layoutEditor.css" />
-</head>
-<body>
-  <div id="editorContainer">
-    <!-- Toolbar -->
-    <div id="toolbar" class="toolbar">
-      <div class="toolbar-section">
-        <select id="layoutMode" class="mode-selector">
-          <option value="">-- Select Layout Mode --</option>
-        </select>
-        <button id="resetButton">Reset to Default</button>
-      </div>
-      <div class="toolbar-section">
-        <button id="exportJsonBtn">Export JSON</button>
-        <button id="exportAsciiBtn">View ASCII</button>
-        <button id="importBtn">Import Layout</button>
-      </div>
-      <div class="toolbar-section">
-        <input type="checkbox" id="gridSnapToggle" checked />
-        <label for="gridSnapToggle">Snap to Grid</label>
-        <input type="checkbox" id="showGridToggle" checked />
-        <label for="showGridToggle">Show Grid</label>
-      </div>
-    </div>
-
-    <!-- Main Editor Area -->
-    <div id="editorMain" class="editor-main">
-      <!-- Canvas Panel -->
-      <div id="canvasPanel" class="canvas-panel">
-        <div id="canvasContainer" class="canvas-container">
-          <canvas id="editorCanvas"></canvas>
-          <div id="regionOverlay" class="region-overlay"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JU-DO-KON! Layout Editor</title>
+    <link rel="stylesheet" href="../styles/layoutEditor.css" />
+  </head>
+  <body>
+    <div id="editorContainer">
+      <!-- Toolbar -->
+      <div id="toolbar" class="toolbar">
+        <div class="toolbar-section">
+          <select id="layoutMode" class="mode-selector">
+            <option value="">-- Select Layout Mode --</option>
+          </select>
+          <button id="resetButton">Reset to Default</button>
         </div>
-        <div id="validationMessage" class="validation-message hidden"></div>
-      </div>
-
-      <!-- Property Inspector -->
-      <div id="propertyPanel" class="property-panel">
-        <h3>Region Properties</h3>
-        <div id="noSelection" class="placeholder">Select a region to edit</div>
-        <form id="regionForm" class="hidden">
-          <div class="form-group">
-            <label>ID</label>
-            <input type="text" id="regionId" disabled />
-          </div>
-          <div class="form-group">
-            <label>X (cols)</label>
-            <input type="number" id="regionX" min="0" />
-          </div>
-          <div class="form-group">
-            <label>Y (rows)</label>
-            <input type="number" id="regionY" min="0" />
-          </div>
-          <div class="form-group">
-            <label>Width (cols)</label>
-            <input type="number" id="regionWidth" min="1" />
-          </div>
-          <div class="form-group">
-            <label>Height (rows)</label>
-            <input type="number" id="regionHeight" min="1" />
-          </div>
-          <div class="form-group">
-            <label>Z-Index</label>
-            <input type="number" id="regionZIndex" />
-          </div>
-          <div class="form-group">
-            <label>Feature Flag (optional)</label>
-            <input type="text" id="regionFeatureFlag" />
-          </div>
-          <button type="submit" class="btn-primary">Apply</button>
-          <button type="button" id="deleteRegionBtn" class="btn-danger">Delete Region</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Preview Iframe -->
-    <div id="previewPanel" class="preview-panel hidden">
-      <div class="preview-header">
-        <h3>Live Preview</h3>
-        <button id="closePreviewBtn">&times;</button>
-      </div>
-      <iframe id="battlePreview" sandbox="allow-scripts allow-same-origin"></iframe>
-    </div>
-
-    <!-- Footer Console -->
-    <div id="consolePanel" class="console-panel">
-      <div id="consoleLogs" class="console-logs"></div>
-      <button id="clearConsoleBtn">Clear</button>
-    </div>
-  </div>
-
-  <!-- Import Modal -->
-  <div id="importModal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Import Layout</h2>
-      <div class="import-options">
-        <div class="option">
-          <h4>Paste JSON</h4>
-          <textarea id="importTextarea" placeholder='{"grid": {...}, "regions": [...]}'></textarea>
-          <button id="importFromTextBtn">Import</button>
+        <div class="toolbar-section">
+          <button id="exportJsonBtn">Export JSON</button>
+          <button id="exportAsciiBtn">View ASCII</button>
+          <button id="importBtn">Import Layout</button>
         </div>
-        <div class="option">
-          <h4>Upload File</h4>
-          <input type="file" id="importFile" accept=".json,.layout.js" />
-          <button id="importFromFileBtn">Import</button>
-        </div>
-        <div class="option">
-          <h4>Load from Registry</h4>
-          <select id="registrySelect"></select>
-          <button id="importFromRegistryBtn">Load</button>
+        <div class="toolbar-section">
+          <input type="checkbox" id="gridSnapToggle" checked />
+          <label for="gridSnapToggle">Snap to Grid</label>
+          <input type="checkbox" id="showGridToggle" checked />
+          <label for="showGridToggle">Show Grid</label>
         </div>
       </div>
-      <button id="closeImportBtn" class="btn-secondary">Cancel</button>
-    </div>
-  </div>
 
-  <!-- ASCII Export Modal -->
-  <div id="asciiModal" class="modal hidden">
-    <div class="modal-content">
-      <h2>ASCII Preview</h2>
-      <pre id="asciiOutput"></pre>
-      <div class="modal-actions">
-        <button id="copyAsciiBtn">Copy to Clipboard</button>
-        <button id="downloadAsciiBtn">Download</button>
-        <button id="closeAsciiBtn" class="btn-secondary">Close</button>
+      <!-- Main Editor Area -->
+      <div id="editorMain" class="editor-main">
+        <!-- Canvas Panel -->
+        <div id="canvasPanel" class="canvas-panel">
+          <div id="canvasContainer" class="canvas-container">
+            <canvas id="editorCanvas"></canvas>
+            <div id="regionOverlay" class="region-overlay"></div>
+          </div>
+          <div id="validationMessage" class="validation-message hidden"></div>
+        </div>
+
+        <!-- Property Inspector -->
+        <div id="propertyPanel" class="property-panel">
+          <h3>Region Properties</h3>
+          <div id="noSelection" class="placeholder">Select a region to edit</div>
+          <form id="regionForm" class="hidden">
+            <div class="form-group">
+              <label>ID</label>
+              <input type="text" id="regionId" disabled />
+            </div>
+            <div class="form-group">
+              <label>X (cols)</label>
+              <input type="number" id="regionX" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Y (rows)</label>
+              <input type="number" id="regionY" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Width (cols)</label>
+              <input type="number" id="regionWidth" min="1" />
+            </div>
+            <div class="form-group">
+              <label>Height (rows)</label>
+              <input type="number" id="regionHeight" min="1" />
+            </div>
+            <div class="form-group">
+              <label>Z-Index</label>
+              <input type="number" id="regionZIndex" />
+            </div>
+            <div class="form-group">
+              <label>Feature Flag (optional)</label>
+              <input type="text" id="regionFeatureFlag" />
+            </div>
+            <button type="submit" class="btn-primary">Apply</button>
+            <button type="button" id="deleteRegionBtn" class="btn-danger">Delete Region</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Preview Iframe -->
+      <div id="previewPanel" class="preview-panel hidden">
+        <div class="preview-header">
+          <h3>Live Preview</h3>
+          <button id="closePreviewBtn">&times;</button>
+        </div>
+        <iframe id="battlePreview" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+
+      <!-- Footer Console -->
+      <div id="consolePanel" class="console-panel">
+        <div id="consoleLogs" class="console-logs"></div>
+        <button id="clearConsoleBtn">Clear</button>
       </div>
     </div>
-  </div>
 
-  <script type="module" src="../components/layoutEditor/index.js"></script>
-</body>
+    <!-- Import Modal -->
+    <div id="importModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Import Layout</h2>
+        <div class="import-options">
+          <div class="option">
+            <h4>Paste JSON</h4>
+            <textarea
+              id="importTextarea"
+              placeholder='{"grid": {...}, "regions": [...]}'
+            ></textarea>
+            <button id="importFromTextBtn">Import</button>
+          </div>
+          <div class="option">
+            <h4>Upload File</h4>
+            <input type="file" id="importFile" accept=".json,.layout.js" />
+            <button id="importFromFileBtn">Import</button>
+          </div>
+          <div class="option">
+            <h4>Load from Registry</h4>
+            <select id="registrySelect"></select>
+            <button id="importFromRegistryBtn">Load</button>
+          </div>
+        </div>
+        <button id="closeImportBtn" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ASCII Export Modal -->
+    <div id="asciiModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>ASCII Preview</h2>
+        <pre id="asciiOutput"></pre>
+        <div class="modal-actions">
+          <button id="copyAsciiBtn">Copy to Clipboard</button>
+          <button id="downloadAsciiBtn">Download</button>
+          <button id="closeAsciiBtn" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../components/layoutEditor/index.js"></script>
+  </body>
 </html>
 ```
 
 #### 1.2 CSS Styling
+
 **File:** `src/styles/layoutEditor.css`
 
 ```css
@@ -223,7 +229,7 @@ Visual Feedback (highlight errors, update DOM)
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
   background: #f5f5f5;
 }
 
@@ -294,20 +300,9 @@ body {
   flex: 1;
   position: relative;
   overflow: auto;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 19px,
-    #eee 19px,
-    #eee 20px
-  ),
-  repeating-linear-gradient(
-    90deg,
-    transparent,
-    transparent 19px,
-    #eee 19px,
-    #eee 20px
-  );
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 19px, #eee 19px, #eee 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, #eee 19px, #eee 20px);
 }
 
 #editorCanvas {
@@ -515,7 +510,7 @@ body {
   color: #d4d4d4;
   border-top: 1px solid #333;
   padding: 0.5rem;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.8rem;
   overflow-y: auto;
   display: flex;
@@ -604,7 +599,7 @@ body {
 
 .option textarea {
   min-height: 100px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.8rem;
 }
 
@@ -621,7 +616,7 @@ body {
   border: 1px solid #ddd;
   border-radius: 4px;
   overflow-x: auto;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.75rem;
   line-height: 1.4;
 }
@@ -654,6 +649,7 @@ body {
 ```
 
 #### 1.3 Core Editor Module
+
 **File:** `src/components/layoutEditor/index.js`
 
 ```javascript
@@ -967,6 +963,7 @@ if (document.readyState === "loading") {
 ```
 
 #### 1.4 Editor Canvas Component
+
 **File:** `src/components/layoutEditor/EditorCanvas.js`
 
 ```javascript
@@ -1162,8 +1159,14 @@ export class EditorCanvas {
     if (!region) return;
 
     if (this.dragState.type === "drag") {
-      const x = Math.max(0, Math.min(this.dragState.origX + deltaX, this.gridCols - region.rect.width));
-      const y = Math.max(0, Math.min(this.dragState.origY + deltaY, this.gridRows - region.rect.height));
+      const x = Math.max(
+        0,
+        Math.min(this.dragState.origX + deltaX, this.gridCols - region.rect.width)
+      );
+      const y = Math.max(
+        0,
+        Math.min(this.dragState.origY + deltaY, this.gridRows - region.rect.height)
+      );
 
       region.rect.x = x;
       region.rect.y = y;
@@ -1238,6 +1241,7 @@ These will be fully implemented in Phase 1.2.
 ## Phase 2: Import/Export & Validation (Week 2-3)
 
 ### Goals
+
 - Implement JSON and ASCII export
 - Support layout import from file, paste, registry
 - Complete real-time validation
@@ -1246,17 +1250,20 @@ These will be fully implemented in Phase 1.2.
 ### Deliverables
 
 #### 2.1 Export Pipeline
+
 - JSON export with metadata (id, engineVersion, grid)
 - ASCII export matching Layout Engine format
 - Download file helpers
 
 #### 2.2 Import Pipeline
+
 - File upload (.json, .layout.js)
 - Paste JSON textarea
 - Resolve via `loadLayout()` (registry + inline fallback)
 - Validation on import
 
 #### 2.3 Validation System
+
 - Real-time schema validation
 - Visual error highlighting
 - Constraint checking (grid bounds, unique IDs)
@@ -1266,6 +1273,7 @@ These will be fully implemented in Phase 1.2.
 ## Phase 3: Live Preview Integration (Week 3-4)
 
 ### Goals
+
 - Embed battle page in iframe
 - Communicate layout via postMessage
 - Apply layout live using Layout Engine
@@ -1274,11 +1282,13 @@ These will be fully implemented in Phase 1.2.
 ### Deliverables
 
 #### 3.1 PostMessage Bridge
+
 - Editor → Iframe: layout object
 - Iframe → Editor: confirmation / error
 - Bidirectional message protocol
 
 #### 3.2 Battle Iframe Integration
+
 - Load battleClassic.html or battleCLI.html
 - Load Layout Engine in iframe context
 - Apply incoming layout via postMessage
@@ -1289,6 +1299,7 @@ These will be fully implemented in Phase 1.2.
 ## Phase 4: Persistence & Versioning (Week 4-5)
 
 ### Goals
+
 - Auto-save drafts to localStorage
 - Track layout metadata (id, version)
 - Restore drafts on page reload
@@ -1297,11 +1308,13 @@ These will be fully implemented in Phase 1.2.
 ### Deliverables
 
 #### 4.1 StorageManager
+
 - Save/restore draft per mode
 - Metadata tagging
 - Fallback recovery
 
 #### 4.2 Metadata System
+
 - Include `engineVersion`, `id`, grid dimensions
 - Version compatibility checking
 
@@ -1310,6 +1323,7 @@ These will be fully implemented in Phase 1.2.
 ## Phase 5: UX Enhancements (Week 5-6)
 
 ### Goals
+
 - Alignment guides
 - Keyboard shortcuts (nudge, snap toggle, duplicate)
 - Theme toggle (light/dark)
@@ -1318,10 +1332,12 @@ These will be fully implemented in Phase 1.2.
 ### Deliverables
 
 #### 5.1 Alignment Guides
+
 - Visual snap lines when regions align
 - Optional toggle in toolbar
 
 #### 5.2 Keyboard Shortcuts
+
 - Arrow keys: nudge selected region
 - Shift + Arrow: resize
 - S: toggle snap
@@ -1329,6 +1345,7 @@ These will be fully implemented in Phase 1.2.
 - Del: delete region
 
 #### 5.3 Theme & Accessibility
+
 - Light/dark mode toggle
 - Contrast validation
 - Keyboard navigation
@@ -1376,6 +1393,7 @@ tests/
 ## Testing Strategy
 
 ### Unit Tests (Vitest)
+
 - **Canvas:** Drag-resize logic, grid snapping, bounds checking
 - **Export:** JSON/ASCII generation, file download
 - **Import:** Parse JSON, validate schema, restore state
@@ -1383,12 +1401,14 @@ tests/
 - **Storage:** Draft save/restore, metadata handling
 
 ### Integration Tests (Playwright)
+
 - Load layout → Edit → Export → Reimport → Verify
 - Drag region → Verify position updates in property inspector
 - PostMessage communication with battle iframe
 - localStorage persistence across reload
 
 ### CI Integration
+
 - Store ASCII snapshots in `tests/__snapshots__/layout_ascii/`
 - Compare exports against known-good layouts
 - Validate against Layout Engine schema
@@ -1398,12 +1418,14 @@ tests/
 ## Dependencies & Integration Points
 
 ### Existing Infrastructure
+
 - **Layout Engine:** `loadLayout`, `applyLayout`, `validateLayoutDefinition`, `layoutRegistry`
 - **Feature Flags:** `featureFlags.js` for conditional regions
 - **Battle Pages:** `battleClassic.html`, `battleCLI.html` for iframe targets
 - **Telemetry:** `logEvent` for editor actions
 
 ### New Files to Create
+
 - `src/pages/layoutEditor.html` (main page)
 - `src/components/layoutEditor/*.js` (component modules)
 - `src/styles/layoutEditor.css` (styling)
@@ -1414,27 +1436,27 @@ tests/
 
 ## Success Metrics
 
-| Criterion                                | Target        | Validation |
-| ---------------------------------------- | ------------- | ---------- |
-| Grid snapping accuracy                   | ±0 pixels     | Unit test  |
-| Drag-resize responsiveness               | <50ms         | Perf test  |
-| Import-export round-trip fidelity        | <0.5% error   | Integration test |
-| ASCII export consistency                 | Exact match   | Snapshot test |
-| localStorage persistence                 | 100% on reload | Playwright test |
-| postMessage latency                      | <16ms (1 frame) | Benchmark |
-| Validation feedback latency              | <100ms        | Unit test  |
+| Criterion                         | Target          | Validation       |
+| --------------------------------- | --------------- | ---------------- |
+| Grid snapping accuracy            | ±0 pixels       | Unit test        |
+| Drag-resize responsiveness        | <50ms           | Perf test        |
+| Import-export round-trip fidelity | <0.5% error     | Integration test |
+| ASCII export consistency          | Exact match     | Snapshot test    |
+| localStorage persistence          | 100% on reload  | Playwright test  |
+| postMessage latency               | <16ms (1 frame) | Benchmark        |
+| Validation feedback latency       | <100ms          | Unit test        |
 
 ---
 
 ## Risk Mitigation
 
-| Risk                              | Mitigation                                    |
-| --------------------------------- | --------------------------------------------- |
-| **Layout schema changes**         | Version metadata + validation helper          |
-| **Iframe sandbox restrictions**   | Use `allow-scripts allow-same-origin`         |
-| **Browser storage quota**         | Compress draft; warn on large layouts         |
-| **Cross-origin postMessage**      | Use `layoutEditor` as page origin (same-site) |
-| **Coordinate precision loss**     | Use integers; validate round-trip deviation  |
+| Risk                            | Mitigation                                    |
+| ------------------------------- | --------------------------------------------- |
+| **Layout schema changes**       | Version metadata + validation helper          |
+| **Iframe sandbox restrictions** | Use `allow-scripts allow-same-origin`         |
+| **Browser storage quota**       | Compress draft; warn on large layouts         |
+| **Cross-origin postMessage**    | Use `layoutEditor` as page origin (same-site) |
+| **Coordinate precision loss**   | Use integers; validate round-trip deviation   |
 
 ---
 
@@ -1491,6 +1513,7 @@ tests/
 This implementation proposal provides a phased, testable approach to building the Layout Editor within the existing JU-DO-KON! architecture. By leveraging the Layout Engine's validation and appliance logic, and integrating with battle pages via postMessage, the editor becomes a first-class contributor tool for layout design, testing, and iteration.
 
 **Next Steps:**
+
 - [ ] Review proposal with team
 - [ ] Prioritize phases for timeline
 - [ ] Assign Phase 1 implementation
