@@ -96,7 +96,7 @@ function readMatchEndModalSnapshot() {
 
     const ariaHidden = modal.getAttribute("aria-hidden");
     const computed =
-      typeof window !== "undefined" && typeof window.getComputedStyle === "function"
+      isWindowAvailable() && typeof window.getComputedStyle === "function"
         ? window.getComputedStyle(modal)
         : null;
 
@@ -309,6 +309,17 @@ function safeRead(getter, defaultValue = null) {
   }
 }
 
+/**
+ * Check if window is available (browser environment).
+ * Replaces repeated "typeof window !== 'undefined'" checks throughout the file.
+ *
+ * @returns {boolean} True if window object is available
+ * @internal
+ */
+function isWindowAvailable() {
+  return typeof window !== "undefined";
+}
+
 function isAutomationNavigator(nav) {
   if (!nav) return false;
 
@@ -376,7 +387,7 @@ export function isTestMode() {
   }
 
   // Check for browser test indicators
-  if (typeof window !== "undefined") {
+  if (isWindowAvailable()) {
     if (window.__TEST__) return true;
     if (
       window.location?.href?.includes("127.0.0.1") ||
@@ -388,7 +399,7 @@ export function isTestMode() {
   }
 
   if (
-    typeof window === "undefined" &&
+    !isWindowAvailable() &&
     typeof navigator !== "undefined" &&
     isAutomationNavigator(navigator)
   ) {
@@ -514,7 +525,7 @@ const stateApi = {
       }
 
       try {
-        const store = typeof window !== "undefined" ? window.battleStore : null;
+        const store = isWindowAvailable() ? window.battleStore : null;
         const fromStore = toFiniteNumber(store?.roundsPlayed);
         if (typeof fromStore === "number") {
           return fromStore;
@@ -523,8 +534,8 @@ const stateApi = {
 
       try {
         const inspectApi =
-          (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
-          (typeof window !== "undefined" && window.__INSPECT_API);
+          (isWindowAvailable() && window.__TEST_API?.inspect) ||
+          (isWindowAvailable() && window.__INSPECT_API);
         if (inspectApi) {
           const snapshot =
             typeof inspectApi.getBattleSnapshot === "function"
@@ -1062,7 +1073,7 @@ const timerApi = {
 
     try {
       // Use existing battleCLI helper if available
-      if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
+      if (isWindowAvailable() && window.__battleCLIinit?.setCountdown) {
         const battleCLI = window.__battleCLIinit;
         let delegationSucceeded = false;
 
@@ -1357,7 +1368,7 @@ const timerApi = {
   clearAllTimers() {
     try {
       // Clear battleCLI timers if available
-      if (typeof window !== "undefined" && window.__battleCLITimers) {
+      if (isWindowAvailable() && window.__battleCLITimers) {
         Object.values(window.__battleCLITimers).forEach((timer) => {
           if (typeof timer === "number") {
             clearTimeout(timer);
@@ -1369,7 +1380,7 @@ const timerApi = {
       // Clear common timer elements
       const timerElements = ["selectionTimer", "cooldownTimer", "statTimeoutId", "autoSelectId"];
       timerElements.forEach((prop) => {
-        if (typeof window !== "undefined" && window[prop]) {
+        if (isWindowAvailable() && window[prop]) {
           clearTimeout(window[prop]);
           clearInterval(window[prop]);
           window[prop] = null;
@@ -1560,8 +1571,8 @@ const engineApi = {
 
       try {
         const inspectApi =
-          (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
-          (typeof window !== "undefined" && window.__INSPECT_API);
+          (isWindowAvailable() && window.__TEST_API?.inspect) ||
+          (isWindowAvailable() && window.__INSPECT_API);
         if (inspectApi && typeof inspectApi.getBattleSnapshot === "function") {
           const snapshot = inspectApi.getBattleSnapshot();
           const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
@@ -1770,7 +1781,7 @@ const initApi = {
    */
   isBattleReady() {
     try {
-      if (typeof window !== "undefined") {
+      if (isWindowAvailable()) {
         const store =
           typeof window.battleStore === "object" && window.battleStore !== null
             ? window.battleStore
@@ -1873,7 +1884,7 @@ const initApi = {
     };
 
     const globalTarget =
-      typeof window !== "undefined" && window
+      isWindowAvailable() && window
         ? window
         : typeof globalThis !== "undefined"
           ? globalThis
@@ -2167,7 +2178,7 @@ const initApi = {
    */
   getComponentState(componentName) {
     try {
-      if (typeof window !== "undefined" && window.__testComponentStates) {
+      if (isWindowAvailable() && window.__testComponentStates) {
         return window.__testComponentStates[componentName];
       }
       return null;
@@ -2183,7 +2194,7 @@ const initApi = {
    */
   setComponentState(componentName, state) {
     try {
-      if (typeof window !== "undefined") {
+      if (isWindowAvailable()) {
         if (!window.__testComponentStates) {
           window.__testComponentStates = {};
         }
@@ -2200,7 +2211,7 @@ const initApi = {
    */
   triggerComponentEvent(componentName, event, data) {
     try {
-      if (typeof window !== "undefined" && window.__testComponentEvents) {
+      if (isWindowAvailable() && window.__testComponentEvents) {
         const handler = window.__testComponentEvents[componentName]?.[event];
         if (typeof handler === "function") {
           handler(data);
@@ -2215,7 +2226,7 @@ const initApi = {
    */
   cleanupComponent(componentName) {
     try {
-      if (typeof window !== "undefined") {
+      if (isWindowAvailable()) {
         if (window.__testComponentStates) {
           delete window.__testComponentStates[componentName];
         }
@@ -2233,7 +2244,7 @@ const initApi = {
   getInitPromises() {
     const promises = {};
 
-    if (typeof window !== "undefined") {
+    if (isWindowAvailable()) {
       if (window.battleReadyPromise) promises.battle = window.battleReadyPromise;
       if (window.settingsReadyPromise) promises.settings = window.settingsReadyPromise;
       if (window.navReadyPromise) promises.nav = window.navReadyPromise;
@@ -2276,7 +2287,7 @@ const inspectionApi = {
       let overrides = {};
       try {
         if (
-          typeof window !== "undefined" &&
+          isWindowAvailable() &&
           window.__FF_OVERRIDES &&
           typeof window.__FF_OVERRIDES === "object"
         ) {
@@ -2306,7 +2317,7 @@ const inspectionApi = {
    */
   getBattleStore() {
     try {
-      return typeof window !== "undefined" ? window.battleStore : null;
+      return isWindowAvailable() ? window.battleStore : null;
     } catch {
       return null;
     }
@@ -2345,7 +2356,7 @@ const inspectionApi = {
 
       const readSelectionFinalized = () => {
         try {
-          if (typeof window !== "undefined") {
+          if (isWindowAvailable()) {
             return window.__classicBattleSelectionFinalized === true;
           }
         } catch {}
@@ -2515,8 +2526,7 @@ const inspectionApi = {
             : null;
       const statSelected = safeRead(() => document.body?.dataset?.statSelected === "true", false);
       const selectionFinalized = safeRead(
-        () =>
-          typeof window !== "undefined" ? window.__classicBattleSelectionFinalized === true : false,
+        () => (isWindowAvailable() ? window.__classicBattleSelectionFinalized === true : false),
         false
       );
       const selectionFromStore =
@@ -2601,7 +2611,7 @@ const inspectionApi = {
           candidates.push(store.roundsPlayed);
         }
         try {
-          if (typeof window !== "undefined") {
+          if (isWindowAvailable()) {
             candidates.push(window.battleStore?.roundsPlayed);
           }
         } catch (error) {
@@ -2679,7 +2689,7 @@ const cliApi = {
    */
   async resolveRound(eventLike = {}) {
     try {
-      const store = typeof window !== "undefined" ? window.battleStore : null;
+      const store = isWindowAvailable() ? window.battleStore : null;
       if (!store || !store.playerChoice) {
         // Fall back to event-only resolution if no selection made
         const dispatch = (detail) => stateApi.dispatchBattleEvent("roundResolved", detail);
@@ -3047,7 +3057,7 @@ const testApi = {
 export function exposeTestAPI() {
   if (!isTestMode()) return;
 
-  if (typeof window !== "undefined") {
+  if (isWindowAvailable()) {
     window.__TEST_API = testApi;
 
     // Also expose individual APIs for convenience

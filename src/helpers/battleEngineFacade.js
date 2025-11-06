@@ -242,6 +242,9 @@ export function resetBattleEnginePreservingConfig() {
     engine = createBattleEngine({ forceCreate: true });
   }
 
+  // Update module-level reference to ensure all subsequent calls get the reset engine
+  battleEngine = engine;
+
   if (typeof preservedPointsToWin === "number" && Number.isFinite(preservedPointsToWin)) {
     try {
       engine?.setPointsToWin?.(preservedPointsToWin);

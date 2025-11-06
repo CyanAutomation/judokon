@@ -11,15 +11,41 @@ test.describe("Classic Battle replay", () => {
     const consoleLogs = [];
     page.on("console", (msg) => {
       const text = msg.text();
+      console.log("[BROWSER CONSOLE]", text); // Log everything
       if (text.includes("[REPLAY DEBUG]")) {
         consoleLogs.push(text);
       }
     });
 
-    await withMutedConsole(async () => {
+    // TEMPORARILY REMOVED withMutedConsole TO SEE LOGS
+    // await withMutedConsole(async () => {
+    {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
         window.__OPPONENT_RESOLVE_DELAY_MS = 500; // 500ms delay before opponent reveals choice
+
+        // Wrap _resetForTest to see when/if it's called
+        setTimeout(() => {
+          const engine = window.__TEST_API?.engine;
+          if (engine && engine.constructor && engine.constructor.prototype) {
+            const originalReset = engine.constructor.prototype._resetForTest;
+            if (originalReset) {
+              console.log("[REPLAY DEBUG] Wrapping _resetForTest method");
+              engine.constructor.prototype._resetForTest = function () {
+                console.log(
+                  "[REPLAY DEBUG] _resetForTest CALLED, roundsPlayed BEFORE:",
+                  this.roundsPlayed
+                );
+                const result = originalReset.call(this);
+                console.log(
+                  "[REPLAY DEBUG] _resetForTest COMPLETED, roundsPlayed AFTER:",
+                  this.roundsPlayed
+                );
+                return result;
+              };
+            }
+          }
+        }, 100);
 
         const readScores = (engineApi) => {
           if (engineApi && typeof engineApi.getScores === "function") {
@@ -235,14 +261,14 @@ test.describe("Classic Battle replay", () => {
       });
       expect(engineStateAfterReplay?.roundsPlayed).toBeLessThanOrEqual(1);
       expect(engineStateAfterReplay?.pointsToWin).toBe(pointsBeforeReplay);
-      await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
-    }, ["log", "info", "warn", "error", "debug"]);
-
-    // Print all captured replay debug logs AFTER withMutedConsole
-    if (consoleLogs.length > 0) {
-      console.log("\n=== REPLAY DEBUG LOGS ===");
+      
+      // Print all captured replay debug logs BEFORE the failing assertion
+      console.log("\n=== REPLAY DEBUG LOGS (" + consoleLogs.length + " total) ===");
       consoleLogs.forEach((log) => console.log(log));
       console.log("=========================\n");
+      
+      await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
     }
+    // }, ["log", "info", "warn", "error", "debug"]); // TEMPORARILY COMMENTED OUT
   });
 });
