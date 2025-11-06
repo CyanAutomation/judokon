@@ -4,6 +4,16 @@
 
 This PRD defines the canonical data shapes, validation rules, and lifecycle for the project's core domain objects (e.g., `judoka`, `card`, `navigationMap`, `settings`). It establishes where schemas live, how to change them, and the expected compatibility guarantees.
 
+---
+
+## Quick Reference
+
+This document defines the canonical data structures for all major entities in the JU-DO-KON! system, including judoka entries, battle configuration, and game data. Each schema shows required fields, types, and examples.
+
+**Search Keywords**: canonical schema, data structure definition, judoka entry, schema validation, structured data
+
+---
+
 ## Problem Statement / Why it matters
 
 Inconsistent data shapes cause runtime errors, UI breakage, and brittle tests. Tests and integrations depend on stable schemas. We need a single source of truth describing canonical fields, validation, and deprecation policy.

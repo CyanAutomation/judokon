@@ -4,6 +4,20 @@ import { setCachedSettings } from "./settingsCache.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 /**
+ * Feature flag system providing enable/disable patterns for experimental and beta features.
+ * Serves as the central emitter for feature flag state changes.
+ *
+ * @module featureFlags
+ * @summary Central emitter and API for feature flag management, controlling feature toggles
+ * @keywords emitter, enable, check, isEnabled, flag, feature-toggle, feature-gate
+ * @description
+ * This module exports the primary API for checking and managing feature flags throughout
+ * the application. It acts as an emitter pattern, broadcasting flag state changes to
+ * listeners. Use `isEnabled()` to check if a feature is available, or `enableFlag()`
+ * to programmatically enable features.
+ */
+
+/**
  * Event emitter broadcasting feature flag changes.
  *
  * @summary This `EventTarget` instance serves as a central hub for observing

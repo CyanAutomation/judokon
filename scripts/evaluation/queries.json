@@ -1,6 +1,6 @@
 [
   {
-    "query": "PRD development standards feature flag ordering guidelines",
+    "query": "PRD development standards validation commands testing rules",
     "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md"
   },
   {
@@ -40,11 +40,11 @@
     "expected_source": "src/data/settings.json"
   },
   {
-    "query": "PRD data schemas judoka entry canonical schema",
+    "query": "Data schema canonical definition judoka structure validation",
     "expected_source": "design/productRequirementsDocuments/prdDataSchemas.md"
   },
   {
-    "query": "What is the implementation for initGame function UI controls wiring initialization",
+    "query": "initGame game initialization carousel startup entry point",
     "expected_source": "src/game.js"
   },
   {
@@ -52,11 +52,11 @@
     "expected_source": "src/helpers/battleEngineFacade.js"
   },
   {
-    "query": "PRD battle CLI accessibility requirements",
+    "query": "PRD battle CLI interface",
     "expected_source": "design/productRequirementsDocuments/prdBattleCLI.md"
   },
   {
-    "query": "What is the implementation for judoka card render component details",
+    "query": "Card class container sanitized HTML content onClick handler",
     "expected_source": "src/components/Card.js"
   },
   {
@@ -64,11 +64,11 @@
     "expected_source": "design/productRequirementsDocuments/prdTestingStandards.md"
   },
   {
-    "query": "Where is the feature flag emitter defined for enabling the card inspector?",
+    "query": "featureFlags isEnabled function enable disable",
     "expected_source": "src/helpers/featureFlags.js"
   },
   {
-    "query": "Which constants control chunk size and overlap for embedding generation?",
-    "expected_source": "src/helpers/vectorSearch/chunkConfig.js"
+    "query": "vector database RAG chunking text splitting algorithm configuration",
+    "expected_source": "design/productRequirementsDocuments/prdVectorDatabaseRAG.md"
   }
 ]

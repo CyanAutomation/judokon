@@ -1,3 +1,12 @@
+/**
+ * @module game
+ * @summary Main game initialization and carousel/card browsing UI
+ * @description Orchestrates game startup including feature flag initialization, tooltip setup,
+ *              carousel building on-demand, and card inspection UI. Exports initGame entry point
+ *              for homepage index.html and provides utility functions for card carousel interaction.
+ * @keywords initGame, carousel, card-browsing, judoka-browser, game-startup, initialization
+ */
+
 import { fetchJson, validateData } from "./helpers/dataUtils.js";
 import { buildCardCarousel, initScrollMarkers } from "./helpers/carouselBuilder.js";
 import { generateRandomCard } from "./helpers/randomCard.js";

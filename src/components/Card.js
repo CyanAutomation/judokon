@@ -1,4 +1,14 @@
 /**
+ * @module Card
+ * @summary Basic card component for rendering judoka card containers with flexible content
+ * @description Flexible card container class that supports both `<div>` and `<a>` elements
+ *              with sanitized HTML content, optional classes, click handlers, and IDs.
+ *              Used throughout the application for rendering judoka cards, stat cards,
+ *              and other content cards with consistent styling and behavior.
+ * @keywords card, component, render, judoka-card, container, ui-component
+ */
+
+/**
  * Basic card container class.
  *
  * @pseudocode

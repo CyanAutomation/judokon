@@ -1,4 +1,13 @@
 /**
+ * @module chunkConfig
+ * @summary Vector embedding chunking configuration with CHUNK_SIZE and OVERLAP_RATIO constants
+ * @description Defines configurable parameters for text chunking during embeddings generation.
+ *              Controls maximum chunk size in characters and overlap ratio between consecutive
+ *              chunks to maintain semantic continuity in vector search indexing.
+ * @keywords chunking, embeddings, configuration, semantic-search, text-splitting, RAG, vector-database
+ */
+
+/**
  * Defines the maximum number of characters allowed in a single chunk when
  * splitting larger texts for the purpose of generating embeddings and
  * performing vector search.

@@ -12,6 +12,29 @@ Inconsistent development practices across the JU-DO-KON! codebase lead to reduce
 
 ---
 
+## Quick Reference for AI Search
+
+This document covers the following topics that agents frequently search for:
+
+- **Feature flag implementation guidelines** - Best practices for enabling/disabling features
+- **Validation command standards** - Complete validation workflow and commands
+- **Import policy and hot path protection** - Rules for import statements in critical code paths
+- **Test quality standards** - Unit test and Playwright testing patterns
+- **JSDoc and code documentation requirements** - Documentation standards and examples
+- **Log discipline and console handling** - Best practices for logging and error handling
+
+### Search Keywords
+
+The following terms will help locate relevant content in this document:
+
+- Development standards, validation workflow, feature flag ordering
+- Import policy, hot paths, dynamic imports
+- Test patterns, testing standards, unit tests
+- JSDoc pseudocode requirements
+- Console discipline, logging best practices
+
+---
+
 ## Goals
 
 - **Consistency**: Establish uniform coding patterns, documentation styles, and naming conventions
