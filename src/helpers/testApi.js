@@ -2268,11 +2268,26 @@ const inspectionApi = {
               ? true
               : null;
 
+      // Read scores from the engine using the facade, not from the store
+      let playerScore = null;
+      let opponentScore = null;
+      try {
+        const scores = facadeGetScores();
+        if (scores && typeof scores === "object") {
+          playerScore = toFiniteNumber(scores.playerScore ?? scores.player);
+          opponentScore = toFiniteNumber(scores.opponentScore ?? scores.opponent);
+        }
+      } catch {
+        // Fall back to trying to read from store if engine fails
+        playerScore = extract("playerScore", (value) => toFiniteNumber(value));
+        opponentScore = extract("opponentScore", (value) => toFiniteNumber(value));
+      }
+
       return {
         roundsPlayed: extract("roundsPlayed", (value) => toFiniteNumber(value)),
         selectionMade: resolvedSelection,
-        playerScore: extract("playerScore", (value) => toFiniteNumber(value)),
-        opponentScore: extract("opponentScore", (value) => toFiniteNumber(value))
+        playerScore,
+        opponentScore
       };
     } catch (error) {
       if (isDevelopmentEnvironment()) {
