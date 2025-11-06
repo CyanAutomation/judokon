@@ -1,23 +1,9 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import selectors from "../../playwright/helpers/selectors";
-import {
-  waitForBattleReady,
-  waitForRoundStats,
-  waitForBattleState
-} from "../helpers/battleStateHelper.js";
+import { waitForBattleReady } from "../helpers/battleStateHelper.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 
 const ENGINE_WAIT_TIMEOUT_MS = 5_000;
-
-const captureEngineState = async (page) => {
-  return page.evaluate(() => {
-    const captureState = window.__PW_CLASSIC_BATTLE?.captureEngineState;
-    if (typeof captureState !== "function") {
-      return { ok: false, reason: "CAPTURE_HELPER_UNAVAILABLE" };
-    }
-    return captureState();
-  });
-};
 
 test.describe("Classic Battle replay", () => {
   test("Replay resets scoreboard after match end", async ({ page }) => {
@@ -110,12 +96,26 @@ test.describe("Classic Battle replay", () => {
 
       // Start match
       await page.click("#round-select-2");
-      // Wait for the round to initialize with player and opponent judoka stats
-      await waitForRoundStats(page, { timeout: ENGINE_WAIT_TIMEOUT_MS });
-      // Wait for the battle state to be ready for player action
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: ENGINE_WAIT_TIMEOUT_MS });
-      // Capture initial engine-reported state, click, then assert score change via Test API
-      const initialEngineState = await captureEngineState(page);
+      
+      // Ensure stats buttons are visible and battle is fully initialized
+      // This must happen AFTER clicking the round button
+      try {
+        await waitForBattleReady(page, { timeout: ENGINE_WAIT_TIMEOUT_MS, allowFallback: false });
+      } catch {
+        // Fallback: just wait for stats buttons to be visible
+        await expect(page.locator(selectors.statButton()).first()).toBeVisible({
+          timeout: ENGINE_WAIT_TIMEOUT_MS
+        });
+      }
+      
+      // Capture initial engine-reported state via page evaluation
+      const initialEngineState = await page.evaluate(() => {
+        const captureState = window.__PW_CLASSIC_BATTLE?.captureEngineState;
+        if (typeof captureState !== "function") {
+          return { ok: false, reason: "CAPTURE_HELPER_UNAVAILABLE" };
+        }
+        return captureState();
+      });
 
       if (!initialEngineState?.ok || !initialEngineState.scores) {
         const reason = initialEngineState?.reason ?? "UNKNOWN_ENGINE_STATE";

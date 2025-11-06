@@ -93,10 +93,7 @@ function getAnimationFrameProvider(animationFrameProvider) {
     return animationFrameProvider;
   }
 
-  if (
-    typeof globalThis !== "undefined" &&
-    typeof globalThis.requestAnimationFrame === "function"
-  ) {
+  if (typeof globalThis !== "undefined" && typeof globalThis.requestAnimationFrame === "function") {
     return globalThis.requestAnimationFrame.bind(globalThis);
   }
 

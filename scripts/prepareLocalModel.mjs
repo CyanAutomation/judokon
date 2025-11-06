@@ -14,7 +14,7 @@
  *    - If successful, copy/cache files into models/minilm.
  * 5. On failure, print actionable guidance for strict-offline environments.
  */
-import { mkdir, stat, cp } from "node:fs/promises";
+import { mkdir, stat, cp, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -103,11 +103,64 @@ async function copyFromDir(fromDir, destDir) {
   }
 }
 
-async function populateFromCache(cacheDir, destDir, options = {}) {
+async function validateCacheIntegrity(cacheDir) {
+  /**
+   * Verify Xenova cache files are valid and not corrupted stubs.
+   * Returns { isValid, issues }
+   */
   const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
+  const issues = [];
+
   try {
     await stat(cacheModelDir);
   } catch {
+    // Cache dir doesn't exist - that's ok
+    return { isValid: true, cacheExists: false, issues: [] };
+  }
+
+  // Validate each required file in cache
+  for (const rel of REQUIRED) {
+    const cachePath = path.join(cacheModelDir, rel);
+    try {
+      const s = await stat(cachePath);
+
+      // Files shouldn't be suspiciously small (stub files from interrupted downloads)
+      if (
+        (rel.endsWith(".onnx") && s.size < 1000000) ||
+        (rel === "tokenizer.json" && s.size < 100000) ||
+        (rel === "config.json" && s.size < 400) ||
+        (rel === "tokenizer_config.json" && s.size < 300)
+      ) {
+        issues.push({ file: rel, size: s.size, reason: "suspiciously small (possible stub)" });
+      }
+    } catch {
+      issues.push({ file: rel, reason: "missing or unreadable" });
+    }
+  }
+
+  return { isValid: issues.length === 0, cacheExists: true, issues };
+}
+
+async function populateFromCache(cacheDir, destDir, options = {}) {
+  const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
+
+  // Validate cache integrity before using it
+  const {
+    isValid: cacheValid,
+    cacheExists,
+    issues: cacheIssues
+  } = await validateCacheIntegrity(cacheDir);
+
+  if (!cacheExists) {
+    return false; // No cache to populate from
+  }
+
+  if (!cacheValid) {
+    // Cache is corrupted - don't use it, will force re-download
+    console.log(`[RAG] Xenova cache integrity check failed (${cacheIssues.length} issues found):`);
+    for (const issue of cacheIssues) {
+      console.log(`  - ${issue.file}: ${issue.reason}`);
+    }
     return false;
   }
 
@@ -200,6 +253,8 @@ export async function prepareLocalModel(options = {}) {
     const { pipeline, env } = await import("@xenova/transformers");
     const cacheDir = path.join(destRoot, "models");
     const localModelDir = path.join(cacheDir, "minilm");
+    const xenovaModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
+
     env.allowLocalModels = true;
     env.cacheDir = cacheDir;
     env.localModelPath = destRoot;
@@ -208,13 +263,39 @@ export async function prepareLocalModel(options = {}) {
     console.log(`  - Cache directory: ${cacheDir}`);
     console.log(`  - Model will be resolved as: ${path.join(destRoot, "models/minilm")}`);
     console.log(`  - Allow local models: true`);
+
+    // Pre-flight: check if Xenova cache is corrupted and needs cleanup
+    const {
+      isValid: cacheValid,
+      cacheExists,
+      issues: cacheIssues
+    } = await validateCacheIntegrity(cacheDir);
+
+    if (cacheExists && !cacheValid && cacheIssues.length > 0) {
+      console.log(
+        `[RAG] Xenova cache is corrupted. Removing stale cache to force clean re-download...`
+      );
+      try {
+        await rm(xenovaModelDir, { recursive: true, force: true });
+        console.log(`[RAG] Stale Xenova cache cleaned.`);
+      } catch (cleanErr) {
+        console.warn(
+          `[RAG] Warning: Could not clean cache (${cleanErr.message}), proceeding anyway`
+        );
+      }
+    }
+
     // Prepare dest directories to allow caching to land in-place
     await ensureDir(cacheDir);
     await ensureDir(localModelDir);
     await ensureDir(path.join(localModelDir, "onnx"));
+
     const seededFromCache = await populateFromCache(cacheDir, destDir, options);
+
     // Instantiating the pipeline may populate caches; we still ensure required files exist.
+    // If we cleaned the cache above, this will download fresh files.
     await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
+
     if (options.force || !seededFromCache) {
       await populateFromCache(cacheDir, destDir, options);
     }
