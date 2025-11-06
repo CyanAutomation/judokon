@@ -8,6 +8,16 @@
 
 **Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
 
+## Task 2.1 – Feature Flag Visibility Telemetry
+
+- Extended `applyLayout` visibility evaluation to capture `visibleIf.featureFlag` decisions, recording whether each flag resolved true/false and which regions were skipped because of a disabled flag.
+- Added telemetry surfaces (`featureFlagDecisions`, `skippedByFeatureFlag`) so debug tooling and downstream tests can assert per-region gating without scraping DOM state.
+- Updated unit coverage to assert both enabled/disabled flag paths populate the new telemetry, keeping previous layout assertions intact.
+
+**Outcome:** Feature flag integration now emits deterministic telemetry describing which regions were evaluated, their associated flag ids, and whether they rendered, satisfying the PRD requirement for observable flag-driven visibility.
+
+**Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
+
 ## Task 1.2 – Implement `loadLayout()` Backed by Static Registry & Inline Fallback
 
 - Added `src/helpers/layoutEngine/loadLayout.js` to resolve layouts from the generated registry or inline JSON fallback, with validation reuse and structured telemetry.

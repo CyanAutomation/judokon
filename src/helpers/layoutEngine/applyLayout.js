@@ -29,14 +29,20 @@ function toPercent(value, total) {
   return (value / total) * 100;
 }
 
-function shouldRenderRegion(region, isFeatureFlagEnabled) {
+function evaluateVisibility(region, isFeatureFlagEnabled) {
   const flagId = region?.visibleIf?.featureFlag;
-  if (!flagId) return true;
-  try {
-    return Boolean(isFeatureFlagEnabled(flagId));
-  } catch {
-    return false;
+  if (!flagId) {
+    return { isVisible: true, flagId: null };
   }
+
+  let enabled = false;
+  try {
+    enabled = Boolean(isFeatureFlagEnabled(flagId));
+  } catch {
+    enabled = false;
+  }
+
+  return { isVisible: enabled, flagId };
 }
 
 function hideElement(element) {
@@ -307,10 +313,21 @@ function processRegion(
     anchorList = [anchorList[0]];
   }
 
-  const shouldRender = shouldRenderRegion(region, resolver);
+  const { isVisible, flagId } = evaluateVisibility(region, resolver);
 
-  if (!shouldRender) {
+  if (flagId) {
+    result.featureFlagDecisions.push({
+      regionId: region.id,
+      flagId,
+      enabled: isVisible
+    });
+  }
+
+  if (!isVisible) {
     result.skippedRegions.push(region.id);
+    if (flagId) {
+      result.skippedByFeatureFlag.push({ regionId: region.id, flagId });
+    }
     anchorList.forEach((anchor) => {
       enqueueMutation(mutationQueue, () => hideElement(anchor));
     });
@@ -356,6 +373,8 @@ function processRegion(
  *   missingAnchors: string[],
  *   conflictingAnchors: string[],
  *   orphanedAnchors: string[],
+ *   skippedByFeatureFlag: { regionId: string, flagId: string }[],
+ *   featureFlagDecisions: { regionId: string, flagId: string, enabled: boolean }[],
  *   durationMs: number,
  *   errors: string[]
  * }} Telemetry describing the outcome.
@@ -378,6 +397,8 @@ export function applyLayout(layoutDefinition, options = {}) {
     missingAnchors: [],
     conflictingAnchors: [],
     orphanedAnchors: [],
+    skippedByFeatureFlag: [],
+    featureFlagDecisions: [],
     durationMs: 0,
     errors: []
   };

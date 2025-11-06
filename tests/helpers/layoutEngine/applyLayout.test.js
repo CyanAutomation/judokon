@@ -80,8 +80,43 @@ describe("applyLayout", () => {
     expect(resolver).toHaveBeenCalledWith("feature.scoreboard");
     expect(result.appliedRegions).toEqual([]);
     expect(result.skippedRegions).toEqual(["scoreboard"]);
+    expect(result.skippedByFeatureFlag).toEqual([
+      { regionId: "scoreboard", flagId: "feature.scoreboard" }
+    ]);
+    expect(result.featureFlagDecisions).toEqual([
+      { regionId: "scoreboard", flagId: "feature.scoreboard", enabled: false }
+    ]);
     expect(anchor.getAttribute("data-layout-visibility")).toBe("hidden");
     expect(anchor.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("records feature flag decisions when flags are enabled", () => {
+    const root = createRoot('<div data-layout-id="scoreboard"></div>');
+    const layout = {
+      id: "flag-enabled-layout",
+      grid: { cols: 6, rows: 6 },
+      regions: [
+        {
+          id: "scoreboard",
+          rect: { x: 0, y: 0, width: 3, height: 2 },
+          visibleIf: { featureFlag: "feature.scoreboard" }
+        }
+      ]
+    };
+    const logger = { warn: vi.fn(), error: vi.fn() };
+    const resolver = vi.fn().mockReturnValue(true);
+
+    const result = applyLayout(layout, {
+      root,
+      logger,
+      isFeatureFlagEnabled: resolver
+    });
+
+    expect(result.appliedRegions).toEqual(["scoreboard"]);
+    expect(result.skippedByFeatureFlag).toEqual([]);
+    expect(result.featureFlagDecisions).toEqual([
+      { regionId: "scoreboard", flagId: "feature.scoreboard", enabled: true }
+    ]);
   });
 
   it("reports missing anchors and continues processing", () => {

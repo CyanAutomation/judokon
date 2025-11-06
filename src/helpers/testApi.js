@@ -194,6 +194,104 @@ function logDevDebug(message, error) {
   } catch {}
 }
 
+/**
+ * Create a promise that polls a condition with timeout and cleanup.
+ * Reduces duplication of the finished flag and cleanup pattern.
+ * Used by multiple waitFor* methods to eliminate boilerplate.
+ *
+ * @param {{
+ *   condition: () => boolean,
+ *   timeout?: number,
+ *   pollInterval?: number,
+ *   onCleanup?: () => void
+ * }} config
+ * @returns {Promise<boolean>} Resolves true when condition met, false on timeout
+ * @internal
+ */
+// eslint-disable-next-line no-unused-vars
+function createPollingPromise({ condition, timeout = 5000, pollInterval = 50, onCleanup } = {}) {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    let finished = false;
+    let intervalId;
+    let timeoutId;
+
+    const cleanup = (result) => {
+      if (finished) return;
+      finished = true;
+      if (intervalId) clearInterval(intervalId);
+      if (timeoutId) clearTimeout(timeoutId);
+      if (onCleanup) {
+        try {
+          onCleanup();
+        } catch {}
+      }
+      resolve(result);
+    };
+
+    const checkCondition = () => {
+      if (finished) return;
+      try {
+        if (condition()) {
+          cleanup(true);
+          return;
+        }
+      } catch (error) {
+        logDevDebug("[createPollingPromise] Condition check failed", error);
+      }
+
+      if (Date.now() - startTime > timeout) {
+        cleanup(false);
+      }
+    };
+
+    // Initial check
+    checkCondition();
+
+    // Setup polling if not finished
+    if (!finished) {
+      intervalId = setInterval(checkCondition, pollInterval);
+      timeoutId = setTimeout(() => cleanup(false), timeout);
+    }
+  });
+}
+
+/**
+ * Extract a numeric stat value from an object, trying both exact key and lowercase variant.
+ * Used by stat comparison and round stats checking functions.
+ *
+ * @param {object} stats - Stats object to read from
+ * @param {string} key - Key to look up (tried as-is first, then lowercased)
+ * @returns {number} Finite number or NaN if not found or invalid
+ * @internal
+ */
+function extractStatValue(stats, key) {
+  if (!stats || typeof stats !== "object") {
+    return Number.NaN;
+  }
+
+  // Try exact key match first
+  if (Object.prototype.hasOwnProperty.call(stats, key)) {
+    const direct = Number(stats[key]);
+    if (Number.isFinite(direct)) {
+      return direct;
+    }
+  }
+
+  // Try lowercase variant
+  const lowerKey = String(key).trim().toLowerCase();
+  if (
+    lowerKey &&
+    lowerKey !== key &&
+    Object.prototype.hasOwnProperty.call(stats, lowerKey) &&
+    Number.isFinite(Number(stats[lowerKey]))
+  ) {
+    return Number(stats[lowerKey]);
+  }
+
+  return Number.NaN;
+}
+
 function isAutomationNavigator(nav) {
   if (!nav) return false;
 
@@ -499,30 +597,11 @@ const stateApi = {
           return false;
         }
 
-        const readValue = (stats, key) => {
-          if (!stats || typeof stats !== "object") {
-            return Number.NaN;
-          }
-
-          const normalizedKey = String(key).trim();
-          const direct = stats[key];
-          if (Number.isFinite(Number(direct))) {
-            return Number(direct);
-          }
-
-          const lower = normalizedKey.toLowerCase();
-          if (lower !== key && Number.isFinite(Number(stats[lower]))) {
-            return Number(stats[lower]);
-          }
-
-          return Number.NaN;
-        };
-
         let playerReady = false;
         let opponentReady = false;
         for (const key of keys) {
-          const playerValue = readValue(playerStats, key);
-          const opponentValue = readValue(opponentStats, key);
+          const playerValue = extractStatValue(playerStats, key);
+          const opponentValue = extractStatValue(opponentStats, key);
           if (Number.isFinite(playerValue)) {
             playerReady = true;
           }
@@ -2315,30 +2394,6 @@ const inspectionApi = {
         new Set([...Object.keys(playerStats ?? {}), ...Object.keys(opponentStats ?? {})])
       );
 
-      const readValue = (stats, key) => {
-        if (!stats || typeof stats !== "object") {
-          return Number.NaN;
-        }
-
-        if (Object.prototype.hasOwnProperty.call(stats, key)) {
-          const direct = Number(stats[key]);
-          if (Number.isFinite(direct)) {
-            return direct;
-          }
-        }
-
-        const normalizedKey = String(key).trim().toLowerCase();
-        if (
-          normalizedKey &&
-          Object.prototype.hasOwnProperty.call(stats, normalizedKey) &&
-          Number.isFinite(Number(stats[normalizedKey]))
-        ) {
-          return Number(stats[normalizedKey]);
-        }
-
-        return Number.NaN;
-      };
-
       const comparisons = [];
       for (const key of keys) {
         const canonicalKey = String(key ?? "").trim();
@@ -2346,8 +2401,8 @@ const inspectionApi = {
           continue;
         }
 
-        const playerValue = readValue(playerStats, canonicalKey);
-        const opponentValue = readValue(opponentStats, canonicalKey);
+        const playerValue = extractStatValue(playerStats, canonicalKey);
+        const opponentValue = extractStatValue(opponentStats, canonicalKey);
         if (!Number.isFinite(playerValue) || !Number.isFinite(opponentValue)) {
           continue;
         }
