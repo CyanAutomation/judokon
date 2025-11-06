@@ -10,14 +10,15 @@ test.describe("Classic Battle replay", () => {
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
+        window.__OPPONENT_RESOLVE_DELAY_MS = 500; // 500ms delay before opponent reveals choice
 
         const readScores = (engineApi) => {
           if (engineApi && typeof engineApi.getScores === "function") {
             try {
               const scores = engineApi.getScores();
               if (scores && typeof scores === "object") {
-                const player = Number(scores.player);
-                const opponent = Number(scores.opponent);
+                const player = Number(scores.playerScore ?? scores.player);
+                const opponent = Number(scores.opponentScore ?? scores.opponent);
                 if (Number.isFinite(player) && Number.isFinite(opponent)) {
                   return { player, opponent };
                 }
@@ -36,8 +37,16 @@ test.describe("Classic Battle replay", () => {
           if (!snapshot || typeof snapshot !== "object") {
             return null;
           }
-          const player = Number(snapshot.playerScore ?? snapshot.player);
-          const opponent = Number(snapshot.opponentScore ?? snapshot.opponent);
+          const player = Number(
+            snapshot.playerScore !== null && snapshot.playerScore !== undefined
+              ? snapshot.playerScore
+              : (snapshot.player ?? 0)
+          );
+          const opponent = Number(
+            snapshot.opponentScore !== null && snapshot.opponentScore !== undefined
+              ? snapshot.opponentScore
+              : (snapshot.opponent ?? 0)
+          );
           if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
             return null;
           }
@@ -114,12 +123,31 @@ test.describe("Classic Battle replay", () => {
         if (typeof captureState !== "function") {
           return { ok: false, reason: "CAPTURE_HELPER_UNAVAILABLE" };
         }
-        return captureState();
+        const result = captureState();
+        
+        // If capture failed, gather diagnostic info
+        if (!result.ok) {
+          const engineApi = window.__TEST_API?.engine;
+          const inspectApi = window.__TEST_API?.inspect;
+          const snapshot = inspectApi?.getBattleSnapshot?.();
+          result.diagnostics = {
+            engineAvailable: !!engineApi,
+            inspectAvailable: !!inspectApi,
+            snapshotAvailable: !!snapshot,
+            snapshotKeys: snapshot ? Object.keys(snapshot) : null,
+            snapshotData: snapshot
+          };
+        }
+        
+        return result;
       });
 
       if (!initialEngineState?.ok || !initialEngineState.scores) {
         const reason = initialEngineState?.reason ?? "UNKNOWN_ENGINE_STATE";
-        throw new Error(`Unable to capture initial engine scores: ${reason}`);
+        const diag = initialEngineState?.diagnostics
+          ? JSON.stringify(initialEngineState.diagnostics)
+          : "NO_DIAGNOSTICS";
+        throw new Error(`Unable to capture initial engine scores: ${reason}\nDiagnostics: ${diag}`);
       }
 
       const initialRoundsPlayed = initialEngineState.roundsPlayed ?? 0;
