@@ -6,7 +6,21 @@ This document proposes a phased implementation strategy for the Layout Editor (`
 
 **Timeline:** 5 phases over ~6-8 weeks  
 **Scope:** Grid-based UI, drag-resize, live preview, import/export, localStorage, ASCII export  
-**Key Dependencies:** Layout Engine, Feature Flags, Battle pages (Classic/CLI for iframe previews)
+**Key Dependencies:** Layout Engine (`loadLayout`, `applyLayout`, `validateLayoutDefinition`, `layoutRegistry`), Feature Flags, Battle pages (Classic/CLI for iframe previews)
+
+---
+
+## Accuracy Audit (2025-02-14)
+
+| Check | Result | Evidence / Follow-up |
+| --- | --- | --- |
+| Layout Editor assets exist today | ❌ `src/pages` and `src/components` do not contain any `layoutEditor*` entries; this proposal remains net-new work. | `ls src/pages`, `ls src/components` |
+| Layout data access pattern | ✅ `src/helpers/layoutEngine/loadLayout.js` already resolves layouts via the generated registry with inline JSON fallback. The editor should call this helper instead of duplicating registry parsing. | `src/helpers/layoutEngine/loadLayout.js` |
+| Registry shape | ❌ The registry is a plain object, not a `Map`. There is no `.get`/`.keys` API, so the editor must use `Object.keys(layoutRegistry)` or `getLayoutModule()`. | `src/helpers/layoutEngine/layoutRegistry.js` |
+| Validation utilities | ✅ `validateLayoutDefinition` is exported from `src/helpers/layoutEngine/applyLayout.js` and should be reused for both import-time and live validation. | `src/helpers/layoutEngine/applyLayout.js` |
+| Battle preview targets | ✅ `battleClassic.html` and `battleCLI.html` exist under `src/pages`; they can be loaded inside the preview iframe. | `src/pages/battleClassic.html`, `src/pages/battleCLI.html` |
+
+The remainder of the document has been updated to reflect these findings—most notably by reusing `loadLayout()` for registry access and by explicitly calling out that the referenced files are deliverables rather than existing assets.
 
 ---
 
@@ -660,6 +674,7 @@ body {
  */
 
 import { layoutRegistry } from "../../helpers/layoutEngine/layoutRegistry.js";
+import { loadLayout as resolveLayout } from "../../helpers/layoutEngine/loadLayout.js";
 import { validateLayoutDefinition } from "../../helpers/layoutEngine/applyLayout.js";
 import { EditorCanvas } from "./EditorCanvas.js";
 import { PropertyInspector } from "./PropertyInspector.js";
@@ -719,7 +734,7 @@ async function initializeEditor() {
 }
 
 function populateModeSelector() {
-  const modes = Array.from(layoutRegistry.keys());
+  const modes = Object.keys(layoutRegistry).sort();
   elements.layoutMode.innerHTML = `<option value="">-- Select Layout Mode --</option>`;
   modes.forEach((mode) => {
     const option = document.createElement("option");
@@ -732,7 +747,7 @@ function populateModeSelector() {
 async function loadDefaultLayout() {
   const savedLayout = storageManager.restoreDraft();
   if (savedLayout) {
-    loadLayout(savedLayout);
+    applyLayoutToEditor(savedLayout);
     consolePanel.info("Restored draft layout from storage.");
   }
 }
@@ -755,21 +770,22 @@ async function handleModeChange(e) {
   if (!mode) return;
 
   try {
-    const module = layoutRegistry.get(mode);
-    if (!module || !module.default) {
-      consolePanel.error(`Failed to load layout for mode: ${mode}`);
+    const outcome = resolveLayout(mode, { document });
+    if (!outcome.layout) {
+      const reason = outcome.errors?.length ? outcome.errors.join("; ") : "unknown error";
+      consolePanel.error(`Failed to load layout for mode: ${mode} (${reason})`);
       return;
     }
 
-    const layout = JSON.parse(JSON.stringify(module.default)); // Deep clone
-    loadLayout(layout);
-    consolePanel.info(`Loaded layout: ${mode}`);
+    const layout = JSON.parse(JSON.stringify(outcome.layout)); // Deep clone
+    applyLayoutToEditor(layout);
+    consolePanel.info(`Loaded layout: ${mode} [${outcome.source}]`);
   } catch (err) {
     consolePanel.error(`Error loading layout: ${err.message}`);
   }
 }
 
-function loadLayout(layout) {
+function applyLayoutToEditor(layout) {
   const { errors } = validateLayoutDefinition(layout);
   if (errors.length) {
     consolePanel.error(`Invalid layout: ${errors.join(", ")}`);
@@ -1237,7 +1253,7 @@ These will be fully implemented in Phase 1.2.
 #### 2.2 Import Pipeline
 - File upload (.json, .layout.js)
 - Paste JSON textarea
-- Load from layoutRegistry
+- Resolve via `loadLayout()` (registry + inline fallback)
 - Validation on import
 
 #### 2.3 Validation System
@@ -1382,7 +1398,7 @@ tests/
 ## Dependencies & Integration Points
 
 ### Existing Infrastructure
-- **Layout Engine:** `applyLayout`, `validateLayoutDefinition`, `layoutRegistry`
+- **Layout Engine:** `loadLayout`, `applyLayout`, `validateLayoutDefinition`, `layoutRegistry`
 - **Feature Flags:** `featureFlags.js` for conditional regions
 - **Battle Pages:** `battleClassic.html`, `battleCLI.html` for iframe targets
 - **Telemetry:** `logEvent` for editor actions

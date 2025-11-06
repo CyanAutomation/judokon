@@ -470,7 +470,9 @@ export async function handleReplay(store) {
         );
         return;
       }
-      console.log("[REPLAY DEBUG] resetBattleEnginePreservingConfig is not a function, using fallback");
+      console.log(
+        "[REPLAY DEBUG] resetBattleEnginePreservingConfig is not a function, using fallback"
+      );
     } catch (error) {
       console.log("[REPLAY DEBUG] resetBattleEnginePreservingConfig threw error:", error);
       try {
