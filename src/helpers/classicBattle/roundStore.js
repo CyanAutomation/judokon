@@ -128,16 +128,28 @@ class RoundStore {
     const safeOptions = typeof options === "object" && options !== null ? options : {};
     const { emitLegacyEvent = true } = safeOptions;
     const oldNumber = this.currentRound.number;
+    console.log(
+      "[REPLAY DEBUG] roundStore.setRoundNumber called - old:",
+      oldNumber,
+      "new:",
+      number,
+      "emitLegacy:",
+      emitLegacyEvent,
+      "stack:",
+      new Error().stack.split("\n").slice(1, 4).join("\n")
+    );
     if (oldNumber === number) return;
 
     this.currentRound.number = number;
 
     // Notify subscribers
     if (this.callbacks.onRoundNumberChange) {
+      console.log("[REPLAY DEBUG] roundStore - calling onRoundNumberChange callback");
       this.callbacks.onRoundNumberChange(number, oldNumber);
     }
 
     if (emitLegacyEvent) {
+      console.log("[REPLAY DEBUG] roundStore - emitting display.round.start event with:", number);
       // Emit legacy event for backward compatibility
       emitBattleEvent("display.round.start", {
         roundNumber: number

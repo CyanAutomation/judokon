@@ -1,4 +1,5 @@
 import { isEnabled as isFeatureFlagEnabledDefault } from "../featureFlags.js";
+import { logEvent } from "../telemetry.js";
 
 const DEFAULT_LAYOUT_ID = "unknown";
 const DEFAULT_Z_INDEX = 1;
@@ -116,6 +117,21 @@ function enqueueMutation(queue, mutation) {
   if (typeof mutation === "function") {
     queue.push(mutation);
   }
+}
+
+function emitSkippedRegionTelemetry(layoutId, skippedByFeatureFlag, featureFlagDecisions) {
+  if (!skippedByFeatureFlag.length) return;
+  const skippedRegions = skippedByFeatureFlag.map((entry) => entry.regionId);
+  const flags = Array.from(new Set(skippedByFeatureFlag.map((entry) => entry.flagId))).filter(
+    Boolean
+  );
+  logEvent("layout.skippedRegions", {
+    layoutId,
+    skipped: skippedByFeatureFlag.map((entry) => ({ ...entry })),
+    skippedRegions,
+    flags,
+    featureFlagDecisions
+  });
 }
 
 function flushMutations(queue, schedule) {
@@ -329,6 +345,9 @@ function processRegion(
     result.skippedRegions.push(region.id);
     if (flagId) {
       result.skippedByFeatureFlag.push({ regionId: region.id, flagId });
+      warn(
+        `layoutEngine.applyLayout: region '${region.id}' skipped – feature flag '${flagId}' disabled.`
+      );
     }
     anchorList.forEach((anchor) => {
       enqueueMutation(mutationQueue, () => hideElement(anchor));
@@ -453,6 +472,7 @@ export function applyLayout(layoutDefinition, options = {}) {
     });
   }
 
+  emitSkippedRegionTelemetry(layoutId, result.skippedByFeatureFlag, result.featureFlagDecisions);
   flushMutations(mutationQueue, scheduleAnimationFrame);
 
   return finalizeResult(result, start);

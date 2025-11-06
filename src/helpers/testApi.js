@@ -292,6 +292,23 @@ function extractStatValue(stats, key) {
   return Number.NaN;
 }
 
+/**
+ * Safely read a value with optional chaining, returning a default on any error.
+ * Eliminates repetitive try-catch IIFEs for DOM and window access.
+ *
+ * @param {() => any} getter - Function that returns the value
+ * @param {any} defaultValue - Value to return if getter throws
+ * @returns {any} The getter result or defaultValue
+ * @internal
+ */
+function safeRead(getter, defaultValue = null) {
+  try {
+    return getter();
+  } catch {
+    return defaultValue;
+  }
+}
+
 function isAutomationNavigator(nav) {
   if (!nav) return false;
 
@@ -2496,21 +2513,12 @@ const inspectionApi = {
               Number.isFinite(Number(scoreboard?.opponent))
             ? Number(scoreboard.player) + Number(scoreboard.opponent)
             : null;
-      const statSelected = (() => {
-        try {
-          return document.body?.dataset?.statSelected === "true";
-        } catch {
-          return false;
-        }
-      })();
-      const selectionFinalized = (() => {
-        try {
-          if (typeof window !== "undefined") {
-            return window.__classicBattleSelectionFinalized === true;
-          }
-        } catch {}
-        return false;
-      })();
+      const statSelected = safeRead(() => document.body?.dataset?.statSelected === "true", false);
+      const selectionFinalized = safeRead(
+        () =>
+          typeof window !== "undefined" ? window.__classicBattleSelectionFinalized === true : false,
+        false
+      );
       const selectionFromStore =
         typeof store?.selectionMade === "boolean" ? store.selectionMade : null;
       const resolvedSelectionMade =
@@ -2540,13 +2548,7 @@ const inspectionApi = {
         roundsPlayed = storeRounds;
       }
 
-      const currentState = (() => {
-        try {
-          return document.body?.dataset?.battleState ?? null;
-        } catch {
-          return null;
-        }
-      })();
+      const currentState = safeRead(() => document.body?.dataset?.battleState ?? null, null);
 
       if (
         (!currentState ||

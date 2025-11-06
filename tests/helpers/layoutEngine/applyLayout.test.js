@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterAll, beforeAll, afterEach } from "vitest";
 import { applyLayout } from "../../../src/helpers/layoutEngine/applyLayout.js";
 import * as featureFlags from "../../../src/helpers/featureFlags.js";
+import * as telemetry from "../../../src/helpers/telemetry.js";
 
 function createRoot(html = "") {
   document.body.innerHTML = `<div id="battleRoot">${html}</div>`;
@@ -145,6 +146,37 @@ describe("applyLayout", () => {
     expect(spy).toHaveBeenCalledWith("feature.arena");
     expect(result.skippedRegions).toEqual(["arena"]);
     expect(result.skippedByFeatureFlag).toEqual([{ regionId: "arena", flagId: "feature.arena" }]);
+  });
+
+  it("emits telemetry when regions are skipped due to disabled feature flags", () => {
+    const root = createRoot('<div data-layout-id="arena"></div>');
+    const layout = {
+      id: "flag-layout",
+      grid: { cols: 4, rows: 4 },
+      regions: [
+        {
+          id: "arena",
+          rect: { x: 0, y: 0, width: 4, height: 4 },
+          visibleIf: { featureFlag: "feature.arena" }
+        }
+      ]
+    };
+    const logEventSpy = vi.spyOn(telemetry, "logEvent").mockImplementation(() => {});
+
+    applyLayout(layout, {
+      root,
+      isFeatureFlagEnabled: () => false
+    });
+
+    expect(logEventSpy).toHaveBeenCalledWith(
+      "layout.skippedRegions",
+      expect.objectContaining({
+        layoutId: "flag-layout",
+        skipped: [{ regionId: "arena", flagId: "feature.arena" }],
+        skippedRegions: ["arena"],
+        flags: ["feature.arena"]
+      })
+    );
   });
 
   it("reports missing anchors and continues processing", () => {
