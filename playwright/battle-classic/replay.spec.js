@@ -7,6 +7,15 @@ const ENGINE_WAIT_TIMEOUT_MS = 5_000;
 
 test.describe("Classic Battle replay", () => {
   test("Replay resets scoreboard after match end", async ({ page }) => {
+    // Capture console logs from the page
+    const consoleLogs = [];
+    page.on("console", (msg) => {
+      const text = msg.text();
+      if (text.includes("[REPLAY DEBUG]")) {
+        consoleLogs.push(text);
+      }
+    });
+
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
@@ -105,7 +114,7 @@ test.describe("Classic Battle replay", () => {
 
       // Start match
       await page.click("#round-select-2");
-
+      
       // Ensure stats buttons are visible and battle is fully initialized
       // This must happen AFTER clicking the round button
       try {
@@ -116,7 +125,7 @@ test.describe("Classic Battle replay", () => {
           timeout: ENGINE_WAIT_TIMEOUT_MS
         });
       }
-
+      
       // Capture initial engine-reported state via page evaluation
       const initialEngineState = await page.evaluate(() => {
         const captureState = window.__PW_CLASSIC_BATTLE?.captureEngineState;
@@ -204,6 +213,14 @@ test.describe("Classic Battle replay", () => {
 
       // Click Replay and assert round counter resets
       await page.getByTestId("replay-button").click();
+      
+      // Add a small delay to allow DOM updates to settle
+      await page.waitForTimeout(100);
+      
+      // Check the round counter text directly
+      const roundCounterText = await page.locator(selectors.roundCounter()).textContent();
+      console.log("Round counter text after replay:", roundCounterText);
+      
       const engineStateAfterReplay = await page.evaluate(() => {
         const engineApi = window.__TEST_API?.engine;
         if (!engineApi) {
@@ -220,5 +237,12 @@ test.describe("Classic Battle replay", () => {
       expect(engineStateAfterReplay?.pointsToWin).toBe(pointsBeforeReplay);
       await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
     }, ["log", "info", "warn", "error", "debug"]);
+
+    // Print all captured replay debug logs AFTER withMutedConsole
+    if (consoleLogs.length > 0) {
+      console.log("\n=== REPLAY DEBUG LOGS ===");
+      consoleLogs.forEach((log) => console.log(log));
+      console.log("=========================\n");
+    }
   });
 });
