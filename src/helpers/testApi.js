@@ -546,6 +546,7 @@ const stateApi = {
 
     return await new Promise((resolve) => {
       const startTime = Date.now();
+      let timeoutId;
       const intervalId = setInterval(() => {
         if (readStatsReady()) {
           clearInterval(intervalId);
@@ -561,7 +562,7 @@ const stateApi = {
         }
       }, 50);
 
-      const timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(() => {
         clearInterval(intervalId);
         resolve(false);
       }, timeout);
@@ -1350,8 +1351,8 @@ const engineApi = {
         return null;
       }
 
-      const player = Number(scores.player);
-      const opponent = Number(scores.opponent);
+      const player = Number(scores.playerScore ?? scores.player);
+      const opponent = Number(scores.opponentScore ?? scores.opponent);
       if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
         return null;
       }

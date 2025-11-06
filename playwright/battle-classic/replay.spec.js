@@ -7,8 +7,7 @@ const ENGINE_WAIT_TIMEOUT_MS = 5_000;
 
 test.describe("Classic Battle replay", () => {
   test("Replay resets scoreboard after match end", async ({ page }) => {
-    // Temporarily disable console muting for debugging
-    // await withMutedConsole(async () => {
+    await withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
         window.__OPPONENT_RESOLVE_DELAY_MS = 500; // 500ms delay before opponent reveals choice
@@ -124,31 +123,12 @@ test.describe("Classic Battle replay", () => {
         if (typeof captureState !== "function") {
           return { ok: false, reason: "CAPTURE_HELPER_UNAVAILABLE" };
         }
-        const result = captureState();
-        
-        // If capture failed, gather diagnostic info
-        if (!result.ok) {
-          const engineApi = window.__TEST_API?.engine;
-          const inspectApi = window.__TEST_API?.inspect;
-          const snapshot = inspectApi?.getBattleSnapshot?.();
-          result.diagnostics = {
-            engineAvailable: !!engineApi,
-            inspectAvailable: !!inspectApi,
-            snapshotAvailable: !!snapshot,
-            snapshotKeys: snapshot ? Object.keys(snapshot) : null,
-            snapshotData: snapshot
-          };
-        }
-        
-        return result;
+        return captureState();
       });
 
       if (!initialEngineState?.ok || !initialEngineState.scores) {
         const reason = initialEngineState?.reason ?? "UNKNOWN_ENGINE_STATE";
-        const diag = initialEngineState?.diagnostics
-          ? JSON.stringify(initialEngineState.diagnostics)
-          : "NO_DIAGNOSTICS";
-        throw new Error(`Unable to capture initial engine scores: ${reason}\nDiagnostics: ${diag}`);
+        throw new Error(`Unable to capture initial engine scores: ${reason}`);
       }
 
       const initialRoundsPlayed = initialEngineState.roundsPlayed ?? 0;
@@ -183,26 +163,14 @@ test.describe("Classic Battle replay", () => {
               }
 
               const engineState = captureState();
-              
-              // Debug: also capture raw engine and snapshot data
-              const debugInfo = {
-                engineScores: window.__TEST_API?.engine?.getScores?.(),
-                snapshotData: window.__TEST_API?.inspect?.getBattleSnapshot?.(),
-                storeScores: {
-                  player: window.battleStore?.playerScore,
-                  opponent: window.battleStore?.opponentScore
-                }
-              };
-              
               if (!engineState?.ok || !engineState.scores) {
                 return {
                   ok: false,
-                  reason: engineState?.reason ?? "ENGINE_STATE_UNAVAILABLE",
-                  debugInfo
+                  reason: engineState?.reason ?? "ENGINE_STATE_UNAVAILABLE"
                 };
               }
 
-              return { ...engineState, debugInfo };
+              return engineState;
             } catch (error) {
               return {
                 ok: false,
@@ -220,18 +188,9 @@ test.describe("Classic Battle replay", () => {
 
         if (attempt === maxAttempts - 1) {
           const reason = waitResult?.reason ?? "UNKNOWN_WAIT_FAILURE";
-          const debug = waitResult?.debugInfo
-            ? `\nDebug: ${JSON.stringify(waitResult.debugInfo, null, 2)}`
-            : "";
-          throw new Error(`Failed to observe score change via engine API: ${reason}${debug}`);
+          throw new Error(`Failed to observe score change via engine API: ${reason}`);
         }
       }
-      
-      // Debug output before assertion
-      console.log("[TEST] Initial engine state:", initialEngineState);
-      console.log("[TEST] Final engine state:", finalEngineState);
-      console.log("[TEST] Final debug info:", finalEngineState?.debugInfo);
-      
       expect(finalEngineState?.scores).toBeDefined();
       expect(finalEngineState.scores).not.toEqual(initialEngineState.scores);
       if (typeof finalEngineState?.roundsPlayed === "number") {
@@ -260,6 +219,6 @@ test.describe("Classic Battle replay", () => {
       expect(engineStateAfterReplay?.roundsPlayed).toBeLessThanOrEqual(1);
       expect(engineStateAfterReplay?.pointsToWin).toBe(pointsBeforeReplay);
       await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
-    // }, ["log", "info", "warn", "error", "debug"]);
+    }, ["log", "info", "warn", "error", "debug"]);
   });
 });
