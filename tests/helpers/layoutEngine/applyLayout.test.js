@@ -1,5 +1,6 @@
-import { describe, expect, it, vi, beforeEach, afterAll, beforeAll } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterAll, beforeAll, afterEach } from "vitest";
 import { applyLayout } from "../../../src/helpers/layoutEngine/applyLayout.js";
+import * as featureFlags from "../../../src/helpers/featureFlags.js";
 
 function createRoot(html = "") {
   document.body.innerHTML = `<div id="battleRoot">${html}</div>`;
@@ -16,6 +17,10 @@ describe("applyLayout", () => {
   beforeEach(() => {
     globalThis.requestAnimationFrame = undefined;
     document.body.innerHTML = "";
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   afterAll(() => {
@@ -117,6 +122,29 @@ describe("applyLayout", () => {
     expect(result.featureFlagDecisions).toEqual([
       { regionId: "scoreboard", flagId: "feature.scoreboard", enabled: true }
     ]);
+  });
+
+  it("uses the feature flag module by default when no resolver is provided", () => {
+    const root = createRoot('<div data-layout-id="arena"></div>');
+    const layout = {
+      id: "flag-default-layout",
+      grid: { cols: 5, rows: 5 },
+      regions: [
+        {
+          id: "arena",
+          rect: { x: 0, y: 0, width: 5, height: 5 },
+          visibleIf: { featureFlag: "feature.arena" }
+        }
+      ]
+    };
+
+    const spy = vi.spyOn(featureFlags, "isEnabled").mockReturnValue(false);
+
+    const result = applyLayout(layout, { root });
+
+    expect(spy).toHaveBeenCalledWith("feature.arena");
+    expect(result.skippedRegions).toEqual(["arena"]);
+    expect(result.skippedByFeatureFlag).toEqual([{ regionId: "arena", flagId: "feature.arena" }]);
   });
 
   it("reports missing anchors and continues processing", () => {

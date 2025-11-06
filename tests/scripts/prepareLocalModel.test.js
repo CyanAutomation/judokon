@@ -55,13 +55,18 @@ describe("prepareLocalModel", () => {
       await stat(path.join(cacheDir, "minilm"));
       await stat(path.join(cacheDir, "minilm", "onnx"));
       await mkdir(path.join(cacheModelDir, "onnx"), { recursive: true });
-      await writeFile(path.join(cacheModelDir, "config.json"), "{}", "utf8");
-      await writeFile(path.join(cacheModelDir, "tokenizer.json"), "{}", "utf8");
-      await writeFile(path.join(cacheModelDir, "tokenizer_config.json"), "{}", "utf8");
+      const largeOnnx = Buffer.alloc(1000001);
+      const largeTokenizer = "a".repeat(100001);
+      const largeConfig = "b".repeat(401);
+      const largeTokenizerConfig = "c".repeat(301);
+      await writeFile(path.join(cacheModelDir, "config.json"), largeConfig, "utf8");
+      await writeFile(path.join(cacheModelDir, "tokenizer.json"), largeTokenizer, "utf8");
       await writeFile(
-        path.join(cacheModelDir, "onnx", "model_quantized.onnx"),
-        Buffer.from([1, 2, 3])
+        path.join(cacheModelDir, "tokenizer_config.json"),
+        largeTokenizerConfig,
+        "utf8"
       );
+      await writeFile(path.join(cacheModelDir, "onnx", "model_quantized.onnx"), largeOnnx);
       return {};
     });
     const env = { allowLocalModels: false };
@@ -102,19 +107,23 @@ describe("prepareLocalModel", () => {
     const cacheDir = path.join(destRoot, "models");
     const destDir = path.join(cacheDir, "minilm");
     const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
-    const cachedConfig = '{"from":"cache"}';
+    const cachedConfig = '{"from":"cache"}'.padEnd(401, " ");
 
     await rm(destDir, { recursive: true, force: true });
     await rm(path.join(cacheDir, "Xenova"), { recursive: true, force: true });
 
     await mkdir(path.join(cacheModelDir, "onnx"), { recursive: true });
+    const largeOnnx = Buffer.alloc(1000001);
+    const largeTokenizer = "a".repeat(100001);
+    const largeTokenizerConfig = "c".repeat(301);
     await writeFile(path.join(cacheModelDir, "config.json"), cachedConfig, "utf8");
-    await writeFile(path.join(cacheModelDir, "tokenizer.json"), "{}", "utf8");
-    await writeFile(path.join(cacheModelDir, "tokenizer_config.json"), "{}", "utf8");
+    await writeFile(path.join(cacheModelDir, "tokenizer.json"), largeTokenizer, "utf8");
     await writeFile(
-      path.join(cacheModelDir, "onnx", "model_quantized.onnx"),
-      Buffer.from([9, 9, 9])
+      path.join(cacheModelDir, "tokenizer_config.json"),
+      largeTokenizerConfig,
+      "utf8"
     );
+    await writeFile(path.join(cacheModelDir, "onnx", "model_quantized.onnx"), largeOnnx);
 
     await mkdir(path.join(destDir, "onnx"), { recursive: true });
     await writeFile(path.join(destDir, "config.json"), '{"stale":true}', "utf8");

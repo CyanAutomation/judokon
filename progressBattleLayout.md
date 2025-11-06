@@ -18,6 +18,16 @@
 
 **Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
 
+## Task 2.2 – Check Runtime Flags & Toggle Visibility
+
+- Wired `applyLayout` to the shared feature flag service (`featureFlags.isEnabled`) so layouts automatically respect the live runtime flag state without requiring callers to pass their own resolver.
+- Added guard-rail telemetry (`featureFlagDecisions`, `skippedByFeatureFlag`) to surface which regions were hidden due to disabled flags, and expanded unit coverage to spy on the shared resolver ensuring default behavior uses it.
+- Maintained animation-frame batching so flag-driven visibility changes sit within the same single-frame mutation queue established earlier.
+
+**Outcome:** Layout regions now honor the canonical feature flag state by default, guaranteeing runtime parity with the broader app while preserving deterministic telemetry for skipped sections.
+
+**Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
+
 ## Task 1.2 – Implement `loadLayout()` Backed by Static Registry & Inline Fallback
 
 - Added `src/helpers/layoutEngine/loadLayout.js` to resolve layouts from the generated registry or inline JSON fallback, with validation reuse and structured telemetry.

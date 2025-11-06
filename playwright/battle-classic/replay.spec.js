@@ -105,7 +105,7 @@ test.describe("Classic Battle replay", () => {
 
       // Start match
       await page.click("#round-select-2");
-      
+
       // Ensure stats buttons are visible and battle is fully initialized
       // This must happen AFTER clicking the round button
       try {
@@ -116,7 +116,7 @@ test.describe("Classic Battle replay", () => {
           timeout: ENGINE_WAIT_TIMEOUT_MS
         });
       }
-      
+
       // Capture initial engine-reported state via page evaluation
       const initialEngineState = await page.evaluate(() => {
         const captureState = window.__PW_CLASSIC_BATTLE?.captureEngineState;

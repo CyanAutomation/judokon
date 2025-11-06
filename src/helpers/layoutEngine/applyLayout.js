@@ -1,3 +1,5 @@
+import { isEnabled as isFeatureFlagEnabledDefault } from "../featureFlags.js";
+
 const DEFAULT_LAYOUT_ID = "unknown";
 const DEFAULT_Z_INDEX = 1;
 
@@ -383,7 +385,7 @@ export function applyLayout(layoutDefinition, options = {}) {
   const start = getNow();
   const {
     root: rootOrSelector,
-    isFeatureFlagEnabled = () => true,
+    isFeatureFlagEnabled = isFeatureFlagEnabledDefault,
     logger = {},
     animationFrameProvider
   } = options;
