@@ -1,6 +1,10 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import selectors from "../../playwright/helpers/selectors";
-import { waitForBattleReady } from "../helpers/battleStateHelper.js";
+import {
+  waitForBattleReady,
+  waitForRoundStats,
+  waitForBattleState
+} from "../helpers/battleStateHelper.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 
 const ENGINE_WAIT_TIMEOUT_MS = 5_000;
@@ -106,6 +110,10 @@ test.describe("Classic Battle replay", () => {
 
       // Start match
       await page.click("#round-select-2");
+      // Wait for the round to initialize with player and opponent judoka stats
+      await waitForRoundStats(page, { timeout: ENGINE_WAIT_TIMEOUT_MS });
+      // Wait for the battle state to be ready for player action
+      await waitForBattleState(page, "waitingForPlayerAction", { timeout: ENGINE_WAIT_TIMEOUT_MS });
       // Capture initial engine-reported state, click, then assert score change via Test API
       const initialEngineState = await captureEngineState(page);
 

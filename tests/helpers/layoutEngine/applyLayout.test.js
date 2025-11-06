@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterAll, beforeAll } from "vitest";
 import { applyLayout } from "../../../src/helpers/layoutEngine/applyLayout.js";
 
 function createRoot(html = "") {
@@ -7,8 +7,19 @@ function createRoot(html = "") {
 }
 
 describe("applyLayout", () => {
+  let originalRequestAnimationFrame;
+
+  beforeAll(() => {
+    originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+  });
+
   beforeEach(() => {
+    globalThis.requestAnimationFrame = undefined;
     document.body.innerHTML = "";
+  });
+
+  afterAll(() => {
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
   });
 
   it("applies region styles using grid percentages", () => {
@@ -98,6 +109,91 @@ describe("applyLayout", () => {
     expect(logger.warn).toHaveBeenCalledWith(
       "layoutEngine.applyLayout: no anchor found for region 'scoreboard'."
     );
+  });
+
+  it("logs conflicts when multiple anchors share the same region id", () => {
+    const root = createRoot(
+      `<div data-layout-id="arena" id="arena-primary"></div><div data-layout-id="arena" id="arena-duplicate"></div>`
+    );
+    const layout = {
+      id: "conflict-layout",
+      grid: { cols: 10, rows: 10 },
+      regions: [
+        {
+          id: "arena",
+          rect: { x: 0, y: 0, width: 10, height: 10 }
+        }
+      ]
+    };
+    const logger = { warn: vi.fn(), error: vi.fn() };
+
+    const result = applyLayout(layout, { root, logger });
+    const primaryAnchor = document.getElementById("arena-primary");
+    const duplicateAnchor = document.getElementById("arena-duplicate");
+
+    expect(result.conflictingAnchors).toEqual(["arena"]);
+    expect(result.appliedRegions).toEqual(["arena"]);
+    expect(primaryAnchor.style.width).toBe("100%");
+    expect(duplicateAnchor.style.width).toBe("");
+    expect(logger.warn).toHaveBeenCalledWith(
+      "layoutEngine.applyLayout: multiple anchors found for region 'arena', using the first match."
+    );
+  });
+
+  it("flags orphaned anchors that are not represented in the layout", () => {
+    const root = createRoot(
+      `<div data-layout-id="arena"></div><div data-layout-id="unused-region"></div>`
+    );
+    const layout = {
+      id: "orphan-layout",
+      grid: { cols: 4, rows: 4 },
+      regions: [
+        {
+          id: "arena",
+          rect: { x: 0, y: 0, width: 4, height: 4 }
+        }
+      ]
+    };
+    const logger = { warn: vi.fn(), error: vi.fn() };
+
+    const result = applyLayout(layout, { root, logger });
+
+    expect(result.orphanedAnchors).toEqual(["unused-region"]);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "layoutEngine.applyLayout: anchor 'unused-region' is present in the DOM but missing from the layout definition."
+    );
+  });
+
+  it("defers DOM mutations until the provided animation frame flush occurs", () => {
+    const root = createRoot('<div data-layout-id="arena"></div>');
+    const layout = {
+      id: "deferred-layout",
+      grid: { cols: 10, rows: 10 },
+      regions: [
+        {
+          id: "arena",
+          rect: { x: 1, y: 2, width: 5, height: 6 }
+        }
+      ]
+    };
+    const logger = { warn: vi.fn(), error: vi.fn() };
+    let scheduled;
+    const animationFrameProvider = (callback) => {
+      scheduled = callback;
+    };
+
+    applyLayout(layout, { root, logger, animationFrameProvider });
+    const anchor = root.querySelector('[data-layout-id="arena"]');
+
+    expect(anchor.style.left).toBe("");
+    expect(typeof scheduled).toBe("function");
+
+    scheduled();
+
+    expect(anchor.style.left).toBe("10%");
+    expect(anchor.style.top).toBe("20%");
+    expect(anchor.style.width).toBe("50%");
+    expect(anchor.style.height).toBe("60%");
   });
 
   it("returns errors when layout definition is invalid", () => {

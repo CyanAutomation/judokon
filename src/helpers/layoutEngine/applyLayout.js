@@ -1,13 +1,5 @@
 const DEFAULT_LAYOUT_ID = "unknown";
 const DEFAULT_Z_INDEX = 1;
-const cssEscape =
-  typeof CSS !== "undefined" && typeof CSS.escape === "function"
-    ? CSS.escape
-    : (value) =>
-        String(value).replace(
-          /[\0-\x1f\x7f-\x9f\s!\"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g,
-          (char) => `\\${char}`
-        );
 
 function getNow() {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
@@ -35,12 +27,6 @@ function toPercent(value, total) {
     return 0;
   }
   return (value / total) * 100;
-}
-
-function ensureArray(value) {
-  if (Array.isArray(value)) return value;
-  if (value === null || value === undefined) return [];
-  return [value];
 }
 
 function shouldRenderRegion(region, isFeatureFlagEnabled) {
@@ -83,10 +69,64 @@ function applyRegionStyle(region, anchor, grid) {
   anchor.dataset.layoutRegionId = region.id || "";
 }
 
-function collectAnchors(root, regionId) {
-  if (!root || !regionId) return [];
-  const selector = `[data-layout-id="${cssEscape(regionId)}"]`;
-  return Array.from(root.querySelectorAll(selector));
+function buildAnchorIndex(root) {
+  const index = new Map();
+  if (!root || typeof root.querySelectorAll !== "function") {
+    return index;
+  }
+
+  const anchors = root.querySelectorAll("[data-layout-id]");
+  anchors.forEach((anchor) => {
+    const regionId = anchor.getAttribute("data-layout-id");
+    if (!regionId) return;
+    if (!index.has(regionId)) {
+      index.set(regionId, []);
+    }
+    index.get(regionId).push(anchor);
+  });
+
+  return index;
+}
+
+function getAnimationFrameProvider(animationFrameProvider) {
+  if (typeof animationFrameProvider === "function") {
+    return animationFrameProvider;
+  }
+
+  if (
+    typeof globalThis !== "undefined" &&
+    typeof globalThis.requestAnimationFrame === "function"
+  ) {
+    return globalThis.requestAnimationFrame.bind(globalThis);
+  }
+
+  return (callback) => {
+    if (typeof callback === "function") {
+      callback();
+    }
+  };
+}
+
+function enqueueMutation(queue, mutation) {
+  if (typeof mutation === "function") {
+    queue.push(mutation);
+  }
+}
+
+function flushMutations(queue, schedule) {
+  if (!Array.isArray(queue) || queue.length === 0) return;
+
+  const runMutations = () => {
+    queue.forEach((mutation) => {
+      mutation();
+    });
+  };
+
+  try {
+    schedule(runMutations);
+  } catch {
+    runMutations();
+  }
 }
 
 /**
@@ -237,36 +277,57 @@ function finalizeResult(result, start) {
   return result;
 }
 
-function processRegion(region, root, grid, resolver, warn, result) {
+function processRegion(
+  region,
+  anchorIndex,
+  unusedAnchorIds,
+  grid,
+  resolver,
+  warn,
+  result,
+  mutationQueue
+) {
   if (!region || typeof region !== "object") {
     warn("layoutEngine.applyLayout: encountered invalid region definition.");
     return;
   }
 
-  const anchors = collectAnchors(root, region.id);
+  const anchors = anchorIndex.get(region.id) || [];
   if (!anchors.length) {
     result.missingAnchors.push(region.id || "");
     warn(`layoutEngine.applyLayout: no anchor found for region '${region.id}'.`);
     return;
   }
 
+  unusedAnchorIds.delete(region.id);
+
+  let anchorList = anchors;
+  if (anchorList.length > 1) {
+    result.conflictingAnchors.push(region.id);
+    warn(
+      `layoutEngine.applyLayout: multiple anchors found for region '${region.id}', using the first match.`
+    );
+    anchorList = [anchorList[0]];
+  }
+
   const shouldRender = shouldRenderRegion(region, resolver);
-  const anchorList = ensureArray(anchors);
+
+  if (!shouldRender) {
+    result.skippedRegions.push(region.id);
+    anchorList.forEach((anchor) => {
+      enqueueMutation(mutationQueue, () => hideElement(anchor));
+    });
+    return;
+  }
 
   anchorList.forEach((anchor) => {
-    if (!shouldRender) {
-      hideElement(anchor);
-      result.skippedRegions.push(region.id);
-      return;
-    }
-
-    showElement(anchor);
-    applyRegionStyle(region, anchor, grid);
+    enqueueMutation(mutationQueue, () => {
+      showElement(anchor);
+      applyRegionStyle(region, anchor, grid);
+    });
   });
 
-  if (shouldRender) {
-    result.appliedRegions.push(region.id);
-  }
+  result.appliedRegions.push(region.id);
 }
 
 /**
@@ -289,19 +350,27 @@ function processRegion(region, root, grid, resolver, warn, result) {
  * @param {object} [options] - Configuration for feature flags, root resolution, and logging.
  * @param {Element|string} [options.root] - DOM element or selector for the layout root.
  * @param {Function} [options.isFeatureFlagEnabled] - Feature flag resolver.
+ * @param {Function} [options.animationFrameProvider] - Override for requestAnimationFrame scheduling.
  * @param {{ warn?: Function, error?: Function }} [options.logger] - Logger for warnings and errors.
  * @returns {{
  *   appliedLayoutId: string,
  *   appliedRegions: string[],
  *   skippedRegions: string[],
  *   missingAnchors: string[],
+ *   conflictingAnchors: string[],
+ *   orphanedAnchors: string[],
  *   durationMs: number,
  *   errors: string[]
  * }} Telemetry describing the outcome.
  */
 export function applyLayout(layoutDefinition, options = {}) {
   const start = getNow();
-  const { root: rootOrSelector, isFeatureFlagEnabled = () => true, logger = {} } = options;
+  const {
+    root: rootOrSelector,
+    isFeatureFlagEnabled = () => true,
+    logger = {},
+    animationFrameProvider
+  } = options;
   const warn = typeof logger.warn === "function" ? logger.warn : () => {};
   const error = typeof logger.error === "function" ? logger.error : () => {};
 
@@ -310,6 +379,8 @@ export function applyLayout(layoutDefinition, options = {}) {
     appliedRegions: [],
     skippedRegions: [],
     missingAnchors: [],
+    conflictingAnchors: [],
+    orphanedAnchors: [],
     durationMs: 0,
     errors: []
   };
@@ -331,12 +402,38 @@ export function applyLayout(layoutDefinition, options = {}) {
   const layoutId = layoutDefinition.id || DEFAULT_LAYOUT_ID;
   const { grid, regions } = layoutDefinition;
 
-  annotateRoot(root, layoutId, grid);
+  const mutationQueue = [];
+  const scheduleAnimationFrame = getAnimationFrameProvider(animationFrameProvider);
+
+  enqueueMutation(mutationQueue, () => annotateRoot(root, layoutId, grid));
   result.appliedLayoutId = layoutId;
 
+  const anchorIndex = buildAnchorIndex(root);
+  const unusedAnchorIds = new Set(anchorIndex.keys());
+
   regions.forEach((region) => {
-    processRegion(region, root, grid, isFeatureFlagEnabled, warn, result);
+    processRegion(
+      region,
+      anchorIndex,
+      unusedAnchorIds,
+      grid,
+      isFeatureFlagEnabled,
+      warn,
+      result,
+      mutationQueue
+    );
   });
+
+  if (unusedAnchorIds.size) {
+    result.orphanedAnchors = Array.from(unusedAnchorIds);
+    result.orphanedAnchors.forEach((orphanId) => {
+      warn(
+        `layoutEngine.applyLayout: anchor '${orphanId}' is present in the DOM but missing from the layout definition.`
+      );
+    });
+  }
+
+  flushMutations(mutationQueue, scheduleAnimationFrame);
 
   return finalizeResult(result, start);
 }

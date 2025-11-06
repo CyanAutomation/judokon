@@ -28,3 +28,23 @@
 **Outcome:** Layout shape is now formally documented and enforced, aligning runtime validation with the published schema to prevent out-of-bounds regions or malformed metadata.
 
 **Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js tests/helpers/layoutEngine/loadLayout.test.js tests/helpers/layoutEngine/validateLayoutDefinition.test.js`; `npx playwright test playwright/cli-layout.spec.js`
+
+## Task 1.3 – Anchor Elements Using `[data-layout-id]`
+
+- Added anchor indexing inside `applyLayout` so regions resolve `[data-layout-id]` targets once, track duplicates, and detect DOM nodes missing from the layout payload.
+- Introduced telemetry for `conflictingAnchors` and `orphanedAnchors`, logging when multiple nodes share a region id or when anchors exist without a matching region; missing anchors continue to be surfaced.
+- Extended unit coverage to assert duplicate handling (only the first anchor mutates) and orphan detection warnings.
+
+**Outcome:** Layout application is now deterministic about which DOM node each region controls while surfacing stray or misconfigured anchors through structured telemetry for downstream tooling.
+
+**Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
+
+## Task 1.4 – Apply Grid Rects & Z-Index in a Single Animation Frame
+
+- Reworked `applyLayout` to batch all DOM mutations (root annotations, visibility toggles, inline rect/z-index writes) into a single animation-frame queue with a configurable scheduler fallback for deterministic tests.
+- Added mutation queue helpers plus an option to override the animation frame provider, ensuring production uses `requestAnimationFrame` while Vitest can assert both immediate and deferred flushes.
+- Extended unit coverage to confirm deferred mutations do not run until the provided animation frame callback executes and updated scaffolding to stub `requestAnimationFrame` for deterministic assertions.
+
+**Outcome:** Layout application now matches the PRD requirement of applying region bounds/z-order within a single animation frame, minimizing layout thrash while keeping telemetry synchronous and test-friendly.
+
+**Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
