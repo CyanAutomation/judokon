@@ -28,6 +28,16 @@
 
 **Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
 
+## Task 2.3 – Emit Telemetry for Flag-Skipped Regions
+
+- Added a dedicated `layout.skippedRegions` telemetry event emitted whenever `applyLayout` hides regions because their feature flag is disabled, capturing the layout id, affected region ids, and governing flags for the debug panel.
+- Surfaced developer-friendly warnings identifying the region/flag responsible for each skip and expanded unit tests to spy on `logEvent`, ensuring payload shape stays stable.
+- Re-ran the layout Playwright coverage to confirm no regressions in the CLI layout spec.
+
+**Outcome:** Regions gated behind feature flags now generate structured telemetry for the debug panel/QA tooling, fulfilling the PRD requirement for observable skipped-region reporting.
+
+**Tests:** `npx vitest run tests/helpers/layoutEngine/applyLayout.test.js`; `npx playwright test playwright/cli-layout.spec.js`
+
 ## Task 1.2 – Implement `loadLayout()` Backed by Static Registry & Inline Fallback
 
 - Added `src/helpers/layoutEngine/loadLayout.js` to resolve layouts from the generated registry or inline JSON fallback, with validation reuse and structured telemetry.
