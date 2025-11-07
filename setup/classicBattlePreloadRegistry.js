@@ -91,6 +91,9 @@ export async function loadClassicBattleModule(cacheKey) {
  */
 export function resetClassicBattlePreloadRegistry() {
   moduleCache.clear();
+  moduleLoaders.clear();
+  moduleMetadata.clear();
+  registerDefaultClassicBattleLoaders();
 }
 
 const DEFAULT_LOADERS = [
@@ -110,6 +113,10 @@ const DEFAULT_LOADERS = [
   ]
 ];
 
-for (const [cacheKey, loader, source] of DEFAULT_LOADERS) {
-  registerClassicBattleModuleLoader(cacheKey, loader, { source });
+function registerDefaultClassicBattleLoaders() {
+  for (const [cacheKey, loader, source] of DEFAULT_LOADERS) {
+    registerClassicBattleModuleLoader(cacheKey, loader, { source });
+  }
 }
+
+registerDefaultClassicBattleLoaders();
