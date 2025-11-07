@@ -4,6 +4,10 @@ import "./commonMocks.js";
 import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
+// CRITICAL: Reset modules to ensure vi.mock() applies to dynamic imports
+// Without this, mocks won't apply to modules imported via await import()
+vi.resetModules();
+
 const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
 let timersControl = null;
 
@@ -115,6 +119,9 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
+
+      // Clear any pending timers before interrupt to prevent old timers from firing
+      vi.clearAllTimers();
 
       await machine.dispatch("interruptRound");
 
