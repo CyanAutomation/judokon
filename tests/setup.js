@@ -64,6 +64,36 @@ function applyConsoleMuting() {
   }
 }
 
+/**
+ * Ensure a fresh BattleEngine instance for each test to avoid shared state.
+ */
+async function ensureFreshBattleEngine() {
+  try {
+    const facade = await import("../src/helpers/battleEngineFacade.js");
+    if (facade?.createBattleEngine && typeof facade.createBattleEngine === "function") {
+      facade.createBattleEngine({ forceCreate: true });
+    }
+  } catch {}
+}
+
+/**
+ * Ensure dataset.target is set on document.body with points-to-win value if missing.
+ * Test-only fallback for suite orderings that leave dataset.target unset after round selection.
+ */
+async function ensurePointsToWinDataset() {
+  if (!process.env?.VITEST) return;
+  try {
+    const facade = await import("../src/helpers/battleEngineFacade.js");
+    const getPointsToWin = facade?.getPointsToWin;
+    if (typeof getPointsToWin === "function" && !document.body?.dataset?.target) {
+      const pts = getPointsToWin();
+      if (pts !== undefined && pts !== null) {
+        document.body.dataset.target = String(pts);
+      }
+    }
+  } catch {}
+}
+
 expect.extend({
   toHaveAttribute(element, attribute, expected) {
     const isElem = element && typeof element.getAttribute === "function";
@@ -138,33 +168,9 @@ beforeEach(async () => {
     // needed by tests without async imports.
     initializeTestBindingsLight();
     // Ensure a fresh BattleEngine instance for each test to avoid shared state
-    try {
-      const facade = await import("../src/helpers/battleEngineFacade.js");
-      if (facade && typeof facade.createBattleEngine === "function") {
-        // Force creation so tests don't accidentally reuse a prior engine instance
-        facade.createBattleEngine({ forceCreate: true });
-      }
-    } catch {}
-    // Test-only: some suite orderings can leave `document.body.dataset.target` unset
-    // after round selection; keep a minimal fallback here to avoid touching
-    // production source. This runs only under Vitest.
-    try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        try {
-          const facade = await import("../src/helpers/battleEngineFacade.js");
-          const getPointsToWin =
-            facade && typeof facade.getPointsToWin === "function" ? facade.getPointsToWin : null;
-          if (
-            typeof document !== "undefined" &&
-            !document.body?.dataset?.target &&
-            getPointsToWin
-          ) {
-            const pts = getPointsToWin();
-            if (pts !== undefined && pts !== null) document.body.dataset.target = String(pts);
-          }
-        } catch {}
-      }
-    } catch {}
+    await ensureFreshBattleEngine();
+    // Ensure dataset.target is set with points-to-win value if missing
+    await ensurePointsToWinDataset();
     const currentHref = String(window.location.href || "http://localhost/");
     const state = { href: currentHref };
     Object.defineProperty(window, "location", {
