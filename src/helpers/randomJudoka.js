@@ -74,20 +74,20 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
  * Canonical MCP documentation schema for the judokon.random tool.
  * @type {Readonly<RandomSelectionDocumentation>}
  * @const
- * @pseudocode
+ * @example
  * create deep clone of documentation base
  * freeze the clone to prevent mutation
  * expose the frozen documentation for reuse across modules
  */
 export const RANDOM_SELECTION_DOCUMENTATION = Object.freeze(
-  JSON.parse(JSON.stringify(RANDOM_DOCUMENTATION_BASE))
+  structuredClone(RANDOM_DOCUMENTATION_BASE)
 );
 
 /**
  * Validate random selection filters
  * @param {Object} filters - Filter criteria object
  * @returns {Object} Validated filters (empty object if none provided)
- * @pseudocode
+ * @example
  * initialize validated = {}
  * if filters.country exists and is string: validated.country = filters.country
  * if filters.rarity exists and is in [Common, Epic, Legendary]: validated.rarity = filters.rarity
@@ -125,7 +125,7 @@ export function validateRandomFilters(filters) {
  * @param {Array} judokaArray - Array of judoka records
  * @param {Object} filters - Validated filter criteria
  * @returns {Array} Filtered judoka array
- * @pseudocode
+ * @example
  * initialize candidates = []
  * for each judoka in judokaArray:
  *   if country filter exists and judoka.country != filters.country: continue
@@ -161,7 +161,7 @@ export function filterJudokaByFilters(judokaArray, filters) {
  * Select a random element from an array
  * @param {Array} array - Array to select from
  * @returns {*} Random element or null if array is empty
- * @pseudocode
+ * @example
  * if array is empty: return null
  * randomIndex = Math.floor(Math.random() * array.length)
  * return array[randomIndex]
@@ -180,7 +180,7 @@ export function selectRandomElement(array) {
  * @param {Array} judokaArray - Array of judoka records
  * @param {Object} filters - Optional filter criteria {country, rarity, weightClass}
  * @returns {Object} Random judoka record or null if no matches
- * @pseudocode
+ * @example
  * validate filters using validateRandomFilters()
  * filter judoka array using filterJudokaByFilters()
  * select random judoka from filtered array using selectRandomElement()
@@ -206,7 +206,7 @@ export function selectRandomJudoka(judokaArray, filters = {}) {
  * @param {Array} judokaArray - Array of judoka records
  * @param {Object} filters - Optional filter criteria
  * @returns {Object} {judoka, filters, totalCount, matchCount} or null if no matches
- * @pseudocode
+ * @example
  * validate filters using validateRandomFilters()
  * filter judoka array using filterJudokaByFilters()
  * select random judoka from filtered array
@@ -244,7 +244,7 @@ export function getRandomJudokaWithMetadata(judokaArray, filters = {}) {
  * Get available filter options for random selection
  * @param {Array} judokaArray - Array of judoka records
  * @returns {Object} Available countries, rarities, weight classes
- * @pseudocode
+ * @example
  * initialize sets for countries, rarities, weights
  * for each judoka in judokaArray:
  *   add judoka.country to countries set
@@ -285,7 +285,7 @@ export function getAvailableFilterOptions(judokaArray) {
 /**
  * Get documentation for random selection tool
  * @returns {Object} Tool documentation and examples
- * @pseudocode
+ * @example
  * return documentation object containing:
  *   - description of random selection
  *   - available filters
@@ -293,5 +293,5 @@ export function getAvailableFilterOptions(judokaArray) {
  *   - response format
  */
 export function getRandomSelectionDocumentation() {
-  return JSON.parse(JSON.stringify(RANDOM_SELECTION_DOCUMENTATION));
+  return structuredClone(RANDOM_SELECTION_DOCUMENTATION);
 }
