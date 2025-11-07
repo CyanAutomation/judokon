@@ -88,29 +88,21 @@ describe("createScoreboard", () => {
 
       expect(playerScoreEl).toBeTruthy();
       expect(opponentScoreEl).toBeTruthy();
-      if (playerScoreEl && opponentScoreEl) {
-        expect(playerScoreEl.textContent).toBe("7");
-        expect(opponentScoreEl.textContent).toBe("5");
-      }
+      expect(playerScoreEl.textContent).toBe("7");
+      expect(opponentScoreEl.textContent).toBe("5");
 
       const timerEl = scoreboard.element.querySelector("#next-round-timer");
       expect(timerEl).toBeTruthy();
-      if (timerEl) {
-        expect(timerEl.textContent).toBe("Time Left: 18s");
-        expect(timerEl.getAttribute("data-remaining-time")).toBe("18");
-      }
+      expect(timerEl.textContent).toBe("Time Left: 18s");
+      expect(timerEl.getAttribute("data-remaining-time")).toBe("18");
 
       const messageEl = scoreboard.element.querySelector("#round-message");
       expect(messageEl).toBeTruthy();
-      if (messageEl) {
-        expect(messageEl.textContent).toBe("Keep pushing!");
-      }
+      expect(messageEl.textContent).toBe("Keep pushing!");
 
       const roundEl = scoreboard.element.querySelector("#round-counter");
       expect(roundEl).toBeTruthy();
-      if (roundEl) {
-        expect(roundEl.textContent).toBe("Round 4");
-      }
+      expect(roundEl.textContent).toBe("Round 4");
     } finally {
       scoreboard.view.destroy();
       scoreboard.element.remove();
