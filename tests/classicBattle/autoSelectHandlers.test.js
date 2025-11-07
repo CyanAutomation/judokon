@@ -1,5 +1,4 @@
 import { vi, describe, test, expect, beforeEach, afterEach } from "vitest";
-import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
 
 // Mock all dependencies before any imports
 vi.mock("../../src/helpers/showSnackbar.js");
@@ -16,9 +15,33 @@ describe("handleStatSelectionTimeout", () => {
   let showSnackbar;
   let autoSelectStat;
   let handleStatSelectionTimeout;
+  let setScheduler;
+  let realScheduler;
 
   beforeEach(async () => {
-    // Import and configure mocked modules (don't reset - that breaks scheduler)
+    // Clear module cache to ensure fresh imports with mocks applied
+    vi.resetModules();
+
+    // Set up fake scheduler FIRST, before importing anything that might use it
+    scheduledCallbacks = new Map();
+    let nextId = 1;
+
+    fakeScheduler = {
+      setTimeout: vi.fn((callback, delay) => {
+        const id = nextId++;
+        scheduledCallbacks.set(id, { callback, delay });
+        return id;
+      }),
+      clearTimeout: vi.fn((id) => scheduledCallbacks.delete(id))
+    };
+
+    // Now import scheduler and set the fake one BEFORE importing implementation
+    const schedulerModule = await import("../../src/helpers/scheduler.js");
+    setScheduler = schedulerModule.setScheduler;
+    realScheduler = schedulerModule.realScheduler;
+    setScheduler(fakeScheduler);
+
+    // Import and configure mocked modules AFTER scheduler is set up
     const { showSnackbar: mockShowSnackbar } = await import("../../src/helpers/showSnackbar.js");
     showSnackbar = mockShowSnackbar;
 
@@ -38,26 +61,11 @@ describe("handleStatSelectionTimeout", () => {
     );
     vi.mocked(computeNextRoundCooldown).mockReturnValue(3);
 
-    // Import the module under test AFTER configuring all mocks
+    // Import the module under test LAST, after all mocks and scheduler are configured
     const { handleStatSelectionTimeout: fn } = await import(
       "../../src/helpers/classicBattle/autoSelectHandlers.js"
     );
     handleStatSelectionTimeout = fn;
-    
-    // Set up fake scheduler
-    scheduledCallbacks = new Map();
-    let nextId = 1;
-
-    fakeScheduler = {
-      setTimeout: vi.fn((callback, delay) => {
-        const id = nextId++;
-        scheduledCallbacks.set(id, { callback, delay });
-        return id;
-      }),
-      clearTimeout: vi.fn((id) => scheduledCallbacks.delete(id))
-    };
-
-    setScheduler(fakeScheduler);
   });
 
   afterEach(() => {
