@@ -9,8 +9,6 @@ describe("Direct Module Import Test", () => {
   it("verifies the real module behavior without mocking", async () => {
     // This test should import the REAL module, so we use vi.importActual
     const realSnackbar = await vi.importActual("../../src/helpers/classicBattle/snackbar.js");
-    console.log("Real snackbar.getOpponentDelay():", realSnackbar.getOpponentDelay());
-    console.log("Real function:", String(realSnackbar.getOpponentDelay).slice(0, 150));
 
     // Verify it has the real implementation (module-level state)
     expect(realSnackbar.getOpponentDelay()).toBe(500);
@@ -62,6 +60,5 @@ describe("Module Import with Mocking", () => {
 
     // Now, the mock should have been called by the event handler.
     expect(mockGetOpponentDelay.mock.calls.length).toBeGreaterThan(0);
-    console.log("Mock was called by the event handler");
   });
 });
