@@ -4,7 +4,7 @@
  * event wiring behavior rather than DOM integration.
  */
 
-import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from "vitest";
+import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 // Create mock functions that will be used by vi.mock factories
@@ -62,31 +62,24 @@ vi.mock("../../src/helpers/classicBattle/opponentPlaceholder.js", () => ({
   OPPONENT_PLACEHOLDER_ID: "mystery-card-placeholder"
 }));
 
+// Static imports - these must come AFTER vi.mock() declarations
+import { setOpponentDelay } from "../../src/helpers/classicBattle/snackbar.js";
+import { bindUIHelperEventHandlersDynamic } from "../../src/helpers/classicBattle/uiEventHandlers.js";
+import {
+  emitBattleEvent,
+  __resetBattleEventTarget as resetBattleEventTarget
+} from "../../src/helpers/classicBattle/battleEvents.js";
+
 describe("UI handlers: opponent message events", () => {
-  let bindUIHelperEventHandlersDynamic;
-  let emitBattleEvent;
-  let resetBattleEventTarget;
   let setTimeoutSpy;
   let timers;
-  let setOpponentDelay;
-
-  beforeAll(async () => {
-    // Import modules
-    const snackbarModule = await import("../../src/helpers/classicBattle/snackbar.js");
-    const uiEventHandlersModule = await import(
-      "../../src/helpers/classicBattle/uiEventHandlers.js"
-    );
-    const battleEventsModule = await import("../../src/helpers/classicBattle/battleEvents.js");
-
-    setOpponentDelay = snackbarModule.setOpponentDelay;
-    bindUIHelperEventHandlersDynamic = uiEventHandlersModule.bindUIHelperEventHandlersDynamic;
-    emitBattleEvent = battleEventsModule.emitBattleEvent;
-    resetBattleEventTarget = battleEventsModule.__resetBattleEventTarget;
-  });
 
   beforeEach(() => {
     timers = useCanonicalTimers();
     setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    console.log("[TEST beforeEach] showSnackbar type:", typeof showSnackbar);
+    console.log("[TEST beforeEach] showSnackbar is mock?", vi.isMockFunction(showSnackbar));
+    console.log("[TEST beforeEach] showSnackbar mock calls:", showSnackbar.mock?.calls?.length);
     showSnackbar.mockReset();
     markOpponentPromptNow.mockReset();
     markOpponentPromptNow.mockImplementation(() => 123.45);

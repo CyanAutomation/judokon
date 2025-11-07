@@ -126,6 +126,22 @@ function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = tru
 /**
  * Bind dynamic UI helper event handlers on the shared battle EventTarget.
  *
+ * @param {object} [deps] - Optional dependencies for testing (defaults to real implementations)
+ * @param {Function} [deps.showSnackbar] - Function to display snackbar messages
+ * @param {Function} [deps.t] - Translation function
+ * @param {Function} [deps.markOpponentPromptNow] - Function to mark opponent prompt timestamp
+ * @param {Function} [deps.recordOpponentPromptTimestamp] - Function to record timestamp
+ * @param {Function} [deps.getOpponentPromptMinDuration] - Function to get minimum duration
+ * @param {Function} [deps.isEnabled] - Function to check feature flags
+ * @param {Function} [deps.getOpponentDelay] - Function to get opponent delay
+ * @param {object} [deps.scoreboard] - Scoreboard utilities
+ * @param {Function} [deps.getOpponentCardData] - Function to get opponent card data
+ * @param {Function} [deps.renderOpponentCard] - Function to render opponent card
+ * @param {Function} [deps.showRoundOutcome] - Function to show round outcome
+ * @param {Function} [deps.showStatComparison] - Function to show stat comparison
+ * @param {Function} [deps.updateDebugPanel] - Function to update debug panel
+ * @param {Function} [deps.applyOpponentCardPlaceholder] - Function to apply placeholder
+ *
  * @pseudocode
  * 1. Track EventTargets in a WeakSet to avoid duplicate bindings.
  * 2. Attach listeners for opponent reveal, stat selection, and round resolution.
@@ -133,24 +149,66 @@ function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = tru
  *
  * @returns {void}
  */
-export function bindUIHelperEventHandlersDynamic() {
+export function bindUIHelperEventHandlersDynamic(deps = {}) {
+  // Use provided dependencies or fall back to default imports
+  const {
+    showSnackbar: showSnackbarFn = showSnackbar,
+    t: tFn = t,
+    markOpponentPromptNow: markOpponentPromptNowFn = markOpponentPromptNow,
+    recordOpponentPromptTimestamp: recordOpponentPromptTimestampFn = recordOpponentPromptTimestamp,
+    getOpponentPromptMinDuration: getOpponentPromptMinDurationFn = getOpponentPromptMinDuration,
+    isEnabled: isEnabledFn = isEnabled,
+    getOpponentDelay: getOpponentDelayFn = getOpponentDelay,
+    scoreboard: scoreboardObj = scoreboard,
+    getOpponentCardData: getOpponentCardDataFn = getOpponentCardData,
+    renderOpponentCard: renderOpponentCardFn = renderOpponentCard,
+    showRoundOutcome: showRoundOutcomeFn = showRoundOutcome,
+    showStatComparison: showStatComparisonFn = showStatComparison,
+    updateDebugPanel: updateDebugPanelFn = updateDebugPanel,
+    applyOpponentCardPlaceholder: applyOpponentCardPlaceholderFn = applyOpponentCardPlaceholder
+  } = deps;
   // Ensure we only bind once per EventTarget instance
   try {
     const KEY = "__cbUIHelpersDynamicBoundTargets";
     const target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
-    console.log("[bindUIHelperEventHandlersDynamic] target:", target);
-    console.log("[bindUIHelperEventHandlersDynamic] already bound?", set.has(target));
     if (set.has(target)) {
-      console.log("[bindUIHelperEventHandlersDynamic] skipping, already bound");
       return;
     }
-    console.log("[bindUIHelperEventHandlersDynamic] adding target to set");
     set.add(target);
-  } catch (error) {
-    console.log("[bindUIHelperEventHandlersDynamic] ERROR in setup:", error);
+  } catch {
+    // Silently skip if binding setup fails
   }
-  console.log("[bindUIHelperEventHandlersDynamic] about to bind opponentReveal");
+
+  // Create local helper that uses injected dependencies
+  function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
+    console.log(
+      "[displayOpponentChoosingPrompt] CALLED, markTimestamp:",
+      markTimestamp,
+      "notifyReady:",
+      notifyReady
+    );
+    try {
+      console.log("[displayOpponentChoosingPrompt] About to call t()");
+      const message = tFn("ui.opponentChoosing");
+      console.log("[displayOpponentChoosingPrompt] t() returned:", message);
+      console.log("[displayOpponentChoosingPrompt] About to call showSnackbar");
+      showSnackbarFn(message);
+      console.log("[displayOpponentChoosingPrompt] showSnackbar called successfully");
+    } catch (error) {
+      console.log("[displayOpponentChoosingPrompt] ERROR calling showSnackbar:", error);
+    }
+    let recordedTimestamp;
+    if (markTimestamp) {
+      try {
+        recordedTimestamp = markOpponentPromptNowFn({ notify: notifyReady });
+      } catch {
+        // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+      }
+    }
+    return recordedTimestamp;
+  }
+
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {

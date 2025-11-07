@@ -95,13 +95,6 @@ export function evaluateRound(playerVal, opponentVal) {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
         const messageEl = document.querySelector("header #round-message");
         const scoreEl = document.querySelector("header #score-display");
-        console.log("[DEBUG] battleUI.evaluateRound DOM check:", {
-          messageEl: !!messageEl,
-          scoreEl: !!scoreEl,
-          message,
-          playerScore: result.playerScore,
-          opponentScore: result.opponentScore
-        });
         if (messageEl && message) {
           messageEl.textContent = message;
         }
@@ -110,7 +103,7 @@ export function evaluateRound(playerVal, opponentVal) {
         }
       }
     } catch (e) {
-      console.log("[DEBUG] battleUI.evaluateRound error:", e);
+      // Silently ignore DOM update errors in test environment
     }
 
     return {
@@ -139,13 +132,6 @@ export function evaluateRound(playerVal, opponentVal) {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
         const scoreEl = document.querySelector("header #score-display");
         const messageEl = document.querySelector("header #round-message");
-        console.log("[DEBUG] battleUI.evaluateRound fallback DOM check:", {
-          messageEl: !!messageEl,
-          scoreEl: !!scoreEl,
-          message,
-          fallbackPlayerScore,
-          fallbackOpponentScore
-        });
         if (scoreEl) {
           writeScoreDisplay(fallbackPlayerScore, fallbackOpponentScore);
         }
@@ -155,7 +141,7 @@ export function evaluateRound(playerVal, opponentVal) {
         }
       }
     } catch (e) {
-      console.log("[DEBUG] battleUI.evaluateRound fallback error:", e);
+      // Silently ignore DOM update errors in fallback path
     }
 
     return {

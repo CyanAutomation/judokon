@@ -75,13 +75,6 @@ function scheduleImmediate(callback) {
       } catch {}
     };
   }
-  try {
-    if (!IS_VITEST) {
-      console.warn(
-        "resetStatButtons fallback executed synchronously; async scheduling unavailable"
-      );
-    }
-  } catch {}
   callback();
   return () => {};
 }
