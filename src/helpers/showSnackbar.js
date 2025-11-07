@@ -96,6 +96,14 @@ function ensureSnackbarContainer(doc) {
   }
 }
 
+function isSnackbarsDisabled() {
+  try {
+    return typeof window !== "undefined" && window.__disableSnackbars;
+  } catch {
+    return false;
+  }
+}
+
 function safeClearTimeout(scheduler, handle) {
   if (!scheduler) {
     realScheduler.clearTimeout(handle);
@@ -153,9 +161,7 @@ function resetTimers() {
  * @returns {void}
  */
 export function showSnackbar(message) {
-  try {
-    if (typeof window !== "undefined" && window.__disableSnackbars) return;
-  } catch {}
+  if (isSnackbarsDisabled()) return;
   const doc = ensureDomOrReset();
   if (!doc) {
     return;
@@ -198,9 +204,7 @@ export function showSnackbar(message) {
  * @returns {void}
  */
 export function updateSnackbar(message) {
-  try {
-    if (typeof window !== "undefined" && window.__disableSnackbars) return;
-  } catch {}
+  if (isSnackbarsDisabled()) return;
   const doc = ensureDomOrReset();
   if (!doc) {
     return;
