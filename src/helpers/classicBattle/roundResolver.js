@@ -38,16 +38,7 @@ let isResolving = false;
  */
 export function evaluateRoundData(playerVal, opponentVal) {
   const base = evaluateRoundApi(playerVal, opponentVal);
-  const result = { ...base, playerVal, opponentVal };
-
-  // Debug logging for message generation
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      console.log("[DEBUG] evaluateRoundData result:", result);
-    }
-  } catch {}
-
-  return result;
+  return { ...base, playerVal, opponentVal };
 }
 
 /**
@@ -93,33 +84,9 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
       debugLog("DEBUG: evaluateOutcome result", result);
     } catch {}
 
-    // Add message generation and DOM updates for tests
+    // Add message generation for tests and real usage
     const message = getOutcomeMessage(result.outcome);
     const resultWithMessage = { ...result, message };
-
-    try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        console.log("[DEBUG] evaluateOutcome with message:", {
-          outcome: result.outcome,
-          message,
-          playerScore: result.playerScore,
-          opponentScore: result.opponentScore
-        });
-
-        const messageEl = document.querySelector("header #round-message");
-        const scoreEl = document.querySelector("header #score-display");
-
-        if (messageEl && message) {
-          messageEl.textContent = message;
-          console.log("[DEBUG] Set round message in evaluateOutcome:", messageEl.textContent);
-        }
-
-        if (scoreEl) {
-          writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
-          console.log("[DEBUG] Set score in evaluateOutcome:", scoreEl.textContent);
-        }
-      }
-    } catch {}
 
     return resultWithMessage;
   } catch (error) {
@@ -191,29 +158,10 @@ export async function dispatchOutcomeEvents(result) {
  * @returns {Promise<ReturnType<typeof evaluateRound>>} Resolves with the original result.
  */
 export async function updateScoreboard(result) {
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      console.log(
-        "[test] updateScoreboard result:",
-        result,
-        "sb.updateScore?",
-        typeof sb.updateScore
-      );
-    }
-  } catch {}
   if (typeof sb.updateScore === "function") {
     sb.updateScore(result.playerScore, result.opponentScore);
-    // Also update the DOM directly to keep E2E deterministic when adapters
-    // or bindings are not yet active.
-    try {
-      const scoreEl = document.querySelector("header #score-display");
-      if (scoreEl) {
-        writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
-      }
-    } catch {}
   }
-
-  // Force DOM update regardless of environment to ensure visible consistency
+  // Update the DOM directly to keep E2E deterministic when adapters or bindings are not yet active
   try {
     const scoreEl = document.querySelector("header #score-display");
     if (scoreEl) {
@@ -263,30 +211,13 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
     const player = Number(result?.playerScore) || 0;
     const opponent = Number(result?.opponentScore) || 0;
     emitBattleEvent("display.score.update", { player, opponent });
-    try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        console.log("[test] emitRoundResolved -> display.score.update", { player, opponent });
-      }
-    } catch {}
   } catch {}
 
-  // Update DOM directly for tests to ensure messages are displayed
+  // Update DOM directly to ensure round messages display properly
   try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const messageEl = document.querySelector("header #round-message");
-      if (messageEl && result?.message) {
-        messageEl.textContent = result.message;
-      }
-    }
-  } catch {}
-
-  // Force DOM update for round messages in tests
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const messageEl = document.querySelector("header #round-message");
-      if (messageEl && result?.message) {
-        messageEl.textContent = result.message;
-      }
+    const messageEl = document.querySelector("header #round-message");
+    if (messageEl && result?.message) {
+      messageEl.textContent = result.message;
     }
   } catch {}
 
@@ -318,19 +249,7 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      console.log("[test] computeRoundResult called with:", { stat, playerVal, opponentVal });
-    }
-  } catch {}
-
   const evaluated = evaluateOutcome(store, stat, playerVal, opponentVal);
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      // Helpful test-only debug to surface evaluation results in Vitest runs.
-      console.log("[test] computeRoundResult evaluated:", evaluated);
-    }
-  } catch {}
   const dispatched = await dispatchOutcomeEvents(evaluated);
   const scored = await updateScoreboard(dispatched);
   const emitted = emitRoundResolved(store, stat, playerVal, opponentVal, scored);
