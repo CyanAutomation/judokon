@@ -21,6 +21,7 @@ import {
 
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
+let _eventCounter = 0;
 
 function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
@@ -162,7 +163,7 @@ export function bindUIHelperEventHandlersDynamic() {
 
   onBattleEvent("statSelected", async (e) => {
     try {
-      console.log("[uiEventHandlers] statSelected event received");
+      console.log("[uiEventHandlers] statSelected event received, event number:", ++_eventCounter);
     } catch {}
     try {
       scoreboard.clearTimer?.();

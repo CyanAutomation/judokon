@@ -19,9 +19,11 @@ const updateDebugPanel = vi.fn();
 const getOpponentCardData = vi.fn();
 
 const setOpponentDelayMock = vi.fn();
+let mockCallCount = 0;
 const getOpponentDelayMock = vi.fn(() => {
+  mockCallCount += 1;
   const result = 500;
-  console.log("[TEST MOCK] getOpponentDelayMock called, returning:", result);
+  console.log("[TEST MOCK] Call #", mockCallCount, "returning:", result);
   return result;
 });
 
