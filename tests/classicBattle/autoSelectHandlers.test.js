@@ -1,33 +1,45 @@
 import { vi, describe, test, expect, beforeEach, afterEach } from "vitest";
 
+// Use vi.hoisted to ensure mocks are set up before any module loading
+const mocks = vi.hoisted(() => ({
+  showSnackbar: vi.fn(),
+  autoSelectStat: vi.fn(),
+  t: (key) => key,
+  isEnabled: () => true,
+  computeNextRoundCooldown: () => 3,
+  emitBattleEvent: vi.fn(),
+  showMessage: vi.fn()
+}));
+
 // Mock dependencies FIRST before importing modules that use them
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn()
+  showSnackbar: mocks.showSnackbar
 }));
 vi.mock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
-  autoSelectStat: vi.fn()
+  autoSelectStat: mocks.autoSelectStat
 }));
 vi.mock("../../src/helpers/i18n.js", () => ({
-  t: (key) => key // Simple mock for translation
+  t: mocks.t
 }));
 vi.mock("../../src/helpers/featureFlags.js", () => ({
-  isEnabled: () => true // Assume autoSelect is enabled
+  isEnabled: mocks.isEnabled
 }));
 vi.mock("../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
-  computeNextRoundCooldown: () => 3 // Mock cooldown
+  computeNextRoundCooldown: mocks.computeNextRoundCooldown
 }));
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn()
+  emitBattleEvent: mocks.emitBattleEvent
 }));
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
-  showMessage: vi.fn()
+  showMessage: mocks.showMessage
 }));
 
 // Import modules AFTER mocks are set up
 import { handleStatSelectionTimeout } from "../../src/helpers/classicBattle/autoSelectHandlers.js";
 import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
-import { showSnackbar } from "../../src/helpers/showSnackbar.js";
-import { autoSelectStat } from "../../src/helpers/classicBattle/autoSelectStat.js";
+
+// Access mocked functions via the mocks object
+const { showSnackbar, autoSelectStat } = mocks;
 
 describe("handleStatSelectionTimeout", () => {
   let scheduledCallbacks;
@@ -58,23 +70,45 @@ describe("handleStatSelectionTimeout", () => {
   test("should show messages and auto-select in a correct, sequential order", () => {
     const store = { selectionMade: false };
     const onSelect = vi.fn();
+    
+    console.log("Initial store:", JSON.stringify(store));
 
     handleStatSelectionTimeout(store, onSelect, 5000);
+    
+    console.log("After handleStatSelectionTimeout, store:", JSON.stringify(store));
 
     // Verify store was modified by handleStatSelectionTimeout
     expect(store.autoSelectId).toBeDefined();
 
     // 1. The initial timeout should be registered for the provided delay.
     expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
+    
+    // Debug: log all setTimeout calls
+    console.log("All setTimeout calls:");
+    fakeScheduler.setTimeout.mock.calls.forEach((call, idx) => {
+      console.log(`  [${idx}] delay=${call[1]}, callback=${typeof call[0]}`);
+    });
+    
     const mainTimeoutCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 5000);
     expect(mainTimeoutCall).toBeDefined();
     const [mainTimeout] = mainTimeoutCall;
 
     // Verify the callback is a function
     expect(typeof mainTimeout).toBe("function");
+    
+    // Add a tracer to the callback
+    let callbackWasCalled = false;
+    const tracedCallback = () => {
+      callbackWasCalled = true;
+      return mainTimeout();
+    };
 
-    // Execute the main timeout callback to simulate the timer expiring.
-    mainTimeout();
+    // Execute the traced callback
+    tracedCallback();
+    
+    console.log("Callback was called:", callbackWasCalled);
+    console.log("showSnackbar call count:", showSnackbar.mock.calls.length);
+    console.log("showSnackbar calls:", JSON.stringify(showSnackbar.mock.calls));
 
     // 2. The stalled message should be shown and no auto-select should occur yet.
     expect(showSnackbar).toHaveBeenCalledWith("ui.statSelectionStalled");

@@ -55,10 +55,9 @@ async function invokeWithConsoleErrorCapture(callback) {
 describe("getFallbackJudoka", () => {
   it("returns the fallback judoka from JSON when available", async () => {
     const fallbackEntry = { id: 0, firstname: "Json", surname: "Fallback" };
-    const mockFetch = vi.fn().mockResolvedValue([
-      { id: 1, firstname: "Other", surname: "Judoka" },
-      fallbackEntry
-    ]);
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue([{ id: 1, firstname: "Other", surname: "Judoka" }, fallbackEntry]);
 
     const getFallbackJudoka = await importGetFallbackJudoka();
     const result = await getFallbackJudoka({ fetchJsonFn: mockFetch });

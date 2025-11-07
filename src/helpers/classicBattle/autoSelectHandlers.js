@@ -80,29 +80,38 @@ export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
 
     // 1. Show stalled message
     const stalledMsg = t("ui.statSelectionStalled");
-    try {
-      showSnackbar(stalledMsg);
-      if (!isEnabled("autoSelect")) {
+    showSnackbar(stalledMsg);
+
+    if (!isEnabled("autoSelect")) {
+      try {
         scoreboard.showMessage(stalledMsg);
+      } catch (error) {
+        // Scoreboard might not be initialized in test environments
+        console.warn("[autoSelect] Scoreboard not available:", error);
       }
+    }
+
+    try {
       emitBattleEvent("statSelectionStalled");
-    } catch {}
+    } catch (error) {
+      console.warn("[autoSelect] Failed to emit battle event:", error);
+    }
 
     if (isEnabled("autoSelect")) {
       // 2. Schedule countdown message
       scheduler.setTimeout(() => {
         if (store?.selectionMade) return;
-        try {
-          const secs = computeNextRoundCooldown();
-          showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
-        } catch {}
+        const secs = computeNextRoundCooldown();
+        showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
 
         // 3. Schedule auto-select
         scheduler.setTimeout(() => {
           if (store?.selectionMade) return;
           try {
             autoSelectStat(onSelect);
-          } catch {}
+          } catch (error) {
+            console.error("[autoSelect] Failed to auto-select stat:", error);
+          }
         }, 250); // 250ms after countdown message
       }, 800); // 800ms after stalled message
     }
