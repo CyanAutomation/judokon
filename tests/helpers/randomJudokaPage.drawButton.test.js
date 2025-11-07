@@ -100,7 +100,7 @@ describe("randomJudokaPage draw button", () => {
 
     setupRandomJudokaCoreMocks({ generateRandomCard });
 
-    const { section, container } = createRandomCardDom();
+    const { section } = createRandomCardDom();
     document.body.append(section);
     document.body?.removeAttribute("data-random-judoka-ready");
 
@@ -136,7 +136,7 @@ describe("randomJudokaPage draw button", () => {
       const generateRandomCard = vi.fn().mockResolvedValue({ name: "Ghost Judoka" });
       setupRandomJudokaCoreMocks({ generateRandomCard });
 
-      const { section, container } = createRandomCardDom();
+      const { section } = createRandomCardDom();
       document.body.append(section);
 
       const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
