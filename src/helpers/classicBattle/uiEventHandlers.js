@@ -58,71 +58,6 @@ function waitForNextFrame() {
   });
 }
 
-async function revealOpponentCardAfterResolution() {
-  const container = document.getElementById("opponent-card");
-  if (!container) {
-    pendingOpponentCardData = null;
-    return;
-  }
-  let cardData = pendingOpponentCardData;
-  if (!cardData) {
-    try {
-      cardData = await getOpponentCardData();
-    } catch {
-      cardData = null;
-    }
-  }
-  if (cardData) {
-    try {
-      await renderOpponentCard(cardData, container);
-    } catch {
-      pendingOpponentCardData = null;
-      return;
-    }
-    await waitForNextFrame();
-    try {
-      const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
-      if (placeholder) placeholder.remove();
-    } catch {}
-    try {
-      container.classList.remove("is-obscured");
-      container.classList.remove("opponent-hidden");
-    } catch {}
-    try {
-      container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
-    } catch {}
-  }
-  pendingOpponentCardData = null;
-}
-
-function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
-  console.log(
-    "[displayOpponentChoosingPrompt] CALLED, markTimestamp:",
-    markTimestamp,
-    "notifyReady:",
-    notifyReady
-  );
-  try {
-    console.log("[displayOpponentChoosingPrompt] About to call t()");
-    const message = t("ui.opponentChoosing");
-    console.log("[displayOpponentChoosingPrompt] t() returned:", message);
-    console.log("[displayOpponentChoosingPrompt] About to call showSnackbar");
-    showSnackbar(message);
-    console.log("[displayOpponentChoosingPrompt] showSnackbar called successfully");
-  } catch (error) {
-    console.log("[displayOpponentChoosingPrompt] ERROR calling showSnackbar:", error);
-  }
-  let recordedTimestamp;
-  if (markTimestamp) {
-    try {
-      recordedTimestamp = markOpponentPromptNow({ notify: notifyReady });
-    } catch {
-      // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
-    }
-  }
-  return recordedTimestamp;
-}
-
 /**
  * Bind dynamic UI helper event handlers on the shared battle EventTarget.
  *
@@ -181,6 +116,44 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   }
 
   // Create local helper that uses injected dependencies
+  async function revealOpponentCardAfterResolution() {
+    const container = document.getElementById("opponent-card");
+    if (!container) {
+      pendingOpponentCardData = null;
+      return;
+    }
+    let cardData = pendingOpponentCardData;
+    if (!cardData) {
+      try {
+        cardData = await getOpponentCardDataFn();
+      } catch {
+        cardData = null;
+      }
+    }
+    if (cardData) {
+      try {
+        await renderOpponentCardFn(cardData, container);
+      } catch {
+        pendingOpponentCardData = null;
+        return;
+      }
+      await waitForNextFrame();
+      try {
+        const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
+        if (placeholder) placeholder.remove();
+      } catch {}
+      try {
+        container.classList.remove("is-obscured");
+        container.classList.remove("opponent-hidden");
+      } catch {}
+      try {
+        container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
+      } catch {}
+    }
+    pendingOpponentCardData = null;
+  }
+
+  // Create local helper that uses injected dependencies
   function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
     console.log(
       "[displayOpponentChoosingPrompt] CALLED, markTimestamp:",
@@ -212,13 +185,13 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
-      pendingOpponentCardData = await getOpponentCardData();
+      pendingOpponentCardData = await getOpponentCardDataFn();
     } catch {
       pendingOpponentCardData = null;
     }
     try {
       if (container && !container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`)) {
-        applyOpponentCardPlaceholder(container);
+        applyOpponentCardPlaceholderFn(container);
       }
     } catch {}
     try {
@@ -230,11 +203,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     } catch {}
   });
 
-  console.log("[bindUIHelperEventHandlersDynamic] about to bind statSelected");
   onBattleEvent("statSelected", async (e) => {
     console.log("[statSelected handler] CALLED! Detail:", e?.detail);
     try {
-      scoreboard.clearTimer?.();
+      scoreboardObj.clearTimer?.();
     } catch (error) {
       console.log("[statSelected handler] Error in clearTimer:", error);
     }
@@ -242,7 +214,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       const detail = (e && e.detail) || {};
       const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
       const opts = hasOpts ? detail.opts || {} : {};
-      const flagEnabled = isEnabled("opponentDelayMessage");
+      const flagEnabled = isEnabledFn("opponentDelayMessage");
       const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
 
       console.log("[statSelected handler] flagEnabled:", flagEnabled, "shouldDelay:", shouldDelay);
@@ -258,7 +230,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
       const delaySource = Object.prototype.hasOwnProperty.call(opts, "delayMs")
         ? Number(opts.delayMs)
-        : Number(getOpponentDelay());
+        : Number(getOpponentDelayFn());
       const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
       console.log(
@@ -276,7 +248,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         return;
       }
 
-      const minDuration = Number(getOpponentPromptMinDuration());
+      const minDuration = Number(getOpponentPromptMinDurationFn());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
       const promptTimestamp = displayOpponentChoosingPrompt({
@@ -287,9 +259,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       opponentSnackbarId = setTimeout(() => {
         try {
           if (Number.isFinite(promptTimestamp)) {
-            recordOpponentPromptTimestamp(promptTimestamp);
+            recordOpponentPromptTimestampFn(promptTimestamp);
           } else {
-            markOpponentPromptNow();
+            markOpponentPromptNowFn();
           }
         } catch {
           // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
@@ -313,12 +285,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         Number.isFinite(numericPlayer) &&
         Number.isFinite(numericOpponent)
       ) {
-        showStatComparison(store, stat, numericPlayer, numericOpponent);
+        showStatComparisonFn(store, stat, numericPlayer, numericOpponent);
       }
     } catch {}
     try {
-      showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
-      updateDebugPanel();
+      showRoundOutcomeFn(result.message || "", stat, playerVal, opponentVal);
+      updateDebugPanelFn();
     } catch {}
     try {
       if (store && typeof store === "object") {

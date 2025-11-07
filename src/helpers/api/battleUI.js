@@ -102,7 +102,7 @@ export function evaluateRound(playerVal, opponentVal) {
           writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
         }
       }
-    } catch (e) {
+    } catch {
       // Silently ignore DOM update errors in test environment
     }
 
@@ -140,7 +140,7 @@ export function evaluateRound(playerVal, opponentVal) {
           messageEl.textContent = message;
         }
       }
-    } catch (e) {
+    } catch {
       // Silently ignore DOM update errors in fallback path
     }
 
