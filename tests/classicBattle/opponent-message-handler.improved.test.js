@@ -91,8 +91,12 @@ describe("UI handlers: opponent message events", () => {
     getOpponentDelayMock.mockClear();
     getOpponentDelayMock.mockReturnValue(500);
     vi.stubGlobal("document", { getElementById: vi.fn(() => null) });
-    resetBattleEventTarget?.();
     delete globalThis.__cbUIHelpersDynamicBoundTargets;
+    
+    // DEBUG: Check when event target is reset
+    console.log("Test beforeEach: resetting event target");
+    resetBattleEventTarget?.();
+    console.log("Test beforeEach: after reset");
   });
 
   afterEach(() => {
@@ -104,13 +108,20 @@ describe("UI handlers: opponent message events", () => {
 
   it("shows opponent choosing snackbar immediately when delay is not positive", () => {
     getOpponentDelayMock.mockReturnValue(0);
+    
+    console.log("Test: Before bindUIHelperEventHandlersDynamic");
+    console.log("Event target before bind:", globalThis.__classicBattleEventTarget);
     bindUIHelperEventHandlersDynamic();
+    console.log("Test: After bindUIHelperEventHandlersDynamic");
+    console.log("Event target after bind:", globalThis.__classicBattleEventTarget);
+    console.log("Bound targets set:", globalThis.__cbUIHelpersDynamicBoundTargets);
 
     console.log("Test: Before emitting statSelected");
     console.log("scoreboardClearTimer mock:", scoreboardClearTimer);
     console.log("showSnackbar mock:", showSnackbar);
     console.log("markOpponentPromptNow mock:", markOpponentPromptNow);
     
+    console.log("Event target before emit:", globalThis.__classicBattleEventTarget);
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
     console.log("Test: After emitting statSelected");
