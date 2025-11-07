@@ -124,9 +124,6 @@ function restoreHistoryToggleButton(historyPanel, toggleHistoryBtn) {
   delete toggleHistoryBtn.dataset.historyToggleFloating;
 }
 
-const DRAW_ICON =
-  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
-
 /**
  * Initialize feature flag state and apply motion/viewport preferences.
  *
@@ -584,27 +581,14 @@ export async function setupRandomJudokaPage() {
   if (!drawButton) {
     throw new Error("initRandomJudokaPage: #draw-card-btn element is missing from the DOM.");
   }
-  if (!drawButton.querySelector("svg")) {
-    const parser = new DOMParser();
-    const svgDoc = parser.parseFromString(DRAW_ICON, "image/svg+xml");
-    const icon = svgDoc.querySelector("svg");
-    if (icon) {
-      icon.setAttribute("aria-hidden", "true");
-      drawButton.prepend(icon);
-    }
-  }
-  if (!drawButton.querySelector(".button-label")) {
-    const label = document.createElement("span");
-    label.className = "button-label";
-    label.textContent = drawButton.dataset.drawButtonIdleLabel || "Draw Card!";
-    drawButton.appendChild(label);
-  }
-  drawButton.dataset.testid = drawButton.dataset.testid || "draw-button";
-  drawButton.dataset.tooltipId = drawButton.dataset.tooltipId || "ui.drawCard";
-  drawButton.setAttribute("aria-label", drawButton.getAttribute("aria-label") || "Draw a random judoka card");
-  drawButton.setAttribute("aria-live", drawButton.getAttribute("aria-live") || "polite");
-  if (!drawButton.hasAttribute("tabindex")) {
-    drawButton.setAttribute("tabindex", "0");
+  const buttonLabelEl = drawButton.querySelector(".button-label");
+  const idleLabel =
+    (drawButton.dataset.drawButtonIdleLabel && drawButton.dataset.drawButtonIdleLabel.trim()) ||
+    buttonLabelEl?.textContent?.trim() ||
+    "Draw Card!";
+  drawButton.dataset.drawButtonIdleLabel = idleLabel;
+  if (buttonLabelEl) {
+    buttonLabelEl.textContent = idleLabel;
   }
   drawButton.dataset.soundEnabled = String(currentSoundEnabled);
 

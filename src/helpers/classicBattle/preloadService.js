@@ -2,7 +2,8 @@ import { runWhenIdle } from "./idleCallback.js";
 import {
   getClassicBattleModule,
   getClassicBattleModuleSource,
-  loadClassicBattleModule
+  loadClassicBattleModule,
+  resetClassicBattlePreloadRegistry
 } from "../../../setup/classicBattlePreloadRegistry.js";
 
 const cachedModules = new Map();
@@ -176,12 +177,16 @@ async function preloadModule(cacheKey) {
       performanceMetrics.moduleLoadTimes.set(cacheKey, loadTime);
       cachedModules.set(cacheKey, module);
       recordMemoryUsage();
+      return module;
     } catch (error) {
       // Silently fail - preloading is best-effort
       console.warn(
         `Failed to preload ${getClassicBattleModuleSource(cacheKey)} (${cacheKey}):`,
         error
       );
+      return null;
+    } finally {
+      preloadPromises.delete(cacheKey);
     }
   })();
 
@@ -533,4 +538,5 @@ export function clearPreloadCache() {
 
   cachedModules.clear();
   preloadPromises.clear();
+  resetClassicBattlePreloadRegistry();
 }
