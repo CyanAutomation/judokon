@@ -105,7 +105,12 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
     if (typeof globalThis !== "undefined") {
       if (!globalThis.__MOCK_TIMERS) globalThis.__MOCK_TIMERS = [];
       globalThis.__MOCK_TIMERS.push(timer);
-      console.log(`[TIMER] Created timer #${globalThis.__MOCK_TIMERS.length - 1}`);
+      const timerNum = globalThis.__MOCK_TIMERS.length - 1;
+      console.log(`[TIMER] Created timer #${timerNum}`);
+      if (timerNum === 10 || timerNum === 11 || timerNum === 12) {
+        console.log(`[TIMER #${timerNum} CREATED] Stack trace:`);
+        console.trace();
+      }
     }
     return timer;
   }
@@ -119,6 +124,9 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     if (globalThis.__MOCK_TIMERS) {
       globalThis.__MOCK_TIMERS.length = 0;
     }
+    // CRITICAL: Clear any pending timers from previous test iterations
+    // This ensures we start with a clean fake timer queue
+    vi.clearAllTimers();
 
     // Ensure fake timers are active so vi.advanceTimersByTimeAsync works
     // (many other tests in this suite call vi.useFakeTimers()).
@@ -128,6 +136,16 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
+
+    // CRITICAL: Clear timers again after init, in case initClassicBattleTest created any
+    console.log(`[TEST SETUP DEBUG] Clearing timers after initClassicBattleTest`);
+    vi.clearAllTimers();
+    if (globalThis.__MOCK_TIMERS) {
+      console.log(
+        `[TEST SETUP DEBUG] __MOCK_TIMERS has ${globalThis.__MOCK_TIMERS.length} items, clearing array`
+      );
+      globalThis.__MOCK_TIMERS.length = 0;
+    }
   });
 
   afterEach(() => {
@@ -167,8 +185,27 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
 
       // Track how many timers exist before interrupt
       const timersBeforeInterrupt = globalThis.__MOCK_TIMERS?.length ?? 0;
+      console.log(`[TEST DEBUG] timersBeforeInterrupt=${timersBeforeInterrupt}`);
 
       // Clear all pending timers to prevent interference
+      // First, stop all currently tracked timers to clear their scheduled callbacks
+      if (globalThis.__MOCK_TIMERS) {
+        console.log(`[TEST DEBUG] Found ${globalThis.__MOCK_TIMERS.length} timers to stop`);
+        for (let i = 0; i < globalThis.__MOCK_TIMERS.length; i++) {
+          const timer = globalThis.__MOCK_TIMERS[i];
+          if (timer && typeof timer.stop === "function") {
+            try {
+              console.log(`[TEST] Stopping Timer #${i} before interrupt`);
+              timer.stop();
+            } catch {
+              // ignore
+            }
+          }
+        }
+      } else {
+        console.log(`[TEST DEBUG] No timers array found`);
+      }
+      // Also clear Vitest's fake timer queue
       vi.clearAllTimers();
 
       await machine.dispatch("interruptRound");

@@ -61,6 +61,9 @@ const READY_DISPATCHER_IDENTITY_SYMBOL =
     ? Symbol.for("classicBattle.readyDispatcherIdentity")
     : "__classicBattle_readyDispatcherIdentity__";
 
+// Track active cooldown controls to enable cleanup when starting new cooldown
+let activeCooldownControls = null;
+
 const hasOwn = Object.prototype.hasOwnProperty;
 const ROUND_START_GUARD = Symbol.for("classicBattle.startRoundGuard");
 const ACTIVE_ROUND_PAYLOAD = Symbol.for("classicBattle.activeRoundPayload");
@@ -715,10 +718,10 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   
   // Stop any existing cooldown timer to prevent old timers from firing
   // when time advances (prevents duplicate ready dispatches in tests)
-  const existingControls = getActiveCooldownControls?.();
-  if (existingControls?.timer && typeof existingControls.timer.stop === "function") {
+  if (activeCooldownControls?.timer && typeof activeCooldownControls.timer.stop === "function") {
     try {
-      existingControls.timer.stop();
+      console.log("[ROUNDMANAGER DEBUG] Stopping previous cooldown timer before creating new one");
+      activeCooldownControls.timer.stop();
     } catch (error) {
       // Ignore errors during cleanup
       if (process?.env?.NODE_ENV !== "test" && typeof console !== "undefined") {
@@ -732,6 +735,9 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   initializeCooldownTelemetry({ schedulerProvided });
   const bus = createEventBus(overrides.eventBus);
   const controls = createCooldownControls({ emit: bus.emit });
+  
+  // Track these controls as active for cleanup on next cooldown
+  activeCooldownControls = controls;
   const context = detectOrchestratorContext(() => {
     if (typeof overrides.isOrchestrated === "function") {
       return overrides.isOrchestrated();
