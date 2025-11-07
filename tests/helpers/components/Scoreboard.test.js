@@ -62,37 +62,40 @@ describe("createScoreboard", () => {
     expect(roundEl.textContent).toBe("Round 3");
   });
 
-  it("updates the DOM via public helpers", () => {
+  it("renders DOM updates via public helpers", async () => {
     const scoreboard = createScoreboard();
     document.body.appendChild(scoreboard.element);
-    expect(document.body.contains(scoreboard.element)).toBe(true);
 
     try {
-      scoreboard.updateScore({ player: 9, opponent: 4 });
-      expect(scoreboard.getScore()).toEqual({ player: 9, opponent: 4 });
+      const scoreInput = { player: 7, opponent: 5 };
+      scoreboard.updateScore(scoreInput);
+      scoreboard.updateTimer(18);
+      scoreboard.updateMessage("Keep pushing!");
+      scoreboard.updateRound(4);
 
-      const playerValue = scoreboard.element.querySelector(
-        '[data-testid="score-display"] [data-testid="player-score-value"]'
-      )?.textContent;
-      const opponentValue = scoreboard.element.querySelector(
-        '[data-testid="score-display"] [data-testid="opponent-score-value"]'
-      )?.textContent;
+      // Allow any deferred DOM work (e.g., debounce or RAF) to finish.
+      await new Promise((resolve) => {
+        queueMicrotask(resolve);
+      });
 
-      expect(playerValue).toBe("9");
-      expect(opponentValue).toBe("4");
+      const scoreDisplay = scoreboard.element.querySelector('[data-testid="score-display"]');
+      expect(scoreboard.getScore()).toEqual(scoreInput);
+      expect(
+        scoreDisplay?.querySelector('[data-testid="player-score-value"]')?.textContent
+      ).toBe("7");
+      expect(
+        scoreDisplay?.querySelector('[data-testid="opponent-score-value"]')?.textContent
+      ).toBe("5");
 
-      scoreboard.updateTimer(42);
       const timerEl = scoreboard.element.querySelector("#next-round-timer");
-      expect(timerEl?.textContent).toBe("Time Left: 42s");
-      expect(timerEl?.getAttribute("data-remaining-time")).toBe("42");
+      expect(timerEl?.textContent).toBe("Time Left: 18s");
+      expect(timerEl?.getAttribute("data-remaining-time")).toBe("18");
 
-      scoreboard.updateMessage("Fight on!");
       const messageEl = scoreboard.element.querySelector("#round-message");
-      expect(messageEl?.textContent).toBe("Fight on!");
+      expect(messageEl?.textContent).toBe("Keep pushing!");
 
-      scoreboard.updateRound(3);
       const roundEl = scoreboard.element.querySelector("#round-counter");
-      expect(roundEl?.textContent).toBe("Round 3");
+      expect(roundEl?.textContent).toBe("Round 4");
     } finally {
       scoreboard.view.destroy();
       scoreboard.element.remove();
