@@ -1,4 +1,9 @@
 import { runWhenIdle } from "./idleCallback.js";
+import {
+  getClassicBattleModule,
+  getClassicBattleModuleSource,
+  loadClassicBattleModule
+} from "../../../setup/classicBattlePreloadRegistry.js";
 
 const cachedModules = new Map();
 const preloadPromises = new Map();
@@ -140,12 +145,19 @@ let performanceMetrics = {
 /**
  * Preload a module during idle time and cache the result.
  *
- * @param {string} modulePath - Path to the module to preload
  * @param {string} cacheKey - Key to store the cached module under
  * @returns {Promise<void>} Resolves when preload completes
  */
-async function preloadModule(modulePath, cacheKey) {
-  if (cachedModules.has(cacheKey) || preloadPromises.has(cacheKey)) {
+async function preloadModule(cacheKey) {
+  const existingModule = cachedModules.get(cacheKey) ?? getClassicBattleModule(cacheKey);
+  if (existingModule) {
+    performanceMetrics.cacheHits++;
+    cachedModules.set(cacheKey, existingModule);
+    recordMemoryUsage();
+    return Promise.resolve(existingModule);
+  }
+
+  if (preloadPromises.has(cacheKey)) {
     performanceMetrics.cacheHits++;
     recordMemoryUsage();
     return preloadPromises.get(cacheKey);
@@ -156,14 +168,20 @@ async function preloadModule(modulePath, cacheKey) {
 
   const preloadPromise = (async () => {
     try {
-      const module = await import(modulePath);
+      const module = await loadClassicBattleModule(cacheKey);
+      if (!module) {
+        return null;
+      }
       const loadTime = Date.now() - startTime;
       performanceMetrics.moduleLoadTimes.set(cacheKey, loadTime);
       cachedModules.set(cacheKey, module);
       recordMemoryUsage();
     } catch (error) {
       // Silently fail - preloading is best-effort
-      console.warn(`Failed to preload ${modulePath}:`, error);
+      console.warn(
+        `Failed to preload ${getClassicBattleModuleSource(cacheKey)} (${cacheKey}):`,
+        error
+      );
     }
   })();
 
@@ -242,7 +260,7 @@ function recordMemoryUsage() {
  * @returns {object|null} The cached module or null if not found
  */
 export function getCachedModule(cacheKey) {
-  return cachedModules.get(cacheKey) || null;
+  return cachedModules.get(cacheKey) ?? getClassicBattleModule(cacheKey);
 }
 
 /**
@@ -295,7 +313,7 @@ export function performMemoryCleanup() {
  * @returns {void}
  */
 export function preloadBattleEngine() {
-  runWhenIdle(() => preloadModule("../battleEngineFacade.js", "battleEngine"));
+  runWhenIdle(() => preloadModule("battleEngine"));
 }
 
 /**
@@ -312,7 +330,7 @@ export function preloadBattleEngine() {
  * @returns {void}
  */
 export function preloadScoreboard() {
-  runWhenIdle(() => preloadModule("../setupScoreboard.js", "scoreboard"));
+  runWhenIdle(() => preloadModule("scoreboard"));
 }
 
 /**
@@ -329,7 +347,7 @@ export function preloadScoreboard() {
  * @returns {void}
  */
 export function preloadCooldownRenderer() {
-  runWhenIdle(() => preloadModule("../CooldownRenderer.js", "cooldownRenderer"));
+  runWhenIdle(() => preloadModule("cooldownRenderer"));
 }
 
 /**
@@ -345,7 +363,7 @@ export function preloadCooldownRenderer() {
  * @returns {void}
  */
 export function preloadDebugPanel() {
-  runWhenIdle(() => preloadModule("./debugPanel.js", "debugPanel"));
+  runWhenIdle(() => preloadModule("debugPanel"));
 }
 
 /**
@@ -363,10 +381,7 @@ export function preloadDebugPanel() {
  */
 export function preloadTimerModules() {
   runWhenIdle(async () => {
-    await Promise.all([
-      preloadModule("../timers/computeNextRoundCooldown.js", "computeCooldown"),
-      preloadModule("../timers/createRoundTimer.js", "createRoundTimer")
-    ]);
+    await Promise.all([preloadModule("computeCooldown"), preloadModule("createRoundTimer")]);
   });
 }
 
@@ -404,7 +419,7 @@ export function initPreloadServices() {
  * @pseudocode
  * 1. Check if battle engine is already cached from preload.
  * 2. Return cached module immediately if available.
- * 3. If not cached, perform synchronous import of battle engine facade.
+ * 3. If not cached, resolve the module via the registered preload loader.
  * 4. Return the loaded module for immediate use.
  *
  * @returns {Promise<object>} The battle engine facade module
@@ -413,7 +428,7 @@ export async function getBattleEngineLazy() {
   const cached = getCachedModule("battleEngine");
   if (cached) return cached;
 
-  return await import("../battleEngineFacade.js");
+  return loadClassicBattleModule("battleEngine");
 }
 
 /**
@@ -422,7 +437,7 @@ export async function getBattleEngineLazy() {
  * @pseudocode
  * 1. Check if scoreboard module is already cached from preload.
  * 2. Return cached module immediately if available.
- * 3. If not cached, perform synchronous import of scoreboard setup.
+ * 3. If not cached, resolve the module via the registered preload loader.
  * 4. Return the loaded module for immediate use.
  *
  * @returns {Promise<object>} The scoreboard module
@@ -431,7 +446,7 @@ export async function getScoreboardLazy() {
   const cached = getCachedModule("scoreboard");
   if (cached) return cached;
 
-  return await import("../setupScoreboard.js");
+  return loadClassicBattleModule("scoreboard");
 }
 
 /**
@@ -440,7 +455,7 @@ export async function getScoreboardLazy() {
  * @pseudocode
  * 1. Check if cooldown renderer is already cached from preload.
  * 2. Return cached module immediately if available.
- * 3. If not cached, perform synchronous import of cooldown renderer.
+ * 3. If not cached, resolve the module via the registered preload loader.
  * 4. Return the loaded module for immediate use.
  *
  * @returns {Promise<object>} The cooldown renderer module
@@ -449,7 +464,7 @@ export async function getCooldownRendererLazy() {
   const cached = getCachedModule("cooldownRenderer");
   if (cached) return cached;
 
-  return await import("../CooldownRenderer.js");
+  return loadClassicBattleModule("cooldownRenderer");
 }
 
 /**
@@ -458,7 +473,7 @@ export async function getCooldownRendererLazy() {
  * @pseudocode
  * 1. Check if debug panel is already cached from preload.
  * 2. Return cached module immediately if available.
- * 3. If not cached, perform synchronous import of debug panel.
+ * 3. If not cached, resolve the module via the registered preload loader.
  * 4. Return the loaded module for immediate use.
  *
  * @returns {Promise<object>} The debug panel module
@@ -467,7 +482,7 @@ export async function getDebugPanelLazy() {
   const cached = getCachedModule("debugPanel");
   if (cached) return cached;
 
-  return await import("./debugPanel.js");
+  return loadClassicBattleModule("debugPanel");
 }
 
 /**
@@ -476,7 +491,7 @@ export async function getDebugPanelLazy() {
  * @pseudocode
  * 1. Check cache for both timer modules (computeCooldown and createRoundTimer).
  * 2. Return cached modules immediately if both are available.
- * 3. Load any missing modules synchronously using Promise.all.
+ * 3. Load any missing modules through the shared preload loader registry.
  * 4. Return object containing both timer modules.
  * 5. This ensures both timer modules are available when needed.
  *
@@ -494,8 +509,8 @@ export async function getTimerModulesLazy() {
 
   // Load any missing modules
   const [computeCooldown, createRoundTimer] = await Promise.all([
-    cached.computeCooldown || import("../timers/computeNextRoundCooldown.js"),
-    cached.createRoundTimer || import("../timers/createRoundTimer.js")
+    cached.computeCooldown || loadClassicBattleModule("computeCooldown"),
+    cached.createRoundTimer || loadClassicBattleModule("createRoundTimer")
   ]);
 
   return { computeCooldown, createRoundTimer };

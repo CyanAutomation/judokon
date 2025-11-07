@@ -1,5 +1,17 @@
 import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
 import { stopTimer } from "../battleEngineFacade.js";
+import * as roundUIModule from "./roundUI.js";
+import * as uiServiceModule from "./uiService.js";
+import * as uiEventHandlersModule from "./uiEventHandlers.js";
+import * as promisesModule from "./promises.js";
+import * as cardSelectionModule from "./cardSelection.js";
+import * as cardStatUtilsModule from "./cardStatUtils.js";
+import * as selectionHandlerModule from "./selectionHandler.js";
+import * as eventDispatcherModule from "./eventDispatcher.js";
+import * as autoSelectModule from "./autoSelectStat.js";
+import * as autoSelectHandlersModule from "./autoSelectHandlers.js";
+import { showMessage as scoreboardShowMessage } from "../../components/Scoreboard.js";
+import { createStatsPanel as createStatsPanelDefault } from "../../components/StatsPanel.js";
 
 // Internal flags to make bindings idempotent and allow limited rebinds in tests.
 let __uiBound = false;
@@ -58,8 +70,6 @@ const TEST_OPPONENT_CARD_BASE = {
   stats: TEST_STAT_BASE
 };
 
-let __createStatsPanelPromise;
-
 const deriveSelectionValues = (stat, getCardStatValue, getOpponentJudoka) => {
   const values = {};
   const playerCard = document.getElementById("player-card");
@@ -101,14 +111,9 @@ const mergeTestCardData = (base, overrides = {}) => {
 
 const renderStatsCardForTest = async (target, base, overrides) => {
   if (!target) return null;
-  if (!__createStatsPanelPromise) {
-    // Preload during module initialization instead of lazy loading
-    __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
-      (mod) => mod.createStatsPanel
-    );
-  }
-  const createStatsPanel = await __createStatsPanelPromise;
-  if (typeof createStatsPanel !== "function") return null;
+  const createStatsPanel =
+    typeof createStatsPanelDefault === "function" ? createStatsPanelDefault : null;
+  if (!createStatsPanel) return null;
 
   const cardData = mergeTestCardData(base, overrides);
   const rarityClass = String(cardData.rarity || "common").toLowerCase();
@@ -168,70 +173,75 @@ export async function setCardStatValuesForTest(config = {}) {
  * rebind dynamic handlers so test-time mocks are honored.
  *
  * @pseudocode
- * 1. If UI bindings are not present, import `./roundUI.js` to register static handlers.
+ * 1. If UI bindings are not present, resolve round UI handlers via deps or static module.
  * 2. When `force` is set, reset the internal EventTarget and call the
  *    dynamic binding entrypoints so vi.mocks are respected.
- * 3. Ensure promises from `./promises.js` are created and reset when forced.
+ * 3. Ensure promises from `./promises.js` (or overrides) are created and reset when forced.
  *
- * @param {{force?: boolean}} [opts] - Optional flags. `force` rebinds dynamic handlers.
+ * @param {{
+ *   force?: boolean,
+ *   deps?: {
+ *     roundUI?: typeof import('./roundUI.js'),
+ *     uiService?: typeof import('./uiService.js'),
+ *     uiEventHandlers?: typeof import('./uiEventHandlers.js'),
+ *     promises?: typeof import('./promises.js')
+ *   }
+ * }} [opts] - Optional flags and dependency overrides. `force` rebinds dynamic handlers.
  * @returns {Promise<void>} Resolves when bindings and promises are available.
  */
 export async function ensureBindings(opts = {}) {
-  const force = !!opts.force;
+  const { force = false, deps: dependencyOverrides = {} } = opts || {};
+  const roundUI = dependencyOverrides.roundUI ?? roundUIModule;
+  const uiService = dependencyOverrides.uiService ?? uiServiceModule;
+  const uiEventHandlers = dependencyOverrides.uiEventHandlers ?? uiEventHandlersModule;
+  const promises = dependencyOverrides.promises ?? promisesModule;
+
   // Bind round UI listeners once per worker to avoid duplicate handlers.
   if (!__uiBound) {
-    const ui = await import("/src/helpers/classicBattle/roundUI.js");
-    if (typeof ui.bindRoundUIEventHandlersOnce === "function") {
-      ui.bindRoundUIEventHandlersOnce();
-    } else if (typeof ui.bindRoundUIEventHandlers === "function") {
-      ui.bindRoundUIEventHandlers();
+    if (typeof roundUI.bindRoundUIEventHandlersOnce === "function") {
+      roundUI.bindRoundUIEventHandlersOnce();
+    } else if (typeof roundUI.bindRoundUIEventHandlers === "function") {
+      roundUI.bindRoundUIEventHandlers();
     }
-    let uiService;
-    try {
-      uiService = await import("/src/helpers/classicBattle/uiService.js");
-      if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
-        uiService.bindUIServiceEventHandlersOnce();
-      }
-    } catch {}
+    if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
+      uiService.bindUIServiceEventHandlersOnce();
+    }
     __uiBound = true;
     if (force) {
       try {
         __resetBattleEventTarget();
       } catch {}
-      if (typeof ui.bindRoundUIEventHandlersDynamic === "function")
-        ui.bindRoundUIEventHandlersDynamic();
-      try {
-        uiService = uiService || (await import("/src/helpers/classicBattle/uiService.js"));
-        if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
-          uiService.bindUIServiceEventHandlersOnce();
-        }
-      } catch {}
-      const eventHandlers = await import("/src/helpers/classicBattle/uiEventHandlers.js");
-      if (typeof eventHandlers.bindUIHelperEventHandlersDynamic === "function")
-        eventHandlers.bindUIHelperEventHandlersDynamic();
+      if (typeof roundUI.bindRoundUIEventHandlersDynamic === "function") {
+        roundUI.bindRoundUIEventHandlersDynamic();
+      }
+      if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
+        uiService.bindUIServiceEventHandlersOnce();
+      }
+      if (typeof uiEventHandlers.bindUIHelperEventHandlersDynamic === "function") {
+        uiEventHandlers.bindUIHelperEventHandlersDynamic();
+      }
     }
   } else if (force) {
     // Reset the event bus and bind dynamic handlers to honor vi.mocks.
     try {
       __resetBattleEventTarget();
     } catch {}
-    const ui = await import("/src/helpers/classicBattle/roundUI.js");
-    if (typeof ui.bindRoundUIEventHandlersDynamic === "function")
-      ui.bindRoundUIEventHandlersDynamic();
-    try {
-      const uiService = await import("/src/helpers/classicBattle/uiService.js");
-      if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
-        uiService.bindUIServiceEventHandlersOnce();
-      }
-    } catch {}
-    const eventHandlers = await import("/src/helpers/classicBattle/uiEventHandlers.js");
-    if (typeof eventHandlers.bindUIHelperEventHandlersDynamic === "function")
-      eventHandlers.bindUIHelperEventHandlersDynamic();
+    if (typeof roundUI.bindRoundUIEventHandlersDynamic === "function") {
+      roundUI.bindRoundUIEventHandlersDynamic();
+    }
+    if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
+      uiService.bindUIServiceEventHandlersOnce();
+    }
+    if (typeof uiEventHandlers.bindUIHelperEventHandlersDynamic === "function") {
+      uiEventHandlers.bindUIHelperEventHandlersDynamic();
+    }
   }
+
   // Ensure event promises exist; allow a forced refresh after mocks in tests.
   if (!__promisesBound || force) {
-    const prom = await import("/src/helpers/classicBattle/promises.js");
-    if (typeof prom.resetBattlePromises === "function") prom.resetBattlePromises();
+    if (typeof promises.resetBattlePromises === "function") {
+      promises.resetBattlePromises();
+    }
     __promisesBound = true;
   }
 }
@@ -265,7 +275,7 @@ export function resetBindings() {
  * synchronously so tests don't need to advance real or fake timers.
  *
  * @pseudocode
- * 1. Import helpers that compute stat values and perform selection.
+ * 1. Resolve helpers that compute stat values and perform selection.
  * 2. Stop any running engine timer to avoid overlapping expirations.
  * 3. Emit `roundTimeout` to inform listeners and start auto-selection.
  * 4. Dispatch the `timeout` state transition and permit DOM updates to settle.
@@ -273,17 +283,30 @@ export function resetBindings() {
  * 6. Run auto-select and (optionally) await completion.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle store instance.
- * @param {{ awaitCompletion?: boolean }} [options] - Optional behaviour overrides.
+ * @param {{
+ *   awaitCompletion?: boolean,
+ *   deps?: {
+ *     getOpponentJudoka?: typeof import('./cardSelection.js')['getOpponentJudoka'],
+ *     getCardStatValue?: typeof import('./cardStatUtils.js')['getCardStatValue'],
+ *     handleStatSelection?: typeof import('./selectionHandler.js')['handleStatSelection'],
+ *     dispatchBattleEvent?: typeof import('./eventDispatcher.js')['dispatchBattleEvent'],
+ *     autoSelectStat?: typeof import('./autoSelectStat.js')['autoSelectStat']
+ *   }
+ * }} [options] - Optional behaviour overrides and dependency injection hooks.
  * @returns {Promise<void>} Resolves after the timeout flow completes or once the timeout transition settles when awaiting is disabled.
  */
 export async function triggerRoundTimeoutNow(store, options = {}) {
-  const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
-  const { getCardStatValue } = await import("/src/helpers/classicBattle/cardStatUtils.js");
-  const { handleStatSelection } = await import("/src/helpers/classicBattle/selectionHandler.js");
-  const { dispatchBattleEvent } = await import("/src/helpers/classicBattle/eventDispatcher.js");
-  const { autoSelectStat } = await import("/src/helpers/classicBattle/autoSelectStat.js");
-
-  const { awaitCompletion = true } = options || {};
+  const { awaitCompletion = true, deps: dependencyOverrides = {} } = options || {};
+  const getOpponentJudoka =
+    dependencyOverrides.getOpponentJudoka ?? cardSelectionModule.getOpponentJudoka;
+  const getCardStatValue =
+    dependencyOverrides.getCardStatValue ?? cardStatUtilsModule.getCardStatValue;
+  const handleStatSelection =
+    dependencyOverrides.handleStatSelection ?? selectionHandlerModule.handleStatSelection;
+  const dispatchBattleEvent =
+    dependencyOverrides.dispatchBattleEvent ?? eventDispatcherModule.dispatchBattleEvent;
+  const autoSelectStat =
+    dependencyOverrides.autoSelectStat ?? autoSelectModule.autoSelectStat;
 
   const onExpiredSelect = async (stat, opts) => {
     const selectionValues = deriveSelectionValues(stat, getCardStatValue, getOpponentJudoka);
@@ -331,20 +354,37 @@ export async function triggerRoundTimeoutNow(store, options = {}) {
  * behavior but runs synchronously.
  *
  * @pseudocode
- * 1. Import helpers for computing stat values and performing selection.
+ * 1. Resolve helpers for computing stat values and performing selection.
  * 2. Call `handleStatSelectionTimeout(store, onSelect, 0)` to schedule immediate action.
  * 3. Show a stall message and emit `statSelectionStalled` so tests can observe it.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle store instance.
+ * @param {{
+ *   deps?: {
+ *     getOpponentJudoka?: typeof import('./cardSelection.js')['getOpponentJudoka'],
+ *     getCardStatValue?: typeof import('./cardStatUtils.js')['getCardStatValue'],
+ *     handleStatSelection?: typeof import('./selectionHandler.js')['handleStatSelection'],
+ *     handleStatSelectionTimeout?: typeof import('./autoSelectHandlers.js')['handleStatSelectionTimeout'],
+ *     showScoreboardMessage?: typeof import('../../components/Scoreboard.js')['showMessage'],
+ *     emitBattleEvent?: typeof import('./battleEvents.js')['emitBattleEvent']
+ *   }
+ * }} [options] - Optional dependency overrides used in tests.
  * @returns {Promise<void>} Resolves after stall prompt setup completes.
  */
-export async function triggerStallPromptNow(store) {
-  const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
-  const { getCardStatValue } = await import("/src/helpers/classicBattle/cardStatUtils.js");
-  const { handleStatSelection } = await import("/src/helpers/classicBattle/selectionHandler.js");
-  const { handleStatSelectionTimeout } = await import(
-    "/src/helpers/classicBattle/autoSelectHandlers.js"
-  );
+export async function triggerStallPromptNow(store, options = {}) {
+  const { deps: dependencyOverrides = {} } = options || {};
+  const getOpponentJudoka =
+    dependencyOverrides.getOpponentJudoka ?? cardSelectionModule.getOpponentJudoka;
+  const getCardStatValue =
+    dependencyOverrides.getCardStatValue ?? cardStatUtilsModule.getCardStatValue;
+  const handleStatSelection =
+    dependencyOverrides.handleStatSelection ?? selectionHandlerModule.handleStatSelection;
+  const handleStatSelectionTimeout =
+    dependencyOverrides.handleStatSelectionTimeout ??
+    autoSelectHandlersModule.handleStatSelectionTimeout;
+  const showMessage =
+    dependencyOverrides.showScoreboardMessage ?? scoreboardShowMessage;
+  const emitBattleEventFn = dependencyOverrides.emitBattleEvent ?? emitBattleEvent;
 
   const onSelect = (stat, opts) => {
     const selectionValues = deriveSelectionValues(stat, getCardStatValue, getOpponentJudoka);
@@ -353,30 +393,23 @@ export async function triggerStallPromptNow(store) {
   handleStatSelectionTimeout(store, onSelect, 0);
   // Surface the stall prompt immediately in tests to avoid waiting on timers.
   const stallMessage = "Stat selection stalled. Pick a stat or wait for auto-pick.";
-  try {
-    // Import Scoreboard.js directly instead of setupScoreboard.js to avoid
-    // the initialization flag check that queues messages when setupScoreboard()
-    // hasn't been called (which is typical in tests that initialize via initScoreboard()).
-    const { showMessage } = await import("../../components/Scoreboard.js");
-    if (typeof showMessage === "function") {
+  if (typeof showMessage === "function") {
+    try {
       showMessage(stallMessage);
-    } else {
-      // Fallback to direct DOM manipulation if showMessage is unavailable
+    } catch {
       const messageEl = document.getElementById("round-message");
       if (messageEl) {
         messageEl.textContent = stallMessage;
       }
     }
-  } catch {
-    // Fallback: set message directly in DOM when scoreboard import fails
+  } else {
     const messageEl = document.getElementById("round-message");
     if (messageEl) {
       messageEl.textContent = stallMessage;
     }
   }
   try {
-    const { emitBattleEvent } = await import("/src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("statSelectionStalled");
+    emitBattleEventFn?.("statSelectionStalled");
   } catch {}
 }
 
