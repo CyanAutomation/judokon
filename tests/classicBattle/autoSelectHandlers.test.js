@@ -19,6 +19,9 @@ vi.mock("../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
+vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+  showMessage: vi.fn()
+}));
 
 // Import modules AFTER mocks are set up
 import { handleStatSelectionTimeout } from "../../src/helpers/classicBattle/autoSelectHandlers.js";
