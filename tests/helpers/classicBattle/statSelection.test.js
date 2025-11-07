@@ -32,7 +32,11 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
 
 vi.mock("../../../src/helpers/classicBattle/uiService.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/uiService.js");
-  return { syncScoreDisplay: actual.syncScoreDisplay, showMatchSummaryModal: vi.fn() };
+  return {
+    syncScoreDisplay: actual.syncScoreDisplay,
+    bindUIServiceEventHandlersOnce: actual.bindUIServiceEventHandlersOnce,
+    showMatchSummaryModal: vi.fn()
+  };
 });
 
 function expectDeselected(button) {
