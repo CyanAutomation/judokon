@@ -19,7 +19,11 @@ const updateDebugPanel = vi.fn();
 const getOpponentCardData = vi.fn();
 
 const setOpponentDelayMock = vi.fn();
-const getOpponentDelayMock = vi.fn(() => 500);
+const getOpponentDelayMock = vi.fn(() => {
+  const result = 500;
+  console.log("[TEST MOCK] getOpponentDelayMock called, returning:", result);
+  return result;
+});
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
 vi.mock("../../src/helpers/featureFlags.js", () => ({
@@ -107,7 +111,9 @@ describe("UI handlers: opponent message events", () => {
   });
 
   it("shows opponent choosing snackbar immediately when delay is not positive", () => {
+    console.log("Test: getOpponentDelayMock before mockReturnValue(0):", getOpponentDelayMock());
     getOpponentDelayMock.mockReturnValue(0);
+    console.log("Test: getOpponentDelayMock after mockReturnValue(0):", getOpponentDelayMock());
 
     console.log("Test: Before bindUIHelperEventHandlersDynamic");
     console.log("Event target before bind:", globalThis.__classicBattleEventTarget);

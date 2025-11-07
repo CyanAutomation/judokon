@@ -25,19 +25,9 @@ import "../src/helpers/classicBattle/battleEvents.js";
 // For debugging local test runs set SHOW_TEST_LOGS=1 in the environment to
 // bypass muting and allow console/stdout to appear in the test run.
 try {
-  // PATCH: Bypass global mute and stdout/stderr patch for debugging
-  const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
-  const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
-  if (IS_VITEST && !SHOW_LOGS) {
-    muteConsole(["warn", "error", "debug", "log"]);
-    try {
-      if (process && process.stdout && process.stderr) {
-        __originalStdoutWrite = process.stdout.write;
-        __originalStderrWrite = process.stderr.write;
-        process.stdout.write = () => {};
-        process.stderr.write = () => {};
-      }
-    } catch {}
+  const IS_VITEST = typeof process !== "undefined" && process.env?.VITEST;
+  if (IS_VITEST) {
+    applyConsoleMuting();
   }
 } catch {}
 
@@ -54,6 +44,25 @@ let originalReplaceState;
 // Keep original process std writes so we can restore them after each test
 let __originalStdoutWrite;
 let __originalStderrWrite;
+
+/**
+ * Apply global console and stdout/stderr muting for tests unless SHOW_TEST_LOGS is set.
+ * Saves original write functions for restoration.
+ */
+function applyConsoleMuting() {
+  const SHOW_LOGS = typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
+  if (!SHOW_LOGS) {
+    muteConsole(["warn", "error", "debug", "log"]);
+    try {
+      if (process?.stdout && process?.stderr) {
+        __originalStdoutWrite = process.stdout.write;
+        __originalStderrWrite = process.stderr.write;
+        process.stdout.write = () => {};
+        process.stderr.write = () => {};
+      }
+    } catch {}
+  }
+}
 
 expect.extend({
   toHaveAttribute(element, attribute, expected) {
@@ -108,18 +117,7 @@ afterEach(() => {
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
-  // Mute noisy console methods by default; tests can opt-in to logging
-  const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
-  if (!SHOW_LOGS) {
-    muteConsole(["warn", "error", "debug", "log"]);
-    // Also mute direct stdout/stderr writes which some telemetry utilities use
-    try {
-      __originalStdoutWrite = process.stdout.write;
-      __originalStderrWrite = process.stderr.write;
-      process.stdout.write = () => {};
-      process.stderr.write = () => {};
-    } catch {}
-  }
+  applyConsoleMuting();
   try {
     // Ensure snackbars are enabled for tests by default
     if (typeof window !== "undefined" && window.__disableSnackbars) {

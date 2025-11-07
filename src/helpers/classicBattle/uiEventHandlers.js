@@ -203,8 +203,10 @@ export function bindUIHelperEventHandlersDynamic() {
         delaySource,
         "resolvedDelay:",
         resolvedDelay,
-        "getOpponentDelay result:",
-        getOpponentDelay()
+        "getOpponentDelay() result:",
+        getOpponentDelay(),
+        "getOpponentDelay function:",
+        String(getOpponentDelay).slice(0, 100)
       );
 
       if (resolvedDelay <= 0) {
