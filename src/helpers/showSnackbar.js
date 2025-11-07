@@ -59,14 +59,14 @@ function createSetTimeoutFallback(timerFn) {
 }
 
 function getGlobalRequestAnimationFrame() {
-  if (typeof globalThis === "undefined") {
-    return null;
-  }
-  if (typeof globalThis.requestAnimationFrame === "function") {
-    return globalThis.requestAnimationFrame.bind(globalThis);
-  }
-  if (typeof globalThis.setTimeout === "function") {
-    return createSetTimeoutFallback(globalThis.setTimeout.bind(globalThis));
+  if (typeof globalThis === "undefined") return null;
+
+  const raf = globalThis.requestAnimationFrame;
+  if (typeof raf === "function") return raf.bind(globalThis);
+
+  const timeout = globalThis.setTimeout;
+  if (typeof timeout === "function") {
+    return createSetTimeoutFallback(timeout.bind(globalThis));
   }
   return null;
 }

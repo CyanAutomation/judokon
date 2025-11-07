@@ -86,7 +86,7 @@ describe("UI handlers: opponent message events", () => {
   beforeEach(() => {
     timers = useCanonicalTimers();
     setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
-    showSnackbar.mockReset();
+    showSnackbarMock.mockReset();
     markOpponentPromptNow.mockReset();
     markOpponentPromptNow.mockImplementation(() => 123.45);
     recordOpponentPromptTimestamp.mockReset();
@@ -156,12 +156,12 @@ describe("UI handlers: opponent message events", () => {
     console.log("[TEST] Timers run");
 
     // DEBUG: Check what was called
-    console.log("[TEST] showSnackbar calls:", showSnackbar.mock.calls);
+    console.log("[TEST] showSnackbarMock calls:", showSnackbarMock.mock.calls);
     console.log("[TEST] markOpponentPromptNow calls:", markOpponentPromptNow.mock.calls);
 
     // When delay is 0 or less, snackbar should show immediately without setTimeout
     // Only markOpponentPromptNow should have been called, not recordOpponentPromptTimestamp
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     // No timers should be queued when delay is 0
@@ -175,7 +175,7 @@ describe("UI handlers: opponent message events", () => {
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: false });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(1);
