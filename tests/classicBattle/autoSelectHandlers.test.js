@@ -70,11 +70,11 @@ describe("handleStatSelectionTimeout", () => {
   test("should show messages and auto-select in a correct, sequential order", () => {
     const store = { selectionMade: false };
     const onSelect = vi.fn();
-    
+
     console.log("Initial store:", JSON.stringify(store));
 
     handleStatSelectionTimeout(store, onSelect, 5000);
-    
+
     console.log("After handleStatSelectionTimeout, store:", JSON.stringify(store));
 
     // Verify store was modified by handleStatSelectionTimeout
@@ -82,20 +82,20 @@ describe("handleStatSelectionTimeout", () => {
 
     // 1. The initial timeout should be registered for the provided delay.
     expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
-    
+
     // Debug: log all setTimeout calls
     console.log("All setTimeout calls:");
     fakeScheduler.setTimeout.mock.calls.forEach((call, idx) => {
       console.log(`  [${idx}] delay=${call[1]}, callback=${typeof call[0]}`);
     });
-    
+
     const mainTimeoutCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 5000);
     expect(mainTimeoutCall).toBeDefined();
     const [mainTimeout] = mainTimeoutCall;
 
     // Verify the callback is a function
     expect(typeof mainTimeout).toBe("function");
-    
+
     // Add a tracer to the callback
     let callbackWasCalled = false;
     const tracedCallback = () => {
@@ -105,7 +105,7 @@ describe("handleStatSelectionTimeout", () => {
 
     // Execute the traced callback
     tracedCallback();
-    
+
     console.log("Callback was called:", callbackWasCalled);
     console.log("showSnackbar call count:", showSnackbar.mock.calls.length);
     console.log("showSnackbar calls:", JSON.stringify(showSnackbar.mock.calls));
