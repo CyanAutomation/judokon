@@ -92,7 +92,7 @@ describe("UI handlers: opponent message events", () => {
     getOpponentDelayMock.mockReturnValue(500);
     vi.stubGlobal("document", { getElementById: vi.fn(() => null) });
     delete globalThis.__cbUIHelpersDynamicBoundTargets;
-    
+
     // DEBUG: Check when event target is reset
     console.log("Test beforeEach: resetting event target");
     resetBattleEventTarget?.();
@@ -108,7 +108,7 @@ describe("UI handlers: opponent message events", () => {
 
   it("shows opponent choosing snackbar immediately when delay is not positive", () => {
     getOpponentDelayMock.mockReturnValue(0);
-    
+
     console.log("Test: Before bindUIHelperEventHandlersDynamic");
     console.log("Event target before bind:", globalThis.__classicBattleEventTarget);
     bindUIHelperEventHandlersDynamic();
@@ -120,7 +120,7 @@ describe("UI handlers: opponent message events", () => {
     console.log("scoreboardClearTimer mock:", scoreboardClearTimer);
     console.log("showSnackbar mock:", showSnackbar);
     console.log("markOpponentPromptNow mock:", markOpponentPromptNow);
-    
+
     console.log("Event target before emit:", globalThis.__classicBattleEventTarget);
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 

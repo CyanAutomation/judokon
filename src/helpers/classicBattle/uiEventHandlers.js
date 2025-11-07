@@ -128,9 +128,17 @@ export function bindUIHelperEventHandlersDynamic() {
     const KEY = "__cbUIHelpersDynamicBoundTargets";
     const target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
-    if (set.has(target)) return;
+    console.log("[bindUIHelperEventHandlersDynamic] Target:", target);
+    console.log("[bindUIHelperEventHandlersDynamic] Already bound?", set.has(target));
+    if (set.has(target)) {
+      console.log("[bindUIHelperEventHandlersDynamic] Skipping bind, already bound");
+      return;
+    }
+    console.log("[bindUIHelperEventHandlersDynamic] Binding handlers");
     set.add(target);
-  } catch {}
+  } catch (e) {
+    console.log("[bindUIHelperEventHandlersDynamic] Error in binding setup:", e);
+  }
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
@@ -190,7 +198,17 @@ export function bindUIHelperEventHandlersDynamic() {
         : Number(getOpponentDelay());
       const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
+      console.log(
+        "[uiEventHandlers] delaySource:",
+        delaySource,
+        "resolvedDelay:",
+        resolvedDelay,
+        "getOpponentDelay result:",
+        getOpponentDelay()
+      );
+
       if (resolvedDelay <= 0) {
+        console.log("[uiEventHandlers] resolvedDelay <= 0, calling displayOpponentChoosingPrompt immediately");
         displayOpponentChoosingPrompt();
         return;
       }

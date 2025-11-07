@@ -8,9 +8,7 @@ async function setupModules() {
   await vi.stubGlobal("document", { getElementById: vi.fn(() => null) });
 
   const battleEventsModule = await import("./src/helpers/classicBattle/battleEvents.js");
-  const uiEventHandlersModule = await import(
-    "./src/helpers/classicBattle/uiEventHandlers.js"
-  );
+  const uiEventHandlersModule = await import("./src/helpers/classicBattle/uiEventHandlers.js");
 
   getBattleEventTarget = battleEventsModule.getBattleEventTarget;
   const emitBattleEvent = battleEventsModule.emitBattleEvent;
@@ -29,23 +27,23 @@ async function setupModules() {
 (async () => {
   try {
     const { emitBattleEvent, bindUIHelperEventHandlersDynamic } = await setupModules();
-    
+
     console.log("\n--- Testing Event System ---");
     console.log("1. Getting battle event target...");
     const target = getBattleEventTarget();
     console.log("Target:", target);
-    
+
     console.log("\n2. Adding listener directly to event target...");
     let listenerCalled = false;
     target.addEventListener("statSelected", (e) => {
       console.log("Direct listener called with event:", e);
       listenerCalled = true;
     });
-    
+
     console.log("\n3. Emitting event...");
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
     console.log("Direct listener was called:", listenerCalled);
-    
+
     console.log("\n--- Complete ---");
   } catch (error) {
     console.error("Error:", error);
