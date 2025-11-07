@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { vi } from "vitest";
 
-const mockBattleEventTarget = new EventTarget();
 let getBattleEventTarget;
 
 async function setupModules() {
@@ -26,7 +25,7 @@ async function setupModules() {
 
 (async () => {
   try {
-    const { emitBattleEvent, bindUIHelperEventHandlersDynamic } = await setupModules();
+    const { emitBattleEvent } = await setupModules();
 
     console.log("\n--- Testing Event System ---");
     console.log("1. Getting battle event target...");
