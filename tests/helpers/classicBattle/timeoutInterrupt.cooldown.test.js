@@ -59,16 +59,30 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
-  const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
-  mockCreateRoundTimer({
-    scheduled: false,
-    ticks: [],
-    expire: true,
-    moduleId: "../../../src/helpers/timers/createRoundTimer.js"
-  });
-  return await import("../../../src/helpers/timers/createRoundTimer.js");
-});
+vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
+  createRoundTimer: () => {
+    const handlers = { tick: new Set(), expired: new Set() };
+    return {
+      on: vi.fn((evt, fn) => {
+        handlers[evt]?.add(fn);
+      }),
+      off: vi.fn((evt, fn) => {
+        handlers[evt]?.delete(fn);
+      }),
+      start: vi.fn((_dur) => {
+        // Schedule expiration after 1 second using fake timers
+        setTimeout(() => {
+          handlers.expired.forEach((fn) => fn());
+        }, 1000);
+      }),
+      stop: vi.fn(() => {
+        handlers.expired.forEach((fn) => fn());
+      }),
+      pause: vi.fn(),
+      resume: vi.fn()
+    };
+  }
+}));
 
 describe("timeout → interruptRound → cooldown auto-advance", () => {
   setupClassicBattleHooks();

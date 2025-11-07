@@ -62,8 +62,9 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
 vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
   mockCreateRoundTimer({
-    scheduled: false,
-    ticks: [],
+    scheduled: true,
+    intervalMs: 1000,
+    tickCount: 1,
     expire: true,
     moduleId: "../../../src/helpers/timers/createRoundTimer.js"
   });
