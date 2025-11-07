@@ -36,11 +36,10 @@ vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
   recordOpponentPromptTimestamp,
   getOpponentPromptMinDuration
 }));
-vi.mock("../../src/helpers/classicBattle/snackbar.js", () => ({
-  showSelectionPrompt: vi.fn(),
-  setOpponentDelay: setOpponentDelayMock,
-  getOpponentDelay: getOpponentDelayMock
-}));
+// NOTE: We need to use the REAL snackbar module, not a mock,
+// because the handler captures a reference to the imported functions at load time.
+// To test different delays, we'll use setOpponentDelay() instead of trying to mock getOpponentDelay.
+// vi.mock("../../src/helpers/classicBattle/snackbar.js", ...)
 vi.mock("../../src/helpers/classicBattle/opponentController.js", () => ({
   getOpponentCardData
 }));
@@ -65,24 +64,17 @@ describe("UI handlers: opponent message events", () => {
   let resetBattleEventTarget;
   let setTimeoutSpy;
   let timers;
-  let snackbarModule;
+  let setOpponentDelay;
 
   beforeAll(async () => {
-    await import("../../src/helpers/classicBattle/snackbar.js");
-    snackbarModule = await import("../../src/helpers/classicBattle/snackbar.js");
+    // Import modules
+    const snackbarModule = await import("../../src/helpers/classicBattle/snackbar.js");
     const uiEventHandlersModule = await import(
       "../../src/helpers/classicBattle/uiEventHandlers.js"
     );
     const battleEventsModule = await import("../../src/helpers/classicBattle/battleEvents.js");
 
-    console.log("In beforeAll:");
-    const isEqual = snackbarModule.getOpponentDelay === getOpponentDelayMock;
-    console.log("snackbarModule.getOpponentDelay === getOpponentDelayMock?", isEqual);
-    const snackbarStr = String(snackbarModule.getOpponentDelay).slice(0, 100);
-    const mockStr = String(getOpponentDelayMock).slice(0, 100);
-    console.log("snackbarModule.getOpponentDelay:", snackbarStr);
-    console.log("getOpponentDelayMock:", mockStr);
-
+    setOpponentDelay = snackbarModule.setOpponentDelay;
     bindUIHelperEventHandlersDynamic = uiEventHandlersModule.bindUIHelperEventHandlersDynamic;
     emitBattleEvent = battleEventsModule.emitBattleEvent;
     resetBattleEventTarget = battleEventsModule.__resetBattleEventTarget;
@@ -103,16 +95,13 @@ describe("UI handlers: opponent message events", () => {
     showStatComparison.mockReset();
     updateDebugPanel.mockReset();
     getOpponentCardData.mockReset();
-    setOpponentDelayMock.mockClear();
-    getOpponentDelayMock.mockClear();
-    getOpponentDelayMock.mockReturnValue(500);
     vi.stubGlobal("document", { getElementById: vi.fn(() => null) });
     delete globalThis.__cbUIHelpersDynamicBoundTargets;
 
-    // DEBUG: Check when event target is reset
-    console.log("Test beforeEach: resetting event target");
+    // Reset opponent delay to default
+    setOpponentDelay(500);
+
     resetBattleEventTarget?.();
-    console.log("Test beforeEach: after reset");
   });
 
   afterEach(() => {
