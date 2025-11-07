@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
+// Mock all dependencies before any imports
 vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
   STATS: ["power"],
   stopTimer: vi.fn()
@@ -50,13 +51,6 @@ vi.mock("../../src/helpers/i18n.js", () => ({
   t: vi.fn((k) => k)
 }));
 
-import { handleStatSelection } from "../../src/helpers/classicBattle.js";
-import {
-  cleanupTimers,
-  isOrchestratorActive
-} from "../../src/helpers/classicBattle/selectionHandler.js";
-import { setFlag } from "../../src/helpers/featureFlags.js";
-
 describe("handleStatSelection helpers", () => {
   let store;
   let stopTimer;
@@ -65,16 +59,94 @@ describe("handleStatSelection helpers", () => {
   let dispatchBattleEvent;
   let getBattleState;
   let timers;
+  let handleStatSelection;
+  let cleanupTimers;
+  let setFlag;
 
   beforeEach(async () => {
+    // Clear module cache to ensure fresh imports with mocks applied
+    vi.resetModules();
+
+    // Re-declare mocks after reset
+    vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+      STATS: ["power"],
+      stopTimer: vi.fn()
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+      emitBattleEvent: vi.fn(),
+      onBattleEvent: vi.fn(),
+      offBattleEvent: vi.fn()
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/eventBus.js", () => ({
+      getBattleState: vi.fn()
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/cardStatUtils.js", () => ({
+      getCardStatValue: vi.fn(() => 1)
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
+      resolveRound: vi.fn()
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn(async (eventName) => {
+        if (eventName === "statSelected") {
+          return Promise.resolve(true);
+        }
+        return Promise.resolve(false);
+      })
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/timerUtils.js", () => ({
+      resolveDelay: vi.fn(() => 0)
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
+      getRoundResolvedPromise: vi.fn(() => new Promise(() => {}))
+    }));
+
+    vi.mock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
+
+    vi.mock("../../src/helpers/i18n.js", () => ({
+      t: vi.fn((k) => k)
+    }));
+
     timers = useCanonicalTimers();
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
-    ({ stopTimer } = await import("../../src/helpers/battleEngineFacade.js"));
-    ({ emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js"));
-    ({ showSnackbar } = await import("../../src/helpers/showSnackbar.js"));
-    ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/eventDispatcher.js"));
-    ({ getBattleState } = await import("../../src/helpers/classicBattle/eventBus.js"));
+
+    // Import all modules after setting up mocks
+    const battleEngineFacade = await import("../../src/helpers/battleEngineFacade.js");
+    stopTimer = battleEngineFacade.stopTimer;
+
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    emitBattleEvent = battleEvents.emitBattleEvent;
+
+    const snackbarModule = await import("../../src/helpers/showSnackbar.js");
+    showSnackbar = snackbarModule.showSnackbar;
+
+    const eventDispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
+    dispatchBattleEvent = eventDispatcher.dispatchBattleEvent;
+
+    const eventBus = await import("../../src/helpers/classicBattle/eventBus.js");
+    getBattleState = eventBus.getBattleState;
     getBattleState.mockReturnValue(null);
+
+    const classicBattle = await import("../../src/helpers/classicBattle.js");
+    handleStatSelection = classicBattle.handleStatSelection;
+
+    const selectionHandlerModule = await import(
+      "../../src/helpers/classicBattle/selectionHandler.js"
+    );
+    cleanupTimers = selectionHandlerModule.cleanupTimers;
+
+    const featureFlags = await import("../../src/helpers/featureFlags.js");
+    setFlag = featureFlags.setFlag;
   });
 
   afterEach(() => {
@@ -248,9 +320,14 @@ describe("handleStatSelection helpers", () => {
 
 describe("isOrchestratorActive", () => {
   let getBattleState;
+  let isOrchestratorActive;
 
   beforeEach(async () => {
     ({ getBattleState } = await import("../../src/helpers/classicBattle/eventBus.js"));
+    const selectionHandlerModule = await import(
+      "../../src/helpers/classicBattle/selectionHandler.js"
+    );
+    isOrchestratorActive = selectionHandlerModule.isOrchestratorActive;
     getBattleState.mockReturnValue(null);
     delete document.body.dataset.battleState;
   });
