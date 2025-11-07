@@ -1,4 +1,4 @@
-player-info {
+.player-info {
   justify-self: start;
   padding-left: var(--space-sm);
 }
