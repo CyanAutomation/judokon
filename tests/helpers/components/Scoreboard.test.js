@@ -74,38 +74,43 @@ describe("createScoreboard", () => {
       scoreboard.updateRound(4);
 
       // Allow any deferred DOM work (e.g., debounce or RAF) to finish.
-      await vi.waitFor(
+      const scoreDisplay = await vi.waitFor(
         () => {
-          expect(
-            scoreboard.element.querySelector('[data-testid="score-display"]')
-          ).toBeTruthy();
+          const el = scoreboard.element.querySelector('[data-testid="score-display"]');
+          expect(el).toBeTruthy();
+          return el;
         },
         { timeout: 100 }
       );
-
-      const scoreDisplay = scoreboard.element.querySelector('[data-testid="score-display"]');
-      expect(scoreDisplay).toBeTruthy();
       expect(scoreboard.getScore()).toEqual(scoreInput);
       const playerScoreEl = scoreDisplay.querySelector('[data-testid="player-score-value"]');
       const opponentScoreEl = scoreDisplay.querySelector('[data-testid="opponent-score-value"]');
 
       expect(playerScoreEl).toBeTruthy();
       expect(opponentScoreEl).toBeTruthy();
-      expect(playerScoreEl.textContent).toBe("7");
-      expect(opponentScoreEl.textContent).toBe("5");
+      if (playerScoreEl && opponentScoreEl) {
+        expect(playerScoreEl.textContent).toBe("7");
+        expect(opponentScoreEl.textContent).toBe("5");
+      }
 
       const timerEl = scoreboard.element.querySelector("#next-round-timer");
       expect(timerEl).toBeTruthy();
-      expect(timerEl.textContent).toBe("Time Left: 18s");
-      expect(timerEl.getAttribute("data-remaining-time")).toBe("18");
+      if (timerEl) {
+        expect(timerEl.textContent).toBe("Time Left: 18s");
+        expect(timerEl.getAttribute("data-remaining-time")).toBe("18");
+      }
 
       const messageEl = scoreboard.element.querySelector("#round-message");
       expect(messageEl).toBeTruthy();
-      expect(messageEl.textContent).toBe("Keep pushing!");
+      if (messageEl) {
+        expect(messageEl.textContent).toBe("Keep pushing!");
+      }
 
       const roundEl = scoreboard.element.querySelector("#round-counter");
       expect(roundEl).toBeTruthy();
-      expect(roundEl.textContent).toBe("Round 4");
+      if (roundEl) {
+        expect(roundEl.textContent).toBe("Round 4");
+      }
     } finally {
       scoreboard.view.destroy();
       scoreboard.element.remove();
