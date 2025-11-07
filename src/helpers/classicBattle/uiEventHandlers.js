@@ -155,21 +155,11 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   // Create local helper that uses injected dependencies
   function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
-    console.log(
-      "[displayOpponentChoosingPrompt] CALLED, markTimestamp:",
-      markTimestamp,
-      "notifyReady:",
-      notifyReady
-    );
     try {
-      console.log("[displayOpponentChoosingPrompt] About to call t()");
       const message = tFn("ui.opponentChoosing");
-      console.log("[displayOpponentChoosingPrompt] t() returned:", message);
-      console.log("[displayOpponentChoosingPrompt] About to call showSnackbar");
       showSnackbarFn(message);
-      console.log("[displayOpponentChoosingPrompt] showSnackbar called successfully");
-    } catch (error) {
-      console.log("[displayOpponentChoosingPrompt] ERROR calling showSnackbar:", error);
+    } catch {
+      // Non-critical: snackbar display failures don't block the battle flow
     }
     let recordedTimestamp;
     if (markTimestamp) {
@@ -204,11 +194,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   });
 
   onBattleEvent("statSelected", async (e) => {
-    console.log("[statSelected handler] CALLED! Detail:", e?.detail);
     try {
       scoreboardObj.clearTimer?.();
-    } catch (error) {
-      console.log("[statSelected handler] Error in clearTimer:", error);
+    } catch {
+      // Timer clearing is non-critical
     }
     try {
       const detail = (e && e.detail) || {};
@@ -217,13 +206,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       const flagEnabled = isEnabledFn("opponentDelayMessage");
       const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
 
-      console.log("[statSelected handler] flagEnabled:", flagEnabled, "shouldDelay:", shouldDelay);
-
       clearOpponentSnackbarTimeout();
       clearFallbackPromptTimer();
 
       if (!shouldDelay) {
-        console.log("[statSelected handler] !shouldDelay, calling displayOpponentChoosingPrompt");
         displayOpponentChoosingPrompt();
         return;
       }
@@ -233,17 +219,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         : Number(getOpponentDelayFn());
       const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
-      console.log(
-        "[statSelected handler] delaySource:",
-        delaySource,
-        "resolvedDelay:",
-        resolvedDelay
-      );
-
       if (resolvedDelay <= 0) {
-        console.log(
-          "[statSelected handler] resolvedDelay <= 0, calling displayOpponentChoosingPrompt"
-        );
         displayOpponentChoosingPrompt();
         return;
       }

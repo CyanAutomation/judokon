@@ -77,9 +77,6 @@ describe("UI handlers: opponent message events", () => {
   beforeEach(() => {
     timers = useCanonicalTimers();
     setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
-    console.log("[TEST beforeEach] showSnackbar type:", typeof showSnackbar);
-    console.log("[TEST beforeEach] showSnackbar is mock?", vi.isMockFunction(showSnackbar));
-    console.log("[TEST beforeEach] showSnackbar mock calls:", showSnackbar.mock?.calls?.length);
     showSnackbar.mockReset();
     markOpponentPromptNow.mockReset();
     markOpponentPromptNow.mockImplementation(() => 123.45);
@@ -112,46 +109,32 @@ describe("UI handlers: opponent message events", () => {
     // Set delay to 0 to test immediate display
     setOpponentDelay(0);
 
-    // Bind handlers
-    console.log("[TEST] About to bind handlers");
-    console.log(
-      "[TEST] bindUIHelperEventHandlersDynamic type:",
-      typeof bindUIHelperEventHandlersDynamic
-    );
-    try {
-      bindUIHelperEventHandlersDynamic();
-      console.log("[TEST] Handlers bound successfully");
-    } catch (error) {
-      console.log("[TEST] ERROR binding handlers:", error);
-      throw error;
-    }
+    // Create dependencies object with mocked functions
+    const deps = {
+      showSnackbar,
+      t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key),
+      markOpponentPromptNow,
+      recordOpponentPromptTimestamp,
+      getOpponentPromptMinDuration,
+      isEnabled: (flag) => flag === "opponentDelayMessage",
+      getOpponentDelay: () => 0,
+      scoreboard: { clearTimer: scoreboardClearTimer },
+      getOpponentCardData,
+      renderOpponentCard,
+      showRoundOutcome,
+      showStatComparison,
+      updateDebugPanel,
+      applyOpponentCardPlaceholder: vi.fn()
+    };
 
-    // DEBUG: Check if handlers are bound
-    const eventTarget = globalThis.__classicBattleEventTarget;
-    console.log("[TEST] eventTarget:", eventTarget);
-    console.log("[TEST] eventTarget type:", eventTarget?.constructor?.name);
-    console.log("[TEST] Has addEventListener?", typeof eventTarget?.addEventListener);
-
-    // Try to manually listen to see if events work at all
-    let manualListenerCalled = false;
-    eventTarget.addEventListener("statSelected", () => {
-      manualListenerCalled = true;
-      console.log("[TEST] Manual listener called!");
-    });
+    // Bind handlers with mocked dependencies
+    bindUIHelperEventHandlersDynamic(deps);
 
     // Emit event that triggers opponent message display
-    console.log("[TEST] About to emit statSelected event");
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
-    console.log("[TEST] Event emitted");
-    console.log("[TEST] Manual listener was called?", manualListenerCalled);
 
     // Give any async callbacks a chance to run
     await timers.runAllTimersAsync();
-    console.log("[TEST] Timers run");
-
-    // DEBUG: Check what was called
-    console.log("[TEST] showSnackbar calls:", showSnackbar.mock.calls);
-    console.log("[TEST] markOpponentPromptNow calls:", markOpponentPromptNow.mock.calls);
 
     // When delay is 0 or less, snackbar should show immediately without setTimeout
     // Only markOpponentPromptNow should have been called, not recordOpponentPromptTimestamp
@@ -164,8 +147,26 @@ describe("UI handlers: opponent message events", () => {
   });
 
   it("reuses captured timestamp when notifying after enforced delay", () => {
+    // Create dependencies object with mocked functions
+    const deps = {
+      showSnackbar,
+      t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key),
+      markOpponentPromptNow,
+      recordOpponentPromptTimestamp,
+      getOpponentPromptMinDuration,
+      isEnabled: (flag) => flag === "opponentDelayMessage",
+      getOpponentDelay: () => 500,
+      scoreboard: { clearTimer: scoreboardClearTimer },
+      getOpponentCardData,
+      renderOpponentCard,
+      showRoundOutcome,
+      showStatComparison,
+      updateDebugPanel,
+      applyOpponentCardPlaceholder: vi.fn()
+    };
+
     // Use the default delay of 500ms
-    bindUIHelperEventHandlersDynamic();
+    bindUIHelperEventHandlersDynamic(deps);
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 

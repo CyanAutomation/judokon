@@ -73,12 +73,13 @@ let fallbackOpponentScore = 0;
 /**
  * Evaluate a stat matchup and return engine results with a user-facing message.
  *
+ * @summary Compute round outcome via engine or fallback logic. Pure function (no side effects).
  * @pseudocode
- * 1. Invoke `handleStatSelection(playerVal, opponentVal)` on the battle engine.
+ * 1. Try to invoke `handleStatSelection(playerVal, opponentVal)` on the battle engine.
  * 2. Map the outcome code to a localized message.
- * 3. In Vitest, mirror message and scores into DOM nodes for assertions.
+ * 3. Return the result with the message.
  * 4. If the engine throws, compute a simple delta outcome and track fallback scores.
- * 5. Return the result merged with the message.
+ * 5. Return the fallback result with the message.
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
@@ -89,22 +90,6 @@ export function evaluateRound(playerVal, opponentVal) {
     // Use the battle engine facade
     const result = handleStatSelection(playerVal, opponentVal);
     const message = getOutcomeMessage(result.outcome);
-
-    // Update DOM directly for test compatibility
-    try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        const messageEl = document.querySelector("header #round-message");
-        const scoreEl = document.querySelector("header #score-display");
-        if (messageEl && message) {
-          messageEl.textContent = message;
-        }
-        if (scoreEl) {
-          writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
-        }
-      }
-    } catch {
-      // Silently ignore DOM update errors in test environment
-    }
 
     return {
       ...result,
@@ -127,23 +112,6 @@ export function evaluateRound(playerVal, opponentVal) {
     const matchEnded = false;
     const message = getOutcomeMessage(outcome);
 
-    // Update DOM directly for test compatibility
-    try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        const scoreEl = document.querySelector("header #score-display");
-        const messageEl = document.querySelector("header #round-message");
-        if (scoreEl) {
-          writeScoreDisplay(fallbackPlayerScore, fallbackOpponentScore);
-        }
-
-        if (messageEl && message) {
-          messageEl.textContent = message;
-        }
-      }
-    } catch {
-      // Silently ignore DOM update errors in fallback path
-    }
-
     return {
       delta,
       outcome,
@@ -152,6 +120,51 @@ export function evaluateRound(playerVal, opponentVal) {
       opponentScore: fallbackOpponentScore,
       message
     };
+  }
+}
+
+/**
+ * Apply round evaluation result to the DOM (for test assertions in Vitest environment).
+ *
+ * @summary Update DOM elements with round result data. Side effect function for tests only.
+ * @pseudocode
+ * 1. If not in Vitest, return immediately (no-op).
+ * 2. Query `header #round-message` and `header #score-display`.
+ * 3. If message element exists and message is provided, set text content.
+ * 4. If score element exists and scores are provided, call `writeScoreDisplay()`.
+ * 5. Silently ignore any DOM errors.
+ *
+ * @param {object} roundResult - Result from `evaluateRound()`.
+ * @param {string} roundResult.message - Message to display.
+ * @param {number} roundResult.playerScore - Player score.
+ * @param {number} roundResult.opponentScore - Opponent score.
+ * @returns {void}
+ */
+export function applyRoundResultToDOM(roundResult) {
+  // Only run in test environment to avoid side effects in production
+  if (typeof process === "undefined" || !process.env || !process.env.VITEST) {
+    return;
+  }
+
+  try {
+    const messageEl = document.querySelector("header #round-message");
+    const scoreEl = document.querySelector("header #score-display");
+
+    if (messageEl && roundResult.message) {
+      messageEl.textContent = roundResult.message;
+    }
+    if (
+      scoreEl &&
+      roundResult.playerScore !== undefined &&
+      roundResult.opponentScore !== undefined
+    ) {
+      writeScoreDisplay(
+        Number(roundResult.playerScore) || 0,
+        Number(roundResult.opponentScore) || 0
+      );
+    }
+  } catch {
+    // Silently ignore DOM update errors in test environment
   }
 }
 
