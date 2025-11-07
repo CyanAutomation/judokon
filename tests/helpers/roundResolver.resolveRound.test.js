@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
+// Mock all dependencies before any imports
 vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn()
 }));
@@ -9,12 +10,11 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
 
-import * as roundResolver from "../../src/helpers/classicBattle/roundResolver.js";
-
 describe("resolveRound", () => {
   let dispatchMock;
   let emitMock;
   let timers;
+  let roundResolver;
 
   const createDeferred = () => {
     let resolve;
@@ -28,10 +28,33 @@ describe("resolveRound", () => {
   };
 
   beforeEach(async () => {
+    // Clear module cache to ensure fresh imports with mocks applied
+    vi.resetModules();
+
+    // Re-declare mocks after reset
+    vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn()
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+      emitBattleEvent: vi.fn()
+    }));
+
     timers = useCanonicalTimers();
-    dispatchMock = (await import("../../src/helpers/classicBattle/eventDispatcher.js"))
-      .dispatchBattleEvent;
-    emitMock = (await import("../../src/helpers/classicBattle/battleEvents.js")).emitBattleEvent;
+
+    // Import modules after setting up mocks
+    const eventDispatcherModule = await import(
+      "../../src/helpers/classicBattle/eventDispatcher.js"
+    );
+    dispatchMock = eventDispatcherModule.dispatchBattleEvent;
+
+    const battleEventsModule = await import("../../src/helpers/classicBattle/battleEvents.js");
+    emitMock = battleEventsModule.emitBattleEvent;
+
+    // Import the module under test AFTER configuring all mocks
+    const resolverModule = await import("../../src/helpers/classicBattle/roundResolver.js");
+    roundResolver = resolverModule;
+
     dispatchMock.mockResolvedValue();
     emitMock.mockImplementation(() => {});
   });

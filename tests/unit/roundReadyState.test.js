@@ -4,29 +4,47 @@
  * @module tests/unit/roundReadyState.test.js
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
-import {
-  setReadyDispatchedForCurrentCooldown,
-  hasReadyBeenDispatchedForCurrentCooldown,
-  resetReadyDispatchState
-} from "../../src/helpers/classicBattle/roundReadyState.js";
-import { roundStore } from "../../src/helpers/classicBattle/roundStore.js";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
-// Mock event dispatcher
+// Mock event dispatcher before any imports
 vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   resetDispatchHistory: vi.fn()
 }));
 
 describe("roundReadyState RoundStore Integration", () => {
   let mockResetDispatchHistory;
+  let setReadyDispatchedForCurrentCooldown;
+  let hasReadyBeenDispatchedForCurrentCooldown;
+  let resetReadyDispatchState;
+  let roundStore;
 
   beforeEach(async () => {
-    // Reset RoundStore
-    roundStore.reset();
+    // Clear module cache to ensure fresh imports with mocks applied
+    vi.resetModules();
 
-    // Get fresh mock
+    // Re-declare mocks after reset
+    vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      resetDispatchHistory: vi.fn()
+    }));
+
+    // Import modules after setting up mocks
     const eventDispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     mockResetDispatchHistory = eventDispatcher.resetDispatchHistory;
+
+    const roundReadyStateModule = await import(
+      "../../src/helpers/classicBattle/roundReadyState.js"
+    );
+    setReadyDispatchedForCurrentCooldown =
+      roundReadyStateModule.setReadyDispatchedForCurrentCooldown;
+    hasReadyBeenDispatchedForCurrentCooldown =
+      roundReadyStateModule.hasReadyBeenDispatchedForCurrentCooldown;
+    resetReadyDispatchState = roundReadyStateModule.resetReadyDispatchState;
+
+    const roundStoreModule = await import("../../src/helpers/classicBattle/roundStore.js");
+    roundStore = roundStoreModule.roundStore;
+
+    // Reset RoundStore
+    roundStore.reset();
     mockResetDispatchHistory.mockReset();
   });
 
