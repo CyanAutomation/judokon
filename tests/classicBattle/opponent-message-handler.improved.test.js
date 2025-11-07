@@ -106,7 +106,20 @@ describe("UI handlers: opponent message events", () => {
     getOpponentDelayMock.mockReturnValue(0);
     bindUIHelperEventHandlersDynamic();
 
+    console.log("Test: Before emitting statSelected");
+    console.log("scoreboardClearTimer mock:", scoreboardClearTimer);
+    console.log("showSnackbar mock:", showSnackbar);
+    console.log("markOpponentPromptNow mock:", markOpponentPromptNow);
+    
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+
+    console.log("Test: After emitting statSelected");
+    console.log("scoreboardClearTimer call count:", scoreboardClearTimer.mock.calls.length);
+    console.log("scoreboardClearTimer calls:", scoreboardClearTimer.mock.calls);
+    console.log("showSnackbar call count:", showSnackbar.mock.calls.length);
+    console.log("showSnackbar calls:", showSnackbar.mock.calls);
+    console.log("markOpponentPromptNow call count:", markOpponentPromptNow.mock.calls.length);
+    console.log("markOpponentPromptNow calls:", markOpponentPromptNow.mock.calls);
 
     expect(scoreboardClearTimer).toHaveBeenCalledTimes(1);
     expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
