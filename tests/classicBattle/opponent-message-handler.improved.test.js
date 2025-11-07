@@ -49,6 +49,12 @@ vi.mock("../../src/helpers/setupScoreboard.js", () => ({
 vi.mock("../../src/helpers/i18n.js", () => ({
   t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key)
 }));
+vi.mock("../../src/helpers/classicBattle/opponentPlaceholder.js", () => ({
+  applyOpponentCardPlaceholder: vi.fn(),
+  OPPONENT_CARD_CONTAINER_ARIA_LABEL: "Opponent card",
+  OPPONENT_PLACEHOLDER_ARIA_LABEL: "Mystery opponent card",
+  OPPONENT_PLACEHOLDER_ID: "mystery-card-placeholder"
+}));
 
 describe("UI handlers: opponent message events", () => {
   let bindUIHelperEventHandlersDynamic;
@@ -108,18 +114,41 @@ describe("UI handlers: opponent message events", () => {
     setOpponentDelay(0);
 
     // Bind handlers
-    bindUIHelperEventHandlersDynamic();
+    console.log("[TEST] About to bind handlers");
+    console.log(
+      "[TEST] bindUIHelperEventHandlersDynamic type:",
+      typeof bindUIHelperEventHandlersDynamic
+    );
+    try {
+      bindUIHelperEventHandlersDynamic();
+      console.log("[TEST] Handlers bound successfully");
+    } catch (error) {
+      console.log("[TEST] ERROR binding handlers:", error);
+      throw error;
+    }
 
     // DEBUG: Check if handlers are bound
     const eventTarget = globalThis.__classicBattleEventTarget;
     console.log("[TEST] eventTarget:", eventTarget);
-    console.log("[TEST] eventTarget listeners:", eventTarget?.getEventListeners?.());
+    console.log("[TEST] eventTarget type:", eventTarget?.constructor?.name);
+    console.log("[TEST] Has addEventListener?", typeof eventTarget?.addEventListener);
+
+    // Try to manually listen to see if events work at all
+    let manualListenerCalled = false;
+    eventTarget.addEventListener("statSelected", () => {
+      manualListenerCalled = true;
+      console.log("[TEST] Manual listener called!");
+    });
 
     // Emit event that triggers opponent message display
+    console.log("[TEST] About to emit statSelected event");
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+    console.log("[TEST] Event emitted");
+    console.log("[TEST] Manual listener was called?", manualListenerCalled);
 
     // Give any async callbacks a chance to run
     await timers.runAllTimersAsync();
+    console.log("[TEST] Timers run");
 
     // DEBUG: Check what was called
     console.log("[TEST] showSnackbar calls:", showSnackbar.mock.calls);

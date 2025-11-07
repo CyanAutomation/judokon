@@ -25,8 +25,7 @@ import "../src/helpers/classicBattle/battleEvents.js";
 // For debugging local test runs set SHOW_TEST_LOGS=1 in the environment to
 // bypass muting and allow console/stdout to appear in the test run.
 try {
-  const IS_VITEST = typeof process !== "undefined" && process.env?.VITEST;
-  if (IS_VITEST) {
+  if (process?.env?.VITEST) {
     applyConsoleMuting();
   }
 } catch {}
@@ -50,7 +49,7 @@ let __originalStderrWrite;
  * Saves original write functions for restoration.
  */
 function applyConsoleMuting() {
-  const SHOW_LOGS = typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
+  const SHOW_LOGS = process?.env?.SHOW_TEST_LOGS;
   if (!SHOW_LOGS) {
     muteConsole(["warn", "error", "debug", "log"]);
     try {
@@ -234,11 +233,11 @@ beforeEach(async () => {
   applyConsoleMuting();
   try {
     // Ensure snackbars are enabled for tests by default
-    if (typeof window !== "undefined" && window.__disableSnackbars) {
+    if (window?.__disableSnackbars) {
       delete window.__disableSnackbars;
     }
     // Ensure a snackbar container exists for any code paths that use it
-    if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
+    if (!document?.getElementById("snackbar-container")) {
       const container = document.createElement("div");
       container.id = "snackbar-container";
       container.setAttribute("role", "status");
@@ -296,9 +295,8 @@ beforeEach(async () => {
 });
 // --- Keep Node's global `process` stable during Vitest runs ---
 // If a dependency/test removed it, restore from Node, then lock the binding.
-if (typeof globalThis.process === "undefined") {
+if (!globalThis.process) {
   // restore minimally; should be rare—root cause still gets removed in step 2
-
   globalThis.process = process;
 }
 const __originalProcessRef = globalThis.process;
