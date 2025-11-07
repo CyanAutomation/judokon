@@ -71,6 +71,19 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
 });
 
 /**
+ * Clone documentation data with compatibility fallback.
+ * @param {RandomSelectionDocumentation} documentation
+ * @returns {RandomSelectionDocumentation}
+ */
+function cloneRandomSelectionDocumentation(documentation) {
+  if (typeof globalThis.structuredClone === "function") {
+    return globalThis.structuredClone(documentation);
+  }
+
+  return JSON.parse(JSON.stringify(documentation));
+}
+
+/**
  * Canonical MCP documentation schema for the judokon.random tool.
  * @type {Readonly<RandomSelectionDocumentation>}
  * @const
@@ -80,7 +93,7 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
  * expose the frozen documentation for reuse across modules
  */
 export const RANDOM_SELECTION_DOCUMENTATION = Object.freeze(
-  structuredClone(RANDOM_DOCUMENTATION_BASE)
+  cloneRandomSelectionDocumentation(RANDOM_DOCUMENTATION_BASE)
 );
 
 /**
@@ -293,5 +306,5 @@ export function getAvailableFilterOptions(judokaArray) {
  *   - response format
  */
 export function getRandomSelectionDocumentation() {
-  return structuredClone(RANDOM_SELECTION_DOCUMENTATION);
+  return cloneRandomSelectionDocumentation(RANDOM_SELECTION_DOCUMENTATION);
 }
