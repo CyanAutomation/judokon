@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createScoreboard } from "./Scoreboard.js";
 
 describe("createScoreboard", () => {
@@ -74,28 +74,38 @@ describe("createScoreboard", () => {
       scoreboard.updateRound(4);
 
       // Allow any deferred DOM work (e.g., debounce or RAF) to finish.
-      await new Promise((resolve) => {
-        queueMicrotask(resolve);
-      });
+      await vi.waitFor(
+        () => {
+          expect(
+            scoreboard.element.querySelector('[data-testid="score-display"]')
+          ).toBeTruthy();
+        },
+        { timeout: 100 }
+      );
 
       const scoreDisplay = scoreboard.element.querySelector('[data-testid="score-display"]');
+      expect(scoreDisplay).toBeTruthy();
       expect(scoreboard.getScore()).toEqual(scoreInput);
-      expect(
-        scoreDisplay?.querySelector('[data-testid="player-score-value"]')?.textContent
-      ).toBe("7");
-      expect(
-        scoreDisplay?.querySelector('[data-testid="opponent-score-value"]')?.textContent
-      ).toBe("5");
+      const playerScoreEl = scoreDisplay.querySelector('[data-testid="player-score-value"]');
+      const opponentScoreEl = scoreDisplay.querySelector('[data-testid="opponent-score-value"]');
+
+      expect(playerScoreEl).toBeTruthy();
+      expect(opponentScoreEl).toBeTruthy();
+      expect(playerScoreEl.textContent).toBe("7");
+      expect(opponentScoreEl.textContent).toBe("5");
 
       const timerEl = scoreboard.element.querySelector("#next-round-timer");
-      expect(timerEl?.textContent).toBe("Time Left: 18s");
-      expect(timerEl?.getAttribute("data-remaining-time")).toBe("18");
+      expect(timerEl).toBeTruthy();
+      expect(timerEl.textContent).toBe("Time Left: 18s");
+      expect(timerEl.getAttribute("data-remaining-time")).toBe("18");
 
       const messageEl = scoreboard.element.querySelector("#round-message");
-      expect(messageEl?.textContent).toBe("Keep pushing!");
+      expect(messageEl).toBeTruthy();
+      expect(messageEl.textContent).toBe("Keep pushing!");
 
       const roundEl = scoreboard.element.querySelector("#round-counter");
-      expect(roundEl?.textContent).toBe("Round 4");
+      expect(roundEl).toBeTruthy();
+      expect(roundEl.textContent).toBe("Round 4");
     } finally {
       scoreboard.view.destroy();
       scoreboard.element.remove();
