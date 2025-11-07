@@ -30,6 +30,12 @@ player-info {
   z-index: 5;
 }
 
+.draw-card-btn {
+  min-width: 300px;
+  min-height: 64px;
+  border-radius: 999px;
+}
+
 .card-section .draw-card-btn {
   align-self: center;
   margin: 0 auto;

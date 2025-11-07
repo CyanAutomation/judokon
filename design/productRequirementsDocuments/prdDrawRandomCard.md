@@ -78,6 +78,11 @@ The random draw logic is implemented in `src/helpers/randomCard.js`. Its
 rendering. This module is used in **Classic Battle** as well as all **Team
 Battle** variants (Female, Male, and Mixed).
 
+The "Draw Card!" control is statically rendered in
+`src/pages/randomJudoka.html` within the `#draw-controls` container. Page
+initialization should bind event handlers to this pre-existing button instead of
+re-creating it at runtime.
+
 Card reveal animations are handled by the `.animate-card` CSS class defined in
 `src/styles/buttons.css` (imported via `src/styles/components.css`). The class
 applies a short fade and upward slide on card insert. A media query removes this

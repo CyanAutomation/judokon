@@ -106,7 +106,43 @@ export function createRandomCardDom() {
   placeholderTemplate.id = "card-placeholder-template";
   placeholderTemplate.innerHTML =
     '<div class="card placeholder-card" data-testid="placeholder-card"><p>Tap "Draw Card!" to begin.</p></div>';
-  return { section, container, placeholderTemplate };
+  const drawControls = document.createElement("div");
+  drawControls.id = "draw-controls";
+  drawControls.className = "draw-controls";
+  drawControls.setAttribute("aria-label", "Draw controls");
+  const drawButton = document.createElement("button");
+  drawButton.id = "draw-card-btn";
+  drawButton.className = "draw-card-btn";
+  drawButton.type = "button";
+  drawButton.dataset.testid = "draw-button";
+  drawButton.dataset.tooltipId = "ui.drawCard";
+  drawButton.setAttribute("aria-label", "Draw a random judoka card");
+  drawButton.setAttribute("aria-live", "polite");
+  drawButton.setAttribute("tabindex", "0");
+  const parser = new DOMParser();
+  const svgDoc = parser.parseFromString(
+    '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>',
+    "image/svg+xml"
+  );
+  const icon = svgDoc.querySelector("svg");
+  if (icon) {
+    icon.setAttribute("aria-hidden", "true");
+    drawButton.appendChild(icon);
+  }
+  const label = document.createElement("span");
+  label.className = "button-label";
+  label.textContent = "Draw Card!";
+  drawButton.appendChild(label);
+  const errorMessage = document.createElement("div");
+  errorMessage.id = "draw-error-message";
+  errorMessage.setAttribute("role", "alert");
+  errorMessage.setAttribute("aria-live", "assertive");
+  errorMessage.style.color = "#b00020";
+  errorMessage.style.fontSize = "1.1rem";
+  errorMessage.style.marginTop = "12px";
+  drawControls.append(drawButton, errorMessage);
+  section.append(container, placeholderTemplate, drawControls);
+  return { section, container, placeholderTemplate, drawControls, drawButton };
 }
 
 /**
