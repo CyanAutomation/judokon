@@ -6,9 +6,9 @@
 import { describe, it, expect, vi } from "vitest";
 
 describe("Direct Module Import Test", () => {
-  it("verifies vi.mock() actually replaces the module", async () => {
-    // This test doesn't use vi.mock() - import the REAL module
-    const realSnackbar = await import("../../src/helpers/classicBattle/snackbar.js");
+  it("verifies the real module behavior without mocking", async () => {
+    // This test should import the REAL module, so we use vi.importActual
+    const realSnackbar = await vi.importActual("../../src/helpers/classicBattle/snackbar.js");
     console.log("Real snackbar.getOpponentDelay():", realSnackbar.getOpponentDelay());
     console.log("Real function:", String(realSnackbar.getOpponentDelay).slice(0, 150));
 
@@ -26,23 +26,42 @@ vi.mock("../../src/helpers/classicBattle/snackbar.js", () => ({
   getOpponentDelay: mockGetOpponentDelay
 }));
 
+vi.mock("../../src/helpers/featureFlags.js", () => ({
+  isEnabled: vi.fn()
+}));
+
 describe("Module Import with Mocking", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("verifies vi.mock() is applied to subsequent imports", async () => {
     // Import AFTER vi.mock() is declared
     const mockedSnackbar = await import("../../src/helpers/classicBattle/snackbar.js");
-    console.log("Mocked snackbar.getOpponentDelay():", mockedSnackbar.getOpponentDelay());
-    console.log("Are they the same?", mockedSnackbar.getOpponentDelay === mockGetOpponentDelay);
-
     // Should return 999 from the mock
     expect(mockedSnackbar.getOpponentDelay()).toBe(999);
+    expect(mockGetOpponentDelay).toHaveBeenCalledTimes(1);
   });
 
-  it("verifies uiEventHandlers uses the mocked version", async () => {
-    await import("../../src/helpers/classicBattle/uiEventHandlers.js");
+  it("verifies uiEventHandlers uses the mocked version via event trigger", async () => {
+    const { bindUIHelperEventHandlersDynamic } = await import(
+      "../../src/helpers/classicBattle/uiEventHandlers.js"
+    );
+    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const { isEnabled } = await import("../../src/helpers/featureFlags.js");
 
-    // The handler is already bound to the module, so we can't easily test
-    // which getOpponentDelay it uses. But we can verify the mock was set up.
+    // The feature flag must be enabled for the delay logic to run
+    isEnabled.mockReturnValue(true);
+
+    // Bind the handlers. Internally, this will use the mocked `getOpponentDelay`
+    // because snackbar.js is mocked for this entire test suite.
+    bindUIHelperEventHandlersDynamic();
+
+    // Dispatch an event that triggers the handler that calls getOpponentDelay
+    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+
+    // Now, the mock should have been called by the event handler.
     expect(mockGetOpponentDelay.mock.calls.length).toBeGreaterThan(0);
-    console.log("Mock was called during handler binding");
+    console.log("Mock was called by the event handler");
   });
 });

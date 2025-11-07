@@ -62,8 +62,18 @@ describe("handleStatSelectionTimeout", () => {
     expect(mainTimeoutCall).toBeDefined();
     const [mainTimeout] = mainTimeoutCall;
 
+    // Debug: Check showSnackbar calls before execution
+    console.log("Before mainTimeout() execution:");
+    console.log("  showSnackbar mock:", showSnackbar);
+    console.log("  showSnackbar call count:", showSnackbar.mock.calls.length);
+
     // Execute the main timeout callback to simulate the timer expiring.
     mainTimeout();
+    
+    // Debug: Check showSnackbar calls after execution
+    console.log("After mainTimeout() execution:");
+    console.log("  showSnackbar call count:", showSnackbar.mock.calls.length);
+    console.log("  showSnackbar call args:", showSnackbar.mock.calls);
 
     // 2. The stalled message should be shown and no auto-select should occur yet.
     expect(showSnackbar).toHaveBeenCalledWith("ui.statSelectionStalled");

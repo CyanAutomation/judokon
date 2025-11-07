@@ -1,17 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { StatsPanel, createStatsPanel } from "../../src/components/StatsPanel.js";
 
-vi.mock("../../src/helpers/stats.js", () => ({
-  loadStatNames: () =>
-    Promise.resolve([
-      { name: "Alpha" },
-      { name: "Beta" },
-      { name: "Gamma" },
-      { name: "Delta" },
-      { name: "Epsilon" }
-    ])
-}));
-
 describe("createStatsPanel", () => {
   it("creates DOM structure with stat values", async () => {
     const panel = await createStatsPanel({
@@ -29,7 +18,7 @@ describe("createStatsPanel", () => {
     expect(panel).toHaveAttribute("aria-label", "Judoka Stats");
     const labels = panel.querySelectorAll("li.stat > strong");
     const texts = Array.from(labels).map((l) => l.textContent);
-    expect(texts).toEqual(["Alpha", "Beta", "Gamma", "Delta", "Epsilon"]);
+    expect(texts).toEqual(["Power", "Speed", "Technique", "Kumi-kata", "Ne-waza"]);
     expect(labels[0]).toHaveAttribute("data-tooltip-id", "stat.power");
     expect(labels[1]).toHaveAttribute("data-tooltip-id", "stat.speed");
     expect(labels[2]).toHaveAttribute("data-tooltip-id", "stat.technique");

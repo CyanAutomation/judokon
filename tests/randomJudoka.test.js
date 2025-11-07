@@ -369,9 +369,7 @@ describe("Random Judoka Selection", () => {
 
   describe("getRandomSelectionDocumentation", () => {
     it("should match the documented schema", () => {
-      const expectedDocumentation = JSON.parse(
-        JSON.stringify(RANDOM_SELECTION_DOCUMENTATION)
-      );
+      const expectedDocumentation = JSON.parse(JSON.stringify(RANDOM_SELECTION_DOCUMENTATION));
       const result = getRandomSelectionDocumentation();
 
       expect(result).toEqual(expectedDocumentation);
