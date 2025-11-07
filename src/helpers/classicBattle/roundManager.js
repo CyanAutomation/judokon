@@ -712,6 +712,21 @@ let currentNextRound = null;
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
   resetReadyDispatchState();
+  
+  // Stop any existing cooldown timer to prevent old timers from firing
+  // when time advances (prevents duplicate ready dispatches in tests)
+  const existingControls = getActiveCooldownControls?.();
+  if (existingControls?.timer && typeof existingControls.timer.stop === "function") {
+    try {
+      existingControls.timer.stop();
+    } catch (error) {
+      // Ignore errors during cleanup
+      if (process?.env?.NODE_ENV !== "test" && typeof console !== "undefined") {
+        console.warn("Failed to stop existing cooldown timer:", error);
+      }
+    }
+  }
+  
   const activeScheduler = resolveActiveScheduler(scheduler);
   const schedulerProvided = scheduler && typeof scheduler?.setTimeout === "function";
   initializeCooldownTelemetry({ schedulerProvided });

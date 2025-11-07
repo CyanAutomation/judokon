@@ -4,6 +4,9 @@ import "./commonMocks.js";
 import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
+// Reset modules once at module load to ensure mocks apply to dynamic imports
+vi.resetModules();
+
 const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
 let timersControl = null;
 
@@ -14,6 +17,9 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOr
     dispatchBattleEvent: vi.fn(async (...args) => {
       const [eventName] = args;
       if (eventName === "ready") {
+        const callNumber = readyDispatchTracker.events.length + 1;
+        console.log(`[DISPATCH #${callNumber}] ready event`);
+        console.trace(`[DISPATCH #${callNumber}] ready stack trace`);
         readyDispatchTracker.events.push(args);
       }
       const result = await actual.dispatchBattleEvent(...args);
@@ -62,25 +68,46 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
 vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
   createRoundTimer: () => {
     const handlers = { tick: new Set(), expired: new Set() };
-    return {
+    const timer = {
       on: vi.fn((evt, fn) => {
+        const timerIndex = globalThis.__MOCK_TIMERS?.length ?? 0;
+        console.log(`[TIMER ${timerIndex}] on("${evt}") - handler ${fn.name || "anonymous"}`);
         handlers[evt]?.add(fn);
       }),
       off: vi.fn((evt, fn) => {
         handlers[evt]?.delete(fn);
       }),
-      start: vi.fn((_dur) => {
+      start: vi.fn(() => {
+        const timerIndex = globalThis.__MOCK_TIMERS?.indexOf(timer) ?? -1;
+        console.log(`[TIMER ${timerIndex}] start() called, scheduling expiration in 1000ms`);
         // Schedule expiration after 1 second using fake timers
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
+          console.log(`[TIMER ${timerIndex}] expired, calling ${handlers.expired.size} handlers`);
           handlers.expired.forEach((fn) => fn());
         }, 1000);
+        // Store timeout ID so we can clear it when stop() is called
+        timer._timeoutId = timeoutId;
       }),
       stop: vi.fn(() => {
-        handlers.expired.forEach((fn) => fn());
+        const timerIndex = globalThis.__MOCK_TIMERS?.indexOf(timer) ?? -1;
+        console.log(`[TIMER ${timerIndex}] stop() called, clearing timeout`);
+        // Clear the scheduled expiration WITHOUT calling handlers
+        // (matching real implementation - stop() does not emit "expired")
+        if (timer._timeoutId !== null && timer._timeoutId !== undefined) {
+          clearTimeout(timer._timeoutId);
+          timer._timeoutId = null;
+        }
       }),
       pause: vi.fn(),
       resume: vi.fn()
     };
+    // Track timer creation for debugging
+    if (typeof globalThis !== "undefined") {
+      if (!globalThis.__MOCK_TIMERS) globalThis.__MOCK_TIMERS = [];
+      globalThis.__MOCK_TIMERS.push(timer);
+      console.log(`[TIMER] Created timer #${globalThis.__MOCK_TIMERS.length - 1}`);
+    }
+    return timer;
   }
 }));
 
@@ -88,6 +115,11 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
   setupClassicBattleHooks();
 
   beforeEach(async () => {
+    // Clear timer tracking
+    if (globalThis.__MOCK_TIMERS) {
+      globalThis.__MOCK_TIMERS.length = 0;
+    }
+
     // Ensure fake timers are active so vi.advanceTimersByTimeAsync works
     // (many other tests in this suite call vi.useFakeTimers()).
     timersControl = useCanonicalTimers();
@@ -133,11 +165,27 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
 
-      await machine.dispatch("interruptRound");
+      // Track how many timers exist before interrupt
+      const timersBeforeInterrupt = globalThis.__MOCK_TIMERS?.length ?? 0;
 
+      // Clear all pending timers to prevent interference
+      vi.clearAllTimers();
+
+      await machine.dispatch("interruptRound");
       const { dispatchBattleEvent } = await import(
         "../../../src/helpers/classicBattle/eventDispatcher.js"
       );
+
+      // Verify a new timer was created for cooldown
+      expect(globalThis.__MOCK_TIMERS).toBeDefined();
+      const timersAfterInterrupt = globalThis.__MOCK_TIMERS.length;
+      expect(timersAfterInterrupt).toBeGreaterThan(timersBeforeInterrupt);
+      console.log(`[TEST] Timers: before=${timersBeforeInterrupt}, after=${timersAfterInterrupt}`);
+
+      // Get the cooldown timer (last one created)
+      const cooldownTimer = globalThis.__MOCK_TIMERS[timersAfterInterrupt - 1];
+      expect(cooldownTimer.start).toHaveBeenCalled();
+
       const readyCallsBeforeAdvance = dispatchBattleEvent.mock.calls.filter(
         ([eventName]) => eventName === "ready"
       );
@@ -145,7 +193,8 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
 
       const transitionCheckpoint = transitions.length;
 
-      await vi.advanceTimersByTimeAsync(1000);
+      // Use runOnlyPendingTimersAsync to avoid cascading timer creation
+      await vi.runOnlyPendingTimersAsync();
       const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
         ([eventName]) => eventName === "ready"
       );

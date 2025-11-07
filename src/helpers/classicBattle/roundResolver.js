@@ -72,17 +72,13 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  * @returns {ReturnType<typeof evaluateRound>}
  */
 export function evaluateOutcome(store, stat, playerVal, opponentVal) {
-  try {
-    debugLog("DEBUG: evaluateOutcome start", { stat, playerVal, opponentVal });
-  } catch {}
+  debugLog("DEBUG: evaluateOutcome start", { stat, playerVal, opponentVal });
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
 
   try {
     const result = engineFacade.handleStatSelection(pVal, oVal);
-    try {
-      debugLog("DEBUG: evaluateOutcome result", result);
-    } catch {}
+    debugLog("DEBUG: evaluateOutcome result", result);
 
     // Add message generation for tests and real usage
     const message = getOutcomeMessage(result.outcome);
@@ -91,9 +87,7 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
     return resultWithMessage;
   } catch (error) {
     // Fallback when engine is not initialized
-    try {
-      debugLog("DEBUG: evaluateOutcome fallback due to error", error);
-    } catch {}
+    debugLog("DEBUG: evaluateOutcome fallback due to error", error);
     return evaluateRoundData(pVal, oVal);
   }
 }
@@ -139,9 +133,7 @@ export async function dispatchOutcomeEvents(result) {
       await dispatchBattleEvent("continue");
     }
   } catch (error) {
-    try {
-      debugLog("DEBUG: Error dispatching outcome events:", error);
-    } catch {}
+    debugLog("DEBUG: Error dispatching outcome events:", error);
   }
   return result;
 }
@@ -223,10 +215,8 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
 
   if (store && typeof store === "object") {
     store.playerChoice = null;
-    try {
-      store.lastRoundResult = result;
-      store.matchEnded = Boolean(result?.matchEnded);
-    } catch {}
+    store.lastRoundResult = result;
+    store.matchEnded = Boolean(result?.matchEnded);
   }
   return result;
 }
@@ -327,16 +317,10 @@ export async function ensureRoundDecisionState() {
  * @returns {Promise<void>}
  */
 export async function delayAndRevealOpponent(delayMs, sleep, stat) {
-  try {
-    debugLog("DEBUG: resolveRound sleep", { delayMs, stat });
-  } catch {}
-  try {
-    exposeDebugState("roundDebug", { resolving: true });
-  } catch {}
+  debugLog("DEBUG: resolveRound sleep", { delayMs, stat });
+  exposeDebugState("roundDebug", { resolving: true });
   await sleep(delayMs);
-  try {
-    debugLog("DEBUG: resolveRound before opponentReveal", { stat });
-  } catch {}
+  debugLog("DEBUG: resolveRound before opponentReveal", { stat });
   emitBattleEvent("opponentReveal");
 }
 
@@ -382,9 +366,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
     const rd = readDebugState("roundDebug");
     if (rd) rd.resolvedAt = Date.now();
   } catch {}
-  try {
-    debugLog("DEBUG: resolveRound result", result);
-  } catch {}
+  debugLog("DEBUG: resolveRound result", result);
   return result;
 }
 
