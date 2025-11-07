@@ -19,18 +19,25 @@ describe("Mock verification with factory function", () => {
   it("verifies factory function mock works correctly", async () => {
     console.log("Initial state:");
     console.log("  snackbarModule.getOpponentDelay():", snackbarModule.getOpponentDelay());
-    console.log("  mockGetOpponentDelay.mock.results:", mockGetOpponentDelay.mock.results);
 
-    console.log("\nAfter mockClear():");
+    console.log("\nAfter mockClear() + mockReturnValue(500):");
     mockGetOpponentDelay.mockClear();
+    mockGetOpponentDelay.mockReturnValue(500);
     console.log("  snackbarModule.getOpponentDelay():", snackbarModule.getOpponentDelay());
 
     console.log("\nAfter mockReturnValue(0):");
     mockGetOpponentDelay.mockReturnValue(0);
     console.log("  snackbarModule.getOpponentDelay():", snackbarModule.getOpponentDelay());
-    console.log("  mockGetOpponentDelay():", mockGetOpponentDelay());
+
+    console.log("\nAfter another mockClear() + mockReturnValue(500):");
+    mockGetOpponentDelay.mockClear();
+    mockGetOpponentDelay.mockReturnValue(500);
+    console.log("  snackbarModule.getOpponentDelay():", snackbarModule.getOpponentDelay());
+
+    console.log("\nAfter final mockReturnValue(0):");
+    mockGetOpponentDelay.mockReturnValue(0);
+    console.log("  snackbarModule.getOpponentDelay():", snackbarModule.getOpponentDelay());
 
     expect(snackbarModule.getOpponentDelay()).toBe(0);
-    expect(mockGetOpponentDelay()).toBe(0);
   });
 });

@@ -113,8 +113,19 @@ describe("UI handlers: opponent message events", () => {
   it("shows opponent choosing snackbar immediately when delay is not positive", () => {
     console.log("\n=== TEST 1: shows opponent choosing snackbar immediately ===");
     console.log("Test 1: getOpponentDelayMock before mockReturnValue(0):", getOpponentDelayMock());
+    console.log("Test 1: getOpponentDelayMock object:", {
+      type: typeof getOpponentDelayMock,
+      isMock: !!getOpponentDelayMock.mock,
+      mockCalls: getOpponentDelayMock.mock?.calls.length,
+      mockResults: getOpponentDelayMock.mock?.results
+    });
     getOpponentDelayMock.mockReturnValue(0);
     console.log("Test 1: getOpponentDelayMock after mockReturnValue(0):", getOpponentDelayMock());
+    console.log("Test 1: After mockReturnValue, mock object:", {
+      type: typeof getOpponentDelayMock,
+      isMock: !!getOpponentDelayMock.mock,
+      mockResults: getOpponentDelayMock.mock?.results
+    });
 
     console.log("Test: Before bindUIHelperEventHandlersDynamic");
     console.log("Event target before bind:", globalThis.__classicBattleEventTarget);
