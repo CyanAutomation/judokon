@@ -1,4 +1,4 @@
-import { fetchJson } from "./dataUtils.js";
+import { fetchJson as defaultFetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
 let cachedFallback = null;
@@ -10,9 +10,12 @@ let cachedFallback = null;
  * other judoka data cannot be loaded or is unavailable. It caches the result
  * for subsequent calls.
  *
+ * @param {object} [deps] - Optional dependencies for testing.
+ * @param {typeof defaultFetchJson} [deps.fetchJsonFn=defaultFetchJson] - Function to fetch JSON data.
+ *
  * @pseudocode
  * 1. Check if `cachedFallback` already holds the judoka data. If yes, return it immediately.
- * 2. Attempt to fetch `judoka.json` using `fetchJson`.
+ * 2. Attempt to fetch `judoka.json` using `fetchJsonFn`.
  * 3. If the fetch is successful and the data is an array, find the judoka entry where `id` is `0`.
  * 4. If the entry with `id: 0` is found, cache it in `cachedFallback` and return it.
  * 5. If the entry is not found in the fetched data, throw an error indicating its absence.
@@ -23,12 +26,13 @@ let cachedFallback = null;
  *
  * @returns {Promise<Judoka>} A promise that resolves to the fallback judoka object.
  */
-export async function getFallbackJudoka() {
+export async function getFallbackJudoka(deps = {}) {
+  const { fetchJsonFn = defaultFetchJson } = deps;
   if (cachedFallback) {
     return cachedFallback;
   }
   try {
-    const data = await fetchJson(`${DATA_DIR}judoka.json`);
+    const data = await fetchJsonFn(`${DATA_DIR}judoka.json`);
     if (Array.isArray(data)) {
       const entry = data.find((j) => j.id === 0);
       if (entry) {

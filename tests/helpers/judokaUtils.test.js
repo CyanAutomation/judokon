@@ -2,17 +2,12 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
 import { resetFallbackCache } from "../../src/helpers/judokaUtils.js";
 
-const mockFetchJson = vi.hoisted(() => vi.fn());
-
-vi.mock("../../src/helpers/dataUtils.js", () => ({
-  fetchJson: mockFetchJson
-}));
+// Note: We are no longer mocking dataUtils at the module level.
+// Instead, we will inject the mock fetch function directly into the function under test.
 
 afterEach(async () => {
   vi.resetModules();
   vi.clearAllMocks();
-  mockFetchJson.mockReset();
-
   resetFallbackCache();
 });
 
@@ -60,45 +55,44 @@ async function invokeWithConsoleErrorCapture(callback) {
 describe("getFallbackJudoka", () => {
   it("returns the fallback judoka from JSON when available", async () => {
     const fallbackEntry = { id: 0, firstname: "Json", surname: "Fallback" };
-    mockFetchJson.mockResolvedValue([
+    const mockFetch = vi.fn().mockResolvedValue([
       { id: 1, firstname: "Other", surname: "Judoka" },
       fallbackEntry
     ]);
 
     const getFallbackJudoka = await importGetFallbackJudoka();
-    const result = await getFallbackJudoka();
+    const result = await getFallbackJudoka({ fetchJsonFn: mockFetch });
 
     expect(result).toEqual(fallbackEntry);
-    expect(mockFetchJson).toHaveBeenCalledTimes(1);
-    expect(mockFetchJson.mock.calls[0][0]).toContain("judoka.json");
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0][0]).toContain("judoka.json");
   });
 
   it("caches the fallback judoka after the first successful fetch", async () => {
     const fallbackEntry = { id: 0, firstname: "Cached", surname: "Hero" };
-    mockFetchJson.mockResolvedValue([fallbackEntry]);
+    const mockFetch = vi.fn().mockResolvedValue([fallbackEntry]);
 
     const getFallbackJudoka = await importGetFallbackJudoka();
 
-    const firstCall = await getFallbackJudoka();
-    const secondCall = await getFallbackJudoka();
+    const firstCall = await getFallbackJudoka({ fetchJsonFn: mockFetch });
+    const secondCall = await getFallbackJudoka({ fetchJsonFn: mockFetch });
 
     expect(firstCall).toBe(secondCall);
     expect(firstCall).toEqual(fallbackEntry);
-    expect(mockFetchJson).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it("falls back to the hardcoded judoka and caches the result on error", async () => {
     const error = new Error("network down");
-    mockFetchJson.mockRejectedValue(error);
+    const mockFetch = vi.fn().mockRejectedValue(error);
 
     const getFallbackJudoka = await importGetFallbackJudoka();
 
     const { result: fallback, errorCalls } = await invokeWithConsoleErrorCapture(() =>
-      getFallbackJudoka()
+      getFallbackJudoka({ fetchJsonFn: mockFetch })
     );
 
-    mockFetchJson.mockClear();
-    const cached = await getFallbackJudoka();
+    const cached = await getFallbackJudoka(); // This call should not use the mock
 
     expect(fallback).toMatchObject({
       id: 0,
@@ -106,7 +100,7 @@ describe("getFallbackJudoka", () => {
       surname: "Ushiyama"
     });
     expect(cached).toBe(fallback);
-    expect(mockFetchJson).not.toHaveBeenCalled();
+    expect(mockFetch).toHaveBeenCalledTimes(1); // Only called once before caching the error result
     expect(errorCalls).toEqual([["Failed to load fallback judoka:", error]]);
   });
 
@@ -122,12 +116,12 @@ describe("getFallbackJudoka", () => {
       expectedError: "Fallback judoka with id 0 not found"
     }
   ])("$name", async ({ mockData, expectedError }) => {
-    mockFetchJson.mockResolvedValue(mockData);
+    const mockFetch = vi.fn().mockResolvedValue(mockData);
 
     const getFallbackJudoka = await importGetFallbackJudoka();
 
     const { result: fallback, errorCalls } = await invokeWithConsoleErrorCapture(() =>
-      getFallbackJudoka()
+      getFallbackJudoka({ fetchJsonFn: mockFetch })
     );
 
     expect(fallback).toMatchObject({
@@ -135,7 +129,7 @@ describe("getFallbackJudoka", () => {
       firstname: "Tatsuuma",
       surname: "Ushiyama"
     });
-    expect(mockFetchJson).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
     expect(errorCalls).toHaveLength(1);
     const [, loggedError] = errorCalls[0];
     expect(loggedError).toBeInstanceOf(Error);

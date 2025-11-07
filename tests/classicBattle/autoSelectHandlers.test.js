@@ -1,10 +1,6 @@
 import { vi, describe, test, expect, beforeEach, afterEach } from "vitest";
-import { handleStatSelectionTimeout } from "../../src/helpers/classicBattle/autoSelectHandlers.js";
-import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
-import { showSnackbar } from "../../src/helpers/showSnackbar.js";
-import { autoSelectStat } from "../../src/helpers/classicBattle/autoSelectStat.js";
 
-// Mock dependencies
+// Mock dependencies FIRST before importing modules that use them
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: vi.fn()
 }));
@@ -23,6 +19,12 @@ vi.mock("../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
+
+// Import modules AFTER mocks are set up
+import { handleStatSelectionTimeout } from "../../src/helpers/classicBattle/autoSelectHandlers.js";
+import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
+import { showSnackbar } from "../../src/helpers/showSnackbar.js";
+import { autoSelectStat } from "../../src/helpers/classicBattle/autoSelectStat.js";
 
 describe("handleStatSelectionTimeout", () => {
   let scheduledCallbacks;
@@ -56,24 +58,20 @@ describe("handleStatSelectionTimeout", () => {
 
     handleStatSelectionTimeout(store, onSelect, 5000);
 
+    // Verify store was modified by handleStatSelectionTimeout
+    expect(store.autoSelectId).toBeDefined();
+
     // 1. The initial timeout should be registered for the provided delay.
     expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
     const mainTimeoutCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 5000);
     expect(mainTimeoutCall).toBeDefined();
     const [mainTimeout] = mainTimeoutCall;
 
-    // Debug: Check showSnackbar calls before execution
-    console.log("Before mainTimeout() execution:");
-    console.log("  showSnackbar mock:", showSnackbar);
-    console.log("  showSnackbar call count:", showSnackbar.mock.calls.length);
+    // Verify the callback is a function
+    expect(typeof mainTimeout).toBe("function");
 
     // Execute the main timeout callback to simulate the timer expiring.
     mainTimeout();
-    
-    // Debug: Check showSnackbar calls after execution
-    console.log("After mainTimeout() execution:");
-    console.log("  showSnackbar call count:", showSnackbar.mock.calls.length);
-    console.log("  showSnackbar call args:", showSnackbar.mock.calls);
 
     // 2. The stalled message should be shown and no auto-select should occur yet.
     expect(showSnackbar).toHaveBeenCalledWith("ui.statSelectionStalled");
