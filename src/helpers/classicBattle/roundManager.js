@@ -449,32 +449,16 @@ function getStartRound(store) {
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
  */
 export async function handleReplay(store) {
-  console.log("[REPLAY DEBUG] handleReplay START");
   persistLastJudokaStats(store, store?.currentPlayerJudoka, store?.currentOpponentJudoka);
   resetMatchDeckState(store);
 
   const resetEngine = () => {
-    console.log(
-      "[REPLAY DEBUG] resetEngine - typeof resetBattleEnginePreservingConfig:",
-      typeof battleEngine.resetBattleEnginePreservingConfig
-    );
     try {
       if (typeof battleEngine.resetBattleEnginePreservingConfig === "function") {
-        console.log("[REPLAY DEBUG] Calling battleEngine.resetBattleEnginePreservingConfig()");
         battleEngine.resetBattleEnginePreservingConfig();
-        console.log(
-          "[REPLAY DEBUG] Engine reset, roundsPlayed:",
-          typeof battleEngine.getRoundsPlayed === "function"
-            ? battleEngine.getRoundsPlayed()
-            : "N/A"
-        );
         return;
       }
-      console.log(
-        "[REPLAY DEBUG] resetBattleEnginePreservingConfig is not a function, using fallback"
-      );
     } catch (error) {
-      console.log("[REPLAY DEBUG] resetBattleEnginePreservingConfig threw error:", error);
       try {
         logger.warn("resetBattleEnginePreservingConfig failed, using fallback", error);
       } catch {
@@ -482,7 +466,6 @@ export async function handleReplay(store) {
       }
     }
 
-    console.log("[REPLAY DEBUG] Using createBattleEngine fallback");
     createBattleEngine({ forceCreate: true });
   };
 
@@ -514,35 +497,22 @@ export async function handleReplay(store) {
 
   safeRound("handleReplay.resetScoreboard", applyZeroScores, { suppressInProduction: true });
 
-  console.log("[REPLAY DEBUG] About to set roundStore to 0");
   safeRound(
     "handleReplay.resetRoundStoreNumber",
     () => roundStore.setRoundNumber(0, { emitLegacyEvent: false }),
     { suppressInProduction: true }
   );
-  console.log("[REPLAY DEBUG] RoundStore set to 0, current:", roundStore.getCurrentRound().number);
 
   const startRoundFn = getStartRound(store);
-  console.log(
-    "[REPLAY DEBUG] About to call startRound, engine roundsPlayed:",
-    typeof battleEngine.getRoundsPlayed === "function" ? battleEngine.getRoundsPlayed() : "N/A"
-  );
   const result = await startRoundFn();
-  console.log("[REPLAY DEBUG] startRound completed, result roundNumber:", result?.roundNumber);
-  console.log("[REPLAY DEBUG] After startRound, roundStore:", roundStore.getCurrentRound().number);
 
   safeRound("handleReplay.reapplyScoreboardReset", applyZeroScores, { suppressInProduction: true });
 
   // Ensure round counter is explicitly set to 1 after replay to prevent stale state issues
-  console.log("[REPLAY DEBUG] About to confirm round 1");
   safeRound(
     "handleReplay.confirmRoundOne",
     () => roundStore.setRoundNumber(1, { emitLegacyEvent: false }),
     { suppressInProduction: true }
-  );
-  console.log(
-    "[REPLAY DEBUG] handleReplay END, final roundStore:",
-    roundStore.getCurrentRound().number
   );
 
   return result;
@@ -638,12 +608,6 @@ export async function startRound(store, onRoundStart) {
       () => {
         const fn = battleEngine.getRoundsPlayed;
         const played = typeof fn === "function" ? Number(fn()) : 0;
-        console.log(
-          "[REPLAY DEBUG] startRound.resolveRoundNumber - played:",
-          played,
-          "roundNumber will be:",
-          played + 1
-        );
         if (Number.isFinite(played)) roundNumber = played + 1;
         try {
           if (typeof window !== "undefined") {
@@ -657,7 +621,6 @@ export async function startRound(store, onRoundStart) {
       },
       { suppressInProduction: true }
     );
-    console.log("[REPLAY DEBUG] startRound - calculated roundNumber:", roundNumber);
     if (typeof onRoundStart === "function") {
       safeRound("startRound.onRoundStart", () => onRoundStart(store, roundNumber), {
         suppressInProduction: true
@@ -673,15 +636,7 @@ export async function startRound(store, onRoundStart) {
     // Synchronise centralized store
     try {
       try {
-        console.log(
-          "[REPLAY DEBUG] startRound - about to call roundStore.setRoundNumber with:",
-          roundNumber
-        );
         roundStore.setRoundNumber(roundNumber);
-        console.log(
-          "[REPLAY DEBUG] startRound - after setRoundNumber, store is:",
-          roundStore.getCurrentRound().number
-        );
       } catch {
         /* keep behaviour stable on failure */
       }

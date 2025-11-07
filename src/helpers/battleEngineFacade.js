@@ -213,15 +213,10 @@ export function createBattleEngine(config = {}) {
  * @returns {IBattleEngine} Refreshed engine instance.
  */
 export function resetBattleEnginePreservingConfig() {
-  console.log("[REPLAY DEBUG] resetBattleEnginePreservingConfig START");
   let preservedPointsToWin = null;
   let existingEngine = null;
   try {
     existingEngine = requireEngine();
-    console.log(
-      "[REPLAY DEBUG] Got existing engine, roundsPlayed:",
-      existingEngine?.getRoundsPlayed?.()
-    );
     if (existingEngine && typeof existingEngine.getPointsToWin === "function") {
       const candidate = Number(existingEngine.getPointsToWin());
       if (Number.isFinite(candidate)) {
@@ -234,46 +229,29 @@ export function resetBattleEnginePreservingConfig() {
 
   let engine = existingEngine;
   if (engine && typeof engine._resetForTest === "function") {
-    console.log(
-      "[REPLAY DEBUG] About to call _resetForTest, roundsPlayed BEFORE:",
-      engine.getRoundsPlayed?.()
-    );
     try {
       engine._resetForTest();
-      console.log(
-        "[REPLAY DEBUG] Called _resetForTest, roundsPlayed AFTER:",
-        engine.getRoundsPlayed?.()
-      );
-    } catch (err) {
-      console.log("[REPLAY DEBUG] _resetForTest threw error:", err);
+    } catch {
       engine = null;
     }
   } else {
-    console.log("[REPLAY DEBUG] No _resetForTest method, will create new engine");
     engine = null;
   }
 
   if (!engine) {
-    console.log("[REPLAY DEBUG] Creating new engine with forceCreate");
     engine = createBattleEngine({ forceCreate: true });
-    console.log("[REPLAY DEBUG] New engine created, roundsPlayed:", engine?.getRoundsPlayed?.());
   }
 
   // Update module-level reference to ensure all subsequent calls get the reset engine
   battleEngine = engine;
 
   if (typeof preservedPointsToWin === "number" && Number.isFinite(preservedPointsToWin)) {
-    console.log("[REPLAY DEBUG] Setting pointsToWin to:", preservedPointsToWin);
     try {
       engine?.setPointsToWin?.(preservedPointsToWin);
     } catch {
       // Ignore failures so replay flow can proceed with default thresholds.
     }
   }
-  console.log(
-    "[REPLAY DEBUG] resetBattleEnginePreservingConfig END, final roundsPlayed:",
-    engine?.getRoundsPlayed?.()
-  );
   return engine;
 }
 
