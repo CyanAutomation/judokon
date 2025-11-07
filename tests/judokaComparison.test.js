@@ -505,12 +505,24 @@ describe("judokaComparison - Documentation", () => {
       expect(typeof doc.description).toBe("string");
     });
 
-    it("should include input schema", () => {
-      const doc = getComparisonDocumentation();
-      expect(doc.inputSchema).toBeDefined();
-      expect(doc.inputSchema.properties).toBeDefined();
-      expect(doc.inputSchema.properties.id1).toBeDefined();
-      expect(doc.inputSchema.properties.id2).toBeDefined();
+    it("should document the input schema", () => {
+      const { inputSchema } = getComparisonDocumentation();
+
+      const expectedProperties = {
+        id1: { type: ["string", "number"], description: "First judoka ID" },
+        id2: { type: ["string", "number"], description: "Second judoka ID" }
+      };
+
+      expect(inputSchema.type).toBe("object");
+      expect(Object.keys(inputSchema.properties)).toEqual(Object.keys(expectedProperties));
+
+      Object.entries(expectedProperties).forEach(([propertyName, expectedDefinition]) => {
+        const propertySchema = inputSchema.properties[propertyName];
+        expect(propertySchema.type).toEqual(expectedDefinition.type);
+        expect(propertySchema.description).toBe(expectedDefinition.description);
+      });
+
+      expect(inputSchema.required).toEqual(["id1", "id2"]);
     });
 
     it("should include output schema", () => {
