@@ -21,7 +21,6 @@ import {
 
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
-let _eventCounter = 0;
 
 function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
@@ -129,16 +128,12 @@ export function bindUIHelperEventHandlersDynamic() {
     const KEY = "__cbUIHelpersDynamicBoundTargets";
     const target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
-    console.log("[bindUIHelperEventHandlersDynamic] Target:", target);
-    console.log("[bindUIHelperEventHandlersDynamic] Already bound?", set.has(target));
     if (set.has(target)) {
-      console.log("[bindUIHelperEventHandlersDynamic] Skipping bind, already bound");
       return;
     }
-    console.log("[bindUIHelperEventHandlersDynamic] Binding handlers");
     set.add(target);
-  } catch (e) {
-    console.log("[bindUIHelperEventHandlersDynamic] Error in binding setup:", e);
+  } catch {
+    // Silently skip if binding setup fails
   }
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
@@ -163,9 +158,6 @@ export function bindUIHelperEventHandlersDynamic() {
 
   onBattleEvent("statSelected", async (e) => {
     try {
-      console.log("[uiEventHandlers] statSelected event received, event number:", ++_eventCounter);
-    } catch {}
-    try {
       scoreboard.clearTimer?.();
     } catch {}
     try {
@@ -174,17 +166,6 @@ export function bindUIHelperEventHandlersDynamic() {
       const opts = hasOpts ? detail.opts || {} : {};
       const flagEnabled = isEnabled("opponentDelayMessage");
       const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
-
-      try {
-        console.log(
-          "[uiEventHandlers] flagEnabled:",
-          flagEnabled,
-          "shouldDelay:",
-          shouldDelay,
-          "opts.delayOpponentMessage:",
-          opts.delayOpponentMessage
-        );
-      } catch {}
 
       clearOpponentSnackbarTimeout();
       clearFallbackPromptTimer();
@@ -199,19 +180,7 @@ export function bindUIHelperEventHandlersDynamic() {
         : Number(getOpponentDelay());
       const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
-      console.log(
-        "[uiEventHandlers] delaySource:",
-        delaySource,
-        "resolvedDelay:",
-        resolvedDelay,
-        "getOpponentDelay() result:",
-        getOpponentDelay(),
-        "getOpponentDelay function:",
-        String(getOpponentDelay).slice(0, 100)
-      );
-
       if (resolvedDelay <= 0) {
-        console.log("[uiEventHandlers] resolvedDelay <= 0, calling displayOpponentChoosingPrompt immediately");
         displayOpponentChoosingPrompt();
         return;
       }
