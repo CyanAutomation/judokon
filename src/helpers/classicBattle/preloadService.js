@@ -177,14 +177,14 @@ async function preloadModule(cacheKey) {
       performanceMetrics.moduleLoadTimes.set(cacheKey, loadTime);
       cachedModules.set(cacheKey, module);
       recordMemoryUsage();
-      return module;
+      return module; // Explicitly return the loaded module
     } catch (error) {
       // Silently fail - preloading is best-effort
       console.warn(
         `Failed to preload ${getClassicBattleModuleSource(cacheKey)} (${cacheKey}):`,
         error
       );
-      return null;
+      return null; // Consistently signal preload failure
     } finally {
       preloadPromises.delete(cacheKey);
     }
