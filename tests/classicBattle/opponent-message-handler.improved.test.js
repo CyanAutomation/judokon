@@ -111,9 +111,10 @@ describe("UI handlers: opponent message events", () => {
   });
 
   it("shows opponent choosing snackbar immediately when delay is not positive", () => {
-    console.log("Test: getOpponentDelayMock before mockReturnValue(0):", getOpponentDelayMock());
+    console.log("\n=== TEST 1: shows opponent choosing snackbar immediately ===");
+    console.log("Test 1: getOpponentDelayMock before mockReturnValue(0):", getOpponentDelayMock());
     getOpponentDelayMock.mockReturnValue(0);
-    console.log("Test: getOpponentDelayMock after mockReturnValue(0):", getOpponentDelayMock());
+    console.log("Test 1: getOpponentDelayMock after mockReturnValue(0):", getOpponentDelayMock());
 
     console.log("Test: Before bindUIHelperEventHandlersDynamic");
     console.log("Event target before bind:", globalThis.__classicBattleEventTarget);
@@ -147,6 +148,7 @@ describe("UI handlers: opponent message events", () => {
   });
 
   it("reuses captured timestamp when notifying after enforced delay", () => {
+    console.log("\n=== TEST 2: reuses captured timestamp ===");
     bindUIHelperEventHandlersDynamic();
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
