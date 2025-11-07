@@ -6,7 +6,8 @@ import {
   selectRandomJudoka,
   getRandomJudokaWithMetadata,
   getAvailableFilterOptions,
-  getRandomSelectionDocumentation
+  getRandomSelectionDocumentation,
+  RANDOM_SELECTION_DOCUMENTATION
 } from "../src/helpers/randomJudoka.js";
 
 // Test data
@@ -367,12 +368,13 @@ describe("Random Judoka Selection", () => {
   });
 
   describe("getRandomSelectionDocumentation", () => {
-    it("should return documentation object", () => {
+    it("should match the documented schema", () => {
+      const expectedDocumentation = JSON.parse(
+        JSON.stringify(RANDOM_SELECTION_DOCUMENTATION)
+      );
       const result = getRandomSelectionDocumentation();
-      expect(result).toHaveProperty("description");
-      expect(result).toHaveProperty("filters");
-      expect(result).toHaveProperty("examples");
-      expect(result).toHaveProperty("responseFormat");
+
+      expect(result).toEqual(expectedDocumentation);
     });
 
     it("should have description string", () => {

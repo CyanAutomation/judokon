@@ -4,6 +4,86 @@
  */
 
 /**
+ * @typedef {Object} RandomSelectionDocumentationFilter
+ * @property {string} description - Explanation of the filter parameter.
+ * @property {string} type - Primitive type accepted by the filter.
+ * @property {string[]=} values - Optional enumerated values for the filter.
+ */
+
+/**
+ * @typedef {Object} RandomSelectionDocumentation
+ * @property {string} description - Summary of the tool behaviour.
+ * @property {{
+ *   country: RandomSelectionDocumentationFilter,
+ *   rarity: RandomSelectionDocumentationFilter & { values: string[] },
+ *   weightClass: RandomSelectionDocumentationFilter
+ * }} filters - Filter metadata available to the tool.
+ * @property {{ description: string, input: { filters: Record<string, string> } }[]} examples - Usage examples.
+ * @property {{
+ *   judoka: string,
+ *   filters: string,
+ *   totalCount: string,
+ *   matchCount: string
+ * }} responseFormat - Description of the response payload.
+ */
+
+const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
+  description: "Select a random judoka from the database with optional filtering",
+  filters: {
+    country: {
+      description: "Filter by country (e.g., 'Japan')",
+      type: "string"
+    },
+    rarity: {
+      description: "Filter by rarity level",
+      type: "string",
+      values: ["Common", "Epic", "Legendary"]
+    },
+    weightClass: {
+      description: "Filter by weight class (e.g., '+100', '-60')",
+      type: "string"
+    }
+  },
+  examples: [
+    {
+      description: "Select any random judoka",
+      input: { filters: {} }
+    },
+    {
+      description: "Select random judoka from Japan",
+      input: { filters: { country: "Japan" } }
+    },
+    {
+      description: "Select random legendary judoka",
+      input: { filters: { rarity: "Legendary" } }
+    },
+    {
+      description: "Select random heavyweight from Japan",
+      input: { filters: { country: "Japan", weightClass: "+100" } }
+    }
+  ],
+  responseFormat: {
+    judoka: "Complete judoka record with all fields",
+    filters: "Validated filters applied",
+    totalCount: "Total judoka in database",
+    matchCount: "Judoka matching applied filters"
+  }
+});
+
+/**
+ * Canonical MCP documentation schema for the judokon.random tool.
+ * @type {Readonly<RandomSelectionDocumentation>}
+ * @const
+ * @pseudocode
+ * create deep clone of documentation base
+ * freeze the clone to prevent mutation
+ * expose the frozen documentation for reuse across modules
+ */
+export const RANDOM_SELECTION_DOCUMENTATION = Object.freeze(
+  JSON.parse(JSON.stringify(RANDOM_DOCUMENTATION_BASE))
+);
+
+/**
  * Validate random selection filters
  * @param {Object} filters - Filter criteria object
  * @returns {Object} Validated filters (empty object if none provided)
@@ -213,46 +293,5 @@ export function getAvailableFilterOptions(judokaArray) {
  *   - response format
  */
 export function getRandomSelectionDocumentation() {
-  return {
-    description: "Select a random judoka from the database with optional filtering",
-    filters: {
-      country: {
-        description: "Filter by country (e.g., 'Japan')",
-        type: "string"
-      },
-      rarity: {
-        description: "Filter by rarity level",
-        type: "string",
-        values: ["Common", "Epic", "Legendary"]
-      },
-      weightClass: {
-        description: "Filter by weight class (e.g., '+100', '-60')",
-        type: "string"
-      }
-    },
-    examples: [
-      {
-        description: "Select any random judoka",
-        input: { filters: {} }
-      },
-      {
-        description: "Select random judoka from Japan",
-        input: { filters: { country: "Japan" } }
-      },
-      {
-        description: "Select random legendary judoka",
-        input: { filters: { rarity: "Legendary" } }
-      },
-      {
-        description: "Select random heavyweight from Japan",
-        input: { filters: { country: "Japan", weightClass: "+100" } }
-      }
-    ],
-    responseFormat: {
-      judoka: "Complete judoka record with all fields",
-      filters: "Validated filters applied",
-      totalCount: "Total judoka in database",
-      matchCount: "Judoka matching applied filters"
-    }
-  };
+  return JSON.parse(JSON.stringify(RANDOM_SELECTION_DOCUMENTATION));
 }
