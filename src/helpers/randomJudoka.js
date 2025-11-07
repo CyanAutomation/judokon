@@ -27,6 +27,19 @@
  * }} responseFormat - Description of the response payload.
  */
 
+/**
+ * Clone documentation data with compatibility fallback.
+ * @param {RandomSelectionDocumentation} documentation
+ * @returns {RandomSelectionDocumentation}
+ */
+function cloneRandomSelectionDocumentation(documentation) {
+  if (typeof globalThis?.structuredClone === "function") {
+    return globalThis.structuredClone(documentation);
+  }
+
+  return JSON.parse(JSON.stringify(documentation));
+}
+
 const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
   description: "Select a random judoka from the database with optional filtering",
   filters: {
@@ -69,19 +82,6 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
     matchCount: "Judoka matching applied filters"
   }
 });
-
-/**
- * Clone documentation data with compatibility fallback.
- * @param {RandomSelectionDocumentation} documentation
- * @returns {RandomSelectionDocumentation}
- */
-function cloneRandomSelectionDocumentation(documentation) {
-  if (typeof globalThis.structuredClone === "function") {
-    return globalThis.structuredClone(documentation);
-  }
-
-  return JSON.parse(JSON.stringify(documentation));
-}
 
 /**
  * Canonical MCP documentation schema for the judokon.random tool.
