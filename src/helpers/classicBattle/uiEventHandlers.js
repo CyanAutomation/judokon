@@ -96,10 +96,21 @@ async function revealOpponentCardAfterResolution() {
 }
 
 function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
+  console.log(
+    "[displayOpponentChoosingPrompt] CALLED, markTimestamp:",
+    markTimestamp,
+    "notifyReady:",
+    notifyReady
+  );
   try {
-    showSnackbar(t("ui.opponentChoosing"));
-  } catch {
-    // Intentionally ignore snackbar failures so battle flow is never interrupted.
+    console.log("[displayOpponentChoosingPrompt] About to call t()");
+    const message = t("ui.opponentChoosing");
+    console.log("[displayOpponentChoosingPrompt] t() returned:", message);
+    console.log("[displayOpponentChoosingPrompt] About to call showSnackbar");
+    showSnackbar(message);
+    console.log("[displayOpponentChoosingPrompt] showSnackbar called successfully");
+  } catch (error) {
+    console.log("[displayOpponentChoosingPrompt] ERROR calling showSnackbar:", error);
   }
   let recordedTimestamp;
   if (markTimestamp) {
@@ -128,13 +139,18 @@ export function bindUIHelperEventHandlersDynamic() {
     const KEY = "__cbUIHelpersDynamicBoundTargets";
     const target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
+    console.log("[bindUIHelperEventHandlersDynamic] target:", target);
+    console.log("[bindUIHelperEventHandlersDynamic] already bound?", set.has(target));
     if (set.has(target)) {
+      console.log("[bindUIHelperEventHandlersDynamic] skipping, already bound");
       return;
     }
+    console.log("[bindUIHelperEventHandlersDynamic] adding target to set");
     set.add(target);
-  } catch {
-    // Silently skip if binding setup fails
+  } catch (error) {
+    console.log("[bindUIHelperEventHandlersDynamic] ERROR in setup:", error);
   }
+  console.log("[bindUIHelperEventHandlersDynamic] about to bind opponentReveal");
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
@@ -156,10 +172,14 @@ export function bindUIHelperEventHandlersDynamic() {
     } catch {}
   });
 
+  console.log("[bindUIHelperEventHandlersDynamic] about to bind statSelected");
   onBattleEvent("statSelected", async (e) => {
+    console.log("[statSelected handler] CALLED! Detail:", e?.detail);
     try {
       scoreboard.clearTimer?.();
-    } catch {}
+    } catch (error) {
+      console.log("[statSelected handler] Error in clearTimer:", error);
+    }
     try {
       const detail = (e && e.detail) || {};
       const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
@@ -167,10 +187,13 @@ export function bindUIHelperEventHandlersDynamic() {
       const flagEnabled = isEnabled("opponentDelayMessage");
       const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
 
+      console.log("[statSelected handler] flagEnabled:", flagEnabled, "shouldDelay:", shouldDelay);
+
       clearOpponentSnackbarTimeout();
       clearFallbackPromptTimer();
 
       if (!shouldDelay) {
+        console.log("[statSelected handler] !shouldDelay, calling displayOpponentChoosingPrompt");
         displayOpponentChoosingPrompt();
         return;
       }
@@ -180,7 +203,17 @@ export function bindUIHelperEventHandlersDynamic() {
         : Number(getOpponentDelay());
       const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
+      console.log(
+        "[statSelected handler] delaySource:",
+        delaySource,
+        "resolvedDelay:",
+        resolvedDelay
+      );
+
       if (resolvedDelay <= 0) {
+        console.log(
+          "[statSelected handler] resolvedDelay <= 0, calling displayOpponentChoosingPrompt"
+        );
         displayOpponentChoosingPrompt();
         return;
       }

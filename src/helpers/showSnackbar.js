@@ -88,6 +88,14 @@ function resetState() {
   removeId = undefined;
 }
 
+function ensureSnackbarContainer(doc) {
+  if (!doc.getElementById("snackbar-container")) {
+    const container = doc.createElement("div");
+    container.id = "snackbar-container";
+    doc.body?.appendChild(container);
+  }
+}
+
 function safeClearTimeout(scheduler, handle) {
   if (!scheduler) {
     realScheduler.clearTimeout(handle);
@@ -156,11 +164,7 @@ export function showSnackbar(message) {
   // don't fail because the container is missing. Create a no-op container
   // when running in test environments where the host page hasn't added it.
   try {
-    if (!doc.getElementById("snackbar-container")) {
-      const container = doc.createElement("div");
-      container.id = "snackbar-container";
-      doc.body?.appendChild(container);
-    }
+    ensureSnackbarContainer(doc);
   } catch {}
   const scheduler = getScheduler();
   const requestFrame = getSafeRequestAnimationFrame(scheduler);
@@ -203,11 +207,7 @@ export function updateSnackbar(message) {
   }
   // Defensive: expose updateSnackbar as safe even before DOM wiring.
   try {
-    if (!doc.getElementById("snackbar-container")) {
-      const container = doc.createElement("div");
-      container.id = "snackbar-container";
-      doc.body?.appendChild(container);
-    }
+    ensureSnackbarContainer(doc);
   } catch {}
   const scheduler = getScheduler();
   const container = doc.getElementById("snackbar-container");

@@ -7,7 +7,7 @@
 import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
-const showSnackbar = vi.fn();
+// Create mock functions that will be used by vi.mock factories
 const markOpponentPromptNow = vi.fn();
 const recordOpponentPromptTimestamp = vi.fn();
 const getOpponentPromptMinDuration = vi.fn(() => 600);
@@ -18,7 +18,12 @@ const showStatComparison = vi.fn();
 const updateDebugPanel = vi.fn();
 const getOpponentCardData = vi.fn();
 
-vi.mock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+// Mock showSnackbar - this MUST be defined before vi.mock so it's available in the factory
+const showSnackbarMock = vi.fn();
+
+vi.mock("../../src/helpers/showSnackbar.js", () => ({
+  showSnackbar: showSnackbarMock
+}));
 vi.mock("../../src/helpers/featureFlags.js", () => ({
   isEnabled: (flag) => flag === "opponentDelayMessage"
 }));
