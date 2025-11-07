@@ -12,7 +12,7 @@
  * 3. Preload judoka and gokyo data using `preloadRandomCardData()`.
  * 4. Create a `historyManager` to track drawn cards.
  * 5. Build the slide-out history panel and its toggle button using `buildHistoryPanel()`.
- * 6. Create the main "Draw Card!" button using `createDrawButton()` and append it to the `.card-section`.
+ * 6. Reference the pre-rendered "Draw Card!" button inside the `#draw-controls` region.
  * 7. Define the `onSelect` callback to add drawn judoka to the history manager.
  * 8. Attach a `click` event listener to the "Draw Card!" button that calls `displayCard()` when clicked.
  * 9. Attach a `change` event listener to `featureFlagsEmitter` to update UI based on feature flag changes (e.g., inspector panels, tooltip overlay debug).
@@ -312,34 +312,6 @@ export function buildHistoryPanel(prefersReducedMotion) {
   return { historyPanel, historyList, toggleHistoryBtn };
 }
 
-/**
- * Create the primary Draw button used on the Random Judoka page.
- *
- * @pseudocode
- * 1. Build a large, accessible button with an icon and ARIA attributes.
- * 2. Apply size, role, and test hooks for UI automation.
- * 3. Return the constructed button element.
- *
- * @returns {HTMLElement}
- */
-export function createDrawButton() {
-  const drawButton = createButton("Draw Card!", {
-    id: "draw-card-btn",
-    className: "draw-card-btn",
-    type: "button",
-    icon: DRAW_ICON
-  });
-  drawButton.dataset.testid = "draw-button";
-  drawButton.dataset.tooltipId = "ui.drawCard";
-  drawButton.style.minHeight = "64px";
-  drawButton.style.minWidth = "300px";
-  drawButton.style.borderRadius = "999px";
-  drawButton.setAttribute("aria-label", "Draw a random judoka card");
-  drawButton.setAttribute("aria-live", "polite");
-  drawButton.setAttribute("tabindex", "0");
-  return drawButton;
-}
-
 function showError(msg) {
   let errorEl = document.getElementById("draw-error-message");
   if (!errorEl) {
@@ -585,7 +557,7 @@ async function displayCard({
  * @pseudocode
  * 1. Initialize feature flags and read motion preference.
  * 2. Render placeholder, preload judoka/gokyo data and compute `dataLoaded`.
- * 3. Build history panel and draw button; wire draw click to `displayCard`.
+ * 3. Build history panel and wire the draw button click to `displayCard`.
  * 4. Wire history toggle and feature-flag-driven debug panels.
  * 5. If data failed to load, render an error and disable draw button.
  * 6. Initialize tooltips.
@@ -608,9 +580,32 @@ export async function setupRandomJudokaPage() {
   const historyManager = createHistoryManager();
   const { historyPanel, historyList, toggleHistoryBtn } = buildHistoryPanel(prefersReducedMotion);
 
-  const cardSection = document.querySelector(".card-section");
-  const drawButton = createDrawButton();
-  cardSection.appendChild(drawButton);
+  const drawButton = document.getElementById("draw-card-btn");
+  if (!drawButton) {
+    throw new Error("initRandomJudokaPage: #draw-card-btn element is missing from the DOM.");
+  }
+  if (!drawButton.querySelector("svg")) {
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(DRAW_ICON, "image/svg+xml");
+    const icon = svgDoc.querySelector("svg");
+    if (icon) {
+      icon.setAttribute("aria-hidden", "true");
+      drawButton.prepend(icon);
+    }
+  }
+  if (!drawButton.querySelector(".button-label")) {
+    const label = document.createElement("span");
+    label.className = "button-label";
+    label.textContent = drawButton.dataset.drawButtonIdleLabel || "Draw Card!";
+    drawButton.appendChild(label);
+  }
+  drawButton.dataset.testid = drawButton.dataset.testid || "draw-button";
+  drawButton.dataset.tooltipId = drawButton.dataset.tooltipId || "ui.drawCard";
+  drawButton.setAttribute("aria-label", drawButton.getAttribute("aria-label") || "Draw a random judoka card");
+  drawButton.setAttribute("aria-live", drawButton.getAttribute("aria-live") || "polite");
+  if (!drawButton.hasAttribute("tabindex")) {
+    drawButton.setAttribute("tabindex", "0");
+  }
   drawButton.dataset.soundEnabled = String(currentSoundEnabled);
 
   if (typeof window !== "undefined") {

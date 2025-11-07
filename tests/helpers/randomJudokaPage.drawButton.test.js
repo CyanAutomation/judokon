@@ -66,8 +66,8 @@ describe("randomJudokaPage draw button", () => {
 
     setupRandomJudokaCoreMocks({ generateRandomCard });
 
-    const { section, container, placeholderTemplate } = createRandomCardDom();
-    document.body.append(section, container, placeholderTemplate);
+    const { section, container } = createRandomCardDom();
+    document.body.append(section);
     document.body?.removeAttribute("data-random-judoka-ready");
 
     const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
@@ -100,8 +100,8 @@ describe("randomJudokaPage draw button", () => {
 
     setupRandomJudokaCoreMocks({ generateRandomCard });
 
-    const { section, container, placeholderTemplate } = createRandomCardDom();
-    document.body.append(section, container, placeholderTemplate);
+    const { section, container } = createRandomCardDom();
+    document.body.append(section);
     document.body?.removeAttribute("data-random-judoka-ready");
 
     const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
@@ -136,8 +136,8 @@ describe("randomJudokaPage draw button", () => {
       const generateRandomCard = vi.fn().mockResolvedValue({ name: "Ghost Judoka" });
       setupRandomJudokaCoreMocks({ generateRandomCard });
 
-      const { section, container, placeholderTemplate } = createRandomCardDom();
-      document.body.append(section, container, placeholderTemplate);
+      const { section, container } = createRandomCardDom();
+      document.body.append(section);
 
       const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
       await initRandomJudokaPage();
@@ -164,11 +164,6 @@ describe("randomJudokaPage draw button", () => {
     const fetchSpy = vi.spyOn(dataUtils, "fetchJson").mockRejectedValue(new Error("fail"));
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const applyMotionPreference = vi.fn();
-    const createButton = vi.fn((_, opts = {}) => {
-      const btn = document.createElement("button");
-      if (opts.id) btn.id = opts.id;
-      return btn;
-    });
 
     const loadGokyoLookup = vi.fn().mockResolvedValue({});
     const renderJudokaCard = vi.fn().mockResolvedValue();
@@ -178,7 +173,6 @@ describe("randomJudokaPage draw button", () => {
       loadGokyoLookup,
       renderJudokaCard
     }));
-    vi.doMock("../../src/components/Button.js", () => ({ createButton }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
     vi.doMock("../../src/helpers/motionUtils.js", () => ({
@@ -190,8 +184,8 @@ describe("randomJudokaPage draw button", () => {
       DATA_DIR: ""
     }));
 
-    const { section, container, placeholderTemplate } = createRandomCardDom();
-    document.body.append(section, container, placeholderTemplate);
+    const { section } = createRandomCardDom();
+    document.body.append(section);
 
     await withMutedConsole(async () => {
       const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
@@ -218,8 +212,8 @@ describe("randomJudokaPage draw button", () => {
 
     setupRandomJudokaCoreMocks();
 
-    const { section, container, placeholderTemplate } = createRandomCardDom();
-    document.body.append(section, container, placeholderTemplate);
+    const { section } = createRandomCardDom();
+    document.body.append(section);
 
     const { initRandomJudokaPage, randomJudokaReadyPromise } = await import(
       "../../src/helpers/randomJudokaPage.js"
