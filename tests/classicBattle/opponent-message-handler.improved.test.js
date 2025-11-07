@@ -63,13 +63,23 @@ describe("UI handlers: opponent message events", () => {
   let resetBattleEventTarget;
   let setTimeoutSpy;
   let timers;
+  let snackbarModule;
 
   beforeAll(async () => {
     await import("../../src/helpers/classicBattle/snackbar.js");
+    snackbarModule = await import("../../src/helpers/classicBattle/snackbar.js");
     const uiEventHandlersModule = await import(
       "../../src/helpers/classicBattle/uiEventHandlers.js"
     );
     const battleEventsModule = await import("../../src/helpers/classicBattle/battleEvents.js");
+
+    console.log("In beforeAll:");
+    const isEqual = snackbarModule.getOpponentDelay === getOpponentDelayMock;
+    console.log("snackbarModule.getOpponentDelay === getOpponentDelayMock?", isEqual);
+    const snackbarStr = String(snackbarModule.getOpponentDelay).slice(0, 100);
+    const mockStr = String(getOpponentDelayMock).slice(0, 100);
+    console.log("snackbarModule.getOpponentDelay:", snackbarStr);
+    console.log("getOpponentDelayMock:", mockStr);
 
     bindUIHelperEventHandlersDynamic = uiEventHandlersModule.bindUIHelperEventHandlersDynamic;
     emitBattleEvent = battleEventsModule.emitBattleEvent;
