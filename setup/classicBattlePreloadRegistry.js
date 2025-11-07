@@ -97,10 +97,26 @@ export function resetClassicBattlePreloadRegistry() {
 }
 
 const DEFAULT_LOADERS = [
-  ["battleEngine", () => import("../src/helpers/battleEngineFacade.js"), "../src/helpers/battleEngineFacade.js"],
-  ["scoreboard", () => import("../src/helpers/setupScoreboard.js"), "../src/helpers/setupScoreboard.js"],
-  ["cooldownRenderer", () => import("../src/helpers/CooldownRenderer.js"), "../src/helpers/CooldownRenderer.js"],
-  ["debugPanel", () => import("../src/helpers/classicBattle/debugPanel.js"), "../src/helpers/classicBattle/debugPanel.js"],
+  [
+    "battleEngine",
+    () => import("../src/helpers/battleEngineFacade.js"),
+    "../src/helpers/battleEngineFacade.js"
+  ],
+  [
+    "scoreboard",
+    () => import("../src/helpers/setupScoreboard.js"),
+    "../src/helpers/setupScoreboard.js"
+  ],
+  [
+    "cooldownRenderer",
+    () => import("../src/helpers/CooldownRenderer.js"),
+    "../src/helpers/CooldownRenderer.js"
+  ],
+  [
+    "debugPanel",
+    () => import("../src/helpers/classicBattle/debugPanel.js"),
+    "../src/helpers/classicBattle/debugPanel.js"
+  ],
   [
     "computeCooldown",
     () => import("../src/helpers/timers/computeNextRoundCooldown.js"),

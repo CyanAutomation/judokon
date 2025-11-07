@@ -305,8 +305,7 @@ export async function triggerRoundTimeoutNow(store, options = {}) {
     dependencyOverrides.handleStatSelection ?? selectionHandlerModule.handleStatSelection;
   const dispatchBattleEvent =
     dependencyOverrides.dispatchBattleEvent ?? eventDispatcherModule.dispatchBattleEvent;
-  const autoSelectStat =
-    dependencyOverrides.autoSelectStat ?? autoSelectModule.autoSelectStat;
+  const autoSelectStat = dependencyOverrides.autoSelectStat ?? autoSelectModule.autoSelectStat;
 
   const onExpiredSelect = async (stat, opts) => {
     const selectionValues = deriveSelectionValues(stat, getCardStatValue, getOpponentJudoka);
@@ -382,8 +381,7 @@ export async function triggerStallPromptNow(store, options = {}) {
   const handleStatSelectionTimeout =
     dependencyOverrides.handleStatSelectionTimeout ??
     autoSelectHandlersModule.handleStatSelectionTimeout;
-  const showMessage =
-    dependencyOverrides.showScoreboardMessage ?? scoreboardShowMessage;
+  const showMessage = dependencyOverrides.showScoreboardMessage ?? scoreboardShowMessage;
   const emitBattleEventFn = dependencyOverrides.emitBattleEvent ?? emitBattleEvent;
 
   const onSelect = (stat, opts) => {

@@ -35,18 +35,6 @@ fi
 # RAG Model Check and Auto-Repair
 echo "Running RAG model file check..."
 
-# Pre-flight: Clean any corrupted Xenova cache to prevent stale stub files
-# This ensures transformers downloads fresh files on the next prep
-echo "  Pre-flight: Checking for corrupted Xenova cache..."
-if [ -d "models/Xenova/all-MiniLM-L6-v2" ]; then
-  # Quick size check: if any file is suspiciously small, clean the cache
-  onnx_size=$(stat -f%z "models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx" 2>/dev/null || stat -c%s "models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx" 2>/dev/null || echo "0")
-  if [ "$onnx_size" -lt 1000000 ] && [ "$onnx_size" -gt 0 ]; then
-    echo "    Detected corrupted Xenova cache (stub files), removing for clean re-download..."
-    rm -rf models/Xenova/all-MiniLM-L6-v2 || true
-  fi
-fi
-
 set +e
 npm run check:rag
 rag_status=$?
