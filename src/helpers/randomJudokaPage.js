@@ -589,6 +589,8 @@ export async function setupRandomJudokaPage() {
   drawButton.dataset.drawButtonIdleLabel = idleLabel;
   if (buttonLabelEl) {
     buttonLabelEl.textContent = idleLabel;
+  } else {
+    drawButton.textContent = idleLabel;
   }
   drawButton.dataset.soundEnabled = String(currentSoundEnabled);
 
