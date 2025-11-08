@@ -1,8 +1,6 @@
 // [TEST DEBUG] top-level testUtils.js
 
 import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-import path from "path";
 import { isConsoleMocked, shouldShowTestLogs } from "../../src/helpers/testLogGate.js";
 
 const debugLog = (...args) => {
@@ -13,9 +11,36 @@ const debugLog = (...args) => {
 };
 
 debugLog("[TEST DEBUG] top-level testUtils.js");
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const judokaFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/judoka.json")));
-const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/gokyo.json")));
+
+// Lazy-load fixtures to handle when readFileSync is externalized in JSDOM
+let cachedJudokaFixture = null;
+let cachedGokyoFixture = null;
+
+const getJudokaFixture = () => {
+  if (cachedJudokaFixture) return cachedJudokaFixture;
+  try {
+    const fixturePath = new URL("../fixtures/judoka.json", import.meta.url).pathname;
+    const normalizedPath = fixturePath[0] === "/" && fixturePath[2] === ":" ? fixturePath.substring(1) : fixturePath;
+    cachedJudokaFixture = JSON.parse(readFileSync(normalizedPath));
+    return cachedJudokaFixture;
+  } catch (e) {
+    debugLog("[TEST DEBUG] Error loading judoka fixture:", e.message);
+    throw e;
+  }
+};
+
+const getGokyoFixture = () => {
+  if (cachedGokyoFixture) return cachedGokyoFixture;
+  try {
+    const fixturePath = new URL("../fixtures/gokyo.json", import.meta.url).pathname;
+    const normalizedPath = fixturePath[0] === "/" && fixturePath[2] === ":" ? fixturePath.substring(1) : fixturePath;
+    cachedGokyoFixture = JSON.parse(readFileSync(normalizedPath));
+    return cachedGokyoFixture;
+  } catch (e) {
+    debugLog("[TEST DEBUG] Error loading gokyo fixture:", e.message);
+    throw e;
+  }
+};
 
 /**
  * Creates a header element for scoreboard-related tests.
