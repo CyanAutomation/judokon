@@ -2,6 +2,11 @@
 
 import { readFileSync } from "fs";
 import { isConsoleMocked, shouldShowTestLogs } from "../../src/helpers/testLogGate.js";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
@@ -16,12 +21,11 @@ debugLog("[TEST DEBUG] top-level testUtils.js");
 let cachedJudokaFixture = null;
 let cachedGokyoFixture = null;
 
-const getJudokaFixture = () => {
+const loadJudokaFixture = () => {
   if (cachedJudokaFixture) return cachedJudokaFixture;
   try {
-    const fixturePath = new URL("../fixtures/judoka.json", import.meta.url).pathname;
-    const normalizedPath = fixturePath[0] === "/" && fixturePath[2] === ":" ? fixturePath.substring(1) : fixturePath;
-    cachedJudokaFixture = JSON.parse(readFileSync(normalizedPath));
+    const fixturePath = path.resolve(__dirname, "../fixtures/judoka.json");
+    cachedJudokaFixture = JSON.parse(readFileSync(fixturePath));
     return cachedJudokaFixture;
   } catch (e) {
     debugLog("[TEST DEBUG] Error loading judoka fixture:", e.message);
@@ -29,14 +33,13 @@ const getJudokaFixture = () => {
   }
 };
 
-const getGokyoFixture = () => {
+const loadGokyoFixture = () => {
   if (cachedGokyoFixture) return cachedGokyoFixture;
   try {
-    const fixturePath = new URL("../fixtures/gokyo.json", import.meta.url).pathname;
-    const normalizedPath = fixturePath[0] === "/" && fixturePath[2] === ":" ? fixturePath.substring(1) : fixturePath;
-    cachedGokyoFixture = JSON.parse(readFileSync(normalizedPath));
+    const fixturePath = path.resolve(__dirname, "../fixtures/gokyo.json");
+    cachedGokyoFixture = JSON.parse(readFileSync(fixturePath));
     return cachedGokyoFixture;
-  } catch (e) {
+  } catch (e). {
     debugLog("[TEST DEBUG] Error loading gokyo fixture:", e.message);
     throw e;
   }
@@ -708,7 +711,7 @@ export function resetDom() {
  * 2. Return the cloned data.
  */
 export function getJudokaFixture() {
-  return structuredClone(judokaFixture);
+  return structuredClone(loadJudokaFixture());
 }
 
 /**
@@ -719,5 +722,5 @@ export function getJudokaFixture() {
  * 2. Return the cloned data.
  */
 export function getGokyoFixture() {
-  return structuredClone(gokyoFixture);
+  return structuredClone(loadGokyoFixture());
 }
