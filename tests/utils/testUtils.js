@@ -39,7 +39,7 @@ const loadGokyoFixture = () => {
     const fixturePath = path.resolve(__dirname, "../fixtures/gokyo.json");
     cachedGokyoFixture = JSON.parse(readFileSync(fixturePath));
     return cachedGokyoFixture;
-  } catch (e). {
+  } catch (e) {
     debugLog("[TEST DEBUG] Error loading gokyo fixture:", e.message);
     throw e;
   }
