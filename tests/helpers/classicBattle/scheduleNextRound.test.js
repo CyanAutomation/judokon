@@ -278,12 +278,15 @@ describe("classicBattle startCooldown", () => {
   }
 
   it("auto-dispatches ready after 1s cooldown", async () => {
+    vi.resetModules();
+
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
 
     mockBattleData();
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    battleEventsMod.__resetBattleEventTarget();
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
     battleEngineMod.createBattleEngine();

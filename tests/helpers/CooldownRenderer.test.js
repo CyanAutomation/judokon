@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const createDeterministicScheduler = () => {
   let nextId = 1;
@@ -45,6 +45,9 @@ const createDeterministicScheduler = () => {
     peekDelays: () => Array.from(tasks.values()).map((task) => task.delay)
   };
 };
+
+// CRITICAL: Reset modules BEFORE mocking to ensure clean state
+vi.resetModules();
 
 const promptTrackerMocks = vi.hoisted(() => ({
   getOpponentPromptTimestamp: vi.fn(),
@@ -94,6 +97,10 @@ describe("createPromptDelayController", () => {
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
     mockIsOpponentPromptReady.mockReturnValue(false);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("delays queued tick until opponent prompt duration elapses", () => {
@@ -323,6 +330,7 @@ describe("attachCooldownRenderer", () => {
   let timer;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
     timer = {
@@ -339,7 +347,10 @@ describe("attachCooldownRenderer", () => {
         }
       }
     };
-    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("renders initial countdown and emits events on first tick", () => {
