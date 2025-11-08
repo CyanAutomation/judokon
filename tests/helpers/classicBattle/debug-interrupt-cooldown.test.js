@@ -100,20 +100,20 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     const store = { selectionMade: false, playerChoice: null };
-    
+
     console.log("[TEST] Initializing orchestrator");
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
 
     console.log("[TEST] Dispatching matchStart");
     await machine.dispatch("matchStart");
-    
+
     console.log("[TEST] Dispatching ready (for match)");
     await machine.dispatch("ready");
-    
+
     console.log("[TEST] Dispatching ready (to cooldown)");
     await machine.dispatch("ready");
-    
+
     console.log("[TEST] Dispatching cardsRevealed");
     await machine.dispatch("cardsRevealed");
 

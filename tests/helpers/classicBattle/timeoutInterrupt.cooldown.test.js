@@ -206,7 +206,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       // CRITICAL: Stop all existing timers AND clear pending setTimeout calls
       // We need both because timers might have expired already
       vi.clearAllTimers(); // Clear any pending setTimeout/setInterval
-      
+
       if (globalThis.__MOCK_TIMERS && globalThis.__MOCK_TIMERS.length > 0) {
         // Create a copy of the array to avoid mutation-during-iteration issues
         const timersToStop = [...globalThis.__MOCK_TIMERS];
@@ -228,7 +228,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       expect(globalThis.__MOCK_TIMERS).toBeDefined();
       const timersAfterInterrupt = globalThis.__MOCK_TIMERS?.length ?? 0;
       expect(timersAfterInterrupt).toBe(1); // Should be exactly 1 after clearing
-      
+
       // Get the cooldown timer (the only one remaining)
       const cooldownTimer = globalThis.__MOCK_TIMERS[0];
       expect(cooldownTimer.start).toHaveBeenCalled();
@@ -254,10 +254,10 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       );
       const readyDispatchesDuringAdvance =
         readyCallsAfterAdvance.length - readyCallsBeforeAdvance.length;
-      
+
       expect(readyDispatchesDuringAdvance).toBe(1);
       expect(readyCallsAfterAdvance).toHaveLength(1);
-      
+
       // Verify the dispatch tracker matches
       expect(readyDispatchTracker.events.length).toBe(1);
       expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
