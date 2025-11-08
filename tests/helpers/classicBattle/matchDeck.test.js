@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  createBattleStore,
-  __matchDeckTestUtils
-} from "../../../src/helpers/classicBattle/roundManager.js";
+import { createBattleStore } from "../../../src/helpers/classicBattle/roundManager.js";
+import { __matchDeckTestUtils } from "../../../src/helpers/classicBattle/matchDeckManager.js";
 
 const {
   createMatchDeckFromPool,

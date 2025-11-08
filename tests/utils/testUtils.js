@@ -2,11 +2,6 @@
 
 import { readFileSync } from "fs";
 import { isConsoleMocked, shouldShowTestLogs } from "../../src/helpers/testLogGate.js";
-import { fileURLToPath } from "url";
-import path from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
@@ -17,6 +12,20 @@ const debugLog = (...args) => {
 
 debugLog("[TEST DEBUG] top-level testUtils.js");
 
+// Compute __dirname lazily to handle when modules are externalized in JSDOM
+let cachedDirname = null;
+const getDirname = () => {
+  if (cachedDirname) return cachedDirname;
+  try {
+    const urlStr = new URL("./", import.meta.url).pathname;
+    cachedDirname = urlStr[0] === "/" && urlStr[2] === ":" ? urlStr.substring(1) : urlStr;
+    return cachedDirname;
+  } catch (e) {
+    debugLog("[TEST DEBUG] Error computing dirname:", e.message);
+    return process.cwd();
+  }
+};
+
 // Lazy-load fixtures to handle when readFileSync is externalized in JSDOM
 let cachedJudokaFixture = null;
 let cachedGokyoFixture = null;
@@ -24,7 +33,8 @@ let cachedGokyoFixture = null;
 const loadJudokaFixture = () => {
   if (cachedJudokaFixture) return cachedJudokaFixture;
   try {
-    const fixturePath = path.resolve(__dirname, "../fixtures/judoka.json");
+    const dirname = getDirname();
+    const fixturePath = dirname + "../fixtures/judoka.json";
     cachedJudokaFixture = JSON.parse(readFileSync(fixturePath));
     return cachedJudokaFixture;
   } catch (e) {
@@ -36,7 +46,8 @@ const loadJudokaFixture = () => {
 const loadGokyoFixture = () => {
   if (cachedGokyoFixture) return cachedGokyoFixture;
   try {
-    const fixturePath = path.resolve(__dirname, "../fixtures/gokyo.json");
+    const dirname = getDirname();
+    const fixturePath = dirname + "../fixtures/gokyo.json";
     cachedGokyoFixture = JSON.parse(readFileSync(fixturePath));
     return cachedGokyoFixture;
   } catch (e) {
