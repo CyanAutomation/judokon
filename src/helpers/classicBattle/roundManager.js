@@ -715,7 +715,7 @@ let currentNextRound = null;
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
   resetReadyDispatchState();
-  
+
   // Stop any existing cooldown timer to prevent old timers from firing
   // when time advances (prevents duplicate ready dispatches in tests)
   if (activeCooldownControls?.timer && typeof activeCooldownControls.timer.stop === "function") {
@@ -729,13 +729,13 @@ export function startCooldown(_store, scheduler, overrides = {}) {
       }
     }
   }
-  
+
   const activeScheduler = resolveActiveScheduler(scheduler);
   const schedulerProvided = scheduler && typeof scheduler?.setTimeout === "function";
   initializeCooldownTelemetry({ schedulerProvided });
   const bus = createEventBus(overrides.eventBus);
   const controls = createCooldownControls({ emit: bus.emit });
-  
+
   // Track these controls as active for cleanup on next cooldown
   activeCooldownControls = controls;
   const context = detectOrchestratorContext(() => {
