@@ -1,4 +1,5 @@
 import * as eventDispatcher from "../eventDispatcher.js";
+import { dispatchBattleEvent as namedDispatchBattleEvent } from "../eventDispatcher.js";
 import { readDebugState as globalReadDebugState } from "../debugHooks.js";
 
 const hasMockIndicators = (fn) => {
@@ -66,8 +67,7 @@ const getOriginalGlobalDispatchBattleEvent = () => {
 
 // Dynamic accessor so test module mocks replace the runtime dispatcher.
 function getGlobalDispatch() {
-  try {
-    const fn = eventDispatcher.dispatchBattleEvent;
+  const logTestDebug = (fn) => {
     try {
       if (typeof process !== "undefined" && process.env?.VITEST) {
         try {
@@ -80,10 +80,28 @@ function getGlobalDispatch() {
         } catch {}
       }
     } catch {}
+  };
+  const consider = (fn) => {
+    if (typeof fn !== "function") return undefined;
+    logTestDebug(fn);
+    try {
+      if (!hasMockIndicators(fn)) {
+        originalDispatchStore.set(fn);
+      }
+    } catch {}
     return fn;
-  } catch {
-    return undefined;
-  }
+  };
+  try {
+    const viaNamespace = consider(eventDispatcher?.dispatchBattleEvent);
+    if (viaNamespace) return viaNamespace;
+  } catch {}
+  const viaNamed = consider(namedDispatchBattleEvent);
+  if (viaNamed) return viaNamed;
+  try {
+    const viaStored = consider(originalDispatchStore.get?.());
+    if (viaStored) return viaStored;
+  } catch {}
+  return undefined;
 }
 
 /**
