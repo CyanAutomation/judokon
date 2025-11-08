@@ -12,7 +12,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import logger from "../logger.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { isTestModeEnabled, seededRandom } from "../testModeUtils.js";
+import { isTestModeEnabled } from "../testModeUtils.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
