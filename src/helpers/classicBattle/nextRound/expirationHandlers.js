@@ -85,7 +85,7 @@ function getGlobalDispatch() {
     if (typeof fn !== "function") return undefined;
     logTestDebug(fn);
     try {
-      if (!hasMockIndicators(fn)) {
+      if (!hasMockIndicators(fn) && !originalDispatchStore.get()) {
         originalDispatchStore.set(fn);
       }
     } catch {}
@@ -98,7 +98,7 @@ function getGlobalDispatch() {
   const viaNamed = consider(namedDispatchBattleEvent);
   if (viaNamed) return viaNamed;
   try {
-    const viaStored = consider(originalDispatchStore.get?.());
+    const viaStored = consider(originalDispatchStore.get());
     if (viaStored) return viaStored;
   } catch {}
   return undefined;
