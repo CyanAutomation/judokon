@@ -89,11 +89,11 @@ describe("createPromptDelayController", () => {
   const now = () => currentNow;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     currentNow = 0;
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
     mockIsOpponentPromptReady.mockReturnValue(false);
-    vi.clearAllMocks();
   });
 
   it("delays queued tick until opponent prompt duration elapses", () => {

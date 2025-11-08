@@ -1,8 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+// CRITICAL: Reset modules BEFORE mocking to ensure clean state
+// This ensures vi.mock() declarations apply to all subsequent imports
+vi.resetModules();
+
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   STATS: ["power"],
-  stopTimer: vi.fn()
+  stopTimer: vi.fn(),
+  getScores: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/api/battleUI.js", () => ({
+  chooseOpponentStat: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+  emitBattleEvent: vi.fn()
 }));
 
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
@@ -16,8 +29,17 @@ vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
 vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
   getCardStatValue: vi.fn()
 }));
+
 vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
   getBattleState: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/promises.js", () => ({
+  getRoundResolvedPromise: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/showSnackbar.js", () => ({
+  showSnackbar: vi.fn()
 }));
 
 import { handleStatSelection } from "../../../src/helpers/classicBattle.js";
