@@ -101,6 +101,9 @@ describe("createPromptDelayController", () => {
     currentNow = 1000;
     mockGetOpponentPromptTimestamp.mockReturnValue(800);
     mockGetOpponentPromptMinDuration.mockReturnValue(500);
+    
+    console.log("TEST DEBUG: timestamp mock return:", mockGetOpponentPromptTimestamp());
+    console.log("TEST DEBUG: duration mock return:", mockGetOpponentPromptMinDuration());
 
     const controller = createPromptDelayController({
       now,

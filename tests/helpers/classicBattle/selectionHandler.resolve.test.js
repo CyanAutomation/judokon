@@ -39,10 +39,12 @@ vi.mock("../../../src/helpers/classicBattle/promises.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn()
+  showSnackbar: vi.fn(),
+  updateSnackbar: vi.fn()
 }));
 
-import { handleStatSelection } from "../../../src/helpers/classicBattle.js";
+// Import AFTER mocking all dependencies
+let handleStatSelection;
 
 describe("handleStatSelection resolution", () => {
   let store;
@@ -51,6 +53,12 @@ describe("handleStatSelection resolution", () => {
   let getBattleState;
 
   beforeEach(async () => {
+    // Import handleStatSelection in beforeEach to ensure mocks are applied
+    if (!handleStatSelection) {
+      const module = await import("../../../src/helpers/classicBattle.js");
+      handleStatSelection = module.handleStatSelection;
+    }
+    
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
     dispatchMock = (await import("../../../src/helpers/classicBattle/eventDispatcher.js"))
       .dispatchBattleEvent;

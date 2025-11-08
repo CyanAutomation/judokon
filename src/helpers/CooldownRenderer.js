@@ -1,11 +1,7 @@
 import * as snackbar from "./showSnackbar.js";
 import * as scoreboard from "./setupScoreboard.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
-import {
-  getOpponentPromptTimestamp,
-  getOpponentPromptMinDuration,
-  isOpponentPromptReady
-} from "./classicBattle/opponentPromptTracker.js";
+import * as opponentPromptTracker from "./classicBattle/opponentPromptTracker.js";
 import { t } from "./i18n.js";
 import { clampToPositiveTimestamp, toPositiveNumber } from "./utils/positiveNumbers.js";
 
@@ -70,12 +66,12 @@ const normalizePromptDelayOptions = (options = {}) => {
 
 const hasActivePrompt = () => {
   try {
-    if (typeof isOpponentPromptReady === "function") {
-      if (isOpponentPromptReady() === true) {
+    if (typeof opponentPromptTracker.isOpponentPromptReady === "function") {
+      if (opponentPromptTracker.isOpponentPromptReady() === true) {
         return true;
       }
     }
-    const timestamp = Number(getOpponentPromptTimestamp());
+    const timestamp = Number(opponentPromptTracker.getOpponentPromptTimestamp());
     return Number.isFinite(timestamp) && timestamp > 0;
   } catch {}
   return false;
@@ -83,11 +79,11 @@ const hasActivePrompt = () => {
 
 const computeRemainingPromptDelayMs = (nowFn) => {
   try {
-    const minDuration = Number(getOpponentPromptMinDuration());
+    const minDuration = Number(opponentPromptTracker.getOpponentPromptMinDuration());
     if (!Number.isFinite(minDuration) || minDuration <= 0) {
       return 0;
     }
-    const lastPrompt = Number(getOpponentPromptTimestamp());
+    const lastPrompt = Number(opponentPromptTracker.getOpponentPromptTimestamp());
     if (!Number.isFinite(lastPrompt) || lastPrompt <= 0) {
       return 0;
     }
