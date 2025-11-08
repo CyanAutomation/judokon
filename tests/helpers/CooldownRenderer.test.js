@@ -47,9 +47,9 @@ const createDeterministicScheduler = () => {
 };
 
 const promptTrackerMocks = vi.hoisted(() => ({
-  getOpponentPromptTimestamp: vi.fn(() => 0),
-  getOpponentPromptMinDuration: vi.fn(() => 0),
-  isOpponentPromptReady: vi.fn(() => false)
+  getOpponentPromptTimestamp: vi.fn(),
+  getOpponentPromptMinDuration: vi.fn(),
+  isOpponentPromptReady: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => promptTrackerMocks);
