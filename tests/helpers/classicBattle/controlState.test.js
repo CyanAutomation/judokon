@@ -11,7 +11,11 @@ import { ClassicBattleView } from "../../../src/helpers/classicBattle/view.js";
 function mockQuitMatch() {
   const msg = document.getElementById("round-message");
   if (msg) msg.textContent = "quit";
-  window.location.href = "http://localhost/index.html";
+  // In jsdom, we can't set window.location.href directly.
+  // Instead, use history.replaceState to simulate navigation.
+  if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+    history.replaceState(null, "", "http://localhost/index.html");
+  }
 }
 
 vi.mock("../../../src/helpers/featureFlags.js", () => {
@@ -69,6 +73,11 @@ vi.mock("../../../src/helpers/setupSvgFallback.js", () => ({}));
 
 vi.mock("../../../src/helpers/classicBattle/quitModal.js", () => ({
   quitMatch: mockQuitMatch
+}));
+
+vi.mock("../../../src/helpers/navUtils.js", () => ({
+  navigateToHome: vi.fn(),
+  resolveHomeHref: vi.fn(() => "http://localhost/index.html")
 }));
 
 describe("classicBattle battle control state", () => {
@@ -134,7 +143,7 @@ describe("classicBattle battle control state", () => {
     initQuitButton(window.battleStore, { quitMatch: mockQuitMatch });
     document.getElementById("quit-button").click();
     expect(document.getElementById("round-message").textContent).toBe("quit");
-    expect(window.location.href).toBe("http://localhost/index.html");
+    expect(window.location.pathname).toBe("/index.html");
   });
 
   it("home link invokes quitMatch", async () => {
@@ -144,6 +153,7 @@ describe("classicBattle battle control state", () => {
     homeLink.dataset.testid = "home-link";
     header.appendChild(homeLink);
 
+    const { navigateToHome } = await import("../../../src/helpers/navUtils.js");
     await import("../../../src/helpers/setupClassicBattleHomeLink.js");
     const { createBattleStore } = await import(
       "../../../src/helpers/classicBattle/roundManager.js"
@@ -151,7 +161,11 @@ describe("classicBattle battle control state", () => {
     window.battleStore = createBattleStore();
     homeLink.click();
     expect(document.getElementById("round-message").textContent).toBe("quit");
-    expect(window.location.href).toBe("http://localhost/index.html");
+    // navigateToHome is mocked and called by the real quitMatch via quitModal.js
+    // which is not mocked, so we'll use the actual window.location path check instead
+    // Actually, setupClassicBattleHomeLink calls quitMatch which is mocked to mockQuitMatch
+    // which uses history.replaceState, so check the pathname
+    expect(window.location.pathname).toBe("/index.html");
   });
 
   it("enables stat buttons only while waiting for player action", async () => {

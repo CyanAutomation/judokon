@@ -1,3 +1,17 @@
+/**
+ * @summary Central re-export barrel for Classic Battle helpers.
+ *
+ * @description This module aggregates all public-facing Classic Battle
+ * utilities, providing a single import point for battle initialization,
+ * round management, UI updates, and test helpers. It delegates to
+ * specific implementation modules in ./classicBattle/* subdirectory.
+ *
+ * @pseudocode
+ * 1. Import specific utilities from classicBattle/* modules.
+ * 2. Re-export them with consistent naming and documentation.
+ * 3. Provide test helpers and orchestrator shims for integration.
+ */
+
 export * from "./classicBattle/roundManager.js";
 export * from "./classicBattle/selectionHandler.js";
 export * from "./classicBattle/roundResolver.js";
@@ -7,6 +21,7 @@ export {
   enableNextRoundButton,
   disableNextRoundButton
 } from "./classicBattle/uiHelpers.js";
+
 /**
  * Re-export: returns the opponent's judoka selection for the current match.
  *
@@ -23,26 +38,7 @@ export {
  * @returns {any}
  */
 export { getOpponentJudoka } from "./classicBattle/cardSelection.js";
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Re-export: extract a numeric stat value from a card object.
  *
@@ -60,26 +56,7 @@ export { getOpponentJudoka } from "./classicBattle/cardSelection.js";
  * @returns {number}
  */
 export { getCardStatValue } from "./classicBattle/cardStatUtils.js";
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Re-export: start a round cooldown timer.
  *
@@ -95,26 +72,7 @@ export { getCardStatValue } from "./classicBattle/cardStatUtils.js";
  * @returns {void}
  */
 export { startCooldown } from "./classicBattle/roundManager.js";
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Re-export: apply UI updates for the current round.
  *
@@ -131,26 +89,7 @@ export { startCooldown } from "./classicBattle/roundManager.js";
  * @returns {void}
  */
 export { applyRoundUI } from "./classicBattle/roundUI.js";
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Re-export: obtain opponent card metadata for display and comparison.
  *
@@ -167,26 +106,7 @@ export { applyRoundUI } from "./classicBattle/roundUI.js";
  * @returns {object}
  */
 export { getOpponentCardData } from "./classicBattle/opponentController.js";
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Re-export: create a debug/test API for Classic Battle flows.
  *
@@ -218,6 +138,8 @@ export {
   getRoundTimeoutPromise,
   getStatSelectionStalledPromise
 } from "./classicBattle/promises.js";
+
+// Test/Debug hooks (prefixed with __ to indicate non-public API)
 export {
   ensureBindings as __ensureClassicBattleBindings,
   resetBindings as __resetClassicBattleBindings,
@@ -226,7 +148,7 @@ export {
   setCardStatValuesForTest as __setCardStatValuesForTest
 } from "./classicBattle/testHooks.js";
 
-// PRD Orchestrator API shims
+// Orchestrator API shims for battle integration
 export {
   confirmReadiness,
   requestInterrupt,
