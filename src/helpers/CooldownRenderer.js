@@ -267,7 +267,19 @@ function flushQueue(state) {
   }
 }
 
-const scheduleDelay = (state, delay) => {
+/**
+ * Schedule a delay before flushing the queue.
+ *
+ * @pseudocode
+ * 1. If delay is zero or timer unavailable, flush immediately.
+ * 2. Otherwise, schedule timer and store ID.
+ * 3. Flush when timer expires.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @param {number} delay - Milliseconds to delay.
+ * @returns {void}
+ */
+function scheduleDelay(state, delay) {
   if (delay <= 0 || typeof state.config.setTimeoutFn !== "function") {
     flushQueue(state);
     return;
@@ -282,7 +294,7 @@ const scheduleDelay = (state, delay) => {
     state.pendingDelayId = null;
     flushQueue(state);
   }
-};
+}
 
 function processQueue(state) {
   if (!state.queuedPayload) {
@@ -297,6 +309,17 @@ function processQueue(state) {
   scheduleDelay(state, delay);
 }
 
+/**
+ * Schedule a poll to check if prompt is ready.
+ *
+ * @pseudocode
+ * 1. Return false if timer unavailable.
+ * 2. Schedule poll callback for poll interval.
+ * 3. Return true on success, false if scheduling fails.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {boolean} True if poll scheduled successfully.
+ */
 function schedulePromptPoll(state) {
   if (typeof state.config.setTimeoutFn !== "function") {
     return false;
@@ -366,36 +389,93 @@ function queueTickInternal(state, value, options = {}, onReady) {
   processQueue(state);
 }
 
-const clearState = (state) => {
+/**
+ * Clear all pending state (timers, queue, deadlines).
+ *
+ * @pseudocode
+ * 1. Cancel any pending timeout.
+ * 2. Clear queued payload.
+ * 3. Reset prompt wait state.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {void}
+ */
+function clearState(state) {
   clearPendingTimeout(state);
   state.queuedPayload = null;
   resetPromptWaitState(state);
-};
+}
 
-const getRemainingPromptDelayMsState = (state) => {
+/**
+ * Compute base remaining delay from prompt timing constraint.
+ *
+ * @pseudocode
+ * 1. Calculate remaining delay via computeRemainingPromptDelayMs.
+ * 2. Clamp to zero if not finite.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {number} Base remaining delay in milliseconds.
+ */
+function computeBaseRemaining(state) {
   const computed = Number(computeRemainingPromptDelayMs(state.config.now));
-  const baseRemaining = Number.isFinite(computed) ? Math.max(0, computed) : 0;
-  if (baseRemaining > 0) {
-    return baseRemaining;
-  }
+  return Number.isFinite(computed) ? Math.max(0, computed) : 0;
+}
 
-  if (state.config.waitForPromptOption && state.config.maxPromptWait > 0 && !hasActivePrompt()) {
-    if (state.promptWaitDeadline > 0) {
-      return Math.max(0, state.promptWaitDeadline - state.config.now());
-    }
-    // No wait period established yet; report zero remaining delay until a deadline is scheduled.
+/**
+ * Compute remaining delay from prompt wait deadline.
+ *
+ * @pseudocode
+ * 1. If deadline is not set, return 0.
+ * 2. Otherwise, return max(0, deadline - now).
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {number} Remaining time until deadline, or 0.
+ */
+function computePromptWaitRemaining(state) {
+  if (state.promptWaitDeadline <= 0) return 0;
+  return Math.max(0, state.promptWaitDeadline - state.config.now());
+}
+
+/**
+ * Compute total remaining prompt delay considering all constraints.
+ *
+ * @pseudocode
+ * 1. Get base remaining delay from timing constraint.
+ * 2. If non-zero, return it (timing constraint takes priority).
+ * 3. Otherwise, if waiting for prompt and it's not active, get wait deadline remaining.
+ * 4. Otherwise return 0.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {number} Total remaining delay in milliseconds.
+ */
+function getRemainingPromptDelayMsState(state) {
+  const baseRemaining = computeBaseRemaining(state);
+  if (baseRemaining > 0) return baseRemaining;
+
+  if (!state.config.waitForPromptOption || state.config.maxPromptWait <= 0 || hasActivePrompt()) {
     return 0;
   }
 
-  return baseRemaining;
-};
+  return computePromptWaitRemaining(state);
+}
 
-const shouldDeferState = (state) => {
+/**
+ * Check if countdown should defer based on prompt and timing constraints.
+ *
+ * @pseudocode
+ * 1. If waiting for prompt and no active prompt, defer.
+ * 2. If remaining prompt delay is positive, defer.
+ * 3. Otherwise, don't defer.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {boolean} True if tick should be deferred.
+ */
+function shouldDeferState(state) {
   if (state.config.waitForPromptOption && !hasActivePrompt()) {
     return true;
   }
   return computeRemainingPromptDelayMs(state.config.now) > 0;
-};
+}
 
 /**
  * Create a controller that defers countdown ticks until prompt constraints finish.
@@ -439,6 +519,30 @@ const createControllerInterface = (state) => ({
 });
 
 /**
+ * Try to extract initially rendered countdown from Vitest snackbar (test-only).
+ *
+ * @pseudocode
+ * 1. Only in Vitest environment with document available.
+ * 2. Query for existing snackbar element.
+ * 3. Extract countdown seconds from text if present.
+ * 4. Return extracted value or null.
+ *
+ * @returns {number|null} Initial countdown value if found, null otherwise.
+ */
+function tryGetInitialRenderedCountdown() {
+  if (!isVitestEnvironment() || typeof document === "undefined") {
+    return null;
+  }
+  try {
+    const existing = document.querySelector?.(".snackbar");
+    const m = existing?.textContent?.match?.(/Next round in: (\d+)s/);
+    return m ? Number(m[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Attach snackbar + scoreboard rendering to a timer.
  *
  * @pseudocode
@@ -471,20 +575,14 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   // In unit tests, if a snackbar already shows a countdown value, treat that
   // as the initial render and skip the first decrement to avoid off-by-one
   // perception when timers begin very soon after the outcome.
-  try {
-    const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
-    if (IS_VITEST && typeof document !== "undefined") {
-      const existing = document.querySelector?.(".snackbar");
-      const m = existing?.textContent?.match?.(/Next round in: (\d+)s/);
-      if (m) {
-        lastRendered = Number(m[1]);
-        rendered = true;
-        // Mark that we've effectively "rendered" the initial state.
-        // The first engine tick will only establish `started` without
-        // changing the visible countdown.
-      }
-    }
-  } catch {}
+  const initialCountdown = tryGetInitialRenderedCountdown();
+  if (initialCountdown !== null) {
+    lastRendered = initialCountdown;
+    rendered = true;
+    // Mark that we've effectively "rendered" the initial state.
+    // The first engine tick will only establish `started` without
+    // changing the visible countdown.
+  }
 
   const normalizeRemaining = (value) => {
     const numeric = Number(value);

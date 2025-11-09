@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { loadBattleCLI, cleanupBattleCLI } from "../utils/loadBattleCLI.js";
 import cliState from "../../../src/pages/battleCLI/state.js";
 import { resetCliState } from "../../utils/battleCliTestUtils.js";
+import { flushMicrotasks } from "../../utils/flushMicrotasks.js";
 
 const baseOptions = {
   battleStats: ["speed", "strength"],
@@ -98,10 +99,6 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     const { statEl, onKeyDown } = await setupWaitingForAction();
     expect(document.activeElement).toBe(statEl);
 
-    console.log("[DEBUG] statEl.dataset:", statEl.dataset);
-    console.log("[DEBUG] statEl.dataset.stat:", statEl.dataset.stat);
-    console.log("[DEBUG] statEl.dataset.statIndex:", statEl.dataset.statIndex);
-
     const event = new KeyboardEvent("keydown", {
       key: "Enter",
       bubbles: true,
@@ -114,10 +111,8 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     expect(cliState.roundResolving).toBe(false);
     expect(statEl.classList.contains("selected")).toBe(false);
 
-    // Wait for two microtask cycles: one for the initial Promise.resolve(),
-    // and another for the scheduled selectStat() function to execute
-    await Promise.resolve();
-    await Promise.resolve();
+    // Flush microtasks to allow the scheduled selectStat() to execute
+    await flushMicrotasks(2);
 
     expect(cliState.roundResolving).toBe(true);
     expect(statEl.classList.contains("selected")).toBe(true);
@@ -132,9 +127,8 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
 
-    // Wait for two microtask cycles for selectStat to execute
-    await Promise.resolve();
-    await Promise.resolve();
+    // Flush microtasks to allow the scheduled selectStat() to execute
+    await flushMicrotasks(2);
 
     expect(emitSpy).toHaveBeenCalledWith("statSelected", { stat: "speed" });
     expect(statEl.classList.contains("selected")).toBe(true);
@@ -153,9 +147,8 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
 
-    // Wait for two microtask cycles for selectStat to execute
-    await Promise.resolve();
-    await Promise.resolve();
+    // Flush microtasks to allow the scheduled selectStat() to execute
+    await flushMicrotasks(2);
 
     expect(emitSpy).toHaveBeenCalledWith("statSelected", { stat: fallbackStat });
     expect(statEl.classList.contains("selected")).toBe(true);
