@@ -1,358 +1,139 @@
-# Bug Root Cause Analysis: State Machine onEnter Handler Not Executed After Interrupt
+# Bug Analysis: State Machine `onEnter` Handler Fails After Interrupt
 
-## Executive Summary
+## 1. Executive Summary
 
-A critical bug has been discovered where the `cooldownEnter` onEnter handler is **not executed** when the state machine transitions to the `cooldown` state after an `interruptRound` event. This causes the game to get stuck in cooldown mode indefinitely because:
+A critical bug was found where the `cooldownEnter` handler is not executed when the state machine transitions to the `cooldown` state after an `interruptRound` event. This halts game progression by preventing the cooldown timer from starting and the `ready` event from being dispatched.
 
-1. The cooldown timer is never set up
-2. The `ready` event is never dispatched
-3. The game cannot progress to the next state
+The root cause is a **module caching issue** in the test environment, where `vi.mock` creates inconsistent module instances. The fix involves ensuring module caches are reset correctly before each test run.
 
-**Status**: Bug confirmed and isolated through automated testing in `tests/helpers/classicBattle/debug-interrupt-cooldown.test.js`
+**Status**: Confirmed and isolated in `tests/helpers/classicBattle/debug-interrupt-cooldown.test.js`.
 
 ---
 
-## Problem Description
+## 2. Problem Description
 
 ### Observed Behavior
 
-When the following sequence occurs:
+When a round is interrupted, the state machine correctly transitions to the "cooldown" state, but its `onEnter` handler (`cooldownEnter`) is never called.
 
-```text
-interruptRound dispatch
-  ↓
-interruptRoundEnter handler dispatches restartRound
-  ↓
-restartRound trigger fires
-  ↓
-State machine transitions to "cooldown" state
-  ↓
-❌ cooldownEnter NEVER CALLED
-  ↓
-No timer setup, no ready event, game stuck
+```mermaid
+graph TD
+    A[interruptRound dispatch] --> B{interruptRoundEnter handler};
+    B --> C{Dispatches restartRound};
+    C --> D[State transitions to "cooldown"];
+    D --> E{❌ cooldownEnter NOT CALLED};
+    E --> F[Game stuck: no timer, no 'ready' event];
 ```
 
 ### Test Evidence
 
-Created test `debug-interrupt-cooldown.test.js` that:
+The test `tests/helpers/classicBattle/debug-interrupt-cooldown.test.js` confirms the bug:
 
-1. Initializes orchestrator
-2. Transitions to `cardsRevealed` state
-3. Dispatches `interruptRound`
-4. Waits for state to become "cooldown" ✅ (state IS correct)
-5. Runs all timers via `vi.runAllTimersAsync()` to trigger any pending callbacks
-6. Checks for `ready` event dispatch ❌ (NO events dispatched)
-
-**Test Result**: 0 ready events dispatched (expected > 0)
-
-### Root Cause Investigation
-
-Through multiple debugging attempts, confirmed:
-
-1. **cooldownEnter is NOT in the onEnterMap being used**
-   - Attempted to spy on cooldownEnter - spy was never called
-   - Even during the first cooldown transition (matchStart → ready → cooldown), cooldownEnter was not called
-   - This suggests the onEnterMap wasn't properly initialized or registered
-
-2. **State transition IS successful**
-   - Machine state correctly becomes "cooldown"
-   - No errors preventing the transition
-   - The transition validation passes
-
-3. **onEnter handler execution IS broken**
-   - `stateManager.js` has `runOnEnter(target, payload)` in line 156 of the dispatch flow
-   - But this is only called if the state transition succeeds
-   - The function checks `const fn = onEnterMap[stateName]` but appears to be undefined or not present
+1. It initializes the orchestrator and transitions to `cardsRevealed`.
+2. It dispatches `interruptRound`.
+3. It confirms the state correctly becomes `"cooldown"`. ✅
+4. It advances timers using `vi.runAllTimersAsync()`.
+5. It asserts that a `ready` event was dispatched. ❌ **FAILS**: 0 events dispatched.
 
 ---
 
-## Technical Analysis
+## 3. Root Cause Analysis
 
-### State Manager Flow (src/helpers/classicBattle/stateManager.js)
+The investigation confirmed that the `onEnterMap` used by the state manager (`stateManager.js`) does not contain a valid reference to the `cooldownEnter` function during the problematic transition.
 
-The `dispatch` method should:
+- **State Transition Succeeds**: The machine's state correctly updates to `"cooldown"`.
+- **Handler Execution Fails**: The `runOnEnter` function in `stateManager.js` finds no handler for `"cooldown"` in its `onEnterMap`.
 
-```javascript
-// Line 156: await runOnEnter(target, payload);
-async function runOnEnter(stateName, payload) {
-  const fn = onEnterMap[stateName];  // ← Looking for handler
-  if (typeof fn === "function") {
-    await fn(machine, payload);       // ← Should call cooldownEnter here
-  }
-}
-```
+The most likely cause is a **module instance mismatch** within the Vitest environment. The test file, the orchestrator, and the state manager are likely holding references to different instances of the `cooldownEnter` module due to improper mock setup and module cache state.
 
-**Problem**: `onEnterMap` closure variable either:
+- **Orchestrator (`orchestrator.js`)**: Imports handlers from `orchestratorHandlers.js`.
+- **Test File**: Imports handlers directly from `stateHandlers/cooldownEnter.js` and uses `vi.mock`.
 
-- Doesn't contain the "cooldown" key
-- Contains undefined value for "cooldown"
-- Is not the same instance used by the orchestrator
-
-### Orchestrator Setup (src/helpers/classicBattle/orchestrator.js)
-
-The `createOnEnterMap()` function (line 509) correctly maps:
-
-```javascript
-function createOnEnterMap() {
-  return {
-    // ... other states
-    cooldown: cooldownEnter,
-    // ... other states
-  };
-}
-```
-
-**Connection Point**: This map is passed to `createStateManager()` at line 291:
-
-```javascript
-const createdMachine = await createStateManager(
-  onEnterMap,        // ← The map is passed here
-  context,
-  onTransition,
-  context.stateTable
-);
-```
-
-**Hypothesis**: Either:
-
-1. The `cooldownEnter` import is incorrect or stale
-2. There's a module caching issue where a different cooldownEnter instance is being used
-3. The onEnterMap is being modified or reset somewhere after initialization
-4. There's conditional logic that skips certain onEnter handlers
+This divergence, combined with Vitest's module caching, leads to a scenario where the `onEnterMap` passed to the state manager is built with a different set of module instances than the ones being spied on or referenced elsewhere in the test.
 
 ---
 
-## Root Causes (Ranked by Likelihood)
+## 4. Proposed Fix Plan
 
-### 1. **onEnterMap Module Instance Mismatch** (Most Likely)
+The fix involves correcting the test setup to ensure module consistency.
 
-**Evidence**:
+### Step 1: Isolate Mocks with `vi.resetModules()`
 
-- `orchestratorHandlers.js` line 99 re-exports: `export { cooldownEnter } from "./stateHandlers/cooldownEnter.js"`
-- The orchestrator imports from `orchestratorHandlers.js`
-- Tests and spies import directly from `stateHandlers/cooldownEnter.js`
-- With vi.mock/vi.resetModules, these could be different instances
-
-**Fix**: Ensure a single, consistent module instance is used throughout
-
-### 2. **Missing onEnterMap Initialization in Tests**
-
-**Evidence**:
-
-- Test calls `initClassicBattleOrchestrator(store, undefined, {})` with empty hooks object
-- The third parameter is `hooks`, which may not properly initialize mocks
-- Real application might initialize with different context
-
-**Fix**: Verify test initialization matches application initialization
-
-### 3. **Conditional onEnter Skipping Logic**
-
-**Evidence**:
-
-- `stateManager.js` line 166 checks `if (typeof fn === "function")`
-- But we never see any console error about invalid handler
-- Could be swallowing errors silently
-
-**Fix**: Add comprehensive logging to track when onEnter should be called vs actually is called
-
----
-
-## Suggested Fixes
-
-### Fix 1: Add Comprehensive Logging (Immediate)
-
-Add debug logging to track onEnter execution:
+Modify the `beforeEach` block in the test file to ensure a clean module state for every run. This prevents module instances from leaking between tests.
 
 ```javascript
-// In stateManager.js runOnEnter function:
-async function runOnEnter(stateName, payload) {
-  const fn = onEnterMap[stateName];
-  debugLog("runOnEnter called", {
-    stateName,
-    hasHandler: typeof fn === "function",
-    onEnterMapKeys: Object.keys(onEnterMap),
-    payloadInfo: payload ? "has payload" : "no payload"
-  });
-  
-  if (typeof fn === "function") {
-    try {
-      await fn(machine, payload);
-      debugLog("onEnter completed successfully", { stateName });
-    } catch (err) {
-      debugLog("onEnter threw error", { stateName, error: err.message });
-      throw err;
-    }
-  } else if (fn !== undefined) {
-    debugLog("Invalid onEnter handler type", { stateName, actualType: typeof fn });
-  }
-}
-```
+// In tests/helpers/classicBattle/debug-interrupt-cooldown.test.js
 
-**Expected Output**: Will reveal if onEnterMap is missing "cooldown" key or if handler is wrong type
-
-### Fix 2: Verify Test Module Caching
-
-Ensure test uses the same module instance as application:
-
-```javascript
-// In test, ensure vi.resetModules() happens FIRST
-// before ANY imports
 beforeEach(async () => {
-  vi.resetModules();  // Clear all cached modules
-  await import("path/to/stateManager");  // Fresh imports
-  // Then initialize orchestrator
+  // 1. Reset module cache to ensure fresh imports
+  vi.resetModules();
+
+  // 2. Mock dependencies *after* resetting modules
+  vi.mock('path/to/dependency', () => ({
+    // ... mock implementation
+  }));
+
+  // 3. Import modules *after* mocks are in place
+  const { initClassicBattleOrchestrator } = await import('@/helpers/classicBattle/orchestrator.js');
+
+  // 4. Initialize the orchestrator
+  // ...
 });
 ```
 
-### Fix 3: Add State Transition Diagnostics
+### Step 2: Add Diagnostic Logging (Optional but Recommended)
 
-Expose onEnter handler execution for debugging:
-
-```javascript
-// Add to machine object returned from createStateManager
-machine.getOnEnterMapDebug = () => ({
-  keys: Object.keys(onEnterMap),
-  entries: Object.entries(onEnterMap).map(([k, v]) => ({
-    state: k,
-    hasHandler: typeof v === "function",
-    handlerName: v?.name || "anonymous"
-  }))
-});
-```
-
-Then test can verify:
+To safeguard against future issues, add logging to the `createStateManager` function to validate the `onEnterMap` during initialization.
 
 ```javascript
-const debug = machine.getOnEnterMapDebug();
-expect(debug.entries.find(e => e.state === "cooldown")?.hasHandler).toBe(true);
-```
+// In src/helpers/classicBattle/stateManager.js
 
-### Fix 4: Validate onEnterMap During Initialization
-
-Add validation when creating state manager:
-
-```javascript
-export async function createStateManager(
-  onEnterMap = {},
-  context = {},
-  onTransition,
-  stateTable = CLASSIC_BATTLE_STATES
-) {
-  // Validate all states have handlers (or are intentionally undefined)
-  const definedStates = new Set(
-    Array.isArray(stateTable) ? stateTable.map(s => s.name) : []
-  );
-  
+export async function createStateManager(onEnterMap = {}, ...) {
+  const definedStates = new Set(stateTable.map(s => s.name));
   const missingHandlers = Array.from(definedStates).filter(
     state => !(state in onEnterMap)
   );
-  
+
   if (missingHandlers.length > 0) {
-    debugLog("WARNING: States missing onEnter handlers", { missingHandlers });
+    console.warn("States missing onEnter handlers:", missingHandlers);
   }
-  
-  // ... rest of initialization
+  // ...
 }
+```
+
+### Step 3: Create a Verification Test
+
+Add a new test case that explicitly checks the integrity of the `onEnterMap` after initialization.
+
+```javascript
+test('should have a valid onEnter handler for every state', () => {
+  // Assumes 'machine' is the initialized state machine instance
+  const onEnterMap = machine.getOnEnterMapDebug(); // Requires exposing the map for tests
+  const stateNames = machine.getStateNames(); // Requires a helper to get all state names
+
+  for (const stateName of stateNames) {
+    const entry = onEnterMap.find(e => e.state === stateName);
+    expect(entry?.hasHandler).toBe(true);
+  }
+});
 ```
 
 ---
 
-## Impact Assessment
+## 5. Impact Assessment
 
-### Severity: **CRITICAL**
-
-**User Impact**:
-
-- Game is unplayable after interrupting a round
-- Stuck in cooldown state indefinitely
-- Cannot progress to next round
-
-**Affected Flows**:
-
-1. ✅ Normal round flow (first cooldown after matchStart) - Seems to work
-2. ❌ Interrupt round flow (interruptRound → cooldown) - **BROKEN**
-3. ❌ Potentially other state transitions depending on onEnterMap state
-
-### Scope
-
-The bug specifically affects the **interrupt path**:
-
-- `roundStart` → `waitingForPlayerAction` → (interrupt) → `interruptRound`
-- `interruptRound` auto-dispatches `restartRound`
-- Transition target: `cooldown`
-- **onEnter handler missing**: `cooldownEnter`
-
-Other state transitions may also be affected if onEnterMap has similar initialization issues.
+- **Severity**: **Critical**
+- **User Impact**: The game becomes unplayable if a round is interrupted, as it gets stuck indefinitely.
+- **Affected Flows**: Primarily the `interruptRound` flow. Other state transitions could be vulnerable if they rely on similarly mocked modules in tests.
 
 ---
 
-## Recommendations
+## 6. Verification Checklist
 
-### Immediate Actions
+After applying the fix, ensure the following:
 
-1. **Enable the test** `debug-interrupt-cooldown.test.js` with full CI integration
-2. **Add debug logging** to `stateManager.js` to track onEnter execution in all environments (not just tests)
-3. **Add validation** that all required states have onEnter handlers
-
-### Short-term Actions
-
-1. Fix the root cause (module caching or onEnterMap initialization)
-2. Add telemetry/Sentry logging for state transitions in production to catch similar issues
-3. Review all state transitions to ensure onEnter handlers are properly registered
-4. Test interrupt flows in all game modes (classic, CLI)
-
-### Long-term Improvements
-
-1. **Refactor state handler registration** to use a registry pattern instead of module imports
-   - Makes it explicit which handlers are registered
-   - Easier to test in isolation
-   - Prevents module caching issues
-
-2. **Add state transition validation layer**
-
-   ```javascript
-   // Validate state machine definition
-   function validateStateTable(stateTable, onEnterMap) {
-     for (const state of stateTable) {
-       if (state.onEnter && !onEnterMap[state.name]) {
-         throw new Error(`State ${state.name} declares onEnter but handler missing`);
-       }
-     }
-   }
-   ```
-
-3. **Improve test infrastructure for state machine testing**
-   - Create test utilities that avoid module caching issues
-   - Provide helper to properly initialize orchestrator in tests
-   - Document best practices for state machine unit testing
-
-4. **Add comprehensive state transition coverage**
-   - Test every transition path, especially error/interrupt paths
-   - Add regression tests for fixed bugs
-
----
-
-## Investigation Checklist
-
-For fixing this bug, investigate in order:
-
-- [ ] Confirm onEnterMap["cooldown"] exists and is a function during state machine dispatch
-- [ ] Verify cooldownEnter is imported/exported correctly through the module chain
-- [ ] Check if there's any code modifying onEnterMap after initialization
-- [ ] Verify test initialization uses the same onEnterMap as production code
-- [ ] Check for any try-catch blocks silently swallowing onEnter errors
-- [ ] Review if certain handlers should be conditionally skipped (and why)
-- [ ] Verify state validation logic isn't preventing cooldown transition
-- [ ] Check if onTransition hook interferes with onEnter execution
-
----
-
-## Test File Location
-
-Root cause identified and documented in:
-
-- **Test**: `tests/helpers/classicBattle/debug-interrupt-cooldown.test.js`
-- **Key Finding**: cooldownEnter handler not called when state transitions to "cooldown" after interrupt
-- **Evidence**: 0 ready events dispatched; timer never set up; state machine stuck
-
----
+- [ ] The `debug-interrupt-cooldown.test.js` test passes consistently.
+- [ ] The new verification test for `onEnterMap` integrity passes.
+- [ ] Manually test the interrupt flow in the browser to confirm the fix.
+- [ ] Run the full Playwright and Vitest suites to check for regressions.
+- [ ] Confirm the `console.warn` for missing handlers (from Step 2) does not appear in the test output.
