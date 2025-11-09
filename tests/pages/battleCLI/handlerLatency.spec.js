@@ -97,6 +97,7 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
   it("defers round resolution work for Enter on the focused stat", async () => {
     const { statEl, onKeyDown } = await setupWaitingForAction();
+
     expect(document.activeElement).toBe(statEl);
 
     // Verify the stat element has the required attributes
@@ -120,6 +121,12 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
     // Flush microtasks to allow the scheduled selectStat() to execute
     await flushMicrotasks(2);
+
+    // Debug: log localStorage to see if selectStat was called
+    const debugLog = localStorage.getItem("__DEBUG_SELECT_STAT_LOG");
+    console.log("DEBUG: selectStat call log:", debugLog);
+    console.log("DEBUG: cliState.roundResolving =", cliState.roundResolving);
+    console.log("DEBUG: statEl.classList =", statEl.classList.toString());
 
     expect(cliState.roundResolving).toBe(true);
     expect(statEl.classList.contains("selected")).toBe(true);

@@ -244,6 +244,12 @@ export async function loadBattleCLI(options = {}) {
  * @returns {Promise<void>} resolves when cleanup completes.
  */
 export async function cleanupBattleCLI() {
+  // Reset module-level state in init.js (selectionApplying, timers, etc.)
+  try {
+    const initMod = await import("../../../src/pages/battleCLI/init.js");
+    await initMod.resetMatch?.();
+  } catch {}
+  
   document.body.innerHTML = "";
   delete window.__TEST__;
   vi.clearAllMocks();
