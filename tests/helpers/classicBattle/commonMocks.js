@@ -34,3 +34,17 @@ vi.mock("../../../src/utils/scheduler.js", () => ({
   start: vi.fn(),
   stop: vi.fn()
 }));
+
+vi.mock("node:url", () => ({
+  fileURLToPath: (url) => {
+    // Mock implementation: strip "file://" prefix and handle query params
+    try {
+      return new URL(url).pathname;
+    } catch {
+      return String(url).replace("file://", "");
+    }
+  },
+  pathToFileURL: (path) => {
+    return `file://${path}`;
+  }
+}));
