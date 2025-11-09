@@ -39,8 +39,7 @@ test.describe("Manual verification: Interrupt flow and cooldown", () => {
 
     // Verify that the page is interactive
     const pageContent = await page.locator("body").innerHTML();
-    const hasClassicBattle = pageContent.includes("classic")
-      || pageContent.includes("battle");
+    const hasClassicBattle = pageContent.includes("classic") || pageContent.includes("battle");
     expect(hasClassicBattle).toBeTruthy();
 
     console.log("✓ Page loaded successfully");
@@ -62,14 +61,12 @@ test.describe("Manual verification: Interrupt flow and cooldown", () => {
 
     // Check if the page has battle-related content
     const hasContent = await page.locator("body").textContent();
-    expect((hasContent?.length || 0)).toBeGreaterThan(0);
+    expect(hasContent?.length || 0).toBeGreaterThan(0);
 
     console.log("✓ Battle page loaded and responsive");
   });
 
-  test("should verify interrupt functionality integrates without errors", async (
-    { page }
-  ) => {
+  test("should verify interrupt functionality integrates without errors", async ({ page }) => {
     await page.goto("http://127.0.0.1:5000/src/pages/battleClassic.html");
 
     // Monitor console messages for errors
