@@ -99,6 +99,13 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     const { statEl, onKeyDown } = await setupWaitingForAction();
     expect(document.activeElement).toBe(statEl);
 
+    // Verify the stat element has the required attributes
+    const hasStat = !!statEl.dataset.stat;
+    const hasStatIndex = !!statEl.dataset.statIndex;
+    if (!hasStat && !hasStatIndex) {
+      throw new Error("Stat element missing both dataset.stat and dataset.statIndex");
+    }
+
     const event = new KeyboardEvent("keydown", {
       key: "Enter",
       bubbles: true,
