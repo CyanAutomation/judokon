@@ -1,38 +1,44 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
-  STATS: ["power"],
-  stopTimer: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-  dispatchBattleEvent: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
-  resolveRound: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
-  getCardStatValue: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
-  getBattleState: vi.fn(() => "waitingForPlayerAction")
-}));
-
-import * as selection from "../../../src/helpers/classicBattle/selectionHandler.js";
-
-const { handleStatSelection } = selection;
-
 describe("handleStatSelection machine interaction", () => {
   let store;
   let dispatchMock;
   let dispatchCalls = [];
   let resolveSpy;
   let getBattleState;
+  let handleStatSelection;
+  let selection;
 
   beforeEach(async () => {
+    // Reset modules to ensure fresh mocks for each test
+    vi.resetModules();
+
+    // Set up mocks before importing modules
+    vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+      STATS: ["power"],
+      stopTimer: vi.fn()
+    }));
+
+    vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn()
+    }));
+
+    vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
+      resolveRound: vi.fn()
+    }));
+
+    vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
+      getCardStatValue: vi.fn()
+    }));
+
+    vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
+      getBattleState: vi.fn(() => "roundDecision")
+    }));
+
+    // Import after mocks are set up
+    selection = await import("../../../src/helpers/classicBattle/selectionHandler.js");
+    handleStatSelection = selection.handleStatSelection;
+
     store = {
       selectionMade: false,
       playerChoice: null,
@@ -58,6 +64,7 @@ describe("handleStatSelection machine interaction", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.resetModules();
     delete document.body.dataset.battleState;
   });
 
