@@ -12,9 +12,16 @@ function mockQuitMatch() {
   const msg = document.getElementById("round-message");
   if (msg) msg.textContent = "quit";
   // In jsdom, we can't set window.location.href directly.
-  // Instead, use history.replaceState to simulate navigation.
+  // Use history.replaceState with a relative path that jsdom will accept
   if (typeof history !== "undefined" && typeof history.replaceState === "function") {
-    history.replaceState(null, "", "http://localhost/index.html");
+    try {
+      history.replaceState(null, "", "/index.html");
+    } catch {
+      // If replaceState fails, try with just the pathname
+      try {
+        window.location.pathname = "/index.html";
+      } catch {}
+    }
   }
 }
 
@@ -73,11 +80,6 @@ vi.mock("../../../src/helpers/setupSvgFallback.js", () => ({}));
 
 vi.mock("../../../src/helpers/classicBattle/quitModal.js", () => ({
   quitMatch: mockQuitMatch
-}));
-
-vi.mock("../../../src/helpers/navUtils.js", () => ({
-  navigateToHome: vi.fn(),
-  resolveHomeHref: vi.fn(() => "http://localhost/index.html")
 }));
 
 describe("classicBattle battle control state", () => {
@@ -153,7 +155,6 @@ describe("classicBattle battle control state", () => {
     homeLink.dataset.testid = "home-link";
     header.appendChild(homeLink);
 
-    const { navigateToHome } = await import("../../../src/helpers/navUtils.js");
     await import("../../../src/helpers/setupClassicBattleHomeLink.js");
     const { createBattleStore } = await import(
       "../../../src/helpers/classicBattle/roundManager.js"
@@ -161,10 +162,7 @@ describe("classicBattle battle control state", () => {
     window.battleStore = createBattleStore();
     homeLink.click();
     expect(document.getElementById("round-message").textContent).toBe("quit");
-    // navigateToHome is mocked and called by the real quitMatch via quitModal.js
-    // which is not mocked, so we'll use the actual window.location path check instead
-    // Actually, setupClassicBattleHomeLink calls quitMatch which is mocked to mockQuitMatch
-    // which uses history.replaceState, so check the pathname
+    // mockQuitMatch uses history.replaceState to simulate navigation in jsdom
     expect(window.location.pathname).toBe("/index.html");
   });
 

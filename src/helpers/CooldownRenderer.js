@@ -11,15 +11,29 @@ import { clampToPositiveTimestamp, toPositiveNumber } from "./utils/positiveNumb
 
 const DEFAULT_PROMPT_POLL_INTERVAL = 16;
 
-const defaultSetTimeout =
-  typeof window !== "undefined" && typeof window.setTimeout === "function"
-    ? window.setTimeout.bind(window)
-    : setTimeout;
+/**
+ * Get a timer function (setTimeout/clearTimeout) with proper bindings.
+ *
+ * @pseudocode
+ * 1. Check if the function exists on window object.
+ * 2. If available, bind it to window to preserve context.
+ * 3. Otherwise, fall back to the global function.
+ *
+ * @param {string} name - Function name to retrieve.
+ * @param {Function} fallback - Fallback function if not found on window.
+ * @returns {Function} Bound function or fallback.
+ */
+function getTimerFunction(name, fallback) {
+  try {
+    if (typeof window !== "undefined" && typeof window[name] === "function") {
+      return window[name].bind(window);
+    }
+  } catch {}
+  return fallback;
+}
 
-const defaultClearTimeout =
-  typeof window !== "undefined" && typeof window.clearTimeout === "function"
-    ? window.clearTimeout.bind(window)
-    : clearTimeout;
+const defaultSetTimeout = getTimerFunction("setTimeout", setTimeout);
+const defaultClearTimeout = getTimerFunction("clearTimeout", clearTimeout);
 
 const defaultNow = () => {
   try {
@@ -39,6 +53,23 @@ const defaultNow = () => {
   return Number.EPSILON;
 };
 
+/**
+ * Check if running in Vitest test environment.
+ *
+ * @pseudocode
+ * 1. Safely check for process.env.VITEST variable.
+ * 2. Return false if not in Node.js or variable unavailable.
+ *
+ * @returns {boolean} True if running under Vitest.
+ */
+function isVitestEnvironment() {
+  try {
+    return typeof process !== "undefined" && !!process.env?.VITEST;
+  } catch {
+    return false;
+  }
+}
+
 const derivePromptPollRetries = (maxPromptWait, promptPollInterval) => {
   if (!Number.isFinite(maxPromptWait) || maxPromptWait <= 0) {
     return 0;
@@ -49,6 +80,32 @@ const derivePromptPollRetries = (maxPromptWait, promptPollInterval) => {
   return Math.max(1, Math.ceil(maxPromptWait / promptPollInterval));
 };
 
+/**
+ * Normalize timing and prompt delay options.
+ *
+ * @pseudocode
+ * 1. Convert option values to positive numbers with defaults.
+ * 2. Derive poll retry count from max wait and interval.
+ * 3. Select appropriate timer and now functions.
+ *
+ * @param {{
+ *   promptPollIntervalMs?: number,
+ *   maxPromptWaitMs?: number,
+ *   waitForOpponentPrompt?: boolean,
+ *   setTimeoutFn?: Function,
+ *   clearTimeoutFn?: Function,
+ *   now?: Function
+ * }} [options]
+ * @returns {{
+ *   waitForPromptOption: boolean,
+ *   promptPollInterval: number,
+ *   maxPromptWait: number,
+ *   maxPromptPollRetries: number,
+ *   setTimeoutFn: Function,
+ *   clearTimeoutFn: Function,
+ *   now: Function
+ * }}
+ */
 const normalizePromptDelayOptions = (options = {}) => {
   const promptPollInterval = toPositiveNumber(
     options?.promptPollIntervalMs,
@@ -68,20 +125,39 @@ const normalizePromptDelayOptions = (options = {}) => {
   };
 };
 
-const hasActivePrompt = () => {
+/**
+ * Check if an opponent prompt is currently active.
+ *
+ * @pseudocode
+ * 1. Check if isOpponentPromptReady function indicates ready state.
+ * 2. Otherwise, verify prompt timestamp is valid and positive.
+ * 3. Return false if either check fails.
+ *
+ * @returns {boolean} True if an active prompt exists.
+ */
+function hasActivePrompt() {
   try {
-    if (typeof isOpponentPromptReady === "function") {
-      if (isOpponentPromptReady() === true) {
-        return true;
-      }
+    if (typeof isOpponentPromptReady === "function" && isOpponentPromptReady() === true) {
+      return true;
     }
     const timestamp = Number(getOpponentPromptTimestamp());
     return Number.isFinite(timestamp) && timestamp > 0;
   } catch {}
   return false;
-};
+}
 
-const computeRemainingPromptDelayMs = (nowFn) => {
+/**
+ * Compute remaining delay milliseconds for prompt constraint.
+ *
+ * @pseudocode
+ * 1. Get minimum prompt duration and last prompt timestamp.
+ * 2. Calculate elapsed time since last prompt.
+ * 3. Return max of 0 or (min duration - elapsed).
+ *
+ * @param {Function} nowFn - Function that returns current timestamp.
+ * @returns {number} Remaining milliseconds, or 0 if constraint satisfied.
+ */
+function computeRemainingPromptDelayMs(nowFn) {
   try {
     const minDuration = Number(getOpponentPromptMinDuration());
     if (!Number.isFinite(minDuration) || minDuration <= 0) {
@@ -98,38 +174,88 @@ const computeRemainingPromptDelayMs = (nowFn) => {
     return Math.max(0, minDuration - elapsed);
   } catch {}
   return 0;
-};
+}
 
-const createPromptDelayState = (config) => ({
-  config,
-  pendingDelayId: null,
-  /**
-   * @type {{
-   *   value: number,
-   *   suppressEvents: boolean,
-   *   onReady: (value: number, options: { suppressEvents: boolean }) => void
-   * } | null}
-   */
-  queuedPayload: null,
-  promptWaitDeadline: 0,
-  promptWaitPollsRemaining: config.maxPromptPollRetries
-});
+/**
+ * Create initial state for prompt delay controller.
+ *
+ * @pseudocode
+ * 1. Initialize config and pending state.
+ * 2. Set up queue for deferred callbacks.
+ * 3. Prepare poll retry counter and deadline tracker.
+ *
+ * @param {object} config - Normalized timing configuration.
+ * @returns {{
+ *   config: object,
+ *   pendingDelayId: number|null,
+ *   queuedPayload: object|null,
+ *   promptWaitDeadline: number,
+ *   promptWaitPollsRemaining: number
+ * }}
+ */
+function createPromptDelayState(config) {
+  return {
+    config,
+    pendingDelayId: null,
+    /**
+     * @type {{
+     *   value: number,
+     *   suppressEvents: boolean,
+     *   onReady: (value: number, options: { suppressEvents: boolean }) => void
+     * } | null}
+     */
+    queuedPayload: null,
+    promptWaitDeadline: 0,
+    promptWaitPollsRemaining: config.maxPromptPollRetries
+  };
+}
 
-const clearPendingTimeout = (state) => {
+/**
+ * Clear any pending timeout ID.
+ *
+ * @pseudocode
+ * 1. If timeout is pending, clear it.
+ * 2. Set ID to null to mark state as cleared.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {void}
+ */
+function clearPendingTimeout(state) {
   if (state.pendingDelayId !== null) {
     try {
       state.config.clearTimeoutFn(state.pendingDelayId);
     } catch {}
     state.pendingDelayId = null;
   }
-};
+}
 
-const resetPromptWaitState = (state) => {
+/**
+ * Reset prompt wait state to initial values.
+ *
+ * @pseudocode
+ * 1. Clear deadline timestamp.
+ * 2. Reset poll retry counter to max.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {void}
+ */
+function resetPromptWaitState(state) {
   state.promptWaitDeadline = 0;
   state.promptWaitPollsRemaining = state.config.maxPromptPollRetries;
-};
+}
 
-const flushQueue = (state) => {
+/**
+ * Flush queued tick callback and reset state.
+ *
+ * @pseudocode
+ * 1. Extract callback from queue.
+ * 2. Clear queue and timer state.
+ * 3. Invoke callback with suppression flag if present.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {void}
+ */
+function flushQueue(state) {
   const payload = state.queuedPayload;
   state.queuedPayload = null;
   resetPromptWaitState(state);
@@ -139,7 +265,7 @@ const flushQueue = (state) => {
       suppressEvents: payload.suppressEvents === true
     });
   }
-};
+}
 
 const scheduleDelay = (state, delay) => {
   if (delay <= 0 || typeof state.config.setTimeoutFn !== "function") {
