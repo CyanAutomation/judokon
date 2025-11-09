@@ -88,7 +88,7 @@ function getGlobalDispatch() {
       if (!hasMockIndicators(fn)) {
         const hasGetter = typeof originalDispatchStore.get === "function";
         const currentStored = hasGetter ? originalDispatchStore.get() : undefined;
-        if (!currentStored) {
+        if (!currentStored && typeof originalDispatchStore.set === "function") {
           originalDispatchStore.set(fn);
         }
       }
