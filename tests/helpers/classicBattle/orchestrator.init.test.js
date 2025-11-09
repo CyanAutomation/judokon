@@ -11,7 +11,12 @@ describe("classic battle orchestrator init preloads", () => {
     const preloadTimerUtils = vi.fn().mockResolvedValue();
     const initScoreboardAdapter = vi.fn();
     vi.doMock(`${testPath}/TimerController.js`, () => ({ preloadTimerUtils }));
-    vi.doMock(`${testPath}/classicBattle/uiService.js`, () => ({}));
+    vi.doMock(`${testPath}/classicBattle/uiService.js`, async () => {
+      const actual = await vi.importActual(`${testPath}/classicBattle/uiService.js`);
+      return {
+        ...actual
+      };
+    });
     vi.doMock(`${testPath}/classicBattle/scoreboardAdapter.js`, () => ({
       initScoreboardAdapter
     }));
@@ -29,7 +34,12 @@ describe("classic battle orchestrator init preloads", () => {
       throw new Error("fail");
     });
     vi.doMock(`${testPath}/TimerController.js`, () => ({ preloadTimerUtils }));
-    vi.doMock(`${testPath}/classicBattle/uiService.js`, () => ({}));
+    vi.doMock(`${testPath}/classicBattle/uiService.js`, async () => {
+      const actual = await vi.importActual(`${testPath}/classicBattle/uiService.js`);
+      return {
+        ...actual
+      };
+    });
     vi.doMock(`${testPath}/classicBattle/scoreboardAdapter.js`, () => ({
       initScoreboardAdapter
     }));
