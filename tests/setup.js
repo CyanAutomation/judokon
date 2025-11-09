@@ -231,7 +231,7 @@ beforeEach(async () => {
   // Reset module cache FIRST to ensure test-specific mocks are applied correctly.
   // This must happen before any modules that might be mocked are imported.
   vi.resetModules();
-  
+
   // Mute noisy console methods by default; tests can opt-in to logging
   applyConsoleMuting();
   try {
@@ -251,7 +251,9 @@ beforeEach(async () => {
   try {
     // Re-import testHooks after vi.resetModules() so the module cache is fresh
     // and test-specific mocks (like vi.mock('eventDispatcher.js')) are applied.
-    const { initializeTestBindingsLight: freshInit } = await import("../src/helpers/classicBattle/testHooks.js");
+    const { initializeTestBindingsLight: freshInit } = await import(
+      "../src/helpers/classicBattle/testHooks.js"
+    );
     freshInit();
     // Ensure a fresh BattleEngine instance for each test to avoid shared state
     await ensureFreshBattleEngine();
