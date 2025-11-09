@@ -58,7 +58,7 @@ describe("handleStatSelection resolution", () => {
       const module = await import("../../../src/helpers/classicBattle.js");
       handleStatSelection = module.handleStatSelection;
     }
-    
+
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
     dispatchMock = (await import("../../../src/helpers/classicBattle/eventDispatcher.js"))
       .dispatchBattleEvent;
