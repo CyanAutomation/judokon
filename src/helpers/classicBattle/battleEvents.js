@@ -14,11 +14,59 @@ import { emitBattleEventWithAliases as emitBattleEventWithAliasesCore } from "./
 const eventLogger = createComponentLogger("BattleEvents");
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
 
-function __tuneMaxListenersIfNode(target) {
+/**
+ * Check if running in Vitest environment.
+ *
+ * @pseudocode
+ * 1. Safely check for process.env.VITEST variable.
+ * 2. Return false if not in Node.js or variable unavailable.
+ *
+ * @returns {boolean} True if running under Vitest.
+ */
+function isVitest() {
   try {
-    // Only in Node/Vitest: remove listener cap for this EventTarget
-    const isVitest = typeof process !== "undefined" && !!process.env?.VITEST;
-    if (!isVitest || !target) return;
+    return typeof process !== "undefined" && !!process.env?.VITEST;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Instrument event dispatcher for test debugging (Vitest only).
+ *
+ * @pseudocode
+ * 1. Only patch globalThis.dispatchEvent if running under Vitest.
+ * 2. Log events when test logs are enabled or console is mocked.
+ * 3. Preserve original dispatcher behavior.
+ *
+ * @returns {void}
+ */
+function setupTestDebugInstrumentation() {
+  if (!isVitest()) return;
+
+  const _origDispatchEvent = globalThis.dispatchEvent;
+  globalThis.dispatchEvent = function (event) {
+    if (
+      typeof console !== "undefined" &&
+      event &&
+      event.type &&
+      (shouldShowTestLogs() || isConsoleMocked(console.log))
+    ) {
+      console.log("[TEST DEBUG] dispatchEvent:", event.type, event.detail);
+    }
+    return _origDispatchEvent.apply(this, arguments);
+  };
+}
+
+// Initialize test instrumentation if in test environment
+setupTestDebugInstrumentation();
+
+function __tuneMaxListenersIfNode(target) {
+  if (!target) return;
+
+  if (!isVitest()) return;
+
+  try {
     queueMicrotask(() => {
       setMaxListenersIfNode(target);
     });
@@ -96,7 +144,7 @@ export function emitBattleEvent(type, detail) {
 
     getTarget().dispatchEvent(new CustomEvent(type, { detail }));
   } catch (error) {
-    console.error(`[battleEvents] Failed to emit event "${type}":`, error);
+    eventLogger.error(`Failed to emit event "${type}":`, error);
   }
 }
 
@@ -122,7 +170,7 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
     eventLogger.event(`Emitting with aliases: ${type}`, detail, { options });
     emitBattleEventWithAliasesCore(type, detail, options);
   } catch (error) {
-    console.error(`[battleEvents] Failed to emit aliased event "${type}":`, error);
+    eventLogger.error(`Failed to emit aliased event "${type}":`, error);
     emitBattleEvent(type, detail);
   }
 }
@@ -185,10 +233,3 @@ export { getTarget };
  * @returns {EventTarget} The shared Classic Battle event bus target.
  */
 export default getTarget;
-
-// Expose for tests and external consumers that may access the emitter globally.
-try {
-  if (typeof globalThis !== "undefined") {
-    // Intentionally avoid polluting globalThis to keep module imports deterministic
-  }
-} catch {}

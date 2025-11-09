@@ -94,7 +94,9 @@ describe("loadGokyoLookup", () => {
 
 describe("pickJudoka", () => {
   it("selects judoka and calls callback", async () => {
-    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
+    const judokaData = getJudokaFixture()
+      .filter((j) => !j.isHidden)
+      .slice(0, 2);
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
     fetchJsonMock = vi.fn();
@@ -173,7 +175,9 @@ describe("generateRandomCard", () => {
   it("selects a random judoka and updates the DOM", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("span");
-    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
+    const judokaData = getJudokaFixture()
+      .filter((j) => !j.isHidden)
+      .slice(0, 2);
     const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => judokaData[1]);
@@ -197,7 +201,9 @@ describe("generateRandomCard", () => {
   it("invokes onSelect callback with chosen judoka", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("span");
-    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
+    const judokaData = getJudokaFixture()
+      .filter((j) => !j.isHidden)
+      .slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
@@ -214,7 +220,9 @@ describe("generateRandomCard", () => {
   });
 
   it("selects judoka when rendering is skipped", async () => {
-    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
+    const judokaData = getJudokaFixture()
+      .filter((j) => !j.isHidden)
+      .slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
@@ -340,7 +348,9 @@ describe("generateRandomCard", () => {
   it("falls back to setTimeout when requestAnimationFrame is unavailable", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("div");
-    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
+    const judokaData = getJudokaFixture()
+      .filter((j) => !j.isHidden)
+      .slice(0, 2);
     const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => judokaData[0]);

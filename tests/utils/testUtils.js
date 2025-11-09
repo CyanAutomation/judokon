@@ -13,20 +13,6 @@ const debugLog = (...args) => {
 
 debugLog("[TEST DEBUG] top-level testUtils.js");
 
-// Compute __dirname lazily to handle when modules are externalized in JSDOM
-let cachedDirname = null;
-const getDirname = () => {
-  if (cachedDirname) return cachedDirname;
-  try {
-    const urlStr = new URL("./", import.meta.url).pathname;
-    cachedDirname = urlStr[0] === "/" && urlStr[2] === ":" ? urlStr.substring(1) : urlStr;
-    return cachedDirname;
-  } catch (e) {
-    debugLog("[TEST DEBUG] Error computing dirname:", e.message);
-    return process.cwd();
-  }
-};
-
 // Lazy-load fixtures to handle when readFileSync is externalized in JSDOM
 let cachedJudokaFixture = null;
 let cachedGokyoFixture = null;
