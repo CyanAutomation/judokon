@@ -21,7 +21,8 @@ test.describe("Manual verification: Interrupt flow and cooldown", () => {
 
     // Try to interact with the page to start a battle
     // Look for Start, Begin, or similar buttons
-    const startButton = page.locator('button:has-text("Start")')
+    const startButton = page
+      .locator('button:has-text("Start")')
       .or(page.locator('button:has-text("Begin")'))
       .or(page.locator('button:has-text("Play")'));
 
