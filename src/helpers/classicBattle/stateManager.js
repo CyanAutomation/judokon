@@ -96,6 +96,24 @@ export async function createStateManager(
   const initName = initial || "waitingForMatchStart";
   let current = initName;
 
+  // Validate onEnterMap integrity: warn if states are missing handlers
+  const definedStates = Array.from(byName.keys());
+  const statesWithHandlers = definedStates.filter(
+    (state) => typeof onEnterMap[state] === "function"
+  );
+  const statesWithoutHandlers = definedStates.filter((state) => !(state in onEnterMap));
+  if (statesWithoutHandlers.length > 0) {
+    logWarn(
+      `createStateManager: The following states do not have onEnter handlers: ${statesWithoutHandlers.join(", ")}`
+    );
+  }
+  debugLog("createStateManager: onEnterMap validation", {
+    totalStates: definedStates.length,
+    statesWithHandlers: statesWithHandlers.length,
+    statesWithoutHandlers: statesWithoutHandlers.length,
+    missingStates: statesWithoutHandlers
+  });
+
   const machine = {
     context,
     getState: () => current,
@@ -165,8 +183,15 @@ export async function createStateManager(
   async function runOnEnter(stateName, payload) {
     const fn = onEnterMap[stateName];
     if (typeof fn === "function") {
+      debugLog(`stateManager: Executing onEnter handler for '${stateName}'`, {
+        stateName,
+        hasPayload: !!payload
+      });
       try {
         await fn(machine, payload);
+        debugLog(`stateManager: onEnter handler completed for '${stateName}'`, {
+          stateName
+        });
       } catch (err) {
         const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
         if (!IS_VITEST) {
@@ -181,6 +206,10 @@ export async function createStateManager(
       logWarn(
         `Invalid onEnter handler for state '${stateName}': expected function, got ${typeof fn}`
       );
+    } else {
+      debugLog(`stateManager: No onEnter handler defined for state '${stateName}'`, {
+        stateName
+      });
     }
   }
 

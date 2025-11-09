@@ -147,9 +147,38 @@ test('should have a valid onEnter handler for every state', () => {
 
 ---
 
-### Step 2: Add diagnostic logging to stateManager.js ⏳ NEXT
+### Step 2: Add diagnostic logging to stateManager.js ✅ COMPLETED
 
 **Objective**: Add validation to warn about missing onEnter handlers and verify the onEnterMap integrity during initialization.
+
+**Changes made in `src/helpers/classicBattle/stateManager.js`**:
+
+1. **Added onEnterMap validation** after state table initialization:
+   - Counts total states and states with handlers
+   - Warns via `logWarn()` if states are missing handlers
+   - Logs detailed diagnostic info via `debugLog()` with handler counts and missing states
+
+2. **Enhanced runOnEnter function logging**:
+   - Logs when a handler is about to execute
+   - Logs successful handler completion
+   - Logs when a state has no handler defined
+   - Improved error context for debugging
+
+**Result**: ✅ All tests still pass!
+
+**Test results**:
+
+- `debug-interrupt-cooldown.test.js`: PASS ✓
+- `expirationHandlers.test.js`: PASS ✓ (23 tests)
+- Playwright `auto-advance.smoke.spec.js`: PASS ✓
+
+**No regressions detected**. The diagnostic logging is now in place to catch future issues with missing handlers.
+
+---
+
+### Step 3: Add integrity verification test ⏳ NEXT
+
+**Objective**: Create a new test to explicitly verify that all states have valid onEnter handlers after initialization.
 
 **Status**: Ready for implementation...
 
@@ -160,7 +189,7 @@ test('should have a valid onEnter handler for every state', () => {
 After applying all fixes, ensure the following:
 
 - [x] Step 1: The `debug-interrupt-cooldown.test.js` test passes consistently.
-- [ ] Step 2: The new verification logging appears in test output.
+- [x] Step 2: The new verification logging appears in test output.
 - [ ] Step 3: The integrity verification test passes.
 - [ ] Step 4: Full Vitest and Playwright suites pass.
 - [ ] Step 5: Manually test the interrupt flow in the browser to confirm the fix.

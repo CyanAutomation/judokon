@@ -103,6 +103,31 @@ describe('expirationHandlers', () => {
 
 ---
 
+---
+
+## 6. Implementation Progress
+
+### Step 1: Fix vi.resetModules() in test setup ✅ COMPLETED
+
+**Changes Made**:
+1. Added `vi.resetModules()` at the start of `beforeEach` in `tests/setup.js` (line 232)
+2. Changed `initializeTestBindingsLight()` from a static import to a dynamic import using `await import()`
+3. Removed the top-level import of `initializeTestBindingsLight` from line 18
+
+**Why This Works**:
+- `vi.resetModules()` clears Vitest's module cache
+- When `initializeTestBindingsLight()` is then imported dynamically, it gets a fresh module instance
+- testHooks.js re-imports eventDispatcher.js, but now the test's `vi.mock()` declaration takes effect first
+- The mock is now used instead of the cached real module
+
+**Test Results**: ✅ All 22 tests in expirationHandlers.test.js now pass
+- `dispatchReadyViaBus > falls back to global dispatcher when override missing` - ✅ PASS
+- `dispatchReadyDirectly > prefers the shared battle dispatcher when available` - ✅ PASS
+
+**Next Step**: Run full test suite to ensure no regressions
+
+---
+
 ## 5. Long-Term Prevention
 
 ### Option A: Codebase Linting Rule

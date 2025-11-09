@@ -15,7 +15,6 @@ if (typeof global.cancelAnimationFrame === "undefined") {
 import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
-import { initializeTestBindingsLight } from "../src/helpers/classicBattle/testHooks.js";
 // Import battleEvents to ensure it's loaded before vi.resetModules() clears it
 import "../src/helpers/classicBattle/battleEvents.js";
 
@@ -229,6 +228,10 @@ afterEach(() => {
 // Prevent JSDOM navigation errors when tests assign to window.location.href.
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(async () => {
+  // Reset module cache FIRST to ensure test-specific mocks are applied correctly.
+  // This must happen before any modules that might be mocked are imported.
+  vi.resetModules();
+  
   // Mute noisy console methods by default; tests can opt-in to logging
   applyConsoleMuting();
   try {
@@ -246,10 +249,10 @@ beforeEach(async () => {
     }
   } catch {}
   try {
-    // Initialize classic battle bindings synchronously to avoid race conditions
-    // with vi.resetModules() in per-test hooks. This sets up the minimal state
-    // needed by tests without async imports.
-    initializeTestBindingsLight();
+    // Re-import testHooks after vi.resetModules() so the module cache is fresh
+    // and test-specific mocks (like vi.mock('eventDispatcher.js')) are applied.
+    const { initializeTestBindingsLight: freshInit } = await import("../src/helpers/classicBattle/testHooks.js");
+    freshInit();
     // Ensure a fresh BattleEngine instance for each test to avoid shared state
     await ensureFreshBattleEngine();
     // Ensure dataset.target is set with points-to-win value if missing
