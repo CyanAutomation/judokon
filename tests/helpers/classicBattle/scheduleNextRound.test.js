@@ -381,7 +381,12 @@ describe("classicBattle startCooldown", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    mockBattleData();
+    // Import cooldownEnter to ensure it uses the same module instance
+    const { cooldownEnter } = await import(
+      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
+    );
+
+    mockBattleData(cooldownEnter);
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
