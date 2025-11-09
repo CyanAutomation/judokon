@@ -5,6 +5,7 @@
 ### Problem
 
 The test expects `scoreboardClearTimer` to be called 1 time when emitting `statSelected` event with delay=0, but it gets 0 calls.
+Also, could it be that The test file doesn't have vi.resetModules(), so the mocks don't apply to the dynamically imported modules?
 
 ### Key Findings
 
@@ -69,3 +70,4 @@ This suggests a **module import/caching issue** where:
 1. Check if the handler is using the correct mock by adding logging directly to the mock
 2. Verify that `getOpponentDelay` in `uiEventHandlers.js` is the same object as `getOpponentDelayMock` in the test
 3. Check if the import in `beforeAll` is causing the issue - maybe the modules need to be imported AFTER the mocks are set up, not in `beforeAll`
+4. Check: could it be that The test file doesn't have vi.resetModules(), so the mocks don't apply to the dynamically imported modules?

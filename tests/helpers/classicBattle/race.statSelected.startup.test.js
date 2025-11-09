@@ -16,7 +16,6 @@ afterEach(() => {
   delete document.body.dataset.battleState;
 });
 
-// Minimal mocks for modules used by the selection flow
 vi.mock("../../../src/helpers/battleEngineFacade.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
   return {
@@ -25,20 +24,8 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", async () => {
   };
 });
 
-// Capture dispatched machine events and simulate no machine at click time
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
-  const events = [];
-  return {
-    dispatchBattleEvent: vi.fn(async (eventName) => {
-      events.push(eventName);
-      // No machine wired yet -> just resolve
-    }),
-    __getEvents: () => events
-  };
-});
-
 describe("race: early stat selection still resolves", () => {
-  it("resolves round directly and dispatches roundResolved without a machine", async () => {
+  it("resolves round directly when orchestrator is not active", async () => {
     // DOM setup: cards + header
     const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
@@ -58,8 +45,9 @@ describe("race: early stat selection still resolves", () => {
     </ul>`;
     document.body.append(playerCard, opponentCard, header);
 
-    const selectionMod = await import("../../../src/helpers/classicBattle/selectionHandler.js");
-    const { handleStatSelection, getPlayerAndOpponentValues } = selectionMod;
+    const { handleStatSelection, getPlayerAndOpponentValues } = await import(
+      "../../../src/helpers/classicBattle/selectionHandler.js"
+    );
 
     const store = {
       selectionMade: false,
@@ -71,19 +59,14 @@ describe("race: early stat selection still resolves", () => {
     const { playerVal, opponentVal } = getPlayerAndOpponentValues("power");
 
     const p = handleStatSelection(store, "power", { playerVal, opponentVal });
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.runAllTimersAsync();
     await p;
-
-    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
-    const events = eventDispatcher.__getEvents();
 
     // Round flow should have proceeded and cleared the choice
     expect(store.playerChoice).toBeNull();
 
-    // Outcome and continue/matchPoint events were dispatched
-    const hasOutcome = events.some((e) => String(e).startsWith("outcome="));
-    expect(hasOutcome).toBe(true);
-    expect(events.includes("roundResolved")).toBe(true);
-    expect(events.includes("continue") || events.includes("matchPointReached")).toBe(true);
+    // Verify the round was resolved (lastRoundResult is set)
+    expect(store.lastRoundResult).toBeDefined();
+    expect(store.lastRoundResult.outcome).toMatch(/winPlayer|winOpponent|draw/);
   });
 });

@@ -9,7 +9,7 @@ import { applyMockSetup } from "./mockSetup.js";
 
 import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 // import { startCooldown } from "../../../src/helpers/classicBattle/roundManager.js";
-import { cooldownEnter } from "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js";
+// Note: cooldownEnter is now imported dynamically in tests to avoid module cache issues
 
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
@@ -194,7 +194,7 @@ afterEach(() => {
 });
 
 describe("classicBattle startCooldown", () => {
-  function mockBattleData() {
+  function mockBattleData(cooldownEnterHandler) {
     // Provide a minimal machine table directly via the test-only override so
     // the embedded state table uses this deterministic set.
     const minimal = [
@@ -209,7 +209,7 @@ describe("classicBattle startCooldown", () => {
       },
       {
         name: "cooldown",
-        onEnter: cooldownEnter,
+        onEnter: cooldownEnterHandler,
         triggers: [{ on: "ready", target: "roundStart" }]
       },
       {
@@ -298,6 +298,11 @@ describe("classicBattle startCooldown", () => {
     const startRoundWrapper = vi.fn(async () => {
       return await battleMod.startRound(store);
     });
+
+    // Import cooldownEnter after vi.resetModules() to ensure it uses the spied battleEvents module
+    const { cooldownEnter } = await import(
+      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
+    );
 
     await orchestrator.initClassicBattleOrchestrator({
       store,
