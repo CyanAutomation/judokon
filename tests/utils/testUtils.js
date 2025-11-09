@@ -1,6 +1,7 @@
 // [TEST DEBUG] top-level testUtils.js
 
 import { readFileSync } from "fs";
+import path from "path";
 import { isConsoleMocked, shouldShowTestLogs } from "../../src/helpers/testLogGate.js";
 
 const debugLog = (...args) => {
@@ -21,6 +22,7 @@ const getDirname = () => {
     cachedDirname = urlStr[0] === "/" && urlStr[2] === ":" ? urlStr.substring(1) : urlStr;
     return cachedDirname;
   } catch (e) {
+    console.log("DEBUG: Error in getDirname try block:", e);
     debugLog("[TEST DEBUG] Error computing dirname:", e.message);
     return process.cwd();
   }
@@ -33,8 +35,7 @@ let cachedGokyoFixture = null;
 const loadJudokaFixture = () => {
   if (cachedJudokaFixture) return cachedJudokaFixture;
   try {
-    const dirname = getDirname();
-    const fixturePath = dirname + "../fixtures/judoka.json";
+    const fixturePath = path.join(process.cwd(), "src/data/judoka.json");
     cachedJudokaFixture = JSON.parse(readFileSync(fixturePath));
     return cachedJudokaFixture;
   } catch (e) {
@@ -46,8 +47,7 @@ const loadJudokaFixture = () => {
 const loadGokyoFixture = () => {
   if (cachedGokyoFixture) return cachedGokyoFixture;
   try {
-    const dirname = getDirname();
-    const fixturePath = dirname + "../fixtures/gokyo.json";
+    const fixturePath = path.join(process.cwd(), "src/data/gokyo.json");
     cachedGokyoFixture = JSON.parse(readFileSync(fixturePath));
     return cachedGokyoFixture;
   } catch (e) {

@@ -252,9 +252,8 @@ export function handleTimerDrift(engine, driftAmount) {
     throw new Error("engineTimer: handleTimerDrift requires engine parameter");
   }
   if (typeof driftAmount !== "number" || driftAmount < 0) {
-    throw new Error(
-      `engineTimer: handleTimerDrift requires driftAmount >= 0, got ${driftAmount}`
-    );
+    const msg = `engineTimer: handleTimerDrift requires driftAmount >= 0, got ${driftAmount}`;
+    throw new Error(msg);
   }
   engine.emit("timerDriftRecorded", { driftAmount });
   stopTimer(engine);
