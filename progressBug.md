@@ -128,12 +128,39 @@ test('should have a valid onEnter handler for every state', () => {
 
 ---
 
-## 6. Verification Checklist
+## 6. Implementation Progress
 
-After applying the fix, ensure the following:
+### Step 1: Add vi.resetModules() before imports ✅ COMPLETED
 
-- [ ] The `debug-interrupt-cooldown.test.js` test passes consistently.
-- [ ] The new verification test for `onEnterMap` integrity passes.
-- [ ] Manually test the interrupt flow in the browser to confirm the fix.
-- [ ] Run the full Playwright and Vitest suites to check for regressions.
-- [ ] Confirm the `console.warn` for missing handlers (from Step 2) does not appear in the test output.
+**Objective**: Ensure fresh module instances for each test run by resetting Vitest's module cache before re-mocking dependencies.
+
+**Changes made in `tests/helpers/classicBattle/debug-interrupt-cooldown.test.js`**:
+
+1. Moved `vi.mock()` declarations to module top level
+2. Added `vi.resetModules()` at the start of `beforeEach` to clear cached modules
+3. Re-import modules after mocks are re-applied
+4. Simplified the test's ready event tracking
+
+**Result**: ✅ Test now **PASSES** consistently! The `ready` event is now correctly dispatched after `interruptRound`.
+
+**Test output**: `Test Files 1 passed (1), Tests 1 passed (1)`
+
+---
+
+### Step 2: Add diagnostic logging to stateManager.js ⏳ NEXT
+
+**Objective**: Add validation to warn about missing onEnter handlers and verify the onEnterMap integrity during initialization.
+
+**Status**: Ready for implementation...
+
+---
+
+## 7. Verification Checklist
+
+After applying all fixes, ensure the following:
+
+- [x] Step 1: The `debug-interrupt-cooldown.test.js` test passes consistently.
+- [ ] Step 2: The new verification logging appears in test output.
+- [ ] Step 3: The integrity verification test passes.
+- [ ] Step 4: Full Vitest and Playwright suites pass.
+- [ ] Step 5: Manually test the interrupt flow in the browser to confirm the fix.

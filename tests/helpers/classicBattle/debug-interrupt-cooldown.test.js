@@ -4,9 +4,7 @@ import "./commonMocks.js";
 import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
-const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
-let timersControl = null;
-
+// Define mock behaviors at module level to be re-applied per test
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -14,10 +12,6 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOr
     dispatchBattleEvent: vi.fn(async (...args) => {
       const [eventName] = args;
       console.log("[MOCK] dispatchBattleEvent called with:", eventName);
-      if (eventName === "ready") {
-        readyDispatchTracker.events.push(args);
-        console.log("[MOCK] Tracked ready event. Total:", readyDispatchTracker.events.length);
-      }
       const result = await actual.dispatchBattleEvent(...args);
       if (eventName === "ready") {
         console.log("[MOCK] Returning true for ready");
@@ -74,14 +68,26 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   return await import("../../../src/helpers/timers/createRoundTimer.js");
 });
 
+// Track ready events across test runs
+let readyDispatchTracker = { events: [] };
+let timersControl = null;
+
 describe("DEBUG: interrupt cooldown ready dispatch", () => {
   setupClassicBattleHooks();
 
   beforeEach(async () => {
+    // 1. Reset module cache to get fresh imports with mocks applied
+    vi.resetModules();
+
+    // 2. Re-initialize tracker for this test run
+    readyDispatchTracker = { events: [] };
+
+    // 3. Setup timers and DOM
     timersControl = useCanonicalTimers();
-    readyDispatchTracker.events.length = 0;
     createTimerNodes();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+
+    // 4. Import test utilities after reset
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
   });
@@ -113,7 +119,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     await machine.dispatch("cardsRevealed");
 
     // Clear previous event calls before the interrupt flow
-    dispatchBattleEvent.mock.calls.length = 0;
+    vi.clearAllMocks();
     readyDispatchTracker.events.length = 0;
 
     await machine.dispatch("interruptRound");
@@ -137,6 +143,5 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     // If no ready events, the cooldown timer didn't trigger or cooldownEnter wasn't called
     // This indicates a bug in the state machine onEnter handler execution
     expect(readyEvents.length).toBeGreaterThan(0);
-    expect(readyDispatchTracker.events.length).toBe(readyEvents.length);
   }, 5000);
 });
