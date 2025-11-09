@@ -284,7 +284,12 @@ describe("classicBattle startCooldown", () => {
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
 
-    mockBattleData();
+    // Import cooldownEnter after vi.resetModules() to ensure it uses the spied battleEvents module
+    const { cooldownEnter } = await import(
+      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
+    );
+
+    mockBattleData(cooldownEnter);
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     battleEventsMod.__resetBattleEventTarget();
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
@@ -298,11 +303,6 @@ describe("classicBattle startCooldown", () => {
     const startRoundWrapper = vi.fn(async () => {
       return await battleMod.startRound(store);
     });
-
-    // Import cooldownEnter after vi.resetModules() to ensure it uses the spied battleEvents module
-    const { cooldownEnter } = await import(
-      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
-    );
 
     await orchestrator.initClassicBattleOrchestrator({
       store,
