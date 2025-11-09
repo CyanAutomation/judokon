@@ -18,6 +18,6 @@ export default defineConfig({
   webServer: {
     command: "node scripts/playwrightServer.js",
     port: 5000,
-    reuseExistingServer: true
+    reuseExistingServer: false
   }
 });
