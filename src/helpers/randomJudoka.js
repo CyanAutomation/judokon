@@ -102,7 +102,7 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
 /**
  * Canonical MCP documentation schema for the `judokon.random` MCP tool.
  *
- * @type {RandomSelectionDocumentation}
+ * @type {Readonly<RandomSelectionDocumentation>}
  * @const
  * @pseudocode
  * clone base documentation
