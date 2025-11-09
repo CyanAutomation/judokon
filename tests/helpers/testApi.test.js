@@ -4,7 +4,6 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 const originalNodeEnv = process.env.NODE_ENV;
 const originalVitestFlag = process.env.VITEST;
 const originalTestFlag = window.__TEST__;
-const originalHref = window.location.href;
 const originalTestApi = window.__TEST_API;
 const originalBattleStateApi = window.__BATTLE_STATE_API;
 const originalTimerApi = window.__TIMER_API;
@@ -63,7 +62,13 @@ describe("testApi.isTestMode", () => {
     delete window.__OPPONENT_RESOLVE_DELAY_MS;
     delete window.__initCalled;
 
-    window.history.replaceState({}, "", "https://example.com/");
+    // Mock location to return a URL that doesn't trigger localhost check
+    vi.stubGlobal("location", {
+      href: "http://example.com/",
+      hostname: "example.com",
+      protocol: "http:",
+      host: "example.com"
+    });
 
     Object.defineProperty(window.navigator, "userAgent", {
       configurable: true,
@@ -97,8 +102,6 @@ describe("testApi.isTestMode", () => {
     } else {
       window.__OPPONENT_RESOLVE_DELAY_MS = originalOpponentDelay;
     }
-
-    window.history.replaceState({}, "", originalHref);
 
     if (originalWebdriverDescriptor) {
       Object.defineProperty(window.navigator, "webdriver", originalWebdriverDescriptor);
