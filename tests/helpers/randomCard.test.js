@@ -53,7 +53,7 @@ beforeEach(() => {
   // Set default mock implementations
   getRandomJudokaMock.mockImplementation((arr) => arr[0]); // Default to return the first element
   getFallbackJudokaMock.mockImplementation(async () => ({ id: 0 })); // Default fallback
-  createGokyoLookupMock.mockImplementation((data) => ({})); // Default empty lookup
+  createGokyoLookupMock.mockImplementation(() => ({})); // Default empty lookup
   fetchJsonMock.mockImplementation(async () => ({})); // Default empty object for fetchJson
   showSnackbarMock.mockImplementation(() => {}); // Default no-op
 });
