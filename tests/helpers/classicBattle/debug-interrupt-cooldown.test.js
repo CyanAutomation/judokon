@@ -64,8 +64,10 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
 vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
   mockCreateRoundTimer({
-    scheduled: false,
-    ticks: [],
+    scheduled: true, // Use scheduled mode with fake timers
+    intervalMs: 1000,
+    tickCount: 1,
+    ticks: [1, 0],
     expire: true,
     moduleId: "../../../src/helpers/timers/createRoundTimer.js"
   });
@@ -99,50 +101,48 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
+    
+    // Spy on cooldownEnter to verify it's called
+    const { cooldownEnter } = await import(
+      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
+    );
+    const cooldownEnterSpy = vi.fn(cooldownEnter);
+    
     const store = { selectionMade: false, playerChoice: null };
 
-    console.log("[TEST] Initializing orchestrator");
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
+    
+    // Replace the cooldown handler with our spy
+    const originalOnEnterMap = machine.context?.onEnterMap;
+    if (originalOnEnterMap) {
+      originalOnEnterMap.cooldown = cooldownEnterSpy;
+    }
 
-    console.log("[TEST] Dispatching matchStart");
     await machine.dispatch("matchStart");
-
-    console.log("[TEST] Dispatching ready (for match)");
     await machine.dispatch("ready");
-
-    console.log("[TEST] Dispatching ready (to cooldown)");
     await machine.dispatch("ready");
-
-    console.log("[TEST] Dispatching cardsRevealed");
     await machine.dispatch("cardsRevealed");
 
-    console.log("[TEST] Dispatching interruptRound");
+    // Clear previous event calls
+    dispatchBattleEvent.mock.calls.length = 0;
+    readyDispatchTracker.events.length = 0;
+    cooldownEnterSpy.mockClear();
+
     await machine.dispatch("interruptRound");
 
-    // Wait for the async transition from interruptRound -> cooldown to complete
-    // interruptRoundEnter automatically dispatches restartRound which transitions to cooldown
-    console.log("[TEST] Waiting for cooldown state...");
+    // Wait for cooldown state
     await vi.waitFor(
       () => {
         const state = machine.getState();
-        console.log("[TEST] Current state:", state);
         expect(state).toBe("cooldown");
       },
       { timeout: 1000 }
     );
 
-    // Flush all pending microtasks/promises to ensure cooldown timer is set up
-    await vi.waitFor(() => Promise.resolve(), { timeout: 100 });
-
-    const readyCallsBeforeAdvance = dispatchBattleEvent.mock.calls.filter(
-      ([eventName]) => eventName === "ready"
-    );
-    console.log("[TEST] readyCallsBeforeAdvance:", readyCallsBeforeAdvance.length);
-
-    // Now advance the cooldown timer (1000ms) - this should trigger ready dispatch
-    console.log("[TEST] Advancing cooldown timer by 1000ms...");
-    await vi.advanceTimersByTimeAsync(1000);
+    // At this point, cooldownEnter should have been called and timer should be set up
+    // Run all timers to complete the cooldown
+    await vi.runAllTimersAsync();
 
     const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
       ([eventName]) => eventName === "ready"
@@ -153,9 +153,15 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
       readyCallsAfterAdvance: readyCallsAfterAdvance.length,
       readyDispatchedViaTracker: readyDispatchTracker.events.length,
       totalCalls: dispatchBattleEvent.mock.calls.length,
-      lastCalls: dispatchBattleEvent.mock.calls.slice(-5).map((c) => c[0])
+      lastCalls: dispatchBattleEvent.mock.calls.slice(-5).map((c) => c[0]),
+      cooldownEnterCalled: window.__cooldownEnterInvoked,
+      startCooldownCalled: window.__startCooldownInvoked,
+      cooldownEnterSpyCalls: cooldownEnterSpy.mock.calls.length
     };
 
+    // First verify cooldownEnter was actually called
+    expect(cooldownEnterSpy).toHaveBeenCalled();
+    
     expect(readyCallsAfterAdvance.length).toBeGreaterThan(0);
     expect(readyDispatchTracker.events.length).toBe(readyCallsAfterAdvance.length);
   }, 5000);
