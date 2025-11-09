@@ -86,8 +86,9 @@ function getGlobalDispatch() {
     logTestDebug(fn);
     try {
       if (!hasMockIndicators(fn)) {
-        const currentStored = originalDispatchStore.get?.();
-        if (!currentStored) {
+        const hasGetter = typeof originalDispatchStore.get === "function";
+        const currentStored = hasGetter ? originalDispatchStore.get() : undefined;
+        if (hasGetter && !currentStored) {
           originalDispatchStore.set(fn);
         }
       }
