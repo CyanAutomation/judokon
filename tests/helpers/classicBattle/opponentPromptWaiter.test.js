@@ -23,7 +23,7 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
   beforeEach(async () => {
     // Reset modules to ensure fresh imports with proper mocks
     vi.resetModules();
-    
+
     // Re-initialize state
     timestamp = 0;
     minDuration = 0;

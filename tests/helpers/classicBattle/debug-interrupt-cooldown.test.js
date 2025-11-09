@@ -120,11 +120,29 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     console.log("[TEST] Dispatching interruptRound");
     await machine.dispatch("interruptRound");
 
+    // Wait for the async transition from interruptRound -> cooldown to complete
+    // interruptRoundEnter automatically dispatches restartRound which transitions to cooldown
+    console.log("[TEST] Waiting for cooldown state...");
+    await vi.waitFor(
+      () => {
+        const state = machine.getState();
+        console.log("[TEST] Current state:", state);
+        expect(state).toBe("cooldown");
+      },
+      { timeout: 1000 }
+    );
+
+    // Allow cooldown timers to be set up
+    console.log("[TEST] Running pending timers to set up cooldown...");
+    await vi.runAllTimersAsync();
+
     const readyCallsBeforeAdvance = dispatchBattleEvent.mock.calls.filter(
       ([eventName]) => eventName === "ready"
     );
     console.log("[TEST] readyCallsBeforeAdvance:", readyCallsBeforeAdvance.length);
 
+    // Now advance the cooldown timer (1000ms)
+    console.log("[TEST] Advancing cooldown timer by 1000ms...");
     await vi.advanceTimersByTimeAsync(1000);
 
     const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
