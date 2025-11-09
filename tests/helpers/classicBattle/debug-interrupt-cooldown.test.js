@@ -132,16 +132,15 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
       { timeout: 1000 }
     );
 
-    // Allow cooldown timers to be set up
-    console.log("[TEST] Running pending timers to set up cooldown...");
-    await vi.runAllTimersAsync();
+    // Flush all pending microtasks/promises to ensure cooldown timer is set up
+    await vi.waitFor(() => Promise.resolve(), { timeout: 100 });
 
     const readyCallsBeforeAdvance = dispatchBattleEvent.mock.calls.filter(
       ([eventName]) => eventName === "ready"
     );
     console.log("[TEST] readyCallsBeforeAdvance:", readyCallsBeforeAdvance.length);
 
-    // Now advance the cooldown timer (1000ms)
+    // Now advance the cooldown timer (1000ms) - this should trigger ready dispatch
     console.log("[TEST] Advancing cooldown timer by 1000ms...");
     await vi.advanceTimersByTimeAsync(1000);
 
