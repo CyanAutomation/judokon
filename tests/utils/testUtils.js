@@ -22,7 +22,6 @@ const getDirname = () => {
     cachedDirname = urlStr[0] === "/" && urlStr[2] === ":" ? urlStr.substring(1) : urlStr;
     return cachedDirname;
   } catch (e) {
-    console.log("DEBUG: Error in getDirname try block:", e);
     debugLog("[TEST DEBUG] Error computing dirname:", e.message);
     return process.cwd();
   }

@@ -1,15 +1,16 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getJudokaFixture, getGokyoFixture } from "../utils/testUtils.js";
 import { withMutedConsole } from "../utils/console.js";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
-let getRandomJudokaMock;
+// Initialize all mocks with vi.fn()
+let getRandomJudokaMock = vi.fn();
 const renderMock = vi.fn();
-let JudokaCardMock;
-let getFallbackJudokaMock;
-let createGokyoLookupMock;
-let fetchJsonMock;
-let showSnackbarMock;
+let JudokaCardMock = vi.fn();
+let getFallbackJudokaMock = vi.fn();
+let createGokyoLookupMock = vi.fn();
+let fetchJsonMock = vi.fn();
+let showSnackbarMock = vi.fn();
 
 vi.mock("../../src/helpers/cardUtils.js", () => ({
   getRandomJudoka: (...args) => getRandomJudokaMock(...args)
@@ -38,6 +39,24 @@ vi.mock("../../src/helpers/dataUtils.js", () => ({
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: (...args) => showSnackbarMock(...args)
 }));
+
+beforeEach(() => {
+  // Reset all mocks before each test
+  getRandomJudokaMock.mockClear();
+  renderMock.mockClear();
+  JudokaCardMock.mockClear();
+  getFallbackJudokaMock.mockClear();
+  createGokyoLookupMock.mockClear();
+  fetchJsonMock.mockClear();
+  showSnackbarMock.mockClear();
+
+  // Set default mock implementations
+  getRandomJudokaMock.mockImplementation((arr) => arr[0]); // Default to return the first element
+  getFallbackJudokaMock.mockImplementation(async () => ({ id: 0 })); // Default fallback
+  createGokyoLookupMock.mockImplementation((data) => ({})); // Default empty lookup
+  fetchJsonMock.mockImplementation(async () => ({})); // Default empty object for fetchJson
+  showSnackbarMock.mockImplementation(() => {}); // Default no-op
+});
 
 describe("loadGokyoLookup", () => {
   it("returns lookup from provided data", async () => {
@@ -75,7 +94,7 @@ describe("loadGokyoLookup", () => {
 
 describe("pickJudoka", () => {
   it("selects judoka and calls callback", async () => {
-    const judokaData = getJudokaFixture().slice(0, 2);
+    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
     fetchJsonMock = vi.fn();
@@ -154,8 +173,7 @@ describe("generateRandomCard", () => {
   it("selects a random judoka and updates the DOM", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("span");
-    generatedEl.textContent = "card";
-    const judokaData = getJudokaFixture().slice(0, 2);
+    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
     const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => judokaData[1]);
@@ -179,7 +197,7 @@ describe("generateRandomCard", () => {
   it("invokes onSelect callback with chosen judoka", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("span");
-    const judokaData = getJudokaFixture().slice(0, 2);
+    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
@@ -196,7 +214,7 @@ describe("generateRandomCard", () => {
   });
 
   it("selects judoka when rendering is skipped", async () => {
-    const judokaData = getJudokaFixture().slice(0, 2);
+    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
@@ -322,7 +340,7 @@ describe("generateRandomCard", () => {
   it("falls back to setTimeout when requestAnimationFrame is unavailable", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("div");
-    const judokaData = getJudokaFixture().slice(0, 2);
+    const judokaData = getJudokaFixture().filter(j => !j.isHidden).slice(0, 2);
     const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
