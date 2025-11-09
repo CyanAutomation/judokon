@@ -35,6 +35,7 @@ No timer setup, no ready event, game stuck
 ### Test Evidence
 
 Created test `debug-interrupt-cooldown.test.js` that:
+
 1. Initializes orchestrator
 2. Transitions to `cardsRevealed` state
 3. Dispatches `interruptRound`
@@ -70,6 +71,7 @@ Through multiple debugging attempts, confirmed:
 ### State Manager Flow (src/helpers/classicBattle/stateManager.js)
 
 The `dispatch` method should:
+
 ```javascript
 // Line 156: await runOnEnter(target, payload);
 async function runOnEnter(stateName, payload) {
@@ -81,6 +83,7 @@ async function runOnEnter(stateName, payload) {
 ```
 
 **Problem**: `onEnterMap` closure variable either:
+
 - Doesn't contain the "cooldown" key
 - Contains undefined value for "cooldown"
 - Is not the same instance used by the orchestrator
@@ -88,6 +91,7 @@ async function runOnEnter(stateName, payload) {
 ### Orchestrator Setup (src/helpers/classicBattle/orchestrator.js)
 
 The `createOnEnterMap()` function (line 509) correctly maps:
+
 ```javascript
 function createOnEnterMap() {
   return {
@@ -99,6 +103,7 @@ function createOnEnterMap() {
 ```
 
 **Connection Point**: This map is passed to `createStateManager()` at line 291:
+
 ```javascript
 const createdMachine = await createStateManager(
   onEnterMap,        // ← The map is passed here
@@ -109,6 +114,7 @@ const createdMachine = await createStateManager(
 ```
 
 **Hypothesis**: Either:
+
 1. The `cooldownEnter` import is incorrect or stale
 2. There's a module caching issue where a different cooldownEnter instance is being used
 3. The onEnterMap is being modified or reset somewhere after initialization
@@ -121,6 +127,7 @@ const createdMachine = await createStateManager(
 ### 1. **onEnterMap Module Instance Mismatch** (Most Likely)
 
 **Evidence**:
+
 - `orchestratorHandlers.js` line 99 re-exports: `export { cooldownEnter } from "./stateHandlers/cooldownEnter.js"`
 - The orchestrator imports from `orchestratorHandlers.js`
 - Tests and spies import directly from `stateHandlers/cooldownEnter.js`
@@ -131,6 +138,7 @@ const createdMachine = await createStateManager(
 ### 2. **Missing onEnterMap Initialization in Tests**
 
 **Evidence**:
+
 - Test calls `initClassicBattleOrchestrator(store, undefined, {})` with empty hooks object
 - The third parameter is `hooks`, which may not properly initialize mocks
 - Real application might initialize with different context
@@ -140,6 +148,7 @@ const createdMachine = await createStateManager(
 ### 3. **Conditional onEnter Skipping Logic**
 
 **Evidence**:
+
 - `stateManager.js` line 166 checks `if (typeof fn === "function")`
 - But we never see any console error about invalid handler
 - Could be swallowing errors silently
@@ -212,6 +221,7 @@ machine.getOnEnterMapDebug = () => ({
 ```
 
 Then test can verify:
+
 ```javascript
 const debug = machine.getOnEnterMapDebug();
 expect(debug.entries.find(e => e.state === "cooldown")?.hasHandler).toBe(true);
@@ -252,11 +262,13 @@ export async function createStateManager(
 ### Severity: **CRITICAL**
 
 **User Impact**:
+
 - Game is unplayable after interrupting a round
 - Stuck in cooldown state indefinitely
 - Cannot progress to next round
 
 **Affected Flows**:
+
 1. ✅ Normal round flow (first cooldown after matchStart) - Seems to work
 2. ❌ Interrupt round flow (interruptRound → cooldown) - **BROKEN**
 3. ❌ Potentially other state transitions depending on onEnterMap state
@@ -264,6 +276,7 @@ export async function createStateManager(
 ### Scope
 
 The bug specifically affects the **interrupt path**:
+
 - `roundStart` → `waitingForPlayerAction` → (interrupt) → `interruptRound`
 - `interruptRound` auto-dispatches `restartRound`
 - Transition target: `cooldown`
@@ -296,6 +309,7 @@ Other state transitions may also be affected if onEnterMap has similar initializ
    - Prevents module caching issues
 
 2. **Add state transition validation layer**
+
    ```javascript
    // Validate state machine definition
    function validateStateTable(stateTable, onEnterMap) {
@@ -336,9 +350,9 @@ For fixing this bug, investigate in order:
 ## Test File Location
 
 Root cause identified and documented in:
+
 - **Test**: `tests/helpers/classicBattle/debug-interrupt-cooldown.test.js`
 - **Key Finding**: cooldownEnter handler not called when state transitions to "cooldown" after interrupt
 - **Evidence**: 0 ready events dispatched; timer never set up; state machine stuck
 
 ---
-
