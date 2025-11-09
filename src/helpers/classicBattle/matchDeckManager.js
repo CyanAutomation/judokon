@@ -1,5 +1,10 @@
 import { seededRandom } from "../testModeUtils.js";
 
+/**
+ * Default number of opponents that should be present in a generated match deck.
+ * @type {number}
+ * @pseudocode defaultMatchDeckSize = 25
+ */
 export const DEFAULT_MATCH_DECK_SIZE = 25;
 
 function normalizeDeckPool(pool) {
@@ -130,6 +135,17 @@ function rejectDeckCandidate(store, candidate, { reason } = {}) {
   store.pendingOpponentFromDeck = null;
 }
 
+/**
+ * Reset all persisted state related to the match deck for the provided store.
+ *
+ * @param {{ [key: string]: any }} store - Mutable store object that tracks deck state.
+ * @returns {void}
+ * @pseudocode
+ * if store is not an object: return
+ * store.matchDeck = []
+ * store.pendingOpponentFromDeck = null
+ * ensure store.usedOpponentIds is an empty Set
+ */
 export function resetMatchDeckState(store) {
   if (!store || typeof store !== "object") return;
   store.matchDeck = [];
@@ -141,6 +157,22 @@ export function resetMatchDeckState(store) {
   }
 }
 
+/**
+ * Create helper callbacks that manage the lifecycle of match deck selections.
+ *
+ * @param {{ [key: string]: any }} store - Mutable store object that tracks deck state.
+ * @returns {{
+ *   randomJudoka(pool: any[]): any,
+ *   onCandidateAccepted(candidate: any, meta?: { isFallback?: boolean }): void,
+ *   onCandidateRejected(candidate: any, meta?: { reason?: string }): void
+ * }} Interface for performing deck interactions.
+ * @pseudocode
+ * return {
+ *   randomJudoka: delegate to getNextDeckCandidate with store
+ *   onCandidateAccepted: delegate to acceptDeckCandidate with store
+ *   onCandidateRejected: delegate to rejectDeckCandidate with store
+ * }
+ */
 export function createMatchDeckHooks(store) {
   return {
     randomJudoka(pool) {
