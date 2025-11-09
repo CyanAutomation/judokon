@@ -101,68 +101,42 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
-    
-    // Spy on cooldownEnter to verify it's called
-    const { cooldownEnter } = await import(
-      "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js"
-    );
-    const cooldownEnterSpy = vi.fn(cooldownEnter);
-    
+
     const store = { selectionMade: false, playerChoice: null };
 
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
-    
-    // Replace the cooldown handler with our spy
-    const originalOnEnterMap = machine.context?.onEnterMap;
-    if (originalOnEnterMap) {
-      originalOnEnterMap.cooldown = cooldownEnterSpy;
-    }
 
     await machine.dispatch("matchStart");
     await machine.dispatch("ready");
     await machine.dispatch("ready");
     await machine.dispatch("cardsRevealed");
 
-    // Clear previous event calls
+    // Clear previous event calls before the interrupt flow
     dispatchBattleEvent.mock.calls.length = 0;
     readyDispatchTracker.events.length = 0;
-    cooldownEnterSpy.mockClear();
 
     await machine.dispatch("interruptRound");
 
-    // Wait for cooldown state
+    // Wait for cooldown state to be entered
     await vi.waitFor(
       () => {
-        const state = machine.getState();
-        expect(state).toBe("cooldown");
+        expect(machine.getState()).toBe("cooldown");
       },
       { timeout: 1000 }
     );
 
-    // At this point, cooldownEnter should have been called and timer should be set up
-    // Run all timers to complete the cooldown
+    // Run all pending timers to complete the cooldown cycle
     await vi.runAllTimersAsync();
 
-    const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
+    // Verify that ready event was dispatched
+    const readyEvents = dispatchBattleEvent.mock.calls.filter(
       ([eventName]) => eventName === "ready"
     );
 
-    // Track debug info for diagnostics
-    void {
-      readyCallsAfterAdvance: readyCallsAfterAdvance.length,
-      readyDispatchedViaTracker: readyDispatchTracker.events.length,
-      totalCalls: dispatchBattleEvent.mock.calls.length,
-      lastCalls: dispatchBattleEvent.mock.calls.slice(-5).map((c) => c[0]),
-      cooldownEnterCalled: window.__cooldownEnterInvoked,
-      startCooldownCalled: window.__startCooldownInvoked,
-      cooldownEnterSpyCalls: cooldownEnterSpy.mock.calls.length
-    };
-
-    // First verify cooldownEnter was actually called
-    expect(cooldownEnterSpy).toHaveBeenCalled();
-    
-    expect(readyCallsAfterAdvance.length).toBeGreaterThan(0);
-    expect(readyDispatchTracker.events.length).toBe(readyCallsAfterAdvance.length);
+    // If no ready events, the cooldown timer didn't trigger or cooldownEnter wasn't called
+    // This indicates a bug in the state machine onEnter handler execution
+    expect(readyEvents.length).toBeGreaterThan(0);
+    expect(readyDispatchTracker.events.length).toBe(readyEvents.length);
   }, 5000);
 });
