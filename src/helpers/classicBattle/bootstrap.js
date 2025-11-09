@@ -20,6 +20,20 @@ import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestAp
 import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpers.js";
 
 /**
+ * @returns {boolean} True if window is globally available and accessible
+ */
+function canAccessWindow() {
+  return typeof window !== "undefined";
+}
+
+/**
+ * @returns {boolean} True if document is globally available and accessible
+ */
+function canAccessDocument() {
+  return typeof document !== "undefined";
+}
+
+/**
  * Bootstrap Classic Battle page by wiring controller and view.
  *
  * @pseudocode
@@ -29,12 +43,17 @@ import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpe
  * 4. Await `startPromise` and expose readiness markers on `window`.
  * 5. Return the debug API after the round is selected.
  *
- * @returns {Promise<object|undefined>} Resolves to the debug API object when initialization completes (or `undefined` if not available).
+ * @returns {Promise<object|undefined>} Resolves to the debug API object when initialization completes.
+ *   Returns `undefined` if not in a test environment. Rejects if initialization fails.
  */
 export async function setupClassicBattlePage() {
   try {
     engineFacade.createBattleEngine?.();
-  } catch {}
+  } catch (err) {
+    if (typeof console !== "undefined" && typeof console.warn === "function") {
+      console.warn("[classicBattle.bootstrap] Engine creation failed:", err);
+    }
+  }
   bridgeEngineEvents();
   let debugApi;
   const view = new ClassicBattleView();
@@ -46,10 +65,14 @@ export async function setupClassicBattlePage() {
     rejectStart = reject;
   });
 
-  if (typeof window !== "undefined") {
+  if (canAccessWindow()) {
     try {
       window.battleStore = controller.battleStore;
-    } catch {}
+    } catch (err) {
+      if (typeof console !== "undefined" && typeof console.warn === "function") {
+        console.warn("[classicBattle.bootstrap] Failed to expose battleStore:", err);
+      }
+    }
   }
 
   async function startCallback() {
@@ -58,26 +81,15 @@ export async function setupClassicBattlePage() {
       await controller.init();
       await view.init();
       bindUIHelperEventHandlers();
-      if (typeof window !== "undefined") {
+      if (canAccessWindow()) {
         window.__initCalled = true;
       }
 
       // Wire the scoreboard with timer controls so visibility/focus
       // pause/resume hooks activate and DOM refs are resolved early.
-      try {
-        if (controller && controller.timerControls) {
-          setupScoreboard(controller.timerControls);
-        } else {
-          setupScoreboard({});
-        }
-      } catch {}
-
+      setupScoreboardWithControls(controller);
       debugApi = createClassicBattleDebugAPI(view);
-      if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
-        try {
-          window.__classicbattledebugapi = debugApi;
-        } catch {}
-      }
+      exposeDebugAPIToWindow(debugApi);
       resolveStart();
     } catch (err) {
       rejectStart(err);
@@ -100,17 +112,62 @@ export async function setupClassicBattlePage() {
 
   await initRoundSelectModal(startCallback);
 
-  if (typeof window !== "undefined") {
+  if (canAccessWindow()) {
     try {
       window.__battleInitComplete = true;
-      if (typeof document !== "undefined") {
+      if (canAccessDocument()) {
         document.dispatchEvent(new Event("battle:init-complete"));
       }
       window.battleReadyPromise = startPromise;
-    } catch {}
+    } catch (err) {
+      if (typeof console !== "undefined" && typeof console.warn === "function") {
+        console.warn("[classicBattle.bootstrap] Failed to expose readiness markers:", err);
+      }
+    }
   }
   startPromise.catch(() => {});
   return debugApi;
+}
+
+/**
+ * Setup scoreboard with timer controls after controller initialization.
+ *
+ * @param {object} controller - Classic battle controller with optional timerControls
+ */
+function setupScoreboardWithControls(controller) {
+  try {
+    if (controller && controller.timerControls) {
+      setupScoreboard(controller.timerControls);
+    } else {
+      setupScoreboard({});
+    }
+  } catch (err) {
+    if (typeof console !== "undefined" && typeof console.warn === "function") {
+      console.warn("[classicBattle.bootstrap] Scoreboard setup with controls failed:", err);
+    }
+  }
+}
+
+/**
+ * Expose the debug API to window in test environments.
+ *
+ * @param {object} debugApi - The debug API object to expose
+ */
+function exposeDebugAPIToWindow(debugApi) {
+  if (
+    typeof process !== "undefined" &&
+    process.env &&
+    process.env.VITEST === "true" &&
+    canAccessWindow()
+  ) {
+    try {
+      window.__classicbattledebugapi = debugApi;
+    } catch (err) {
+      if (typeof console !== "undefined" && typeof console.warn === "function") {
+        console.warn("[classicBattle.bootstrap] Failed to expose debug API:", err);
+      }
+    }
+  }
 }
 
 // When this module is loaded as a module script from the page, initialize

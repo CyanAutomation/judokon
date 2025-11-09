@@ -249,7 +249,7 @@ export async function cleanupBattleCLI() {
     const initMod = await import("../../../src/pages/battleCLI/init.js");
     await initMod.resetMatch?.();
   } catch {}
-  
+
   document.body.innerHTML = "";
   delete window.__TEST__;
   vi.clearAllMocks();

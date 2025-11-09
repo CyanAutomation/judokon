@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { loadBattleCLI, cleanupBattleCLI } from "../utils/loadBattleCLI.js";
-import cliState from "../../../src/pages/battleCLI/state.js";
 import { resetCliState } from "../../utils/battleCliTestUtils.js";
 import { flushMicrotasks } from "../../utils/flushMicrotasks.js";
 
@@ -81,11 +80,11 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     };
   }
 
-  beforeEach(() => {
-    resetCliState();
+  beforeEach(async () => {
+    await resetCliState();
   });
   afterEach(async () => {
-    resetCliState();
+    await resetCliState();
     delete document.activeElement;
     if (battleCliLoaded) {
       await cleanupBattleCLI();
@@ -97,6 +96,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
   it("defers round resolution work for Enter on the focused stat", async () => {
     const { statEl, onKeyDown } = await setupWaitingForAction();
+
+    // Import cliState AFTER setup to get the correct instance
+    const { default: cliState } = await import("../../../src/pages/battleCLI/state.js");
 
     expect(document.activeElement).toBe(statEl);
 
@@ -121,12 +123,6 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
     // Flush microtasks to allow the scheduled selectStat() to execute
     await flushMicrotasks(2);
-
-    // Debug: log localStorage to see if selectStat was called
-    const debugLog = localStorage.getItem("__DEBUG_SELECT_STAT_LOG");
-    console.log("DEBUG: selectStat call log:", debugLog);
-    console.log("DEBUG: cliState.roundResolving =", cliState.roundResolving);
-    console.log("DEBUG: statEl.classList =", statEl.classList.toString());
 
     expect(cliState.roundResolving).toBe(true);
     expect(statEl.classList.contains("selected")).toBe(true);
@@ -170,6 +166,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
   it("defers numeric key handling through handleWaitingForPlayerActionKey", async () => {
     const { mod, runtimeInit } = await initNumericSelectionTest();
+    // Import cliState AFTER setup to get the correct instance
+    const { default: cliState } = await import("../../../src/pages/battleCLI/state.js");
+
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     battleEventsMod.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
     const emitSpy = battleEventsMod.emitBattleEvent;
@@ -207,6 +206,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
   it("delays DOM updates until the numeric selection microtask runs", async () => {
     const { mod } = await initNumericSelectionTest();
+    // Import cliState AFTER setup to get the correct instance
+    const { default: cliState } = await import("../../../src/pages/battleCLI/state.js");
+
     const { onKeyDown } = await import("../../../src/pages/index.js");
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitSpy = battleEventsMod.emitBattleEvent;
