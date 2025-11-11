@@ -931,7 +931,8 @@ const stateApi = {
           reason: result.reason ?? detail?.reason ?? null,
           elapsedMs: Date.now() - startTime,
           timedOut: result.timedOut === true,
-          dom: result.dom ?? null
+          dom: result.dom ?? null,
+          uiState: result.uiState ?? null
         });
       };
 
@@ -946,32 +947,30 @@ const stateApi = {
         let modalShown = false;
         let uiState = null;
 
-        while (Date.now() - modalWaitStart < modalWaitTimeout) {
-          try {
+        modalShown = await createPollingPromise({
+          condition: () => {
             const modalCount =
               typeof window !== "undefined" ? window.__classicBattleEndModalCount : 0;
-            if (Number(modalCount) > 0) {
-              modalShown = true;
+            return Number(modalCount) > 0;
+          },
+          timeout: modalWaitTimeout,
+          pollInterval: 50, // Matches the original setTimeout delay
+        });
 
-              // Capture UI state atomically when modal is confirmed
-              try {
-                const statButtons = document.querySelectorAll("#stat-buttons button");
-                const nextButton = document.getElementById("next-button");
-                const modal = document.getElementById("match-end-modal");
+        if (modalShown) {
+          // Capture UI state atomically when modal is confirmed
+          try {
+            const statButtons = document.querySelectorAll("#stat-buttons button");
+            const nextButton = document.getElementById("next-button");
+            const modal = document.getElementById("match-end-modal");
 
-                uiState = {
-                  statButtonsDisabled: Array.from(statButtons).every((btn) => btn.disabled),
-                  nextButtonDisabled: nextButton?.disabled === true,
-                  modalExists: modal !== null,
-                  modalOpen: modal?.open === true
-                };
-              } catch {}
-
-              break;
-            }
+            uiState = {
+              statButtonsDisabled: Array.from(statButtons).every((btn) => btn.disabled),
+              nextButtonDisabled: nextButton?.disabled === true,
+              modalExists: modal !== null,
+              modalOpen: modal?.open === true
+            };
           } catch {}
-
-          await new Promise((resolve) => setTimeout(resolve, 50));
         }
 
         if (!modalShown) {
