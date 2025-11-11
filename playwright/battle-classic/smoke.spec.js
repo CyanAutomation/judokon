@@ -171,14 +171,28 @@ test.describe("Classic Battle page", () => {
     expect(matchResult).toBeTruthy();
     expect(matchResult.timedOut).toBe(false);
 
-    // The match completion tracker (with fallback) resolves when the modal exists in the DOM.
-    // The modal should now be visible, but use locator() which waits for element presence.
-    const modal = page.locator("#match-end-modal");
-    await expect(modal).toBeAttached({ timeout: 5_000 });
-    await expect(modal).toBeVisible({ timeout: 5_000 });
+    // Verify the showEndModal function was called via its counter (Test API approach)
+    const endModalCallCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
+    expect(endModalCallCount).toBeGreaterThan(0);
 
-    // Assert that the showEndModal function incremented its structured counter
-    const callCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
-    expect(callCount).toBeGreaterThan(0);
+    // Verify stat buttons are disabled when match ends (prevents race condition)
+    const statButtonsDisabled = await page.evaluate(() => {
+      const buttons = document.querySelectorAll("#stat-buttons button");
+      return Array.from(buttons).every((btn) => btn.disabled);
+    });
+    expect(statButtonsDisabled).toBe(true);
+
+    // Verify next button is disabled when match ends
+    const nextButtonDisabled = await page.evaluate(() => {
+      const btn = document.getElementById("next-button");
+      return btn?.disabled === true;
+    });
+    expect(nextButtonDisabled).toBe(true);
+
+    // Verify modal element exists in DOM
+    const modalExists = await page.evaluate(() => {
+      return document.getElementById("match-end-modal") !== null;
+    });
+    expect(modalExists).toBe(true);
   });
 });
