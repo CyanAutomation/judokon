@@ -7,17 +7,6 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
-// Create mock functions that will be used by vi.mock factories
-const markOpponentPromptNow = vi.fn();
-const recordOpponentPromptTimestamp = vi.fn();
-const getOpponentPromptMinDuration = vi.fn(() => 600);
-const scoreboardClearTimer = vi.fn();
-const renderOpponentCard = vi.fn();
-const showRoundOutcome = vi.fn();
-const showStatComparison = vi.fn();
-const updateDebugPanel = vi.fn();
-const getOpponentCardData = vi.fn();
-
 // Mock showSnackbar - Vitest will create a fresh mock for each import
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: vi.fn()
@@ -28,10 +17,11 @@ vi.mock("../../src/helpers/featureFlags.js", () => ({
 
 // Import the mocked showSnackbar AFTER vi.mock so we get the mocked version
 import { showSnackbar } from "../../src/helpers/showSnackbar.js";
+
 vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
-  markOpponentPromptNow,
-  recordOpponentPromptTimestamp,
-  getOpponentPromptMinDuration
+  markOpponentPromptNow: vi.fn(),
+  recordOpponentPromptTimestamp: vi.fn(),
+  getOpponentPromptMinDuration: vi.fn(() => 600)
 }));
 
 // NOTE: We use the REAL snackbar module (not a mock) because the handler captures a reference to the
@@ -39,18 +29,18 @@ vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
 // function in beforeEach and in individual tests to control the module-level state.
 // vi.mock("../../src/helpers/classicBattle/snackbar.js", ...)
 vi.mock("../../src/helpers/classicBattle/opponentController.js", () => ({
-  getOpponentCardData
+  getOpponentCardData: vi.fn()
 }));
 vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  renderOpponentCard,
-  showRoundOutcome,
-  showStatComparison
+  renderOpponentCard: vi.fn(),
+  showRoundOutcome: vi.fn(),
+  showStatComparison: vi.fn()
 }));
 vi.mock("../../src/helpers/classicBattle/debugPanel.js", () => ({
-  updateDebugPanel
+  updateDebugPanel: vi.fn()
 }));
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
-  clearTimer: scoreboardClearTimer
+  clearTimer: vi.fn()
 }));
 vi.mock("../../src/helpers/i18n.js", () => ({
   t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key)
@@ -69,6 +59,21 @@ import {
   emitBattleEvent,
   __resetBattleEventTarget as resetBattleEventTarget
 } from "../../src/helpers/classicBattle/battleEvents.js";
+
+// Import mocked modules to access their mock functions
+import { getOpponentCardData } from "../../src/helpers/classicBattle/opponentController.js";
+import {
+  markOpponentPromptNow,
+  recordOpponentPromptTimestamp,
+  getOpponentPromptMinDuration
+} from "../../src/helpers/classicBattle/opponentPromptTracker.js";
+import {
+  renderOpponentCard,
+  showRoundOutcome,
+  showStatComparison
+} from "../../src/helpers/classicBattle/uiHelpers.js";
+import { updateDebugPanel } from "../../src/helpers/classicBattle/debugPanel.js";
+import { clearTimer as scoreboardClearTimer } from "../../src/helpers/setupScoreboard.js";
 
 describe("UI handlers: opponent message events", () => {
   let setTimeoutSpy;
