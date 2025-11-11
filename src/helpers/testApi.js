@@ -935,9 +935,30 @@ const stateApi = {
         });
       };
 
-      const handleMatchConcluded = (event) => {
+      const handleMatchConcluded = async (event) => {
         const detail = event?.detail ?? null;
         const scores = normalizeMatchScores(detail?.scores);
+
+        // Wait for the end modal to be shown after match conclusion
+        // The modal is created in matchDecisionEnter state handler
+        const modalShown = await waitForCondition(
+          () => {
+            const modalCount =
+              typeof window !== "undefined" ? window.__classicBattleEndModalCount : 0;
+            return Number(modalCount) > 0;
+          },
+          { timeout: 5000, pollInterval: 50 }
+        );
+
+        if (!modalShown) {
+          // Log warning but don't fail - modal might be shown via different path
+          if (typeof console !== "undefined" && typeof console.warn === "function") {
+            console.warn(
+              "Test API: match.concluded event fired but modal counter not incremented within 5s"
+            );
+          }
+        }
+
         finish({ detail, scores, timedOut: false });
       };
 
