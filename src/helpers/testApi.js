@@ -942,19 +942,17 @@ const stateApi = {
 
         // Wait for the end modal to be shown after match conclusion
         // The modal is created in matchDecisionEnter state handler
-        const modalWaitStart = Date.now();
         const modalWaitTimeout = 5000;
-        let modalShown = false;
         let uiState = null;
 
-        modalShown = await createPollingPromise({
+        const modalShown = await createPollingPromise({
           condition: () => {
             const modalCount =
               typeof window !== "undefined" ? window.__classicBattleEndModalCount : 0;
             return Number(modalCount) > 0;
           },
           timeout: modalWaitTimeout,
-          pollInterval: 50, // Matches the original setTimeout delay
+          pollInterval: 50 // Matches the original setTimeout delay
         });
 
         if (modalShown) {

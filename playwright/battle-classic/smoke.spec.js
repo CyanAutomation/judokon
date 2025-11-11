@@ -61,7 +61,7 @@ async function selectDecisiveStat(page) {
     if (await matchModal.isVisible()) {
       return;
     }
-    
+
     const candidate = statButtons.nth(index);
     if (await candidate.isEnabled()) {
       // Use force: true to click even if modal might be appearing
