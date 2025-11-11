@@ -965,14 +965,22 @@ const stateApi = {
 
         // Wait for the end modal to be shown after match conclusion
         // The modal is created in matchDecisionEnter state handler
-        const modalShown = await waitForCondition(
-          () => {
+        const modalWaitStart = Date.now();
+        const modalWaitTimeout = 5000;
+        let modalShown = false;
+
+        while (Date.now() - modalWaitStart < modalWaitTimeout) {
+          try {
             const modalCount =
               typeof window !== "undefined" ? window.__classicBattleEndModalCount : 0;
-            return Number(modalCount) > 0;
-          },
-          { timeout: 5000, pollInterval: 50 }
-        );
+            if (Number(modalCount) > 0) {
+              modalShown = true;
+              break;
+            }
+          } catch {}
+
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
 
         if (!modalShown) {
           // Log warning but don't fail - modal might be shown via different path
