@@ -59,18 +59,9 @@ async function selectDecisiveStat(page) {
   for (let index = 0; index < buttonCount; index += 1) {
     const candidate = statButtons.nth(index);
     if (await candidate.isEnabled()) {
-      // Check if match modal has appeared after stat selection (race condition fix)
-      if (await matchModal.isVisible()) {
-        return;
-      }
       await candidate.click();
       return;
     }
-  }
-
-  // Final check before fallback button click
-  if (await matchModal.isVisible()) {
-    return;
   }
 
   const fallbackButton = statGroup.getByRole("button").first();

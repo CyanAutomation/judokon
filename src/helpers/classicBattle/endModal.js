@@ -3,15 +3,17 @@ import { createButton } from "../../components/Button.js";
 import { handleReplay } from "./roundManager.js";
 import { quitMatch } from "./quitModal.js";
 import { getOutcomeMessage } from "../api/battleUI.js";
+import { disableStatButtons } from "../battle/battleUI.js";
 
 /**
  * Show the end-of-match modal with Replay and Quit actions.
  *
  * @pseudocode
- * 1. Build a title, summary text, and actions (Replay, Quit).
- * 2. Create a Modal with accessible labelling and append to body.
- * 3. Wire Replay to `handleReplay(store)` and Quit to `quitMatch(store)`.
- * 4. Open the modal, focusing the Replay button.
+ * 1. Disable stat buttons and next button to prevent interaction during match end.
+ * 2. Build a title, summary text, and actions (Replay, Quit).
+ * 3. Create a Modal with accessible labelling and append to body.
+ * 4. Wire Replay to `handleReplay(store)` and Quit to `quitMatch(store)`.
+ * 5. Open the modal, focusing the Replay button.
  *
  * @param {ReturnType<import('./roundManager.js').createBattleStore>} store
  * @param {{
@@ -26,6 +28,32 @@ export function showEndModal(store, detail = {}) {
   if (document.getElementById("match-end-modal")) {
     return;
   }
+
+  // Disable interactive elements when match ends to prevent race conditions
+  try {
+    disableStatButtons();
+  } catch (error) {
+    if (typeof Sentry !== "undefined" && Sentry?.captureException) {
+      Sentry.captureException(new Error("showEndModal: failed to disable stat buttons"), {
+        contexts: { error: { original: error?.message } }
+      });
+    }
+  }
+
+  try {
+    const nextButton = document.getElementById("next-button");
+    if (nextButton) {
+      nextButton.disabled = true;
+      nextButton.setAttribute("data-next-ready", "false");
+    }
+  } catch (error) {
+    if (typeof Sentry !== "undefined" && Sentry?.captureException) {
+      Sentry.captureException(new Error("showEndModal: failed to disable next button"), {
+        contexts: { error: { original: error?.message } }
+      });
+    }
+  }
+
   try {
     if (typeof window !== "undefined") {
       const currentCount = Number(window.__classicBattleEndModalCount || 0);
