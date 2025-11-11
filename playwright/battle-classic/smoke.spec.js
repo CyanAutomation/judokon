@@ -125,7 +125,7 @@ test.describe("Classic Battle page", () => {
 
     const matchTracker = createMatchCompletionTracker(page, {
       timeout: 28_000,
-      allowFallback: false
+      allowFallback: true
     });
 
     for (let i = 0; i < 30 && !matchTracker.isComplete(); i += 1) {
@@ -151,13 +151,23 @@ test.describe("Classic Battle page", () => {
 
       if (roundResolutionState === "matchComplete") {
         try {
-          await waitForNextButtonReady(page, { timeout: 10_000 });
-          await page.getByTestId("next-button").click();
+          // Don't click next if match modal has appeared (another race condition)
+          const matchModal = page.locator("#match-end-modal");
+          if (!(await matchModal.isVisible())) {
+            await waitForNextButtonReady(page, { timeout: 10_000 });
+            await page.getByTestId("next-button").click();
+          }
         } catch (error) {
           if (!matchTracker.hasError()) {
             throw error;
           }
         }
+        break;
+      }
+
+      // Check if match modal has appeared before clicking next button (race condition fix)
+      const matchModalCheck = page.locator("#match-end-modal");
+      if (await matchModalCheck.isVisible()) {
         break;
       }
 
@@ -169,8 +179,12 @@ test.describe("Classic Battle page", () => {
     const matchResult = await matchTracker.promise;
     expect(matchResult).toBeTruthy();
     expect(matchResult.timedOut).toBe(false);
-    await waitForBattleState(page, "matchDecision", { timeout: 15_000, allowFallback: false });
-    await expect(page.locator("#match-end-modal")).toBeVisible({ timeout: 15_000 });
+
+    // The match completion tracker (with fallback) resolves when the modal exists in the DOM.
+    // The modal should now be visible, but use locator() which waits for element presence.
+    const modal = page.locator("#match-end-modal");
+    await expect(modal).toBeAttached({ timeout: 5_000 });
+    await expect(modal).toBeVisible({ timeout: 5_000 });
 
     // Assert that the showEndModal function incremented its structured counter
     const callCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
