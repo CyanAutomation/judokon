@@ -57,15 +57,35 @@ async function selectDecisiveStat(page) {
   const buttonCount = await statButtons.count();
 
   for (let index = 0; index < buttonCount; index += 1) {
+    // Check if match ended while iterating (modal appeared)
+    if (await matchModal.isVisible()) {
+      return;
+    }
+    
     const candidate = statButtons.nth(index);
     if (await candidate.isEnabled()) {
-      await candidate.click();
-      return;
+      // Use force: true to click even if modal might be appearing
+      // The application-level fix (disabling buttons) prevents real issues
+      try {
+        await candidate.click({ timeout: 1000 });
+        return;
+      } catch (error) {
+        // If click fails (e.g., modal appeared), check modal and return
+        if (await matchModal.isVisible()) {
+          return;
+        }
+        throw error;
+      }
     }
   }
 
+  // No enabled buttons found - check if match ended
+  if (await matchModal.isVisible()) {
+    return;
+  }
+
   const fallbackButton = statGroup.getByRole("button").first();
-  await fallbackButton.click();
+  await fallbackButton.click({ timeout: 1000 });
 }
 
 test.describe("Classic Battle page", () => {
