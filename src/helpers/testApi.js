@@ -174,30 +174,6 @@ async function waitForNextFrame() {
   await new Promise((resolve) => setTimeout(resolve, FRAME_DELAY_MS));
 }
 
-/**
- * Poll a condition function until it returns true or timeout is reached.
- *
- * @param {Function} condition - Function that returns boolean
- * @param {{timeout?: number, pollInterval?: number}} [options] - Options
- * @returns {Promise<boolean>} - True if condition met, false if timeout
- */
-async function waitForCondition(condition, options = {}) {
-  const { timeout = 5000, pollInterval = 50 } = options;
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeout) {
-    try {
-      if (condition()) {
-        return true;
-      }
-    } catch {}
-
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  return false;
-}
-
 function logDevWarning(message, error) {
   if (!isDevelopmentEnvironment()) return;
 
