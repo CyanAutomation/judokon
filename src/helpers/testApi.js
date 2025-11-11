@@ -208,7 +208,6 @@ function logDevDebug(message, error) {
  * @returns {Promise<boolean>} Resolves true when condition met, false on timeout
  * @internal
  */
-// eslint-disable-next-line no-unused-vars
 function createPollingPromise({ condition, timeout = 5000, pollInterval = 50, onCleanup } = {}) {
   return new Promise((resolve) => {
     const startTime = Date.now();
