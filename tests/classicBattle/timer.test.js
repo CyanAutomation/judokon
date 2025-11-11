@@ -35,6 +35,11 @@ describe("Classic Battle round timer", () => {
       if (cat === "roundTimer") return 2;
       return 3;
     });
+    // Clear __OVERRIDE_TIMERS so the mocked getDefaultTimer is used
+    const previousOverrides = typeof window !== "undefined" ? window.__OVERRIDE_TIMERS : undefined;
+    if (typeof window !== "undefined") {
+      delete window.__OVERRIDE_TIMERS;
+    }
     try {
       // Minimal DOM: header with timer node
       const { createBattleHeader } = await import("../utils/testUtils.js");
@@ -67,6 +72,11 @@ describe("Classic Battle round timer", () => {
       expect(timerEl?.textContent).toBe("");
     } finally {
       spy.mockRestore();
+      if (previousOverrides !== undefined) {
+        if (typeof window !== "undefined") {
+          window.__OVERRIDE_TIMERS = previousOverrides;
+        }
+      }
       timers.cleanup();
     }
   });

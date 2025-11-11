@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
-import { dispatchBattleEvent } from "../../src/helpers/classicBattle/orchestrator.js";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("battleCLI init helpers", () => {
@@ -27,6 +26,8 @@ describe("battleCLI init helpers", () => {
     if (!emitter) {
       throw new Error("Battle event emitter unavailable");
     }
+    // Import after mocks are set up by loadBattleCLI
+    const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
     dispatchBattleEvent.mockClear();
     const battleCliModule = await import("../../src/pages/battleCLI/init.js");
     const startClickedListener = vi.fn();

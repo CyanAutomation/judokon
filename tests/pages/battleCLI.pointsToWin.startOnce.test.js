@@ -2,10 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
-import {
-  initClassicBattleOrchestrator,
-  dispatchBattleEvent
-} from "../../src/helpers/classicBattle/orchestrator.js";
 
 describe("battleCLI start control", () => {
   let timers;
@@ -28,6 +24,10 @@ describe("battleCLI start control", () => {
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
     const { emitBattleEvent } = battleEvents;
     const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");
+    // Import after mocks are set up by loadBattleCLI
+    const { initClassicBattleOrchestrator, dispatchBattleEvent } = await import(
+      "../../src/helpers/classicBattle/orchestrator.js"
+    );
     initClassicBattleOrchestrator.mockResolvedValue();
     dispatchBattleEvent.mockImplementation(async (evt) => {
       if (evt === "startClicked") {
