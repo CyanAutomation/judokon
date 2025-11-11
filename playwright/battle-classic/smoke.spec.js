@@ -169,17 +169,11 @@ test.describe("Classic Battle page", () => {
 
     const matchResult = await matchTracker.promise;
     expect(matchResult).toBeTruthy();
-
-    // Debug: Log what the match tracker returned
-    console.log("Match result:", JSON.stringify(matchResult, null, 2));
-
     expect(matchResult.timedOut).toBe(false);
 
     // Verify the showEndModal function was called via its counter (Test API approach)
     const endModalCallCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
-    expect(endModalCallCount).toBeGreaterThan(0);
-
-    // Verify stat buttons are disabled when match ends (prevents race condition)
+    expect(endModalCallCount).toBeGreaterThan(0); // Verify stat buttons are disabled when match ends (prevents race condition)
     const statButtonsDisabled = await page.evaluate(() => {
       const buttons = document.querySelectorAll("#stat-buttons button");
       return Array.from(buttons).every((btn) => btn.disabled);
