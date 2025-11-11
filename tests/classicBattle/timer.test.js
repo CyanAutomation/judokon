@@ -29,7 +29,7 @@ function installMockBattleMachine(dispatchImpl) {
 describe("Classic Battle round timer", () => {
   test("starts timer and clears on expire deterministically", async () => {
     const timers = useCanonicalTimers();
-    
+
     try {
       // Minimal DOM: header with timer node
       const { createBattleHeader } = await import("../utils/testUtils.js");
@@ -47,11 +47,15 @@ describe("Classic Battle round timer", () => {
       mockCreateRoundTimer({ scheduled: true, tickCount: 2, intervalMs: 1000 });
 
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-      
+
       // Pass mock duration via dependencies to avoid getDefaultTimer lookup
-      await startTimer(async () => {}, { selectionMade: false }, {
-        resolveDuration: async () => ({ duration: 2, synced: true, restore: () => {} })
-      });
+      await startTimer(
+        async () => {},
+        { selectionMade: false },
+        {
+          resolveDuration: async () => ({ duration: 2, synced: true, restore: () => {} })
+        }
+      );
 
       const timerEl = document.getElementById("next-round-timer");
       expect(timerEl).toBeTruthy();
@@ -114,9 +118,13 @@ describe("Classic Battle round timer", () => {
 
       for (const step of ["expire", "stop", "expire"]) {
         const baseline = listenerRefs.size;
-        const timer = await startTimer(async () => {}, { selectionMade: false }, {
-          resolveDuration: async () => ({ duration: 1, synced: true, restore: () => {} })
-        });
+        const timer = await startTimer(
+          async () => {},
+          { selectionMade: false },
+          {
+            resolveDuration: async () => ({ duration: 1, synced: true, restore: () => {} })
+          }
+        );
         expect(listenerRefs.size - baseline).toBe(1);
 
         if (step === "stop") {
@@ -198,9 +206,13 @@ describe("Classic Battle round timer", () => {
 
       const { withMutedConsole } = await import("../utils/console.js");
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-      const timer = await startTimer(async () => {}, { selectionMade: false }, {
-        resolveDuration: async () => ({ duration: 1, synced: true, restore: () => {} })
-      });
+      const timer = await startTimer(
+        async () => {},
+        { selectionMade: false },
+        {
+          resolveDuration: async () => ({ duration: 1, synced: true, restore: () => {} })
+        }
+      );
 
       const [expiredHandler] = expiredHandlers;
       expect(typeof expiredHandler).toBe("function");
