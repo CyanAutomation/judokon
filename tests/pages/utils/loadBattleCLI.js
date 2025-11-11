@@ -278,6 +278,8 @@ export async function cleanupBattleCLI() {
     "../../../src/helpers/showSnackbar.js"
   ];
   mocked.forEach((m) => vi.doUnmock(m));
+  // Reset modules to ensure fresh imports on next loadBattleCLI call
+  vi.resetModules();
   try {
     const { __resetClassicBattleBindings } = await import("../../../src/helpers/classicBattle.js");
     __resetClassicBattleBindings();

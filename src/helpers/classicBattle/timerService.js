@@ -1035,10 +1035,11 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
     autoSelect = autoSelectStat,
     showSnack = showSnackbar,
     translate = t,
-    startRound = engineStartRound
+    startRound = engineStartRound,
+    resolveDuration = resolveRoundTimerDuration
   } = dependencies;
 
-  const { duration, synced, restore } = await resolveRoundTimerDuration(scoreboardApi);
+  const { duration, synced, restore } = await resolveDuration(scoreboardApi);
 
   timerLogger.info("Starting selection timer", {
     initialDuration: duration,

@@ -1,4 +1,3 @@
-import * as timerUtils from "../../src/helpers/timerUtils.js";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 function installMockBattleMachine(dispatchImpl) {
@@ -30,16 +29,7 @@ function installMockBattleMachine(dispatchImpl) {
 describe("Classic Battle round timer", () => {
   test("starts timer and clears on expire deterministically", async () => {
     const timers = useCanonicalTimers();
-    // Provide a short round timer
-    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
-      if (cat === "roundTimer") return 2;
-      return 3;
-    });
-    // Clear __OVERRIDE_TIMERS so the mocked getDefaultTimer is used
-    const previousOverrides = typeof window !== "undefined" ? window.__OVERRIDE_TIMERS : undefined;
-    if (typeof window !== "undefined") {
-      delete window.__OVERRIDE_TIMERS;
-    }
+    
     try {
       // Minimal DOM: header with timer node
       const { createBattleHeader } = await import("../utils/testUtils.js");
@@ -57,7 +47,11 @@ describe("Classic Battle round timer", () => {
       mockCreateRoundTimer({ scheduled: true, tickCount: 2, intervalMs: 1000 });
 
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-      await startTimer(async () => {}, { selectionMade: false });
+      
+      // Pass mock duration via dependencies to avoid getDefaultTimer lookup
+      await startTimer(async () => {}, { selectionMade: false }, {
+        resolveDuration: async () => ({ duration: 2, synced: true, restore: () => {} })
+      });
 
       const timerEl = document.getElementById("next-round-timer");
       expect(timerEl).toBeTruthy();
@@ -71,12 +65,6 @@ describe("Classic Battle round timer", () => {
       expect(clearSpy).toHaveBeenCalled();
       expect(timerEl?.textContent).toBe("");
     } finally {
-      spy.mockRestore();
-      if (previousOverrides !== undefined) {
-        if (typeof window !== "undefined") {
-          window.__OVERRIDE_TIMERS = previousOverrides;
-        }
-      }
       timers.cleanup();
     }
   });
@@ -104,11 +92,6 @@ describe("Classic Battle round timer", () => {
         return originalRemove.call(document, type, handler, options);
       });
 
-    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
-      if (cat === "roundTimer") return 1;
-      return 3;
-    });
-
     let unmock = null;
 
     try {
@@ -131,7 +114,9 @@ describe("Classic Battle round timer", () => {
 
       for (const step of ["expire", "stop", "expire"]) {
         const baseline = listenerRefs.size;
-        const timer = await startTimer(async () => {}, { selectionMade: false });
+        const timer = await startTimer(async () => {}, { selectionMade: false }, {
+          resolveDuration: async () => ({ duration: 1, synced: true, restore: () => {} })
+        });
         expect(listenerRefs.size - baseline).toBe(1);
 
         if (step === "stop") {
@@ -143,7 +128,6 @@ describe("Classic Battle round timer", () => {
         expect(listenerRefs.size).toBe(baseline);
       }
     } finally {
-      spy.mockRestore();
       addSpy.mockRestore();
       removeSpy.mockRestore();
       if (unmock?.unmock) {
@@ -204,11 +188,6 @@ describe("Classic Battle round timer", () => {
       }
     }));
 
-    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
-      if (cat === "roundTimer") return 1;
-      return 3;
-    });
-
     try {
       const { createBattleHeader } = await import("../utils/testUtils.js");
       const header = createBattleHeader();
@@ -219,7 +198,9 @@ describe("Classic Battle round timer", () => {
 
       const { withMutedConsole } = await import("../utils/console.js");
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-      const timer = await startTimer(async () => {}, { selectionMade: false });
+      const timer = await startTimer(async () => {}, { selectionMade: false }, {
+        resolveDuration: async () => ({ duration: 1, synced: true, restore: () => {} })
+      });
 
       const [expiredHandler] = expiredHandlers;
       expect(typeof expiredHandler).toBe("function");
@@ -235,7 +216,6 @@ describe("Classic Battle round timer", () => {
       expect(removeSpy).toHaveBeenCalledTimes(1);
       expect(cleanupExecutionCount).toBe(1);
     } finally {
-      spy.mockRestore();
       addSpy.mockRestore();
       removeSpy.mockRestore();
       vi.doUnmock("../../src/helpers/timers/createRoundTimer.js");

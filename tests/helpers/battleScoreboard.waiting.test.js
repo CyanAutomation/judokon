@@ -4,7 +4,6 @@ import {
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
 import { mount, clearBody } from "./domUtils.js";
-import { setScheduler } from "../../src/helpers/scheduler.js";
 
 describe("battleScoreboard waiting fallback", () => {
   beforeEach(async () => {
@@ -35,6 +34,8 @@ describe("battleScoreboard waiting fallback", () => {
     resetScoreboard();
     initScoreboard(header);
     const mock = await import("./mockScheduler.js");
+    // Import setScheduler dynamically here to ensure same module instance
+    const { setScheduler } = await import("../../src/helpers/scheduler.js");
     setScheduler(mock.createMockScheduler());
     const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();
