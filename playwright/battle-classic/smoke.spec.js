@@ -193,24 +193,12 @@ test.describe("Classic Battle page", () => {
 
     // Verify the showEndModal function was called via its counter (Test API approach)
     const endModalCallCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
-    expect(endModalCallCount).toBeGreaterThan(0); // Verify stat buttons are disabled when match ends (prevents race condition)
-    const statButtonsDisabled = await page.evaluate(() => {
-      const buttons = document.querySelectorAll("#stat-buttons button");
-      return Array.from(buttons).every((btn) => btn.disabled);
-    });
-    expect(statButtonsDisabled).toBe(true);
+    expect(endModalCallCount).toBeGreaterThan(0);
 
-    // Verify next button is disabled when match ends
-    const nextButtonDisabled = await page.evaluate(() => {
-      const btn = document.getElementById("next-button");
-      return btn?.disabled === true;
-    });
-    expect(nextButtonDisabled).toBe(true);
-
-    // Verify modal element exists in DOM
-    const modalExists = await page.evaluate(() => {
-      return document.getElementById("match-end-modal") !== null;
-    });
-    expect(modalExists).toBe(true);
+    // Verify UI state captured atomically by Test API when modal appeared
+    expect(matchResult.uiState).toBeTruthy();
+    expect(matchResult.uiState.statButtonsDisabled).toBe(true);
+    expect(matchResult.uiState.nextButtonDisabled).toBe(true);
+    expect(matchResult.uiState.modalExists).toBe(true);
   });
 });

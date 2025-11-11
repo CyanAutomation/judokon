@@ -944,6 +944,7 @@ const stateApi = {
         const modalWaitStart = Date.now();
         const modalWaitTimeout = 5000;
         let modalShown = false;
+        let uiState = null;
 
         while (Date.now() - modalWaitStart < modalWaitTimeout) {
           try {
@@ -951,6 +952,21 @@ const stateApi = {
               typeof window !== "undefined" ? window.__classicBattleEndModalCount : 0;
             if (Number(modalCount) > 0) {
               modalShown = true;
+
+              // Capture UI state atomically when modal is confirmed
+              try {
+                const statButtons = document.querySelectorAll("#stat-buttons button");
+                const nextButton = document.getElementById("next-button");
+                const modal = document.getElementById("match-end-modal");
+
+                uiState = {
+                  statButtonsDisabled: Array.from(statButtons).every((btn) => btn.disabled),
+                  nextButtonDisabled: nextButton?.disabled === true,
+                  modalExists: modal !== null,
+                  modalOpen: modal?.open === true
+                };
+              } catch {}
+
               break;
             }
           } catch {}
@@ -967,7 +983,7 @@ const stateApi = {
           }
         }
 
-        finish({ detail, scores, timedOut: false });
+        finish({ detail, scores, timedOut: false, uiState });
       };
 
       try {

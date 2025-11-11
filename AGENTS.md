@@ -488,14 +488,15 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 
 1. **Default to RAG first** - Query `queryRag("your question")` for any "How/Why/What/Where" questions (15x faster than manual exploration)
 2. **Follow 5-step workflow** - Context → Task Contract → Implementation → Validation → Delivery
-3. **Core validation suite** - `npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast`
-4. **Critical rules** - No dynamic imports in hot paths, no unsilenced console in tests, include `@pseudocode` in JSDoc
-5. **Key files** - `src/data/tooltips.json`, `src/data/judoka.json`, `src/config/settingsDefaults.js`
-6. **Quality standards** - Functions ≤50 lines, test happy+edge cases, maintain net-better repo state
-7. **Hot path protection** - Use static imports in `src/helpers/classicBattle*`, `battleEngineFacade.js`
-8. **Machine-readable rules** - See JSON ruleset at bottom of document for programmatic access
-9. **Task contracts required** - Declare inputs/outputs/success/error before execution
-10. **Complete validation reference** - [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) aggregates workflow commands; pair with [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) for test-specific policies
+3. **Run targeted tests** - Avoid the full suite. Run tests relevant to your changes. See the [Targeted Testing](#-targeted-testing) section for how.
+4. **Core validation suite** - `npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run <tests>` (always run targeted tests)
+5. **Critical rules** - No dynamic imports in hot paths, no unsilenced console in tests, include `@pseudocode` in JSDoc
+6. **Key files** - `src/data/tooltips.json`, `src/data/judoka.json`, `src/config/settingsDefaults.js`
+7. **Quality standards** - Functions ≤50 lines, test happy+edge cases, maintain net-better repo state
+8. **Hot path protection** - Use static imports in `src/helpers/classicBattle*`, `battleEngineFacade.js`
+9. **Machine-readable rules** - See JSON ruleset at bottom of document for programmatic access
+10. **Task contracts required** - Declare inputs/outputs/success/error before execution
+11. **Complete validation reference** - [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) aggregates workflow commands; pair with [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) for test-specific policies
 
 **JSON Ruleset Location**: [Line 545+](#machine-readable-ruleset) | **RAG Guide**: [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
 
@@ -511,6 +512,7 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 - [🧪 Task Contract](#-task-contract)
 - [✅ Evaluation Criteria](#-evaluation-criteria)
 - [⚔️ Classic Battle Testing](#️-classic-battle-testing)
+- [🎯 Targeted Testing](#-targeted-testing)
 - [🧪 Unit Test Quality Standards](#-unit-test-quality-standards)
 - [🎭 Playwright Test Quality Standards](#-playwright-test-quality-standards)
 - [🧯 Runtime Safeguards](#-runtime-safeguards)
@@ -528,7 +530,7 @@ Deterministic rules, workflows, and safety requirements for AI Agents operating 
 1. Context acquisition (queryRag, key file references)
 2. Task contract definition (inputs/outputs/success/error)
 3. Implementation (import policy, coding rules)
-4. Validation (lint, format, tests, contrast, logs)
+4. Validation (lint, format, targeted tests, contrast, logs)
 5. Delivery (PR body with verification summary)
 
 ```bash
@@ -791,6 +793,44 @@ Task Contract JSON template:
   - Round → `#round-message`
   - Countdown/hints → snackbar
 - Cleanup: clear snackbar + `#round-message` after each test
+
+---
+
+## 🎯 Targeted Testing
+
+To maintain efficiency and speed, agents **MUST** avoid running the full test suite for every change. Instead, run targeted tests relevant to the modifications.
+
+### Workflow
+
+1.  **Identify Relevant Tests**: Before running tests, analyze the changes to identify the corresponding test files. For example, a change in `src/components/Header.js` should be tested by `tests/components/Header.test.js`.
+
+2.  **Run Specific Test Files**: Use `vitest` to run only the relevant test files.
+
+    ```bash
+    # Run a single test file
+    npx vitest run tests/components/Header.test.js
+
+    # Run tests from a specific folder
+    npx vitest run tests/components/
+    ```
+
+3.  **Use Project-Specific Scripts**: For larger, but still contained, changes, use the specialized test scripts in `package.json`.
+
+    ```bash
+    # Run tests for the classic battle mode
+    npm run test:battles:classic
+
+    # Run tests for the CLI battle mode
+    npm run test:battles:cli
+    ```
+
+### When to Run the Full Suite
+
+Only run the full test suite (`npx vitest run` or `npm test`) under these circumstances:
+
+-   Making widespread, cross-cutting changes (e.g., refactoring a core utility used by many components).
+-   Changing configuration files that affect the entire application (`vite.config.js`, etc.).
+-   Before submitting a pull request to ensure no unintended side effects.
 
 ---
 
@@ -1380,9 +1420,10 @@ npx prettier . --check
 npx eslint .
 npm run check:jsdoc
 
-# Step 3: Tests
-npx vitest run
-npx playwright test
+# Step 3: Tests (run targeted tests, not the full suite)
+# See the "Targeted Testing" section for details.
+npx vitest run <path/to/relevant/tests.spec.js>
+npx playwright test <path/to/relevant/spec.js>
 npm run check:contrast
 ```
 
