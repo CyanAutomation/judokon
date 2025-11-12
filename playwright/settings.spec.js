@@ -436,11 +436,12 @@ test.describe("Settings page", () => {
     await page.reload();
     await app.applyRuntime();
     await waitForSettingsReady(page);
-    const themeHandle = await page.waitForFunction(() => {
-      const theme = document.body.dataset.theme;
-      return theme === "light" || theme === "dark" ? theme : undefined;
-    });
-    const theme = await themeHandle.jsonValue();
+    const body = page.locator("body");
+    await expect(body).toHaveAttribute("data-theme", /^(light|dark)$/);
+    const theme = await body.getAttribute("data-theme");
+    if (theme !== "light" && theme !== "dark") {
+      throw new Error(`Unexpected theme value: ${theme}`);
+    }
     const radioSelector = theme === "dark" ? "#display-mode-dark" : "#display-mode-light";
     await expect(page.locator(radioSelector)).toBeChecked();
     await expect(page.locator(`#header-display-mode-${theme}`)).toBeChecked();
@@ -478,8 +479,10 @@ test.describe("Settings page", () => {
     expect(light.fieldsetBg).not.toBe("");
     await expect(page.locator("#header-display-mode-light")).toBeChecked();
 
+    const body = page.locator("body");
+
     await page.check("#display-mode-dark");
-    await page.waitForFunction(() => document.body.dataset.theme === "dark");
+    await expect(body).toHaveAttribute("data-theme", "dark");
     const dark = await snapshot();
     expect(dark.sectionBg).not.toBe(light.sectionBg);
     expect(dark.switchOn).not.toBe(light.switchOn);
@@ -492,7 +495,7 @@ test.describe("Settings page", () => {
     await expect(page.locator("#header-display-mode-dark")).toBeChecked();
 
     await page.check("#display-mode-light");
-    await page.waitForFunction(() => document.body.dataset.theme === "light");
+    await expect(body).toHaveAttribute("data-theme", "light");
     const backToLight = await snapshot();
     expect(backToLight.sectionBg).toBe(light.sectionBg);
     expect(backToLight.switchOn).toBe(light.switchOn);
