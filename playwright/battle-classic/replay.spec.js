@@ -205,8 +205,60 @@ test.describe("Classic Battle replay", () => {
       // Click Replay and assert round counter resets
       await page.getByTestId("replay-button").click();
 
-      // Add a small delay to allow DOM updates to settle
-      await page.waitForTimeout(100);
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(
+              ({ expectedPoints }) => {
+                const engineApi = window.__TEST_API?.engine;
+                if (!engineApi) {
+                  return {
+                    status: "error",
+                    reason: "ENGINE_API_UNAVAILABLE",
+                    roundsPlayed: null,
+                    pointsToWin: null,
+                    roundsReset: false,
+                    pointsRestored: false
+                  };
+                }
+
+                const roundsPlayed =
+                  typeof engineApi.getRoundsPlayed === "function"
+                    ? engineApi.getRoundsPlayed()
+                    : null;
+                const pointsToWin =
+                  typeof engineApi.getPointsToWin === "function"
+                    ? engineApi.getPointsToWin()
+                    : null;
+
+                if (typeof roundsPlayed !== "number" || typeof pointsToWin !== "number") {
+                  return {
+                    status: "error",
+                    reason: "ENGINE_STATE_UNAVAILABLE",
+                    roundsPlayed,
+                    pointsToWin,
+                    roundsReset: false,
+                    pointsRestored: false
+                  };
+                }
+
+                return {
+                  status: "ok",
+                  roundsPlayed,
+                  pointsToWin,
+                  roundsReset: roundsPlayed <= 1,
+                  pointsRestored: pointsToWin === expectedPoints
+                };
+              },
+              { expectedPoints: pointsBeforeReplay }
+            ),
+          {
+            message:
+              "Replay button should reset the battle engine rounds and preserve the configured points-to-win value.",
+            timeout: ENGINE_WAIT_TIMEOUT_MS
+          }
+        )
+        .toMatchObject({ status: "ok", roundsReset: true, pointsRestored: true });
 
       const engineStateAfterReplay = await page.evaluate(() => {
         const engineApi = window.__TEST_API?.engine;
