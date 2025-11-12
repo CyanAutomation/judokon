@@ -77,7 +77,8 @@ export function validateJsDoc(lines, index, symbolType = "function") {
 
   // Extract function signature to check for params and return
   const signature = lines[index];
-  const hasParams = /\(([^)]*)\)/.exec(signature)?.[1].trim().length > 0;
+  const hasParams =
+    symbolType !== "variable" && /\(([^)]*)\)/.exec(signature)?.[1].trim().length > 0;
   const returnsValue =
     symbolType !== "variable" &&
     ((!/=>\s*\{/.test(signature) &&

@@ -69,6 +69,13 @@ const STAT_LABELS = {
   newaza: "Ne-waza"
 };
 
+const ACTION_LABELS = {
+  start: "Start",
+  next: "Next",
+  draw: "Draw",
+  done: "Done"
+};
+
 /**
  * Create a battle action bar component.
  *
