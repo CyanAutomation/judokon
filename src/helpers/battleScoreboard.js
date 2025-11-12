@@ -10,120 +10,23 @@ import {
 } from "../components/Scoreboard.js";
 import { getScheduler } from "./scheduler.js";
 
-// Event names
-const EVENTS = {
-  ROUND_STARTED: "round.started",
-  ROUND_TIMER_TICK: "round.timer.tick",
-  COOLDOWN_TIMER_TICK: "cooldown.timer.tick",
-  ROUND_EVALUATED: "round.evaluated",
-  MATCH_CONCLUDED: "match.concluded",
-  CONTROL_STATE_CHANGED: "control.state.changed"
-};
-
 let _bound = false;
-let _currentState = null;
-let _lastOutcome = "none";
+let _state = { current: null, lastOutcome: "none" };
 let _lastRoundIndex = 0;
 let _handlers = [];
 let _waitingTimer = null;
 let _waitingClearer = null;
 let _onResetUi = null;
-
-/**
- * Detects if the application is running in CLI mode.
- *
- * @returns {boolean} - True if CLI mode is active.
- */
-const isCliMode = () => !!document.getElementById("cli-countdown");
-
-/**
- * Safely parses a value to a finite number.
- *
- * @param {unknown} value - The value to parse.
- * @param {number} [fallback=0] - The fallback value if parsing fails.
- * @returns {number} - The parsed number or fallback.
- */
-const safeNumber = (value, fallback = 0) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-};
-
-/**
- * Safely extracts event detail with fallback to empty object.
- *
- * @param {Event} event - The event object.
- * @returns {object} - The detail object or empty object.
- */
-const getEventDetail = (event) => event?.detail || {};
-
-/**
- * Safely normalizes outcome string to a standard enum.
- *
- * @param {string|unknown} outcome - The raw outcome value.
- * @returns {'playerWin'|'opponentWin'|'draw'|'none'} - Normalized outcome enum.
- */
-const mapOutcomeToEnum = (outcome) => {
-  const s = String(outcome || "");
-  if (/player/i.test(s)) return "playerWin";
-  if (/opponent/i.test(s)) return "opponentWin";
-  if (/draw/i.test(s)) return "draw";
-  return "none";
-};
-
-/**
- * Extracts and validates round number from event detail.
- *
- * @param {object} detail - The event detail object.
- * @returns {number|null} - The round number or null if invalid.
- */
-const extractRoundNumber = (detail) => {
-  const n = typeof detail.roundIndex === "number" ? detail.roundIndex : detail.roundNumber;
-  return typeof n === "number" ? n : null;
-};
-
-/**
- * Checks if a round number is new (greater than the last observed).
- *
- * @param {number|null} roundNumber - The round number to check.
- * @returns {boolean} - True if it's a new round.
- */
-const isNewRound = (roundNumber) => {
-  if (typeof roundNumber !== "number" || roundNumber < 0) return false;
-  return roundNumber > _lastRoundIndex;
-};
-
-/**
- * Extracts player and opponent scores from event detail.
- *
- * @param {object} detail - The event detail object.
- * @returns {{player: number, opponent: number}} - Extracted scores.
- */
-const extractScores = (detail) => {
-  return {
-    player: safeNumber(detail?.scores?.player),
-    opponent: safeNumber(detail?.scores?.opponent)
-  };
-};
-
-/**
- * Displays outcome information and optional message.
- *
- * @param {string|unknown} outcomeRaw - The raw outcome value.
- * @param {string} [message] - Optional message to display.
- */
-const displayOutcome = (outcomeRaw, message) => {
-  const outcomeType = mapOutcomeToEnum(outcomeRaw);
-  _lastOutcome = outcomeType;
-  if (message) {
-    showMessage(String(message), { outcome: true, outcomeType });
-  } else {
-    showMessage("", { outcome: true, outcomeType });
-  }
-};
-
-/**
- * Cancels the waiting message timeout and clears the temporary message.
- */
+// Schedule fallback message if no state is observed within 500ms
+try {
+  const scheduler = getScheduler();
+  _waitingTimer = scheduler.setTimeout(() => {
+    try {
+      _waitingClearer =
+        typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
+    } catch {}
+  }, 500);
+} catch {}
 function _cancelWaiting() {
   try {
     if (_waitingTimer) {
@@ -139,10 +42,14 @@ function _cancelWaiting() {
   } catch {}
   _waitingClearer = null;
 }
+function mapOutcomeToEnum(outcome) {
+  const s = String(outcome || "");
+  if (/player/i.test(s)) return "playerWin";
+  if (/opponent/i.test(s)) return "opponentWin";
+  if (/draw/i.test(s)) return "draw";
+  return "none";
+}
 
-/**
- * Registers a window event listener to reset the UI and reset round counter on game:reset-ui.
- */
 function registerResetUiListener() {
   if (typeof window === "undefined" || typeof window.addEventListener !== "function") {
     return;
@@ -164,9 +71,6 @@ function registerResetUiListener() {
   }
 }
 
-/**
- * Unregisters the window event listener for game:reset-ui.
- */
 function unregisterResetUiListener() {
   if (typeof window === "undefined" || typeof window.removeEventListener !== "function") {
     _onResetUi = null;
@@ -211,68 +115,94 @@ export function initBattleScoreboardAdapter() {
     onBattleEvent(type, fn);
   };
 
-  // round.started → round counter (skip in CLI mode)
-  on(EVENTS.ROUND_STARTED, (e) => {
-    _cancelWaiting();
-    try {
-      const d = getEventDetail(e);
-      const roundNum = extractRoundNumber(d);
-      if (isNewRound(roundNum)) {
-        if (!isCliMode()) updateRoundCounter(roundNum);
-        _lastRoundIndex = roundNum;
-      }
-      // Ensure root outcome resets to none at round start
-      displayOutcome("none");
-    } catch {}
-  });
+  // round.started → round counter
+  // Skip in CLI mode (battleCLI handles its own round counter display with target info)
+  if (!document.getElementById("cli-countdown")) {
+    on("round.started", (e) => {
+      _cancelWaiting();
+      try {
+        const d = e?.detail || {};
+        const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
+        if (typeof n === "number" && n > _lastRoundIndex) {
+          updateRoundCounter(n);
+          _lastRoundIndex = n;
+        }
+        // Ensure root outcome resets to none at round start
+        showMessage("", { outcome: true, outcomeType: "none" });
+      } catch {}
+    });
+  } else {
+    // In CLI mode, still subscribe to round.started to clear messages and update outcome
+    on("round.started", (e) => {
+      _cancelWaiting();
+      try {
+        const d = e?.detail || {};
+        const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
+        if (typeof n === "number" && n > _lastRoundIndex) {
+          _lastRoundIndex = n;
+        }
+        // Ensure root outcome resets to none at round start (but don't update CLI counter)
+        showMessage("", { outcome: true, outcomeType: "none" });
+      } catch {}
+    });
+  }
 
   // round.timer.tick and cooldown.timer.tick → header timer (seconds)
   // Skip timer updates in CLI mode (battleCLI handles its own timer display)
-  if (!isCliMode()) {
+  if (!document.getElementById("cli-countdown")) {
     const handleTimerTick = (e) => {
       _cancelWaiting();
       try {
-        const ms = safeNumber(e?.detail?.remainingMs);
-        updateTimer(Math.max(0, Math.round(ms / 1000)));
+        const ms = Number(e?.detail?.remainingMs);
+        if (Number.isFinite(ms)) updateTimer(Math.max(0, Math.round(ms / 1000)));
       } catch {}
     };
 
-    on(EVENTS.ROUND_TIMER_TICK, handleTimerTick);
-    on(EVENTS.COOLDOWN_TIMER_TICK, handleTimerTick);
+    on("round.timer.tick", handleTimerTick);
+    on("cooldown.timer.tick", handleTimerTick);
   }
 
   // round.evaluated → scores (+ optional message)
-  on(EVENTS.ROUND_EVALUATED, (e) => {
+  on("round.evaluated", (e) => {
     _cancelWaiting();
     try {
-      const d = getEventDetail(e);
-      const { player, opponent } = extractScores(d);
-      updateScore(player, opponent);
-      displayOutcome(d?.outcome, d.message);
+      const d = e?.detail || {};
+      const p = Number(d?.scores?.player) || 0;
+      const o = Number(d?.scores?.opponent) || 0;
+      updateScore(p, o);
+      const outcomeType = mapOutcomeToEnum(d?.outcome);
+      _state.lastOutcome = outcomeType;
+      if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
+      else showMessage("", { outcome: true, outcomeType });
     } catch {}
   });
 
   // match.concluded → final scores + clear round counter (+ optional message)
-  on(EVENTS.MATCH_CONCLUDED, (e) => {
+  on("match.concluded", (e) => {
     _cancelWaiting();
     try {
-      const d = getEventDetail(e);
-      const { player, opponent } = extractScores(d);
-      updateScore(player, opponent);
+      const d = e?.detail || {};
+      const p = Number(d?.scores?.player) || 0;
+      const o = Number(d?.scores?.opponent) || 0;
+      updateScore(p, o);
       clearRoundCounter();
-      displayOutcome(d?.winner || d?.reason, d.message);
+      const outcomeType = mapOutcomeToEnum(d?.winner || d?.reason);
+      _state.lastOutcome = outcomeType;
+      if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
+      else showMessage("", { outcome: true, outcomeType });
     } catch {}
   });
 
   // control.state.changed reserved for Phase 2
-  on(EVENTS.CONTROL_STATE_CHANGED, (e) => {
+  on("control.state.changed", (e) => {
     _cancelWaiting();
     try {
       const to = e?.detail?.to;
-      _currentState = to || _currentState;
+      _state.current = to || _state.current;
       if (to === "selection" || to === "cooldown") {
         // Clear outcome on authoritative transition back to selection/cooldown
-        displayOutcome("none");
+        showMessage("", { outcome: true, outcomeType: "none" });
+        _state.lastOutcome = "none";
       }
     } catch {}
   });
