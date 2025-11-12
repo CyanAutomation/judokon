@@ -265,11 +265,13 @@ export function createActionBar(options = {}) {
     // Check stat shortcuts (1-5)
     if (key >= "1" && key <= "5") {
       const statIndex = parseInt(key) - 1;
-      const stat = STATS[statIndex];
-      if (stat && statButtonsEnabled) {
-        e.preventDefault();
-        handleStatClick(stat);
-        return;
+      if (statIndex < STATS.length) {
+        const stat = STATS[statIndex];
+        if (stat && statButtonsEnabled) {
+          e.preventDefault();
+          handleStatClick(stat);
+          return;
+        }
       }
     }
 
@@ -282,7 +284,10 @@ export function createActionBar(options = {}) {
 
     // Check action shortcut (Enter or Space)
     if (key === "enter" || key === " ") {
-      if (actionButtonEnabled && document.activeElement !== buttonElements.options) {
+      const isInputField =
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA";
+      if (actionButtonEnabled && !isInputField) {
         e.preventDefault();
         handleActionClick();
         return;
@@ -361,16 +366,10 @@ export function createActionBar(options = {}) {
 
     const btn = buttonElements.action;
     if (btn) {
-      const labelMap = {
-        start: "Start",
-        next: "Next",
-        draw: "Draw",
-        done: "Done"
-      };
-      btn.textContent = labelMap[state] || "Next";
+      btn.textContent = ACTION_LABELS[state] || "Next";
       btn.disabled = disabled;
       btn.setAttribute("data-action-state", state);
-      btn.setAttribute("aria-pressed", disabled ? "true" : "false");
+      btn.setAttribute("aria-disabled", disabled ? "true" : "false");
     }
   }
 
@@ -396,7 +395,7 @@ export function createActionBar(options = {}) {
     subscribeToEngine();
 
     // Attach global keyboard listeners
-    const boundKeyDown = handleKeyDown.bind(null);
+    const boundKeyDown = (e) => handleKeyDown(e);
     document.addEventListener("keydown", boundKeyDown);
     boundListeners.set("keydown", boundKeyDown);
 
