@@ -103,9 +103,7 @@ test.describe("View Judoka screen", () => {
     await expect(historyPanel).not.toHaveAttribute("open");
   });
 
-  test("history panel focus management - focus returns to button on close", async ({
-    page
-  }) => {
+  test("history panel focus management - focus returns to button on close", async ({ page }) => {
     const historyBtn = page.locator("#toggle-history-btn");
 
     // Open the panel
