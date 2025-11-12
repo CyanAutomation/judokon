@@ -24,7 +24,7 @@ let resolveReady;
  * (both 'home' and 'state' parts are ready).
  *
  * @type {Promise<void>}
- * @param {(value: void) => void} resolve - Resolver provided by the promise executor.
+ * @type {Promise<void>}
  * @pseudocode
  * 1. Create a new promise and capture its resolve function.
  * 2. Store the resolver so other modules can trigger readiness completion.
