@@ -8,8 +8,8 @@
  * 3. Call dispatchBattleEvent with proper promise handling
  * 4. Return normalized result with ok/result/reason structure
  */
-export async function dispatchBattleEvent(page, eventName) {
-  return await page.evaluate((event) => {
+export async function dispatchBattleEvent(page, eventName, payload) {
+  return await page.evaluate(({ event, data }) => {
     return new Promise((resolve) => {
       const api = window.__TEST_API?.state;
       if (!api || typeof api.dispatchBattleEvent !== "function") {
@@ -18,7 +18,7 @@ export async function dispatchBattleEvent(page, eventName) {
       }
 
       try {
-        const result = api.dispatchBattleEvent(event);
+        const result = api.dispatchBattleEvent(event, data);
         if (result && typeof result.then === "function") {
           result
             .then((value) => {
@@ -38,7 +38,7 @@ export async function dispatchBattleEvent(page, eventName) {
         resolve({ ok: false, result: null, reason: error?.message ?? "dispatch failed" });
       }
     });
-  }, eventName);
+  }, { event: eventName, data: payload });
 }
 
 /**
