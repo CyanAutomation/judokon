@@ -10,23 +10,16 @@ test.describe("skipRoundCooldown feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for body to have the feature marker
-    await page.waitForFunction(
-      () => document.body?.getAttribute("data-feature-skip-round-cooldown") === "enabled"
-    );
+    const body = page.locator("body");
+    await expect(body).toHaveAttribute("data-feature-skip-round-cooldown", "enabled");
 
     // Verify the body has the enabled marker
-    const bodyMarker = await page.locator("body").getAttribute("data-feature-skip-round-cooldown");
+    const bodyMarker = await body.getAttribute("data-feature-skip-round-cooldown");
     expect(bodyMarker).toBe("enabled");
 
-    await page.waitForFunction(
-      () =>
-        document.getElementById("next-button")?.getAttribute("data-feature-skip-round-cooldown") ===
-        "enabled"
-    );
-    const nextMarker = await page
-      .locator('[data-testid="next-button"]')
-      .getAttribute("data-feature-skip-round-cooldown");
+    const nextButton = page.locator('[data-testid="next-button"]');
+    await expect(nextButton).toHaveAttribute("data-feature-skip-round-cooldown", "enabled");
+    const nextMarker = await nextButton.getAttribute("data-feature-skip-round-cooldown");
     expect(nextMarker).toBe("enabled");
   });
 
@@ -39,23 +32,16 @@ test.describe("skipRoundCooldown feature flag", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for body to have the feature marker
-    await page.waitForFunction(
-      () => document.body?.getAttribute("data-feature-skip-round-cooldown") === "disabled"
-    );
+    const body = page.locator("body");
+    await expect(body).toHaveAttribute("data-feature-skip-round-cooldown", "disabled");
 
     // Verify the body has the disabled marker
-    const bodyMarker = await page.locator("body").getAttribute("data-feature-skip-round-cooldown");
+    const bodyMarker = await body.getAttribute("data-feature-skip-round-cooldown");
     expect(bodyMarker).toBe("disabled");
 
-    await page.waitForFunction(
-      () =>
-        document.getElementById("next-button")?.getAttribute("data-feature-skip-round-cooldown") ===
-        "disabled"
-    );
-    const nextMarker = await page
-      .locator('[data-testid="next-button"]')
-      .getAttribute("data-feature-skip-round-cooldown");
+    const nextButton = page.locator('[data-testid="next-button"]');
+    await expect(nextButton).toHaveAttribute("data-feature-skip-round-cooldown", "disabled");
+    const nextMarker = await nextButton.getAttribute("data-feature-skip-round-cooldown");
     expect(nextMarker).toBe("disabled");
   });
 
