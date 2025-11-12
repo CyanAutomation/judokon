@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHelper.js";
-import { completeRoundViaApi } from "../helpers/battleApiHelper.js";
+import { completeRoundViaApi, dispatchBattleEvent } from "../helpers/battleApiHelper.js";
 import { triggerAutoSelect } from "../helpers/autoSelectHelper.js";
 
 test.describe("Battle state progress list", () => {
@@ -181,33 +181,90 @@ test.describe("Battle state progress list", () => {
         .poll(async () => progress.getAttribute("data-feature-battle-state-ready"))
         .toBe("true");
 
-      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
-
-      const mappingSnapshot = await page.evaluate(async () => {
+      await page.evaluate(() => {
         const list = document.getElementById("battle-state-progress");
-        if (!list) return null;
-        const mod = await import("../helpers/battleStateProgress.js");
-        mod.updateActiveState(list, "interruptRound");
-        const cooldownItem = list.querySelector('li[data-state="cooldown"]');
-        const mappedAttr = cooldownItem?.getAttribute("data-feature-battle-state-active") ?? null;
-        const roundModificationItem = list.querySelector('li[data-state="roundDecision"]');
-        mod.updateActiveState(list, "roundModification");
-        const remappedRound = roundModificationItem?.getAttribute(
-          "data-feature-battle-state-active"
-        );
-        return {
-          active: list.getAttribute("data-feature-battle-state-active"),
-          original: list.getAttribute("data-feature-battle-state-active-original"),
-          cooldownMarker: mappedAttr,
-          remappedRound
+        if (!list) return;
+
+        if (window.__progressHistoryObserver) {
+          try {
+            window.__progressHistoryObserver.disconnect();
+          } catch {}
+        }
+
+        const history = [];
+        const recordSnapshot = () => {
+          history.push({
+            active: list.getAttribute("data-feature-battle-state-active"),
+            original: list.getAttribute("data-feature-battle-state-active-original")
+          });
         };
+
+        recordSnapshot();
+
+        const observer = new MutationObserver((mutations) => {
+          if (
+            mutations.some((mutation) =>
+              mutation.attributeName === "data-feature-battle-state-active" ||
+              mutation.attributeName === "data-feature-battle-state-active-original"
+            )
+          ) {
+            recordSnapshot();
+          }
+        });
+
+        observer.observe(list, {
+          attributes: true,
+          attributeFilter: [
+            "data-feature-battle-state-active",
+            "data-feature-battle-state-active-original"
+          ]
+        });
+
+        window.__progressHistory = history;
+        window.__progressHistoryObserver = observer;
       });
 
-      expect(mappingSnapshot).not.toBeNull();
-      expect(mappingSnapshot?.active).toBe("roundDecision");
-      expect(mappingSnapshot?.original).toBe("roundModification");
-      expect(mappingSnapshot?.cooldownMarker).toBe("true");
-      expect(mappingSnapshot?.remappedRound).toBe("true");
+      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
+
+      const interruptResult = await dispatchBattleEvent(page, "interrupt", { reason: "pause" });
+      expect(interruptResult.ok).toBe(true);
+
+      await waitForBattleState(page, "cooldown", { timeout: 7_500 });
+      await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+
+      const adminInterrupt = await dispatchBattleEvent(page, "interrupt", {
+        reason: "admin review",
+        adminTest: true,
+        modification: "score adjusted"
+      });
+      expect(adminInterrupt.ok).toBe(true);
+
+      const progressHistory = await page.evaluate(() => {
+        if (window.__progressHistoryObserver) {
+          try {
+            window.__progressHistoryObserver.disconnect();
+          } catch {}
+        }
+        const snapshot = Array.isArray(window.__progressHistory)
+          ? [...window.__progressHistory]
+          : [];
+        try {
+          delete window.__progressHistoryObserver;
+          delete window.__progressHistory;
+        } catch {}
+        return snapshot;
+      });
+
+      const sawInterruptRemap = progressHistory.some(
+        (entry) => entry?.active === "cooldown" && entry?.original === "interruptRound"
+      );
+      expect(sawInterruptRemap).toBe(true);
+
+      const sawModificationRemap = progressHistory.some(
+        (entry) => entry?.active === "roundDecision" && entry?.original === "roundModification"
+      );
+      expect(sawModificationRemap).toBe(true);
+
       await expect(progress.locator('li[data-state="interruptRound"]')).toHaveCount(0);
     }, ["log", "info", "warn", "error", "debug"]));
 
