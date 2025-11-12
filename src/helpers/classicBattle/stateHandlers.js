@@ -17,6 +17,13 @@ import { roundModificationEnter } from "./stateHandlers/roundModificationEnter.j
  * Map of classic battle state handlers.
  *
  * @type {Record<string, {onEnter?: Function, onExit?: Function}>}
+ * @pseudocode
+ * 1. Import individual handler functions (onEnter/onExit) from ./stateHandlers/ directory
+ * 2. Build a record mapping state names (strings) to handler objects
+ *    - Each state name maps to {onEnter?: Function, onExit?: Function}
+ *    - onEnter is called when entering the state
+ *    - onExit is called when exiting the state (if defined)
+ * 3. Export as default and named export for use by state machine
  */
 export const stateHandlers = {
   waitingForMatchStart: { onEnter: waitingForMatchStartEnter },

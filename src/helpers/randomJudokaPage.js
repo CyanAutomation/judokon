@@ -23,7 +23,6 @@
  */
 import { generateRandomCard, loadGokyoLookup, renderJudokaCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
-import { createButton } from "../components/Button.js";
 import { applyMotionPreference, shouldReduceMotionSync } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
@@ -37,7 +36,6 @@ import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardSta
 import { getSetting, setCachedSettings } from "./settingsCache.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
-const historyTogglePlacementRegistry = new WeakMap();
 let randomJudokaPageInitialized = false;
 let randomJudokaInitPromise = null;
 
@@ -47,81 +45,6 @@ function signalRandomJudokaReady(resolve) {
     document.dispatchEvent(new CustomEvent("random-judoka-ready", { bubbles: true }));
   }
   resolve();
-}
-
-/**
- * Floats the history toggle button inside the dialog panel to keep it accessible.
- *
- * @pseudocode
- * 1. Look up the placement registration for the provided dialog.
- * 2. Mirror the toggle button's size on the placeholder and reveal it.
- * 3. Absolutely position the toggle button inside the dialog using calculated offsets.
- * 4. Append the toggle button into the dialog so it remains clickable.
- *
- * @param {HTMLDialogElement} historyPanel - The dialog panel element.
- * @param {HTMLElement} toggleHistoryBtn - The toggle button to float.
- */
-function floatHistoryToggleButton(historyPanel, toggleHistoryBtn) {
-  const placement = historyTogglePlacementRegistry.get(historyPanel);
-  if (!placement) {
-    return;
-  }
-
-  const rect = toggleHistoryBtn.getBoundingClientRect();
-  const panelRect = historyPanel.getBoundingClientRect();
-  const offsetTop = rect.top - panelRect.top;
-  const offsetLeft = rect.left - panelRect.left;
-
-  placement.placeholder.style.display = "inline-block";
-  placement.placeholder.style.width = `${rect.width}px`;
-  placement.placeholder.style.height = `${rect.height}px`;
-
-  toggleHistoryBtn.dataset.historyToggleFloating = "true";
-  toggleHistoryBtn.style.position = "absolute";
-  toggleHistoryBtn.style.top = `${offsetTop}px`;
-  toggleHistoryBtn.style.left = `${offsetLeft}px`;
-  toggleHistoryBtn.style.width = `${rect.width}px`;
-  toggleHistoryBtn.style.height = `${rect.height}px`;
-  toggleHistoryBtn.style.zIndex = "var(--z-index-floating-toggle, 101)";
-
-  historyPanel.appendChild(toggleHistoryBtn);
-}
-
-/**
- * Restores the history toggle button to its original position.
- *
- * @pseudocode
- * 1. Ensure the toggle button is currently floated.
- * 2. Retrieve the placeholder that marks the original position.
- * 3. Hide the placeholder and move the toggle button back before it.
- * 4. Clear the positioning styles and floating metadata on the toggle button.
- *
- * @param {HTMLDialogElement} historyPanel - The dialog panel element.
- * @param {HTMLElement} toggleHistoryBtn - The toggle button to restore.
- */
-function restoreHistoryToggleButton(historyPanel, toggleHistoryBtn) {
-  if (toggleHistoryBtn.dataset.historyToggleFloating !== "true") {
-    return;
-  }
-
-  const placement = historyTogglePlacementRegistry.get(historyPanel);
-  if (!placement?.placeholder?.parentElement) {
-    return;
-  }
-
-  placement.placeholder.style.display = "none";
-  placement.placeholder.style.width = "";
-  placement.placeholder.style.height = "";
-
-  placement.placeholder.parentElement.insertBefore(toggleHistoryBtn, placement.placeholder);
-
-  toggleHistoryBtn.style.position = "";
-  toggleHistoryBtn.style.top = "";
-  toggleHistoryBtn.style.left = "";
-  toggleHistoryBtn.style.width = "";
-  toggleHistoryBtn.style.height = "";
-  toggleHistoryBtn.style.zIndex = "";
-  delete toggleHistoryBtn.dataset.historyToggleFloating;
 }
 
 /**
@@ -135,7 +58,6 @@ function restoreHistoryToggleButton(historyPanel, toggleHistoryBtn) {
  *
  * @returns {Promise<{prefersReducedMotion: boolean}>}
  */
-export async function initFeatureFlagState() {
   const hasMatchMedia = typeof window !== "undefined" && typeof window.matchMedia === "function";
   let settings;
   try {
@@ -212,99 +134,25 @@ export async function initFeatureFlagState() {
  * Build a slide-out history panel for previously drawn cards.
  *
  * @pseudocode
- * 1. Create toggle button and an off-canvas dialog element.
- * 2. Populate the panel with a title and empty list container.
- * 3. Append the panel to the document body and return UI handles.
+ * 1. Query the static #history-panel details element from the DOM.
+ * 2. Apply reduced-motion class if needed.
+ * 3. Return references to the panel and list container.
  *
  * @param {boolean} prefersReducedMotion
- * @returns {{historyPanel: HTMLElement, historyList: HTMLElement, toggleHistoryBtn: HTMLElement}}
+ * @returns {{historyPanel: HTMLDetailsElement, historyList: HTMLElement, toggleHistoryBtn: HTMLElement}}
  */
-export function buildHistoryPanel(prefersReducedMotion) {
-  const cardSection = document.querySelector(".card-section");
-  const toggleHistoryBtn = createButton("History", {
-    id: "toggle-history-btn",
-    type: "button"
-  });
-  toggleHistoryBtn.setAttribute("aria-controls", "history-panel");
-  toggleHistoryBtn.setAttribute("aria-expanded", "false");
-  toggleHistoryBtn.setAttribute("aria-haspopup", "dialog");
-  cardSection.appendChild(toggleHistoryBtn);
-  const togglePlaceholder = document.createElement("span");
-  togglePlaceholder.dataset.historyTogglePlaceholder = "true";
-  togglePlaceholder.style.display = "none";
-  toggleHistoryBtn.after(togglePlaceholder);
+export function getHistoryPanelElements(prefersReducedMotion) {
+  const historyPanel = document.getElementById("history-panel");
+  const toggleHistoryBtn = document.getElementById("toggle-history-btn");
+  const historyList = historyPanel?.querySelector(".history-list");
 
-  const historyPanel = document.createElement("dialog");
-  historyPanel.id = "history-panel";
-  historyPanel.setAttribute("aria-labelledby", "history-panel-title");
-  historyPanel.setAttribute("aria-hidden", "true");
-  historyPanel.classList.add("history-panel");
-
-  const supportsNativeDialog = typeof historyPanel.showModal === "function";
-  historyPanel.dataset.supportsNativeDialog = supportsNativeDialog ? "true" : "false";
-  historyTogglePlacementRegistry.set(historyPanel, {
-    placeholder: togglePlaceholder
-  });
-
-  if (!supportsNativeDialog) {
-    historyPanel.open = false;
-    historyPanel.returnValue = "";
-
-    historyPanel.showModal = () => {
-      if (historyPanel.open) {
-        return;
-      }
-      historyPanel.open = true;
-      historyPanel.returnValue = "";
-      historyPanel.setAttribute("open", "");
-      historyPanel.setAttribute("aria-hidden", "false");
-    };
-    historyPanel.close = (returnValue = "") => {
-      if (!historyPanel.open) {
-        return;
-      }
-      historyPanel.returnValue = returnValue;
-      historyPanel.open = false;
-      historyPanel.removeAttribute("open");
-      historyPanel.setAttribute("aria-hidden", "true");
-      historyPanel.dispatchEvent(new Event("close"));
-    };
+  if (!historyPanel || !toggleHistoryBtn || !historyList) {
+    throw new Error("History panel elements not found in DOM");
   }
 
   if (prefersReducedMotion) {
     historyPanel.classList.add("history-panel--reduced-motion");
   }
-
-  const historyTitle = document.createElement("h2");
-  historyTitle.id = "history-panel-title";
-  historyTitle.textContent = "History";
-  historyTitle.setAttribute("tabindex", "-1");
-  const historyList = document.createElement("ul");
-  historyPanel.append(historyTitle, historyList);
-  document.body.appendChild(historyPanel);
-
-  historyPanel.addEventListener("cancel", (event) => {
-    if (event.defaultPrevented) {
-      event.preventDefault();
-      return;
-    }
-
-    if (!supportsNativeDialog) {
-      event.preventDefault();
-      historyPanel.close();
-    }
-  });
-
-  historyPanel.addEventListener("close", () => {
-    toggleHistoryBtn.setAttribute("aria-expanded", "false");
-    if (historyPanel.dataset.supportsNativeDialog === "true") {
-      historyPanel.setAttribute("aria-hidden", "true");
-    }
-    restoreHistoryToggleButton(historyPanel, toggleHistoryBtn);
-    runMicrotask(() => {
-      toggleHistoryBtn.focus();
-    });
-  });
 
   return { historyPanel, historyList, toggleHistoryBtn };
 }
@@ -363,40 +211,32 @@ function addToHistory(historyManager, historyList, judoka) {
 }
 
 /**
- * Toggles the history panel dialog and coordinates focus management.
+ * Toggles the history panel details element and coordinates focus management.
  *
- * @summary Uses the dialog API to show/hide the history drawer and
- * ensures the heading receives focus on open.
+ * @summary Uses the native details element's open state to show/hide the history panel
+ * and ensures proper focus management on open/close.
  *
  * @pseudocode
- * 1. If the dialog is closed:
- *    a. Set `aria-expanded` on the toggle button to "true".
- *    b. Call `showModal()` on the dialog.
- *    c. Queue a microtask to focus the history heading.
- * 2. Otherwise call `close()` to hide the dialog.
+ * 1. If the details element is closed:
+ *    a. Set open to true to show the panel.
+ *    b. Queue a microtask to focus the summary element.
+ * 2. Otherwise set open to false to hide the panel.
+ * 3. On close, restore focus to the summary (toggle button).
  *
- * @param {HTMLDialogElement} historyPanel - The panel dialog element
- * @param {HTMLElement} toggleHistoryBtn - The toggle button element
+ * @param {HTMLDetailsElement} historyPanel - The details panel element
+ * @param {HTMLElement} toggleHistoryBtn - The summary button element
  */
 function toggleHistory(historyPanel, toggleHistoryBtn) {
   if (!historyPanel.open) {
-    toggleHistoryBtn.setAttribute("aria-expanded", "true");
-    historyPanel.showModal();
-    if (historyPanel.dataset.supportsNativeDialog === "true") {
-      historyPanel.setAttribute("aria-hidden", "false");
-    }
-    if (historyTogglePlacementRegistry.has(historyPanel)) {
-      floatHistoryToggleButton(historyPanel, toggleHistoryBtn);
-    }
-
-    const historyTitle = historyPanel.querySelector("h2");
-    if (historyTitle) {
-      runMicrotask(() => {
-        historyTitle.focus();
-      });
-    }
+    historyPanel.open = true;
+    runMicrotask(() => {
+      toggleHistoryBtn.focus();
+    });
   } else {
-    historyPanel.close();
+    historyPanel.open = false;
+    runMicrotask(() => {
+      toggleHistoryBtn.focus();
+    });
   }
 }
 
@@ -541,11 +381,6 @@ async function displayCard({
 }
 
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Set up the Random Judoka page UI and behavior.
  *
  * @summary Renders the draw button/history panel, preloads data, wires listeners,
@@ -554,7 +389,7 @@ async function displayCard({
  * @pseudocode
  * 1. Initialize feature flags and read motion preference.
  * 2. Render placeholder, preload judoka/gokyo data and compute `dataLoaded`.
- * 3. Build history panel and wire the draw button click to `displayCard`.
+ * 3. Get history panel references from static DOM and wire the draw button click to `displayCard`.
  * 4. Wire history toggle and feature-flag-driven debug panels.
  * 5. If data failed to load, render an error and disable draw button.
  * 6. Initialize tooltips.
@@ -575,7 +410,7 @@ export async function setupRandomJudokaPage() {
   const { judokaData, gokyoData, error: preloadError } = await preloadRandomCardData();
   const dataLoaded = !preloadError;
   const historyManager = createHistoryManager();
-  const { historyPanel, historyList, toggleHistoryBtn } = buildHistoryPanel(prefersReducedMotion);
+  const { historyPanel, historyList, toggleHistoryBtn } = getHistoryPanelElements(prefersReducedMotion);
 
   const drawButton = document.getElementById("draw-card-btn");
   if (!drawButton) {
