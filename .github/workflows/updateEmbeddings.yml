@@ -1,35 +1,113 @@
+# Workflow Name: Update Vector Database
+# Purpose: Nightly refresh of vector embeddings and offline RAG assets
+#
+# This workflow:
+#   - Regenerates vector embeddings from documentation sources
+#   - Builds offline RAG artifacts from fresh embeddings
+#   - Validates all generated files exist and are well-formed
+#   - Creates PR with embedding updates and offline assets
+#   - Tracks embedding statistics and vector metadata
+#   - Provides detailed diff and metrics on PR body
+#
+# Trigger Events:
+#   1. Scheduled: Daily at 3:15 AM UTC (after lintAutofix.yml, before rag_validation.yml)
+#   2. Manual: Can be triggered via GitHub Actions interface
+#
+# Files Modified:
+#   - src/data/client_embeddings.json (vector embeddings)
+#   - src/data/client_embeddings.meta.json (embedding metadata)
+#   - src/data/offline_rag_vectors.bin (offline RAG binary)
+#   - src/data/offline_rag_metadata.json (offline RAG metadata)
+#
+# Performance:
+#   - Node.js 22 LTS (aligned with other workflows)
+#   - Memory: 8GB heap for embedding generation
+#   - npm cache for fast dependency installation
+#   - Expected duration: ~15-20 minutes
+#
+# Workflow Sequence (UTC):
+#   - 03:00: lintAutofix.yml (auto-format, lint fixes)
+#   - 03:15: updateEmbeddings.yml (THIS WORKFLOW - vector embeddings)
+#   - 04:00: rag_validation.yml (validate RAG system)
+#   - 08:00: runUnitTests.yml (on push/PR only)
+
 name: Update Vector Database
 
 on:
   schedule:
-    - cron: "15 3 * * *" # Runs daily at 03:15 UTC
+    - cron: "15 3 * * *" # Runs daily at 03:15 UTC (1 hour 15 min after lintAutofix)
   workflow_dispatch: {}
 
 permissions:
   contents: write
   pull-requests: write
+  checks: write
+
+concurrency:
+  group: update-embeddings
+  cancel-in-progress: true
 
 jobs:
   generate_embeddings:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
+        id: setup-node
         with:
           node-version: 22
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Prepare local RAG model
-        run: npm run rag:prepare:models
+      - name: Validate configuration
+        id: validate
+        timeout-minutes: 2
+        run: |
+          echo "✓ Checking required scripts..."
+          [ -f "scripts/generateEmbeddings.js" ] || { echo "❌ Generator script missing"; exit 1; }
+          [ -f "scripts/buildOfflineRag.mjs" ] || { echo "❌ Builder script missing"; exit 1; }
+          echo "✓ Checking disk space..."
+          df -h | grep -E "/$"
+          echo "✓ All configuration checks passed"
 
-      - name: Run embedding generator
+      - name: Prepare local RAG model
+        id: prepare-model
+        run: npm run rag:prepare:models
+        timeout-minutes: 10
+
+      - name: Generate embeddings
+        id: generate-embeddings
         run: npm run generate:embeddings
+        timeout-minutes: 15
+
+      - name: Validate embeddings generated
+        id: validate-embeddings
+        run: |
+          if [ ! -f "src/data/client_embeddings.json" ]; then
+            echo "❌ Embeddings file not generated"
+            exit 1
+          fi
+          SIZE=$(wc -c < "src/data/client_embeddings.json")
+          SIZE_KB=$((SIZE / 1024))
+          echo "✓ Embeddings file generated: ${SIZE_KB}KB"
+          echo "size_kb=${SIZE_KB}" >> $GITHUB_OUTPUT
+          
+          # Validate JSON structure
+          echo "✓ Validating embeddings JSON structure..."
+          jq '.embeddings | length' src/data/client_embeddings.json > /dev/null || {
+            echo "❌ Invalid embeddings JSON"
+            exit 1
+          }
+          echo "✓ Embeddings JSON is valid"
 
       - name: Check if embeddings changed
         id: embeds-check
@@ -46,26 +124,49 @@ jobs:
           fi
 
       - name: Build offline RAG assets
+        id: build-offline
         if: steps.embeds-check.outputs.changed == 'true'
+        timeout-minutes: 5
         shell: bash
         run: |
           set -euxo pipefail
-          # Build offline assets from freshly generated embeddings
+          echo "Building offline RAG assets from fresh embeddings..."
           npm run build:offline-rag
+          echo "✓ Offline build complete"
           echo '--- offline artifacts present ---'
           (cd src && find data -maxdepth 1 -type f -name 'offline_rag_*' -print 2>/dev/null || true)
 
-      - name: Assert offline files exist
+      - name: Validate offline files exist
+        id: validate-offline
         if: steps.embeds-check.outputs.changed == 'true'
         shell: bash
         run: |
           err=0
-          test -f "src/data/offline_rag_vectors.bin" || { echo "❌ missing offline_rag_vectors.bin"; err=1; }
-          test -f "src/data/offline_rag_metadata.json" || { echo "❌ missing offline_rag_metadata.json"; err=1; }
+          if [ ! -f "src/data/offline_rag_vectors.bin" ]; then
+            echo "❌ missing offline_rag_vectors.bin"
+            err=1
+          else
+            VEC_SIZE=$(stat -f%z "src/data/offline_rag_vectors.bin" 2>/dev/null || stat -c%s "src/data/offline_rag_vectors.bin")
+            echo "✓ offline_rag_vectors.bin: $((VEC_SIZE / 1024 / 1024))MB"
+          fi
+          
+          if [ ! -f "src/data/offline_rag_metadata.json" ]; then
+            echo "❌ missing offline_rag_metadata.json"
+            err=1
+          else
+            echo "✓ offline_rag_metadata.json present"
+            # Validate JSON structure
+            jq '.vectorLength, .count' src/data/offline_rag_metadata.json > /dev/null || {
+              echo "❌ Invalid offline metadata JSON"
+              exit 1
+            }
+          fi
+          
           if [ $err -ne 0 ]; then
             echo "Hint: verify scripts/buildOfflineRag.mjs writes to src/data/."
             exit 1
           fi
+          echo "✓ All offline files validated"
 
       - name: Check for changes
         id: git-check
@@ -79,6 +180,37 @@ jobs:
           else
             echo "Changes detected."
             echo "changed=true" >> $GITHUB_OUTPUT
+            
+            # Count changed files
+            COUNT=$(git diff --cached --name-only | wc -l | tr -d ' ')
+            echo "files_changed=$COUNT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Monitor system resources
+        if: always()
+        run: |
+          echo "=== Memory Usage ==="
+          free -h
+          echo ""
+          echo "=== Disk Usage ==="
+          df -h | grep -E "/$|src"
+          echo ""
+          echo "=== Data Directory Size ==="
+          du -sh src/data/ 2>/dev/null || echo "Cannot calculate"
+
+      - name: Check embedding size changes
+        id: size-check
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          META_FILE="src/data/client_embeddings.meta.json"
+          if [ -f "$META_FILE" ]; then
+            SIZE=$(jq '.fileSizeKB' < "$META_FILE")
+            if [ "$SIZE" -gt 50000 ]; then
+              echo "⚠️ Warning: Embeddings are large (${SIZE}KB). May impact load times."
+            else
+              echo "✓ Embedding size within normal range: ${SIZE}KB"
+            fi
+            echo "size_warning=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Get current date
@@ -89,12 +221,13 @@ jobs:
       - name: Fetch Developer Aphorism
         if: steps.git-check.outputs.changed == 'true'
         id: quote
+        timeout-minutes: 1
         run: |
-          RESPONSE=$(curl -fsL https://zenquotes.io/api/random)
-          if [ $? -ne 0 ]; then
-            echo "quote=Could not fetch quote. 🤖" >> $GITHUB_OUTPUT
+          RESPONSE=$(curl -fsL --max-time 5 https://zenquotes.io/api/random 2>/dev/null || true)
+          if [ -z "$RESPONSE" ]; then
+            echo "quote=Code is poetry. Every commit is an art form. 🎨" >> $GITHUB_OUTPUT
           else
-            QUOTE=$(echo "$RESPONSE" | jq -r '.[0] | "\(.q) — \(.a)"')
+            QUOTE=$(echo "$RESPONSE" | jq -r '.[0] | "\(.q) — \(.a)"' 2>/dev/null || echo "Code is poetry. 🎨")
             echo "quote=$QUOTE" >> $GITHUB_OUTPUT
           fi
 
@@ -119,7 +252,11 @@ jobs:
         run: |
           OUT_DIR="src/data"
           size_kb() {
-            test -f "$1" && echo "$(( $(wc -c < "$1")/1024 ))KB" || echo "—"
+            if [ -f "$1" ]; then
+              echo "$(($(wc -c < "$1")/1024))KB"
+            else
+              echo "—"
+            fi
           }
           VEC_SZ=$(size_kb "$OUT_DIR/offline_rag_vectors.bin")
           META_SZ=$(size_kb "$OUT_DIR/offline_rag_metadata.json")
@@ -132,6 +269,43 @@ jobs:
           echo "meta=${META_SZ}" >> $GITHUB_OUTPUT
           echo "docs=${DOCS}"    >> $GITHUB_OUTPUT
           echo "dim=${DIM}"      >> $GITHUB_OUTPUT
+
+      - name: Generate embedding update report
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          {
+            echo "### Vector Database Update Report"
+            echo ""
+            echo "✅ **Status**: Embeddings Updated Successfully"
+            echo ""
+            echo "**Update Details:**"
+            echo "- Embeddings regenerated: ✓"
+            echo "- Offline RAG assets built: ✓"
+            echo "- Files validated: ✓"
+            echo "- Files changed: ${{ steps.git-check.outputs.files_changed }}"
+            echo ""
+            echo "**Embedding Metrics:**"
+            echo "${{ steps.stats.outputs.summary }}"
+            echo ""
+            echo "**Offline RAG Assets:**"
+            echo "- Vector binary: ${{ steps.offline.outputs.vec }}"
+            echo "- Metadata: ${{ steps.offline.outputs.meta }}"
+            echo "- Documents indexed: ${{ steps.offline.outputs.docs }}"
+            echo "- Vector dimensions: ${{ steps.offline.outputs.dim }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload embedding artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: embeddings-artifacts-${{ github.run_id }}
+          path: |
+            src/data/client_embeddings.json
+            src/data/client_embeddings.meta.json
+            src/data/offline_rag_vectors.bin
+            src/data/offline_rag_metadata.json
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Create Pull Request
         if: steps.git-check.outputs.changed == 'true'
@@ -157,9 +331,49 @@ jobs:
             _${{ steps.quote.outputs.quote }}_
 
           branch: auto/update-vector-db
+          branch-suffix: timestamp
           labels: |
             automated
             backend
             vector
             offline
           assignees: ${{ github.actor }}
+
+      - name: Report success
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          {
+            echo "### 📦 Vector Database Updated"
+            echo ""
+            echo "Pull request created with latest embeddings and offline RAG assets."
+            echo "Review: [View PR](https://github.com/${{ github.repository }}/pulls?q=is%3Apr+is%3Aopen+branch%3Aauto%2Fupdate-vector-db)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report no changes
+        if: steps.git-check.outputs.changed == 'false'
+        run: |
+          {
+            echo "### ℹ️ No Changes Detected"
+            echo ""
+            echo "Vector database and offline RAG assets are up to date."
+            echo "No new PR created."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Vector Database Update Failed"
+            echo ""
+            echo "**Common causes:**"
+            echo "- Out of memory during embedding generation (check Node memory settings)"
+            echo "- RAG model files not downloaded (verify \`rag:prepare:models\`)"
+            echo "- Insufficient disk space for offline RAG build"
+            echo "- Documentation sources corrupted or missing"
+            echo "- Invalid JSON in generated files"
+            echo ""
+            echo "**Debug info:**"
+            echo "- Check system resources section above for memory/disk"
+            echo "- Review validation steps for specific errors"
+            echo "- Artifacts available for inspection: embeddings-artifacts-${{ github.run_id }}"
+          } >> "$GITHUB_STEP_SUMMARY"

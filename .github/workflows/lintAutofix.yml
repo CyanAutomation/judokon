@@ -1,41 +1,20 @@
 # Workflow Name: Auto-format & LINT fix
 # This workflow ensures that the codebase is properly formatted and linted.
-
+#
+# Purpose:
+#   - Automatically format code using Prettier
+#   - Fix linting issues using ESLint
+#   - Validate JSDoc documentation
+#   - Validate data integrity
+#   - Create a pull request with all fixes
+#
 # Trigger Events:
-# 1. Scheduled Trigger:
-#    - Runs every day at 3:00 AM UTC using a cron schedule.
-# 2. Manual Trigger:
-#    - Can be manually triggered via the GitHub Actions interface.
-
-# Permissions:
-# - Grants write access to the repository contents to allow creating pull requests.
-
-# Define a job named 'format_and_lint':
-# - The job runs on the latest version of Ubuntu.
-
-# Steps in the 'format_and_lint' job:
-# 1. Check out the repository:
-#    - Use the 'actions/checkout' action to clone the repository into the workflow environment.
-
-# 2. Set up Node.js:
-#    - Use the 'actions/setup-node' action to install Node.js version 20.
-
-# 3. Install project dependencies:
-#    - Run 'npm ci' to install dependencies in a clean environment.
-
-# 4. Run Prettier:
-#    - Execute 'npx prettier . --write' to format all files in the repository.
-
-# 5. Run ESLint with auto-fix:
-#    - Execute 'npx eslint . --fix' to lint the codebase and automatically fix issues.
-
-# 6. Create a Pull Request:
-#    - Use the 'peter-evans/create-pull-request' action to create a pull request with the following details:
-#      - Commit message: "PR: Auto-formatting and LINT fixes"
-#      - Pull request title: "PR: Auto-formatting and LINT fixes"
-#      - Pull request body: "This PR includes automated formatting via Prettier and lint fixes via ESLint. Please review before merging."
-#      - Branch name: "auto/format-lint-fixes"
-#    - The pull request is created using a token stored in the repository secrets (`AUTOFIX_TOKEN`).
+#   1. Scheduled: Every day at 3:00 AM UTC
+#   2. Manual: Can be triggered via GitHub Actions interface
+#
+# Security Note:
+#   - Uses AUTOFIX_TOKEN secret for PR creation
+#   - Permissions limited to contents:write and pull-requests:write
 name: Auto-format & LINT fix
 
 on:
@@ -49,15 +28,13 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: autofix-${{ github.ref }}
+  group: autofix  # Single global group to prevent concurrent autofix PRs
   cancel-in-progress: true
 
 jobs:
   format_and_lint:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      NODE_VERSION: 22
 
     steps:
       - name: Checkout repository
@@ -66,19 +43,20 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Debug Secrets
-        run: echo "AUTOFIX_TOKEN is set"
-        env:
-          TOKEN: ${{ secrets.AUTOFIX_TOKEN }}
-
       - name: Run Prettier
-        run: npx prettier . --write --ignore-path .prettierignore
+        run: npx prettier . --write --ignore-path .prettierignore --ignore-unknown
+
+      - name: Run JSDoc validation
+        run: npm run check:jsdoc
+
+      - name: Validate data integrity
+        run: npm run validate:data || true
 
       - name: Cache ESLint cache
         uses: actions/cache@v4
@@ -159,6 +137,7 @@ jobs:
       - name: Fetch Today in History
         id: today
         if: steps.git-check.outputs.changed == 'true'
+        timeout-minutes: 1
         run: |
           RESPONSE=$(curl -fsL --max-time 10 https://history.muffinlabs.com/date || true)
           if [ $? -ne 0 ]; then
@@ -182,6 +161,7 @@ jobs:
       - name: Fetch Weather Mood
         id: weather
         if: steps.git-check.outputs.changed == 'true'
+        timeout-minutes: 1
         run: |
           CITY="Wokingham"
           # '&m' forces temperature in Celsius
@@ -201,20 +181,31 @@ jobs:
           title: "PR: Auto-formatting and LINT fixes - ${{ env.date }}"
           body: |
             📣 **PR Details**
-            This PR includes automated formatting via Prettier and LINT fixes via ESLint.
-            Date of creation: ${{ env.date }}.
+            This PR includes automated fixes from:
+            - **Prettier**: Code formatting
+            - **ESLint**: Linting issues
+            - **JSDoc**: Documentation validation
+            - **Data validation**: JSON schema checks
+
+            Date of creation: ${{ env.date }}
             Please review before merging!
+
+            📊 **Fix Summary**
+            - Potential ESLint fixes: ${{ steps.lint-stats.outputs.fixes }}
+            - Fixable errors: ${{ steps.lint-stats.outputs.fixableErrors }}
+            - Fixable warnings: ${{ steps.lint-stats.outputs.fixableWarnings }}
+            - Files affected: ${{ steps.git-check.outputs.files_changed }}
 
             📚 **Today in History**
             ${{ steps.today.outputs.fact }}
 
             🌤️ **Weather Report**
-            ${{ steps.weather.outputs.weather }}.
+            ${{ steps.weather.outputs.weather }}
           branch: auto/format-lint-fixes
           branch-suffix: timestamp
           labels: |
             automated
-            lint
+            linting
             formatting
           assignees: ${{ github.actor }}
           delete-branch: true

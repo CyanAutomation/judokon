@@ -1,3 +1,7 @@
+# ESLint & Prettier Code Quality Workflow
+# Runs on every PR and push to main to catch code style and quality issues.
+# ESLint checks: code quality, syntax errors, best practices
+# Prettier check: code formatting consistency
 name: Run ESLint
 
 on:
@@ -33,12 +37,75 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify linting config
+        run: |
+          test -f eslint.config.mjs || { echo "::error::eslint.config.mjs not found"; exit 1; }
+          echo "Linting configurations validated"
+
+      - name: Cache ESLint cache
+        uses: actions/cache@v4
+        with:
+          path: .eslintcache
+          key: ${{ runner.os }}-eslint-${{ hashFiles('eslint.config.mjs', 'package-lock.json') }}
+          restore-keys: ${{ runner.os }}-eslint-
+
+      - name: Check Prettier formatting
+        id: prettier-check
+        continue-on-error: true
+        run: |
+          UNFORMATTED=$(npx prettier . --check --list-different 2>&1 || true)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "unformatted_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$UNFORMATTED" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "has_unformatted=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_unformatted=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run ESLint
-        run: npx eslint . --format stylish
+        id: eslint-check
+        continue-on-error: true
+        # Lints entire repo including src/, tests/, scripts/, and config files
+        run: npx eslint . --format stylish --max-warnings 0
+
+      - name: Generate ESLint report
+        id: report
+        if: always()
+        continue-on-error: true
+        run: npx eslint . --format json --output-file eslint-report.json || true
+
+      - name: Upload ESLint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report-${{ github.run_id }}
+          path: eslint-report.json
+          retention-days: 7
+
+      - name: Validate linting results
+        if: failure()
+        run: |
+          echo "::error::Linting failed! Run these commands to fix:"
+          echo "  npm run lint              # Check all issues"
+          echo "  npx prettier . --write    # Auto-format code"
+          echo "  npx eslint . --fix        # Auto-fix ESLint issues"
+          exit 1
 
       - name: Summary
         if: always()
         run: |
-          echo "### ESLint" >> "$GITHUB_STEP_SUMMARY"
+          STATUS_ICON="✅"
+          if [ "${{ job.status }}" = "failure" ]; then
+            STATUS_ICON="❌"
+          fi
+          echo "### Linting Results $STATUS_ICON" >> "$GITHUB_STEP_SUMMARY"
           echo "- Node: ${{ env.NODE_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Ref: $GITHUB_REF" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.prettier-check.outputs.has_unformatted }}" = "true" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "⚠️ **Prettier**: Files need formatting:" >> "$GITHUB_STEP_SUMMARY"
+            echo "${{ steps.prettier-check.outputs.unformatted_files }}" | sed 's/^/- /' >> "$GITHUB_STEP_SUMMARY"
+          fi

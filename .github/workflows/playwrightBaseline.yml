@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare local RAG model
+        run: npm run rag:prepare:models
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -43,11 +46,26 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-playwright-
 
+      - name: Cache Playwright test cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/playwright
+          key: ${{ runner.os }}-playwright-test-cache-${{ hashFiles('playwright.config.js') }}
+          restore-keys: ${{ runner.os }}-playwright-test-cache-
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Update Playwright snapshots
+        id: snapshot-update
+        continue-on-error: true
         run: npx playwright test --update-snapshots
+
+      - name: Validate snapshot update
+        if: steps.snapshot-update.outcome == 'failure'
+        run: |
+          echo "::error::Playwright snapshot update failed. Check test stability."
+          exit 1
 
       - name: Check for changes
         id: git-check
@@ -62,7 +80,7 @@ jobs:
       - name: Get current date
         if: steps.git-check.outputs.changed == 'true'
         id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       # 🧮 Collect Test Suite Stats and Roll Dice
       - name: Collect Test Suite Stats
@@ -75,9 +93,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-snapshots-${{ github.run_id }}
-          path: |
-            test-results/**/*.png
-            playwright/**/*-snapshots/**/*
+          retention-days: 7
+          path: playwright/**/*-snapshots/**/*
+
+      - name: Configure Git
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create Pull Request
         if: steps.git-check.outputs.changed == 'true'
@@ -85,11 +108,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "PR: update Playwright baseline images"
-          title: "PR: update Playwright baselines - ${{ env.date }}"
+          title: "PR: update Playwright baselines - ${{ steps.date.outputs.date }}"
           body: |
             📣 **PR Details**
             This PR updates the Playwright baseline screenshots.
             New baseline images overwrite the previous ones.
+            
+            **Generated**: ${{ steps.date.outputs.date }}
+            **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             🔍 **Test Suite Stats**
             - 🖼️ Snapshot files: ${{ steps.stats.outputs.snapshots }}
@@ -99,6 +125,11 @@ jobs:
 
             **Let The Die Roll!**
             ${{ steps.stats.outputs.mood }}
+            
+            ⚠️ **Action Required**
+            - [ ] Review visual changes in updated snapshots
+            - [ ] Verify no unexpected regressions
+            - [ ] Approve and merge if changes look correct
           branch: ${{ env.BRANCH_NAME }}
           labels: |
             automated
@@ -106,3 +137,8 @@ jobs:
             testing
           assignees: ${{ github.actor }}
           delete-branch: true
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Playwright baseline workflow failed. Check logs for details."

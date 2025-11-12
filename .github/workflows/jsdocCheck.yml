@@ -1,6 +1,13 @@
+# JSDoc & Pseudocode Validation Workflow
+# This workflow ensures all exported functions have valid JSDoc blocks
+# and that public/complex functions include @pseudocode annotations.
+# It runs automatically on PR/push to main and can be triggered manually.
 name: Check JSDoc & Pseudocode
 
 on:
+  pull_request: {}
+  push:
+    branches: [main]
   workflow_dispatch: {}
 
 permissions:
@@ -30,10 +37,30 @@ jobs:
         run: npm ci
 
       - name: Run JSDoc/pseudocode checker
+        id: jsdoc-check
+        continue-on-error: true
         run: npm run check:jsdoc
+        # Checks src/ directory for JSDoc compliance
+
+      - name: Validate JSDoc check
+        if: steps.jsdoc-check.outcome == 'failure'
+        run: |
+          echo "::error::JSDoc check failed. Review logs for violations."
+          exit 1
 
       - name: Summary
         if: always()
         run: |
-          echo "### JSDoc Check" >> "$GITHUB_STEP_SUMMARY"
+          STATUS_ICON="✅"
+          if [ "${{ steps.jsdoc-check.outcome }}" == "failure" ]; then
+            STATUS_ICON="❌"
+          fi
+          echo "### JSDoc Check $STATUS_ICON" >> "$GITHUB_STEP_SUMMARY"
           echo "- Node: ${{ env.NODE_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Ref: $GITHUB_REF" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: ${{ steps.jsdoc-check.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.jsdoc-check.outcome }}" == "failure" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "⚠️ JSDoc violations detected. Review logs for details." >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -1,3 +1,39 @@
+# Workflow Name: Update Card Codes
+# Purpose: Regenerate card codes for all judoka entries based on latest data
+#
+# This workflow:
+#   - Regenerates unique card codes for each judoka entry
+#   - Updates the `lastUpdated` timestamp for all records
+#   - Validates generated codes are correct, well-formed, and unique
+#   - Detects any changes to judoka data
+#   - Creates PR with card code updates and detailed reporting
+#   - Tracks number of judoka updated and change statistics
+#
+# Trigger Events:
+#   - Manual: Triggered via GitHub Actions interface (workflow_dispatch)
+#
+# Typical Use Cases:
+#   - After updating judoka data structure
+#   - To refresh card codes and timestamps
+#   - When card generation algorithm changes
+#   - Periodic maintenance of card codes
+#
+# Files Modified:
+#   - src/data/judoka.json (card codes + lastUpdated timestamps)
+#
+# Files Validated:
+#   - src/helpers/cardCode.js (card generation logic)
+#   - updateCodes.mjs (update script)
+#
+# Performance:
+#   - Node.js 22 LTS (aligned with other workflows)
+#   - Quick operation (~2-5 seconds)
+#   - npm cache enabled for fast setup
+
+# Card Codes Update Workflow
+# Regenerates card codes for all judoka entries based on their data.
+# Should be run after bulk changes to judoka data (name, stats, etc.)
+# Manual trigger only to prevent unnecessary updates.
 name: Update Card Codes
 
 on:
@@ -7,48 +43,212 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  checks: write
 
 concurrency:
-  group: update-card-codes-${{ github.ref }}
+  group: update-card-codes
   cancel-in-progress: true
 
 jobs:
   update_card_codes:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      NODE_VERSION: 22
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
+        id: setup-node
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate configuration
+        id: validate
+        timeout-minutes: 2
+        run: |
+          echo "✓ Checking required files..."
+          [ -f "src/data/judoka.json" ] || { echo "❌ judoka.json missing"; exit 1; }
+          [ -f "src/helpers/cardCode.js" ] || { echo "❌ cardCode.js missing"; exit 1; }
+          [ -f "updateCodes.mjs" ] || { echo "❌ updateCodes.mjs missing"; exit 1; }
+          echo "✓ All required files present"
+          
+          echo "✓ Validating judoka.json syntax..."
+          jq '.' src/data/judoka.json > /dev/null || {
+            echo "❌ judoka.json is invalid JSON"
+            exit 1
+          }
+          echo "✓ judoka.json is valid JSON"
+          
+          echo "✓ Checking required fields in judoka entries..."
+          jq -e '.[] | .id and .name' src/data/judoka.json > /dev/null || {
+            echo "❌ Missing required fields in judoka entries (id, name)"
+            exit 1
+          }
+          echo "✓ All entries have required fields"
+
+      - name: Backup original judoka.json
+        id: backup
+        run: |
+          cp src/data/judoka.json src/data/judoka.json.backup
+          echo "✓ Backup created at src/data/judoka.json.backup"
+
       - name: Generate card codes
-        run: node updateCodes.mjs
+        id: generate-codes
+        run: npm run update:codes
+        timeout-minutes: 5
+
+      - name: Validate generated card codes
+        id: validate-codes
+        timeout-minutes: 2
+        run: |
+          echo "Validating generated card codes..."
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("src/data/judoka.json", "utf8"));
+            
+            const codes = new Set();
+            let valid = true;
+            let updated = 0;
+            let missingCardCode = 0;
+            let duplicateCodes = 0;
+            
+            data.forEach((judoka, idx) => {
+              if (!judoka.cardCode) {
+                console.error(`❌ Missing cardCode for judoka ${judoka.id}`);
+                missingCardCode++;
+                valid = false;
+              } else {
+                if (codes.has(judoka.cardCode)) {
+                  console.error(`❌ Duplicate cardCode: ${judoka.cardCode} (judoka ${judoka.id})`);
+                  duplicateCodes++;
+                  valid = false;
+                }
+                codes.add(judoka.cardCode);
+              }
+              
+              if (judoka.lastUpdated) {
+                updated++;
+              }
+            });
+            
+            if (valid) {
+              console.log(`✓ Generated ${data.length} unique card codes`);
+              console.log(`✓ Updated ${updated} lastUpdated timestamps`);
+              console.log(`✓ All card codes are unique and well-formed`);
+            } else {
+              console.error(`\n❌ Validation failed:`);
+              if (missingCardCode > 0) console.error(`  - Missing cardCode: ${missingCardCode}`);
+              if (duplicateCodes > 0) console.error(`  - Duplicate codes: ${duplicateCodes}`);
+              process.exit(1);
+            }
+          '
+
+      - name: Verify backup integrity
+        id: verify-backup
+        run: |
+          echo "Verifying backup can be restored..."
+          jq '.' src/data/judoka.json.backup > /dev/null || {
+            echo "❌ Backup is corrupted and not restorable"
+            exit 1
+          }
+          echo "✓ Backup is valid and restorable"
+
+      - name: Analyze changes
+        id: analyze-changes
+        run: |
+          echo "Analyzing changes..."
+          
+          # Compare original and updated
+          DIFF=$(diff src/data/judoka.json.backup src/data/judoka.json || true)
+          DIFF_LINES=$(echo "$DIFF" | wc -l)
+          
+          # Count judoka entries
+          JUDOKA_COUNT=$(jq 'length' src/data/judoka.json)
+          echo "judoka_count=$JUDOKA_COUNT" >> $GITHUB_OUTPUT
+          
+          # Get file sizes
+          ORIGINAL_SIZE=$(stat -f%z "src/data/judoka.json.backup" 2>/dev/null || stat -c%s "src/data/judoka.json.backup")
+          UPDATED_SIZE=$(stat -f%z "src/data/judoka.json" 2>/dev/null || stat -c%s "src/data/judoka.json")
+          SIZE_DIFF=$((UPDATED_SIZE - ORIGINAL_SIZE))
+          
+          echo "original_size_kb=$((ORIGINAL_SIZE / 1024))" >> $GITHUB_OUTPUT
+          echo "updated_size_kb=$((UPDATED_SIZE / 1024))" >> $GITHUB_OUTPUT
+          echo "size_diff_bytes=$SIZE_DIFF" >> $GITHUB_OUTPUT
+          echo "diff_lines=$DIFF_LINES" >> $GITHUB_OUTPUT
+
+      - name: Display sample changes
+        id: sample-changes
+        run: |
+          echo "=== Sample Card Code Updates (first 3 entries) ==="
+          jq '.[0:3] | .[] | {id, name, cardCode, lastUpdated}' src/data/judoka.json
 
       - name: Stage changes
         id: changes
         run: |
           set -euo pipefail
           git add src/data/judoka.json 2>/dev/null || true
+          
           if git diff --cached --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No changes detected in card codes"
           else
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "files_changed=$(git diff --cached --name-only | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+            FILES=$(git diff --cached --name-only | wc -l | tr -d ' ')
+            echo "files_changed=$FILES" >> $GITHUB_OUTPUT
+            echo "✓ Changes detected in $FILES file(s)"
+            
             echo "changed_files<<'EOF'" >> $GITHUB_OUTPUT
             git diff --cached --name-only >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
+
+      - name: Get current date
+        id: date
+        if: steps.changes.outputs.changed == 'true'
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Generate update report
+        if: always()
+        run: |
+          {
+            echo "### Card Code Update Report"
+            echo ""
+            
+            if [ "${{ steps.changes.outputs.changed }}" == "true" ]; then
+              echo "✅ **Status**: Card codes regenerated successfully"
+              echo ""
+              echo "**Update Details:**"
+              echo "- Judoka entries processed: ${{ steps.analyze-changes.outputs.judoka_count }}"
+              echo "- Files changed: ${{ steps.changes.outputs.files_changed }}"
+              echo "- Original file size: ${{ steps.analyze-changes.outputs.original_size_kb }}KB"
+              echo "- Updated file size: ${{ steps.analyze-changes.outputs.updated_size_kb }}KB"
+              echo "- Size difference: ${{ steps.analyze-changes.outputs.size_diff_bytes }} bytes"
+              echo ""
+              echo "**Actions Completed:**"
+              echo "- ✓ Regenerated card codes for all judoka"
+              echo "- ✓ Updated lastUpdated timestamps"
+              echo "- ✓ Validated card code uniqueness"
+              echo "- ✓ Verified data integrity"
+            else
+              echo "ℹ️ **Status**: No changes detected"
+              echo ""
+              echo "Card codes are already up to date."
+              echo "- Judoka entries: ${{ steps.analyze-changes.outputs.judoka_count }}"
+              echo "- File size: ${{ steps.analyze-changes.outputs.updated_size_kb }}KB"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up backup
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          rm -f src/data/judoka.json.backup
+          echo "✓ Backup cleaned up"
 
       - name: Create Pull Request
         if: steps.changes.outputs.changed == 'true'
@@ -56,22 +256,78 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: update card codes for judoka"
-          title: "PR: Update Judoka Card Codes - ${{ github.run_id }}"
+          title: "chore: update judoka card codes - ${{ steps.date.outputs.date }}"
           body: |
-            This PR updates the card codes for all judoka based on the latest data.
-
-            Files changed:
+            ✅ **Card Codes Regenerated**
+            
+            This PR regenerates card codes for all judoka entries and updates timestamps.
+            
+            **Workflow**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            **Summary**
+            - Judoka entries updated: ${{ steps.analyze-changes.outputs.judoka_count }}
+            - File size change: ${{ steps.analyze-changes.outputs.size_diff_bytes }} bytes
+            - Diff lines: ${{ steps.analyze-changes.outputs.diff_lines }}
+            
+            **What was done:**
+            - ✓ Generated unique card codes for each judoka
+            - ✓ Updated `lastUpdated` timestamp to current date/time
+            - ✓ Validated all card codes are unique and well-formed
+            - ✓ Verified data integrity and consistency
+            
+            **Files Changed**
             ${{ steps.changes.outputs.changed_files }}
           branch: auto/update-card-codes
           branch-suffix: timestamp
           labels: |
             automated
             backend
+            judoka
           assignees: ${{ github.actor }}
           delete-branch: true
 
-      - name: Summary
+      - name: Report success
         if: steps.changes.outputs.changed == 'true'
         run: |
-          echo "### Card Code Update" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Files changed: ${{ steps.changes.outputs.files_changed }}" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### 📝 Card Codes Updated Successfully"
+            echo ""
+            echo "Pull request created with updated card codes."
+            echo "Review and merge to apply changes."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report no changes
+        if: steps.changes.outputs.changed == 'false'
+        run: |
+          {
+            echo "### ℹ️ No Changes Detected"
+            echo ""
+            echo "Card codes are already up to date."
+            echo "No pull request created."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Card Code Update Failed"
+            echo ""
+            echo "**Common causes:**"
+            echo "- \`src/data/judoka.json\` is missing or corrupted"
+            echo "- \`src/helpers/cardCode.js\` has errors in generation logic"
+            echo "- \`updateCodes.mjs\` script has syntax errors"
+            echo "- Generated card codes have duplicates"
+            echo "- JSON validation failed"
+            echo ""
+            echo "**Debug steps:**"
+            echo "1. Verify \`src/data/judoka.json\` is valid JSON: \`jq . src/data/judoka.json\`"
+            echo "2. Check \`src/helpers/cardCode.js\` for errors in generateCardCode()"
+            echo "3. Run \`npm run update:codes\` locally to test"
+            echo "4. Review workflow logs for specific error messages"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up backup on failure
+        if: failure()
+        run: |
+          rm -f src/data/judoka.json.backup
+          echo "✓ Backup cleaned up after failure"

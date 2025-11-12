@@ -1,28 +1,34 @@
 # Workflow Name: Run Unit Tests (Vitest)
-# This workflow is triggered on specific events in the repository.
-
+# Purpose: Execute unit tests on push to main and on all pull requests
+#
+# This workflow:
+#   - Runs Vitest unit test suite (deterministic CI mode)
+#   - Generates test coverage reports
+#   - Runs accessibility/contrast audit (pa11y)
+#   - Provides detailed test reports in GitHub Actions UI
+#   - Uploads test results as artifacts on failure
+#   - Fails if tests or accessibility checks fail
+#
 # Trigger Events:
-# 1. When code is pushed to the 'main' branch.
-# 2. When a pull request is created or updated.
+#   1. Push to main branch
+#   2. Pull request creation or update
+#
+# Success Criteria:
+#   - All Vitest unit tests pass
+#   - All accessibility/contrast checks pass
+#
+# Performance:
+#   - LTS Node.js 22 (aligned with other workflows)
+#   - npm cache for fast dependency installation
+#   - Vitest cache for faster subsequent runs
+#   - Concurrent test execution disabled in CI for determinism
 
-# Define a job named 'test':
-# - The job runs on the latest version of Ubuntu.
-
-# Steps in the 'test' job:
-# 1. Check out the repository's code:
-#    - Use the 'actions/checkout' action to clone the repository into the workflow environment.
-
-# 2. Set up Node.js:
-#    - Use the 'actions/setup-node' action to install Node.js version 18.
-
-# 3. Install project dependencies:
-#    - Run 'npm install' to install all dependencies defined in the 'package.json' file.
-
-# 4. Run the test suite:
-#    - Execute 'npm run test' to run the project's tests using Vitest.
 name: Run Unit Tests (Vitest)
+
 permissions:
   contents: read
+  checks: write
+  pull-requests: write
 
 on:
   push:
@@ -30,32 +36,137 @@ on:
       - main
   pull_request: {}
 
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      NODE_VERSION: 22
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
+        id: setup-node
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: npm
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache Vitest cache
+      - name: Cache Vitest cache and dependencies
         uses: actions/cache@v4
         with:
           path: |
             node_modules/.vitest
-          key: ${{ runner.os }}-vitest-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-vitest-
+            node_modules/.cache
+          key: ${{ runner.os }}-vitest-${{ hashFiles('**/package-lock.json', '**/vitest.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-vitest-
+            ${{ runner.os }}-
 
-      - name: Run Vitest
-        run: npm run test
-      - name: Run contrast audit
+      - name: Check code style (Prettier & ESLint)
+        id: lint
+        run: npx prettier . --check && npx eslint .
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Check JSDoc documentation
+        id: jsdoc
+        run: npm run check:jsdoc
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Run Vitest unit tests
+        id: vitest
+        run: npm run test:ci
+        timeout-minutes: 15
+
+      - name: Generate test coverage
+        id: coverage
+        run: npm run test:cov
+        timeout-minutes: 15
+        continue-on-error: true
+
+      - name: Run accessibility audit
+        id: contrast
         run: npm run check:contrast
+        timeout-minutes: 10
+
+      - name: Generate test report
+        if: always()
+        run: |
+          {
+            echo "### Unit Test Report"
+            echo ""
+            if [ "${{ steps.vitest.outcome }}" == "success" ]; then
+              echo "✅ **Vitest**: All tests passed"
+            else
+              echo "❌ **Vitest**: Some tests failed"
+            fi
+            echo ""
+            if [ "${{ steps.contrast.outcome }}" == "success" ]; then
+              echo "✅ **Accessibility**: All checks passed"
+            else
+              echo "⚠️ **Accessibility**: Some issues found"
+            fi
+            echo ""
+            if [ "${{ steps.lint.outcome }}" == "success" ]; then
+              echo "✅ **Lint & Format**: All checks passed"
+            else
+              echo "⚠️ **Lint & Format**: Some issues found (non-blocking)"
+            fi
+            echo ""
+            if [ "${{ steps.jsdoc.outcome }}" == "success" ]; then
+              echo "✅ **JSDoc**: Documentation valid"
+            else
+              echo "⚠️ **JSDoc**: Some issues found (non-blocking)"
+            fi
+            echo ""
+            if [ "${{ steps.coverage.outcome }}" == "success" ]; then
+              echo "✅ **Coverage**: Report generated"
+            else
+              echo "ℹ️ **Coverage**: Report generation skipped or failed"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            coverage/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload coverage reports (on success)
+        if: steps.coverage.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ github.run_id }}
+          path: coverage/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Print test environment info on failure
+        if: failure()
+        run: |
+          echo "=== Test Environment Info ==="
+          echo "Node version:"
+          node --version
+          echo ""
+          echo "NPM version:"
+          npm --version
+          echo ""
+          echo "Vitest cache status:"
+          ls -lh node_modules/.vitest/ 2>/dev/null || echo "Cache not found"
+          echo ""
+          echo "Package.json scripts related to tests:"
+          grep -A 20 '"test' package.json || echo "Test scripts not found"

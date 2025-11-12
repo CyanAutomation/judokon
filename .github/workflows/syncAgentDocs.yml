@@ -1,3 +1,9 @@
+# Agent Documentation Sync Workflow
+# Automatically syncs AGENTS.md (single source of truth) to multiple targets:
+# - GEMINI.md (Claude/Gemini integration)
+# - .github/copilot-instructions.md (GitHub Copilot)
+# - .amazonq/rules/AgentQ.md (Amazon Q)
+# Runs on changes to any agent doc file and provides detailed stats.
 name: Sync Agent Docs
 
 on:
@@ -42,18 +48,31 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: package-lock.json
 
       # 3) Dependencies
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify sync script exists
+        run: test -f scripts/syncAgentDocs.mjs || exit 1
 
       # 4) Run the sync script
       - name: Run agent docs sync
         id: sync
         run: |
           set -euo pipefail
-          npm run sync:agents
+          npm run sync:agents > /tmp/sync_output.txt 2>&1
+          cat /tmp/sync_output.txt
+          echo "output=$(cat /tmp/sync_output.txt)" >> $GITHUB_OUTPUT
+
+      - name: Verify sync success
+        run: |
+          for target in GEMINI.md .github/copilot-instructions.md .amazonq/rules/AgentQ.md; do
+            if ! diff -q AGENTS.md "$target" > /dev/null 2>&1; then
+              echo "::error::$target is not in sync with AGENTS.md after sync"
+              exit 1
+            fi
+          done
 
       # 5) Check for changes in working tree (multi-line changed_files output)
       - name: Check for changes
@@ -116,6 +135,7 @@ jobs:
           TASKS=$(awk '/^[[:space:]]*-[[:space:]]\[[ xX]\]/{c++} END{print c+0}' "$FILE")
           READ_MINS=$(( (WORDS + 199) / 200 ))
 
+          FILE_SIZE=$(du -h AGENTS.md | cut -f1)
           echo "words=$WORDS" >> $GITHUB_OUTPUT
           echo "lines=$LINES" >> $GITHUB_OUTPUT
           echo "headings=$HEADINGS" >> $GITHUB_OUTPUT
@@ -124,6 +144,7 @@ jobs:
           echo "links=$LINKS" >> $GITHUB_OUTPUT
           echo "tasks=$TASKS" >> $GITHUB_OUTPUT
           echo "readmins=$READ_MINS" >> $GITHUB_OUTPUT
+          echo "filesize=$FILE_SIZE" >> $GITHUB_OUTPUT
 
       - name: Summarise Changes (add/remove & mood)
         id: summary
@@ -206,6 +227,7 @@ jobs:
             echo "- Links: ${{ steps.docstats.outputs.links }}"
             echo "- Tasks: ${{ steps.docstats.outputs.tasks }}"
             echo "- Read mins: ${{ steps.docstats.outputs.readmins }}"
+            echo "- File size: ${{ steps.docstats.outputs.filesize }}"
             echo ""
             echo "Changes: ${{ steps.summary.outputs.added }} added, ${{ steps.summary.outputs.removed }} removed — ${{ steps.summary.outputs.mood }}"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -217,9 +239,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: sync agent docs"
-          title: "chore: sync agent docs - ${{ steps.date.outputs.date }}"
+          title: "chore: sync agent docs - ${{ steps.date.outputs.date }} 📚"
           body: |
             This PR contains automated updates produced by `npm run sync:agents`.
+            
+            **Workflow**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             Changed files:
             ${{ steps.changes.outputs.changed_files }}
@@ -233,6 +257,7 @@ jobs:
             - Links: ${{ steps.docstats.outputs.links }}
             - Tasks: ${{ steps.docstats.outputs.tasks }}
             - Estimated read mins: ${{ steps.docstats.outputs.readmins }}
+            - File size: ${{ steps.docstats.outputs.filesize }}
 
             Changes summary: ${{ steps.summary.outputs.added }} additions, ${{ steps.summary.outputs.removed }} removals — ${{ steps.summary.outputs.mood }}
 
@@ -250,9 +275,11 @@ jobs:
           delete-branch: true
 
   verify_sync:
+    needs: sync
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     name: Verify Agent Docs Sync
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -267,7 +294,13 @@ jobs:
           diff -u AGENTS.md .github/copilot-instructions.md || { echo ".github/copilot-instructions.md is out of sync with AGENTS.md"; exit 1; }
           diff -u AGENTS.md .amazonq/rules/AgentQ.md || { echo ".amazonq/rules/AgentQ.md is out of sync with AGENTS.md"; exit 1; }
       - name: Write verification summary
-        if: success()
+        if: always()
         run: |
-          echo "### Agent Docs Verification" >> "$GITHUB_STEP_SUMMARY"
-          echo "Targets are in sync with AGENTS.md ✅" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ job.status }}" = "failure" ]; then
+            echo "### Agent Docs Verification ❌" >> "$GITHUB_STEP_SUMMARY"
+            echo "Targets are NOT in sync with AGENTS.md" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          else
+            echo "### Agent Docs Verification ✅" >> "$GITHUB_STEP_SUMMARY"
+            echo "Targets are in sync with AGENTS.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
