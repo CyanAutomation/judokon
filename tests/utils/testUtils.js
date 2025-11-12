@@ -165,8 +165,21 @@ export function createRandomCardDom() {
   errorMessage.style.fontSize = "1.1rem";
   errorMessage.style.marginTop = "12px";
   drawControls.append(drawButton, errorMessage);
-  section.append(container, placeholderTemplate, drawControls);
-  return { section, container, placeholderTemplate, drawControls, drawButton };
+
+  // Create history panel elements
+  const historyPanel = document.createElement("details");
+  historyPanel.id = "history-panel";
+  historyPanel.className = "history-panel";
+  const summary = document.createElement("summary");
+  summary.id = "toggle-history-btn";
+  summary.className = "history-toggle";
+  summary.textContent = "History";
+  const historyList = document.createElement("ul");
+  historyList.className = "history-list";
+  historyPanel.append(summary, historyList);
+
+  section.append(container, placeholderTemplate, drawControls, historyPanel);
+  return { section, container, placeholderTemplate, drawControls, drawButton, historyPanel };
 }
 
 /**

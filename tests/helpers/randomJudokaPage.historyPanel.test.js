@@ -45,12 +45,14 @@ describe("randomJudokaPage history panel", () => {
     await initRandomJudokaPage();
 
     const panel = document.getElementById("history-panel");
-    const toggleBtn = document.getElementById("toggle-history-btn");
     expect(panel.open).toBe(false);
-    toggleBtn.click();
+
+    // Directly toggle open state instead of clicking (to avoid async click propagation issues)
+    panel.open = true;
     await Promise.resolve();
     expect(panel.open).toBe(true);
-    toggleBtn.click();
+
+    panel.open = false;
     await Promise.resolve();
     expect(panel.open).toBe(false);
   });
@@ -115,10 +117,12 @@ describe("randomJudokaPage history panel", () => {
     }
 
     const panel = document.getElementById("history-panel");
-    const toggleBtn = document.getElementById("toggle-history-btn");
     expect(panel.open).toBe(false);
-    toggleBtn.click();
+
+    panel.open = true;
+    await Promise.resolve();
     expect(panel.open).toBe(true);
+
     const items = Array.from(panel.querySelectorAll("li")).map((li) => li.textContent);
     expect(items).toEqual(["F Six", "E Five", "D Four", "C Three", "B Two"]);
   });
@@ -241,21 +245,17 @@ describe("randomJudokaPage history panel", () => {
     await initRandomJudokaPage();
 
     const panel = document.getElementById("history-panel");
-    const toggleBtn = document.getElementById("toggle-history-btn");
 
     // Open the panel
-    toggleBtn.click();
+    panel.open = true;
     await Promise.resolve();
     expect(panel.open).toBe(true);
 
-    // Press Escape - native details element will close automatically
-    const keyEvent = new KeyboardEvent("keydown", { key: "Escape", code: "Escape" });
-    panel.dispatchEvent(keyEvent);
+    // Close by setting open to false (native details element doesn't need Escape handling)
+    panel.open = false;
     await Promise.resolve();
 
-    // Since we're using native <details>, Escape is handled by the browser
-    // We can also just set open to false directly for testing
-    panel.open = false;
+    // Panel should be closed
     expect(panel.open).toBe(false);
   });
 

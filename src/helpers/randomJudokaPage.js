@@ -58,6 +58,7 @@ function signalRandomJudokaReady(resolve) {
  *
  * @returns {Promise<{prefersReducedMotion: boolean}>}
  */
+export async function initFeatureFlagState() {
   const hasMatchMedia = typeof window !== "undefined" && typeof window.matchMedia === "function";
   let settings;
   try {
@@ -410,7 +411,8 @@ export async function setupRandomJudokaPage() {
   const { judokaData, gokyoData, error: preloadError } = await preloadRandomCardData();
   const dataLoaded = !preloadError;
   const historyManager = createHistoryManager();
-  const { historyPanel, historyList, toggleHistoryBtn } = getHistoryPanelElements(prefersReducedMotion);
+  const { historyPanel, historyList, toggleHistoryBtn } =
+    getHistoryPanelElements(prefersReducedMotion);
 
   const drawButton = document.getElementById("draw-card-btn");
   if (!drawButton) {

@@ -71,36 +71,41 @@ test.describe("View Judoka screen", () => {
     expect(bottom).toBeLessThanOrEqual(innerHeight + ALLOWED_OFFSET);
   });
 
-  test("history panel focus management - focus moves to title on open", async ({ page }) => {
+  test("history panel focus management - focus moves to summary on open", async ({ page }) => {
     const historyBtn = page.locator("#toggle-history-btn");
 
-    // Initially, focus should not be on the title
+    // Initially, focus should not be on the summary
     const focusedElement = await page.evaluate(() => document.activeElement?.id);
-    expect(focusedElement).not.toBe("history-panel");
+    expect(focusedElement).not.toBe("toggle-history-btn");
 
     // Click history button to open
     await historyBtn.click();
 
-    // Focus should now be on the history title
-    await expect(page.locator("#history-panel h2")).toBeFocused();
+    // Focus should now be on the toggle button (summary element)
+    await expect(page.locator("#toggle-history-btn")).toBeFocused();
   });
 
-  test("history panel focus management - Escape key closes panel", async ({ page }) => {
+  test("history panel focus management - native details element handles Escape", async ({
+    page
+  }) => {
     const historyBtn = page.locator("#toggle-history-btn");
     const historyPanel = page.locator("#history-panel");
 
     // Open the panel
     await historyBtn.click();
-    await expect(historyPanel).toHaveAttribute("aria-hidden", "false");
+    // Note: With native details element, we check for open attribute instead
+    await expect(historyPanel).toHaveAttribute("open", "");
 
-    // Press Escape
+    // Press Escape - native details element will close automatically
     await page.press("body", "Escape");
 
-    // Panel should be closed
-    await expect(historyPanel).toHaveAttribute("aria-hidden", "true");
+    // Panel should be closed (open attribute should be gone)
+    await expect(historyPanel).not.toHaveAttribute("open");
   });
 
-  test("history panel focus management - focus returns to button on close", async ({ page }) => {
+  test("history panel focus management - focus returns to button on close", async ({
+    page
+  }) => {
     const historyBtn = page.locator("#toggle-history-btn");
 
     // Open the panel
@@ -121,11 +126,11 @@ test.describe("View Judoka screen", () => {
 
     // Open the panel
     await historyBtn.click();
-    await expect(historyPanel).toHaveAttribute("aria-hidden", "false");
+    await expect(historyPanel).toHaveAttribute("open", "");
 
     // Click button again to close
     await historyBtn.click();
-    await expect(historyPanel).toHaveAttribute("aria-hidden", "true");
+    await expect(historyPanel).not.toHaveAttribute("open");
 
     // Focus should be on the button
     const focusedId = await page.evaluate(() => document.activeElement?.id);
