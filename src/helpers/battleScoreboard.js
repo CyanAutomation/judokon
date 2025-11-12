@@ -10,47 +10,118 @@ import {
 } from "../components/Scoreboard.js";
 import { getScheduler } from "./scheduler.js";
 
+// Event names
+const EVENTS = {
+  ROUND_STARTED: "round.started",
+  ROUND_TIMER_TICK: "round.timer.tick",
+  COOLDOWN_TIMER_TICK: "cooldown.timer.tick",
+  ROUND_EVALUATED: "round.evaluated",
+  MATCH_CONCLUDED: "match.concluded",
+  CONTROL_STATE_CHANGED: "control.state.changed"
+};
+
 let _bound = false;
-let _state = { current: null, lastOutcome: "none" };
+let _currentState = null;
+let _lastOutcome = "none";
 let _lastRoundIndex = 0;
 let _handlers = [];
 let _waitingTimer = null;
 let _waitingClearer = null;
 let _onResetUi = null;
-// Schedule fallback message if no state is observed within 500ms
-try {
-  const scheduler = getScheduler();
-  _waitingTimer = scheduler.setTimeout(() => {
-    try {
-      _waitingClearer =
-        typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
-    } catch {}
-  }, 500);
-} catch {}
-function _cancelWaiting() {
-  try {
-    if (_waitingTimer) {
-      const scheduler = getScheduler();
-      scheduler.clearTimeout(_waitingTimer);
-    }
-  } catch {}
-  _waitingTimer = null;
-  try {
-    if (typeof _waitingClearer === "function") {
-      _waitingClearer();
-    }
-  } catch {}
-  _waitingClearer = null;
-}
-function mapOutcomeToEnum(outcome) {
+
+/**
+ * Detects if the application is running in CLI mode.
+ *
+ * @returns {boolean} - True if CLI mode is active.
+ */
+const isCliMode = () => !!document.getElementById("cli-countdown");
+
+/**
+ * Safely parses a value to a finite number.
+ *
+ * @param {unknown} value - The value to parse.
+ * @param {number} [fallback=0] - The fallback value if parsing fails.
+ * @returns {number} - The parsed number or fallback.
+ */
+const safeNumber = (value, fallback = 0) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+/**
+ * Safely extracts event detail with fallback to empty object.
+ *
+ * @param {Event} event - The event object.
+ * @returns {object} - The detail object or empty object.
+ */
+const getEventDetail = (event) => event?.detail || {};
+
+/**
+ * Safely normalizes outcome string to a standard enum.
+ *
+ * @param {string|unknown} outcome - The raw outcome value.
+ * @returns {'playerWin'|'opponentWin'|'draw'|'none'} - Normalized outcome enum.
+ */
+const mapOutcomeToEnum = (outcome) => {
   const s = String(outcome || "");
   if (/player/i.test(s)) return "playerWin";
   if (/opponent/i.test(s)) return "opponentWin";
   if (/draw/i.test(s)) return "draw";
   return "none";
-}
+};
 
-function registerResetUiListener() {
+/**
+ * Extracts and validates round number from event detail.
+ *
+ * @param {object} detail - The event detail object.
+ * @returns {number|null} - The round number or null if invalid.
+ */
+const extractRoundNumber = (detail) => {
+  const n = typeof detail.roundIndex === "number" ? detail.roundIndex : detail.roundNumber;
+  return typeof n === "number" ? n : null;
+};
+
+/**
+ * Checks if a round number is new (greater than the last observed).
+ *
+ * @param {number|null} roundNumber - The round number to check.
+ * @returns {boolean} - True if it's a new round.
+ */
+const isNewRound = (roundNumber) => {
+  if (typeof roundNumber !== "number" || roundNumber < 0) return false;
+  return roundNumber > _lastRoundIndex;
+};
+
+/**
+ * Extracts player and opponent scores from event detail.
+ *
+ * @param {object} detail - The event detail object.
+ * @returns {{player: number, opponent: number}} - Extracted scores.
+ */
+const extractScores = (detail) => {
+  return {
+    player: safeNumber(detail?.scores?.player),
+    opponent: safeNumber(detail?.scores?.opponent)
+  };
+};
+
+/**
+ * Displays outcome information and optional message.
+ *
+ * @param {string|unknown} outcomeRaw - The raw outcome value.
+ * @param {string} [message] - Optional message to display.
+ */
+const displayOutcome = (outcomeRaw, message) => {
+  const outcomeType = mapOutcomeToEnum(outcomeRaw);
+  _lastOutcome = outcomeType;
+  if (message) {
+    showMessage(String(message), { outcome: true, outcomeType });
+  } else {
+    showMessage("", { outcome: true, outcomeType });
+  }
+};
+
+function _cancelWaiting() {
   if (typeof window === "undefined" || typeof window.addEventListener !== "function") {
     return;
   }

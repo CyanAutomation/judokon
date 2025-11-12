@@ -23,6 +23,35 @@ import { isEnabled } from "./featureFlags.js";
 import { onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 
 /**
+ * Data attribute names and state remappings.
+ *
+ * @type {{
+ *   list: string;
+ *   item: string;
+ *   ready: string;
+ *   initialized: string;
+ *   count: string;
+ *   active: string;
+ *   activeOriginal: string;
+ *   stateRemap: Record<string, string>;
+ * }}
+ */
+const CONFIG = {
+  list: "data-feature-battle-state-progress",
+  item: "data-feature-battle-state-progress-item",
+  ready: "data-feature-battle-state-ready",
+  initialized: "data-progress-initialized",
+  count: "data-progress-count",
+  active: "data-feature-battle-state-active",
+  activeOriginal: "data-feature-battle-state-active-original",
+  stateRemap: {
+    interruptRound: "cooldown",
+    interruptMatch: "matchOver",
+    roundModification: "roundDecision"
+  }
+};
+
+/**
  * Internal resolver for `battleStateProgressReadyPromise`.
  * Assigned when running in a browser environment so callers can be
  * notified after the list is rendered (or skipped).
@@ -32,19 +61,11 @@ import { onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 let resolveBattleStateProgressReady;
 
 /**
- * Promise that resolves when the battle state progress list has been
- * rendered (or when rendering is intentionally skipped).
- *
- * - In browser environments this promise resolves when rendering completes
- *   or when the list is absent.
- * - In non-browser environments the promise resolves immediately.
- *
- * @type {Promise<(() => void) | undefined>}
- */
-/**
  * Promise resolving when the battle state progress list has been rendered or skipped.
  *
- * @summary Notifies callers when the state progress list has been initialized.
+ * - In browser environments: resolves when rendering completes or list is absent
+ * - In non-browser environments: resolves immediately
+ *
  * @type {Promise<(() => void) | undefined>}
  */
 export const battleStateProgressReadyPromise =
@@ -59,19 +80,15 @@ if (typeof window !== "undefined") {
 }
 
 if (!isEnabled("battleStateProgress")) {
-  const handler = () => {
-    markBattlePartReady("state");
-    offBattleEvent("battleStateChange", handler);
-  };
-  onBattleEvent("battleStateChange", handler);
-  const list =
-    typeof document !== "undefined" ? document.getElementById("battle-state-progress") : null;
-  if (list) {
-    list.classList.remove("ready");
-    list.dataset.progressInitialized = "false";
-    list.dataset.featureBattleStateReady = "false";
-    list.removeAttribute("data-feature-battle-state-active");
-    list.removeAttribute("data-feature-battle-state-active-original");
+  if (typeof document !== "undefined") {
+    const list = document.getElementById("battle-state-progress");
+    if (list) {
+      list.classList.remove("ready");
+      list.textContent = "";
+      list.dataset.featureBattleStateReady = "false";
+      list.removeAttribute(CONFIG.active);
+      list.removeAttribute(CONFIG.activeOriginal);
+    }
   }
   resolveBattleStateProgressReady?.();
 }
@@ -80,9 +97,10 @@ if (!isEnabled("battleStateProgress")) {
  * Render the core battle states into `#battle-state-progress` when necessary.
  *
  * @param {{ id: number, name: string }[]} coreStates
- * @returns {HTMLUListElement | undefined} The list element if it exists.
+ * @returns {HTMLUListElement | undefined} The list element if it exists, undefined otherwise.
+ * @throws {Error} If coreStates contains invalid entries without id or name.
  * @pseudocode
- * 1. Query `#battle-state-progress`; return if missing.
+ * 1. Query `#battle-state-progress`; return undefined if missing.
  * 2. Show the list and handle empty `coreStates` with a fallback item.
  * 3. Compare existing items to `coreStates`; render new `<li>` elements when mismatched.
  * 4. Return the list element for further processing.
@@ -91,15 +109,14 @@ export function renderStateList(coreStates) {
   const list = document.getElementById("battle-state-progress");
   if (!list) return undefined;
   list.style.display = "";
-  list.setAttribute("data-feature-battle-state-progress", "list");
+  list.setAttribute(CONFIG.list, "list");
   list.dataset.featureBattleStateReady = "pending";
   if (!coreStates.length) {
     list.innerHTML = "<li>No states found</li>";
     const placeholder = list.querySelector("li");
     if (placeholder) {
-      placeholder.setAttribute("data-feature-battle-state-progress-item", "true");
+      placeholder.setAttribute(CONFIG.item, "true");
     }
-    list.dataset.progressInitialized = "true";
     list.dataset.featureBattleStateReady = "true";
     list.dataset.featureBattleStateCount = "0";
     list.classList.add("ready");
@@ -120,16 +137,15 @@ export function renderStateList(coreStates) {
       const li = document.createElement("li");
       li.dataset.state = s.name;
       li.textContent = String(s.id);
-      li.setAttribute("data-feature-battle-state-progress-item", "true");
+      li.setAttribute(CONFIG.item, "true");
       frag.appendChild(li);
     }
     list.appendChild(frag);
   } else {
     for (const li of items) {
-      li.setAttribute("data-feature-battle-state-progress-item", "true");
+      li.setAttribute(CONFIG.item, "true");
     }
   }
-  list.dataset.progressInitialized = "true";
   list.dataset.featureBattleStateReady = "true";
   list.dataset.featureBattleStateCount = String(coreStates.length);
   list.classList.add("ready");
@@ -137,62 +153,63 @@ export function renderStateList(coreStates) {
 }
 
 /**
- * Toggle the active state in the progress list, remapping interrupts.
+ * Toggle the active state in the progress list, remapping interrupts to core states.
+ *
+ * If the target state doesn't exist in the list, attempts to remap non-core states
+ * (interrupt and modification states) to their core state counterparts.
  *
  * @param {HTMLUListElement} list The progress list element.
  * @param {string} state The new active state.
  * @pseudocode
  * 1. Set the target state to the input state.
- * 2. If the target state is not in the list, remap non-core states (e.g., `interruptRound` to `cooldown`).
- * 3. Iterate through all list items, toggling the 'active' class based on whether the item's `data-state` matches the target state.
- * 4. Update the separate battle state badge with the original, unmapped state.
+ * 2. If the target state is not in the list, remap using CONFIG.stateRemap.
+ * 3. Iterate through all list items, toggling 'active' class based on match.
+ * 4. Update ARIA and data attributes for accessibility.
+ * 5. Update the battle state badge with the original (unmapped) state.
  * @returns {void}
  */
 export function updateActiveState(list, state) {
   let target = state;
   if (!list.querySelector(`li[data-state="${target}"]`)) {
-    if (target === "interruptRound") target = "cooldown";
-    else if (target === "interruptMatch") target = "matchOver";
-    else if (target === "roundModification") target = "roundDecision";
+    target = CONFIG.stateRemap[target] || target;
   }
   for (const li of list.querySelectorAll("li")) {
     const isActive = li.dataset.state === target;
     li.classList.toggle("active", isActive);
     if (isActive) {
       li.setAttribute("aria-current", "step");
-      li.setAttribute("data-feature-battle-state-active", "true");
+      li.setAttribute(CONFIG.active, "true");
     } else {
       li.removeAttribute("aria-current");
-      li.removeAttribute("data-feature-battle-state-active");
+      li.removeAttribute(CONFIG.active);
     }
   }
-  list.setAttribute("data-feature-battle-state-active", target);
-  list.setAttribute("data-feature-battle-state-active-original", state);
+  list.setAttribute(CONFIG.active, target);
+  list.setAttribute(CONFIG.activeOriginal, state);
   updateBattleStateBadge(state);
 }
 
 /**
  * Listen for `battleStateChange` events and update the list.
  *
- * @param {HTMLUListElement} list
- * @param {boolean} [initialApplied=false]
+ * @param {HTMLUListElement} list The progress list element.
+ * @param {boolean} [initialApplied=false] Whether initial state has been applied.
  * @returns {() => void} Cleanup function removing the listener.
  * @pseudocode
  * 1. Track readiness based on whether an initial state was applied.
- * 2. On each `battleStateChange`, extract the state and call `updateActiveState`.
- * 3. After the first update, mark the battle state part ready.
- * 4. Return a closure that unregisters the event listener.
+ * 2. On each `battleStateChange`, extract the state from event detail or body dataset.
+ * 3. Call `updateActiveState` with the extracted state.
+ * 4. After the first update, mark the battle state part ready.
+ * 5. Return a closure that unregisters the event listener.
  */
 export function initProgressListener(list, initialApplied = false) {
   let ready = initialApplied;
   const handler = (e) => {
-    const detail = e && e.detail;
+    const detail = e?.detail;
     const state =
-      typeof detail === "string"
-        ? detail
-        : detail && typeof detail.to === "string"
-          ? detail.to
-          : document.body?.dataset?.battleState || "";
+      (typeof detail === "string" ? detail : detail?.to) ||
+      document.body?.dataset?.battleState ||
+      "";
     if (!state) return;
     updateActiveState(list, state);
     if (!ready) {
@@ -205,28 +222,25 @@ export function initProgressListener(list, initialApplied = false) {
   return () => offBattleEvent("battleStateChange", handler);
 }
 /**
- * Initialize and render the battle state progress list and wire up runtime
- * updates.
+ * Initialize and render the battle state progress list and wire up runtime updates.
  *
  * Responsibilities:
- * - Render a trimmed list of core states (id < 90) into the
- *   `#battle-state-progress` element when necessary.
- * - Provide visual active-state updates when `battleStateChange` events fire.
- * - Update the small status badge via `updateBattleStateBadge`.
- * - Resolve `battleStateProgressReadyPromise` once rendering or skip is done.
- * - Call `markBattlePartReady('state')` after the first active state is applied.
+ * - Render a trimmed list of core states (id < 90) into the `#battle-state-progress` element
+ * - Provide visual active-state updates when `battleStateChange` events fire
+ * - Update the small status badge via `updateBattleStateBadge`
+ * - Resolve `battleStateProgressReadyPromise` once rendering or skip is done
+ * - Call `markBattlePartReady('state')` after the first active state is applied
  *
+ * @async
+ * @returns {Promise<(() => void) | undefined>} Cleanup function or undefined.
+ * @throws {Error} If CLASSIC_BATTLE_STATES is invalid and cannot be processed safely.
  * @pseudocode
- * 1. If the feature flag is disabled, hide the element if the DOM exists, ensure `'state'` is
- *    marked ready, resolve the ready promise, and return.
- * 2. If `document` is unavailable resolve the ready promise and return.
- * 3. Locate `#battle-state-progress` and either render or skip depending on `CLASSIC_BATTLE_STATES`.
- * 4. Resolve the ready promise and register an event listener to toggle `active` on list items.
- * 5. If an initial state exists on the body, apply it and mark the state part ready.
- * 6. Return a cleanup function that removes the event listener.
- *
- * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function
- *   or undefined.
+ * 1. If the feature flag is disabled, clear the element if the DOM exists and resolve.
+ * 2. If `document` is unavailable, resolve the promise and return.
+ * 3. Extract and filter core states (id < 90) from CLASSIC_BATTLE_STATES.
+ * 4. Render the list via `renderStateList`.
+ * 5. If an initial state exists on the body, apply it and mark ready.
+ * 6. Register event listener and return cleanup function.
  */
 export async function initBattleStateProgress() {
   if (!isEnabled("battleStateProgress")) {
@@ -236,8 +250,8 @@ export async function initBattleStateProgress() {
         list.classList.remove("ready");
         list.textContent = "";
         list.dataset.featureBattleStateReady = "false";
-        list.removeAttribute("data-feature-battle-state-active");
-        list.removeAttribute("data-feature-battle-state-active-original");
+        list.removeAttribute(CONFIG.active);
+        list.removeAttribute(CONFIG.activeOriginal);
       }
     }
     resolveBattleStateProgressReady?.();
@@ -249,10 +263,9 @@ export async function initBattleStateProgress() {
     return;
   }
 
-  const states = Array.isArray(CLASSIC_BATTLE_STATES) ? CLASSIC_BATTLE_STATES : [];
-  const core = Array.isArray(states)
-    ? states.filter((s) => s.id < 90).sort((a, b) => a.id - b.id)
-    : [];
+  const core = (Array.isArray(CLASSIC_BATTLE_STATES) ? CLASSIC_BATTLE_STATES : [])
+    .filter((s) => s.id < 90)
+    .sort((a, b) => a.id - b.id);
 
   const list = renderStateList(core);
   resolveBattleStateProgressReady?.();

@@ -5,12 +5,13 @@
  * 1. If the feature flag is disabled or DOM is unavailable, return a no-op API with isReady=false.
  * 2. Resolve `mount` and `announcer` to DOM elements; if missing return a no-op API.
  * 3. Create a root `<ul>` and an ARIA announcer `<p>`, append both to the provided mount points.
- * 4. Fetch the state `catalog` via `getCatalog()` and render the list of known states.
- * 5. Subscribe to `control.state.changed` events and on each change:
- *    - Refresh catalog when a new version is indicated.
- *    - Update `activeState`, mark the matching list item as active and set `aria-current`.
+ * 4. Validate the catalog structure and fetch the state `catalog` via `getCatalog()`.
+ * 5. Render the list of known states using a DocumentFragment to minimize reflows.
+ * 6. Subscribe to `control.state.changed` events and on each change:
+ *    - Refresh catalog with debounce when a new version is indicated.
+ *    - Update `activeState` using efficient DOM queries.
  *    - Update the announcer text and manage an `unknown` flag when state is not in the catalog.
- * 6. Return an API with `cleanup()`, `isReady: true`, and `getActiveState()`.
+ * 7. Return an API with `cleanup()`, `isReady: true`, and `getActiveState()`.
  *
  * @param {object} config - The configuration object.
  * @param {boolean} [config.featureFlag=true] - A flag to enable or disable the component.
@@ -35,8 +36,16 @@ export async function createBattleStateIndicator({
     };
   }
 
-  const mountEl = typeof mount === "string" ? document.querySelector(mount) : mount;
-  const announcerEl = typeof announcer === "string" ? document.querySelector(announcer) : announcer;
+  /**
+   * Resolves a DOM element from a string selector or element reference.
+   *
+   * @param {HTMLElement|string} ref - The selector or element.
+   * @returns {HTMLElement|null} - The resolved element or null.
+   */
+  const resolveElement = (ref) => (typeof ref === "string" ? document.querySelector(ref) : ref);
+
+  const mountEl = resolveElement(mount);
+  const announcerEl = resolveElement(announcer);
 
   if (!mountEl || !announcerEl) {
     return {
@@ -60,52 +69,124 @@ export async function createBattleStateIndicator({
   mountEl.appendChild(rootEl);
   announcerEl.appendChild(announcerP);
 
-  const catalog = await getCatalog();
+  let catalog;
+  try {
+    catalog = await getCatalog();
+  } catch (error) {
+    console.error("Failed to fetch state catalog:", error);
+    return {
+      cleanup: () => {
+        if (rootEl.parentNode) mountEl.removeChild(rootEl);
+        if (announcerP.parentNode) announcerEl.removeChild(announcerP);
+      },
+      isReady: false,
+      getActiveState: () => null
+    };
+  }
+
+  // Validate catalog structure
+  if (!catalog?.display?.include || !Array.isArray(catalog.display.include)) {
+    console.warn("Invalid catalog structure: missing or invalid display.include");
+    return {
+      cleanup: () => {
+        if (rootEl.parentNode) mountEl.removeChild(rootEl);
+        if (announcerP.parentNode) announcerEl.removeChild(announcerP);
+      },
+      isReady: false,
+      getActiveState: () => null
+    };
+  }
 
   let activeState = null;
   let currentCatalog = catalog;
+  let catalogRefreshPending = false;
 
+  /**
+   * Resolves a state label from the catalog.
+   *
+   * @param {string} stateName - The raw state name.
+   * @returns {string} - The display label or the raw state name.
+   */
+  const getStateLabel = (stateName) =>
+    (currentCatalog.labels && currentCatalog.labels[stateName]) || stateName;
+
+  /**
+   * Updates the unknown state flag on the root element.
+   *
+   * @param {boolean} stateExists - Whether the state exists in the catalog.
+   */
+  const updateUnknownState = (stateExists) => {
+    if (!stateExists) {
+      rootEl.dataset.unknown = "true";
+    } else {
+      delete rootEl.dataset.unknown;
+    }
+  };
+
+  /**
+   * Renders the state list using a DocumentFragment to minimize reflows.
+   */
   const renderList = () => {
-    rootEl.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     currentCatalog.display.include.forEach((stateName) => {
       const li = document.createElement("li");
       li.dataset.stateRaw = stateName;
       li.dataset.stateId = currentCatalog.ids[stateName];
-      if (currentCatalog.labels && currentCatalog.labels[stateName]) {
-        li.dataset.stateLabel = currentCatalog.labels[stateName];
+      const label = getStateLabel(stateName);
+      if (label !== stateName) {
+        li.dataset.stateLabel = label;
       }
-      li.textContent = (currentCatalog.labels && currentCatalog.labels[stateName]) || stateName;
-      rootEl.appendChild(li);
+      li.textContent = label;
+      fragment.appendChild(li);
     });
+    rootEl.innerHTML = "";
+    rootEl.appendChild(fragment);
   };
 
   renderList();
 
-  const handleStateChange = async ({ to, catalogVersion }) => {
-    if (catalogVersion && catalogVersion !== currentCatalog.version) {
-      currentCatalog = await getCatalog();
-      renderList();
+  /**
+   * Updates the active state and UI elements when state changes.
+   * Handles catalog refresh asynchronously without blocking UI updates.
+   *
+   * @param {string} to - The new state.
+   * @param {string} catalogVersion - The catalog version.
+   */
+  const handleStateChange = ({ to, catalogVersion }) => {
+    // Handle catalog refresh asynchronously without blocking UI updates (fire-and-forget)
+    if (catalogVersion && catalogVersion !== currentCatalog.version && !catalogRefreshPending) {
+      catalogRefreshPending = true;
+      getCatalog()
+        .then((newCatalog) => {
+          currentCatalog = newCatalog;
+          renderList();
+        })
+        .catch((error) => {
+          console.error("Failed to refresh catalog:", error);
+        })
+        .finally(() => {
+          catalogRefreshPending = false;
+        });
     }
 
     activeState = to;
     announcerP.textContent = `State: ${to}`;
 
     const stateExistsInCatalog = currentCatalog.display.include.includes(to);
-    if (!stateExistsInCatalog) {
-      rootEl.dataset.unknown = "true";
-    } else {
-      delete rootEl.dataset.unknown;
+    updateUnknownState(stateExistsInCatalog);
+
+    const previousActive = rootEl.querySelector("li.active");
+    const newActive = rootEl.querySelector(`li[data-state-raw="${to}"]`);
+
+    if (previousActive) {
+      previousActive.classList.remove("active");
+      previousActive.removeAttribute("aria-current");
     }
 
-    Array.from(rootEl.children).forEach((li) => {
-      if (li.dataset.stateRaw === to) {
-        li.classList.add("active");
-        li.setAttribute("aria-current", "step");
-      } else {
-        li.classList.remove("active");
-        li.removeAttribute("aria-current");
-      }
-    });
+    if (newActive) {
+      newActive.classList.add("active");
+      newActive.setAttribute("aria-current", "step");
+    }
   };
 
   events.on("control.state.changed", handleStateChange);
@@ -113,8 +194,8 @@ export async function createBattleStateIndicator({
   return {
     cleanup: () => {
       events.off("control.state.changed", handleStateChange);
-      mountEl.removeChild(rootEl);
-      announcerEl.removeChild(announcerP);
+      if (rootEl.parentNode) mountEl.removeChild(rootEl);
+      if (announcerP.parentNode) announcerEl.removeChild(announcerP);
     },
     isReady: true,
     getActiveState: () => activeState
