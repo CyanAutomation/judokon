@@ -4,7 +4,7 @@
  * This replaces runtime JSON fetching to avoid path/MIME/timing issues in
  * production and ensures the state machine is always configured.
  *
- * @pseudocode
+ * @description
  * 1. Preload all state metadata and entry actions via static module import.
  * 2. Define deterministic transitions for match, round, and decision phases.
  * 3. Include dedicated interrupt branches for safe abort, resume, or admin flows.
