@@ -23,7 +23,13 @@ let resolveReady;
  * Promise that resolves when the battle screen has fully initialized
  * (both 'home' and 'state' parts are ready).
  *
- * @type {Promise<void>}
+ * @pseudocode
+ * 1. Create a deferred promise.
+ * 2. Capture the resolve handler.
+ * 3. Export the promise for readiness consumers.
+ *
+ * @returns {Promise<void>}
+ * @param {(value?: void) => void} resolve - Internal resolver assigned to {@link resolveReady}.
  */
 export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
