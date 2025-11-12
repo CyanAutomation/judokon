@@ -828,9 +828,9 @@ To maintain efficiency and speed, agents **MUST** avoid running the full test su
 
 Only run the full test suite (`npx vitest run` or `npm test`) under these circumstances:
 
--   Making widespread, cross-cutting changes (e.g., refactoring a core utility used by many components).
--   Changing configuration files that affect the entire application (`vite.config.js`, etc.).
--   Before submitting a pull request to ensure no unintended side effects.
+- Making widespread, cross-cutting changes (e.g., refactoring a core utility used by many components).
+- Changing configuration files that affect the entire application (`vite.config.js`, etc.).
+- Before submitting a pull request to ensure no unintended side effects.
 
 ---
 
