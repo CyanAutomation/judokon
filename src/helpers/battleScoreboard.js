@@ -121,7 +121,29 @@ const displayOutcome = (outcomeRaw, message) => {
   }
 };
 
+/**
+ * Cancels the waiting message timeout and clears the temporary message.
+ */
 function _cancelWaiting() {
+  try {
+    if (_waitingTimer) {
+      const scheduler = getScheduler();
+      scheduler.clearTimeout(_waitingTimer);
+    }
+  } catch {}
+  _waitingTimer = null;
+  try {
+    if (typeof _waitingClearer === "function") {
+      _waitingClearer();
+    }
+  } catch {}
+  _waitingClearer = null;
+}
+
+/**
+ * Registers a window event listener to reset the UI and reset round counter on game:reset-ui.
+ */
+function registerResetUiListener() {
   if (typeof window === "undefined" || typeof window.addEventListener !== "function") {
     return;
   }
@@ -142,6 +164,9 @@ function _cancelWaiting() {
   }
 }
 
+/**
+ * Unregisters the window event listener for game:reset-ui.
+ */
 function unregisterResetUiListener() {
   if (typeof window === "undefined" || typeof window.removeEventListener !== "function") {
     _onResetUi = null;
@@ -186,94 +211,68 @@ export function initBattleScoreboardAdapter() {
     onBattleEvent(type, fn);
   };
 
-  // round.started → round counter
-  // Skip in CLI mode (battleCLI handles its own round counter display with target info)
-  if (!document.getElementById("cli-countdown")) {
-    on("round.started", (e) => {
-      _cancelWaiting();
-      try {
-        const d = e?.detail || {};
-        const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
-        if (typeof n === "number" && n > _lastRoundIndex) {
-          updateRoundCounter(n);
-          _lastRoundIndex = n;
-        }
-        // Ensure root outcome resets to none at round start
-        showMessage("", { outcome: true, outcomeType: "none" });
-      } catch {}
-    });
-  } else {
-    // In CLI mode, still subscribe to round.started to clear messages and update outcome
-    on("round.started", (e) => {
-      _cancelWaiting();
-      try {
-        const d = e?.detail || {};
-        const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
-        if (typeof n === "number" && n > _lastRoundIndex) {
-          _lastRoundIndex = n;
-        }
-        // Ensure root outcome resets to none at round start (but don't update CLI counter)
-        showMessage("", { outcome: true, outcomeType: "none" });
-      } catch {}
-    });
-  }
+  // round.started → round counter (skip in CLI mode)
+  on(EVENTS.ROUND_STARTED, (e) => {
+    _cancelWaiting();
+    try {
+      const d = getEventDetail(e);
+      const roundNum = extractRoundNumber(d);
+      if (isNewRound(roundNum)) {
+        if (!isCliMode()) updateRoundCounter(roundNum);
+        _lastRoundIndex = roundNum;
+      }
+      // Ensure root outcome resets to none at round start
+      displayOutcome("none");
+    } catch {}
+  });
 
   // round.timer.tick and cooldown.timer.tick → header timer (seconds)
   // Skip timer updates in CLI mode (battleCLI handles its own timer display)
-  if (!document.getElementById("cli-countdown")) {
+  if (!isCliMode()) {
     const handleTimerTick = (e) => {
       _cancelWaiting();
       try {
-        const ms = Number(e?.detail?.remainingMs);
-        if (Number.isFinite(ms)) updateTimer(Math.max(0, Math.round(ms / 1000)));
+        const ms = safeNumber(e?.detail?.remainingMs);
+        updateTimer(Math.max(0, Math.round(ms / 1000)));
       } catch {}
     };
 
-    on("round.timer.tick", handleTimerTick);
-    on("cooldown.timer.tick", handleTimerTick);
+    on(EVENTS.ROUND_TIMER_TICK, handleTimerTick);
+    on(EVENTS.COOLDOWN_TIMER_TICK, handleTimerTick);
   }
 
   // round.evaluated → scores (+ optional message)
-  on("round.evaluated", (e) => {
+  on(EVENTS.ROUND_EVALUATED, (e) => {
     _cancelWaiting();
     try {
-      const d = e?.detail || {};
-      const p = Number(d?.scores?.player) || 0;
-      const o = Number(d?.scores?.opponent) || 0;
-      updateScore(p, o);
-      const outcomeType = mapOutcomeToEnum(d?.outcome);
-      _state.lastOutcome = outcomeType;
-      if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
-      else showMessage("", { outcome: true, outcomeType });
+      const d = getEventDetail(e);
+      const { player, opponent } = extractScores(d);
+      updateScore(player, opponent);
+      displayOutcome(d?.outcome, d.message);
     } catch {}
   });
 
   // match.concluded → final scores + clear round counter (+ optional message)
-  on("match.concluded", (e) => {
+  on(EVENTS.MATCH_CONCLUDED, (e) => {
     _cancelWaiting();
     try {
-      const d = e?.detail || {};
-      const p = Number(d?.scores?.player) || 0;
-      const o = Number(d?.scores?.opponent) || 0;
-      updateScore(p, o);
+      const d = getEventDetail(e);
+      const { player, opponent } = extractScores(d);
+      updateScore(player, opponent);
       clearRoundCounter();
-      const outcomeType = mapOutcomeToEnum(d?.winner || d?.reason);
-      _state.lastOutcome = outcomeType;
-      if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
-      else showMessage("", { outcome: true, outcomeType });
+      displayOutcome(d?.winner || d?.reason, d.message);
     } catch {}
   });
 
   // control.state.changed reserved for Phase 2
-  on("control.state.changed", (e) => {
+  on(EVENTS.CONTROL_STATE_CHANGED, (e) => {
     _cancelWaiting();
     try {
       const to = e?.detail?.to;
-      _state.current = to || _state.current;
+      _currentState = to || _currentState;
       if (to === "selection" || to === "cooldown") {
         // Clear outcome on authoritative transition back to selection/cooldown
-        showMessage("", { outcome: true, outcomeType: "none" });
-        _state.lastOutcome = "none";
+        displayOutcome("none");
       }
     } catch {}
   });
