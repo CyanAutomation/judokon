@@ -29,7 +29,7 @@ let resolveReady;
  * 3. Export the promise for readiness consumers.
  *
  * @returns {Promise<void>}
- * @param {(value?: void) => void} resolve - Internal resolver assigned to {@link resolveReady}.
+ * @returns {Promise<void>}
  */
 export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
