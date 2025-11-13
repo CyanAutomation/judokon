@@ -55,11 +55,23 @@ export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
  */
 let battleEngine = null;
 
-// Use a WeakMap to store battle engines per window to avoid sharing across pages
+// Use a WeakMap to store battle engines per window to avoid sharing across pages.
+// This isolates engines in multi-window environments (e.g., Playwright tests).
+// The module-level `battleEngine` variable provides a Node.js fallback when
+// `window` is unavailable, enabling both browser and server-side testing.
 const battleEngines = new WeakMap();
 
 /** @type {Set<(engine: IBattleEngine|null) => void>} */
 const engineCreatedListeners = new Set();
+
+/**
+ * Get the current engine instance from either window-isolated storage or module fallback.
+ *
+ * @returns {IBattleEngine|null}
+ */
+function getCurrentEngine() {
+  return typeof window !== "undefined" ? (battleEngines.get(window) ?? battleEngine) : battleEngine;
+}
 
 function shouldLogEngineListenerErrors() {
   return (
@@ -102,8 +114,7 @@ export function onEngineCreated(listener) {
     return () => {};
   }
   engineCreatedListeners.add(listener);
-  const currentEngine =
-    typeof window !== "undefined" ? (battleEngines.get(window) ?? battleEngine) : battleEngine;
+  const currentEngine = getCurrentEngine();
   if (currentEngine) {
     invokeEngineCreatedListener(listener, currentEngine);
   }
@@ -117,15 +128,14 @@ export function onEngineCreated(listener) {
  *
  * @summary Ensures the engine has been created before helper functions delegate to it.
  * @pseudocode
- * 1. If `battleEngine` is undefined, throw an Error instructing callers to initialize it.
- * 2. Otherwise, return the `battleEngine` instance.
+ * 1. If the current engine is undefined, throw an Error instructing callers to initialize it.
+ * 2. Otherwise, return the engine instance.
  *
  * @throws {Error} When no engine has been created.
  * @returns {IBattleEngine}
  */
 export function requireEngine() {
-  const engine =
-    typeof window !== "undefined" ? (battleEngines.get(window) ?? battleEngine) : battleEngine;
+  const engine = getCurrentEngine();
   if (!engine) {
     // Provide a clear error for consumers that call helpers before
     // initialization.
@@ -135,29 +145,14 @@ export function requireEngine() {
 }
 
 /**
- * Create a new battle engine instance.
+ * Detect if code is running in a test environment.
  *
- * @summary Factory returning a fresh `BattleEngine` instance.
- * @pseudocode
- * 1. Construct a new `BattleEngine` with default classic config merged with `config`.
- * 2. Store the instance for use by exported wrapper helpers.
- * 3. Return the new instance.
- *
- * @param {object} [config]
- * @returns {IBattleEngine}
+ * @returns {boolean}
  */
-export function createBattleEngine(config = {}) {
-  logger.log("battleEngineFacade: createBattleEngine called with config:", config);
-  // If an engine already exists and the caller didn't explicitly request a
-  // fresh one, return the existing instance. Tests that repeatedly call
-  // createBattleEngine() during simulated rounds previously recreated the
-  // engine each time, resetting cumulative scores. Allow callers to force
-  // recreation by passing { forceCreate: true }.
-  const forceCreate =
-    config.forceCreate ||
-    (typeof window !== "undefined" && window.__ENGINE_CONFIG?.forceCreate) ||
-    (typeof requireEngine !== "function" ? false : false); // Always create fresh in test mode
-  const isProcessTestEnv =
+function isTestEnvironment() {
+  const isWindowTest =
+    typeof window !== "undefined" && (window.__TEST__ || window.__ENGINE_CONFIG?.forceCreate);
+  const isNodeTest =
     typeof window === "undefined" &&
     typeof process !== "undefined" &&
     Boolean(
@@ -166,12 +161,49 @@ export function createBattleEngine(config = {}) {
         process?.env?.JEST_WORKER_ID ||
         process?.env?.BABEL_ENV === "test"
     );
-  // Check if we're in test mode and force create if so
-  const isTest =
-    (typeof window !== "undefined" && (window.__TEST__ || window.__ENGINE_CONFIG?.forceCreate)) ||
-    isProcessTestEnv;
-  const currentEngine = typeof window !== "undefined" ? battleEngines.get(window) : battleEngine;
-  if (currentEngine && !forceCreate && !isTest) {
+  return isWindowTest || isNodeTest;
+}
+
+/**
+ * Attempt to reset an engine via its internal _resetForTest method.
+ *
+ * @param {IBattleEngine|null} engine
+ * @returns {IBattleEngine|null} The reset engine, or null if reset failed.
+ */
+function attemptInternalReset(engine) {
+  if (engine && typeof engine._resetForTest === "function") {
+    try {
+      engine._resetForTest();
+      return engine;
+    } catch (error) {
+      logger.warn("Engine _resetForTest failed:", error);
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Create a new battle engine instance.
+ *
+ * @summary Factory returning a fresh `BattleEngine` instance.
+ * @pseudocode
+ * 1. Check if an engine already exists and reuse it if forceCreate is not set.
+ * 2. Construct a new `BattleEngine` with default classic config merged with `config`.
+ * 3. Store the instance for use by exported wrapper helpers.
+ * 4. Apply seed configuration if provided.
+ * 5. Notify listeners that engine was created.
+ * 6. Return the new instance.
+ *
+ * @param {object} [config]
+ * @returns {IBattleEngine}
+ */
+export function createBattleEngine(config = {}) {
+  logger.log("battleEngineFacade: createBattleEngine called with config:", config);
+  const forceCreate = config.forceCreate || isTestEnvironment();
+  const currentEngine = getCurrentEngine();
+
+  if (currentEngine && !forceCreate) {
     logger.log("battleEngineFacade: returning existing engine instance");
     notifyEngineCreated(currentEngine);
     return currentEngine;
@@ -192,7 +224,9 @@ export function createBattleEngine(config = {}) {
     if (typeof config?.seed === "number") {
       setTestMode({ enabled: true, seed: Number(config.seed) });
     }
-  } catch {}
+  } catch (error) {
+    logger.warn("Failed to set test mode seed:", error);
+  }
   notifyEngineCreated(battleEngine);
   return battleEngine;
 }
@@ -205,16 +239,16 @@ export function createBattleEngine(config = {}) {
  *
  * @pseudocode
  * 1. Attempt to capture the current `pointsToWin` value when an engine exists.
- * 2. Call `createBattleEngine({ forceCreate: true })` to rebuild the engine and
- *    clear accumulated match state.
- * 3. Reapply captured overrides like `pointsToWin` on the new engine instance
- *    before returning it.
+ * 2. Try to reset the existing engine via `_resetForTest()` method.
+ * 3. If that fails, create a fresh engine via `createBattleEngine({ forceCreate: true })`.
+ * 4. Reapply captured overrides like `pointsToWin` on the engine before returning.
  *
  * @returns {IBattleEngine} Refreshed engine instance.
  */
 export function resetBattleEnginePreservingConfig() {
   let preservedPointsToWin = null;
   let existingEngine = null;
+
   try {
     existingEngine = requireEngine();
     if (existingEngine && typeof existingEngine.getPointsToWin === "function") {
@@ -227,17 +261,7 @@ export function resetBattleEnginePreservingConfig() {
     existingEngine = null;
   }
 
-  let engine = existingEngine;
-  if (engine && typeof engine._resetForTest === "function") {
-    try {
-      engine._resetForTest();
-    } catch {
-      engine = null;
-    }
-  } else {
-    engine = null;
-  }
-
+  let engine = attemptInternalReset(existingEngine);
   if (!engine) {
     engine = createBattleEngine({ forceCreate: true });
   }
@@ -248,8 +272,9 @@ export function resetBattleEnginePreservingConfig() {
   if (typeof preservedPointsToWin === "number" && Number.isFinite(preservedPointsToWin)) {
     try {
       engine?.setPointsToWin?.(preservedPointsToWin);
-    } catch {
+    } catch (error) {
       // Ignore failures so replay flow can proceed with default thresholds.
+      logger.warn("Failed to restore pointsToWin after reset:", error);
     }
   }
   return engine;
@@ -400,13 +425,7 @@ export const getCurrentStats = () => {
  * @returns {number}
  */
 export const getRoundsPlayed = () => {
-  const result = requireEngine().getRoundsPlayed();
-  if (typeof window !== "undefined" && window.__DEBUG_ROUNDS_SYNC) {
-    try {
-      console.log("[DEBUG getRoundsPlayed]", result);
-    } catch {}
-  }
-  return result;
+  return requireEngine().getRoundsPlayed();
 };
 
 /**
@@ -433,25 +452,27 @@ export const getTimerState = () => requireEngine().getTimerState();
  * Subscribe to battle engine events.
  *
  * @pseudocode
- * 1. Delegate to `battleEngine.on(type, handler)`.
+ * 1. Ensure an engine exists via `requireEngine()`.
+ * 2. Delegate to `battleEngine.on(type, handler)`.
  *
  * @param {string} type - Event name.
  * @param {(payload: any) => void} handler - Callback for the event.
  * @returns {void}
  */
-export const on = (type, handler) => battleEngine?.on?.(type, handler);
+export const on = (type, handler) => requireEngine().on(type, handler);
 
 /**
  * Unsubscribe from battle engine events.
  *
  * @pseudocode
- * 1. Delegate to `battleEngine.off(type, handler)`.
+ * 1. Ensure an engine exists via `requireEngine()`.
+ * 2. Delegate to `battleEngine.off(type, handler)`.
  *
  * @param {string} type - Event name.
  * @param {(payload: any) => void} handler - Callback for the event.
  * @returns {void}
  */
-export const off = (type, handler) => battleEngine?.off?.(type, handler);
+export const off = (type, handler) => requireEngine().off(type, handler);
 
 /**
  * startRoundTimer: PRD alias for starting the round timer.
