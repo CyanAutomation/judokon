@@ -36,6 +36,9 @@ export const OUTCOME = {
   ERROR: "error"
 };
 
+const MATCH_POINT_OFFSET = 1;
+const ALLOWED_MODIFICATIONS = ["playerScore", "opponentScore", "roundsPlayed", "resetRound"];
+
 /**
  * Compare two stat values and report the winner.
  *
@@ -149,6 +152,23 @@ export class BattleEngine {
     this.emit = this.emitter.emit.bind(this.emitter);
   }
 
+  #safeLog(method, data) {
+    if (!logger?.debug) return;
+    try {
+      logger.debug(method, data);
+    } catch {}
+  }
+
+  #safeEmit(eventName, payload) {
+    try {
+      this.emit(eventName, payload);
+    } catch (error) {
+      try {
+        this.#safeLog(`Failed to emit ${eventName}`, error);
+      } catch {}
+    }
+  }
+
   /**
    * Set the points required to win the match.
    *
@@ -243,6 +263,8 @@ export class BattleEngine {
    * @pseudocode
    * 1. Set the `paused` flag to true.
    * 2. If a timer is running, call `pause()` on it.
+   *
+   * @note Delegates to engineTimer module to maintain separation of concerns.
    */
   pauseTimer() {
     enginePauseTimer(this);
@@ -254,6 +276,8 @@ export class BattleEngine {
    * @pseudocode
    * 1. Clear the `paused` flag.
    * 2. If a timer is running, call `resume()` on it.
+   *
+   * @note Delegates to engineTimer module to maintain separation of concerns.
    */
   resumeTimer() {
     engineResumeTimer(this);
@@ -276,35 +300,29 @@ export class BattleEngine {
    * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   handleStatSelection(playerVal, opponentVal) {
-    try {
-      logger.debug("BattleEngine.handleStatSelection", { playerVal, opponentVal });
-    } catch {}
+    this.#safeLog("BattleEngine.handleStatSelection", { playerVal, opponentVal });
     if (this.matchEnded) {
       return this.#resultWhenMatchEnded(playerVal, opponentVal);
     }
     this.stopTimer();
     const outcome = determineOutcome(playerVal, opponentVal);
-    try {
-      logger.debug("BattleEngine.determineOutcome", outcome);
-    } catch {}
+    this.#safeLog("BattleEngine.determineOutcome", outcome);
     applyOutcome(this, outcome);
     // Notify listeners that stats-related values used for UI may need refresh.
-    try {
-      this.emit("statsUpdated", {
-        stats: undefined // UI may query snapshots; payload optional by design
-      });
-    } catch {}
-    try {
-      logger.debug("BattleEngine.applyOutcome.scores", {
-        playerScore: this.playerScore,
-        opponentScore: this.opponentScore
-      });
-    } catch {}
+    this.#safeEmit("statsUpdated", {
+      stats: undefined // UI may query snapshots; payload optional by design
+    });
+    this.#safeLog("BattleEngine.applyOutcome.scores", {
+      playerScore: this.playerScore,
+      opponentScore: this.opponentScore
+    });
     this.roundsPlayed += 1;
     return this.#finalizeRound(outcome);
   }
 
   #resultWhenMatchEnded(playerVal, opponentVal) {
+    // Note: We recompute outcome here for consistency with happy path,
+    // even though the match has already ended. The outcome won't affect scoring.
     const already = determineOutcome(playerVal, opponentVal);
     return {
       ...already,
@@ -315,9 +333,7 @@ export class BattleEngine {
   }
 
   #finalizeRound(outcome) {
-    try {
-      logger.debug("BattleEngine.finalizeRound.in", outcome);
-    } catch {}
+    this.#safeLog("BattleEngine.finalizeRound.in", outcome);
     const matchOutcome = this.#endMatchIfNeeded();
     const result = {
       ...outcome,
@@ -326,11 +342,10 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    try {
-      logger.debug("BattleEngine.finalizeRound.out", result);
-    } catch {}
-    this.emit("roundEnded", result);
-    if (this.matchEnded) this.emit("matchEnded", result);
+    this.#safeLog("BattleEngine.finalizeRound.out", result);
+    this.#safeEmit("roundEnded", result);
+    // matchEnded event only emitted when match actually ends (not on every round)
+    if (this.matchEnded) this.#safeEmit("matchEnded", result);
     return result;
   }
 
@@ -352,7 +367,7 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    this.emit("matchEnded", result);
+    this.#safeEmit("matchEnded", result);
     return result;
   }
 
@@ -400,7 +415,7 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    this.emit("matchEnded", result);
+    this.#safeEmit("matchEnded", result);
     return result;
   }
 
@@ -408,14 +423,27 @@ export class BattleEngine {
    * Admin/test branch for modifying round state.
    *
    * @pseudocode
-   * 1. Accept a modification object and apply changes to round state.
-   * 2. Optionally log the modification.
-   * 3. Return a modification outcome and current scores.
+   * 1. Accept a modification object and validate keys against allowed modifications.
+   * 2. Apply changes to round state only for recognized keys.
+   * 3. Optionally log the modification.
+   * 4. Return a modification outcome and current scores.
    *
    * @param {object} modification - Object describing the round modification.
    * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   roundModification(modification) {
+    if (!modification || typeof modification !== "object") {
+      this.lastError = "Invalid modification: expected object";
+      return this.handleError(this.lastError);
+    }
+
+    // Warn about unrecognized keys
+    for (const key of Object.keys(modification)) {
+      if (!ALLOWED_MODIFICATIONS.includes(key)) {
+        console.warn(`Unrecognized modification key: ${key}`);
+      }
+    }
+
     // Example: allow score override, round reset, etc.
     if (modification?.playerScore !== undefined) this.playerScore = modification.playerScore;
     if (modification?.opponentScore !== undefined) this.opponentScore = modification.opponentScore;
@@ -431,9 +459,7 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    try {
-      this.emit("statsUpdated", { stats: undefined });
-    } catch {}
+    this.#safeEmit("statsUpdated", { stats: undefined });
     return result;
   }
 
@@ -456,7 +482,7 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    this.emit("error", { message: errorMsg });
+    this.#safeEmit("error", { message: errorMsg });
     return result;
   }
 
@@ -473,22 +499,26 @@ export class BattleEngine {
     this.lastError = "";
   }
 
+  /**
+   * Get the current scores.
+   *
+   * @pseudocode
+   * 1. Return current player and opponent scores.
+   *
+   * @returns {{playerScore: number, opponentScore: number}}
+   */
   getScores() {
     return { playerScore: this.playerScore, opponentScore: this.opponentScore };
   }
 
   /**
-   * Get the number of rounds played so far.
+   * Check if the match has ended.
    *
    * @pseudocode
-   * 1. Return `roundsPlayed`.
+   * 1. Return the `matchEnded` flag.
    *
-   * @returns {number}
+   * @returns {boolean}
    */
-  getRoundsPlayed() {
-    return this.roundsPlayed;
-  }
-
   isMatchEnded() {
     return this.matchEnded;
   }
@@ -503,10 +533,30 @@ export class BattleEngine {
    * @returns {boolean}
    */
   isMatchPoint() {
-    const needed = Math.max(0, Number(this.pointsToWin) - 1);
+    const needed = Math.max(0, Number(this.pointsToWin) - MATCH_POINT_OFFSET);
     return this.playerScore === needed || this.opponentScore === needed;
   }
 
+  /**
+   * Get the number of rounds played so far.
+   *
+   * @pseudocode
+   * 1. Return `roundsPlayed`.
+   *
+   * @returns {number}
+   */
+  getRoundsPlayed() {
+    return this.roundsPlayed;
+  }
+
+  /**
+   * Get the timer state.
+   *
+   * @pseudocode
+   * 1. Return the current timer state from the TimerController.
+   *
+   * @returns {object}
+   */
   getTimerState() {
     return this.timer.getState();
   }
@@ -522,12 +572,8 @@ export class BattleEngine {
    */
   getTimerStateSnapshot() {
     const timer = this.getTimerState();
-    let transitions = [];
-    const snap = this.debugHooks?.getStateSnapshot?.();
-    if (Array.isArray(snap?.log)) {
-      transitions = snap.log.slice();
-    }
-    return { timer, transitions };
+    const transitions = this.debugHooks?.getStateSnapshot?.()?.log ?? [];
+    return { timer, transitions: Array.isArray(transitions) ? transitions : [] };
   }
 
   /**
@@ -564,6 +610,12 @@ export class BattleEngine {
     engineHandleTabActive(this);
   }
 
+  #getTimerRestarter(category) {
+    return category !== "coolDownTimer"
+      ? this.timer.startRound.bind(this.timer)
+      : this.timer.startCoolDown.bind(this.timer);
+  }
+
   /**
    * Respond to timer drift by resetting the timer and logging the event.
    *
@@ -591,10 +643,8 @@ export class BattleEngine {
     const onExpired = this.timer.onExpiredCb;
     this.stopTimer();
     this.lastTimerDrift = remainingTime;
-    const restartRound = category !== "coolDownTimer";
-    const restart = restartRound
-      ? this.timer.startRound.bind(this.timer)
-      : this.timer.startCoolDown.bind(this.timer);
+
+    const restart = this.#getTimerRestarter(category);
     restart(onTick, onExpired, remainingTime, (r) => this.handleTimerDrift(r));
   }
 
