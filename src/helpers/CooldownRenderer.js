@@ -338,6 +338,65 @@ function schedulePromptPoll(state) {
   }
 }
 
+/**
+ * Check if the prompt wait deadline has been reached.
+ *
+ * @pseudocode
+ * 1. If waiting is not constrained by time (max wait disabled), return true.
+ * 2. Otherwise, compare current time against deadline timestamp.
+ * 3. Return true if deadline is set and current time has passed it.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {boolean} True if deadline reached or time limit disabled.
+ */
+function isPromptWaitDeadlineReached(state) {
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
+  if (!canWaitForPrompt) {
+    return true;
+  }
+  return state.promptWaitDeadline > 0 && state.config.now() >= state.promptWaitDeadline;
+}
+
+/**
+ * Check if the maximum number of prompt poll retries has been exhausted.
+ *
+ * @pseudocode
+ * 1. If polling is not constrained (max retries disabled), return false.
+ * 2. Otherwise, check if remaining polls have been decremented to or below zero.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {boolean} True if poll limit has been reached.
+ */
+function isPromptPollLimitReached(state) {
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
+  if (!canWaitForPrompt || state.config.maxPromptPollRetries <= 0) {
+    return false;
+  }
+  return state.promptWaitPollsRemaining <= 0;
+}
+
+/**
+ * Check if prompt waiting should begin (initialize deadline and retries).
+ *
+ * @pseudocode
+ * 1. If waiting is not enabled or no time/poll limits, return false.
+ * 2. Check if deadline is not yet initialized (zero).
+ * 3. Initialize deadline to now + maxPromptWait and reset poll counter.
+ * 4. Return true to signal initialization.
+ *
+ * @param {object} state - Prompt delay controller state.
+ * @returns {boolean} True if waiting should begin.
+ */
+function canBeginWaitingForPrompt(state) {
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
+  if (!canWaitForPrompt || state.promptWaitDeadline !== 0) {
+    return false;
+  }
+  state.promptWaitDeadline = state.config.now() + state.config.maxPromptWait;
+  state.promptWaitPollsRemaining = state.config.maxPromptPollRetries;
+  return true;
+}
+
 function handlePromptWaiting(state) {
   if (!state.config.waitForPromptOption) {
     if (state.promptWaitDeadline !== 0 && hasActivePrompt()) {
@@ -351,26 +410,14 @@ function handlePromptWaiting(state) {
     return false;
   }
 
-  const canWaitForPrompt = state.config.maxPromptWait > 0;
-  if (canWaitForPrompt && state.promptWaitDeadline === 0) {
-    state.promptWaitDeadline = state.config.now() + state.config.maxPromptWait;
-    state.promptWaitPollsRemaining = state.config.maxPromptPollRetries;
-  }
+  canBeginWaitingForPrompt(state);
 
-  const pollLimitReached =
-    canWaitForPrompt &&
-    state.config.maxPromptPollRetries > 0 &&
-    state.promptWaitPollsRemaining <= 0;
-
-  const deadlineReached = !canWaitForPrompt
-    ? true
-    : state.promptWaitDeadline > 0 && state.config.now() >= state.promptWaitDeadline;
-
-  if (deadlineReached || pollLimitReached) {
+  if (isPromptWaitDeadlineReached(state) || isPromptPollLimitReached(state)) {
     resetPromptWaitState(state);
     return false;
   }
 
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
   if (!canWaitForPrompt) {
     return false;
   }
@@ -480,10 +527,17 @@ function shouldDeferState(state) {
 /**
  * Create a controller that defers countdown ticks until prompt constraints finish.
  *
+ * @description Manages prompt delay logic by deferring countdown ticks while waiting for
+ * opponent prompts to become active or minimum inter-prompt durations to elapse. Provides
+ * a queueing interface for ticks and exposes utilities for clearing state and checking
+ * whether deferral should occur.
+ *
  * @pseudocode
- * 1. Normalize timing options and capture shared state.
- * 2. Queue ticks until prompts or minimum delays finish, reusing helper functions.
- * 3. Expose `queueTick`, `clear`, and `shouldDefer` to the renderer.
+ * 1. Normalize and validate timing options (poll intervals, max wait, timer functions).
+ * 2. Create encapsulated state object holding config, pending timeouts, queue, and deadlines.
+ * 3. Initialize controller interface exposing three public methods.
+ * 4. Return controller with queueTick (defer until ready), clear (reset state), and shouldDefer
+ *    (check if deferral active) methods.
  *
  * @param {{
  *   waitForOpponentPrompt?: boolean,
@@ -492,12 +546,13 @@ function shouldDeferState(state) {
  *   setTimeoutFn?: typeof setTimeout,
  *   clearTimeoutFn?: typeof clearTimeout,
  *   now?: () => number
- * }} [options]
+ * }} [options] - Timing configuration and function overrides.
  * @returns {{
- *   queueTick: (value: number, options: { suppressEvents?: boolean }, onReady: Function) => void,
+ *   queueTick: (value: number, queueOptions: {suppressEvents?: boolean}, onReady: Function) => void,
  *   clear: () => void,
- *   shouldDefer: () => boolean
- * }}
+ *   shouldDefer: () => boolean,
+ *   getRemainingPromptDelayMs: () => number
+ * }} Prompt delay controller interface.
  */
 export function createPromptDelayController(options = {}) {
   const config = normalizePromptDelayOptions(options);
@@ -545,21 +600,28 @@ function tryGetInitialRenderedCountdown() {
 /**
  * Attach snackbar + scoreboard rendering to a timer.
  *
- * @pseudocode
- * 1. Subscribe to timer `tick` and `expired` events.
- * 2. On `tick`, emit countdown events and render snackbar.
- * 3. On `expired`, render final 0s, emit final tick, and clear scoreboard timer.
- * 4. Optionally render initial remaining immediately when provided.
+ * @description Subscribes to timer tick/expired events and renders countdown UI via snackbar
+ * and scoreboard updates. Respects opponent prompt timing constraints by deferring ticks until
+ * prompts become active or minimum delays elapse. Emits battle events on each tick for
+ * test coordination. Returns a detach function to clean up listeners and state.
  *
- * @param {{on: Function, off: Function}} timer - Timer with event API.
- * @param {number} [initialRemaining] - Seconds remaining to render initially.
+ * @pseudocode
+ * 1. Initialize renderer state: last rendered value, started flag, prompt controller.
+ * 2. Attempt to extract pre-rendered countdown from Vitest DOM (test-only optimization).
+ * 3. Define helper functions for normalization, rendering, tick processing, and event emission.
+ * 4. Subscribe timer's tick and expired events to processing pipeline.
+ * 5. Optionally render initial remaining value with deferred tick processing.
+ * 6. Return detach function that unsubscribes, clears controller state, and tears down listeners.
+ *
+ * @param {{on: Function, off: Function}} timer - Timer with event subscription API.
+ * @param {number} [initialRemaining] - Seconds remaining to render initially (optional).
  * @param {{
  *   waitForOpponentPrompt?: boolean,
  *   maxPromptWaitMs?: number,
  *   promptPollIntervalMs?: number,
  *   opponentPromptBufferMs?: number
  * }} [options] - Optional countdown delay configuration.
- * @returns {() => void} Detach function.
+ * @returns {() => void} Detach function to clean up listeners and state.
  */
 export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   let started = false;
