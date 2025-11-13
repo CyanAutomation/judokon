@@ -77,14 +77,14 @@ jobs:
           [ -f "src/helpers/cardCode.js" ] || { echo "❌ cardCode.js missing"; exit 1; }
           [ -f "updateCodes.mjs" ] || { echo "❌ updateCodes.mjs missing"; exit 1; }
           echo "✓ All required files present"
-          
+
           echo "✓ Validating judoka.json syntax..."
           jq '.' src/data/judoka.json > /dev/null || {
             echo "❌ judoka.json is invalid JSON"
             exit 1
           }
           echo "✓ judoka.json is valid JSON"
-          
+
           echo "✓ Checking required fields in judoka entries..."
           jq -e '.[] | .id and .name' src/data/judoka.json > /dev/null || {
             echo "❌ Missing required fields in judoka entries (id, name)"
@@ -163,20 +163,20 @@ jobs:
         id: analyze-changes
         run: |
           echo "Analyzing changes..."
-          
+
           # Compare original and updated
           DIFF=$(diff src/data/judoka.json.backup src/data/judoka.json || true)
           DIFF_LINES=$(echo "$DIFF" | wc -l)
-          
+
           # Count judoka entries
           JUDOKA_COUNT=$(jq 'length' src/data/judoka.json)
           echo "judoka_count=$JUDOKA_COUNT" >> $GITHUB_OUTPUT
-          
+
           # Get file sizes
           ORIGINAL_SIZE=$(stat -f%z "src/data/judoka.json.backup" 2>/dev/null || stat -c%s "src/data/judoka.json.backup")
           UPDATED_SIZE=$(stat -f%z "src/data/judoka.json" 2>/dev/null || stat -c%s "src/data/judoka.json")
           SIZE_DIFF=$((UPDATED_SIZE - ORIGINAL_SIZE))
-          
+
           echo "original_size_kb=$((ORIGINAL_SIZE / 1024))" >> $GITHUB_OUTPUT
           echo "updated_size_kb=$((UPDATED_SIZE / 1024))" >> $GITHUB_OUTPUT
           echo "size_diff_bytes=$SIZE_DIFF" >> $GITHUB_OUTPUT
@@ -193,7 +193,7 @@ jobs:
         run: |
           set -euo pipefail
           git add src/data/judoka.json 2>/dev/null || true
-          
+
           if git diff --cached --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "ℹ️ No changes detected in card codes"
@@ -259,22 +259,22 @@ jobs:
           title: "chore: update judoka card codes - ${{ steps.date.outputs.date }}"
           body: |
             ✅ **Card Codes Regenerated**
-            
+
             This PR regenerates card codes for all judoka entries and updates timestamps.
-            
+
             **Workflow**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
+
             **Summary**
             - Judoka entries updated: ${{ steps.analyze-changes.outputs.judoka_count }}
             - File size change: ${{ steps.analyze-changes.outputs.size_diff_bytes }} bytes
             - Diff lines: ${{ steps.analyze-changes.outputs.diff_lines }}
-            
+
             **What was done:**
             - ✓ Generated unique card codes for each judoka
             - ✓ Updated `lastUpdated` timestamp to current date/time
             - ✓ Validated all card codes are unique and well-formed
             - ✓ Verified data integrity and consistency
-            
+
             **Files Changed**
             ${{ steps.changes.outputs.changed_files }}
           branch: auto/update-card-codes

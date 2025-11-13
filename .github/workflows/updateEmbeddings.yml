@@ -100,7 +100,7 @@ jobs:
           SIZE_KB=$((SIZE / 1024))
           echo "✓ Embeddings file generated: ${SIZE_KB}KB"
           echo "size_kb=${SIZE_KB}" >> $GITHUB_OUTPUT
-          
+
           # Validate JSON structure
           echo "✓ Validating embeddings JSON structure..."
           jq '.embeddings | length' src/data/client_embeddings.json > /dev/null || {
@@ -149,7 +149,7 @@ jobs:
             VEC_SIZE=$(stat -f%z "src/data/offline_rag_vectors.bin" 2>/dev/null || stat -c%s "src/data/offline_rag_vectors.bin")
             echo "✓ offline_rag_vectors.bin: $((VEC_SIZE / 1024 / 1024))MB"
           fi
-          
+
           if [ ! -f "src/data/offline_rag_metadata.json" ]; then
             echo "❌ missing offline_rag_metadata.json"
             err=1
@@ -161,7 +161,7 @@ jobs:
               exit 1
             }
           fi
-          
+
           if [ $err -ne 0 ]; then
             echo "Hint: verify scripts/buildOfflineRag.mjs writes to src/data/."
             exit 1

@@ -28,7 +28,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: autofix  # Single global group to prevent concurrent autofix PRs
+  group: autofix # Single global group to prevent concurrent autofix PRs
   cancel-in-progress: true
 
 jobs:
