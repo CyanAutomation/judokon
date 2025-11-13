@@ -247,7 +247,10 @@ test.describe("Battle state progress list", () => {
         let snapshot = [];
         try {
           if (window.__progressHistoryObserver) {
-            window.__progressHistoryObserver.disconnect();
+            try {
+              window.__progressHistoryObserver.disconnect();
+            } catch {}
+            delete window.__progressHistoryObserver;
           }
         } catch {}
 
@@ -258,7 +261,6 @@ test.describe("Battle state progress list", () => {
         } catch {}
 
         try {
-          delete window.__progressHistoryObserver;
           delete window.__progressHistory;
         } catch {}
 
