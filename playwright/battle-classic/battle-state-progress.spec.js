@@ -203,9 +203,10 @@ test.describe("Battle state progress list", () => {
 
         const observer = new MutationObserver((mutations) => {
           if (
-            mutations.some((mutation) =>
-              mutation.attributeName === "data-feature-battle-state-active" ||
-              mutation.attributeName === "data-feature-battle-state-active-original"
+            mutations.some(
+              (mutation) =>
+                mutation.attributeName === "data-feature-battle-state-active" ||
+                mutation.attributeName === "data-feature-battle-state-active-original"
             )
           ) {
             recordSnapshot();

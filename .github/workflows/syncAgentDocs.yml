@@ -242,7 +242,7 @@ jobs:
           title: "chore: sync agent docs - ${{ steps.date.outputs.date }} 📚"
           body: |
             This PR contains automated updates produced by `npm run sync:agents`.
-            
+
             **Workflow**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             Changed files:

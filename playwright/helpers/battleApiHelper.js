@@ -9,36 +9,39 @@
  * 4. Return normalized result with ok/result/reason structure
  */
 export async function dispatchBattleEvent(page, eventName, payload) {
-  return await page.evaluate(({ event, data }) => {
-    return new Promise((resolve) => {
-      const api = window.__TEST_API?.state;
-      if (!api || typeof api.dispatchBattleEvent !== "function") {
-        resolve({ ok: false, result: null, reason: "state.dispatchBattleEvent unavailable" });
-        return;
-      }
-
-      try {
-        const result = api.dispatchBattleEvent(event, data);
-        if (result && typeof result.then === "function") {
-          result
-            .then((value) => {
-              resolve({ ok: value !== false, result: value ?? null, reason: null });
-            })
-            .catch((error) => {
-              resolve({
-                ok: false,
-                result: null,
-                reason: error?.message ?? "dispatch failed"
-              });
-            });
-        } else {
-          resolve({ ok: result !== false, result: result ?? null, reason: null });
+  return await page.evaluate(
+    ({ event, data }) => {
+      return new Promise((resolve) => {
+        const api = window.__TEST_API?.state;
+        if (!api || typeof api.dispatchBattleEvent !== "function") {
+          resolve({ ok: false, result: null, reason: "state.dispatchBattleEvent unavailable" });
+          return;
         }
-      } catch (error) {
-        resolve({ ok: false, result: null, reason: error?.message ?? "dispatch failed" });
-      }
-    });
-  }, { event: eventName, data: payload });
+
+        try {
+          const result = api.dispatchBattleEvent(event, data);
+          if (result && typeof result.then === "function") {
+            result
+              .then((value) => {
+                resolve({ ok: value !== false, result: value ?? null, reason: null });
+              })
+              .catch((error) => {
+                resolve({
+                  ok: false,
+                  result: null,
+                  reason: error?.message ?? "dispatch failed"
+                });
+              });
+          } else {
+            resolve({ ok: result !== false, result: result ?? null, reason: null });
+          }
+        } catch (error) {
+          resolve({ ok: false, result: null, reason: error?.message ?? "dispatch failed" });
+        }
+      });
+    },
+    { event: eventName, data: payload }
+  );
 }
 
 /**

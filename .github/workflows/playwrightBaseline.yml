@@ -113,7 +113,7 @@ jobs:
             📣 **PR Details**
             This PR updates the Playwright baseline screenshots.
             New baseline images overwrite the previous ones.
-            
+
             **Generated**: ${{ steps.date.outputs.date }}
             **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
@@ -125,7 +125,7 @@ jobs:
 
             **Let The Die Roll!**
             ${{ steps.stats.outputs.mood }}
-            
+
             ⚠️ **Action Required**
             - [ ] Review visual changes in updated snapshots
             - [ ] Verify no unexpected regressions
