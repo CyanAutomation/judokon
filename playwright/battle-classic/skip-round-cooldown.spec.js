@@ -13,14 +13,8 @@ test.describe("skipRoundCooldown feature flag", () => {
     const body = page.locator("body");
     await expect(body).toHaveAttribute("data-feature-skip-round-cooldown", "enabled");
 
-    // Verify the body has the enabled marker
-    const bodyMarker = await body.getAttribute("data-feature-skip-round-cooldown");
-    expect(bodyMarker).toBe("enabled");
-
     const nextButton = page.locator('[data-testid="next-button"]');
     await expect(nextButton).toHaveAttribute("data-feature-skip-round-cooldown", "enabled");
-    const nextMarker = await nextButton.getAttribute("data-feature-skip-round-cooldown");
-    expect(nextMarker).toBe("enabled");
   });
 
   test("DOM markers are set when skipRoundCooldown flag is disabled", async ({ page }) => {
@@ -35,14 +29,8 @@ test.describe("skipRoundCooldown feature flag", () => {
     const body = page.locator("body");
     await expect(body).toHaveAttribute("data-feature-skip-round-cooldown", "disabled");
 
-    // Verify the body has the disabled marker
-    const bodyMarker = await body.getAttribute("data-feature-skip-round-cooldown");
-    expect(bodyMarker).toBe("disabled");
-
     const nextButton = page.locator('[data-testid="next-button"]');
     await expect(nextButton).toHaveAttribute("data-feature-skip-round-cooldown", "disabled");
-    const nextMarker = await nextButton.getAttribute("data-feature-skip-round-cooldown");
-    expect(nextMarker).toBe("disabled");
   });
 
   test("skipRoundCooldown skips cooldown when enabled during battle", async ({ page }) => {
