@@ -246,7 +246,7 @@ test.describe("Classic Battle replay", () => {
                   status: "ok",
                   roundsPlayed,
                   pointsToWin,
-                  roundsReset: roundsPlayed <= 1,
+                  roundsReset: roundsPlayed === 0,
                   pointsRestored: pointsToWin === expectedPoints
                 };
               },
@@ -272,7 +272,7 @@ test.describe("Classic Battle replay", () => {
             typeof engineApi.getPointsToWin === "function" ? engineApi.getPointsToWin() : null
         };
       });
-      expect(engineStateAfterReplay?.roundsPlayed).toBeLessThanOrEqual(1);
+      expect(engineStateAfterReplay?.roundsPlayed).toBe(0);
       expect(engineStateAfterReplay?.pointsToWin).toBe(pointsBeforeReplay);
 
       await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
