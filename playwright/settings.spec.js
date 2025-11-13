@@ -439,9 +439,6 @@ test.describe("Settings page", () => {
     const body = page.locator("body");
     await expect(body).toHaveAttribute("data-theme", /^(light|dark)$/);
     const theme = await body.getAttribute("data-theme");
-    if (theme !== "light" && theme !== "dark") {
-      throw new Error(`Unexpected theme value: ${theme}`);
-    }
     const radioSelector = theme === "dark" ? "#display-mode-dark" : "#display-mode-light";
     await expect(page.locator(radioSelector)).toBeChecked();
     await expect(page.locator(`#header-display-mode-${theme}`)).toBeChecked();
@@ -480,7 +477,6 @@ test.describe("Settings page", () => {
     await expect(page.locator("#header-display-mode-light")).toBeChecked();
 
     const body = page.locator("body");
-
     await page.check("#display-mode-dark");
     await expect(body).toHaveAttribute("data-theme", "dark");
     const dark = await snapshot();
