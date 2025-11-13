@@ -574,6 +574,230 @@ const createControllerInterface = (state) => ({
 });
 
 /**
+ * Create renderer state for countdown attachment.
+ *
+ * @pseudocode
+ * 1. Initialize tracking variables for render state and timing.
+ * 2. Create prompt delay controller with configuration.
+ * 3. Check for pre-rendered countdown from Vitest environment (test-only).
+ * 4. Return composed state object for use by renderer.
+ *
+ * @param {{
+ *   waitForOpponentPrompt?: boolean,
+ *   maxPromptWaitMs?: number,
+ *   promptPollIntervalMs?: number,
+ *   opponentPromptBufferMs?: number
+ * }} [options] - Countdown delay configuration.
+ * @returns {{
+ *   started: boolean,
+ *   lastRendered: number,
+ *   rendered: boolean,
+ *   promptController: object,
+ *   waitForPromptOption: boolean,
+ *   maxPromptWaitMs: number
+ * }} Renderer state object.
+ */
+function createRendererState(options = {}) {
+  const waitForPromptOption = options?.waitForOpponentPrompt === true;
+  const maxPromptWaitMs = Number(options?.maxPromptWaitMs);
+  const promptController = createPromptDelayController({
+    waitForOpponentPrompt: waitForPromptOption,
+    promptPollIntervalMs: options?.promptPollIntervalMs,
+    maxPromptWaitMs: options?.maxPromptWaitMs
+  });
+
+  const initialCountdown = tryGetInitialRenderedCountdown();
+  const started = false;
+  const lastRendered = initialCountdown !== null ? initialCountdown : -1;
+  const rendered = initialCountdown !== null;
+
+  return {
+    started,
+    lastRendered,
+    rendered,
+    promptController,
+    waitForPromptOption,
+    maxPromptWaitMs
+  };
+}
+
+/**
+ * Create helper functions for rendering and tick processing.
+ *
+ * @pseudocode
+ * 1. Create normalizer for countdown values (clamp to positive).
+ * 2. Create render function for snackbar and scoreboard updates.
+ * 3. Create tick processor for state machine and event emission.
+ * 4. Create prompt remaining getter from controller.
+ * 5. Create tick queuing handler with prompt delay logic.
+ * 6. Return object of all helper functions.
+ *
+ * @param {object} rendererState - Renderer state from createRendererState.
+ * @returns {{
+ *   normalizeRemaining: (value: number) => number,
+ *   render: (remaining: number) => number,
+ *   processTick: (normalized: number, options?: {suppressEvents?: boolean}) => void,
+ *   getRemainingPromptDelayMs: () => number,
+ *   processTickWithPromptDelay: (value: number, queueOptions?: object, renderOptions?: object) => void
+ * }} Helper functions for tick processing.
+ */
+function createTickProcessors(rendererState) {
+  const normalizeRemaining = (value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.max(0, numeric);
+  };
+
+  const render = (remaining) => {
+    const clamped = normalizeRemaining(remaining);
+    const text = t("ui.nextRoundIn", { seconds: clamped });
+    if (!rendererState.rendered) {
+      snackbar.showSnackbar(text);
+      rendererState.rendered = true;
+    } else if (clamped !== rendererState.lastRendered) {
+      snackbar.updateSnackbar(text);
+    }
+    rendererState.lastRendered = clamped;
+    try {
+      if (typeof scoreboard.updateTimer === "function") {
+        scoreboard.updateTimer(clamped);
+      }
+    } catch {}
+    return clamped;
+  };
+
+  const processTick = (normalized, { suppressEvents = false } = {}) => {
+    if (
+      !rendererState.started &&
+      rendererState.rendered &&
+      rendererState.lastRendered >= 0 &&
+      normalized === rendererState.lastRendered
+    ) {
+      if (!suppressEvents) {
+        rendererState.started = true;
+        emitBattleEvent("nextRoundCountdownStarted");
+        emitBattleEvent("nextRoundCountdownTick", { remaining: normalized });
+      }
+      return;
+    }
+    const clamped = render(normalized);
+    if (!rendererState.started && !suppressEvents) {
+      rendererState.started = true;
+      emitBattleEvent("nextRoundCountdownStarted");
+    }
+    if (!suppressEvents) {
+      emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
+    }
+  };
+
+  const deliverTick = (value, { suppressEvents }) => {
+    processTick(value, { suppressEvents });
+  };
+
+  const getRemainingPromptDelayMs = () => {
+    try {
+      if (typeof rendererState.promptController.getRemainingPromptDelayMs === "function") {
+        const remaining = Number(rendererState.promptController.getRemainingPromptDelayMs());
+        if (Number.isFinite(remaining)) {
+          return remaining;
+        }
+      }
+    } catch {}
+    return 0;
+  };
+
+  const processTickWithPromptDelay = (value, queueOptions = {}, { respectDelay = false } = {}) => {
+    const normalized = normalizeRemaining(value);
+    const suppressEvents = queueOptions?.suppressEvents === true;
+    const normalizedOptions = { suppressEvents };
+    const remainingRaw = Number(getRemainingPromptDelayMs());
+    const remainingDelay = Number.isFinite(remainingRaw) ? Math.max(0, remainingRaw) : 0;
+    const canWaitForPrompt =
+      !rendererState.started &&
+      rendererState.waitForPromptOption &&
+      Number.isFinite(rendererState.maxPromptWaitMs) &&
+      rendererState.maxPromptWaitMs > 0;
+    const waitingForPrompt = canWaitForPrompt && !hasActivePrompt();
+    const shouldDelay = !rendererState.started && (waitingForPrompt || remainingDelay > 0);
+
+    if (!shouldDelay && !respectDelay) {
+      rendererState.promptController.clear();
+      processTick(normalized, normalizedOptions);
+      return;
+    }
+
+    if (!waitingForPrompt && remainingDelay <= 0) {
+      rendererState.promptController.clear();
+      processTick(normalized, normalizedOptions);
+      return;
+    }
+
+    rendererState.promptController.queueTick(normalized, normalizedOptions, deliverTick);
+  };
+
+  return {
+    normalizeRemaining,
+    render,
+    processTick,
+    getRemainingPromptDelayMs,
+    processTickWithPromptDelay
+  };
+}
+
+/**
+ * Setup timer event handlers and initial rendering.
+ *
+ * @pseudocode
+ * 1. Create tick processor helper functions.
+ * 2. Define onTick and onExpired handlers that dispatch to processor.
+ * 3. Subscribe onTick and onExpired to timer events.
+ * 4. If initialRemaining provided, process it through tick pipeline.
+ * 5. Return handler references and processor for cleanup.
+ *
+ * @param {{on: Function, off: Function}} timer - Timer with event subscription API.
+ * @param {number} [initialRemaining] - Seconds remaining to render initially.
+ * @param {object} rendererState - Renderer state.
+ * @returns {{
+ *   onTick: Function,
+ *   onExpired: Function,
+ *   processTickWithPromptDelay: Function,
+ *   promptController: object
+ * }} Handler references and state for cleanup.
+ */
+function setupTickHandlers(timer, initialRemaining, rendererState) {
+  const processors = createTickProcessors(rendererState);
+
+  const onTick = (remaining) => {
+    processors.processTickWithPromptDelay(remaining);
+  };
+
+  const onExpired = () => onTick(0);
+
+  timer.on("tick", onTick);
+  timer.on("expired", onExpired);
+
+  const initialValue = Number(initialRemaining);
+  if (Number.isFinite(initialValue)) {
+    try {
+      processors.processTickWithPromptDelay(
+        initialValue,
+        { suppressEvents: true },
+        {
+          respectDelay: true
+        }
+      );
+    } catch {}
+  }
+
+  return {
+    onTick,
+    onExpired,
+    promptController: rendererState.promptController,
+    timer
+  };
+}
+
+/**
  * Try to extract initially rendered countdown from Vitest snackbar (test-only).
  *
  * @pseudocode
@@ -607,11 +831,9 @@ function tryGetInitialRenderedCountdown() {
  *
  * @pseudocode
  * 1. Initialize renderer state: last rendered value, started flag, prompt controller.
- * 2. Attempt to extract pre-rendered countdown from Vitest DOM (test-only optimization).
- * 3. Define helper functions for normalization, rendering, tick processing, and event emission.
- * 4. Subscribe timer's tick and expired events to processing pipeline.
- * 5. Optionally render initial remaining value with deferred tick processing.
- * 6. Return detach function that unsubscribes, clears controller state, and tears down listeners.
+ * 2. Setup timer event handlers for tick and expiration callbacks.
+ * 3. Subscribe to timer events and perform initial rendering if provided.
+ * 4. Return detach function that unsubscribes, clears controller state, and tears down listeners.
  *
  * @param {{on: Function, off: Function}} timer - Timer with event subscription API.
  * @param {number} [initialRemaining] - Seconds remaining to render initially (optional).
@@ -624,130 +846,12 @@ function tryGetInitialRenderedCountdown() {
  * @returns {() => void} Detach function to clean up listeners and state.
  */
 export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
-  let started = false;
-  let lastRendered = -1;
-  let rendered = false;
-  const waitForPromptOption = options?.waitForOpponentPrompt === true;
-  const maxPromptWaitMs = Number(options?.maxPromptWaitMs);
-  const promptController = createPromptDelayController({
-    waitForOpponentPrompt: waitForPromptOption,
-    promptPollIntervalMs: options?.promptPollIntervalMs,
-    maxPromptWaitMs: options?.maxPromptWaitMs
-  });
-  // In unit tests, if a snackbar already shows a countdown value, treat that
-  // as the initial render and skip the first decrement to avoid off-by-one
-  // perception when timers begin very soon after the outcome.
-  const initialCountdown = tryGetInitialRenderedCountdown();
-  if (initialCountdown !== null) {
-    lastRendered = initialCountdown;
-    rendered = true;
-    // Mark that we've effectively "rendered" the initial state.
-    // The first engine tick will only establish `started` without
-    // changing the visible countdown.
-  }
+  const rendererState = createRendererState(options);
+  const handlers = setupTickHandlers(timer, initialRemaining, rendererState);
 
-  const normalizeRemaining = (value) => {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric)) return 0;
-    return Math.max(0, numeric);
-  };
-
-  const render = (remaining) => {
-    const clamped = normalizeRemaining(remaining);
-    const text = t("ui.nextRoundIn", { seconds: clamped });
-    if (!rendered) {
-      snackbar.showSnackbar(text);
-      rendered = true;
-    } else if (clamped !== lastRendered) {
-      snackbar.updateSnackbar(text);
-    }
-    lastRendered = clamped;
-    try {
-      if (typeof scoreboard.updateTimer === "function") {
-        scoreboard.updateTimer(clamped);
-      }
-    } catch {}
-    return clamped;
-  };
-
-  const processTick = (normalized, { suppressEvents = false } = {}) => {
-    if (!started && rendered && lastRendered >= 0 && normalized === lastRendered) {
-      if (!suppressEvents) {
-        started = true;
-        emitBattleEvent("nextRoundCountdownStarted");
-        emitBattleEvent("nextRoundCountdownTick", { remaining: normalized });
-      }
-      return;
-    }
-    const clamped = render(normalized);
-    if (!started && !suppressEvents) {
-      started = true;
-      emitBattleEvent("nextRoundCountdownStarted");
-    }
-    if (!suppressEvents) {
-      emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
-    }
-  };
-
-  const deliverTick = (value, { suppressEvents }) => {
-    processTick(value, { suppressEvents });
-  };
-
-  const getRemainingPromptDelayMs = () => {
-    try {
-      if (typeof promptController.getRemainingPromptDelayMs === "function") {
-        const remaining = Number(promptController.getRemainingPromptDelayMs());
-        if (Number.isFinite(remaining)) {
-          return remaining;
-        }
-      }
-    } catch {}
-    return 0;
-  };
-
-  const processTickWithPromptDelay = (value, queueOptions = {}, { respectDelay = false } = {}) => {
-    const normalized = normalizeRemaining(value);
-    const suppressEvents = queueOptions?.suppressEvents === true;
-    const normalizedOptions = { suppressEvents };
-    const remainingRaw = Number(getRemainingPromptDelayMs());
-    const remainingDelay = Number.isFinite(remainingRaw) ? Math.max(0, remainingRaw) : 0;
-    const canWaitForPrompt =
-      !started && waitForPromptOption && Number.isFinite(maxPromptWaitMs) && maxPromptWaitMs > 0;
-    const waitingForPrompt = canWaitForPrompt && !hasActivePrompt();
-    const shouldDelay = !started && (waitingForPrompt || remainingDelay > 0);
-
-    if (!shouldDelay && !respectDelay) {
-      promptController.clear();
-      processTick(normalized, normalizedOptions);
-      return;
-    }
-
-    if (!waitingForPrompt && remainingDelay <= 0) {
-      promptController.clear();
-      processTick(normalized, normalizedOptions);
-      return;
-    }
-
-    promptController.queueTick(normalized, normalizedOptions, deliverTick);
-  };
-
-  const onTick = (remaining) => {
-    processTickWithPromptDelay(remaining);
-  };
-
-  const onExpired = () => onTick(0);
-
-  timer.on("tick", onTick);
-  timer.on("expired", onExpired);
-  const initialValue = Number(initialRemaining);
-  if (Number.isFinite(initialValue)) {
-    try {
-      processTickWithPromptDelay(initialValue, { suppressEvents: true }, { respectDelay: true });
-    } catch {}
-  }
   return () => {
-    timer.off("tick", onTick);
-    timer.off("expired", onExpired);
-    promptController.clear();
+    timer.off("tick", handlers.onTick);
+    timer.off("expired", handlers.onExpired);
+    handlers.promptController.clear();
   };
 }
