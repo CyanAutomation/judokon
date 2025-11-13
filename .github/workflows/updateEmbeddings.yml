@@ -101,10 +101,12 @@ jobs:
           echo "✓ Embeddings file generated: ${SIZE_KB}KB"
           echo "size_kb=${SIZE_KB}" >> $GITHUB_OUTPUT
 
-          # Validate JSON structure
+          # Validate JSON structure - embeddings is a root-level array of embedding objects
           echo "✓ Validating embeddings JSON structure..."
-          jq '.embeddings | length' src/data/client_embeddings.json > /dev/null || {
-            echo "❌ Invalid embeddings JSON"
+          jq 'if type != "array" then error("Root must be a JSON array") elif length == 0 then error("Array is empty") elif .[0] | type != "object" then error("First element must be object") elif (.[0] | has("embedding") | not) then error("Missing embedding field") else true end' src/data/client_embeddings.json > /dev/null || {
+            echo "❌ Invalid embeddings JSON structure"
+            echo "Expected: root-level JSON array with embedding objects"
+            echo "Schema: src/data/schemas/client-embeddings.schema.json"
             exit 1
           }
           echo "✓ Embeddings JSON is valid"

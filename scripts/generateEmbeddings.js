@@ -2,6 +2,10 @@
 /**
  * Generate embeddings for PRD markdown, JSON data, and JS source files.
  *
+ * **OUTPUT STRUCTURE**: Generates `src/data/client_embeddings.json` as a **ROOT-LEVEL JSON ARRAY**
+ * (NOT an object with an "embeddings" property). The root must always be `[{...}, {...}, ...]`.
+ * See `src/data/schemas/client-embeddings.schema.json` for the full schema.
+ *
  * @pseudocode
  * 1. Use glob to gather markdown, JSON, and JS sources, skipping existing
  *    `client_embeddings.json` and large datasets.
@@ -27,9 +31,10 @@
  *      specific labels such as "judoka-data" or "tooltip".
  *    - Append a simple intent tag ("why", "how", or "what") based on text
  *      analysis.
- * 6. Stream each output object directly to `client_embeddings.json` using
- *    `fs.createWriteStream`.
+ * 6. Stream each output object directly to `client_embeddings.json` as a JSON array.
+ *    Each entry is streamed sequentially: [entry1, entry2, entry3, ...]
  *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (24.8 MB).
+ *    - The root structure is always an array, maintained throughout the stream.
  * 7. After writing the file, record the total count, average vector length,
  *    and output size in `client_embeddings.meta.json`.
  */

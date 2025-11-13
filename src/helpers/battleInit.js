@@ -9,6 +9,13 @@ const PARTS = {
 };
 
 /**
+ * Event name dispatched when all battle parts are ready.
+ *
+ * @type {string}
+ */
+const BATTLE_INIT_EVENT = "battle:init";
+
+/**
  * Root element selector for the battle screen.
  *
  * @type {string}
@@ -40,6 +47,8 @@ const readinessState = {
 
 const isReady = () => readinessState.resolved;
 
+const allPartsBattleReady = () => Object.values(PARTS).every((part) => readyParts.has(part));
+
 const tryResolveReady = () => {
   if (!isReady()) {
     readinessState.resolved = true;
@@ -55,7 +64,7 @@ const ensureBattleInitListener = () => {
   // { once: true } ensures listener auto-removes after first dispatch,
   // preventing memory leaks from repeated registrations
   document.addEventListener(
-    "battle:init",
+    BATTLE_INIT_EVENT,
     () => {
       tryResolveReady();
     },
@@ -66,7 +75,11 @@ const ensureBattleInitListener = () => {
 
 ensureBattleInitListener();
 
-if (typeof window !== "undefined") {
+if (
+  typeof window !== "undefined" &&
+  typeof process !== "undefined" &&
+  process.env.NODE_ENV === "development"
+) {
   window.battleReadyPromise = battleReadyPromise;
 }
 /**
@@ -75,10 +88,11 @@ if (typeof window !== "undefined") {
  * @param {"home"|"state"} part - The portion of the page that finished initializing.
  * @pseudocode
  * 1. Exit early if the readiness promise already resolved.
- * 2. Add `part` to the `readyParts` set.
- * 3. Return until both PARTS.HOME and PARTS.STATE are present.
- * 4. If the DOM is unavailable, resolve the readiness promise directly (SSR fallback).
- * 5. Otherwise, ensure the listener is attached, set the DOM ready flag, and dispatch `battle:init`.
+ * 2. Validate that `part` is a recognized battle part.
+ * 3. Add `part` to the `readyParts` set.
+ * 4. Return until both PARTS.HOME and PARTS.STATE are present.
+ * 5. If the DOM is unavailable, resolve the readiness promise directly (SSR fallback).
+ * 6. Ensure the listener is attached, set the DOM ready flag, and dispatch `battle:init`.
  * @returns {void}
  */
 export function markBattlePartReady(part) {
@@ -86,12 +100,20 @@ export function markBattlePartReady(part) {
     return;
   }
 
+  if (!Object.values(PARTS).includes(part)) {
+    console.warn(
+      `Invalid battle part: "${part}". Expected one of: ${Object.values(PARTS).join(", ")}`
+    );
+    return;
+  }
+
   readyParts.add(part);
-  if (!readyParts.has(PARTS.HOME) || !readyParts.has(PARTS.STATE)) {
+  if (!allPartsBattleReady()) {
     return;
   }
 
   if (typeof document === "undefined") {
+    // In SSR/non-DOM environments, resolve immediately since listeners won't work
     tryResolveReady();
     return;
   }
@@ -101,6 +123,8 @@ export function markBattlePartReady(part) {
   const root = document.querySelector(ROOT_SELECTOR) || document.body;
   if (root && root.dataset.ready !== "true") {
     root.dataset.ready = "true";
-    document.dispatchEvent(new CustomEvent("battle:init"));
+    // The listener resolves the promise, which already checked that both parts are ready
+    // via the allPartsBattleReady() guard above
+    document.dispatchEvent(new CustomEvent(BATTLE_INIT_EVENT));
   }
 }
