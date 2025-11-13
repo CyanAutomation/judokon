@@ -2,6 +2,7 @@
  * Dispatches a battle event through the Test API.
  * @param {import("@playwright/test").Page} page
  * @param {string} eventName
+ * @param {object} [payload] - Optional payload data to pass with the event
  * @pseudocode
  * 1. Evaluate in browser context
  * 2. Check if Test API state is available

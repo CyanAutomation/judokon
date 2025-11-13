@@ -189,6 +189,10 @@ test.describe("Battle state progress list", () => {
           try {
             window.__progressHistoryObserver.disconnect();
           } catch {}
+          delete window.__progressHistoryObserver;
+        }
+        if (window.__progressHistory) {
+          delete window.__progressHistory;
         }
 
         const history = [];
@@ -240,27 +244,33 @@ test.describe("Battle state progress list", () => {
       expect(adminInterrupt.ok).toBe(true);
 
       const progressHistory = await page.evaluate(() => {
-        if (window.__progressHistoryObserver) {
-          try {
+        let snapshot = [];
+        try {
+          if (window.__progressHistoryObserver) {
             window.__progressHistoryObserver.disconnect();
-          } catch {}
-        }
-        const snapshot = Array.isArray(window.__progressHistory)
-          ? [...window.__progressHistory]
-          : [];
+          }
+        } catch {}
+
+        try {
+          snapshot = Array.isArray(window.__progressHistory)
+            ? [...window.__progressHistory]
+            : [];
+        } catch {}
+
         try {
           delete window.__progressHistoryObserver;
           delete window.__progressHistory;
         } catch {}
+
         return snapshot;
       });
 
-      const sawInterruptRemap = progressHistory.some(
+      const sawInterruptRemap = Array.isArray(progressHistory) && progressHistory.some(
         (entry) => entry?.active === "cooldown" && entry?.original === "interruptRound"
       );
       expect(sawInterruptRemap).toBe(true);
 
-      const sawModificationRemap = progressHistory.some(
+      const sawModificationRemap = Array.isArray(progressHistory) && progressHistory.some(
         (entry) => entry?.active === "roundDecision" && entry?.original === "roundModification"
       );
       expect(sawModificationRemap).toBe(true);
