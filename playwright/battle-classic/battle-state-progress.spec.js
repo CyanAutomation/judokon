@@ -256,9 +256,7 @@ test.describe("Battle state progress list", () => {
         } catch {}
 
         try {
-          snapshot = Array.isArray(window.__progressHistory)
-            ? [...window.__progressHistory]
-            : [];
+          snapshot = Array.isArray(window.__progressHistory) ? [...window.__progressHistory] : [];
         } catch {}
 
         try {
@@ -268,14 +266,18 @@ test.describe("Battle state progress list", () => {
         return snapshot;
       });
 
-      const sawInterruptRemap = Array.isArray(progressHistory) && progressHistory.some(
-        (entry) => entry?.active === "cooldown" && entry?.original === "interruptRound"
-      );
+      const sawInterruptRemap =
+        Array.isArray(progressHistory) &&
+        progressHistory.some(
+          (entry) => entry?.active === "cooldown" && entry?.original === "interruptRound"
+        );
       expect(sawInterruptRemap).toBe(true);
 
-      const sawModificationRemap = Array.isArray(progressHistory) && progressHistory.some(
-        (entry) => entry?.active === "roundDecision" && entry?.original === "roundModification"
-      );
+      const sawModificationRemap =
+        Array.isArray(progressHistory) &&
+        progressHistory.some(
+          (entry) => entry?.active === "roundDecision" && entry?.original === "roundModification"
+        );
       expect(sawModificationRemap).toBe(true);
 
       await expect(progress.locator('li[data-state="interruptRound"]')).toHaveCount(0);

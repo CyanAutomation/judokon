@@ -6,12 +6,7 @@
   "minItems": 1,
   "items": {
     "type": "object",
-    "required": [
-      "id",
-      "text",
-      "embedding",
-      "source"
-    ],
+    "required": ["id", "text", "embedding", "source"],
     "properties": {
       "id": {
         "type": "string",
@@ -57,12 +52,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "definition",
-              "implementation",
-              "documentation",
-              "test"
-            ],
+            "enum": ["definition", "implementation", "documentation", "test"],
             "description": "Role or context of the content"
           },
           "patterns": {

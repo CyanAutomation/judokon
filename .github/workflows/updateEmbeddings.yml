@@ -103,34 +103,34 @@ jobs:
 
           # Validate JSON structure - embeddings is a root-level array of embedding objects
           echo "✓ Validating embeddings JSON structure..."
-          
+
           # First: Basic JSON validity check
           jq empty src/data/client_embeddings.json > /dev/null 2>&1 || {
             echo "❌ Invalid JSON syntax"
             exit 1
           }
-          
+
           # Second: Check root structure
           ROOT_TYPE=$(jq -r 'type' src/data/client_embeddings.json)
           if [ "$ROOT_TYPE" != "array" ]; then
             echo "❌ Root must be a JSON array, got: $ROOT_TYPE"
             exit 1
           fi
-          
+
           # Third: Check array is non-empty
           ARRAY_LEN=$(jq 'length' src/data/client_embeddings.json)
           if [ "$ARRAY_LEN" -eq 0 ]; then
             echo "❌ Array is empty"
             exit 1
           fi
-          
+
           # Fourth: Validate first and sample items
           FIRST_TYPE=$(jq -r '.[0] | type' src/data/client_embeddings.json)
           if [ "$FIRST_TYPE" != "object" ]; then
             echo "❌ First element must be object, got: $FIRST_TYPE"
             exit 1
           fi
-          
+
           # Fifth: Check required fields on sample of items (first, middle, last)
           jq -e '
             def validate_item:
@@ -144,7 +144,7 @@ jobs:
             echo "❌ Missing required fields (id, text, embedding, source)"
             exit 1
           }
-          
+
           echo "✓ Embeddings JSON is valid ($ARRAY_LEN entries)"
 
       - name: Check if embeddings changed

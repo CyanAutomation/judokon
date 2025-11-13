@@ -56,6 +56,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Clean up any leftover processes
+        run: |
+          pkill -f "playwrightServer" || true
+          sleep 2
+
       - name: Update Playwright snapshots
         id: snapshot-update
         continue-on-error: true
@@ -65,6 +70,9 @@ jobs:
         if: steps.snapshot-update.outcome == 'failure'
         run: |
           echo "::error::Playwright snapshot update failed. Check test stability."
+          echo "Playwright version: $(npx playwright --version)"
+          echo "Node version: $(node --version)"
+          echo "npm version: $(npm --version)"
           exit 1
 
       - name: Check for changes
