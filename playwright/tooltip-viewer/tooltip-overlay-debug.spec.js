@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 
 test.describe("tooltipOverlayDebug feature flag", () => {
   test("outlines tooltip targets when enabled", async ({ page }) => {

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 
 test.describe("Cooldown countdown snackbar", () => {
   test("shows after selecting a stat", async ({ page }) => {

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { TEST_ROUND_TIMER_MS } from "../helpers/testTiming.js";
 

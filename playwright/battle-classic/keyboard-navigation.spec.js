@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 import { waitForBattleState, waitForStatButtonsReady } from "../helpers/battleStateHelper.js";
 
 async function expectBattleStateReady(page, stateName, options) {

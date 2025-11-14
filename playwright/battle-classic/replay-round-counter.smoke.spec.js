@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 import { waitForBattleReady } from "../helpers/battleStateHelper.js";
 
 test.describe("Classic Battle replay - round counter", () => {

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe("Manual verification: Interrupt flow and cooldown", () => {
   test("should handle interrupt round and progress to cooldown without stalling", async ({

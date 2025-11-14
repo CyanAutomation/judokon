@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 
 test.describe("Classic Battle auto-advance", () => {
   test("after a round, cooldown completes and Next becomes ready", async ({ page }) => {

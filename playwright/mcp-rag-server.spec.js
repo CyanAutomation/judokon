@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
