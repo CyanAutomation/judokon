@@ -24,7 +24,7 @@ import { handleRoundError } from "../handleRoundError.js";
  * on other error → handleRoundError(`roundResolutionError`)
  */
 export async function roundDecisionEnter(machine) {
-  const { store } = machine.context;
+  const store = machine?.context?.store;
   recordEntry();
   const cancel = guardSelectionResolution(store, machine);
   try {

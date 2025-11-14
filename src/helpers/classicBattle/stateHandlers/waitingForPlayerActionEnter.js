@@ -11,6 +11,11 @@ import {
 
 const stateLogger = createComponentLogger("WaitingForPlayerAction");
 
+function queryCardByRole(role) {
+  if (typeof document === "undefined") return null;
+  return document.querySelector(`[data-role='${role}']`);
+}
+
 /**
  * onEnter handler for `waitingForPlayerAction` state.
  *
@@ -27,7 +32,9 @@ const stateLogger = createComponentLogger("WaitingForPlayerAction");
  * 3. Timer will emit "roundTimeout" on expiry and dispatch "timeout" to state machine.
  */
 export async function waitingForPlayerActionEnter(machine) {
-  console.log("[DEBUG] waitingForPlayerActionEnter() called");
+  stateLogger.debug("waitingForPlayerActionEnter invoked", {
+    currentState: machine?.currentState
+  });
 
   // Defensive: ensure selection state is reset when entering this state
   // This handles cases where state transitions are too fast for startRound to have completed
@@ -76,8 +83,8 @@ export async function waitingForPlayerActionEnter(machine) {
       stateLogger.debug("Auto-selecting stat due to timeout", { stat, opts });
 
       // Get card values for the auto-selected stat
-      const playerCard = document.querySelector("[data-role='player-card']");
-      const opponentCard = document.querySelector("[data-role='opponent-card']");
+      const playerCard = queryCardByRole("player-card");
+      const opponentCard = queryCardByRole("opponent-card");
 
       const playerVal = getCardStatValue(playerCard, stat);
       let opponentVal = getCardStatValue(opponentCard, stat);
