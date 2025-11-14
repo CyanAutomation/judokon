@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import selectors from "../../playwright/helpers/selectors";
+import selectors from "../helpers/selectors.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { buildScorePattern, parseScores } from "../helpers/scoreUtils.js";
 
