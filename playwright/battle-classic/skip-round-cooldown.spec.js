@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 
 test.describe("skipRoundCooldown feature flag", () => {
   test("DOM markers are set when skipRoundCooldown flag is enabled", async ({ page }) => {

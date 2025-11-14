@@ -1,5 +1,5 @@
 // Playwright smoke test: verifies inter-round cooldown auto-advances
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBattleReady, waitForBattleState } from "./helpers/battleStateHelper.js";
 import {
   completeRoundViaApi,

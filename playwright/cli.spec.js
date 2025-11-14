@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/battleCliFixture.js";
 import { waitForTestApi } from "./helpers/battleStateHelper.js";
 
 const DEFAULT_CLI_URL = "http://127.0.0.1:5000/src/pages/battleCLI.html";

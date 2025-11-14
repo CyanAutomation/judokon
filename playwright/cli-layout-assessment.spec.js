@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/battleCliFixture.js";
 
 const ALLOWED_CLI_BACKGROUND_COLORS = [
   "rgb(11,12,12)",

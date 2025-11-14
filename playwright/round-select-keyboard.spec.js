@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/battleCliFixture.js";
 import { configureApp } from "./fixtures/appConfig.js";
 
 test.describe("Round Select Modal - Keyboard Navigation", () => {

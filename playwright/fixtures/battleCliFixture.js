@@ -20,7 +20,7 @@
  * });
  */
 
-import { test as base } from "@playwright/test";
+import { test as base } from "./commonSetup.js";
 import { waitForTestApi } from "../helpers/battleStateHelper.js";
 
 /**
@@ -104,4 +104,4 @@ export const test = base.extend({
 });
 
 // Re-export expect for convenience
-export { expect } from "@playwright/test";
+export { expect } from "./commonSetup.js";

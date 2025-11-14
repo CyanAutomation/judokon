@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/battleCliFixture.js";
 
 test.describe("CLI layout", () => {
   test("should render core CLI sections", async ({ page }) => {

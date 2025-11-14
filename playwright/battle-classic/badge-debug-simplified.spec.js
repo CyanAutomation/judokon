@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 
 test.describe("State badge and debug panel (simplified)", () => {
   test("badge visible with flag", async ({ page }) => {

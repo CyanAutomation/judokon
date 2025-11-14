@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/commonSetup.js";
 
 test.describe("Stat hotkeys", () => {
   test("pressing the 1 hotkey selects the first stat", async ({ page }) => {
