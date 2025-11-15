@@ -36,15 +36,19 @@ test.describe("Classic Battle - Immediate Button State", () => {
     // Install a capturing listener that logs state DURING the click event
     await page.evaluate(() => {
       const btn = document.querySelector('[data-testid="stat-button"]');
-      btn.addEventListener('click', (e) => {
-        window.__duringClick = {
-          disabled: btn.disabled,
-          hasDisabledAttr: btn.hasAttribute("disabled"),
-          hasDisabledClass: btn.classList.contains("disabled"),
-          target: e.target === btn,
-          currentTarget: e.currentTarget === btn
-        };
-      }, { capture: true }); // Use capture phase to run BEFORE the app's listener
+      btn.addEventListener(
+        "click",
+        (e) => {
+          window.__duringClick = {
+            disabled: btn.disabled,
+            hasDisabledAttr: btn.hasAttribute("disabled"),
+            hasDisabledClass: btn.classList.contains("disabled"),
+            target: e.target === btn,
+            currentTarget: e.currentTarget === btn
+          };
+        },
+        { capture: true }
+      ); // Use capture phase to run BEFORE the app's listener
     });
 
     // Click the button

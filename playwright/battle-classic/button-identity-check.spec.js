@@ -27,14 +27,14 @@ test.describe("Classic Battle - Button Identity Check", () => {
       const btn = document.querySelector('[data-testid="stat-button"]');
       const id = `btn-${Date.now()}-${Math.random()}`;
       btn.dataset.uniqueId = id;
-      
+
       // Also add our own click listener to test
       let clicked = false;
       btn.addEventListener("click", () => {
         clicked = true;
         window.__ourClickHandlerCalled = true;
       });
-      
+
       return { id, clicked };
     });
 
@@ -55,9 +55,13 @@ test.describe("Classic Battle - Button Identity Check", () => {
     console.log("Still same button:", JSON.stringify(stillSameButton, null, 2));
 
     // Check if init functions were called
-    const initStatButtonsCalled = await page.evaluate(() => window.__initStatButtonsCalled || false);
+    const initStatButtonsCalled = await page.evaluate(
+      () => window.__initStatButtonsCalled || false
+    );
     const renderCalled = await page.evaluate(() => window.__renderStatButtonsCalled || false);
-    const clickListenersAttached = await page.evaluate(() => window.__clickListenerAttachedFor || []);
+    const clickListenersAttached = await page.evaluate(
+      () => window.__clickListenerAttachedFor || []
+    );
     console.log("initStatButtons called:", initStatButtonsCalled);
     console.log("renderStatButtons called:", renderCalled);
     console.log("Click listeners attached for stats (renderStatButtons):", clickListenersAttached);
@@ -69,11 +73,17 @@ test.describe("Classic Battle - Button Identity Check", () => {
     // Check if our listener was called
     const ourHandlerCalled = await page.evaluate(() => window.__ourClickHandlerCalled || false);
     const appHandlerCalled = await page.evaluate(() => window.__statButtonClickCalled || false);
-    const uiHelpersHandlerCalled = await page.evaluate(() => window.__statButtonClickHandlerTriggered || false);
-    const selectStatCalledDisable = await page.evaluate(() => window.__selectStatCalledDisable || false);
-    const disableStatButtonsCalled = await page.evaluate(() => window.__disableStatButtonsCalled || false);
+    const uiHelpersHandlerCalled = await page.evaluate(
+      () => window.__statButtonClickHandlerTriggered || false
+    );
+    const selectStatCalledDisable = await page.evaluate(
+      () => window.__selectStatCalledDisable || false
+    );
+    const disableStatButtonsCalled = await page.evaluate(
+      () => window.__disableStatButtonsCalled || false
+    );
     const disableCount = await page.evaluate(() => window.__disableStatButtonsCount || 0);
-    
+
     console.log("Our click handler called:", ourHandlerCalled);
     console.log("App click handler called (battleClassic.init.js):", appHandlerCalled);
     console.log("UIHelpers click handler called (uiHelpers.js):", uiHelpersHandlerCalled);

@@ -755,6 +755,15 @@ export function selectStat(store, stat) {
       disableStatButtons(buttons, container);
       console.log("[selectStat] disableStatButtons called");
       window.__selectStatCalledDisable = true;
+
+      // Set a flag to prevent re-enabling for a short time
+      if (typeof container.dataset !== "undefined") {
+        container.dataset.selectionInProgress = "true";
+        console.log("[selectStat] Set selectionInProgress = true");
+        window.__selectionInProgressSet = true;
+      } else {
+        console.log("[selectStat] container.dataset is undefined!");
+      }
     }
   } catch (err) {
     console.log("[selectStat] Error disabling buttons:", err);

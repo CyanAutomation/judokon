@@ -26,7 +26,12 @@ function applyDisabledState(btn, disabled) {
     console.log("[applyDisabledState] No button provided");
     return;
   }
-  console.log("[applyDisabledState] Setting disabled =", disabled, "for button:", btn.dataset?.stat);
+  console.log(
+    "[applyDisabledState] Setting disabled =",
+    disabled,
+    "for button:",
+    btn.dataset?.stat
+  );
   try {
     btn.disabled = disabled;
     console.log("[applyDisabledState] After setting, btn.disabled =", btn.disabled);
@@ -70,16 +75,16 @@ function applyDisabledState(btn, disabled) {
  */
 export function enableStatButtons(buttons, container) {
   console.log("[enableStatButtons] Called with", toButtonArray(buttons).length, "buttons");
-  
+
   // Save stack trace for debugging
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.__enableStackTraces = window.__enableStackTraces || [];
     window.__enableStackTraces.push({
       time: Date.now(),
       stack: new Error().stack
     });
   }
-  
+
   toButtonArray(buttons).forEach((btn) => {
     applyDisabledState(btn, false);
     btn.classList.remove("selected");

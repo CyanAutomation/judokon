@@ -60,34 +60,41 @@ export async function setupUIBindings(view) {
 
   onBattleEvent("statButtons:enable", () => {
     // Don't enable buttons during states where they should be disabled
-    const battleState = typeof document !== "undefined" ? document.body?.dataset?.battleState : null;
-    // Prevent enabling during these states AND during waitingForPlayerAction (which might have a selection in progress)
+    const battleState =
+      typeof document !== "undefined" ? document.body?.dataset?.battleState : null;
     const statesWhereButtonsAreDisabled = ["roundDecision", "roundOver", "cooldown", "roundStart"];
-    
+
     console.log("[statButtons:enable] Event fired, battleState:", battleState);
-    
-    if (typeof window !== 'undefined') {
+
+    // Also check if a selection is in progress
+    const container =
+      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    const selectionInProgress = container?.dataset?.selectionInProgress;
+    console.log("[statButtons:enable] selectionInProgress flag:", selectionInProgress);
+
+    if (typeof window !== "undefined") {
       window.__statButtonsEnableEvents = window.__statButtonsEnableEvents || [];
       window.__statButtonsEnableEvents.push({
         time: Date.now(),
         battleState,
-        willEnable: !(battleState && statesWhereButtonsAreDisabled.includes(battleState))
+        selectionInProgress,
+        willEnable:
+          !(battleState && statesWhereButtonsAreDisabled.includes(battleState)) &&
+          selectionInProgress !== "true"
       });
     }
-    
+
     if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
       // Skip enabling buttons during these states
       console.log("[statButtons:enable] Skipping enable because battleState is", battleState);
       return;
     }
-    
-    // Also check if buttons are already disabled (selection in progress)
-    const container = typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
-    if (container && container.dataset.buttonsReady === "false") {
-      console.log("[statButtons:enable] Skipping enable because buttonsReady is false");
+
+    if (selectionInProgress === "true") {
+      console.log("[statButtons:enable] Skipping enable because selection is in progress");
       return;
     }
-    
+
     console.log("[statButtons:enable] Calling enable()");
     statButtonControls?.enable();
     // Focus the first stat button for keyboard navigation

@@ -24,7 +24,7 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
 
     // Click and check IMMEDIATELY
     await statButtons.first().click();
-    
+
     // Check button state with ZERO delay
     const immediateState = await page.evaluate(() => {
       const btn = document.querySelector('[data-testid="stat-button"]');
@@ -65,9 +65,9 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
 
     // Get the stack traces
     const stackTraces = await page.evaluate(() => {
-      return (window.__enableStackTraces || []).map(entry => ({
+      return (window.__enableStackTraces || []).map((entry) => ({
         time: entry.time,
-        stack: entry.stack.split('\n').slice(1, 4).join('\n')
+        stack: entry.stack.split("\n").slice(1, 4).join("\n")
       }));
     });
 

@@ -8,7 +8,7 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
       window.__TEST__ = true;
       window.process = window.process || {};
       window.process.env = { ...(window.process.env || {}), VITEST: "true" };
-      
+
       // Hook into button disable/enable for debugging
       window.__buttonStateChanges = [];
     });
@@ -31,7 +31,9 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
 
     // Check initial state
     const initialDisabledCount = await page.locator('[data-testid="stat-button"]:disabled').count();
-    const initialWithClassCount = await page.locator('[data-testid="stat-button"].disabled').count();
+    const initialWithClassCount = await page
+      .locator('[data-testid="stat-button"].disabled')
+      .count();
     console.log("Initial disabled (attribute):", initialDisabledCount);
     console.log("Initial disabled (class):", initialWithClassCount);
 
@@ -46,8 +48,12 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
     console.log("Click handler called:", clickHandlerCalled);
 
     // Check state immediately after Enter
-    const afterEnterDisabledCount = await page.locator('[data-testid="stat-button"]:disabled').count();
-    const afterEnterWithClassCount = await page.locator('[data-testid="stat-button"].disabled').count();
+    const afterEnterDisabledCount = await page
+      .locator('[data-testid="stat-button"]:disabled')
+      .count();
+    const afterEnterWithClassCount = await page
+      .locator('[data-testid="stat-button"].disabled')
+      .count();
     const battleState1 = await page.evaluate(() => document.body?.dataset?.battleState);
     const roundsPlayed1 = await page.evaluate(() => {
       const store = window.__TEST_API?.inspect?.getBattleStore?.();
@@ -62,19 +68,27 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
     await waitForBattleState(page, "cooldown", { timeout: 10_000 });
 
     // Check state during cooldown
-    const duringCooldownDisabledCount = await page.locator('[data-testid="stat-button"]:disabled').count();
-    const duringCooldownWithClassCount = await page.locator('[data-testid="stat-button"].disabled').count();
+    const duringCooldownDisabledCount = await page
+      .locator('[data-testid="stat-button"]:disabled')
+      .count();
+    const duringCooldownWithClassCount = await page
+      .locator('[data-testid="stat-button"].disabled')
+      .count();
     const battleState2 = await page.evaluate(() => document.body?.dataset?.battleState);
     console.log("During cooldown - Battle state:", battleState2);
     console.log("During cooldown - disabled (attribute):", duringCooldownDisabledCount);
     console.log("During cooldown - disabled (class):", duringCooldownWithClassCount);
 
-    // Wait for next round  
+    // Wait for next round
     await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
 
     // Check state after returning to waitingForPlayerAction
-    const afterCooldownDisabledCount = await page.locator('[data-testid="stat-button"]:disabled').count();
-    const afterCooldownWithClassCount = await page.locator('[data-testid="stat-button"].disabled').count();
+    const afterCooldownDisabledCount = await page
+      .locator('[data-testid="stat-button"]:disabled')
+      .count();
+    const afterCooldownWithClassCount = await page
+      .locator('[data-testid="stat-button"].disabled')
+      .count();
     const battleState3 = await page.evaluate(() => document.body?.dataset?.battleState);
     console.log("After cooldown - Battle state:", battleState3);
     console.log("After cooldown - disabled (attribute):", afterCooldownDisabledCount);

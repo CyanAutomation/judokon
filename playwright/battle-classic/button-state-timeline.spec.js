@@ -12,24 +12,24 @@ test.describe("Classic Battle - Button State Timeline", () => {
       // Hook into button state changes
       window.__buttonTimeline = [];
       const originalSetAttribute = Element.prototype.setAttribute;
-      Element.prototype.setAttribute = function(...args) {
-        if (this.dataset?.testid === 'stat-button' && args[0] === 'disabled') {
+      Element.prototype.setAttribute = function (...args) {
+        if (this.dataset?.testid === "stat-button" && args[0] === "disabled") {
           window.__buttonTimeline.push({
             time: Date.now(),
-            action: 'setAttribute disabled',
-            stack: new Error().stack.split('\n').slice(2, 5).join('\n')
+            action: "setAttribute disabled",
+            stack: new Error().stack.split("\n").slice(2, 5).join("\n")
           });
         }
         return originalSetAttribute.apply(this, args);
       };
 
       const originalRemoveAttribute = Element.prototype.removeAttribute;
-      Element.prototype.removeAttribute = function(...args) {
-        if (this.dataset?.testid === 'stat-button' && args[0] === 'disabled') {
+      Element.prototype.removeAttribute = function (...args) {
+        if (this.dataset?.testid === "stat-button" && args[0] === "disabled") {
           window.__buttonTimeline.push({
             time: Date.now(),
-            action: 'removeAttribute disabled',
-            stack: new Error().stack.split('\n').slice(2, 5).join('\n')
+            action: "removeAttribute disabled",
+            stack: new Error().stack.split("\n").slice(2, 5).join("\n")
           });
         }
         return originalRemoveAttribute.apply(this, args);
@@ -64,7 +64,7 @@ test.describe("Classic Battle - Button State Timeline", () => {
     timeline.forEach((entry, i) => {
       console.log(`${i}: ${entry.action}`);
       console.log(entry.stack);
-      console.log('---');
+      console.log("---");
     });
 
     // Check final state

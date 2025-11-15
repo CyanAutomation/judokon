@@ -31,7 +31,7 @@ test.describe("Classic Battle - Button Listener Test", () => {
       // This is tricky as JavaScript doesn't expose listeners directly
       // Let's try adding our own listener and clicking
       let ourListenerCalled = false;
-      btn.addEventListener('click', () => {
+      btn.addEventListener("click", () => {
         ourListenerCalled = true;
         console.log("Our test listener called!");
       });
