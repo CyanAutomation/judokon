@@ -133,7 +133,7 @@ These debug statements were likely added during investigation and should not be 
 
 **Change**: Remove all debug logging and replace with production-quality code that is clean and minimal.
 
-### Part 3: Simplify and Clean Up roundUI.js (Optional Enhancement)
+### Part 3: Simplify and Clean Up roundUI.js
 
 **File**: `src/helpers/classicBattle/roundUI.js` (lines 456–460)
 
@@ -244,12 +244,3 @@ After this fix is applied:
 1. The battle button state machine will be more robust and resistant to timing variations
 2. The `selectionInProgress` flag will serve as a reliable sentinel for the UI event handler
 3. The code will be cleaner and easier to reason about without the debug logging
-
-### Risk Assessment
-
-**Risk Level**: **Very Low**
-
-- The change is localized to a single event handler
-- The fix leverages existing infrastructure (the flag)
-- The test suite provides strong coverage of the interaction
-- The change is additive (guard addition) rather than refactoring logic
