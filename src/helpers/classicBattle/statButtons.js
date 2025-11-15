@@ -27,6 +27,11 @@ function applyDisabledState(btn, disabled) {
   }
   try {
     btn.disabled = disabled;
+    if (disabled) {
+      btn.setAttribute("disabled", "");
+    } else {
+      btn.removeAttribute("disabled");
+    }
     btn.tabIndex = disabled ? -1 : 0;
     if (disabled) {
       if (btn.classList && typeof btn.classList.add === "function") {

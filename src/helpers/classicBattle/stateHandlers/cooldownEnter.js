@@ -117,6 +117,7 @@ export async function cooldownEnter(machine, payload) {
       // Clear the selection in progress flag now that we're in cooldown
       if (container && typeof container.dataset !== "undefined") {
         container.dataset.selectionInProgress = "false";
+        debugLog("cooldownEnter: set selectionInProgress to 'false'");
       }
     }
   } catch (error) {
