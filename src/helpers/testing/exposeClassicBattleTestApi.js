@@ -68,9 +68,7 @@ function isNodeTestEnvironment() {
 
 function hasBrowserTestFlags(win) {
   try {
-    return Boolean(
-      win.__TEST__ || win.__VITEST__ || win.__PLAYWRIGHT__ || win.__PLAYWRIGHT_TEST__
-    );
+    return Boolean(win.__TEST__ || win.__VITEST__ || win.__PLAYWRIGHT__ || win.__PLAYWRIGHT_TEST__);
   } catch {
     return false;
   }
