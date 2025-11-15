@@ -21,20 +21,20 @@
 
 The core issue is a **race condition** between two asynchronous processes:
 
-1.  **State Transition**: The battle state machine, which moves from `waitingForPlayerAction` -> `cooldown` after a selection.
-2.  **Event Emission**: The UI setup logic in `applyRoundUI()`, which emits a `statButtons:enable` event.
+1. **State Transition**: The battle state machine, which moves from `waitingForPlayerAction` -> `cooldown` after a selection.
+2. **Event Emission**: The UI setup logic in `applyRoundUI()`, which emits a `statButtons:enable` event.
 
 **Execution Flow Leading to Failure:**
 
-1.  A player clicks a stat button, triggering `selectStat()`.
-2.  `disableStatButtons()` is called synchronously. **The buttons are now correctly disabled.**
-3.  An asynchronous operation `handleStatSelection()` begins.
-4.  Crucially, `applyRoundUI()` is invoked as part of the sequence, which unconditionally emits `statButtons:enable`.
-5.  The event listener for `statButtons:enable` in `setupUIBindings.js` executes.
-6.  The listener checks the current battle state, which is still `waitingForPlayerAction` because the state transition to `cooldown` has not yet completed.
-7.  The guard condition `statesWhereButtonsAreDisabled.includes(battleState)` returns `false`.
-8.  `statButtonControls.enable()` is called. **The buttons are now incorrectly re-enabled.**
-9.  Eventually, the battle state transitions to `cooldown`, but it's too late.
+1. A player clicks a stat button, triggering `selectStat()`.
+2. `disableStatButtons()` is called synchronously. **The buttons are now correctly disabled.**
+3. An asynchronous operation `handleStatSelection()` begins.
+4. Crucially, `applyRoundUI()` is invoked as part of the sequence, which unconditionally emits `statButtons:enable`.
+5. The event listener for `statButtons:enable` in `setupUIBindings.js` executes.
+6. The listener checks the current battle state, which is still `waitingForPlayerAction` because the state transition to `cooldown` has not yet completed.
+7. The guard condition `statesWhereButtonsAreDisabled.includes(battleState)` returns `false`.
+8. `statButtonControls.enable()` is called. **The buttons are now incorrectly re-enabled.**
+9. Eventually, the battle state transitions to `cooldown`, but it's too late.
 
 The bug is in the faulty assumption that `applyRoundUI` only runs when buttons *should* be enabled. The state check in `setupUIBindings.js` is insufficient because it doesn't account for the in-progress selection state.
 
@@ -138,19 +138,15 @@ onBattleEvent("statButtons:enable", () => {
 
 ## 5. Implementation & Verification Plan
 
-1.  **Apply Fixes**: Implement the changes in `roundUI.js` and `setupUIBindings.js` as described above.
-2.  **Run Failing Test**: Confirm the original test now passes.
+1. **Apply Fixes**: Implement the changes in `roundUI.js` and `setupUIBindings.js` as described above.
+2. **Run Failing Test**: Confirm the original test now passes.
     - `npx playwright test playwright/battle-classic/keyboard-navigation.spec.js`
-3.  **Run Full Battle Suite**: Ensure no regressions have been introduced.
+3. **Run Full Battle Suite**: Ensure no regressions have been introduced.
     - `npm run test:battles`
-4.  **Manual Verification**:
+4. **Manual Verification**:
     - Confirm buttons remain disabled during cooldown (visually).
     - Confirm buttons re-enable correctly after cooldown.
     - Test with mouse clicks, keyboard (Tab + Enter), and numeric hotkeys (1-5).
-5.  **Cleanup**: Remove all temporary `console.log` statements, `window` flags, and debug test files that were added during the investigation.
+5. **Cleanup**: Remove all temporary `console.log` statements, `window` flags, and debug test files that were added during the investigation.
 
----
 
-## 6. Status
-
-**Ready for implementation.** Awaiting final review before proceeding with the hybrid fix approach.
