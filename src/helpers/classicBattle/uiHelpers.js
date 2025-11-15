@@ -757,7 +757,7 @@ export function selectStat(store, stat) {
         container.dataset.selectionInProgress = "true";
       }
     }
-  } catch (err) {
+  } catch {
     // Silently handle errors in button state management
   }
   btn?.classList.add("selected");

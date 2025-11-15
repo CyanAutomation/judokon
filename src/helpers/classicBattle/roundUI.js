@@ -16,7 +16,7 @@ import { createRoundTimer as defaultCreateRoundTimer } from "../timers/createRou
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer as defaultAttachCooldownRenderer } from "../CooldownRenderer.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
-import { enableStatButtons, disableStatButtons } from "../battle/index.js";
+import { disableStatButtons } from "../battle/index.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { runAfterFrames } from "../../utils/rafUtils.js";
 import { getOpponentPromptTimestamp } from "./opponentPromptTracker.js";
@@ -483,7 +483,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
     const container =
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     const selectionInProgress = container?.dataset?.selectionInProgress;
-    
+
     if (selectionInProgress !== "true") {
       // Only emit the event - the handler in setupUIBindings will call enable()
       emitBattleEvent("statButtons:enable");
