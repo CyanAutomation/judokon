@@ -1445,6 +1445,7 @@ function handleRoundCounterFallback(visibleRound) {
 
 async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
+  window.__statButtonClickCalled = true; // Track for debugging
   if (!btn || btn.disabled) return;
   const container =
     document.getElementById("stat-buttons") ??

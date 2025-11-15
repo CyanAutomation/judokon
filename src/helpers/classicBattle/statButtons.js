@@ -86,7 +86,11 @@ export function enableStatButtons(buttons, container) {
  * @returns {void}
  */
 export function disableStatButtons(buttons, container) {
-  toButtonArray(buttons).forEach((btn) => {
+  const buttonArray = toButtonArray(buttons);
+  console.debug("disableStatButtons called with", buttonArray.length, "buttons");
+  window.__disableStatButtonsCalled = true; // Track for debugging
+  window.__disableStatButtonsCount = buttonArray.length;
+  buttonArray.forEach((btn) => {
     applyDisabledState(btn, true);
   });
   if (container) container.dataset.buttonsReady = "false";

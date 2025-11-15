@@ -1,18 +1,13 @@
-import { exposeDebugState, readDebugState } from "../debugHooks.js";
+import { cancelRoundDecisionGuard } from "./guardCancellation.js";
 
 /**
- * onExit handler for `roundDecision`.
+ * onExit handler for `roundDecision` state.
+ *
+ * @pseudocode
+ * 1. Cancel and clear any scheduled decision guard.
  *
  * @returns {Promise<void>}
- * @pseudocode
- * 1. Invoke and clear any scheduled decision guard.
  */
 export async function roundDecisionExit() {
-  try {
-    const fn = readDebugState("roundDecisionGuard");
-    if (typeof fn === "function") fn();
-    exposeDebugState("roundDecisionGuard", null);
-  } catch {}
+  cancelRoundDecisionGuard();
 }
-
-export default roundDecisionExit;

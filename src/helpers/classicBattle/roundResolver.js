@@ -9,6 +9,7 @@ import { debugLog } from "../debug.js";
 import { resolveDelay } from "./timerUtils.js";
 import * as sb from "../setupScoreboard.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
+import { cancelRoundDecisionGuard } from "./stateHandlers/guardCancellation.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -357,11 +358,7 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
  */
 export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
   const result = await computeRoundResult(store, stat, playerVal, opponentVal);
-  try {
-    const fn = readDebugState("roundDecisionGuard");
-    if (typeof fn === "function") fn();
-    exposeDebugState("roundDecisionGuard", null);
-  } catch {}
+  cancelRoundDecisionGuard();
   try {
     const rd = readDebugState("roundDebug");
     if (rd) rd.resolvedAt = Date.now();

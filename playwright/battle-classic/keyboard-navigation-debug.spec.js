@@ -41,6 +41,10 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
     // Wait a moment for the async operations
     await page.waitForTimeout(50);
 
+    // Check if the click handler was called
+    const clickHandlerCalled = await page.evaluate(() => window.__statButtonClickCalled || false);
+    console.log("Click handler called:", clickHandlerCalled);
+
     // Check state immediately after Enter
     const afterEnterDisabledCount = await page.locator('[data-testid="stat-button"]:disabled').count();
     const afterEnterWithClassCount = await page.locator('[data-testid="stat-button"].disabled').count();
