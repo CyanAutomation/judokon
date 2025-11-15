@@ -755,6 +755,9 @@ export function selectStat(store, stat) {
       // Set a flag to prevent re-enabling while selection is being processed
       if (typeof container.dataset !== "undefined") {
         container.dataset.selectionInProgress = "true";
+        if (typeof window !== "undefined" && window.IS_VITEST) {
+          console.log("[selectStat] set selectionInProgress to true");
+        }
       }
     }
   } catch (err) {
