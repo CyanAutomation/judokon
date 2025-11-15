@@ -59,43 +59,23 @@ export async function setupUIBindings(view) {
   const statButtonControls = initStatButtons(store);
 
   onBattleEvent("statButtons:enable", () => {
-    // Don't enable buttons during states where they should be disabled
     const battleState =
       typeof document !== "undefined" ? document.body?.dataset?.battleState : null;
     const statesWhereButtonsAreDisabled = ["roundDecision", "roundOver", "cooldown", "roundStart"];
 
-    console.log("[statButtons:enable] Event fired, battleState:", battleState);
+    if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
+      return;
+    }
 
-    // Also check if a selection is in progress
+    // Check if a selection is in progress; if so, don't re-enable buttons
     const container =
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     const selectionInProgress = container?.dataset?.selectionInProgress;
-    console.log("[statButtons:enable] selectionInProgress flag:", selectionInProgress);
-
-    if (typeof window !== "undefined") {
-      window.__statButtonsEnableEvents = window.__statButtonsEnableEvents || [];
-      window.__statButtonsEnableEvents.push({
-        time: Date.now(),
-        battleState,
-        selectionInProgress,
-        willEnable:
-          !(battleState && statesWhereButtonsAreDisabled.includes(battleState)) &&
-          selectionInProgress !== "true"
-      });
-    }
-
-    if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
-      // Skip enabling buttons during these states
-      console.log("[statButtons:enable] Skipping enable because battleState is", battleState);
-      return;
-    }
 
     if (selectionInProgress === "true") {
-      console.log("[statButtons:enable] Skipping enable because selection is in progress");
       return;
     }
 
-    console.log("[statButtons:enable] Calling enable()");
     statButtonControls?.enable();
     // Focus the first stat button for keyboard navigation
     const firstButton = document.querySelector("#stat-buttons button[data-stat]");

@@ -748,25 +748,17 @@ export function selectStat(store, stat) {
   try {
     const container =
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
-    console.log("[selectStat] Container found:", !!container);
     if (container) {
       const buttons = container.querySelectorAll("button");
-      console.log("[selectStat] About to disable", buttons.length, "buttons");
       disableStatButtons(buttons, container);
-      console.log("[selectStat] disableStatButtons called");
-      window.__selectStatCalledDisable = true;
 
-      // Set a flag to prevent re-enabling for a short time
+      // Set a flag to prevent re-enabling while selection is being processed
       if (typeof container.dataset !== "undefined") {
         container.dataset.selectionInProgress = "true";
-        console.log("[selectStat] Set selectionInProgress = true");
-        window.__selectionInProgressSet = true;
-      } else {
-        console.log("[selectStat] container.dataset is undefined!");
       }
     }
   } catch (err) {
-    console.log("[selectStat] Error disabling buttons:", err);
+    // Silently handle errors in button state management
   }
   btn?.classList.add("selected");
   // read values from cards
