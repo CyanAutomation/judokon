@@ -1,5 +1,10 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState, waitForStatButtonsReady } from "../helpers/battleStateHelper.js";
+import {
+  waitForBattleState,
+  waitForStatButtonsReady,
+  configureClassicBattle,
+  waitForBattleReady
+} from "../helpers/battleStateHelper.js";
 
 async function expectBattleStateReady(page, stateName, options) {
   try {
@@ -14,37 +19,11 @@ async function expectBattleStateReady(page, stateName, options) {
 
 test.describe("Classic Battle keyboard navigation", () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      window.__TEST__ = true;
-      window.process = window.process || {};
-      window.process.env = { ...(window.process.env || {}), VITEST: "true" };
-    });
+    // Don't show the round select modal - start battle immediately with default settings
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for the bootstrap to complete and the round select modal to be initialized
-    // The modal buttons are created asynchronously, so we need to wait for them to exist
-    await page.waitForFunction(
-      () => {
-        const modal = document.querySelector("dialog.modal");
-        const buttons = modal?.querySelector(".round-select-buttons");
-        return modal && buttons;
-      },
-      { timeout: 5000 }
-    );
-
-    // Ensure the modal is actually displayed by waiting for the open attribute
-    await page.waitForFunction(
-      () => {
-        const modal = document.querySelector("dialog.modal");
-        return modal && modal.hasAttribute("open");
-      },
-      { timeout: 5000 }
-    );
-
-    // Start the match via modal
-    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-    await page.getByRole("button", { name: "Medium" }).click();
+    // Wait for battle to be fully initialized (modal bypass happens automatically in Playwright)
+    await waitForBattleReady(page, { allowFallback: false, timeout: 10_000 });
   });
 
   test("should allow tab navigation to stat buttons and keyboard activation", async ({ page }) => {
