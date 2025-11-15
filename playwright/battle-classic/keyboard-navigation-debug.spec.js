@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState, waitForStatButtonsReady } from "../helpers/battleStateHelper.js";
+import { waitForBattleState } from "../helpers/battleStateHelper.js";
 
 test.describe("Classic Battle keyboard navigation DEBUG", () => {
   test.beforeEach(async ({ page }) => {
