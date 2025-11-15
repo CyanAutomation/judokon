@@ -485,7 +485,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
     const selectionInProgress = container?.dataset?.selectionInProgress;
     
     if (selectionInProgress !== "true") {
-      enableStatButtons?.();
+      // Only emit the event - the handler in setupUIBindings will call enable()
       emitBattleEvent("statButtons:enable");
     }
   } catch {}

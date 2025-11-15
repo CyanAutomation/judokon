@@ -71,7 +71,6 @@ function applyDisabledState(btn, disabled) {
  * @returns {void}
  */
 export function enableStatButtons(buttons, container) {
-  console.log("[enableStatButtons] called with", toButtonArray(buttons).length, "buttons");
   const buttonArray = toButtonArray(buttons);
   if (typeof window !== "undefined") {
     window.__statButtonsEnableCount = (window.__statButtonsEnableCount || 0) + 1;
@@ -100,7 +99,6 @@ export function enableStatButtons(buttons, container) {
  * @returns {void}
  */
 export function disableStatButtons(buttons, container) {
-  console.log("[disableStatButtons] called with", toButtonArray(buttons).length, "buttons");
   const buttonArray = toButtonArray(buttons);
   if (typeof window !== "undefined") {
     window.__statButtonsDisableCount = (window.__statButtonsDisableCount || 0) + 1;

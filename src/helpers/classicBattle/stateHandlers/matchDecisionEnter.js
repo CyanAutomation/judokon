@@ -1,9 +1,42 @@
+import * as Sentry from "@sentry/browser";
 import { emitBattleEvent } from "../battleEvents.js";
 import { showEndModal } from "../endModal.js";
 import {
   getScores as getFacadeScores,
   isMatchEnded as facadeIsMatchEnded
 } from "../../battleEngineFacade.js";
+
+/**
+ * Safely capture errors to Sentry with context.
+ * @param {Error} error
+ * @param {Object} context
+ */
+function captureError(error, context = {}) {
+  try {
+    if (Sentry?.captureException) {
+      Sentry.captureException(error, { contexts: { error: context } });
+    }
+  } catch {
+    // Silent fallback if Sentry fails
+  }
+}
+
+/**
+ * Execute a function safely, capturing any errors to Sentry.
+ * @param {Function} fn
+ * @param {string} errorLabel
+ * @returns {any}
+ */
+function safeTry(fn, errorLabel) {
+  try {
+    return fn();
+  } catch (error) {
+    captureError(new Error(`matchDecisionEnter: ${errorLabel}`), {
+      original: error.message
+    });
+    return null;
+  }
+}
 
 /**
  * Normalize numeric score values.
@@ -15,6 +48,15 @@ function coerceScore(value) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : 0;
 }
+
+/**
+ * Map round outcome tokens to match outcome tokens.
+ * @type {Object<string, string>}
+ */
+const OUTCOME_MAP = {
+  winPlayer: "matchWinPlayer",
+  winOpponent: "matchWinOpponent"
+};
 
 /**
  * Map match outcome token to winner identifier.
@@ -30,35 +72,17 @@ function getWinner(outcome) {
 
 /**
  * Read the latest match scores from the engine or facade helpers.
- * Falls back gracefully if either source is unavailable or throws.
+ * Tries engine.getScores() first, then falls back to getFacadeScores().
+ * Returns normalized scores with graceful degradation on error.
  *
- * @param {any} engine
+ * @param {Object} engine - Battle engine (may have getScores())
  * @returns {{ player: number, opponent: number }}
  */
 function readScores(engine) {
-  let raw = null;
-  try {
-    if (engine && typeof engine.getScores === "function") {
-      raw = engine.getScores();
-    }
-  } catch (error) {
-    if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-      Sentry.captureException(new Error("matchDecisionEnter: engine.getScores() threw"), {
-        contexts: { error: { original: error.message } }
-      });
-    }
-  }
-  if (!raw) {
-    try {
-      raw = getFacadeScores();
-    } catch (error) {
-      if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-        Sentry.captureException(new Error("matchDecisionEnter: getFacadeScores() threw"), {
-          contexts: { error: { original: error.message } }
-        });
-      }
-    }
-  }
+  const raw =
+    safeTry(() => engine?.getScores?.(), "engine.getScores() threw") ||
+    safeTry(() => getFacadeScores(), "getFacadeScores() threw");
+
   return {
     player: coerceScore(raw?.playerScore ?? raw?.player),
     opponent: coerceScore(raw?.opponentScore ?? raw?.opponent)
@@ -69,32 +93,21 @@ function readScores(engine) {
  * Determine whether the match has definitively ended.
  * Checks store, engine, and facade helpers in priority order.
  *
- * @param {any} store
- * @param {any} engine
+ * @param {Object} store - Battle store (may contain matchEnded flag)
+ * @param {Object} engine - Battle engine (may have isMatchEnded())
  * @returns {boolean}
  */
 function isMatchComplete(store, engine) {
   if (store?.matchEnded === true) return true;
-  try {
-    if (engine && typeof engine.isMatchEnded === "function" && engine.isMatchEnded()) {
-      return true;
-    }
-  } catch (error) {
-    if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-      Sentry.captureException(new Error("matchDecisionEnter: engine.isMatchEnded() threw"), {
-        contexts: { error: { original: error.message } }
-      });
-    }
+
+  if (safeTry(() => engine?.isMatchEnded?.(), "engine.isMatchEnded() threw")) {
+    return true;
   }
-  try {
-    if (typeof facadeIsMatchEnded === "function" && facadeIsMatchEnded()) return true;
-  } catch (error) {
-    if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-      Sentry.captureException(new Error("matchDecisionEnter: facadeIsMatchEnded() threw"), {
-        contexts: { error: { original: error.message } }
-      });
-    }
+
+  if (safeTry(() => facadeIsMatchEnded(), "facadeIsMatchEnded() threw")) {
+    return true;
   }
+
   return false;
 }
 
@@ -106,18 +119,17 @@ function isMatchComplete(store, engine) {
  * 2. Fall back to score comparison: player > opponent → "matchWinPlayer", etc.
  * 3. Default to "matchDraw" if no score difference.
  *
- * @param {any} store
+ * @param {Object} store - Battle store (may contain lastRoundResult)
  * @param {{ player: number, opponent: number }} scores
  * @returns {string}
  */
 function resolveOutcome(store, scores) {
-  const lastOutcome =
-    typeof store?.lastRoundResult?.outcome === "string" ? store.lastRoundResult.outcome : "";
-  if (lastOutcome) {
-    if (lastOutcome === "winPlayer") return "matchWinPlayer";
-    if (lastOutcome === "winOpponent") return "matchWinOpponent";
-    return lastOutcome;
+  const lastOutcome = store?.lastRoundResult?.outcome;
+
+  if (typeof lastOutcome === "string") {
+    return OUTCOME_MAP[lastOutcome] || lastOutcome;
   }
+
   if (scores.player > scores.opponent) return "matchWinPlayer";
   if (scores.opponent > scores.player) return "matchWinOpponent";
   return "matchDraw";
@@ -144,57 +156,40 @@ export async function matchDecisionEnter(machine) {
 
   // Ensure match is complete before proceeding; if not, log and return early
   if (!isMatchComplete(store, engine)) {
-    try {
-      emitBattleEvent("matchDecision", { matchEnded: false, scores });
-    } catch (error) {
-      if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-        Sentry.captureException(error);
-      }
-    }
+    safeTry(
+      () => emitBattleEvent("matchDecision", { matchEnded: false, scores }),
+      "emitBattleEvent threw"
+    );
     return;
   }
 
   const outcome = resolveOutcome(store, scores);
   const message =
     typeof store?.lastRoundResult?.message === "string" ? store.lastRoundResult.message : undefined;
+
   const detail = {
     outcome,
     winner: getWinner(outcome),
-    scores,
-    ...(message ? { message } : {})
+    scores
   };
 
-  // Emit the matchDecision event with final outcome
-  try {
-    emitBattleEvent("matchDecision", detail);
-  } catch (error) {
-    if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-      Sentry.captureException(error);
-    }
+  if (message) {
+    detail.message = message;
   }
+
+  // Emit the matchDecision event with final outcome
+  safeTry(() => emitBattleEvent("matchDecision", detail), "emitBattleEvent threw");
 
   // Persist outcome to store for later reference (if store is mutable)
   if (store && typeof store === "object") {
-    try {
+    safeTry(() => {
       store.matchOutcome = detail;
-    } catch (error) {
-      if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-        Sentry.captureException(new Error("matchDecisionEnter: unable to set store.matchOutcome"), {
-          contexts: { error: { original: error.message } }
-        });
-      }
-    }
+    }, "unable to set store.matchOutcome");
   }
 
   // Display the end-of-match modal with Replay and Quit options
   if (store) {
-    try {
-      showEndModal(store, detail);
-    } catch (error) {
-      if (typeof Sentry !== "undefined" && Sentry?.captureException) {
-        Sentry.captureException(error);
-      }
-    }
+    safeTry(() => showEndModal(store, detail), "showEndModal threw");
   }
 }
 

@@ -3,244 +3,257 @@
 ## 1. Executive Summary
 
 - **Problem**: In Classic Battle, stat selection buttons do not remain disabled after a player makes a choice. They are momentarily disabled (50–100 ms) and then incorrectly re-enabled, allowing for multiple selections before the round resolves and breaking intended game flow.
-- **Root Cause**: A **confirmed race condition** exists between the battle state machine and the UI event bus. When a player selects a stat:
-  1. Buttons are disabled synchronously via `disableStatButtons()` in the button click handler
-  2. Asynchronous processing begins (state machine transitions to `cooldown`)
-  3. `applyRoundUI()` is invoked as part of the round flow and **unconditionally** emits `statButtons:enable`
-  4. The event listener in `setupUIBindings.js` receives the enable event BEFORE the state machine has transitioned to `cooldown` (still in `waitingForPlayerAction`)
-  5. The guard condition `statesWhereButtonsAreDisabled.includes(battleState)` returns `false`
-  6. Buttons are incorrectly re-enabled, breaking the game flow
-- **Current Mitigation**: The `selectionInProgress` flag was added to the DOM dataset (set by `selectStat()` in `uiHelpers.js` at line 761, cleared by `cooldownEnter()` at line 119 of `cooldownEnter.js`). However, this flag **is not yet checked** in the event handler, making it ineffective.
-- **Recommended Fix**: A hybrid approach combining two defensive measures:
-  1. **Primary**: Prevent premature `statButtons:enable` event emission by checking the `selectionInProgress` flag in `roundUI.js`
-  2. **Secondary**: Add defensive checks to the event handler in `setupUIBindings.js` to verify buttons should truly be enabled
-  3. This provides **defense-in-depth** and resilience to future changes
-- **Risk**: **Very Low**. The fix is localized to well-understood UI interaction code and is already covered by the Playwright test at `playwright/battle-classic/keyboard-navigation.spec.js:30`.
+- **Root Cause**: A **confirmed race condition** exists between the battle state machine and the UI event bus. Multiple code paths emit `statButtons:enable` events without properly checking the `selectionInProgress` flag.
+- **Investigation Status**: **IN PROGRESS** - Multiple fixes attempted, test still failing
+- **Current Findings**:
+  1. The `selectionInProgress` flag infrastructure exists and is being set/cleared correctly
+  2. Flag checks have been added to event emission sites (`roundUI.js` line 487, `waitingForPlayerActionEnter.js` line 74)
+  3. Flag check exists in event handler (`setupUIBindings.js` line 75)
+  4. `applyDisabledState()` function correctly sets both `disabled` property AND `disabled` attribute
+  5. **However**: Test still shows buttons alternating between disabled/enabled states (tabindex cycling between -1 and 0)
+  6. **Critical Discovery**: Playwright test shows NO `disabled` attribute in HTML markup at all, despite code setting it
+  7. **Double Enable Issue Found**: `roundUI.js` was calling `enableStatButtons()` directly AND emitting the event (fixed)
+- **Risk**: **Medium**. The race condition is more complex than initially understood, requiring deeper investigation into the button state management and event flow.
 
 ---
 
 ## 2. Issue Details
 
-- **Test Failure**: `playwright/battle-classic/keyboard-navigation.spec.js:30:3` (line 30–67 in the "should allow tab navigation..." test)
+- **Test Failure**: `playwright/battle-classic/keyboard-navigation.spec.js:30:3` (line 60: `await expect(thirdStatButton).toBeDisabled()`)
+- **Current Test State**: **FAILING** - Buttons still cycling between disabled/enabled states
+- **Test Output Analysis**:
+  - Playwright retry mechanism shows button alternating between two states:
+    - 5 retries: `<button type="button" tabindex="-1" ...>` (appears disabled via tabindex)
+    - 4 retries: `<button tabindex="0" type="button" ...>` (appears enabled via tabindex)
+  - **Critical**: Neither state shows `disabled` attribute in HTML markup
+  - This suggests buttons are being rapidly toggled between states
 - **Affected Code Paths**:
-  - `src/helpers/classicBattle/uiHelpers.js:selectStat()` — sets `selectionInProgress = "true"` (line 761)
-  - `src/helpers/classicBattle/roundUI.js:applyRoundUI()` — emits `statButtons:enable` unconditionally (line 456–460)
-  - `src/helpers/classicBattle/setupUIBindings.js:onBattleEvent("statButtons:enable", ...)` — receives and processes the enable event (line 54–99)
+  - `src/helpers/classicBattle/uiHelpers.js:selectStat()` — sets `selectionInProgress = "true"` (line 757)
+  - `src/helpers/classicBattle/statButtons.js:applyDisabledState()` — sets disabled property AND attribute (lines 28-31)
+  - `src/helpers/classicBattle/roundUI.js:applyRoundUI()` — conditionally emits `statButtons:enable` (line 487)
+  - `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js` — conditionally emits `statButtons:enable` (line 74)
+  - `src/helpers/classicBattle/setupUIBindings.js:onBattleEvent("statButtons:enable", ...)` — checks flag before enabling (line 75)
+  - `src/helpers/classicBattle/view.js:startRound()` — conditionally calls `statButtonControls?.enable()` in finally block (line 96)
   - `src/helpers/classicBattle/stateHandlers/cooldownEnter.js` — clears the flag (line 119)
 - **Expected Behavior**: Stat buttons should be disabled immediately after player selection and remain disabled through the "cooldown" phase until the next round begins.
-- **Actual Behavior**: Buttons are correctly disabled for ~50–100 ms. Then the `statButtons:enable` event fires prematurely (before state transition to `cooldown`), triggering re-enablement. This allows multiple selections to be registered, breaking the round logic.
-- **Evidence**: The `selectionInProgress` flag is being set and cleared, but the event handler does not consult it, leaving the race condition unguarded.
+- **Actual Behavior**: Buttons are being disabled and re-enabled in rapid succession, creating a race condition that Playwright's retry mechanism detects as alternating states.
 
 ---
 
 ## 3. Root Cause Analysis
 
-### High-Level Race Condition
+### Investigation Timeline
 
-The core issue is a **race condition** between two asynchronous processes that are not properly synchronized:
+**Iteration 1**: Initial hypothesis that `selectionInProgress` flag was not checked in event handler
 
-1. **State Machine Transition**: Battle state machine moves from `waitingForPlayerAction` → `cooldown` after a selection
-2. **Event Emission**: The UI setup logic in `applyRoundUI()` emits a `statButtons:enable` event
+- ✅ **Confirmed**: Flag check was missing in `setupUIBindings.js`
+- ✅ **Fixed**: Added flag check at line 75
+- ❌ **Result**: Test still failing
 
-### Detailed Execution Flow Leading to Failure
+**Iteration 2**: Discovered missing HTML `disabled` attribute
 
-- Player clicks a stat button, triggering `selectStat()` in `uiHelpers.js`
-- `disableStatButtons()` is called **synchronously**. The buttons are now correctly disabled.
-- The `selectionInProgress` flag is set to `"true"` on the DOM container (line 761 of `uiHelpers.js`)
-- An asynchronous operation `handleStatSelection()` begins, which eventually triggers the state machine to move to `cooldown`
-- **Critically**, `applyRoundUI()` is invoked as part of the round setup flow (via the `roundStarted` event in a later round)
-- Line 456–460 of `roundUI.js` **unconditionally** calls `enableStatButtons?.()` and emits `statButtons:enable`:
+- ✅ **Confirmed**: `applyDisabledState()` was only setting `.disabled` property, not the attribute
+- ✅ **Fixed**: Added `btn.setAttribute("disabled", "")` at line 29
+- ❌ **Result**: Test still failing
 
-```javascript
-try {
-  enableStatButtons?.();
-  emitBattleEvent("statButtons:enable");
-} catch {}
-```
+**Iteration 3**: Found multiple event emission points
 
-- The event listener for `statButtons:enable` in `setupUIBindings.js` (line 54–99) executes
-- The listener checks the current battle state via `document.body?.dataset?.battleState`, which is **still** `waitingForPlayerAction` because the state transition to `cooldown` has not yet completed
-- The guard condition `statesWhereButtonsAreDisabled.includes(battleState)` evaluates to `false`
-- The `selectionInProgress` flag check is **missing** from the event handler, so it does not block re-enablement
-- `statButtonControls.enable()` is called. **Buttons are now incorrectly re-enabled.**
-- Eventually (after 50–100 ms), the battle state machine transitions to `cooldown`, but it's too late. The buttons are already re-enabled and can accept additional input.
+- ✅ **Confirmed**: Both `roundUI.js` and `waitingForPlayerActionEnter.js` emit `statButtons:enable`
+- ✅ **Fixed**: Added flag checks to both emission sites (lines 487 and 74 respectively)
+- ❌ **Result**: Test still failing
 
-### Why the Flag Was Insufficient
+**Iteration 4**: Discovered double-enable in roundUI.js
 
-The `selectionInProgress` flag was added to the DOM dataset (observable via `document.getElementById("stat-buttons")?.dataset?.selectionInProgress`), but:
+- ✅ **Confirmed**: `roundUI.js` was calling `enableStatButtons()` directly AND emitting event
+- ✅ **Fixed**: Removed direct call, only emit event (line 489)
+- ❌ **Result**: Test still failing - buttons still alternating disabled/enabled
 
-- The flag is set correctly in `selectStat()` at `uiHelpers.js:761`
-- The flag is cleared correctly in `cooldownEnter()` at `cooldownEnter.js:119`
-- **However**, the event handler in `setupUIBindings.js` does **not consult this flag**, making it ineffective as a guard
+**Iteration 5**: Added debug logging
 
-This is the primary defect: the infrastructure for the fix exists but is not wired into the event handler.
+- 🔍 **Attempted**: Added console.log to trace execution flow
+- ❌ **Issue**: Console logs not captured in Playwright test output
+- 🔄 **Status**: Need alternative debugging approach
 
----
+### Current Understanding
 
-## 4. Proposed Fix Plan
+The race condition is MORE COMPLEX than initially understood:
 
-The recommended solution is a **hybrid approach** combining multiple defensive layers. Since the infrastructure (the `selectionInProgress` flag) is already in place but not fully utilized, the fix is straightforward:
+1. **Multiple Code Paths**: At least 4+ locations can enable/disable buttons:
+   - `view.startRound()` finally block (line 96)
+   - `roundUI.js` event emission (line 489)
+   - `waitingForPlayerActionEnter.js` event emission (line 75)
+   - Event handler in `setupUIBindings.js` (line 78)
 
-### Part 1: Wire the Flag into the Event Handler (Primary Fix)
+2. **Timing Issue**: Buttons are being toggled SO RAPIDLY that Playwright's retry mechanism sees them alternate between states within milliseconds
 
-**File**: `src/helpers/classicBattle/setupUIBindings.js`
+3. **Missing Attribute Mystery**: Despite code explicitly setting `disabled` attribute, Playwright NEVER sees it in the HTML markup - this suggests either:
+   - Attribute is being set then immediately removed
+   - Button elements are being replaced/recreated
+   - setAttribute is failing silently
+   - Timing issue where attribute is set after Playwright checks
 
-The event handler for `statButtons:enable` (starting at line 54) already checks the battle state but does not check the `selectionInProgress` flag. Add this check as the **first guard** before any enabling logic.
+4. **Flag Checks Present But Ineffective**: All the flag checks are in place but the rapid cycling continues, suggesting:
+   - Flag is being cleared too early
+   - Flag is not being read at the right time
+   - There's another code path not yet discovered
+   - Async timing issue bypassing the checks
 
-**Change**: In the `onBattleEvent("statButtons:enable", ...)` handler, add a check for the `selectionInProgress` flag **immediately after** the battle state check:
+### High-Level Race Condition (Updated)
 
-```javascript
-onBattleEvent("statButtons:enable", () => {
-    const battleState =
-      typeof document !== "undefined" ? document.body?.dataset?.battleState : null;
-    const statesWhereButtonsAreDisabled = ["roundDecision", "roundOver", "cooldown", "roundStart"];
+The core issue remains a **race condition** but with multiple contributing factors:
 
-    if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
-      return;
-    }
+1. **State Machine Transition**: Battle state machine moves through states asynchronously
+2. **Multiple Event Sources**: Multiple code paths can emit enable/disable events
+3. **View Lifecycle**: `view.startRound()` has its own enable logic in a finally block
+4. **Async Boundaries**: Flag checks happen synchronously but state transitions are async
+5. **DOM Manipulation**: Possibility of button elements being recreated or attribute manipulation
 
-    // NEW: Check the selectionInProgress flag before enabling.
-    // If a selection is in flight, don't re-enable.
-    const container =
-      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
-    const selectionInProgress = container?.dataset?.selectionInProgress;
-    
-    if (selectionInProgress === "true") {
-      return;
-    }
+### Why Current Fixes Are Insufficient
 
-    statButtonControls?.enable();
-    const firstButton = document.querySelector("#stat-buttons button[data-stat]");
-    if (firstButton) {
-      firstButton.focus();
-    }
-  });
-```
+Despite implementing all documented fixes:
 
-**Rationale**: This wires the existing flag into the guard logic, preventing re-enablement while a selection is being processed. It directly addresses the root cause by blocking the premature `statButtons:enable` event.
+- Flag checks in emission sites ✅
+- Flag check in event handler ✅
+- HTML attribute setting ✅
+- Removed double-enable ✅
 
-### Part 2: Remove Unnecessary Debug Logging (Code Cleanup)
+**The test still fails**, indicating:
 
-**File**: `src/helpers/classicBattle/setupUIBindings.js`
-
-The event handler currently contains debug logging (lines 57–82) that should be removed as part of the fix:
-
-- Line 57: `console.log("[statButtons:enable] Event fired, battleState:", battleState);`
-- Line 72–73: Multiple console.log calls related to `selectionInProgress`
-- Lines 74–83: The `window.__statButtonsEnableEvents` tracking array (used for debugging)
-
-These debug statements were likely added during investigation and should not be committed to production.
-
-**Change**: Remove all debug logging and replace with production-quality code that is clean and minimal.
-
-### Part 3: Simplify and Clean Up roundUI.js
-
-**File**: `src/helpers/classicBattle/roundUI.js` (lines 456–460)
-
-While not strictly necessary for the fix, the comments in `roundUI.js` are verbose and debug-oriented:
-
-```javascript
-try {
-  enableStatButtons?.();
-  emitBattleEvent("statButtons:enable");
-  if (!IS_VITEST) console.log("INFO: applyRoundUI -> ensured stat buttons enabled (tail)");
-} catch {}
-```
-
-After Part 1 is implemented, the `statButtons:enable` event will be properly guarded, so this unconditional emit is no longer problematic. However, keep this logic as-is for now—no change is required here since the guard is now in place downstream.
-
-### Summary of Changes
-
-| File | Change | Scope | Purpose |
-|------|--------|-------|---------|
-| `setupUIBindings.js` | Add `selectionInProgress` flag check | ~10 lines | Wire the flag into the event handler guard |
-| `setupUIBindings.js` | Remove debug logging | ~26 lines | Clean up debug instrumentation |
-| Total | — | ~36 lines modified | Resolve race condition and clean up |
-
-## 5. Implementation & Verification Plan
-
-### Step 1: Apply the Fix
-
-Modify `src/helpers/classicBattle/setupUIBindings.js` to wire the `selectionInProgress` flag into the `statButtons:enable` event handler.
-
-**Specific Changes**:
-
-1. Add the `selectionInProgress` flag check as a guard after the battle state check
-2. Remove all debug logging and the `window.__statButtonsEnableEvents` array
-
-### Step 2: Run the Failing Test
-
-Verify the specific test that was failing now passes:
-
-```bash
-npx playwright test playwright/battle-classic/keyboard-navigation.spec.js --grep "should allow tab navigation"
-```
-
-**Expected Result**: Test passes. Buttons remain disabled through cooldown and re-enable at the start of the next round.
-
-### Step 3: Run the Full Battle Regression Suite
-
-Ensure no regressions have been introduced to related battle functionality:
-
-```bash
-npm run test:battles
-```
-
-**Expected Result**: All battle tests pass (both Classic and CLI modes).
-
-### Step 4: Run Full Validation
-
-Run the complete test suite and linting to ensure quality:
-
-```bash
-npm run check:jsdoc && npx prettier . --check && npx eslint . && npm run test:ci
-```
-
-**Expected Result**: All checks pass.
-
-### Step 5: Manual Verification (Optional)
-
-For extra confidence, manually verify the fix in the browser:
-
-1. Open `src/pages/battleClassic.html` in a browser
-2. Start a battle via the modal
-3. Select a stat using:
-   - **Mouse click**: Click any stat button
-   - **Keyboard**: Tab to a button and press Enter
-   - **Hotkey**: Press 1–5 for stat shortcuts
-4. Immediately try to click another stat button while the cooldown runs (before the next round starts)
-5. **Expected Behavior**: The button click should have no effect—only the first selection counts
-
-### Verification Checklist
-
-- [ ] Targeted test `keyboard-navigation.spec.js` passes
-- [ ] All `npm run test:battles` tests pass
-- [ ] `prettier`, `eslint`, and `jsdoc` all pass
-- [ ] No unsuppressed console logs
-- [ ] Code review confirms selectionInProgress flag is properly guarded
-- [ ] Manual testing confirms buttons remain locked during cooldown
-- [ ] All CI/CD checks pass
+- There's a code path we haven't discovered yet
+- The timing of flag checks vs. state changes is off
+- The `disabled` attribute issue points to a deeper DOM manipulation problem
 
 ---
 
-## 6. Key Insights & Recommendations
+## 4. Fixes Applied So Far
 
-### What Worked Well in the Investigation
+### ✅ Fix 1: Added selectionInProgress flag check to event handler
 
-- **Existing Infrastructure**: The `selectionInProgress` flag was already added to the codebase (at `uiHelpers.js:761` and cleared at `cooldownEnter.js:119`), providing a solid foundation for the fix.
-- **Test Coverage**: The Playwright test `keyboard-navigation.spec.js` is well-designed and caught the regression effectively.
-- **Clear Event Flow**: The battle events system (`battleEvents.js`, `emitBattleEvent`, `onBattleEvent`) is well-organized and made tracing the issue straightforward.
+**File**: `src/helpers/classicBattle/setupUIBindings.js` (line 75)
+**Change**: Added conditional check before enabling buttons in `statButtons:enable` event handler
+**Status**: Applied, test still failing
 
-### Areas for Improvement
+### ✅ Fix 2: Added HTML disabled attribute to applyDisabledState
 
-- **Debug Logging**: The current codebase contains numerous debug logging statements (particularly in `setupUIBindings.js` lines 57–83) that clutter the logic. These should be removed as part of the fix.
-- **Guard Completeness**: Once a guard measure is added (like the `selectionInProgress` flag), all relevant code paths must consult it. The flag was added but not wired into the event handler—this gap allowed the bug to persist.
-- **Documentation**: Consider adding JSDoc comments to clarify the race condition and the purpose of the `selectionInProgress` flag for future maintainers.
+**File**: `src/helpers/classicBattle/statButtons.js` (lines 28-31)
+**Change**: Added `btn.setAttribute("disabled", "")` when disabling, `btn.removeAttribute("disabled")` when enabling
+**Status**: Applied, but attribute not appearing in Playwright snapshots
 
-### Future Resilience
+### ✅ Fix 3: Added flag check to roundUI.js event emission
 
-After this fix is applied:
+**File**: `src/helpers/classicBattle/roundUI.js` (line 487)
+**Change**: Only emit `statButtons:enable` if `selectionInProgress !== "true"`
+**Status**: Applied, test still failing
 
-1. The battle button state machine will be more robust and resistant to timing variations
-2. The `selectionInProgress` flag will serve as a reliable sentinel for the UI event handler
-3. The code will be cleaner and easier to reason about without the debug logging
+### ✅ Fix 4: Added flag check to waitingForPlayerActionEnter.js
+
+**File**: `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js` (line 74)
+**Change**: Only emit `statButtons:enable` if `selectionInProgress !== "true"`
+**Status**: Applied, test still failing
+
+### ✅ Fix 5: Removed double-enable in roundUI.js
+
+**File**: `src/helpers/classicBattle/roundUI.js` (line 489)
+**Change**: Removed direct call to `enableStatButtons()`, only emit event
+**Status**: Applied, test still failing
+
+### 🔄 Next Steps Needed
+
+1. **Investigate view.startRound() lifecycle**: The finally block unconditionally calls `this.statButtonControls?.enable()` - this may be bypassing all flag checks
+2. **Trace complete button enable/disable call stack**: Use browser DevTools or add persistent debugging to understand exact sequence
+3. **Check for button recreation**: Search for code that might be replacing/recreating button elements
+4. **Verify flag timing**: Confirm flag is set BEFORE any state transitions that might trigger enables
+5. **Consider alternative approaches**: May need to rearchitect how button state is managed
+
+---
+
+## 5. Debugging Observations
+
+### Playwright Test Output Analysis
+
+**Test**: `playwright/battle-classic/keyboard-navigation.spec.js:60`
+**Failure Point**: `await expect(thirdStatButton).toBeDisabled()`
+**Retry Pattern**: Button alternates between two states across 9 retry attempts:
+
+- 5 attempts show: `<button type="button" tabindex="-1" class="stat-button" ...>`
+- 4 attempts show: `<button tabindex="0" type="button" class="stat-button" ...>`
+
+**Key Observations**:
+
+1. **No disabled attribute**: Neither state includes `disabled` attribute in HTML
+2. **Rapid cycling**: Alternation happens within Playwright's 5-second timeout
+3. **Tabindex as proxy**: `tabindex="-1"` suggests disabled, `tabindex="0"` suggests enabled
+4. **Class missing**: Neither state shows `.disabled` class (should be added by `applyDisabledState()`)
+
+### Code Path Discoveries
+
+**Files that call enableStatButtons/disableStatButtons**:
+
+- ✅ `statButtons.js` - Core implementation
+- ✅ `uiHelpers.js` - selectStat() disables buttons (line 752)
+- ✅ `roundUI.js` - Emits enable event (line 489)
+- ✅ `waitingForPlayerActionEnter.js` - Emits enable event (line 75)
+- ✅ `setupUIBindings.js` - Event handler (line 78)
+- ⚠️ `view.js` - startRound() finally block calls enable (line 96)
+
+**Critical Finding**: `view.startRound()` has flag check BUT calls `this.statButtonControls?.enable()` directly, which may bypass some guards
+
+### Unresolved Questions
+
+1. **Why is `disabled` attribute missing?** Code explicitly sets it via `setAttribute("disabled", "")` but Playwright never sees it
+2. **What triggers the rapid cycling?** Something is calling enable/disable in quick succession
+3. **Is view.startRound() the culprit?** It's called during round transitions and has its own enable logic
+4. **Are buttons being recreated?** If DOM is manipulated, attributes might be lost
+5. **Is there a circular event loop?** Enable triggers state change which triggers enable again?
+
+---
+
+## 6. Investigation Action Items
+
+### High Priority
+
+1. **Add view.startRound() to flag check audit**: Verify if this is bypassing guards
+2. **Trace button element lifecycle**: Confirm buttons aren't being recreated/replaced
+3. **Add browser console debugging**: Use non-Playwright-captured logging to see execution order
+4. **Check circular dependencies**: Map full event emission→handler→emission chain
+
+### Medium Priority
+
+5. **Review cooldownEnter timing**: Verify flag is cleared at right moment
+6. **Audit all setAttribute calls**: Ensure disabled attribute manipulation is correct
+7. **Check for DOM cloning**: Look for code that might clone buttons without attributes
+
+### Low Priority
+
+8. **Manual browser testing**: Open battleClassic.html and inspect button states during cooldown
+9. **Add e2e test with longer waits**: See if timing/async issue resolves with delays
+10. **Consider refactoring button state**: May need architectural change if race is unsolvable
+
+---
+
+## 7. Summary & Next Actions
+
+### Current Status
+
+**Test Status**: ❌ FAILING (5th iteration)
+**Fixes Applied**: 5 separate code changes across 4 files
+**Root Cause**: NOT YET FULLY IDENTIFIED - race condition more complex than initially understood
+
+### What We Know
+
+- ✅ Flag infrastructure exists and is used
+- ✅ Multiple code paths checked and patched
+- ✅ HTML attribute setting code added
+- ❌ Test still fails with rapid state cycling
+- ❌ Disabled attribute never appears in HTML
+- ⚠️ view.startRound() may be a key player
+
+### Recommended Next Step
+
+**Prioritize investigating `view.startRound()`**: This method is called during state transitions and has its own button enable logic in the finally block. Even though it has a flag check, it may be:
+
+- Called at the wrong time (after flag is cleared)
+- Called multiple times in quick succession
+- Bypassing some synchronization mechanism
+
+**Alternative approach if view.startRound() isn't the issue**: Consider adding a centralized button state manager that serializes all enable/disable operations through a single code path, preventing race conditions by design.
