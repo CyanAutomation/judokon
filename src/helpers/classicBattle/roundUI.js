@@ -478,10 +478,16 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   );
   updateDebugPanel();
   // Ensure buttons end up enabled at the tail of round UI setup
+  // But don't re-enable if a selection is in progress
   try {
-    enableStatButtons?.();
-    emitBattleEvent("statButtons:enable");
-    if (!IS_VITEST) console.log("INFO: applyRoundUI -> ensured stat buttons enabled (tail)");
+    const container =
+      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    const selectionInProgress = container?.dataset?.selectionInProgress;
+    
+    if (selectionInProgress !== "true") {
+      enableStatButtons?.();
+      emitBattleEvent("statButtons:enable");
+    }
   } catch {}
 }
 
