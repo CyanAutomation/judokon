@@ -55,8 +55,8 @@ test.describe("Classic Battle keyboard navigation", () => {
 
     // Verify that selection occurred (timer should start, buttons should be disabled)
     await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: \d+s)$/);
-    // Check that all buttons receive the disabled class once the round resolves
-    const disabledStatButtons = page.locator('[data-testid="stat-button"].disabled');
+    // Check that all buttons are disabled once the round resolves
+    const disabledStatButtons = page.locator('[data-testid="stat-button"]:disabled');
     await expect(thirdStatButton).toBeDisabled();
     await expect(disabledStatButtons).toHaveCount(statButtonCount);
 

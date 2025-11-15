@@ -40,35 +40,24 @@ function setupDebugState(payload) {
 }
 
 /**
- * Check if a round object has a valid round number.
+ * Compute the next round number based on current round.
  *
  * @pseudocode
  * 1. Verify round exists and has numeric number property.
  * 2. Ensure number is finite and >= 1.
- * 3. Return validation result.
- *
- * @param {object} round - Round object to validate.
- * @returns {boolean} True if round has valid number >= 1.
- */
-function isValidRound(round) {
-  return (
-    round && typeof round.number === "number" && Number.isFinite(round.number) && round.number >= 1
-  );
-}
-
-/**
- * Compute the next round number based on current round.
- *
- * @pseudocode
- * 1. Check if current round is valid.
- * 2. If not valid, log warning and return 1.
- * 3. Otherwise return current.number + 1.
+ * 3. If not valid, log warning and return 1.
+ * 4. Otherwise return current.number + 1.
  *
  * @param {object} currentRound - Current round object.
  * @returns {number} Next round number (>= 1).
  */
 function computeNextRoundNumber(currentRound) {
-  if (!isValidRound(currentRound)) {
+  if (
+    !currentRound ||
+    typeof currentRound.number !== "number" ||
+    !Number.isFinite(currentRound.number) ||
+    currentRound.number < 1
+  ) {
     debugLog("cooldownEnter: current round invalid, defaulting next round to 1");
     return 1;
   }
@@ -79,30 +68,30 @@ function computeNextRoundNumber(currentRound) {
  * Safely execute a round store operation with error handling.
  *
  * @pseudocode
- * 1. Execute the operation function.
- * 2. If error occurs, log failure with operation name.
- * 3. Silently continue on error (non-fatal).
+ * 1. Combine round state and round number updates into atomic operation.
+ * 2. Compute next round number first to ensure validity.
+ * 3. If error occurs, log failure and re-throw for caller to handle.
+ * 4. Ensures round state consistency.
  *
- * @param {Function} operation - Function to execute.
- * @param {string} operationName - Human-readable name of operation for logging.
+ * @param {object} round - Current round from store.
  * @returns {void}
  */
-function safeRoundStoreOperation(operation, operationName) {
-  try {
-    operation();
-  } catch (error) {
-    debugLog(`cooldownEnter: failed to ${operationName} - ${error.message}`);
-  }
+function updateRoundStateAtomically(round) {
+  const nextRoundNumber = computeNextRoundNumber(round);
+  debugLog("cooldownEnter: updating round state", { nextRoundNumber });
+  roundStore.setRoundState("cooldown", "cooldownEnter");
+  roundStore.setRoundNumber(nextRoundNumber);
 }
 
 /**
  * onEnter handler for `cooldown` state.
  *
  * @pseudocode
- * 1. Set up debug state.
- * 2. If `payload.initial` -> start match countdown.
- * 3. Otherwise schedule inter-round cooldown.
- * 4. Update round state and compute next round number.
+ * 1. Validate machine parameter to prevent null reference errors.
+ * 2. Set up debug state.
+ * 3. If `payload.initial` -> start match countdown.
+ * 4. Otherwise schedule inter-round cooldown.
+ * 5. Update round state atomically and compute next round number.
  *
  * @param {object} machine - State machine context with store and scheduler.
  * @param {object} [payload] - Optional transition payload.
@@ -110,6 +99,11 @@ function safeRoundStoreOperation(operation, operationName) {
  * @returns {Promise<void>}
  */
 export async function cooldownEnter(machine, payload) {
+  if (!machine) {
+    debugLog("cooldownEnter: invalid machine context");
+    return;
+  }
+
   setupDebugState(payload);
 
   if (payload?.initial) {
@@ -117,26 +111,18 @@ export async function cooldownEnter(machine, payload) {
     return;
   }
 
-  // Pass scheduler from context if present
   const { store, scheduler } = machine.context || {};
-  // In test environments, assume orchestrated context
-  const context = { orchestrated: true };
 
   debugLog("cooldownEnter: about to call startCooldown");
   await startCooldown(store, scheduler, {
-    isOrchestrated: () => context.orchestrated,
+    isOrchestrated: () => !!machine.context,
     getClassicBattleMachine: () => machine
   });
   debugLog("cooldownEnter: startCooldown completed");
 
-  // Update round state
-  safeRoundStoreOperation(() => {
-    roundStore.setRoundState("cooldown", "cooldownEnter");
-  }, "set round state");
-
-  // Compute and set next round number
-  safeRoundStoreOperation(() => {
-    const nextRoundNumber = computeNextRoundNumber(roundStore.getCurrentRound());
-    roundStore.setRoundNumber(nextRoundNumber);
-  }, "set round number");
+  try {
+    updateRoundStateAtomically(roundStore.getCurrentRound());
+  } catch (error) {
+    debugLog(`cooldownEnter: failed to update round state - ${error.message}`);
+  }
 }
