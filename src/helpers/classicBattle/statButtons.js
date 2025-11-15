@@ -71,7 +71,14 @@ function applyDisabledState(btn, disabled) {
  * @returns {void}
  */
 export function enableStatButtons(buttons, container) {
-  toButtonArray(buttons).forEach((btn) => {
+  console.log("[enableStatButtons] called with", toButtonArray(buttons).length, "buttons");
+  const buttonArray = toButtonArray(buttons);
+  if (typeof window !== "undefined") {
+    window.__statButtonsEnableCount = (window.__statButtonsEnableCount || 0) + 1;
+    window.__statButtonsEnableStack = window.__statButtonsEnableStack || [];
+    window.__statButtonsEnableStack.push(new Error().stack);
+  }
+  buttonArray.forEach((btn) => {
     applyDisabledState(btn, false);
     btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
@@ -93,7 +100,11 @@ export function enableStatButtons(buttons, container) {
  * @returns {void}
  */
 export function disableStatButtons(buttons, container) {
+  console.log("[disableStatButtons] called with", toButtonArray(buttons).length, "buttons");
   const buttonArray = toButtonArray(buttons);
+  if (typeof window !== "undefined") {
+    window.__statButtonsDisableCount = (window.__statButtonsDisableCount || 0) + 1;
+  }
   buttonArray.forEach((btn) => {
     applyDisabledState(btn, true);
   });

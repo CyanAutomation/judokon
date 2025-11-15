@@ -83,13 +83,9 @@ export class ClassicBattleView {
   async startRound() {
     this.statButtonControls?.disable();
     try {
-      if (typeof window !== "undefined" && window.IS_VITEST) {
-        console.log("[view.startRound] entering, will call this.controller.startRound()");
-      }
+      console.log("[view.startRound] entering, will call this.controller.startRound()");
       await this.controller.startRound();
-      if (typeof window !== "undefined" && window.IS_VITEST) {
-        console.log("[view.startRound] controller.startRound() completed");
-      }
+      console.log("[view.startRound] controller.startRound() completed");
     } catch {
       // error already dispatched
     } finally {
@@ -97,13 +93,9 @@ export class ClassicBattleView {
       const container =
         typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
       const selectionInProgress = container?.dataset?.selectionInProgress;
-      if (typeof window !== "undefined" && window.IS_VITEST) {
-        console.log("[view.startRound] finally block - selectionInProgress:", selectionInProgress, "will enable:", selectionInProgress !== "true");
-      }
+      console.log("[view.startRound] finally block - selectionInProgress:", selectionInProgress, "will enable:", selectionInProgress !== "true");
       if (selectionInProgress !== "true") {
-        if (typeof window !== "undefined" && window.IS_VITEST) {
-          console.log("[view.startRound] calling this.statButtonControls?.enable()");
-        }
+        console.log("[view.startRound] calling this.statButtonControls?.enable()");
         this.statButtonControls?.enable();
       }
     }
