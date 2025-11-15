@@ -54,8 +54,13 @@ export class StatsPanel {
       const next = (payload && payload.stats) || engineFacade.getCurrentStats();
       await this.update(next);
     };
-    if (typeof engineFacade.on === "function") {
-      engineFacade.on("statsUpdated", this.#onStatsUpdated);
+    try {
+      if (typeof engineFacade.on === "function") {
+        engineFacade.on("statsUpdated", this.#onStatsUpdated);
+      }
+    } catch {
+      // Engine not initialized; skip event subscription. The panel will still
+      // function with the initial stats object passed to the constructor.
     }
   }
   // Private handler reference for unsubscribe
@@ -98,10 +103,14 @@ export class StatsPanel {
    * Unsubscribe listeners and release references.
    */
   destroy() {
-    if (this.#onStatsUpdated && typeof engineFacade.off === "function") {
+    if (this.#onStatsUpdated) {
       try {
-        engineFacade.off("statsUpdated", this.#onStatsUpdated);
-      } catch {}
+        if (typeof engineFacade.off === "function") {
+          engineFacade.off("statsUpdated", this.#onStatsUpdated);
+        }
+      } catch {
+        // Engine not initialized; nothing to unsubscribe from.
+      }
     }
     this.#onStatsUpdated = undefined;
   }
