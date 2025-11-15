@@ -59,6 +59,15 @@ export async function setupUIBindings(view) {
   const statButtonControls = initStatButtons(store);
 
   onBattleEvent("statButtons:enable", () => {
+    // Don't enable buttons during states where they should be disabled
+    const battleState = typeof document !== "undefined" ? document.body?.dataset?.battleState : null;
+    const statesWhereButtonsAreDisabled = ["roundDecision", "roundOver", "cooldown", "roundStart"];
+    
+    if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
+      // Skip enabling buttons during these states
+      return;
+    }
+    
     statButtonControls?.enable();
     // Focus the first stat button for keyboard navigation
     const firstButton = document.querySelector("#stat-buttons button[data-stat]");

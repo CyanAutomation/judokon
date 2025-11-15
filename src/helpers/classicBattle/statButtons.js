@@ -23,12 +23,27 @@ function toButtonArray(buttons) {
 
 function applyDisabledState(btn, disabled) {
   if (!btn) return;
-  btn.disabled = disabled;
-  btn.tabIndex = disabled ? -1 : 0;
-  if (disabled) {
-    btn.classList.add("disabled");
-  } else {
-    btn.classList.remove("disabled");
+  try {
+    btn.disabled = disabled;
+    btn.tabIndex = disabled ? -1 : 0;
+    if (disabled) {
+      if (btn.classList && typeof btn.classList.add === "function") {
+        btn.classList.add("disabled");
+      }
+    } else {
+      if (btn.classList && typeof btn.classList.remove === "function") {
+        btn.classList.remove("disabled");
+      }
+    }
+  } catch (error) {
+    // Silently handle errors to prevent disrupting the game flow
+    try {
+      if (typeof console !== "undefined" && console.warn) {
+        console.warn("Failed to apply disabled state:", error);
+      }
+    } catch {
+      // Ignore logging errors
+    }
   }
 }
 

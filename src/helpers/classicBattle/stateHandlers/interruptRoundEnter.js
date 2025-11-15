@@ -1,60 +1,61 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import { exposeDebugState, readDebugState } from "../debugHooks.js";
-import { cleanupTimers } from "../selectionHandler.js";
+import { cleanupInterruptState } from "./interruptStateCleanup.js";
+import { debugLog } from "../debugLog.js";
 
 /**
- * onEnter handler for `interruptRound`.
+ * onEnter handler for `interruptRound` state.
  *
- * @param {object} machine
- * @param {object} [payload]
- * @returns {Promise<void>}
  * @pseudocode
- * 1. Clear running timers to prevent stale callbacks.
- * 2. Clear scoreboard messages and update debug panel.
- * 3. Reset selection state and cancel decision guard.
- * 4. Expose last interrupt reason.
- * 5. If `adminTest` -> dispatch `roundModification`, else `restartRound`.
+ * 1. Validate machine parameter to prevent null reference errors.
+ * 2. Clean up timers and reset player selection state.
+ * 3. Clear scoreboard messages and update debug panel.
+ * 4. Cancel decision guard and expose interrupt reason.
+ * 5. Route to appropriate next state based on interrupt payload.
+ *
+ * @param {object} machine - State machine context with store and dispatcher.
+ * @param {object} [payload] - Optional transition payload.
+ * @param {string} [payload.reason] - Human-readable interrupt reason for display.
+ * @param {boolean} [payload.adminTest] - If true, dispatch to roundModification.
+ * @returns {Promise<void>}
  */
 export async function interruptRoundEnter(machine, payload) {
-  // timer:clearIfRunning - Clear any running timers to prevent stale callbacks
-  const store = machine?.context?.store;
-  if (store) {
-    try {
-      cleanupTimers(store);
-    } catch (err) {
-      console.debug("Timer cleanup failed during round interrupt:", err);
-    }
+  if (!machine) {
+    debugLog("interruptRoundEnter: invalid machine context");
+    return;
   }
 
+  const store = machine.context?.store;
+
+  // Cleanup timers and selection state
+  cleanupInterruptState(store);
+
+  // Update UI to reflect interrupted state
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
 
-  // rollback:roundContextIfNeeded - Reset selection state and cancel decision guard
+  // Cancel round decision guard and expose interrupt reason
   try {
-    if (store) {
-      store.playerChoice = null;
-      store.selectionMade = false;
-      store.__lastSelectionMade = false;
-      try {
-        if (typeof window !== "undefined") {
-          window.__classicBattleSelectionFinalized = false;
-          window.__classicBattleLastFinalizeContext = null;
-        }
-      } catch {}
-    }
     const fn = readDebugState("roundDecisionGuard");
     if (typeof fn === "function") fn();
     exposeDebugState("roundDecisionGuard", null);
-  } catch {}
+  } catch (err) {
+    debugLog("Failed to cancel decision guard:", err);
+  }
 
-  // log:analyticsInterruptRound - Expose interrupt reason for analytics
+  // Expose interrupt reason for analytics
   try {
     exposeDebugState("classicBattleLastInterruptReason", payload?.reason || "");
-  } catch {}
+  } catch (err) {
+    debugLog("Failed to expose interrupt reason:", err);
+  }
 
+  // Show interrupt message if provided
   if (payload?.reason) {
     emitBattleEvent("scoreboardShowMessage", `Round interrupted: ${payload.reason}`);
   }
+
+  // Route to appropriate next state
   if (payload?.adminTest) {
     await machine.dispatch("roundModification", payload);
   } else if (payload?.reason === "quit") {
@@ -63,5 +64,3 @@ export async function interruptRoundEnter(machine, payload) {
     await machine.dispatch("restartRound");
   }
 }
-
-export default interruptRoundEnter;

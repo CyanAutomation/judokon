@@ -3,6 +3,7 @@ import { initStartCooldown } from "../cooldowns.js";
 import { exposeDebugState } from "../debugHooks.js";
 import { debugLog } from "../debugLog.js";
 import { roundStore } from "../roundStore.js";
+import { disableStatButtons } from "../statButtons.js";
 
 /**
  * Mark cooldownEnter handler invocation in debug window (test-only).
@@ -105,6 +106,17 @@ export async function cooldownEnter(machine, payload) {
   }
 
   setupDebugState(payload);
+
+  // Disable stat buttons during cooldown to prevent interaction
+  try {
+    const container = typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
+    if (buttons.length > 0) {
+      disableStatButtons(buttons, container);
+    }
+  } catch (error) {
+    debugLog("cooldownEnter: failed to disable stat buttons", error);
+  }
 
   if (payload?.initial) {
     await initStartCooldown(machine);
