@@ -99,7 +99,20 @@ function resolveEnvironmentFlags() {
 
 async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, showModalInTest }) {
   const autoStartRequested = shouldAutostart();
-  const bypassForTests = !showModalInTest && (isTestModeEnabled() || isPlaywright);
+  const testModeActive = isTestModeEnabled();
+  const bypassForTests = !showModalInTest && (testModeActive || isPlaywright);
+
+  // Debug logging to understand modal bypass logic
+  if (typeof console !== "undefined" && console.debug) {
+    console.debug("[roundSelectModal] handleAutostartAndTestMode:", {
+      autoStartRequested,
+      showModalInTest,
+      testModeActive,
+      isPlaywright,
+      bypassForTests,
+      willBypass: autoStartRequested || bypassForTests
+    });
+  }
 
   if (autoStartRequested || bypassForTests) {
     const resolvedTarget = resolveWinTarget();

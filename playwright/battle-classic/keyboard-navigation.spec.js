@@ -22,10 +22,25 @@ test.describe("Classic Battle keyboard navigation", () => {
     });
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for the round select modal to be created and opened with its buttons visible
-    // The modal is created asynchronously after page load, so we need to wait for
-    // the modal dialog to have the [open] attribute before looking for buttons
-    await page.waitForSelector("dialog.modal[open] .round-select-buttons", { timeout: 5000 });
+    // Wait for the bootstrap to complete and the round select modal to be initialized
+    // The modal buttons are created asynchronously, so we need to wait for them to exist
+    await page.waitForFunction(
+      () => {
+        const modal = document.querySelector("dialog.modal");
+        const buttons = modal?.querySelector(".round-select-buttons");
+        return modal && buttons;
+      },
+      { timeout: 5000 }
+    );
+
+    // Ensure the modal is actually displayed by waiting for the open attribute
+    await page.waitForFunction(
+      () => {
+        const modal = document.querySelector("dialog.modal");
+        return modal && modal.hasAttribute("open");
+      },
+      { timeout: 5000 }
+    );
 
     // Start the match via modal
     await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();

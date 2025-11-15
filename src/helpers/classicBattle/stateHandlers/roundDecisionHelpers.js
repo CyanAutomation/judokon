@@ -9,16 +9,30 @@ import { exposeDebugState, readDebugState } from "../debugHooks.js";
 import { autoContinue } from "../autoContinue.js";
 import isStateTransition from "../isStateTransition.js";
 
+// Magic number constants for timing coordination
+const PLAYER_CHOICE_POLL_INTERVAL_MS = 50;
+const PLAYER_CHOICE_TIMEOUT_MS = 1500;
+const GUARD_SELECTION_RESOLUTION_DELAY_MS = 1200;
+const POST_RESOLVE_WATCHDOG_DELAY_MS = 600;
+
 function getElementIfDocument(id) {
   return typeof document !== "undefined" ? document.getElementById(id) : null;
 }
 
+/**
+ * Get the opponent's stat value with fallback to DOM-based calculation.
+ *
+ * @param {string} stat - Stat key (e.g., "power", "speed")
+ * @param {HTMLElement|null} fallbackCard - DOM card element fallback
+ * @returns {number} Opponent stat value or fallback value
+ */
 function getOpponentStatValue(stat, fallbackCard) {
   try {
     const opp = getOpponentJudoka();
     const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
     return Number.isFinite(raw) ? raw : getStatValue(fallbackCard, stat);
-  } catch {
+  } catch (err) {
+    debugLog("DEBUG: getOpponentStatValue error", { stat, error: err.message });
     return getStatValue(fallbackCard, stat);
   }
 }
@@ -55,12 +69,22 @@ export async function computeAndDispatchOutcome(store, machine) {
     try {
       exposeDebugState("guardFiredAt", Date.now());
       exposeDebugState("guardOutcomeEvent", outcomeEvent || "none");
-    } catch {}
+    } catch (err) {
+      debugLog("DEBUG: exposeDebugState error", { error: err.message });
+    }
     await dispatchOutcome(outcomeEvent, machine);
     emitBattleEvent("debugPanelUpdate");
-  } catch {}
+  } catch (err) {
+    debugLog("DEBUG: computeAndDispatchOutcome error", { error: err.message });
+  }
 }
 
+/**
+ * Determine the round outcome based on player and opponent stat values.
+ *
+ * @param {object} store - Battle state store
+ * @returns {string|null} Outcome event string or null if unable to determine
+ */
 function determineOutcomeEvent(store) {
   try {
     const stat = store.playerChoice;
@@ -74,29 +98,47 @@ function determineOutcomeEvent(store) {
       if (playerVal < opponentVal) return "outcome=winOpponent";
       return "outcome=draw";
     }
-  } catch {}
+  } catch (err) {
+    debugLog("DEBUG: determineOutcomeEvent error", { error: err.message });
+  }
   return null;
 }
 
+/**
+ * Dispatch the outcome event to the machine, with microtask scheduling as fallback.
+ *
+ * @param {string|null} outcomeEvent - Outcome event string or null
+ * @param {object} machine - State machine
+ * @returns {Promise<void>}
+ */
+async function dispatchOutcomeEvent(outcomeEvent, machine) {
+  try {
+    await machine.dispatch(outcomeEvent);
+    if (autoContinue) await machine.dispatch("continue");
+  } catch (err) {
+    debugLog("DEBUG: dispatchOutcomeEvent error", { outcomeEvent, error: err.message });
+  }
+}
+
+/**
+ * Dispatch outcome via async scheduler with fallback to setTimeout.
+ *
+ * @param {string|null} outcomeEvent - Outcome event string or null
+ * @param {object} machine - State machine
+ * @returns {Promise<void>}
+ */
 async function dispatchOutcome(outcomeEvent, machine) {
   if (outcomeEvent) {
     try {
-      const run = async () => {
-        try {
-          await machine.dispatch(outcomeEvent);
-          if (autoContinue) await machine.dispatch("continue");
-        } catch {}
-      };
+      const run = () => dispatchOutcomeEvent(outcomeEvent, machine);
       if (typeof queueMicrotask === "function") {
         queueMicrotask(run);
       } else {
         setTimeout(run, 0);
       }
-    } catch {
-      try {
-        await machine.dispatch(outcomeEvent);
-        if (autoContinue) await machine.dispatch("continue");
-      } catch {}
+    } catch (err) {
+      debugLog("DEBUG: dispatchOutcome queueMicrotask error", { error: err.message });
+      await dispatchOutcomeEvent(outcomeEvent, machine);
     }
   } else {
     await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
@@ -115,12 +157,16 @@ async function dispatchOutcome(outcomeEvent, machine) {
 export function recordEntry() {
   try {
     debugLog("DEBUG: Entering roundDecisionEnter");
-  } catch {}
+  } catch (err) {
+    debugLog("DEBUG: recordEntry debugLog error", { error: err.message });
+  }
   try {
     if (typeof window !== "undefined") {
       exposeDebugState("roundDecisionEnter", Date.now());
     }
-  } catch {}
+  } catch (err) {
+    debugLog("DEBUG: recordEntry exposeDebugState error", { error: err.message });
+  }
   emitBattleEvent("debugPanelUpdate");
 }
 
@@ -153,7 +199,9 @@ export async function resolveSelectionIfPresent(store) {
   const opponentVal = getOpponentStatValue(stat, oCard);
   try {
     debugLog("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
-  } catch {}
+  } catch (err) {
+    debugLog("DEBUG: resolveSelectionIfPresent debugLog error", { error: err.message });
+  }
   const delayMs = resolveDelay();
   await resolveRound(store, stat, playerVal, opponentVal, { delayMs });
   return true;
@@ -197,7 +245,7 @@ export function waitForPlayerChoice(store, timeoutMs) {
         cleanup();
         resolve();
       }
-    }, 50);
+    }, PLAYER_CHOICE_POLL_INTERVAL_MS);
   });
 
   const timeoutPromise = new Promise((_, reject) => {
@@ -211,36 +259,44 @@ export function waitForPlayerChoice(store, timeoutMs) {
 }
 
 /**
- * Convenience wrapper waiting a fixed 1500ms for player choice.
+ * Convenience wrapper waiting a fixed timeout for player choice.
  *
  * @pseudocode
- * 1. Delegate to `waitForPlayerChoice(store, 1500)`.
+ * 1. Delegate to `waitForPlayerChoice(store, PLAYER_CHOICE_TIMEOUT_MS)`.
  *
  * @param {ReturnType<import('../roundManager.js').createBattleStore>} store - Battle state store.
  * @returns {Promise<void>}
  */
 export async function awaitPlayerChoice(store) {
-  await waitForPlayerChoice(store, 1500);
+  await waitForPlayerChoice(store, PLAYER_CHOICE_TIMEOUT_MS);
 }
 
 /**
  * Schedule a watchdog to resolve the round if selection stalls.
  *
  * @pseudocode
- * 1. Use `scheduleGuard` to call `computeAndDispatchOutcome` after 1200ms.
- * 2. Store cancel function in debug state and return a cleanup function.
+ * 1. Use `scheduleGuard` to call `computeAndDispatchOutcome` after guard delay.
+ * 2. Store cancel function in closure and return a cleanup function.
  *
  * @param {ReturnType<import('../roundManager.js').createBattleStore>} store - Battle store.
  * @param {import('../stateManager.js').ClassicBattleStateManager} machine - State machine.
  * @returns {() => void} Cleanup that cancels the guard.
  */
 export function guardSelectionResolution(store, machine) {
-  const cancel = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
-  exposeDebugState("roundDecisionGuard", cancel);
+  let cancelFn;
+  const setupCancel = () => {
+    cancelFn = scheduleGuard(GUARD_SELECTION_RESOLUTION_DELAY_MS, () =>
+      computeAndDispatchOutcome(store, machine)
+    );
+    exposeDebugState("roundDecisionGuard", cancelFn);
+  };
+  setupCancel();
+
   return () => {
     guard(() => {
-      const fn = readDebugState("roundDecisionGuard");
-      if (typeof fn === "function") fn();
+      if (typeof cancelFn === "function") {
+        cancelFn();
+      }
       exposeDebugState("roundDecisionGuard", null);
     });
   };
@@ -250,7 +306,7 @@ export function guardSelectionResolution(store, machine) {
  * Ensure the state machine leaves `roundDecision` shortly after resolution.
  *
  * @pseudocode
- * 1. After 600ms, check the machine's state.
+ * 1. After watchdog delay, check the machine's state.
  * 2. If still in `roundDecision`, dispatch `interrupt`.
  *
  * @param {import('../stateManager.js').ClassicBattleStateManager} machine - State machine.
@@ -264,7 +320,7 @@ export function schedulePostResolveWatchdog(machine) {
         await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
       }
     });
-  }, 600);
+  }, POST_RESOLVE_WATCHDOG_DELAY_MS);
 }
 
 export default {
