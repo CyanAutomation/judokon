@@ -148,5 +148,3 @@ onBattleEvent("statButtons:enable", () => {
     - Confirm buttons re-enable correctly after cooldown.
     - Test with mouse clicks, keyboard (Tab + Enter), and numeric hotkeys (1-5).
 5. **Cleanup**: Remove all temporary `console.log` statements, `window` flags, and debug test files that were added during the investigation.
-
-
