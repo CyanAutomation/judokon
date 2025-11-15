@@ -8,6 +8,11 @@ import { emitBattleEvent } from "../battleEvents.js";
  * 1. Disable stat buttons.
  */
 export async function waitingForPlayerActionExit() {
+  try {
+    if (typeof window !== "undefined" && window.console && window.console.debug) {
+      window.console.debug("[waitingForPlayerActionExit] emitting statButtons:disable");
+    }
+  } catch {}
   emitBattleEvent("statButtons:disable");
 }
 

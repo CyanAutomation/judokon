@@ -64,6 +64,14 @@ export async function setupUIBindings(view) {
     const statesWhereButtonsAreDisabled = ["roundDecision", "roundOver", "cooldown", "roundStart"];
 
     if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
+      try {
+        if (typeof window !== "undefined" && window.console && window.console.debug) {
+          window.console.debug(
+            "[setupUIBindings:statButtons:enable] SKIPPED due to battleState=",
+            battleState
+          );
+        }
+      } catch {}
       return;
     }
 
@@ -73,9 +81,25 @@ export async function setupUIBindings(view) {
     const selectionInProgress = container?.dataset?.selectionInProgress;
 
     if (selectionInProgress === "true") {
+      try {
+        if (typeof window !== "undefined" && window.console && window.console.debug) {
+          window.console.debug(
+            "[setupUIBindings:statButtons:enable] SKIPPED due to selectionInProgress=true"
+          );
+        }
+      } catch {}
       return;
     }
 
+    try {
+      if (typeof window !== "undefined" && window.console && window.console.debug) {
+        window.console.debug(
+          "[setupUIBindings:statButtons:enable] CALLING statButtonControls.enable()",
+          "battleState=",
+          battleState
+        );
+      }
+    } catch {}
     statButtonControls?.enable();
     // Focus the first stat button for keyboard navigation
     const firstButton = document.querySelector("#stat-buttons button[data-stat]");
