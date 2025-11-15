@@ -91,6 +91,9 @@ export class ClassicBattleView {
       const container =
         typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
       const selectionInProgress = container?.dataset?.selectionInProgress;
+      if (typeof window !== "undefined" && !window.IS_VITEST) {
+        console.log("[view.startRound] selectionInProgress:", selectionInProgress, "will enable:", selectionInProgress !== "true");
+      }
       if (selectionInProgress !== "true") {
         this.statButtonControls?.enable();
       }
