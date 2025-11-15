@@ -1047,8 +1047,8 @@ export function initStatButtons(store) {
  * Applies localized stat names and accessibility attributes to stat buttons.
  *
  * @pseudocode
- * 1. Load stat names asynchronously.
- * 2. Iterate over the loaded stat names and their corresponding STATS keys.
+ * 1. Load stat names asynchronously and build a map from key to label.
+ * 2. Iterate over the STATS keys and their corresponding buttons.
  * 3. For each stat:
  *    a. Construct a selector for the stat button.
  *    b. Handle potential errors during selector construction or DOM query.
@@ -1060,7 +1060,18 @@ export function initStatButtons(store) {
  * @returns {Promise<void>} A promise that resolves when stat labels are applied.
  */
 export async function applyStatLabels() {
-  const names = await loadStatNames().catch(() => ({}));
+  const statsArray = await loadStatNames().catch(() => []);
+  // Build a map from stat key (slug) to display name
+  const nameMap = {};
+  for (const stat of statsArray) {
+    const key = String(stat.name || "")
+      .toLowerCase()
+      .replace(/[-\s]/g, "");
+    if (key) {
+      nameMap[key] = stat.name;
+    }
+  }
+
   const statKeys = Array.isArray(STATS) ? STATS : Object.keys(STATS || {});
   for (const rawKey of statKeys) {
     const key = String(rawKey);
@@ -1069,7 +1080,7 @@ export async function applyStatLabels() {
     /** @type {HTMLButtonElement|null} */
     const btn = document.querySelector(selector);
     if (!btn) continue;
-    const label = names[key] || key.charAt(0).toUpperCase() + key.slice(1);
+    const label = nameMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
     try {
       btn.textContent = label;
       btn.setAttribute("aria-label", label);

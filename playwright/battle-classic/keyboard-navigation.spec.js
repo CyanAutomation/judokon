@@ -22,6 +22,11 @@ test.describe("Classic Battle keyboard navigation", () => {
     });
     await page.goto("/src/pages/battleClassic.html");
 
+    // Wait for the round select modal to be created and opened with its buttons visible
+    // The modal is created asynchronously after page load, so we need to wait for
+    // the modal dialog to have the [open] attribute before looking for buttons
+    await page.waitForSelector("dialog.modal[open] .round-select-buttons", { timeout: 5000 });
+
     // Start the match via modal
     await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
     await page.getByRole("button", { name: "Medium" }).click();
