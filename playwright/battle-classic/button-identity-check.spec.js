@@ -54,6 +54,14 @@ test.describe("Classic Battle - Button Identity Check", () => {
 
     console.log("Still same button:", JSON.stringify(stillSameButton, null, 2));
 
+    // Check if init functions were called
+    const initStatButtonsCalled = await page.evaluate(() => window.__initStatButtonsCalled || false);
+    const renderCalled = await page.evaluate(() => window.__renderStatButtonsCalled || false);
+    const clickListenersAttached = await page.evaluate(() => window.__clickListenerAttachedFor || []);
+    console.log("initStatButtons called:", initStatButtonsCalled);
+    console.log("renderStatButtons called:", renderCalled);
+    console.log("Click listeners attached for stats (renderStatButtons):", clickListenersAttached);
+
     // Now click the button
     await statButtons.first().click();
     await page.waitForTimeout(50);

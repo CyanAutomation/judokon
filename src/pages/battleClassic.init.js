@@ -1492,8 +1492,14 @@ async function handleStatButtonClick(store, stat, btn) {
  * 1. Create buttons for STATS, enable them, and handle selection.
  */
 function renderStatButtons(store) {
+  console.log("renderStatButtons: START");
+  window.__renderStatButtonsCalled = true;
   const container = document.getElementById("stat-buttons");
-  if (!container) return;
+  if (!container) {
+    console.log("renderStatButtons: container not found");
+    return;
+  }
+  console.log("renderStatButtons: container found");
   resetCooldownFlag(store);
   try {
     disableNextRoundButton();
@@ -1532,6 +1538,9 @@ function renderStatButtons(store) {
       desc = undefined;
     }
     btn.addEventListener("click", () => {
+      console.log("Button click listener attached for stat:", stat);
+      window.__clickListenerAttachedFor = window.__clickListenerAttachedFor || [];
+      window.__clickListenerAttachedFor.push(stat);
       void handleStatButtonClick(store, stat, btn);
     });
     container.appendChild(btn);
