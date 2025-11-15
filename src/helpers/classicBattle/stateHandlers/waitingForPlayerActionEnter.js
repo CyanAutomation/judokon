@@ -55,6 +55,23 @@ export async function waitingForPlayerActionEnter(machine) {
     // Intentionally ignore window global availability errors
   }
 
+  // DEBUG: Clear the selectionInProgress flag when entering this state
+  // This ensures buttons can be re-enabled for the new round
+  try {
+    const container =
+      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    if (container && typeof container.dataset !== "undefined") {
+      container.dataset.selectionInProgress = "false";
+      if (typeof window !== "undefined" && window.console && window.console.debug) {
+        window.console.debug(
+          "[waitingForPlayerActionEnter] Cleared selectionInProgress flag to false"
+        );
+      }
+    }
+  } catch {
+    // Intentionally ignore errors
+  }
+
   // Debug logging for state handler entry
   logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
     hasStore: !!machine?.context?.store,
@@ -67,7 +84,7 @@ export async function waitingForPlayerActionEnter(machine) {
   });
 
   // prompt:chooseStat - Enable stat buttons
-  // But only if a selection is not currently in progress
+  // Now that we've entered the new waiting state, allow buttons to be enabled
   const container =
     typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
   const selectionInProgress = container?.dataset?.selectionInProgress;
