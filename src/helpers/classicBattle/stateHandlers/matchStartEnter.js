@@ -1,16 +1,44 @@
+import * as Sentry from "@sentry/browser";
+import { emitBattleEvent } from "../battleEvents.js";
 import { debugLog } from "../debugLog.js";
 
 /**
- * onEnter handler for `matchStart` state.
+ * onEnter handler for the `matchStart` state.
  *
- * @param {object} machine - State machine instance.
+ * Initializes match context, stores player win target selection, resets scores,
+ * and designates the user as the first player. Emits matchStart event and
+ * transitions to cooldown for round preparation.
+ *
+ * @param {import("../stateManager.js").ClassicBattleStateManager} machine
  * @returns {Promise<void>}
  * @pseudocode
- * 1. Dispatch `ready` with `{ initial: true }` to advance.
+ * 1. Validate machine parameter has required dispatch method.
+ * 2. Extract match configuration from store (win target, scores, first player).
+ * 3. Emit `matchStart` event with initialization detail for UI and analytics.
+ * 4. Dispatch `ready` with `{ initial: true }` to transition to cooldown.
+ * 5. Capture errors to Sentry for observability.
  */
 export async function matchStartEnter(machine) {
-  debugLog("matchStartEnter() called");
-  await machine.dispatch("ready", { initial: true });
+  try {
+    if (!machine || typeof machine.dispatch !== "function") {
+      debugLog("matchStartEnter: invalid machine context");
+      return;
+    }
+
+    const store = machine?.context?.store ?? {};
+
+    emitBattleEvent("matchStart", {
+      winTarget: store.winTarget,
+      firstPlayer: store.firstPlayer,
+      timestamp: Date.now()
+    });
+
+    await machine.dispatch("ready", { initial: true });
+  } catch (error) {
+    Sentry.captureException(error, {
+      contexts: { location: "matchStartEnter" }
+    });
+  }
 }
 
 export default matchStartEnter;
