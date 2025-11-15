@@ -387,7 +387,7 @@ export function isTestMode() {
 
   // Check for browser test indicators
   if (isWindowAvailable()) {
-    if (window.__TEST__) return true;
+    if (window.__TEST__ || window.__PLAYWRIGHT_TEST__) return true;
     if (
       window.location?.href?.includes("127.0.0.1") ||
       window.location?.href?.includes("localhost")
