@@ -748,11 +748,17 @@ export function selectStat(store, stat) {
   try {
     const container =
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    console.log("[selectStat] Container found:", !!container);
     if (container) {
       const buttons = container.querySelectorAll("button");
+      console.log("[selectStat] About to disable", buttons.length, "buttons");
       disableStatButtons(buttons, container);
+      console.log("[selectStat] disableStatButtons called");
+      window.__selectStatCalledDisable = true;
     }
-  } catch {}
+  } catch (err) {
+    console.log("[selectStat] Error disabling buttons:", err);
+  }
   btn?.classList.add("selected");
   // read values from cards
   const pCard = document.getElementById("player-card");

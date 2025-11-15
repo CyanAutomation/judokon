@@ -69,9 +69,17 @@ test.describe("Classic Battle - Button Identity Check", () => {
     // Check if our listener was called
     const ourHandlerCalled = await page.evaluate(() => window.__ourClickHandlerCalled || false);
     const appHandlerCalled = await page.evaluate(() => window.__statButtonClickCalled || false);
+    const uiHelpersHandlerCalled = await page.evaluate(() => window.__statButtonClickHandlerTriggered || false);
+    const selectStatCalledDisable = await page.evaluate(() => window.__selectStatCalledDisable || false);
+    const disableStatButtonsCalled = await page.evaluate(() => window.__disableStatButtonsCalled || false);
+    const disableCount = await page.evaluate(() => window.__disableStatButtonsCount || 0);
     
     console.log("Our click handler called:", ourHandlerCalled);
-    console.log("App click handler called:", appHandlerCalled);
+    console.log("App click handler called (battleClassic.init.js):", appHandlerCalled);
+    console.log("UIHelpers click handler called (uiHelpers.js):", uiHelpersHandlerCalled);
+    console.log("selectStat called disableStatButtons:", selectStatCalledDisable);
+    console.log("disableStatButtons function called:", disableStatButtonsCalled);
+    console.log("Number of buttons passed to disableStatButtons:", disableCount);
 
     // Check if button is still the same after click
     const afterClickSameButton = await page.evaluate((id) => {
