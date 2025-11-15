@@ -823,14 +823,10 @@ function shouldDisplaySelectionSnackbar(store, delayOpponentMessage) {
 const STAT_BUTTON_HANDLER_KEY = "__classicBattleStatHandler";
 
 function registerStatButtonClickHandler(container, store) {
-  console.log("registerStatButtonClickHandler: START");
   if (!container || container[STAT_BUTTON_HANDLER_KEY]) {
-    console.log("registerStatButtonClickHandler: Already registered or no container");
     return;
   }
   const handler = (event) => {
-    console.log("Stat button click handler triggered!");
-    window.__statButtonClickHandlerTriggered = true;
     const target = event?.target;
     if (!target || typeof target.closest !== "function") {
       return;
@@ -840,7 +836,6 @@ function registerStatButtonClickHandler(container, store) {
       return;
     }
     if (btn.disabled) {
-      console.log("Button is disabled, ignoring click");
       return;
     }
     const stat = btn.dataset?.stat;
@@ -848,14 +843,12 @@ function registerStatButtonClickHandler(container, store) {
       return;
     }
     try {
-      console.log("About to call selectStat for:", stat);
       selectStat(store, stat);
     } catch (error) {
       guard(() => console.warn("[uiHelpers] Failed to handle stat selection:", error));
     }
   };
   container.addEventListener("click", handler);
-  console.log("registerStatButtonClickHandler: Event listener attached");
   Object.defineProperty(container, STAT_BUTTON_HANDLER_KEY, {
     value: handler,
     configurable: true
@@ -1014,13 +1007,10 @@ export function clearScoreboardAndMessages() {
  * @returns {{enable: Function, disable: Function}} An object with enable and disable functions for the stat buttons.
  */
 export function initStatButtons(store) {
-  console.log("initStatButtons: START");
-  window.__initStatButtonsCalled = true;
   const container = document.getElementById("stat-buttons");
   if (!container) throw new Error("initStatButtons: #stat-buttons missing");
   const buttons = Array.from(container.querySelectorAll("button"));
   if (buttons.length === 0) {
-    console.warn("[uiHelpers] #stat-buttons has no buttons");
     try {
       resolveStatButtonsReady();
     } catch {}
@@ -1029,7 +1019,6 @@ export function initStatButtons(store) {
 
   let disposeHotkeys = null;
   registerStatButtonClickHandler(container, store);
-  console.log("initStatButtons: registerStatButtonClickHandler called");
 
   const enable = () => {
     enableStatButtons(buttons, container);

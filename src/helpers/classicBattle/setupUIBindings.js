@@ -63,7 +63,10 @@ export async function setupUIBindings(view) {
       typeof document !== "undefined" ? document.body?.dataset?.battleState : null;
     const statesWhereButtonsAreDisabled = ["roundDecision", "roundOver", "cooldown", "roundStart"];
 
+    console.log("[DEBUG] statButtons:enable fired, battleState:", battleState);
+
     if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
+      console.log("[DEBUG] blocked by battleState");
       return;
     }
 
@@ -72,10 +75,14 @@ export async function setupUIBindings(view) {
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     const selectionInProgress = container?.dataset?.selectionInProgress;
 
+    console.log("[DEBUG] selectionInProgress:", selectionInProgress);
+
     if (selectionInProgress === "true") {
+      console.log("[DEBUG] blocked by selectionInProgress");
       return;
     }
 
+    console.log("[DEBUG] enabling buttons");
     statButtonControls?.enable();
     // Focus the first stat button for keyboard navigation
     const firstButton = document.querySelector("#stat-buttons button[data-stat]");

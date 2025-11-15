@@ -23,18 +23,10 @@ function toButtonArray(buttons) {
 
 function applyDisabledState(btn, disabled) {
   if (!btn) {
-    console.log("[applyDisabledState] No button provided");
     return;
   }
-  console.log(
-    "[applyDisabledState] Setting disabled =",
-    disabled,
-    "for button:",
-    btn.dataset?.stat
-  );
   try {
     btn.disabled = disabled;
-    console.log("[applyDisabledState] After setting, btn.disabled =", btn.disabled);
     btn.tabIndex = disabled ? -1 : 0;
     if (disabled) {
       if (btn.classList && typeof btn.classList.add === "function") {
@@ -74,17 +66,6 @@ function applyDisabledState(btn, disabled) {
  * @returns {void}
  */
 export function enableStatButtons(buttons, container) {
-  console.log("[enableStatButtons] Called with", toButtonArray(buttons).length, "buttons");
-
-  // Save stack trace for debugging
-  if (typeof window !== "undefined") {
-    window.__enableStackTraces = window.__enableStackTraces || [];
-    window.__enableStackTraces.push({
-      time: Date.now(),
-      stack: new Error().stack
-    });
-  }
-
   toButtonArray(buttons).forEach((btn) => {
     applyDisabledState(btn, false);
     btn.classList.remove("selected");
@@ -108,9 +89,6 @@ export function enableStatButtons(buttons, container) {
  */
 export function disableStatButtons(buttons, container) {
   const buttonArray = toButtonArray(buttons);
-  console.debug("disableStatButtons called with", buttonArray.length, "buttons");
-  window.__disableStatButtonsCalled = true; // Track for debugging
-  window.__disableStatButtonsCount = buttonArray.length;
   buttonArray.forEach((btn) => {
     applyDisabledState(btn, true);
   });
