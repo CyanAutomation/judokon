@@ -87,7 +87,13 @@ export class ClassicBattleView {
     } catch {
       // error already dispatched
     } finally {
-      this.statButtonControls?.enable();
+      // Only re-enable buttons if a selection is not in progress
+      const container =
+        typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+      const selectionInProgress = container?.dataset?.selectionInProgress;
+      if (selectionInProgress !== "true") {
+        this.statButtonControls?.enable();
+      }
     }
   }
 }

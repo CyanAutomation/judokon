@@ -67,7 +67,13 @@ export async function waitingForPlayerActionEnter(machine) {
   });
 
   // prompt:chooseStat - Enable stat buttons
-  emitBattleEvent("statButtons:enable");
+  // But only if a selection is not currently in progress
+  const container =
+    typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+  const selectionInProgress = container?.dataset?.selectionInProgress;
+  if (selectionInProgress !== "true") {
+    emitBattleEvent("statButtons:enable");
+  }
 
   // timer:startStatSelection - Start round timer with timeout callback
   if (store) {

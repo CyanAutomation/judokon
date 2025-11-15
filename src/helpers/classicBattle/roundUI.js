@@ -484,14 +484,9 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     const selectionInProgress = container?.dataset?.selectionInProgress;
     
-    if (!IS_VITEST) console.log("[roundUI.applyRoundUI] selectionInProgress check:", selectionInProgress, "typeof:", typeof selectionInProgress);
-    
     if (selectionInProgress !== "true") {
-      if (!IS_VITEST) console.log("[roundUI.applyRoundUI] enabling buttons");
       enableStatButtons?.();
       emitBattleEvent("statButtons:enable");
-    } else {
-      if (!IS_VITEST) console.log("[roundUI.applyRoundUI] BLOCKED: selectionInProgress is 'true'");
     }
   } catch {}
 }

@@ -25,9 +25,6 @@ import {
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel as updateDebugPanelImpl, setDebugPanelEnabled } from "./debugPanel.js";
-
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
-
 /**
  * Re-export of updateDebugPanel from debugPanel.js
 /**
@@ -753,17 +750,15 @@ export function selectStat(store, stat) {
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     if (container) {
       const buttons = container.querySelectorAll("button");
-      if (!IS_VITEST) console.log("[selectStat] disabling", buttons.length, "buttons for stat:", stat);
       disableStatButtons(buttons, container);
 
       // Set a flag to prevent re-enabling while selection is being processed
       if (typeof container.dataset !== "undefined") {
         container.dataset.selectionInProgress = "true";
-        if (!IS_VITEST) console.log("[selectStat] set selectionInProgress to 'true'");
       }
     }
   } catch (err) {
-    if (!IS_VITEST) console.log("[selectStat] error:", err);
+    // Silently handle errors in button state management
   }
   btn?.classList.add("selected");
   // read values from cards
