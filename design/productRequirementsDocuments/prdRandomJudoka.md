@@ -84,6 +84,17 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 - Caching, randomness, and fallback logic are handled by `generateRandomCard`
 
+### Card History UI
+
+- The Random Judoka history view uses a native `<details id="history-panel">`
+  disclosure rather than a modal dialog so the toggle is always reachable,
+  survives refreshes, and requires no scripted mounting.
+- Opening the disclosure animates a right-aligned sheet into view purely with
+  CSS so Reduced Motion preferences remain respected.
+- Pressing <kbd>Escape</kbd> (or toggling the summary again) closes the panel
+  and returns focus to the summary control, matching the prior dialog's
+  keyboard affordances.
+
 ---
 
 ## Implementation Architecture: Draw Card State Machine
