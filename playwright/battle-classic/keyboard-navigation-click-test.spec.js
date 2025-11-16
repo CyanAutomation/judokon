@@ -48,10 +48,17 @@ test.describe("Classic Battle - Manual Click Test", () => {
     await statButtons.first().click();
 
     const handlerEvent = await page.evaluate(async () => {
+      const formatError = (error) => {
+        const message =
+          typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
+        const normalizedMessage = message.toLowerCase();
+        const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
+        return { timedOut: isTimeout, error: message };
+      };
       try {
         return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
       } catch (error) {
-        return { timedOut: true, error: error.message };
+        return formatError(error);
       }
     });
     expect(handlerEvent).toBeTruthy();
@@ -59,10 +66,17 @@ test.describe("Classic Battle - Manual Click Test", () => {
 
     const disableEvent = await page.evaluate(
       async (afterId) => {
+        const formatError = (error) => {
+          const message =
+            typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
+          const normalizedMessage = message.toLowerCase();
+          const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
+          return { timedOut: isTimeout, error: message };
+        };
         try {
           return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
         } catch (error) {
-          return { timedOut: true, error: error.message };
+          return formatError(error);
         }
       },
       handlerEvent?.id ?? null
@@ -81,10 +95,17 @@ test.describe("Classic Battle - Manual Click Test", () => {
     await statButtons.first().click();
 
     const handlerEvent = await page.evaluate(async () => {
+      const formatError = (error) => {
+        const message =
+          typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
+        const normalizedMessage = message.toLowerCase();
+        const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
+        return { timedOut: isTimeout, error: message };
+      };
       try {
         return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
       } catch (error) {
-        return { timedOut: true, error: error.message };
+        return formatError(error);
       }
     });
     expect(handlerEvent).toBeTruthy();
@@ -92,10 +113,17 @@ test.describe("Classic Battle - Manual Click Test", () => {
 
     const disableEvent = await page.evaluate(
       async (afterId) => {
+        const formatError = (error) => {
+          const message =
+            typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
+          const normalizedMessage = message.toLowerCase();
+          const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
+          return { timedOut: isTimeout, error: message };
+        };
         try {
           return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
         } catch (error) {
-          return { timedOut: true, error: error.message };
+          return formatError(error);
         }
       },
       handlerEvent?.id ?? null
