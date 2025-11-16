@@ -2550,9 +2550,14 @@ const inspectionApi = {
           }))
         : [];
 
+      const attachedCount =
+        typeof registry.attachedCount === "number" && Number.isFinite(registry.attachedCount)
+          ? registry.attachedCount
+          : stats.length || 0;
+
       return {
         available: true,
-        attachedCount: Number(registry.attachedCount ?? stats.length ?? 0) || 0,
+        attachedCount,
         buttonCount:
           typeof registry.buttonCount === "number" && Number.isFinite(registry.buttonCount)
             ? registry.buttonCount
