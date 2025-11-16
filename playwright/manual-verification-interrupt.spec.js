@@ -53,7 +53,7 @@ async function stubSentryImports(page) {
 
     const basePath = path.join(process.cwd(), allowedPrefix);
     const basePathNormalized = path.resolve(basePath) + path.sep;
-    const filePath = path.join(basePathNormalized, sanitizedRelative);
+    const filePath = path.resolve(basePathNormalized, sanitizedRelative);
 
     if (!filePath.startsWith(basePathNormalized)) {
       await route.abort();
