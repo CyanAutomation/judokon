@@ -26,18 +26,35 @@ async function navigateToBattle(page) {
   await waitForTestApi(page);
 }
 
+const SENTRY_MOCK =
+  "const Sentry = { captureException() {}, withScope(cb) { try { cb?.({ setTag() {}, setExtra() {} }); } catch (e) { console.warn('Sentry mock error:', e); } }, configureScope() {} };";
+
 async function stubSentryImports(page) {
   await page.route("**/src/helpers/classicBattle/stateHandlers/*.js", async (route) => {
     const requestUrl = new URL(route.request().url());
     const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\//, "");
+
+    if (
+      relativePath.includes("..") ||
+      !relativePath.startsWith("src/helpers/classicBattle/stateHandlers/")
+    ) {
+      await route.abort();
+      return;
+    }
+
     const filePath = path.join(process.cwd(), relativePath);
-    let source = await readFile(filePath, "utf8");
+    let source;
+
+    try {
+      source = await readFile(filePath, "utf8");
+    } catch (error) {
+      console.warn(`Failed to read file ${filePath}:`, error.message);
+      await route.abort();
+      return;
+    }
 
     if (source.includes("@sentry/browser")) {
-      source = source.replace(
-        'import * as Sentry from "@sentry/browser";',
-        "const Sentry = { captureException() {}, withScope(cb) { try { cb?.({ setTag() {}, setExtra() {} }); } catch {} }, configureScope() {} };"
-      );
+      source = source.replace('import * as Sentry from "@sentry/browser";', SENTRY_MOCK);
     }
 
     await route.fulfill({ body: source, contentType: "application/javascript" });
