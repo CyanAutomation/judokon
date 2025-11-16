@@ -37,11 +37,24 @@ function initSentryIfNeeded(sentry) {
   try {
     const hub = typeof sentry.getCurrentHub === "function" ? sentry.getCurrentHub() : null;
     const hasClient = typeof hub?.getClient === "function" && Boolean(hub.getClient());
-    if (hasClient || typeof sentry.init !== "function") {
+    if (
+      hasClient ||
+      typeof sentry.init !== "function" ||
+      (typeof sentry.isInitialized === "function" && sentry.isInitialized())
+    ) {
       return sentry;
     }
     const scope = getGlobalScope();
-    const env = typeof process !== "undefined" ? process.env ?? {} : {};
+    const env =
+      typeof process !== "undefined" && process.env
+        ? {
+            SENTRY_DSN: process.env.SENTRY_DSN,
+            VITE_SENTRY_DSN: process.env.VITE_SENTRY_DSN,
+            SENTRY_RELEASE: process.env.SENTRY_RELEASE,
+            VITE_SENTRY_RELEASE: process.env.VITE_SENTRY_RELEASE,
+            SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE,
+          }
+        : {};
     const dsn = scope?.__SENTRY_DSN__ ?? env.SENTRY_DSN ?? env.VITE_SENTRY_DSN;
     if (!dsn) {
       return sentry;
@@ -111,7 +124,7 @@ export function reportSentryError(error, context) {
     }
     loadSentry()
       .then((sentry) => {
-        captureWithSentry(sentry ?? getConfiguredSentry(), error, payload);
+        captureWithSentry(sentry, error, payload);
       })
       .catch(() => {
         /* ignore loader errors */
