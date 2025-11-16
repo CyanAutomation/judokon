@@ -1505,6 +1505,15 @@ function renderStatButtons(store) {
       if (typeof window === "undefined" || !window.__TEST__) {
         return null;
       }
+      if (window.__classicBattleStatButtonListeners) {
+        const existing = window.__classicBattleStatButtonListeners;
+        existing.attachedCount = 0;
+        existing.stats = [];
+        existing.details = [];
+        existing.buttonCount = Array.isArray(STATS) ? STATS.length : 0;
+        existing.updatedAt = Date.now();
+        return existing;
+      }
       const registry = {
         attachedCount: 0,
         stats: [],
