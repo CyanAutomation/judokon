@@ -243,27 +243,29 @@ function removeHistoryPanelEscapeHandler() {
   activeHistoryPanel = null;
 }
 
-function handleHistoryPanelBeforeUnload() {
-  removeHistoryPanelEscapeHandler();
-  if (typeof window !== "undefined") {
-    window.removeEventListener("beforeunload", handleHistoryPanelBeforeUnload);
-    window.removeEventListener("pagehide", handleHistoryPanelBeforeUnload);
-    window.removeEventListener(
-      "visibilitychange",
-      handleHistoryPanelVisibilityChange
-    );
-    historyPanelUnloadHandlerBound = false;
-  }
-}
-
-function handleHistoryPanelVisibilityChange() {
-  if (typeof document === "undefined") {
+function removeHistoryPanelUnloadHandlers() {
+  if (!historyPanelUnloadHandlerBound || typeof window === "undefined") {
     return;
   }
 
-  if (document.visibilityState === "hidden") {
-    handleHistoryPanelBeforeUnload();
+  window.removeEventListener("beforeunload", handleHistoryPanelBeforeUnload);
+  window.removeEventListener("pagehide", handleHistoryPanelBeforeUnload);
+  window.removeEventListener("visibilitychange", handleHistoryPanelVisibilityChange);
+  historyPanelUnloadHandlerBound = false;
+}
+
+function handleHistoryPanelBeforeUnload() {
+  removeHistoryPanelEscapeHandler();
+  removeHistoryPanelUnloadHandlers();
+}
+
+function handleHistoryPanelVisibilityChange() {
+  if (typeof document === "undefined" || document.visibilityState !== "hidden") {
+    return;
   }
+
+  removeHistoryPanelEscapeHandler();
+  removeHistoryPanelUnloadHandlers();
 }
 
 function handleHistoryPanelEscape(event) {
