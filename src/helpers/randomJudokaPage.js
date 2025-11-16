@@ -227,6 +227,25 @@ function addToHistory(historyManager, historyList, judoka) {
  */
 let activeHistoryPanel = null;
 let historyPanelEscapeHandlerBound = false;
+let historyPanelUnloadHandlerBound = false;
+
+function removeHistoryPanelEscapeHandler() {
+  if (!historyPanelEscapeHandlerBound || typeof document === "undefined") {
+    return;
+  }
+
+  document.removeEventListener("keydown", handleHistoryPanelEscape);
+  historyPanelEscapeHandlerBound = false;
+  activeHistoryPanel = null;
+}
+
+function handleHistoryPanelBeforeUnload() {
+  removeHistoryPanelEscapeHandler();
+  if (typeof window !== "undefined") {
+    window.removeEventListener("beforeunload", handleHistoryPanelBeforeUnload);
+    historyPanelUnloadHandlerBound = false;
+  }
+}
 
 function handleHistoryPanelEscape(event) {
   if (event.key === "Escape" && activeHistoryPanel?.open) {
@@ -261,6 +280,11 @@ function bindHistoryPanelInteractions(historyPanel, toggleHistoryBtn) {
   if (!historyPanelEscapeHandlerBound && typeof document !== "undefined") {
     document.addEventListener("keydown", handleHistoryPanelEscape);
     historyPanelEscapeHandlerBound = true;
+  }
+
+  if (!historyPanelUnloadHandlerBound && typeof window !== "undefined") {
+    window.addEventListener("beforeunload", handleHistoryPanelBeforeUnload);
+    historyPanelUnloadHandlerBound = true;
   }
 }
 
