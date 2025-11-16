@@ -243,14 +243,16 @@ Despite implementing all documented fixes:
 **Core Issue**: `selectionInProgress` flag was being cleared in the wrong state handler
 
 **Timeline**:
+
 1. Player selects stat → flag set to "true"
-2. State transitions: `waitingForPlayerAction` → `waitingForPlayerActionExit` → `cooldownEnter` 
+2. State transitions: `waitingForPlayerAction` → `waitingForPlayerActionExit` → `cooldownEnter`
 3. **BUG**: Flag was cleared in `cooldownEnter` (exiting old state)
 4. State continues: `cooldownExit` → `waitingForPlayerActionEnter` (NEW ROUND)
 5. **PROBLEM**: Flag could be cleared before async enable events were processed
 6. Multiple async code paths could then emit `statButtons:enable` and race through the guard checks
 
 **Solution Implemented**:
+
 - Moved flag clearing from `cooldownEnter` to `waitingForPlayerActionEnter`
 - Flag now stays "true" through entire selection→cooldown→next-round cycle
 - Flag cleared only when genuinely entering the NEXT round's `waitingForPlayerAction` state
@@ -296,6 +298,7 @@ Despite implementing all documented fixes:
 ### What The Fix Addresses
 
 **Before Fix**:
+
 - Button selection triggered disable
 - State transitions began
 - Flag cleared in `cooldownEnter` (too early)
@@ -305,6 +308,7 @@ Despite implementing all documented fixes:
 - ❌ Race condition
 
 **After Fix**:
+
 - Button selection triggered disable, flag set to "true"
 - State transitions begin
 - Flag stays "true" through entire cooldown→next-round cycle
@@ -316,6 +320,7 @@ Despite implementing all documented fixes:
 ### Code Change Detail
 
 **Critical addition to `waitingForPlayerActionEnter.js`** (lines 28-36):
+
 ```javascript
 try {
   const container = document.getElementById("stat-buttons");
@@ -348,9 +353,12 @@ This ensures the flag is cleared at the CORRECT time - when entering the NEW rou
 ## APPENDIX: Playwright E2E Test Infrastructure Issues
 
 During validation, Playwright E2E tests failed on test infrastructure issues (not code issues):
+
 - Tests fail waiting for `__TEST_API` to be available
 - Modal buttons not rendering in test environment
 - These are pre-existing test infrastructure issues, not caused by our fix
 - Unit test suite (85 tests) provides sufficient validation that the fix works
+
+```
 
 ```

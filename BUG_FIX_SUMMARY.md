@@ -13,6 +13,7 @@ In Classic Battle, stat selection buttons failed to remain disabled after a play
 **Core Issue**: The `selectionInProgress` flag was being cleared at the wrong point in the state machine lifecycle.
 
 **Problematic Flow**:
+
 1. Player selects stat → flag set to "true"
 2. State machine transitions begin: `waitingForPlayerAction` → `waitingForPlayerActionExit` → `cooldownEnter`
 3. **BUG POINT**: Flag was cleared in `cooldownEnter` (exiting the OLD state)
@@ -30,7 +31,9 @@ In Classic Battle, stat selection buttons failed to remain disabled after a play
 ## Files Modified
 
 ### 1. `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js` (CRITICAL)
+
 **Lines 28-36**: Added flag clearing logic
+
 ```javascript
 try {
   const container = document.getElementById("stat-buttons");
@@ -48,28 +51,33 @@ try {
 ```
 
 ### 2. `src/helpers/classicBattle/view.js`
+
 **Lines 95-101**: Added debug logging to `startRound()` finally block  
 Purpose: Traces flag state during round initialization
 
 ### 3. `src/helpers/classicBattle/setupUIBindings.js`
+
 **Lines 61-103**: Enhanced logging in `statButtons:enable` event handler  
 Purpose: Traces guard check results and enable/disable flows
 
 ### 4. `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js`
+
 **Lines 9-14**: Added debug logging to disable event emission  
 Purpose: Traces disable event flow
 
 ## Validation Results
 
 ### Unit Tests
+
 ```
 ✅ Test Files:  31 passed
-✅ Tests:       85 passed  
+✅ Tests:       85 passed
 ✅ Regressions: 0
 ⏱️  Duration:   61.45 seconds
 ```
 
 ### Code Quality
+
 ```
 ✅ ESLint:      PASS (no warnings/errors)
 ✅ Prettier:    PASS (all files formatted)
@@ -77,7 +85,9 @@ Purpose: Traces disable event flow
 ```
 
 ### Test Coverage
+
 All 85 tests in the classic battle test suite include:
+
 - Round selection and validation
 - Stat selection and keyboard shortcuts
 - Timer functionality (countdown, auto-advance, cooldown)
