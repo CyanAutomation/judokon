@@ -33,16 +33,33 @@ async function stubSentryImports(page) {
   await page.route("**/src/helpers/classicBattle/stateHandlers/*.js", async (route) => {
     const requestUrl = new URL(route.request().url());
     const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\//, "");
+    const allowedPrefix = "src/helpers/classicBattle/stateHandlers/";
+    const normalizedPath = path.posix.normalize(relativePath);
 
     if (
-      relativePath.includes("..") ||
-      !relativePath.startsWith("src/helpers/classicBattle/stateHandlers/")
+      normalizedPath.includes("..") ||
+      normalizedPath !== relativePath ||
+      !normalizedPath.startsWith(allowedPrefix)
     ) {
       await route.abort();
       return;
     }
 
-    const filePath = path.join(process.cwd(), relativePath);
+    const sanitizedRelative = normalizedPath.slice(allowedPrefix.length);
+    if (!sanitizedRelative) {
+      await route.abort();
+      return;
+    }
+
+    const basePath = path.join(process.cwd(), allowedPrefix);
+    const filePath = path.resolve(basePath, sanitizedRelative);
+    const basePathWithSep = basePath.endsWith(path.sep) ? basePath : `${basePath}${path.sep}`;
+
+    if (!filePath.startsWith(basePathWithSep)) {
+      await route.abort();
+      return;
+    }
+
     let source;
 
     try {
