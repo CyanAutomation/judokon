@@ -243,6 +243,12 @@ function removeHistoryPanelEscapeHandler() {
   activeHistoryPanel = null;
 }
 
+/**
+ * Removes all history panel unload listeners and resets the shared bound flag.
+ *
+ * @summary Centralizes cleanup for beforeunload, pagehide, and visibilitychange
+ * listeners that ensure the history panel releases resources on navigation.
+ */
 function removeHistoryPanelUnloadHandlers() {
   if (!historyPanelUnloadHandlerBound || typeof window === "undefined") {
     return;
@@ -260,10 +266,13 @@ function handleHistoryPanelBeforeUnload() {
 }
 
 function handleHistoryPanelVisibilityChange() {
-  if (typeof document === "undefined" || document.visibilityState !== "hidden") {
+  if (typeof document === "undefined" || document.visibilityState === "visible") {
     return;
   }
 
+  // Clean up both escape and unload handlers when the document becomes hidden
+  // instead of delegating to handleHistoryPanelBeforeUnload() to avoid any
+  // potential side effects or recursion within the unload handler.
   removeHistoryPanelEscapeHandler();
   removeHistoryPanelUnloadHandlers();
 }
