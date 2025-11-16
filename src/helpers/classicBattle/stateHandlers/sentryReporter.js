@@ -40,7 +40,7 @@ function initSentryIfNeeded(sentry) {
     if (
       hasClient ||
       typeof sentry.init !== "function" ||
-      (typeof sentry.isInitialized === "function" && sentry.isInitialized())
+      (typeof sentry.isInitialized === "function" && sentry.isInitialized() && hasClient)
     ) {
       return sentry;
     }
@@ -124,7 +124,7 @@ export function reportSentryError(error, context) {
     }
     loadSentry()
       .then((sentry) => {
-        captureWithSentry(sentry, error, payload);
+        captureWithSentry(sentry ?? getConfiguredSentry(), error, payload);
       })
       .catch(() => {
         /* ignore loader errors */
