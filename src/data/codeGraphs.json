@@ -3645,10 +3645,6 @@
       "imports": [],
       "functions": {}
     },
-    "src/components/PlayerInfo.js": {
-      "imports": [],
-      "functions": {}
-    },
     "src/components/Modal.js": {
       "imports": [],
       "functions": {
@@ -4497,10 +4493,6 @@
         "../../src/helpers/battleEngineFacade.js",
         "../utils/testUtils.js"
       ],
-      "functions": {}
-    },
-    "tests/components/PlayerInfo.test.js": {
-      "imports": ["vitest", "../../src/components/PlayerInfo.js"],
       "functions": {}
     },
     "tests/card/judokaZeroId.test.js": {
