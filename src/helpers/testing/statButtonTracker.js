@@ -13,6 +13,9 @@ function createEmptySnapshot() {
 }
 
 function cloneSnapshot(snapshot) {
+  if (!snapshot) {
+    return createEmptySnapshot();
+  }
   return {
     capturedAt: snapshot.capturedAt,
     containerReady: snapshot.containerReady,
