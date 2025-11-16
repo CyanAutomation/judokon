@@ -11,9 +11,12 @@ test.describe("Classic Battle - Button Identity Check", () => {
     });
     await page.goto("/src/pages/battleClassic.html");
 
-    // Start the match via modal
-    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-    await page.getByRole("button", { name: "Medium" }).click();
+    // Start the match via modal when present
+    const mediumButton = page.getByRole("button", { name: "Medium" });
+    if ((await mediumButton.count()) > 0) {
+      await expect(mediumButton).toBeVisible();
+      await mediumButton.click();
+    }
   });
 
   test("check if button element is replaced", async ({ page }) => {
@@ -22,37 +25,23 @@ test.describe("Classic Battle - Button Identity Check", () => {
     await waitForBattleState(page, "waitingForPlayerAction");
     await expect(statButtons.first()).toBeEnabled();
 
-    // Mark the button with a unique ID
-    const buttonId = await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      const id = `btn-${Date.now()}-${Math.random()}`;
-      btn.dataset.uniqueId = id;
+    // Capture the rendered button identity via the test API
+    const initialSnapshot = await page.evaluate(() =>
+      window.__TEST_API.inspect.getStatButtonSnapshot({ refresh: true })
+    );
+    console.log("Initial stat button snapshot:", JSON.stringify(initialSnapshot, null, 2));
 
-      // Also add our own click listener to test
-      let clicked = false;
-      btn.addEventListener("click", () => {
-        clicked = true;
-        window.__ourClickHandlerCalled = true;
-      });
+    expect(initialSnapshot.buttons.length).toBeGreaterThan(0);
+    const trackedButton = initialSnapshot.buttons[0];
 
-      return { id, clicked };
+    // Confirm readiness via deterministic helper
+    const stableSnapshot = await page.evaluate(async () => {
+      await window.__TEST_API.state.waitForStatButtonsReady();
+      return window.__TEST_API.inspect.getStatButtonSnapshot();
     });
 
-    console.log("Initial button ID:", buttonId.id);
-
-    // Wait a moment
-    await page.waitForTimeout(100);
-
-    // Check if the button still has the same ID (i.e., wasn't replaced)
-    const stillSameButton = await page.evaluate((id) => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      return {
-        hasOurId: btn?.dataset?.uniqueId === id,
-        currentId: btn?.dataset?.uniqueId
-      };
-    }, buttonId.id);
-
-    console.log("Still same button:", JSON.stringify(stillSameButton, null, 2));
+    console.log("Stable stat button snapshot:", JSON.stringify(stableSnapshot, null, 2));
+    expect(stableSnapshot.buttons[0]?.id).toBe(trackedButton.id);
 
     // Check if init functions were called
     const initStatButtonsCalled = await page.evaluate(
@@ -68,10 +57,17 @@ test.describe("Classic Battle - Button Identity Check", () => {
 
     // Now click the button
     await statButtons.first().click();
-    await page.waitForTimeout(50);
 
-    // Check if our listener was called
-    const ourHandlerCalled = await page.evaluate(() => window.__ourClickHandlerCalled || false);
+    const snapshotAfterClick = await page.evaluate(async () => {
+      await window.__TEST_API.state.waitForBattleState("roundDecision");
+      return window.__TEST_API.inspect.getStatButtonSnapshot({ refresh: true });
+    });
+
+    console.log(
+      "Snapshot after click:",
+      JSON.stringify({ before: trackedButton, after: snapshotAfterClick.buttons[0] }, null, 2)
+    );
+
     const appHandlerCalled = await page.evaluate(() => window.__statButtonClickCalled || false);
     const uiHelpersHandlerCalled = await page.evaluate(
       () => window.__statButtonClickHandlerTriggered || false
@@ -84,7 +80,6 @@ test.describe("Classic Battle - Button Identity Check", () => {
     );
     const disableCount = await page.evaluate(() => window.__disableStatButtonsCount || 0);
 
-    console.log("Our click handler called:", ourHandlerCalled);
     console.log("App click handler called (battleClassic.init.js):", appHandlerCalled);
     console.log("UIHelpers click handler called (uiHelpers.js):", uiHelpersHandlerCalled);
     console.log("selectStat called disableStatButtons:", selectStatCalledDisable);
@@ -92,14 +87,6 @@ test.describe("Classic Battle - Button Identity Check", () => {
     console.log("Number of buttons passed to disableStatButtons:", disableCount);
 
     // Check if button is still the same after click
-    const afterClickSameButton = await page.evaluate((id) => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      return {
-        hasOurId: btn?.dataset?.uniqueId === id,
-        currentId: btn?.dataset?.uniqueId
-      };
-    }, buttonId.id);
-
-    console.log("After click, still same button:", JSON.stringify(afterClickSameButton, null, 2));
+    expect(snapshotAfterClick.buttons[0]?.id).toBe(trackedButton.id);
   });
 });

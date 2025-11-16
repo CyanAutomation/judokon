@@ -1,10 +1,10 @@
-import * as Sentry from "@sentry/browser";
 import { emitBattleEvent } from "../battleEvents.js";
 import { showEndModal } from "../endModal.js";
 import {
   getScores as getFacadeScores,
   isMatchEnded as facadeIsMatchEnded
 } from "../../battleEngineFacade.js";
+import { reportSentryError } from "./sentryReporter.js";
 
 /**
  * Safely capture errors to Sentry with context.
@@ -13,12 +13,8 @@ import {
  */
 function captureError(error, context = {}) {
   try {
-    if (Sentry?.captureException) {
-      Sentry.captureException(error, { contexts: { error: context } });
-    }
-  } catch {
-    // Silent fallback if Sentry fails
-  }
+    reportSentryError(error, { contexts: { error: context } });
+  } catch {}
 }
 
 /**

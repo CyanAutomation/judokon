@@ -1,4 +1,5 @@
 import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
+import { captureStatButtonSnapshot } from "../testing/statButtonTracker.js";
 
 /**
  * Normalize assorted button collections into a clean array of elements.
@@ -83,6 +84,9 @@ export function enableStatButtons(buttons, container) {
     btn.style.removeProperty("background-color");
   });
   if (container) container.dataset.buttonsReady = "true";
+  try {
+    captureStatButtonSnapshot(buttonArray, container);
+  } catch {}
 }
 
 /**
@@ -107,6 +111,9 @@ export function disableStatButtons(buttons, container) {
     applyDisabledState(btn, true);
   });
   if (container) container.dataset.buttonsReady = "false";
+  try {
+    captureStatButtonSnapshot(buttonArray, container);
+  } catch {}
 }
 
 /**
