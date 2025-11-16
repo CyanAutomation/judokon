@@ -1880,7 +1880,6 @@
     "src/components/Scoreboard.js [getState]": 1,
     "src/components/Scoreboard.js [destroy]": 1,
     "src/components/PreviewToggle.js [PreviewToggle]": 1,
-    "src/components/PlayerInfo.js [PlayerInfo]": 1,
     "src/components/Modal.js [Modal]": 1,
     "src/components/Modal.js [createModal]": 1,
     "src/components/JudokaCard.js [JudokaCard]": 1,

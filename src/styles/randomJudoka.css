@@ -1,3 +1,4 @@
+/* Static header label for the player indicator */
 .player-info {
   justify-self: start;
   padding-left: var(--space-sm);

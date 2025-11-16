@@ -187,7 +187,7 @@ instantly without movement.
 
 **Contents:**
 
-- **Player Info Module**: “You” + small avatar + status (e.g., “Your Turn” indicator).
+- **Player Info Indicator**: Static `<span class="player-info">Player</span>` label pinned to the header (no custom element or runtime registration).
 - **Optional Timer** (future feature): If there’s a time limit per draw.
 
 **Why**: Clear identification of player status.
