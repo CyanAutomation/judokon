@@ -234,7 +234,11 @@ function removeHistoryPanelEscapeHandler() {
     return;
   }
 
-  document.removeEventListener("keydown", handleHistoryPanelEscape);
+  try {
+    document.removeEventListener("keydown", handleHistoryPanelEscape);
+  } catch (error) {
+    console.warn("Failed to remove history panel escape handler:", error);
+  }
   historyPanelEscapeHandlerBound = false;
   activeHistoryPanel = null;
 }
@@ -243,7 +247,22 @@ function handleHistoryPanelBeforeUnload() {
   removeHistoryPanelEscapeHandler();
   if (typeof window !== "undefined") {
     window.removeEventListener("beforeunload", handleHistoryPanelBeforeUnload);
+    window.removeEventListener("pagehide", handleHistoryPanelBeforeUnload);
+    window.removeEventListener(
+      "visibilitychange",
+      handleHistoryPanelVisibilityChange
+    );
     historyPanelUnloadHandlerBound = false;
+  }
+}
+
+function handleHistoryPanelVisibilityChange() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  if (document.visibilityState === "hidden") {
+    handleHistoryPanelBeforeUnload();
   }
 }
 
@@ -284,6 +303,11 @@ function bindHistoryPanelInteractions(historyPanel, toggleHistoryBtn) {
 
   if (!historyPanelUnloadHandlerBound && typeof window !== "undefined") {
     window.addEventListener("beforeunload", handleHistoryPanelBeforeUnload);
+    window.addEventListener("pagehide", handleHistoryPanelBeforeUnload);
+    window.addEventListener(
+      "visibilitychange",
+      handleHistoryPanelVisibilityChange
+    );
     historyPanelUnloadHandlerBound = true;
   }
 }
