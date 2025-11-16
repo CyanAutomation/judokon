@@ -1011,6 +1011,7 @@ export function initStatButtons(store) {
   if (!container) throw new Error("initStatButtons: #stat-buttons missing");
   const buttons = Array.from(container.querySelectorAll("button"));
   if (buttons.length === 0) {
+    guard(() => console.warn("[uiHelpers] #stat-buttons has no buttons"));
     try {
       resolveStatButtonsReady();
     } catch {}
