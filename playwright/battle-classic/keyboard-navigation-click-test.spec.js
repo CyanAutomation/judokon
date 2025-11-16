@@ -63,15 +63,16 @@ test.describe("Classic Battle - Manual Click Test", () => {
     // Programmatically click the first button
     await statButtons.first().click();
 
-    const handlerEvent = await page.evaluate(async () => {
-      return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
-    });
+    const handlerEvent = await page.evaluate(() =>
+      window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 })
+    );
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
-    const disableEvent = await page.evaluate(async (afterId) => {
-      return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
-    }, handlerEvent?.id ?? null);
+    const disableEvent = await page.evaluate(
+      (afterId) => window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId }),
+      handlerEvent?.id ?? null
+    );
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
 
@@ -87,15 +88,16 @@ test.describe("Classic Battle - Manual Click Test", () => {
     // Use Playwright's click method
     await statButtons.first().click();
 
-    const handlerEvent = await page.evaluate(async () => {
-      return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
-    });
+    const handlerEvent = await page.evaluate(() =>
+      window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 })
+    );
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
-    const disableEvent = await page.evaluate(async (afterId) => {
-      return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
-    }, handlerEvent?.id ?? null);
+    const disableEvent = await page.evaluate(
+      (afterId) => window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId }),
+      handlerEvent?.id ?? null
+    );
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
 
