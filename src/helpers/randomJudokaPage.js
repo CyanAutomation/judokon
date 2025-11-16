@@ -11,7 +11,7 @@
  * 2. Append a card placeholder template to the `#card-container`.
  * 3. Preload judoka and gokyo data using `preloadRandomCardData()`.
  * 4. Create a `historyManager` to track drawn cards.
- * 5. Build the slide-out history panel and its toggle button using `buildHistoryPanel()`.
+ * 5. Wire the static `<details id="history-panel">` disclosure and toggle button.
  * 6. Reference the pre-rendered "Draw Card!" button inside the `#draw-controls` region.
  * 7. Define the `onSelect` callback to add drawn judoka to the history manager.
  * 8. Attach a `click` event listener to the "Draw Card!" button that calls `displayCard()` when clicked.
@@ -132,7 +132,7 @@ export async function initFeatureFlagState() {
 }
 
 /**
- * Build a slide-out history panel for previously drawn cards.
+ * Retrieves references to the slide-out history panel for previously drawn cards.
  *
  * @pseudocode
  * 1. Query the static #history-panel details element from the DOM.
@@ -212,32 +212,55 @@ function addToHistory(historyManager, historyList, judoka) {
 }
 
 /**
- * Toggles the history panel details element and coordinates focus management.
+ * Binds focus management and Escape handling to the history details element.
  *
- * @summary Uses the native details element's open state to show/hide the history panel
- * and ensures proper focus management on open/close.
+ * @summary Keeps focus on the summary toggle, and closes the panel when Escape
+ * is pressed anywhere on the page while the disclosure is open.
  *
  * @pseudocode
- * 1. If the details element is closed:
- *    a. Set open to true to show the panel.
- *    b. Queue a microtask to focus the summary element.
- * 2. Otherwise set open to false to hide the panel.
- * 3. On close, restore focus to the summary (toggle button).
+ * 1. Attach a `toggle` listener that returns focus to the summary on open/close.
+ * 2. Track the active history panel for Escape handling.
+ * 3. Lazily bind a single document-level Escape listener to close the panel.
  *
  * @param {HTMLDetailsElement} historyPanel - The details panel element
  * @param {HTMLElement} toggleHistoryBtn - The summary button element
  */
-function toggleHistory(historyPanel, toggleHistoryBtn) {
-  if (!historyPanel.open) {
-    historyPanel.open = true;
+let activeHistoryPanel = null;
+let historyPanelEscapeHandlerBound = false;
+
+function handleHistoryPanelEscape(event) {
+  if (event.key === "Escape" && activeHistoryPanel?.open) {
+    event.preventDefault();
+    activeHistoryPanel.open = false;
+  }
+}
+
+function bindHistoryPanelInteractions(historyPanel, toggleHistoryBtn) {
+  if (!historyPanel || !toggleHistoryBtn) {
+    return;
+  }
+
+  if (toggleHistoryBtn.tabIndex < 0) {
+    toggleHistoryBtn.tabIndex = 0;
+  }
+
+  let focusScheduled = false;
+  const focusToggle = () => {
+    if (focusScheduled) return;
+    focusScheduled = true;
     runMicrotask(() => {
+      focusScheduled = false;
       toggleHistoryBtn.focus();
     });
-  } else {
-    historyPanel.open = false;
-    runMicrotask(() => {
-      toggleHistoryBtn.focus();
-    });
+  };
+
+  historyPanel.addEventListener("toggle", focusToggle);
+  toggleHistoryBtn.addEventListener("click", focusToggle);
+  activeHistoryPanel = historyPanel;
+
+  if (!historyPanelEscapeHandlerBound && typeof document !== "undefined") {
+    document.addEventListener("keydown", handleHistoryPanelEscape);
+    historyPanelEscapeHandlerBound = true;
   }
 }
 
@@ -390,7 +413,7 @@ async function displayCard({
  * @pseudocode
  * 1. Initialize feature flags and read motion preference.
  * 2. Render placeholder, preload judoka/gokyo data and compute `dataLoaded`.
- * 3. Get history panel references from static DOM and wire the draw button click to `displayCard`.
+ * 3. Get history panel references from the static DOM and wire listeners to it.
  * 4. Wire history toggle and feature-flag-driven debug panels.
  * 5. If data failed to load, render an error and disable draw button.
  * 6. Initialize tooltips.
@@ -504,7 +527,7 @@ export async function setupRandomJudokaPage() {
     });
   });
 
-  toggleHistoryBtn.addEventListener("click", () => toggleHistory(historyPanel, toggleHistoryBtn));
+  bindHistoryPanelInteractions(historyPanel, toggleHistoryBtn);
 
   featureFlagsEmitter.addEventListener("change", () => {
     const motionEnabled = getSetting("motionEffects") !== false;
