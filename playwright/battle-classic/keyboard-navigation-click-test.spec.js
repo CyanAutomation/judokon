@@ -39,6 +39,14 @@ test.describe("Classic Battle - Manual Click Test", () => {
 
   });
 
+  const formatError = (error) => {
+    const message =
+      typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
+    const normalizedMessage = message.toLowerCase();
+    const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
+    return { timedOut: isTimeout, error: message };
+  };
+
   test("programmatic click works", async ({ page }) => {
     // Wait for stat buttons to be enabled
     const statButtons = page.getByTestId("stat-button");
@@ -47,40 +55,28 @@ test.describe("Classic Battle - Manual Click Test", () => {
     // Programmatically click the first button
     await statButtons.first().click();
 
-    const handlerEvent = await page.evaluate(async () => {
-      const formatError = (error) => {
-        const message =
-          typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
-        const normalizedMessage = message.toLowerCase();
-        const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
-        return { timedOut: isTimeout, error: message };
-      };
-      try {
+    let handlerEvent;
+    try {
+      handlerEvent = await page.evaluate(async () => {
         return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
-      } catch (error) {
-        return formatError(error);
-      }
-    });
+      });
+    } catch (error) {
+      handlerEvent = formatError(error);
+    }
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
-    const disableEvent = await page.evaluate(
-      async (afterId) => {
-        const formatError = (error) => {
-          const message =
-            typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
-          const normalizedMessage = message.toLowerCase();
-          const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
-          return { timedOut: isTimeout, error: message };
-        };
-        try {
+    let disableEvent;
+    try {
+      disableEvent = await page.evaluate(
+        async (afterId) => {
           return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
-        } catch (error) {
-          return formatError(error);
-        }
-      },
-      handlerEvent?.id ?? null
-    );
+        },
+        handlerEvent?.id ?? null
+      );
+    } catch (error) {
+      disableEvent = formatError(error);
+    }
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
 
@@ -94,40 +90,28 @@ test.describe("Classic Battle - Manual Click Test", () => {
     // Use Playwright's click method
     await statButtons.first().click();
 
-    const handlerEvent = await page.evaluate(async () => {
-      const formatError = (error) => {
-        const message =
-          typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
-        const normalizedMessage = message.toLowerCase();
-        const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
-        return { timedOut: isTimeout, error: message };
-      };
-      try {
+    let handlerEvent;
+    try {
+      handlerEvent = await page.evaluate(async () => {
         return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
-      } catch (error) {
-        return formatError(error);
-      }
-    });
+      });
+    } catch (error) {
+      handlerEvent = formatError(error);
+    }
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
-    const disableEvent = await page.evaluate(
-      async (afterId) => {
-        const formatError = (error) => {
-          const message =
-            typeof error?.message === "string" ? error.message : String(error ?? "unknown error");
-          const normalizedMessage = message.toLowerCase();
-          const isTimeout = normalizedMessage.includes("timeout") || error?.name === "TimeoutError";
-          return { timedOut: isTimeout, error: message };
-        };
-        try {
+    let disableEvent;
+    try {
+      disableEvent = await page.evaluate(
+        async (afterId) => {
           return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
-        } catch (error) {
-          return formatError(error);
-        }
-      },
-      handlerEvent?.id ?? null
-    );
+        },
+        handlerEvent?.id ?? null
+      );
+    } catch (error) {
+      disableEvent = formatError(error);
+    }
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
 
