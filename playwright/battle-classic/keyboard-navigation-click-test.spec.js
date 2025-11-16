@@ -48,14 +48,22 @@ test.describe("Classic Battle - Manual Click Test", () => {
     await statButtons.first().click();
 
     const handlerEvent = await page.evaluate(async () => {
-      return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
+      try {
+        return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
+      } catch (error) {
+        return { timedOut: true, error: error.message };
+      }
     });
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
     const disableEvent = await page.evaluate(
       async (afterId) => {
-        return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
+        try {
+          return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
+        } catch (error) {
+          return { timedOut: true, error: error.message };
+        }
       },
       handlerEvent?.id ?? null
     );
@@ -73,14 +81,22 @@ test.describe("Classic Battle - Manual Click Test", () => {
     await statButtons.first().click();
 
     const handlerEvent = await page.evaluate(async () => {
-      return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
+      try {
+        return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
+      } catch (error) {
+        return { timedOut: true, error: error.message };
+      }
     });
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
     const disableEvent = await page.evaluate(
       async (afterId) => {
-        return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
+        try {
+          return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
+        } catch (error) {
+          return { timedOut: true, error: error.message };
+        }
       },
       handlerEvent?.id ?? null
     );
