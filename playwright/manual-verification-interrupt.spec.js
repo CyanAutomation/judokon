@@ -1,98 +1,134 @@
+import path from "node:path";
+import { readFile } from "node:fs/promises";
 import { test, expect } from "./fixtures/commonSetup.js";
+import {
+  waitForBattleReady,
+  waitForBattleState,
+  waitForTestApi
+} from "./helpers/battleStateHelper.js";
+import { dispatchBattleEvent, readCountdown } from "./helpers/battleApiHelper.js";
+
+const BATTLE_PAGE_URL = "/src/pages/battleClassic.html";
+const PLAYER_ACTION_STATE = "waitingForPlayerAction";
+
+async function navigateToBattle(page) {
+  await stubSentryImports(page);
+
+  await page.addInitScript(() => {
+    window.__FF_OVERRIDES = {
+      ...(window.__FF_OVERRIDES || {}),
+      enableTestMode: true,
+      showRoundSelectModal: true
+    };
+  });
+
+  await page.goto(BATTLE_PAGE_URL);
+  await waitForTestApi(page);
+}
+
+async function stubSentryImports(page) {
+  await page.route("**/src/helpers/classicBattle/stateHandlers/*.js", async (route) => {
+    const requestUrl = new URL(route.request().url());
+    const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\//, "");
+    const filePath = path.join(process.cwd(), relativePath);
+    let source = await readFile(filePath, "utf8");
+
+    if (source.includes("@sentry/browser")) {
+      source = source.replace(
+        'import * as Sentry from "@sentry/browser";',
+        "const Sentry = { captureException() {}, withScope(cb) { try { cb?.({ setTag() {}, setExtra() {} }); } catch {} }, configureScope() {} };"
+      );
+    }
+
+    await route.fulfill({ body: source, contentType: "application/javascript" });
+  });
+}
+
+async function launchClassicBattle(page) {
+  await navigateToBattle(page);
+
+  const quickButton = page.getByRole("button", { name: "Quick" });
+  await expect(quickButton).toBeVisible();
+  await quickButton.click();
+
+  await waitForBattleReady(page, { allowFallback: false });
+}
 
 test.describe("Manual verification: Interrupt flow and cooldown", () => {
   test("should handle interrupt round and progress to cooldown without stalling", async ({
     page
   }) => {
-    // Navigate to the classic battle page
-    await page.goto("http://127.0.0.1:5000/src/pages/battleClassic.html");
+    await launchClassicBattle(page);
 
-    // Wait for the page to load
-    await page.waitForLoadState("networkidle");
+    await waitForBattleState(page, PLAYER_ACTION_STATE, {
+      timeout: 10_000,
+      allowFallback: false
+    });
 
-    // Get the state display element (if available for debugging)
-    let stateElement = await page.locator("body").textContent();
-    console.log("Initial page state:", stateElement?.substring(0, 100));
+    const interruptResult = await dispatchBattleEvent(page, "interrupt", {
+      reason: "manual verification pause"
+    });
+    expect(interruptResult.ok).toBe(true);
 
-    // Start the match
-    // Look for any button or input that initiates the battle
-    const buttons = await page.locator("button").all();
-    console.log(`Found ${buttons.length} buttons on page`);
+    await waitForBattleState(page, "cooldown", { timeout: 10_000, allowFallback: false });
 
-    // Try to interact with the page to start a battle
-    // Look for Start, Begin, or similar buttons
-    const startButton = page
-      .locator('button:has-text("Start")')
-      .or(page.locator('button:has-text("Begin")'))
-      .or(page.locator('button:has-text("Play")'));
+    await expect
+      .poll(async () => {
+        return await readCountdown(page);
+      })
+      .not.toBeNull();
 
-    const startButtonCount = await startButton.count();
-    if (startButtonCount > 0) {
-      console.log("Found start button, clicking...");
-      await startButton.first().click();
-      await page.waitForTimeout(1000);
-    }
-
-    // Try to locate the battle interface elements
-    const roundMessage = page.locator("#round-message");
-    const roundText = await roundMessage.textContent().catch(() => "");
-    console.log("Round message:", roundText);
-
-    // Verify that the page is interactive
-    const pageContent = await page.locator("body").innerHTML();
-    const hasClassicBattle = pageContent.includes("classic") || pageContent.includes("battle");
-    expect(hasClassicBattle).toBeTruthy();
-
-    console.log("✓ Page loaded successfully");
+    await waitForBattleState(page, PLAYER_ACTION_STATE, {
+      timeout: 10_000,
+      allowFallback: false
+    });
   });
 
   test("should expose debug state when available", async ({ page }) => {
-    await page.goto("http://127.0.0.1:5000/src/pages/battleClassic.html");
-    await page.waitForLoadState("networkidle");
+    await navigateToBattle(page);
 
-    // Try to access debug state through window object
-    const debugState = await page
-      .evaluate(() => {
-        // window.__DEBUG_STATE__ may not exist
-        return (typeof window !== "undefined" && window.__DEBUG_STATE__) || null;
-      })
-      .catch(() => null);
+    const diagnostics = await page.evaluate(() => {
+      const api = window.__TEST_API ?? null;
+      return {
+        hasStateApi: typeof api?.state === "object", // core bridge
+        hasInitHelper: typeof api?.init?.waitForBattleReady === "function",
+        hasDispatch: typeof api?.state?.dispatchBattleEvent === "function",
+        hasStateGetter: typeof api?.state?.getBattleState === "function"
+      };
+    });
 
-    console.log("Debug state available:", !!debugState);
-
-    // Check if the page has battle-related content
-    const hasContent = await page.locator("body").textContent();
-    expect(hasContent?.length || 0).toBeGreaterThan(0);
-
-    console.log("✓ Battle page loaded and responsive");
+    expect(diagnostics.hasStateApi).toBe(true);
+    expect(diagnostics.hasInitHelper).toBe(true);
+    expect(diagnostics.hasDispatch).toBe(true);
+    expect(diagnostics.hasStateGetter).toBe(true);
   });
 
   test("should verify interrupt functionality integrates without errors", async ({ page }) => {
-    await page.goto("http://127.0.0.1:5000/src/pages/battleClassic.html");
-
-    // Monitor console messages for errors
-    const consoleMessages = [];
+    const consoleErrors = [];
     page.on("console", (msg) => {
       if (msg.type() === "error") {
-        consoleMessages.push(`ERROR: ${msg.text()}`);
+        consoleErrors.push(msg.text());
       }
     });
 
-    await page.waitForLoadState("networkidle");
+    await launchClassicBattle(page);
 
-    // Check for any JavaScript errors
-    const errors = await page
-      .evaluate(() => {
-        return (typeof window !== "undefined" && window.__ERRORS__) || [];
-      })
-      .catch(() => []);
+    await waitForBattleState(page, PLAYER_ACTION_STATE, {
+      timeout: 10_000,
+      allowFallback: false
+    });
 
-    console.log("Logged errors:", errors.length > 0 ? errors : "None");
+    const interruptResult = await dispatchBattleEvent(page, "interrupt", {
+      reason: "console guard"
+    });
+    expect(interruptResult.ok).toBe(true);
 
-    // The page should load without immediate crashes
-    const html = await page.content();
-    expect(html.length).toBeGreaterThan(100);
+    await waitForBattleState(page, "cooldown", { timeout: 10_000, allowFallback: false });
+    await waitForBattleState(page, PLAYER_ACTION_STATE, {
+      timeout: 10_000,
+      allowFallback: false
+    });
 
-    console.log("✓ Page loaded without critical errors");
+    expect(consoleErrors).toEqual([]);
   });
 });
