@@ -4,6 +4,7 @@ import "./promises.js";
 import "./roundUI.js";
 import "./roundCycleHistoryTracker.js";
 import "../domReady.js";
+import "./statButtonTestSignals.js";
 
 import { ClassicBattleController } from "./controller.js";
 import { ClassicBattleView } from "./view.js";
