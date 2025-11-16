@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/browser";
 import {
   recordEntry,
   resolveSelectionIfPresent,
@@ -10,6 +9,7 @@ import { emitBattleEvent } from "../battleEvents.js";
 import { guard, guardAsync } from "../guard.js";
 import { handleRoundError } from "../handleRoundError.js";
 import { debugLog } from "../debugLog.js";
+import { reportSentryError } from "./sentryReporter.js";
 
 /**
  * onEnter handler for the `roundDecision` state.
@@ -59,7 +59,7 @@ export async function roundDecisionEnter(machine) {
     } catch (err) {
       cancel();
 
-      Sentry.captureException(err, {
+      reportSentryError(err, {
         contexts: {
           location: "roundDecisionEnter",
           round: { playerChoice: store.playerChoice }
@@ -78,7 +78,7 @@ export async function roundDecisionEnter(machine) {
       }
     }
   } catch (error) {
-    Sentry.captureException(error, {
+    reportSentryError(error, {
       contexts: { location: "roundDecisionEnter" }
     });
   }

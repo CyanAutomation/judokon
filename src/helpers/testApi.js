@@ -29,6 +29,7 @@ import {
   setPointsToWin as facadeSetPointsToWin
 } from "./battleEngineFacade.js";
 import { setTestMode } from "./testModeUtils.js";
+import { readStatButtonSnapshot, refreshStatButtonSnapshotFromDom } from "./testing/statButtonTracker.js";
 
 const FRAME_DELAY_MS = 16;
 
@@ -2361,6 +2362,25 @@ const inspectionApi = {
       return isWindowAvailable() ? window.battleStore : null;
     } catch {
       return null;
+    }
+  },
+
+  /**
+   * Get a snapshot of the rendered stat buttons, including stable identity tokens.
+   *
+   * @param {{ refresh?: boolean }} [options] - Optional behavior overrides.
+   * @param {boolean} [options.refresh=false] - When true, re-queries the DOM before returning.
+   * @returns {{ capturedAt: number|null, containerReady: boolean|null, buttonCount: number, buttons: Array<{ id: string, stat: string|null, disabled: boolean, ariaDisabled: boolean, selected: boolean, tabIndex: number|null, text: string, isConnected: boolean|null, testId: string|null }> }}
+   *   Snapshot data for assertions.
+   */
+  getStatButtonSnapshot(options = {}) {
+    const normalizedOptions =
+      options && typeof options === "object" ? options : { refresh: false };
+    const refresh = normalizedOptions.refresh === true;
+    try {
+      return refresh ? refreshStatButtonSnapshotFromDom() : readStatButtonSnapshot();
+    } catch {
+      return { capturedAt: null, containerReady: null, buttonCount: 0, buttons: [] };
     }
   },
 

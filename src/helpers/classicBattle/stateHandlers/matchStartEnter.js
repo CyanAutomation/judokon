@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/browser";
 import { emitBattleEvent } from "../battleEvents.js";
 import { debugLog } from "../debugLog.js";
+import { reportSentryError } from "./sentryReporter.js";
 
 /**
  * onEnter handler for the `matchStart` state.
@@ -35,7 +35,7 @@ export async function matchStartEnter(machine) {
 
     await machine.dispatch("ready", { initial: true });
   } catch (error) {
-    Sentry.captureException(error, {
+    reportSentryError(error, {
       contexts: { location: "matchStartEnter" }
     });
   }
