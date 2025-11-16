@@ -47,6 +47,14 @@ test.describe("Classic Battle - Manual Click Test", () => {
     return { timedOut: isTimeout, error: message };
   };
 
+  const handleEvaluateError = (error) => {
+    const formattedError = formatError(error);
+    if (!formattedError.timedOut) {
+      throw error;
+    }
+    return formattedError;
+  };
+
   test("programmatic click works", async ({ page }) => {
     // Wait for stat buttons to be enabled
     const statButtons = page.getByTestId("stat-button");
@@ -61,7 +69,7 @@ test.describe("Classic Battle - Manual Click Test", () => {
         return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
       });
     } catch (error) {
-      handlerEvent = formatError(error);
+      handlerEvent = handleEvaluateError(error);
     }
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
@@ -75,7 +83,7 @@ test.describe("Classic Battle - Manual Click Test", () => {
         handlerEvent?.id ?? null
       );
     } catch (error) {
-      disableEvent = formatError(error);
+      disableEvent = handleEvaluateError(error);
     }
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
@@ -96,7 +104,7 @@ test.describe("Classic Battle - Manual Click Test", () => {
         return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
       });
     } catch (error) {
-      handlerEvent = formatError(error);
+      handlerEvent = handleEvaluateError(error);
     }
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
@@ -110,7 +118,7 @@ test.describe("Classic Battle - Manual Click Test", () => {
         handlerEvent?.id ?? null
       );
     } catch (error) {
-      disableEvent = formatError(error);
+      disableEvent = handleEvaluateError(error);
     }
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
