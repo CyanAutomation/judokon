@@ -2495,6 +2495,64 @@ const inspectionApi = {
   },
 
   /**
+   * Read instrumentation describing stat button listener attachments.
+   * @returns {{ available: boolean, attachedCount: number, buttonCount: number|null, stats: string[], details: Array<{stat: string|null, datasetStat: string|null, label: string|null}>, updatedAt: number|null }}
+   */
+  getStatButtonListenerSnapshot() {
+    const fallback = {
+      available: false,
+      attachedCount: 0,
+      buttonCount: null,
+      stats: [],
+      details: [],
+      updatedAt: null
+    };
+
+    try {
+      if (!isWindowAvailable()) {
+        return fallback;
+      }
+
+      const registry = window.__classicBattleStatButtonListeners;
+      if (!registry) {
+        return fallback;
+      }
+
+      const stats = Array.isArray(registry.stats)
+        ? registry.stats.map((value) => String(value))
+        : [];
+
+      const details = Array.isArray(registry.details)
+        ? registry.details.map((entry) => ({
+            stat: typeof entry?.stat === "string" ? entry.stat : null,
+            datasetStat: typeof entry?.datasetStat === "string" ? entry.datasetStat : null,
+            label: typeof entry?.label === "string" ? entry.label : null
+          }))
+        : [];
+
+      return {
+        available: true,
+        attachedCount: Number(registry.attachedCount ?? stats.length ?? 0) || 0,
+        buttonCount:
+          typeof registry.buttonCount === "number" && Number.isFinite(registry.buttonCount)
+            ? registry.buttonCount
+            : null,
+        stats,
+        details,
+        updatedAt:
+          typeof registry.updatedAt === "number" && Number.isFinite(registry.updatedAt)
+            ? registry.updatedAt
+            : null
+      };
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("testApi.inspect.getStatButtonListenerSnapshot failed", error);
+      }
+      return fallback;
+    }
+  },
+
+  /**
    * Determine which stat currently favours the player.
    * @param {{ requirePositiveDelta?: boolean }} [options]
    * @returns {{ key: string|null, normalizedKey: string|null, player: number|null, opponent: number|null, delta: number|null }}
