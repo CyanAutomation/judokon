@@ -132,7 +132,7 @@ function waitForStatButtonEventInternal(options = {}) {
 
   const timeoutMs = Number.isFinite(timeout) && timeout > 0 ? Number(timeout) : 1000;
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let finished = false;
     let timeoutId;
     let unsubscribe;
@@ -154,13 +154,7 @@ function waitForStatButtonEventInternal(options = {}) {
       if (finished) return;
       finished = true;
       cleanup();
-      if (timedOut) {
-        const error = new Error(`Timeout waiting for stat button event after ${timeoutMs}ms`);
-        error.code = "STAT_BUTTON_TEST_TIMEOUT";
-        reject(error);
-        return;
-      }
-      resolve(serializeEvent(event, false));
+      resolve(serializeEvent(event, timedOut));
     };
 
     const immediate = findMatchingEvent(typeSet, minId);
