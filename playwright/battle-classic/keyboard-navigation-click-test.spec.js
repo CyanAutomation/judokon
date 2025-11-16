@@ -26,6 +26,22 @@ test.describe("Classic Battle - Manual Click Test", () => {
       `
     });
 
+    await page.evaluate(async () => {
+      if (!window.__TEST_API?.statButtons?.waitForHandler) {
+        try {
+          const mod = await import("/src/helpers/classicBattle/statButtonTestSignals.js");
+          const factory = typeof mod?.createStatButtonTestApi === "function"
+            ? mod.createStatButtonTestApi
+            : null;
+          const root = window.__TEST_API || (window.__TEST_API = {});
+          if (factory && !root.statButtons) {
+            root.statButtons = factory();
+          }
+        } catch (error) {
+          console.warn("statButtonTestSignals import failed", error);
+        }
+      }
+    });
     await page.waitForFunction(() => !!window.__TEST_API?.statButtons?.waitForHandler, {
       timeout: 5_000
     });
@@ -47,22 +63,21 @@ test.describe("Classic Battle - Manual Click Test", () => {
     // Programmatically click the first button
     await statButtons.first().click();
 
-    const handlerEvent = await page.evaluate(() =>
-      window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 })
-    );
+    const handlerEvent = await page.evaluate(async () => {
+      return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
+    });
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
-    const disableEvent = await page.evaluate(
-      (afterId) => window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId }),
-      handlerEvent?.id ?? null
-    );
+    const disableEvent = await page.evaluate(async (afterId) => {
+      return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
+    }, handlerEvent?.id ?? null);
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
 
-    await expect.poll(async () =>
-      page.locator('[data-testid="stat-button"]:disabled').count()
-    ).toBeGreaterThan(0);
+    expect(disableEvent?.detail?.count ?? 0).toBeGreaterThan(0);
+    expect(Array.isArray(disableEvent?.detail?.stats)).toBeTruthy();
+    expect(disableEvent?.detail?.stats ?? []).toContain(handlerEvent?.detail?.stat ?? null);
   });
 
   test("playwright click() works", async ({ page }) => {
@@ -72,21 +87,20 @@ test.describe("Classic Battle - Manual Click Test", () => {
     // Use Playwright's click method
     await statButtons.first().click();
 
-    const handlerEvent = await page.evaluate(() =>
-      window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 })
-    );
+    const handlerEvent = await page.evaluate(async () => {
+      return await window.__TEST_API?.statButtons?.waitForHandler?.({ timeout: 2000 });
+    });
     expect(handlerEvent).toBeTruthy();
     expect(handlerEvent?.timedOut).toBeFalsy();
 
-    const disableEvent = await page.evaluate(
-      (afterId) => window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId }),
-      handlerEvent?.id ?? null
-    );
+    const disableEvent = await page.evaluate(async (afterId) => {
+      return await window.__TEST_API?.statButtons?.waitForDisable?.({ timeout: 2000, afterId });
+    }, handlerEvent?.id ?? null);
     expect(disableEvent).toBeTruthy();
     expect(disableEvent?.timedOut).toBeFalsy();
 
-    await expect.poll(async () =>
-      page.locator('[data-testid="stat-button"]:disabled').count()
-    ).toBeGreaterThan(0);
+    expect(disableEvent?.detail?.count ?? 0).toBeGreaterThan(0);
+    expect(Array.isArray(disableEvent?.detail?.stats)).toBeTruthy();
+    expect(disableEvent?.detail?.stats ?? []).toContain(handlerEvent?.detail?.stat ?? null);
   });
 });

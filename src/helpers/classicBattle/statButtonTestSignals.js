@@ -130,7 +130,9 @@ function waitForStatButtonEventInternal(options = {}) {
     Array.isArray(types) && types.length > 0 ? new Set(types.map((value) => String(value))) : null;
   const minId = Number.isFinite(afterId) ? Number(afterId) : 0;
 
-  return new Promise((resolve) => {
+  const timeoutMs = Number.isFinite(timeout) && timeout > 0 ? Number(timeout) : 1000;
+
+  return new Promise((resolve, reject) => {
     let finished = false;
     let timeoutId;
     let unsubscribe;
@@ -152,7 +154,13 @@ function waitForStatButtonEventInternal(options = {}) {
       if (finished) return;
       finished = true;
       cleanup();
-      resolve(serializeEvent(event, timedOut));
+      if (timedOut) {
+        const error = new Error(`Timeout waiting for stat button event after ${timeoutMs}ms`);
+        error.code = "STAT_BUTTON_TEST_TIMEOUT";
+        reject(error);
+        return;
+      }
+      resolve(serializeEvent(event, false));
     };
 
     const immediate = findMatchingEvent(typeSet, minId);
@@ -167,7 +175,6 @@ function waitForStatButtonEventInternal(options = {}) {
       }
     });
 
-    const timeoutMs = Number.isFinite(timeout) && timeout > 0 ? Number(timeout) : 1000;
     timeoutId = setTimeout(() => finish(null, true), timeoutMs);
   });
 }

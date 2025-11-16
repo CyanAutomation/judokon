@@ -39,6 +39,7 @@ import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { initDebugFlagHud } from "../helpers/debugFlagHud.js";
+import { emitStatButtonTestEvent } from "../helpers/classicBattle/statButtonTestSignals.js";
 
 function updateTimerFallback(value) {
   try {
@@ -1447,6 +1448,13 @@ async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
   window.__statButtonClickCalled = true; // Track for debugging
   if (!btn || btn.disabled) return;
+  try {
+    const statName = typeof stat === "string" ? stat : stat != null ? String(stat) : null;
+    emitStatButtonTestEvent("handler", {
+      stat: statName,
+      buttonStat: btn?.dataset?.stat ?? null
+    });
+  } catch {}
   const container =
     document.getElementById("stat-buttons") ??
     (btn instanceof HTMLElement ? btn.parentElement : null);
