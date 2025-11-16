@@ -25,6 +25,7 @@ import {
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel as updateDebugPanelImpl, setDebugPanelEnabled } from "./debugPanel.js";
+import { emitStatButtonTestEvent } from "./statButtonTestSignals.js";
 /**
  * Re-export of updateDebugPanel from debugPanel.js
 /**
@@ -744,6 +745,14 @@ export function selectStat(store, stat) {
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
+  try {
+    emitStatButtonTestEvent("handler", {
+      stat: stat ? String(stat) : null,
+      label,
+      buttonId: btn?.id ?? null,
+      source: "selectStat"
+    });
+  } catch {}
   // best-effort visual state
   try {
     const container =
