@@ -1,0 +1,20 @@
+{
+  "inputs": [
+    "scripts/playwrightServer.js",
+    "src/helpers/classicBattle/statButtons.js",
+    "src/helpers/testApi.js",
+    "src/helpers/classicBattle/bootstrap.js",
+    "playwright/battle-classic/button-state-timeline.spec.js"
+  ],
+  "outputs": [
+    "scripts/playwrightServer.js",
+    "src/helpers/classicBattle/testHookEmitter.js",
+    "src/helpers/classicBattle/statButtons.js",
+    "src/helpers/testApi.js",
+    "playwright/battle-classic/button-state-timeline.spec.js"
+  ],
+  "success": [
+    "npx playwright test playwright/battle-classic/button-state-timeline.spec.js"
+  ],
+  "errorMode": "ask_on_public_api_change"
+}

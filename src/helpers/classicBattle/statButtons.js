@@ -1,4 +1,8 @@
 import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
+import {
+  emitBattleTestHookEvent,
+  BATTLE_TEST_HOOK_EVENTS
+} from "./testHookEmitter.js";
 
 /**
  * Normalize assorted button collections into a clean array of elements.
@@ -54,6 +58,31 @@ function applyDisabledState(btn, disabled) {
   }
 }
 
+function captureHookStackTrace() {
+  try {
+    const stack = new Error().stack;
+    if (!stack) return null;
+    return stack
+      .split("\n")
+      .slice(2, 7)
+      .map((line) => line.trim())
+      .join("\n");
+  } catch {
+    return null;
+  }
+}
+
+function emitStatButtonHook(action, buttons, container) {
+  emitBattleTestHookEvent(BATTLE_TEST_HOOK_EVENTS.STAT_BUTTON_STATE, {
+    action,
+    timestamp: Date.now(),
+    stack: captureHookStackTrace(),
+    buttonCount: buttons.length,
+    stats: buttons.map((btn) => btn?.dataset?.stat ?? null),
+    containerReady: container?.dataset?.buttonsReady ?? null
+  });
+}
+
 /**
  * Enable stat buttons and flag the container as ready for interaction.
  *
@@ -83,6 +112,7 @@ export function enableStatButtons(buttons, container) {
     btn.style.removeProperty("background-color");
   });
   if (container) container.dataset.buttonsReady = "true";
+  emitStatButtonHook("enable", buttonArray, container);
 }
 
 /**
@@ -107,6 +137,7 @@ export function disableStatButtons(buttons, container) {
     applyDisabledState(btn, true);
   });
   if (container) container.dataset.buttonsReady = "false";
+  emitStatButtonHook("disable", buttonArray, container);
 }
 
 /**

@@ -11,7 +11,7 @@
  * 6. Return 404 if file not found.
  */
 import http from "http";
-import { createReadStream, existsSync, statSync } from "fs";
+import { createReadStream, existsSync, statSync, readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -37,6 +37,25 @@ function getContentType(filePath) {
   return mimeTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream";
 }
 
+const SENTRY_IMPORT_MAP_SIGNATURE = "\"@sentry/browser\": \"/tests/fixtures/sentry-browser-stub.js\"";
+
+function shouldInjectImportMap(filePath) {
+  return filePath.endsWith(".html");
+}
+
+function injectSentryImportMap(html) {
+  if (!html || html.includes(SENTRY_IMPORT_MAP_SIGNATURE)) {
+    return html;
+  }
+
+  const importMap = `\n    <script type="importmap">\n      {\n        \"imports\": {\n          \"@sentry/browser\": \"/tests/fixtures/sentry-browser-stub.js\"\n        }\n      }\n    </script>\n`;
+  const headCloseIndex = html.toLowerCase().indexOf("</head>");
+  if (headCloseIndex === -1) {
+    return `${html}${importMap}`;
+  }
+  return `${html.slice(0, headCloseIndex)}${importMap}${html.slice(headCloseIndex)}`;
+}
+
 const server = http.createServer((req, res) => {
   const { pathname } = new URL(req.url, `http://${req.headers.host}`);
   const requestPath = decodeURIComponent(pathname).replace(/^\/+/, "");
@@ -50,7 +69,23 @@ const server = http.createServer((req, res) => {
     filePath = path.join(filePath, "index.html");
   }
   if (existsSync(filePath)) {
-    res.setHeader("Content-Type", getContentType(filePath));
+    const contentType = getContentType(filePath);
+    if (shouldInjectImportMap(filePath)) {
+      try {
+        let html = readFileSync(filePath, "utf8");
+        html = injectSentryImportMap(html);
+        res.setHeader("Content-Type", contentType);
+        res.end(html);
+        return;
+      } catch (err) {
+        console.error("Error reading HTML file %s:", filePath, err);
+        res.statusCode = 500;
+        res.end("Internal Server Error");
+        return;
+      }
+    }
+
+    res.setHeader("Content-Type", contentType);
     const stream = createReadStream(filePath);
     stream.on("error", (err) => {
       console.error("Error reading file %s:", filePath, err);

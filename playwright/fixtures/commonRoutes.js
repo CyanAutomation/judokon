@@ -65,6 +65,12 @@ export async function registerCommonRoutes(page) {
         body: ""
       })
     ),
+    page.route("**/@sentry/browser", (route) =>
+      route.fulfill({
+        path: "tests/fixtures/sentry-browser-stub.js",
+        contentType: "application/javascript"
+      })
+    ),
     page.route("https://esm.sh/ajv@6*", (route) =>
       route.fulfill({ path: "src/vendor/ajv6.min.js" })
     ),

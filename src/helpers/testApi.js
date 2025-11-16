@@ -17,6 +17,10 @@ import { buildFeatureFlagSnapshot } from "./featureFlagSnapshot.js";
 import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
+import {
+  addBattleTestHookListener,
+  BATTLE_TEST_HOOK_EVENTS
+} from "./classicBattle/testHookEmitter.js";
 import { isEnabled } from "./featureFlags.js";
 import { getCachedSettings } from "./settingsCache.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
@@ -3063,6 +3067,24 @@ const testApi = {
   inspect: inspectionApi,
   viewport: viewportApi,
   engine: engineApi,
+  hooks: {
+    statButtons: {
+      onStateChange(handler) {
+        if (typeof handler !== "function") {
+          return () => {};
+        }
+        return addBattleTestHookListener(
+          BATTLE_TEST_HOOK_EVENTS.STAT_BUTTON_STATE,
+          (event) => {
+            const detail = event?.detail ?? null;
+            try {
+              handler(detail, event);
+            } catch {}
+          }
+        );
+      }
+    }
+  },
   autoSelect: {
     /**
      * Force the stat selection timer to expire when auto-select is enabled.
