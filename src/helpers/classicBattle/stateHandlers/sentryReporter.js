@@ -40,7 +40,7 @@ function initSentryIfNeeded(sentry) {
     if (
       hasClient ||
       typeof sentry.init !== "function" ||
-      (typeof sentry.isInitialized === "function" && sentry.isInitialized() && hasClient)
+(typeof sentry.isInitialized === "function" && sentry.isInitialized() && hasClient)
     ) {
       return sentry;
     }
