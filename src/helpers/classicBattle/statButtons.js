@@ -1,5 +1,6 @@
 import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
 import { captureStatButtonSnapshot } from "../testing/statButtonTracker.js";
+import { emitStatButtonTestEvent } from "./statButtonTestSignals.js";
 
 /**
  * Normalize assorted button collections into a clean array of elements.
@@ -114,6 +115,15 @@ export function disableStatButtons(buttons, container) {
   try {
     captureStatButtonSnapshot(buttonArray, container);
   } catch {}
+  if (buttonArray.length > 0) {
+    try {
+      emitStatButtonTestEvent("disabled", {
+        count: buttonArray.length,
+        stats: buttonArray.map((btn) => btn?.dataset?.stat ?? null).filter(Boolean),
+        containerReady: container?.dataset?.buttonsReady ?? null
+      });
+    } catch {}
+  }
 }
 
 /**

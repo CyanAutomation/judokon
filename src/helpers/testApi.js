@@ -30,6 +30,7 @@ import {
 } from "./battleEngineFacade.js";
 import { setTestMode } from "./testModeUtils.js";
 import { readStatButtonSnapshot, refreshStatButtonSnapshotFromDom } from "./testing/statButtonTracker.js";
+import { createStatButtonTestApi } from "./classicBattle/statButtonTestSignals.js";
 
 const FRAME_DELAY_MS = 16;
 
@@ -3182,7 +3183,14 @@ export function exposeTestAPI() {
   if (!isTestMode()) return;
 
   if (isWindowAvailable()) {
+    const previous =
+      typeof window.__TEST_API === "object" && window.__TEST_API !== null ? window.__TEST_API : null;
     window.__TEST_API = testApi;
+    if (previous?.statButtons && !window.__TEST_API.statButtons) {
+      window.__TEST_API.statButtons = previous.statButtons;
+    } else if (!window.__TEST_API.statButtons) {
+      window.__TEST_API.statButtons = createStatButtonTestApi();
+    }
 
     // Also expose individual APIs for convenience
     window.__BATTLE_STATE_API = stateApi;
