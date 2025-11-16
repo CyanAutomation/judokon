@@ -1500,6 +1500,43 @@ function renderStatButtons(store) {
     return;
   }
   console.log("renderStatButtons: container found");
+  const listenerRegistry = (() => {
+    try {
+      if (typeof window === "undefined" || !window.__TEST__) {
+        return null;
+      }
+      const registry = {
+        attachedCount: 0,
+        stats: [],
+        details: [],
+        buttonCount: Array.isArray(STATS) ? STATS.length : 0,
+        updatedAt: Date.now()
+      };
+      window.__classicBattleStatButtonListeners = registry;
+      return registry;
+    } catch {
+      return null;
+    }
+  })();
+  const recordStatButtonListenerAttachment = (button, stat) => {
+    if (!listenerRegistry) {
+      return;
+    }
+    try {
+      listenerRegistry.attachedCount += 1;
+      listenerRegistry.stats.push(String(stat));
+      listenerRegistry.details.push({
+        stat: String(stat),
+        datasetStat:
+          typeof button?.dataset?.stat === "string" ? button.dataset.stat : null,
+        label:
+          typeof button?.textContent === "string"
+            ? button.textContent.trim()
+            : null
+      });
+      listenerRegistry.updatedAt = Date.now();
+    } catch {}
+  };
   resetCooldownFlag(store);
   try {
     disableNextRoundButton();
@@ -1543,6 +1580,7 @@ function renderStatButtons(store) {
       window.__clickListenerAttachedFor.push(stat);
       void handleStatButtonClick(store, stat, btn);
     });
+    recordStatButtonListenerAttachment(btn, stat);
     container.appendChild(btn);
     if (desc) {
       container.appendChild(desc);

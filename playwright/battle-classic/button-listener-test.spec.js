@@ -22,37 +22,21 @@ test.describe("Classic Battle - Button Listener Test", () => {
     await waitForBattleState(page, "waitingForPlayerAction");
     await expect(statButtons.first()).toBeEnabled();
 
-    // Check if buttons have click listeners
-    const hasListeners = await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      if (!btn) return { error: "Button not found" };
-
-      // Try to detect if there are event listeners
-      // This is tricky as JavaScript doesn't expose listeners directly
-      // Let's try adding our own listener and clicking
-      let ourListenerCalled = false;
-      btn.addEventListener("click", () => {
-        ourListenerCalled = true;
-        console.log("Our test listener called!");
-      });
-
-      // Manually dispatch a click event
-      btn.click();
-
-      return {
-        ourListenerCalled,
-        buttonExists: true,
-        buttonDisabled: btn.disabled,
-        buttonType: btn.type,
-        buttonTagName: btn.tagName
-      };
+    const listenerSnapshot = await page.evaluate(() => {
+      const inspectApi = window.__TEST_API?.inspect;
+      return inspectApi?.getStatButtonListenerSnapshot?.() ?? null;
     });
 
-    console.log("Listener test results:", JSON.stringify(hasListeners, null, 2));
+    expect(listenerSnapshot, "stat button listener snapshot should be available").toBeTruthy();
+    expect(listenerSnapshot.available).toBe(true);
+    expect(listenerSnapshot.buttonCount).toBeGreaterThan(0);
+    expect(listenerSnapshot.attachedCount).toBe(listenerSnapshot.buttonCount);
+    expect(listenerSnapshot.stats.length).toBe(listenerSnapshot.buttonCount);
 
-    // Check the global flag
-    await page.waitForTimeout(50);
-    const clickHandlerCalled = await page.evaluate(() => window.__statButtonClickCalled || false);
-    console.log("App's click handler called:", clickHandlerCalled);
+    await statButtons.first().click();
+
+    await expect
+      .poll(() => page.evaluate(() => window.__statButtonClickCalled === true))
+      .toBe(true);
   });
 });
