@@ -41,7 +41,7 @@ test.describe("Classic Battle - Button Identity Check", () => {
     });
 
     console.log("Stable stat button snapshot:", JSON.stringify(stableSnapshot, null, 2));
-    expect(stableSnapshot.buttons[0]?.id).toBe(trackedButton.id);
+    expect(stableSnapshot.buttons[0]?.id).toBe(trackedButton?.id);
 
     // Check if init functions were called
     const initStatButtonsCalled = await page.evaluate(
@@ -87,6 +87,6 @@ test.describe("Classic Battle - Button Identity Check", () => {
     console.log("Number of buttons passed to disableStatButtons:", disableCount);
 
     // Check if button is still the same after click
-    expect(snapshotAfterClick.buttons[0]?.id).toBe(trackedButton.id);
+    expect(snapshotAfterClick.buttons[0]?.id).toBe(trackedButton?.id);
   });
 });
