@@ -1,5 +1,4 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState } from "../helpers/battleStateHelper.js";
 
 test.describe("Classic Battle - Immediate Button State", () => {
   test.beforeEach(async ({ page }) => {
@@ -11,68 +10,58 @@ test.describe("Classic Battle - Immediate Button State", () => {
     });
     await page.goto("/src/pages/battleClassic.html");
 
-    // Start the match via modal
-    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-    await page.getByRole("button", { name: "Medium" }).click();
+    const mediumButton = page.getByRole("button", { name: "Medium" });
+    const modalVisible = await mediumButton.isVisible().catch(() => false);
+    if (modalVisible) {
+      await mediumButton.click();
+    }
   });
 
   test("check button state immediately before and during click", async ({ page }) => {
-    // Wait for stat buttons to be enabled
     const statButtons = page.getByTestId("stat-button");
-    await waitForBattleState(page, "waitingForPlayerAction");
     await expect(statButtons.first()).toBeEnabled();
 
-    // Check button state BEFORE click
-    const beforeClick = await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      return {
-        disabled: btn.disabled,
-        hasDisabledAttr: btn.hasAttribute("disabled"),
-        hasDisabledClass: btn.classList.contains("disabled")
-      };
+    await expect
+      .poll(() => page.evaluate(() => Boolean(window.__TEST_API?.state?.statButtons)))
+      .toBeTruthy();
+
+    await page.evaluate(() => window.__TEST_API?.state?.statButtons?.clearSnapshots?.());
+
+    const getSnapshot = (phase) =>
+      page.evaluate(
+        (targetPhase) =>
+          window.__TEST_API?.state?.statButtons?.getPhaseSnapshot?.(targetPhase) ?? null,
+        phase
+      );
+
+    const waitForPhaseSnapshot = async (phase) => {
+      await expect.poll(() => getSnapshot(phase)).toBeTruthy();
+      return getSnapshot(phase);
+    };
+
+    const firstButton = statButtons.first();
+    await firstButton.scrollIntoViewIfNeeded();
+    await firstButton.click({ force: true });
+
+    const beforeSnapshot = await waitForPhaseSnapshot("beforeSelection");
+    expect(beforeSnapshot).toMatchObject({
+      disabled: false,
+      hasDisabledAttr: false,
+      hasDisabledClass: false
     });
-    console.log("Before click:", JSON.stringify(beforeClick, null, 2));
 
-    // Install a capturing listener that logs state DURING the click event
-    await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      btn.addEventListener(
-        "click",
-        (e) => {
-          window.__duringClick = {
-            disabled: btn.disabled,
-            hasDisabledAttr: btn.hasAttribute("disabled"),
-            hasDisabledClass: btn.classList.contains("disabled"),
-            target: e.target === btn,
-            currentTarget: e.currentTarget === btn
-          };
-        },
-        { capture: true }
-      ); // Use capture phase to run BEFORE the app's listener
+    const duringSnapshot = await waitForPhaseSnapshot("duringSelection");
+    expect(duringSnapshot).toMatchObject({
+      disabled: true,
+      hasDisabledAttr: true,
+      hasDisabledClass: true
     });
 
-    // Click the button
-    await statButtons.first().click();
-
-    await page.waitForTimeout(50);
-
-    // Check state during click
-    const duringClick = await page.evaluate(() => window.__duringClick || {});
-    console.log("During click (capture phase):", JSON.stringify(duringClick, null, 2));
-
-    // Check if app handler was called
-    const handlerCalled = await page.evaluate(() => window.__statButtonClickCalled || false);
-    console.log("App handler called:", handlerCalled);
-
-    // Check state after click
-    const afterClick = await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      return {
-        disabled: btn.disabled,
-        hasDisabledAttr: btn.hasAttribute("disabled"),
-        hasDisabledClass: btn.classList.contains("disabled")
-      };
+    const afterSnapshot = await waitForPhaseSnapshot("afterSelection");
+    expect(afterSnapshot).toMatchObject({
+      disabled: true,
+      hasDisabledAttr: true,
+      hasDisabledClass: true
     });
-    console.log("After click:", JSON.stringify(afterClick, null, 2));
   });
 });

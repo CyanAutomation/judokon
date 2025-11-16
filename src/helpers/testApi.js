@@ -29,6 +29,7 @@ import {
   setPointsToWin as facadeSetPointsToWin
 } from "./battleEngineFacade.js";
 import { setTestMode } from "./testModeUtils.js";
+import { attachClassicBattleStatButtonStateApi } from "./testing/classicBattleButtonStateInstrumentation.js";
 
 const FRAME_DELAY_MS = 16;
 
@@ -3085,6 +3086,8 @@ const testApi = {
   }
 };
 
+attachClassicBattleStatButtonStateApi(testApi);
+
 /**
  * Initialize the test API by exposing it on the window object.
  *
@@ -3100,6 +3103,7 @@ export function exposeTestAPI() {
 
   if (isWindowAvailable()) {
     window.__TEST_API = testApi;
+    attachClassicBattleStatButtonStateApi(window.__TEST_API);
 
     // Also expose individual APIs for convenience
     window.__BATTLE_STATE_API = stateApi;

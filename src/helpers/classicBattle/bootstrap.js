@@ -18,6 +18,9 @@ import { setupScoreboard } from "../setupScoreboard.js";
 // Test API exposure for Playwright and unit tests
 import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestApi.js";
 import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpers.js";
+// Load the instrumentation module eagerly so stat button snapshots are
+// available as soon as the bootstrap script runs in the browser.
+import "../testing/classicBattleButtonStateInstrumentation.js";
 
 /**
  * @returns {boolean} True if window is globally available and accessible

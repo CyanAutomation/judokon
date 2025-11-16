@@ -1,5 +1,5 @@
-import * as Sentry from "@sentry/browser";
 import { emitBattleEvent } from "../battleEvents.js";
+import { captureException } from "../../sentryShim.js";
 
 /**
  * onEnter handler for the `matchOver` state.
@@ -27,7 +27,7 @@ export async function matchOverEnter(machine) {
       timestamp: Date.now()
     });
   } catch (error) {
-    Sentry.captureException(error, {
+    captureException(error, {
       contexts: { location: "matchOverEnter" }
     });
   }

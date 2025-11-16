@@ -38,6 +38,7 @@ import { updateDebugPanel as updateDebugPanelImpl, setDebugPanelEnabled } from "
 export { updateDebugPanelImpl as updateDebugPanel };
 
 import { runWhenIdle } from "./idleCallback.js";
+import { recordClassicButtonStateSnapshot } from "../testing/classicBattleButtonStateInstrumentation.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { bindUIHelperEventHandlersDynamic } from "./uiEventHandlers.js";
 import { getStateSnapshot } from "./battleDebug.js";
@@ -742,6 +743,7 @@ export function selectStat(store, stat) {
     console.log("[selectStat] Called with stat:", stat);
   } catch {}
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
+  recordClassicButtonStateSnapshot("beforeSelection", btn);
   // derive label from button text if available
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
   // best-effort visual state
@@ -751,6 +753,7 @@ export function selectStat(store, stat) {
     if (container) {
       const buttons = container.querySelectorAll("button");
       disableStatButtons(buttons, container);
+      recordClassicButtonStateSnapshot("duringSelection", btn);
 
       // Set a flag to prevent re-enabling while selection is being processed
       if (typeof container.dataset !== "undefined") {
@@ -805,6 +808,7 @@ export function selectStat(store, stat) {
       showSnackbar(`You Picked: ${label}`);
     } catch {}
   }
+  recordClassicButtonStateSnapshot("afterSelection", btn);
 }
 
 function shouldDisplaySelectionSnackbar(store, delayOpponentMessage) {
