@@ -204,48 +204,71 @@ export async function configureClassicBattle(page, battleConfig = {}, options = 
 export async function waitForBattleState(page, expectedState, options = {}) {
   const { timeout = 5_000, allowFallback = true } = options;
 
-  await waitForTestApi(page, { timeout });
+  let testApiAvailable = true;
+  let waitForApiError = null;
+  try {
+    await waitForTestApi(page, { timeout });
+  } catch (error) {
+    if (!allowFallback) {
+      const message = error instanceof Error ? error.message : String(error ?? "unknown error");
+      throw new Error(
+        `Test API unavailable before waiting for battle state "${expectedState}" (${message})`
+      );
+    }
+    testApiAvailable = false;
+    waitForApiError = error;
+  }
 
   let apiCallError = null;
-  const apiResult = await page.evaluate(
-    async ({ state, waitTimeout }) => {
-      try {
-        const stateApi = window.__TEST_API?.state;
-        if (!stateApi) {
-          return { result: null, error: "stateApi not available" };
+  let actualApiResult = null;
+
+  if (testApiAvailable) {
+    const apiResult = await page.evaluate(
+      async ({ state, waitTimeout }) => {
+        try {
+          const stateApi = window.__TEST_API?.state;
+          if (!stateApi) {
+            return { result: null, error: "stateApi not available" };
+          }
+          if (typeof stateApi.waitForBattleState !== "function") {
+            return { result: null, error: "waitForBattleState not a function" };
+          }
+          // IMPORTANT: Must await the async waitForBattleState function
+          const result = await stateApi.waitForBattleState.call(stateApi, state, waitTimeout);
+          return { result, error: null };
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          return { result: null, error: errorMsg };
         }
-        if (typeof stateApi.waitForBattleState !== "function") {
-          return { result: null, error: "waitForBattleState not a function" };
-        }
-        // IMPORTANT: Must await the async waitForBattleState function
-        const result = await stateApi.waitForBattleState.call(stateApi, state, waitTimeout);
-        return { result, error: null };
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        return { result: null, error: errorMsg };
-      }
-    },
-    { state: expectedState, waitTimeout: timeout }
-  );
+      },
+      { state: expectedState, waitTimeout: timeout }
+    );
 
-  if (apiResult?.error) {
-    apiCallError = apiResult.error;
-  }
-
-  const actualApiResult = apiResult?.result;
-
-  if (actualApiResult === true) {
-    return;
-  }
-
-  if (actualApiResult === false) {
-    if (!allowFallback) {
-      throw new Error(`Timed out waiting for battle state "${expectedState}" via Test API`);
+    if (apiResult?.error) {
+      apiCallError = apiResult.error;
     }
-  } else if (actualApiResult === null && !allowFallback) {
-    const errorInfo = apiCallError ? ` (${apiCallError})` : "";
-    const msg = `Test API waitForBattleState unavailable for "${expectedState}"${errorInfo}`;
-    throw new Error(msg);
+
+    actualApiResult = apiResult?.result ?? null;
+
+    if (actualApiResult === true) {
+      return;
+    }
+
+    if (actualApiResult === false) {
+      if (!allowFallback) {
+        throw new Error(`Timed out waiting for battle state "${expectedState}" via Test API`);
+      }
+    } else if (actualApiResult === null && !allowFallback) {
+      const errorInfo = apiCallError ? ` (${apiCallError})` : "";
+      const msg = `Test API waitForBattleState unavailable for "${expectedState}"${errorInfo}`;
+      throw new Error(msg);
+    }
+  } else if (!allowFallback) {
+    const waitMessage =
+      waitForApiError instanceof Error
+        ? waitForApiError.message
+        : String(waitForApiError ?? "unknown error");
+    throw new Error(`Test API unavailable for battle state "${expectedState}" (${waitMessage})`);
   }
 
   if (!allowFallback) {
