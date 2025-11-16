@@ -73,12 +73,13 @@ function captureHookStackTrace() {
 }
 
 function emitStatButtonHook(action, buttons, container) {
+  const buttonList = Array.isArray(buttons) ? buttons : [];
   emitBattleTestHookEvent(BATTLE_TEST_HOOK_EVENTS.STAT_BUTTON_STATE, {
     action,
     timestamp: Date.now(),
     stack: captureHookStackTrace(),
-    buttonCount: buttons.length,
-    stats: buttons.map((btn) => btn?.dataset?.stat ?? null),
+    buttonCount: buttonList.length,
+    stats: buttonList.map((btn) => btn?.dataset?.stat ?? null),
     containerReady: container?.dataset?.buttonsReady ?? null
   });
 }

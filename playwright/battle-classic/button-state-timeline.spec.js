@@ -15,7 +15,7 @@ async function subscribeToStatButtonHook(page) {
     window.__disposeStatButtonHook?.();
     const hook = window.__TEST_API?.hooks?.statButtons;
     if (!hook || typeof hook.onStateChange !== "function") {
-      throw new Error("Stat button hook unavailable");
+      throw new Error(`Stat button hook unavailable: ${typeof hook?.onStateChange}`);
     }
     window.__disposeStatButtonHook = hook.onStateChange((detail) => {
       if (!Array.isArray(window.__buttonTimeline)) {
@@ -85,7 +85,7 @@ test.describe("Classic Battle - Button State Timeline", () => {
       if (entry.buttonCount !== null) {
         console.log(`buttonCount=${entry.buttonCount}`);
       }
-      if (entry.stats) {
+      if (Array.isArray(entry.stats) && entry.stats.length > 0) {
         console.log(`stats=${entry.stats.join(",")}`);
       }
       console.log(entry.stack);

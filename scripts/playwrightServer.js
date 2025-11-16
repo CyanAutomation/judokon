@@ -37,7 +37,7 @@ function getContentType(filePath) {
   return mimeTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream";
 }
 
-const SENTRY_IMPORT_MAP_SIGNATURE = "\"@sentry/browser\": \"/tests/fixtures/sentry-browser-stub.js\"";
+const SENTRY_IMPORT_MAP_SIGNATURE = '"@sentry/browser": "/tests/fixtures/sentry-browser-stub.js"';
 
 function shouldInjectImportMap(filePath) {
   return filePath.endsWith(".html");
@@ -48,7 +48,15 @@ function injectSentryImportMap(html) {
     return html;
   }
 
-  const importMap = `\n    <script type="importmap">\n      {\n        \"imports\": {\n          \"@sentry/browser\": \"/tests/fixtures/sentry-browser-stub.js\"\n        }\n      }\n    </script>\n`;
+  const importMap = `
+    <script type="importmap">
+      {
+        "imports": {
+          "@sentry/browser": "/tests/fixtures/sentry-browser-stub.js"
+        }
+      }
+    </script>
+`;
   const headCloseIndex = html.toLowerCase().indexOf("</head>");
   if (headCloseIndex === -1) {
     return `${html}${importMap}`;
