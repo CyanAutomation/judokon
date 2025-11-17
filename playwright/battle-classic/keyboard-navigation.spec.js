@@ -48,7 +48,7 @@ test.describe("Classic Battle keyboard navigation", () => {
 
     const thirdStatButton = statButtons.nth(2);
 
-    // Press Enter to select the third stat button
+    // Press Enter to select the third stat button (should trigger click event on focused button)
     await page.keyboard.press("Enter");
 
     // Verify that selection occurred (timer should start, buttons should be disabled)

@@ -48,8 +48,8 @@ describe("testApi.isTestMode", () => {
       };
     });
 
-    process.env.NODE_ENV = "production";
-    delete process.env.VITEST;
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VITEST", undefined);
 
     restoreWindowProperty("__TEST__", undefined);
     restoreWindowProperty("__TEST_API", undefined);
@@ -80,13 +80,7 @@ describe("testApi.isTestMode", () => {
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv;
-
-    if (originalVitestFlag === undefined) {
-      delete process.env.VITEST;
-    } else {
-      process.env.VITEST = originalVitestFlag;
-    }
+    vi.unstubAllEnvs();
 
     restoreWindowProperty("__TEST__", originalTestFlag);
     restoreWindowProperty("__TEST_API", originalTestApi);
@@ -170,8 +164,8 @@ describe("initApi readiness gating", () => {
     vi.resetModules();
     timers = useCanonicalTimers();
 
-    process.env.NODE_ENV = "test";
-    process.env.VITEST = "1";
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("VITEST", "1");
 
     window.__TEST__ = true;
     delete window.battleStore;
@@ -184,17 +178,7 @@ describe("initApi readiness gating", () => {
   });
 
   afterEach(() => {
-    if (originalNodeEnv === undefined) {
-      delete process.env.NODE_ENV;
-    } else {
-      process.env.NODE_ENV = originalNodeEnv;
-    }
-
-    if (originalVitestFlag === undefined) {
-      delete process.env.VITEST;
-    } else {
-      process.env.VITEST = originalVitestFlag;
-    }
+    vi.unstubAllEnvs();
 
     restoreWindowProperty("__TEST__", originalTestFlag);
     restoreWindowProperty("__TEST_API", originalTestApi);

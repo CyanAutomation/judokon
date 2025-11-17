@@ -114,10 +114,7 @@ export async function cooldownEnter(machine, payload) {
     const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
     if (buttons.length > 0) {
       disableStatButtons(buttons, container);
-      // Clear the selection in progress flag now that we're in cooldown
-      if (container && typeof container.dataset !== "undefined") {
-        container.dataset.selectionInProgress = "false";
-      }
+      // Keep selectionInProgress flag true throughout cooldown to prevent premature button re-enabling
     }
   } catch (error) {
     debugLog("cooldownEnter: failed to disable stat buttons", error);
