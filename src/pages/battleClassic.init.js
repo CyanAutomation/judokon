@@ -1536,12 +1536,8 @@ function renderStatButtons(store) {
       listenerRegistry.stats.push(String(stat));
       listenerRegistry.details.push({
         stat: String(stat),
-        datasetStat:
-          typeof button?.dataset?.stat === "string" ? button.dataset.stat : null,
-        label:
-          typeof button?.textContent === "string"
-            ? button.textContent.trim()
-            : null
+        datasetStat: typeof button?.dataset?.stat === "string" ? button.dataset.stat : null,
+        label: typeof button?.textContent === "string" ? button.textContent.trim() : null
       });
       listenerRegistry.updatedAt = Date.now();
     } catch {}

@@ -212,7 +212,9 @@ export function createStatButtonTestApi() {
         return events.map((event) => serializeEvent(event, false));
       }
       const limit = Number(options.limit);
-      return events.slice(Math.max(0, events.length - limit)).map((event) => serializeEvent(event, false));
+      return events
+        .slice(Math.max(0, events.length - limit))
+        .map((event) => serializeEvent(event, false));
     },
     waitForEvent(options) {
       return waitForStatButtonEventInternal(options);

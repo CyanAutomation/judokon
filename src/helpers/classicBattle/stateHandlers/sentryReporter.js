@@ -40,7 +40,7 @@ function initSentryIfNeeded(sentry) {
     if (
       hasClient ||
       typeof sentry.init !== "function" ||
-(typeof sentry.isInitialized === "function" && sentry.isInitialized() && hasClient)
+      (typeof sentry.isInitialized === "function" && sentry.isInitialized() && hasClient)
     ) {
       return sentry;
     }
@@ -52,7 +52,7 @@ function initSentryIfNeeded(sentry) {
             VITE_SENTRY_DSN: process.env.VITE_SENTRY_DSN,
             SENTRY_RELEASE: process.env.SENTRY_RELEASE,
             VITE_SENTRY_RELEASE: process.env.VITE_SENTRY_RELEASE,
-            SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE,
+            SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE
           }
         : {};
     const dsn = scope?.__SENTRY_DSN__ ?? env.SENTRY_DSN ?? env.VITE_SENTRY_DSN;
