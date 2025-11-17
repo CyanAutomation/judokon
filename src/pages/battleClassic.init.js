@@ -1984,6 +1984,8 @@ async function init() {
 
     // Expose test API for testing direct access
     exposeTestAPI();
+    // Reset cached inspection values between Classic Battle bootstraps
+    window.__TEST_API?.inspect?.resetCache?.();
 
     // Initialize badge immediately based on overrides (synchronous)
     initBattleStateBadge();
