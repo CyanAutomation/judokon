@@ -2,7 +2,7 @@ import { evaluateRound as evaluateRoundApi, getOutcomeMessage } from "../api/bat
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
-import { resetStatButtons } from "../battle/battleUI.js";
+import { resetStatButtons } from "./statButtons.js";
 import { isEnabled } from "../featureFlags.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
@@ -230,8 +230,7 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  * 3. Update the scoreboard with the new scores.
  * 4. Emit round resolved events for external observers.
  * 5. Wait for UI lock timers to settle to avoid race conditions.
- * 6. Reset stat buttons so the next selection can begin.
- * 7. Return the final round result object.
+ * 6. Return the final round result object (stat button reset deferred to next round start).
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -245,7 +244,8 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   const scored = await updateScoreboard(dispatched);
   const emitted = emitRoundResolved(store, stat, playerVal, opponentVal, scored);
   await waitForRoundUILocks();
-  await resetStatButtons();
+  // Stat buttons will be reset by applyRoundUI when the next round starts
+  // Do NOT reset them here during cooldown as it bypasses guard logic
   return emitted;
 }
 
