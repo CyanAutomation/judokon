@@ -49,7 +49,7 @@ describe("testApi.isTestMode", () => {
     });
 
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("VITEST", undefined);
+    vi.stubEnv("VITEST", "");  // Empty string is falsy
 
     restoreWindowProperty("__TEST__", undefined);
     restoreWindowProperty("__TEST_API", undefined);
@@ -116,8 +116,11 @@ describe("testApi.isTestMode", () => {
 
   it("treats webdriver automation as test mode and exposes the API", async () => {
     vi.resetModules();
+    
+    // Use vi.stubEnv to replace VITEST with a falsy value instead of undefined
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("VITEST", undefined);
+    vi.stubEnv("VITEST", "");  // Empty string is falsy
+    
     setNavigatorWebdriver(false);
 
     const mod = await import("../../src/helpers/testApi.js");
