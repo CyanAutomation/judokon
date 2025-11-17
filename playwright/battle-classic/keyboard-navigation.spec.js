@@ -2,7 +2,6 @@ import { test, expect } from "../fixtures/commonSetup.js";
 import {
   waitForBattleState,
   waitForStatButtonsReady,
-  configureClassicBattle,
   waitForBattleReady
 } from "../helpers/battleStateHelper.js";
 

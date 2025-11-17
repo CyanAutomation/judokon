@@ -122,6 +122,7 @@ describe("testApi.isTestMode", () => {
 
   it("treats webdriver automation as test mode and exposes the API", async () => {
     vi.resetModules();
+    setNavigatorWebdriver(false);
     const mod = await import("../../src/helpers/testApi.js");
     const { exposeTestAPI, getTestAPI, isTestMode } = mod;
 
