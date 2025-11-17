@@ -1,7 +1,5 @@
 import { updateDebugPanel } from "./debugPanel.js";
 import { showSelectionPrompt } from "./snackbar.js";
-// Use index re-exports so tests can vi.mock("../battle/index.js") and spy
-import { resetStatButtons } from "../battle/index.js";
 import { startTimer } from "./timerService.js";
 import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
@@ -16,7 +14,7 @@ import { createRoundTimer as defaultCreateRoundTimer } from "../timers/createRou
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer as defaultAttachCooldownRenderer } from "../CooldownRenderer.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
-import { disableStatButtons } from "../battle/index.js";
+import { disableStatButtons, resetStatButtons } from "./statButtons.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { runAfterFrames } from "../../utils/rafUtils.js";
 import { getOpponentPromptTimestamp } from "./opponentPromptTracker.js";

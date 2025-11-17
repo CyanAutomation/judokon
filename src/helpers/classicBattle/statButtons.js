@@ -177,6 +177,38 @@ export function setStatButtonsEnabled(buttons, container, enable, resolveReady, 
   }
 }
 
+/**
+ * Reset stat buttons by clearing selection state and re-enabling them.
+ *
+ * This function properly uses enableStatButtons to re-enable buttons,
+ * ensuring guard logic is respected and counters are tracked.
+ *
+ * @pseudocode
+ * 1. Query all stat buttons from the DOM.
+ * 2. Clear visual selection state (remove 'selected' class, background color).
+ * 3. Re-enable buttons using enableStatButtons (respects guards and tracking).
+ *
+ * @param {HTMLElement} [container] - Optional container element.
+ * @returns {void}
+ */
+export function resetStatButtons(container) {
+  const buttons = container
+    ? Array.from(container.querySelectorAll("button[data-stat]"))
+    : Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+
+  // Clear selection state from all buttons
+  buttons.forEach((btn) => {
+    if (!btn) return;
+    try {
+      btn.classList.remove("selected");
+      btn.style.removeProperty("background-color");
+    } catch {}
+  });
+
+  // Re-enable using proper function that respects guards
+  enableStatButtons(buttons, container);
+}
+
 const HOTKEY_INPUT_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
 
 function exposeHotkeyTestHook(buttons) {
