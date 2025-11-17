@@ -115,9 +115,10 @@ describe("testApi.isTestMode", () => {
   });
 
   it("treats webdriver automation as test mode and exposes the API", async () => {
-    vi.resetModules();
+    // Don't call vi.resetModules() here - it's already done in beforeEach
+    // and will clear the featureFlags mock set up there
     
-    // Use vi.stubEnv to replace VITEST with a falsy value instead of undefined
+    // Re-stub env vars (they may have been reset by beforeEach cleanup)
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VITEST", "");  // Empty string is falsy
     

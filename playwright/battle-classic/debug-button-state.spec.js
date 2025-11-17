@@ -13,8 +13,33 @@ test.describe("Debug button state during cooldown", () => {
     await page.evaluate(() => {
       window.buttonStateLog = [];
 
+      // Monitor actual DOM attribute changes with MutationObserver
+      setTimeout(() => {
+        const buttons = document.querySelectorAll('[data-testid="stat-button"]');
+        buttons.forEach((btn) => {
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === "attributes" && mutation.attributeName === "disabled") {
+                const isDisabled = btn.hasAttribute("disabled");
+                const battleState = document.body?.dataset?.battleState;
+                const selInProgress =
+                  document.getElementById("stat-buttons")?.dataset?.selectionInProgress;
+                window.buttonStateLog.push({
+                  type: isDisabled ? "DOM_DISABLED" : "DOM_ENABLED",
+                  stat: btn.dataset.stat,
+                  battleState: battleState,
+                  selectionInProgress: selInProgress,
+                  timestamp: Date.now(),
+                  stack: new Error().stack.split("\n").slice(2, 6).join("\n")
+                });
+              }
+            });
+          });
+          observer.observe(btn, { attributes: true });
+        });
+      }, 100);
+
       // Monitor enable calls
-      const originalEnable = window.__statButtonsEnableCount;
       Object.defineProperty(window, "__statButtonsEnableCount", {
         get() {
           return this._enableCount || 0;
@@ -69,13 +94,14 @@ test.describe("Debug button state during cooldown", () => {
     // Get the log
     const log = await page.evaluate(() => window.buttonStateLog);
 
-    console.log("\n=== Button State Log ===");
-    log.forEach((entry, i) => {
-      console.log(
-        `${i + 1}. ${entry.type} (count=${entry.count}) - battleState=${entry.state || entry.battleState}, selectionInProgress=${entry.selectionInProgress}`
-      );
+    console.log("\n=== Button State Log (showing only DOM changes during cooldown) ===");
+    log.filter((entry) => entry.type.startsWith("DOM_") && entry.battleState === "cooldown").forEach((entry, i) => {
+      console.log(`${i + 1}. ${entry.type} - stat=${entry.stat}, selectionInProgress=${entry.selectionInProgress}`);
+      if (entry.stack) {
+        console.log(`   Stack: ${entry.stack.split("\n").slice(0, 3).join("\n   ")}`);
+      }
     });
-    console.log("========================\n");
+    console.log("=====================================================================\n");
 
     // Check actual button disabled property directly
     const buttonsDisabledProperty = await page.evaluate(() => {
