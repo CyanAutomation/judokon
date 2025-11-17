@@ -140,7 +140,11 @@ function storeSnapshot(snapshot) {
   if (snapshots.length > HISTORY_LIMIT) {
     snapshots.shift();
   }
-  ensureTestApiState();
+  const win = getWindow();
+  const testApi = win?.__TEST_API;
+  if (!testApi?.state?.statButtons) {
+    ensureTestApiState();
+  }
 }
 
 /**

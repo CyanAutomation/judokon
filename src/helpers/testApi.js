@@ -3086,7 +3086,7 @@ const testApi = {
   }
 };
 
-attachClassicBattleStatButtonStateApi(testApi);
+// Stat button instrumentation is attached when the API is exposed.
 
 /**
  * Initialize the test API by exposing it on the window object.

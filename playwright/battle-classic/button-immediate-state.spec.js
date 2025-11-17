@@ -39,11 +39,13 @@ test.describe("Classic Battle - Immediate Button State", () => {
       return getSnapshot(phase);
     };
 
+    const beforeSnapshotPromise = waitForPhaseSnapshot("beforeSelection");
+
     const firstButton = statButtons.first();
     await firstButton.scrollIntoViewIfNeeded();
     await firstButton.click({ force: true });
 
-    const beforeSnapshot = await waitForPhaseSnapshot("beforeSelection");
+    const beforeSnapshot = await beforeSnapshotPromise;
     expect(beforeSnapshot).toMatchObject({
       disabled: false,
       hasDisabledAttr: false,
