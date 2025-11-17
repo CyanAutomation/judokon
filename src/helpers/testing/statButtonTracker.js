@@ -159,7 +159,8 @@ export function refreshStatButtonSnapshotFromDom() {
   }
   try {
     const container =
-      document.querySelector("[data-testid='stat-buttons']") ?? document.getElementById("stat-buttons");
+      document.querySelector("[data-testid='stat-buttons']") ??
+      document.getElementById("stat-buttons");
     if (!container) {
       const snapshot = createSnapshot([], null);
       storeSnapshot(snapshot);

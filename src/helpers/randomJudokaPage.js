@@ -315,10 +315,7 @@ function bindHistoryPanelInteractions(historyPanel, toggleHistoryBtn) {
   if (!historyPanelUnloadHandlerBound && typeof window !== "undefined") {
     window.addEventListener("beforeunload", handleHistoryPanelBeforeUnload);
     window.addEventListener("pagehide", handleHistoryPanelBeforeUnload);
-    window.addEventListener(
-      "visibilitychange",
-      handleHistoryPanelVisibilityChange
-    );
+    window.addEventListener("visibilitychange", handleHistoryPanelVisibilityChange);
     historyPanelUnloadHandlerBound = true;
   }
 }

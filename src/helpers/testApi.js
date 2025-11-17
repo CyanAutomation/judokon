@@ -29,7 +29,10 @@ import {
   setPointsToWin as facadeSetPointsToWin
 } from "./battleEngineFacade.js";
 import { setTestMode } from "./testModeUtils.js";
-import { readStatButtonSnapshot, refreshStatButtonSnapshotFromDom } from "./testing/statButtonTracker.js";
+import {
+  readStatButtonSnapshot,
+  refreshStatButtonSnapshotFromDom
+} from "./testing/statButtonTracker.js";
 import { createStatButtonTestApi } from "./classicBattle/statButtonTestSignals.js";
 
 const FRAME_DELAY_MS = 16;
@@ -2375,8 +2378,7 @@ const inspectionApi = {
    *   Snapshot data for assertions.
    */
   getStatButtonSnapshot(options = {}) {
-    const normalizedOptions =
-      options && typeof options === "object" ? options : { refresh: false };
+    const normalizedOptions = options && typeof options === "object" ? options : { refresh: false };
     const refresh = normalizedOptions.refresh === true;
     try {
       return refresh ? refreshStatButtonSnapshotFromDom() : readStatButtonSnapshot();
@@ -3184,7 +3186,9 @@ export function exposeTestAPI() {
 
   if (isWindowAvailable()) {
     const previous =
-      typeof window.__TEST_API === "object" && window.__TEST_API !== null ? window.__TEST_API : null;
+      typeof window.__TEST_API === "object" && window.__TEST_API !== null
+        ? window.__TEST_API
+        : null;
     window.__TEST_API = testApi;
     if (previous?.statButtons && !window.__TEST_API.statButtons) {
       window.__TEST_API.statButtons = previous.statButtons;

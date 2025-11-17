@@ -36,7 +36,6 @@ test.describe("Classic Battle - Manual Click Test", () => {
     if (mediumVisible) {
       await mediumButton.click();
     }
-
   });
 
   const formatError = (error) => {
@@ -77,13 +76,10 @@ test.describe("Classic Battle - Manual Click Test", () => {
 
     let disableEvent;
     try {
-      disableEvent = await page.evaluate(
-        async (afterId) => {
-          const api = window.__TEST_API?.statButtons;
-          return await api?.waitForDisable?.({ timeout: 2000, afterId });
-        },
-        handlerEvent?.id ?? null
-      );
+      disableEvent = await page.evaluate(async (afterId) => {
+        const api = window.__TEST_API?.statButtons;
+        return await api?.waitForDisable?.({ timeout: 2000, afterId });
+      }, handlerEvent?.id ?? null);
     } catch (error) {
       disableEvent = handleEvaluateError(error);
     }
@@ -114,13 +110,10 @@ test.describe("Classic Battle - Manual Click Test", () => {
 
     let disableEvent;
     try {
-      disableEvent = await page.evaluate(
-        async (afterId) => {
-          const api = window.__TEST_API?.statButtons;
-          return await api?.waitForDisable?.({ timeout: 2000, afterId });
-        },
-        handlerEvent?.id ?? null
-      );
+      disableEvent = await page.evaluate(async (afterId) => {
+        const api = window.__TEST_API?.statButtons;
+        return await api?.waitForDisable?.({ timeout: 2000, afterId });
+      }, handlerEvent?.id ?? null);
     } catch (error) {
       disableEvent = handleEvaluateError(error);
     }
