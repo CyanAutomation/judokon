@@ -121,10 +121,24 @@ function createStatButtonHookInterface() {
   };
 }
 
-function attachStatHookToGlobalTestApi() {
+/**
+ * Attach the stat button test hook interface to the provided test API root.
+ *
+ * @pseudocode
+ * 1. Resolve the target root from the argument or global scope.
+ * 2. Lazily create the `hooks` bag if needed.
+ * 3. Attach the stat button hook interface when it does not already exist.
+ *
+ * @param {object} [rootCandidate] - Optional test API root to attach hooks to.
+ * @returns {void}
+ */
+export function attachStatHookToTestApiRoot(rootCandidate) {
   const scope = getGlobalScope();
+  const root = rootCandidate || (scope && scope.__TEST_API ? scope.__TEST_API : null);
+  if (!root) {
+    return;
+  }
   try {
-    const root = scope.__TEST_API || (scope.__TEST_API = {});
     const hooks = root.hooks || (root.hooks = {});
     if (!hooks.statButtons) {
       hooks.statButtons = createStatButtonHookInterface();
@@ -133,7 +147,6 @@ function attachStatHookToGlobalTestApi() {
 }
 
 ensureHookTarget();
-attachStatHookToGlobalTestApi();
 
 /**
  * @summary Internal event emitter shared between battle modules and the battle test API.

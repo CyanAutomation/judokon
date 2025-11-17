@@ -17,10 +17,7 @@ import { buildFeatureFlagSnapshot } from "./featureFlagSnapshot.js";
 import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
-import {
-  addBattleTestHookListener,
-  BATTLE_TEST_HOOK_EVENTS
-} from "./classicBattle/testHookEmitter.js";
+import { attachStatHookToTestApiRoot } from "./classicBattle/testHookEmitter.js";
 import { isEnabled } from "./featureFlags.js";
 import { getCachedSettings } from "./settingsCache.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
@@ -3068,22 +3065,7 @@ const testApi = {
   viewport: viewportApi,
   engine: engineApi,
   hooks: {
-    statButtons: {
-      onStateChange(handler) {
-        if (typeof handler !== "function") {
-          return () => {};
-        }
-        return addBattleTestHookListener(
-          BATTLE_TEST_HOOK_EVENTS.STAT_BUTTON_STATE,
-          (event) => {
-            const detail = event?.detail ?? null;
-            try {
-              handler(detail, event);
-            } catch {}
-          }
-        );
-      }
-    }
+    // Hook interfaces are automatically attached by testHookEmitter.js
   },
   autoSelect: {
     /**
@@ -3106,6 +3088,8 @@ const testApi = {
     }
   }
 };
+
+attachStatHookToTestApiRoot(testApi);
 
 /**
  * Initialize the test API by exposing it on the window object.
