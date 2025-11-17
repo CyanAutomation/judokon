@@ -73,7 +73,7 @@ function captureHookStackTrace() {
 }
 
 function emitStatButtonHook(action, buttons, container) {
-  const buttonList = Array.isArray(buttons) ? buttons : [];
+const buttonList = Array.isArray(buttons) ? buttons : [];
   emitBattleTestHookEvent(BATTLE_TEST_HOOK_EVENTS.STAT_BUTTON_STATE, {
     action,
     timestamp: Date.now(),
