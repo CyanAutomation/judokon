@@ -29,6 +29,7 @@ test.describe("Classic Battle keyboard navigation", () => {
     // Wait for stat buttons to be enabled via battle state readiness
     const statButtons = page.getByTestId("stat-button");
     await expectBattleStateReady(page, "waitingForPlayerAction");
+    await waitForStatButtonsReady(page, { timeout: 10_000 });
     const statButtonCount = await statButtons.count();
     const firstStatButton = statButtons.first();
     const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
@@ -76,6 +77,7 @@ test.describe("Classic Battle keyboard navigation", () => {
     const statButtons = page.getByTestId("stat-button");
     const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
     await expectBattleStateReady(page, "waitingForPlayerAction");
+    await waitForStatButtonsReady(page, { timeout: 10_000 });
     await expect(statButtons.first()).toBeEnabled();
 
     // Verify the naturally focused button displays the expected outline
@@ -91,6 +93,7 @@ test.describe("Classic Battle keyboard navigation", () => {
     // Check ARIA labels on stat buttons
     const statButtons = page.getByTestId("stat-button");
     await expectBattleStateReady(page, "waitingForPlayerAction");
+    await waitForStatButtonsReady(page, { timeout: 10_000 });
     const ariaLabelPatterns = ["Power", "Speed", "Technique"].map(
       (stat) => new RegExp(`^(Select ${stat} stat for battle|${stat})$`, "i")
     );
