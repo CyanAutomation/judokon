@@ -94,9 +94,11 @@ test.describe("Debug button state during cooldown", () => {
     // Get the log
     const log = await page.evaluate(() => window.buttonStateLog);
 
-    console.log("\n=== Button State Log (showing only DOM changes during cooldown) ===");
-    log.filter((entry) => entry.type.startsWith("DOM_") && entry.battleState === "cooldown").forEach((entry, i) => {
-      console.log(`${i + 1}. ${entry.type} - stat=${entry.stat}, selectionInProgress=${entry.selectionInProgress}`);
+    console.log("\n=== Button State Log (ALL EVENTS) ===");
+    log.forEach((entry, i) => {
+      console.log(
+        `${i + 1}. ${entry.type} - ${entry.stat ? `stat=${entry.stat}` : `count=${entry.count}`}, battleState=${entry.battleState}, selectionInProgress=${entry.selectionInProgress}`
+      );
       if (entry.stack) {
         console.log(`   Stack: ${entry.stack.split("\n").slice(0, 3).join("\n   ")}`);
       }
