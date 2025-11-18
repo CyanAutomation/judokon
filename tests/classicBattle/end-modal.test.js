@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+
+// Read HTML file at module load time before any test runs and before vi.resetModules() can affect it
+const htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
 
 describe("Classic Battle end-of-match modal", () => {
   test("renders with Replay and Quit when invoked", async () => {
-    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-    const html = readFileSync(file, "utf-8");
-    document.documentElement.innerHTML = html;
+    document.documentElement.innerHTML = htmlContent;
     const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
     const { createBattleStore } = await import("../../src/helpers/classicBattle/roundManager.js");
     const store = createBattleStore();
@@ -17,9 +17,7 @@ describe("Classic Battle end-of-match modal", () => {
   });
 
   test("renders quit outcome messaging with scores", async () => {
-    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-    const html = readFileSync(file, "utf-8");
-    document.documentElement.innerHTML = html;
+    document.documentElement.innerHTML = htmlContent;
     const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
     const { createBattleStore } = await import("../../src/helpers/classicBattle/roundManager.js");
     const store = createBattleStore();

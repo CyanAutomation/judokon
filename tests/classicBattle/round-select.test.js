@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+
+// Read HTML file at module load time before any test runs and before vi.resetModules() can affect it
+const htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
 
 describe("Classic Battle round select modal", () => {
   test("selecting Long (10) sets pointsToWin and marks target", async () => {
     process.env.VITEST = "true"; // ensure modal avoids extra event dispatch
-    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-    const html = readFileSync(file, "utf-8");
-    document.documentElement.innerHTML = html;
+    document.documentElement.innerHTML = htmlContent;
 
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
@@ -44,9 +44,7 @@ describe("Classic Battle round select modal", () => {
 
   test("header navigation unlocks when startRoundCycle hits data load failure", async () => {
     process.env.VITEST = "true";
-    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-    const html = readFileSync(file, "utf-8");
-    document.documentElement.innerHTML = html;
+    document.documentElement.innerHTML = htmlContent;
     const readyDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
     Object.defineProperty(document, "readyState", {
       configurable: true,

@@ -7,8 +7,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { readFileSync } from "fs";
-import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
+
+// Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
+const cwd = process.cwd();
+const sep = process.platform === "win32" ? "\\" : "/";
+const htmlPathInit = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
+const htmlContentInit = readFileSync(htmlPathInit, "utf-8");
 
 describe("Classic Battle Init Complete Hooks", () => {
   let dom;
@@ -16,10 +21,7 @@ describe("Classic Battle Init Complete Hooks", () => {
   let document;
 
   beforeEach(async () => {
-    const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
-    const htmlContent = readFileSync(htmlPath, "utf-8");
-
-    dom = new JSDOM(htmlContent, {
+    dom = new JSDOM(htmlContentInit, {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",
       resources: "usable",

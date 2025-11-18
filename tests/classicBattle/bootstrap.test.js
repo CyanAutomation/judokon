@@ -1,5 +1,4 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("../../src/helpers/domReady.js", () => ({
@@ -15,7 +14,7 @@ vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
 }));
 
 const battleClassicHtml = readFileSync(
-  resolve(process.cwd(), "src/pages/battleClassic.html"),
+  `${process.cwd()}/src/pages/battleClassic.html`,
   "utf-8"
 );
 

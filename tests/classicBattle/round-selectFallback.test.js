@@ -1,9 +1,8 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 const battleClassicHtml = readFileSync(
-  resolve(process.cwd(), "src/pages/battleClassic.html"),
+  `${process.cwd()}/src/pages/battleClassic.html`,
   "utf-8"
 );
 
