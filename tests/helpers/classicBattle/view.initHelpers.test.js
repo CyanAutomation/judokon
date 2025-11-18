@@ -5,7 +5,7 @@ import setupScheduler from "../../../src/helpers/classicBattle/setupScheduler.js
 import setupUIBindings from "../../../src/helpers/classicBattle/setupUIBindings.js";
 import setupDebugHooks from "../../../src/helpers/classicBattle/setupDebugHooks.js";
 
-vi.mock("../../../src/helpers/battle/index.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/statButtons.js", () => ({
   resetStatButtons: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
