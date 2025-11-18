@@ -1,15 +1,16 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
-import { readFileSync } from "fs";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 
 // Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
+// Using require to ensure this is cached separately from the fs import used in tests
 const cwd = process.cwd();
 const sep = process.platform === "win32" ? "\\" : "/";
 const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-const htmlContent = readFileSync(htmlPath, "utf-8");
+// eslint-disable-next-line global-require
+const htmlContent = require("fs").readFileSync(htmlPath, "utf-8");
 
 /**
  * Completes the first round of battle by clicking round and stat buttons.

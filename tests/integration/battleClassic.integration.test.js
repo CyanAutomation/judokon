@@ -14,7 +14,6 @@
 
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
-import { readFileSync } from "fs";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { getBattleStore } from "../utils/battleStoreAccess.js";
@@ -24,10 +23,12 @@ import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
 // Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
+// Using require to ensure this is cached separately from the fs import used in tests
 const cwd = process.cwd();
 const sep = process.platform === "win32" ? "\\" : "/";
 const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-const htmlContent = readFileSync(htmlPath, "utf-8");
+// eslint-disable-next-line global-require
+const htmlContent = require("fs").readFileSync(htmlPath, "utf-8");
 
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
   const { inspect, state, engine } = testApi;
