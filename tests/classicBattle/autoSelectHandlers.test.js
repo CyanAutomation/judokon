@@ -20,7 +20,6 @@ describe("handleStatSelectionTimeout", () => {
 
   beforeEach(async () => {
     // Clear module cache to ensure fresh imports with mocks applied
-    vi.resetModules();
 
     // Set up fake scheduler FIRST, before importing anything that might use it
     scheduledCallbacks = new Map();

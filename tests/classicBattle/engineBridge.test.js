@@ -16,7 +16,6 @@ const createListenersMap = () => {
 
 describe("bridgeEngineEvents", () => {
   test("attaches one listener set per engine instance", async () => {
-    vi.resetModules();
     const { listeners, on, emit } = createListenersMap();
     const engine = { id: "engine" };
     const requireEngine = vi.fn(() => engine);

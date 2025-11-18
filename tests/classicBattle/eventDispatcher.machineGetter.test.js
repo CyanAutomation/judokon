@@ -29,7 +29,6 @@ describe("Classic Battle dispatchBattleEvent getter caching", () => {
     } else {
       delete globalThis.__classicBattleDebugRead;
     }
-    vi.resetModules();
   });
 
   it("invokes the machine getter exactly once for a single dispatch", async () => {

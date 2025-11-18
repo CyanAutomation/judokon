@@ -17,7 +17,6 @@ const battleClassicHtml = readFileSync(`${process.cwd()}/src/pages/battleClassic
 
 describe("Classic Battle bootstrap", () => {
   beforeEach(() => {
-    vi.resetModules();
     document.documentElement.innerHTML = battleClassicHtml;
     delete window.__battleInitComplete;
     delete window.__initCalled;

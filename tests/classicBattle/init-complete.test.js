@@ -50,7 +50,6 @@ describe("Classic Battle Init Complete Hooks", () => {
   afterEach(() => {
     dom?.window?.close();
     vi.clearAllMocks();
-    vi.resetModules();
   });
 
   it("signals readiness through init-complete dispatch", async () => {

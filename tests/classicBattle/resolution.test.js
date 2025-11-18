@@ -162,7 +162,6 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
 }
 
 beforeEach(() => {
-  vi.resetModules();
   vi.clearAllMocks();
   computeRoundResultMock = undefined;
 });

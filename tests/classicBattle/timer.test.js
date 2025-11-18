@@ -74,7 +74,6 @@ describe("Classic Battle round timer", () => {
   });
 
   test("cleans up visibility listeners between sequential timers", async () => {
-    vi.resetModules();
     const timers = useCanonicalTimers();
     const listenerRefs = new Set();
     const originalAdd = document.addEventListener;
@@ -147,7 +146,6 @@ describe("Classic Battle round timer", () => {
   });
 
   test("cleanup tolerates reentrant expiry and repeated stop calls", async () => {
-    vi.resetModules();
     const timers = useCanonicalTimers();
     let cleanupExecutionCount = 0;
 
@@ -237,7 +235,6 @@ describe("Classic Battle round timer", () => {
   });
 
   test("Next button dispatches countdown events and ready when skip flag is active", async () => {
-    vi.resetModules();
     const timers = useCanonicalTimers();
     const previousOverrides = typeof window !== "undefined" ? window.__FF_OVERRIDES : undefined;
     if (typeof window !== "undefined") {

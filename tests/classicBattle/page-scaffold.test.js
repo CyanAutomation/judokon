@@ -1121,7 +1121,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     engineMock.listeners.clear();
     modalMock.onStart = null;
     vi.clearAllMocks();
-    vi.resetModules();
   });
 
   test("onEngineCreated listeners can unsubscribe and stop receiving notifications", async () => {
