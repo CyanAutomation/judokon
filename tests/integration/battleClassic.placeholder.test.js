@@ -1,7 +1,6 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { readFileSync } from "fs";
-import { join } from "path";
 import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
@@ -75,7 +74,8 @@ describe("Battle Classic opponent placeholder integration", () => {
   let document;
 
   beforeEach(async () => {
-    const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
+    // Construct path without using path.join to avoid issues with vi.resetModules()
+    const htmlPath = `${process.cwd()}/src/pages/battleClassic.html`;
     const htmlContent = readFileSync(htmlPath, "utf-8");
 
     dom = new JSDOM(htmlContent, {
