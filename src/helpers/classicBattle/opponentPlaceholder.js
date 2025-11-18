@@ -101,10 +101,6 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
   }
 
   try {
-    container.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
-  } catch {}
-
-  try {
     targetContainer?.classList?.add("is-obscured");
   } catch {}
   try {
