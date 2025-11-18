@@ -13,10 +13,7 @@ vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   })
 }));
 
-const battleClassicHtml = readFileSync(
-  `${process.cwd()}/src/pages/battleClassic.html`,
-  "utf-8"
-);
+const battleClassicHtml = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
 
 describe("Classic Battle bootstrap", () => {
   beforeEach(() => {

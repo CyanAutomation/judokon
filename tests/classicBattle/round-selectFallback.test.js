@@ -1,10 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-const battleClassicHtml = readFileSync(
-  `${process.cwd()}/src/pages/battleClassic.html`,
-  "utf-8"
-);
+const battleClassicHtml = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
 
 const flushMicrotasks = async () => {
   await Promise.resolve();

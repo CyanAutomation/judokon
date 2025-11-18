@@ -9,7 +9,7 @@ import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 const cwd = process.cwd();
 const sep = process.platform === "win32" ? "\\" : "/";
 const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-// eslint-disable-next-line global-require
+
 const htmlContent = require("fs").readFileSync(htmlPath, "utf-8");
 
 /**

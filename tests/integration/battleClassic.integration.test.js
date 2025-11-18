@@ -27,7 +27,7 @@ import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 const cwd = process.cwd();
 const sep = process.platform === "win32" ? "\\" : "/";
 const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-// eslint-disable-next-line global-require
+
 const htmlContent = require("fs").readFileSync(htmlPath, "utf-8");
 
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
