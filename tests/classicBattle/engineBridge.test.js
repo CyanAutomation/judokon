@@ -44,7 +44,6 @@ describe("bridgeEngineEvents", () => {
     mockEmitBattleEvent = vi.fn();
 
     const { bridgeEngineEvents } = await import("../../src/helpers/classicBattle/engineBridge.js");
-    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
 
     bridgeEngineEvents();
     bridgeEngineEvents();

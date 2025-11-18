@@ -35,6 +35,9 @@ vi.mock("../../src/helpers/timers/createRoundTimer.js", () => ({
 }));
 
 describe("Classic Battle round timer", () => {
+  beforeEach(() => {
+    mockCreateRoundTimerFn = null;
+  });
   test("starts timer and clears on expire deterministically", async () => {
     const timers = useCanonicalTimers();
 
@@ -50,9 +53,42 @@ describe("Classic Battle round timer", () => {
       const updateSpy = vi.spyOn(sbHelper, "updateTimer");
       const clearSpy = vi.spyOn(sbHelper, "clearTimer");
 
-      // Deterministic round timer via shared helper
-      const { mockCreateRoundTimer } = await import("../helpers/roundTimerMock.js");
-      mockCreateRoundTimer({ scheduled: true, tickCount: 2, intervalMs: 1000 });
+      // Setup deterministic timer mock directly via mockCreateRoundTimerFn
+      // instead of using helper's vi.doMock (which won't work with module-level mock)
+      mockCreateRoundTimerFn = () => {
+        const handlers = { tick: new Set(), expired: new Set() };
+        const timer = {
+          on: vi.fn((evt, fn) => {
+            if (handlers[evt]) {
+              handlers[evt].add(fn);
+              // Return unsubscribe function for expired handler
+              return () => {
+                if (handlers[evt]) {
+                  handlers[evt].delete(fn);
+                }
+              };
+            }
+            return () => {};
+          }),
+          start: vi.fn((dur) => {
+            const ticks = [2, 1]; // 2s and 1s countdown
+            // Emit first tick immediately
+            handlers.tick.forEach((fn) => fn(ticks[0]));
+            // Schedule second tick at 1s
+            setTimeout(() => {
+              handlers.tick.forEach((fn) => fn(ticks[1]));
+            }, 1000);
+            // Schedule expiry at 2s (after all ticks)
+            setTimeout(() => {
+              handlers.expired.forEach((fn) => fn());
+            }, 2000);
+          }),
+          stop: vi.fn(),
+          pause: vi.fn(),
+          resume: vi.fn()
+        };
+        return timer;
+      };
 
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
 
@@ -103,8 +139,6 @@ describe("Classic Battle round timer", () => {
         return originalRemove.call(document, type, handler, options);
       });
 
-    let unmock = null;
-
     try {
       const { createBattleHeader } = await import("../utils/testUtils.js");
       const header = createBattleHeader();
@@ -113,13 +147,40 @@ describe("Classic Battle round timer", () => {
       const scoreboardModule = await import("../../src/helpers/setupScoreboard.js");
       scoreboardModule.setupScoreboard({ pauseTimer: () => {}, resumeTimer: () => {} });
 
-      const { mockCreateRoundTimer } = await import("../helpers/roundTimerMock.js");
-      unmock = mockCreateRoundTimer({
-        scheduled: true,
-        tickCount: 1,
-        intervalMs: 1000,
-        stopEmitsExpired: false
-      });
+      // Setup deterministic timer mock directly via mockCreateRoundTimerFn
+      // Emit initial tick, then one more tick at 1s, and emit expired when appropriate
+      mockCreateRoundTimerFn = () => {
+        const handlers = { tick: new Set(), expired: new Set() };
+        const timer = {
+          on: vi.fn((evt, fn) => {
+            if (handlers[evt]) {
+              handlers[evt].add(fn);
+              return () => {
+                if (handlers[evt]) {
+                  handlers[evt].delete(fn);
+                }
+              };
+            }
+            return () => {};
+          }),
+          start: vi.fn((dur) => {
+            // Emit first tick immediately
+            handlers.tick.forEach((fn) => fn(1));
+            // Schedule next tick at 1s
+            setTimeout(() => {
+              handlers.tick.forEach((fn) => fn(0));
+            }, 1000);
+            // Schedule expired at 1s (after all ticks, matching intervalMs: 1000)
+            setTimeout(() => {
+              handlers.expired.forEach((fn) => fn());
+            }, 1000);
+          }),
+          stop: vi.fn(),
+          pause: vi.fn(),
+          resume: vi.fn()
+        };
+        return timer;
+      };
 
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
 
@@ -145,9 +206,7 @@ describe("Classic Battle round timer", () => {
     } finally {
       addSpy.mockRestore();
       removeSpy.mockRestore();
-      if (unmock?.unmock) {
-        unmock.unmock();
-      }
+      mockCreateRoundTimerFn = null;
       timers.cleanup();
       document.body.innerHTML = "";
     }
