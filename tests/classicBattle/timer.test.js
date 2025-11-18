@@ -70,8 +70,8 @@ describe("Classic Battle round timer", () => {
             }
             return () => {};
           }),
-          start: vi.fn(() => {
-            // 2s and 1s countdown
+          start: vi.fn((dur) => {
+            const ticks = [2, 1]; // 2s and 1s countdown
             // Emit first tick immediately
             handlers.tick.forEach((fn) => fn(ticks[0]));
             // Schedule second tick at 1s
