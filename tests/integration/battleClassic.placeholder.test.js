@@ -4,14 +4,6 @@ import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 
-// Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
-// Using require to ensure this is cached separately from the fs import used in tests
-const cwd = process.cwd();
-const sep = process.platform === "win32" ? "\\" : "/";
-const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-
-const htmlContent = require("fs").readFileSync(htmlPath, "utf-8");
-
 /**
  * Completes the first round of battle by clicking round and stat buttons.
  *
@@ -81,6 +73,12 @@ describe("Battle Classic opponent placeholder integration", () => {
   let document;
 
   beforeEach(async () => {
+    // Read HTML file using Node's built-in require to bypass vi.resetModules() issues
+    const fs = require("fs");
+    const path = require("path");
+    const htmlPath = path.join(process.cwd(), "src/pages/battleClassic.html");
+    const htmlContent = fs.readFileSync(htmlPath, "utf-8");
+
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",

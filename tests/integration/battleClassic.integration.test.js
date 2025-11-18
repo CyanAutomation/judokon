@@ -22,14 +22,6 @@ import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
-// Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
-// Using require to ensure this is cached separately from the fs import used in tests
-const cwd = process.cwd();
-const sep = process.platform === "win32" ? "\\" : "/";
-const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-
-const htmlContent = require("fs").readFileSync(htmlPath, "utf-8");
-
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
   const { inspect, state, engine } = testApi;
   const ensureStore = () => {
@@ -98,6 +90,12 @@ describe("Battle Classic Page Integration", () => {
   let document;
 
   beforeEach(async () => {
+    // Read HTML file using Node's built-in require to bypass vi.resetModules() issues
+    const fs = require("fs");
+    const path = require("path");
+    const htmlPath = path.join(process.cwd(), "src/pages/battleClassic.html");
+    const htmlContent = fs.readFileSync(htmlPath, "utf-8");
+
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",

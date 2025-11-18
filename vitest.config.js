@@ -15,7 +15,6 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.js"],
-    testTimeout: 10000,
     // Reduce runtime verbosity from Vitest itself
     log: false,
     /**

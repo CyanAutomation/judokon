@@ -33,7 +33,7 @@ const disableSpy = vi.fn(() => {
   });
 });
 
-vi.mock("../../../src/helpers/battle/index.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/statButtons.js", () => ({
   resetStatButtons: resetSpy,
   disableStatButtons: disableSpy
 }));
