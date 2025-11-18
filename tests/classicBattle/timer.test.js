@@ -1,3 +1,4 @@
+import { describe, test, vi, expect, beforeEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 function installMockBattleMachine(dispatchImpl) {
@@ -25,6 +26,13 @@ function installMockBattleMachine(dispatchImpl) {
     }
   };
 }
+
+let mockCreateRoundTimerFn;
+
+vi.mock("../../src/helpers/timers/createRoundTimer.js", () => ({
+  createRoundTimer: (...args) =>
+    mockCreateRoundTimerFn?.(...args) || { on: () => {}, start: vi.fn(), stop: vi.fn() }
+}));
 
 describe("Classic Battle round timer", () => {
   test("starts timer and clears on expire deterministically", async () => {
@@ -148,6 +156,36 @@ describe("Classic Battle round timer", () => {
   test("cleanup tolerates reentrant expiry and repeated stop calls", async () => {
     const timers = useCanonicalTimers();
     let cleanupExecutionCount = 0;
+    const expiredHandlers = new Set();
+
+    // Set up mock implementation
+    mockCreateRoundTimerFn = () => {
+      const timer = {
+        on: vi.fn((event, handler) => {
+          if (event === "expired" && typeof handler === "function") {
+            expiredHandlers.add(handler);
+            return () => {
+              cleanupExecutionCount += 1;
+              if (expiredHandlers.has(handler)) {
+                handler();
+                expiredHandlers.delete(handler);
+              }
+            };
+          }
+          return () => {};
+        }),
+        start: vi.fn(),
+        stop: vi.fn(() => {
+          for (const handler of [...expiredHandlers]) {
+            handler();
+          }
+          return "stopped";
+        }),
+        pause: vi.fn(),
+        resume: vi.fn()
+      };
+      return timer;
+    };
 
     const originalAdd = document.addEventListener;
     const originalRemove = document.removeEventListener;
@@ -161,38 +199,6 @@ describe("Classic Battle round timer", () => {
       .mockImplementation((type, handler, options) => {
         return originalRemove.call(document, type, handler, options);
       });
-
-    const expiredHandlers = new Set();
-
-    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
-      createRoundTimer: () => {
-        const timer = {
-          on: vi.fn((event, handler) => {
-            if (event === "expired" && typeof handler === "function") {
-              expiredHandlers.add(handler);
-              return () => {
-                cleanupExecutionCount += 1;
-                if (expiredHandlers.has(handler)) {
-                  handler();
-                  expiredHandlers.delete(handler);
-                }
-              };
-            }
-            return () => {};
-          }),
-          start: vi.fn(),
-          stop: vi.fn(() => {
-            for (const handler of [...expiredHandlers]) {
-              handler();
-            }
-            return "stopped";
-          }),
-          pause: vi.fn(),
-          resume: vi.fn()
-        };
-        return timer;
-      }
-    }));
 
     try {
       const { createBattleHeader } = await import("../utils/testUtils.js");
@@ -228,7 +234,7 @@ describe("Classic Battle round timer", () => {
     } finally {
       addSpy.mockRestore();
       removeSpy.mockRestore();
-      vi.doUnmock("../../src/helpers/timers/createRoundTimer.js");
+      mockCreateRoundTimerFn = null;
       timers.cleanup();
       document.body.innerHTML = "";
     }

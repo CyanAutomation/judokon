@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test, vi, beforeEach } from "vitest";
 
 const createListenersMap = () => {
   const listeners = new Map();
@@ -14,24 +14,34 @@ const createListenersMap = () => {
   return { listeners, on, emit };
 };
 
+let mockOn;
+let mockRequireEngine;
+let mockEmitBattleEvent;
+
+vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+  __esModule: true,
+  emitBattleEvent: (...args) => mockEmitBattleEvent?.(...args)
+}));
+
+vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+  __esModule: true,
+  on: (...args) => mockOn?.(...args),
+  requireEngine: () => mockRequireEngine?.(),
+  STATS: ["speed", "power"],
+  onEngineCreated: vi.fn(() => () => {})
+}));
+
 describe("bridgeEngineEvents", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
   test("attaches one listener set per engine instance", async () => {
     const { listeners, on, emit } = createListenersMap();
     const engine = { id: "engine" };
-    const requireEngine = vi.fn(() => engine);
-
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      __esModule: true,
-      emitBattleEvent: vi.fn()
-    }));
-
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-      __esModule: true,
-      on,
-      requireEngine,
-      STATS: ["speed", "power"],
-      onEngineCreated: vi.fn(() => () => {})
-    }));
+    mockOn = on;
+    mockRequireEngine = vi.fn(() => engine);
+    mockEmitBattleEvent = vi.fn();
 
     const { bridgeEngineEvents } = await import("../../src/helpers/classicBattle/engineBridge.js");
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
@@ -46,34 +56,36 @@ describe("bridgeEngineEvents", () => {
     expect(listeners.get("matchEnded")).toHaveLength(2);
 
     const roundDetail = { playerScore: 3, opponentScore: 1 };
-    emitBattleEvent.mockClear();
+    mockEmitBattleEvent.mockClear();
     emit("roundEnded", roundDetail);
-    expect(emitBattleEvent.mock.calls).toEqual([
+    expect(mockEmitBattleEvent.mock.calls).toEqual([
       ["roundResolved", roundDetail],
       ["display.score.update", { player: 3, opponent: 1 }]
     ]);
 
     const roundStartDetail = { round: 2 };
-    emitBattleEvent.mockClear();
+    mockEmitBattleEvent.mockClear();
     emit("roundStarted", roundStartDetail);
-    expect(emitBattleEvent.mock.calls).toEqual([
+    expect(mockEmitBattleEvent.mock.calls).toEqual([
       ["round.started", { roundIndex: 2, availableStats: ["speed", "power"] }]
     ]);
 
     const roundTickDetail = { phase: "round", remaining: 5 };
-    emitBattleEvent.mockClear();
+    mockEmitBattleEvent.mockClear();
     emit("timerTick", roundTickDetail);
-    expect(emitBattleEvent.mock.calls).toEqual([["round.timer.tick", { remainingMs: 5000 }]]);
+    expect(mockEmitBattleEvent.mock.calls).toEqual([["round.timer.tick", { remainingMs: 5000 }]]);
 
     const cooldownTickDetail = { phase: "cooldown", remaining: 4 };
-    emitBattleEvent.mockClear();
+    mockEmitBattleEvent.mockClear();
     emit("timerTick", cooldownTickDetail);
-    expect(emitBattleEvent.mock.calls).toEqual([["cooldown.timer.tick", { remainingMs: 4000 }]]);
+    expect(mockEmitBattleEvent.mock.calls).toEqual([
+      ["cooldown.timer.tick", { remainingMs: 4000 }]
+    ]);
 
     const matchDetail = { outcome: "matchWinPlayer", playerScore: 4, opponentScore: 2 };
-    emitBattleEvent.mockClear();
+    mockEmitBattleEvent.mockClear();
     emit("matchEnded", matchDetail);
-    expect(emitBattleEvent.mock.calls).toEqual([
+    expect(mockEmitBattleEvent.mock.calls).toEqual([
       ["matchOver", matchDetail],
       [
         "match.concluded",
