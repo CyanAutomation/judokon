@@ -23,6 +23,12 @@ import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
+// Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
+const cwd = process.cwd();
+const sep = process.platform === "win32" ? "\\" : "/";
+const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
+const htmlContent = readFileSync(htmlPath, "utf-8");
+
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
   const { inspect, state, engine } = testApi;
   const ensureStore = () => {
@@ -91,18 +97,6 @@ describe("Battle Classic Page Integration", () => {
   let document;
 
   beforeEach(async () => {
-    // Dynamically import fs to handle cases where vi.resetModules() is called in other tests
-    const { readFileSync: readFile } = await import("fs").catch(() => {
-      // Fallback if fs module is cleared - reimport it
-      return import("fs");
-    });
-    
-    const cwd = process.cwd();
-    // On Windows, convert forward slashes to backslashes; on Unix, use forward slashes
-    const sep = process.platform === "win32" ? "\\" : "/";
-    const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-    const htmlContent = readFile(htmlPath, "utf-8");
-
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",

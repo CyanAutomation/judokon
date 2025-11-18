@@ -5,6 +5,12 @@ import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 
+// Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
+const cwd = process.cwd();
+const sep = process.platform === "win32" ? "\\" : "/";
+const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
+const htmlContent = readFileSync(htmlPath, "utf-8");
+
 /**
  * Completes the first round of battle by clicking round and stat buttons.
  *
@@ -74,18 +80,6 @@ describe("Battle Classic opponent placeholder integration", () => {
   let document;
 
   beforeEach(async () => {
-    // Dynamically import fs to handle cases where vi.resetModules() is called in other tests
-    const { readFileSync: readFile } = await import("fs").catch(() => {
-      // Fallback if fs module is cleared - reimport it
-      return import("fs");
-    });
-    
-    const cwd = process.cwd();
-    // On Windows, convert forward slashes to backslashes; on Unix, use forward slashes
-    const sep = process.platform === "win32" ? "\\" : "/";
-    const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-    const htmlContent = readFile(htmlPath, "utf-8");
-
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",
