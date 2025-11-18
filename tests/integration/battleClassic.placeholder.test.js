@@ -74,9 +74,17 @@ describe("Battle Classic opponent placeholder integration", () => {
   let document;
 
   beforeEach(async () => {
-    // Construct path without using path.join to avoid issues with vi.resetModules()
-    const htmlPath = `${process.cwd()}/src/pages/battleClassic.html`;
-    const htmlContent = readFileSync(htmlPath, "utf-8");
+    // Dynamically import fs to handle cases where vi.resetModules() is called in other tests
+    const { readFileSync: readFile } = await import("fs").catch(() => {
+      // Fallback if fs module is cleared - reimport it
+      return import("fs");
+    });
+    
+    const cwd = process.cwd();
+    // On Windows, convert forward slashes to backslashes; on Unix, use forward slashes
+    const sep = process.platform === "win32" ? "\\" : "/";
+    const htmlPath = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
+    const htmlContent = readFile(htmlPath, "utf-8");
 
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
@@ -107,7 +115,8 @@ describe("Battle Classic opponent placeholder integration", () => {
   afterEach(() => {
     dom?.window?.close();
     vi.clearAllMocks();
-    vi.resetModules();
+    // Note: vi.resetModules() is not used because it clears ALL modules including Node.js built-ins,
+    // causing the next test's beforeEach to fail when trying to use fs/path functions
   });
 
   it("renders an accessible opponent placeholder card before any reveal", async () => {

@@ -127,6 +127,8 @@ describe("testApi.isTestMode", () => {
     // so process.env.VITEST will still be true. That's OK - the test
     // is primarily testing the webdriver detection logic
     setNavigatorWebdriver(false);
+    // Ensure window.__TEST__ is set so exposeTestAPI() is called during module load
+    window.__TEST__ = true;
 
     const mod = await import("../../src/helpers/testApi.js");
     const { isTestMode } = mod;
@@ -154,7 +156,6 @@ describe("testApi.isTestMode", () => {
     try {
       await expect(window.__INIT_API.waitForBattleReady(5)).resolves.toBe(true);
     } finally {
-      waitForBattleReadySpy.mockRestore();
       if (originalInitCalled === undefined) {
         delete window.__initCalled;
       } else {
