@@ -51,7 +51,7 @@ vi.mock("../../../src/helpers/tooltip.js", () => ({
 
 const scheduler = await import("../../../src/utils/scheduler.js");
 const skipHandler = await import("../../../src/helpers/classicBattle/skipHandler.js");
-const battle = await import("../../../src/helpers/battle/index.js");
+const battle = await import("../../../src/helpers/classicBattle/statButtons.js");
 const uiHelpers = await import("../../../src/helpers/classicBattle/uiHelpers.js");
 const debugPanel = await import("../../../src/helpers/classicBattle/debugPanel.js");
 const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
