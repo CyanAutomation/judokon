@@ -39,6 +39,36 @@ import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { initDebugFlagHud } from "../helpers/debugFlagHud.js";
+import { safeExecute, safeExecuteAsync, ERROR_LEVELS } from "../helpers/classicBattle/safeExecute.js";
+import {
+  getInitCalled,
+  setInitCalled,
+  getInitComplete,
+  setInitComplete,
+  getStopSelectionTimer,
+  setStopSelectionTimer,
+  getHighestDisplayedRound,
+  setHighestDisplayedRound,
+  getLastManualRoundStartTimestamp,
+  setLastManualRoundStartTimestamp,
+  getOpponentPromptFallbackTimerId,
+  setOpponentPromptFallbackTimerId,
+  getDebugFlag,
+  setDebugFlag,
+  resetBattleClassicGlobalState
+} from "../helpers/classicBattle/globalState.js";
+import {
+  getVisibleRoundNumber,
+  updateRoundCounterFromEngine,
+  resetRoundCounterTracking
+} from "../helpers/classicBattle/roundTracker.js";
+import { recordJudokaLoadFailureTelemetry } from "../helpers/classicBattle/judokaTelemetry.js";
+import {
+  getCurrentTimestamp,
+  scheduleDelayed,
+  clearScheduled,
+  calculateRemaining
+} from "../helpers/classicBattle/timerSchedule.js";
 
 function updateTimerFallback(value) {
   try {
@@ -106,10 +136,8 @@ let activeSelectionTimer = null;
 let failSafeTimerId = null;
 // Re-entrancy guard to avoid starting multiple round cycles concurrently
 let isStartingRoundCycle = false;
-// Suppress duplicate round cycle starts when manual Next clicks trigger both
-// `round.start` and `ready` back-to-back.
-let lastManualRoundStartTimestamp = 0;
 let detachStatHotkeys;
+
 const READY_SUPPRESSION_WINDOW_MS = (() => {
   if (typeof window === "undefined") {
     return 200;
@@ -121,10 +149,7 @@ const READY_SUPPRESSION_WINDOW_MS = (() => {
     return 200;
   }
 })();
-let lastRoundCycleTriggerSource = null;
-let lastRoundCycleTriggerTimestamp = 0;
-// Track the highest round number displayed to the user (per window)
-let highestDisplayedRound = 0;
+
 let hasLoggedFinalizeSelectionUpdateFailure = false;
 
 /**
@@ -151,114 +176,38 @@ function clearOpponentPromptFallbackTimer() {
   } catch {}
 }
 
-// Guarded telemetry configuration for recurring judoka load failures.
-const JUDOKA_FAILURE_TELEMETRY_THRESHOLD = 3;
-const JUDOKA_FAILURE_TELEMETRY_WINDOW_MS = 120000;
-const JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE = 0.25;
-const judokaFailureTelemetryState = {
-  count: 0,
-  firstTimestamp: 0,
-  lastTimestamp: 0,
-  reported: false,
-  sampled: null
-};
-
-function shouldSampleJudokaFailureTelemetry() {
-  if (typeof window !== "undefined") {
-    try {
-      const forced = window.__CLASSIC_BATTLE_FORCE_JUDOKA_TELEMETRY;
-      if (typeof forced === "boolean") {
-        return forced;
-      }
-    } catch {}
-  }
-  return Math.random() < JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE;
-}
-
-function emitJudokaLoadFailureTelemetry(state, safeContext, timestamp) {
-  try {
-    if (typeof window !== "undefined") {
-      try {
-        window.__classicBattleJudokaFailureTelemetry = {
-          count: state.count,
-          context: safeContext,
-          firstTimestamp: state.firstTimestamp,
-          reportedAt: timestamp
-        };
-      } catch {}
-    }
-    if (typeof Sentry !== "undefined") {
-      if (typeof Sentry.startSpan === "function") {
-        Sentry.startSpan(
-          {
-            op: "ui.retry",
-            name: "classicBattle.judokaLoad.retryLoop"
-          },
-          (span) => {
-            try {
-              if (span && typeof span.setAttribute === "function") {
-                span.setAttribute("failureCount", state.count);
-                span.setAttribute("elapsedMs", timestamp - state.firstTimestamp);
-                span.setAttribute("context", safeContext);
-                span.setAttribute("sampleRate", JUDOKA_FAILURE_TELEMETRY_SAMPLE_RATE);
-                span.setAttribute("threshold", JUDOKA_FAILURE_TELEMETRY_THRESHOLD);
-              }
-            } catch {}
-          }
-        );
-      }
-      if (Sentry?.logger?.warn) {
-        try {
-          Sentry.logger.warn(Sentry.logger.fmt`classicBattle:judokaLoadFailure:${safeContext}`, {
-            count: state.count,
-            elapsedMs: timestamp - state.firstTimestamp,
-            threshold: JUDOKA_FAILURE_TELEMETRY_THRESHOLD
-          });
-        } catch {}
-      }
-    }
-  } catch {}
-}
-
-function recordJudokaLoadFailureTelemetry(context) {
-  const state = judokaFailureTelemetryState;
-  const now = Date.now();
-  const windowExceeded =
-    state.firstTimestamp && now - state.firstTimestamp > JUDOKA_FAILURE_TELEMETRY_WINDOW_MS;
-  if (!state.firstTimestamp || windowExceeded) {
-    state.count = 0;
-    state.firstTimestamp = now;
-    state.sampled = null;
-    if (windowExceeded) {
-      state.reported = false;
-    }
-  }
-
-  state.count += 1;
-  state.lastTimestamp = now;
-  const safeContext = typeof context === "string" && context ? context : "unspecified";
-
-  if (state.reported) {
-    return;
-  }
-  if (state.count < JUDOKA_FAILURE_TELEMETRY_THRESHOLD) {
-    return;
-  }
-  if (now - state.firstTimestamp > JUDOKA_FAILURE_TELEMETRY_WINDOW_MS) {
-    return;
-  }
-  if (state.sampled === null) {
-    state.sampled = shouldSampleJudokaFailureTelemetry();
-  }
-  if (!state.sampled) {
-    state.reported = true;
-    return;
-  }
-
-  emitJudokaLoadFailureTelemetry(state, safeContext, now);
-  state.reported = true;
-}
-
+// Import i18n and snackbar helpers
+import { t } from "../helpers/i18n.js";
+import {
+  showSelectionPrompt,
+  getOpponentDelay,
+  setOpponentDelay
+} from "../helpers/classicBattle/snackbar.js";
+import {
+  removeBackdrops,
+  enableNextRoundButton,
+  disableNextRoundButton,
+  showFatalInitError,
+  setNextButtonFinalizedState
+} from "../helpers/classicBattle/uiHelpers.js";
+import {
+  handleStatSelection,
+  getPlayerAndOpponentValues,
+  isOrchestratorActive
+} from "../helpers/classicBattle/selectionHandler.js";
+import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
+import {
+  recordOpponentPromptTimestamp,
+  getOpponentPromptTimestamp,
+  resetOpponentPromptTimestamp,
+  getOpponentPromptMinDuration
+} from "../helpers/classicBattle/opponentPromptTracker.js";
+import {
+  CARD_RETRY_EVENT,
+  LOAD_ERROR_EXIT_EVENT,
+  JudokaDataLoadError
+} from "../helpers/classicBattle/cardSelection.js";
+import { isDevelopmentEnvironment } from "../helpers/environment.js";
 /**
  * Toggle header navigation interactivity.
  *
@@ -276,45 +225,6 @@ function setHeaderNavigationLocked(locked) {
   } catch {}
 }
 
-/**
- * Get the current highest displayed round, preferring window global for test isolation.
- */
-function getHighestDisplayedRound() {
-  if (typeof window !== "undefined" && typeof window.__highestDisplayedRound === "number") {
-    return window.__highestDisplayedRound;
-  }
-  return highestDisplayedRound;
-}
-
-/**
- * Set the highest displayed round, updating both local and window global.
- */
-function setHighestDisplayedRound(value) {
-  highestDisplayedRound = value;
-  if (typeof window !== "undefined") {
-    try {
-      if (window.__DEBUG_ROUND_TRACKING) {
-        try {
-          console.debug("[round-tracking] setHighestDisplayedRound", {
-            value,
-            previous: window.__highestDisplayedRound
-          });
-        } catch {}
-        try {
-          if (!window.__RTRACE_LOGS) window.__RTRACE_LOGS = [];
-          window.__RTRACE_LOGS.push({
-            tag: "setHighestDisplayedRound",
-            value,
-            previous: window.__highestDisplayedRound,
-            stack: new Error().stack
-          });
-        } catch {}
-      }
-    } catch {}
-    window.__highestDisplayedRound = value;
-  }
-}
-
 // Wire Main Menu button to quit flow
 function bindHomeButton(store) {
   try {
@@ -329,128 +239,6 @@ function bindHomeButton(store) {
       homeBtn.__boundQuit = true;
     }
   } catch {}
-}
-/**
- * Minimum delay before enabling the Next button after stat selection.
- * Ensures UI state transitions are visible to users.
- */
-const POST_SELECTION_READY_DELAY_MS = 48;
-
-let lastBroadcastState = null;
-
-function resolveFallbackMachine() {
-  if (typeof getBattleStateMachine !== "function") {
-    return null;
-  }
-  try {
-    return getBattleStateMachine();
-  } catch {
-    return null;
-  }
-}
-
-function isOrchestratorHandlingState(machine) {
-  if (!machine || typeof machine !== "object") {
-    return false;
-  }
-
-  try {
-    const { isActive } = machine;
-    if (typeof isActive === "function") {
-      const active = isActive.call(machine);
-      if (active !== undefined) {
-        return Boolean(active);
-      }
-    }
-  } catch {
-    return true;
-  }
-
-  try {
-    const state = typeof machine.getState === "function" ? machine.getState() : null;
-    if (typeof state === "string" && state) {
-      return true;
-    }
-  } catch {
-    return true;
-  }
-
-  const context = machine?.context;
-  if (context && typeof context === "object") {
-    if (context.orchestrated || context.engine || context.store) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function updateBattleStateDataset(nextState, previousState) {
-  const detail = {
-    from: previousState ?? null,
-    to: String(nextState),
-    event: "fallback"
-  };
-  try {
-    domStateListener({ detail });
-    return;
-  } catch (error) {
-    try {
-      console.debug("battleClassic: domStateListener failed, using fallback DOM sync", error);
-    } catch {
-      // Silently ignore logging failures to prevent cascading errors.
-    }
-  }
-
-  if (typeof document === "undefined" || !document?.body) {
-    return;
-  }
-  try {
-    document.body.dataset.battleState = String(nextState);
-  } catch {}
-  if (previousState) {
-    try {
-      document.body.dataset.prevBattleState = String(previousState);
-    } catch {}
-  } else {
-    try {
-      delete document.body.dataset.prevBattleState;
-    } catch {}
-  }
-}
-
-function emitFallbackStateChange(prevState, nextState) {
-  try {
-    emitBattleEvent("battleStateChange", { from: prevState ?? null, to: nextState });
-  } catch {}
-}
-
-/**
- * @summary Mirror battle state transitions when the orchestrator is inactive.
- * @param {string} nextState - The state identifier to broadcast.
- * @pseudocode
- * 1. Exit early when `nextState` is falsy.
- * 2. Resolve the orchestrator machine; skip broadcasting if it reports active.
- * 3. Ignore duplicate sequential broadcasts of the same state.
- * 4. Persist the previous/next states on `document.body.dataset` for UI fallbacks.
- * 5. Emit a `battleStateChange` event on the classic battle event bus.
- */
-function broadcastBattleState(nextState) {
-  if (!nextState) return;
-
-  const machine = resolveFallbackMachine();
-  if (isOrchestratorHandlingState(machine)) {
-    return;
-  }
-
-  if (lastBroadcastState === nextState) {
-    return;
-  }
-
-  const prevState = lastBroadcastState;
-  lastBroadcastState = nextState;
-
-  updateBattleStateDataset(nextState, prevState);
-  emitFallbackStateChange(prevState, nextState);
 }
 
 /**
@@ -487,30 +275,26 @@ function calculateRemainingOpponentMessageTime() {
 }
 
 function recordRoundCycleTrigger(source) {
-  lastRoundCycleTriggerSource = source;
-  lastRoundCycleTriggerTimestamp = getCurrentTimestamp();
+  const timestamp = getCurrentTimestamp();
+  setLastRoundCycleTrigger(source, timestamp);
   if (typeof window !== "undefined") {
     try {
       window.__lastRoundCycleTrigger = {
-        source: lastRoundCycleTriggerSource,
-        timestamp: lastRoundCycleTriggerTimestamp
+        source,
+        timestamp
       };
     } catch (error) {
-      if (typeof console !== "undefined") {
-        const logger =
-          typeof console.warn === "function"
-            ? console.warn
-            : typeof console.debug === "function"
-              ? console.debug
-              : null;
-        if (logger) {
-          logger.call(console, "battleClassic: failed to persist lastRoundCycleTrigger", {
+      safeExecute(
+        () => {
+          console.warn("battleClassic: failed to persist lastRoundCycleTrigger", {
             error,
-            source: lastRoundCycleTriggerSource,
-            timestamp: lastRoundCycleTriggerTimestamp
+            source,
+            timestamp
           });
-        }
-      }
+        },
+        "recordRoundCycleTrigger persist",
+        ERROR_LEVELS.SILENT
+      );
     }
   }
 }
@@ -926,7 +710,7 @@ function finalizeSelectionReady(store, options = {}) {
     try {
       const selectionMade = Boolean(store?.selectionMade);
       const shouldExpectRoundAdvance = shouldStartCooldown || selectionMade;
-      updateRoundCounterFromEngine({
+      updateRoundCounterDisplay({
         expectAdvance: shouldExpectRoundAdvance,
         forceWhenEngineMatchesVisible: shouldExpectRoundAdvance
       });
@@ -937,7 +721,7 @@ function finalizeSelectionReady(store, options = {}) {
           try {
             if (typeof console !== "undefined" && typeof console.debug === "function") {
               console.debug(
-                "battleClassic: updateRoundCounterFromEngine after selection failed",
+                "battleClassic: updateRoundCounterDisplay after selection failed",
                 err
               );
             }
@@ -1130,318 +914,28 @@ function ensureLobbyBadge() {
 }
 
 /**
- * Read the round number currently shown on the scoreboard.
+ * Wrapper for updateRoundCounterFromEngine that injects the updateRoundCounter function.
+ * This bridges the imported roundTracker module to the local updateRoundCounter DOM function.
  *
- * @pseudocode
- * 1. Get the round-counter element from DOM.
- * 2. Extract text content and match against round number pattern.
- * 3. Parse and validate the number, returning null if invalid.
- *
- * @returns {number|null} Parsed round number or `null` when unavailable.
+ * @param {Object} [options={}] - Configuration options.
+ * @param {boolean} [options.expectAdvance=false] - Whether advancement is expected.
+ * @param {boolean} [options.forceWhenEngineMatchesVisible=false] - Force advancement when engine matches visible.
  */
-function getVisibleRoundNumber() {
+function updateRoundCounterDisplay(options = {}) {
   try {
-    const el = document.getElementById("round-counter");
-    if (!el) return null;
-    const match = String(el.textContent || "").match(/Round\s+(\d+)/i);
-    if (!match) return null;
-    const parsed = Number(match[1]);
-    return Number.isFinite(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Update the round counter from engine state.
- *
- * @pseudocode
- * 1. Read `getRoundsPlayed()` and compute `played + 1` when possible.
- * 2. Track the highest round shown so far and never render a lower value.
- * 3. When `expectAdvance` is true and the engine still reports the prior total,
- *    increment from the visible round so early `round.start` signals progress.
- * 4. Fall back to the last known round (or 1) when engine data is unavailable.
- */
-// Initialize highestDisplayedRound from window or default to 0
-if (typeof window !== "undefined") {
-  window.__highestDisplayedRound = window.__highestDisplayedRound || 0;
-}
-
-// Reset highestDisplayedRound for tests
-window.__highestDisplayedRound = 0;
-let lastForcedTargetRound = null;
-let lastRoundCounterUpdateContext = "init";
-
-/**
- * Reset round counter tracking state to the initial baseline.
- *
- * @pseudocode
- * 1. Zero out highest round and forced target tracking.
- * 2. Restore the update context to "init".
- * 3. Sync diagnostic globals for test introspection.
- */
-function resetRoundCounterTracking() {
-  setHighestDisplayedRound(0);
-  lastForcedTargetRound = null;
-  lastRoundCounterUpdateContext = "init";
-  if (typeof window !== "undefined") {
-    try {
-      window.__highestDisplayedRound = getHighestDisplayedRound();
-      window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
-      window.__previousRoundCounterContext = null;
-    } catch {}
-  }
-}
-
-/**
- * Determine whether forced advancement should apply for this update.
- *
- * @pseudocode
- * 1. Require an expected advance with a visible round already shown.
- * 2. Ensure the engine has not yet caught up to the visible round.
- * 3. Prevent forcing past any previously coerced round target.
- *
- * @param {boolean} expectAdvance - Whether the caller expects a visible advance.
- * @param {boolean} hasVisibleRound - Whether a round is already displayed.
- * @param {boolean} hasEngineRound - Whether the engine reported a round.
- * @param {number} engineRound - Round value read from the engine.
- * @param {number|null} visibleRound - Round value currently shown.
- * @param {boolean} forceWhenEngineMatchesVisible - Whether to advance when the
- * engine round matches the visible round (post-selection forcing).
- * @returns {boolean} True when the UI should coerce the next round.
- */
-function shouldForceAdvancement(
-  expectAdvance,
-  hasVisibleRound,
-  hasEngineRound,
-  engineRound,
-  visibleRound,
-  forceWhenEngineMatchesVisible
-) {
-  // Engine hasn't caught up to the visible round yet (normal lag scenario)
-  const engineLagging = !hasEngineRound || engineRound < Number(visibleRound);
-  // Engine matches visible round but we want to force advancement (post-selection scenario)
-  const engineMatching = forceWhenEngineMatchesVisible && engineRound === Number(visibleRound);
-  return (
-    expectAdvance &&
-    hasVisibleRound &&
-    (engineLagging || engineMatching) &&
-    (lastForcedTargetRound === null || Number(visibleRound) < lastForcedTargetRound)
-  );
-}
-
-/**
- * Compute the lowest acceptable round to render.
- *
- * @pseudocode
- * 1. Use the tracked highest round when available; otherwise fall back to 1.
- * 2. Use the visible round when present; otherwise fall back to 1.
- * 3. Return the max of those candidates.
- */
-function computeBaselineRound(hasHighestRound, highestRound, hasVisibleRound, visibleRound) {
-  const highest = hasHighestRound ? highestRound : 1;
-  const visible = hasVisibleRound ? Number(visibleRound) : 1;
-  return Math.max(highest, visible);
-}
-
-/**
- * Determine the next round to display and whether it was forced.
- *
- * @pseudocode
- * 1. Start from the engine-reported round when available.
- * 2. Apply forced advancement rules when the engine lags behind or matches the
- *    visible round when forced.
- * 3. Guarantee the result is never below the calculated baseline.
- *
- * @param {Object} options - Configuration options
- * @param {boolean} options.expectAdvance - Whether advancement is expected
- * @param {boolean} options.hasVisibleRound - Whether a round is currently displayed
- * @param {boolean} options.hasEngineRound - Whether the engine reported a round
- * @param {number} options.engineRound - Round value from the engine
- * @param {number|null} options.visibleRound - Currently displayed round
- * @param {number} options.baselineRound - Minimum acceptable round
- * @param {boolean} [options.forceWhenEngineMatchesVisible=false] - Force advancement when engine matches visible round (used after selections)
- * @returns {Object} Object with nextRound and forceAdvance properties
- */
-function resolveNextRound({
-  expectAdvance,
-  hasVisibleRound,
-  hasEngineRound,
-  engineRound,
-  visibleRound,
-  baselineRound,
-  forceWhenEngineMatchesVisible = false
-}) {
-  let nextRound = hasEngineRound ? engineRound : baselineRound;
-  const forceAdvance = shouldForceAdvancement(
-    expectAdvance,
-    hasVisibleRound,
-    hasEngineRound,
-    engineRound,
-    visibleRound,
-    forceWhenEngineMatchesVisible
-  );
-
-  if (forceAdvance) {
-    const forcedTarget = Math.max(Number(visibleRound) + 1, baselineRound);
-    nextRound = Math.max(nextRound, forcedTarget);
-  } else {
-    nextRound = Math.max(nextRound, baselineRound);
-  }
-
-  return { nextRound, forceAdvance };
-}
-
-/**
- * Update global tracking state and diagnostics after rendering a new round.
- *
- * @pseudocode
- * 1. Raise the recorded highest displayed round when necessary.
- * 2. Maintain forced advancement guards based on the latest outcome.
- * 3. Record the active update context for debug instrumentation.
- */
-function updateRoundCounterState({
-  nextRound,
-  expectAdvance,
-  shouldForceAdvance,
-  hasEngineRound,
-  engineRound,
-  priorContext
-}) {
-  try {
-    if (typeof window !== "undefined" && window.__DEBUG_ROUND_TRACKING) {
-      console.debug("[round-tracking] updateRoundCounterState", {
-        nextRound,
-        prevGlobal: window.__highestDisplayedRound,
-        highestDisplayedRoundBefore: highestDisplayedRound,
-        expectAdvance,
-        shouldForceAdvance,
-        engineRound,
-        priorContext
-      });
-    }
-  } catch {}
-
-  setHighestDisplayedRound(Math.max(getHighestDisplayedRound(), nextRound));
-
-  if (shouldForceAdvance) {
-    lastForcedTargetRound = nextRound;
-  } else if (!expectAdvance || (hasEngineRound && engineRound >= nextRound)) {
-    lastForcedTargetRound = null;
-  }
-
-  lastRoundCounterUpdateContext = expectAdvance ? "advance" : "regular";
-  if (typeof window !== "undefined") {
-    try {
-      window.__highestDisplayedRound = window.__highestDisplayedRound;
-      window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
-      window.__previousRoundCounterContext = priorContext;
-    } catch {}
-  }
-}
-
-/**
- * Update the round counter from engine state.
- *
- * @pseudocode
- * 1. Read `getRoundsPlayed()` and compute `played + 1` when possible.
- * 2. Track the highest round shown so far and never render a lower value.
- * 3. When `expectAdvance` is true and the engine still reports the prior total,
- *    increment from the visible round so early `round.start` signals progress.
- * 4. When a selection was just made, force advancement even if the engine still
- *    matches the visible round.
- * 5. Fall back to the last known round (or 1) when engine data is unavailable.
- *
- * @param {Object} [options={}] - Configuration flags for this update.
- * @param {boolean} [options.expectAdvance=false] - Whether the caller expects an advance.
- * @param {boolean} [options.forceWhenEngineMatchesVisible=false] - Force advancement when engine matches visible round (post-selection handling).
- */
-function updateRoundCounterFromEngine(options = {}) {
-  const { expectAdvance = false, forceWhenEngineMatchesVisible = false } = options;
-  const visibleRound = getVisibleRoundNumber();
-  const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
-
-  if (hasVisibleRound) {
-    setHighestDisplayedRound(Math.max(getHighestDisplayedRound(), Number(visibleRound)));
-  }
-
-  const priorContext = lastRoundCounterUpdateContext;
-
-  try {
-    const engineRound = calculateEngineRound();
-    const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
-    const hasHighestRound =
-      Number.isFinite(getHighestDisplayedRound()) && getHighestDisplayedRound() >= 1;
-    const baselineRound = computeBaselineRound(
-      hasHighestRound,
-      getHighestDisplayedRound(),
-      hasVisibleRound,
-      visibleRound
-    );
-
-    const { nextRound, forceAdvance } = resolveNextRound({
-      expectAdvance,
-      hasVisibleRound,
-      hasEngineRound,
-      engineRound,
-      visibleRound,
-      baselineRound,
-      forceWhenEngineMatchesVisible
-    });
-
-    if (typeof window !== "undefined" && window.__DEBUG_ROUND_TRACKING) {
-      try {
-        console.debug("[RTRACE] updateRoundCounterFromEngine -> nextRound", {
-          nextRound,
-          engineRound,
-          getRoundsPlayed: typeof getRoundsPlayed === "function" ? getRoundsPlayed() : undefined,
-          stack: new Error().stack
-        });
-      } catch {}
-    }
-    updateRoundCounter(nextRound);
-    updateRoundCounterState({
-      nextRound,
-      expectAdvance,
-      shouldForceAdvance: forceAdvance,
-      hasEngineRound,
-      engineRound,
-      priorContext
+    updateRoundCounterFromEngine({
+      ...options,
+      updateRoundCounterFn: updateRoundCounter
     });
   } catch (err) {
-    console.debug("battleClassic: getRoundsPlayed failed", err);
-    handleRoundCounterFallback(visibleRound);
-    lastRoundCounterUpdateContext = "fallback";
+    safeExecute(
+      () => console.debug("battleClassic: updateRoundCounterDisplay failed", err),
+      "updateRoundCounterDisplay",
+      ERROR_LEVELS.DEBUG
+    );
   }
 }
 
-function calculateEngineRound() {
-  const played = Number(getRoundsPlayed?.() || 0);
-  return Number.isFinite(played) ? played + 1 : NaN;
-}
-
-function handleRoundCounterFallback(visibleRound) {
-  try {
-    const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
-    const baseline =
-      Number.isFinite(getHighestDisplayedRound()) && getHighestDisplayedRound() >= 1
-        ? getHighestDisplayedRound()
-        : 1;
-    const fallback = hasVisibleRound ? Math.max(Number(visibleRound), baseline) : baseline;
-    updateRoundCounter(fallback);
-    setHighestDisplayedRound(Math.max(getHighestDisplayedRound(), fallback));
-    lastForcedTargetRound = null;
-    if (typeof window !== "undefined") {
-      try {
-        window.__highestDisplayedRound = getHighestDisplayedRound();
-        window.__lastRoundCounterContext = "fallback";
-        window.__previousRoundCounterContext = lastRoundCounterUpdateContext;
-      } catch {}
-    }
-  } catch (err2) {
-    console.debug("battleClassic: updateRoundCounter fallback failed", err2);
-  }
-}
 
 async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
@@ -1817,7 +1311,7 @@ async function startRoundCycle(store, options = {}) {
       broadcastBattleState("roundStart");
     }
 
-    updateRoundCounterFromEngine({ expectAdvance: true });
+    updateRoundCounterDisplay({ expectAdvance: true });
 
     try {
       renderStatButtons(store);
