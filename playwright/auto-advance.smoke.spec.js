@@ -54,7 +54,9 @@ test.describe("Classic Battle – auto-advance", () => {
   test("shows countdown and auto-advances without Next", async ({ page }) => {
     await page.goto("/index.html");
 
-    // Navigate to Classic Battle if needed
+    // Navigate to Classic Battle and wait for navigation to complete
+    const navigationPromise = page.waitForURL("**/battleClassic.html");
+    
     let startBtn = await page.$('[data-testid="start-classic"]');
     if (startBtn) {
       await startBtn.click();
@@ -63,9 +65,9 @@ test.describe("Classic Battle – auto-advance", () => {
       startBtn = await page.getByText("Classic Battle").first();
       await startBtn.click();
     }
-
-    // Wait for navigation to complete before accessing Test API
-    await page.waitForLoadState("domcontentloaded");
+    
+    // Wait for the navigation to complete
+    await navigationPromise;
 
     await waitForBattleReady(page, { allowFallback: false });
 
