@@ -756,26 +756,19 @@ details#cli-shortcuts > summary.cli-shortcuts-summary {
 }
 
 .cli-shortcuts-body {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 8px;
   padding: 0 16px 16px;
 }
 
-.cli-shortcuts-body > .cli-settings-header {
-  margin-top: 8px;
+.cli-shortcuts[open] .cli-shortcuts-body,
+details#cli-shortcuts[open] .cli-shortcuts-body {
+  display: flex;
 }
 
-#cli-shortcuts-close {
-  /* place the close control inline and visually aligned to the right */
-  float: none;
-  background: none;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  font-size: 14px;
-  display: inline-block;
-  margin-left: auto;
+.cli-shortcuts-body > .cli-settings-header {
+  margin-top: 8px;
 }
 /* Ensure good contrast for links if any appear */
 a {
@@ -843,18 +836,10 @@ select:focus,
   font-size: 12px;
 }
 
-details.cli-settings > summary,
-#cli-shortcuts-close {
+details.cli-settings > summary {
   align-items: center;
   display: flex;
-}
-details.cli-settings > summary {
   justify-content: space-between;
-}
-#cli-shortcuts-close {
-  justify-content: center;
-  min-height: 44px;
-  min-width: 44px;
 }
 .pre-wrap {
   margin: 0;

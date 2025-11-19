@@ -78,13 +78,6 @@ const hasDocument = typeof document !== "undefined";
 const getSafeDocument = () => (hasDocument ? document : null);
 const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
 
-function syncShortcutsButtonState(isOpen) {
-  const close = byId("cli-shortcuts-close");
-  if (close) {
-    close.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  }
-}
-
 function handleShortcutsToggle(event) {
   const target = event?.currentTarget;
   if (!target || typeof target !== "object") {
@@ -95,7 +88,6 @@ function handleShortcutsToggle(event) {
     return;
   }
   const isOpen = target.open === true;
-  syncShortcutsButtonState(isOpen);
   try {
     localStorage.setItem("battleCLI.shortcutsCollapsed", isOpen ? "0" : "1");
   } catch {}
@@ -925,7 +917,6 @@ function updateCliShortcutsVisibility() {
       section.open = false;
     }
     section.hidden = true;
-    syncShortcutsButtonState(false);
     if (persistedCollapsed === false || wasOpen) {
       try {
         localStorage.setItem("battleCLI.shortcutsCollapsed", "1");
@@ -943,8 +934,6 @@ function updateCliShortcutsVisibility() {
   if (shouldBeOpen !== section.open) {
     section.open = shouldBeOpen;
   }
-
-  syncShortcutsButtonState(section.open);
   updateShortcutsFallback(enabled);
   updateControlsHint();
 }
@@ -953,52 +942,32 @@ function updateCliShortcutsVisibility() {
  * Expand the CLI shortcuts panel.
  *
  * @pseudocode
- * if test hook `setShortcutsCollapsed(false)` returns false:
- *   show shortcuts section and body
- *   persist expanded state to localStorage
- *   set close button `aria-expanded` to true
+ * show shortcuts section and body
+ * allow the native toggle event to persist expanded state to localStorage
  * set state.shortcutsOverlay = true to track that overlay is active
  */
 function showCliShortcuts() {
-  if (window.__battleCLIinit?.setShortcutsCollapsed?.(false)) {
-    return;
-  }
-  pauseTimers();
   const sec = byId("cli-shortcuts");
   if (sec) {
     sec.open = true;
     sec.hidden = false;
   }
-  state.shortcutsOverlay = true;
 }
 
 /**
  * Collapse the CLI shortcuts panel and restore focus.
  *
  * @pseudocode
- * if test hook `setShortcutsCollapsed(true)` returns false:
- *   hide shortcuts section and body
- *   persist collapsed state to localStorage
- *   set close button `aria-expanded` to false
+ * hide shortcuts section and body
+ * persist collapsed state to localStorage via the native toggle event
  * if stored focus exists: focus it and clear reference
  * set state.shortcutsOverlay = null to track that overlay is closed
  */
 function hideCliShortcuts() {
-  if (window.__battleCLIinit?.setShortcutsCollapsed?.(true)) {
-    return;
-  }
   const sec = byId("cli-shortcuts");
   if (sec) {
     sec.open = false;
   }
-  try {
-    resumeTimers();
-  } catch {}
-  try {
-    state.shortcutsReturnFocus?.focus();
-  } catch {}
-  state.shortcutsReturnFocus = null;
-  state.shortcutsOverlay = null;
 }
 
 function showBottomLine(text) {
@@ -2215,7 +2184,7 @@ const globalKeyHandlers = {
         const activeElement = getActiveElement();
         state.shortcutsReturnFocus = activeElement instanceof HTMLElement ? activeElement : null;
         showCliShortcuts();
-        byId("cli-shortcuts-close")?.focus();
+        sec.querySelector("summary")?.focus();
         return;
       }
       hideCliShortcuts();
@@ -3100,16 +3069,6 @@ export async function setupFlags() {
   }
   updateCliShortcutsVisibility();
   updateControlsHint();
-  if (shortcutsDetails) {
-    syncShortcutsButtonState(shortcutsDetails.open);
-  }
-  const close = byId("cli-shortcuts-close");
-  close?.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    state.ignoreNextAdvanceClick = true;
-    hideCliShortcuts();
-  });
   checkbox?.addEventListener("change", async () => {
     await toggleVerbose(!!checkbox.checked);
   });

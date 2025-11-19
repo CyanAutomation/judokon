@@ -2,18 +2,16 @@
  * Synchronize the disclosure state of the country flag panel and manage focus affordances.
  *
  * @summary This helper leans on the native `<details>` behaviour by toggling the
- * `open` property directly, while ensuring focus and accessibility attributes stay
- * aligned with the rendered state.
+ * `open` property directly and handling focus transitions.
  *
  * @pseudocode
  * 1. Determine the next state using the optional `show` parameter and the panel's
  *    native `open` property.
  * 2. Capture the previous open state (either the provided `previousOpen` hint or
  *    the panel's current state) so focus only moves on real transitions.
- * 3. Set the `open` property accordingly, mirroring the state back to
- *    `aria-expanded` on the summary toggle.
- * 4. Update the disclosure content's `aria-hidden` attribute to mirror visibility.
- * 5. When opening, focus the first flag button to keep keyboard navigation fluid.
+ * 3. Set the `open` property accordingly to let CSS and the browser manage
+ *    visibility.
+ * 4. When opening, focus the first flag button to keep keyboard navigation fluid.
  *    When closing, return focus to the toggle control.
  *
  * @param {HTMLElement|null} toggleButton - The summary element that toggles the panel.
@@ -33,21 +31,6 @@ export function toggleCountryPanel(toggleButton, panel, show, options) {
   const shouldOpen = typeof show === "boolean" ? show : !details.open;
   const previousOpen = options?.previousOpen ?? wasOpen;
   details.open = shouldOpen;
-
-  if (toggleButton) {
-    toggleButton.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
-  }
-
-  const content = details.querySelector?.(".country-panel__content");
-  if (content) {
-    if (shouldOpen) {
-      content.removeAttribute("aria-hidden");
-      content.removeAttribute("inert");
-    } else {
-      content.setAttribute("aria-hidden", "true");
-      content.setAttribute("inert", "true");
-    }
-  }
 
   const stateChanged = previousOpen !== shouldOpen;
 

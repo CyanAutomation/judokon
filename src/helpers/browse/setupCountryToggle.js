@@ -7,7 +7,7 @@ import { toggleCountryPanel } from "../countryPanel.js";
  *
  * @pseudocode
  * 1. Derive helper functions for reading the native `open` state and loading flag buttons.
- * 2. Mirror the disclosure state via the shared `toggleCountryPanel` helper so focus and aria are synchronized.
+ * 2. Mirror the disclosure state via the shared `toggleCountryPanel` helper so focus stays aligned with visibility.
  * 3. Return the adapter consumed by {@link createCountryToggleController}.
  *
  * @param {HTMLElement} toggleButton - Summary element that toggles the panel.
@@ -80,9 +80,6 @@ export function createCountryToggleController(adapter) {
       if (isOpen && !flagsLoaded) {
         await adapter.loadFlags?.();
         flagsLoaded = adapter.hasFlags ? adapter.hasFlags() : true;
-        if (flagsLoaded) {
-          adapter.reflectPanelState?.(lastKnownOpen);
-        }
       }
     },
     handleKeydown(event) {
