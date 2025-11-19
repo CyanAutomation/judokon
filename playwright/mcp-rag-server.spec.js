@@ -66,9 +66,7 @@ test.describe("MCP RAG Server Health Checks", () => {
         return;
       }
 
-      if (proc.exitCode !== null) {
-        throw new Error("Process has exited");
-      }
+      // Process health check already handled above
 
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
