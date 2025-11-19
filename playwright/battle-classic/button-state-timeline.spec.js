@@ -63,8 +63,7 @@ test.describe("Classic Battle - Button State Timeline", () => {
       console.log(`${i}: [${entry.type}]`, JSON.stringify(entry.detail));
     });
 
-    expect(disableEvent).toBeDefined();
-    expect(disableEvent?.timedOut).toBe(false);
+    expect(disableEvent?.timedOut ?? true).toBe(false);
     expect(timeline.some((event) => event.type === "disabled")).toBe(true);
     await expect(statButtons.first()).toBeDisabled();
   });
