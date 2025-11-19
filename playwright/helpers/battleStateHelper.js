@@ -127,23 +127,33 @@ export async function ensureBattleCliResetChannel(page) {
   });
 
   const waitForReset = async (timeout = 5_000) => {
+    const currentDeferred = deferred;
     const result = await withTimeout(
-      deferred.promise,
+      currentDeferred.promise,
       timeout,
       `Timed out waiting for Battle CLI reset after ${timeout}ms`
     );
-    deferred = createDeferred();
-    return result;
+    const nextDeferred = createDeferred();
+    const currentResult = result;
+    deferred = nextDeferred;
+    return currentResult;
   };
 
   const signalReset = async (payload) => {
-    await page.evaluate(({ bindingName, data }) => {
-      const notifier = window[bindingName];
-      if (typeof notifier !== "function") {
-        throw new Error(`Reset notifier ${bindingName} not available on window`);
+    try {
+      await page.evaluate(({ bindingName, data }) => {
+        const notifier = window[bindingName];
+        if (typeof notifier !== "function") {
+          throw new Error(`Reset notifier ${bindingName} not available on window`);
+        }
+        notifier(data);
+      }, { bindingName: BATTLE_CLI_RESET_BINDING, data: payload });
+    } catch (error) {
+      if (error.message?.includes("Target page, context or browser has been closed")) {
+        deferred.resolve({ ok: false, error: "Page context destroyed" });
       }
-      notifier(data);
-    }, { bindingName: BATTLE_CLI_RESET_BINDING, data: payload });
+      throw error;
+    }
   };
 
   const channel = { waitForReset, signalReset };
