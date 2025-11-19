@@ -1,6 +1,8 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { waitForBattleState, waitForStatButtonsReady } from "../helpers/battleStateHelper.js";
 
+const PLAYWRIGHT_TIMEOUT_MS = Number(process.env.PLAYWRIGHT_TIMEOUT ?? 10000);
+
 test.describe("Classic Battle - Immediate Button State After Click", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -22,7 +24,7 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
       const inspectorReady = typeof api.inspect?.getStatButtonSnapshot === "function";
       const stateHelpersReady = typeof api.state?.waitForStatButtonsReady === "function";
       return statButtonsReady && inspectorReady && stateHelpersReady;
-    }, { timeout: 10000 });
+    }, { timeout: PLAYWRIGHT_TIMEOUT_MS });
   });
 
   test("button state check", async ({ page }) => {
@@ -59,7 +61,9 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
     console.log("Immediate snapshot:", JSON.stringify(immediateSnapshot, null, 2));
 
     if (!immediateSnapshot) {
-      throw new Error("Failed to get immediate snapshot from __TEST_API");
+      throw new Error(
+        "Failed to get immediate snapshot from __TEST_API. Check if the test API is properly initialized and the inspect module is available."
+      );
     }
     const primaryButton = immediateSnapshot?.buttons?.[0] ?? null;
     expect(primaryButton?.disabled).toBe(true);
