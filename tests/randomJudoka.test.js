@@ -416,14 +416,6 @@ describe("Random Judoka Selection", () => {
         Object.keys(expectedResponseFormat).sort()
       );
       expect(responseFormat).toEqual(expectedResponseFormat);
-      expect(responseFormat).toEqual(
-        expect.objectContaining({
-          judoka: expect.any(String),
-          filters: expect.any(String),
-          totalCount: expect.any(String),
-          matchCount: expect.any(String)
-        })
-      );
       expect(responseFormat.judoka.length).toBeGreaterThan(0);
       expect(responseFormat.filters.length).toBeGreaterThan(0);
       expect(responseFormat.totalCount.length).toBeGreaterThan(0);
