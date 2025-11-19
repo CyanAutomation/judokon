@@ -104,7 +104,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   if (cleanedLines.length === 0) return false;
 
   const summaryLine = cleanedLines[0];
-  if (summaryLine.startsWith("@")) return false;
+  const isSummaryTag = summaryLine.startsWith("@summary");
 
   const summaryWithoutMarkers = summaryLine.trim();
   const hasNonWhitespaceContent = /\S/.test(summaryWithoutMarkers.replace(/\*/g, ""));
