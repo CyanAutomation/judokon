@@ -4,6 +4,30 @@
 
 export const STAT_WAIT_TIMEOUT_MS = 5_000;
 export const MATCH_COMPLETION_TIMEOUT_MS = 30_000;
+const BATTLE_CLI_RESET_BINDING = "__onBattleCliReset";
+
+const battleCliResetChannelKey = Symbol("battleCliResetChannel");
+
+function createDeferred() {
+  /** @type {(value: any) => void} */
+  let resolve;
+  const promise = new Promise((res) => {
+    resolve = res;
+  });
+  return {
+    promise,
+    resolve: /** @param {any} value */ (value) => resolve(value)
+  };
+}
+
+async function withTimeout(promise, timeoutMs, message) {
+  return await Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), timeoutMs);
+    })
+  ]);
+}
 
 function isValidMatchCompletionPayload(payload) {
   if (!payload || typeof payload !== "object") {
@@ -79,6 +103,52 @@ export async function waitForTestApi(page, options = {}) {
     },
     { timeout }
   );
+}
+
+/**
+ * Create (or reuse) a channel for receiving Battle CLI reset completion events.
+ * @pseudocode
+ * REUSE an existing channel attached to the page when present.
+ * EXPOSE a binding so the page can notify when the reset completes.
+ * AUTO-RESET the underlying promise after each notification to support multiple waits.
+ * PROVIDE waitForReset + signalReset helpers for tests and fixtures.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @returns {Promise<{ waitForReset: (timeout?: number) => Promise<any>, signalReset: (payload: any) => Promise<void> }>} Channel helpers
+ */
+export async function ensureBattleCliResetChannel(page) {
+  if (page[battleCliResetChannelKey]) {
+    return page[battleCliResetChannelKey];
+  }
+
+  let deferred = createDeferred();
+
+  await page.exposeBinding(BATTLE_CLI_RESET_BINDING, (_source, payload) => {
+    deferred.resolve(payload);
+  });
+
+  const waitForReset = async (timeout = 5_000) => {
+    const result = await withTimeout(
+      deferred.promise,
+      timeout,
+      `Timed out waiting for Battle CLI reset after ${timeout}ms`
+    );
+    deferred = createDeferred();
+    return result;
+  };
+
+  const signalReset = async (payload) => {
+    await page.evaluate(({ bindingName, data }) => {
+      const notifier = window[bindingName];
+      if (typeof notifier !== "function") {
+        throw new Error(`Reset notifier ${bindingName} not available on window`);
+      }
+      notifier(data);
+    }, { bindingName: BATTLE_CLI_RESET_BINDING, data: payload });
+  };
+
+  const channel = { waitForReset, signalReset };
+  page[battleCliResetChannelKey] = channel;
+  return channel;
 }
 
 /**
