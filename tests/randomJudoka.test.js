@@ -409,10 +409,25 @@ describe("Random Judoka Selection", () => {
 
     it("should have response format documented", () => {
       const result = getRandomSelectionDocumentation();
-      expect(result.responseFormat).toHaveProperty("judoka");
-      expect(result.responseFormat).toHaveProperty("filters");
-      expect(result.responseFormat).toHaveProperty("totalCount");
-      expect(result.responseFormat).toHaveProperty("matchCount");
+      const { responseFormat } = result;
+      const expectedResponseFormat = RANDOM_SELECTION_DOCUMENTATION.responseFormat;
+
+      expect(Object.keys(responseFormat).sort()).toEqual(
+        Object.keys(expectedResponseFormat).sort()
+      );
+      expect(responseFormat).toEqual(expectedResponseFormat);
+      expect(responseFormat).toEqual(
+        expect.objectContaining({
+          judoka: expect.any(String),
+          filters: expect.any(String),
+          totalCount: expect.any(String),
+          matchCount: expect.any(String)
+        })
+      );
+      expect(responseFormat.judoka.length).toBeGreaterThan(0);
+      expect(responseFormat.filters.length).toBeGreaterThan(0);
+      expect(responseFormat.totalCount.length).toBeGreaterThan(0);
+      expect(responseFormat.matchCount.length).toBeGreaterThan(0);
     });
   });
 
