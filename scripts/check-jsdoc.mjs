@@ -108,7 +108,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
 
   const summaryWithoutMarkers = summaryLine.trim();
   const hasNonWhitespaceContent = /\S/.test(summaryWithoutMarkers.replace(/\*/g, ""));
-  if (!hasNonAsteriskContent) return false;
+  if (!hasNonWhitespaceContent) return false;
 
   return true;
 }
