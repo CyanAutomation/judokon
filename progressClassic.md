@@ -56,27 +56,11 @@ The `opponent-choosing.smoke.spec.js` test was failing because the `opponentDela
 
 ---
 
-## Root Cause: Shallow Merge in `initFeatureFlags`
+## Root Cause: Test-localStorage overrides never survive setup
 
-The primary issue is a shallow merge operation within `src/helpers/featureFlags.js` in the `initFeatureFlags` function.
+The failing snackbar is not due to `initFeatureFlags` losing nested data; `loadSettings` already performs a deep merge and `DEFAULT_SETTINGS.featureFlags.opponentDelayMessage` is shipped `enabled: true` (see `src/data/settings.json`), so the app should show the „Opponent is choosing…” message even with the baseline defaults. Instead, the value written by the test’s `addInitScript` never survives to runtime because the `playwright/fixtures/commonSetup.js` fixture clears `localStorage` and immediately rewrites it to `{ featureFlags: { enableTestMode: { enabled: true } } }` on every navigation. That fixture adds its init scripts after the test’s scripts, so the injected flag override is clobbered before the app ever calls `initFeatureFlags`. The shallow merge in `initFeatureFlags` therefore just re-applies the same defaults and never sees the overridden flag; the real blocker is the fixture’s aggressive reset.
 
-```javascript
-// src/helpers/featureFlags.js
-export async function initFeatureFlags() {
-  // ...
-  settings = await loadSettings();
-  const mergedFlags = {
-    ...DEFAULT_SETTINGS.featureFlags,
-    ...(settings.featureFlags || {})
-  };
-  cachedFlags = mergedFlags;
-  // ...
-}
-```
-
-The line `const mergedFlags = { ...DEFAULT_SETTINGS.featureFlags, ...(settings.featureFlags || {}) };` performs a shallow copy. When `settings.featureFlags` from `localStorage` contains a partial list of flags (e.g., just `opponentDelayMessage`), this operation replaces entire flag objects, losing nested properties like `description` and any other default flags not present in the `localStorage` version. The `isEnabled` function relies on `cachedFlags`, which is assigned this incorrectly merged object.
-
-While the settings merge logic in `src/config/loadSettings.js` is complex, the most direct cause of this bug is the incorrect shallow merge in `initFeatureFlags`.
+The merge in `initFeatureFlags` is redundant but not broken: it runs after `loadSettings` (which already merges via `mergeKnown`), copies the merged map into `cachedFlags`, and reuses it for `setCachedSettings`. The instrumentation we added during Phase 4 confirmed `isEnabled("opponentDelayMessage")` was still `false` in the browser because no flag data survived, not because nested properties were stripped away.
 
 ---
 

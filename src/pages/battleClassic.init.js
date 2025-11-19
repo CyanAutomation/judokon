@@ -33,38 +33,17 @@ import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerSer
 import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
-import { getBattleStateMachine } from "../helpers/classicBattle/orchestrator.js";
-import { domStateListener } from "../helpers/classicBattle/stateTransitionListeners.js";
 import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { initDebugFlagHud } from "../helpers/debugFlagHud.js";
+import { safeExecute, ERROR_LEVELS } from "../helpers/classicBattle/safeExecute.js";
 import {
-  safeExecute,
-  safeExecuteAsync,
-  ERROR_LEVELS
-} from "../helpers/classicBattle/safeExecute.js";
-import {
-  getInitCalled,
-  setInitCalled,
-  getInitComplete,
-  setInitComplete,
-  getStopSelectionTimer,
-  setStopSelectionTimer,
-  getHighestDisplayedRound,
-  setHighestDisplayedRound,
-  getLastManualRoundStartTimestamp,
-  setLastManualRoundStartTimestamp,
   getOpponentPromptFallbackTimerId,
   setOpponentPromptFallbackTimerId,
-  getLastRoundCycleTrigger,
-  setLastRoundCycleTrigger,
-  getDebugFlag,
-  setDebugFlag,
-  resetBattleClassicGlobalState
+  setLastRoundCycleTrigger
 } from "../helpers/classicBattle/globalState.js";
 import {
-  getVisibleRoundNumber,
   updateRoundCounterFromEngine,
   resetRoundCounterTracking
 } from "../helpers/classicBattle/roundTracker.js";
@@ -72,8 +51,7 @@ import { recordJudokaLoadFailureTelemetry } from "../helpers/classicBattle/judok
 import {
   getCurrentTimestamp,
   scheduleDelayed,
-  clearScheduled,
-  calculateRemaining
+  clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
 
 function updateTimerFallback(value) {
