@@ -59,12 +59,14 @@ test.describe("MCP RAG Server Health Checks", () => {
     const start = Date.now();
 
     while (Date.now() - start < timeoutMs) {
-      if (proc.pid) {
-        if (proc.killed || proc.exitCode !== null) {
+      if (proc.pid && proc.exitCode === null) {
+        if (proc.killed) {
           throw new Error("Process has exited");
         }
         return;
       }
+
+      // Process health check already handled above
 
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
@@ -77,15 +79,15 @@ test.describe("MCP RAG Server Health Checks", () => {
     if (proc.exitCode !== null) return;
 
     await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        proc.off("exit", onExit);
-        reject(new Error("Timed out waiting for MCP server to exit"));
-      }, timeoutMs);
-
       const onExit = () => {
         clearTimeout(timer);
         resolve();
       };
+
+      const timer = setTimeout(() => {
+        proc.off("exit", onExit);
+        reject(new Error("Timed out waiting for MCP server to exit"));
+      }, timeoutMs);
 
       proc.once("exit", onExit);
     });
