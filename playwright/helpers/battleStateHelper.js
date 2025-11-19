@@ -178,11 +178,11 @@ export async function waitForBattleReady(page, options = {}) {
   await waitForTestApi(page, { timeout });
 
   const readyViaApi = await page.evaluate(
-    ({ waitTimeout }) => {
+    async ({ waitTimeout }) => {
       try {
         const initApi = window.__TEST_API?.init;
         if (initApi && typeof initApi.waitForBattleReady === "function") {
-          return initApi.waitForBattleReady.call(initApi, waitTimeout);
+          return await initApi.waitForBattleReady.call(initApi, waitTimeout);
         }
       } catch {}
       return null;
