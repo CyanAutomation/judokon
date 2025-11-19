@@ -5,6 +5,8 @@ import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
 import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
+import { getCardStatValue } from "./cardStatUtils.js";
+import { getOpponentJudoka } from "./cardSelection.js";
 import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { showSnackbar, updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
