@@ -224,7 +224,8 @@ describe("Random Judoka Selection", () => {
 
     it("should select deterministic index with seeded RNG", () => {
       const seed = 9876;
-      const testRng = vi.fn(createSeededRng(seed));
+      const seededRng = createSeededRng(seed);
+      const testRng = vi.fn(seededRng);
       const array = ["alpha", "beta", "gamma", "delta"];
 
       const result = selectRandomElement(array, testRng);
@@ -232,6 +233,7 @@ describe("Random Judoka Selection", () => {
       expect(testRng).toHaveBeenCalledTimes(1);
 
       const expectedRandom = testRng.mock.results[0]?.value;
+      expect(expectedRandom).toBeDefined();
       expect(expectedRandom).toBeGreaterThanOrEqual(0);
       expect(expectedRandom).toBeLessThan(1);
       const expectedIndex = Math.floor(expectedRandom * array.length);
