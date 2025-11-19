@@ -567,13 +567,6 @@ describe("judokaComparison - Documentation", () => {
       };
 
       expect(outputSchema).toEqual(expectedOutputSchema);
-      expect(outputSchema.properties.summary.properties).toHaveProperty("winner");
-      expect(outputSchema.properties.summary.properties).toHaveProperty("advantages");
-      expect(outputSchema.properties.summary.properties).toHaveProperty("disadvantages");
-      expect(outputSchema.properties.rankedDifferences.items.properties).toEqual({
-        stat: { type: "string" },
-        difference: { type: "number" }
-      });
     });
 
     it("should include examples", () => {
