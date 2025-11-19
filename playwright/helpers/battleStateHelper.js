@@ -133,10 +133,9 @@ export async function ensureBattleCliResetChannel(page) {
       timeout,
       `Timed out waiting for Battle CLI reset after ${timeout}ms`
     );
-    const currentResult = result;
     const nextDeferred = createDeferred();
     deferred = nextDeferred;
-    return currentResult;
+    return result;
   };
 
   const signalReset = async (payload) => {
