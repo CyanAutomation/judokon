@@ -253,11 +253,7 @@ describe("Random Judoka Selection", () => {
       const lastSelection = selectRandomElement(array, rng);
       const middleSelection = selectRandomElement(array, rng);
 
-      expect([firstSelection, lastSelection, middleSelection]).toEqual([
-        "first",
-        "last",
-        "middle"
-      ]);
+      expect([firstSelection, lastSelection, middleSelection]).toEqual(["first", "last", "middle"]);
       expect(rng).toHaveBeenCalledTimes(3);
     });
   });
@@ -437,12 +433,8 @@ describe("Random Judoka Selection", () => {
       const { country: expectedCountryFilter } = RANDOM_SELECTION_DOCUMENTATION.filters;
 
       expect(result.filters.country.type).toBe(expectedCountryFilter.type);
-      expect(result.filters.country.description).toBe(
-        expectedCountryFilter.description
-      );
-      expect(result.filters.country.values ?? []).toEqual(
-        expectedCountryFilter.values ?? []
-      );
+      expect(result.filters.country.description).toBe(expectedCountryFilter.description);
+      expect(result.filters.country.values ?? []).toEqual(expectedCountryFilter.values ?? []);
     });
 
     it("should have rarity filter with valid values", () => {

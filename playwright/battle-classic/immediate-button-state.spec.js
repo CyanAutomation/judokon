@@ -17,14 +17,17 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
     await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
     await page.getByRole("button", { name: "Medium" }).click();
 
-    await page.waitForFunction(() => {
-      const api = window.__TEST_API;
-      if (!api) return false;
-      const statButtonsReady = !!api.statButtons?.waitForHandler;
-      const inspectorReady = typeof api.inspect?.getStatButtonSnapshot === "function";
-      const stateHelpersReady = typeof api.state?.waitForStatButtonsReady === "function";
-      return statButtonsReady && inspectorReady && stateHelpersReady;
-    }, { timeout: PLAYWRIGHT_TIMEOUT_MS });
+    await page.waitForFunction(
+      () => {
+        const api = window.__TEST_API;
+        if (!api) return false;
+        const statButtonsReady = !!api.statButtons?.waitForHandler;
+        const inspectorReady = typeof api.inspect?.getStatButtonSnapshot === "function";
+        const stateHelpersReady = typeof api.state?.waitForStatButtonsReady === "function";
+        return statButtonsReady && inspectorReady && stateHelpersReady;
+      },
+      { timeout: PLAYWRIGHT_TIMEOUT_MS }
+    );
   });
 
   test("button state check", async ({ page }) => {
@@ -46,10 +49,7 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
       };
     });
 
-    console.log(
-      "Baseline stat-button readiness:",
-      JSON.stringify(baselineDiagnostics, null, 2)
-    );
+    console.log("Baseline stat-button readiness:", JSON.stringify(baselineDiagnostics, null, 2));
 
     // Click and check IMMEDIATELY
     await statButtons.first().click();
@@ -68,20 +68,24 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
     const primaryButton = immediateSnapshot?.buttons?.[0] ?? null;
     expect(primaryButton?.disabled).toBe(true);
 
-    const afterId = typeof baselineDiagnostics.lastEventId === "number" ? baselineDiagnostics.lastEventId : 0;
-    const eventResults = await page.evaluate(async ({ afterId: id }) => {
-      const api = window.__TEST_API?.statButtons;
-      if (!api) {
-        return { handler: null, disable: null, history: [] };
-      }
-      const handler = await api.waitForHandler({ timeout: 2000, afterId: id });
-      const disable = await api.waitForDisable({ timeout: 2000, afterId: handler?.id ?? id });
-      return {
-        handler,
-        disable,
-        history: api.getHistory({ limit: 10 }) ?? []
-      };
-    }, { afterId });
+    const afterId =
+      typeof baselineDiagnostics.lastEventId === "number" ? baselineDiagnostics.lastEventId : 0;
+    const eventResults = await page.evaluate(
+      async ({ afterId: id }) => {
+        const api = window.__TEST_API?.statButtons;
+        if (!api) {
+          return { handler: null, disable: null, history: [] };
+        }
+        const handler = await api.waitForHandler({ timeout: 2000, afterId: id });
+        const disable = await api.waitForDisable({ timeout: 2000, afterId: handler?.id ?? id });
+        return {
+          handler,
+          disable,
+          history: api.getHistory({ limit: 10 }) ?? []
+        };
+      },
+      { afterId }
+    );
 
     expect(eventResults.handler).toBeTruthy();
     expect(eventResults.handler?.timedOut).toBe(false);

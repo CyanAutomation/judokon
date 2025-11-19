@@ -47,7 +47,8 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
 
     // Countdown text is visible via the snackbar/timer UI
     const timerElement = page.getByTestId("next-round-timer");
-    const timerText = (await timerElement.count()) > 0 ? (await timerElement.textContent())?.trim() ?? "" : "";
+    const timerText =
+      (await timerElement.count()) > 0 ? ((await timerElement.textContent())?.trim() ?? "") : "";
     console.log("After Enter - Timer text:", timerText || "<empty>");
 
     // Check state immediately after Enter

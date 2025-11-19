@@ -21,10 +21,7 @@
  */
 
 import { test as base } from "./commonSetup.js";
-import {
-  ensureBattleCliResetChannel,
-  waitForTestApi
-} from "../helpers/battleStateHelper.js";
+import { ensureBattleCliResetChannel, waitForTestApi } from "../helpers/battleStateHelper.js";
 
 /**
  * Extended test fixture that ensures battle CLI tests run with isolated state.

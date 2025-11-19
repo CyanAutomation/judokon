@@ -140,13 +140,16 @@ export async function ensureBattleCliResetChannel(page) {
 
   const signalReset = async (payload) => {
     try {
-      await page.evaluate(({ bindingName, data }) => {
-        const notifier = window[bindingName];
-        if (typeof notifier !== "function") {
-          throw new Error(`Reset notifier ${bindingName} not available on window`);
-        }
-        notifier(data);
-      }, { bindingName: BATTLE_CLI_RESET_BINDING, data: payload });
+      await page.evaluate(
+        ({ bindingName, data }) => {
+          const notifier = window[bindingName];
+          if (typeof notifier !== "function") {
+            throw new Error(`Reset notifier ${bindingName} not available on window`);
+          }
+          notifier(data);
+        },
+        { bindingName: BATTLE_CLI_RESET_BINDING, data: payload }
+      );
     } catch (error) {
       if (error.message?.includes("Target page, context or browser has been closed")) {
         deferred.resolve({ ok: false, error: "Page context destroyed" });

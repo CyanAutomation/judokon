@@ -67,10 +67,7 @@ test.describe("Classic Battle - Immediate Button State", () => {
 
     await statButtons.first().click();
 
-    const [handlerEvent, disableEvent] = await Promise.all([
-      handlerPromise,
-      disablePromise
-    ]);
+    const [handlerEvent, disableEvent] = await Promise.all([handlerPromise, disablePromise]);
     await waitForBattleState(page, "cooldown");
 
     expect(handlerEvent?.type).toBe("handler");
