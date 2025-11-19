@@ -144,6 +144,8 @@ export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
 }
 
 /**
+ * Check whether the layout debug panel is currently enabled.
+ *
  * @pseudocode
  * 1. Return the cached enabled state for the layout debug panel.
  *
