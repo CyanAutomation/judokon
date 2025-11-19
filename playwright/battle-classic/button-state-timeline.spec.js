@@ -8,32 +8,6 @@ test.describe("Classic Battle - Button State Timeline", () => {
       window.__TEST__ = true;
       window.process = window.process || {};
       window.process.env = { ...(window.process.env || {}), VITEST: "true" };
-
-      // Hook into button state changes
-      window.__buttonTimeline = [];
-      const originalSetAttribute = Element.prototype.setAttribute;
-      Element.prototype.setAttribute = function (...args) {
-        if (this.dataset?.testid === "stat-button" && args[0] === "disabled") {
-          window.__buttonTimeline.push({
-            time: Date.now(),
-            action: "setAttribute disabled",
-            stack: new Error().stack.split("\n").slice(2, 5).join("\n")
-          });
-        }
-        return originalSetAttribute.apply(this, args);
-      };
-
-      const originalRemoveAttribute = Element.prototype.removeAttribute;
-      Element.prototype.removeAttribute = function (...args) {
-        if (this.dataset?.testid === "stat-button" && args[0] === "disabled") {
-          window.__buttonTimeline.push({
-            time: Date.now(),
-            action: "removeAttribute disabled",
-            stack: new Error().stack.split("\n").slice(2, 5).join("\n")
-          });
-        }
-        return originalRemoveAttribute.apply(this, args);
-      };
     });
     await page.goto("/src/pages/battleClassic.html");
 
@@ -48,30 +22,49 @@ test.describe("Classic Battle - Button State Timeline", () => {
     await waitForBattleState(page, "waitingForPlayerAction");
     await expect(statButtons.first()).toBeEnabled();
 
-    // Clear timeline before click
-    await page.evaluate(() => {
-      window.__buttonTimeline = [];
+    // Record the current stat-button event id so we can slice the timeline later
+    const baselineEventId = await page.evaluate(() => {
+      const api = window.__TEST_API?.statButtons;
+      if (!api?.getLastEvent) {
+        throw new Error("Stat button Test API unavailable");
+      }
+      const lastEvent = api.getLastEvent();
+      return typeof lastEvent?.id === "number" ? lastEvent.id : 0;
     });
 
     // Click the button
     await statButtons.first().click();
 
-    await page.waitForTimeout(100);
+    // Wait for the stat buttons to report their disabled event through the Test API
+    const disableEvent = await page.evaluate(async (afterId) => {
+      const api = window.__TEST_API?.statButtons;
+      if (!api?.waitForDisable) {
+        throw new Error("waitForDisable unavailable on stat button Test API");
+      }
+      return api.waitForDisable({ timeout: 5_000, afterId });
+    }, baselineEventId);
+
+    // Allow the battle flow to reach cooldown instead of relying on arbitrary timeouts
+    await waitForBattleState(page, "cooldown");
 
     // Get the timeline
-    const timeline = await page.evaluate(() => window.__buttonTimeline || []);
-    console.log("Button state timeline:");
+    const timeline = await page.evaluate((afterId) => {
+      const api = window.__TEST_API?.statButtons;
+      if (!api?.getHistory) {
+        return [];
+      }
+      return api
+        .getHistory({ limit: 20 })
+        .filter((event) => typeof event?.id === "number" && event.id > afterId);
+    }, baselineEventId);
+
+    console.log("Stat button event timeline:");
     timeline.forEach((entry, i) => {
-      console.log(`${i}: ${entry.action}`);
-      console.log(entry.stack);
-      console.log("---");
+      console.log(`${i}: [${entry.type}]`, JSON.stringify(entry.detail));
     });
 
-    // Check final state
-    const finalDisabled = await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="stat-button"]');
-      return btn ? btn.disabled : null;
-    });
-    console.log("Final button disabled state:", finalDisabled);
+    expect(disableEvent?.timedOut).toBe(false);
+    expect(timeline.some((event) => event.type === "disabled")).toBe(true);
+    await expect(statButtons.first()).toBeDisabled();
   });
 });
