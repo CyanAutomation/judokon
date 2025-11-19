@@ -55,51 +55,11 @@ export let statSelectionStalledPromise;
 export let roundResolvedPromise;
 
 /**
- * @summary TODO: Add summary
+ * @summary Reset and initialize the suite of battle event promises used by tests.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Initialize and reset the suite of test-friendly battle promises.
- *
- * These promises are created with `setupPromise()` which attaches a window-
- * scoped reference and automatically re-creates a fresh Promise each time the
- * corresponding battle event fires. Tests (and runtime helpers) can await the
- * returned getters to synchronize with UI and state transitions.
- *
- * @pseudocode
- * 1. For each well-known battle lifecycle event, call `setupPromise(key, event)`
- *    to create a self-resetting Promise and assign it to the exported symbol.
- * 2. Ensure the created Promise is the active one by invoking the returned
- *    function (which returns the current Promise instance).
- * 3. Caller code and tests should use the provided getters (e.g. `getRoundPromptPromise`) to
- *    obtain the latest Promise instance, avoiding races with module-level resolved Promises.
- *
- * @returns {void}
- */
-/**
- * Reset all battle promise instances for testing or reinitialization.
- *
- * @summary Reinitialize all battle event promises to fresh instances.
- * @pseudocode
- * 1. Create new promise instances for all battle events.
- * 2. Update module-level exports with fresh promises.
- * 3. Set up event listeners for each promise type.
+ * 1. For each tracked battle lifecycle event, call `setupPromise(key, eventName)`.
+ * 2. Immediately invoke the returned getter to store the active Promise in the export.
+ * 3. Allow consumers to await the exported promises or getter helpers for synchronization.
  *
  * @returns {void}
  */
@@ -142,26 +102,6 @@ function latest(key, fallback) {
 }
 
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Return a Promise that resolves when the next `roundPrompt` battle event fires.
  *
  * This returns the window-scoped promise instance created by `resetBattlePromises()`
@@ -176,26 +116,6 @@ function latest(key, fallback) {
  */
 export const getRoundPromptPromise = () => latest("roundPromptPromise", roundPromptPromise);
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Return a Promise that resolves when the next `nextRoundCountdownStarted` event fires.
  *
  * See `getRoundPromptPromise` for the getter semantics and race avoidance.
@@ -209,26 +129,6 @@ export const getRoundPromptPromise = () => latest("roundPromptPromise", roundPro
 export const getCountdownStartedPromise = () =>
   latest("countdownStartedPromise", countdownStartedPromise);
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Return a Promise that resolves on the next `roundResolved` event.
  *
  * @pseudocode
@@ -240,26 +140,6 @@ export const getCountdownStartedPromise = () =>
  */
 export const getRoundResolvedPromise = () => latest("roundResolvedPromise", roundResolvedPromise);
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Return a Promise that resolves when a `roundTimeout` event occurs.
  *
  * @pseudocode
@@ -269,26 +149,6 @@ export const getRoundResolvedPromise = () => latest("roundResolvedPromise", roun
  * @returns {Promise<void>} Promise resolved when the round times out.
  */
 export const getRoundTimeoutPromise = () => latest("roundTimeoutPromise", roundTimeoutPromise);
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 /**
  * Return a Promise that resolves when the `statSelectionStalled` event is emitted.
  *
