@@ -42,13 +42,13 @@ describe("browseJudokaPage helpers", () => {
 
     open = true;
     await controller.handleToggle();
-    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(2);
+    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(1);
     expect(interactions.loads).toBe(1);
     expect(controller.countriesLoaded()).toBe(true);
 
     open = false;
     await controller.handleToggle();
-    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(3);
+    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(2);
     expect(interactions.loads).toBe(1);
 
     open = true;
@@ -85,7 +85,7 @@ describe("browseJudokaPage helpers", () => {
     open = true;
     const toggleHandler = panelEvents.find(({ event }) => event === "toggle");
     await toggleHandler.handler();
-    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(4);
+    expect(adapter.reflectPanelState).toHaveBeenCalledTimes(3);
 
     open = true;
     const keydownHandler = panelEvents.find(({ event }) => event === "keydown");

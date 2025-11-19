@@ -165,22 +165,6 @@ function init() {
     };
   } catch {}
 
-  // expose shortcuts collapse/expand helper for tests
-  try {
-    window.__battleCLIinit.setShortcutsCollapsed = function (collapsed) {
-      const section = byId("cli-shortcuts");
-      const closeBtn = byId("cli-shortcuts-close");
-      if (!closeBtn || !section) return false;
-      try {
-        localStorage.setItem("battleCLI.shortcutsCollapsed", collapsed ? "1" : "0");
-      } catch {}
-      section.open = !collapsed;
-      section.removeAttribute("hidden");
-      closeBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
-      return true;
-    };
-  } catch {}
-
   loadBattleCLIModule();
 }
 

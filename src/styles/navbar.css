@@ -188,12 +188,14 @@
     transform 300ms ease-in-out,
     visibility 0s linear 300ms;
   visibility: hidden;
+  pointer-events: none;
   z-index: 50;
 }
 
 .country-panel[open] > .country-panel__content {
   transform: translateX(0);
   visibility: visible;
+  pointer-events: auto;
   transition:
     transform 300ms ease-in-out,
     visibility 0s linear 0s;
