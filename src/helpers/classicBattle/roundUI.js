@@ -264,20 +264,6 @@ function derivePromptWaitOptions(rendererOptions) {
   return { intervalMs };
 }
 
-function resolveOpponentPromptBuffer(cooldownResult, rendererOptions) {
-  const optionsBuffer = Number(rendererOptions?.opponentPromptBufferMs);
-  if (Number.isFinite(optionsBuffer) && optionsBuffer >= 0) {
-    return optionsBuffer;
-  }
-  if (cooldownResult && typeof cooldownResult === "object") {
-    const resultBuffer = Number(cooldownResult.opponentPromptBufferMs);
-    if (Number.isFinite(resultBuffer) && resultBuffer >= 0) {
-      return resultBuffer;
-    }
-  }
-  return undefined;
-}
-
 async function waitForOpponentPrompt(waitFn, waitArgs, waitOptions) {
   if (typeof waitFn !== "function") {
     return;
