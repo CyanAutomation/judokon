@@ -95,7 +95,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
     .split(/\n/)
     .map((line) =>
       line
-        .replace(/^\s*\/?\*+\s?/, "")
+        .replace(/^\s*\/?\**\s?/, "")
         .replace(/\*\/\s*$/, "")
         .trim()
     )
@@ -107,7 +107,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   if (summaryLine.startsWith("@")) return false;
 
   const summaryWithoutMarkers = summaryLine.trim();
-  const hasNonAsteriskContent = /[^\s*]/.test(summaryWithoutMarkers);
+  const hasNonAsteriskContent = /\S/.test(summaryWithoutMarkers.replace(/\*/g, ""));
   if (!hasNonAsteriskContent) return false;
 
   return true;
