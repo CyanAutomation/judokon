@@ -57,6 +57,10 @@ export function createBattleLogger(enabled = !IS_VITEST) {
 /**
  * Default battle logger instance (enabled outside vitest).
  *
+ * @pseudocode
+ * 1. Initialize logger with default settings.
+ * 2. Return pre-configured logger for use throughout battle flow.
+ *
  * @type {ReturnType<typeof createBattleLogger>}
  */
 export const battleLog = createBattleLogger();

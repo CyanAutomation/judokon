@@ -13,6 +13,10 @@ import { attachCooldownRenderer as defaultAttachCooldownRenderer } from "../Cool
 /**
  * Select timer factory from overrides or default.
  *
+ * @pseudocode
+ * 1. Check if override is a function.
+ * 2. Return override or fallback to default factory.
+ *
  * @param {Function} [override] - Optional override factory
  * @returns {Function | null}
  */
@@ -26,6 +30,10 @@ export function selectTimerFactory(override) {
 /**
  * Select renderer factory from overrides or default.
  *
+ * @pseudocode
+ * 1. Check if override is a function.
+ * 2. Return override or fallback to default factory.
+ *
  * @param {Function} [override] - Optional override factory
  * @returns {Function | null}
  */
@@ -38,6 +46,11 @@ export function selectRendererFactory(override) {
 
 /**
  * Instantiate timer from factory function.
+ *
+ * @pseudocode
+ * 1. Validate factory is a function.
+ * 2. Invoke factory and return result.
+ * 3. Silently return null on failure.
  *
  * @param {Function} factory - Timer factory
  * @returns {any} Timer instance or null
@@ -56,6 +69,10 @@ export function instantiateTimer(factory) {
 
 /**
  * Normalize renderer options object.
+ *
+ * @pseudocode
+ * 1. Validate options is an object.
+ * 2. Return options or empty object if invalid.
  *
  * @param {any} options - Options to normalize
  * @returns {object} Empty object or provided object

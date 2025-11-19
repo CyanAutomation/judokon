@@ -1041,7 +1041,17 @@ async function scheduleNextRoundCooldown(
 
 // --- Event Bindings ---
 
-
+/**
+ * Bind handler for `roundStarted` events.
+ *
+ * @pseudocode
+ * 1. Listen for `roundStarted`.
+ * 2. Extract store and round number.
+ * 3. Invoke `applyRoundUI`.
+ *
+ * @returns {void}
+ */
+export function bindRoundStarted() {
   onBattleEvent("roundStarted", (event) => {
     handleRoundStartedEvent(event);
   });
