@@ -2,39 +2,6 @@ import { resetStatButtons } from "./statButtons.js";
 import { skipCurrentPhase } from "./skipHandler.js";
 import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
 import { emitBattleEvent } from "./battleEvents.js";
-
-/**
- * Create debug helpers for Classic Battle tests.
- *
- * @pseudocode
- * 1. Reference the controller's battle store.
- * 2. Define `skipBattlePhase` that resets stat buttons after skipping.
- * 3. Expose overrides to start a round and freeze/resume the header.
- * 4. Assign the store and helpers to `window` for runtime consumers.
- * 5. Return the helpers.
- *
- * @param {import("./view.js").ClassicBattleView} view
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 /**
  * Create a debug API for Classic Battle used in tests and developer tooling.
  *
