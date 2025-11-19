@@ -724,17 +724,18 @@ function chunkCode(source, isTest = false) {
     }
   }
 
+  const firstCodeStart = Math.min(firstImportStart, firstExportStart);
+
   let moduleDocComment = null;
   let attachModuleDocToExport = false;
-  if (!isTest && firstImportStart !== Infinity) {
+  if (!isTest && firstCodeStart !== Infinity) {
     for (const comment of comments) {
       if (
         comment.type === "Block" &&
         comment.value.startsWith("*") &&
-        comment.start <= firstImportStart
+        comment.end <= firstCodeStart
       ) {
         moduleDocComment = comment;
-        break;
       }
     }
   }
