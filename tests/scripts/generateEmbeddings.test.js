@@ -336,6 +336,28 @@ describe("chunkCode", () => {
     expect(chunks.find((chunk) => chunk.id === "module-doc")).toBeUndefined();
   });
 
+  it("attaches module doc comments when exports appear without imports", () => {
+    const source = [
+      "/**",
+      " * Module description for exports without imports.",
+      " *",
+      " * @pseudocode",
+      " * 1. Describe the module.",
+      " */",
+      "export function withoutImports() {",
+      "  return true;",
+      "}",
+      "export const anotherExport = () => {};"
+    ].join("\n");
+
+    const { chunks } = chunkCode(source, false);
+    const exportedChunk = chunks.find((chunk) => chunk.id === "withoutImports");
+
+    expect(exportedChunk?.jsDoc).toContain("Module description for exports without imports.");
+    expect(exportedChunk?.pseudocode).toContain("1. Describe the module.");
+    expect(chunks.find((chunk) => chunk.id === "module-doc")).toBeUndefined();
+  });
+
   it("preserves module docs as standalone chunks when other statements intervene", () => {
     const source = [
       "/**",
