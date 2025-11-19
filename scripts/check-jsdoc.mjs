@@ -107,7 +107,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   if (summaryLine.startsWith("@")) return false;
 
   const summaryWithoutMarkers = summaryLine.trim();
-  const hasNonAsteriskContent = /\S/.test(summaryWithoutMarkers.replace(/\*/g, ""));
+  const hasNonWhitespaceContent = /\S/.test(summaryWithoutMarkers.replace(/\*/g, ""));
   if (!hasNonAsteriskContent) return false;
 
   return true;
