@@ -29,7 +29,7 @@ test.describe("Classic Battle - Button State Timeline", () => {
         throw new Error("Stat button Test API unavailable");
       }
       const lastEvent = api.getLastEvent();
-      return typeof lastEvent?.id === "number" ? lastEvent.id : 0;
+      return lastEvent && typeof lastEvent.id === "number" ? lastEvent.id : 0;
     });
 
     // Click the button
@@ -41,7 +41,7 @@ test.describe("Classic Battle - Button State Timeline", () => {
       if (!api?.waitForDisable) {
         throw new Error("waitForDisable unavailable on stat button Test API");
       }
-      return api.waitForDisable({ timeout: 5_000, afterId });
+      return api.waitForDisable({ timeout: 2_000, afterId });
     }, baselineEventId);
 
     // Allow the battle flow to reach cooldown instead of relying on arbitrary timeouts
@@ -55,7 +55,7 @@ test.describe("Classic Battle - Button State Timeline", () => {
       }
       return api
         .getHistory({ limit: 20 })
-        .filter((event) => typeof event?.id === "number" && event.id > afterId);
+        .filter((event) => event && typeof event?.id === "number" && event.id > afterId);
     }, baselineEventId);
 
     console.log("Stat button event timeline:");
@@ -63,7 +63,8 @@ test.describe("Classic Battle - Button State Timeline", () => {
       console.log(`${i}: [${entry.type}]`, JSON.stringify(entry.detail));
     });
 
-    expect(disableEvent?.timedOut).toBe(false);
+    expect(disableEvent).toBeDefined();
+    expect(disableEvent.timedOut).toBe(false);
     expect(timeline.some((event) => event.type === "disabled")).toBe(true);
     await expect(statButtons.first()).toBeDisabled();
   });
