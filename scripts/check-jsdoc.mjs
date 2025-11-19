@@ -91,10 +91,26 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   if (hasParams && !hasParamTag) return false;
   if (returnsValue && !hasReturnTag) return false;
 
-  const summaryLine = lines[start + 1];
-  const summary = summaryLine.replace(/^\s*\*\s*/, "").trim();
-  if (summary.length === 0) return false;
+  let summaryLineIndex = start + 1;
+  let summaryLine = null;
 
+  while (summaryLineIndex < j) {
+    const rawLine = lines[summaryLineIndex];
+    const candidate = rawLine.replace(/^\s*\*\s?/, "").trim();
+
+    if (candidate.startsWith("@")) break;
+    if (candidate.length === 0) {
+      summaryLineIndex += 1;
+      continue;
+    }
+
+    summaryLine = rawLine;
+    break;
+  }
+
+  if (!summaryLine) return false;
+
+  const summary = summaryLine.replace(/^\s*\*\s?/, "").trim();
   const summaryWithoutMarkers = summary.replace(/\*/g, "").trim();
   if (summaryWithoutMarkers.length === 0) return false;
 
