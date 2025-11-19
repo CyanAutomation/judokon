@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/commonSetup.js";
+import { test } from "./fixtures/commonSetup.js";
 import { waitForBattleReady } from "./helpers/battleStateHelper.js";
 
 test("Debug opponent choosing - minimal", async ({ page }) => {

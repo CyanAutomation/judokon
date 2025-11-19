@@ -14,13 +14,13 @@ test.describe("Debug snackbar flow", () => {
           }
         })
       );
-      
+
       // Instrument showSnackbar to track calls
       window.__snackbarCalls = [];
-      window.addEventListener('DOMContentLoaded', () => {
+      window.addEventListener("DOMContentLoaded", () => {
         const originalShowSnackbar = window.showSnackbar;
         if (originalShowSnackbar) {
-          window.showSnackbar = function(...args) {
+          window.showSnackbar = function (...args) {
             window.__snackbarCalls.push({ args, timestamp: Date.now() });
             return originalShowSnackbar.apply(this, args);
           };
@@ -46,9 +46,9 @@ test.describe("Debug snackbar flow", () => {
     const featureFlagCheck = await page.evaluate(() => {
       const isEnabled = window.isEnabled || (() => false);
       return {
-        opponentDelayMessageEnabled: isEnabled('opponentDelayMessage'),
-        autoSelectEnabled: isEnabled('autoSelect'),
-        localStorage: localStorage.getItem('settings')
+        opponentDelayMessageEnabled: isEnabled("opponentDelayMessage"),
+        autoSelectEnabled: isEnabled("autoSelect"),
+        localStorage: localStorage.getItem("settings")
       };
     });
     console.log("Feature flags:", JSON.stringify(featureFlagCheck, null, 2));
