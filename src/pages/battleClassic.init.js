@@ -114,6 +114,18 @@ import {
 } from "../helpers/classicBattle/cardSelection.js";
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
 
+function broadcastBattleState(state) {
+  emitBattleEvent("battleStateChange", state);
+  try {
+    if (typeof document !== "undefined") {
+      document.body.dataset.battleState = state;
+    }
+  } catch (e) {
+    // ignore, this is a non-critical side-effect
+    console.warn(`Failed to set battleState on body`, e);
+  }
+}
+
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
 // Track the failsafe timeout so it can be cancelled when the timer resolves
