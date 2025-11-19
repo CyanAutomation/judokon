@@ -43,29 +43,33 @@ test.describe("Classic Battle - Immediate Button State", () => {
       return typeof last?.id === "number" ? last.id : 0;
     });
 
+    const handlerPromise = page.evaluate(
+      ({ afterId }) => {
+        const api = window.__TEST_API?.statButtons;
+        if (!api || typeof api.waitForHandler !== "function") {
+          throw new Error("Stat button handler wait unavailable");
+        }
+        return api.waitForHandler({ afterId, timeout: 2000 });
+      },
+      { afterId: baselineEventId }
+    );
+
+    const disablePromise = page.evaluate(
+      ({ afterId }) => {
+        const api = window.__TEST_API?.statButtons;
+        if (!api || typeof api.waitForDisable !== "function") {
+          throw new Error("Stat button disable wait unavailable");
+        }
+        return api.waitForDisable({ afterId, timeout: 2000 });
+      },
+      { afterId: baselineEventId }
+    );
+
     await statButtons.first().click();
 
     const [handlerEvent, disableEvent] = await Promise.all([
-      page.evaluate(
-        ({ afterId }) => {
-          const api = window.__TEST_API?.statButtons;
-          if (!api || typeof api.waitForHandler !== "function") {
-            throw new Error("Stat button handler wait unavailable");
-          }
-          return api.waitForHandler({ afterId, timeout: 2000 });
-        },
-        { afterId: baselineEventId }
-      ),
-      page.evaluate(
-        ({ afterId }) => {
-          const api = window.__TEST_API?.statButtons;
-          if (!api || typeof api.waitForDisable !== "function") {
-            throw new Error("Stat button disable wait unavailable");
-          }
-          return api.waitForDisable({ afterId, timeout: 2000 });
-        },
-        { afterId: baselineEventId }
-      )
+      handlerPromise,
+      disablePromise
     ]);
     await waitForBattleState(page, "cooldown");
 
