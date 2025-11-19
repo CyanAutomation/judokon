@@ -1,7 +1,10 @@
+// Battle engine & core logic
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { bridgeEngineEvents } from "./engineBridge.js";
+
+// Utilities
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
@@ -17,6 +20,20 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
 import { setNextButtonFinalizedState } from "./uiHelpers.js";
+import { showSnackbar } from "../showSnackbar.js";
+import { t } from "../i18n.js";
+
+// Guard & storage utilities
+import { enterStoreGuard, getHiddenStoreValue, setHiddenStoreValue } from "./storeGuard.js";
+import {
+  getOpponentCardContainer,
+  hasRealOpponentCard,
+  hideOpponentCardIfRealVisible,
+  ensureOpponentPlaceholderVisibility
+} from "./domHelpers.js";
+import { readReadyDispatcherSignature } from "./readyDispatcherUtils.js";
+
+// Expiration & ready dispatch handling
 import {
   createExpirationTelemetryEmitter,
   createMachineReader,
@@ -27,6 +44,8 @@ import {
   runReadyDispatchStrategies,
   updateExpirationUi
 } from "./nextRound/expirationHandlers.js";
+
+// Cooldown orchestration
 import {
   appendReadyTrace,
   createCooldownControls,
@@ -46,177 +65,26 @@ import {
   setupOrchestratedReady,
   startTimerWithDiagnostics
 } from "./cooldownOrchestrator.js";
+
+// Session & state management
 import { createNextRoundSession } from "./nextRound/session.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
   resetReadyDispatchState,
   setReadyDispatchedForCurrentCooldown
 } from "./roundReadyState.js";
-import { showSnackbar } from "../showSnackbar.js";
-import { t } from "../i18n.js";
-import { OPPONENT_PLACEHOLDER_ID } from "./opponentPlaceholder.js";
 
-const READY_DISPATCHER_IDENTITY_SYMBOL =
-  typeof Symbol === "function"
-    ? Symbol.for("classicBattle.readyDispatcherIdentity")
-    : "__classicBattle_readyDispatcherIdentity__";
-
-// Track active cooldown controls to enable cleanup when starting new cooldown
-let activeCooldownControls = null;
-
+// Match deck
 import {
   createMatchDeckHooks,
   resetMatchDeckState,
   DEFAULT_MATCH_DECK_SIZE
 } from "./matchDeckManager.js";
 
-const hasOwn = Object.prototype.hasOwnProperty;
-const ROUND_START_GUARD = Symbol.for("classicBattle.startRoundGuard");
-const ACTIVE_ROUND_PAYLOAD = Symbol.for("classicBattle.activeRoundPayload");
-const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
-const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
-
-function enterStoreGuard(store, token) {
-  if (!store || typeof store !== "object") {
-    return { entered: true, release() {} };
-  }
-  if (hasOwn.call(store, token)) {
-    return { entered: false, release() {} };
-  }
-  Object.defineProperty(store, token, {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: true
-  });
-  return {
-    entered: true,
-    release() {
-      try {
-        delete store[token];
-      } catch (error) {
-        // Cleanup is best-effort; ignore deletion errors.
-        void error;
-      }
-    }
-  };
-}
-
-function getHiddenStoreValue(store, token) {
-  if (!store || typeof store !== "object") return undefined;
-  return store[token];
-}
-
-function setHiddenStoreValue(store, token, value) {
-  if (!store || typeof store !== "object") {
-    return;
-  }
-  if (hasOwn.call(store, token)) {
-    store[token] = value;
-    return;
-  }
-  Object.defineProperty(store, token, {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value
-  });
-}
-
-/**
- * @summary Get the opponent card container element from the DOM.
- * @returns {HTMLElement|null} The opponent card container or null if not found.
- */
-function getOpponentCardContainer() {
-  if (typeof document === "undefined") return null;
-  try {
-    return document.getElementById("opponent-card");
-  } catch {
-    return null;
-  }
-}
-
-/**
- * @summary Determine whether the container currently holds a rendered opponent card.
- * @param {HTMLElement|null} container - The container to inspect.
- * @returns {boolean} True when a real opponent card is present.
- */
-function hasRealOpponentCard(container) {
-  if (!container || typeof container.querySelector !== "function") return false;
-  try {
-    return !!container.querySelector(".judoka-card");
-  } catch {
-    return false;
-  }
-}
-
-/**
- * @summary Determine whether the container has an opponent placeholder element.
- * @param {HTMLElement|null} container - The container to inspect.
- * @returns {boolean} True when a placeholder element exists.
- */
-function hasOpponentPlaceholder(container) {
-  if (!container || typeof container.querySelector !== "function") return false;
-  try {
-    return !!container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
-  } catch {
-    return false;
-  }
-}
-
-/**
- * @summary Hide the opponent container when a real opponent card is visible.
- * @param {HTMLElement|null} container - The container to potentially hide.
- * @returns {HTMLElement|null} The container reference for chaining.
- */
-function hideOpponentCardIfRealVisible(container) {
-  if (!container) return null;
-  if (hasRealOpponentCard(container)) {
-    try {
-      container.classList.add("opponent-hidden");
-    } catch {
-      // Silently ignore errors when modifying classList
-    }
-    return container;
-  }
-  try {
-    container.classList.remove("opponent-hidden");
-  } catch {
-    // Silently ignore errors when modifying classList
-  }
-  return container;
-}
-
-/**
- * @summary Ensure the opponent placeholder remains visible when no real card is rendered.
- * @param {HTMLElement|null} container - The container whose visibility should be adjusted.
- */
-function ensureOpponentPlaceholderVisibility(container) {
-  if (!container) return;
-  if (hasOpponentPlaceholder(container) && !hasRealOpponentCard(container)) {
-    try {
-      container.classList.remove("opponent-hidden");
-    } catch {
-      // Silently ignore errors when modifying classList
-    }
-  }
-}
-
-function readReadyDispatcherSignature(candidate) {
-  if (typeof candidate !== "function") return undefined;
-  const identitySymbol = READY_DISPATCHER_IDENTITY_SYMBOL;
-  const symbolValue = identitySymbol ? candidate[identitySymbol] : undefined;
-  if (typeof symbolValue === "string" || typeof symbolValue === "number") {
-    return String(symbolValue);
-  }
-  if (typeof candidate.readyDispatcherId === "string" && candidate.readyDispatcherId) {
-    return candidate.readyDispatcherId;
-  }
-  if (typeof candidate.dispatcherId === "string" && candidate.dispatcherId) {
-    return candidate.dispatcherId;
-  }
-  return undefined;
-}
+const READY_DISPATCHER_IDENTITY_SYMBOL =
+  typeof Symbol === "function"
+    ? Symbol.for("classicBattle.readyDispatcherIdentity")
+    : "__classicBattle_readyDispatcherIdentity__";
 
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
@@ -526,31 +394,8 @@ export async function startRound(store, onRoundStart) {
 let currentNextRound = null;
 
 /**
- * Dispatch the cooldown "ready" event through available event bus dispatchers.
- *
- * Prioritizes an injected dispatcher when present so orchestrated environments
- * can observe the event before falling back to the global dispatcher. Treats a
- * resolved value of `false` as an explicit refusal so direct dispatch fallback
- * can proceed when orchestration declines the event.
- *
- * @param {object} [options={}] - Possible override hooks for dispatching
- * @param {Function} [options.dispatchBattleEvent] - Injected dispatcher helper
- * @returns {Promise<boolean>} True when any dispatcher handles the event
- * @pseudocode
- * 1. Collect injected dispatcher then the global dispatcher when distinct.
- * 2. Invoke each dispatcher with the "ready" event and await any promise.
- * 3. Treat a resolved value of `false` as failure; otherwise report success.
- * 4. Return false if every dispatcher declines or throws.
- */
-/**
- * @summary Schedule the cooldown before the next round and expose controls for the Next button.
  * @summary Schedule the cooldown before the next round and expose controls for the Next button.
  *
- * @pseudocode
- * 1. Reset readiness tracking, determine the active scheduler, and capture orchestration context for telemetry.
- * 2. Build the event bus and cooldown controls, wiring DOM readiness handlers when the UI is not orchestrated.
- * 3. Compute the cooldown duration, emit countdown events, and configure helpers and timers for orchestrated or default flows.
- * 4. Persist the resulting controls for later retrieval and surface them through debug state before returning.
  * @pseudocode
  * 1. Reset readiness tracking, determine the active scheduler, and capture orchestration context for telemetry.
  * 2. Build the event bus and cooldown controls, wiring DOM readiness handlers when the UI is not orchestrated.
@@ -560,10 +405,6 @@ let currentNextRound = null;
  * @param {ReturnType<typeof createBattleStore>} _store - Battle state store.
  * @param {typeof realScheduler} [scheduler=realScheduler] - Scheduler for timers.
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
- * @pseudocode
- * 1. Reset cooldown diagnostics and build event bus/controls.
- * 2. Wire orchestrated or standard ready handlers based on context.
- * 3. Start timers, expose debug state, and return the cooldown controls.
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
   resetReadyDispatchState();
@@ -572,12 +413,15 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   // when time advances (prevents duplicate ready dispatches in tests)
   if (activeCooldownControls?.timer && typeof activeCooldownControls.timer.stop === "function") {
     try {
-      console.log("[ROUNDMANAGER DEBUG] Stopping previous cooldown timer before creating new one");
       activeCooldownControls.timer.stop();
     } catch (error) {
       // Ignore errors during cleanup
       if (process?.env?.NODE_ENV !== "test" && typeof console !== "undefined") {
-        console.warn("Failed to stop existing cooldown timer:", error);
+        try {
+          console.warn("Failed to stop existing cooldown timer:", error);
+        } catch {
+          // Ignore console errors
+        }
       }
     }
   }
@@ -727,21 +571,13 @@ export function startCooldown(_store, scheduler, overrides = {}) {
 
 /**
  * @summary Expose the active cooldown controls for Next button helpers.
- * @summary Expose the active cooldown controls for Next button helpers.
  *
- * @pseudocode
- * 1. Return the cached `currentNextRound` controls when a cooldown is active.
- * 2. When controls are missing, inspect the Next button to fabricate resolved controls if it already signals readiness.
- * 3. Otherwise return `null` to indicate no cooldown is running.
  * @pseudocode
  * 1. Return the cached `currentNextRound` controls when a cooldown is active.
  * 2. When controls are missing, inspect the Next button to fabricate resolved controls if it already signals readiness.
  * 3. Otherwise return `null` to indicate no cooldown is running.
  *
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
- * @pseudocode
- * 1. Return existing cooldown controls when present.
- * 2. Otherwise inspect the DOM for a ready button state and fabricate controls when needed.
  */
 export function getNextRoundControls() {
   if (currentNextRound) return currentNextRound;

@@ -51,7 +51,7 @@ export function enterStoreGuard(store, token) {
 /**
  * @summary Retrieve a hidden (non-enumerable) value from a store.
  *
- * Safely accesses a symbol or key that was stored as a non-enumerable property.
+ * @description Safely accesses a symbol or key that was stored as a non-enumerable property.
  *
  * @param {object} store - The store object.
  * @param {symbol|string} token - The key or symbol to retrieve.
@@ -65,7 +65,7 @@ export function getHiddenStoreValue(store, token) {
 /**
  * @summary Store a hidden (non-enumerable) value on a store object.
  *
- * Sets or updates a value as a non-enumerable property, preserving visibility
+ * @description Sets or updates a value as a non-enumerable property, preserving visibility
  * guards for internal state.
  *
  * @param {object} store - The store object.

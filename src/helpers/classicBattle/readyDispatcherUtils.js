@@ -42,6 +42,8 @@ export function readReadyDispatcherSignature(candidate) {
 /**
  * @summary Get the ready dispatcher identity symbol.
  *
+ * @description Returns the Symbol.for key or fallback string used for dispatcher identity tracking.
+ *
  * @returns {symbol|string} The symbol or string key used for dispatcher identity.
  */
 export function getReadyDispatcherIdentitySymbol() {
