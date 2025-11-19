@@ -736,6 +736,7 @@ function chunkCode(source, isTest = false) {
         comment.end <= firstCodeStart
       ) {
         moduleDocComment = comment;
+        break;
       }
     }
   }
