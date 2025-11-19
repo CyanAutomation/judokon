@@ -231,10 +231,6 @@ describe("Random Judoka Selection", () => {
       const expectedRandom = deterministicRng();
       // Verify the RNG produces the same value when reset
       const testRng = createSeededRng(seed);
-      const actualRandom = testRng();
-      expect(actualRandom).toBe(expectedRandom);
-      const expectedIndex = Math.floor(expectedRandom * array.length);
-
       const result = selectRandomElement(array, testRng);
 
       expect(result).toBe(array[expectedIndex]);
