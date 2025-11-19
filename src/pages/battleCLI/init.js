@@ -951,6 +951,7 @@ function showCliShortcuts() {
   if (sec) {
     sec.open = true;
     sec.hidden = false;
+    state.shortcutsOverlay = true;
     // Ensure toggle event is fired for listeners (test environments may not fire it automatically)
     try {
       const toggleEvent = new Event("toggle", { bubbles: false });
@@ -972,6 +973,12 @@ function hideCliShortcuts() {
   const sec = byId("cli-shortcuts");
   if (sec) {
     sec.open = false;
+    // Restore focus before clearing the reference
+    try {
+      state.shortcutsReturnFocus?.focus();
+    } catch {}
+    state.shortcutsReturnFocus = null;
+    state.shortcutsOverlay = null;
     // Ensure toggle event is fired for listeners (test environments may not fire it automatically)
     try {
       const toggleEvent = new Event("toggle", { bubbles: false });
