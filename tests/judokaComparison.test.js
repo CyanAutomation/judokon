@@ -522,9 +522,58 @@ describe("judokaComparison - Documentation", () => {
     });
 
     it("should include output schema", () => {
-      const doc = getComparisonDocumentation();
-      expect(doc.outputSchema).toBeDefined();
-      expect(doc.outputSchema.properties).toBeDefined();
+      const { outputSchema } = getComparisonDocumentation();
+
+      const expectedOutputSchema = {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Comparison title" },
+          judoka1Info: { type: "string", description: "First judoka basic info" },
+          judoka2Info: { type: "string", description: "Second judoka basic info" },
+          comparisonText: {
+            type: "string",
+            description: "Human-readable comparison summary"
+          },
+          summary: {
+            type: "object",
+            properties: {
+              winner: { type: "string", description: "Winner or 'Tied'" },
+              margin: { type: "number", description: "Stat advantage margin" },
+              judoka1Total: { type: "number" },
+              judoka2Total: { type: "number" },
+              advantages: { type: "array", description: "Stats where judoka1 leads" },
+              disadvantages: {
+                type: "array",
+                description: "Stats where judoka2 leads"
+              }
+            }
+          },
+          rankedDifferences: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stat: { type: "string" },
+                difference: { type: "number" }
+              }
+            },
+            description: "Stats ranked by largest differences"
+          },
+          statDetails: {
+            type: "object",
+            description: "Stat-by-stat comparison (val1 vs val2 [difference])"
+          }
+        }
+      };
+
+      expect(outputSchema).toEqual(expectedOutputSchema);
+      expect(outputSchema.properties.summary.properties).toHaveProperty("winner");
+      expect(outputSchema.properties.summary.properties).toHaveProperty("advantages");
+      expect(outputSchema.properties.summary.properties).toHaveProperty("disadvantages");
+      expect(outputSchema.properties.rankedDifferences.items.properties).toEqual({
+        stat: { type: "string" },
+        difference: { type: "number" }
+      });
     });
 
     it("should include examples", () => {
