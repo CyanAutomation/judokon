@@ -1,52 +1,41 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady, waitForBattleState } from "./helpers/battleStateHelper.js";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {
-    await page.goto("/index.html");
-
-    // Disable auto-select before navigating to battle page
+    // Set up feature flags before navigation
     await page.addInitScript(() => {
+      localStorage.clear();
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({
+          featureFlags: {
+            enableTestMode: { enabled: true },
+            autoSelect: { enabled: false },
+            opponentDelayMessage: { enabled: true }
+          }
+        })
+      );
       window.__FF_OVERRIDES = {
         autoSelect: false,
         opponentDelayMessage: true
       };
     });
 
-    // Navigate to Classic Battle and wait for navigation to complete
-    const navigationPromise = page.waitForURL("**/battleClassic.html");
+    // Navigate directly to the battle page
+    await page.goto("/src/pages/battleClassic.html");
 
-    const startBtn =
-      (await page.$('[data-testid="start-classic"]')) ||
-      (await page.getByText("Classic Battle").first());
-    await startBtn.click();
-
-    // Wait for the navigation to complete
-    await navigationPromise;
-
-    // Wait for battle to be ready
-    await waitForBattleReady(page, { allowFallback: true });
-
-    // Wait for the battle state to be ready for player action
-    await waitForBattleState(page, "waitingForPlayerAction", {
-      allowFallback: true,
-      timeout: 10_000
-    });
-
-    // Wait for stat buttons to be enabled
-    const firstStat = page.locator("#stat-buttons button").first();
-    await expect(firstStat).toBeEnabled();
+    // Wait for stat buttons to be visible and ready
+    const firstStat = page.getByRole("button", { name: /power/i }).first();
+    await expect(firstStat).toBeVisible();
+    await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
 
     // Click a stat to trigger the opponent choosing state
     await firstStat.click();
 
-    // Wait a bit for any snackbar to appear
-    await page.waitForTimeout(1000);
-
     // Snackbar shows the opponent choosing message
     const snackbar = page.locator("#snackbar-container .snackbar");
     await expect(snackbar).toContainText(/Opponent is choosing|choosing|Picked/i, {
-      timeout: 10_000
+      timeout: 5000
     });
   });
 });
