@@ -39,7 +39,11 @@ import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { initDebugFlagHud } from "../helpers/debugFlagHud.js";
-import { safeExecute, safeExecuteAsync, ERROR_LEVELS } from "../helpers/classicBattle/safeExecute.js";
+import {
+  safeExecute,
+  safeExecuteAsync,
+  ERROR_LEVELS
+} from "../helpers/classicBattle/safeExecute.js";
 import {
   getInitCalled,
   setInitCalled,
@@ -53,6 +57,8 @@ import {
   setLastManualRoundStartTimestamp,
   getOpponentPromptFallbackTimerId,
   setOpponentPromptFallbackTimerId,
+  getLastRoundCycleTrigger,
+  setLastRoundCycleTrigger,
   getDebugFlag,
   setDebugFlag,
   resetBattleClassicGlobalState
@@ -167,47 +173,12 @@ async function waitForStatButtonsReady() {
 
 function clearOpponentPromptFallbackTimer() {
   if (typeof window === "undefined") return;
-  try {
-    const id = window.__battleClassicOpponentPromptFallback;
-    if (id) clearTimeout(id);
-  } catch {}
-  try {
-    window.__battleClassicOpponentPromptFallback = 0;
-  } catch {}
+  const id = getOpponentPromptFallbackTimerId();
+  if (id) {
+    clearScheduled(id);
+  }
+  setOpponentPromptFallbackTimerId(0);
 }
-
-// Import i18n and snackbar helpers
-import { t } from "../helpers/i18n.js";
-import {
-  showSelectionPrompt,
-  getOpponentDelay,
-  setOpponentDelay
-} from "../helpers/classicBattle/snackbar.js";
-import {
-  removeBackdrops,
-  enableNextRoundButton,
-  disableNextRoundButton,
-  showFatalInitError,
-  setNextButtonFinalizedState
-} from "../helpers/classicBattle/uiHelpers.js";
-import {
-  handleStatSelection,
-  getPlayerAndOpponentValues,
-  isOrchestratorActive
-} from "../helpers/classicBattle/selectionHandler.js";
-import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
-import {
-  recordOpponentPromptTimestamp,
-  getOpponentPromptTimestamp,
-  resetOpponentPromptTimestamp,
-  getOpponentPromptMinDuration
-} from "../helpers/classicBattle/opponentPromptTracker.js";
-import {
-  CARD_RETRY_EVENT,
-  LOAD_ERROR_EXIT_EVENT,
-  JudokaDataLoadError
-} from "../helpers/classicBattle/cardSelection.js";
-import { isDevelopmentEnvironment } from "../helpers/environment.js";
 /**
  * Toggle header navigation interactivity.
  *
@@ -245,24 +216,13 @@ function bindHomeButton(store) {
  * Buffer time added to opponent delay to ensure snackbar message is visible.
  * Prevents UI elements from changing too quickly for user comprehension.
  */
+const POST_SELECTION_READY_DELAY_MS = 48;
 const OPPONENT_MESSAGE_BUFFER_MS = 150;
 
 const BASE_SELECTION_READY_DELAY_MS = Math.max(
   POST_SELECTION_READY_DELAY_MS,
   OPPONENT_MESSAGE_BUFFER_MS
 );
-
-function getCurrentTimestamp() {
-  try {
-    if (typeof performance !== "undefined" && typeof performance.now === "function") {
-      return performance.now();
-    }
-  } catch {}
-  try {
-    return Date.now();
-  } catch {}
-  return 0;
-}
 
 function calculateRemainingOpponentMessageTime() {
   try {
@@ -521,16 +481,17 @@ export function prepareUiBeforeSelection() {
   if (flagEnabled) {
     setOpponentDelay(resolvedDelay);
     if (resolvedDelay > 0) {
-      if (typeof window !== "undefined") {
+      const scheduled = scheduleDelayed(() => {
         try {
-          window.__battleClassicOpponentPromptFallback = setTimeout(() => {
-            try {
-              showSnackbar(t("ui.opponentChoosing"));
-              recordOpponentPromptTimestamp(getCurrentTimestamp());
-            } catch {}
-            clearOpponentPromptFallbackTimer();
-          }, resolvedDelay);
+          showSnackbar(t("ui.opponentChoosing"));
+          recordOpponentPromptTimestamp(getCurrentTimestamp());
         } catch {}
+        clearOpponentPromptFallbackTimer();
+      }, resolvedDelay);
+
+      if (scheduled && typeof window !== "undefined") {
+        // Store the timer ID for future cleanup
+        setOpponentPromptFallbackTimerId(resolvedDelay);
       }
       return resolvedDelay;
     }
@@ -720,10 +681,7 @@ function finalizeSelectionReady(store, options = {}) {
         if (isDevelopmentEnvironment()) {
           try {
             if (typeof console !== "undefined" && typeof console.debug === "function") {
-              console.debug(
-                "battleClassic: updateRoundCounterDisplay after selection failed",
-                err
-              );
+              console.debug("battleClassic: updateRoundCounterDisplay after selection failed", err);
             }
           } catch {}
         }
@@ -935,7 +893,6 @@ function updateRoundCounterDisplay(options = {}) {
     );
   }
 }
-
 
 async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");

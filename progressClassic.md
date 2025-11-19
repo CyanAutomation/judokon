@@ -2,7 +2,7 @@
 
 ## Summary
 
-The `opponent-choosing.smoke.spec.js` test was failing because the `opponentDelayMessage` feature flag was not being properly read from localStorage when set via Playwright's `addInitScript`. This investigation uncovered a combination of issues: fixture-level localStorage clobbering, feature flag initialization timing, and a deeper settings merge bug.
+The `opponent-choosing.smoke.spec.js` test was failing because the `opponentDelayMessage` feature flag was not being properly read from localStorage when set via Playwright's `addInitScript`. This investigation uncovered a combination of issues: fixture-level localStorage clobbering, a shallow merge of feature flags during initialization, and an overly complex settings merge logic that made the root cause difficult to identify.
 
 ---
 
@@ -37,146 +37,111 @@ The `opponent-choosing.smoke.spec.js` test was failing because the `opponentDela
 1. **localStorage Clobbering** (commonSetup.js fixture):
    - The commonSetup fixture runs `addInitScript` that clears localStorage and ONLY sets `enableTestMode`
    - This runs AFTER the test's `addInitScript`, overwriting our feature flag settings
-   - **Solution**: Don't use commonSetup fixture for this test
+   - **Solution**: Don't use commonSetup fixture for this test. This has been implemented.
 
-2. **__FF_OVERRIDES Mechanism Broken**:
-   - Set `window.__FF_OVERRIDES = { opponentDelayMessage: true }` after page load
-   - Verified the override was properly set on window
-   - Called `isEnabled("opponentDelayMessage")`
-   - **Result**: Returned `false` despite override being present
-   - **Reason**: `window.isEnabled` function doesn't exist! The featureFlags module doesn't export to window
-   - The application code imports `isEnabled` directly, so it works there, but test code can't call it
+2. **`__FF_OVERRIDES` Mechanism Broken**:
+   - The `window.isEnabled` function is not exposed for tests, making direct verification difficult.
 
-3. **Settings Merge Pipeline Bug** (most critical):
-   - Created test with `addInitScript` setting localStorage BEFORE page load
-   - Verified localStorage contains correct values: `{ featureFlags: { opponentDelayMessage: { enabled: true } } }`
-   - Called `initFeatureFlags()` which should merge stored settings with defaults
-   - **Result**: `isEnabled("opponentDelayMessage")` still returned `false`
-   - **Expected**: Should return `true` since localStorage value should override defaults
+3. **Settings Merge Pipeline Bug**:
+   - `localStorage` correctly contains `{ featureFlags: { opponentDelayMessage: { enabled: true } } }`.
+   - `initFeatureFlags()` should merge these settings with defaults.
+   - **Result**: `isEnabled("opponentDelayMessage")` still returned `false`.
+   - **Expected**: Should return `true`.
 
 ### Phase 4: Snackbar Flow Analysis
 
-**Instrumentation**: Added mutation observer to track snackbar text changes over time
+**Instrumentation**: Added mutation observer to track snackbar text changes over time.
 
-**Finding**: Snackbar text NEVER updates after stat selection
-
-- Initial: "First to 5 points wins." (shown on page load)
-- After 3s: Fades away
-- After stat click: NO UPDATE
-
-**Code Analysis** (uiHelpers.js lines 800-815):
-
-- When `delayOpponentMessage` is enabled, code should show "Opponent is choosing…"
-- Logic path exists and looks correct
-- **Conclusion**: `isEnabled("opponentDelayMessage")` must be returning `false` when the code runs
+**Finding**: Snackbar text NEVER updates after stat selection. This confirms `isEnabled("opponentDelayMessage")` is returning `false`.
 
 ---
 
-## Root Cause: Settings Merge Bug
+## Root Cause: Shallow Merge in `initFeatureFlags`
 
-The core issue is in `src/config/loadSettings.js`. When localStorage contains a partial `featureFlags` object:
+The primary issue is a shallow merge operation within `src/helpers/featureFlags.js` in the `initFeatureFlags` function.
 
-```json
-{
-  "featureFlags": {
-    "autoSelect": { "enabled": false },
-    "opponentDelayMessage": { "enabled": true }
-  }
+```javascript
+// src/helpers/featureFlags.js
+export async function initFeatureFlags() {
+  // ...
+  settings = await loadSettings();
+  const mergedFlags = {
+    ...DEFAULT_SETTINGS.featureFlags,
+    ...(settings.featureFlags || {})
+  };
+  cachedFlags = mergedFlags;
+  // ...
 }
 ```
 
-The merge function SHOULD recursively merge flag-by-flag, preserving all unmentioned flags from defaults. However, the actual behavior appears to be replacing the entire featureFlags object or losing flags during merge.
+The line `const mergedFlags = { ...DEFAULT_SETTINGS.featureFlags, ...(settings.featureFlags || {}) };` performs a shallow copy. When `settings.featureFlags` from `localStorage` contains a partial list of flags (e.g., just `opponentDelayMessage`), this operation replaces entire flag objects, losing nested properties like `description` and any other default flags not present in the `localStorage` version. The `isEnabled` function relies on `cachedFlags`, which is assigned this incorrectly merged object.
 
-**Evidence**:
-
-- localStorage correctly stored: `{ featureFlags: { opponentDelayMessage: { enabled: true } } }`
-- `loadSettings()` should merge with defaults and include ALL flags
-- But when `initFeatureFlags()` caches the flags, `opponentDelayMessage` is not enabled
-
-**Suspected Code Path** (loadSettings.js):
-
-1. `mergeObject()` called recursively for nested objects ✓
-2. `mergeKnown()` validates top-level keys only (line 58: `!(key in defaults)`)
-3. For nested `featureFlags`, should iterate each flag... but merge behavior is unclear
+While the settings merge logic in `src/config/loadSettings.js` is complex, the most direct cause of this bug is the incorrect shallow merge in `initFeatureFlags`.
 
 ---
 
 ## Suggested Fix Plan
 
-### Fix 1: Don't Use commonSetup Fixture (Test-Level, Short-term)
+### Fix 1: Correct the Merge Logic in `initFeatureFlags` (Root Cause Fix)
 
-**Status**: Already implemented
+**The most direct fix is to ensure a deep merge of feature flags.** Instead of the shallow merge, `initFeatureFlags` should rely on `loadSettings` to provide a correctly merged object, or perform a deep merge itself.
 
-- Remove commonSetup fixture that clobbers localStorage
-- Use base Playwright `test` instead
-- This allows `addInitScript` to set localStorage before app initializes
+**Recommended Change in `src/helpers/featureFlags.js`:**
 
-**File**: `playwright/opponent-choosing.smoke.spec.js`
-**Expected Result**: If settings merge works, test will pass
+```javascript
+// from
+const mergedFlags = {
+  ...DEFAULT_SETTINGS.featureFlags,
+  ...(settings.featureFlags || {})
+};
+cachedFlags = mergedFlags;
+setCachedSettings({ ...settings, featureFlags: mergedFlags });
 
-### Fix 2: Debug & Fix Settings Merge (Application-Level, Root Cause)
-
-**Investigation Needed**:
-
-1. Add console.debug logging to `loadSettings.js` `mergeObject()` to trace merge of featureFlags
-2. Verify that localStorage values are preserved through merge pipeline
-3. Trace `initFeatureFlags()` to confirm cachedFlags contains merged values
-
-**Likely Fixes**:
-
-- Ensure recursive merge preserves all keys from defaults that aren't overridden
-- Add test case for partial localStorage override of featureFlags
-- Consider exposing `isEnabled()` to `window` for test debugging
+// to
+cachedFlags = settings.featureFlags || { ...DEFAULT_SETTINGS.featureFlags };
+setCachedSettings(settings);
+```
+This change assumes that `loadSettings` returns a correctly deep-merged settings object. If `loadSettings` is also buggy, it will need to be fixed as well, but the redundant and incorrect merge in `initFeatureFlags` should be removed regardless.
 
 **Files to Check**:
+- `src/helpers/featureFlags.js` (to apply the fix)
+- `src/config/loadSettings.js` (to verify its merge logic if the above fix is not sufficient)
 
-- `src/config/loadSettings.js` - merge logic
-- `src/helpers/featureFlags.js` - cache initialization
-- `src/helpers/settingsStorage.js` - loadSettings wrapper
+### Fix 2: Expose `isEnabled` for Testing (Test Infrastructure Improvement)
 
-### Fix 3: Expose isEnabled for Testing (Test Infrastructure)
-
-**Purpose**: Allow tests to verify feature flag state without relying on behavior
+To make tests more robust, expose a debug version of `isEnabled`.
 
 **Implementation**:
-
+In a test setup file, or via `addInitScript`:
 ```javascript
-// In a test setup or during test mode init
 if (window.__PLAYWRIGHT_TEST__) {
-  window.isEnabledDebug = (flag) => {
-    // Can import and call actual isEnabled function
-  };
+  // Assuming 'isEnabled' is available in the module scope
+  window.isEnabledDebug = isEnabled;
 }
 ```
+This allows tests to directly verify the state of a flag.
 
-**Benefit**: Tests can verify flags are working instead of waiting for snackbar text changes
+### Fix 3: Use Test API for State Verification (Best Practice)
 
-### Fix 4: Alternative - Use Test API (Best Practice)
-
-**Rather than relying on feature flags working correctly**:
-
-- Use `window.__TEST_API` to query battle engine state directly
-- Assert on `engine.getOpponentDelay()` or similar instead of snackbar text
-- Less brittle than waiting for UI feedback
+As a best practice, tests should assert on application state rather than UI text when possible.
 
 **Example**:
-
 ```javascript
-// Instead of: await expect(snackbar).toContainText(/Opponent is choosing/i)
 const delay = await page.evaluate(
   () => window.__TEST_API?.engine?.getOpponentDelay?.()
 );
-expect(delay).toBeGreaterThan(0); // Verifies opponent delay is configured
+expect(delay).toBeGreaterThan(0);
 ```
+This makes the test less brittle.
 
 ---
 
 ## Recommended Action Order
 
-1. **Immediate**: Apply Fix 1 (remove commonSetup fixture) - DONE
-2. **Verify**: Re-run test to see if basic localStorage merging works
-3. **If still failing**: Apply Fix 2 & 3 (add logging, debug settings merge)
-4. **Best Practice**: Apply Fix 4 (use Test API instead of UI assertions)
+1. **Immediate**: Apply **Fix 1** to correct the merge logic in `initFeatureFlags`.
+2. **Verify**: Re-run `playwright/opponent-choosing.smoke.spec.js` to confirm the fix.
+3. **If still failing**: Investigate the merge logic in `src/config/loadSettings.js` as it may also contain bugs. Add logging to trace the merge process for `featureFlags`.
+4. **Best Practice (Recommended)**: Implement **Fix 2** and **Fix 3** to improve testability and robustness.
 
 ---
 
@@ -184,18 +149,17 @@ expect(delay).toBeGreaterThan(0); // Verifies opponent delay is configured
 
 | Issue | Root Cause | Status | Fix |
 |-------|-----------|--------|-----|
-| Snackbar not updating | `opponentDelayMessage` flag returns false | **Critical** | Fix settings merge bug |
-| localStorage overwritten | commonSetup fixture | **Fixed** | Removed fixture usage |
-| Can't test flag state | `window.isEnabled` not exposed | **Minor** | Expose for debugging |
-| UI-dependent test | Waiting for snackbar text | **Design Issue** | Use Test API instead |
+| Snackbar not updating | Incorrect shallow merge in `initFeatureFlags` | **Critical** | Implement deep merge or remove redundant merge. |
+| localStorage overwritten | `commonSetup` fixture | **Fixed** | Removed fixture usage. |
+| Can't test flag state | `isEnabled` not exposed to tests | **Minor** | Expose for debugging. |
+| UI-dependent test | Waiting for snackbar text | **Design Issue** | Use Test API for state assertions. |
 
 ---
 
 ## Next Steps
 
-1. Run opponent-choosing test with current fix (no commonSetup)
-2. If failing: Add logging to loadSettings merge pipeline
-3. Trace where featureFlags are lost/corrupted during settings initialization
-4. Fix merge logic to properly handle partial feature flag overrides
-5. Refactor test to use Test API for state verification (per AGENTS.md guidelines)
-
+1.  Modify `src/helpers/featureFlags.js` to fix the shallow merge issue.
+2.  Run `npm run test:e2e playwright/opponent-choosing.smoke.spec.js` to verify the fix.
+3.  If the test passes, consider implementing the testing improvements (Fix 2 and 3).
+4.  If the test still fails, add debug logging to `src/config/loadSettings.js` to trace the settings merge pipeline and identify any other issues.
+5.  Refactor test to use Test API for state verification (per AGENTS.md guidelines).
