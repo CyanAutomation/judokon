@@ -39,14 +39,15 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
 
     // Press Enter to select the first stat button
     await page.keyboard.press("Enter");
-    await expect(firstStatButton).toBeDisabled();
+    await expect(firstStatButton).toBeDisabled({ timeout: 1_000 });
 
     // Await the round decision state so we only log after the action resolves
     await waitForBattleState(page, "roundDecision", { timeout: 7_500 });
     console.log("After Enter - Battle state reached:", "roundDecision");
 
     // Countdown text is visible via the snackbar/timer UI
-    const timerText = (await page.getByTestId("next-round-timer").textContent())?.trim() ?? "";
+    const timerElement = page.getByTestId("next-round-timer");
+    const timerText = (await timerElement.count()) > 0 ? (await timerElement.textContent())?.trim() ?? "" : "";
     console.log("After Enter - Timer text:", timerText || "<empty>");
 
     // Check state immediately after Enter
@@ -86,6 +87,6 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
     console.log("After cooldown - disabled (attribute):", afterCooldownDisabledCount);
     console.log("After cooldown - disabled (class):", afterCooldownWithClassCount);
 
-    await expect(firstStatButton).toBeEnabled();
+    await expect(firstStatButton).toBeEnabled({ timeout: 1_000 });
   });
 });
