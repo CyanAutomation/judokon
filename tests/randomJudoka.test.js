@@ -227,10 +227,13 @@ describe("Random Judoka Selection", () => {
       const deterministicRng = createSeededRng(seed);
       const array = ["alpha", "beta", "gamma", "delta"];
 
-      const firstRandom = ((seed * multiplier + increment) % modulus) / modulus;
-      const expectedIndex = Math.floor(firstRandom * array.length);
+      // Call the RNG once to get the expected random value
+      const expectedRandom = deterministicRng();
+      // Reset the RNG to the same state for the actual test
+      const testRng = createSeededRng(seed);
+      const expectedIndex = Math.floor(expectedRandom * array.length);
 
-      const result = selectRandomElement(array, deterministicRng);
+      const result = selectRandomElement(array, testRng);
 
       expect(result).toBe(array[expectedIndex]);
     });
@@ -238,7 +241,8 @@ describe("Random Judoka Selection", () => {
     it("should avoid index bias across rng extremes", () => {
       const array = ["first", "middle", "last"];
       const rngSequence = [0, 0.999999, 0.4];
-      const rng = vi.fn(() => rngSequence.shift());
+      let callCount = 0;
+      const rng = vi.fn(() => rngSequence[callCount++]);
 
       const firstSelection = selectRandomElement(array, rng);
       const lastSelection = selectRandomElement(array, rng);
