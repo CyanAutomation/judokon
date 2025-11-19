@@ -21,7 +21,10 @@
  */
 
 import { test as base } from "./commonSetup.js";
-import { waitForTestApi } from "../helpers/battleStateHelper.js";
+import {
+  ensureBattleCliResetChannel,
+  waitForTestApi
+} from "../helpers/battleStateHelper.js";
 
 /**
  * Extended test fixture that ensures battle CLI tests run with isolated state.
@@ -40,6 +43,8 @@ import { waitForTestApi } from "../helpers/battleStateHelper.js";
  */
 export const test = base.extend({
   page: async ({ page }, use) => {
+    const battleCliResetChannel = await ensureBattleCliResetChannel(page);
+
     // PRE-NAVIGATION: Clear globals that might persist across page reloads
     await page.addInitScript(() => {
       // WeakSet that tracks stat list elements with bound click handlers
@@ -66,9 +71,7 @@ export const test = base.extend({
       try {
         await waitForTestApi(page);
       } catch (error) {
-        await page.evaluate((err) => {
-          window.__battleCliResetCompleted = { ok: false, error: err };
-        }, String(error));
+        await battleCliResetChannel.signalReset({ ok: false, error: String(error) });
         return;
       }
 
@@ -80,14 +83,9 @@ export const test = base.extend({
           }
           return { ok: false, reason: "resetBattleCliModuleState not available" };
         });
-        // Store the result in a flag so tests can verify the reset completed
-        await page.evaluate((res) => {
-          window.__battleCliResetCompleted = res;
-        }, result);
+        await battleCliResetChannel.signalReset(result);
       } catch (error) {
-        await page.evaluate((err) => {
-          window.__battleCliResetCompleted = { ok: false, error: err };
-        }, String(error));
+        await battleCliResetChannel.signalReset({ ok: false, error: String(error) });
       }
     };
 
