@@ -400,6 +400,13 @@ export async function startRound(store, onRoundStart) {
 let currentNextRound = null;
 
 /**
+ * Store controls for the active cooldown timer.
+ * Used to clean up existing timers when starting a new cooldown.
+ * @type {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
+ */
+let activeCooldownControls = null;
+
+/**
  * @summary Schedule the cooldown before the next round and expose controls for the Next button.
  *
  * @pseudocode
