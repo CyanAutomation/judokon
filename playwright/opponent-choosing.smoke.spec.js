@@ -5,15 +5,16 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {
     await page.goto("/index.html");
 
-    await Promise.all([
-      page.waitForURL("**/battleClassic.html"),
-      (async () => {
-        const startBtn =
-          (await page.$('[data-testid="start-classic"]')) ||
-          (await page.getByText("Classic Battle").first());
-        await startBtn.click();
-      })()
-    ]);
+    // Navigate to Classic Battle and wait for navigation to complete
+    const navigationPromise = page.waitForURL("**/battleClassic.html");
+
+    const startBtn =
+      (await page.$('[data-testid="start-classic"]')) ||
+      (await page.getByText("Classic Battle").first());
+    await startBtn.click();
+
+    // Wait for the navigation to complete
+    await navigationPromise;
 
     // Wait for battle to be ready before trying to interact
     await waitForBattleReady(page, { allowFallback: true });

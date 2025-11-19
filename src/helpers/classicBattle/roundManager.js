@@ -27,7 +27,6 @@ import { t } from "../i18n.js";
 import { enterStoreGuard, getHiddenStoreValue, setHiddenStoreValue } from "./storeGuard.js";
 import {
   getOpponentCardContainer,
-  hasRealOpponentCard,
   hideOpponentCardIfRealVisible,
   ensureOpponentPlaceholderVisibility
 } from "./domHelpers.js";
@@ -81,13 +80,14 @@ import {
   DEFAULT_MATCH_DECK_SIZE
 } from "./matchDeckManager.js";
 
-const READY_DISPATCHER_IDENTITY_SYMBOL =
-  typeof Symbol === "function"
-    ? Symbol.for("classicBattle.readyDispatcherIdentity")
-    : "__classicBattle_readyDispatcherIdentity__";
-
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
+
+/**
+ * @summary Load the debug panel updater lazily on first request.
+ *
+ * @returns {Promise<(()=>void)>} The updateDebugPanel function.
+ */
 async function getLazyUpdateDebugPanel() {
   if (!lazyUpdateDebugPanel) {
     const debugPanel = await getDebugPanelLazy();
