@@ -9,10 +9,15 @@ test.describe("Classic Battle – stat hotkeys", () => {
     await page.goto("/index.html");
     await app.applyRuntime();
 
-    const startBtn =
-      (await page.$('[data-testid="start-classic"]')) ||
-      (await page.getByText("Classic Battle").first());
-    await startBtn.click();
+    await Promise.all([
+      page.waitForURL("**/battleClassic.html"),
+      (async () => {
+        const startBtn =
+          (await page.$('[data-testid="start-classic"]')) ||
+          (await page.getByText("Classic Battle").first());
+        await startBtn.click();
+      })()
+    ]);
 
     // Wait for stat buttons to render
     const firstStat = page.locator("#stat-buttons button").first();

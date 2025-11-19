@@ -4,10 +4,15 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {
     await page.goto("/index.html");
 
-    const startBtn =
-      (await page.$('[data-testid="start-classic"]')) ||
-      (await page.getByText("Classic Battle").first());
-    await startBtn.click();
+    await Promise.all([
+      page.waitForURL("**/battleClassic.html"),
+      (async () => {
+        const startBtn =
+          (await page.$('[data-testid="start-classic"]')) ||
+          (await page.getByText("Classic Battle").first());
+        await startBtn.click();
+      })()
+    ]);
 
     // Wait for stat buttons to render
     const firstStat = page.locator("#stat-buttons button").first();
