@@ -80,13 +80,57 @@ describe("Advanced Filters", () => {
       expect(parseStatFilter("xyz>=5")).toBeNull();
     });
 
-    it("should support all comparison operators", () => {
-      expect(parseStatFilter("power>=8")).toBeTruthy();
-      expect(parseStatFilter("power<=8")).toBeTruthy();
-      expect(parseStatFilter("power>8")).toBeTruthy();
-      expect(parseStatFilter("power<8")).toBeTruthy();
-      expect(parseStatFilter("power==8")).toBeTruthy();
-      expect(parseStatFilter("power!=8")).toBeTruthy();
+    it("should support all comparison operators with parsed structure and application", () => {
+      const judokaHighPower = { ...judokaHigh, stats: { ...judokaHigh.stats, power: 9 } };
+      const judokaLowPower = { ...judokaLow, stats: { ...judokaLow.stats, power: 2 } };
+
+      const cases = [
+        {
+          filter: "power>=8",
+          expected: { stat: "power", operator: ">=", value: 8 },
+          passes: judokaHighPower,
+          fails: judokaLowPower
+        },
+        {
+          filter: "power<=3",
+          expected: { stat: "power", operator: "<=", value: 3 },
+          passes: judokaLowPower,
+          fails: judokaHighPower
+        },
+        {
+          filter: "power>2",
+          expected: { stat: "power", operator: ">", value: 2 },
+          passes: judokaHighPower,
+          fails: judokaLowPower
+        },
+        {
+          filter: "power<3",
+          expected: { stat: "power", operator: "<", value: 3 },
+          passes: judokaLowPower,
+          fails: judokaHighPower
+        },
+        {
+          filter: "power==9",
+          expected: { stat: "power", operator: "==", value: 9 },
+          passes: judokaHighPower,
+          fails: judokaLowPower
+        },
+        {
+          filter: "power!=2",
+          expected: { stat: "power", operator: "!=", value: 2 },
+          passes: judokaHighPower,
+          fails: judokaLowPower
+        }
+      ];
+
+      cases.forEach(({ filter, expected, passes, fails }) => {
+        const parsed = parseStatFilter(filter);
+        expect(parsed).toMatchObject(expected);
+
+        const filters = { statThresholds: [filter] };
+        expect(applyAdvancedFilters(passes, filters)).toBe(true);
+        expect(applyAdvancedFilters(fails, filters)).toBe(false);
+      });
     });
   });
 
