@@ -2,9 +2,9 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 test("Debug Test API exposure on battle page", async ({ page }) => {
   console.log("\n=== Starting Test API Debug ===\n");
-  
+
   await page.goto("/index.html");
-  
+
   // Check if Test API is available on index page
   const indexApi = await page.evaluate(() => ({
     testApi: typeof window.__TEST_API !== "undefined",
@@ -14,18 +14,18 @@ test("Debug Test API exposure on battle page", async ({ page }) => {
     settings: localStorage.getItem("settings")
   }));
   console.log("Index page state:", JSON.stringify(indexApi, null, 2));
-  
+
   // Navigate to Classic Battle
   const startBtn = await page.getByText("Classic Battle").first();
   await startBtn.click();
-  
+
   // Wait for navigation to complete
   await page.waitForLoadState("networkidle");
-  
+
   // Check current URL
   const url = await page.url();
   console.log("Current URL after navigation:", url);
-  
+
   // Check if bootstrap script is loaded
   const pageState = await page.evaluate(() => ({
     testApi: typeof window.__TEST_API !== "undefined",
@@ -40,22 +40,25 @@ test("Debug Test API exposure on battle page", async ({ page }) => {
     initCalled: window.__initCalled,
     settings: localStorage.getItem("settings"),
     body: document.body?.dataset?.battleState,
-    scripts: Array.from(document.scripts).map(s => ({
+    scripts: Array.from(document.scripts).map((s) => ({
       src: s.src,
       type: s.type,
       loaded: s.src ? true : false
     }))
   }));
-  
+
   console.log("\nBattle page state:", JSON.stringify(pageState, null, 2));
-  
+
   // Check if isTestMode would return true
   const testModeChecks = await page.evaluate(() => {
     const checks = {
-      processEnv: typeof process !== "undefined" ? {
-        NODE_ENV: process.env?.NODE_ENV,
-        VITEST: process.env?.VITEST
-      } : null,
+      processEnv:
+        typeof process !== "undefined"
+          ? {
+              NODE_ENV: process.env?.NODE_ENV,
+              VITEST: process.env?.VITEST
+            }
+          : null,
       windowFlags: {
         __TEST__: typeof window.__TEST__ !== "undefined",
         __PLAYWRIGHT_TEST__: typeof window.__PLAYWRIGHT_TEST__ !== "undefined"
@@ -71,9 +74,9 @@ test("Debug Test API exposure on battle page", async ({ page }) => {
     };
     return checks;
   });
-  
+
   console.log("\nTest mode detection checks:", JSON.stringify(testModeChecks, null, 2));
-  
+
   // Force expose Test API if needed
   const exposeResult = await page.evaluate(async () => {
     try {
@@ -91,17 +94,17 @@ test("Debug Test API exposure on battle page", async ({ page }) => {
       };
     }
   });
-  
+
   console.log("\nManual expose result:", JSON.stringify(exposeResult, null, 2));
-  
+
   // Final check
   const finalState = await page.evaluate(() => ({
     testApi: typeof window.__TEST_API !== "undefined",
     initApi: typeof window.__TEST_API?.init !== "undefined",
     waitForBattleReady: typeof window.__TEST_API?.init?.waitForBattleReady
   }));
-  
+
   console.log("\nFinal state:", JSON.stringify(finalState, null, 2));
-  
+
   console.log("\n=== End Test API Debug ===\n");
 });
