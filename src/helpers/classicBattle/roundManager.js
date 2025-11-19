@@ -80,6 +80,12 @@ import {
   DEFAULT_MATCH_DECK_SIZE
 } from "./matchDeckManager.js";
 
+// State guards for round management
+const ROUND_START_GUARD = Symbol.for("classicBattle.startRoundGuard");
+const ACTIVE_ROUND_PAYLOAD = Symbol.for("classicBattle.activeRoundPayload");
+const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
+const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
+
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
 

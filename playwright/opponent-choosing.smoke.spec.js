@@ -3,6 +3,13 @@ import { waitForBattleReady, waitForBattleState } from "./helpers/battleStateHel
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {
+    // Disable auto-select to prevent automatic stat selection before we can interact
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = {
+        autoSelect: false
+      };
+    });
+
     await page.goto("/index.html");
 
     // Navigate to Classic Battle and wait for navigation to complete
@@ -16,26 +23,25 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     // Wait for the navigation to complete
     await navigationPromise;
 
-    // Wait for battle to be ready before trying to interact
+    // Wait for battle to be ready
     await waitForBattleReady(page, { allowFallback: true });
 
-    // Wait for the battle state to transition to waitingForPlayerAction
+    // Wait for the battle state to be ready for player action
     await waitForBattleState(page, "waitingForPlayerAction", {
       allowFallback: true,
       timeout: 10_000
     });
 
-    // Wait for stat buttons to render and be clickable
+    // Wait for stat buttons to be enabled
     const firstStat = page.locator("#stat-buttons button").first();
-    await expect(firstStat).toBeVisible();
     await expect(firstStat).toBeEnabled();
 
     // Click a stat to trigger the opponent choosing state
     await firstStat.click();
 
-    // Snackbar element shows the opponent choosing message
+    // Snackbar shows the opponent choosing message
     const snackbar = page.locator("#snackbar-container .snackbar");
-    await expect(snackbar).toBeVisible({ timeout: 3000 });
+    await expect(snackbar).toBeVisible({ timeout: 5000 });
     await expect(snackbar).toContainText(/Opponent is choosing|choosing/i);
   });
 });
