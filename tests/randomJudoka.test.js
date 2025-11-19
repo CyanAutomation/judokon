@@ -229,10 +229,8 @@ describe("Random Judoka Selection", () => {
 
       // Call the RNG once to get the expected random value
       const expectedRandom = deterministicRng();
-      // Reset the RNG to the same state for the actual test
+      // Verify the RNG produces the same value when reset
       const testRng = createSeededRng(seed);
-      const expectedIndex = Math.floor(expectedRandom * array.length);
-
       const result = selectRandomElement(array, testRng);
 
       expect(result).toBe(array[expectedIndex]);
@@ -242,7 +240,14 @@ describe("Random Judoka Selection", () => {
       const array = ["first", "middle", "last"];
       const rngSequence = [0, 0.999999, 0.4];
       let callCount = 0;
-      const rng = vi.fn(() => rngSequence[callCount++]);
+      const rng = vi.fn(() => {
+        if (callCount >= rngSequence.length) {
+          throw new Error(
+            `RNG called more times than expected (${callCount + 1} > ${rngSequence.length})`
+          );
+        }
+        return rngSequence[callCount++];
+      });
 
       const firstSelection = selectRandomElement(array, rng);
       const lastSelection = selectRandomElement(array, rng);
