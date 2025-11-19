@@ -15,6 +15,78 @@ test.describe("MCP RAG Server Health Checks", () => {
   let serverProcess;
   const cwd = path.join(__dirname, "..");
 
+  const SERVER_READY_PATTERN = /RAG MCP server started/i;
+
+  async function waitForServerStartup(proc, timeoutMs = 10000) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error("Timed out waiting for MCP server readiness"));
+      }, timeoutMs);
+
+      const onOutput = (chunk) => {
+        const text = chunk.toString();
+        if (SERVER_READY_PATTERN.test(text)) {
+          cleanup();
+          resolve();
+        }
+      };
+
+      const onExit = (code, signal) => {
+        cleanup();
+        reject(new Error(`MCP server exited before readiness (code: ${code}, signal: ${signal})`));
+      };
+
+      const cleanup = () => {
+        clearTimeout(timer);
+        proc.stderr?.off("data", onOutput);
+        proc.stdout?.off("data", onOutput);
+        proc.off("exit", onExit);
+      };
+
+      proc.stderr?.on("data", onOutput);
+      proc.stdout?.on("data", onOutput);
+      proc.on("exit", onExit);
+    });
+  }
+
+  async function probeServerHealth(proc, timeoutMs = 5000) {
+    const start = Date.now();
+
+    while (Date.now() - start < timeoutMs) {
+      if (proc.exitCode === null && proc.pid) {
+        try {
+          process.kill(proc.pid, 0);
+          return;
+        } catch (error) {
+          if (error.code !== "ESRCH") {
+            throw error;
+          }
+        }
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    throw new Error("MCP server health probe failed");
+  }
+
+  async function waitForProcessExit(proc, timeoutMs = 5000) {
+    if (!proc) return;
+    if (proc.exitCode !== null) return;
+
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("Timed out waiting for MCP server to exit")), timeoutMs);
+
+      const onExit = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+
+      proc.once("exit", onExit);
+    });
+  }
+
   test.beforeEach(async () => {
     // Start the MCP server as a subprocess
     serverProcess = spawn("npm", ["run", "rag:mcp"], {
@@ -22,16 +94,15 @@ test.describe("MCP RAG Server Health Checks", () => {
       stdio: ["pipe", "pipe", "pipe"]
     });
 
-    // Give the server a moment to start
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await waitForServerStartup(serverProcess);
+    await probeServerHealth(serverProcess);
   });
 
   test.afterEach(async () => {
     // Clean up the server process
     if (serverProcess) {
       serverProcess.kill();
-      // Give it time to shut down
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await waitForProcessExit(serverProcess);
     }
   });
 
