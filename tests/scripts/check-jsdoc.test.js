@@ -134,6 +134,38 @@ describe("check-jsdoc", () => {
       expect(valid).toBe(true);
     });
 
+    it("should treat inline summaries correctly", () => {
+      const content = `
+        /** Quick summary with inline tags. @pseudocode 1. Do something. @returns {boolean} */
+        export function myFunction() {
+          return true;
+        }
+      `;
+      const lines = content.split("\n");
+      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
+      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe(true);
+    });
+
+    it("should return false when annotations appear before any summary text", () => {
+      const content = `
+        /**
+         * @pseudocode
+         * 1. Do something.
+         * @returns {boolean}
+         */
+        export function myFunction() {
+          return true;
+        }
+      `;
+      const lines = content.split("\n");
+      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
+      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe(false);
+    });
+
     it.each(["* * *", "**", "*   "])(
       "should return false when the summary contains only asterisks and whitespace (%s)",
       (summaryText) => {
