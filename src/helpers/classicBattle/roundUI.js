@@ -7,12 +7,8 @@ import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
-import { getCardStatValue } from "./cardStatUtils.js";
-import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar, updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
-import { createRoundTimer as defaultCreateRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { attachCooldownRenderer as defaultAttachCooldownRenderer } from "../CooldownRenderer.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { disableStatButtons, resetStatButtons } from "./statButtons.js";
 import { runWhenIdle } from "./idleCallback.js";
@@ -24,24 +20,48 @@ import {
   DEFAULT_OPPONENT_PROMPT_BUFFER_MS as INTERNAL_DEFAULT_OPPONENT_PROMPT_BUFFER_MS
 } from "./opponentPromptWaiter.js";
 
+// New utility imports
+import { battleLog } from "./battleLogger.js";
+import { createPostResetScheduler } from "./frameScheduler.js";
+import { resolveStatValues } from "./statValuesHelper.js";
+import { createStatButtonCache } from "./statButtonCache.js";
+import { validateRoundStartedEvent, validateStatSelectedEvent, validateRoundResolvedEvent } from "./eventValidators.js";
+import {
+  selectTimerFactory,
+  selectRendererFactory,
+  instantiateTimer,
+  normalizeRendererOptions,
+  resolveOpponentPromptBuffer,
+  parseSecondsFromResult
+} from "./cooldownResolver.js";
+
 /**
  * @summary Safety buffer exported for backward compatibility with existing imports.
  * @pseudocode DEFAULT_OPPONENT_PROMPT_BUFFER_MS = 250
  */
 export const DEFAULT_OPPONENT_PROMPT_BUFFER_MS = INTERNAL_DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+const TIMINGS = {
+  POST_COOLDOWN_BUFFER_MS: 250,
+  FRAME_SCHEDULER_FALLBACK_MS: 32,
+  POST_RESET_SAFETY_MARGIN_MS: 250
+};
+
 let showMatchSummaryModal = null;
 // Reference to avoid unused-import lint complaint when the function is re-exported
 // or only used in other environments.
 void _updateSnackbar;
+
 let hasScheduledUiServicePreload = false;
+const statButtonCache = createStatButtonCache("#stat-buttons button[data-stat]", "stat-buttons");
 function preloadUiService() {
   import("/src/helpers/classicBattle/uiService.js")
     .then((m) => {
       showMatchSummaryModal = m.showMatchSummaryModal;
     })
-    .catch(() => {});
+    .catch(() => {
+      // Preload failed; continue with fallback
+    });
 }
 
 function collectStatButtons(store) {
@@ -50,84 +70,14 @@ function collectStatButtons(store) {
       return Object.values(store.statButtonEls).filter(
         (btn) => btn && typeof btn === "object" && typeof btn.classList !== "undefined"
       );
-    } catch {}
-  }
-  ensureStatButtonObservers();
-
-  const cached = Array.isArray(collectStatButtons._cachedButtons)
-    ? collectStatButtons._cachedButtons
-    : null;
-  if (cached && cached.length > 0) {
-    const allConnected = cached.every((btn) => btn && btn.isConnected !== false);
-    if (allConnected) {
-      return cached;
+    } catch {
+      // Continue to cache fallback
     }
-    collectStatButtons._cachedButtons = undefined;
   }
 
-  const buttons = queryStatButtons();
-  if (buttons.length > 0) {
-    collectStatButtons._cachedButtons = buttons;
-    return buttons;
-  }
-
-  collectStatButtons._cachedButtons = undefined;
-  return buttons;
+  // Use optimized cache
+  return statButtonCache.get();
 }
-
-function queryStatButtons() {
-  try {
-    if (typeof document?.querySelectorAll === "function") {
-      return Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    }
-  } catch {}
-  return [];
-}
-
-function ensureStatButtonObservers() {
-  if (collectStatButtons._observerAttached) {
-    const root = collectStatButtons._observerRoot;
-    if (root && root.isConnected === false) {
-      collectStatButtons.invalidateCache();
-    } else if (!root) {
-      collectStatButtons._observerAttached = false;
-    } else {
-      return;
-    }
-  }
-  if (typeof MutationObserver !== "function") {
-    collectStatButtons._observerAttached = true;
-    return;
-  }
-  try {
-    const root = document?.getElementById?.("stat-buttons");
-    if (!root) {
-      return;
-    }
-    const observer = new MutationObserver(() => {
-      collectStatButtons.invalidateCache();
-    });
-    observer.observe(root, { childList: true, subtree: true });
-    collectStatButtons._observerAttached = true;
-    collectStatButtons._observer = observer;
-    collectStatButtons._observerRoot = root;
-  } catch {}
-}
-
-collectStatButtons.invalidateCache = function invalidateCache() {
-  collectStatButtons._cachedButtons = undefined;
-
-  const observer = collectStatButtons._observer;
-  if (observer && typeof observer.disconnect === "function") {
-    try {
-      observer.disconnect();
-    } catch {}
-  }
-
-  collectStatButtons._observer = undefined;
-  collectStatButtons._observerRoot = undefined;
-  collectStatButtons._observerAttached = false;
-};
 
 function clearStatButtonSelections(store) {
   const buttons = collectStatButtons(store);
@@ -138,7 +88,9 @@ function clearStatButtonSelections(store) {
       if (typeof btn.blur === "function") {
         btn.blur();
       }
-    } catch {}
+    } catch {
+      // Silently continue on individual button errors
+    }
   });
   return buttons;
 }
@@ -170,7 +122,7 @@ function scheduleUiServicePreload() {
  * @returns {Promise<{ timer: any, renderer: ((timer: any, secs: number, opts?: object) => void)|null }>}
  */
 export async function resolveCooldownDependencies(store, overrides = {}) {
-  void store;
+  void store; // Acknowledge parameter
   const timerFactory = selectTimerFactory(overrides?.createRoundTimer);
   const renderer = selectRendererFactory(overrides?.attachCooldownRenderer);
 
@@ -178,32 +130,6 @@ export async function resolveCooldownDependencies(store, overrides = {}) {
     timer: instantiateTimer(timerFactory),
     renderer
   };
-}
-
-function selectTimerFactory(override) {
-  if (typeof override === "function") {
-    return override;
-  }
-  return typeof defaultCreateRoundTimer === "function" ? defaultCreateRoundTimer : null;
-}
-
-function selectRendererFactory(override) {
-  if (typeof override === "function") {
-    return override;
-  }
-  return typeof defaultAttachCooldownRenderer === "function" ? defaultAttachCooldownRenderer : null;
-}
-
-function instantiateTimer(factory) {
-  if (typeof factory !== "function") {
-    return null;
-  }
-  try {
-    return factory();
-  } catch {
-    // Silently handle factory failures to maintain UI responsiveness
-  }
-  return null;
 }
 
 /**
