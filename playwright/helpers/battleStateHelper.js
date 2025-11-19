@@ -134,9 +134,8 @@ export async function ensureBattleCliResetChannel(page) {
       `Timed out waiting for Battle CLI reset after ${timeout}ms`
     );
     const nextDeferred = createDeferred();
-    const currentResult = result;
     deferred = nextDeferred;
-    return currentResult;
+    return result;
   };
 
   const signalReset = async (payload) => {
@@ -151,6 +150,7 @@ export async function ensureBattleCliResetChannel(page) {
     } catch (error) {
       if (error.message?.includes("Target page, context or browser has been closed")) {
         deferred.resolve({ ok: false, error: "Page context destroyed" });
+        return;
       }
       throw error;
     }
