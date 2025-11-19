@@ -22,7 +22,7 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
       const inspectorReady = typeof api.inspect?.getStatButtonSnapshot === "function";
       const stateHelpersReady = typeof api.state?.waitForStatButtonsReady === "function";
       return statButtonsReady && inspectorReady && stateHelpersReady;
-    });
+    }, { timeout: 10000 });
   });
 
   test("button state check", async ({ page }) => {
@@ -58,6 +58,9 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
 
     console.log("Immediate snapshot:", JSON.stringify(immediateSnapshot, null, 2));
 
+    if (!immediateSnapshot) {
+      throw new Error("Failed to get immediate snapshot from __TEST_API");
+    }
     const primaryButton = immediateSnapshot?.buttons?.[0] ?? null;
     expect(primaryButton?.disabled).toBe(true);
 
