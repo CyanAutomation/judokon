@@ -19,9 +19,12 @@ test.describe("MCP RAG Server Health Checks", () => {
 
   async function waitForServerStartup(proc, timeoutMs = 10000) {
     return new Promise((resolve, reject) => {
+      let isCleanedUp = false;
       const timer = setTimeout(() => {
-        cleanup();
-        reject(new Error("Timed out waiting for MCP server readiness"));
+        if (!isCleanedUp) {
+          cleanup();
+          reject(new Error("Timed out waiting for MCP server readiness"));
+        }
       }, timeoutMs);
 
       const onOutput = (chunk) => {
@@ -38,6 +41,8 @@ test.describe("MCP RAG Server Health Checks", () => {
       };
 
       const cleanup = () => {
+        if (isCleanedUp) return;
+        isCleanedUp = true;
         clearTimeout(timer);
         proc.stderr?.off("data", onOutput);
         proc.stdout?.off("data", onOutput);
@@ -54,15 +59,11 @@ test.describe("MCP RAG Server Health Checks", () => {
     const start = Date.now();
 
     while (Date.now() - start < timeoutMs) {
-      if (proc.exitCode === null && proc.pid) {
-        try {
-          process.kill(proc.pid, 0);
-          return;
-        } catch (error) {
-          if (error.code !== "ESRCH") {
-            throw error;
-          }
+      if (proc.pid) {
+        if (proc.killed || proc.exitCode !== null) {
+          throw new Error("Process has exited");
         }
+        return;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -76,7 +77,10 @@ test.describe("MCP RAG Server Health Checks", () => {
     if (proc.exitCode !== null) return;
 
     await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("Timed out waiting for MCP server to exit")), timeoutMs);
+      const timer = setTimeout(() => {
+        proc.off("exit", onExit);
+        reject(new Error("Timed out waiting for MCP server to exit"));
+      }, timeoutMs);
 
       const onExit = () => {
         clearTimeout(timer);
