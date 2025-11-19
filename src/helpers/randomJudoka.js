@@ -191,18 +191,19 @@ export function filterJudokaByFilters(judokaArray, filters) {
  *
  * @template T
  * @param {T[]} array - Array to sample from.
+ * @param {() => number} [rng=Math.random] - Random number generator returning values in [0, 1).
  * @returns {T|null} A randomly selected element, or {@code null} when no values are available.
  * @pseudocode
  * if array is empty: return null
- * index = floor(random() * array.length)
+ * index = floor((rng or Math.random)() * array.length)
  * return array[index]
  */
-export function selectRandomElement(array) {
+export function selectRandomElement(array, rng = Math.random) {
   if (!array || array.length === 0) {
     return null;
   }
 
-  const randomIndex = Math.floor(Math.random() * array.length);
+  const randomIndex = Math.floor(rng() * array.length);
   return array[randomIndex];
 }
 

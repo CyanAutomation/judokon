@@ -54,6 +54,18 @@ const mockJudoka = [
   }
 ];
 
+const multiplier = 1103515245;
+const increment = 12345;
+const modulus = 2 ** 31;
+
+const createSeededRng = (seed) => {
+  let state = seed >>> 0;
+  return () => {
+    state = (state * multiplier + increment) % modulus;
+    return state / modulus;
+  };
+};
+
 describe("Random Judoka Selection", () => {
   describe("validateRandomFilters", () => {
     it("should return empty object if filters is null", () => {
@@ -208,6 +220,36 @@ describe("Random Judoka Selection", () => {
       const mixed = [1, "string", { obj: true }, null];
       const result = selectRandomElement(mixed);
       expect(mixed).toContain(result);
+    });
+
+    it("should select deterministic index with seeded RNG", () => {
+      const seed = 9876;
+      const deterministicRng = createSeededRng(seed);
+      const array = ["alpha", "beta", "gamma", "delta"];
+
+      const firstRandom = ((seed * multiplier + increment) % modulus) / modulus;
+      const expectedIndex = Math.floor(firstRandom * array.length);
+
+      const result = selectRandomElement(array, deterministicRng);
+
+      expect(result).toBe(array[expectedIndex]);
+    });
+
+    it("should avoid index bias across rng extremes", () => {
+      const array = ["first", "middle", "last"];
+      const rngSequence = [0, 0.999999, 0.4];
+      const rng = vi.fn(() => rngSequence.shift());
+
+      const firstSelection = selectRandomElement(array, rng);
+      const lastSelection = selectRandomElement(array, rng);
+      const middleSelection = selectRandomElement(array, rng);
+
+      expect([firstSelection, lastSelection, middleSelection]).toEqual([
+        "first",
+        "last",
+        "middle"
+      ]);
+      expect(rng).toHaveBeenCalledTimes(3);
     });
   });
 
