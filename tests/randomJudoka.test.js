@@ -229,6 +229,7 @@ describe("Random Judoka Selection", () => {
 
       // Call the RNG once to get the expected random value
       const expectedRandom = deterministicRng();
+      const expectedIndex = Math.floor(expectedRandom * array.length);
       // Verify the RNG produces the same value when reset
       const testRng = createSeededRng(seed);
       const result = selectRandomElement(array, testRng);

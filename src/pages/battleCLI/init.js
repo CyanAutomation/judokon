@@ -2184,7 +2184,12 @@ const globalKeyHandlers = {
         const activeElement = getActiveElement();
         state.shortcutsReturnFocus = activeElement instanceof HTMLElement ? activeElement : null;
         showCliShortcuts();
-        sec.querySelector("summary")?.focus();
+        const closeButton = byId("cli-shortcuts-close");
+        if (closeButton) {
+          closeButton.focus();
+        } else {
+          sec.querySelector("summary")?.focus();
+        }
         return;
       }
       hideCliShortcuts();
