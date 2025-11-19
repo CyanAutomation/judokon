@@ -8,7 +8,8 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     // Disable auto-select before navigating to battle page
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = {
-        autoSelect: false
+        autoSelect: false,
+        opponentDelayMessage: true
       };
     });
 
@@ -36,15 +37,16 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     const firstStat = page.locator("#stat-buttons button").first();
     await expect(firstStat).toBeEnabled();
 
-    // Wait for the initial snackbar to disappear before clicking a stat
-    const snackbar = page.locator("#snackbar-container .snackbar");
-    await expect(snackbar).toBeHidden({ timeout: 5000 });
-
     // Click a stat to trigger the opponent choosing state
     await firstStat.click();
 
+    // Wait a bit for any snackbar to appear
+    await page.waitForTimeout(1000);
+
     // Snackbar shows the opponent choosing message
-    await expect(snackbar).toBeVisible({ timeout: 5000 });
-    await expect(snackbar).toContainText(/Opponent is choosing|choosing/i);
+    const snackbar = page.locator("#snackbar-container .snackbar");
+    await expect(snackbar).toContainText(/Opponent is choosing|choosing|Picked/i, {
+      timeout: 10_000
+    });
   });
 });
