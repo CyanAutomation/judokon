@@ -53,6 +53,10 @@ export function enterStoreGuard(store, token) {
  *
  * @description Safely accesses a symbol or key that was stored as a non-enumerable property.
  *
+ * @pseudocode
+ * 1. Return undefined if store is null or not an object.
+ * 2. Access and return the value stored at the token key.
+ *
  * @param {object} store - The store object.
  * @param {symbol|string} token - The key or symbol to retrieve.
  * @returns {any} The stored value, or `undefined` if not found or store is invalid.
@@ -65,8 +69,12 @@ export function getHiddenStoreValue(store, token) {
 /**
  * @summary Store a hidden (non-enumerable) value on a store object.
  *
- * @description Sets or updates a value as a non-enumerable property, preserving visibility
- * guards for internal state.
+ * @description Sets or updates a value as a non-enumerable property, preserving visibility guards for internal state.
+ *
+ * @pseudocode
+ * 1. Return early if store is null or not an object.
+ * 2. If token already exists, update its value.
+ * 3. Otherwise define it as a non-enumerable property with the given value.
  *
  * @param {object} store - The store object.
  * @param {symbol|string} token - The key or symbol to define.
