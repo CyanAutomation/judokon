@@ -21,15 +21,14 @@ import {
 } from "./opponentPromptWaiter.js";
 
 // New utility imports
-
 import {
   selectTimerFactory,
   selectRendererFactory,
   instantiateTimer,
   normalizeRendererOptions,
-  resolveOpponentPromptBuffer,
-  parseSecondsFromResult
+  resolveOpponentPromptBuffer
 } from "./cooldownResolver.js";
+import { createPostResetScheduler } from "./frameScheduler.js";
 
 /**
  * @summary Safety buffer exported for backward compatibility with existing imports.
@@ -37,19 +36,13 @@ import {
  */
 export const DEFAULT_OPPONENT_PROMPT_BUFFER_MS = INTERNAL_DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
 
-const TIMINGS = {
-  POST_COOLDOWN_BUFFER_MS: 250,
-  FRAME_SCHEDULER_FALLBACK_MS: 32,
-  POST_RESET_SAFETY_MARGIN_MS: 250
-};
-
 let showMatchSummaryModal = null;
 // Reference to avoid unused-import lint complaint when the function is re-exported
 // or only used in other environments.
 void _updateSnackbar;
 
 let hasScheduledUiServicePreload = false;
-const statButtonCache = createStatButtonCache("#stat-buttons button[data-stat]", "stat-buttons");
+
 function preloadUiService() {
   import("/src/helpers/classicBattle/uiService.js")
     .then((m) => {
@@ -67,12 +60,19 @@ function collectStatButtons(store) {
         (btn) => btn && typeof btn === "object" && typeof btn.classList !== "undefined"
       );
     } catch {
-      // Continue to cache fallback
+      // Continue to query fallback
     }
   }
 
-  // Use optimized cache
-  return statButtonCache.get();
+  // Fallback to DOM query
+  try {
+    if (typeof document?.querySelectorAll === "function") {
+      return Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    }
+  } catch {
+    // Silently continue
+  }
+  return [];
 }
 
 function clearStatButtonSelections(store) {

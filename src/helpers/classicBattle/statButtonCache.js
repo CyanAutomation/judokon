@@ -27,7 +27,6 @@
 export function createStatButtonCache(selector, rootId) {
   let cache = null;
   let observer = null;
-  let rootElement = null;
 
   const invalidate = () => {
     cache = null;
@@ -39,7 +38,6 @@ export function createStatButtonCache(selector, rootId) {
       }
       observer = null;
     }
-    rootElement = null;
   };
 
   const setupObserver = () => {
@@ -50,7 +48,6 @@ export function createStatButtonCache(selector, rootId) {
       const root = document?.getElementById?.(rootId);
       if (!root) return;
 
-      rootElement = root;
       observer = new MutationObserver(() => {
         invalidate();
       });
