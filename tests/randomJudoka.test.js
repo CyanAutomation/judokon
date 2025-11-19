@@ -224,25 +224,21 @@ describe("Random Judoka Selection", () => {
 
     it("should select deterministic index with seeded RNG", () => {
       const seed = 9876;
-      const seededRng = createSeededRng(seed);
-      const testRng = vi.fn(seededRng);
+      // Use a separate RNG instance to predict the first value
+      const predictorRng = createSeededRng(seed);
+      const expectedFirstRandomValue = predictorRng();
+
+      // Create a fresh RNG for the test and wrap it with a spy
+      const rngForTest = createSeededRng(seed);
+      const testRngSpy = vi.fn(rngForTest);
+
       const array = ["alpha", "beta", "gamma", "delta"];
+      const result = selectRandomElement(array, testRngSpy);
 
-      // Call the RNG once to get the expected random value
-      const expectedRandom = deterministicRng();
-      const expectedIndex = Math.floor(expectedRandom * array.length);
-      // Verify the RNG produces the same value when reset
-      const testRng = createSeededRng(seed);
-      const result = selectRandomElement(array, testRng);
-
-      expect(testRng).toHaveBeenCalledTimes(1);
-
-      const expectedRandom = testRng.mock.results[0]?.value;
-      expect(expectedRandom).toBeDefined();
-      expect(expectedRandom).toBeGreaterThanOrEqual(0);
-      expect(expectedRandom).toBeLessThan(1);
-      const expectedIndex = Math.floor(expectedRandom * array.length);
-
+      // Assertions
+      expect(testRngSpy).toHaveBeenCalledTimes(1);
+      expect(testRngSpy).toHaveReturnedWith(expectedFirstRandomValue);
+      const expectedIndex = Math.floor(expectedFirstRandomValue * array.length);
       expect(result).toBe(array[expectedIndex]);
     });
 
