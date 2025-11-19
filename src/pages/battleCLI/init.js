@@ -967,11 +967,6 @@ function hideCliShortcuts() {
   const sec = byId("cli-shortcuts");
   if (sec) {
     sec.open = false;
-    // Ensure toggle event is fired for listeners (test environments may not fire it automatically)
-    try {
-      const toggleEvent = new Event("toggle", { bubbles: false });
-      sec.dispatchEvent(toggleEvent);
-    } catch {}
   }
 }
 
