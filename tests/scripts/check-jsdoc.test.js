@@ -148,6 +148,44 @@ describe("check-jsdoc", () => {
       expect(valid).toBe(true);
     });
 
+    it("should allow @summary as the first meaningful line when it has text", () => {
+      const content = `
+        /**
+         * @summary This function clearly documents its behavior.
+         * @pseudocode
+         * 1. Do something useful.
+         * @returns {boolean}
+         */
+        export function myFunction() {
+          return true;
+        }
+      `;
+      const lines = content.split("\n");
+      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
+      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe(true);
+    });
+
+    it("should reject @summary when no summary text follows", () => {
+      const content = `
+        /**
+         * @summary
+         * @pseudocode
+         * 1. Do something.
+         * @returns {boolean}
+         */
+        export function myFunction() {
+          return true;
+        }
+      `;
+      const lines = content.split("\n");
+      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
+      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe(false);
+    });
+
     it("should return false when annotations appear before any summary text", () => {
       const content = `
         /**
