@@ -21,11 +21,7 @@ import {
 } from "./opponentPromptWaiter.js";
 
 // New utility imports
-import { battleLog } from "./battleLogger.js";
 
-import { resolveStatValues } from "./statValuesHelper.js";
-import { createStatButtonCache } from "./statButtonCache.js";
-import { validateRoundStartedEvent, validateStatSelectedEvent, validateRoundResolvedEvent } from "./eventValidators.js";
 import {
   selectTimerFactory,
   selectRendererFactory,
@@ -241,13 +237,6 @@ function extractTimer(resolved) {
 function selectRenderer(resolved) {
   const renderer = resolved?.renderer;
   return typeof renderer === "function" ? renderer : null;
-}
-
-function normalizeRendererOptions(options) {
-  if (options && typeof options === "object") {
-    return options;
-  }
-  return {};
 }
 
 function attachRendererSafely(renderer, timer, seconds, options) {
@@ -843,8 +832,7 @@ async function scheduleNextRoundCooldown(
         promptBudget = computeOpponentPromptWaitBudget();
       }
 
-      const rendererBuffer =
-        resolvedBuffer !== undefined ? resolvedBuffer : promptBudget.bufferMs;
+      const rendererBuffer = resolvedBuffer !== undefined ? resolvedBuffer : promptBudget.bufferMs;
       attachRendererOptions.opponentPromptBufferMs = rendererBuffer;
       attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
       attachRendererOptions.promptPollIntervalMs = Math.max(
@@ -870,7 +858,9 @@ async function scheduleNextRoundCooldown(
       seconds: secs,
       delayOpponentMessage: delayOpponentMessageFlag,
       rendererOptions: attachRendererOptions,
-      promptBudget: delayOpponentMessageFlag ? computeOpponentPromptWaitBudget(resolvedBuffer) : null,
+      promptBudget: delayOpponentMessageFlag
+        ? computeOpponentPromptWaitBudget(resolvedBuffer)
+        : null,
       waitForDelayedOpponentPromptDisplay,
       getOpponentPromptTimestamp
     });

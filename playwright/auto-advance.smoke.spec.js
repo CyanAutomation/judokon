@@ -64,6 +64,9 @@ test.describe("Classic Battle – auto-advance", () => {
       await startBtn.click();
     }
 
+    // Wait for navigation to complete before accessing Test API
+    await page.waitForLoadState("domcontentloaded");
+
     await waitForBattleReady(page, { allowFallback: false });
 
     await waitForBattleState(page, "waitingForPlayerAction", {
