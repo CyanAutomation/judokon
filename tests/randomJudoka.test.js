@@ -383,9 +383,15 @@ describe("Random Judoka Selection", () => {
 
     it("should have country filter documented", () => {
       const result = getRandomSelectionDocumentation();
-      expect(result.filters).toHaveProperty("country");
-      expect(result.filters.country).toHaveProperty("description");
-      expect(result.filters.country).toHaveProperty("type");
+      const { country: expectedCountryFilter } = RANDOM_SELECTION_DOCUMENTATION.filters;
+
+      expect(result.filters.country.type).toBe(expectedCountryFilter.type);
+      expect(result.filters.country.description).toBe(
+        expectedCountryFilter.description
+      );
+      expect(result.filters.country.values ?? []).toEqual(
+        expectedCountryFilter.values ?? []
+      );
     });
 
     it("should have rarity filter with valid values", () => {
