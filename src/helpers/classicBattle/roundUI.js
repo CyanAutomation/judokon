@@ -883,17 +883,165 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
 
 // --- Event bindings ---
 
+// --- Helper Functions for handleRoundResolvedEvent ---
+
 /**
- * Bind handler for `roundStarted` events.
+ * Safely resolve a fallback value.
  *
- * @pseudocode
- * 1. Listen for `roundStarted`.
- * 2. Extract store and round number.
- * 3. Invoke `applyRoundUI`.
+ * @template T
+ * @param {() => T} getter - Function to get value
+ * @returns {T | undefined}
+ */
+function resolveFallback(getter) {
+  try {
+    return getter();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Schedule UI reset after frame buffer to let rendering complete.
  *
+ * @param {any} store - Battle store
+ * @param {() => void} lockFn - Lock function
  * @returns {void}
  */
-export function bindRoundStarted() {
+function schedulePostRoundUIReset(store, lockFn) {
+  const resetOnce = (() => {
+    let didRun = false;
+    return () => {
+      if (didRun) return;
+      didRun = true;
+      clearStatButtonSelections(store);
+      const { handleFailure, ensureSafetyLock, markLocked } = createPostResetScheduler(lockFn);
+      try {
+        disableStatButtons?.();
+        markLocked();
+      } catch {
+        handleFailure();
+      }
+      ensureSafetyLock();
+    };
+  })();
+
+  let timeoutId = null;
+  try {
+    runAfterFrames(2, () => {
+      if (timeoutId !== null) {
+        try {
+          if (typeof clearTimeout === "function") clearTimeout(timeoutId);
+        } catch {
+          // Silently continue
+        }
+        timeoutId = null;
+      }
+      resetOnce();
+    });
+  } catch {
+    // Frame scheduling failed, rely on timeout
+  }
+
+  if (typeof setTimeout === "function") {
+    timeoutId = setTimeout(resetOnce, TIMINGS.FRAME_SCHEDULER_FALLBACK_MS);
+  } else {
+    resetOnce();
+  }
+}
+
+/**
+ * Schedule next-round cooldown when not orchestrated.
+ *
+ * @param {any} store - Battle store
+ * @param {any} result - Round result
+ * @param {object} deps - Dependencies
+ * @param {Function} isOrchestratedFn - Orchestration check
+ * @param {Function} computeNextRoundCooldownFn - Cooldown computer
+ * @returns {Promise<void>}
+ */
+async function scheduleNextRoundCooldown(
+  store,
+  result,
+  deps,
+  isOrchestratedFn,
+  computeNextRoundCooldownFn
+) {
+  try {
+    const orchestrated = isOrchestratedFn?.() ?? false;
+    if (orchestrated) return;
+
+    const delayOpponentMessageFlag =
+      store &&
+      typeof store === "object" &&
+      Object.prototype.hasOwnProperty.call(store, "__delayOpponentMessage") &&
+      store.__delayOpponentMessage === true;
+
+    const computeCooldown = computeNextRoundCooldownFn ?? computeNextRoundCooldown;
+    let cooldownResult;
+    try {
+      cooldownResult = computeCooldown();
+    } catch {
+      // Use default cooldown
+    }
+
+    const resolvedSeconds = parseSecondsFromResult(cooldownResult);
+    const secs = Math.max(3, Number.isFinite(resolvedSeconds) ? resolvedSeconds : 3);
+
+    const attachRendererOptions =
+      deps.attachCooldownRendererOptions && typeof deps.attachCooldownRendererOptions === "object"
+        ? { ...deps.attachCooldownRendererOptions }
+        : {};
+
+    const resolvedBuffer = resolveOpponentPromptBuffer(cooldownResult, attachRendererOptions);
+
+    // Configure opponent prompt options if delayed
+    if (delayOpponentMessageFlag) {
+      let promptBudget = null;
+      try {
+        promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
+      } catch {
+        promptBudget = computeOpponentPromptWaitBudget();
+      }
+
+      const rendererBuffer =
+        resolvedBuffer !== undefined ? resolvedBuffer : promptBudget.bufferMs;
+      attachRendererOptions.opponentPromptBufferMs = rendererBuffer;
+      attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
+      attachRendererOptions.promptPollIntervalMs = Math.max(
+        50,
+        Number(attachRendererOptions.promptPollIntervalMs) || 75
+      );
+      attachRendererOptions.waitForOpponentPrompt = true;
+    } else {
+      attachRendererOptions.waitForOpponentPrompt = false;
+      attachRendererOptions.maxPromptWaitMs = 0;
+      attachRendererOptions.promptPollIntervalMs = Math.max(
+        50,
+        Number(attachRendererOptions.promptPollIntervalMs) || 75
+      );
+    }
+
+    const resolvedDeps = await resolveCooldownDependencies(store, {
+      createRoundTimer: deps.createRoundTimer,
+      attachCooldownRenderer: deps.attachCooldownRenderer
+    });
+
+    await startRoundCooldown(resolvedDeps, {
+      seconds: secs,
+      delayOpponentMessage: delayOpponentMessageFlag,
+      rendererOptions: attachRendererOptions,
+      promptBudget: delayOpponentMessageFlag ? computeOpponentPromptWaitBudget(resolvedBuffer) : null,
+      waitForDelayedOpponentPromptDisplay,
+      getOpponentPromptTimestamp
+    });
+  } catch {
+    // Silently continue on cooldown scheduling errors
+  }
+}
+
+// --- Event Bindings ---
+
+
   onBattleEvent("roundStarted", (event) => {
     handleRoundStartedEvent(event);
   });
