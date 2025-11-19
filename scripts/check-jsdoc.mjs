@@ -95,7 +95,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
     .split(/\n/)
     .map((line) =>
       line
-        .replace(/^\s*\/?\*+\s?/, "")
+        .replace(/^\s*\/?\**\s?/, "")
         .replace(/\*\/\s*$/, "")
         .trim()
     )
@@ -106,13 +106,9 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   const summaryLine = cleanedLines[0];
   const isSummaryTag = summaryLine.startsWith("@summary");
 
-  if (summaryLine.startsWith("@") && !isSummaryTag) return false;
-
-  const summaryText = isSummaryTag
-    ? summaryLine.replace(/^@summary\b/, "").trim()
-    : summaryLine.replace(/\*/g, "").trim();
-
-  if (summaryText.length === 0) return false;
+  const summaryWithoutMarkers = summaryLine.trim();
+  const hasNonWhitespaceContent = /\S/.test(summaryWithoutMarkers.replace(/\*/g, ""));
+  if (!hasNonWhitespaceContent) return false;
 
   return true;
 }
