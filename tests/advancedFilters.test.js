@@ -119,7 +119,7 @@ describe("Advanced Filters", () => {
           filter: "power!=2",
           expected: { stat: "power", operator: "!=", value: 2 },
           passes: judokaHighPower,
-          fails: judokaLowPower
+          fails: judokaLowPower // power equals 2 so should be filtered out
         }
       ];
 
