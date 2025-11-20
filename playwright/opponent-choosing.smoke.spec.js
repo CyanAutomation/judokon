@@ -1,9 +1,6 @@
-import { test as base, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
 import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";
-
-// Use base test with commonSetup fixture for proper feature flag handling
-const test = base;
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {

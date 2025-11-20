@@ -1028,7 +1028,7 @@ export function initStatButtons(store) {
   }
 
   // Create listener registry for test instrumentation
-  const listenerRegistry = createStatButtonListenerRegistry(buttons);
+  createStatButtonListenerRegistry(buttons);
 
   let disposeHotkeys = null;
   registerStatButtonClickHandler(container, store);

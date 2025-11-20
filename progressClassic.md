@@ -72,21 +72,24 @@ The merge in `initFeatureFlags` is redundant but not broken: it runs after `load
 **Status**: Completed successfully
 
 **Changes Made**:
+
 - Replaced manual `addInitScript` with `configureApp` from `playwright/fixtures/appConfig.js`
 - Imports added:
   - `import { configureApp } from "./fixtures/appConfig.js";`
   - `import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";`
 - Feature flag configuration now uses the proven fixture-based pattern:
-  ```javascript
-  const app = await configureApp(page, {
-    featureFlags: {
-      opponentDelayMessage: true,
-      autoSelect: false
-    }
-  });
-  ```
+
+```javascript
+const app = await configureApp(page, {
+  featureFlags: {
+    opponentDelayMessage: true,
+    autoSelect: false
+  }
+});
+```
 
 **Why This Works**:
+
 - `configureApp` routes the settings fetch to inject overrides, which survives fixture initialization
 - Applied at the fetch layer (not localStorage), so `commonSetup` fixture's reset won't clobber it
 - Same pattern proven across 10+ existing tests
@@ -100,18 +103,22 @@ The merge in `initFeatureFlags` is redundant but not broken: it runs after `load
 **Status**: Completed successfully
 
 **Changes Made**:
+
 - Added explicit feature flag state verification before driving UI:
-  ```javascript
-  await waitForFeatureFlagOverrides(page, {
-    opponentDelayMessage: true,
-    autoSelect: false
-  });
-  ```
+
+```javascript
+await waitForFeatureFlagOverrides(page, {
+  opponentDelayMessage: true,
+  autoSelect: false
+});
+```
+
 - This waits up to 5 seconds for both flags to reach their expected state in the browser
 - Kept snackbar text assertion for full end-to-end validation
 - Added cleanup call: `await app.cleanup();`
 
 **Why This Works**:
+
 - Tests that flags are actually enabled before asserting on snackbar behavior
 - `waitForFeatureFlagOverrides` is a proven test helper used across 10+ existing tests
 - Makes test deterministic: asserts on flag state (source of truth) before checking UI
