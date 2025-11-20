@@ -948,12 +948,9 @@ function renderStatButtons(store) {
   console.log("renderStatButtons: container found");
   const listenerRegistry = (() => {
     try {
-      console.log("renderStatButtons: __TEST__=", window.__TEST__, "__PLAYWRIGHT_TEST__=", window.__PLAYWRIGHT_TEST__);
       if (typeof window === "undefined" || (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)) {
-        console.log("renderStatButtons: test flags not set, skipping registry creation");
         return null;
       }
-      console.log("renderStatButtons: test flags detected, creating registry");
       if (window.__classicBattleStatButtonListeners) {
         const existing = window.__classicBattleStatButtonListeners;
         existing.attachedCount = 0;

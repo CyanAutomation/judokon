@@ -1027,6 +1027,9 @@ export function initStatButtons(store) {
     return { enable: () => {}, disable: () => {} };
   }
 
+  // Create listener registry for test instrumentation
+  const listenerRegistry = createStatButtonListenerRegistry(buttons);
+
   let disposeHotkeys = null;
   registerStatButtonClickHandler(container, store);
 
@@ -1051,6 +1054,79 @@ export function initStatButtons(store) {
   // Initialize disabled by default
   disable();
   return { enable, disable };
+}
+
+/**
+ * Create and register the stat button listener registry for test instrumentation.
+ *
+ * @pseudocode
+ * 1. Check if running in test mode (__TEST__ or __PLAYWRIGHT_TEST__)
+ * 2. If in test mode, create registry tracking button count and attached listeners
+ * 3. Populate registry with details for each button (stat, dataset, label)
+ * 4. Expose registry on window.__classicBattleStatButtonListeners
+ * 5. Return the registry object
+ *
+ * @param {HTMLButtonElement[]} buttons - Array of stat button elements
+ * @returns {{attachedCount: number, buttonCount: number, stats: string[], details: Array, updatedAt: number}}
+ */
+function createStatButtonListenerRegistry(buttons) {
+  try {
+    if (typeof window === "undefined" || (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)) {
+      return null;
+    }
+
+    // Reuse existing registry if present
+    if (window.__classicBattleStatButtonListeners) {
+      const existing = window.__classicBattleStatButtonListeners;
+      existing.attachedCount = buttons.length;
+      existing.buttonCount = buttons.length;
+      existing.stats = [];
+      existing.details = [];
+      existing.updatedAt = Date.now();
+      
+      // Populate stats and details from buttons
+      buttons.forEach((btn) => {
+        const stat = btn.dataset?.stat;
+        if (stat) {
+          existing.stats.push(String(stat));
+          existing.details.push({
+            stat: String(stat),
+            datasetStat: btn.dataset?.stat || null,
+            label: btn.textContent?.trim() || null
+          });
+        }
+      });
+      
+      return existing;
+    }
+
+    // Create new registry
+    const registry = {
+      attachedCount: buttons.length,
+      buttonCount: buttons.length,
+      stats: [],
+      details: [],
+      updatedAt: Date.now()
+    };
+
+    // Populate stats and details from buttons
+    buttons.forEach((btn) => {
+      const stat = btn.dataset?.stat;
+      if (stat) {
+        registry.stats.push(String(stat));
+        registry.details.push({
+          stat: String(stat),
+          datasetStat: btn.dataset?.stat || null,
+          label: btn.textContent?.trim() || null
+        });
+      }
+    });
+
+    window.__classicBattleStatButtonListeners = registry;
+    return registry;
+  } catch {
+    return null;
+  }
 }
 
 /**

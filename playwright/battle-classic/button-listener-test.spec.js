@@ -22,25 +22,6 @@ test.describe("Classic Battle - Button Listener Test", () => {
     await waitForBattleState(page, "waitingForPlayerAction");
     await expect(statButtons.first()).toBeEnabled();
 
-    // Diagnostic: Check what flags are set and what registry exists
-    const diagnostics = await page.evaluate(() => {
-      return {
-        hasTestFlag: !!window.__TEST__,
-        hasPlaywrightFlag: !!window.__PLAYWRIGHT_TEST__,
-        hasTestApi: !!window.__TEST_API,
-        hasInspectApi: !!window.__TEST_API?.inspect,
-        hasGetStatButtonListenerSnapshot: typeof window.__TEST_API?.inspect?.getStatButtonListenerSnapshot === 'function',
-        hasRegistry: !!window.__classicBattleStatButtonListeners,
-        renderStatButtonsCalled: !!window.__renderStatButtonsCalled,
-        registryDetails: window.__classicBattleStatButtonListeners ? {
-          attachedCount: window.__classicBattleStatButtonListeners.attachedCount,
-          buttonCount: window.__classicBattleStatButtonListeners.buttonCount,
-          statsLength: window.__classicBattleStatButtonListeners.stats?.length
-        } : null
-      };
-    });
-    console.log('Diagnostics:', JSON.stringify(diagnostics, null, 2));
-
     const listenerSnapshot = await page.evaluate(() => {
       const inspectApi = window.__TEST_API?.inspect;
       return inspectApi?.getStatButtonListenerSnapshot?.() ?? null;
