@@ -15,7 +15,6 @@ import { isEnabled } from "../featureFlags.js";
 import {
   applyOpponentCardPlaceholder,
   OPPONENT_CARD_CONTAINER_ARIA_LABEL,
-  OPPONENT_PLACEHOLDER_ARIA_LABEL,
   OPPONENT_PLACEHOLDER_ID
 } from "./opponentPlaceholder.js";
 

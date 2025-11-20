@@ -942,13 +942,13 @@ function renderStatButtons(store) {
   if (!container) {
     return;
   }
-  
+
   // Safety check: ensure STATS is defined and iterable
   if (!Array.isArray(STATS)) {
     console.error("battleClassic: STATS is not an array", STATS);
     return;
   }
-  
+
   const listenerRegistry = (() => {
     try {
       if (typeof window === "undefined" || (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)) {

@@ -229,7 +229,7 @@ describe("engineTimer event emissions", () => {
     const roundStartedSpy = vi.fn();
     engine.on("roundStarted", roundStartedSpy);
 
-    engine.timer.startRound = vi.fn((tick, expired) => {
+    engine.timer.startRound = vi.fn(() => {
       return Promise.resolve();
     });
 
