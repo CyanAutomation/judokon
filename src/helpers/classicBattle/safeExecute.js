@@ -76,6 +76,12 @@ function getLogger(level) {
  * @param {string} [errorLevel="debug"] - Logging level.
  * @param {any} [fallback=null] - Value to return on error.
  * @returns {Promise<any>} Result promise or fallback on error.
+ *
+ * @pseudocode
+ * 1. Attempt to await the provided async function.
+ * 2. When an error occurs, short-circuit if SILENT logging is requested.
+ * 3. Otherwise, resolve the appropriate logger and emit the failure message.
+ * 4. Return the provided fallback value after logging.
  */
 export async function safeExecuteAsync(
   fn,

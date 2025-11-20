@@ -192,6 +192,7 @@ function updateRoundCounterState({
  * @param {boolean} [options.expectAdvance=false] - Whether the caller expects an advance.
  * @param {Function} [options.updateRoundCounterFn] - Function to call with the next round value.
  * @param {boolean} [options.forceWhenEngineMatchesVisible=false] - Force advancement when engine matches visible.
+ * @returns {void}
  *
  * @pseudocode
  * 1. Read `getRoundsPlayed()` and compute `played + 1` when possible.
@@ -308,6 +309,7 @@ function handleRoundCounterFallback(visibleRound, updateRoundCounterFn) {
  * 1. Zero out highest round and forced target tracking.
  * 2. Restore the update context to "init".
  * 3. Sync diagnostic globals for test introspection.
+ * @returns {void}
  */
 export function resetRoundCounterTracking() {
   setHighestRoundGlobal(0);

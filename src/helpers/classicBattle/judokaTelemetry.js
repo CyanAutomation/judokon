@@ -101,6 +101,7 @@ function emitJudokaLoadFailureTelemetry(state, safeContext, timestamp) {
  * Record a judoka load failure and emit telemetry when thresholds are met.
  *
  * @param {string} [context="unspecified"] - Context or location where the failure occurred.
+ * @returns {void}
  *
  * @pseudocode
  * 1. Track failure count and timestamps.
@@ -157,6 +158,9 @@ export function recordJudokaLoadFailureTelemetry(context) {
  * Get the current telemetry state (mainly for testing).
  *
  * @returns {Object} Current telemetry state.
+ *
+ * @pseudocode
+ * 1. Return the in-memory telemetryState object.
  */
 export function getTelemetryState() {
   return telemetryState;
@@ -164,6 +168,12 @@ export function getTelemetryState() {
 
 /**
  * Reset telemetry state (mainly for testing).
+ *
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Recreate the telemetry state object with default values.
+ * 2. Replace the module-level telemetryState reference.
  */
 export function resetTelemetryState() {
   telemetryState = createTelemetryState();
