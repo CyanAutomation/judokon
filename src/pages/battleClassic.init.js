@@ -115,7 +115,12 @@ import {
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
 
 function broadcastBattleState(state) {
-  emitBattleEvent("battleStateChange", state);
+  let from = null;
+  try {
+    from = typeof document !== "undefined" ? document.body?.dataset?.battleState ?? null : null;
+  } catch {}
+  const detail = { from, to: state };
+  emitBattleEvent("battleStateChange", detail);
   try {
     if (typeof document !== "undefined") {
       document.body.dataset.battleState = state;
