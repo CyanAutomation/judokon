@@ -1,15 +1,28 @@
 /**
- * Playwright test setup that automatically registers common routes.
+ * Playwright test setup that automatically registers common routes and preserves feature flag overrides.
  *
  * @pseudocode
  * 1. Import base test and expect from Playwright.
  * 2. Import registerCommonRoutes helper.
  * 3. Extend the base test's page fixture to:
- *    a. Clear localStorage and enable test-mode settings.
+ *    a. Clear localStorage and enable test-mode settings, while preserving any existing feature flags.
  *    b. Remove unexpected modal backdrops once after DOMContentLoaded.
  *    c. Register common routes.
  * 4. Export the extended test and expect.
+ *
+ * **Feature Flag Preservation**:
+ * - If a test's setup code (e.g., `configureApp`) has already set feature flags in localStorage,
+ *   this fixture will merge them with its base settings rather than overwriting them.
+ * - This allows tests using `configureApp` for route-based overrides to also benefit from the
+ *   fixture's common route setup and browser logging without losing feature flag state.
+ * - The fixture always ensures `enableTestMode` is set to `true`, even if it was previously false.
+ *
+ * **Compatibility**:
+ * - Works with tests that do NOT use feature flag overrides (existing behavior preserved).
+ * - Works with tests that DO use `configureApp` with feature flag overrides (new behavior).
+ * - Can be extended in the future to support callback-based feature flag injection.
  */
+
 import { test as base, expect } from "@playwright/test";
 import { registerCommonRoutes } from "./commonRoutes.js";
 
@@ -78,15 +91,61 @@ export const test = base.extend({
       } catch {}
     }, showLogsInBrowser);
     await page.addInitScript(() => {
-      localStorage.clear();
       // Reset snackbar override between tests so snackbar-based assertions remain deterministic
       try {
         delete window.__disableSnackbars;
       } catch {}
-      localStorage.setItem(
-        "settings",
-        JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
-      );
+
+      // Helper to perform deep merge of settings objects
+      const mergeSettings = (base, overrides) => {
+        if (!overrides || typeof overrides !== "object" || Array.isArray(overrides)) {
+          return base;
+        }
+        const result = { ...base };
+        for (const [key, value] of Object.entries(overrides)) {
+          if (
+            value &&
+            typeof value === "object" &&
+            !Array.isArray(value) &&
+            result[key] &&
+            typeof result[key] === "object" &&
+            !Array.isArray(result[key])
+          ) {
+            result[key] = mergeSettings(result[key], value);
+          } else {
+            result[key] = value;
+          }
+        }
+        return result;
+      };
+
+      // Read existing settings from localStorage (may have been set by test's configureApp)
+      let existingSettings = {};
+      try {
+        const stored = localStorage.getItem("settings");
+        if (stored) {
+          existingSettings = JSON.parse(stored);
+        }
+      } catch {}
+
+      // Base settings provided by fixture: enableTestMode + any existing feature flags
+      const baseSettings = {
+        featureFlags: {
+          enableTestMode: { enabled: true }
+        }
+      };
+
+      // Merge: preserve existing feature flags while ensuring enableTestMode is set
+      const mergedSettings = mergeSettings(existingSettings, baseSettings);
+
+      // Ensure enableTestMode.enabled is explicitly true (overriding any false value)
+      if (!mergedSettings.featureFlags) {
+        mergedSettings.featureFlags = {};
+      }
+      mergedSettings.featureFlags.enableTestMode = { enabled: true };
+
+      localStorage.clear();
+      localStorage.setItem("settings", JSON.stringify(mergedSettings));
     });
     await page.addInitScript(() => {
       // Remove only hidden/inactive dialogs once DOM is ready to

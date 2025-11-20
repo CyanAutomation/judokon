@@ -1029,9 +1029,6 @@ function renderStatButtons(store) {
       desc = undefined;
     }
     btn.addEventListener("click", () => {
-      console.log("Button click listener attached for stat:", stat);
-      window.__clickListenerAttachedFor = window.__clickListenerAttachedFor || [];
-      window.__clickListenerAttachedFor.push(stat);
       void handleStatButtonClick(store, stat, btn);
     });
     recordStatButtonListenerAttachment(btn, stat);
@@ -1258,6 +1255,8 @@ async function startRoundCycle(store, options = {}) {
         roundStarted = true;
       } catch (err) {
         console.error("battleClassic: startRound failed", err);
+        // Don't re-throw - continue with the cycle even if startRound fails
+        // This allows the battle state machine to proceed
       }
     }
 
@@ -1271,6 +1270,7 @@ async function startRoundCycle(store, options = {}) {
       renderStatButtons(store);
     } catch (err) {
       console.error("battleClassic: renderStatButtons failed", err);
+      // Log the error but continue - don't prevent state transition
     }
     try {
       showSelectionPrompt();
@@ -1282,6 +1282,8 @@ async function startRoundCycle(store, options = {}) {
     } catch {}
 
     broadcastBattleState("waitingForPlayerAction");
+  } catch (err) {
+    console.error("battleClassic: startRoundCycle outer catch:", err);
   } finally {
     isStartingRoundCycle = false;
   }
