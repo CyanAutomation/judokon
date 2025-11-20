@@ -8,6 +8,11 @@
  * Get current timestamp using performance.now() with Date.now() fallback.
  *
  * @returns {number} Current timestamp in milliseconds.
+ *
+ * @pseudocode
+ * 1. Prefer performance.now when available for monotonic precision.
+ * 2. Fall back to Date.now when performance is unavailable or throws.
+ * 3. Return 0 if all timestamp sources fail.
  */
 export function getCurrentTimestamp() {
   try {
@@ -58,6 +63,11 @@ export function scheduleDelayed(fn, delayMs) {
  *
  * @param {number|null} timeoutId - Timer ID to clear.
  * @returns {boolean} True if cleared, false otherwise.
+ *
+ * @pseudocode
+ * 1. Validate the timeoutId to ensure it is a finite, non-zero number.
+ * 2. Attempt to clear the timeout and report success.
+ * 3. On failure or invalid input, return false.
  */
 export function clearScheduled(timeoutId) {
   if (!Number.isFinite(timeoutId) || timeoutId === 0) {
@@ -77,6 +87,11 @@ export function clearScheduled(timeoutId) {
  *
  * @param {number} deadlineTimestamp - Target timestamp.
  * @returns {number} Remaining milliseconds (0 or positive if time remains, negative if expired).
+ *
+ * @pseudocode
+ * 1. Capture the current timestamp using getCurrentTimestamp().
+ * 2. Subtract the current timestamp from the deadline to compute the delta.
+ * 3. Clamp the result at 0 to avoid negative remaining time.
  */
 export function calculateRemaining(deadlineTimestamp) {
   const now = getCurrentTimestamp();
