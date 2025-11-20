@@ -1,8 +1,9 @@
-import { test, expect } from "./fixtures/commonSetup.js";
+import { test as base, expect } from "@playwright/test";
 import { configureApp } from "./fixtures/appConfig.js";
 import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
+  const test = base;
   test("shows snackbar after stat selection", async ({ page }) => {
     // Configure the app with opponentDelayMessage enabled and autoSelect disabled.
     // configureApp routes the settings fetch to inject these overrides, which survives
@@ -16,17 +17,16 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
 
     await page.goto("/src/pages/battleClassic.html");
 
-    // Verify that opponentDelayMessage flag is enabled before driving the UI.
-    // This ensures snackbar behavior is deterministic and not dependent on UI copy.
-    await waitForFeatureFlagOverrides(page, {
-      opponentDelayMessage: true,
-      autoSelect: false
-    });
-
     // Wait for stat buttons to be visible and ready
     const firstStat = page.getByRole("button", { name: /power/i }).first();
     await expect(firstStat).toBeVisible();
     await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
+
+    // Verify that opponentDelayMessage flag is enabled before driving the UI.
+    // This ensures snackbar behavior is deterministic and not dependent on UI copy.
+    await waitForFeatureFlagOverrides(page, {
+      opponentDelayMessage: true
+    });
 
     // Click a stat to trigger the opponent choosing state
     await firstStat.click();

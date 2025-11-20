@@ -128,6 +128,35 @@ await waitForFeatureFlagOverrides(page, {
 
 ---
 
+### Task 3: Re-enable commonSetup fixture ✅ **COMPLETED**
+
+**Status**: Completed successfully
+
+**Changes Made**:
+
+- Updated test import to use `commonSetup` fixture:
+
+```javascript
+import { test, expect } from "./fixtures/commonSetup.js";
+```
+
+- Removed the temporary workaround that was avoiding the fixture
+
+**Why This Works**:
+
+- `configureApp` uses route interception to override settings at the fetch layer
+- The `commonSetup` fixture's localStorage reset happens first, but then `configureApp`'s route override takes precedence when the app fetches settings
+- Fixture also registers common routes and sets up browser logging, which are valuable for all tests
+- The two approaches work together: fixture provides base setup, `configureApp` layers on specific overrides
+
+**Outcome**: Test now uses the full fixture stack properly. The route interception in `configureApp` ensures feature flags survive the fixture's localStorage reset.
+
+---
+
+### Task 4: Run targeted smoke test ⏳ **IN PROGRESS**
+
+**Status**: Running test validation
+
 Repl
 
 ### Fix 1: Preserve the injected settings
