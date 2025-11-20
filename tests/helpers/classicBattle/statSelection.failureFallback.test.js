@@ -212,7 +212,7 @@ describe("classicBattle stat selection failure recovery", () => {
   it("emits cooldown state change with proper from/to format after selection resolution", async () => {
     // Test the battleStateChange event format without relying on timers
     // Simply verify that broadcastBattleState emits events with { from, to } structure
-    
+
     const eventLog = [];
     const eventHandler = (event) => {
       eventLog.push({ type: "battleStateChange", detail: event.detail });
@@ -237,7 +237,7 @@ describe("classicBattle stat selection failure recovery", () => {
       // Simulate a button click and check that state changes are emitted correctly
       const statButton = document.querySelector("[data-stat]");
       expect(statButton).toBeTruthy();
-      
+
       // Click the button - this should trigger handleStatButtonClick
       statButton.click();
 
@@ -247,9 +247,7 @@ describe("classicBattle stat selection failure recovery", () => {
       // Check that battleStateChange events have the correct format with from/to
       // The test is checking that events are emitted with proper structure,
       // not waiting for timers to fire
-      const stateChangeEvents = eventLog.filter(
-        (entry) => entry.type === "battleStateChange"
-      );
+      const stateChangeEvents = eventLog.filter((entry) => entry.type === "battleStateChange");
 
       // Should have at least one state change event (e.g., roundDecision)
       expect(stateChangeEvents.length).toBeGreaterThan(0);
@@ -263,9 +261,7 @@ describe("classicBattle stat selection failure recovery", () => {
       }
 
       // Verify roundDecision state change occurred
-      const roundDecisionEvent = stateChangeEvents.find(
-        (e) => e.detail?.to === "roundDecision"
-      );
+      const roundDecisionEvent = stateChangeEvents.find((e) => e.detail?.to === "roundDecision");
       expect(roundDecisionEvent).toBeDefined();
       expect(roundDecisionEvent.detail.to).toBe("roundDecision");
     } finally {

@@ -1083,7 +1083,7 @@ function createStatButtonListenerRegistry(buttons) {
       existing.stats = [];
       existing.details = [];
       existing.updatedAt = Date.now();
-      
+
       // Populate stats and details from buttons
       buttons.forEach((btn) => {
         const stat = btn.dataset?.stat;
@@ -1096,7 +1096,7 @@ function createStatButtonListenerRegistry(buttons) {
           });
         }
       });
-      
+
       return existing;
     }
 
