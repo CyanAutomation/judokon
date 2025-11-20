@@ -938,14 +938,17 @@ async function handleStatButtonClick(store, stat, btn) {
  * 1. Create buttons for STATS, enable them, and handle selection.
  */
 function renderStatButtons(store) {
-  console.log("renderStatButtons: START");
-  window.__renderStatButtonsCalled = true;
   const container = document.getElementById("stat-buttons");
   if (!container) {
-    console.log("renderStatButtons: container not found");
     return;
   }
-  console.log("renderStatButtons: container found");
+  
+  // Safety check: ensure STATS is defined and iterable
+  if (!Array.isArray(STATS)) {
+    console.error("battleClassic: STATS is not an array", STATS);
+    return;
+  }
+  
   const listenerRegistry = (() => {
     try {
       if (typeof window === "undefined" || (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)) {
@@ -1255,7 +1258,6 @@ async function startRoundCycle(store, options = {}) {
         roundStarted = true;
       } catch (err) {
         console.error("battleClassic: startRound failed", err);
-        throw err; // Re-throw to propagate to caller
       }
     }
 
@@ -1269,7 +1271,6 @@ async function startRoundCycle(store, options = {}) {
       renderStatButtons(store);
     } catch (err) {
       console.error("battleClassic: renderStatButtons failed", err);
-      throw err; // Re-throw to propagate to caller
     }
     try {
       showSelectionPrompt();
