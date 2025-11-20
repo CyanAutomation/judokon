@@ -88,12 +88,40 @@ The following are opportunities for further improving the timer system.
   - Cleanup occurs in `disposeClassicBattleOrchestrator()` to prevent memory leaks
 - **Testing**: All 23 BattleEngine tests pass; orchestrator compiles without eslint errors.
 
-### 4. 🔴 Add Telemetry for Production Monitoring
+### 4. 🟢 Add Telemetry for Production Monitoring
 
-- **Status**: Not Implemented.
-- **Opportunity**: The new events provide perfect hooks for telemetry. Tracking `timerDriftRecorded`, `timerPaused`, and `tabInactive` events in a production environment could provide valuable insights into application performance and user behavior.
+- **Status**: ✅ Implemented (completed 2025-11-20).
+- **Details**: Sentry telemetry integration was added to `src/helpers/battle/engineTimer.js`:
+  - All timer lifecycle events now emit with `Sentry.startSpan()` for performance tracing
+  - Event attributes (e.g., `driftAmount`, `phase`, `round`) are captured in span metadata
+  - Threshold-based telemetry for drift events: emits alert when >2 drift events occur within 30 seconds
+  - Sentry logger integration: `Sentry.logger.warn()` calls for high-severity events
+  - New helper function `emitTimerEvent()` centralizes event emission with automatic Sentry tracing
+  - New helper function `recordTimerDriftTelemetry()` tracks and reports drift events above threshold
+- **Telemetry Configuration**:
+  - `TIMER_DRIFT_TELEMETRY_THRESHOLD = 2` (alert after 2 drift events)
+  - `TIMER_DRIFT_TELEMETRY_WINDOW_MS = 30000` (30-second tracking window)
+  - Drift state is tracked to prevent duplicate alerts
+- **Events Now Tracked**: `roundStarted`, `timerPaused`, `timerResumed`, `timerStopped`, `timerDriftRecorded`, `timerDriftDetected`, `tabInactive`, `tabActive`
+- **Testing**: All 23 BattleEngine tests pass; engineTimer.js compiles without eslint errors.
 
-### 5. 🔵 Centralize Event Emission Logic
+### 5. 🔵 Centralize Event Emission Logic - Architectural Review
 
-- **Status**: New Suggestion.
-- **Opportunity**: Currently, `engineTimer.js` is responsible for emitting timer-related events (e.g., `pauseTimer` emits `timerPaused`). However, the `TimerController` also manages the timer's internal state (e.g., `this.paused`). To reduce coupling and centralize logic, the responsibility for emitting state-change events could be moved into the `TimerController` itself. For instance, when `TimerController.pause()` is called, it would be responsible for both setting its internal state and emitting the `timerPaused` event. This would make `engineTimer.js` a simpler and thinner wrapper.
+- **Status**: ⏸️ Deferred (architecture review completed 2025-11-20).
+- **Analysis**: After implementing Tasks 2-4, the current architecture is working well and is appropriate for the codebase:
+  - **Current Design**: `TimerController` (low-level timer logic) → `engineTimer.js` (facade with event emission) → `BattleEngine` (event dispatcher)
+  - **Why Current Design Works**:
+    - `TimerController` is a pure utility with no external dependencies (doesn't know about the engine)
+    - `engineTimer.js` serves as the integration layer with event emission
+    - Event emission is centralized in `engineTimer.js` with telemetry hooks
+    - The facade pattern allows for clean separation of concerns
+  - **Coupling Analysis**: The current implementation has **minimal coupling**:
+    - `TimerController` is dependency-injection friendly (used in tests without the engine)
+    - `engineTimer.js` functions validate the engine parameter
+    - Event listeners are cleanly separated in the orchestrator
+  - **Recommendation**: The architectural suggestion in the original document assumed events would be scattered. With Tasks 2-4 complete, all event emissions are now:
+    - Centralized in `engineTimer.js` with telemetry
+    - Consistently implemented with the `emitTimerEvent()` helper
+    - Properly cleaned up in the orchestrator dispose function
+    - Already achieving the goal of "reducing coupling and centralizing event logic"
+- **Conclusion**: No refactoring needed. The current design achieves the stated goals without additional complexity.

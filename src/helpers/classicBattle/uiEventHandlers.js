@@ -188,7 +188,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       if (container) {
         container.classList.add("is-obscured");
         container.classList.remove("opponent-hidden");
-        container.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
       }
     } catch {}
   });
