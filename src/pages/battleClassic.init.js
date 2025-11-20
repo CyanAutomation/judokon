@@ -115,7 +115,12 @@ import {
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
 
 function broadcastBattleState(state) {
-  emitBattleEvent("battleStateChange", state);
+  let from = null;
+  try {
+    from = typeof document !== "undefined" ? document.body?.dataset?.battleState ?? null : null;
+  } catch {}
+  const detail = { from, to: state };
+  emitBattleEvent("battleStateChange", detail);
   try {
     if (typeof document !== "undefined") {
       document.body.dataset.battleState = state;
@@ -943,9 +948,12 @@ function renderStatButtons(store) {
   console.log("renderStatButtons: container found");
   const listenerRegistry = (() => {
     try {
-      if (typeof window === "undefined" || !window.__TEST__) {
+      console.log("renderStatButtons: __TEST__=", window.__TEST__, "__PLAYWRIGHT_TEST__=", window.__PLAYWRIGHT_TEST__);
+      if (typeof window === "undefined" || (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)) {
+        console.log("renderStatButtons: test flags not set, skipping registry creation");
         return null;
       }
+      console.log("renderStatButtons: test flags detected, creating registry");
       if (window.__classicBattleStatButtonListeners) {
         const existing = window.__classicBattleStatButtonListeners;
         existing.attachedCount = 0;
