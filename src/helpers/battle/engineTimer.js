@@ -184,7 +184,7 @@ export function startRoundTimer(engine, onTick, onExpired, duration, onDrift) {
   }
 
   const round = engine.roundsPlayed + 1;
-  engine.emit("roundStarted", { round });
+  emitTimerEvent(engine, "roundStarted", { round });
 
   const tickCallback = createTickCallback(engine, "round", onTick);
   const expiredCallback = createGuardedExpiredCallback(engine, onExpired);
@@ -192,7 +192,10 @@ export function startRoundTimer(engine, onTick, onExpired, duration, onDrift) {
   // Wrap drift handler to emit event if provided
   const wrappedDrift = onDrift
     ? (driftAmount) => {
-        engine.emit("timerDriftDetected", { phase: "round", remaining: driftAmount });
+        emitTimerEvent(engine, "timerDriftDetected", {
+          phase: "round",
+          remaining: driftAmount
+        });
         onDrift(driftAmount);
       }
     : undefined;
@@ -228,7 +231,10 @@ export function startCoolDownTimer(engine, onTick, onExpired, duration, onDrift)
   // Wrap drift handler to emit event if provided
   const wrappedDrift = onDrift
     ? (driftAmount) => {
-        engine.emit("timerDriftDetected", { phase: "cooldown", remaining: driftAmount });
+        emitTimerEvent(engine, "timerDriftDetected", {
+          phase: "cooldown",
+          remaining: driftAmount
+        });
         onDrift(driftAmount);
       }
     : undefined;
@@ -241,7 +247,7 @@ export function startCoolDownTimer(engine, onTick, onExpired, duration, onDrift)
  *
  * @pseudocode
  * 1. Validate engine exists.
- * 2. Emit `timerPaused` event.
+ * 2. Emit `timerPaused` event with telemetry.
  * 3. Invoke `pause()` on the underlying timer.
  *
  * @param {object} engine - Battle engine instance (required).
@@ -252,7 +258,7 @@ export function pauseTimer(engine) {
   if (!engine) {
     throw new Error("engineTimer: pauseTimer requires engine parameter");
   }
-  engine.emit("timerPaused", {});
+  emitTimerEvent(engine, "timerPaused", {});
   engine.timer.pause();
 }
 
@@ -261,7 +267,7 @@ export function pauseTimer(engine) {
  *
  * @pseudocode
  * 1. Validate engine exists.
- * 2. Emit `timerResumed` event.
+ * 2. Emit `timerResumed` event with telemetry.
  * 3. Invoke `resume()` on the underlying timer.
  *
  * @param {object} engine - Battle engine instance (required).
@@ -272,7 +278,7 @@ export function resumeTimer(engine) {
   if (!engine) {
     throw new Error("engineTimer: resumeTimer requires engine parameter");
   }
-  engine.emit("timerResumed", {});
+  emitTimerEvent(engine, "timerResumed", {});
   engine.timer.resume();
 }
 
@@ -281,7 +287,7 @@ export function resumeTimer(engine) {
  *
  * @pseudocode
  * 1. Validate engine exists.
- * 2. Emit `timerStopped` event.
+ * 2. Emit `timerStopped` event with telemetry.
  * 3. Invoke `stop()` on the underlying timer.
  *
  * @param {object} engine - Battle engine instance (required).
@@ -292,7 +298,7 @@ export function stopTimer(engine) {
   if (!engine) {
     throw new Error("engineTimer: stopTimer requires engine parameter");
   }
-  engine.emit("timerStopped", {});
+  emitTimerEvent(engine, "timerStopped", {});
   engine.timer.stop();
 }
 
@@ -301,7 +307,7 @@ export function stopTimer(engine) {
  *
  * @pseudocode
  * 1. Validate engine exists.
- * 2. Emit `tabInactive` event for observability.
+ * 2. Emit `tabInactive` event for observability with telemetry.
  * 3. Pause the timer.
  * 4. Set `tabInactive` flag.
  *
@@ -313,7 +319,7 @@ export function handleTabInactive(engine) {
   if (!engine) {
     throw new Error("engineTimer: handleTabInactive requires engine parameter");
   }
-  engine.emit("tabInactive", {});
+  emitTimerEvent(engine, "tabInactive", {});
   pauseTimer(engine);
   engine.tabInactive = true;
 }
@@ -323,7 +329,7 @@ export function handleTabInactive(engine) {
  *
  * @pseudocode
  * 1. Validate engine exists.
- * 2. If previously inactive, emit `tabActive` event, resume timer, and clear flag.
+ * 2. If previously inactive, emit `tabActive` event with telemetry, resume timer, and clear flag.
  *
  * @param {object} engine - Battle engine instance (required).
  * @returns {void}
@@ -334,7 +340,7 @@ export function handleTabActive(engine) {
     throw new Error("engineTimer: handleTabActive requires engine parameter");
   }
   if (engine.tabInactive) {
-    engine.emit("tabActive", {});
+    emitTimerEvent(engine, "tabActive", {});
     resumeTimer(engine);
     engine.tabInactive = false;
   }
@@ -346,9 +352,10 @@ export function handleTabActive(engine) {
  * @pseudocode
  * 1. Validate engine exists.
  * 2. Validate driftAmount is a number >= 0.
- * 3. Emit `timerDriftRecorded` event for logging/diagnostics.
- * 4. Stop the timer.
- * 5. Record the drift amount on the engine.
+ * 3. Emit `timerDriftRecorded` event with telemetry.
+ * 4. Record drift for threshold-based telemetry emission.
+ * 5. Stop the timer.
+ * 6. Record the drift amount on the engine.
  *
  * @param {object} engine - Battle engine instance (required).
  * @param {number} driftAmount - Amount of drift detected (must be >= 0).
@@ -363,7 +370,8 @@ export function handleTimerDrift(engine, driftAmount) {
     const msg = `engineTimer: handleTimerDrift requires driftAmount >= 0, got ${driftAmount}`;
     throw new Error(msg);
   }
-  engine.emit("timerDriftRecorded", { driftAmount });
+  emitTimerEvent(engine, "timerDriftRecorded", { driftAmount });
+  recordTimerDriftTelemetry(driftAmount);
   stopTimer(engine);
   engine.lastTimerDrift = driftAmount;
 }
