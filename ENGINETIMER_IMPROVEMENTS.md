@@ -56,10 +56,20 @@ The following are opportunities for further improving the timer system.
 - **Status**: Partially Implemented.
 - **Details**: The original suggestion was to add `isPaused()` and `getRemaining()` methods. The `TimerController` now has a `getState()` method which returns an object containing `{ remaining, paused, category, pauseOnHidden }`. This effectively provides the same information. While not implemented as originally described, the goal has been met. No further action is required here.
 
-### 2. 🔴 Add Integration Tests for New Event Emissions
+### 2. 🟢 Add Integration Tests for New Event Emissions
 
-- **Status**: Not Implemented.
-- **Opportunity**: The unit tests for the timer system currently mock the underlying timer methods but do not verify that the new lifecycle events (`timerPaused`, `timerResumed`, `timerStopped`, etc.) are actually emitted. The tests should be updated to spy on `engine.emit` and assert that the correct events are dispatched with the correct payloads.
+- **Status**: ✅ Implemented (completed 2025-11-20).
+- **Details**: Unit tests were added to `tests/helpers/BattleEngine.test.js` (12 new test cases) to verify that all 8 events are emitted with correct payloads:
+  - `startRoundTimer` emits `roundStarted` event with incremented round number
+  - `startRoundTimer` and `startCoolDownTimer` emit `timerDriftDetected` event with phase and remaining time
+  - `pauseTimer` emits `timerPaused` event
+  - `resumeTimer` emits `timerResumed` event
+  - `stopTimer` emits `timerStopped` event
+  - `handleTabInactive` emits `tabInactive` event and triggers pause sequence
+  - `handleTabActive` emits `tabActive` event and triggers resume sequence (when tab was previously inactive)
+  - `handleTimerDrift` emits `timerDriftRecorded` event with drift amount and also triggers `timerStopped` event
+- **Test Coverage**: All 23 tests in BattleEngine.test.js pass (including 12 new event emission tests).
+- **Verification**: `npx vitest run tests/helpers/BattleEngine.test.js` returns "Test Files 1 passed (1), Tests 23 passed (23)".
 
 ### 3. 🔴 Update Consumers to Observe New Events
 

@@ -31,6 +31,7 @@ let machine = null;
 let machineInitPromise = null;
 let debugLogListener = null;
 let visibilityHandler = null;
+let timerEventHandlers = {};
 
 /**
  * Check if an object appears to be a battle store.
@@ -585,6 +586,38 @@ function attachListeners(machineRef) {
       emitBattleEvent("debugPanelUpdate");
       engine.handleTimerDrift(drift);
     };
+
+    // Listen to timer lifecycle events for UI updates and logging
+    timerEventHandlers.onPaused = () => {
+      emitBattleEvent("scoreboardShowMessage", "Timer paused");
+    };
+    engine.on("timerPaused", timerEventHandlers.onPaused);
+
+    timerEventHandlers.onResumed = () => {
+      emitBattleEvent("scoreboardShowMessage", "Timer resumed");
+    };
+    engine.on("timerResumed", timerEventHandlers.onResumed);
+
+    timerEventHandlers.onStopped = () => {
+      emitBattleEvent("scoreboardShowMessage", "Timer stopped");
+    };
+    engine.on("timerStopped", timerEventHandlers.onStopped);
+
+    timerEventHandlers.onDriftRecorded = ({ driftAmount }) => {
+      emitBattleEvent("scoreboardShowMessage", `Drift detected: ${driftAmount}s`);
+    };
+    engine.on("timerDriftRecorded", timerEventHandlers.onDriftRecorded);
+
+    timerEventHandlers.onTabInactive = () => {
+      emitBattleEvent("scoreboardShowMessage", "Page hidden - timer paused");
+    };
+    engine.on("tabInactive", timerEventHandlers.onTabInactive);
+
+    timerEventHandlers.onTabActive = () => {
+      emitBattleEvent("scoreboardShowMessage", "Page visible - timer resumed");
+    };
+    engine.on("tabActive", timerEventHandlers.onTabActive);
+
     // Expose initial timer state for tests/diagnostics
     try {
       const ts = typeof engine.getTimerState === "function" ? engine.getTimerState() : null;

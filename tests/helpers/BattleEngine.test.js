@@ -14,7 +14,11 @@ import {
   startRoundTimer,
   startCoolDownTimer,
   pauseTimer as pauseEngineTimer,
-  resumeTimer as resumeEngineTimer
+  resumeTimer as resumeEngineTimer,
+  stopTimer,
+  handleTabInactive,
+  handleTabActive,
+  handleTimerDrift
 } from "../../src/helpers/battle/engineTimer.js";
 import { SimpleEmitter } from "../../src/helpers/events/SimpleEmitter.js";
 
@@ -211,6 +215,176 @@ describe("engineTimer helpers", () => {
     resumeEngineTimer(engine);
     expect(engine.timer.pause).toHaveBeenCalled();
     expect(engine.timer.resume).toHaveBeenCalled();
+  });
+});
+
+describe("engineTimer event emissions", () => {
+  let engine;
+
+  beforeEach(() => {
+    engine = new BattleEngine();
+  });
+
+  it("startRoundTimer emits roundStarted event with incremented round number", async () => {
+    const roundStartedSpy = vi.fn();
+    engine.on("roundStarted", roundStartedSpy);
+
+    engine.timer.startRound = vi.fn((tick, expired) => {
+      return Promise.resolve();
+    });
+
+    engine.roundsPlayed = 2; // Already played 2 rounds
+    await startRoundTimer(engine, undefined, undefined, 10);
+
+    expect(roundStartedSpy).toHaveBeenCalledWith({ round: 3 });
+    expect(roundStartedSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("startRoundTimer emits timerDriftDetected event when onDrift callback is triggered", async () => {
+    const timerDriftDetectedSpy = vi.fn();
+    engine.on("timerDriftDetected", timerDriftDetectedSpy);
+
+    let driftHandler;
+    engine.timer.startRound = vi.fn((tick, expired, duration, onDrift) => {
+      driftHandler = onDrift;
+      return Promise.resolve();
+    });
+
+    const onDriftHandler = vi.fn();
+    await startRoundTimer(engine, undefined, undefined, 10, onDriftHandler);
+
+    // Simulate drift detection
+    driftHandler(5);
+
+    expect(timerDriftDetectedSpy).toHaveBeenCalledWith({ phase: "round", remaining: 5 });
+    expect(onDriftHandler).toHaveBeenCalledWith(5);
+  });
+
+  it("startCoolDownTimer emits timerDriftDetected event with cooldown phase", async () => {
+    const timerDriftDetectedSpy = vi.fn();
+    engine.on("timerDriftDetected", timerDriftDetectedSpy);
+
+    let driftHandler;
+    engine.timer.startCoolDown = vi.fn((tick, expired, duration, onDrift) => {
+      driftHandler = onDrift;
+      return Promise.resolve();
+    });
+
+    const onDriftHandler = vi.fn();
+    await startCoolDownTimer(engine, undefined, undefined, 5, onDriftHandler);
+
+    // Simulate drift detection
+    driftHandler(2);
+
+    expect(timerDriftDetectedSpy).toHaveBeenCalledWith({ phase: "cooldown", remaining: 2 });
+    expect(onDriftHandler).toHaveBeenCalledWith(2);
+  });
+
+  it("pauseTimer emits timerPaused event", () => {
+    const timerPausedSpy = vi.fn();
+    engine.on("timerPaused", timerPausedSpy);
+    engine.timer.pause = vi.fn();
+
+    pauseEngineTimer(engine);
+
+    expect(timerPausedSpy).toHaveBeenCalledWith({});
+    expect(timerPausedSpy).toHaveBeenCalledTimes(1);
+    expect(engine.timer.pause).toHaveBeenCalled();
+  });
+
+  it("resumeTimer emits timerResumed event", () => {
+    const timerResumedSpy = vi.fn();
+    engine.on("timerResumed", timerResumedSpy);
+    engine.timer.resume = vi.fn();
+
+    resumeEngineTimer(engine);
+
+    expect(timerResumedSpy).toHaveBeenCalledWith({});
+    expect(timerResumedSpy).toHaveBeenCalledTimes(1);
+    expect(engine.timer.resume).toHaveBeenCalled();
+  });
+
+  it("stopTimer emits timerStopped event", () => {
+    const timerStoppedSpy = vi.fn();
+    engine.on("timerStopped", timerStoppedSpy);
+    engine.timer.stop = vi.fn();
+
+    stopTimer(engine);
+
+    expect(timerStoppedSpy).toHaveBeenCalledWith({});
+    expect(timerStoppedSpy).toHaveBeenCalledTimes(1);
+    expect(engine.timer.stop).toHaveBeenCalled();
+  });
+
+  it("handleTabInactive emits tabInactive event and pauses timer", () => {
+    const tabInactiveSpy = vi.fn();
+    const timerPausedSpy = vi.fn();
+    engine.on("tabInactive", tabInactiveSpy);
+    engine.on("timerPaused", timerPausedSpy);
+    engine.timer.pause = vi.fn();
+
+    handleTabInactive(engine);
+
+    expect(tabInactiveSpy).toHaveBeenCalledWith({});
+    expect(tabInactiveSpy).toHaveBeenCalledTimes(1);
+    expect(timerPausedSpy).toHaveBeenCalledTimes(1);
+    expect(engine.tabInactive).toBe(true);
+    expect(engine.timer.pause).toHaveBeenCalled();
+  });
+
+  it("handleTabActive emits tabActive event and resumes timer when tab becomes active", () => {
+    const tabActiveSpy = vi.fn();
+    const timerResumedSpy = vi.fn();
+    engine.on("tabActive", tabActiveSpy);
+    engine.on("timerResumed", timerResumedSpy);
+    engine.timer.resume = vi.fn();
+    engine.tabInactive = true;
+
+    handleTabActive(engine);
+
+    expect(tabActiveSpy).toHaveBeenCalledWith({});
+    expect(tabActiveSpy).toHaveBeenCalledTimes(1);
+    expect(timerResumedSpy).toHaveBeenCalledTimes(1);
+    expect(engine.tabInactive).toBe(false);
+    expect(engine.timer.resume).toHaveBeenCalled();
+  });
+
+  it("handleTabActive does not emit tabActive event if already active", () => {
+    const tabActiveSpy = vi.fn();
+    engine.on("tabActive", tabActiveSpy);
+    engine.timer.resume = vi.fn();
+    engine.tabInactive = false;
+
+    handleTabActive(engine);
+
+    expect(tabActiveSpy).not.toHaveBeenCalled();
+    expect(engine.timer.resume).not.toHaveBeenCalled();
+  });
+
+  it("handleTimerDrift emits timerDriftRecorded event with drift amount", () => {
+    const timerDriftRecordedSpy = vi.fn();
+    engine.on("timerDriftRecorded", timerDriftRecordedSpy);
+    engine.timer.stop = vi.fn();
+
+    handleTimerDrift(engine, 7);
+
+    expect(timerDriftRecordedSpy).toHaveBeenCalledWith({ driftAmount: 7 });
+    expect(timerDriftRecordedSpy).toHaveBeenCalledTimes(1);
+    expect(engine.lastTimerDrift).toBe(7);
+    expect(engine.timer.stop).toHaveBeenCalled();
+  });
+
+  it("handleTimerDrift also emits timerStopped event via stopTimer", () => {
+    const timerDriftRecordedSpy = vi.fn();
+    const timerStoppedSpy = vi.fn();
+    engine.on("timerDriftRecorded", timerDriftRecordedSpy);
+    engine.on("timerStopped", timerStoppedSpy);
+    engine.timer.stop = vi.fn();
+
+    handleTimerDrift(engine, 4);
+
+    expect(timerDriftRecordedSpy).toHaveBeenCalledWith({ driftAmount: 4 });
+    expect(timerStoppedSpy).toHaveBeenCalledWith({});
   });
 });
 
