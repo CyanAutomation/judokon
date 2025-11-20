@@ -1,7 +1,7 @@
 # progressRAG.md Review & Improvements Summary
 
 **Date**: November 1, 2025  
-**Status**: 🟡 **Requires Action**  
+**Status**: 🟡 **Requires Action**
 
 ## Overview
 
@@ -15,16 +15,16 @@ The previous version of this summary claimed that `progressRAG.md` was a 500+ li
 
 **Reality**: The actual `progressRAG.md` is a much more concise document. While it accurately describes the implemented RAG server, it lacks the detailed sections, roadmap, and advanced considerations that were described in the summary.
 
-**Conclusion**: The review summary was describing a *proposed future state* of `progressRAG.md`, not the state that was implemented.
+**Conclusion**: The review summary was describing a _proposed future state_ of `progressRAG.md`, not the state that was implemented.
 
 ## Verification of `progressRAG.md` Content
 
-Despite the structural discrepancy, the technical claims within the *current* `progressRAG.md` have been verified:
+Despite the structural discrepancy, the technical claims within the _current_ `progressRAG.md` have been verified:
 
-*   ✅ **MCP Server**: The server implementation at `scripts/mcp-rag-server.mjs` exists and is correctly described.
-*   ✅ **NPM Scripts**: The `npm run rag:mcp` command is correct.
-*   ✅ **Data Schema**: The use of `synonyms.json` is correctly mentioned.
-*   ✅ **Helper Files**: The helper files mentioned (`lruCache.js`, `queryExpander.js`, etc.) all exist in `src/helpers/`.
+- ✅ **MCP Server**: The server implementation at `scripts/mcp-rag-server.mjs` exists and is correctly described.
+- ✅ **NPM Scripts**: The `npm run rag:mcp` command is correct.
+- ✅ **Data Schema**: The use of `synonyms.json` is correctly mentioned.
+- ✅ **Helper Files**: The helper files mentioned (`lruCache.js`, `queryExpander.js`, etc.) all exist in `src/helpers/`.
 
 The current `progressRAG.md` is technically accurate, just not as detailed as this summary originally claimed.
 
@@ -49,8 +49,8 @@ Therefore, the recommended course of action is to **refactor `progressRAG.md` to
 
 ### Action Item
 
-*   **Task**: Update `progressRAG.md` to a more comprehensive document using the 10-section structure proposed above.
-*   **Rationale**: This will improve documentation quality, provide a clear roadmap for future development, and onboard new developers (or agents) more effectively.
+- **Task**: Update `progressRAG.md` to a more comprehensive document using the 10-section structure proposed above.
+- **Rationale**: This will improve documentation quality, provide a clear roadmap for future development, and onboard new developers (or agents) more effectively.
 
 ## Summary
 

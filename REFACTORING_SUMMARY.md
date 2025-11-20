@@ -26,7 +26,7 @@ Successfully refactored `/workspaces/judokon/src/pages/battleClassic.init.js` to
 
 ### 2. `src/helpers/classicBattle/globalState.js`
 
-**Purpose:** Centralized namespace for all window.__battleClassic* globals
+**Purpose:** Centralized namespace for all window.\_\_battleClassic\* globals
 
 ### 3. `src/helpers/classicBattle/roundTracker.js`
 

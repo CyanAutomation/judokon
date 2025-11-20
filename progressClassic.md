@@ -315,12 +315,12 @@ Once the flag is visible, validate the feature using battle state or a test API 
 
 ## Summary Table
 
-| Issue | Root Cause | Status | Fix |
-|-------|-----------|--------|-----|
-| Snackbar not updating | Test-localStorage overrides were clobbered by `playwright/fixtures/commonSetup.js` | **Critical** | Preserve the injected `settings` and avoid fixture reset. |
-| localStorage overwritten | `commonSetup` fixture | **Fixed** | Removed fixture usage. |
-| Can't test flag state | No stable hook to inspect `isEnabled` in Playwright | **Minor** | Expose a debug API (e.g., `window.__featureFlagsDebug`). |
-| UI-dependent test | Waiting for snackbar text | **Design Issue** | Assert on battle state or test API instead of copy. |
+| Issue                    | Root Cause                                                                         | Status           | Fix                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------- |
+| Snackbar not updating    | Test-localStorage overrides were clobbered by `playwright/fixtures/commonSetup.js` | **Critical**     | Preserve the injected `settings` and avoid fixture reset. |
+| localStorage overwritten | `commonSetup` fixture                                                              | **Fixed**        | Removed fixture usage.                                    |
+| Can't test flag state    | No stable hook to inspect `isEnabled` in Playwright                                | **Minor**        | Expose a debug API (e.g., `window.__featureFlagsDebug`).  |
+| UI-dependent test        | Waiting for snackbar text                                                          | **Design Issue** | Assert on battle state or test API instead of copy.       |
 
 ---
 
