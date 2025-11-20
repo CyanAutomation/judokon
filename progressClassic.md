@@ -183,67 +183,35 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 ---
 
-### Task 5: Document fixture pattern ✅ **COMPLETED**
-
-**Status**: Comprehensive documentation added
-
-**Documentation Added**:
-
-Added a detailed module-level JSDoc block to `playwright/opponent-choosing.smoke.spec.js` explaining:
-
-1. **Fixture Usage Pattern for Feature Flag Overrides** - Clear title for the pattern
-2. **Why not use `commonSetup` fixture?** - Explains the core problem:
-   - fixture clears localStorage on every page load
-   - localStorage-based overrides get reset
-   - `configureApp`'s route interception is more robust
-
-3. **Pattern Instructions** - Step-by-step guide:
-   - How to call `configureApp`
-   - How to pass the returned `app` object
-   - When/how to cleanup
-
-4. **Why this works** - Technical explanation:
-   - Route override happens before page.goto()
-   - Fetch is intercepted at the protocol level
-   - Survives any localStorage manipulation
-
-5. **Benefits** - Clear advantages listed:
-   - ✅ Survives fixture initialization
-   - ✅ Proven pattern (10+ tests)
-   - ✅ Works with/without commonSetup
-   - ✅ Can be combined with other options
-
-6. **See Also** - References to related files:
-   - `fixtures/appConfig.js` - Implementation
-   - `helpers/featureFlagHelper.js` - Helper functions
-   - `stat-hotkeys.smoke.spec.js` - Another example
-   - `battle-cli-complete-round.spec.js` - Complex example
-
-**Outcome**: Future maintainers can understand the pattern immediately, preventing accidental regressions (e.g., trying to re-add commonSetup). The documentation serves as both inline reference and a teaching resource for similar feature flag override scenarios.
-
----
-
 ## Summary: Implementation Complete ✅
 
 **All 5 tasks completed successfully!**
 
 ### Changes Made
 
-| File | Changes |
-|------|---------|
-| `playwright/opponent-choosing.smoke.spec.js` | • Migrated to `configureApp` fixture pattern<br>• Added `waitForFeatureFlagOverrides` verification<br>• Added comprehensive JSDoc documentation<br>• Uses route-based settings override (fetch layer)<br>• Test now passes ✅ |
+**File**: `playwright/opponent-choosing.smoke.spec.js`
+
+**Changes**:
+
+- Migrated to `configureApp` fixture pattern
+- Added `waitForFeatureFlagOverrides` verification
+- Added comprehensive JSDoc documentation
+- Uses route-based settings override (fetch layer)
+- Test now passes ✅
 
 ### Root Cause Resolution
 
 **Original Problem**: `opponentDelayMessage` feature flag was clobbered by `commonSetup` fixture's localStorage reset, causing the snackbar to show default message instead of "Opponent is choosing..."
 
 **Why It Was Happening**:
+
 - Test's `addInitScript` set feature flags in localStorage
 - `commonSetup` fixture's `addInitScript` ran AFTER test's script
 - Fixture cleared localStorage and only set `enableTestMode`
 - When app called `initFeatureFlags()`, the test's flags were gone
 
 **How It's Fixed**:
+
 - Switched to `configureApp` which uses route interception
 - Route override happens at fetch layer (more robust than localStorage)
 - Settings intercept and include feature flag overrides
@@ -254,6 +222,7 @@ Added a detailed module-level JSDoc block to `playwright/opponent-choosing.smoke
 ✅ Test passes: `npx playwright test playwright/opponent-choosing.smoke.spec.js` - **PASSED (8.8s)**
 
 Test now correctly:
+
 1. Enables `opponentDelayMessage` flag via route override
 2. Verifies flag state before driving UI
 3. Triggers stat selection
@@ -263,9 +232,56 @@ Test now correctly:
 ### Best Practices Established
 
 The implemented solution establishes a reusable pattern for all future feature flag override scenarios:
+
 - Route interception > localStorage manipulation
 - Explicit flag state verification > UI-only assertions
 - Comprehensive documentation prevents future regressions
+
+---
+
+## Final Verification ✅
+
+**Code Quality Checks**:
+
+- ✅ ESLint: PASSED
+- ✅ Prettier: PASSED
+- ✅ Test execution: PASSED (7.5s)
+
+**Test File**: `playwright/opponent-choosing.smoke.spec.js`
+
+**Final Status**: ✅ COMPLETE AND WORKING
+
+---
+
+## Implementation Summary
+
+### What Was Done
+
+1. ✅ Replaced manual `addInitScript` localStorage manipulation with proven `configureApp` fixture pattern
+2. ✅ Added explicit feature flag state verification using `waitForFeatureFlagOverrides` helper
+3. ✅ Recognized that `commonSetup` fixture's aggressive reset requires route-based override approach
+4. ✅ Established fixture-less test setup for compatibility with `configureApp`'s route interception
+5. ✅ Added comprehensive JSDoc documenting the pattern and why it works
+
+### Why This Works
+
+The solution uses **route interception** at the fetch layer instead of localStorage manipulation:
+
+- `configureApp` sets up a route override BEFORE `page.goto()`
+- When the app loads and calls `fetch('/src/data/settings.json')`, the route intercepts it
+- The mocked response includes the feature flag overrides
+- This is immune to any fixture-based localStorage resets because it operates at the protocol level
+
+### Key Learning
+
+**Don't fight fixtures—work around them**: Rather than trying to modify or disable the `commonSetup` fixture, we adopted a pattern that's orthogonal to it. The `configureApp` approach using route interception is actually MORE robust than localStorage manipulation and works correctly whether or not `commonSetup` is active.
+
+### Applicable To
+
+This pattern can be reused for ANY Playwright test that needs to override feature flags:
+
+- See `playwright/stat-hotkeys.smoke.spec.js` for another example
+- See `playwright/battle-cli-complete-round.spec.js` for complex multi-override scenarios
 
 Repl
 
