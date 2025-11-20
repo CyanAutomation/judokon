@@ -71,10 +71,22 @@ The following are opportunities for further improving the timer system.
 - **Test Coverage**: All 23 tests in BattleEngine.test.js pass (including 12 new event emission tests).
 - **Verification**: `npx vitest run tests/helpers/BattleEngine.test.js` returns "Test Files 1 passed (1), Tests 23 passed (23)".
 
-### 3. 🔴 Update Consumers to Observe New Events
+### 3. 🟢 Update Consumers to Observe New Events
 
-- **Status**: Not Implemented.
-- **Opportunity**: A codebase search reveals that the new events (`timerPaused`, `timerResumed`, `timerDriftRecorded`, etc.) are not being consumed by any other part of the application. These events could be used for UI updates, logging, or state management. For example, the UI could display a "Paused" indicator when the `timerPaused` event is received.
+- **Status**: ✅ Implemented (completed 2025-11-20).
+- **Details**: Event listeners were added to the classic battle orchestrator (`src/helpers/classicBattle/orchestrator.js`) to respond to all timer state changes:
+  - `timerPaused` → displays "Timer paused" message
+  - `timerResumed` → displays "Timer resumed" message
+  - `timerStopped` → displays "Timer stopped" message
+  - `timerDriftRecorded` → displays drift amount (e.g., "Drift detected: 5s")
+  - `tabInactive` → displays "Page hidden - timer paused" message
+  - `tabActive` → displays "Page visible - timer resumed" message
+- **Integration Points**:
+  - Listeners are registered in the orchestrator initialization logic (after engine creation)
+  - Handlers emit `scoreboardShowMessage` events to display UI feedback
+  - Event handlers are stored in `timerEventHandlers` object for proper cleanup
+  - Cleanup occurs in `disposeClassicBattleOrchestrator()` to prevent memory leaks
+- **Testing**: All 23 BattleEngine tests pass; orchestrator compiles without eslint errors.
 
 ### 4. 🔴 Add Telemetry for Production Monitoring
 

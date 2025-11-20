@@ -675,6 +675,21 @@ export function disposeClassicBattleOrchestrator() {
     document.removeEventListener("visibilitychange", visibilityHandler);
     visibilityHandler = null;
   }
+
+  // Clean up timer event listeners
+  const engine = machine?.context?.engine;
+  if (engine && timerEventHandlers) {
+    if (timerEventHandlers.onPaused) engine.off("timerPaused", timerEventHandlers.onPaused);
+    if (timerEventHandlers.onResumed) engine.off("timerResumed", timerEventHandlers.onResumed);
+    if (timerEventHandlers.onStopped) engine.off("timerStopped", timerEventHandlers.onStopped);
+    if (timerEventHandlers.onDriftRecorded)
+      engine.off("timerDriftRecorded", timerEventHandlers.onDriftRecorded);
+    if (timerEventHandlers.onTabInactive)
+      engine.off("tabInactive", timerEventHandlers.onTabInactive);
+    if (timerEventHandlers.onTabActive) engine.off("tabActive", timerEventHandlers.onTabActive);
+    timerEventHandlers = {};
+  }
+
   machine = null;
 }
 

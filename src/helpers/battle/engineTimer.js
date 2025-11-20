@@ -2,7 +2,115 @@
  * Timer control helpers for the BattleEngine.
  *
  * @note Callbacks are optional and guarded to prevent execution after match end.
+ * @note Event emissions include Sentry telemetry for production monitoring.
  */
+
+// Telemetry configuration for drift event tracking
+const TIMER_DRIFT_TELEMETRY_THRESHOLD = 2;
+const TIMER_DRIFT_TELEMETRY_WINDOW_MS = 30000;
+
+let timerDriftState = {
+  count: 0,
+  firstTimestamp: 0,
+  reported: false
+};
+
+/**
+ * Emit timer lifecycle event with optional Sentry telemetry.
+ *
+ * @pseudocode
+ * 1. Emit the event on engine
+ * 2. If Sentry is available, wrap with startSpan for performance tracking
+ * 3. Add contextual attributes for debugging
+ *
+ * @private
+ */
+function emitTimerEvent(engine, eventName, payload = {}) {
+  engine.emit(eventName, payload);
+
+  // Add Sentry tracing for key events
+  if (typeof Sentry !== "undefined" && typeof Sentry.startSpan === "function") {
+    try {
+      Sentry.startSpan(
+        {
+          op: "timer.state",
+          name: `timer.${eventName}`
+        },
+        (span) => {
+          if (span && typeof span.setAttribute === "function") {
+            span.setAttribute("eventName", eventName);
+            Object.entries(payload).forEach(([key, value]) => {
+              if (typeof value === "number" || typeof value === "string") {
+                span.setAttribute(key, value);
+              }
+            });
+          }
+        }
+      );
+    } catch {}
+  }
+}
+
+/**
+ * Record timer drift event and emit telemetry when threshold is met.
+ *
+ * @pseudocode
+ * 1. Increment drift event counter
+ * 2. Reset counter if telemetry window has elapsed
+ * 3. When threshold is met, emit to Sentry with drift metrics
+ * 4. Log warning for production monitoring
+ *
+ * @private
+ */
+function recordTimerDriftTelemetry(driftAmount) {
+  const now = Date.now();
+  const windowExceeded =
+    timerDriftState.firstTimestamp &&
+    now - timerDriftState.firstTimestamp > TIMER_DRIFT_TELEMETRY_WINDOW_MS;
+
+  if (!timerDriftState.firstTimestamp || windowExceeded) {
+    timerDriftState = {
+      count: 0,
+      firstTimestamp: now,
+      reported: false
+    };
+  }
+
+  timerDriftState.count += 1;
+
+  // Emit telemetry when threshold is reached
+  if (timerDriftState.count >= TIMER_DRIFT_TELEMETRY_THRESHOLD && !timerDriftState.reported) {
+    try {
+      if (typeof Sentry !== "undefined") {
+        if (typeof Sentry.startSpan === "function") {
+          Sentry.startSpan(
+            {
+              op: "timer.drift",
+              name: "timer.drift.threshold_exceeded"
+            },
+            (span) => {
+              if (span && typeof span.setAttribute === "function") {
+                span.setAttribute("driftCount", timerDriftState.count);
+                span.setAttribute("windowMs", TIMER_DRIFT_TELEMETRY_WINDOW_MS);
+                span.setAttribute("threshold", TIMER_DRIFT_TELEMETRY_THRESHOLD);
+              }
+            }
+          );
+        }
+
+        if (Sentry?.logger?.warn) {
+          Sentry.logger.warn("timer:driftThresholdExceeded", {
+            count: timerDriftState.count,
+            threshold: TIMER_DRIFT_TELEMETRY_THRESHOLD,
+            lastDriftAmount: driftAmount
+          });
+        }
+      }
+    } catch {}
+
+    timerDriftState.reported = true;
+  }
+}
 
 /**
  * Helper to create a guarded expiration callback that checks match state.
