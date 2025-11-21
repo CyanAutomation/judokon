@@ -119,7 +119,8 @@ export const test = base.extend({
         return result;
       };
 
-      // Read existing settings from localStorage (may have been set by test's configureApp)
+      // Read existing settings from localStorage BEFORE clearing
+      // (tests may have pre-populated this via route overrides or previous operations)
       let existingSettings = {};
       try {
         const stored = localStorage.getItem("settings");
@@ -128,6 +129,26 @@ export const test = base.extend({
         }
       } catch {}
 
+      // Only clear localStorage if there are no significant feature flags already set
+      // (Preserve route-based overrides that may have been pre-configured by tests)
+      const hasExistingFlags = existingSettings?.featureFlags &&
+        Object.keys(existingSettings.featureFlags).some(
+          (key) => key !== "enableTestMode"
+        );
+
+      if (!hasExistingFlags) {
+        // No pre-configured feature flags; safe to clear
+        localStorage.clear();
+      } else {
+        // Pre-configured flags exist; preserve them
+        // Just delete the snackbar disabler if present
+        try {
+          const parsed = existingSettings;
+          localStorage.clear();
+          localStorage.setItem("settings", JSON.stringify(parsed));
+        } catch {}
+      }
+
       // Base settings provided by fixture: enableTestMode + any existing feature flags
       const baseSettings = {
         featureFlags: {
@@ -135,8 +156,17 @@ export const test = base.extend({
         }
       };
 
+      // Read again in case we just cleared and reset
+      let currentSettings = {};
+      try {
+        const stored = localStorage.getItem("settings");
+        if (stored) {
+          currentSettings = JSON.parse(stored);
+        }
+      } catch {}
+
       // Merge: preserve existing feature flags while ensuring enableTestMode is set
-      const mergedSettings = mergeSettings(existingSettings, baseSettings);
+      const mergedSettings = mergeSettings(currentSettings, baseSettings);
 
       // Ensure enableTestMode.enabled is explicitly true (overriding any false value)
       if (!mergedSettings.featureFlags) {
@@ -144,7 +174,6 @@ export const test = base.extend({
       }
       mergedSettings.featureFlags.enableTestMode = { enabled: true };
 
-      localStorage.clear();
       localStorage.setItem("settings", JSON.stringify(mergedSettings));
     });
     await page.addInitScript(() => {

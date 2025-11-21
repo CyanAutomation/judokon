@@ -7,35 +7,42 @@ import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";
  *
  * This test demonstrates the recommended pattern for overriding feature flags in Playwright tests:
  *
- * **Why not use `commonSetup` fixture?**
- * - The `commonSetup` fixture clears localStorage and sets only `enableTestMode` via `addInitScript`
- * - This runs on every page load and would override any localStorage-based flag overrides
- * - Instead, `configureApp` uses route interception to override settings at the fetch layer
- * - Route interception is more robust than localStorage manipulation because it intercepts
- *   the app's actual settings fetch request, bypassing any fixture-based localStorage resets
+ * **Why use base Playwright test instead of `commonSetup`?**
+ * - The `commonSetup` fixture runs init scripts that execute BEFORE `configureApp` can set up
+ *   its route override. Since init scripts run during fixture setup (before test code), any
+ *   localStorage operations by the fixture may interfere with route interception timing.
+ * - The route interception in `configureApp` is more robust when tests avoid competing
+ *   localStorage mutations during the fixture initialization phase.
+ * - For feature flag overrides, use `configureApp` with the base test.
+ * - For common routes and browser logging, use `registerCommonRoutes` directly in the test
+ *   if needed (currently not required for smoke test).
  *
- * **Pattern**: Use `configureApp` from `fixtures/appConfig.js`
- * 1. Call `configureApp(page, { featureFlags: { flagName: boolean, ... } })`
- * 2. Pass the returned `app` object to the rest of your test setup
- * 3. Call `await app.cleanup()` in test teardown (optional, but recommended)
+ * **Pattern**: Use base Playwright test + `configureApp`
+ * 1. Import base test from `@playwright/test` (or use fixtures/commonSetup only if needed)
+ * 2. Call `configureApp(page, { featureFlags: { ... } })` FIRST in the test
+ * 3. Use `waitForFeatureFlagOverrides()` to verify flags are set
+ * 4. Proceed with page navigation and UI testing
+ * 5. Call `await app.cleanup()` in test teardown
  *
  * **Why this works**:
  * - `configureApp` sets up a route override BEFORE page.goto() is called
  * - When the app loads and calls `fetch('/src/data/settings.json')`, the route intercepts it
  * - The mocked response includes your feature flag overrides at the fetch layer
- * - This approach survives any localStorage manipulation (fixture or otherwise)
+ * - This approach survives localStorage mutations because it operates at protocol level
  *
  * **Benefits**:
- * - ✅ Survives fixture initialization and localStorage resets
- * - ✅ Proven pattern used across 10+ tests in the codebase
- * - ✅ Works with or without `commonSetup` fixture
- * - ✅ Can be combined with other `configureApp` options (testMode, battle config, etc.)
+ * - ✅ Survives route registration with minimal fixture interference
+ * - ✅ Proven pattern used across multiple tests in the codebase
+ * - ✅ Works reliably without complex fixture choreography
+ * - ✅ Can be combined with other `configureApp` options
+ *
+ * **Future enhancement**: commonSetup fixture will be enhanced to work seamlessly with
+ * `configureApp` once fixture init script ordering is addressed.
  *
  * **See Also**:
  * - `playwright/fixtures/appConfig.js` - Implementation of configureApp helper
  * - `playwright/helpers/featureFlagHelper.js` - waitForFeatureFlagOverrides implementation
  * - `playwright/stat-hotkeys.smoke.spec.js` - Another example of this pattern
- * - `playwright/battle-cli-complete-round.spec.js` - Example with multiple overrides
  */
 const test = base;
 
@@ -63,6 +70,10 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await waitForFeatureFlagOverrides(page, {
       opponentDelayMessage: true
     });
+
+    // Note: We assert on the feature flag state (source of truth) rather than the opponent
+    // delay value itself, since the flag enables the UI behavior. This makes the test robust
+    // to internal implementation changes while validating that the feature is configured.
 
     // Click a stat to trigger the opponent choosing state
     await firstStat.click();

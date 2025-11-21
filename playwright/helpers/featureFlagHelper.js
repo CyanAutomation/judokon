@@ -250,11 +250,67 @@ export function resolveFeatureFlagEnabled(snapshot, flagName) {
 }
 
 /**
- * Read the current feature flag snapshot via the Test API.
+ * Try to read feature flag snapshot from window.__TEST_API?.inspect?.getFeatureFlags().
+ * This is the preferred path when the Test API is available, as it returns the authoritative
+ * snapshot computed by the app's testApi module.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @param {{ maxRetries?: number, retryDelayMs?: number }} [options]
+ * @returns {Promise<Record<string, any> | null>}
+ */
+export async function getFeatureFlagsSnapshotFromTestApi(page, options = {}) {
+  const maxRetries = options.maxRetries ?? 3;
+  const retryDelayMs = options.retryDelayMs ?? 100;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const snapshot = await page.evaluate(() => {
+      try {
+        const inspectApi =
+          (typeof window !== "undefined" && window.__TEST_API?.inspect) ||
+          (typeof window !== "undefined" && window.__INSPECT_API) ||
+          null;
+        if (inspectApi && typeof inspectApi.getFeatureFlags === "function") {
+          const result = inspectApi.getFeatureFlags();
+          if (result && typeof result === "object") {
+            return result;
+          }
+        }
+      } catch {}
+      return null;
+    });
+
+    if (snapshot) {
+      return snapshot;
+    }
+
+    if (attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Read the current feature flag snapshot via the Test API, with fallback to computed snapshot.
+ *
+ * First attempts to read from window.__TEST_API?.inspect?.getFeatureFlags() with retries.
+ * If unavailable or all retries exhausted, falls back to the computed snapshot approach.
+ *
  * @param {import("@playwright/test").Page} page
  * @returns {Promise<Record<string, any> | null>}
  */
 export async function getFeatureFlagsSnapshot(page) {
+  // First try the Test API inspect hooks (preferred, most reliable)
+  const testApiSnapshot = await getFeatureFlagsSnapshotFromTestApi(page, {
+    maxRetries: 3,
+    retryDelayMs: 100
+  });
+  if (testApiSnapshot) {
+    return testApiSnapshot;
+  }
+
+  // Fallback to the computed snapshot (for cases where Test API isn't available yet)
   return page.evaluate(
     ({
       defaults,

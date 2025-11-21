@@ -798,3 +798,122 @@ export async function triggerStateTransition(page, event) {
     return false;
   }, event);
 }
+
+/**
+ * Get the configured opponent reveal delay in milliseconds.
+ *
+ * Queries the battle engine's opponent delay setting, which controls how long
+ * to wait before revealing the opponent's choice in the Classic Battle UI.
+ * This is useful for tests to understand the battle's timing behavior and
+ * to assert on app configuration rather than on UI copy.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @returns {Promise<number>} Opponent delay in milliseconds, or 0 if not configured.
+ */
+export async function getOpponentDelay(page) {
+  return page.evaluate(() => {
+    try {
+      // Try to access via the battle engine or snackbar module
+      if (typeof window !== "undefined" && window.__TEST_API?.state?.getOpponentDelay) {
+        const result = window.__TEST_API.state.getOpponentDelay();
+        const numeric = Number(result);
+        if (Number.isFinite(numeric)) {
+          return numeric;
+        }
+      }
+    } catch {}
+
+    // Fallback: return default 0
+    return 0;
+  });
+}
+
+/**
+ * Get the current player score.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @returns {Promise<number | null>} Player score or null if unavailable.
+ */
+export async function getPlayerScore(page) {
+  return page.evaluate(() => {
+    try {
+      if (typeof window !== "undefined" && window.__TEST_API?.state?.getPlayerScore) {
+        const result = window.__TEST_API.state.getPlayerScore();
+        const numeric = Number(result);
+        if (Number.isFinite(numeric)) {
+          return numeric;
+        }
+      }
+    } catch {}
+
+    // Also try reading from the battle store directly
+    try {
+      const store = window.battleStore;
+      if (store && Number.isFinite(store.playerScore)) {
+        return Number(store.playerScore);
+      }
+    } catch {}
+
+    return null;
+  });
+}
+
+/**
+ * Get the current opponent score.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @returns {Promise<number | null>} Opponent score or null if unavailable.
+ */
+export async function getOpponentScore(page) {
+  return page.evaluate(() => {
+    try {
+      if (typeof window !== "undefined" && window.__TEST_API?.state?.getOpponentScore) {
+        const result = window.__TEST_API.state.getOpponentScore();
+        const numeric = Number(result);
+        if (Number.isFinite(numeric)) {
+          return numeric;
+        }
+      }
+    } catch {}
+
+    // Also try reading from the battle store directly
+    try {
+      const store = window.battleStore;
+      if (store && Number.isFinite(store.opponentScore)) {
+        return Number(store.opponentScore);
+      }
+    } catch {}
+
+    return null;
+  });
+}
+
+/**
+ * Get the number of rounds played so far.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @returns {Promise<number | null>} Rounds played or null if unavailable.
+ */
+export async function getRoundsPlayed(page) {
+  return page.evaluate(() => {
+    try {
+      if (typeof window !== "undefined" && window.__TEST_API?.state?.getRoundsPlayed) {
+        const result = window.__TEST_API.state.getRoundsPlayed();
+        const numeric = Number(result);
+        if (Number.isFinite(numeric)) {
+          return numeric;
+        }
+      }
+    } catch {}
+
+    // Also try reading from the battle store directly
+    try {
+      const store = window.battleStore;
+      if (store && Number.isFinite(store.roundsPlayed)) {
+        return Number(store.roundsPlayed);
+      }
+    } catch {}
+
+    return null;
+  });
+}
