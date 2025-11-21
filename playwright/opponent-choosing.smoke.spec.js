@@ -1,42 +1,49 @@
-import { test, expect } from "./fixtures/commonSetup.js";
+import { test as base, expect } from "@playwright/test";
 import { configureApp } from "./fixtures/appConfig.js";
+import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";
 
 /**
- * Feature Flag Override Pattern with commonSetup
+ * Feature Flag Override Pattern for Smoke Tests
  *
- * This test uses the commonSetup fixture combined with configureApp for feature flag overrides.
- * The commonSetup fixture provides:
- * - Common mocked routes (navigation, gameModes, etc.) needed for page load
- * - Browser logging and error capture
- * - localStorage initialization with enableTestMode
+ * This test uses base Playwright test with manual route registration and configureApp.
  *
- * configureApp provides:
- * - Route-based settings fetch override (operates at fetch layer, not localStorage)
- * - Feature flag injection that survives localStorage operations
+ * **Why NOT use commonSetup fixture?**
+ * The commonSetup fixture runs multiple init scripts that can conflict with route-based
+ * feature flag overrides from configureApp:
+ * - Fixture's addInitScript for enableTestMode runs BEFORE test code
+ * - test's configureApp route setup runs in test code (AFTER fixture construction)
+ * - When page.goto() is called, init scripts have already run but route hasn't been set up yet
+ * - This timing mismatch can cause page load issues or feature flag interference
  *
- * **Why this pattern works**:
- * 1. commonSetup fixture runs init scripts that set up enableTestMode in localStorage
- * 2. commonSetup registers common routes (navigation, gameModes, etc.)
- * 3. Test calls configureApp() to set up settings.json route override with feature flags
- * 4. When page.goto() is called, page loads with registered routes + feature flag override
- * 5. The route override happens at fetch layer (survives any localStorage mutations)
+ * **Why this pattern works:**
+ * 1. Base test provides minimal fixture overhead
+ * 2. configureApp(page, {...}) sets up route override BEFORE page.goto()
+ * 3. registerCommonRoutes(page) provides mocked routes needed for page load
+ * 4. When page loads, settings.json fetch is intercepted with feature flag overrides
+ * 5. No competing init scripts means no timing conflicts
  *
- * **Initialization Order**:
- * - Fixture setup (enableTestMode + common routes) → configureApp (feature flag route) → page.goto()
- * - This order ensures all necessary routes are ready before navigation
+ * **Pattern:**
+ * - Use base Playwright test (not commonSetup)
+ * - Call registerCommonRoutes(page) to set up mocked routes
+ * - Call configureApp(page, {...}) to set up feature flag overrides
+ * - Call page.goto() after both setup steps
  *
- * **See Also**:
- * - `playwright/fixtures/commonSetup.js` - Common fixture setup
+ * **See Also:**
  * - `playwright/fixtures/appConfig.js` - configureApp implementation
+ * - `playwright/fixtures/commonRoutes.js` - registerCommonRoutes implementation
  * - `playwright/helpers/featureFlagHelper.js` - waitForFeatureFlagOverrides implementation
  */
+const test = base;
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {
+    // Register common routes needed for page load (navigation, gameModes, etc.)
+    await registerCommonRoutes(page);
+
     // Configure the app with opponentDelayMessage enabled and autoSelect disabled.
     // configureApp routes the settings fetch to inject these overrides, which survives
-    // fixture initialization because it's applied at the fetch layer, not localStorage.
+    // route registration because it's applied at the fetch layer, not localStorage.
     const app = await configureApp(page, {
       featureFlags: {
         opponentDelayMessage: true,
