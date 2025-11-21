@@ -21,7 +21,7 @@ test.describe("Cooldown countdown snackbar", () => {
     // The snackbar initially shows "First to X points wins" but should be
     // updated to "Next round in" once the cooldown timer starts rendering
     const snackbar = page.locator(".snackbar.show");
-    
+
     // Wait for the text to contain "Next round in"
     await expect(snackbar).toContainText(/Next round in/i, { timeout: 10_000 });
   });
