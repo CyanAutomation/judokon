@@ -432,6 +432,12 @@ function emitStateChange(from, to) {
  * 2. If `engine.getTimerState` exists, call it and expose the result via
  *    `exposeDebugState('classicBattleTimerState', state)`.
  * 3. Swallow errors to keep transitions resilient.
+ * Mirror the timer state from the engine to debug hooks and shared store.
+ *
+ * @pseudocode
+ * 1. Retrieve timer state from engine.
+ * 2. Write to shared store for test inspection.
+ * 3. Expose via debug hooks (globalThis or debugHooks).
  *
  * @returns {void}
  */
@@ -724,5 +730,14 @@ export function getBattleStateMachine() {
  */
 export { dispatchBattleEvent };
 
-// Test-only exports for direct API testing
+/**
+ * Test-only export: Mirror the timer state from the engine to debug hooks.
+ *
+ * @pseudocode
+ * 1. Retrieve timer state from engine.
+ * 2. Write to shared store for test inspection.
+ * 3. Expose via debug hooks (globalThis or debugHooks).
+ *
+ * @returns {void}
+ */
 export { mirrorTimerState as _mirrorTimerState };

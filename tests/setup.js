@@ -29,6 +29,14 @@ try {
   }
 } catch {}
 
+// Suppress debug flag performance logs and displayMode logs in tests
+if (typeof window !== "undefined") {
+  // Prevent debug flag performance metrics from logging
+  window.__DEBUG_PERF__ = false;
+  window.__LOG_DEBUG_FLAG_PERF__ = false;
+  window.__PROFILE_DEBUG_FLAGS__ = false;
+}
+
 // Global mock removed - individual tests should handle their own mocking
 
 // vi.importMz: utility for dynamic imports while preserving mocks
@@ -50,7 +58,7 @@ let __originalStderrWrite;
 function applyConsoleMuting() {
   const SHOW_LOGS = process?.env?.SHOW_TEST_LOGS;
   if (!SHOW_LOGS) {
-    muteConsole(["warn", "error", "debug", "log"]);
+    muteConsole(["warn", "error", "debug", "log", "info"]);
     try {
       if (process?.stdout && process?.stderr) {
         __originalStdoutWrite = process.stdout.write;
@@ -217,7 +225,7 @@ afterEach(() => {
     if (msg) msg.textContent = "";
   } catch {}
   // Restore console to originals after each test
-  restoreConsole(["warn", "error", "debug", "log"]);
+  restoreConsole(["warn", "error", "debug", "log", "info"]);
   // Restore stdout/stderr writes
   try {
     if (__originalStdoutWrite) process.stdout.write = __originalStdoutWrite;
