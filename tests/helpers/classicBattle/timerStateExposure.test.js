@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { SimpleEmitter } from "../../../src/helpers/events/SimpleEmitter.js";
+
 let debugHooks;
 
 // Minimal mocks for modules used by orchestrator
@@ -26,15 +28,20 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
 let timerState;
 // eslint-disable-next-line no-unused-vars
 let store;
-// `store` declared previously was unused; keep tests focused on timerState.
-const engineMock = {
-  getTimerState: () => ({ ...timerState })
+let engineEmitter;
+
+const createEngineMock = () => {
+  engineEmitter = new SimpleEmitter();
+  return {
+    on: engineEmitter.on.bind(engineEmitter),
+    getTimerState: () => ({ ...timerState })
+  };
 };
 
 vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({
   createStateManager: async (_onEnter, { store }, onTransition) => {
     const machine = {
-      context: { store, engine: engineMock },
+      context: { store, engine: createEngineMock() },
       current: "init",
       async dispatch(event) {
         const from = this.current;

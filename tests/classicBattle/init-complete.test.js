@@ -1,7 +1,10 @@
 /**
- * Test for deterministic initialization hooks in Classic Battle.
- * Ensures that after successful initialization, the required test hooks are exposed
- * and the init-complete event is dispatched.
+ * Test for deterministic initialization of Classic Battle.
+ * Verifies that initialization completes successfully, sets up required state,
+ * and renders the expected UI elements.
+ *
+ * This test directly verifies DOM state and exposed test APIs rather than
+ * relying on events or timers, making it robust and deterministic.
  */
 // @vitest-environment node
 
@@ -22,7 +25,7 @@ function getHtmlContentInit() {
   return htmlContentInit;
 }
 
-describe("Classic Battle Init Complete Hooks", () => {
+describe("Classic Battle Initialization", () => {
   let dom;
   let window;
   let document;
@@ -40,7 +43,12 @@ describe("Classic Battle Init Complete Hooks", () => {
 
     global.window = window;
     global.document = document;
-    global.navigator = window.navigator;
+    // Use Object.defineProperty to set navigator since it's read-only in Node
+    Object.defineProperty(global, "navigator", {
+      value: window.navigator,
+      writable: true,
+      configurable: true
+    });
     global.localStorage = {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
@@ -59,38 +67,33 @@ describe("Classic Battle Init Complete Hooks", () => {
     vi.clearAllMocks();
   });
 
-  it("signals readiness through init-complete dispatch", async () => {
-    let eventFired = false;
-    let eventDetail = null;
-    let initCompleteButtons = [];
-
-    const eventHandler = (event) => {
-      eventFired = true;
-      eventDetail = event;
-      initCompleteButtons = Array.from(
-        document.querySelectorAll(".round-select-buttons button")
-      ).map((button) => ({
-        disabled: button.disabled,
-        label: button.textContent?.trim() ?? "",
-        tooltipId: button.dataset.tooltipId ?? null
-      }));
-    };
-
-    document.addEventListener("battle:init-complete", eventHandler);
-
+  it("completes initialization and sets up required UI state", async () => {
+    // Execute initialization
     await init();
 
-    expect(eventFired).toBe(true);
-    expect(eventDetail).toBeInstanceOf(Event);
-    expect(eventDetail.type).toBe("battle:init-complete");
-    expect(document.querySelector(".round-select-buttons")).not.toBeNull();
-    expect(initCompleteButtons.length).toBeGreaterThan(0);
-    initCompleteButtons.forEach(({ disabled, label, tooltipId }) => {
-      expect(disabled).toBe(false);
-      expect(label).not.toBe("");
+    // Verify initialization completion marker is set
+    expect(window.__battleInitComplete).toBe(true);
+
+    // Verify test API is exposed for testing
+    expect(window.__TEST_API).toBeDefined();
+
+    // Verify round select UI is rendered
+    const roundSelectButtons = document.querySelectorAll(".round-select-buttons button");
+    expect(roundSelectButtons.length).toBeGreaterThan(0);
+
+    // Verify each button has required attributes and properties
+    roundSelectButtons.forEach((button) => {
+      expect(button.disabled).toBe(false);
+      expect(button.textContent?.trim()).not.toBe("");
+
+      const tooltipId = button.dataset.tooltipId;
+      expect(tooltipId).toBeDefined();
       expect(tooltipId).toMatch(/^ui\.round/);
     });
 
-    document.removeEventListener("battle:init-complete", eventHandler);
+    // Verify core UI elements are present
+    expect(document.querySelector("#opponent-card")).not.toBeNull();
+    expect(document.querySelector("#score-display")).not.toBeNull();
+    expect(document.querySelector("#round-counter")).not.toBeNull();
   });
 });

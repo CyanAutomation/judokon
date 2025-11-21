@@ -1772,8 +1772,7 @@ async function init() {
     // Mark initialization as complete for test hooks
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
-      // Dispatch event for deterministic test hooks
-      document.dispatchEvent(new Event("battle:init-complete"));
+      // Mark initialization complete for test/debug purposes
     }
   } catch (err) {
     console.error("battleClassic: bootstrap failed", err);
@@ -1800,7 +1799,11 @@ function initBadgeSync() {
     console.debug("battleClassic: sync badge init failed", err);
   }
 }
-if (document.readyState === "loading") {
+
+// Only initialize automatically in browser context; in test/Node environments,
+// tests must explicitly call init() and manage setup. Guard against document
+// being undefined at module load time (e.g., in certain test configurations).
+if (typeof document !== "undefined" && document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     initBadgeSync();
     init().catch((err) => {
@@ -1808,7 +1811,7 @@ if (document.readyState === "loading") {
       showFatalInitError(err);
     });
   });
-} else {
+} else if (typeof document !== "undefined") {
   initBadgeSync();
   init().catch((err) => {
     console.error("battleClassic: init failed", err);

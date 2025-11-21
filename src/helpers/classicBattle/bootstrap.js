@@ -116,9 +116,7 @@ export async function setupClassicBattlePage() {
   if (canAccessWindow()) {
     try {
       window.__battleInitComplete = true;
-      if (canAccessDocument()) {
-        document.dispatchEvent(new Event("battle:init-complete"));
-      }
+      // Mark initialization complete for debugging/testing purposes
       window.battleReadyPromise = startPromise;
     } catch (err) {
       if (typeof console !== "undefined" && typeof console.warn === "function") {

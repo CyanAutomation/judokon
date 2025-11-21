@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { SimpleEmitter } from "../../../src/helpers/events/SimpleEmitter.js";
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   initRoundSelectModal: vi.fn()
@@ -18,22 +19,28 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
 }));
 
-const engineMock = {
-  getRoundsPlayed: () => 0,
-  getScores: () => ({ playerScore: 0, opponentScore: 0 }),
-  getSeed: () => 1,
-  getTimerState: () => ({
-    remaining: 30,
-    paused: false,
-    category: "roundTimer",
-    pauseOnHidden: true
-  })
+let engineEmitter;
+
+const createEngineMock = () => {
+  engineEmitter = new SimpleEmitter();
+  return {
+    on: engineEmitter.on.bind(engineEmitter),
+    getRoundsPlayed: () => 0,
+    getScores: () => ({ playerScore: 0, opponentScore: 0 }),
+    getSeed: () => 1,
+    getTimerState: () => ({
+      remaining: 30,
+      paused: false,
+      category: "roundTimer",
+      pauseOnHidden: true
+    })
+  };
 };
 
 vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({
   createStateManager: async (_onEnter, { store }, onTransition) => {
     const machine = {
-      context: { store, engine: engineMock },
+      context: { store, engine: createEngineMock() },
       current: "init",
       async dispatch(event) {
         const from = this.current;

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { SimpleEmitter } from "../../../src/helpers/events/SimpleEmitter.js";
 
 // Minimal mocks for modules required by orchestrator
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
@@ -19,19 +20,25 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
 }));
 
-const engineMock = {
-  getTimerState: () => ({
-    remaining: 30,
-    paused: false,
-    category: "roundTimer",
-    pauseOnHidden: true
-  })
+let engineEmitter;
+
+const createEngineMock = () => {
+  engineEmitter = new SimpleEmitter();
+  return {
+    on: engineEmitter.on.bind(engineEmitter),
+    getTimerState: () => ({
+      remaining: 30,
+      paused: false,
+      category: "roundTimer",
+      pauseOnHidden: true
+    })
+  };
 };
 
 vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({
   createStateManager: async (_onEnter, { store }, onTransition) => {
     const machine = {
-      context: { store, engine: engineMock },
+      context: { store, engine: createEngineMock() },
       current: "init",
       async dispatch(event) {
         const from = this.current;
