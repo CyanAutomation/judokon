@@ -1240,7 +1240,6 @@ async function startRoundCycle(store, options = {}) {
   const { skipStartRound = false } = options;
   if (isStartingRoundCycle) return;
   isStartingRoundCycle = true;
-  clearRoundSelectFallback(store);
   try {
     try {
       stopActiveSelectionTimer();
@@ -1259,12 +1258,20 @@ async function startRoundCycle(store, options = {}) {
         if (err instanceof JudokaDataLoadError) {
           throw err;
         }
+        // For other errors when showing fallback retry UI, we need to signal the error
+        // so the fallback handler can re-show the button. Check if we're in fallback mode.
+        if (store && store.__roundSelectFallbackShown) {
+          throw new Error(`startRound failed in fallback mode: ${err.message}`);
+        }
         // Don't re-throw other errors - continue with the cycle even if startRound fails
         // This allows the battle state machine to proceed
       }
     }
 
+    // Clear fallback UI only after successful round start
+    // If startRound failed, the fallback will be re-shown by the click handler's catch block
     if (roundStarted) {
+      clearRoundSelectFallback(store);
       broadcastBattleState("roundStart");
     }
 
@@ -1288,6 +1295,10 @@ async function startRoundCycle(store, options = {}) {
     broadcastBattleState("waitingForPlayerAction");
   } catch (err) {
     console.error("battleClassic: startRoundCycle outer catch:", err);
+    // Re-throw fallback mode errors so the click handler can handle retry logic
+    if (store && store.__roundSelectFallbackShown) {
+      throw err;
+    }
   } finally {
     isStartingRoundCycle = false;
   }
@@ -1377,6 +1388,7 @@ function showRoundSelectFallback(store) {
         console.error("battleClassic: fallback retry limit exceeded", err);
       }
       try {
+        clearRoundSelectFallback(store);
         showFatalInitError(err);
       } catch (fatalError) {
         console.error("battleClassic: fatal error display failed", fatalError);
