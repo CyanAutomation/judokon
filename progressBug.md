@@ -152,79 +152,43 @@ This confirms the event handler issue: **DOM clicks don't properly trigger stat 
 - Event listeners may be attached before buttons exist in DOM
 - Test setup may not properly initialize the UI bindings
 
-## Suggested Fix Plan
+## Suspected Root Causes (Ranked)
 
-### Option A (Recommended): Use Direct State Machine Dispatch
+### Priority 1: JSDOM Event Delegation Limitations
 
-Instead of simulating user clicks, dispatch events directly to the state machine:
+- JSDOM may not properly simulate event delegation through `element.closest()`
+- Event bubbling/capturing may not work correctly for dynamically-created buttons
+- The handler is attached to `#stat-buttons` container but needs to work on `button[data-stat]` children
 
-```javascript
-// ✅ BETTER: Direct state machine invocation
-const selectedStat = "power";
-await testApi.state.dispatchBattleEvent("statSelected", { stat: selectedStat });
+### Priority 2: Test Environment vs. Real Browser Mismatch
 
-// Then check outcomes
-const store = getBattleStore();
-expect(store.selectionMade).toBe(true);
-expect(store.playerChoice).toBe(selectedStat);
-```
+- Tests use JSDOM (headless, no browser engine)
+- Real application uses actual browser events
+- Event propagation timing differs significantly
 
-**Advantages:**
+### Priority 3: Stat Button Listener Not Properly Attached
 
-- Tests actual state machine logic (not event delegation)
-- No JSDOM limitations
-- Deterministic and fast
-- More focused testing
+- `initStatButtons()` may not be called at the right time in tests
+- Event listeners may be attached before buttons exist in DOM
+- Test setup may not properly initialize the UI bindings
 
-**Disadvantages:**
+## Verification and Recommendation
 
-- Doesn't test UI event binding (but that's what unit tests are for)
-- Requires test API to accept event data
+The analysis in this report is sound. The root cause is almost certainly the mismatch between the JSDOM test environment and a real browser's event handling, especially concerning event delegation. While debugging the exact nature of the JSDOM issue (Option B) is possible, it is likely to be a time-consuming effort for a brittle solution. Moving the tests to Playwright (Option C) is a valid but heavy-handed solution for what should be a fast-running integration test.
 
-### Option B: Fix Event Handler Registration
-
-Debug why stat button listeners aren't working in JSDOM:
-
-1. Verify `registerStatButtonClickHandler` is called in test setup
-2. Check if buttons exist when event listener is attached
-3. Test event delegation with synthetic events instead of `.click()`
-4. Verify `selectStat()` is actually being called
-
-**Implementation:**
-
-```javascript
-// In test, add instrumentation
-const originalSelectStat = window.__selectStat;
-window.__selectStat = vi.fn(originalSelectStat);
-
-// After click
-expect(window.__selectStat).toHaveBeenCalled();
-```
-
-### Option C: Use Playwright E2E Tests
-
-For integration tests that require real browser environment:
-
-- Move these tests to `playwright/`
-- Keep JSDOM tests for unit/isolated component testing
-- Playwright tests will run in real browser context
-
-**Trade-off:** Slower tests but more realistic
-
-## Recommendation
+**Therefore, Option A is the strongest path forward.**
 
 **Implement Option A (Direct State Machine Dispatch)** because:
 
-1. ✅ Eliminates JSDOM event propagation issues
-2. ✅ Tests the actual battle logic (state machine → store changes)
-3. ✅ Fast and deterministic
-4. ✅ Aligns with user story: "verify store is accessible and updated correctly"
-5. ⚠️ Doesn't test UI event binding, but that belongs in unit tests of `uiHelpers.js`
+1.  ✅ **Eliminates JSDOM event propagation issues:** By dispatching events directly to the state machine, the tests are no longer dependent on JSDOM's sometimes-unpredictable DOM event simulation.
+2.  ✅ **Tests the actual battle logic:** The primary goal of these integration tests is to verify the state machine and its effect on the application's data store. This approach focuses squarely on that goal.
+3.  ✅ **Fast and deterministic:** Direct dispatching avoids the overhead of DOM rendering and event simulation, leading to faster and more reliable tests.
+4.  ✅ **Aligns with the user story:** The goal is to "verify store is accessible and updated correctly," and this method does exactly that.
+5.  ⚠️ **Doesn't test UI event binding:** This is a valid trade-off. The responsibility for testing UI event binding should be in more granular unit tests for the specific UI components, not in these higher-level integration tests.
 
 **Secondary Action:**
 
-- Create new unit tests in `tests/uiHelpers.test.js` to specifically test stat button click handlers
-- These tests would use more targeted mocking/instrumentation
+- Create new unit tests in `tests/uiHelpers.test.js` to specifically test stat button click handlers. These tests would use more targeted mocking/instrumentation to verify that the click handlers are correctly attached and that they call the `selectStat` function.
 
 ## Files Modified
 
@@ -244,13 +208,8 @@ During investigation, the following changes were made:
 
 ## Next Steps (Awaiting Review)
 
-1. **Clarify intended scope:** Are these tests meant to verify:
-   - State machine logic works? → Use Option A
-   - UI event binding works? → Use Option B or C
-   - Full integration with real user interaction? → Use Option C
+1.  **Refactor failing tests:** Modify the failing integration tests in `tests/integration/battleClassic.integration.test.js` to use direct state machine dispatch (`testApi.state.dispatchBattleEvent`) instead of simulating clicks.
+2.  **Create unit tests for UI event binding:** Add new unit tests to `tests/uiHelpers.test.js` to verify that `registerStatButtonClickHandler` correctly attaches event listeners that trigger the `selectStat` function.
+3.  **Remove skips:** Once the refactored tests and new unit tests are in place, remove the `.skip()` markers from the integration tests.
+4.  **Verify all tests pass:** Run the `test:battles:classic` script to ensure that all related tests are now passing.
 
-2. **If Option A chosen:** Modify test to dispatch events directly instead of simulating clicks
-
-3. **If Option B chosen:** Debug event handler registration in JSDOM and fix root cause
-
-4. **If Option C chosen:** Move these tests to Playwright and adjust JSDOM tests to be more unit-focused

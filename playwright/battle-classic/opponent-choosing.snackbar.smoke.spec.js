@@ -17,12 +17,9 @@ test.describe("Cooldown countdown snackbar", () => {
     // Wait for cooldown state after selection
     await waitForBattleState(page, "cooldown");
 
-    // Wait for the snackbar to be updated with the countdown message
-    // The snackbar initially shows "First to X points wins" but should be
-    // updated to "Next round in" once the cooldown timer starts rendering
+    // Expect snackbar to show cooldown countdown text
+    // The cooldown renderer should update the snackbar immediately on first render
     const snackbar = page.locator(".snackbar.show");
-
-    // Wait for the text to contain "Next round in"
-    await expect(snackbar).toContainText(/Next round in/i, { timeout: 10_000 });
+    await expect(snackbar).toHaveText(/Next round in/i);
   });
 });
