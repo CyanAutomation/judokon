@@ -4,6 +4,7 @@ import { exposeDebugState } from "../debugHooks.js";
 import { debugLog } from "../debugLog.js";
 import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
+import { updateSnackbar } from "../../showSnackbar.js";
 
 /**
  * Mark cooldownEnter handler invocation in debug window (test-only).
@@ -133,6 +134,13 @@ export async function cooldownEnter(machine, payload) {
     getClassicBattleMachine: () => machine
   });
   debugLog("cooldownEnter: startCooldown completed");
+
+  // Clear previous snackbar message to ensure cooldown renderer can display countdown
+  try {
+    updateSnackbar("");
+  } catch (error) {
+    debugLog("cooldownEnter: failed to clear snackbar", error);
+  }
 
   try {
     updateRoundStateAtomically(roundStore.getCurrentRound());

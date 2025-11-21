@@ -1,7 +1,6 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { init } from "../../src/pages/battleClassic.init.js";
-import { withMutedConsole } from "../utils/console.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 
 /**
