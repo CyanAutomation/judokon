@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { readFileSync } from "node:fs";
 
 // Read HTML file at module load time before any test runs and before vi.resetModules() can affect it

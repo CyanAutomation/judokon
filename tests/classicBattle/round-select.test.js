@@ -1,8 +1,14 @@
-// @vitest-environment node
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 
-// Read HTML file at module load time before any test runs and before vi.resetModules() can affect it
-const htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+// Defer reading HTML file until after jsdom is setup
+let htmlContent;
+function getHtmlContent() {
+  if (!htmlContent) {
+    htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+  }
+  return htmlContent;
+}
 
 describe("Classic Battle round select modal", () => {
   test("selecting Long (10) sets pointsToWin and marks target", async () => {

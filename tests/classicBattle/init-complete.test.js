@@ -3,6 +3,7 @@
  * Ensures that after successful initialization, the required test hooks are exposed
  * and the init-complete event is dispatched.
  */
+// @vitest-environment node
 
 import { describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
