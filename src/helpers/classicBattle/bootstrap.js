@@ -28,13 +28,6 @@ function canAccessWindow() {
 }
 
 /**
- * @returns {boolean} True if document is globally available and accessible
- */
-function canAccessDocument() {
-  return typeof document !== "undefined";
-}
-
-/**
  * Bootstrap Classic Battle page by wiring controller and view.
  *
  * @pseudocode

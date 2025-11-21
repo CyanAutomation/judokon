@@ -53,15 +53,17 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
 
     // Navigate to battle page
     // Note: Using "networkidle" instead of "load" since the app may have deferred loading
-    await page.goto("/src/pages/battleClassic.html", { 
+    await page.goto("/src/pages/battleClassic.html", {
       waitUntil: "networkidle",
-      timeout: 15000 
+      timeout: 15000
     });
 
     // Wait for stat buttons to be visible and ready
     const firstStat = page.getByRole("button", { name: /power/i }).first();
     await expect(firstStat).toBeVisible({ timeout: 5000 });
-    await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+    await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true", {
+      timeout: 5000
+    });
 
     // Verify that opponentDelayMessage flag is enabled before driving the UI.
     // This ensures snackbar behavior is deterministic and not dependent on UI copy.

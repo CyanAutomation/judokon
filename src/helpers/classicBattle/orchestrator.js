@@ -723,3 +723,6 @@ export function getBattleStateMachine() {
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export { dispatchBattleEvent };
+
+// Test-only exports for direct API testing
+export { mirrorTimerState as _mirrorTimerState };

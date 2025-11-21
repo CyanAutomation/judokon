@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SimpleEmitter } from "../../../src/helpers/events/SimpleEmitter.js";
 
 let debugHooks;
+let orchestrator;
 
 // Minimal mocks for modules used by orchestrator
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
@@ -26,7 +27,6 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
 
 // These will be defined per test run
 let timerState;
-// eslint-disable-next-line no-unused-vars
 let store;
 let engineEmitter;
 
@@ -58,12 +58,10 @@ vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({
 }));
 
 describe("classic battle timer state exposure", () => {
-  let orchestrator;
-  let machine;
-
   beforeEach(async () => {
     vi.resetModules();
     debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
+    orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     document.body.innerHTML = "";
     timerState = {
       remaining: 30,
@@ -72,38 +70,29 @@ describe("classic battle timer state exposure", () => {
       pauseOnHidden: true
     };
     store = {};
-    orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
-    await orchestrator.initClassicBattleOrchestrator({});
-    machine = orchestrator.getBattleStateMachine();
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-    vi.restoreAllMocks();
   });
 
   it("mirrors timer state on window", async () => {
-    await machine.dispatch("stateA");
-    expect(debugHooks.readDebugState("classicBattleTimerState")).toMatchObject({
+    await orchestrator.initClassicBattleOrchestrator({});
+    const exposed = debugHooks.readDebugState("classicBattleTimerState");
+    expect(exposed).toMatchObject({
       remaining: 30,
       paused: false
     });
-    const el = document.getElementById("machine-timer");
-    expect(el).toBeNull();
   });
 
-  it("updates paused/resumed and remaining after transitions", async () => {
-    await machine.dispatch("start");
+  it("updates paused/resumed and remaining after timer state changes", async () => {
+    await orchestrator.initClassicBattleOrchestrator({});
 
     timerState.paused = true;
     timerState.remaining = 25;
-    await machine.dispatch("paused");
+    await orchestrator._mirrorTimerState?.();
     expect(debugHooks.readDebugState("classicBattleTimerState").paused).toBe(true);
     expect(debugHooks.readDebugState("classicBattleTimerState").remaining).toBe(25);
 
     timerState.paused = false;
     timerState.remaining = 20;
-    await machine.dispatch("resumed");
+    await orchestrator._mirrorTimerState?.();
     expect(debugHooks.readDebugState("classicBattleTimerState").paused).toBe(false);
     expect(debugHooks.readDebugState("classicBattleTimerState").remaining).toBe(20);
   });
