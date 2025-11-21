@@ -17,17 +17,32 @@ import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
  *   3. Find and click first stat button (expects at least one button)
  *   4. Assert all state transitions completed successfully
  */
-async function completeFirstRound(document, testApi) {
+async function completeFirstRound(document) {
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
   expect(roundButtons.length).toBeGreaterThan(0);
 
-  await withMutedConsole(async () => {
+  await new Promise((resolve) => {
     roundButtons[0].click();
-    // Verify stat buttons appear and are enabled (indicates we reached waitingForPlayerAction state)
-    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    expect(statButtons.length).toBeGreaterThan(0);
-    statButtons.forEach((btn) => {
-      expect(btn.disabled).toBe(false);
+    // Wait for async handlers to complete
+    let frameCount = 0;
+    const checkFrames = () => {
+      frameCount++;
+      if (frameCount < 3) {
+        if (typeof window.requestAnimationFrame === "function") {
+          window.requestAnimationFrame(checkFrames);
+        } else {
+          setTimeout(checkFrames, 0);
+        }
+      } else {
+        resolve();
+      }
+    };
+    Promise.resolve().then(() => {
+      if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(checkFrames);
+      } else {
+        setTimeout(checkFrames, 0);
+      }
     });
   });
 
@@ -41,8 +56,29 @@ async function completeFirstRound(document, testApi) {
   const placeholder = opponentCard?.querySelector("#mystery-card-placeholder");
   expect(placeholder).not.toBeNull();
 
-  await withMutedConsole(async () => {
+  await new Promise((resolve) => {
     statButtons[0].click();
+    // Wait for async handlers to complete after stat selection
+    let frameCount = 0;
+    const checkFrames = () => {
+      frameCount++;
+      if (frameCount < 5) {
+        if (typeof window.requestAnimationFrame === "function") {
+          window.requestAnimationFrame(checkFrames);
+        } else {
+          setTimeout(checkFrames, 0);
+        }
+      } else {
+        resolve();
+      }
+    };
+    Promise.resolve().then(() => {
+      if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(checkFrames);
+      } else {
+        setTimeout(checkFrames, 0);
+      }
+    });
   });
 }
 

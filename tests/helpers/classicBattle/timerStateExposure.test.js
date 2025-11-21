@@ -69,7 +69,6 @@ describe("classic battle timer state exposure", () => {
       category: "roundTimer",
       pauseOnHidden: true
     };
-    store = {};
   });
 
   it("mirrors timer state on window", async () => {

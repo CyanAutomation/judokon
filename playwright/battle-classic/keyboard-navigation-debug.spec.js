@@ -41,9 +41,9 @@ test.describe("Classic Battle keyboard navigation DEBUG", () => {
     await page.keyboard.press("Enter");
     await expect(firstStatButton).toBeDisabled({ timeout: 1_000 });
 
-    // Await the round decision state so we only log after the action resolves
-    await waitForBattleState(page, "roundDecision", { timeout: 7_500 });
-    console.log("After Enter - Battle state reached:", "roundDecision");
+    // Wait for cooldown state after selection (roundDecision is too transient to wait for)
+    await waitForBattleState(page, "cooldown", { timeout: 7_500 });
+    console.log("After Enter - Battle state reached:", "cooldown");
 
     // Countdown text is visible via the snackbar/timer UI
     const timerElement = page.getByTestId("next-round-timer");

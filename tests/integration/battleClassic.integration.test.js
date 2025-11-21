@@ -23,7 +23,7 @@ import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
-  const { inspect, state, engine } = testApi;
+  const { inspect, engine } = testApi;
   const ensureStore = () => {
     const currentStore = getBattleStore();
     expect(currentStore).toBeTruthy();
@@ -297,7 +297,6 @@ describe("Battle Classic Page Integration", () => {
     const selectedStat = selectedButton.dataset.stat;
     expect(selectedStat).toBeTruthy();
 
-    let reachedRoundDecision = false;
     let resetOpponentDelay = () => {};
     if (typeof testApi?.timers?.setOpponentResolveDelay === "function") {
       testApi.timers.setOpponentResolveDelay(0);
@@ -309,6 +308,29 @@ describe("Battle Classic Page Integration", () => {
     try {
       await withMutedConsole(async () => {
         selectedButton.click();
+        // Wait for async handlers and requestAnimationFrame to complete after stat selection
+        await new Promise((resolve) => {
+          let frameCount = 0;
+          const checkFrames = () => {
+            frameCount++;
+            if (frameCount < 5) {
+              if (typeof window.requestAnimationFrame === "function") {
+                window.requestAnimationFrame(checkFrames);
+              } else {
+                setTimeout(checkFrames, 0);
+              }
+            } else {
+              resolve();
+            }
+          };
+          Promise.resolve().then(() => {
+            if (typeof window.requestAnimationFrame === "function") {
+              window.requestAnimationFrame(checkFrames);
+            } else {
+              setTimeout(checkFrames, 0);
+            }
+          });
+        });
       });
     } finally {
       resetOpponentDelay();
