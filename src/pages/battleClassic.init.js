@@ -1295,8 +1295,8 @@ async function startRoundCycle(store, options = {}) {
     broadcastBattleState("waitingForPlayerAction");
   } catch (err) {
     console.error("battleClassic: startRoundCycle outer catch:", err);
-    // Re-throw fallback mode errors so the click handler can handle retry logic
-    if (store && store.__roundSelectFallbackShown) {
+    // Re-throw JudokaDataLoadError or fallback mode errors so they can be handled by callers
+    if (err instanceof JudokaDataLoadError || (store && store.__roundSelectFallbackShown)) {
       throw err;
     }
   } finally {
