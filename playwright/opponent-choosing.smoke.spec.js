@@ -1,50 +1,36 @@
-import { test as base, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
 import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";
 
 /**
- * Fixture Usage Pattern for Feature Flag Overrides
+ * Feature Flag Override Pattern with commonSetup
  *
- * This test demonstrates the recommended pattern for overriding feature flags in Playwright tests:
+ * This test uses the commonSetup fixture combined with configureApp for feature flag overrides.
+ * The commonSetup fixture provides:
+ * - Common mocked routes (navigation, gameModes, etc.) needed for page load
+ * - Browser logging and error capture
+ * - localStorage initialization with enableTestMode
  *
- * **Why use base Playwright test instead of `commonSetup`?**
- * - The `commonSetup` fixture runs init scripts that execute BEFORE `configureApp` can set up
- *   its route override. Since init scripts run during fixture setup (before test code), any
- *   localStorage operations by the fixture may interfere with route interception timing.
- * - The route interception in `configureApp` is more robust when tests avoid competing
- *   localStorage mutations during the fixture initialization phase.
- * - For feature flag overrides, use `configureApp` with the base test.
- * - For common routes and browser logging, use `registerCommonRoutes` directly in the test
- *   if needed (currently not required for smoke test).
+ * configureApp provides:
+ * - Route-based settings fetch override (operates at fetch layer, not localStorage)
+ * - Feature flag injection that survives localStorage operations
  *
- * **Pattern**: Use base Playwright test + `configureApp`
- * 1. Import base test from `@playwright/test` (or use fixtures/commonSetup only if needed)
- * 2. Call `configureApp(page, { featureFlags: { ... } })` FIRST in the test
- * 3. Use `waitForFeatureFlagOverrides()` to verify flags are set
- * 4. Proceed with page navigation and UI testing
- * 5. Call `await app.cleanup()` in test teardown
+ * **Why this pattern works**:
+ * 1. commonSetup fixture runs init scripts that set up enableTestMode in localStorage
+ * 2. commonSetup registers common routes (navigation, gameModes, etc.)
+ * 3. Test calls configureApp() to set up settings.json route override with feature flags
+ * 4. When page.goto() is called, page loads with registered routes + feature flag override
+ * 5. The route override happens at fetch layer (survives any localStorage mutations)
  *
- * **Why this works**:
- * - `configureApp` sets up a route override BEFORE page.goto() is called
- * - When the app loads and calls `fetch('/src/data/settings.json')`, the route intercepts it
- * - The mocked response includes your feature flag overrides at the fetch layer
- * - This approach survives localStorage mutations because it operates at protocol level
- *
- * **Benefits**:
- * - ✅ Survives route registration with minimal fixture interference
- * - ✅ Proven pattern used across multiple tests in the codebase
- * - ✅ Works reliably without complex fixture choreography
- * - ✅ Can be combined with other `configureApp` options
- *
- * **Future enhancement**: commonSetup fixture will be enhanced to work seamlessly with
- * `configureApp` once fixture init script ordering is addressed.
+ * **Initialization Order**:
+ * - Fixture setup (enableTestMode + common routes) → configureApp (feature flag route) → page.goto()
+ * - This order ensures all necessary routes are ready before navigation
  *
  * **See Also**:
- * - `playwright/fixtures/appConfig.js` - Implementation of configureApp helper
+ * - `playwright/fixtures/commonSetup.js` - Common fixture setup
+ * - `playwright/fixtures/appConfig.js` - configureApp implementation
  * - `playwright/helpers/featureFlagHelper.js` - waitForFeatureFlagOverrides implementation
- * - `playwright/stat-hotkeys.smoke.spec.js` - Another example of this pattern
  */
-const test = base;
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   test("shows snackbar after stat selection", async ({ page }) => {
@@ -58,12 +44,17 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       }
     });
 
-    await page.goto("/src/pages/battleClassic.html");
+    // Navigate to battle page
+    // Note: Using "networkidle" instead of "load" since the app may have deferred loading
+    await page.goto("/src/pages/battleClassic.html", { 
+      waitUntil: "networkidle",
+      timeout: 15000 
+    });
 
     // Wait for stat buttons to be visible and ready
     const firstStat = page.getByRole("button", { name: /power/i }).first();
-    await expect(firstStat).toBeVisible();
-    await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
+    await expect(firstStat).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
 
     // Verify that opponentDelayMessage flag is enabled before driving the UI.
     // This ensures snackbar behavior is deterministic and not dependent on UI copy.

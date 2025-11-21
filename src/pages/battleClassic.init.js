@@ -1255,7 +1255,11 @@ async function startRoundCycle(store, options = {}) {
         roundStarted = true;
       } catch (err) {
         console.error("battleClassic: startRound failed", err);
-        // Don't re-throw - continue with the cycle even if startRound fails
+        // Re-throw JudokaDataLoadError to trigger proper cleanup in outer handler
+        if (err instanceof JudokaDataLoadError) {
+          throw err;
+        }
+        // Don't re-throw other errors - continue with the cycle even if startRound fails
         // This allows the battle state machine to proceed
       }
     }

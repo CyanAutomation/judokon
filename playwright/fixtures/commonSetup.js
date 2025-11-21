@@ -127,14 +127,15 @@ export const test = base.extend({
         if (stored) {
           existingSettings = JSON.parse(stored);
         }
-      } catch {}
+      } catch (e) {
+        console.warn("[commonSetup] Failed to parse existing settings:", e);
+      }
 
       // Only clear localStorage if there are no significant feature flags already set
       // (Preserve route-based overrides that may have been pre-configured by tests)
-      const hasExistingFlags = existingSettings?.featureFlags &&
-        Object.keys(existingSettings.featureFlags).some(
-          (key) => key !== "enableTestMode"
-        );
+      const hasExistingFlags =
+        existingSettings?.featureFlags &&
+        Object.keys(existingSettings.featureFlags).some((key) => key !== "enableTestMode");
 
       if (!hasExistingFlags) {
         // No pre-configured feature flags; safe to clear
@@ -146,7 +147,9 @@ export const test = base.extend({
           const parsed = existingSettings;
           localStorage.clear();
           localStorage.setItem("settings", JSON.stringify(parsed));
-        } catch {}
+        } catch (e) {
+          console.warn("[commonSetup] Failed to preserve settings:", e);
+        }
       }
 
       // Base settings provided by fixture: enableTestMode + any existing feature flags
@@ -163,7 +166,9 @@ export const test = base.extend({
         if (stored) {
           currentSettings = JSON.parse(stored);
         }
-      } catch {}
+      } catch (e) {
+        console.warn("[commonSetup] Failed to read settings after clear:", e);
+      }
 
       // Merge: preserve existing feature flags while ensuring enableTestMode is set
       const mergedSettings = mergeSettings(currentSettings, baseSettings);
@@ -174,7 +179,11 @@ export const test = base.extend({
       }
       mergedSettings.featureFlags.enableTestMode = { enabled: true };
 
-      localStorage.setItem("settings", JSON.stringify(mergedSettings));
+      try {
+        localStorage.setItem("settings", JSON.stringify(mergedSettings));
+      } catch (e) {
+        console.warn("[commonSetup] Failed to set merged settings:", e);
+      }
     });
     await page.addInitScript(() => {
       // Remove only hidden/inactive dialogs once DOM is ready to
