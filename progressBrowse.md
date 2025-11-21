@@ -1,5 +1,23 @@
 # Investigation: readFileSync Not Available in jsdom Environment
 
+## Executive Summary
+
+**PARTIALLY RESOLVED WITH IMPORTANT CAVEAT**: The original `readFileSync` issue has been successfully fixed for 5 out of 6 mentioned test files. However, `tests/classicBattle/init-complete.test.js` still fails—**but not due to the readFileSync issue**. It fails due to a separate, unrelated problem where `src/pages/battleClassic.init.js` contains module-level code that checks `document.readyState` before the jsdom environment is initialized.
+
+**Accurate Status Summary**:
+
+- ✅ `readFileSync` timing issue: **RESOLVED** (5/6 tests now pass)
+- ❌ `init-complete.test.js` failure: **DIFFERENT ROOT CAUSE** (document undefined at module load time)
+
+**Test Results (Verified November 21, 2025)**:
+
+- `tests/classicBattle/round-select.test.js` ✅ PASS (4 tests)
+- `tests/classicBattle/bootstrap.test.js` ✅ PASS
+- `tests/classicBattle/end-modal.test.js` ✅ PASS
+- `tests/classicBattle/quit-flow.test.js` ✅ PASS
+- `tests/classicBattle/round-selectFallback.test.js` ✅ PASS
+- `tests/classicBattle/init-complete.test.js` ❌ FAIL (ReferenceError: document is not defined)
+
 ---
 
 ## Verification & Review by AI Agent
@@ -9,34 +27,32 @@
 
 ### Findings
 
-1. **✅ Root Cause Analysis (CORRECT)**: The original analysis correctly identified that Vitest externalizes Node.js built-in modules like `fs` at module load time in jsdom environments, causing `readFileSync` to be undefined.
+1. **✅ Root Cause Analysis (CORRECT for readFileSync issue)**: The original analysis correctly identified that Vitest externalizes Node.js built-in modules like `fs` at module load time in jsdom environments, causing `readFileSync` to be undefined. This was the actual problem in 5 out of 6 test files.
 
-2. **✅ Proposed Solution (APPROPRIATE)**: The recommended fix to defer reading HTML content using `beforeAll` hooks was correct and has been successfully implemented.
+2. **✅ Proposed Solution (SUCCESSFULLY IMPLEMENTED)**: The recommended fix to defer reading HTML content using `beforeAll` hooks was correct and has been successfully implemented. Tests using this pattern now pass.
 
-3. **✅ Implementation Status (COMPLETE)**: All six originally mentioned test files have been updated with the pattern:
+3. **⚠️ Incomplete Implementation Status**: While 5 files were successfully updated and now pass, `init-complete.test.js` was left in a partially broken state. The file uses the `beforeAll`/`getHtmlContent` pattern, but still fails due to a different issue: importing `src/pages/battleClassic.init.js` which contains module-level code checking `document.readyState`.
 
-
-   - `tests/classicBattle/round-select.test.js`
-   - `tests/classicBattle/bootstrap.test.js`
-   - `tests/classicBattle/end-modal.test.js`
-   - `tests/classicBattle/quit-flow.test.js`
-   - `tests/classicBattle/round-selectFallback.test.js`
-   - `tests/classicBattle/init-complete.test.js`
-
-4. **Current Test Results**: `npm run test:battles:classic` shows **30 passed test suites out of 31**, with 84 total tests passing. The single failure in `init-complete.test.js` is unrelated to the `readFileSync` issue and stems from a different problem: code importing `src/pages/battleClassic.init.js` which checks `document.readyState` at module load time.
+4. **Test Verification Results (November 21, 2025)**:
+   - ✅ `tests/classicBattle/round-select.test.js`: PASS (4 tests)
+   - ✅ `tests/classicBattle/bootstrap.test.js`: PASS
+   - ✅ `tests/classicBattle/end-modal.test.js`: PASS
+   - ✅ `tests/classicBattle/quit-flow.test.js`: PASS
+   - ✅ `tests/classicBattle/round-selectFallback.test.js`: PASS
+   - ❌ `tests/classicBattle/init-complete.test.js`: FAIL (ReferenceError: document is not defined)
 
 ---
 
 ## Issue Description
 
-### Original Failing Tests
+### Original Failing Tests - Corrected Status
 
-- `tests/classicBattle/round-select.test.js` ✅ Fixed
-- `tests/classicBattle/bootstrap.test.js` ✅ Fixed
-- `tests/classicBattle/end-modal.test.js` ✅ Fixed
-- `tests/classicBattle/quit-flow.test.js` ✅ Fixed
-- `tests/classicBattle/round-selectFallback.test.js` ✅ Fixed
-- `tests/classicBattle/init-complete.test.js` ✅ Fixed (original issue)
+- `tests/classicBattle/round-select.test.js` ✅ Fixed (readFileSync issue resolved)
+- `tests/classicBattle/bootstrap.test.js` ✅ Fixed (readFileSync issue resolved)
+- `tests/classicBattle/end-modal.test.js` ✅ Fixed (readFileSync issue resolved)
+- `tests/classicBattle/quit-flow.test.js` ✅ Fixed (readFileSync issue resolved)
+- `tests/classicBattle/round-selectFallback.test.js` ✅ Fixed (readFileSync issue resolved)
+- `tests/classicBattle/init-complete.test.js` ❌ NOT FIXED (different issue: document undefined at module load)
 
 ### Original Error Message
 
@@ -129,9 +145,11 @@ describe("Classic Battle round select modal", () => {
 
 ---
 
-## Current Known Issues (Unrelated)
+## Critical Issue: init-complete.test.js NOT Fixed
 
-### init-complete.test.js: document Undefined Error
+### Problem: Different Root Cause Than readFileSync
+
+**Error**:
 
 ```text
 ReferenceError: document is not defined
@@ -139,9 +157,14 @@ ReferenceError: document is not defined
     1803| if (document.readyState === "loading") {
 ```
 
-**Status**: Out of scope for this investigation. This is a different issue where `src/pages/battleClassic.init.js` contains module-level code that checks `document.readyState`, which fails in certain test contexts.
+**Analysis**:
 
-**Recommendation**: Address separately (see ROOT_CAUSE_ANALYSIS.md or similar for any prior investigation).
+- This test file DOES have the `beforeAll`/`getHtmlContent` pattern applied (readFileSync issue was addressed)
+- However, it fails because `src/pages/battleClassic.init.js` contains **module-level code** that checks `document.readyState` before the jsdom environment is fully initialized
+- This is a **separate issue** from the readFileSync problem
+- The pattern applied fixed the readFileSync timing conflict but did not address this second module-load-time DOM access issue
+
+**Recommendation**: This requires a separate fix in `src/pages/battleClassic.init.js` to defer the `document.readyState` check or wrap it in a guard condition that checks if `document` exists.
 
 ---
 
@@ -158,10 +181,11 @@ ReferenceError: document is not defined
 
 ## Status
 
-- [x] Root cause identified and verified.
-- [x] Investigation documented.
-- [x] Fix plan created and implemented.
-- [x] Tests running successfully (unrelated failure noted).
-- [x] Code review completed.
+- [x] Root cause identified and verified (for readFileSync issue).
+- [x] Investigation documented and re-verified with actual test runs.
+- [x] Fix plan created and successfully implemented (for 5/6 files).
+- [x] Tests verified: 5 out of 6 now pass for the readFileSync issue.
+- [x] Separate issue identified in init-complete.test.js.
+- [ ] init-complete.test.js awaits separate fix for document.readyState issue.
 
-**Conclusion**: The `readFileSync` issue has been successfully resolved. The current implementation is appropriate for the Vitest/jsdom environment. The remaining `init-complete.test.js` failure is a separate issue.
+**Corrected Conclusion**: The `readFileSync` timing issue has been **successfully resolved for 5 out of 6 test files**. However, `init-complete.test.js` continues to fail due to a **completely separate problem**: module-level code in `src/pages/battleClassic.init.js` accessing the DOM before the test environment is initialized. This requires a distinct fix outside the scope of the readFileSync investigation.
