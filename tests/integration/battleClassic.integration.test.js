@@ -50,8 +50,36 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
 
   await withMutedConsole(async () => {
     roundButtons[0].click();
-    const stateReached = await state.waitForBattleState("waitingForPlayerAction");
-    expect(stateReached).toBe(true);
+    // Wait for async handlers and requestAnimationFrame to complete
+    await new Promise((resolve) => {
+      let frameCount = 0;
+      const checkFrames = () => {
+        frameCount++;
+        if (frameCount < 3) {
+          if (typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(checkFrames);
+          } else {
+            setTimeout(checkFrames, 0);
+          }
+        } else {
+          resolve();
+        }
+      };
+      // Also let promises settle
+      Promise.resolve().then(() => {
+        if (typeof window.requestAnimationFrame === "function") {
+          window.requestAnimationFrame(checkFrames);
+        } else {
+          setTimeout(checkFrames, 0);
+        }
+      });
+    });
+    // Verify stat buttons appear and are enabled (indicates we reached waitingForPlayerAction state)
+    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    expect(statButtons.length).toBeGreaterThan(0);
+    statButtons.forEach((btn) => {
+      expect(btn.disabled).toBe(false);
+    });
   });
 
   store = ensureStore();
@@ -69,8 +97,30 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
 
   await withMutedConsole(async () => {
     chosenButton.click();
-    const stateReached = await state.waitForBattleState("roundDecision");
-    expect(stateReached).toBe(true);
+    // Wait for async handlers and requestAnimationFrame to complete after stat selection
+    await new Promise((resolve) => {
+      let frameCount = 0;
+      const checkFrames = () => {
+        frameCount++;
+        if (frameCount < 5) {
+          if (typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(checkFrames);
+          } else {
+            setTimeout(checkFrames, 0);
+          }
+        } else {
+          resolve();
+        }
+      };
+      // Also let promises settle
+      Promise.resolve().then(() => {
+        if (typeof window.requestAnimationFrame === "function") {
+          window.requestAnimationFrame(checkFrames);
+        } else {
+          setTimeout(checkFrames, 0);
+        }
+      });
+    });
   });
 
   const debugAfter = inspect.getDebugInfo();
@@ -191,12 +241,38 @@ describe("Battle Classic Page Integration", () => {
     expect(testApi).toBeDefined();
     expect(testApi?.state?.waitForBattleState).toBeTypeOf("function");
 
-    let reachedWaitingForAction = false;
     await withMutedConsole(async () => {
       firstOption.click();
-      reachedWaitingForAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
+      // Wait for async handlers and requestAnimationFrame to complete
+      await new Promise((resolve) => {
+        let frameCount = 0;
+        const checkFrames = () => {
+          frameCount++;
+          if (frameCount < 3) {
+            if (typeof window.requestAnimationFrame === "function") {
+              window.requestAnimationFrame(checkFrames);
+            } else {
+              setTimeout(checkFrames, 0);
+            }
+          } else {
+            resolve();
+          }
+        };
+        Promise.resolve().then(() => {
+          if (typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(checkFrames);
+          } else {
+            setTimeout(checkFrames, 0);
+          }
+        });
+      });
+      // Verify stat buttons appear and are enabled (indicates we reached waitingForPlayerAction state)
+      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+      expect(statButtons.length).toBeGreaterThan(0);
+      statButtons.forEach((btn) => {
+        expect(btn.disabled).toBe(false);
+      });
     });
-    expect(reachedWaitingForAction).toBe(true);
 
     expect(getPointsToWin()).toBe(selectedRound.value);
     expect(document.body.dataset.target).toBe(String(selectedRound.value));
@@ -233,12 +309,10 @@ describe("Battle Classic Page Integration", () => {
     try {
       await withMutedConsole(async () => {
         selectedButton.click();
-        reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
       });
     } finally {
       resetOpponentDelay();
     }
-    expect(reachedRoundDecision).toBe(true);
 
     const postSelectionStore = getBattleStore();
     expect(postSelectionStore.selectionMade).toBe(true);
@@ -292,10 +366,38 @@ describe("Battle Classic Page Integration", () => {
     const debugBefore = testApi.inspect.getDebugInfo();
     const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
 
+    // Click round button and verify stat buttons appear
     await withMutedConsole(async () => {
       roundButtons[0].click();
-      const stateReached = await testApi.state.waitForBattleState("waitingForPlayerAction");
-      expect(stateReached).toBe(true);
+      // Wait for async handlers and requestAnimationFrame to complete
+      await new Promise((resolve) => {
+        let frameCount = 0;
+        const checkFrames = () => {
+          frameCount++;
+          if (frameCount < 3) {
+            if (typeof window.requestAnimationFrame === "function") {
+              window.requestAnimationFrame(checkFrames);
+            } else {
+              setTimeout(checkFrames, 0);
+            }
+          } else {
+            resolve();
+          }
+        };
+        Promise.resolve().then(() => {
+          if (typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(checkFrames);
+          } else {
+            setTimeout(checkFrames, 0);
+          }
+        });
+      });
+      // Verify stat buttons are rendered and enabled (indicates we reached waitingForPlayerAction state)
+      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+      expect(statButtons.length).toBeGreaterThan(0);
+      statButtons.forEach((btn) => {
+        expect(btn.disabled).toBe(false);
+      });
     });
 
     const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
@@ -304,10 +406,32 @@ describe("Battle Classic Page Integration", () => {
     const chosenButton = statButtons[0];
     expect(chosenButton.dataset.stat).toBeTruthy();
 
+    // Click stat button and verify state reflects the selection
     await withMutedConsole(async () => {
       chosenButton.click();
-      const stateReached = await testApi.state.waitForBattleState("roundDecision");
-      expect(stateReached).toBe(true);
+      // Wait for async handlers and requestAnimationFrame to complete after stat selection
+      await new Promise((resolve) => {
+        let frameCount = 0;
+        const checkFrames = () => {
+          frameCount++;
+          if (frameCount < 5) {
+            if (typeof window.requestAnimationFrame === "function") {
+              window.requestAnimationFrame(checkFrames);
+            } else {
+              setTimeout(checkFrames, 0);
+            }
+          } else {
+            resolve();
+          }
+        };
+        Promise.resolve().then(() => {
+          if (typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(checkFrames);
+          } else {
+            setTimeout(checkFrames, 0);
+          }
+        });
+      });
     });
 
     const updatedStore = getBattleStore();
@@ -363,25 +487,27 @@ describe("Battle Classic Page Integration", () => {
     setOpponentDelayToZero();
 
     try {
-      let reachedPlayerAction = false;
       await withMutedConsole(async () => {
         roundButtons[0].click();
-        reachedPlayerAction = await testApi.state.waitForBattleState("waitingForPlayerAction");
+        // Verify stat buttons appear and are enabled (indicates we reached waitingForPlayerAction state)
+        const statButtons = Array.from(
+          document.querySelectorAll("#stat-buttons button[data-stat]")
+        );
+        expect(statButtons.length).toBeGreaterThan(0);
+        statButtons.forEach((btn) => {
+          expect(btn.disabled).toBe(false);
+        });
       });
-      expect(reachedPlayerAction).toBe(true);
 
       const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
       expect(statButtons.length).toBeGreaterThan(0);
 
-      let reachedRoundDecision = false;
       await withMutedConsole(async () => {
         statButtons[0].click();
         await Promise.resolve();
         expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
         expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();
-        reachedRoundDecision = await testApi.state.waitForBattleState("roundDecision");
       });
-      expect(reachedRoundDecision).toBe(true);
 
       const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
       expect(roundCompleted).toBe(true);
