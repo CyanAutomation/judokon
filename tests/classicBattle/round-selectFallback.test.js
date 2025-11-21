@@ -1,8 +1,14 @@
-// @vitest-environment node
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-const battleClassicHtml = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+let battleClassicHtml;
+function getBattleClassicHtml() {
+  if (!battleClassicHtml) {
+    battleClassicHtml = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+  }
+  return battleClassicHtml;
+}
 
 const flushMicrotasks = async () => {
   await Promise.resolve();
@@ -12,7 +18,7 @@ const flushMicrotasks = async () => {
 describe("Classic Battle round select fallback", () => {
   beforeEach(async () => {
     process.env.VITEST = "true";
-    document.documentElement.innerHTML = battleClassicHtml;
+    document.documentElement.innerHTML = getBattleClassicHtml();
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
   });

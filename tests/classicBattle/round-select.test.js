@@ -1,11 +1,25 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
+import { beforeAll } from "vitest";
 
-// Defer reading HTML file until after jsdom is setup
+// Defer reading HTML file until beforeAll runs (after environment is fully setup)
 let htmlContent;
+
+beforeAll(() => {
+  if (!htmlContent) {
+    try {
+      htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+    } catch (err) {
+      console.error("Failed to read battle HTML:", err);
+      throw err;
+    }
+  }
+});
+
 function getHtmlContent() {
   if (!htmlContent) {
-    htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+    // Fallback: try to read synchronously if beforeAll hasn't run yet
+    return readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
   }
   return htmlContent;
 }
@@ -13,7 +27,7 @@ function getHtmlContent() {
 describe("Classic Battle round select modal", () => {
   test("selecting Long (10) sets pointsToWin and marks target", async () => {
     process.env.VITEST = "true"; // ensure modal avoids extra event dispatch
-    document.documentElement.innerHTML = htmlContent;
+    document.documentElement.innerHTML = getHtmlContent();
 
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
@@ -51,7 +65,7 @@ describe("Classic Battle round select modal", () => {
 
   test("header navigation unlocks when startRoundCycle hits data load failure", async () => {
     process.env.VITEST = "true";
-    document.documentElement.innerHTML = htmlContent;
+    document.documentElement.innerHTML = getHtmlContent();
     const readyDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
     Object.defineProperty(document, "readyState", {
       configurable: true,

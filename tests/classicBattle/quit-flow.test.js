@@ -1,9 +1,15 @@
-// @vitest-environment node
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { afterEach, vi } from "vitest";
 
-// Read HTML file at module load time before any test runs and before vi.resetModules() can affect it
-const htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+// Defer reading HTML file until after jsdom is setup
+let htmlContent;
+function getHtmlContent() {
+  if (!htmlContent) {
+    htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+  }
+  return htmlContent;
+}
 
 describe("Classic Battle quit flow", () => {
   afterEach(() => {
@@ -11,7 +17,7 @@ describe("Classic Battle quit flow", () => {
   });
 
   test("clicking Quit opens confirmation modal", async () => {
-    document.documentElement.innerHTML = htmlContent;
+    document.documentElement.innerHTML = getHtmlContent();
 
     const battleEngine = await import("../../src/helpers/battleEngineFacade.js");
     const navUtils = await import("../../src/helpers/navUtils.js");

@@ -1,4 +1,4 @@
-// @vitest-environment node
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -14,11 +14,17 @@ vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   })
 }));
 
-const battleClassicHtml = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+let battleClassicHtml;
+function getBattleClassicHtml() {
+  if (!battleClassicHtml) {
+    battleClassicHtml = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
+  }
+  return battleClassicHtml;
+}
 
 describe("Classic Battle bootstrap", () => {
   beforeEach(() => {
-    document.documentElement.innerHTML = battleClassicHtml;
+    document.documentElement.innerHTML = getBattleClassicHtml();
     delete window.__battleInitComplete;
     delete window.__initCalled;
     delete window.battleStore;

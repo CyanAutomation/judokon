@@ -10,11 +10,17 @@ import { JSDOM } from "jsdom";
 import { readFileSync } from "fs";
 import { init } from "../../src/pages/battleClassic.init.js";
 
-// Read HTML file at module load time, before any test runs and before vi.resetModules() can affect it
-const cwd = process.cwd();
-const sep = process.platform === "win32" ? "\\" : "/";
-const htmlPathInit = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
-const htmlContentInit = readFileSync(htmlPathInit, "utf-8");
+// Defer reading HTML file until after Node environment is setup
+let htmlContentInit;
+function getHtmlContentInit() {
+  if (!htmlContentInit) {
+    const cwd = process.cwd();
+    const sep = process.platform === "win32" ? "\\" : "/";
+    const htmlPathInit = cwd + sep + "src" + sep + "pages" + sep + "battleClassic.html";
+    htmlContentInit = readFileSync(htmlPathInit, "utf-8");
+  }
+  return htmlContentInit;
+}
 
 describe("Classic Battle Init Complete Hooks", () => {
   let dom;
@@ -22,7 +28,7 @@ describe("Classic Battle Init Complete Hooks", () => {
   let document;
 
   beforeEach(async () => {
-    dom = new JSDOM(htmlContentInit, {
+    dom = new JSDOM(getHtmlContentInit(), {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",
       resources: "usable",
