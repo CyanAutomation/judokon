@@ -718,19 +718,19 @@ function createTickProcessors(rendererState) {
       Number.isFinite(rendererState.maxPromptWaitMs) &&
       rendererState.maxPromptWaitMs > 0;
     const waitingForPrompt = canWaitForPrompt && !hasActivePrompt();
-    
+
     // IMPORTANT: For the first render, bypass prompt delay to ensure the countdown
     // message displays immediately instead of persisting the previous message.
     // Only defer subsequent ticks if waiting for opponent prompt.
     const isFirstRender = !rendererState.rendered;
-    
+
     // If this is the first render, always process immediately regardless of respectDelay
     if (isFirstRender) {
       rendererState.promptController.clear();
       processTick(normalized, normalizedOptions);
       return;
     }
-    
+
     // For subsequent renders, apply normal prompt delay logic
     const shouldDelay = !rendererState.started && (waitingForPrompt || remainingDelay > 0);
 
