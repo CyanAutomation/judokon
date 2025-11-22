@@ -225,7 +225,7 @@ function getRandomValue(rngSource) {
  * @returns {T|null} A randomly selected element, or {@code null} when no values are available.
  * @pseudocode
  * if array is empty: return null
- * randomValue = getRandomValue(rng or Math.random)
+ * randomValue = getRandomValue(rng if provided else Math.random)
  * index = floor(randomValue * array.length)
  * return array[index]
  */
@@ -234,7 +234,7 @@ export function selectRandomElement(array, rng) {
     return null;
   }
 
-  const rngSource = arguments.length > 1 ? arguments[1] : Math.random;
+  const rngSource = arguments.length > 1 ? rng : Math.random;
   const randomIndex = Math.floor(getRandomValue(rngSource) * array.length);
   return array[randomIndex];
 }
