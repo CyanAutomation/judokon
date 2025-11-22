@@ -340,3 +340,44 @@ npm run test:battles:classic
 **Solution:** Hybrid approach combining event handlers + direct store updates + state dispatch (→)
 
 **Expected Outcome:** Fast, reliable integration tests that verify battle logic without relying on fragile JSDOM event propagation
+
+---
+
+---
+
+## Implementation Progress Update
+
+### Task 2: Update performStatSelectionFlow() Helper ✅ COMPLETED (2025-11-22 17:54)
+
+**Changes Made:**
+
+1. ✅ Imported `selectStat` from `src/helpers/classicBattle/uiHelpers.js`
+2. ✅ Updated `performStatSelectionFlow()` helper to call `selectStat(store, selectedStat)` directly
+3. ✅ Updated all 5 affected test cases to use the same hybrid approach
+4. ✅ Added comprehensive inline comments explaining the workaround
+
+**Test Results After Implementation:**
+
+- Total execution time: ~78 seconds
+- Tests passed: 80/85 (5 tests still failing)
+- **Timeout errors: 0 (completely eliminated!)**
+- selectionMade now correctly becomes `true` ✓
+
+**Key Finding - Partial Success:**
+
+The hybrid approach FIXED the first issue (selectionMade not updating). However, a secondary issue remains:
+
+- roundsPlayed still not incrementing even though state reaches roundDecision
+- This suggests roundDecision's onEnter handler isn't executing or isn't calling the round increment logic
+
+**New Issue Identified:**
+
+After selectStat() completes and state reaches roundDecision, the handler that increments roundsPlayed is not executing. This could be due to:
+
+1. Handlers not being properly connected to state transitions
+2. Async handler execution not being awaited
+3. Handler not being called for test-initiated state transitions
+
+### Next Steps
+
+Need to investigate why roundDecision's onEnter handler isn't incrementing roundsPlayed, even though state transition completes successfully.

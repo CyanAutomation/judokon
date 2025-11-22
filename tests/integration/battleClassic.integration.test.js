@@ -21,6 +21,7 @@ import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
+import { selectStat } from "../../src/helpers/classicBattle/uiHelpers.js";
 
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
   const { state, inspect, engine, init: initApi } = testApi;
@@ -70,21 +71,46 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   expect(store.selectionMade).toBe(false);
   expect(store.playerChoice).toBeNull();
 
-  // Dispatch statSelected event directly to state machine
-  const currentState = state.getBattleState();
-  const debugBeforeDispatch = inspect.getDebugInfo();
-  console.log(
-    `Before statSelected dispatch: state=${currentState}, selectionMade=${debugBeforeDispatch?.store?.selectionMade}`
-  );
+  // ===== HYBRID APPROACH: Manually call selectStat() =====
+  // This approach works around JSDOM event delegation limitations by calling the
+  // internal selection handler directly. The selectStat() function is normally invoked
+  // by the stat button click handler, but JSDOM doesn't reliably delegate click events
+  // to dynamically rendered buttons. By calling it directly, we simulate the effect
+  // of clicking a stat button and trigger the full event emission chain, which updates
+  // the store and dispatches the state machine event.
+  //
+  // This is test-specific code: in production, stat buttons are clicked by the user,
+  // which triggers the normal event handler flow. Tests use this direct call because
+  // JSDOM's event propagation is unreliable for this use case.
 
+  // Get first stat button to determine which stat to select
+  const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+  expect(statButtons.length).toBeGreaterThan(0);
+  const selectedStat = statButtons[0].dataset.stat;
+  expect(selectedStat).toBeTruthy();
+
+  // Call selectStat directly - this invokes the full selection flow:
+  // selectStat() → handleStatSelection() → validateAndApplySelection() → applySelectionToStore()
+  // The chain updates store.selectionMade = true and store.playerChoice = stat,
+  // and also emits the "statSelected" battle event which dispatches to the state machine
   await withMutedConsole(async () => {
-    await state.dispatchBattleEvent("statSelected");
+    selectStat(store, selectedStat);
+    // Let handlers execute asynchronously
+    await Promise.resolve();
   });
 
-  const debugAfterDispatch = inspect.getDebugInfo();
-  console.log(
-    `After statSelected dispatch: selectionMade=${debugAfterDispatch?.store?.selectionMade}, state=${state.getBattleState()}`
-  );
+  // After selectStat completes, store should have selectionMade = true
+  store = ensureStore();
+  expect(store.selectionMade).toBe(true);
+  expect(store.playerChoice).toBe(selectedStat);
+
+  // Dispatch statSelected event to state machine (redundant if selectStat already did it,
+  // but ensures state transition completes)
+  await withMutedConsole(async () => {
+    await state.dispatchBattleEvent("statSelected");
+    // Let handlers complete (e.g., roundDecision onEnter handlers that update roundsPlayed)
+    await Promise.resolve();
+  });
 
   const debugAfter = inspect.getDebugInfo();
   const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
@@ -245,7 +271,21 @@ describe("Battle Classic Page Integration", () => {
     }
 
     try {
-      // Dispatch statSelected via state machine
+      // Use hybrid approach: call selectStat directly to invoke full event chain
+      // selectStat() → handleStatSelection() → validateAndApplySelection() → applySelectionToStore()
+      // This works around JSDOM event delegation limitations by calling the selection
+      // handler directly, which updates store.selectionMade and store.playerChoice
+      await withMutedConsole(async () => {
+        selectStat(store, selectedStat);
+        // Let handlers execute
+        await Promise.resolve();
+      });
+
+      // Verify store was updated
+      expect(store.selectionMade).toBe(true);
+      expect(store.playerChoice).toBe(selectedStat);
+
+      // Dispatch state event to complete the transition
       await withMutedConsole(async () => {
         await testApi.state.dispatchBattleEvent("statSelected");
         // Don't assert on dispatch result - focus on store state changes
@@ -317,14 +357,24 @@ describe("Battle Classic Page Integration", () => {
     expect(updatedStore).toBe(initialStore);
     expect(updatedStore.selectionMade).toBe(false);
 
-    // Dispatch statSelected via state machine
+    // Use hybrid approach: call selectStat directly
+    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    expect(statButtons.length).toBeGreaterThan(0);
+    const selectedStat = statButtons[0].dataset.stat;
+
     await withMutedConsole(async () => {
-      await testApi.state.dispatchBattleEvent("statSelected");
+      selectStat(initialStore, selectedStat);
+      await Promise.resolve();
     });
 
     const postStatStore = getBattleStore();
     expect(postStatStore).toBe(initialStore);
     expect(postStatStore.selectionMade).toBe(true);
+
+    // Dispatch statSelected via state machine to complete state transition
+    await withMutedConsole(async () => {
+      await testApi.state.dispatchBattleEvent("statSelected");
+    });
 
     const debugAfter = testApi.inspect.getDebugInfo();
     const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
@@ -371,9 +421,16 @@ describe("Battle Classic Page Integration", () => {
         await Promise.resolve();
       });
 
-      // Dispatch statSelected via state machine
+      // Use hybrid approach: call selectStat directly
+      const store = getBattleStore();
+      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+      expect(statButtons.length).toBeGreaterThan(0);
+      const selectedStat = statButtons[0].dataset.stat;
+
+      // Dispatch statSelected via selectStat and state machine
       await withMutedConsole(async () => {
-        await testApi.state.dispatchBattleEvent("statSelected");
+        selectStat(store, selectedStat);
+        await Promise.resolve();
         // At this point, opponent card should be obscured with placeholder
         expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
         expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();
