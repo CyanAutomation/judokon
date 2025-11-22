@@ -309,7 +309,8 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
     if (IS_VITEST) {
       console.log("[applySelectionToStore] BEFORE:", {
         selectionMade: store.selectionMade,
-        playerChoice: store.playerChoice
+        playerChoice: store.playerChoice,
+        storeObject: store
       });
     }
   } catch {}
@@ -321,7 +322,12 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
     if (IS_VITEST) {
       console.log("[applySelectionToStore] AFTER:", {
         selectionMade: store.selectionMade,
-        playerChoice: store.playerChoice
+        playerChoice: store.playerChoice,
+        storeObject: store,
+        checkStorePersistence: {
+          viaProperty: store.selectionMade,
+          viaReference: store["selectionMade"]
+        }
       });
     }
   } catch {}
@@ -596,17 +602,54 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
  * @returns {Promise<boolean|undefined>} Result from `dispatchBattleEvent`.
  */
 export async function dispatchStatSelected(store, stat, playerVal, opponentVal, opts = {}) {
+  try {
+    if (IS_VITEST) {
+      console.log("[dispatchStatSelected] START:", {
+        stat,
+        playerVal,
+        opponentVal,
+        storeSelectionMade: store.selectionMade,
+        storePlayerChoice: store.playerChoice
+      });
+    }
+  } catch {}
+
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
+
+  try {
+    if (IS_VITEST) {
+      console.log("[dispatchStatSelected] After emitSelectionEvent:", {
+        storeSelectionMade: store.selectionMade,
+        storePlayerChoice: store.playerChoice
+      });
+    }
+  } catch {}
 
   try {
     const forceDirectResolution =
       IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
     if (forceDirectResolution) {
+      try {
+        if (IS_VITEST) {
+          console.log("[dispatchStatSelected] Returning false (forceDirectResolution)");
+        }
+      } catch {}
       return false;
     }
-    return await dispatchBattleEvent("statSelected");
-  } catch {
+    const result = await dispatchBattleEvent("statSelected");
+    try {
+      if (IS_VITEST) {
+        console.log("[dispatchStatSelected] dispatchBattleEvent returned:", result);
+      }
+    } catch {}
+    return result;
+  } catch (error) {
+    try {
+      if (IS_VITEST) {
+        console.log("[dispatchStatSelected] Error caught:", error?.message);
+      }
+    } catch {}
     return undefined;
   }
 }
@@ -907,8 +950,23 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   try {
     const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
     if (!values) {
+      try {
+        if (IS_VITEST) {
+          console.log("[handleStatSelection] validateAndApplySelection returned falsy");
+        }
+      } catch {}
       return;
     }
+
+    try {
+      if (IS_VITEST) {
+        console.log("[handleStatSelection] After validateAndApplySelection:", {
+          storeSelectionMade: store.selectionMade,
+          storePlayerChoice: store.playerChoice,
+          valuesReturned: values
+        });
+      }
+    } catch {}
 
     ({ playerVal, opponentVal } = values);
 
@@ -920,6 +978,16 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       opts
     );
 
+    try {
+      if (IS_VITEST) {
+        console.log("[handleStatSelection] After dispatchStatSelected:", {
+          handledByOrchestrator,
+          storeSelectionMade: store.selectionMade,
+          storePlayerChoice: store.playerChoice
+        });
+      }
+    } catch {}
+
     const handled = await resolveWithFallback(
       store,
       stat,
@@ -930,10 +998,25 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
     );
 
     if (handled) {
+      try {
+        if (IS_VITEST) {
+          console.log("[handleStatSelection] resolveWithFallback returned true (handled)");
+        }
+      } catch {}
       return;
     }
 
     const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
+    try {
+      if (IS_VITEST) {
+        console.log("[handleStatSelection] After syncResultDisplay:", {
+          storeSelectionMade: store.selectionMade,
+          storePlayerChoice: store.playerChoice,
+          roundsPlayed: store.roundsPlayed,
+          resultMessage: result?.message
+        });
+      }
+    } catch {}
     return result;
   } finally {
     guard.release();

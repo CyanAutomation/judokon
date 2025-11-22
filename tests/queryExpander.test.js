@@ -181,7 +181,7 @@ describe("Query Expansion", () => {
     it("should handle complex unicode edge cases", async () => {
       // Test combining characters, emoji, and mixed scripts
       const result = await expandQuery("café 🥋 مرحبا");
-      
+
       expect(result.expanded).toContain("café");
       expect(result.expanded).toContain("مرحبا");
       expect(result.expanded).not.toContain("🥋"); // Emoji should be filtered out

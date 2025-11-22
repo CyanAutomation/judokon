@@ -127,9 +127,7 @@ function sanitizeUnicodeWords(query) {
 }
 
 function normalizeAndLimitQuery(query) {
-  const normalized = sanitizeUnicodeWords(query.toLowerCase())
-    .replace(/\s+/g, " ")
-    .trim();
+  const normalized = sanitizeUnicodeWords(query.toLowerCase()).replace(/\s+/g, " ").trim();
 
   if (!normalized) {
     return "";
