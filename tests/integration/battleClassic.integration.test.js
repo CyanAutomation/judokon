@@ -60,8 +60,10 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
 
   await withMutedConsole(async () => {
     roundButtons[0].click();
-    // Let the modal's button click handler execute
+    // Let the modal's button click handler execute and dispatch startClicked
     await Promise.resolve();
+    // Wait for state machine to reach waitingForPlayerAction state
+    await state.waitForBattleState("waitingForPlayerAction", 5000);
   });
 
   store = ensureStore();
@@ -69,10 +71,20 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   expect(store.playerChoice).toBeNull();
 
   // Dispatch statSelected event directly to state machine
+  const currentState = state.getBattleState();
+  const debugBeforeDispatch = inspect.getDebugInfo();
+  console.log(
+    `Before statSelected dispatch: state=${currentState}, selectionMade=${debugBeforeDispatch?.store?.selectionMade}`
+  );
+
   await withMutedConsole(async () => {
-    const dispatched = await state.dispatchBattleEvent("statSelected");
-    // Don't assert on dispatch result - focus on store state changes
+    await state.dispatchBattleEvent("statSelected");
   });
+
+  const debugAfterDispatch = inspect.getDebugInfo();
+  console.log(
+    `After statSelected dispatch: selectionMade=${debugAfterDispatch?.store?.selectionMade}, state=${state.getBattleState()}`
+  );
 
   const debugAfter = inspect.getDebugInfo();
   const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
