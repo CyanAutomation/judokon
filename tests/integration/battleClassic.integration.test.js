@@ -101,7 +101,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
 
   try {
     // selectStat now returns a promise that resolves when selection is complete
-    const result = await selectStat(store, selectedStat);
+    await selectStat(store, selectedStat);
   } catch (error) {
     throw new Error(`selectStat failed: ${error?.message}`);
   }

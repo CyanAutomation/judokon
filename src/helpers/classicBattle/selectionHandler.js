@@ -317,7 +317,6 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.selectionMade = true;
   store.__lastSelectionMade = true;
   store.playerChoice = stat;
-
   try {
     if (IS_VITEST) {
       console.log("[applySelectionToStore] AFTER:", {
@@ -577,8 +576,8 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
   } catch {}
 
   // DEBUG: Throw to force error message
-  throw new Error(`DEBUG: About to call applySelectionToStore for stat=${stat}`);
-  // return applySelectionToStore(store, stat, playerVal, opponentVal);
+  // throw new Error(`DEBUG: About to call applySelectionToStore for stat=${stat}`);
+  return applySelectionToStore(store, stat, playerVal, opponentVal);
 }
 
 /**
@@ -885,9 +884,6 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
  * @returns {Promise<void>}
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
-  // DEBUG: Force error
-  throw new Error(`DEBUG: handleStatSelection called with stat=${stat}`);
-
   try {
     if (IS_VITEST) {
       console.log("[handleStatSelection] Called with:", {
