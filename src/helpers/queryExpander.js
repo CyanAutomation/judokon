@@ -110,7 +110,7 @@ function normalizeAndLimitQuery(query) {
     return limitedJoined;
   }
 
-  const lastSpaceBeforeLimit = limitedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH);
+  const lastSpaceBeforeLimit = limitedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH - 1);
   if (lastSpaceBeforeLimit > 0) {
     return limitedJoined.slice(0, lastSpaceBeforeLimit);
   }
