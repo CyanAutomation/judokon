@@ -269,151 +269,70 @@ selectStat(store, stat); // This triggers full event chain
 
 ---
 
-## Recommended Implementation Plan
+## Revised Implementation Plan & Next Actions
 
 **Execute Option A (Hybrid Approach):**
 
-### Step 1: Update Helper Function (performStatSelectionFlow) and Address Silent Error Swallowing
+### Phase 1: Diagnose the Root Cause
 
-Modify `performStatSelectionFlow()` to:
+1.  **Expose Diagnostic Logs:** In `tests/integration/battleClassic.integration.test.js`, temporarily **remove the `withMutedConsole()` wrapper** from the test cases that call `performStatSelectionFlow()`. This is the **most critical step** to make the existing diagnostic logs visible.
+2.  **Run the Failing Test:** Execute `npm run test:battles:classic`.
+3.  **Analyze the Output:** Examine the console for logs from `selectionHandler.js`. Pinpoint exactly why `validateAndApplySelection()` is returning a falsy value. It is likely due to a failed state check in `validateSelectionState()`.
+4.  **Document the Finding:** Add a comment in the test file explaining the root cause (e.g., `// Root Cause: selection was attempted in 'cooldown' state instead of 'waitingForPlayerAction'`).
 
-1. **Call `selectStat(getBattleStore(), stat)`**: Instead of manually updating store properties.
-2. **Ensure `selectStat()` properly propagates errors**: Investigate and fix the silent error swallowing in `src/helpers/classicBattle/uiHelpers.js` by ensuring the `.catch()` block either rethrows or logs errors visibly, allowing tests to correctly await its completion. This is critical for reliable store updates.
+### Phase 2: Implement the Fix
 
-```javascript
-async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
-  const { state, inspect, engine, init: initApi } = testApi;
+5.  **Fix the Logic Flow:** Based on the findings, correct the test setup or the application code to ensure `selectStat()` is called only when the battle state is `waitingForPlayerAction`.
+6.  **Clean Up Debug Code:** Remove any temporary debugging artifacts (like `throw new Error(...)` statements) from `src/helpers/classicBattle/selectionHandler.js`.
+7.  **Address Silent Error Swallowing:** In `src/helpers/classicBattle/uiHelpers.js`, ensure the `.catch()` block in `selectStat()` properly logs and **re-throws errors**. This prevents silent failures in the future.
+    ```javascript
+    // In src/helpers/classicBattle/uiHelpers.js
+    .catch(error => {
+      console.error("Error during stat selection:", error);
+      throw error; // Re-throw to ensure promise rejects and tests fail correctly
+    });
+    ```
+8.  **Update `performStatSelectionFlow()`:** Modify the helper in `tests/integration/battleClassic.integration.test.js` to use the `await selectStat(getBattleStore(), stat);` call, removing any manual store manipulation.
+9.  **Refine Integration Tests:** Adjust the assertions in the integration tests to check the state of the *actual* store via `getBattleStore()` after the selection flow completes.
 
-  // Wait for battle ready
-  await initApi.waitForBattleReady(5000);
+### Phase 3: Add Targeted Unit Tests
 
-  // Click round button - lets modal handlers work
-  const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
-  roundButtons[0].click();
-  await Promise.resolve(); // Let handlers execute
+10. **Create New Test File:** Create `tests/classicBattle/uiEventBinding.test.js`.
+11. **Write Unit Tests to Verify:**
+    *   Stat button click listeners are correctly attached to the DOM.
+    *   Clicking a stat button correctly invokes `selectStat()` with the appropriate `stat` argument.
+    *   (Optional but recommended) A test to ensure `selectStat` correctly updates the store, mocking its dependencies to isolate its behavior.
 
-  // Wait for correct state
-  await state.waitForBattleState("waitingForPlayerAction", 5000);
+### Phase 4: Final Validation
 
-  // Get stat buttons and select one
-  const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-  const selectedButton = statButtons[0];
-  const stat = selectedButton.dataset.stat;
+12. **Re-enable Muted Console:** Restore the `withMutedConsole()` wrapper in the integration tests.
+13. **Run All Checks:** Execute the full validation suite to ensure the fix is robust and introduces no regressions.
 
-  // Call selectStat, ensuring it handles errors visibly and its promise reflects store update completion.
-  await selectStat(getBattleStore(), stat);
+---
 
-  // Dispatch state machine event (if necessary, after store updates are confirmed)
-  // await state.dispatchBattleEvent("statSelected", { stat }); // May not be needed if selectStat() handles this
+## Verification Checklist
 
-  // Return results
-  return {
-    store: getBattleStore(), // Get the latest store state
-    roundsAfter: getBattleStore().roundsPlayed,
-    stat
-  };
-}
-```
-
-### Step 2: Update Integration Tests
-
-Tests become simpler and faster. Assertions should be made against the actual battle store object returned by `getBattleStore()` to ensure the updates are persistent and correctly reflected.
-
-```javascript
-it("example test", async () => {
-  await init();
-  const testApi = window.__TEST_API;
-
-  const result = await performStatSelectionFlow(testApi);
-  const updatedStore = getBattleStore(); // Retrieve the current store state
-
-  // Direct assertions on observable state
-  expect(updatedStore.selectionMade).toBe(true);
-  expect(updatedStore.playerChoice).toBeTruthy();
-  // Expect roundsPlayed to increment if selectStat() orchestrates it.
-  // expect(updatedStore.roundsPlayed).toBeGreaterThan(initialRoundsPlayed);
-});
-```
-
-### Step 3: Add Unit Tests for UI Event Binding
-
-Create `tests/classicBattle/uiEventBinding.test.js` to verify:
-
-- Stat button click listeners are attached.
-- Clicking buttons calls `selectStat()` with the correct arguments.
-- `selectStat()` properly updates the store. This unit test should specifically mock dependencies to isolate `selectStat()`'s behavior regarding store updates.
-
-This captures what we're NOT testing in the integration tests (direct UI interaction in JSDOM) but is critical for full coverage.
-
-### Step 4: Validation and Verification Checklist
-
-After implementing the changes, ensure all validation commands pass and the project's quality standards are met:
+After implementing all changes, run the following commands to verify the fix:
 
 ```bash
-# Run battle logic integration tests
+# 1. Run the updated battle logic integration tests
 npm run test:battles:classic
 
-# Run newly added UI event binding unit tests
+# 2. Run the newly created UI event binding unit tests
 npx vitest run tests/classicBattle/uiEventBinding.test.js
 
-# Essential code quality checks
+# 3. Run essential code quality and data integrity checks
 npx prettier . --check
 npx eslint .
 npm run check:jsdoc
-npm run validate:data # Validate data schemas
+npm run validate:data
 
-# Standard verification checklist (from GEMINI.md)
-# - prettier/eslint/jsdoc PASS
-# - vitest + playwright PASS (targeted tests)
-# - No unsuppressed console logs
-# - Tests cover happy-path + edge case
-# - CI pipeline green (once changes are pushed to a PR)
+# 4. Final check: Ensure the entire test suite passes
+npm run test:ci
 ```
+This comprehensive plan ensures that we not only fix the immediate bug but also improve the test suite's reliability and maintainability for the future.
 
 ---
-
-## Files Modified So Far
-
-### `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js`
-
-- **Current Status:** CONTAINS DEBUG CODE - NEEDS CLEANUP
-- **Planned Change:** Remove debug error throws, ensure normal execution flow.
-
-### `/workspaces/judokon/src/helpers/classicBattle/uiHelpers.js`
-
-- **Current Status:** ACCEPTABLE - logs errors instead of silently swallowing (line ~819)
-- **Planned Change:** Verify `selectStat()` properly propagates errors (rethrows or logs visibly).
-
-### `/workspaces/judokon/tests/integration/battleClassic.integration.test.js`
-
-- **Current Status:** Tests run fast but fail on store assertions (line 96-107 and multiple test cases)
-- **Planned Change:** Update `performStatSelectionFlow()` to call `await selectStat(getBattleStore(), stat)` and remove manual store updates. Refine assertions to use `getBattleStore()`.
-
----
-
-## Next Actions
-
-1. **Clean up debug artifacts:** Remove debug error throws from `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js`.
-2. **Fix silent error swallowing:** Modify the `.catch()` block in `selectStat()` (in `/workspaces/judokon/src/helpers/classicBattle/uiHelpers.js`) to log errors visibly and rethrow them, ensuring `selectStat()`'s promise reflects actual completion or failure.
-3. **Update `performStatSelectionFlow()`:** Implement the changes for Step 1 of the "Recommended Implementation Plan" in `/workspaces/judokon/tests/integration/battleClassic.integration.test.js`.
-4. **Update integration tests:** Implement Step 2 of the "Recommended Implementation Plan" by refining assertions in existing integration tests to use `getBattleStore()`.
-5. **Create UI event binding unit tests:** Implement Step 3 of the "Recommended Implementation Plan" by creating `tests/classicBattle/uiEventBinding.test.js`.
-6. **Validate and Verify:** Execute Step 4 of the "Recommended Implementation Plan", running all specified validation commands and confirming all tests pass.
-7. **If store updates still not persisting:** If, after fixing error propagation and implementing the plan, `getBattleStore()` still does not reflect updates as expected (e.g., `roundsPlayed` not incrementing), then:
-    - Add targeted logging within `applySelectionToStore()` and `roundDecision`'s `onEnter` handler.
-    - Create a focused unit test for `applySelectionToStore()` as described in "Proposed Solution: Clean and Verify - Phase 4" to isolate the store object mutation.
-
----
-
-## Summary
-
-**Problem Solved:** Eliminated timeout issues in unit/integration tests (✅)
-
-**New Problem Found:** Store updates don't happen reliably via state machine dispatch alone, and silent error swallowing masked the problem (🔄)
-
-**Solution:** Hybrid approach combining event handlers + direct `selectStat()` call (with error propagation) + state dispatch (→)
-
-**Expected Outcome:** Fast, reliable unit/integration tests that verify battle logic without relying on fragile JSDOM event propagation, and with proper visibility into the entire execution chain.
 
 ---
 
