@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { expandQuery, getSynonymStats } from "../src/helpers/queryExpander.js";
+import { describe, it, expect, vi } from "vitest";
+import {
+  MAX_QUERY_LENGTH,
+  MAX_QUERY_TERMS,
+  expandQuery,
+  getSynonymStats
+} from "../src/helpers/queryExpander.js";
 
 describe("Query Expansion", () => {
   describe("Basic Query Expansion", () => {
@@ -138,10 +143,14 @@ describe("Query Expansion", () => {
       expect(result.expanded).toBeTruthy();
     });
 
-    it("should handle very long query", async () => {
-      const longQuery = "kumikata ".repeat(100);
+    it("should clamp very long queries to a predictable size", async () => {
+      const longQuery = Array.from({ length: MAX_QUERY_TERMS + 5 }, (_, idx) => `term${idx}`).join(" ");
       const result = await expandQuery(longQuery);
-      expect(result.hasExpansion).toBe(true);
+      const terms = result.expanded.split(/\s+/);
+
+      expect(terms.length).toBe(MAX_QUERY_TERMS);
+      expect(terms.at(-1)).toBe(`term${MAX_QUERY_TERMS - 1}`);
+      expect(result.original).toBe(longQuery);
     });
 
     it("should handle query with special characters", async () => {
@@ -157,6 +166,14 @@ describe("Query Expansion", () => {
       expect(result.expanded).toBeTruthy();
     });
 
+    it("should trim extremely long single-token queries", async () => {
+      const longToken = "x".repeat(MAX_QUERY_LENGTH + 20);
+      const result = await expandQuery(longToken);
+
+      expect(result.expanded.length).toBe(MAX_QUERY_LENGTH);
+      expect(result.expanded).toBe(result.expanded.toLowerCase());
+    });
+
     it("should handle repeated words", async () => {
       const result = await expandQuery("kumikata kumikata kumikata");
       const terms = result.expanded.split(/\s+/);
@@ -167,23 +184,29 @@ describe("Query Expansion", () => {
   });
 
   describe("Performance", () => {
-    it("should expand query within reasonable time", async () => {
-      const start = performance.now();
-      await expandQuery("kumikata scoreboard countdown");
-      const duration = performance.now() - start;
-      // Should complete in less than 100ms
-      expect(duration).toBeLessThan(100);
+    it("should bound expansion size for verbose inputs", async () => {
+      const fillerTerms = Array.from({ length: MAX_QUERY_TERMS + 20 }, (_, idx) => `filler${idx}`);
+      const verboseQuery = ["kumikata grip", ...fillerTerms].join(" ");
+      const result = await expandQuery(verboseQuery);
+      const addedLength = result.addedTerms.join(" ").length;
+
+      expect(result.expanded).toContain("filler47");
+      expect(result.expanded).not.toContain("filler48");
+      expect(result.expanded.length).toBeLessThanOrEqual(MAX_QUERY_LENGTH + addedLength + MAX_QUERY_TERMS);
+      expect(result.addedTerms).toContain("kumi-kata");
     });
 
     it("should cache synonyms for subsequent calls", async () => {
-      // First call loads synonyms
-      await expandQuery("kumikata");
-      const start = performance.now();
-      // Second call should use cache
-      await expandQuery("scoreboard");
-      const duration = performance.now() - start;
-      // Cached call should be faster (though this is not a hard requirement)
-      expect(duration).toBeLessThan(50);
+      vi.resetModules();
+      const dataUtils = await import("../src/helpers/dataUtils.js");
+      const fetchSpy = vi.spyOn(dataUtils, "fetchJson");
+      const { expandQuery: freshExpandQuery } = await import("../src/helpers/queryExpander.js");
+
+      await freshExpandQuery("kumikata");
+      const afterFirstLoad = fetchSpy.mock.calls.length;
+      await freshExpandQuery("scoreboard");
+
+      expect(fetchSpy.mock.calls.length).toBe(afterFirstLoad);
     });
   });
 
