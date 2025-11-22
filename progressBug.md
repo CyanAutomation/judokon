@@ -212,4 +212,3 @@ During investigation, the following changes were made:
 2.  **Create unit tests for UI event binding:** Add new unit tests to `tests/uiHelpers.test.js` to verify that `registerStatButtonClickHandler` correctly attaches event listeners that trigger the `selectStat` function.
 3.  **Remove skips:** Once the refactored tests and new unit tests are in place, remove the `.skip()` markers from the integration tests.
 4.  **Verify all tests pass:** Run the `test:battles:classic` script to ensure that all related tests are now passing.
-
