@@ -315,8 +315,6 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
     }
   } catch {}
 
-
-
   store.selectionMade = true;
   store.__lastSelectionMade = true;
   store.playerChoice = stat;

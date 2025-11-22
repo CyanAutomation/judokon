@@ -6,7 +6,7 @@ import {
 } from "./helpers/battleStateHelper.js";
 import { dispatchBattleEvent, readCountdown } from "./helpers/battleApiHelper.js";
 import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
-import {  waitForNextRoundReadyEvent } from "./fixtures/waits.js";
+import { waitForNextRoundReadyEvent } from "./fixtures/waits.js";
 
 const BATTLE_PAGE_URL = "/src/pages/battleClassic.html";
 const PLAYER_ACTION_STATE = "waitingForPlayerAction";

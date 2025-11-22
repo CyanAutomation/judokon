@@ -37,6 +37,7 @@ export function createBattleStore() {
 ### 2. Store Access Flow (How Tests Get the Store)
 
 **Flow Chain**:
+
 ```
 Test calls getBattleStore()
   ↓
@@ -105,13 +106,15 @@ return applySelectionToStore(store, stat, playerVal, opponentVal);
 
 ### 5. Property Descriptors on Store
 
-**Found in**: 
+**Found in**:
+
 - `src/helpers/classicBattle/storeGuard.js:32` - Guard tokens added as non-enumerable properties
 - `src/helpers/classicBattle/selectionHandler.js:30` - Same pattern
 
 **Status**: ✅ These are **only used for internal guard symbols** (e.g., `SELECTION_IN_FLIGHT_GUARD`), NOT for `selectionMade` or `playerChoice`.
 
 Code pattern:
+
 ```javascript
 Object.defineProperty(store, token, {
   configurable: true,
@@ -128,6 +131,7 @@ Object.defineProperty(store, token, {
 **Search Result**: No `Object.freeze()` or `Object.seal()` found on store object.
 
 Found:
+
 - 5x `Object.defineProperty()` calls → ALL for guard tokens, not main properties
 - 0x `Object.freeze()` calls
 - 0x `Object.seal()` calls
@@ -137,6 +141,7 @@ Found:
 **Store exposure points**:
 
 1. **battleClassic.init.js:1777** - Store created and exposed:
+
    ```javascript
    const store = createBattleStore();
    if (typeof window !== "undefined") {
@@ -145,6 +150,7 @@ Found:
    ```
 
 2. **testApi.js:2361** - Returns the same reference:
+
    ```javascript
    getBattleStore() {
      return isWindowAvailable() ? window.battleStore : null;
@@ -152,6 +158,7 @@ Found:
    ```
 
 3. **battleStoreAccess.js:16-26** - Test accessor returns same reference:
+
    ```javascript
    const inspectStore = window.__TEST_API?.inspect?.getBattleStore?.();
    if (inspectStore) {
@@ -162,6 +169,7 @@ Found:
 ### 8. Evidence of Mutations Persisting
 
 **In actual code** (`selectionHandler.js:321-323`):
+
 ```javascript
 store.selectionMade = true;
 store.__lastSelectionMade = true;  // Mirror property for debugging
@@ -179,6 +187,7 @@ store.playerChoice = stat;
 **Location**: `tests/integration/battleClassic.integration.test.js:207-217`
 
 **Current Code** (GOOD):
+
 ```javascript
 afterEach(() => {
   dom?.window?.close();
@@ -195,6 +204,7 @@ afterEach(() => {
 **Risk**: In some test configurations, if `global.window` is reset or JSDOM context changes between calls, store references might become invalid.
 
 **Mitigation**: Tests set up globals properly:
+
 ```javascript
 global.window = window;
 global.document = document;
@@ -238,11 +248,13 @@ All mutations flow through these verified paths:
 The code includes explicit verification logging when `IS_VITEST` is true:
 
 1. **Before mutation** (applySelectionToStore):
+
    ```javascript
    console.log("[applySelectionToStore] BEFORE:", { selectionMade, playerChoice, storeObject })
    ```
 
 2. **Immediate re-read** (applySelectionToStore):
+
    ```javascript
    const afterSelectionMade = store.selectionMade;
    if (afterSelectionMade !== true) {
@@ -251,11 +263,13 @@ The code includes explicit verification logging when `IS_VITEST` is true:
    ```
 
 3. **After dispatch** (dispatchStatSelected):
+
    ```javascript
    console.log("[dispatchStatSelected] After emitSelectionEvent:", { storeSelectionMade, storePlayerChoice })
    ```
 
 4. **After sync** (handleStatSelection):
+
    ```javascript
    console.log("[handleStatSelection] After syncResultDisplay:", { storeSelectionMade, storePlayerChoice })
    ```
@@ -275,6 +289,7 @@ The code includes explicit verification logging when `IS_VITEST` is true:
 1. **Enable test logging** - Check the Vitest logs when running tests that claim mutations don't persist. The verification code will reveal exactly where (and if) mutations fail.
 
 2. **Verify test setup** - Ensure the store being read after `selectStat()` is the same object instance that was passed to it:
+
    ```javascript
    const store1 = getBattleStore();
    await selectStat(store1, stat);
@@ -283,6 +298,7 @@ The code includes explicit verification logging when `IS_VITEST` is true:
    ```
 
 3. **Check timing** - If mutations appear to not persist, it might be a timing issue where assertions run before async mutations complete:
+
    ```javascript
    await selectStat(store, stat);  // Returns promise
    // ← Ensure you await this!
@@ -302,4 +318,3 @@ The code includes explicit verification logging when `IS_VITEST` is true:
 - `tests/utils/battleStoreAccess.js` - Test store accessor
 - `src/helpers/testApi.js` - Inspect API for test access
 - `src/pages/battleClassic.init.js` - Store initialization and exposure
-

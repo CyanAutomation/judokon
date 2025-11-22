@@ -11,6 +11,7 @@ This document summarizes the findings from a complete investigation into the bat
 ## 1. Store Creation & Definition
 
 ### Where it's created
+
 - **File**: `src/helpers/classicBattle/roundManager.js`
 - **Lines**: 105-124
 - **Function**: `createBattleStore()`
@@ -35,6 +36,7 @@ export function createBattleStore() {
 ## 2. Store Access Paths (How Tests Get It)
 
 ### Test Accessor Function
+
 **File**: `tests/utils/battleStoreAccess.js`
 
 ```javascript
@@ -77,6 +79,7 @@ export function getBattleStore() {
 ## 3. Mutation Sites & Verification
 
 ### Primary Mutation Function
+
 **File**: `src/helpers/classicBattle/selectionHandler.js:310-360`
 
 ```javascript
@@ -119,6 +122,7 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 ```
 
 **Key Points**:
+
 1. ✅ Mutations use direct assignment (not Object.defineProperty)
 2. ✅ Verification code checks persistence immediately
 3. ✅ If mutations failed, an error would be thrown (and tests would fail)
@@ -170,7 +174,9 @@ Test Code (battleClassic.integration.test.js:83)
 ## 5. Property Descriptors & Symbols
 
 ### Guard Tokens (NOT on regular properties)
+
 **Files**:
+
 - `src/helpers/classicBattle/storeGuard.js:32`
 - `src/helpers/classicBattle/selectionHandler.js:30`
 
@@ -185,6 +191,7 @@ Object.defineProperty(store, token, {
 ```
 
 **Guard tokens used**:
+
 - `ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard")`
 - `SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight")`
 - `LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult")`
@@ -192,6 +199,7 @@ Object.defineProperty(store, token, {
 **CRITICAL**: These symbols store INTERNAL state only. They DO NOT affect `selectionMade` or `playerChoice`.
 
 ### Regular Properties (Direct Assignment)
+
 ```javascript
 store.selectionMade = true;  // ← Direct assignment, NOT via defineProperty
 store.playerChoice = stat;   // ← Direct assignment, NOT via defineProperty
@@ -219,6 +227,7 @@ store.playerChoice = stat;   // ← Direct assignment, NOT via defineProperty
 ## 7. Store Cloning & Copying Check
 
 ### Only Place Where Store is "Copied"
+
 **File**: `src/helpers/classicBattle/debugPanel.js:226`
 
 ```javascript
@@ -236,6 +245,7 @@ function getStoreSnapshot(win) {
 ```
 
 **Analysis**:
+
 - ✅ This is READ-ONLY snapshot for UI debugging
 - ✅ Does NOT modify the store
 - ✅ Creates a fresh object each call (doesn't preserve reference)
@@ -248,6 +258,7 @@ function getStoreSnapshot(win) {
 ## 8. Complete Store Lifecycle
 
 ### Phase 1: Initialization
+
 ```javascript
 // battleClassic.init.js:1777
 const store = createBattleStore();
@@ -255,6 +266,7 @@ window.battleStore = store;  // Expose for tests
 ```
 
 ### Phase 2: State Transitions
+
 ```javascript
 // Various state handler files reset/update store
 store.selectionMade = false;  // Reset on state changes
@@ -262,6 +274,7 @@ store.playerChoice = null;
 ```
 
 ### Phase 3: Selection (Where Mutation Happens)
+
 ```javascript
 // selectionHandler.js:321-323
 store.selectionMade = true;
@@ -270,6 +283,7 @@ store.playerChoice = stat;
 ```
 
 ### Phase 4: Test Access
+
 ```javascript
 // tests/utils/battleStoreAccess.js
 const store = getBattleStore();
@@ -284,12 +298,14 @@ expect(store.selectionMade).toBe(true);  // Should work!
 When running tests with `IS_VITEST = true`, these logs appear:
 
 ### Log 1: selectStat Entry
+
 ```
 [selectStat] Called with stat: power
 [selectStat] Calling handleStatSelection with: { stat: 'power', playerVal: 5, opponentVal: 3, storeSelectionMadeBefore: false }
 ```
 
 ### Log 2: Mutation Application
+
 ```
 [applySelectionToStore] BEFORE: { selectionMade: false, playerChoice: null, storeObject: {...} }
 [applySelectionToStore] AFTER: { 
@@ -300,12 +316,14 @@ When running tests with `IS_VITEST = true`, these logs appear:
 ```
 
 ### Log 3: Orchestrator Dispatch
+
 ```
 [dispatchStatSelected] START: { stat: 'power', playerVal: 5, opponentVal: 3, storeSelectionMade: true, storePlayerChoice: 'power' }
 [dispatchStatSelected] After emitSelectionEvent: { storeSelectionMade: true, storePlayerChoice: 'power' }
 ```
 
 ### Log 4: Final State
+
 ```
 [handleStatSelection] After syncResultDisplay: { storeSelectionMade: true, storePlayerChoice: 'power', roundsPlayed: 1, resultMessage: '...' }
 ```
@@ -317,6 +335,7 @@ When running tests with `IS_VITEST = true`, these logs appear:
 If mutations appear not to persist, check:
 
 ### ✅ Store Reference Identity
+
 ```javascript
 const store1 = getBattleStore();
 await selectStat(store1, 'power');
@@ -326,6 +345,7 @@ console.assert(store1 === store2, "Store reference changed!");
 ```
 
 ### ✅ Promise Resolution
+
 ```javascript
 // WRONG - doesn't await
 selectStat(store, 'power');
@@ -337,6 +357,7 @@ expect(store.selectionMade).toBe(true);  // Should pass
 ```
 
 ### ✅ Timing Issues
+
 ```javascript
 // Check if there's a delay before checking
 await selectStat(store, 'power');
@@ -345,6 +366,7 @@ expect(store.selectionMade).toBe(true);
 ```
 
 ### ✅ Test Isolation
+
 ```javascript
 // Ensure globals aren't reset between test and assertion
 beforeEach(() => {
@@ -362,6 +384,7 @@ afterEach(() => {
 ```
 
 ### ✅ Enable Debug Logging
+
 ```javascript
 // Vitest captures console.log when VITEST env var is set
 // Check test output for [applySelectionToStore] logs
@@ -387,6 +410,7 @@ afterEach(() => {
 ## 12. Next Steps
 
 1. **Run a failing test with console capture**:
+
    ```bash
    npm run test:battles:classic -- tests/integration/battleClassic.integration.test.js -t "initializes the page UI" 2>&1 | tee test-output.log
    ```
@@ -419,10 +443,10 @@ The battle store mutation system appears to be working correctly. All mutations 
 - ✅ Include comprehensive debug logging
 
 **If tests fail**, the issue is likely:
+
 1. **Not awaiting** the `selectStat()` promise
 2. **Timing** - assertions before async completes
 3. **Store reference** - different instance between calls
 4. **Test setup** - globals not preserved
 
 NOT due to store mutations not persisting.
-

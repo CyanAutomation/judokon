@@ -301,7 +301,10 @@ describe("Battle Classic Page Integration", () => {
       try {
         // selectStat now returns a promise that resolves when selection is complete
         const selectStatPromise = selectStat(store, selectedStat);
-        console.log("[TEST DIAG] selectStat returned promise:", selectStatPromise instanceof Promise);
+        console.log(
+          "[TEST DIAG] selectStat returned promise:",
+          selectStatPromise instanceof Promise
+        );
         await selectStatPromise;
         console.log("[TEST DIAG] selectStat promise resolved");
       } catch (error) {

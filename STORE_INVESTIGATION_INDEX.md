@@ -24,16 +24,19 @@
 ## File Cross-Reference
 
 ### Store Creation
+
 - **Definition**: `src/helpers/classicBattle/roundManager.js:105-124`
 - **Function**: `createBattleStore()`
 - **Returns**: Plain object with 13 properties
 
 ### Store Initialization & Exposure
+
 - **Init File**: `src/pages/battleClassic.init.js:1777`
 - **Exposure**: `window.battleStore = store`
 - **Guard Reset**: `exposeTestAPI()` at line 1748
 
 ### Store Access in Tests
+
 - **Test Accessor**: `tests/utils/battleStoreAccess.js`
 - **Function**: `getBattleStore()`
 - **Fallback Chain**: 
@@ -42,6 +45,7 @@
   3. `window.battleStore`
 
 ### Mutations to Store
+
 - **Primary**: `src/helpers/classicBattle/selectionHandler.js:310-360`
 - **Function**: `applySelectionToStore(store, stat, playerVal, opponentVal)`
 - **Mutations**:
@@ -50,6 +54,7 @@
 - **Verification**: Lines 324-345 (in VITEST only)
 
 ### State Reset
+
 - **Files**: 
   - `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js:43-45`
   - `src/helpers/classicBattle/controller.js:105`
@@ -57,6 +62,7 @@
 - **Operations**: Reset `selectionMade` and `playerChoice` on state transitions
 
 ### Guard Tokens (NOT regular properties)
+
 - **Guard File**: `src/helpers/classicBattle/storeGuard.js:25-99`
 - **Symbols Used**:
   - `ROUND_RESOLUTION_GUARD` (Symbol.for)
@@ -65,12 +71,14 @@
 - **Implementation**: `Object.defineProperty()` with non-enumerable flag
 
 ### Selection Flow
+
 - **Test Entry**: `src/helpers/classicBattle/uiHelpers.js:742` (`selectStat`)
 - **Handler**: `src/helpers/classicBattle/selectionHandler.js:947` (`handleStatSelection`)
 - **Validator**: `src/helpers/classicBattle/selectionHandler.js:564` (`validateAndApplySelection`)
 - **Mutation**: `src/helpers/classicBattle/selectionHandler.js:310` (`applySelectionToStore`)
 
 ### Debug & Inspection
+
 - **Debug Panel**: `src/helpers/classicBattle/debugPanel.js:226`
 - **Store Snapshot**: `getStoreSnapshot(win)` - READ ONLY
 - **Test API**: `src/helpers/testApi.js:2361` - `getBattleStore()`

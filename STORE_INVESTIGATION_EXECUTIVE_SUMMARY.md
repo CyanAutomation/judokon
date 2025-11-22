@@ -55,6 +55,7 @@ window.battleStore = store;  // Direct reference
 ```
 
 **Accessed via** (`tests/utils/battleStoreAccess.js`):
+
 - `window.__TEST_API?.inspect?.getBattleStore()`
 - `window.__classicbattledebugapi?.battleStore`
 - `window.battleStore`
@@ -66,6 +67,7 @@ window.battleStore = store;  // Direct reference
 ### 3. No Freezing/Sealing ✅
 
 **Search Results**:
+
 - `Object.freeze()` on store: **0 found**
 - `Object.seal()` on store: **0 found**
 - `Object.defineProperty()` on regular props: **0 found**
@@ -163,6 +165,7 @@ store.playerChoice = stat;      // ← NO defineProperty
 ### ✅ Mutations ARE persisting
 
 The code shows:
+
 1. Direct property assignment
 2. Immediate verification of mutation success
 3. No freezing/sealing blocking mutations
@@ -174,11 +177,13 @@ The code shows:
 If tests fail with claims that mutations don't persist, the actual issue is likely:
 
 1. **Async not awaited** - `selectStat()` returns a promise that must be awaited
+
    ```javascript
    await selectStat(store, stat);  // ← MUST await
    ```
 
 2. **Store reference changed** - Different instance before/after
+
    ```javascript
    const store1 = getBattleStore();
    await selectStat(store1, stat);
@@ -187,6 +192,7 @@ If tests fail with claims that mutations don't persist, the actual issue is like
    ```
 
 3. **Timing issue** - Assertions before async completes
+
    ```javascript
    await selectStat(store, stat);  // ← Must complete
    await new Promise(r => setTimeout(r, 100));  // ← Allow time for side effects
@@ -194,6 +200,7 @@ If tests fail with claims that mutations don't persist, the actual issue is like
    ```
 
 4. **Test setup** - Globals being reset
+
    ```javascript
    // Ensure globals persist
    beforeEach(() => {
@@ -211,22 +218,26 @@ If you're seeing mutation failures:
 
 ### Step 1: Enable debug logging
 All verification code is gated by `IS_VITEST` and will log to console:
+
 - Before mutation: `[applySelectionToStore] BEFORE: {...}`
 - After mutation: `[applySelectionToStore] AFTER: {...}`
 - If mutation fails: Throws `[applySelectionToStore] MUTATION FAILED!`
 
 ### Step 2: Run test with output capture
+
 ```bash
 npm run test:battles:classic -- tests/integration/battleClassic.integration.test.js -t "initializes the page UI" 2>&1 | tee test-output.log
 grep -i "mutation\|applySelection\|selectionMade" test-output.log
 ```
 
 ### Step 3: Check for error logs
+
 - If `MUTATION FAILED` appears → Store has restrictions (not likely - investigation found none)
 - If no logs appear → Verification code not reached (earlier error)
 - If logs show mutation worked → Issue is elsewhere (async, timing, reference)
 
 ### Step 4: Verify store reference
+
 ```javascript
 const store1 = getBattleStore();
 await selectStat(store1, stat);
@@ -269,10 +280,10 @@ The battle store mutation system is **working as designed**. All mutations to `s
 - ✅ Include comprehensive error handling
 
 **If tests claim mutations don't persist, the issue is NOT the store mutation mechanism itself, but rather:**
+
 - Async handling (not awaiting promise)
 - Store reference management (getting different instance)
 - Timing (assertions before async completes)
 - Test setup (globals not preserved)
 
 Use the verification logging points and diagnostic checklist in the investigation documents to identify the actual issue.
-
