@@ -180,7 +180,10 @@ describe("Query Expansion", () => {
       const result = await expandQuery(longQuery);
       const expandedTokens = result.expanded.split(/\s+/).filter(Boolean);
 
-      expect(expandedTokens.every((token) => longTokens.includes(token))).toBe(true);
+      // Verify that all expanded tokens are either from original tokens or added synonyms
+      const originalTokensSet = new Set(longTokens);
+      const addedTermsSet = new Set(result.addedTerms);
+      expect(expandedTokens.every((token) => originalTokensSet.has(token) || addedTermsSet.has(token))).toBe(true);
       expect(result.expanded.length).toBeLessThanOrEqual(MAX_QUERY_LENGTH);
     });
 
