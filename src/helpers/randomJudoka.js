@@ -200,7 +200,7 @@ export function filterJudokaByFilters(judokaArray, filters) {
  * return value
  */
 function getRandomValue(rngSource) {
-  const generator = typeof rngSource === "function" ? rngSource : rngSource && rngSource.random;
+  const generator = typeof rngSource === "function" ? rngSource : rngSource?.random;
 
   if (typeof generator !== "function") {
     throw new TypeError("getRandomValue requires a function or object with a random() method");
@@ -229,14 +229,13 @@ function getRandomValue(rngSource) {
  * index = floor(randomValue * array.length)
  * return array[index]
  */
-export function selectRandomElement(array, rng) {
+export function selectRandomElement(array, rng = Math.random) {
   if (!array || array.length === 0) {
     return null;
   }
 
-  const rngSource = arguments.length < 2 ? Math.random : rng;
-  const randomValue = getRandomValue(rngSource);
-  const randomIndex = Math.floor(randomValue * array.length);
+  const rngSource = arguments.length > 1 ? arguments[1] : rng;
+  const randomIndex = Math.floor(getRandomValue(rngSource) * array.length);
   return array[randomIndex];
 }
 
