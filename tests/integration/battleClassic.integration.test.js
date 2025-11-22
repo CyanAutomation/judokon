@@ -247,7 +247,7 @@ describe("Battle Classic Page Integration", () => {
     try {
       // Dispatch statSelected via state machine
       await withMutedConsole(async () => {
-        const dispatched = await testApi.state.dispatchBattleEvent("statSelected");
+        await testApi.state.dispatchBattleEvent("statSelected");
         // Don't assert on dispatch result - focus on store state changes
       });
     } finally {

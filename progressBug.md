@@ -27,16 +27,16 @@
 
 ### What Was Done
 
-**Replaced polling-based waits with direct state checks:**
+**Replaced polling-based waits with direct state checks, aiming to isolate state machine transitions from unreliable JSDOM event simulation for button clicks:**
 
 ```javascript
 // ❌ OLD: Wait for state machine to transition (timeout-prone)
 const stateReached = await testApi.state.waitForBattleState("waitingForPlayerAction");
 expect(stateReached).toBe(true); // Often false after 5 seconds
 
-// ✅ NEW: Check observable outcome instead
+// ✅ NEW: Check observable outcome by allowing modal handlers to execute and then asserting DOM state
 const roundButtons = document.querySelectorAll(".round-select-buttons button");
-roundButtons[0].click(); // Let modal handlers execute naturally
+roundButtons[0].click(); // Let modal handlers execute naturally (e.g., startRound())
 await testApi.state.waitForBattleState("waitingForPlayerAction", 5000); // Wait for state
 const statButtons = document.querySelectorAll("#stat-buttons button[data-stat]");
 expect(statButtons.length).toBeGreaterThan(0); // Direct DOM assertion
@@ -92,13 +92,23 @@ FAIL: expected 0 to be greater than 0
 
 ### Root Cause Hypothesis
 
-The state machine dispatch mechanism works for state transitions but may:
 
-1. **Not be calling the proper store update functions** - The dispatch moves state but the `onEnter` handlers for `roundDecision` state might not be updating the store properly
 
-2. **Be relying on separate event emission path** - The store updates might happen through `emitBattleEvent("statSelected")` which is separate from the state machine dispatch. The dispatch alone might not trigger this event emission.
+The state machine dispatch mechanism, when used directly in tests to advance the battle state (e.g., from `waitingForPlayerAction` to `roundDecision`), bypasses the crucial event emission chain responsible for updating the battle store.
 
-3. **Have missing dependencies** - The orchestrator or battle store setup in tests might be incomplete, preventing event handlers from executing
+
+
+Specifically, directly calling `testApi.state.dispatchBattleEvent("statSelected")` does not trigger:
+
+
+
+- The invocation of `selectStat(store, stat)` which normally records the player's choice and updates initial store properties.
+
+- The emission of `emitBattleEvent("statSelected")`, which orchestrates listeners to update the store and coordinate with the state machine.
+
+
+
+This creates a fundamental disconnect: the state machine transitions as expected, but the battle store's properties (`selectionMade`, `roundsPlayed`, etc.) are never updated because the necessary intermediate functions and event listeners are not engaged. This issue is particularly pronounced in the JSDOM test environment where UI event simulation (like button clicks) doesn't reliably trigger these underlying handlers.
 
 ---
 
@@ -169,8 +179,8 @@ expect(getBattleStore().playerChoice).toBe(stat);
 - Fast execution
 
 **Cons:**
-- Calls internal functions directly (less isolated)
-- Doesn't test event handler attachment
+- Calls internal functions directly (less isolated), **but this is explicitly mitigated by Step 3: adding unit tests for UI event binding.**
+- Doesn't directly test event handler attachment in the integration test context (covered by unit tests).
 
 ### Option B: Full Orchestrator Path
 
@@ -239,8 +249,9 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   const selectedButton = statButtons[0];
   const stat = selectedButton.dataset.stat;
   
-  // MANUALLY update store with selection
-  // This replaces the event delegation approach that fails in JSDOM
+  // MANUALLY update store with selection - This is a **test-specific workaround**
+  // necessitated by JSDOM limitations, to simulate the effect of the full event
+  // emission chain without relying on unreliable JSDOM event propagation.
   const store = getBattleStore();
   store.playerChoice = stat;
   store.selectionMade = true;
@@ -300,7 +311,7 @@ npm run test:battles:classic
 ### `/workspaces/judokon/tests/integration/battleClassic.integration.test.js`
 
 **Changes:**
-- Updated `performStatSelectionFlow()` helper to use `waitForBattleState()` instead of polling
+- Updated `performStatSelectionFlow()` helper (defined in `tests/integration/battleClassic.integration.test.js`) to use `waitForBattleState()` instead of polling
 - Refactored 5 of 6 tests to eliminate direct dispatch assertions
 - Added proper state waiting before dispatch
 
