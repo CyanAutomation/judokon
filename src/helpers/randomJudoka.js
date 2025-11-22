@@ -234,7 +234,7 @@ export function selectRandomElement(array, rng = Math.random) {
     return null;
   }
 
-  const rngSource = arguments.length > 1 ? arguments[1] : rng;
+  const rngSource = arguments.length > 1 ? arguments[1] : Math.random;
   const randomIndex = Math.floor(getRandomValue(rngSource) * array.length);
   return array[randomIndex];
 }
