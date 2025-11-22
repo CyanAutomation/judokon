@@ -250,9 +250,7 @@ describe("Random Judoka Selection", () => {
     it("should throw when rng returns invalid values", () => {
       const array = ["only", "two"];
 
-      expect(() => selectRandomElement(array, () => NaN)).toThrow(
-        /finite number within \[0, 1\)/
-      );
+      expect(() => selectRandomElement(array, () => NaN)).toThrow(/finite number within \[0, 1\)/);
       expect(() => selectRandomElement(array, { random: () => 1.2 })).toThrow(
         /finite number within \[0, 1\)/
       );

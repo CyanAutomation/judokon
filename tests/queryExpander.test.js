@@ -144,7 +144,9 @@ describe("Query Expansion", () => {
     });
 
     it("should clamp very long queries to a predictable size", async () => {
-      const longQuery = Array.from({ length: MAX_QUERY_TERMS + 5 }, (_, idx) => `term${idx}`).join(" ");
+      const longQuery = Array.from({ length: MAX_QUERY_TERMS + 5 }, (_, idx) => `term${idx}`).join(
+        " "
+      );
       const result = await expandQuery(longQuery);
       const terms = result.expanded.split(/\s+/);
 
@@ -183,7 +185,9 @@ describe("Query Expansion", () => {
       // Verify that all expanded tokens are either from original tokens or added synonyms
       const originalTokensSet = new Set(longTokens);
       const addedTermsSet = new Set(result.addedTerms);
-      expect(expandedTokens.every((token) => originalTokensSet.has(token) || addedTermsSet.has(token))).toBe(true);
+      expect(
+        expandedTokens.every((token) => originalTokensSet.has(token) || addedTermsSet.has(token))
+      ).toBe(true);
       expect(result.expanded.length).toBeLessThanOrEqual(MAX_QUERY_LENGTH);
     });
 
@@ -203,7 +207,9 @@ describe("Query Expansion", () => {
       const result = await expandQuery(verboseQuery);
       const addedLength = result.addedTerms.join(" ").length;
 
-      const fillerTermCount = result.expanded.split(/\s+/).filter((term) => term.startsWith("filler")).length;
+      const fillerTermCount = result.expanded
+        .split(/\s+/)
+        .filter((term) => term.startsWith("filler")).length;
 
       expect(fillerTermCount).toBe(MAX_QUERY_TERMS - 2); // -2 for "kumikata" and "grip"
       expect(result.expanded.length).toBeLessThanOrEqual(MAX_QUERY_LENGTH + addedLength);
