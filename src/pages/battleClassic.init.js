@@ -26,7 +26,8 @@ import {
   STATS,
   on as onEngine,
   getRoundsPlayed,
-  isMatchEnded
+  isMatchEnded,
+  getScores
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
@@ -152,6 +153,8 @@ const READY_SUPPRESSION_WINDOW_MS = (() => {
 })();
 
 let hasLoggedFinalizeSelectionUpdateFailure = false;
+// Track manual round start for ready event suppression
+let lastManualRoundStartTimestamp = 0;
 
 /**
  * Waits for the stat buttons hydration promise (when present) so UI updates
@@ -526,7 +529,6 @@ async function confirmMatchOutcome(store, result) {
   let matchEnded = Boolean(snapshot?.matchEnded);
   let engineScores = null;
   try {
-    const { isMatchEnded, getScores } = await import("../helpers/battleEngineFacade.js");
     if (!matchEnded && typeof isMatchEnded === "function" && isMatchEnded()) {
       matchEnded = true;
       snapshot = snapshot || {};
@@ -795,11 +797,12 @@ if (typeof window !== "undefined") {
 
 /**
  * Initializes the battle state badge element based on feature flag state
- * and any runtime overrides. This function performs synchronous DOM
- * manipulation to ensure the badge's initial visibility is set correctly
- * before the rest of the page loads.
+ * and any runtime overrides.
  *
  * @summary Sets the initial visibility and content of the battle state badge.
+ *
+ * @param {Object} [options={}] - Configuration options.
+ * @param {boolean} [options.force=false] - Force badge visibility regardless of current state.
  *
  * @returns {void}
  *
@@ -808,62 +811,32 @@ if (typeof window !== "undefined") {
  * 2. Get a reference to the `#battle-state-badge` element. If not found, exit.
  * 3. If the override is enabled:
  *    a. Set `badge.hidden` to `false` and remove the `hidden` attribute.
- *    b. Set the `badge.textContent` to "Lobby".
- * 4. If the override is not enabled, the badge remains hidden (its default state).
- * 5. Wrap all DOM operations in a `try...catch` block to prevent errors during page initialization.
+ *    b. Set the `badge.textContent` to "Lobby" (unless force=false and text exists).
+ * 4. Wrap all DOM operations in a `try...catch` block.
  */
-function initBattleStateBadge() {
+function initBattleStateBadge(options = {}) {
+  const { force = true } = options;
   try {
-    // Check for feature flag override first
     const overrideEnabled =
       typeof window !== "undefined" &&
       window.__FF_OVERRIDES &&
       window.__FF_OVERRIDES.battleStateBadge;
 
-    console.debug("battleClassic: badge check", { overrideEnabled });
-
     const badge = document.getElementById("battle-state-badge");
     if (!badge) return;
 
     if (overrideEnabled) {
-      console.debug("battleClassic: enabling badge via override");
       badge.hidden = false;
       badge.removeAttribute("hidden");
-      badge.textContent = "Lobby";
-      console.debug("battleClassic: badge enabled", badge.hidden, badge.hasAttribute("hidden"));
-    } else {
-      console.debug("battleClassic: badge remains hidden");
+      const txt = String(badge.textContent || "");
+      // Keep any explicit round label; otherwise show Lobby
+      if (force || !/\bRound\b/i.test(txt)) {
+        badge.textContent = "Lobby";
+      }
     }
   } catch (err) {
     console.debug("battleClassic: badge setup failed", err);
   }
-}
-
-/**
- * Ensure the state badge shows "Lobby" when the feature flag override is set.
- *
- * Defensive re-assertion used in E2E to avoid any early default writers
- * switching the badge to a generic placeholder (e.g. "State: —").
- *
- * @pseudocode
- * 1. If `window.__FF_OVERRIDES.battleStateBadge` is truthy, locate the badge.
- * 2. Make it visible and set textContent to "Lobby" unless already showing a round label.
- */
-function ensureLobbyBadge() {
-  try {
-    const w = typeof window !== "undefined" ? window : null;
-    const overrides = w && w.__FF_OVERRIDES;
-    if (!overrides || !overrides.battleStateBadge) return;
-    const badge = document.getElementById("battle-state-badge");
-    if (!badge) return;
-    badge.hidden = false;
-    badge.removeAttribute("hidden");
-    const txt = String(badge.textContent || "");
-    // Keep any explicit round label; otherwise show Lobby for the lobby state.
-    if (!/\bRound\b/i.test(txt)) {
-      badge.textContent = "Lobby";
-    }
-  } catch {}
 }
 
 /**
@@ -1400,17 +1373,315 @@ function showRoundSelectFallback(store) {
 }
 
 /**
- * Initializes the Classic Battle page and its UI bindings.
+ * Set up scoreboard and initial UI state.
+ * @pseudocode
+ * 1. Initialize scoreboard with no-op timer controls.
+ * 2. Ensure opponent card visibility.
+ * 3. Initialize scoreboard adapter.
+ * 4. Seed visible defaults for score and round counter.
+ */
+function setupInitialUI() {
+  setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
+
+  const opponentCard = document.getElementById("opponent-card");
+  if (opponentCard) {
+    opponentCard.classList.remove("opponent-hidden");
+    opponentCard.classList.add("is-obscured");
+  }
+
+  initScoreboardAdapter();
+  updateScore(0, 0);
+
+  const sd = document.getElementById("score-display");
+  if (sd) {
+    const hasExcessWhitespace = /\n\s{2,}/.test(sd.innerHTML);
+    if (hasExcessWhitespace) {
+      sd.innerHTML = `<span data-side="player"><span data-part="label">You:</span> <span data-part="value">0</span></span>\n<span data-side="opponent"><span data-part="label">Opponent:</span> <span data-part="value">0</span></span>`;
+    }
+  }
+
+  updateRoundCounter(0);
+  const rc = document.getElementById("round-counter");
+  if (rc && !rc.textContent) rc.textContent = "Round 0";
+}
+
+/**
+ * Wire event listeners for cooldown transitions.
+ * @param {Object} store - Battle store.
+ */
+function wireCooldownEvents(store) {
+  const markFromEvent = () => {
+    markCooldownStarted(store);
+  };
+  onBattleEvent("nextRoundCountdownStarted", markFromEvent);
+  onBattleEvent("control.countdown.started", markFromEvent);
+  onBattleEvent("countdownStart", markFromEvent);
+}
+
+/**
+ * Wire global event listeners for round cycles and match events.
+ * @param {Object} store - Battle store.
+ */
+function wireGlobalBattleEvents(store) {
+  onBattleEvent("roundResolved", (e) => {
+    try {
+      const result = e?.detail?.result;
+      if (!result || !result.matchEnded) return;
+      const outcome = String(result?.outcome || "");
+      const scores = {
+        player: Number(result?.playerScore) || 0,
+        opponent: Number(result?.opponentScore) || 0
+      };
+      showEndModal(store, { outcome, scores });
+    } catch {}
+  });
+
+  onEngine?.("matchEnded", (detail) => {
+    try {
+      const outcome = String(detail?.outcome || "");
+      if (outcome === "quit") return;
+      const scores = {
+        player: Number(detail?.playerScore) || 0,
+        opponent: Number(detail?.opponentScore) || 0
+      };
+      showEndModal(store, { outcome, scores });
+    } catch {}
+  });
+}
+
+/**
+ * Wire UI control buttons (next, replay, quit, home).
+ * @param {Object} store - Battle store.
+ */
+function wireControlButtons(store) {
+  const nextBtn = document.getElementById("next-button");
+  if (nextBtn) nextBtn.addEventListener("click", onNextButtonClick);
+
+  const replayBtn = document.getElementById("replay-button");
+  if (replayBtn) {
+    replayBtn.addEventListener("click", async () => {
+      stopActiveSelectionTimer();
+      isStartingRoundCycle = false;
+      resetOpponentPromptTimestamp();
+      resetRoundCounterTracking();
+
+      if (store.statTimeoutId) {
+        clearTimeout(store.statTimeoutId);
+        store.statTimeoutId = null;
+      }
+      if (store.autoSelectId) {
+        clearTimeout(store.autoSelectId);
+        store.autoSelectId = null;
+      }
+
+      await handleReplay(store);
+      await waitForStatButtonsReady();
+      updateScore(0, 0);
+      updateRoundCounter(1);
+      resetFallbackScores();
+    });
+  }
+
+  const quitBtn = document.getElementById("quit-button");
+  if (quitBtn) quitBtn.addEventListener("click", () => quitMatch(store, quitBtn));
+
+  bindHomeButton(store);
+}
+
+/**
+ * Handle round start event with deduplication.
+ * @param {Object} store - Battle store.
+ * @param {Event} evt - Event object.
+ */
+async function handleRoundStartEvent(store, evt) {
+  const eventType = typeof evt === "string" ? evt : evt?.type;
+  const eventDetail =
+    evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
+  const manualRoundStart =
+    eventType === "round.start" &&
+    eventDetail &&
+    typeof eventDetail === "object" &&
+    eventDetail?.source === "next-button";
+
+  if (manualRoundStart) {
+    lastManualRoundStartTimestamp = getCurrentTimestamp();
+    if (typeof window !== "undefined") {
+      try {
+        window.__lastManualRoundStartTimestamp = lastManualRoundStartTimestamp;
+      } catch {}
+    }
+  }
+
+  if (eventType === "ready") {
+    queueMicrotask(async () => {
+      const now = getCurrentTimestamp();
+      const hasManualStamp = lastManualRoundStartTimestamp > 0;
+      const elapsedSinceManual = hasManualStamp
+        ? now - lastManualRoundStartTimestamp
+        : Number.POSITIVE_INFINITY;
+      const skipDueToManual =
+        hasManualStamp &&
+        elapsedSinceManual >= 0 &&
+        elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
+      if (skipDueToManual) {
+        return;
+      }
+      try {
+        await startRoundCycle(store);
+        recordRoundCycleTrigger(eventType || "unknown");
+      } catch (err) {
+        console.error("battleClassic: startRoundCycle ready handler failed", err);
+        if (err instanceof JudokaDataLoadError) {
+          recordJudokaLoadFailureTelemetry("event.ready.startRoundCycle");
+        } else {
+          showFatalInitError(err);
+        }
+      }
+    });
+  } else {
+    try {
+      await startRoundCycle(store);
+      recordRoundCycleTrigger(eventType || "unknown");
+    } catch (err) {
+      console.error("battleClassic: startRoundCycle round.start handler failed", err);
+      if (err instanceof JudokaDataLoadError) {
+        recordJudokaLoadFailureTelemetry("event.round.start.startRoundCycle");
+      } else {
+        showFatalInitError(err);
+      }
+    }
+  }
+
+  if (typeof isMatchEnded === "function" && isMatchEnded()) return;
+}
+
+/**
+ * Wire round cycle events (ready, round.start, roundStarted).
+ * @param {Object} store - Battle store.
+ */
+function wireRoundCycleEvents(store) {
+  onBattleEvent("round.start", (evt) => handleRoundStartEvent(store, evt));
+  onBattleEvent("ready", (evt) => handleRoundStartEvent(store, evt));
+  onBattleEvent("roundStarted", async () => {
+    if (isStartingRoundCycle) return;
+    try {
+      await startRoundCycle(store, { skipStartRound: true });
+    } catch (err) {
+      console.error("battleClassic: startRoundCycle roundStarted handler failed", err);
+      if (err instanceof JudokaDataLoadError) {
+        recordJudokaLoadFailureTelemetry("event.roundStarted.startRoundCycle");
+      } else {
+        showFatalInitError(err);
+      }
+    }
+  });
+}
+
+/**
+ * Handle card retry and error exit events.
+ * @param {Object} store - Battle store.
+ */
+function wireCardEventHandlers(store) {
+  if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+    if (window.__classicBattleRetryListener) {
+      window.removeEventListener(CARD_RETRY_EVENT, window.__classicBattleRetryListener);
+    }
+    const retryListener = async () => {
+      try {
+        await startRoundCycle(store);
+      } catch (err) {
+        console.error("battleClassic: startRoundCycle retry failed", err);
+        showFatalInitError(err);
+      }
+    };
+    window.__classicBattleRetryListener = retryListener;
+    window.addEventListener(CARD_RETRY_EVENT, retryListener);
+
+    if (window.__classicBattleExitListener) {
+      window.removeEventListener(LOAD_ERROR_EXIT_EVENT, window.__classicBattleExitListener);
+    }
+    const exitListener = () => {
+      try {
+        stopActiveSelectionTimer();
+      } catch {}
+      setHeaderNavigationLocked(false);
+      try {
+        document.body.removeAttribute("data-battle-active");
+      } catch {}
+      setBadgeText("Lobby");
+      try {
+        showSnackbar("");
+      } catch {}
+      try {
+        if (!document.getElementById("round-select-error")) {
+          showRoundSelectFallback(store);
+        }
+      } catch {}
+    };
+    window.__classicBattleExitListener = exitListener;
+    window.addEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
+  }
+}
+
+/**
+ * Initialize round select modal and handle match start.
+ * @param {Object} store - Battle store.
+ */
+async function initializeMatchStart(store) {
+  try {
+    await initRoundSelectModal(async () => {
+      try {
+        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+          console.debug(
+            `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
+          );
+        }
+      } catch {}
+      setBadgeText("Round");
+      document.body.setAttribute("data-battle-active", "true");
+      setHeaderNavigationLocked(true);
+      broadcastBattleState("matchStart");
+      try {
+        await startRoundCycle(store);
+      } catch (err) {
+        console.error("battleClassic: startRoundCycle failed", err);
+        setHeaderNavigationLocked(false);
+        try {
+          document.body.removeAttribute("data-battle-active");
+        } catch {}
+        setBadgeText("Lobby");
+        if (err instanceof JudokaDataLoadError) {
+          recordJudokaLoadFailureTelemetry("initRoundSelectModal.startRoundCycle");
+          return;
+        }
+        showFatalInitError(err);
+        return;
+      }
+    });
+  } catch (err) {
+    console.error("battleClassic: initRoundSelectModal failed", err);
+    if (err instanceof JudokaDataLoadError) {
+      recordJudokaLoadFailureTelemetry("initRoundSelectModal.bootstrap");
+    }
+    try {
+      showRoundSelectFallback(store);
+    } catch (fallbackError) {
+      console.error("battleClassic: showRoundSelectFallback failed", fallbackError);
+      try {
+        showFatalInitError(fallbackError);
+      } catch (fatalError) {
+        console.error("battleClassic: fatal error display failed", fatalError);
+      }
+      throw fallbackError;
+    }
+  }
+}
+
+/**
+ * Initializes the battle state badge element based on feature flag state
+ * and any runtime overrides.
  *
- * @summary This function bootstraps the scoreboard, battle engine, event bridges,
- * and UI handlers for the Classic Battle experience. It is designed to be
- * safely called at `DOMContentLoaded` and includes error handling for robustness.
- *
- * @description
- * This is the main entry point for setting up the Classic Battle page. It
- * performs a series of asynchronous operations to ensure all components are
- * ready and wired correctly. Internal operations are guarded with `try/catch`
- * blocks to prevent failures in optional features from breaking the entire page.
+ * @summary Sets the initial visibility and content of the battle state badge.
  *
  * @returns {Promise<void>} A promise that resolves when the Classic Battle page
  * is fully initialized.
@@ -1427,12 +1698,11 @@ function showRoundSelectFallback(store) {
  * 9. Bridge engine events to UI handlers using `bridgeEngineEvents()`.
  * 10. Create the battle store using `createBattleStore()` and expose it globally as `window.battleStore`.
  * 11. Bind transient UI helper event handlers using `bindUIHelperEventHandlersDynamic()`.
- * 12. Bind `roundResolved` event to show the end modal if the match has ended.
- * 13. Initialize the debug panel using `initDebugPanel()`.
- * 14. Bind `matchEnded` event from the engine to show the end modal.
- * 15. Wire click handlers for the "Next", "Replay", and "Quit" buttons.
- * 16. Initialize the round select modal using `initRoundSelectModal()`. If it fails, show a fallback start button.
- * 17. Bind `countdownFinished` event to start the next round cycle.
+ * 12. Initialize the debug panel using `initDebugPanel()`.
+ * 13. Wire control buttons (next, replay, quit, home).
+ * 14. Wire cooldown, battle, and round cycle events.
+ * 15. Wire card retry and exit event handlers.
+ * 16. Initialize the round select modal and handle match start.
  */
 async function init() {
   try {
@@ -1782,22 +2052,25 @@ async function init() {
 
 // Simple synchronous badge initialization
 function initBadgeSync() {
+  initBattleStateBadge({ force: true });
+}
+
+/**
+ * Update badge text to indicate round state (non-destructive if not override).
+ *
+ * @param {string} text - Text to set on badge (e.g., "Round").
+ */
+function setBadgeText(text) {
   try {
-    const overrideEnabled =
-      typeof window !== "undefined" &&
-      window.__FF_OVERRIDES &&
-      window.__FF_OVERRIDES.battleStateBadge;
-
+    const w = typeof window !== "undefined" ? window : null;
+    const overrides = w && w.__FF_OVERRIDES;
+    if (!overrides || !overrides.battleStateBadge) return;
     const badge = document.getElementById("battle-state-badge");
-
-    if (badge && overrideEnabled) {
-      badge.hidden = false;
-      badge.removeAttribute("hidden");
-      badge.textContent = "Lobby";
-    }
-  } catch (err) {
-    console.debug("battleClassic: sync badge init failed", err);
-  }
+    if (!badge) return;
+    badge.hidden = false;
+    badge.removeAttribute("hidden");
+    badge.textContent = String(text || "Lobby");
+  } catch {}
 }
 
 // Only initialize automatically in browser context; in test/Node environments,

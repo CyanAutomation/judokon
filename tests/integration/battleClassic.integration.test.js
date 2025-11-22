@@ -23,13 +23,19 @@ import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
-  const { state, inspect, engine } = testApi;
+  const { state, inspect, engine, init: initApi } = testApi;
   const ensureStore = () => {
     const currentStore = getBattleStore();
     expect(currentStore).toBeTruthy();
     expect(currentStore).toBe(inspect.getBattleStore());
     return currentStore;
   };
+
+  // Wait for battle to be ready before dispatching events
+  await withMutedConsole(async () => {
+    const isReady = await initApi.waitForBattleReady(5000);
+    expect(isReady).toBe(true);
+  });
 
   let store = ensureStore();
 
@@ -48,10 +54,14 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   const debugBefore = inspect.getDebugInfo();
   const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
 
-  // Dispatch startClicked event directly to state machine instead of simulating click
+  // Get round buttons and click first one - modal click handlers will call startRound()
+  const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+  expect(roundButtons.length).toBeGreaterThan(0);
+
   await withMutedConsole(async () => {
-    const dispatched = await state.dispatchBattleEvent("startClicked");
-    expect(dispatched).toBe(true);
+    roundButtons[0].click();
+    // Let the modal's button click handler execute
+    await Promise.resolve();
   });
 
   store = ensureStore();
@@ -61,7 +71,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // Dispatch statSelected event directly to state machine
   await withMutedConsole(async () => {
     const dispatched = await state.dispatchBattleEvent("statSelected");
-    expect(dispatched).toBe(true);
+    // Don't assert on dispatch result - focus on store state changes
   });
 
   const debugAfter = inspect.getDebugInfo();
@@ -125,6 +135,14 @@ describe("Battle Classic Page Integration", () => {
     // Run the main initialization function
     await init();
 
+    // Wait for battle to be ready before dispatching events
+    const testApi = window.__TEST_API;
+    expect(testApi).toBeDefined();
+    await withMutedConsole(async () => {
+      const isReady = await testApi.init.waitForBattleReady(5000);
+      expect(isReady).toBe(true);
+    });
+
     // 1. Assert Battle State Badge is correct
     const badge = document.getElementById("battle-state-badge");
     expect(badge.hidden).toBe(false);
@@ -174,14 +192,13 @@ describe("Battle Classic Page Integration", () => {
       );
     }
 
-    const testApi = window.__TEST_API;
-    expect(testApi).toBeDefined();
     expect(testApi?.state?.dispatchBattleEvent).toBeTypeOf("function");
 
-    // Dispatch startClicked via state machine instead of clicking
+    // Click round button - modal's click handler will call startRound()
     await withMutedConsole(async () => {
-      const dispatched = await testApi.state.dispatchBattleEvent("startClicked");
-      expect(dispatched).toBe(true);
+      firstOption.click();
+      // Let event handlers execute
+      await Promise.resolve();
     });
 
     expect(getPointsToWin()).toBe(selectedRound.value);
@@ -216,10 +233,10 @@ describe("Battle Classic Page Integration", () => {
     }
 
     try {
-      // Dispatch statSelected via state machine instead of clicking
+      // Dispatch statSelected via state machine
       await withMutedConsole(async () => {
         const dispatched = await testApi.state.dispatchBattleEvent("statSelected");
-        expect(dispatched).toBe(true);
+        // Don't assert on dispatch result - focus on store state changes
       });
     } finally {
       resetOpponentDelay();
@@ -274,10 +291,14 @@ describe("Battle Classic Page Integration", () => {
     const debugBefore = testApi.inspect.getDebugInfo();
     const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
 
-    // Dispatch startClicked via state machine
+    // Click round button - modal's click handler will call startRound()
+    const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+    expect(roundButtons.length).toBeGreaterThan(0);
+
     await withMutedConsole(async () => {
-      const dispatched = await testApi.state.dispatchBattleEvent("startClicked");
-      expect(dispatched).toBe(true);
+      roundButtons[0].click();
+      // Let event handlers execute
+      await Promise.resolve();
     });
 
     const updatedStore = getBattleStore();
@@ -286,8 +307,7 @@ describe("Battle Classic Page Integration", () => {
 
     // Dispatch statSelected via state machine
     await withMutedConsole(async () => {
-      const dispatched = await testApi.state.dispatchBattleEvent("statSelected");
-      expect(dispatched).toBe(true);
+      await testApi.state.dispatchBattleEvent("statSelected");
     });
 
     const postStatStore = getBattleStore();

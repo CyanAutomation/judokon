@@ -11,7 +11,27 @@ Multiple integration tests in `tests/integration/battleClassic.integration.test.
 - `keeps roundsPlayed in sync between engine and store in orchestrated flow`
 - `exposes the battle store through the public accessor during a full selection flow`
 - `upgrades the placeholder card during opponent reveal`
-- `replaces the placeholder with the revealed opponent card after the first stat resolution`
+
+## Implementation Progress
+
+### Stage 1: Refactoring to Direct State Machine Dispatch
+
+**Status:** IN PROGRESS
+
+**Work Completed:**
+- Created `performStatSelectionFlow()` helper that uses `testApi.state.dispatchBattleEvent()` instead of clicking buttons
+- Refactored 4 of 6 failing tests to use direct dispatch API
+- Removed `.skip()` marker from non-orchestrated flow test
+- Added `waitForBattleReady()` calls before dispatching events
+
+**Current Issue:**
+`dispatchBattleEvent("startClicked")` returns `false` during the round selection modal phase, indicating the state machine either:
+1. Isn't initialized yet despite `waitForBattleReady()` 
+2. Doesn't accept `startClicked` event at that phase
+3. The event name is incorrect for the round selection phase
+
+**Next Step:**
+Need to identify the correct event name and timing for triggering round selection and stat selection through the state machine dispatch API.
 
 ## Initial Failure Mode
 
