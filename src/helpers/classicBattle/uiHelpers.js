@@ -733,10 +733,11 @@ export function registerRoundStartErrorHandler(retryFn) {
  * 2. Disable all stat buttons and mark the chosen button as `selected` for visual feedback.
  * 3. Read player/opponent values from card elements and call `handleStatSelection`.
  * 4. Show a snackbar message indicating the chosen stat.
+ * 5. Return a promise that resolves when selection is complete (for testing).
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
  * @param {string} stat - Stat key to select (e.g. 'strength').
- * @returns {void}
+ * @returns {Promise<void>} Promise that resolves when selection completes (primarily for testing).
  */
 export function selectStat(store, stat) {
   try {
@@ -789,11 +790,17 @@ export function selectStat(store, stat) {
       }
     } catch {}
   }
+
+  // Return a promise that resolves when selection completes
+  // This allows tests to await the full selection flow
+  let selectionPromise = Promise.resolve();
   try {
     const selectionOptions = delayOpponentMessage
       ? { playerVal, opponentVal, delayOpponentMessage: true }
       : { playerVal, opponentVal };
-    Promise.resolve(handleStatSelection(store, stat, selectionOptions)).catch(() => {});
+    selectionPromise = Promise.resolve(handleStatSelection(store, stat, selectionOptions)).catch(
+      () => {}
+    );
   } catch {}
 
   // Display snackbar feedback
@@ -814,7 +821,8 @@ export function selectStat(store, stat) {
       showSnackbar(`You Picked: ${label}`);
     } catch {}
   }
-}
+
+  return selectionPromise;
 
 function shouldDisplaySelectionSnackbar(store, delayOpponentMessage) {
   if (delayOpponentMessage) return false;

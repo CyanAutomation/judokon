@@ -94,12 +94,8 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // The chain updates store.selectionMade = true and store.playerChoice = stat,
   // and also emits the "statSelected" battle event which dispatches to the state machine
   await withMutedConsole(async () => {
-    selectStat(store, selectedStat);
-    // Let handlers execute - need to wait for the promise chain within selectStat to settle
-    // by doing multiple microtask yields to ensure store updates are visible
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    // selectStat now returns a promise that resolves when selection is complete
+    await selectStat(store, selectedStat);
   });
 
   // After selectStat completes, store should have selectionMade = true
@@ -112,10 +108,6 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // which eventually calls evaluateOutcome() to update roundsPlayed
   await withMutedConsole(async () => {
     await state.waitForBattleState("roundDecision", 5000);
-    // Give roundDecision's onEnter handler time to execute and call resolveRound()
-    // which triggers a promise chain that updates roundsPlayed via evaluateOutcome()
-    // Use a small timeout to ensure all promise chains settle
-    await new Promise((r) => setTimeout(r, 10));
   });
 
   const debugAfter = inspect.getDebugInfo();
