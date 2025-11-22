@@ -116,10 +116,8 @@ function sanitizeUnicodeWords(query) {
       sanitized += char;
     } else if (char === "_") {
       sanitized += " ";
-    } else if (WHITESPACE_REGEX.test(char)) {
-      sanitized += " ";
-    } else if (LETTER_NUMBER_REGEX.test(char)) {
-      sanitized += char;
+    } else if (LETTER_NUMBER_REGEX.test(char) || WHITESPACE_REGEX.test(char)) {
+      sanitized += WHITESPACE_REGEX.test(char) ? " " : char;
     } else {
       sanitized += " ";
     }
