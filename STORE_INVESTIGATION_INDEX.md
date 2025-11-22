@@ -325,4 +325,3 @@ If ANY of these fail:
 2. Is the store reference the same before/after?
 3. Are assertions running before async completes?
 4. Are test globals (`window`, `document`) preserved?
-

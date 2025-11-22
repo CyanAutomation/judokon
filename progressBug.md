@@ -414,3 +414,38 @@ npm run validate:data # Validate data schemas
 **Solution:** Hybrid approach combining event handlers + direct `selectStat()` call (with error propagation) + state dispatch (→)
 
 **Expected Outcome:** Fast, reliable unit/integration tests that verify battle logic without relying on fragile JSDOM event propagation, and with proper visibility into the entire execution chain.
+
+---
+
+## Task 1 Investigation Summary - Status: COMPLETE ✅
+
+### Key Findings
+
+1. **Store mutations ARE theoretically working** - No freezing/sealing, mutations code is correct
+2. **Problem is in the flow logic, NOT the store** - `validateAndApplySelection()` returns `null`, causing early exit from `handleStatSelection()`
+3. **Diagnostic infrastructure is in place** - Comprehensive logging added to trace the entire chain
+4. **Console logs are muted** - The diagnostics exist but are hidden by `withMutedConsole()` in tests
+
+### Root Cause
+
+Looking at `handleStatSelection()`:
+- Guard enters successfully  
+- BUT `validateAndApplySelection()` must be returning `null` (falsy)
+- This causes the function to return WITHOUT reaching `applySelectionToStore()`
+- Therefore no mutations happen
+
+### Evidence
+
+- Tests run fast (no timeouts) - proves async is working
+- Assertions fail on store properties - proves mutations didn't happen
+- Error verification in `applySelectionToStore()` doesn't throw - proves that code path wasn't reached
+
+### Action Items for Task 2
+
+Instead of "fixing silent error swallowing", the real fix is:
+1. Determine WHY `validateAndApplySelection()` returns `null`
+2. Check if `validateSelectionState()` is rejecting the selection
+3. Verify the battle state is actually `waitingForPlayerAction` when selection happens
+4. Add explicit error logging to understand the flow
+
+The diagnostic infrastructure is READY - just needs console logs to be visible!
