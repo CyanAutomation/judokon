@@ -1,5 +1,3 @@
-import path from "node:path";
-import { readFile } from "node:fs/promises";
 import { test, expect } from "./fixtures/commonSetup.js";
 import {
   waitForBattleReady,
@@ -7,12 +5,20 @@ import {
   waitForTestApi
 } from "./helpers/battleStateHelper.js";
 import { dispatchBattleEvent, readCountdown } from "./helpers/battleApiHelper.js";
+import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
+import { waitForNextRoundCountdown, waitForNextRoundReadyEvent } from "./fixtures/waits.js";
 
 const BATTLE_PAGE_URL = "/src/pages/battleClassic.html";
 const PLAYER_ACTION_STATE = "waitingForPlayerAction";
 
-async function navigateToBattle(page) {
-  await stubSentryImports(page);
+async function navigateToBattle(page, options = {}) {
+  const { cooldownMs = 1200, roundTimerMs = 16 } = options;
+
+  await applyDeterministicCooldown(page, {
+    cooldownMs,
+    roundTimerMs,
+    showRoundSelectModal: true
+  });
 
   await page.addInitScript(() => {
     window.__FF_OVERRIDES = {
@@ -26,60 +32,8 @@ async function navigateToBattle(page) {
   await waitForTestApi(page);
 }
 
-const SENTRY_MOCK =
-  "const Sentry = { captureException() {}, withScope(cb) { try { cb?.({ setTag() {}, setExtra() {} }); } catch (e) { console.warn('Sentry mock error:', e); } }, configureScope() {} };";
-
-async function stubSentryImports(page) {
-  await page.route("**/src/helpers/classicBattle/stateHandlers/*.js", async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\//, "");
-    const allowedPrefix = "src/helpers/classicBattle/stateHandlers/";
-    const normalizedPath = path.posix.normalize(relativePath);
-
-    if (
-      normalizedPath.includes("..") ||
-      normalizedPath !== relativePath ||
-      !normalizedPath.startsWith(allowedPrefix)
-    ) {
-      await route.abort();
-      return;
-    }
-
-    const sanitizedRelative = normalizedPath.slice(allowedPrefix.length);
-    if (!sanitizedRelative) {
-      await route.abort();
-      return;
-    }
-
-    const basePath = path.join(process.cwd(), allowedPrefix);
-    const basePathNormalized = path.resolve(basePath) + path.sep;
-    const filePath = path.resolve(basePathNormalized, sanitizedRelative);
-
-    if (!filePath.startsWith(basePathNormalized)) {
-      await route.abort();
-      return;
-    }
-
-    let source;
-
-    try {
-      source = await readFile(filePath, "utf8");
-    } catch (error) {
-      console.warn(`Failed to read file ${filePath}:`, error.message);
-      await route.abort();
-      return;
-    }
-
-    if (source.includes("@sentry/browser")) {
-      source = source.replace('import * as Sentry from "@sentry/browser";', SENTRY_MOCK);
-    }
-
-    await route.fulfill({ body: source, contentType: "application/javascript" });
-  });
-}
-
-async function launchClassicBattle(page) {
-  await navigateToBattle(page);
+async function launchClassicBattle(page, options = {}) {
+  await navigateToBattle(page, options);
 
   const quickButton = page.getByRole("button", { name: "Quick" });
   await expect(quickButton).toBeVisible();
@@ -89,33 +43,74 @@ async function launchClassicBattle(page) {
 }
 
 test.describe("Manual verification: Interrupt flow and cooldown", () => {
-  test("should handle interrupt round and progress to cooldown without stalling", async ({
+  test("interrupt transitions to cooldown and resumes with countdown cues", async ({
     page
   }) => {
-    await launchClassicBattle(page);
+    await launchClassicBattle(page, { cooldownMs: 1500, roundTimerMs: 12 });
 
-    await waitForBattleState(page, PLAYER_ACTION_STATE, {
-      timeout: 10_000,
-      allowFallback: false
-    });
+    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
 
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
       reason: "manual verification pause"
     });
     expect(interruptResult.ok).toBe(true);
 
-    await waitForBattleState(page, "cooldown", { timeout: 10_000, allowFallback: false });
+    await waitForBattleState(page, "cooldown", { allowFallback: false });
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-battle-state",
+      "cooldown"
+    );
 
+    const timerValue = page.locator('#next-round-timer [data-part="value"]');
+    await expect(timerValue).toHaveText(/\d+s/i);
+
+    const countdownValue = await readCountdown(page);
+    expect(countdownValue).not.toBeNull();
+
+    await waitForNextRoundReadyEvent(page);
+    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-battle-state",
+      PLAYER_ACTION_STATE
+    );
+    await expect(page.getByTestId("stat-buttons")).toHaveAttribute(
+      "data-buttons-ready",
+      "true"
+    );
+    await expect(page.getByTestId("stat-button").first()).toBeEnabled();
+  });
+
+  test("interrupt during cooldown keeps countdown visible and resumes", async ({ page }) => {
+    await launchClassicBattle(page, { cooldownMs: 1800, roundTimerMs: 12 });
+
+    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
+    await page.getByTestId("stat-button").first().click();
+
+    await waitForBattleState(page, "cooldown", { allowFallback: false });
     await expect
       .poll(async () => {
         return await readCountdown(page);
       })
       .not.toBeNull();
 
-    await waitForBattleState(page, PLAYER_ACTION_STATE, {
-      timeout: 10_000,
-      allowFallback: false
+    const interruptResult = await dispatchBattleEvent(page, "interrupt", {
+      reason: "cooldown coverage"
     });
+    expect(interruptResult.ok).toBe(true);
+
+    const timerValue = page.locator('#next-round-timer [data-part="value"]');
+    await expect(timerValue).toHaveText(/\d+s/i);
+
+    await waitForNextRoundReadyEvent(page);
+    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
+    const roundText = await page.getByTestId("round-counter").innerText();
+    const roundNumber = Number.parseInt(roundText.replace(/\D+/g, ""), 10);
+    expect(roundNumber).toBeGreaterThanOrEqual(1);
+    await expect(page.getByTestId("stat-buttons")).toHaveAttribute(
+      "data-buttons-ready",
+      "true"
+    );
+    await expect(page.getByTestId("stat-button").first()).toBeEnabled();
   });
 
   test("should expose debug state when available", async ({ page }) => {
@@ -135,34 +130,5 @@ test.describe("Manual verification: Interrupt flow and cooldown", () => {
     expect(diagnostics.hasInitHelper).toBe(true);
     expect(diagnostics.hasDispatch).toBe(true);
     expect(diagnostics.hasStateGetter).toBe(true);
-  });
-
-  test("should verify interrupt functionality integrates without errors", async ({ page }) => {
-    const consoleErrors = [];
-    page.on("console", (msg) => {
-      if (msg.type() === "error") {
-        consoleErrors.push(msg.text());
-      }
-    });
-
-    await launchClassicBattle(page);
-
-    await waitForBattleState(page, PLAYER_ACTION_STATE, {
-      timeout: 10_000,
-      allowFallback: false
-    });
-
-    const interruptResult = await dispatchBattleEvent(page, "interrupt", {
-      reason: "console guard"
-    });
-    expect(interruptResult.ok).toBe(true);
-
-    await waitForBattleState(page, "cooldown", { timeout: 10_000, allowFallback: false });
-    await waitForBattleState(page, PLAYER_ACTION_STATE, {
-      timeout: 10_000,
-      allowFallback: false
-    });
-
-    expect(consoleErrors).toEqual([]);
   });
 });

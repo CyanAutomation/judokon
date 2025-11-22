@@ -25,6 +25,7 @@
 
 import { test as base, expect } from "@playwright/test";
 import { registerCommonRoutes } from "./commonRoutes.js";
+import { installSentryStub } from "./sentryStub.js";
 
 const showLogsInBrowser =
   typeof process !== "undefined" && !!process.env && !!process.env.SHOW_TEST_LOGS;
@@ -200,6 +201,7 @@ export const test = base.extend({
         { once: true }
       );
     });
+    await installSentryStub(page);
     await registerCommonRoutes(page);
     await use(page);
   }
