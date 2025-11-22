@@ -110,7 +110,7 @@ const UNICODE_WHITESPACE_REGEX = /\s/;
 // so expanded terms never include punctuation even when the original query does. Uses
 // character-by-character filtering to stay Unicode-aware without regex backtracking risks.
 function sanitizeUnicodeWords(query) {
-  return query.replace(/./gu, (char) => {
+  return query.replace(/[\s\S]/gu, (char) => {
     if (char === "-") return "-";
     if (char === "_") return " ";
     if (UNICODE_LETTER_NUMBER_REGEX.test(char)) return char;
