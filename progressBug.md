@@ -429,6 +429,7 @@ npm run validate:data # Validate data schemas
 ### Root Cause
 
 Looking at `handleStatSelection()`:
+
 - Guard enters successfully  
 - BUT `validateAndApplySelection()` must be returning `null` (falsy)
 - This causes the function to return WITHOUT reaching `applySelectionToStore()`
@@ -443,6 +444,7 @@ Looking at `handleStatSelection()`:
 ### Action Items for Task 2
 
 Instead of "fixing silent error swallowing", the real fix is:
+
 1. Determine WHY `validateAndApplySelection()` returns `null`
 2. Check if `validateSelectionState()` is rejecting the selection
 3. Verify the battle state is actually `waitingForPlayerAction` when selection happens

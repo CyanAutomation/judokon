@@ -39,7 +39,7 @@
 
 - **Test Accessor**: `tests/utils/battleStoreAccess.js`
 - **Function**: `getBattleStore()`
-- **Fallback Chain**: 
+- **Fallback Chain**:
   1. `window.__TEST_API.inspect.getBattleStore()`
   2. `window.__classicbattledebugapi.battleStore`
   3. `window.battleStore`
@@ -55,7 +55,7 @@
 
 ### State Reset
 
-- **Files**: 
+- **Files**:
   - `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js:43-45`
   - `src/helpers/classicBattle/controller.js:105`
   - `src/helpers/classicBattle/roundManager.js:272, 308, 1218`
@@ -301,6 +301,7 @@ These points guarantee mutations worked correctly:
 4. **Promise returned** and awaited by test
 
 If ANY of these fail:
+
 - ❌ Error thrown → Mutation verification failed
 - ❌ No logs → Verification code not reached (earlier error)
 - ❌ Different reference → Store reference changed (test setup issue)
@@ -313,6 +314,7 @@ If ANY of these fail:
 **The store mutation system is working correctly.**
 
 **All mutations to `selectionMade` and `playerChoice`:**
+
 - ✅ Apply to the correct store object
 - ✅ Persist in the same reference
 - ✅ Are verified immediately
@@ -321,6 +323,7 @@ If ANY of these fail:
 - ✅ Include comprehensive debug logging
 
 **If tests fail, check:**
+
 1. Is `selectStat()` promise awaited?
 2. Is the store reference the same before/after?
 3. Are assertions running before async completes?

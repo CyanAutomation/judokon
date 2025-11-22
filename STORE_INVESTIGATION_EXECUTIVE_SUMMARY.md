@@ -217,6 +217,7 @@ If tests fail with claims that mutations don't persist, the actual issue is like
 If you're seeing mutation failures:
 
 ### Step 1: Enable debug logging
+
 All verification code is gated by `IS_VITEST` and will log to console:
 
 - Before mutation: `[applySelectionToStore] BEFORE: {...}`
