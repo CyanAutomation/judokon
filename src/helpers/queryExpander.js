@@ -102,28 +102,21 @@ function findSynonymMatches(query, synonymMap) {
   return matches;
 }
 
-const LETTER_NUMBER_REGEX = /[\p{L}\p{N}]/u;
-const WHITESPACE_REGEX = /\s/;
+// Unicode-aware character classification patterns
+const UNICODE_LETTER_NUMBER_REGEX = /[\p{L}\p{N}]/u;
+const UNICODE_WHITESPACE_REGEX = /\s/;
 
 // Strip special characters (preserving hyphens), normalize case, and clamp length/term count
 // so expanded terms never include punctuation even when the original query does. Uses
 // character-by-character filtering to stay Unicode-aware without regex backtracking risks.
 function sanitizeUnicodeWords(query) {
-  let sanitized = "";
-
-  for (const char of query) {
-    if (char === "-") {
-      sanitized += char;
-    } else if (char === "_") {
-      sanitized += " ";
-    } else if (LETTER_NUMBER_REGEX.test(char) || WHITESPACE_REGEX.test(char)) {
-      sanitized += WHITESPACE_REGEX.test(char) ? " " : char;
-    } else {
-      sanitized += " ";
-    }
-  }
-
-  return sanitized;
+  return query.replace(/./gu, (char) => {
+    if (char === "-") return "-";
+    if (char === "_") return " ";
+    if (UNICODE_LETTER_NUMBER_REGEX.test(char)) return char;
+    if (UNICODE_WHITESPACE_REGEX.test(char)) return " ";
+    return " ";
+  });
 }
 
 function normalizeAndLimitQuery(query) {
