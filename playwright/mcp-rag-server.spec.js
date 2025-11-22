@@ -13,6 +13,7 @@ async function waitForServerReadiness(transport, timeoutMs = 15000) {
     let isResolved = false;
     const timeout = setTimeout(() => {
       if (!isResolved) {
+        cleanup();
         reject(new Error("Timed out waiting for MCP server readiness"));
       }
     }, timeoutMs);
@@ -26,9 +27,17 @@ async function waitForServerReadiness(transport, timeoutMs = 15000) {
       }
     };
 
+    const cleanup = () => {
+      if (!isResolved) {
+        isResolved = true;
+        clearTimeout(timeout);
+        transport.stderr?.off("data", onData);
+      }
+    };
+
     transport.stderr?.on("data", onData);
     transport.onerror = (error) => {
-      clearTimeout(timeout);
+      cleanup();
       reject(error);
     };
   });
@@ -63,7 +72,7 @@ test.describe("MCP RAG Server", () => {
   let client;
   let transport;
 
-  test.beforeAll(async () => {
+  test.beforeEach(async () => {
     ({ client, transport } = createMcpToolClient(cwd));
 
     const readyPromise = waitForServerReadiness(transport);
@@ -71,9 +80,17 @@ test.describe("MCP RAG Server", () => {
     await readyPromise;
   });
 
-  test.afterAll(async () => {
-    await client?.close();
-    await transport?.close();
+  test.afterEach(async () => {
+    try {
+      await client?.close();
+    } catch (error) {
+      console.warn("Failed to close MCP client:", error);
+    }
+    try {
+      await transport?.close();
+    } catch (error) {
+      console.warn("Failed to close transport:", error);
+    }
   });
 
   test("should expose RAG tools with input schemas", async () => {
