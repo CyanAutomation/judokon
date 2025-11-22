@@ -1374,6 +1374,11 @@ function showRoundSelectFallback(store) {
 
 /**
  * Set up scoreboard and initial UI state.
+ *
+ * @summary Initializes the scoreboard component, opponent card display, and score/round counter defaults.
+ *
+ * @returns {void}
+ *
  * @pseudocode
  * 1. Initialize scoreboard with no-op timer controls.
  * 2. Ensure opponent card visibility.
@@ -1407,7 +1412,11 @@ function setupInitialUI() {
 
 /**
  * Wire event listeners for cooldown transitions.
+ *
+ * @summary Listens for countdown start events and marks cooldown state.
+ *
  * @param {Object} store - Battle store.
+ * @returns {void}
  */
 function wireCooldownEvents(store) {
   const markFromEvent = () => {
@@ -1420,7 +1429,11 @@ function wireCooldownEvents(store) {
 
 /**
  * Wire global event listeners for round cycles and match events.
+ *
+ * @summary Binds `roundResolved` and `matchEnded` events to show end-of-match modal.
+ *
  * @param {Object} store - Battle store.
+ * @returns {void}
  */
 function wireGlobalBattleEvents(store) {
   onBattleEvent("roundResolved", (e) => {
@@ -1451,7 +1464,11 @@ function wireGlobalBattleEvents(store) {
 
 /**
  * Wire UI control buttons (next, replay, quit, home).
+ *
+ * @summary Binds click handlers to next round, replay, quit, and home navigation buttons.
+ *
  * @param {Object} store - Battle store.
+ * @returns {void}
  */
 function wireControlButtons(store) {
   const nextBtn = document.getElementById("next-button");
@@ -1490,13 +1507,16 @@ function wireControlButtons(store) {
 
 /**
  * Handle round start event with deduplication.
+ *
+ * @summary Processes round.start and ready events, with suppression for duplicate manual triggers.
+ *
  * @param {Object} store - Battle store.
- * @param {Event} evt - Event object.
+ * @param {Event} evt - Event object (can be string or event).
+ * @returns {Promise<void>}
  */
 async function handleRoundStartEvent(store, evt) {
   const eventType = typeof evt === "string" ? evt : evt?.type;
-  const eventDetail =
-    evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
+  const eventDetail = evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
   const manualRoundStart =
     eventType === "round.start" &&
     eventDetail &&
@@ -1557,7 +1577,11 @@ async function handleRoundStartEvent(store, evt) {
 
 /**
  * Wire round cycle events (ready, round.start, roundStarted).
+ *
+ * @summary Binds event handlers for starting round cycles at appropriate times.
+ *
  * @param {Object} store - Battle store.
+ * @returns {void}
  */
 function wireRoundCycleEvents(store) {
   onBattleEvent("round.start", (evt) => handleRoundStartEvent(store, evt));
@@ -1579,7 +1603,11 @@ function wireRoundCycleEvents(store) {
 
 /**
  * Handle card retry and error exit events.
+ *
+ * @summary Wires card selection retry and error exit listeners for graceful error recovery.
+ *
  * @param {Object} store - Battle store.
+ * @returns {void}
  */
 function wireCardEventHandlers(store) {
   if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
@@ -1625,7 +1653,11 @@ function wireCardEventHandlers(store) {
 
 /**
  * Initialize round select modal and handle match start.
+ *
+ * @summary Sets up the round select modal; on selection, starts the first round cycle.
+ *
  * @param {Object} store - Battle store.
+ * @returns {Promise<void>}
  */
 async function initializeMatchStart(store) {
   try {
