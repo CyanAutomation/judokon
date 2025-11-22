@@ -83,7 +83,7 @@ export async function verifyNavigationTargets(page, linkIds = []) {
     if (!targetHref) continue;
     const navLink = page.getByTestId(nav.id);
     const expectedUrl = new URL(targetHref, originUrl).toString();
-    await navLink.evaluate((element) => element.click());
+    await navLink.click();
     await page.waitForURL(expectedUrl, { timeout: 10000 });
     await expect(page).toHaveURL(expectedUrl);
     await page.goto(originUrl);
