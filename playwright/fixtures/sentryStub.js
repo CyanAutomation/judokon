@@ -42,7 +42,7 @@ export async function installSentryStub(page) {
     } else {
       const existing = scope.Sentry;
       for (const key of Object.keys(stub)) {
-        if (typeof existing[key] !== "function") {
+        if (typeof existing[key] === "undefined") {
           existing[key] = stub[key];
         }
       }
