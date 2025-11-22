@@ -305,9 +305,28 @@ function validateSelectionState(store) {
  * @returns {{playerVal: number, opponentVal: number}}
  */
 function applySelectionToStore(store, stat, playerVal, opponentVal) {
+  try {
+    if (IS_VITEST) {
+      console.log("[applySelectionToStore] BEFORE:", {
+        selectionMade: store.selectionMade,
+        playerChoice: store.playerChoice
+      });
+    }
+  } catch {}
+
   store.selectionMade = true;
   store.__lastSelectionMade = true;
   store.playerChoice = stat;
+
+  try {
+    if (IS_VITEST) {
+      console.log("[applySelectionToStore] AFTER:", {
+        selectionMade: store.selectionMade,
+        playerChoice: store.playerChoice
+      });
+    }
+  } catch {}
+
   // Mirror selection to RoundStore
   try {
     try {
@@ -540,7 +559,7 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
   if (!validateSelectionState(store)) {
     try {
       if (IS_VITEST)
-        console.log("[test] handleStatSelection: validateSelectionState returned false");
+        console.log("[test] handleStatSelection: validateSelectionState returned FALSE");
     } catch {}
     if (store.selectionMade) {
       try {
@@ -550,7 +569,16 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
     return null;
   }
 
-  return applySelectionToStore(store, stat, playerVal, opponentVal);
+  try {
+    if (IS_VITEST)
+      console.log(
+        "[test] handleStatSelection: validateSelectionState PASSED, calling applySelectionToStore"
+      );
+  } catch {}
+
+  // DEBUG: Throw to force error message
+  throw new Error(`DEBUG: About to call applySelectionToStore for stat=${stat}`);
+  // return applySelectionToStore(store, stat, playerVal, opponentVal);
 }
 
 /**
@@ -857,6 +885,9 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
  * @returns {Promise<void>}
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+  // DEBUG: Force error
+  throw new Error(`DEBUG: handleStatSelection called with stat=${stat}`);
+
   try {
     if (IS_VITEST) {
       console.log("[handleStatSelection] Called with:", {
@@ -868,7 +899,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       });
     }
   } catch {}
-  
+
   const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
   if (!guard.entered) {
     try {

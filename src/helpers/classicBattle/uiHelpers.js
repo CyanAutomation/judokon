@@ -776,10 +776,17 @@ export function selectStat(store, stat) {
   const oCard = document.getElementById("opponent-card");
   const playerVal = getCardStatValue(pCard, stat);
   const opponentVal = getCardStatValue(oCard, stat);
-  
+
   // Safety check: if values are missing, throw error
-  if (playerVal === undefined || playerVal === null || opponentVal === undefined || opponentVal === null) {
-    throw new Error(`[selectStat] Missing stat values: playerVal=${playerVal}, opponentVal=${opponentVal} for stat=${stat}`);
+  if (
+    playerVal === undefined ||
+    playerVal === null ||
+    opponentVal === undefined ||
+    opponentVal === null
+  ) {
+    throw new Error(
+      `[selectStat] Missing stat values: playerVal=${playerVal}, opponentVal=${opponentVal} for stat=${stat}`
+    );
   }
   // fire selection and snackbar
   let delayOpponentMessage = false;
@@ -811,13 +818,12 @@ export function selectStat(store, stat) {
         storeSelectionMadeBefore: store.selectionMade
       });
     } catch {}
-    selectionPromise = handleStatSelection(store, stat, selectionOptions).catch(
-      (error) => {
-        try {
-          console.log("[selectStat] handleStatSelection error caught:", error);
-        } catch {}
-      }
-    );
+    selectionPromise = handleStatSelection(store, stat, selectionOptions).catch((error) => {
+      try {
+        console.log("[selectStat] handleStatSelection error caught:", error?.message);
+      } catch {}
+      throw error;
+    });
   } catch (error) {
     try {
       console.log("[selectStat] Outer catch error:", error);
