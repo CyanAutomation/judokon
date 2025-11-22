@@ -107,7 +107,8 @@ function findSynonymMatches(query, synonymMap) {
 function normalizeAndLimitQuery(query) {
   const normalized = query
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s-]+/gu, " ")
+    .replace(/[^\w\s-]/g, " ")
+    .replace(/_/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
