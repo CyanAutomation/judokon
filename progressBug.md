@@ -260,8 +260,9 @@ selectStat(store, stat); // This triggers full event chain
 ### Step 1: Update Helper Function (performStatSelectionFlow) and Address Silent Error Swallowing
 
 Modify `performStatSelectionFlow()` to:
-1.  **Call `selectStat(getBattleStore(), stat)`**: Instead of manually updating store properties.
-2.  **Ensure `selectStat()` properly propagates errors**: Investigate and fix the silent error swallowing in `src/helpers/classicBattle/uiHelpers.js` by ensuring the `.catch()` block either rethrows or logs errors visibly, allowing tests to correctly await its completion. This is critical for reliable store updates.
+
+1. **Call `selectStat(getBattleStore(), stat)`**: Instead of manually updating store properties.
+2. **Ensure `selectStat()` properly propagates errors**: Investigate and fix the silent error swallowing in `src/helpers/classicBattle/uiHelpers.js` by ensuring the `.catch()` block either rethrows or logs errors visibly, allowing tests to correctly await its completion. This is critical for reliable store updates.
 
 ```javascript
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
@@ -358,14 +359,17 @@ npm run validate:data # Validate data schemas
 ## Files Modified So Far
 
 ### `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js`
+
 - **Current Status:** CONTAINS DEBUG CODE - NEEDS CLEANUP
 - **Planned Change:** Remove debug error throws, ensure normal execution flow.
 
 ### `/workspaces/judokon/src/helpers/classicBattle/uiHelpers.js`
+
 - **Current Status:** ACCEPTABLE - logs errors instead of silently swallowing (line ~819)
 - **Planned Change:** Verify `selectStat()` properly propagates errors (rethrows or logs visibly).
 
 ### `/workspaces/judokon/tests/integration/battleClassic.integration.test.js`
+
 - **Current Status:** Tests run fast but fail on store assertions (line 96-107 and multiple test cases)
 - **Planned Change:** Update `performStatSelectionFlow()` to call `await selectStat(getBattleStore(), stat)` and remove manual store updates. Refine assertions to use `getBattleStore()`.
 
@@ -373,15 +377,15 @@ npm run validate:data # Validate data schemas
 
 ## Next Actions
 
-1.  **Clean up debug artifacts:** Remove debug error throws from `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js`.
-2.  **Fix silent error swallowing:** Modify the `.catch()` block in `selectStat()` (in `/workspaces/judokon/src/helpers/classicBattle/uiHelpers.js`) to log errors visibly and rethrow them, ensuring `selectStat()`'s promise reflects actual completion or failure.
-3.  **Update `performStatSelectionFlow()`:** Implement the changes for Step 1 of the "Recommended Implementation Plan" in `/workspaces/judokon/tests/integration/battleClassic.integration.test.js`.
-4.  **Update integration tests:** Implement Step 2 of the "Recommended Implementation Plan" by refining assertions in existing integration tests to use `getBattleStore()`.
-5.  **Create UI event binding unit tests:** Implement Step 3 of the "Recommended Implementation Plan" by creating `tests/classicBattle/uiEventBinding.test.js`.
-6.  **Validate and Verify:** Execute Step 4 of the "Recommended Implementation Plan", running all specified validation commands and confirming all tests pass.
-7.  **If store updates still not persisting:** If, after fixing error propagation and implementing the plan, `getBattleStore()` still does not reflect updates as expected (e.g., `roundsPlayed` not incrementing), then:
-    *   Add targeted logging within `applySelectionToStore()` and `roundDecision`'s `onEnter` handler.
-    *   Create a focused unit test for `applySelectionToStore()` as described in "Proposed Solution: Clean and Verify - Phase 4" to isolate the store object mutation.
+1. **Clean up debug artifacts:** Remove debug error throws from `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js`.
+2. **Fix silent error swallowing:** Modify the `.catch()` block in `selectStat()` (in `/workspaces/judokon/src/helpers/classicBattle/uiHelpers.js`) to log errors visibly and rethrow them, ensuring `selectStat()`'s promise reflects actual completion or failure.
+3. **Update `performStatSelectionFlow()`:** Implement the changes for Step 1 of the "Recommended Implementation Plan" in `/workspaces/judokon/tests/integration/battleClassic.integration.test.js`.
+4. **Update integration tests:** Implement Step 2 of the "Recommended Implementation Plan" by refining assertions in existing integration tests to use `getBattleStore()`.
+5. **Create UI event binding unit tests:** Implement Step 3 of the "Recommended Implementation Plan" by creating `tests/classicBattle/uiEventBinding.test.js`.
+6. **Validate and Verify:** Execute Step 4 of the "Recommended Implementation Plan", running all specified validation commands and confirming all tests pass.
+7. **If store updates still not persisting:** If, after fixing error propagation and implementing the plan, `getBattleStore()` still does not reflect updates as expected (e.g., `roundsPlayed` not incrementing), then:
+    - Add targeted logging within `applySelectionToStore()` and `roundDecision`'s `onEnter` handler.
+    - Create a focused unit test for `applySelectionToStore()` as described in "Proposed Solution: Clean and Verify - Phase 4" to isolate the store object mutation.
 
 ---
 

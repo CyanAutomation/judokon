@@ -1,7 +1,7 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {},
-  "postCreateCommand": "which rg >/dev/null 2>&1 || (apt-get update && apt-get install -y ripgrep || true)",
+  "postCreateCommand": "which rg >/dev/null 2>&1 || (apt-get update && apt-get install -y ripgrep || true); git config --global commit.gpgsign false",
   "customizations": {
     "vscode": {
       "settings": {

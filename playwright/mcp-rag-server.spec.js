@@ -108,7 +108,10 @@ test.describe("MCP RAG Server", () => {
   });
 
   test("judokon.getById should surface not-found responses", async () => {
-    const result = await client.callTool({ name: "judokon.getById", arguments: { id: "missing-id" } });
+    const result = await client.callTool({
+      name: "judokon.getById",
+      arguments: { id: "missing-id" }
+    });
 
     expect(result.isError).toBeFalsy();
     const text = await extractText(result);
@@ -136,8 +139,8 @@ test.describe("MCP RAG Server", () => {
       client.callTool({ name: "judokon.search", arguments: { topK: 2 } })
     ).rejects.toThrow(/Query parameter is required/);
 
-    await expect(
-      client.callTool({ name: "query_rag", arguments: {} })
-    ).rejects.toThrow(/Query parameter is required/);
+    await expect(client.callTool({ name: "query_rag", arguments: {} })).rejects.toThrow(
+      /Query parameter is required/
+    );
   });
 });
