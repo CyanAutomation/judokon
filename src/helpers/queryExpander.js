@@ -102,8 +102,19 @@ function findSynonymMatches(query, synonymMap) {
   return matches;
 }
 
+// Strip special characters (preserving hyphens), normalize case, and clamp length/term count
+// so expanded terms never include punctuation even when the original query does.
 function normalizeAndLimitQuery(query) {
-  const normalized = query.toLowerCase();
+  const normalized = query
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!normalized) {
+    return "";
+  }
+
   const limitedTerms = normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS);
   const limitedJoined = limitedTerms.join(" ");
   if (limitedJoined.length <= MAX_QUERY_LENGTH) {
@@ -122,6 +133,8 @@ function normalizeAndLimitQuery(query) {
  * Expand a query with synonyms for improved search relevance
  * Uses Levenshtein distance (max 2 edits) for fuzzy matching
  * Applies sensible limits to avoid runaway work on extremely long queries
+ * Normalizes queries by removing punctuation (while preserving hyphens) so added terms are
+ * free of special characters, while still returning the caller's original input unchanged.
  * @param {string} query - Search query to expand
  * @returns {Promise<ExpandedQueryResult>} Result with original query, expanded query, and matched terms
  *
