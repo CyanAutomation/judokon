@@ -354,7 +354,7 @@ async function executeJudokonSearch(query, topK, filters) {
  */
 async function handleJudokonSearch(query, topK = 8, filters = {}) {
   // Generate deterministic cache key
-  const cacheKey = queryCache.generateKey(query, topK, filters);
+  const cacheKey = LRUCache.generateKey(query, topK, filters);
 
   // Check cache
   const cached = queryCache.get(cacheKey);
