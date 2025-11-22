@@ -282,9 +282,41 @@ describe("Battle Classic Page Integration", () => {
       // selectStat() → handleStatSelection() → validateAndApplySelection() → applySelectionToStore()
       // This works around JSDOM event delegation limitations by calling the selection
       // handler directly, which updates store.selectionMade and store.playerChoice
-      await withMutedConsole(async () => {
+
+      // Add test ID to store for debugging
+      if (store && typeof store === "object") {
+        store.__testId = "test-" + Date.now();
+      }
+
+      // DIAGNOSTIC: Before calling selectStat
+      const storeBeforeSelection = getBattleStore();
+      const storeRefBefore = storeBeforeSelection;
+      console.log("[TEST DIAG] Before selectStat:", {
+        storeRefSame: storeRefBefore === store,
+        selectionMadeBefore: storeBeforeSelection.selectionMade,
+        playerChoiceBefore: storeBeforeSelection.playerChoice,
+        storeId: storeBeforeSelection?.__testId
+      });
+
+      try {
         // selectStat now returns a promise that resolves when selection is complete
-        await selectStat(store, selectedStat);
+        const selectStatPromise = selectStat(store, selectedStat);
+        console.log("[TEST DIAG] selectStat returned promise:", selectStatPromise instanceof Promise);
+        await selectStatPromise;
+        console.log("[TEST DIAG] selectStat promise resolved");
+      } catch (error) {
+        throw new Error(`selectStat failed: ${error?.message}`);
+      }
+
+      // DIAGNOSTIC: After calling selectStat
+      const storeAfterSelection = getBattleStore();
+      const storeRefAfter = storeAfterSelection;
+      console.log("[TEST DIAG] After selectStat:", {
+        storeRefSame: storeRefAfter === store,
+        storeRefChanged: storeRefAfter !== storeRefBefore,
+        selectionMadeAfter: storeAfterSelection.selectionMade,
+        playerChoiceAfter: storeAfterSelection.playerChoice,
+        storeId: storeAfterSelection?.__testId
       });
 
       // Verify store was updated

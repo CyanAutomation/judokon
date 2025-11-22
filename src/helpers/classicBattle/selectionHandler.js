@@ -315,8 +315,7 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
     }
   } catch {}
 
-  const beforeSelectionMade = store.selectionMade;
-  const beforePlayerChoice = store.playerChoice;
+
 
   store.selectionMade = true;
   store.__lastSelectionMade = true;

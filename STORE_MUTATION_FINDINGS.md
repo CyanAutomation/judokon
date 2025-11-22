@@ -425,3 +425,4 @@ The battle store mutation system appears to be working correctly. All mutations 
 4. **Test setup** - globals not preserved
 
 NOT due to store mutations not persisting.
+

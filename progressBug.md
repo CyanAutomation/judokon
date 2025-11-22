@@ -84,57 +84,73 @@ The real issue wasn't state machine transitions—it was that clicking stat butt
 
 ---
 
-## Current Status: Task 1 Investigation - Store Update Chain Execution 🔍 IN PROGRESS
+## Current Status: Task 1 Investigation - Store Update Chain Execution 🔍 **FINDINGS DOCUMENTED**
+
+### Key Discoveries
+
+1. **Store object itself is fully mutable** ✅
+   - No Object.freeze() or Object.seal() on store
+   - No non-writable property descriptors except for guard tokens (which are non-enumerable symbols)
+   - Store is accessed consistently via `window.battleStore` → `testApi.inspect.getBattleStore()` → `getBattleStore()` helper
+   - All paths return the same reference
+
+2. **Mutation code is correct** ✅
+   - `applySelectionToStore()` sets `store.selectionMade = true; store.playerChoice = stat;`
+   - Added immediate verification that throws error if mutation fails
+   - If test reaches assertion, mutations must have "succeeded" from code perspective
+
+3. **Test Flow Issue Identified** ⚠️
+   - `selectStat(store, selectedStat)` returns a Promise
+   - Promise is from `handleStatSelection()` which contains full event chain
+   - Guard token prevents concurrent calls but shouldn't block first call
+   - BUT: Test assertions show `playerChoice` is `null` after `await selectStat()`
+
+### Root Cause Hypothesis - NOT STORE MUTATION
+
+The problem is **NOT** that mutations don't persist. The problem is likely:
+
+1. **`selectStat()` promise resolves but returns early** - The guard may be blocking execution OR `validateAndApplySelection()` returns `null`
+2. **Store reference issue** - Possible but unlikely given accessor implementation
+3. **Event chain doesn't reach `applySelectionToStore()`** - Guard enters, but `validateSelectionState()` fails, causing early return
+4. **Console logs muted** - Diagnostic logging is hidden by `withMutedConsole()`, preventing visibility
+
+### Actual Problem
+
+Looking at the code flow in `handleStatSelection()`:
+
+```javascript
+const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
+if (!guard.entered) return getHiddenStoreValue(store, LAST_ROUND_RESULT);
+
+const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
+if (!values) return; // EARLY RETURN IF VALIDATION FAILS
+```
+
+**`validateAndApplySelection()` can return `null` if `validateSelectionState()` fails!**
+
+This means the store mutations NEVER happen if validation fails. The test should be failing with a different error OR validation is passing but something else is wrong.
 
 ### Actions Taken
 
-1. **Added comprehensive logging to the store update chain:**
-   - Enhanced `applySelectionToStore()` to log before/after state and verify mutations succeed
-   - Enhanced `dispatchStatSelected()` to log start, after emitSelectionEvent, and after dispatch
-   - Enhanced `handleStatSelection()` to log at key checkpoints with store state
-   - Added error checking in `applySelectionToStore()` to detect if mutations fail
+- Added comprehensive logging at key checkpoints
+- Added mutation verification in `applySelectionToStore()` that throws on failure
+- Added diagnostic logging in test to check store reference before/after `selectStat()`
+- Updated todo with findings
 
-2. **Verified tests are fast (no timeouts):** ✅
-   - Tests run in ~200-250ms instead of 5-6 seconds
-   - Eliminated timeout issues from Stage 1
+### Next Steps
 
-3. **Identified new issue:** ⚠️
-   - After calling `await selectStat(store, stat)`, the store still shows:
-     - `store.selectionMade = false` (should be `true`)
-     - `store.playerChoice = null` (should be `stat`)
-   - The mutation code `store.selectionMade = true; store.playerChoice = stat;` is not persisting
+**Must unmute console logs to see what's actually happening.** The logging infrastructure is in place but hidden. Options:
 
-### Key Discovery
+1. Remove `withMutedConsole()` wrapper around `selectStat()` call
+2. Use `testApi.inspect.getDebugInfo()` to check if system is even trying to apply selection
+3. Add assertion to log promise resolution value
 
-**The console logs ARE being muted by `withMutedConsole()` in the test**, preventing visibility into the execution chain. However, the critical clue is clear:
+### Files Modified
 
-- The store object that's passed to `selectStat()` is NOT being mutated
-- OR the store object retrieved after the call is a different reference
+- `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js` - Enhanced logging + mutation verification
+- `/workspaces/judokon/tests/integration/battleClassic.integration.test.js` - Added diagnostic assertions (still muted)
 
-### Next Steps for Task 1
-
-1. **Verify store reference integrity:** Check if `getBattleStore()` returns the same object throughout the test
-2. **Examine store object mutability:** Is the store object frozen, sealed, or configured with non-writable properties?
-3. **Check event listener registration:** Are store update listeners registered and firing?
-4. **Trace store access chain:** Follow all store references from init through to the test assertion
-
-### Current Test Error
-
-```javascript
-× initializes the page UI to the correct default state
-  → expected null to be 'power' (playerChoice not set)
-  → expected false to be true (selectionMade not set)
-```
-
-### Files Modified So Far
-
-- `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js` - Added comprehensive logging
-- `/workspaces/judokon/src/helpers/classicBattle/uiHelpers.js` - Already had logging
-- `/workspaces/judokon/tests/integration/battleClassic.integration.test.js` - Removed one layer of `withMutedConsole` for first test
-
----
-
-## Technical Deep Dive
+---## Technical Deep Dive
 
 ### How Stat Selection Normally Works (in App)
 
