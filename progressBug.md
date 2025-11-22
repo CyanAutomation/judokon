@@ -4,11 +4,11 @@
 
 **Original Issue:** Unit/integration tests for battle logic components are timing out and failing assertions in a JSDOM environment. Specifically, 6 tests were timing out (5-6 seconds each) while waiting for battle state transitions via JSDOM event simulation, and subsequently, store updates were not persisting.
 
-**Root Cause:** JSDOM event delegation doesn't reliably trigger stat button handlers, preventing store updates
+**Root Cause:** The store *does* pick up the player's selection, but by the time the test inspects it the orchestrator has already resolved the round and cleared `selectionMade`/`playerChoice`. Waiting on `selectStat()` hides the moment the mutation happens.
 
-**Solution Approach:** Replace JSDOM event simulation with direct state machine dispatch to test battle logic without relying on fragile event propagation
+**Solution Approach:** Call `selectStat()` (or the underlying handler) and assert the store immediately after the synchronous selection path completes, before the resolution promise finishes, so we capture the values before the orchestrator resets them.
 
-**Current Status:** Successfully eliminated timeouts, but discovered secondary blocker: state machine dispatch completes but store doesn't update
+**Current Status:** Timeouts are gone, but we now understand the remaining failure is a timing issue: the round resolution runs to completion before the test checks the store, so the test observes the cleaned-up state rather than the selection that was just applied.
 
 ---
 
@@ -80,7 +80,7 @@ expect(statButtons.length).toBeGreaterThan(0); // Direct DOM assertion
 
 ### Key Insight
 
-The real issue wasn't state machine transitions—it was that clicking stat buttons in JSDOM doesn't invoke the event handlers that update the store. The polling waits were masking this deeper problem.
+After the timeouts were removed we verified that `applySelectionToStore()` actually fires, but `selectStat()` resolves only after the round resolution completes, which immediately resets `selectionMade` and `playerChoice`. The previous polling waits were therefore inspecting the store after it had already been cleaned up, so we saw false negatives even though the mutation had occurred.
 
 ---
 
@@ -90,67 +90,44 @@ The real issue wasn't state machine transitions—it was that clicking stat butt
 
 1. **Store object itself is fully mutable** ✅
    - No Object.freeze() or Object.seal() on store
-   - No non-writable property descriptors except for guard tokens (which are non-enumerable symbols)
-   - Store is accessed consistently via `window.battleStore` → `testApi.inspect.getBattleStore()` → `getBattleStore()` helper
-   - All paths return the same reference
+   - Store is accessed via the public `getBattleStore()` helper, and every path returns the same reference
+   - Access to properties such as `selectionMade` and `playerChoice` is unrestricted
 
-2. **Mutation code is correct** ✅
-   - `applySelectionToStore()` sets `store.selectionMade = true; store.playerChoice = stat;`
-   - Added immediate verification that throws error if mutation fails
-   - If test reaches assertion, mutations must have "succeeded" from code perspective
+2. **Mutation code executes correctly** ✅
+   - `applySelectionToStore()` is invoked and sets `selectionMade = true` and `playerChoice = stat`
+   - Instrumentation of the mutation verified the selection history shows `stat: "power"` with `beforeSelection: false`
+   - The store becomes truthy during the immediate synchronous selection path
 
-3. **Test Flow Issue Identified** ⚠️
-   - `selectStat(store, selectedStat)` returns a Promise
-   - Promise is from `handleStatSelection()` which contains full event chain
-   - Guard token prevents concurrent calls but shouldn't block first call
-   - BUT: Test assertions show `playerChoice` is `null` after `await selectStat()`
+3. **Timing is the actual problem** ⚠️
+   - `selectStat()` returns a promise that only resolves once `resolveRound()` and its fallback are complete
+   - By the time the integration test awaits that promise, the orchestrator has already reset `selectionMade`/`playerChoice`
+   - The test therefore observes the cleaned-up store and concludes the mutation never happened
 
-### Root Cause Hypothesis - NOT STORE MUTATION
+### Root Cause
 
-The problem is **NOT** that mutations don't persist. The problem is likely:
-
-1. **`selectStat()` promise resolves but returns early** - The guard may be blocking execution OR `validateAndApplySelection()` returns `null`
-2. **Store reference issue** - Possible but unlikely given accessor implementation
-3. **Event chain doesn't reach `applySelectionToStore()`** - Guard enters, but `validateSelectionState()` fails, causing early return
-4. **Console logs muted** - Diagnostic logging is hidden by `withMutedConsole()`, preventing visibility
-
-### Actual Problem
-
-Looking at the code flow in `handleStatSelection()`:
-
-```javascript
-const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
-if (!guard.entered) return getHiddenStoreValue(store, LAST_ROUND_RESULT);
-
-const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
-if (!values) return; // EARLY RETURN IF VALIDATION FAILS
-```
-
-**`validateAndApplySelection()` can return `null` if `validateSelectionState()` fails!**
-
-This means the store mutations NEVER happen if validation fails. The test should be failing with a different error OR validation is passing but something else is wrong.
+The root cause is not a missing store mutation but a race in the test flow: the integration helper waits for `selectStat()` to finish, which includes the entire round resolution and cleanup. The state machine clears the selection immediately after the mutation, so assertions that run after the promise resolves always read `selectionMade === false`.
 
 ### Actions Taken
 
-- Added comprehensive logging at key checkpoints
-- Added mutation verification in `applySelectionToStore()` that throws on failure
-- Added diagnostic logging in test to check store reference before/after `selectStat()`
-- Updated todo with findings
+- Instrumented `applySelectionToStore()` locally to confirm the mutation fires before resolution and recorded the selection history for manual debugging
+- Verified that the selection history entry reports `stat: "power"` (or the stat being chosen) at the time of the mutation
+- Observed that as soon as `resolveRound()` completes, the store is reset (round metadata goes back to null), proving the timing window is lost
 
 ### Next Steps
 
-**Must unmute console logs to see what's actually happening.** The logging infrastructure is in place but hidden. Options:
+1. Update `performStatSelectionFlow()` to capture the store state immediately after `selectStat()` is invoked (before awaiting the returned promise). For example:
+   ```js
+   const selectionPromise = selectStat(store, selectedStat);
+   await Promise.resolve(); // allow the synchronous selection path to run
+   expect(getBattleStore().selectionMade).toBe(true);
+   await selectionPromise;
+   ```
+2. Consider adding a helper that exposes `selectStat()`'s mid-flight completion (e.g., resolve `selectionApplied` first and resolve the rest of the flow separately) so tests can assert without losing the selection window.
+3. Continue to let the original promise resolve before waiting for `roundDecision`/`roundsPlayed` assertions so the rest of the flow is still verified.
 
-1. Remove `withMutedConsole()` wrapper around `selectStat()` call
-2. Use `testApi.inspect.getDebugInfo()` to check if system is even trying to apply selection
-3. Add assertion to log promise resolution value
+---
 
-### Files Modified
-
-- `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js` - Enhanced logging + mutation verification
-- `/workspaces/judokon/tests/integration/battleClassic.integration.test.js` - Added diagnostic assertions (still muted)
-
----## Technical Deep Dive
+## Technical Deep Dive
 
 ### How Stat Selection Normally Works (in App)
 
@@ -173,143 +150,78 @@ Test clicks round button
 → Modal handler dispatches startClicked event
 → State machine transitions through cooldown → roundStart → waitingForPlayerAction
 → Test waits for waitingForPlayerAction state (✅ works)
-→ Test calls dispatchBattleEvent("statSelected")
-→ State machine transitions to roundDecision (unclear if this works)
-→ Store should be updated but isn't (❌ fails)
+→ Test calls `selectStat()` and `await` it
+→ The state machine resolves the round and clears the selection before the promise returns
+→ Store now reports `selectionMade === false`, so the assertion fails even though the selection happened
 ```
 
 ### The Disconnect
 
-The test dispatch path skips the normal event emission chain. It goes directly to state machine dispatch without:
-
-- Calling `selectStat()` to update initial player choice
-- Emitting `emitBattleEvent("statSelected")` to trigger listeners
-- Allowing orchestrator to coordinate between state machine and store
+The assertion fires after the promise returned by `selectStat()` resolves, which is *after* the orchestrator has already reset the selection state. The mutation never appears in the assertion window even though it ran synchronously, so the test incorrectly reports a regression.
 
 ---
 
 ## Proposed Solution Path
 
-### Option A: Hybrid Approach (Recommended)
+### Option A: Capture the store before resolution (Recommended)
 
-**Strategy:** Click modal button (use normal handlers) + manually call store update functions + dispatch state event. This approach leverages the discovery that `selectStat()` *does* execute and initiate the store update chain, but its `Promise` silently swallows errors, preventing visibility into whether the updates persisted. By ensuring proper error propagation and direct invocation, we can reliably test the battle logic.
+**Strategy:** Trigger the normal selection helpers but split the test into two phases: kick off `selectStat()`, check the store once the synchronous mutation has completed, and only then await the promise so `roundDecision` and score assertions can run.
 
 ```javascript
-// 1. Click round button - lets modal's startRound() work naturally
-roundButtons[0].click();
-await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
-
-// 2. Manually trigger stat selection logic
-//    This bypasses unreliable JSDOM event propagation for stat buttons
-const stat = "speed"; // or get from statButtons
-await selectStat(getBattleStore(), stat); // Ensure proper error handling/rethrowing in selectStat()
-
-// 3. Dispatch state machine event (if necessary, after store updates are confirmed)
-await testApi.state.dispatchBattleEvent("statSelected", { stat });
-
-// 4. Verify outcomes
+const selectionPromise = selectStat(store, selectedStat);
+await Promise.resolve(); // allow validateAndApplySelection + applySelectionToStore to run
 expect(getBattleStore().selectionMade).toBe(true);
-expect(getBattleStore().playerChoice).toBe(stat);
+expect(getBattleStore().playerChoice).toBe(selectedStat);
+await selectionPromise;
+await state.waitForBattleState('roundDecision', 5000);
 ```
 
 **Pros:**
-
-- Tests actual battle logic, including the store update flow (once silent errors are addressed).
-- Avoids unreliable JSDOM UI event simulation issues for stat buttons.
-- Clear and explicit about what's being tested.
-- Fast execution.
+- No production code change required; the tests simply observe the pre-cleanup window.
+- Keeps the rest of the flow intact by awaiting the original promise once the short-lived check passes.
+- Verifies the battle store as the user would see it immediately after picking a stat.
 
 **Cons:**
+- Tests must be careful to await the returned promise later so they still validate the rest of the flow.
 
-- Calls internal functions directly (`selectStat`), **but this is explicitly mitigated by Step 3: adding unit tests for UI event binding to ensure event handlers correctly invoke `selectStat()`.**
-- Relies on `selectStat()`'s promise resolving after store updates persist, which needs verification.
+### Option B: Expose a selection-applied promise from `selectStat()`
 
-### Option B: Full Orchestrator Path
-
-**Strategy:** Wire up complete event emission chain in test setup
-
-```javascript
-// Test setup properly initializes:
-// - Battle store with listeners
-// - Event emitter connected to state machine
-// - All handlers bound correctly
-
-// Then tests can:
-selectStat(store, stat); // This triggers full event chain
-// Which eventually updates store via event listeners
-```
+**Strategy:** Extend `selectStat()` (or the underlying `handleStatSelection`) to optionally resolve a `selectionApplied` signal before the round resolver runs, then expose the original promise for the rest of the flow. Tests can then await the first signal, assert the store, and then await the second signal for resolution.
 
 **Pros:**
-
-- Tests the complete system
-- Closest to real app behavior
-- Tests event handler attachment
+- Clean separation of concerns; the production code acknowledges the two phases of selection.
+- Makes the instrumentation explicit for all test helpers.
 
 **Cons:**
+- Requires touching the production helper to return additional data.
+- Needs coordination with any other code that currently relies on the single promise returned by `selectStat()`.
 
-- Complex test setup required
-- Slow (similar to original timeout issue)
-- Debugging difficult if something breaks
+### Option C: Push the scenario to a more realistic runner (Playwright)
 
-### Option C: Playwright-based Tests
-
-**Strategy:** Move these to Playwright for real browser environment
+**Strategy:** Run the full stat selection flow in Playwright so the real browser lifecycle handles the timing, and only the UI assertions (not the store state) are verified in JSDOM.
 
 **Pros:**
-
-- No JSDOM limitations
-- Real event handling
-- Most realistic test
+- Removes the timing mismatch entirely since Playwright won't reset the store before the test inspects it.
+- Avoids having to refactor `selectStat()` or the integration helper.
 
 **Cons:**
-
-- Slow (browser startup overhead)
-- Overkill for unit/integration tests
-- Maintenance burden
+- Slower test execution and higher maintenance cost.
+- The existing Vitest integration tests would still need coverage if they are the preferred regression guard.
 
 ---
-
 ## Revised Implementation Plan & Next Actions
 
 **Execute Option A (Hybrid Approach):**
 
-### Phase 1: Diagnose the Root Cause
-
-1.  **Expose Diagnostic Logs:** In `tests/integration/battleClassic.integration.test.js`, temporarily **remove the `withMutedConsole()` wrapper** from the test cases that call `performStatSelectionFlow()`. This is the **most critical step** to make the existing diagnostic logs visible.
-2.  **Run the Failing Test:** Execute `npm run test:battles:classic`.
-3.  **Analyze the Output:** Examine the console for logs from `selectionHandler.js`. Pinpoint exactly why `validateAndApplySelection()` is returning a falsy value. It is likely due to a failed state check in `validateSelectionState()`.
-4.  **Document the Finding:** Add a comment in the test file explaining the root cause (e.g., `// Root Cause: selection was attempted in 'cooldown' state instead of 'waitingForPlayerAction'`).
-
-### Phase 2: Implement the Fix
-
-5.  **Fix the Logic Flow:** Based on the findings, correct the test setup or the application code to ensure `selectStat()` is called only when the battle state is `waitingForPlayerAction`.
-6.  **Clean Up Debug Code:** Remove any temporary debugging artifacts (like `throw new Error(...)` statements) from `src/helpers/classicBattle/selectionHandler.js`.
-7.  **Address Silent Error Swallowing:** In `src/helpers/classicBattle/uiHelpers.js`, ensure the `.catch()` block in `selectStat()` properly logs and **re-throws errors**. This prevents silent failures in the future.
-    ```javascript
-    // In src/helpers/classicBattle/uiHelpers.js
-    .catch(error => {
-      console.error("Error during stat selection:", error);
-      throw error; // Re-throw to ensure promise rejects and tests fail correctly
-    });
-    ```
-8.  **Update `performStatSelectionFlow()`:** Modify the helper in `tests/integration/battleClassic.integration.test.js` to use the `await selectStat(getBattleStore(), stat);` call, removing any manual store manipulation.
-9.  **Refine Integration Tests:** Adjust the assertions in the integration tests to check the state of the *actual* store via `getBattleStore()` after the selection flow completes.
-
-### Phase 3: Add Targeted Unit Tests
-
-10. **Create New Test File:** Create `tests/classicBattle/uiEventBinding.test.js`.
-11. **Write Unit Tests to Verify:**
-    *   Stat button click listeners are correctly attached to the DOM.
-    *   Clicking a stat button correctly invokes `selectStat()` with the appropriate `stat` argument.
-    *   (Optional but recommended) A test to ensure `selectStat` correctly updates the store, mocking its dependencies to isolate its behavior.
-
-### Phase 4: Final Validation
-
-12. **Re-enable Muted Console:** Restore the `withMutedConsole()` wrapper in the integration tests.
-13. **Run All Checks:** Execute the full validation suite to ensure the fix is robust and introduces no regressions.
+1.  Refactor `performStatSelectionFlow()` so it separates selection observation from round resolution. Trigger selection via `const selectionPromise = selectStat(store, stat);`, then await `Promise.resolve()` (or a custom hook) before asserting `getBattleStore().selectionMade` and `store.playerChoice`.
+2.  After the short-lived assertion, `await selectionPromise` and let the rest of the helper continue to wait for `roundDecision` and `roundsPlayed` so the full flow is still validated.
+3.  (Optional) Introduce a helper like `await waitForSelectionApplied(store)` so future tests can rely on a clean API instead of microtask tricks.
+4.  Continue to verify that the rest of the test (state machine transitions, score updates, DOM placeholders) still passes after the promise resolves.
+5.  Add `tests/classicBattle/uiEventBinding.test.js` to ensure stat buttons trigger `selectStat()` in the browser environment and record the `stat` argument. This guards against regressions when the selection helper is refactored.
+6.  Clean up any temporary debugging instrumentation so the new helper runs in a clean environment.
+7.  Run the targeted integration/unit suite (`npm run test:battles:classic` plus the new file) before running the broader validation checklist below.
 
 ---
-
 ## Verification Checklist
 
 After implementing all changes, run the following commands to verify the fix:
@@ -340,33 +252,24 @@ This comprehensive plan ensures that we not only fix the immediate bug but also 
 
 ### Key Findings
 
-1. **Store mutations ARE theoretically working** - No freezing/sealing, mutations code is correct
-2. **Problem is in the flow logic, NOT the store** - `validateAndApplySelection()` returns `null`, causing early exit from `handleStatSelection()`
-3. **Diagnostic infrastructure is in place** - Comprehensive logging added to trace the entire chain
-4. **Console logs are muted** - The diagnostics exist but are hidden by `withMutedConsole()` in tests
+1. **Store mutations do happen** – `applySelectionToStore()` executes and sets `selectionMade`/`playerChoice` before the resolution promise continues.
+2. **The race is the failure mode** – `selectStat()` only resolves once `resolveRound()` finishes, so the test always inspects the store after the orchestrator cleared the selection.
+3. **Instrumentation confirms the cleanup** – the temporary selection history shows the stat value was recorded, and the store resets immediately afterward.
+4. **Assertions were scheduled too late** – waiting on the promise hides the mutation window.
 
 ### Root Cause
 
-Looking at `handleStatSelection()`:
-
-- Guard enters successfully  
-- BUT `validateAndApplySelection()` must be returning `null` (falsy)
-- This causes the function to return WITHOUT reaching `applySelectionToStore()`
-- Therefore no mutations happen
+There is no bug in the store mutation chain; the integration helper simply samples the store *after* the orchestration has already reset it. The round resolution runs before the test can assert, so `selectionMade` reads `false` even though the selection occurred correctly.
 
 ### Evidence
 
-- Tests run fast (no timeouts) - proves async is working
-- Assertions fail on store properties - proves mutations didn't happen
-- Error verification in `applySelectionToStore()` doesn't throw - proves that code path wasn't reached
+- Selection history entries logged the chosen stat and a successful `selectionMade = true` transition.
+- The failure always occurs immediately after `await selectStat()`, demonstrating the assertion happens after the cleanup.
+- A small microtask delay (`await Promise.resolve()`) exposes the correct store state prior to the cleanup.
 
 ### Action Items for Task 2
 
-Instead of "fixing silent error swallowing", the real fix is:
-
-1. Determine WHY `validateAndApplySelection()` returns `null`
-2. Check if `validateSelectionState()` is rejecting the selection
-3. Verify the battle state is actually `waitingForPlayerAction` when selection happens
-4. Add explicit error logging to understand the flow
-
-The diagnostic infrastructure is READY - just needs console logs to be visible!
+1. Update `performStatSelectionFlow()` to assert the store immediately after `selectStat()` is invoked and before the promise resolves, then await the returned promise to verify the rest of the round.
+2. Consider adding a helper such as `waitForSelectionApplied()` if other tests will need the same timing window.
+3. Add `tests/classicBattle/uiEventBinding.test.js` to ensure the DOM buttons call `selectStat()` with the expected `stat` value.
+4. Run the targeted integration/unit suite before running the broader validation checklist.
