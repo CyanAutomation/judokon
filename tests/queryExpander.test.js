@@ -39,9 +39,12 @@ describe("Query Expansion", () => {
 
     it("should handle query with no matching synonyms", async () => {
       const result = await expandQuery("xyz_nonexistent_term_abc");
+      const normalizedExpanded = result.expanded.toLowerCase();
+
       expect(result.hasExpansion).toBe(false);
       expect(result.addedTerms).toHaveLength(0);
-      expect(result.expanded).toContain("xyz_nonexistent_term_abc");
+      expect(normalizedExpanded).toBe("xyz nonexistent term abc");
+      expect(result.original).toBe("xyz_nonexistent_term_abc");
     });
   });
 
@@ -157,7 +160,11 @@ describe("Query Expansion", () => {
 
     it("should handle query with special characters", async () => {
       const result = await expandQuery("kumikata! @#$%");
-      // Should still find kumikata matches despite special chars
+      const expectedExpanded = "kumikata kumi-kata grip fighting";
+
+      // Should strip punctuation from expansion while preserving the original input
+      expect(result.expanded).toBe(expectedExpanded);
+      expect(result.hasExpansion).toBe(true);
       expect(result.original).toBe("kumikata! @#$%");
     });
 
