@@ -6,6 +6,9 @@
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
+export const MAX_QUERY_TERMS = 50;
+export const MAX_QUERY_LENGTH = 512;
+
 /**
  * @typedef {object} ExpandedQueryResult
  * @property {string} original - Original query string provided by the caller.
@@ -99,17 +102,26 @@ function findSynonymMatches(query, synonymMap) {
   return matches;
 }
 
+function normalizeAndLimitQuery(query) {
+  const normalized = query.toLowerCase();
+  const limitedTerms = normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS);
+  const limitedJoined = limitedTerms.join(" ");
+  return limitedJoined.length > MAX_QUERY_LENGTH ? limitedJoined.slice(0, MAX_QUERY_LENGTH) : limitedJoined;
+}
+
 /**
  * Expand a query with synonyms for improved search relevance
  * Uses Levenshtein distance (max 2 edits) for fuzzy matching
+ * Applies sensible limits to avoid runaway work on extremely long queries
  * @param {string} query - Search query to expand
  * @returns {Promise<ExpandedQueryResult>} Result with original query, expanded query, and matched terms
  *
  * @pseudocode
  * 1. Guard against empty inputs and return baseline result
  * 2. Load cached synonym map from disk
- * 3. Compute fuzzy synonym matches for the provided query (max 2 Levenshtein edits)
- * 4. Merge original tokens with matched synonyms and report statistics
+ * 3. Normalize and cap the query length/term count for predictable processing
+ * 4. Compute fuzzy synonym matches for the provided query (max 2 Levenshtein edits)
+ * 5. Merge original tokens with matched synonyms and report statistics
  */
 export async function expandQuery(query) {
   if (!query || typeof query !== "string") {
@@ -123,11 +135,11 @@ export async function expandQuery(query) {
   }
 
   const synonymMap = await loadSynonyms();
-  const lower = query.toLowerCase();
-  const words = new Set(lower.split(/\s+/).filter(Boolean));
+  const normalized = normalizeAndLimitQuery(query);
+  const words = new Set(normalized.split(/\s+/).filter(Boolean));
 
   // Find matching synonyms
-  const addedTerms = findSynonymMatches(query, synonymMap);
+  const addedTerms = findSynonymMatches(normalized, synonymMap);
 
   // Build expanded query by combining original words with new terms
   const allTerms = Array.from(new Set([...words, ...addedTerms]));
