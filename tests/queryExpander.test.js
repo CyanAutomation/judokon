@@ -169,6 +169,15 @@ describe("Query Expansion", () => {
       expect(result.original).toBe("kumikata! @#$%");
     });
 
+    it("should preserve unicode letters during normalization", async () => {
+      const result = await expandQuery("Ōuchi-gari 練習!");
+
+      expect(result.expanded).toContain("ōuchi-gari");
+      expect(result.expanded).toContain("練習");
+      expect(result.expanded).not.toContain("!");
+      expect(result.original).toBe("Ōuchi-gari 練習!");
+    });
+
     it("should handle query with numbers", async () => {
       const result = await expandQuery("power 123 speed");
       expect(result.original).toBe("power 123 speed");
