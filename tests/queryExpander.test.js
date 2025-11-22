@@ -174,6 +174,16 @@ describe("Query Expansion", () => {
       expect(result.expanded).toBe(result.expanded.toLowerCase());
     });
 
+    it("should truncate multi-word queries on word boundaries", async () => {
+      const longTokens = Array.from({ length: MAX_QUERY_TERMS }, (_, idx) => `longtoken${idx}long`);
+      const longQuery = longTokens.join(" ");
+      const result = await expandQuery(longQuery);
+      const expandedTokens = result.expanded.split(/\s+/).filter(Boolean);
+
+      expect(expandedTokens.every((token) => longTokens.includes(token))).toBe(true);
+      expect(result.expanded.length).toBeLessThanOrEqual(MAX_QUERY_LENGTH);
+    });
+
     it("should handle repeated words", async () => {
       const result = await expandQuery("kumikata kumikata kumikata");
       const terms = result.expanded.split(/\s+/);
@@ -190,9 +200,10 @@ describe("Query Expansion", () => {
       const result = await expandQuery(verboseQuery);
       const addedLength = result.addedTerms.join(" ").length;
 
-      expect(result.expanded).toContain("filler47");
-      expect(result.expanded).not.toContain("filler48");
-      expect(result.expanded.length).toBeLessThanOrEqual(MAX_QUERY_LENGTH + addedLength + MAX_QUERY_TERMS);
+      const fillerTermCount = result.expanded.split(/\s+/).filter((term) => term.startsWith("filler")).length;
+
+      expect(fillerTermCount).toBe(MAX_QUERY_TERMS - 2); // -2 for "kumikata" and "grip"
+      expect(result.expanded.length).toBeLessThanOrEqual(MAX_QUERY_LENGTH + addedLength);
       expect(result.addedTerms).toContain("kumi-kata");
     });
 

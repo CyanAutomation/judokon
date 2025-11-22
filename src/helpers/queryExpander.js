@@ -106,7 +106,16 @@ function normalizeAndLimitQuery(query) {
   const normalized = query.toLowerCase();
   const limitedTerms = normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS);
   const limitedJoined = limitedTerms.join(" ");
-  return limitedJoined.length > MAX_QUERY_LENGTH ? limitedJoined.slice(0, MAX_QUERY_LENGTH) : limitedJoined;
+  if (limitedJoined.length <= MAX_QUERY_LENGTH) {
+    return limitedJoined;
+  }
+
+  const lastSpaceBeforeLimit = limitedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH);
+  if (lastSpaceBeforeLimit > 0) {
+    return limitedJoined.slice(0, lastSpaceBeforeLimit);
+  }
+
+  return limitedJoined.slice(0, MAX_QUERY_LENGTH);
 }
 
 /**
