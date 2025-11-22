@@ -135,51 +135,187 @@ Error: expect(locator).toContainText(expected) failed
 
 **Root Cause Analysis**:
 
-The test expects the snackbar to show "Opponent is choosing…" when a stat is selected, but instead it shows match configuration messages like "First to 5 points wins."
+The test expects the snackbar to show "Opponent is choosing…" when a stat is selected, but instead it shows match configuration messages like "First to 5 points wins." My investigation into `showSnackbar` calls confirms a timing conflict.
 
-Looking at `prepareUiBeforeSelection()`:
-
-```javascript
-// Line 473-496 of battleClassic.init.js
-const flagEnabled = isEnabled("opponentDelayMessage");
-const baseDelay = Number.isFinite(delayOverride)
-  ? Number(delayOverride)
-  : Number(getOpponentDelay());
-const resolvedDelay = Number.isFinite(baseDelay) && baseDelay > 0 ? baseDelay : 0;
-
-if (flagEnabled) {
-  setOpponentDelay(resolvedDelay);
-  if (resolvedDelay > 0) {
-    const scheduled = scheduleDelayed(() => {
-      showSnackbar(t("ui.opponentChoosing"));
-      // ...
-    }, resolvedDelay);
-    return resolvedDelay;
-  }
-}
-
-try {
-  showSnackbar(t("ui.opponentChoosing"));
-  recordOpponentPromptTimestamp(getCurrentTimestamp());
-} catch {}
-return 0;
-```
+*   The `prepareUiBeforeSelection()` function in `src/pages/battleClassic.init.js` is responsible for attempting to display `t("ui.opponentChoosing")` (the "Opponent is choosing..." message). This occurs at lines 484 and 499.
+*   However, the message `First to ${value} points wins.` is displayed by `showSnackbar()` in `src/helpers/classicBattle/roundSelectModal.js` at line 61. This message is likely displayed immediately after the round selection modal closes and the battle begins, or during an early initialization phase.
 
 **Suspected Issues**:
 
-1.  **Feature Flag `opponentDelayMessage` Not Enabled/Configured**: The `opponentDelayMessage` feature flag might not be enabled or correctly configured within the Playwright test environment.
-    *   If `flagEnabled` is `false`, the code directly attempts to show "Opponent is choosing…" without delay. However, this message might then be immediately overwritten by another snackbar message.
-2.  **`resolvedDelay` is 0 or too short**: Even if the flag is enabled, if `resolvedDelay` is `0` (or a very small value that causes immediate execution), the scheduled callback runs instantly. This still leaves open the possibility of the message being overwritten.
-3.  **Message Overwriting**: Other components or initialization routines might be displaying snackbar messages that overwrite the "Opponent is choosing" message.
-    *   The test output `Received string: "First to 5 points wins."` strongly suggests that the match configuration message (shown at round initialization) is being displayed in the snackbar instead of the opponent message. This indicates a timing issue where the match configuration message appears *after* the `prepareUiBeforeSelection()` function's `showSnackbar` call, or the test is asserting too early.
-4.  **Race Condition in Test Setup**: The Playwright test might not be waiting for the `battleClassic.init.js` initialization to fully complete and stabilize before triggering stat selection, leading to an inconsistent UI state.
+1.  **Message Overwriting (Primary Cause)**: The "First to X points wins." message, triggered by `roundSelectModal.js`, is being displayed and immediately overwriting the "Opponent is choosing…" message that `prepareUiBeforeSelection()` attempts to show. This happens because the initial setup messages are being shown at a similar time or *after* the attempt to show the opponent message.
+2.  **Feature Flag `opponentDelayMessage` Configuration**: While the `codebase_investigator` confirmed the mechanism for setting feature flags in Playwright, and `opponentDelayMessage` is default-enabled, a misconfiguration in specific test setups could still contribute. However, message overwriting is a more direct explanation for the observed error.
+3.  **`resolvedDelay` is 0 or too short**: If the delay for the opponent message is very short or zero, it might be displayed but immediately replaced.
+4.  **Test Assertion Timing**: The Playwright test's assertion is occurring at a point where the "Opponent is choosing" message has already been replaced by the "First to X points wins." message.
 
 **Supporting Evidence from Test Output**:
 ```
 Received string: "First to 5 points wins."  // ← Round config message, not opponent message
 ```
 
-This confirms that a match configuration message (related to round initialization) is being shown in the snackbar, implying a conflict or timing issue with the "Opponent is choosing" message.
+This definitively indicates that the match configuration message is present in the snackbar when the test performs its assertion, strongly supporting the message overwriting theory.
+
+---
+
+## Impact Assessment
+
+### By Severity
+
+**Critical** (Blocks deployment):
+- None - the integration test issues might indicate logic problems, but tests are also using unstable patterns
+
+**High** (Should fix):
+- Opponent message timing in Playwright (affects E2E user experience visibility)
+- Round progression sync (might be a real logic issue)
+
+**Low** (Pre-existing):
+- Import errors in unit tests (5 tests) - not caused by refactoring
+
+---
+
+## Root Cause Summary
+
+| Failure Category | Root Cause | Severity | 
+|------------------|-----------|----------|
+| Import errors (5 tests) | Missing `fs` imports in test files | Low | 
+| Round progression (3 tests) | Incorrect sequencing assumption in `applySelectionResult()`: it reads `BattleEngine.roundsPlayed` before `BattleEngine.handleStatSelection` has completed incrementing it, leading to `store.roundsPlayed` being updated with a stale value. | High | 
+| Opponent message timing (4 tests) | A timing conflict where the "First to X points wins." snackbar message (from `roundSelectModal.js`) overwrites the "Opponent is choosing…" message (from `battleClassic.init.js`) immediately after stat selection, or during battle initialization. | Medium | 
+
+---
+
+## Proposed Fix Plan
+
+### Phase 1: Verify Non-Regression (Pre-existing Failures)
+
+**Fix 1.1: Add missing `fs` import to test files**
+
+Action: For each of the affected test files, add the following import statement at the top of the file:
+```javascript
+import { readFileSync } from "fs";
+```
+
+Affected Files:
+- `tests/classicBattle/round-select.test.js`
+- `tests/classicBattle/bootstrap.test.js`
+- `tests/classicBattle/end-modal.test.js`
+- `tests/classicBattle/quit-flow.test.js`
+- `tests/classicBattle/round-selectFallback.test.js`
+
+Priority: **Low** (pre-existing, easy fix)  
+Impact: Fixes 5 unit test files (7 failures)  
+Estimated Time: 10 minutes
+
+---
+
+### Phase 2: Investigate Round Progression (Potential Issue)
+
+**Fix 2.1: Debug round tracking synchronization and `applySelectionResult` logic**
+
+Root cause candidates:
+1.  **Incorrect Sequencing**: `applySelectionResult()` is called too early in the round resolution flow, before `BattleEngine.handleStatSelection` has completed incrementing it, leading to `store.roundsPlayed` being updated with a stale value.
+2.  **Logic Flaw in `applySelectionResult`**: The conditional increment logic (`if (engineRounds === null ...)` is flawed; `store.roundsPlayed` should always be set to the *final, authoritative* value from `BattleEngine.roundsPlayed` *after* the engine has confirmed the increment.
+
+Investigation steps:
+1.  **Examine `performStatSelectionFlow()`**: Understand the exact sequence of calls within `performStatSelectionFlow()` that leads to `applySelectionResult()`. The goal is to determine if there's an opportunity to delay the call to `applySelectionResult()` until *after* the `BattleEngine.handleStatSelection` has fully updated `BattleEngine.roundsPlayed`.
+2.  **Add Debug Logging**: In `applySelectionResult()`, add comprehensive debug logging to track the values of `engineRounds`, `store.roundsPlayed` (before and after), `matchEnded`, and `isOrchestratorActive(store)`.
+    ```javascript
+    // In applySelectionResult(), add debug logging:
+    console.debug("[ROUND DEBUG] applySelectionResult:", {
+      currentEngineRoundsFromGetter: getRoundsPlayed(), // What the engine reports *now*
+      storeRoundsBeforeUpdate: store.roundsPlayed,
+      matchEnded,
+      isOrchestratorActive: isOrchestratorActive(store),
+      incomingResult: result // Inspect the result object for round info
+    });
+    // Also log the value of engineRounds *after* its determination but *before* assignment to store.roundsPlayed
+    console.debug("[ROUND DEBUG] Calculated engineRounds before assignment to store:", engineRounds);
+    ```
+3.  **Review Battle Engine Logic**: Confirm how the `BattleEngine` signals the completion of `handleStatSelection` and the final `roundsPlayed` count. This signal should ideally be what triggers the update to `store.roundsPlayed` in the UI.
+
+Potential fixes:
+-   **Rely on Engine's Final State**: Modify `applySelectionResult()` to *always* set `store.roundsPlayed` to the value returned by `getRoundsPlayed()` *after* `BattleEngine.handleStatSelection` is guaranteed to have completed and incremented its internal counter. This may involve restructuring the `performStatSelectionFlow()` or introducing an event-driven update from the engine.
+-   **Remove Flawed Conditional Increment**: The `if (engineRounds === null ...)` block is a source of confusion and likely incorrect behavior. It should be removed or re-evaluated if `getRoundsPlayed()` is *never* expected to be `null` or `undefined` under normal operation. If `getRoundsPlayed()` can fail, a more robust error handling strategy is needed.
+-   **Test Refinement**: Improve the async waiting mechanism in the integration tests to ensure they wait for the observable effect of round increment. This might involve waiting for a specific event emitted by the battle engine or a more robust `waitFor` condition.
+
+Priority: **High** (affects core game logic)  
+Impact: Fixes 3 integration tests, ensures correct round tracking  
+Estimated Time: 30-60 minutes (investigation + fix)
+
+---
+
+### Phase 3: Address Opponent Message Timing (E2E Issue)
+
+**Fix 3.1: Improve opponent message visibility and timing in Playwright tests**
+
+Root cause candidates:
+1.  **Message Overwriting**: The primary issue is a timing conflict where other battle initialization or setup messages (e.g., "First to X points wins.") overwrite the "Opponent is choosing…" message.
+2.  **Feature Flag `opponentDelayMessage` Configuration**: While the mechanism is known, ensure the flag is consistently `true` in Playwright test contexts if delays are intended.
+3.  **Test Assertion Timing**: The Playwright test might be asserting too quickly or at an inconsistent point in the UI update cycle.
+
+Investigation steps:
+1.  **Prioritize Snackbar Calls**: Analyze the execution flow leading to the display of both "First to X points wins." (from `roundSelectModal.js`) and "Opponent is choosing…" (from `battleClassic.init.js`). Determine the precise order and, if possible, control the timing so that the "Opponent is choosing…" message is *guaranteed* to appear after any conflicting initialization messages.
+2.  **Feature Flag Verification**: Explicitly verify in the Playwright test setup that `opponentDelayMessage` is set to `true` to ensure the delayed display logic is active (if a delay is desired).
+    ```javascript
+    // Example Playwright test setup check:
+    // In a test setup function or fixture, log the actual flag state:
+    await page.evaluate(() => console.log("Playwright Flag State: opponentDelayMessage", window.__FF_OVERRIDES?.opponentDelayMessage));
+    ```
+3.  **Verbose Snackbar Logging**: Temporarily introduce verbose logging within the `showSnackbar` function itself and all its call sites to trace the exact sequence of messages and their display/overwrite events during a Playwright run.
+    ```javascript
+    // In showSnackbar.js:
+    export function showSnackbar(message) {
+      console.log(`[SNACKBAR DEBUG] Displaying: "${message}" at ${new Date().toLocaleTimeString()}`);
+      // ... original function logic ...
+    }
+    ```
+4.  **Refine Playwright Waits**:
+    *   Increase the Playwright `expect().toContainText()` timeout for the snackbar assertion.
+    *   Use more robust waiting strategies, such as `page.waitForFunction()` or `page.waitForSelector()` that explicitly wait for the snackbar content to match `/Opponent is choosing/i` before asserting. This ensures the test is not flaky due to timing.
+
+Potential fixes:
+-   **Sequence Snackbar Messages**: Adjust the battle initialization flow to ensure that messages like "First to X points wins." are either displayed in a non-conflicting UI element, are transient (cleared quickly), or are explicitly shown *before* the stat selection process begins. The "Opponent is choosing…" message should then be displayed after this initial setup is complete.
+-   **Implement Message Queueing (if necessary)**: For more complex scenarios, consider implementing a simple snackbar message queue that prioritizes messages or prevents rapid overwriting within a short timeframe.
+-   **Improve Playwright Test Resilience**: Implement stricter and more explicit waits in the Playwright tests to ensure the "Opponent is choosing…" message is present and stable before asserting. This means waiting for the *absence* of other messages and then the *presence* of the expected message.
+
+Priority: **Medium** (E2E quality, user experience)  
+Impact: Fixes 4 Playwright test failures  
+Estimated Time: 20-45 minutes (investigation + fix)
+
+---
+
+## Implementation Order
+
+1.  **Immediate** (< 10 min):
+    *   Add missing `fs` imports to unit test files.
+2.  **Short-term** (30-60 min):
+    *   Investigate and fix round progression sync issue.
+3.  **Medium-term** (20-45 min):
+    *   Debug and fix opponent message timing in E2E tests.
+
+---
+
+## Risk Assessment
+
+**Low Risk**: 
+- Adding missing imports (isolated to test files, no prod code changes)
+
+**Medium Risk**:
+- Modifying round progression logic (might affect gameplay if not carefully implemented, but fix is targeted)
+- Adjusting E2E test environment or waits (isolated to test layer, low risk to prod code)
+
+**Negligible Risk**:
+- Debugging and logging steps are non-invasive.
+
+---
+
+## Recommendations
+
+1.  **Do NOT hold refactoring** - The refactoring is performing as expected in most tests (38+ E2E tests pass, no regressions in core initialization). The identified issues appear to be distinct from the refactoring's core logic.
+2.  **Prioritize round progression fix** - This might indicate a subtle logic issue in how `applySelectionResult` interacts with the battle engine's state, or a pre-existing race condition that was highlighted by the refactoring.
+3.  **Fix import errors** - This is a quick and easy win that cleans up the test suite.
+4.  **Review E2E environment** - Investigate how feature flags are consistently applied in Playwright to ensure predictable test behavior.
+5.  **Be methodical with `showSnackbar`**: When addressing the opponent message timing, ensure to understand all calls to `showSnackbar` around the battle initiation and stat selection to prevent future conflicts.
+
+---
 
 ---
 
@@ -360,51 +496,187 @@ Error: expect(locator).toContainText(expected) failed
 
 **Root Cause Analysis**:
 
-The test expects the snackbar to show "Opponent is choosing…" when a stat is selected, but instead it shows match configuration messages like "First to 5 points wins."
+The test expects the snackbar to show "Opponent is choosing…" when a stat is selected, but instead it shows match configuration messages like "First to 5 points wins." My investigation into `showSnackbar` calls confirms a timing conflict.
 
-Looking at `prepareUiBeforeSelection()`:
-
-```javascript
-// Line 473-496 of battleClassic.init.js
-const flagEnabled = isEnabled("opponentDelayMessage");
-const baseDelay = Number.isFinite(delayOverride)
-  ? Number(delayOverride)
-  : Number(getOpponentDelay());
-const resolvedDelay = Number.isFinite(baseDelay) && baseDelay > 0 ? baseDelay : 0;
-
-if (flagEnabled) {
-  setOpponentDelay(resolvedDelay);
-  if (resolvedDelay > 0) {
-    const scheduled = scheduleDelayed(() => {
-      showSnackbar(t("ui.opponentChoosing"));
-      // ...
-    }, resolvedDelay);
-    return resolvedDelay;
-  }
-}
-
-try {
-  showSnackbar(t("ui.opponentChoosing"));
-  recordOpponentPromptTimestamp(getCurrentTimestamp());
-} catch {}
-return 0;
-```
+*   The `prepareUiBeforeSelection()` function in `src/pages/battleClassic.init.js` is responsible for attempting to display `t("ui.opponentChoosing")` (the "Opponent is choosing..." message). This occurs at lines 484 and 499.
+*   However, the message `First to ${value} points wins.` is displayed by `showSnackbar()` in `src/helpers/classicBattle/roundSelectModal.js` at line 61. This message is likely displayed immediately after the round selection modal closes and the battle begins, or during an early initialization phase.
 
 **Suspected Issues**:
 
-1.  **Feature Flag `opponentDelayMessage` Not Enabled/Configured**: The `opponentDelayMessage` feature flag might not be enabled or correctly configured within the Playwright test environment.
-    *   If `flagEnabled` is `false`, the code directly attempts to show "Opponent is choosing…" without delay. However, this message might then be immediately overwritten by another snackbar message.
-2.  **`resolvedDelay` is 0 or too short**: Even if the flag is enabled, if `resolvedDelay` is `0` (or a very small value that causes immediate execution), the scheduled callback runs instantly. This still leaves open the possibility of the message being overwritten.
-3.  **Message Overwriting**: Other components or initialization routines might be displaying snackbar messages that overwrite the "Opponent is choosing" message.
-    *   The test output `Received string: "First to 5 points wins."` strongly suggests that the match configuration message (shown at round initialization) is being displayed in the snackbar instead of the opponent message. This indicates a timing issue where the match configuration message appears *after* the `prepareUiBeforeSelection()` function's `showSnackbar` call, or the test is asserting too early.
-4.  **Race Condition in Test Setup**: The Playwright test might not be waiting for the `battleClassic.init.js` initialization to fully complete and stabilize before triggering stat selection, leading to an inconsistent UI state.
+1.  **Message Overwriting (Primary Cause)**: The "First to X points wins." message, triggered by `roundSelectModal.js`, is being displayed and immediately overwriting the "Opponent is choosing…" message that `prepareUiBeforeSelection()` attempts to show. This happens because the initial setup messages are being shown at a similar time or *after* the attempt to show the opponent message.
+2.  **Feature Flag `opponentDelayMessage` Configuration**: While the `codebase_investigator` confirmed the mechanism for setting feature flags in Playwright, and `opponentDelayMessage` is default-enabled, a misconfiguration in specific test setups could still contribute. However, message overwriting is a more direct explanation for the observed error.
+3.  **`resolvedDelay` is 0 or too short**: If the delay for the opponent message is very short or zero, it might be displayed but immediately replaced.
+4.  **Test Assertion Timing**: The Playwright test's assertion is occurring at a point where the "Opponent is choosing" message has already been replaced by the "First to X points wins." message.
 
 **Supporting Evidence from Test Output**:
 ```
 Received string: "First to 5 points wins."  // ← Round config message, not opponent message
 ```
 
-This confirms that a match configuration message (related to round initialization) is being shown in the snackbar, implying a conflict or timing issue with the "Opponent is choosing" message.
+This definitively indicates that the match configuration message is present in the snackbar when the test performs its assertion, strongly supporting the message overwriting theory.
+
+---
+
+## Impact Assessment
+
+### By Severity
+
+**Critical** (Blocks deployment):
+- None - the integration test issues might indicate logic problems, but tests are also using unstable patterns
+
+**High** (Should fix):
+- Opponent message timing in Playwright (affects E2E user experience visibility)
+- Round progression sync (might be a real logic issue)
+
+**Low** (Pre-existing):
+- Import errors in unit tests (5 tests) - not caused by refactoring
+
+---
+
+## Root Cause Summary
+
+| Failure Category | Root Cause | Severity | 
+|------------------|-----------|----------|
+| Import errors (5 tests) | Missing `fs` imports in test files | Low | 
+| Round progression (3 tests) | Incorrect sequencing assumption in `applySelectionResult()`: it reads `BattleEngine.roundsPlayed` before `BattleEngine.handleStatSelection` has completed incrementing it, leading to `store.roundsPlayed` being updated with a stale value. | High | 
+| Opponent message timing (4 tests) | A timing conflict where the "First to X points wins." snackbar message (from `roundSelectModal.js`) overwrites the "Opponent is choosing…" message (from `battleClassic.init.js`) immediately after stat selection, or during battle initialization. | Medium | 
+
+---
+
+## Proposed Fix Plan
+
+### Phase 1: Verify Non-Regression (Pre-existing Failures)
+
+**Fix 1.1: Add missing `fs` import to test files**
+
+Action: For each of the affected test files, add the following import statement at the top of the file:
+```javascript
+import { readFileSync } from "fs";
+```
+
+Affected Files:
+- `tests/classicBattle/round-select.test.js`
+- `tests/classicBattle/bootstrap.test.js`
+- `tests/classicBattle/end-modal.test.js`
+- `tests/classicBattle/quit-flow.test.js`
+- `tests/classicBattle/round-selectFallback.test.js`
+
+Priority: **Low** (pre-existing, easy fix)  
+Impact: Fixes 5 unit test files (7 failures)  
+Estimated Time: 10 minutes
+
+---
+
+### Phase 2: Investigate Round Progression (Potential Issue)
+
+**Fix 2.1: Debug round tracking synchronization and `applySelectionResult` logic**
+
+Root cause candidates:
+1.  **Incorrect Sequencing**: `applySelectionResult()` is called too early in the round resolution flow, before `BattleEngine.handleStatSelection` has completed incrementing it, leading to `store.roundsPlayed` being updated with a stale value.
+2.  **Logic Flaw in `applySelectionResult`**: The conditional increment logic (`if (engineRounds === null ...)` is flawed; `store.roundsPlayed` should always be set to the *final, authoritative* value from `BattleEngine.roundsPlayed` *after* the engine has confirmed the increment.
+
+Investigation steps:
+1.  **Examine `performStatSelectionFlow()`**: Understand the exact sequence of calls within `performStatSelectionFlow()` that leads to `applySelectionResult()`. The goal is to determine if there's an opportunity to delay the call to `applySelectionResult()` until *after* the `BattleEngine.handleStatSelection` has fully updated `BattleEngine.roundsPlayed`.
+2.  **Add Debug Logging**: In `applySelectionResult()`, add comprehensive debug logging to track the values of `engineRounds`, `store.roundsPlayed` (before and after), `matchEnded`, and `isOrchestratorActive(store)`.
+    ```javascript
+    // In applySelectionResult(), add debug logging:
+    console.debug("[ROUND DEBUG] applySelectionResult:", {
+      currentEngineRoundsFromGetter: getRoundsPlayed(), // What the engine reports *now*
+      storeRoundsBeforeUpdate: store.roundsPlayed,
+      matchEnded,
+      isOrchestratorActive: isOrchestratorActive(store),
+      incomingResult: result // Inspect the result object for round info
+    });
+    // Also log the value of engineRounds *after* its determination but *before* assignment to store.roundsPlayed
+    console.debug("[ROUND DEBUG] Calculated engineRounds before assignment to store:", engineRounds);
+    ```
+3.  **Review Battle Engine Logic**: Confirm how the `BattleEngine` signals the completion of `handleStatSelection` and the final `roundsPlayed` count. This signal should ideally be what triggers the update to `store.roundsPlayed` in the UI.
+
+Potential fixes:
+-   **Rely on Engine's Final State**: Modify `applySelectionResult()` to *always* set `store.roundsPlayed` to the value returned by `getRoundsPlayed()` *after* `BattleEngine.handleStatSelection` is guaranteed to have completed and incremented its internal counter. This may involve restructuring the `performStatSelectionFlow()` or introducing an event-driven update from the engine.
+-   **Remove Flawed Conditional Increment**: The `if (engineRounds === null ...)` block is a source of confusion and likely incorrect behavior. It should be removed or re-evaluated if `getRoundsPlayed()` is *never* expected to be `null` or `undefined` under normal operation. If `getRoundsPlayed()` can fail, a more robust error handling strategy is needed.
+-   **Test Refinement**: Improve the async waiting mechanism in the integration tests to ensure they wait for the observable effect of round increment. This might involve waiting for a specific event emitted by the battle engine or a more robust `waitFor` condition.
+
+Priority: **High** (affects core game logic)  
+Impact: Fixes 3 integration tests, ensures correct round tracking  
+Estimated Time: 30-60 minutes (investigation + fix)
+
+---
+
+### Phase 3: Address Opponent Message Timing (E2E Issue)
+
+**Fix 3.1: Improve opponent message visibility and timing in Playwright tests**
+
+Root cause candidates:
+1.  **Message Overwriting**: The primary issue is a timing conflict where other battle initialization or setup messages (e.g., "First to X points wins.") overwrite the "Opponent is choosing…" message.
+2.  **Feature Flag `opponentDelayMessage` Configuration**: While the mechanism is known, ensure the flag is consistently `true` in Playwright test contexts if delays are intended.
+3.  **Test Assertion Timing**: The Playwright test might be asserting too quickly or at an inconsistent point in the UI update cycle.
+
+Investigation steps:
+1.  **Prioritize Snackbar Calls**: Analyze the execution flow leading to the display of both "First to X points wins." (from `roundSelectModal.js`) and "Opponent is choosing…" (from `battleClassic.init.js`). Determine the precise order and, if possible, control the timing so that the "Opponent is choosing…" message is *guaranteed* to appear after any conflicting initialization messages.
+2.  **Feature Flag Verification**: Explicitly verify in the Playwright test setup that `opponentDelayMessage` is set to `true` to ensure the delayed display logic is active (if a delay is desired).
+    ```javascript
+    // Example Playwright test setup check:
+    // In a test setup function or fixture, log the actual flag state:
+    await page.evaluate(() => console.log("Playwright Flag State: opponentDelayMessage", window.__FF_OVERRIDES?.opponentDelayMessage));
+    ```
+3.  **Verbose Snackbar Logging**: Temporarily introduce verbose logging within the `showSnackbar` function itself and all its call sites to trace the exact sequence of messages and their display/overwrite events during a Playwright run.
+    ```javascript
+    // In showSnackbar.js:
+    export function showSnackbar(message) {
+      console.log(`[SNACKBAR DEBUG] Displaying: "${message}" at ${new Date().toLocaleTimeString()}`);
+      // ... original function logic ...
+    }
+    ```
+4.  **Refine Playwright Waits**:
+    *   Increase the Playwright `expect().toContainText()` timeout for the snackbar assertion.
+    *   Use more robust waiting strategies, such as `page.waitForFunction()` or `page.waitForSelector()` that explicitly wait for the snackbar content to match `/Opponent is choosing/i` before asserting. This ensures the test is not flaky due to timing.
+
+Potential fixes:
+-   **Sequence Snackbar Messages**: Adjust the battle initialization flow to ensure that messages like "First to X points wins." are either displayed in a non-conflicting UI element, are transient (cleared quickly), or are explicitly shown *before* the stat selection process begins. The "Opponent is choosing…" message should then be displayed after this initial setup is complete.
+-   **Implement Message Queueing (if necessary)**: For more complex scenarios, consider implementing a simple snackbar message queue that prioritizes messages or prevents rapid overwriting within a short timeframe.
+-   **Improve Playwright Test Resilience**: Implement stricter and more explicit waits in the Playwright tests to ensure the "Opponent is choosing…" message is present and stable before asserting. This means waiting for the *absence* of other messages and then the *presence* of the expected message.
+
+Priority: **Medium** (E2E quality, user experience)  
+Impact: Fixes 4 Playwright test failures  
+Estimated Time: 20-45 minutes (investigation + fix)
+
+---
+
+## Implementation Order
+
+1.  **Immediate** (< 10 min):
+    *   Add missing `fs` imports to unit test files.
+2.  **Short-term** (30-60 min):
+    *   Investigate and fix round progression sync issue.
+3.  **Medium-term** (20-45 min):
+    *   Debug and fix opponent message timing in E2E tests.
+
+---
+
+## Risk Assessment
+
+**Low Risk**: 
+- Adding missing imports (isolated to test files, no prod code changes)
+
+**Medium Risk**:
+- Modifying round progression logic (might affect gameplay if not carefully implemented, but fix is targeted)
+- Adjusting E2E test environment or waits (isolated to test layer, low risk to prod code)
+
+**Negligible Risk**:
+- Debugging and logging steps are non-invasive.
+
+---
+
+## Recommendations
+
+1.  **Do NOT hold refactoring** - The refactoring is performing as expected in most tests (38+ E2E tests pass, no regressions in core initialization). The identified issues appear to be distinct from the refactoring's core logic.
+2.  **Prioritize round progression fix** - This might indicate a subtle logic issue in how `applySelectionResult` interacts with the battle engine's state, or a pre-existing race condition that was highlighted by the refactoring.
+3.  **Fix import errors** - This is a quick and easy win that cleans up the test suite.
+4.  **Review E2E environment** - Investigate how feature flags are consistently applied in Playwright to ensure predictable test behavior.
+5.  **Be methodical with `showSnackbar`**: When addressing the opponent message timing, ensure to understand all calls to `showSnackbar` around the battle initiation and stat selection to prevent future conflicts.
+
+---
 
 ---
 

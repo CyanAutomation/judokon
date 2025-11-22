@@ -857,6 +857,18 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
  * @returns {Promise<void>}
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+  try {
+    if (IS_VITEST) {
+      console.log("[handleStatSelection] Called with:", {
+        stat,
+        playerVal,
+        opponentVal,
+        storeId: store?.__testId ?? "no-id",
+        storeSelectionMadeBefore: store?.selectionMade
+      });
+    }
+  } catch {}
+  
   const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
   if (!guard.entered) {
     try {

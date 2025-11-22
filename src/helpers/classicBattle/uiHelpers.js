@@ -776,6 +776,11 @@ export function selectStat(store, stat) {
   const oCard = document.getElementById("opponent-card");
   const playerVal = getCardStatValue(pCard, stat);
   const opponentVal = getCardStatValue(oCard, stat);
+  
+  // Safety check: if values are missing, throw error
+  if (playerVal === undefined || playerVal === null || opponentVal === undefined || opponentVal === null) {
+    throw new Error(`[selectStat] Missing stat values: playerVal=${playerVal}, opponentVal=${opponentVal} for stat=${stat}`);
+  }
   // fire selection and snackbar
   let delayOpponentMessage = false;
   try {

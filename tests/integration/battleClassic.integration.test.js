@@ -93,10 +93,18 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // selectStat() → handleStatSelection() → validateAndApplySelection() → applySelectionToStore()
   // The chain updates store.selectionMade = true and store.playerChoice = stat,
   // and also emits the "statSelected" battle event which dispatches to the state machine
-  await withMutedConsole(async () => {
+  
+  // Add test ID to store for debugging
+  if (store && typeof store === "object") {
+    store.__testId = "test-" + Date.now();
+  }
+  
+  try {
     // selectStat now returns a promise that resolves when selection is complete
-    await selectStat(store, selectedStat);
-  });
+    const result = await selectStat(store, selectedStat);
+  } catch (error) {
+    throw new Error(`selectStat failed: ${error?.message}`);
+  }
 
   // After selectStat completes, store should have selectionMade = true
   store = ensureStore();
