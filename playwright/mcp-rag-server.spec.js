@@ -11,6 +11,15 @@ const SERVER_READY_PATTERN = /JU-DO-KON! RAG MCP server started/i;
 async function waitForServerReadiness(transport, timeoutMs = 15000) {
   return new Promise((resolve, reject) => {
     let isResolved = false;
+
+    const cleanup = () => {
+      if (!isResolved) {
+        isResolved = true;
+        clearTimeout(timeout);
+        transport.stderr?.off("data", onData);
+      }
+    };
+
     const timeout = setTimeout(() => {
       if (!isResolved) {
         cleanup();
@@ -24,14 +33,6 @@ async function waitForServerReadiness(transport, timeoutMs = 15000) {
         clearTimeout(timeout);
         transport.stderr?.off("data", onData);
         resolve();
-      }
-    };
-
-    const cleanup = () => {
-      if (!isResolved) {
-        isResolved = true;
-        clearTimeout(timeout);
-        transport.stderr?.off("data", onData);
       }
     };
 
