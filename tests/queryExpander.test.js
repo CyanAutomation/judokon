@@ -178,6 +178,16 @@ describe("Query Expansion", () => {
       expect(result.original).toBe("Ōuchi-gari 練習!");
     });
 
+    it("should handle complex unicode edge cases", async () => {
+      // Test combining characters, emoji, and mixed scripts
+      const result = await expandQuery("café 🥋 مرحبا");
+      
+      expect(result.expanded).toContain("café");
+      expect(result.expanded).toContain("مرحبا");
+      expect(result.expanded).not.toContain("🥋"); // Emoji should be filtered out
+      expect(result.original).toBe("café 🥋 مرحبا");
+    });
+
     it("should handle query with numbers", async () => {
       const result = await expandQuery("power 123 speed");
       expect(result.original).toBe("power 123 speed");
