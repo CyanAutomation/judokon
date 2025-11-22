@@ -95,7 +95,10 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // and also emits the "statSelected" battle event which dispatches to the state machine
   await withMutedConsole(async () => {
     selectStat(store, selectedStat);
-    // Let handlers execute asynchronously
+    // Let handlers execute - need to wait for the promise chain within selectStat to settle
+    // by doing multiple microtask yields to ensure store updates are visible
+    await Promise.resolve();
+    await Promise.resolve();
     await Promise.resolve();
   });
 
@@ -104,12 +107,15 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   expect(store.selectionMade).toBe(true);
   expect(store.playerChoice).toBe(selectedStat);
 
-  // Dispatch statSelected event to state machine (redundant if selectStat already did it,
-  // but ensures state transition completes)
+  // Now wait for the state machine to transition to roundDecision and execute
+  // its onEnter handler, which calls resolveSelectionIfPresent() and then resolveRound()
+  // which eventually calls evaluateOutcome() to update roundsPlayed
   await withMutedConsole(async () => {
-    await state.dispatchBattleEvent("statSelected");
-    // Let handlers complete (e.g., roundDecision onEnter handlers that update roundsPlayed)
-    await Promise.resolve();
+    await state.waitForBattleState("roundDecision", 5000);
+    // Give roundDecision's onEnter handler time to execute and call resolveRound()
+    // which triggers a promise chain that updates roundsPlayed via evaluateOutcome()
+    // Use a small timeout to ensure all promise chains settle
+    await new Promise((r) => setTimeout(r, 10));
   });
 
   const debugAfter = inspect.getDebugInfo();
@@ -277,7 +283,9 @@ describe("Battle Classic Page Integration", () => {
       // handler directly, which updates store.selectionMade and store.playerChoice
       await withMutedConsole(async () => {
         selectStat(store, selectedStat);
-        // Let handlers execute
+        // Wait for promise chains to settle
+        await Promise.resolve();
+        await Promise.resolve();
         await Promise.resolve();
       });
 
@@ -285,10 +293,11 @@ describe("Battle Classic Page Integration", () => {
       expect(store.selectionMade).toBe(true);
       expect(store.playerChoice).toBe(selectedStat);
 
-      // Dispatch state event to complete the transition
+      // Wait for roundDecision state and its handlers to execute
       await withMutedConsole(async () => {
-        await testApi.state.dispatchBattleEvent("statSelected");
-        // Don't assert on dispatch result - focus on store state changes
+        await testApi.state.waitForBattleState("roundDecision", 5000);
+        // Let resolveRound complete
+        await new Promise((r) => setTimeout(r, 10));
       });
     } finally {
       resetOpponentDelay();
@@ -364,6 +373,9 @@ describe("Battle Classic Page Integration", () => {
 
     await withMutedConsole(async () => {
       selectStat(initialStore, selectedStat);
+      // Wait for promise chains to settle
+      await Promise.resolve();
+      await Promise.resolve();
       await Promise.resolve();
     });
 
@@ -371,9 +383,11 @@ describe("Battle Classic Page Integration", () => {
     expect(postStatStore).toBe(initialStore);
     expect(postStatStore.selectionMade).toBe(true);
 
-    // Dispatch statSelected via state machine to complete state transition
+    // Wait for roundDecision state
     await withMutedConsole(async () => {
-      await testApi.state.dispatchBattleEvent("statSelected");
+      await testApi.state.waitForBattleState("roundDecision", 5000);
+      // Let resolveRound complete
+      await new Promise((r) => setTimeout(r, 10));
     });
 
     const debugAfter = testApi.inspect.getDebugInfo();
@@ -431,9 +445,17 @@ describe("Battle Classic Page Integration", () => {
       await withMutedConsole(async () => {
         selectStat(store, selectedStat);
         await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         // At this point, opponent card should be obscured with placeholder
         expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
         expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();
+      });
+
+      // Wait for roundDecision resolution to complete
+      await withMutedConsole(async () => {
+        await testApi.state.waitForBattleState("roundDecision", 5000);
+        await new Promise((r) => setTimeout(r, 10));
       });
 
       const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
