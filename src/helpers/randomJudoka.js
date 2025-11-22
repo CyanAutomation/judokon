@@ -187,15 +187,45 @@ export function filterJudokaByFilters(judokaArray, filters) {
 }
 
 /**
+ * Resolve a numeric value from the provided RNG source.
+ *
+ * @param {(() => number) | { random: () => number }} rngSource - RNG function or object with a `random()` method.
+ * @returns {number} Random value constrained to {@code [0, 1)}.
+ * @throws {TypeError|RangeError} When RNG source is missing or returns invalid values.
+ * @pseudocode
+ * choose generator = rngSource if function else rngSource.random
+ * if generator is not a function: throw TypeError
+ * value = generator()
+ * if value is not finite or outside [0, 1): throw RangeError
+ * return value
+ */
+function getRandomValue(rngSource) {
+  const generator = typeof rngSource === "function" ? rngSource : rngSource?.random;
+
+  if (typeof generator !== "function") {
+    throw new TypeError("selectRandomElement requires a function or object with a random() method");
+  }
+
+  const value = generator();
+
+  if (!Number.isFinite(value) || value < 0 || value >= 1) {
+    throw new RangeError("Random generator must return a finite number within [0, 1)");
+  }
+
+  return value;
+}
+
+/**
  * Select a random element from the provided array.
  *
  * @template T
  * @param {T[]} array - Array to sample from.
- * @param {() => number} [rng=Math.random] - Random number generator returning values in [0, 1).
+ * @param {(() => number) | { random: () => number }} [rng=Math.random] - Random source returning values in [0, 1).
  * @returns {T|null} A randomly selected element, or {@code null} when no values are available.
  * @pseudocode
  * if array is empty: return null
- * index = floor((rng or Math.random)() * array.length)
+ * randomValue = getRandomValue(rng or Math.random)
+ * index = floor(randomValue * array.length)
  * return array[index]
  */
 export function selectRandomElement(array, rng = Math.random) {
@@ -203,7 +233,8 @@ export function selectRandomElement(array, rng = Math.random) {
     return null;
   }
 
-  const randomIndex = Math.floor(rng() * array.length);
+  const randomValue = getRandomValue(rng);
+  const randomIndex = Math.floor(randomValue * array.length);
   return array[randomIndex];
 }
 

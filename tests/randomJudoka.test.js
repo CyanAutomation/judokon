@@ -222,6 +222,42 @@ describe("Random Judoka Selection", () => {
       expect(mixed).toContain(result);
     });
 
+    it("should allow RNG objects with random method for deterministic selection", () => {
+      const seed = 1337;
+      const predictorRng = createSeededRng(seed);
+      const expectedFirstRandomValue = predictorRng();
+      const rngObject = { random: vi.fn(createSeededRng(seed)) };
+
+      const array = ["alpha", "beta", "gamma", "delta"];
+      const result = selectRandomElement(array, rngObject);
+
+      expect(rngObject.random).toHaveBeenCalledTimes(1);
+      const expectedIndex = Math.floor(expectedFirstRandomValue * array.length);
+      expect(result).toBe(array[expectedIndex]);
+    });
+
+    it("should support deterministic selection across heterogeneous arrays", () => {
+      const heterogeneous = [1, "two", { three: 3 }, null, undefined];
+      const seededRng = createSeededRng(2024);
+      const expectedValue = createSeededRng(2024)();
+      const expectedIndex = Math.floor(expectedValue * heterogeneous.length);
+
+      const selection = selectRandomElement(heterogeneous, seededRng);
+
+      expect(selection).toBe(heterogeneous[expectedIndex]);
+    });
+
+    it("should throw when rng returns invalid values", () => {
+      const array = ["only", "two"];
+
+      expect(() => selectRandomElement(array, () => NaN)).toThrow(
+        /finite number within \[0, 1\)/
+      );
+      expect(() => selectRandomElement(array, { random: () => 1.2 })).toThrow(
+        /finite number within \[0, 1\)/
+      );
+    });
+
     it("should select deterministic index with seeded RNG", () => {
       const seed = 9876;
       // Use a separate RNG instance to predict the first value
