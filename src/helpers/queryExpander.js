@@ -102,13 +102,32 @@ function findSynonymMatches(query, synonymMap) {
   return matches;
 }
 
+const LETTER_NUMBER_REGEX = /[\p{L}\p{N}]/u;
+const WHITESPACE_REGEX = /\s/;
+
 // Strip special characters (preserving hyphens), normalize case, and clamp length/term count
-// so expanded terms never include punctuation even when the original query does.
+// so expanded terms never include punctuation even when the original query does. Uses
+// character-by-character filtering to stay Unicode-aware without regex backtracking risks.
+function sanitizeUnicodeWords(query) {
+  let sanitized = "";
+
+  for (const char of query) {
+    if (char === "-") {
+      sanitized += char;
+    } else if (char === "_") {
+      sanitized += " ";
+    } else if (LETTER_NUMBER_REGEX.test(char) || WHITESPACE_REGEX.test(char)) {
+      sanitized += WHITESPACE_REGEX.test(char) ? " " : char;
+    } else {
+      sanitized += " ";
+    }
+  }
+
+  return sanitized;
+}
+
 function normalizeAndLimitQuery(query) {
-  const normalized = query
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, " ")
-    .replace(/_/g, " ")
+  const normalized = sanitizeUnicodeWords(query.toLowerCase())
     .replace(/\s+/g, " ")
     .trim();
 
