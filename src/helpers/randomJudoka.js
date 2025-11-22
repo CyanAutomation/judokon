@@ -200,13 +200,13 @@ export function filterJudokaByFilters(judokaArray, filters) {
  * return value
  */
 function getRandomValue(rngSource) {
-  const generator = typeof rngSource === "function" ? rngSource : rngSource?.random;
+  const generator = typeof rngSource === "function" ? rngSource : rngSource && rngSource.random;
 
   if (typeof generator !== "function") {
-    throw new TypeError("selectRandomElement requires a function or object with a random() method");
+    throw new TypeError("getRandomValue requires a function or object with a random() method");
   }
 
-  const value = generator();
+  const value = generator.call(rngSource);
 
   if (!Number.isFinite(value) || value < 0 || value >= 1) {
     throw new RangeError("Random generator must return a finite number within [0, 1)");
@@ -220,7 +220,8 @@ function getRandomValue(rngSource) {
  *
  * @template T
  * @param {T[]} array - Array to sample from.
- * @param {(() => number) | { random: () => number }} [rng=Math.random] - Random source returning values in [0, 1).
+ * @param {(() => number) | { random: () => number }} [rng] - Random source returning values in [0, 1). Defaults to
+ * Math.random when omitted.
  * @returns {T|null} A randomly selected element, or {@code null} when no values are available.
  * @pseudocode
  * if array is empty: return null
@@ -228,12 +229,13 @@ function getRandomValue(rngSource) {
  * index = floor(randomValue * array.length)
  * return array[index]
  */
-export function selectRandomElement(array, rng = Math.random) {
+export function selectRandomElement(array, rng) {
   if (!array || array.length === 0) {
     return null;
   }
 
-  const randomValue = getRandomValue(rng);
+  const rngSource = arguments.length < 2 ? Math.random : rng;
+  const randomValue = getRandomValue(rngSource);
   const randomIndex = Math.floor(randomValue * array.length);
   return array[randomIndex];
 }
