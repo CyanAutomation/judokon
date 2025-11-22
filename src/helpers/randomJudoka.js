@@ -229,7 +229,7 @@ function getRandomValue(rngSource) {
  * index = floor(randomValue * array.length)
  * return array[index]
  */
-export function selectRandomElement(array, rng = Math.random) {
+export function selectRandomElement(array, rng) {
   if (!array || array.length === 0) {
     return null;
   }
