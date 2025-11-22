@@ -315,22 +315,40 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
     }
   } catch {}
 
+  const beforeSelectionMade = store.selectionMade;
+  const beforePlayerChoice = store.playerChoice;
+
   store.selectionMade = true;
   store.__lastSelectionMade = true;
   store.playerChoice = stat;
+
   try {
     if (IS_VITEST) {
+      // Immediately re-read to verify persistence
+      const afterSelectionMade = store.selectionMade;
+      const afterPlayerChoice = store.playerChoice;
+
+      if (afterSelectionMade !== true || afterPlayerChoice !== stat) {
+        throw new Error(
+          `[applySelectionToStore] MUTATION FAILED! Expected selectionMade=true, playerChoice=${stat}, but got selectionMade=${afterSelectionMade}, playerChoice=${afterPlayerChoice}`
+        );
+      }
+
       console.log("[applySelectionToStore] AFTER:", {
         selectionMade: store.selectionMade,
         playerChoice: store.playerChoice,
-        storeObject: store,
         checkStorePersistence: {
           viaProperty: store.selectionMade,
           viaReference: store["selectionMade"]
         }
       });
     }
-  } catch {}
+  } catch (error) {
+    if (IS_VITEST) {
+      console.log("[applySelectionToStore] ERROR:", error);
+    }
+    throw error;
+  }
 
   // Mirror selection to RoundStore
   try {

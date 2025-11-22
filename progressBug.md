@@ -84,55 +84,53 @@ The real issue wasn't state machine transitions—it was that clicking stat butt
 
 ---
 
-## Stage 2: Discover Secondary Blocker 🔄 IN PROGRESS
+## Current Status: Task 1 Investigation - Store Update Chain Execution 🔍 IN PROGRESS
 
-### What We Found
+### Actions Taken
 
-After optimizing away timeouts, discovered tests still fail because:
+1. **Added comprehensive logging to the store update chain:**
+   - Enhanced `applySelectionToStore()` to log before/after state and verify mutations succeed
+   - Enhanced `dispatchStatSelected()` to log start, after emitSelectionEvent, and after dispatch
+   - Enhanced `handleStatSelection()` to log at key checkpoints with store state
+   - Added error checking in `applySelectionToStore()` to detect if mutations fail
 
-- `store.selectionMade` remains `false` after dispatch
-- `roundsPlayed` remains `0` instead of incrementing
-- Battle logic isn't executing despite state transitions appearing to work
+2. **Verified tests are fast (no timeouts):** ✅
+   - Tests run in ~200-250ms instead of 5-6 seconds
+   - Eliminated timeout issues from Stage 1
 
-### Current Test Results
+3. **Identified new issue:** ⚠️
+   - After calling `await selectStat(store, stat)`, the store still shows:
+     - `store.selectionMade = false` (should be `true`)
+     - `store.playerChoice = null` (should be `stat`)
+   - The mutation code `store.selectionMade = true; store.playerChoice = stat;` is not persisting
 
+### Key Discovery
+
+**The console logs ARE being muted by `withMutedConsole()` in the test**, preventing visibility into the execution chain. However, the critical clue is clear:
+
+- The store object that's passed to `selectStat()` is NOT being mutated
+- OR the store object retrieved after the call is a different reference
+
+### Next Steps for Task 1
+
+1. **Verify store reference integrity:** Check if `getBattleStore()` returns the same object throughout the test
+2. **Examine store object mutability:** Is the store object frozen, sealed, or configured with non-writable properties?
+3. **Check event listener registration:** Are store update listeners registered and firing?
+4. **Trace store access chain:** Follow all store references from init through to the test assertion
+
+### Current Test Error
+
+```javascript
+× initializes the page UI to the correct default state
+  → expected null to be 'power' (playerChoice not set)
+  → expected false to be true (selectionMade not set)
 ```
-✓ 1 passed
-✗ 5 failed
 
-FAIL: expected false to be true
-  expect(postSelectionStore.selectionMade).toBe(true);
+### Files Modified So Far
 
-FAIL: expected 0 to be greater than 0
-  expect(result.roundsAfter).toBeGreaterThan(result.roundsBefore);
-```
-
-### Investigation Findings
-
-**What Works:**
-
-- `waitForBattleReady()` returns true
-- `waitForBattleState("waitingForPlayerAction")` successfully reaches state
-- State machine appears to be initialized and responsive
-- No JavaScript errors thrown
-
-**What Doesn't Work:**
-
-- Dispatching `statSelected` event doesn't update store
-- Store updates don't appear to be reflected in battle data
-- Observable side effects (roundsPlayed increment) don't happen
-
-### Root Cause Hypothesis
-
-The state machine dispatch mechanism, when used directly in tests to advance the battle state (e.g., from `waitingForPlayerAction` to `roundDecision`), bypasses the crucial event emission chain responsible for updating the battle store.
-
-Specifically, directly calling `testApi.state.dispatchBattleEvent("statSelected")` does not trigger:
-
-- The invocation of `selectStat(store, stat)` which normally records the player's choice and updates initial store properties.
-
-- The emission of `emitBattleEvent("statSelected")`, which orchestrates listeners to update the store and coordinate with the state machine.
-
-This creates a fundamental disconnect: the state machine transitions as expected, but the battle store's properties (`selectionMade`, `roundsPlayed`, etc.) are never updated because the necessary intermediate functions and event listeners are not engaged. This issue is particularly pronounced in the JSDOM test environment where UI event simulation (like button clicks) doesn't reliably trigger these underlying handlers.
+- `/workspaces/judokon/src/helpers/classicBattle/selectionHandler.js` - Added comprehensive logging
+- `/workspaces/judokon/src/helpers/classicBattle/uiHelpers.js` - Already had logging
+- `/workspaces/judokon/tests/integration/battleClassic.integration.test.js` - Removed one layer of `withMutedConsole` for first test
 
 ---
 
