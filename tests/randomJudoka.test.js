@@ -256,6 +256,15 @@ describe("Random Judoka Selection", () => {
       expect(() => selectRandomElement(array, { random: () => 1.2 })).toThrow(
         /finite number within \[0, 1\)/
       );
+      expect(() => selectRandomElement(array, null)).toThrow(
+        /requires a function or object with a random\(\) method/
+      );
+      expect(() => selectRandomElement(array, undefined)).toThrow(
+        /requires a function or object with a random\(\) method/
+      );
+      expect(() => selectRandomElement(array, {})).toThrow(
+        /requires a function or object with a random\(\) method/
+      );
     });
 
     it("should select deterministic index with seeded RNG", () => {
