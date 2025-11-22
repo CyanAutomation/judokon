@@ -350,16 +350,18 @@ describe("Battle Classic Page Integration", () => {
     setOpponentDelayToZero();
 
     try {
-      // Dispatch startClicked via state machine
+      // Click round button - modal's click handler will dispatch startClicked
+      const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+      expect(roundButtons.length).toBeGreaterThan(0);
+
       await withMutedConsole(async () => {
-        const dispatched = await testApi.state.dispatchBattleEvent("startClicked");
-        expect(dispatched).toBe(true);
+        roundButtons[0].click();
+        await Promise.resolve();
       });
 
       // Dispatch statSelected via state machine
       await withMutedConsole(async () => {
-        const dispatched = await testApi.state.dispatchBattleEvent("statSelected");
-        expect(dispatched).toBe(true);
+        await testApi.state.dispatchBattleEvent("statSelected");
         // At this point, opponent card should be obscured with placeholder
         expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
         expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();

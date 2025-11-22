@@ -1706,70 +1706,30 @@ async function initializeMatchStart(store) {
  */
 async function init() {
   try {
-    // Clean up any stray modal backdrops from previous page loads or test runs
-    // This ensures that modal backdrops don't interfere with UI interactions
     removeBackdrops();
-
     setupScheduler();
 
-    // Mark that init was called for debugging
     if (typeof window !== "undefined") {
       window.__initCalled = true;
     }
 
-    // Expose test API for testing direct access
     exposeTestAPI();
-    // Reset cached inspection values between Classic Battle bootstraps
     try {
       window.__TEST_API?.inspect?.resetCache?.();
     } catch (err) {
       console.debug("battleClassic: test cache reset failed", err);
     }
 
-    // Initialize badge immediately based on overrides (synchronous)
     initBattleStateBadge();
-    // Double-ensure Lobby text in E2E contexts
-    ensureLobbyBadge();
+    initBattleStateBadge({ force: false });
 
-    // Initialize feature flags (async, for other features)
     await initFeatureFlags();
-    // Re-assert badge text after async flag init in case any early writers changed it
-    ensureLobbyBadge();
-    // Surface debug flag metrics in battle views when profiling is active
+    initBattleStateBadge({ force: false });
     initDebugFlagHud();
 
-    // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
-    setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
+    setupInitialUI();
 
-    // Ensure opponent card area remains visible so the Mystery placeholder shows pre-reveal
-    const opponentCard = document.getElementById("opponent-card");
-    if (opponentCard) {
-      opponentCard.classList.remove("opponent-hidden");
-      opponentCard.classList.add("is-obscured");
-    }
-
-    // Initialize scoreboard adapter to handle display.score.update events
-    initScoreboardAdapter();
-    // Seed visible defaults to avoid invisible empty elements and enable a11y announcements
-    updateScore(0, 0);
-    // Fallback: ensure score display has clean markup for deterministic tests
-    // If the innerHTML still has excessive whitespace or newlines, rebuild it cleanly
-    const sd = document.getElementById("score-display");
-    if (sd) {
-      const hasExcessWhitespace = /\n\s{2,}/.test(sd.innerHTML);
-      if (hasExcessWhitespace) {
-        sd.innerHTML = `<span data-side="player"><span data-part="label">You:</span> <span data-part="value">0</span></span>\n<span data-side="opponent"><span data-part="label">Opponent:</span> <span data-part="value">0</span></span>`;
-      }
-    }
-    // Do not force Round 0 after match starts; actual round set in startRoundCycle
-    updateRoundCounter(0);
-    const rc = document.getElementById("round-counter");
-    if (rc && !rc.textContent) rc.textContent = "Round 0";
-
-    // Initialize the battle engine and present the round selection modal.
     createBattleEngine(window.__ENGINE_CONFIG || {});
-
-    // Initialize engine event bridge after engine is created
     bridgeEngineEvents();
 
     const store = createBattleStore();
@@ -1777,272 +1737,20 @@ async function init() {
       window.battleStore = store;
     }
 
-    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
-      if (window.__classicBattleRetryListener) {
-        window.removeEventListener(CARD_RETRY_EVENT, window.__classicBattleRetryListener);
-      }
-      const retryListener = async () => {
-        try {
-          await startRoundCycle(store);
-        } catch (err) {
-          console.error("battleClassic: startRoundCycle retry failed", err);
-          showFatalInitError(err);
-        }
-      };
-      window.__classicBattleRetryListener = retryListener;
-      window.addEventListener(CARD_RETRY_EVENT, retryListener);
-
-      if (window.__classicBattleExitListener) {
-        window.removeEventListener(LOAD_ERROR_EXIT_EVENT, window.__classicBattleExitListener);
-      }
-      const exitListener = () => {
-        try {
-          stopActiveSelectionTimer();
-        } catch {}
-        setHeaderNavigationLocked(false);
-        try {
-          document.body.removeAttribute("data-battle-active");
-        } catch {}
-        ensureLobbyBadge();
-        try {
-          showSnackbar("");
-        } catch {}
-        try {
-          if (!document.getElementById("round-select-error")) {
-            showRoundSelectFallback(store);
-          }
-        } catch {}
-      };
-      window.__classicBattleExitListener = exitListener;
-      window.addEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
-    }
-
-    const markFromEvent = () => {
-      markCooldownStarted(store);
-    };
-    onBattleEvent("nextRoundCountdownStarted", markFromEvent);
-    onBattleEvent("control.countdown.started", markFromEvent);
-    onBattleEvent("countdownStart", markFromEvent);
-
-    // Bind transient UI handlers (opponent choosing message, reveal, outcome)
+    wireCardEventHandlers(store);
+    wireCooldownEvents(store);
     bindUIHelperEventHandlersDynamic();
-
-    // Show modal when a round resolves with matchEnded=true (covers direct-resolve path)
-    onBattleEvent("roundResolved", (e) => {
-      try {
-        const result = e?.detail?.result;
-        if (!result || !result.matchEnded) return;
-        const outcome = String(result?.outcome || "");
-        const scores = {
-          player: Number(result?.playerScore) || 0,
-          opponent: Number(result?.opponentScore) || 0
-        };
-        showEndModal(store, { outcome, scores });
-      } catch {}
-    });
-
-    // Initialize debug panel when enabled
+    wireGlobalBattleEvents(store);
     initDebugPanel();
+    initBattleStateBadge({ force: false });
 
-    // One more gentle nudge to keep the badge text deterministic before interaction
-    ensureLobbyBadge();
+    wireControlButtons(store);
+    await initializeMatchStart(store);
 
-    // Show end-of-match modal on engine event to cover all resolution paths
-    onEngine?.("matchEnded", (detail) => {
-      try {
-        const outcome = String(detail?.outcome || "");
-        // Skip showing end modal for quit, as it's handled directly in quit flow
-        if (outcome === "quit") return;
-        const scores = {
-          player: Number(detail?.playerScore) || 0,
-          opponent: Number(detail?.opponentScore) || 0
-        };
-        showEndModal(store, { outcome, scores });
-      } catch {}
-    });
+    wireRoundCycleEvents(store);
 
-    // Wire Next button click to cooldown/advance handler
-    const nextBtn = document.getElementById("next-button");
-    if (nextBtn) nextBtn.addEventListener("click", onNextButtonClick);
-
-    // Wire Replay button to restart match
-    const replayBtn = document.getElementById("replay-button");
-    if (replayBtn)
-      replayBtn.addEventListener("click", async () => {
-        // Stop any active selection timers and pending fallbacks
-        stopActiveSelectionTimer();
-        // Clear any in-flight start cycle to avoid duplicate starts after replay
-        isStartingRoundCycle = false;
-        resetOpponentPromptTimestamp();
-        resetRoundCounterTracking();
-
-        // Cancel pending auto-select timers so the fresh match starts cleanly
-        if (store.statTimeoutId) {
-          clearTimeout(store.statTimeoutId);
-          store.statTimeoutId = null;
-        }
-        if (store.autoSelectId) {
-          clearTimeout(store.autoSelectId);
-          store.autoSelectId = null;
-        }
-
-        // Use unified replay/init path for clean state
-        await handleReplay(store);
-
-        // Wait for stat buttons hydration to prevent DOM/initialization race conditions
-        await waitForStatButtonsReady();
-
-        // Ensure UI mirrors fresh match state
-        updateScore(0, 0);
-        updateRoundCounter(1);
-
-        // Reset fallback scores for tests so DOM mirrors engine state
-        resetFallbackScores();
-      });
-
-    // Wire Quit button to open confirmation modal
-    const quitBtn = document.getElementById("quit-button");
-    if (quitBtn) quitBtn.addEventListener("click", () => quitMatch(store, quitBtn));
-
-    // Wire Main Menu button with battle store-aware handler
-    bindHomeButton(store);
-
-    try {
-      await initRoundSelectModal(async () => {
-        try {
-          if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-            console.debug(
-              `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
-            );
-          }
-        } catch {}
-        // Reflect state change in badge
-        const badge = document.getElementById("battle-state-badge");
-        if (badge && !badge.hidden) badge.textContent = "Round";
-        // Set data-battle-active attribute on body
-        document.body.setAttribute("data-battle-active", "true");
-        // Disable header navigation during battle
-        setHeaderNavigationLocked(true);
-        // Begin first round
-        broadcastBattleState("matchStart");
-        try {
-          await startRoundCycle(store);
-        } catch (err) {
-          console.error("battleClassic: startRoundCycle failed", err);
-          setHeaderNavigationLocked(false);
-          try {
-            document.body.removeAttribute("data-battle-active");
-          } catch {}
-          ensureLobbyBadge();
-          if (err instanceof JudokaDataLoadError) {
-            recordJudokaLoadFailureTelemetry("initRoundSelectModal.startRoundCycle");
-            return;
-          }
-          showFatalInitError(err);
-          return;
-        }
-      });
-    } catch (err) {
-      console.error("battleClassic: initRoundSelectModal failed", err);
-      if (err instanceof JudokaDataLoadError) {
-        recordJudokaLoadFailureTelemetry("initRoundSelectModal.bootstrap");
-      }
-      try {
-        showRoundSelectFallback(store);
-      } catch (fallbackError) {
-        console.error("battleClassic: showRoundSelectFallback failed", fallbackError);
-        try {
-          showFatalInitError(fallbackError);
-        } catch (fatalError) {
-          console.error("battleClassic: fatal error display failed", fatalError);
-        }
-        throw fallbackError;
-      }
-    }
-
-    // In the simplified (non-orchestrated) page, start the next round when the
-    // cooldown is considered finished. Some paths may dispatch `ready` directly
-    // (e.g. when skipping timers), so listen to both events.
-    const startIfNotEnded = async (evt) => {
-      const eventType = typeof evt === "string" ? evt : evt?.type;
-      const eventDetail =
-        evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
-      const manualRoundStart =
-        eventType === "round.start" &&
-        eventDetail &&
-        typeof eventDetail === "object" &&
-        eventDetail?.source === "next-button";
-
-      if (manualRoundStart) {
-        lastManualRoundStartTimestamp = getCurrentTimestamp();
-        if (typeof window !== "undefined") {
-          try {
-            window.__lastManualRoundStartTimestamp = lastManualRoundStartTimestamp;
-          } catch {}
-        }
-      }
-
-      if (eventType === "ready") {
-        queueMicrotask(async () => {
-          const now = getCurrentTimestamp();
-          const hasManualStamp = lastManualRoundStartTimestamp > 0;
-          const elapsedSinceManual = hasManualStamp
-            ? now - lastManualRoundStartTimestamp
-            : Number.POSITIVE_INFINITY;
-          const skipDueToManual =
-            hasManualStamp &&
-            elapsedSinceManual >= 0 &&
-            elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
-          if (skipDueToManual) {
-            return;
-          }
-          try {
-            await startRoundCycle(store);
-            recordRoundCycleTrigger(eventType || "unknown");
-          } catch (err) {
-            console.error("battleClassic: startRoundCycle ready handler failed", err);
-            if (err instanceof JudokaDataLoadError) {
-              recordJudokaLoadFailureTelemetry("event.ready.startRoundCycle");
-            } else {
-              showFatalInitError(err);
-            }
-          }
-        });
-      } else {
-        try {
-          await startRoundCycle(store);
-          recordRoundCycleTrigger(eventType || "unknown");
-        } catch (err) {
-          console.error("battleClassic: startRoundCycle round.start handler failed", err);
-          if (err instanceof JudokaDataLoadError) {
-            recordJudokaLoadFailureTelemetry("event.round.start.startRoundCycle");
-          } else {
-            showFatalInitError(err);
-          }
-        }
-      }
-
-      if (typeof isMatchEnded === "function" && isMatchEnded()) return;
-    };
-    onBattleEvent("round.start", startIfNotEnded);
-    onBattleEvent("ready", startIfNotEnded);
-    onBattleEvent("roundStarted", async () => {
-      if (isStartingRoundCycle) return;
-      try {
-        await startRoundCycle(store, { skipStartRound: true });
-      } catch (err) {
-        console.error("battleClassic: startRoundCycle roundStarted handler failed", err);
-        if (err instanceof JudokaDataLoadError) {
-          recordJudokaLoadFailureTelemetry("event.roundStarted.startRoundCycle");
-        } else {
-          showFatalInitError(err);
-        }
-      }
-    });
-    // Mark initialization as complete for test hooks
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
-      // Mark initialization complete for test/debug purposes
     }
   } catch (err) {
     console.error("battleClassic: bootstrap failed", err);
