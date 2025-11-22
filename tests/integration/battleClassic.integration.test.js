@@ -274,11 +274,8 @@ describe("Battle Classic Page Integration", () => {
       // This works around JSDOM event delegation limitations by calling the selection
       // handler directly, which updates store.selectionMade and store.playerChoice
       await withMutedConsole(async () => {
-        selectStat(store, selectedStat);
-        // Wait for promise chains to settle
-        await Promise.resolve();
-        await Promise.resolve();
-        await Promise.resolve();
+        // selectStat now returns a promise that resolves when selection is complete
+        await selectStat(store, selectedStat);
       });
 
       // Verify store was updated
@@ -288,8 +285,6 @@ describe("Battle Classic Page Integration", () => {
       // Wait for roundDecision state and its handlers to execute
       await withMutedConsole(async () => {
         await testApi.state.waitForBattleState("roundDecision", 5000);
-        // Let resolveRound complete
-        await new Promise((r) => setTimeout(r, 10));
       });
     } finally {
       resetOpponentDelay();
@@ -364,11 +359,8 @@ describe("Battle Classic Page Integration", () => {
     const selectedStat = statButtons[0].dataset.stat;
 
     await withMutedConsole(async () => {
-      selectStat(initialStore, selectedStat);
-      // Wait for promise chains to settle
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
+      // selectStat now returns a promise that resolves when selection is complete
+      await selectStat(initialStore, selectedStat);
     });
 
     const postStatStore = getBattleStore();
@@ -378,8 +370,6 @@ describe("Battle Classic Page Integration", () => {
     // Wait for roundDecision state
     await withMutedConsole(async () => {
       await testApi.state.waitForBattleState("roundDecision", 5000);
-      // Let resolveRound complete
-      await new Promise((r) => setTimeout(r, 10));
     });
 
     const debugAfter = testApi.inspect.getDebugInfo();
@@ -433,21 +423,18 @@ describe("Battle Classic Page Integration", () => {
       expect(statButtons.length).toBeGreaterThan(0);
       const selectedStat = statButtons[0].dataset.stat;
 
-      // Dispatch statSelected via selectStat and state machine
+      // Dispatch statSelected via selectStat
       await withMutedConsole(async () => {
-        selectStat(store, selectedStat);
-        await Promise.resolve();
-        await Promise.resolve();
-        await Promise.resolve();
-        // At this point, opponent card should be obscured with placeholder
-        expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
-        expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();
+        await selectStat(store, selectedStat);
       });
+
+      // At this point, opponent card should be obscured with placeholder
+      expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
+      expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();
 
       // Wait for roundDecision resolution to complete
       await withMutedConsole(async () => {
         await testApi.state.waitForBattleState("roundDecision", 5000);
-        await new Promise((r) => setTimeout(r, 10));
       });
 
       const roundCompleted = await testApi.state.waitForRoundsPlayed(1);

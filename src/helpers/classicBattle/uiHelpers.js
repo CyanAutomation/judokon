@@ -798,10 +798,26 @@ export function selectStat(store, stat) {
     const selectionOptions = delayOpponentMessage
       ? { playerVal, opponentVal, delayOpponentMessage: true }
       : { playerVal, opponentVal };
-    selectionPromise = Promise.resolve(handleStatSelection(store, stat, selectionOptions)).catch(
-      () => {}
+    try {
+      console.log("[selectStat] Calling handleStatSelection with:", {
+        stat,
+        playerVal,
+        opponentVal,
+        storeSelectionMadeBefore: store.selectionMade
+      });
+    } catch {}
+    selectionPromise = handleStatSelection(store, stat, selectionOptions).catch(
+      (error) => {
+        try {
+          console.log("[selectStat] handleStatSelection error caught:", error);
+        } catch {}
+      }
     );
-  } catch {}
+  } catch (error) {
+    try {
+      console.log("[selectStat] Outer catch error:", error);
+    } catch {}
+  }
 
   // Display snackbar feedback
   if (shouldDisplaySelectionSnackbar(store, delayOpponentMessage)) {
@@ -823,6 +839,7 @@ export function selectStat(store, stat) {
   }
 
   return selectionPromise;
+}
 
 function shouldDisplaySelectionSnackbar(store, delayOpponentMessage) {
   if (delayOpponentMessage) return false;
