@@ -107,6 +107,10 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     throw new Error(`selectStat failed: ${error?.message}`);
   }
 
+  console.log("Validate selection history:", window.__VALIDATE_SELECTION_DEBUG);
+  console.log("Validate selection last:", window.__VALIDATE_SELECTION_LAST);
+  expect(window.__VALIDATE_SELECTION_LAST?.current).toBe("waitingForPlayerAction");
+
   // After selectStat completes, store should have selectionMade = true
   store = ensureStore();
   expect(store.selectionMade).toBe(true);

@@ -268,7 +268,22 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
  * @returns {boolean} True if selection is allowed, false otherwise
  */
 function validateSelectionState(store) {
+  const debugInfo = {
+    timestamp: Date.now(),
+    selectionMade: !!(store && store.selectionMade),
+    current: null,
+    allowed: true
+  };
   if (store.selectionMade) {
+    debugInfo.current = "selectionMade";
+    debugInfo.allowed = false;
+    try {
+      if (typeof window !== "undefined") {
+        const arr = window.__VALIDATE_SELECTION_DEBUG || [];
+        arr.push(debugInfo);
+        window.__VALIDATE_SELECTION_DEBUG = arr;
+      }
+    } catch {}
     try {
       emitBattleEvent("input.ignored", { kind: "duplicateSelection" });
     } catch {}
@@ -277,14 +292,32 @@ function validateSelectionState(store) {
 
   try {
     const current = typeof getBattleState === "function" ? getBattleState() : null;
+    debugInfo.current = current;
     if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
+      debugInfo.allowed = false;
       try {
         if (!IS_VITEST) console.warn(`Ignored stat selection while in state=${current}`);
       } catch {}
       try {
         emitBattleEvent("input.ignored", { kind: "invalidState", state: current });
       } catch {}
+      try {
+        if (typeof window !== "undefined") {
+          const arr = window.__VALIDATE_SELECTION_DEBUG || [];
+          arr.push(debugInfo);
+          window.__VALIDATE_SELECTION_DEBUG = arr;
+          window.__VALIDATE_SELECTION_LAST = debugInfo;
+        }
+      } catch {}
       return false;
+    }
+  } catch {}
+  try {
+    if (typeof window !== "undefined") {
+      const arr = window.__VALIDATE_SELECTION_DEBUG || [];
+      arr.push(debugInfo);
+      window.__VALIDATE_SELECTION_DEBUG = arr;
+      window.__VALIDATE_SELECTION_LAST = debugInfo;
     }
   } catch {}
   return true;
