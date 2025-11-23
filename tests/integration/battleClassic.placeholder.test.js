@@ -12,37 +12,25 @@ import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
  * @pseudocode
  * completeFirstRound(document, testApi):
  *   1. Find and click first round button (expects at least one button)
- *   2. Verify stat buttons appear (indicates we reached waitingForPlayerAction state)
- *   3. Find and click first stat button (expects at least one button)
- *   4. Assert all state transitions completed successfully
+ *   2. Wait for orchestrator to reach waitingForPlayerAction state
+ *   3. Verify stat buttons appear (indicates we reached waitingForPlayerAction state)
+ *   4. Find and click first stat button (expects at least one button)
+ *   5. Assert all state transitions completed successfully
  */
-async function completeFirstRound(document) {
+async function completeFirstRound(document, testApi) {
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
   expect(roundButtons.length).toBeGreaterThan(0);
 
-  await new Promise((resolve) => {
+  // Click round button and wait for orchestrator state transition
+  await new Promise(async (resolve) => {
     roundButtons[0].click();
-    // Wait for async handlers to complete
-    let frameCount = 0;
-    const checkFrames = () => {
-      frameCount++;
-      if (frameCount < 3) {
-        if (typeof window.requestAnimationFrame === "function") {
-          window.requestAnimationFrame(checkFrames);
-        } else {
-          setTimeout(checkFrames, 0);
-        }
-      } else {
-        resolve();
-      }
-    };
-    Promise.resolve().then(() => {
-      if (typeof window.requestAnimationFrame === "function") {
-        window.requestAnimationFrame(checkFrames);
-      } else {
-        setTimeout(checkFrames, 0);
-      }
-    });
+    // Wait for async handlers and orchestrator state transition to complete
+    try {
+      await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
+    } catch (e) {
+      // Fallback if state transition fails
+    }
+    resolve();
   });
 
   const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));

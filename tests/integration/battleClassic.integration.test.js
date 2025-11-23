@@ -485,6 +485,8 @@ describe("Battle Classic Page Integration", () => {
       roundButtons[0].click();
       // Let event handlers execute
       await Promise.resolve();
+      // Wait for orchestrator to reach waitingForPlayerAction state
+      await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
     });
 
     const updatedStore = getBattleStore();
@@ -553,6 +555,8 @@ describe("Battle Classic Page Integration", () => {
       await withMutedConsole(async () => {
         roundButtons[0].click();
         await Promise.resolve();
+        // Wait for orchestrator to reach waitingForPlayerAction state
+        await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
       });
 
       // Use hybrid approach: call selectStat directly
