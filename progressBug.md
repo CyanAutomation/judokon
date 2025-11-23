@@ -31,9 +31,9 @@ This confirms the guard is working as designed, but exposes a flaw in the test s
 
 The core issue is a discrepancy between the browser environment and the JSDOM test environment.
 
-1.  **State Transition Logic is Sound**: The orchestrator is designed to transition to `waitingForPlayerAction` upon receiving a `roundStarted` event. This works in the browser.
-2.  **Event Propagation Failure**: In the JSDOM environment, the `roundStarted` event dispatched by the UI does not reliably trigger the corresponding listener in the orchestrator. This can be due to timing (event loop processing) or binding issues specific to the test setup.
-3.  **State Leakage Ruled Out (For Now)**: While module-level state can be a problem, the consistent failure at the *initial* state transition points away from this. The orchestrator never reaches a state that could "leak" into the next test.
+1. **State Transition Logic is Sound**: The orchestrator is designed to transition to `waitingForPlayerAction` upon receiving a `roundStarted` event. This works in the browser.
+2. **Event Propagation Failure**: In the JSDOM environment, the `roundStarted` event dispatched by the UI does not reliably trigger the corresponding listener in the orchestrator. This can be due to timing (event loop processing) or binding issues specific to the test setup.
+3. **State Leakage Ruled Out (For Now)**: While module-level state can be a problem, the consistent failure at the *initial* state transition points away from this. The orchestrator never reaches a state that could "leak" into the next test.
 
 The problem lies not in the orchestrator's inability to change state, but in its **failure to receive the signal to do so** within the artificial confines of the test.
 
@@ -46,15 +46,17 @@ We will address this by creating a more robust test harness that acknowledges th
 ### Step 1: Create a `test-only` Orchestrator Helper
 
 In a test utility file, create a new function, e.g., `manuallyTransitionToPlayerAction()`. This function will:
-1.  Access the orchestrator service directly.
-2.  Manually send the `START_ROUND` event that the UI *should* have triggered.
-3.  Wait for the orchestrator's state to confirm it has transitioned to `waitingForPlayerAction`.
+
+1. Access the orchestrator service directly.
+2. Manually send the `START_ROUND` event that the UI *should* have triggered.
+3. Wait for the orchestrator's state to confirm it has transitioned to `waitingForPlayerAction`.
 
 ### Step 2: Integrate the Helper into Integration Tests
 
 Modify `tests/integration/battleClassic.integration.test.js`:
-1.  After the code that simulates a click to start a round, call `manuallyTransitionToPlayerAction()`.
-2.  Remove any fragile `waitForBattleState()` calls that poll for the state, as the new helper will handle this explicitly.
+
+1. After the code that simulates a click to start a round, call `manuallyTransitionToPlayerAction()`.
+2. Remove any fragile `waitForBattleState()` calls that poll for the state, as the new helper will handle this explicitly.
 
 ### Step 3: Deprecate Unreliable Test Patterns
 
@@ -69,10 +71,12 @@ This approach makes tests more resilient and less dependent on the nuances of JS
 *The following sections are preserved from the original report for context. The debugging guide remains a valuable tool.*
 
 ### Task 1: validateSelectionState() Unit Test ✅ COMPLETE
+
 **File**: `tests/classicBattle/validateSelectionState.test.js`
 *(Details omitted for brevity, see previous report version)*
 
 ### Task 2: window.__VALIDATE_SELECTION_DEBUG Documentation ✅ COMPLETE
+
 *(Details omitted for brevity, see previous report version)*
 
 ### Debugging Guide: Reading window.__VALIDATE_SELECTION_DEBUG
