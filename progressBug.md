@@ -140,4 +140,27 @@ if (!validateStateTransition(from, target, eventName, byName)) {
 
 **Result**: All 7 tests pass ✓
 
-**Key Finding**: The initial state is properly set to "waitingForMatchStart" (NOT null). The previous suspicion that `machine.getState()` returned null was incorrect. The actual issue was the `validateStateTransition()` bug preventing state transitions from co
+**Key Finding**: The initial state is properly set to "waitingForMatchStart" (NOT null). The previous suspicion that `machine.getState()` returned null was incorrect. The actual issue was the `validateStateTransition()` bug preventing state transitions from completing.
+
+---
+
+### Task 2: Verify State Transitions and Integration Issues ✅ IN PROGRESS
+
+**Files Modified**:
+
+- `src/helpers/classicBattle/stateManager.js` (fixed byName Map reference)
+- `tests/integration/battleClassic.integration.test.js` (added waitForBattleState calls)
+- `tests/integration/battleClassic.placeholder.test.js` (updated completeFirstRound to wait for state)
+
+**Findings**:
+
+1. **State Manager Bug Fixed**: Changed line 257 in stateManager.js from passing `stateTable` (array) to `byName` (Map) to validateStateTransition
+2. **Integration Tests Issue Identified**: Several tests were not waiting for `waitingForPlayerAction` state before calling `selectStat()`
+3. **Tests Fixed**: Updated tests to wait for proper orchestrator state transition before proceeding
+4. **Remaining Issue**: Even after waiting for state, `roundsPlayed` is not incrementing, suggesting stat selection isn't fully completing
+
+**Current Test Results**:
+
+- 89 tests passing ✓
+- 16 tests still failing due to incomplete stat selection flow
+- Main issue: `roundsPlayed` counter not incrementing after selection

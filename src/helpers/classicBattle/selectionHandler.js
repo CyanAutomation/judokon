@@ -25,6 +25,73 @@ export const VALID_BATTLE_STATES = ["waitingForPlayerAction", "roundDecision"];
 const FALLBACK_BUFFER_MS = 32;
 const INVALID_STATE_WARNING = (state) => `Ignored stat selection while in state=${state}`;
 
+// Battle state constants for easier maintenance
+const BATTLE_STATES = {
+  WAITING_FOR_ACTION: "waitingForPlayerAction",
+  ROUND_DECISION: "roundDecision",
+  ROUND_OVER: "roundOver"
+};
+
+/**
+ * Get current battle state safely without throwing.
+ *
+ * @returns {string|null}
+ */
+function getCurrentBattleState() {
+  try {
+    return typeof getBattleState === "function" ? getBattleState() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Manage hidden properties on store objects with consolidated logic.
+ *
+ * @param {object|null|undefined} store - Target object.
+ * @param {symbol} token - Property token.
+ * @param {"get"|"set"} action - Action to perform.
+ * @param {any} [value] - Value for set action.
+ * @returns {any}
+ */
+function manageHiddenProperty(store, token, action, value) {
+  if (!store || typeof store !== "object") {
+    return undefined;
+  }
+  if (action === "get") {
+    return store[token];
+  }
+  if (action === "set") {
+    if (hasOwn.call(store, token)) {
+      store[token] = value;
+    } else {
+      Object.defineProperty(store, token, {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value
+      });
+    }
+  }
+}
+
+/**
+ * Update dataset battle state with optional previous state tracking.
+ *
+ * @param {string} newState - New battle state.
+ * @param {string|null} [prevState] - Previous battle state.
+ */
+function setBattleStateDataset(newState, prevState) {
+  try {
+    if (typeof document !== "undefined" && document.body) {
+      document.body.dataset.battleState = newState;
+      if (prevState) {
+        document.body.dataset.prevBattleState = String(prevState);
+      }
+    }
+  } catch {}
+}
+
 /**
  * Guard management system for preventing concurrent operations.
  *
@@ -67,26 +134,11 @@ function enterGuard(store, token) {
 }
 
 function setHiddenStoreValue(store, token, value) {
-  if (!store || typeof store !== "object") {
-    return;
-  }
-  if (hasOwn.call(store, token)) {
-    store[token] = value;
-    return;
-  }
-  Object.defineProperty(store, token, {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value
-  });
+  manageHiddenProperty(store, token, "set", value);
 }
 
 function getHiddenStoreValue(store, token) {
-  if (!store || typeof store !== "object") {
-    return undefined;
-  }
-  return store[token];
+  return manageHiddenProperty(store, token, "get");
 }
 
 /**
@@ -158,11 +210,7 @@ export function isOrchestratorActive(store, currentState = undefined) {
 
   let state = currentState;
   if (state === undefined) {
-    try {
-      state = typeof getBattleState === "function" ? getBattleState() : null;
-    } catch {
-      state = null;
-    }
+    state = getCurrentBattleState();
   }
   const hasMachineState = typeof state === "string" && state.length > 0;
 
@@ -263,11 +311,7 @@ function resolveStatSide({ value, selector, stat, stats, persistedStats }) {
 
   const container = getStatContainer(selector);
   const domValue = Number(getCardStatValue(container, stat));
-  if (Number.isFinite(domValue)) {
-    return domValue;
-  }
-
-  return domValue;
+  return Number.isFinite(domValue) ? domValue : 0;
 }
 
 function readStoreStat(stats, stat) {
@@ -389,25 +433,16 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.__lastSelectionMade = true;
   store.playerChoice = stat;
 
-  try {
-    if (IS_VITEST) {
-      const afterSelectionMade = store.selectionMade;
-      const afterPlayerChoice = store.playerChoice;
-
-      if (afterSelectionMade !== true || afterPlayerChoice !== stat) {
-        throw new Error(
-          `[applySelectionToStore] MUTATION FAILED! Expected selectionMade=true, playerChoice=${stat}, but got selectionMade=${afterSelectionMade}, playerChoice=${afterPlayerChoice}`
-        );
-      }
-
-      logSelectionDebug("[applySelectionToStore] AFTER:", {
-        selectionMade: store.selectionMade,
-        playerChoice: store.playerChoice
-      });
+  if (IS_VITEST) {
+    if (store.selectionMade !== true || store.playerChoice !== stat) {
+      throw new Error(
+        `[applySelectionToStore] Store mutation failed: selectionMade=${store.selectionMade}, playerChoice=${store.playerChoice}`
+      );
     }
-  } catch (error) {
-    logSelectionDebug("[applySelectionToStore] ERROR:", error);
-    throw error;
+    logSelectionDebug("[applySelectionToStore] AFTER:", {
+      selectionMade: store.selectionMade,
+      playerChoice: store.playerChoice
+    });
   }
 
   // Mirror selection to RoundStore
@@ -489,16 +524,6 @@ function clearTimerHandle(handle, schedulers) {
   }
 }
 
-/**
- * @summary Stop timers and clear pending timeouts tied to stat selection.
- *
- * @pseudocode
- * 1. Call `stopTimer()` to halt the countdown.
- * 2. Clear `store.statTimeoutId` and `store.autoSelectId`.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @returns {void}
- */
 /**
  * Stop countdown timers and clear pending selection timeouts on the store.
  *
@@ -708,29 +733,18 @@ async function handleFallbackResolution(
   normalizedDelay
 ) {
   const selectionWasMade = !!store?.selectionMade;
-  let previousState = null;
-  try {
-    previousState = typeof getBattleState === "function" ? getBattleState() : currentState;
-  } catch {
-    previousState = currentState;
+  let previousState = currentState;
+  if (previousState === undefined) {
+    previousState = getCurrentBattleState() ?? null;
   }
 
   // Transition to roundDecision
-  if (typeof document !== "undefined" && document.body) {
-    try {
-      document.body.dataset.battleState = "roundDecision";
-      if (previousState) {
-        document.body.dataset.prevBattleState = String(previousState);
-      } else {
-        delete document.body.dataset.prevBattleState;
-      }
-    } catch {}
-  }
+  setBattleStateDataset(BATTLE_STATES.ROUND_DECISION, previousState);
 
   try {
     emitBattleEvent("battleStateChange", {
       from: previousState ?? null,
-      to: "roundDecision"
+      to: BATTLE_STATES.ROUND_DECISION
     });
   } catch {}
 
@@ -752,17 +766,12 @@ async function handleFallbackResolution(
   }
 
   // Transition to roundOver
-  if (typeof document !== "undefined" && document.body) {
-    try {
-      document.body.dataset.battleState = "roundOver";
-      document.body.dataset.prevBattleState = "roundDecision";
-    } catch {}
-  }
+  setBattleStateDataset(BATTLE_STATES.ROUND_OVER, BATTLE_STATES.ROUND_DECISION);
 
   try {
     emitBattleEvent("battleStateChange", {
-      from: "roundDecision",
-      to: "roundOver"
+      from: BATTLE_STATES.ROUND_DECISION,
+      to: BATTLE_STATES.ROUND_OVER
     });
   } catch {}
 }
@@ -793,12 +802,7 @@ export async function resolveWithFallback(
   handledByOrchestrator
 ) {
   try {
-    let currentState = null;
-    try {
-      currentState = typeof getBattleState === "function" ? getBattleState() : null;
-    } catch {
-      currentState = null;
-    }
+    let currentState = getCurrentBattleState();
 
     const orchestrated = isOrchestratorActive(store, currentState);
 
@@ -845,7 +849,7 @@ export async function resolveWithFallback(
     }
 
     if (orchestrated) {
-      if (currentState && currentState !== "roundDecision") {
+      if (currentState && currentState !== BATTLE_STATES.ROUND_DECISION) {
         logSelectionDebug(
           "[test] handleStatSelection: machine in non-decision state",
           currentState
