@@ -13,6 +13,7 @@ import { t } from "../i18n.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundStore } from "./roundStore.js";
 import { getScheduler } from "../scheduler.js";
+
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 const hasOwn = Object.prototype.hasOwnProperty;
@@ -20,6 +21,28 @@ const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
 const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
 
+const VALID_BATTLE_STATES = ["waitingForPlayerAction", "roundDecision"];
+const FALLBACK_BUFFER_MS = 32;
+const INVALID_STATE_WARNING = (state) => `Ignored stat selection while in state=${state}`;
+
+/**
+ * Guard management system for preventing concurrent operations.
+ *
+ * Uses Symbol-based hidden properties to track state without polluting the object's
+ * enumerable namespace. This approach avoids WeakMap storage overhead while ensuring
+ * non-enumerable, configurable properties that can be safely deleted.
+ *
+ * @pseudocode
+ * 1. Check if store is a valid object; bail gracefully if not.
+ * 2. Attempt to acquire guard token via hidden property.
+ * 3. If token already exists, return { entered: false } (already held).
+ * 4. Define non-enumerable property with guard token and return { entered: true }.
+ * 5. Provide release() function that safely deletes the token property.
+ *
+ * @param {object|null|undefined} store - Target object to guard.
+ * @param {symbol} token - Unique guard identifier (Symbol).
+ * @returns {{ entered: boolean, release(): void }}
+ */
 function enterGuard(store, token) {
   if (!store || typeof store !== "object") {
     return { entered: true, release() {} };
@@ -64,6 +87,46 @@ function getHiddenStoreValue(store, token) {
     return undefined;
   }
   return store[token];
+}
+
+/**
+ * Log debug information for test environments only.
+ *
+ * @param {string} message - Debug message.
+ * @param {any} data - Optional data to log.
+ */
+function logSelectionDebug(message, data) {
+  if (!IS_VITEST) return;
+  try {
+    console.log(message, data);
+  } catch {}
+}
+
+/**
+ * Track debug information about selection validation in tests.
+ *
+ * @param {object} debugInfo - Debug information to record.
+ */
+function trackDebugInfo(debugInfo) {
+  if (typeof window === "undefined") return;
+  try {
+    const arr = window.__VALIDATE_SELECTION_DEBUG || [];
+    arr.push(debugInfo);
+    window.__VALIDATE_SELECTION_DEBUG = arr;
+    window.__VALIDATE_SELECTION_LAST = debugInfo;
+  } catch {}
+}
+
+/**
+ * Normalize a numeric value for scoring.
+ *
+ * @param {any} value - Value to normalize.
+ * @param {number} [fallback=0] - Fallback if value is not finite.
+ * @returns {number} Normalized number.
+ */
+function normalizeScore(value, fallback = 0) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
 }
 
 /**

@@ -24,6 +24,22 @@ import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 import { selectStat } from "../../src/helpers/classicBattle/uiHelpers.js";
 
+/**
+ * Perform a complete stat selection flow for testing.
+ *
+ * This helper:
+ * 1. Waits for battle to be ready
+ * 2. Selects a round from the modal
+ * 3. Waits for player action state
+ * 4. Selects a stat and verifies store is updated immediately
+ * 5. Waits for round to fully resolve (roundDecision state)
+ * 6. Verifies roundsPlayed was incremented
+ *
+ * @param {object} testApi - Test API from window.__TEST_API
+ * @param {object} options - Configuration
+ * @param {boolean} [options.orchestrated=false] - Whether to test orchestrated flow
+ * @returns {Promise<{store, roundsBefore, roundsAfter, engineRounds}>}
+ */
 async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) {
   const { state, inspect, engine, init: initApi } = testApi;
   const ensureStore = () => {
@@ -33,7 +49,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     return currentStore;
   };
 
-  // Wait for battle to be ready before dispatching events
+  // Step 1: Wait for battle to be ready before dispatching events
   await withMutedConsole(async () => {
     const isReady = await initApi.waitForBattleReady(5000);
     expect(isReady).toBe(true);
@@ -56,7 +72,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   const debugBefore = inspect.getDebugInfo();
   const roundsBefore = debugBefore?.store?.roundsPlayed ?? 0;
 
-  // Get round buttons and click first one - modal click handlers will call startRound()
+  // Step 2: Click round button and wait for waitingForPlayerAction state
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
   expect(roundButtons.length).toBeGreaterThan(0);
 
@@ -64,58 +80,51 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     roundButtons[0].click();
     // Let the modal's button click handler execute and dispatch startClicked
     await Promise.resolve();
-    // Log state before waiting
-    console.log("[TEST DIAG] Before waitForBattleState (waitingForPlayerAction):", await state.getBattleState());
     // Wait for state machine to reach waitingForPlayerAction state
     await state.waitForBattleState("waitingForPlayerAction", 5000);
-    // Log state after waiting
-    console.log("[TEST DIAG] After waitForBattleState (waitingForPlayerAction):", await state.getBattleState());
   });
 
   store = ensureStore();
   expect(store.selectionMade).toBe(false);
   expect(store.playerChoice).toBeNull();
 
-  // Get first stat button to determine which stat to select
+  // Step 3: Get first stat button to determine which stat to select
   const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
   expect(statButtons.length).toBeGreaterThan(0);
   const selectedStat = statButtons[0].dataset.stat;
   expect(selectedStat).toBeTruthy();
 
-  // Add test ID to store for debugging
-  if (store && typeof store === "object") {
-    store.__testId = "test-" + Date.now();
-  }
-
-  // Call selectStat but don't await it immediately. This starts the selection
-  // process, which synchronously updates the store.
-  const selectionPromise = selectStat(store, selectedStat);
-
-  // Log store state right after selectStat and before Promise.resolve()
-  console.log("[TEST DIAG] After selectStat (before Promise.resolve()):", {
-    selectionMade: store.selectionMade,
-    playerChoice: store.playerChoice,
+  // Step 4: Perform stat selection and verify immediate store update
+  // CRITICAL: The store is updated synchronously during selectStat() execution.
+  // We need to assert the store state BEFORE awaiting the full selection promise,
+  // which includes round resolution and state machine transitions.
+  
+  // Disable console logging for the selection call to keep test output clean
+  let selectionPromise;
+  await withMutedConsole(async () => {
+    selectionPromise = selectStat(store, selectedStat);
+    // Microtask to allow handleStatSelection to run and update store
+    await Promise.resolve();
   });
 
-  // Allow the synchronous part of selectStat to complete. This includes
-  // the call to applySelectionToStore.
-  await Promise.resolve();
-
-  // After the synchronous part of selectStat completes, the store should be updated.
+  // NOW check that store was updated - this happens synchronously in applySelectionToStore
   store = ensureStore();
   expect(store.selectionMade).toBe(true);
   expect(store.playerChoice).toBe(selectedStat);
 
-  // Now, await the resolution of the full round.
+  // Step 5: Now await the full selection promise to complete the round resolution
+  // This ensures the orchestrator state machine transitions and round is fully complete
   try {
-    await selectionPromise;
+    await withMutedConsole(async () => {
+      await selectionPromise;
+    });
   } catch (error) {
     throw new Error(`selectStat failed: ${error?.message}`);
   }
 
-  // Now wait for the state machine to transition to roundDecision and execute
-  // its onEnter handler, which calls resolveSelectionIfPresent() and then resolveRound()
-  // which eventually calls evaluateOutcome() to update roundsPlayed
+  // Step 6: Wait for state machine to reach roundDecision and fully resolve the round
+  // This transition happens after the selection event is processed and the round outcome
+  // is evaluated (which updates roundsPlayed).
   await withMutedConsole(async () => {
     await state.waitForBattleState("roundDecision", 5000);
   });
