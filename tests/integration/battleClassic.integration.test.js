@@ -182,7 +182,20 @@ describe("Battle Classic Page Integration", () => {
 
   it("DEBUG: Verify validateSelectionState logs are firing", async () => {
     // Simple test to verify logging is happening
-    await init();
+    // Capture logs from init as well
+    window.__TEST_CAPTURED_LOGS = [];
+    const originalLog = console.log;
+    console.log = (...args) => {
+      const msg = args.map((a) => String(a)).join(" ");
+      window.__TEST_CAPTURED_LOGS.push(msg);
+    };
+
+    try {
+      await init();
+    } finally {
+      // Don't restore yet - keep capturing
+    }
+
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
 
@@ -206,14 +219,6 @@ describe("Battle Classic Page Integration", () => {
     const store = testApi.inspect.getBattleStore();
     const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     expect(statButtons.length).toBeGreaterThan(0);
-
-    // Capture logs to window global
-    window.__TEST_CAPTURED_LOGS = [];
-    const originalLog = console.log;
-    console.log = (...args) => {
-      const msg = args.map((a) => String(a)).join(" ");
-      window.__TEST_CAPTURED_LOGS.push(msg);
-    };
 
     try {
       await selectStat(store, statButtons[0].dataset.stat);

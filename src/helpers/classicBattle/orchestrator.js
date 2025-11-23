@@ -299,6 +299,8 @@ export async function initClassicBattleOrchestrator(
       machine = createdMachine;
       attachListeners(machine);
       // Register the machine's state getter so eventBus can access current state
+      const initialState = machine.getState();
+      window.__ORCHESTRATOR_INITIAL_STATE = initialState;
       setBattleStateGetter(() => machine.getState());
       preloadDependencies();
       return machine;
