@@ -273,13 +273,17 @@ export async function initClassicBattleOrchestrator(
   hooks = {}
 ) {
   debugLog("initClassicBattleOrchestrator() called");
+  window.__INIT_ORCHESTRATOR_CALLED = true;
   if (machine) {
+    window.__ORCHESTRATOR_EARLY_RETURN_MACHINE = true;
     return machine;
   }
 
   if (machineInitPromise) {
+    window.__ORCHESTRATOR_EARLY_RETURN_PROMISE = true;
     return machineInitPromise;
   }
+  window.__ORCHESTRATOR_STARTING_INIT = true;
   machineInitPromise = (async () => {
     const overrides = normalizeContextOverrides(contextOverrides);
     const deps = normalizeDependencies(dependencies);

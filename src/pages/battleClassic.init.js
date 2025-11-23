@@ -54,6 +54,7 @@ import {
   scheduleDelayed,
   clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
+import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 
 function updateTimerFallback(value) {
   try {
@@ -1768,6 +1769,9 @@ async function init() {
     if (typeof window !== "undefined") {
       window.battleStore = store;
     }
+
+    // Initialize the battle orchestrator for state machine management
+    store.orchestrator = await initClassicBattleOrchestrator(store);
 
     wireCardEventHandlers(store);
     wireCooldownEvents(store);
