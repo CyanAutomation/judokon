@@ -166,3 +166,107 @@ if (!validateStateTransition(from, target, eventName, byName)) {
 - 89 tests passing ✓
 - 16 tests still failing due to incomplete stat selection flow
 - Main issue: `roundsPlayed` counter not incrementing after selection
+
+---
+
+### Task 3: Deep Dive - Event Routing Investigation 🔍 IN PROGRESS
+
+**Architecture Discovered**:
+
+The battle system uses a multi-layer event routing architecture:
+
+1. **Event Emission Layer** (`battleEvents.js`):
+   - `emitBattleEvent(eventName, payload)` - broadcasts reactive events
+   - `onBattleEvent(eventName, handler)` - subscribes to events
+
+2. **Orchestrator Dispatch Layer** (`eventDispatcher.js`):
+   - `dispatchBattleEvent(eventName, payload)` - routes events to the state machine
+   - Obtains machine via `debugHooks.readDebugState("getClassicBattleMachine")`
+   - Calls `machine.dispatch(eventName, payload)`
+
+3. **State Machine Layer** (`stateManager.js`):
+   - Manages finite state transitions
+   - Triggers onEnter handlers when entering states
+   - Currently resolves to `roundDecision` state from `waitingForPlayerAction` on "statSelected" event
+
+4. **Action Handlers Layer** (`stateHandlers/`):
+   - Map state names to handler functions (e.g., `roundDecisionEnter` for `roundDecision` state)
+   - Registered via `onEnterMap` passed to `createStateManager()`
+   - Example: `roundDecisionEnter()` calls `resolveSelectionIfPresent()` → should trigger `roundDecision` logic
+
+**Key Issue Identified**:
+
+The state table CORRECTLY defines the transition:
+
+```javascript
+{
+  on: "statSelected", target: "roundDecision",
+  ...
+}
+```
+
+The `roundDecision` state correctly has onEnter handlers:
+
+```javascript
+onEnter: ["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"]
+```
+
+However, when tests call `dispatchBattleEvent("statSelected")`, the function returns `false`, meaning:
+
+- Either the machine is not properly registered in debug state
+- Or the orchestrator doesn't have state handlers that invoke `BattleEngine.handleStatSelection()`
+- Or the machine dispatch() call succeeds but doesn't actually execute the state transition
+
+**Event Flow Traced**:
+
+1. Test calls `selectStat(store, selectedStat)`
+2. `selectStat()` calls `handleStatSelection()` in selectionHandler.js
+3. `handleStatSelection()` validates state, applies selection, calls `dispatchStatSelected()`
+4. `dispatchStatSelected()` calls `dispatchBattleEvent("statSelected")`
+5. `dispatchBattleEvent()` retrieves machine from debug state
+6. Calls `machine.dispatch("statSelected", payload)`
+7. Returns `false` (event not handled) ❌
+
+**Missing Link**: The orchestrator needs to explicitly handle the state transition and invoke the BattleEngine's stat selection logic. Currently:
+
+- State machine can transition to `roundDecision` state
+- `roundDecisionEnter()` handler exists in orchestrator
+- But `BattleEngine.handleStatSelection()` (which increments `roundsPlayed`) is never called
+
+**Root Cause Hypothesis**:
+
+The orchestrator is missing an action handler or state transition that bridges the gap between the "statSelected" event being dispatched and the BattleEngine's stat selection handler being invoked. The state machine transitions to `roundDecision`, but `roundDecisionEnter()` doesn't call the battle engine directly—it appears to wait for selection resolution instead.
+
+---
+
+### Proposed Fix Plan for `roundsPlayed` Issue
+
+**Step 1**: Verify that orchestrator properly initializes machine in test environment
+
+- Check that `machine` is registered in `debugHooks` during init
+- Verify `setBattleStateGetter()` is called before tests run
+- Confirm machine is accessible via `readDebugState("getClassicBattleMachine")`
+
+**Step 2**: Add explicit state transition handler for "statSelected" event
+
+- Currently, only state machine transition is defined
+- Need to add orchestrator-level handler that invokes `BattleEngine.handleStatSelection()`
+- This handler should fire when transitioning from `waitingForPlayerAction` to `roundDecision`
+
+**Step 3**: Verify BattleEngine initialization in test environment
+
+- Ensure engine is properly attached to machine context
+- Check that engine methods are callable (not stubbed/mocked incorrectly)
+- Confirm `handleStatSelection()` is being called when state enters `roundDecision`
+
+**Step 4**: Trace action execution in roundDecisionEnter handler
+
+- The handler calls `resolveSelectionIfPresent()` which should process the selection
+- This should ultimately lead to updating scores and incrementing `roundsPlayed`
+- Verify the execution path completes successfully
+
+**Step 5**: Run targeted tests to validate fix
+
+- After implementing fixes, run: `npm run test:battles:classic`
+- Confirm `roundsPlayed` increments properly
+- Verify 16 failing tests now pass
