@@ -1,31 +1,129 @@
 import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
 import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
+
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
+// Constants
+const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
+const VALIDATION_WARN_ENABLED = true;
+
 /**
- * Validates a state transition against the provided state table.
+ * Build a lookup map from state table and find initial state.
+ *
+ * @param {Array} stateTable - Array of state definitions.
+ * @returns {{byName: Map, initialState: string}} State lookup map and initial state name.
+ */
+function initializeStateTable(stateTable) {
+  const byName = new Map();
+  let initialState = null;
+
+  for (const s of Array.isArray(stateTable) ? stateTable : []) {
+    byName.set(s.name, s);
+    if (s.type === "initial") {
+      initialState = s.name;
+    }
+  }
+
+  if (!initialState) {
+    initialState = DEFAULT_INITIAL_STATE;
+  }
+
+  return { byName, initialState };
+}
+
+/**
+ * Build a trigger lookup map for fast O(1) access to transitions.
+ *
+ * @param {Map} statesByName - State lookup map.
+ * @returns {Map} Map of "eventName:stateName" -> target state.
+ */
+function buildTriggerMap(statesByName) {
+  const triggerMap = new Map();
+
+  for (const [stateName, stateDef] of statesByName) {
+    for (const trigger of stateDef.triggers || []) {
+      const key = `${stateName}:${trigger.on}`;
+      triggerMap.set(key, trigger.target);
+    }
+  }
+
+  return triggerMap;
+}
+
+/**
+ * Get available trigger event names for a given state.
+ *
+ * @param {object} stateDef - State definition.
+ * @returns {string[]} Array of event names.
+ */
+function getAvailableTriggers(stateDef) {
+  return (stateDef?.triggers || []).map((t) => t.on);
+}
+
+/**
+ * Validate state table structure.
+ *
+ * @param {Array} stateTable - Array of state definitions.
+ * @returns {boolean} True if valid, logs errors if not.
+ */
+function validateStateTable(stateTable) {
+  if (!Array.isArray(stateTable)) {
+    logError("State table must be an array");
+    return false;
+  }
+
+  if (stateTable.length === 0) {
+    logError("State table is empty");
+    return false;
+  }
+
+  for (const state of stateTable) {
+    if (!state.name || typeof state.name !== "string") {
+      logError(`State entry missing 'name' property: ${JSON.stringify(state)}`);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Validate context object structure.
+ *
+ * @param {any} context - Context object to validate.
+ * @returns {boolean} True if valid.
+ */
+function validateContext(context) {
+  if (context !== null && typeof context !== "object") {
+    logError(`Invalid context: expected object, got ${typeof context}`);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Validate a state transition against allowed triggers.
  *
  * @pseudocode
- * 1. Look up the definition for `fromState`; return false if it is missing.
- * 2. Look up the definition for `toState`; return false if it is missing.
- * 3. Check the `fromState` triggers for the matching event/target pair.
- * 4. Warn if the event is unexpected but still return `true` for resilience.
+ * 1. Look up from/to state definitions, return false if missing.
+ * 2. Check if event is allowed via triggers from current state.
+ * 3. Optionally warn if event is unexpected but still return true.
  *
- * @param {string} fromState - The current state name.
- * @param {string} toState - The target state name.
- * @param {string} eventName - The event that triggered the transition.
- * @param {Array} stateTable - The state table to validate against.
- * @returns {boolean} True if the transition is valid, false otherwise.
+ * @param {string} fromState - Current state name.
+ * @param {string} toState - Target state name.
+ * @param {string} eventName - Triggering event name.
+ * @param {Map} statesByName - State lookup map.
+ * @returns {boolean} True if valid, false if invalid.
  */
-function validateStateTransition(fromState, toState, eventName, stateTable) {
-  const fromStateDef = stateTable.find((s) => s.name === fromState);
+function validateStateTransition(fromState, toState, eventName, statesByName) {
+  const fromStateDef = statesByName.get(fromState);
   if (!fromStateDef) {
     logError(`State validation error: Unknown fromState '${fromState}'`);
     return false;
   }
 
-  const toStateDef = stateTable.find((s) => s.name === toState);
+  const toStateDef = statesByName.get(toState);
   if (!toStateDef) {
     logError(`State validation error: Unknown toState '${toState}'`);
     return false;
@@ -35,22 +133,16 @@ function validateStateTransition(fromState, toState, eventName, stateTable) {
   const validTrigger = fromStateDef.triggers?.find(
     (t) => t.on === eventName && t.target === toState
   );
-  if (!validTrigger) {
+
+  if (!validTrigger && VALIDATION_WARN_ENABLED) {
     logWarn(
       `State validation warning: Event '${eventName}' may not be valid from '${fromState}' to '${toState}'`
     );
-    // Don't fail validation for unknown events, just warn
   }
 
+  // Resilience: warn but don't fail
   return true;
 }
-
-/**
- * @typedef {object} ClassicBattleStateManager
- * @property {object} context
- * @property {() => string} getState
- * @property {(eventName: string, payload?: any) => Promise<void>} dispatch
- */
 
 /**
  * Create a lightweight state manager for the Classic Battle finite-state machine.
