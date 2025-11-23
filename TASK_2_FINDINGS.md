@@ -1,13 +1,17 @@
 # Task 2 Findings: Debug Logging Verification
 
 ## Summary
+
 Successfully made validation rejection reasons visible by adding console.log statements to `validateSelectionState()`. The logs now clearly show what's happening in the selection flow.
 
 ## Critical Discovery
+
 **The battle state is `null` when `selectStat()` is called in tests!**
 
 ### Evidence
+
 From captured logs when running the debug test:
+
 ```
 3: [validateSelectionState] ALLOWED - state is valid: null
 ```
@@ -15,12 +19,15 @@ From captured logs when running the debug test:
 The state should be `"waitingForPlayerAction"` but it's returning `null`.
 
 ### Root Cause
+
 The state getter is not being initialized:
+
 - `eventBus.js` line 8: `let stateGetter = () => null;` (defaults to null)
 - Function `setBattleStateGetter()` exists but is NEVER CALLED anywhere in the codebase
 - When `getBattleState()` is called, it invokes `stateGetter()` which has never been configured
 
 ### Complete Selection Flow (from logs)
+
 ```
 0: [selectStat] Called with stat: power
 1: [selectStat] Calling handleStatSelection with: [object Object]
@@ -39,13 +46,16 @@ The state getter is not being initialized:
 ```
 
 ### Key Observations
+
 1. **Mutations ARE happening** (logs 6-7 show BEFORE/AFTER)
 2. **dispatchBattleEvent returns false** (log 11) - the orchestrator is NOT handling the event
 3. **State is null** (log 4) - getBattleState() returns null because stateGetter is not configured
 4. **validateSelectionState allows null** (log 4) - it only rejects when state is explicitly invalid, not when null
 
 ### Why This Matters
+
 The validation logic in `validateSelectionState()` accepts `null` as a valid state:
+
 ```javascript
 if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
   // REJECT
@@ -54,6 +64,7 @@ if (current && current !== "waitingForPlayerAction" && current !== "roundDecisio
 ```
 
 This means:
+
 - When state is null, validation passes
 - Selection is allowed to proceed
 - Mutations happen successfully
@@ -61,6 +72,7 @@ This means:
 - This breaks the test expectations
 
 ## Next Steps for Task 3
+
 1. **Determine the correct state getter setup** - Where should `setBattleStateGetter()` be called during test initialization?
 2. **Check if orchestrator is properly initialized** in tests - The `dispatchBattleEvent` returning false suggests orchestrator is not set up
 3. **Verify state machine initialization** - The state machine should be passing its state getter to eventBus during init
@@ -99,4 +111,3 @@ The state manager's `getState()` method is not returning the current state. Need
 - `src/helpers/classicBattle/stateManager.js` - Check if machine has getState() method
 - `src/helpers/classicBattle/battleDebug.js` - Check getStateSnapshot() implementation
 - `src/helpers/classicBattle/orchestrator.js` - Verify machine.getState() call is correct
-

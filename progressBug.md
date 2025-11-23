@@ -4,7 +4,7 @@
 
 **Original Issue:** Unit/integration tests for battle logic components are timing out and failing assertions in a JSDOM environment. Specifically, 6 tests were timing out (5-6 seconds each) while waiting for battle state transitions via JSDOM event simulation, and subsequently, store updates were not persisting.
 
-**Root Cause:** The store *does* pick up the player's selection, but by the time the test inspects it the orchestrator has already resolved the round and cleared `selectionMade`/`playerChoice`. Waiting on `selectStat()` hides the moment the mutation happens.
+**Root Cause:** The store _does_ pick up the player's selection, but by the time the test inspects it the orchestrator has already resolved the round and cleared `selectionMade`/`playerChoice`. Waiting on `selectStat()` hides the moment the mutation happens.
 
 **Solution Approach:** Call `selectStat()` (or the underlying handler) and assert the store immediately after the synchronous selection path completes, before the resolution promise finishes, so we capture the values before the orchestrator resets them.
 
@@ -157,7 +157,7 @@ Test clicks round button
 
 ### The Disconnect
 
-The assertion fires after the promise returned by `selectStat()` resolves, which is *after* the orchestrator has already reset the selection state. The mutation never appears in the assertion window even though it ran synchronously, so the test incorrectly reports a regression.
+The assertion fires after the promise returned by `selectStat()` resolves, which is _after_ the orchestrator has already reset the selection state. The mutation never appears in the assertion window even though it ran synchronously, so the test incorrectly reports a regression.
 
 ---
 
@@ -173,15 +173,17 @@ await Promise.resolve(); // allow validateAndApplySelection + applySelectionToSt
 expect(getBattleStore().selectionMade).toBe(true);
 expect(getBattleStore().playerChoice).toBe(selectedStat);
 await selectionPromise;
-await state.waitForBattleState('roundDecision', 5000);
+await state.waitForBattleState("roundDecision", 5000);
 ```
 
 **Pros:**
+
 - No production code change required; the tests simply observe the pre-cleanup window.
 - Keeps the rest of the flow intact by awaiting the original promise once the short-lived check passes.
 - Verifies the battle store as the user would see it immediately after picking a stat.
 
 **Cons:**
+
 - Tests must be careful to await the returned promise later so they still validate the rest of the flow.
 
 ### Option B: Expose a selection-applied promise from `selectStat()`
@@ -189,10 +191,12 @@ await state.waitForBattleState('roundDecision', 5000);
 **Strategy:** Extend `selectStat()` (or the underlying `handleStatSelection`) to optionally resolve a `selectionApplied` signal before the round resolver runs, then expose the original promise for the rest of the flow. Tests can then await the first signal, assert the store, and then await the second signal for resolution.
 
 **Pros:**
+
 - Clean separation of concerns; the production code acknowledges the two phases of selection.
 - Makes the instrumentation explicit for all test helpers.
 
 **Cons:**
+
 - Requires touching the production helper to return additional data.
 - Needs coordination with any other code that currently relies on the single promise returned by `selectStat()`.
 
@@ -201,14 +205,17 @@ await state.waitForBattleState('roundDecision', 5000);
 **Strategy:** Run the full stat selection flow in Playwright so the real browser lifecycle handles the timing, and only the UI assertions (not the store state) are verified in JSDOM.
 
 **Pros:**
+
 - Removes the timing mismatch entirely since Playwright won't reset the store before the test inspects it.
 - Avoids having to refactor `selectStat()` or the integration helper.
 
 **Cons:**
+
 - Slower test execution and higher maintenance cost.
 - The existing Vitest integration tests would still need coverage if they are the preferred regression guard.
 
 ---
+
 ## Revised Implementation Plan & Next Actions
 
 **Execute Option A (Hybrid Approach):**
@@ -222,6 +229,7 @@ await state.waitForBattleState('roundDecision', 5000);
 7.  Run the targeted integration/unit suite (`npm run test:battles:classic` plus the new file) before running the broader validation checklist below.
 
 ---
+
 ## Verification Checklist
 
 After implementing all changes, run the following commands to verify the fix:
@@ -242,6 +250,7 @@ npm run validate:data
 # 4. Final check: Ensure the entire test suite passes
 npm run test:ci
 ```
+
 This comprehensive plan ensures that we not only fix the immediate bug but also improve the test suite's reliability and maintainability for the future.
 
 ---
@@ -259,7 +268,7 @@ This comprehensive plan ensures that we not only fix the immediate bug but also 
 
 ### Root Cause
 
-There is no bug in the store mutation chain; the integration helper simply samples the store *after* the orchestration has already reset it. The round resolution runs before the test can assert, so `selectionMade` reads `false` even though the selection occurred correctly.
+There is no bug in the store mutation chain; the integration helper simply samples the store _after_ the orchestration has already reset it. The round resolution runs before the test can assert, so `selectionMade` reads `false` even though the selection occurred correctly.
 
 ### Evidence
 
@@ -273,3 +282,95 @@ There is no bug in the store mutation chain; the integration helper simply sampl
 2. Consider adding a helper such as `waitForSelectionApplied()` if other tests will need the same timing window.
 3. Add `tests/classicBattle/uiEventBinding.test.js` to ensure the DOM buttons call `selectStat()` with the expected `stat` value.
 4. Run the targeted integration/unit suite before running the broader validation checklist.
+
+---
+
+## Task 2: Orchestrator Initialization - Status: IN PROGRESS 🔄
+
+### Discovery: Orchestrator Not Being Initialized in Tests
+
+While investigating why `getBattleState()` returns null (causing validation to silently accept any state), we discovered that **the orchestrator is never initialized in the test environment**.
+
+### Root Cause Analysis
+
+1. **Missing Import & Call in battleClassic.init.js**
+   - The `init()` function in `src/pages/battleClassic.init.js` was NOT calling `initClassicBattleOrchestrator()`
+   - This means the state machine was never created, so `getBattleState()` could never return a valid state
+   - Without the state machine, validation in `validateSelectionState()` couldn't reject invalid states, causing silent failures
+
+2. **Auto-Initialization Prevented During Tests**
+   - `battleClassic.init.js` has module-level code that auto-initializes `init()` when the module loads in a browser context
+   - With `runScripts: "dangerously"` in JSDOM tests, this auto-init was running and consuming the orchestrator
+   - When tests then called `await init()`, the orchestrator was already initialized (early return)
+   - This caused the second orchestrator initialization to skip setup and return the already-initialized machine
+   - Result: Tests couldn't get a fresh orchestrator for each test run
+
+3. **Missing startRound Dependency**
+   - The orchestrator needs a `startRoundWrapper` callback to trigger round cycles
+   - The controller passes `() => this.startRound()` but the manual init wasn't passing anything
+   - This prevented the orchestrator from transitioning states when round buttons were clicked
+
+### Changes Implemented
+
+1. **Added orchestrator initialization to battleClassic.init.js** (line 1774-1776)
+
+   ```javascript
+   // Pass startRound as the startRoundWrapper dependency so orchestrator can trigger round cycles
+   store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
+   ```
+
+2. **Prevented auto-initialization in test environments** (line 1825-1837)
+
+   ```javascript
+   const isTestEnvironment =
+     typeof process !== "undefined" &&
+     (process.env?.VITEST === "true" || process.env?.NODE_ENV === "test");
+   if (!isTestEnvironment && typeof document !== "undefined" && document.readyState === "loading") {
+     // ... auto-init only in production
+   }
+   ```
+
+3. **Added orchestrator test cleanup** (orchestrator.js & test file)
+   - Created `resetOrchestratorForTest()` function to clear module-level state between tests
+   - Updated test `afterEach()` to call `resetOrchestratorForTest()` to prevent cross-test contamination
+
+4. **Added diagnostic logging** (eventBus.js, orchestrator.js, test file)
+   - Logs show orchestrator initialization: `[eventBus] setBattleStateGetter called, stateGetter updated` ✅
+   - Logs confirm initial state: "waitingForMatchStart" ✅
+   - Diagnostic markers reveal initialization flow
+
+### Current Status: Orchestrator Initializes but Round Cycle Not Running
+
+**Positive:**
+
+- Orchestrator now initializes correctly during `init()`
+- State machine exists and reports valid initial state
+- `getBattleState()` now returns correct state values
+- Validation can now reject invalid states
+
+**Problem Discovered:**
+
+- Round button click doesn't trigger the round cycle state transitions
+- State stays at "matchStart" instead of transitioning to "waitingForPlayerAction"
+- The test waits for state transition but times out (even though wait completes, state never changes)
+
+**Why Round Cycle Isn't Starting:**
+
+The round cycle is triggered by event handlers wired in the `init()` function. Looking at the code:
+
+- `wireRoundCycleEvents(store)` is called AFTER `initializeMatchStart(store)`
+- But the orchestrator needs to be listening for events BEFORE the round buttons can trigger `startRound()`
+- The orchestrator has `startRound` as a dependency now, but the UI event handlers may not be properly wired in the test environment
+
+### Next Investigation Steps
+
+1. Trace through `wireRoundCycleEvents()` to see if it's properly wiring the click handlers to orchestrator callbacks
+2. Check if the orchestrator's internal event listeners are set up correctly before the test starts clicking
+3. Verify that the round select modal's button click is triggering the expected event chain
+4. Consider whether the initialization order in `init()` needs adjustment so event handlers are wired before `initializeMatchStart()` sets up the UI
+
+### Task 2 Current Blockers
+
+- Round cycle initialization code seems correct but button clicks aren't triggering state transitions
+- May need to trace the full event flow from button click → event emission → orchestrator dispatch → state transition
+- Alternatively, the issue might be in how the test environment handles async state machine transitions

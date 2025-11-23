@@ -1771,7 +1771,8 @@ async function init() {
     }
 
     // Initialize the battle orchestrator for state machine management
-    store.orchestrator = await initClassicBattleOrchestrator(store);
+    // Pass startRound as the startRoundWrapper dependency so orchestrator can trigger round cycles
+    store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
 
     wireCardEventHandlers(store);
     wireCooldownEvents(store);
@@ -1820,7 +1821,10 @@ function setBadgeText(text) {
 // Only initialize automatically in browser context; in test/Node environments,
 // tests must explicitly call init() and manage setup. Guard against document
 // being undefined at module load time (e.g., in certain test configurations).
-if (typeof document !== "undefined" && document.readyState === "loading") {
+const isTestEnvironment =
+  typeof process !== "undefined" &&
+  (process.env?.VITEST === "true" || process.env?.NODE_ENV === "test");
+if (!isTestEnvironment && typeof document !== "undefined" && document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     initBadgeSync();
     init().catch((err) => {
@@ -1828,7 +1832,7 @@ if (typeof document !== "undefined" && document.readyState === "loading") {
       showFatalInitError(err);
     });
   });
-} else if (typeof document !== "undefined") {
+} else if (!isTestEnvironment && typeof document !== "undefined") {
   initBadgeSync();
   init().catch((err) => {
     console.error("battleClassic: init failed", err);

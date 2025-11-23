@@ -7,7 +7,9 @@ const contrastRatio = (bg, fg) => {
   const parse = (c) => {
     const matches = c.match(/\d+(?:\.\d+)?/g);
     if (!matches || matches.length < 3) {
-      throw new Error(`Invalid color format: ${c}. Expected format: rgb(r, g, b) or rgba(r, g, b, a)`);
+      throw new Error(
+        `Invalid color format: ${c}. Expected format: rgb(r, g, b) or rgba(r, g, b, a)`
+      );
     }
     if (matches.length > 4) {
       throw new Error(`Invalid color format: ${c}. Too many numeric values found`);
@@ -148,15 +150,15 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
           resolution?.detail?.outcome ||
           "Round resolved";
 
-      const stat = selectedStat || resolution?.detail?.stat || "stat";
-      const formatted = `${baseMessage} (${stat})`;
-      const el = document.getElementById("round-message");
+        const stat = selectedStat || resolution?.detail?.stat || "stat";
+        const formatted = `${baseMessage} (${stat})`;
+        const el = document.getElementById("round-message");
 
-      if (window.__TEST_API?.ui?.updateRoundMessage) {
-        window.__TEST_API.ui.updateRoundMessage(formatted);
-      } else if (el) {
-        el.textContent = formatted;
-      }
+        if (window.__TEST_API?.ui?.updateRoundMessage) {
+          window.__TEST_API.ui.updateRoundMessage(formatted);
+        } else if (el) {
+          el.textContent = formatted;
+        }
 
         return { formatted, domTextAfter: el?.textContent || "" };
       },

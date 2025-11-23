@@ -35,7 +35,7 @@ You requested an investigation into why mutations to `selectionMade` and `player
 export function createBattleStore() {
   return {
     selectionMade: false,
-    playerChoice: null,
+    playerChoice: null
     // ... 11 more properties
   };
 }
@@ -51,7 +51,7 @@ export function createBattleStore() {
 
 ```javascript
 const store = createBattleStore();
-window.battleStore = store;  // Direct reference
+window.battleStore = store; // Direct reference
 ```
 
 **Accessed via** (`tests/utils/battleStoreAccess.js`):
@@ -122,15 +122,15 @@ Return same store object
 **Location**: `src/helpers/classicBattle/selectionHandler.js:324-345`
 
 ```javascript
-store.selectionMade = true;      // ← SET
-store.playerChoice = stat;       // ← SET
+store.selectionMade = true; // ← SET
+store.playerChoice = stat; // ← SET
 
 if (IS_VITEST) {
-  const afterSelectionMade = store.selectionMade;     // ← READ
-  const afterPlayerChoice = store.playerChoice;       // ← READ
-  
+  const afterSelectionMade = store.selectionMade; // ← READ
+  const afterPlayerChoice = store.playerChoice; // ← READ
+
   if (afterSelectionMade !== true || afterPlayerChoice !== stat) {
-    throw new Error(`[applySelectionToStore] MUTATION FAILED!`);  // ← ERROR IF FAILED
+    throw new Error(`[applySelectionToStore] MUTATION FAILED!`); // ← ERROR IF FAILED
   }
 }
 ```
@@ -146,14 +146,14 @@ if (IS_VITEST) {
 ```javascript
 // Guard tokens (INTERNAL STATE ONLY)
 Object.defineProperty(store, GUARD_SYMBOL, {
-  enumerable: false,   // Hidden
+  enumerable: false, // Hidden
   writable: true,
   value: true
 });
 
 // Regular properties (DIRECT ASSIGNMENT)
-store.selectionMade = true;     // ← NO defineProperty
-store.playerChoice = stat;      // ← NO defineProperty
+store.selectionMade = true; // ← NO defineProperty
+store.playerChoice = stat; // ← NO defineProperty
 ```
 
 **Conclusion**: Guard tokens use non-enumerable storage; regular properties are freely assignable.
@@ -179,7 +179,7 @@ If tests fail with claims that mutations don't persist, the actual issue is like
 1. **Async not awaited** - `selectStat()` returns a promise that must be awaited
 
    ```javascript
-   await selectStat(store, stat);  // ← MUST await
+   await selectStat(store, stat); // ← MUST await
    ```
 
 2. **Store reference changed** - Different instance before/after
@@ -194,8 +194,8 @@ If tests fail with claims that mutations don't persist, the actual issue is like
 3. **Timing issue** - Assertions before async completes
 
    ```javascript
-   await selectStat(store, stat);  // ← Must complete
-   await new Promise(r => setTimeout(r, 100));  // ← Allow time for side effects
+   await selectStat(store, stat); // ← Must complete
+   await new Promise((r) => setTimeout(r, 100)); // ← Allow time for side effects
    expect(store.selectionMade).toBe(true);
    ```
 
@@ -243,7 +243,7 @@ grep -i "mutation\|applySelection\|selectionMade" test-output.log
 const store1 = getBattleStore();
 await selectStat(store1, stat);
 const store2 = getBattleStore();
-console.assert(store1 === store2, 'Store reference changed!');
+console.assert(store1 === store2, "Store reference changed!");
 ```
 
 ---

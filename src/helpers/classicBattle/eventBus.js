@@ -76,7 +76,12 @@ export function getBattleState() {
     try {
       if (typeof process !== "undefined" && !!process.env?.VITEST) {
         if (!result) {
-          console.log("[eventBus] getBattleState() called, stateGetter returned:", result, "stateGetter fn is:", typeof stateGetter);
+          console.log(
+            "[eventBus] getBattleState() called, stateGetter returned:",
+            result,
+            "stateGetter fn is:",
+            typeof stateGetter
+          );
         }
       }
     } catch {}

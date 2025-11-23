@@ -276,6 +276,12 @@ export async function initClassicBattleOrchestrator(
   window.__INIT_ORCHESTRATOR_CALLED = true;
   if (machine) {
     window.__ORCHESTRATOR_EARLY_RETURN_MACHINE = true;
+    // Capture where this is being called from
+    if (typeof new Error().stack !== "undefined") {
+      const stack = new Error().stack;
+      const lines = stack.split("\n").slice(0, 5);
+      window.__ORCHESTRATOR_EARLY_RETURN_STACK = lines.join(" | ");
+    }
     return machine;
   }
 
@@ -724,6 +730,10 @@ export function getBattleStateMachine() {
 /**
  * Test-only: Reset the orchestrator state to allow fresh initialization.
  * Use in test teardown to clear module-level state between tests.
+ *
+ * @pseudocode
+ * 1. Set `machine`, `machineInitPromise`, `debugLogListener`, `visibilityHandler`, and `timerEventHandlers` to null.
+ * 2. Delete test-related properties from the global `window` object if it exists.
  *
  * @returns {void}
  */

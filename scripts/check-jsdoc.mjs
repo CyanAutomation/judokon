@@ -73,7 +73,8 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   if (!/\/\*\*/.test(lines[start])) return false;
 
   const block = lines.slice(start, j + 1).join("\n");
-  if (!/@pseudocode\b/.test(block)) return false;
+  // The @pseudocode tag is only required for functions
+  if (symbolType === "function" && !/@pseudocode\b/.test(block)) return false;
 
   // Extract function signature to check for params and return
   const signature = lines[index];

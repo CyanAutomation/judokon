@@ -4,20 +4,20 @@
 
 ### Store Object Questions Answered
 
-| Question | Answer | Evidence |
-|----------|--------|----------|
-| Where is `createBattleStore()` defined? | `src/helpers/classicBattle/roundManager.js:105` | Function returns plain object |
-| What does it return? | Plain object with ~13 properties | No freezing, sealing, or descriptors on regular props |
-| Where is the store cached/stored? | `window.battleStore` in `battleClassic.init.js:1777` | Set once at init, reused throughout |
-| Are there freezing operations? | ❌ NO | Search found 0 `Object.freeze()` calls |
-| Are there sealing operations? | ❌ NO | Search found 0 `Object.seal()` calls |
-| Are there property descriptors on regular props? | ❌ NO | Descriptors only on guard symbols |
-| How does `getBattleStore()` work? | Returns direct reference via 3 fallback paths | All paths return `window.battleStore` |
-| Does the store get cloned? | ❌ NO (only read snapshot for debug) | Debug panel creates shallow snapshot only |
-| Where does `selectionMade` get set to `true`? | `src/helpers/classicBattle/selectionHandler.js:321` | Direct assignment: `store.selectionMade = true` |
-| Where does `playerChoice` get set? | `src/helpers/classicBattle/selectionHandler.js:323` | Direct assignment: `store.playerChoice = stat` |
-| Are mutations verified? | ✅ YES | Verification throws error if mutation fails |
-| Is there custom getter/setter logic? | ❌ NO | All access is direct property access |
+| Question                                         | Answer                                               | Evidence                                              |
+| ------------------------------------------------ | ---------------------------------------------------- | ----------------------------------------------------- |
+| Where is `createBattleStore()` defined?          | `src/helpers/classicBattle/roundManager.js:105`      | Function returns plain object                         |
+| What does it return?                             | Plain object with ~13 properties                     | No freezing, sealing, or descriptors on regular props |
+| Where is the store cached/stored?                | `window.battleStore` in `battleClassic.init.js:1777` | Set once at init, reused throughout                   |
+| Are there freezing operations?                   | ❌ NO                                                | Search found 0 `Object.freeze()` calls                |
+| Are there sealing operations?                    | ❌ NO                                                | Search found 0 `Object.seal()` calls                  |
+| Are there property descriptors on regular props? | ❌ NO                                                | Descriptors only on guard symbols                     |
+| How does `getBattleStore()` work?                | Returns direct reference via 3 fallback paths        | All paths return `window.battleStore`                 |
+| Does the store get cloned?                       | ❌ NO (only read snapshot for debug)                 | Debug panel creates shallow snapshot only             |
+| Where does `selectionMade` get set to `true`?    | `src/helpers/classicBattle/selectionHandler.js:321`  | Direct assignment: `store.selectionMade = true`       |
+| Where does `playerChoice` get set?               | `src/helpers/classicBattle/selectionHandler.js:323`  | Direct assignment: `store.playerChoice = stat`        |
+| Are mutations verified?                          | ✅ YES                                               | Verification throws error if mutation fails           |
+| Is there custom getter/setter logic?             | ❌ NO                                                | All access is direct property access                  |
 
 ---
 
@@ -248,29 +248,29 @@ When `IS_VITEST = true`, these debug logs appear:
 ```javascript
 // Before mutation
 console.log("[applySelectionToStore] BEFORE:", {
-  selectionMade: store.selectionMade,     // false
-  playerChoice: store.playerChoice,        // null
+  selectionMade: store.selectionMade, // false
+  playerChoice: store.playerChoice, // null
   storeObject: store
 });
 
 // After mutation (with verification)
-const afterSelectionMade = store.selectionMade;  // Should be true
-const afterPlayerChoice = store.playerChoice;    // Should be stat
+const afterSelectionMade = store.selectionMade; // Should be true
+const afterPlayerChoice = store.playerChoice; // Should be stat
 
 if (afterSelectionMade !== true || afterPlayerChoice !== stat) {
   throw new Error(
     `[applySelectionToStore] MUTATION FAILED!` +
-    `Expected selectionMade=true, playerChoice=${stat},` +
-    `but got selectionMade=${afterSelectionMade}, playerChoice=${afterPlayerChoice}`
+      `Expected selectionMade=true, playerChoice=${stat},` +
+      `but got selectionMade=${afterSelectionMade}, playerChoice=${afterPlayerChoice}`
   );
 }
 
 console.log("[applySelectionToStore] AFTER:", {
-  selectionMade: store.selectionMade,      // true
-  playerChoice: store.playerChoice,        // stat
+  selectionMade: store.selectionMade, // true
+  playerChoice: store.playerChoice, // stat
   checkStorePersistence: {
-    viaProperty: store.selectionMade,      // true
-    viaReference: store["selectionMade"]   // true
+    viaProperty: store.selectionMade, // true
+    viaReference: store["selectionMade"] // true
   }
 });
 ```

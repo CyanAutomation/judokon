@@ -82,7 +82,6 @@ test.describe("Battle CLI verbose toggle", () => {
     await expect(indicator).toBeHidden();
 
     const disabledState = "should-not-appear";
-    const disabledState = "should-not-appear";
     try {
       await emitVerboseEntry(page, disabledState);
     } catch (error) {

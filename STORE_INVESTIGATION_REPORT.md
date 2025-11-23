@@ -62,20 +62,20 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   const beforeSelectionMade = store.selectionMade;
   const beforePlayerChoice = store.playerChoice;
 
-  store.selectionMade = true;      // ← MUTATION 1
+  store.selectionMade = true; // ← MUTATION 1
   store.__lastSelectionMade = true;
-  store.playerChoice = stat;       // ← MUTATION 2
+  store.playerChoice = stat; // ← MUTATION 2
 
   // VERIFICATION: Re-read immediately to check persistence
   if (IS_VITEST) {
     const afterSelectionMade = store.selectionMade;
     const afterPlayerChoice = store.playerChoice;
-    
+
     if (afterSelectionMade !== true || afterPlayerChoice !== stat) {
       throw new Error(
         `[applySelectionToStore] MUTATION FAILED! Expected selectionMade=true, ` +
-        `playerChoice=${stat}, but got selectionMade=${afterSelectionMade}, ` +
-        `playerChoice=${afterPlayerChoice}`
+          `playerChoice=${stat}, but got selectionMade=${afterSelectionMade}, ` +
+          `playerChoice=${afterPlayerChoice}`
       );
     }
   }
@@ -118,7 +118,7 @@ Code pattern:
 ```javascript
 Object.defineProperty(store, token, {
   configurable: true,
-  enumerable: false,  // Hidden, not enumerable
+  enumerable: false, // Hidden, not enumerable
   writable: true,
   value: true
 });
@@ -145,7 +145,7 @@ Found:
    ```javascript
    const store = createBattleStore();
    if (typeof window !== "undefined") {
-     window.battleStore = store;  // Direct reference
+     window.battleStore = store; // Direct reference
    }
    ```
 
@@ -162,7 +162,7 @@ Found:
    ```javascript
    const inspectStore = window.__TEST_API?.inspect?.getBattleStore?.();
    if (inspectStore) {
-     return inspectStore;  // Same reference returned
+     return inspectStore; // Same reference returned
    }
    ```
 
@@ -172,7 +172,7 @@ Found:
 
 ```javascript
 store.selectionMade = true;
-store.__lastSelectionMade = true;  // Mirror property for debugging
+store.__lastSelectionMade = true; // Mirror property for debugging
 store.playerChoice = stat;
 ```
 
@@ -222,7 +222,7 @@ function getStoreSnapshot(win) {
   const store = win?.battleStore;
   if (store) {
     out.store = {
-      selectionMade: !!store.selectionMade,  // Read, not mutate
+      selectionMade: !!store.selectionMade, // Read, not mutate
       playerChoice: store.playerChoice || null
     };
   }
@@ -236,12 +236,12 @@ function getStoreSnapshot(win) {
 
 All mutations flow through these verified paths:
 
-| Property | Set By | Location | Status |
-|----------|--------|----------|--------|
-| `selectionMade` | `applySelectionToStore` | selectionHandler.js:321 | ✅ Direct assignment |
-| `playerChoice` | `applySelectionToStore` | selectionHandler.js:323 | ✅ Direct assignment |
+| Property        | Set By                        | Location                                        | Status                   |
+| --------------- | ----------------------------- | ----------------------------------------------- | ------------------------ |
+| `selectionMade` | `applySelectionToStore`       | selectionHandler.js:321                         | ✅ Direct assignment     |
+| `playerChoice`  | `applySelectionToStore`       | selectionHandler.js:323                         | ✅ Direct assignment     |
 | `selectionMade` | `waitingForPlayerActionEnter` | stateHandlers/waitingForPlayerActionEnter.js:43 | ✅ Reset on state change |
-| `playerChoice` | `waitingForPlayerActionEnter` | stateHandlers/waitingForPlayerActionEnter.js:45 | ✅ Reset on state change |
+| `playerChoice`  | `waitingForPlayerActionEnter` | stateHandlers/waitingForPlayerActionEnter.js:45 | ✅ Reset on state change |
 
 ## Mutation Verification Points
 
@@ -250,7 +250,7 @@ The code includes explicit verification logging when `IS_VITEST` is true:
 1. **Before mutation** (applySelectionToStore):
 
    ```javascript
-   console.log("[applySelectionToStore] BEFORE:", { selectionMade, playerChoice, storeObject })
+   console.log("[applySelectionToStore] BEFORE:", { selectionMade, playerChoice, storeObject });
    ```
 
 2. **Immediate re-read** (applySelectionToStore):
@@ -258,20 +258,26 @@ The code includes explicit verification logging when `IS_VITEST` is true:
    ```javascript
    const afterSelectionMade = store.selectionMade;
    if (afterSelectionMade !== true) {
-     throw new Error("MUTATION FAILED!")
+     throw new Error("MUTATION FAILED!");
    }
    ```
 
 3. **After dispatch** (dispatchStatSelected):
 
    ```javascript
-   console.log("[dispatchStatSelected] After emitSelectionEvent:", { storeSelectionMade, storePlayerChoice })
+   console.log("[dispatchStatSelected] After emitSelectionEvent:", {
+     storeSelectionMade,
+     storePlayerChoice
+   });
    ```
 
 4. **After sync** (handleStatSelection):
 
    ```javascript
-   console.log("[handleStatSelection] After syncResultDisplay:", { storeSelectionMade, storePlayerChoice })
+   console.log("[handleStatSelection] After syncResultDisplay:", {
+     storeSelectionMade,
+     storePlayerChoice
+   });
    ```
 
 ## Conclusion
@@ -300,7 +306,7 @@ The code includes explicit verification logging when `IS_VITEST` is true:
 3. **Check timing** - If mutations appear to not persist, it might be a timing issue where assertions run before async mutations complete:
 
    ```javascript
-   await selectStat(store, stat);  // Returns promise
+   await selectStat(store, stat); // Returns promise
    // ← Ensure you await this!
    expect(store.selectionMade).toBe(true);
    ```

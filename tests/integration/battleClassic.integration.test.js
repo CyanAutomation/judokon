@@ -231,15 +231,16 @@ describe("Battle Classic Page Integration", () => {
     // Now check what was captured - SHOW EVERYTHING
     const logs = window.__TEST_CAPTURED_LOGS || [];
     const logSummary = logs.map((log, idx) => `${idx}: ${log}`).join("\n");
-    
+
     const orchestratorState = window.__ORCHESTRATOR_INITIAL_STATE;
     const initCalled = window.__INIT_ORCHESTRATOR_CALLED;
     const earlyReturnMachine = window.__ORCHESTRATOR_EARLY_RETURN_MACHINE;
     const earlyReturnPromise = window.__ORCHESTRATOR_EARLY_RETURN_PROMISE;
     const startingInit = window.__ORCHESTRATOR_STARTING_INIT;
-    
-    const additionalInfo = `\n\nDiagnostics:\n  Init called: ${initCalled}\n  Early return (machine): ${earlyReturnMachine}\n  Early return (promise): ${earlyReturnPromise}\n  Starting init: ${startingInit}\n  Initial state: ${orchestratorState}`;
-    
+    const earlyReturnStack = window.__ORCHESTRATOR_EARLY_RETURN_STACK;
+
+    const additionalInfo = `\n\nDiagnostics:\n  Init called: ${initCalled}\n  Early return (machine): ${earlyReturnMachine}\n  Stack: ${earlyReturnStack}\n  Early return (promise): ${earlyReturnPromise}\n  Starting init: ${startingInit}\n  Initial state: ${orchestratorState}`;
+
     throw new Error(`Captured ${logs.length} total logs:\n${logSummary}${additionalInfo}`);
   });
 

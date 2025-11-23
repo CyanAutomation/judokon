@@ -23,7 +23,7 @@ export function createBattleStore() {
     selectionMade: false,
     stallTimeoutMs: 35000,
     autoSelectId: null,
-    playerChoice: null,
+    playerChoice: null
     // ... more properties
   };
 }
@@ -47,17 +47,17 @@ export function getBattleStore() {
     // Path 1: Official test API
     const inspectStore = window.__TEST_API?.inspect?.getBattleStore?.();
     if (inspectStore) {
-      return inspectStore;  // ← Returns DIRECT reference
+      return inspectStore; // ← Returns DIRECT reference
     }
 
     // Path 2: Debug API
     const debugStore = window.__classicbattledebugapi?.battleStore;
     if (debugStore) {
-      return debugStore;    // ← Returns DIRECT reference
+      return debugStore; // ← Returns DIRECT reference
     }
 
     // Path 3: Legacy direct window property
-    return window.battleStore || null;  // ← Returns DIRECT reference
+    return window.battleStore || null; // ← Returns DIRECT reference
   } catch {
     return null;
   }
@@ -66,11 +66,11 @@ export function getBattleStore() {
 
 ### Store Exposure (All Entry Points)
 
-| Location | Mechanism | Reference Type |
-|----------|-----------|-----------------|
-| `src/pages/battleClassic.init.js:1777` | `window.battleStore = store` | Direct |
-| `src/helpers/testApi.js:2361` | `return window.battleStore` | Direct |
-| `tests/utils/battleStoreAccess.js:26` | `return window.battleStore` | Direct |
+| Location                               | Mechanism                    | Reference Type |
+| -------------------------------------- | ---------------------------- | -------------- |
+| `src/pages/battleClassic.init.js:1777` | `window.battleStore = store` | Direct         |
+| `src/helpers/testApi.js:2361`          | `return window.battleStore`  | Direct         |
+| `tests/utils/battleStoreAccess.js:26`  | `return window.battleStore`  | Direct         |
 
 **All paths return the SAME object reference** - no copying, no cloning.
 
@@ -89,20 +89,20 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   const beforePlayerChoice = store.playerChoice;
 
   // STEP 2: Apply mutations
-  store.selectionMade = true;      // ← MUTATION 1
+  store.selectionMade = true; // ← MUTATION 1
   store.__lastSelectionMade = true; // ← Mirror for verification
-  store.playerChoice = stat;        // ← MUTATION 2
+  store.playerChoice = stat; // ← MUTATION 2
 
   // STEP 3: Verify persistence (IN TESTS)
   if (IS_VITEST) {
     const afterSelectionMade = store.selectionMade;
     const afterPlayerChoice = store.playerChoice;
-    
+
     if (afterSelectionMade !== true || afterPlayerChoice !== stat) {
       throw new Error(
         `[applySelectionToStore] MUTATION FAILED!` +
-        `Expected selectionMade=true, playerChoice=${stat},` +
-        `but got selectionMade=${afterSelectionMade}, playerChoice=${afterPlayerChoice}`
+          `Expected selectionMade=true, playerChoice=${stat},` +
+          `but got selectionMade=${afterSelectionMade}, playerChoice=${afterPlayerChoice}`
       );
     }
 
@@ -184,7 +184,7 @@ Test Code (battleClassic.integration.test.js:83)
 // Guard tokens ARE stored with Object.defineProperty
 Object.defineProperty(store, token, {
   configurable: true,
-  enumerable: false,    // Hidden, won't show in for...in
+  enumerable: false, // Hidden, won't show in for...in
   writable: true,
   value: true
 });
@@ -201,8 +201,8 @@ Object.defineProperty(store, token, {
 ### Regular Properties (Direct Assignment)
 
 ```javascript
-store.selectionMade = true;  // ← Direct assignment, NOT via defineProperty
-store.playerChoice = stat;   // ← Direct assignment, NOT via defineProperty
+store.selectionMade = true; // ← Direct assignment, NOT via defineProperty
+store.playerChoice = stat; // ← Direct assignment, NOT via defineProperty
 ```
 
 **These bypass all defineProperty logic.**
@@ -213,12 +213,12 @@ store.playerChoice = stat;   // ← Direct assignment, NOT via defineProperty
 
 ### Complete Search Results
 
-| Operation | Found | Location |
-|-----------|-------|----------|
-| `Object.freeze()` on store | ❌ 0 | - |
-| `Object.seal()` on store | ❌ 0 | - |
-| `Object.defineProperty()` for guard tokens | ✅ 5 | storeGuard.js, selectionHandler.js |
-| `Object.defineProperty()` for regular properties | ❌ 0 | - |
+| Operation                                        | Found | Location                           |
+| ------------------------------------------------ | ----- | ---------------------------------- |
+| `Object.freeze()` on store                       | ❌ 0  | -                                  |
+| `Object.seal()` on store                         | ❌ 0  | -                                  |
+| `Object.defineProperty()` for guard tokens       | ✅ 5  | storeGuard.js, selectionHandler.js |
+| `Object.defineProperty()` for regular properties | ❌ 0  | -                                  |
 
 **Conclusion**: Store is fully mutable.
 
@@ -236,7 +236,7 @@ function getStoreSnapshot(win) {
   const store = win?.battleStore;
   if (store) {
     out.store = {
-      selectionMade: !!store.selectionMade,  // READ only
+      selectionMade: !!store.selectionMade, // READ only
       playerChoice: store.playerChoice || null
     };
   }
@@ -262,14 +262,14 @@ function getStoreSnapshot(win) {
 ```javascript
 // battleClassic.init.js:1777
 const store = createBattleStore();
-window.battleStore = store;  // Expose for tests
+window.battleStore = store; // Expose for tests
 ```
 
 ### Phase 2: State Transitions
 
 ```javascript
 // Various state handler files reset/update store
-store.selectionMade = false;  // Reset on state changes
+store.selectionMade = false; // Reset on state changes
 store.playerChoice = null;
 ```
 
@@ -288,7 +288,7 @@ store.playerChoice = stat;
 // tests/utils/battleStoreAccess.js
 const store = getBattleStore();
 // ← Returns same object from window.battleStore
-expect(store.selectionMade).toBe(true);  // Should work!
+expect(store.selectionMade).toBe(true); // Should work!
 ```
 
 ---
@@ -308,8 +308,8 @@ When running tests with `IS_VITEST = true`, these logs appear:
 
 ```
 [applySelectionToStore] BEFORE: { selectionMade: false, playerChoice: null, storeObject: {...} }
-[applySelectionToStore] AFTER: { 
-  selectionMade: true, 
+[applySelectionToStore] AFTER: {
+  selectionMade: true,
   playerChoice: 'power',
   checkStorePersistence: { viaProperty: true, viaReference: true }
 }
@@ -338,7 +338,7 @@ If mutations appear not to persist, check:
 
 ```javascript
 const store1 = getBattleStore();
-await selectStat(store1, 'power');
+await selectStat(store1, "power");
 const store2 = getBattleStore();
 console.assert(store1 === store2, "Store reference changed!");
 // Both should be TRUE if references are the same
@@ -348,20 +348,20 @@ console.assert(store1 === store2, "Store reference changed!");
 
 ```javascript
 // WRONG - doesn't await
-selectStat(store, 'power');
-expect(store.selectionMade).toBe(true);  // May fail - async not awaited
+selectStat(store, "power");
+expect(store.selectionMade).toBe(true); // May fail - async not awaited
 
 // CORRECT - awaits the promise
-await selectStat(store, 'power');
-expect(store.selectionMade).toBe(true);  // Should pass
+await selectStat(store, "power");
+expect(store.selectionMade).toBe(true); // Should pass
 ```
 
 ### ✅ Timing Issues
 
 ```javascript
 // Check if there's a delay before checking
-await selectStat(store, 'power');
-await new Promise(r => setTimeout(r, 100));  // Give async handlers time
+await selectStat(store, "power");
+await new Promise((r) => setTimeout(r, 100)); // Give async handlers time
 expect(store.selectionMade).toBe(true);
 ```
 
@@ -395,15 +395,15 @@ afterEach(() => {
 
 ## 11. Summary of Findings
 
-| Aspect | Status | Evidence |
-|--------|--------|----------|
-| Store object mutability | ✅ MUTABLE | No freeze/seal/defineProperty on regular props |
-| Reference preservation | ✅ PRESERVED | All accessors return same object |
-| Mutation sites | ✅ WORKING | Direct assignment with verification |
-| Property descriptors block mutations | ❌ NO IMPACT | Only used for guard symbols |
-| Store is cloned somewhere | ❌ NOT FOUND | Only debug snapshot (read-only) |
-| Mutations verified immediately | ✅ YES | Verification code throws if failed |
-| Test logging enabled | ✅ YES | VITEST detection logs all steps |
+| Aspect                               | Status       | Evidence                                       |
+| ------------------------------------ | ------------ | ---------------------------------------------- |
+| Store object mutability              | ✅ MUTABLE   | No freeze/seal/defineProperty on regular props |
+| Reference preservation               | ✅ PRESERVED | All accessors return same object               |
+| Mutation sites                       | ✅ WORKING   | Direct assignment with verification            |
+| Property descriptors block mutations | ❌ NO IMPACT | Only used for guard symbols                    |
+| Store is cloned somewhere            | ❌ NOT FOUND | Only debug snapshot (read-only)                |
+| Mutations verified immediately       | ✅ YES       | Verification code throws if failed             |
+| Test logging enabled                 | ✅ YES       | VITEST detection logs all steps                |
 
 ---
 
