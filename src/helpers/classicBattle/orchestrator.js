@@ -721,6 +721,27 @@ export function getBattleStateMachine() {
   return machine;
 }
 
+/**
+ * Test-only: Reset the orchestrator state to allow fresh initialization.
+ * Use in test teardown to clear module-level state between tests.
+ *
+ * @returns {void}
+ */
+export function resetOrchestratorForTest() {
+  machine = null;
+  machineInitPromise = null;
+  debugLogListener = null;
+  visibilityHandler = null;
+  timerEventHandlers = {};
+  if (typeof window !== "undefined") {
+    delete window.__ORCHESTRATOR_INITIAL_STATE;
+    delete window.__INIT_ORCHESTRATOR_CALLED;
+    delete window.__ORCHESTRATOR_EARLY_RETURN_MACHINE;
+    delete window.__ORCHESTRATOR_EARLY_RETURN_PROMISE;
+    delete window.__ORCHESTRATOR_STARTING_INIT;
+  }
+}
+
 // Re-export for test compatibility
 /**
  * Dispatches an event to the classic battle state machine.

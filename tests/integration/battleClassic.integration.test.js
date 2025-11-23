@@ -18,6 +18,7 @@ import { init } from "../../src/pages/battleClassic.init.js";
 import { withMutedConsole } from "../utils/console.js";
 import { getBattleStore } from "../utils/battleStoreAccess.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
+import { resetOrchestratorForTest } from "../../src/helpers/classicBattle/orchestrator.js";
 import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
@@ -176,6 +177,7 @@ describe("Battle Classic Page Integration", () => {
   afterEach(() => {
     dom?.window?.close();
     vi.clearAllMocks();
+    resetOrchestratorForTest();
     // Note: vi.resetModules() is not used because it clears ALL modules including Node.js built-ins,
     // causing the next test's beforeEach to fail when trying to use fs/path functions
   });
