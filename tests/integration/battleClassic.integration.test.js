@@ -117,7 +117,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     const lastEntry = validationDebug[validationDebug.length - 1];
     if (!lastEntry.allowed) {
       throw new Error(
-        `Selection was rejected by validateSelectionState: selectionMade=${lastEntry.selectionMade}, current state=${lastEntry.current}. This likely means the orchestrator is not in "waitingForPlayerAction" state yet. Full debug: ${JSON.stringify(validationDebug)}`
+        `Selection was rejected by validateSelectionState: selectionMade=${lastEntry.selectionMade}, current state=${lastEntry.current}. Last Validation: ${JSON.stringify(lastValidation)}. This likely means the orchestrator is not in "waitingForPlayerAction" state yet. Full debug: ${JSON.stringify(validationDebug)}`
       );
     }
   }
