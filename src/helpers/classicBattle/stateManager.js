@@ -195,7 +195,9 @@ function validateHandlerMap(onEnterMap, definedStates) {
   const statesWithHandlers = Array.from(definedStates).filter(
     (state) => typeof onEnterMap[state] === "function"
   );
-  const statesWithoutHandlers = Array.from(definedStates).filter((state) => !(state in onEnterMap));
+  const statesWithoutHandlers = Array.from(definedStates).filter(
+    (state) => !(state in onEnterMap)
+  );
 
   if (statesWithoutHandlers.length > 0) {
     logWarn(
@@ -312,7 +314,9 @@ export async function createStateManager(
 
       // Validate transition
       if (!validateStateTransition(from, target, eventName, statesByName)) {
-        logError(`State transition validation failed: ${from} -> ${target} via ${eventName}`);
+        logError(
+          `State transition validation failed: ${from} -> ${target} via ${eventName}`
+        );
         return false;
       }
 
