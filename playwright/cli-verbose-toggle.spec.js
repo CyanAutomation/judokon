@@ -13,8 +13,12 @@ async function emitVerboseEntry(page, to) {
     }
 
     if (typeof window.emitBattleEvent === "function") {
-      window.emitBattleEvent("battleStateChange", { from: "setup", to: nextState });
-      return;
+      try {
+        window.emitBattleEvent("battleStateChange", { from: "setup", to: nextState });
+        return;
+      } catch (error) {
+        console.warn("emitBattleEvent failed:", error);
+      }
     }
 
     throw new Error("Battle event helpers unavailable");
@@ -31,9 +35,20 @@ test.describe("Battle CLI verbose toggle", () => {
     const verboseSection = page.getByRole("region", { name: "Verbose Log" });
     const verboseLog = page.locator("#cli-verbose-log");
     const verboseToggle = page.getByLabel("Toggle verbose logging");
+    const isVerboseEnabled = async () =>
+      await page.evaluate(() => {
+        try {
+          const storedSettings = JSON.parse(localStorage.getItem("settings") || "{}");
+          return storedSettings?.featureFlags?.cliVerbose?.enabled ?? null;
+        } catch {
+          return null;
+        }
+      });
 
     await expect(verboseSection).toBeHidden();
     await expect(indicator).toBeHidden();
+
+    await waitForTestApi(page);
 
     await verboseToggle.check();
 
@@ -41,6 +56,7 @@ test.describe("Battle CLI verbose toggle", () => {
     await expect(verboseSection).toBeVisible();
     await expect(indicator).toBeVisible();
     await expect(verboseLog).toBeVisible();
+    await expect.poll(isVerboseEnabled, { timeout: 5000, interval: 200 }).toBe(true);
 
     const firstState = "mocked-round-start";
     await emitVerboseEntry(page, firstState);
@@ -48,8 +64,10 @@ test.describe("Battle CLI verbose toggle", () => {
 
     await page.reload({ waitUntil: "networkidle" });
     await app.applyRuntime();
+    await waitForTestApi(page);
+    await expect.poll(isVerboseEnabled, { timeout: 5000, interval: 200 }).toBe(true);
 
-    await expect(verboseToggle).toBeChecked({ timeout: 10000 });
+    await expect(verboseToggle).toBeChecked({ timeout: 5000 });
     await expect(verboseSection).toBeVisible();
     await expect(indicator).toBeVisible();
     await expect(verboseLog).toBeVisible();
@@ -61,5 +79,9 @@ test.describe("Battle CLI verbose toggle", () => {
     await verboseToggle.uncheck();
     await expect(verboseSection).toBeHidden();
     await expect(indicator).toBeHidden();
+
+    const disabledState = "should-not-appear";
+    await emitVerboseEntry(page, disabledState);
+    await expect(verboseLog).not.toContainText(disabledState, { timeout: 2000 });
   });
 });
