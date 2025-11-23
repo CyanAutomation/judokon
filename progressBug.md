@@ -2,76 +2,113 @@
 
 ## Executive Summary
 
-**Original Issue:** Unit and integration tests that exercise the battle flow were timing out while waiting for state transitions, and the assertions that verified stat selection were observing the store only after the round had resolved.
+**Status**: Implementation in progress with unit test success, but orchestrator state transition issue identified in integration tests.
 
-**Root Cause Analysis:** The current codebase now protects against both failure modes that triggered the original regression.
-1.  **Test Race Condition (resolved):** `performStatSelectionFlow()` captures the store and performs the assertions immediately after `selectStat()` is invoked but before awaiting the round-resolution promise. This guarantees the synchronous update is observed (see `tests/integration/battleClassic.integration.test.js:90` and `tests/integration/battleClassic.integration.test.js:105`).
-2.  **Orchestrator Readiness (covered):** Every integration path waits for `waitingForPlayerAction` before interacting with stat buttons, either by using `state.waitForBattleState("waitingForPlayerAction", …)` or the `tests/classicBattle/uiEventBinding.test.js` click flow (`uiEventBinding.test.js:66`). The same helper also resets the orchestrator in `afterEach` (`tests/integration/battleClassic.integration.test.js:173`) so the state machine is always reinitialized, and `validateSelectionState()` (see `src/helpers/classicBattle/selectionHandler.js:257`) guards the synchronous dispatch to reject selections unless the state is `waitingForPlayerAction` or `roundDecision`.
+**Completed Work**:
 
-**Solution Plan:** The existing tests verify the necessary behavior, so the focus shifts to keeping this coverage healthy and documenting the verification points.
-1.  **Guard selection assertions:** Ensure `performStatSelectionFlow()` continues to assert the store immediately after `selectStat()` (see `tests/integration/battleClassic.integration.test.js:90` and `tests/integration/battleClassic.integration.test.js:107`).
-2.  **Validate UI wiring:** Maintain the UI event binding test (`tests/classicBattle/uiEventBinding.test.js:62`) so clicks hit `selectStat` only after the orchestrator is ready.
-3.  **Improve validation coverage:** Add a small unit test targeting `validateSelectionState()` (`src/helpers/classicBattle/selectionHandler.js:257`) to explicitly prove it rejects selections when the machine is still in `matchStart`, preventing regressions before new failsafe loops are added.
+1. ✅ Exported `validateSelectionState()` function and `VALID_BATTLE_STATES` constant from `src/helpers/classicBattle/selectionHandler.js`
+2. ✅ Created comprehensive unit test `tests/classicBattle/validateSelectionState.test.js` with 18 passing tests covering:
+   - Valid state acceptance ("waitingForPlayerAction", "roundDecision", null)
+   - Invalid state rejection ("matchStart", "roundOver", etc.)
+   - Duplicate selection guard
+   - Error handling
+   - Debug tracking via `window.__VALIDATE_SELECTION_DEBUG`
+3. ✅ Documented `window.__VALIDATE_SELECTION_DEBUG` debugging guide with scenarios, usage patterns, and programmatic access
+4. ✅ Refactored `performStatSelectionFlow()` to add better error diagnostics
+
+**Current Issue**: Integration tests reveal that the orchestrator state machine is not transitioning to `waitingForPlayerAction` after round selection. When `selectStat()` is called, `validateSelectionState()` correctly rejects the selection because the battle state is still `matchStart` instead of the expected `waitingForPlayerAction`.
+
+**Root Cause**: The orchestrator state machine may not be initializing properly in the JSDOM test environment, or state transitions are not being triggered by the round selection event.
 
 ---
 
-## Task Contract
+## Implementation Progress
 
-```json
-{
-  "inputs": [
-    "tests/integration/battleClassic.integration.test.js",
-    "src/helpers/classicBattle/uiHelpers.js",
-    "src/helpers/classicBattle/selectionHandler.js",
-    "src/pages/battleClassic.init.js"
-  ],
-  "outputs": [
-    "tests/integration/battleClassic.integration.test.js",
-    "src/helpers/classicBattle/orchestrator.js",
-    "tests/classicBattle/uiEventBinding.test.js"
-  ],
-  "success": [
-    "eslint: PASS",
-    "vitest: PASS (all battle logic unit/integration tests)",
-    "jsdoc: PASS",
-    "no_unsilenced_console_in_tests",
-    "tests: happy + edge cases for UI event binding",
-    "CI green"
-  ],
-  "errorMode": "ask_on_regression_failure"
-}
+### Task 1: validateSelectionState() Unit Test ✅ COMPLETE
+
+**File**: `tests/classicBattle/validateSelectionState.test.js`
+
+**Tests Added**:
+
+- Happy path tests: Valid states (`waitingForPlayerAction`, `roundDecision`, null)
+- Guard path tests: Invalid states (`matchStart`, `roundOver`, `roundCooldown`, `matchOver`, unknown states)
+- Duplicate selection guard
+- Error handling
+- Debug tracking verification
+- API coverage for `VALID_BATTLE_STATES` constant
+
+**Result**: All 18 tests passing. The guard path is now explicitly covered, ensuring that selections in `matchStart` state (the failing integration test scenario) will be properly rejected with appropriate event emission.
+
+### Task 2: window.__VALIDATE_SELECTION_DEBUG Documentation ✅ COMPLETE
+
+**Location**: Added to `progressBug.md` (lines 79-185)
+
+**Documentation Includes**:
+
+- Overview of debug arrays and their purpose
+- Debug entry structure with field definitions
+- Example usage patterns in tests
+- 3 common debug scenarios with investigation steps
+- Programmatic access pattern for filtering debug history
+- Integration with `performStatSelectionFlow()` error handling
+- Manual cleanup instructions
+
+**Impact**: Developers can now quickly diagnose why selections are rejected by checking `window.__VALIDATE_SELECTION_DEBUG` and understanding the validation flow order (duplicate check → state check).
+
+### Task 3: performStatSelectionFlow() Enhancement ✅ PARTIAL
+
+**File**: `tests/integration/battleClassic.integration.test.js` (lines 91-130)
+
+**Changes Made**:
+
+- Added clear documentation with 6-step flow pseudocode
+- Separated store assertion from round resolution
+- Added diagnostic error handling that inspects `window.__VALIDATE_SELECTION_DEBUG`
+- Enhanced error message to surface root cause (state not yet ready, or duplicate)
+
+**Current Test Results**: Tests fail with clear diagnostic showing:
+
+```javascript
+Selection was rejected by validateSelectionState: 
+selectionMade=false, current state=matchStart
 ```
 
----
-
-## Investigation Details
-
-### Task 1: Test Race Condition ✅ COMPLETE
-
-*   **Finding:** The helper stopped waiting until after the round fully resolved, so assertions occasionally saw the cleared store.
-*   **Resolution:** `performStatSelectionFlow()` now reads the store and asserts `selectionMade`/`playerChoice` immediately after `selectStat()` before awaiting the promise, preventing the timing window (see `tests/integration/battleClassic.integration.test.js:90` and `tests/integration/battleClassic.integration.test.js:105`).
-
-### Task 2: Orchestrator Initialization Failure ✅ COMPLETE
-
-*   **Finding:** The orchestrator state was sometimes still `matchStart` when `selectStat()` hit the guard, so the selection was rejected in JSDOM.
-*   **Resolution:** Every integration scenario waits for the state machine to reach `waitingForPlayerAction` (see `tests/integration/battleClassic.integration.test.js:70` and `tests/classicBattle/uiEventBinding.test.js:66`), `resetOrchestratorForTest()` ensures a clean machine between runs (`tests/integration/battleClassic.integration.test.js:173`), and `validateSelectionState()` (`src/helpers/classicBattle/selectionHandler.js:257`) enforces that `selectStat()` can only succeed when the machine is in `waitingForPlayerAction` or `roundDecision`.
+This is actually GOOD - the guard is working correctly. The issue is that the orchestrator state machine is not transitioning as expected when the round button is clicked.
 
 ---
 
-## Follow-up Suggestions
+## Analysis: Orchestrator State Transition Issue
 
-1.  **Keep the speedy store assertions:** Preserve the pattern where `performStatSelectionFlow()` reads the store right after `selectStat()` so any regression in the synchronous update fails fast (see `tests/integration/battleClassic.integration.test.js:90` and `tests/integration/battleClassic.integration.test.js:105`).
-2.  **Maintain the UI event guard:** Retain the DOM-click regression captured in `tests/classicBattle/uiEventBinding.test.js:62` so interactions keep exercising the real wiring and the orchestrator is already in `waitingForPlayerAction` before the stat button click.
-3.  **Surface validateSelectionState failures:** Add a synthetic unit test around `validateSelectionState()` (`src/helpers/classicBattle/selectionHandler.js:257`) that simulates being in `matchStart` and asserts the guard rejects the selection, and keep `window.__VALIDATE_SELECTION_DEBUG` data documented so future investigations can reproduce the skipped selection path.
+### Symptom
+
+After clicking the round select button and waiting for `waitingForPlayerAction`, the state remains `matchStart`:
+
+```javascript
+❯ performStatSelectionFlow tests/integration/battleClassic.integration.test.js:119:13
+Selection was rejected because current state=matchStart
+```
+
+### Investigation
+
+1. **waitForBattleState() is completing** - The promise resolves without timeout, but the state assertion immediately after shows `matchStart`.
+2. **validateSelectionState is working correctly** - It properly rejects the selection when state is not in `VALID_BATTLE_STATES`.
+3. **Orchestrator initialization appears successful** - The orchestrator is initialized with `await initClassicBattleOrchestrator(store, startRound)` in `src/pages/battleClassic.init.js:1775`.
+
+### Possible Root Causes
+
+1. **State Getter Timing Issue**: The `waitForBattleState()` polls `getBattleState()`, which might be reading a stale or cached value.
+2. **State Transition Not Triggered**: The round button click might not be properly triggering the orchestrator's initial state transition.
+3. **Orchestrator Event Listener Issue**: The orchestrator might not be properly listening to round start events in JSDOM.
+4. **Module-Level State Leakage**: Despite `resetOrchestratorForTest()` being called in `afterEach`, the orchestrator might be retaining state across test runs.
+
+### Next Steps for Resolution
+
+1. **Verify orchestrator initialization**: Add diagnostic logging to `initClassicBattleOrchestrator()` to confirm it's being called and returning a valid machine.
+2. **Check state getter accuracy**: Verify that `getBattleState()` is consistently returning the current machine state in tests.
+3. **Inspect round button event flow**: Verify that clicking the round button properly dispatches `startClicked` and triggers the orchestrator state transition.
+4. **Review orchestrator event listeners**: Ensure all orchestrator event listeners are properly attached in the JSDOM environment.
 
 ---
-
-## Revised Implementation Plan
-
-1.  **Keep the integration helper assertions** in place so the store is read before the asynchronous resolution (no refactor required unless the flow changes).
-2.  **Retain the UI event binding regression test** in `tests/classicBattle/uiEventBinding.test.js` to ensure DOM clicks reach `selectStat` only after the orchestrator has reached `waitingForPlayerAction`.
-3.  **Add a small unit test** for `validateSelectionState()` (`src/helpers/classicBattle/selectionHandler.js:257`) that injects a fake state of `matchStart` and expects the function to reject the selection.
-4.  **Continue running the targeted suites** listed in the verification checklist to guard the integration paths whenever coverage or feature flags change.
 
 ---
 
@@ -83,10 +120,10 @@ When investigating why a stat selection was rejected or why tests are failing wi
 
 ### Overview
 
-* **`window.__VALIDATE_SELECTION_DEBUG`**: An array of debug entries, one for each time `validateSelectionState()` was called. Each entry logs validation details.
-* **`window.__VALIDATE_SELECTION_LAST`**: The most recent debug entry (useful for quick inspection).
-* **Populated by**: `validateSelectionState()` in `src/helpers/classicBattle/selectionHandler.js:257`
-* **Available in**: Test environments (JSDOM, Vitest)
+- **`window.__VALIDATE_SELECTION_DEBUG`**: An array of debug entries, one for each time `validateSelectionState()` was called. Each entry logs validation details.
+- **`window.__VALIDATE_SELECTION_LAST`**: The most recent debug entry (useful for quick inspection).
+- **Populated by**: `validateSelectionState()` in `src/helpers/classicBattle/selectionHandler.js:257`
+- **Available in**: Test environments (JSDOM, Vitest)
 
 ### Debug Entry Structure
 
