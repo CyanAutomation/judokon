@@ -7,7 +7,10 @@ const contrastRatio = (bg, fg) => {
   const parse = (c) => {
     const matches = c.match(/\d+(?:\.\d+)?/g);
     if (!matches || matches.length < 3) {
-      throw new Error(`Invalid color format: ${c}. Expected format: rgb(r, g, b)`);
+      throw new Error(`Invalid color format: ${c}. Expected format: rgb(r, g, b) or rgba(r, g, b, a)`);
+    }
+    if (matches.length > 4) {
+      throw new Error(`Invalid color format: ${c}. Too many numeric values found`);
     }
     return matches.map(Number);
   };
