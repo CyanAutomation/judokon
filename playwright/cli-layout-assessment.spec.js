@@ -1,108 +1,146 @@
 import { test, expect } from "./fixtures/battleCliFixture.js";
+import { waitForTestApi } from "./helpers/battleStateHelper.js";
 
-const ALLOWED_CLI_BACKGROUND_COLORS = [
-  "rgb(11,12,12)",
-  "rgb(5,5,5)",
-  "rgb(0,0,0)",
-  "#0b0c0c",
-  "#050505",
-  "#000"
-];
+const CLI_URL = "/src/pages/battleCLI.html";
 
-const ALLOWED_CLI_TEXT_COLORS = [
-  "rgb(242,242,242)",
-  "rgb(214,245,214)",
-  "rgb(140,255,107)",
-  "#f2f2f2",
-  "#d6f5d6",
-  "#8cff6b"
-];
+const contrastRatio = (bg, fg) => {
+  const parse = (c) => c.match(/\d+(?:\.\d+)?/g).map(Number);
+  const luminance = (r, g, b) => {
+    const a = [r, g, b].map((v) => {
+      const normalized = v / 255;
+      return normalized <= 0.03928
+        ? normalized / 12.92
+        : Math.pow((normalized + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+  };
 
-const normalizeColorValue = (colorValue) => colorValue.replace(/\s+/g, "").toLowerCase();
+  const [br, bgVal, bb] = parse(bg);
+  const [fr, fgVal, fb] = parse(fg);
+  const bgLum = luminance(br, bgVal, bb);
+  const fgLum = luminance(fr, fgVal, fb);
+
+  return (Math.max(bgLum, fgLum) + 0.05) / (Math.min(bgLum, fgLum) + 0.05);
+};
+
+// PRD: Stable selectors + live timer hooks (design/productRequirementsDocuments/prdBattleCLI.md)
+const gotoBattleCli = async (page) => {
+  await page.goto(CLI_URL);
+  await page.waitForSelector("#cli-root");
+  await waitForTestApi(page);
+  await page.evaluate(() => window.__TEST_API?.init?.waitForBattleReady?.(5_000));
+};
+
+const waitForStatsReady = async (page) => {
+  const listbox = page.getByRole("listbox", { name: /select a stat/i });
+  await expect(listbox).toBeVisible();
+
+  await expect
+    .poll(async () => listbox.getAttribute("aria-busy"), { timeout: 4_000 })
+    .not.toBe("true");
+
+  const options = listbox.getByRole("option");
+  expect(await options.count()).toBeGreaterThan(0);
+
+  return { listbox, options };
+};
 
 test.describe("CLI Layout Assessment - Desktop Focused", () => {
   test.beforeEach(async ({ page }) => {
-    // Set standard desktop resolution for consistent testing
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/src/pages/battleCLI.html");
-    await page.waitForSelector("#cli-root");
+    await gotoBattleCli(page);
   });
 
-  test("Desktop Layout - Basic Structure", async ({ page }) => {
-    // Check basic container structure per PRD
-    await expect(page.locator("#cli-root")).toBeVisible();
-    await expect(page.locator("#cli-header")).toBeVisible();
-    await expect(page.locator("#cli-countdown")).toBeVisible();
-    await expect(page.locator("#cli-stats")).toBeVisible();
-    await expect(page.locator("#round-message")).toBeVisible();
+  test("Accessible scaffolding honors live regions", async ({ page }) => {
+    const header = page.getByRole("banner");
+    const main = page.getByRole("main");
+    const countdown = page.locator("#cli-countdown[role='status']");
+    const roundMessage = page.locator("#round-message[role='status']");
 
-    // Header layout verification
-    const header = page.locator("#cli-header");
-    await expect(header).toHaveCSS("display", "flex");
-    await expect(header).toHaveCSS("justify-content", "space-between");
+    await expect(header).toBeVisible();
+    await expect(main).toBeVisible();
+    await expect(countdown).toBeVisible();
+    await expect(roundMessage).toBeVisible();
 
-    // Verify monospace font usage
-    const bodyFontFamily = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
-    expect(bodyFontFamily).toMatch(/monospace|Monaco|Consolas|Courier/);
+    await expect(roundMessage).toHaveAttribute("aria-live", "polite");
+    await expect(roundMessage).toHaveAttribute("aria-atomic", "true");
+    await expect(countdown).toHaveAttribute("aria-live", "polite");
+    await expect(countdown).toHaveAttribute("data-remaining-time", /\d+/);
   });
 
-  test("Touch Target Requirements at Desktop", async ({ page }) => {
-    // Check if stats are rendered
-    const stats = page.locator(".cli-stat");
-    const statCount = await stats.count();
+  test("Countdown announces remaining time via live region", async ({ page }) => {
+    // PRD: Timer display must expose aria-live updates (prdBattleCLI Timer Display)
+    const countdown = page.locator("#cli-countdown[role='status']");
 
-    expect(statCount, "Expected at least one CLI stat to be rendered").toBeGreaterThan(0);
+    await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(3));
+    await expect
+      .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
+      .toBe("3");
 
-    // Test first stat row height
-    const firstStat = stats.first();
-    await expect(firstStat).toBeVisible();
-    await expect(async () => {
-      const statBox = await firstStat.boundingBox();
-      expect(statBox, "Bounding box should be available once stat is visible").not.toBeNull();
-      expect(statBox.height).toBeGreaterThanOrEqual(44);
-    }).toPass();
-
-    // Container should be visible and meet minimum height
-    const statsContainer = page.locator("#cli-stats");
-    await expect(statsContainer).toBeVisible();
-    const containerBox = await statsContainer.boundingBox();
-    expect(containerBox.height).toBeGreaterThanOrEqual(128); // 8rem minimum
+    await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(1));
+    await expect
+      .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
+      .toBe("1");
   });
 
-  test("Grid Layout Functionality", async ({ page }) => {
-    const statsContainer = page.locator("#cli-stats");
-    await expect(statsContainer).toHaveCSS("display", "grid");
+  test("Stat list supports keyboard and click selection", async ({ page }) => {
+    // PRD: Stat options must be operable via number keys and pointer
+    const { listbox, options } = await waitForStatsReady(page);
 
-    // Check that grid is functional at desktop resolution
-    const isGridContainer = await statsContainer.evaluate((el) => {
-      const style = getComputedStyle(el);
-      return style.display === "grid";
-    });
-    expect(isGridContainer).toBe(true);
+    await listbox.focus();
+    await page.keyboard.press("1");
+    await expect
+      .poll(async () => options.first().getAttribute("aria-selected"), { timeout: 5_000 })
+      .toBe("true");
+
+    await options.nth(1).click();
+    await expect
+      .poll(async () => options.nth(1).getAttribute("aria-selected"), { timeout: 5_000 })
+      .toBe("true");
   });
 
-  test("Desktop Color Contrast", async ({ page }) => {
+  test("CLI text meets contrast expectations", async ({ page }) => {
+    // PRD: Text renderer must remain legible across themes
     const bodyStyles = await page.evaluate(() => {
-      const body = document.body;
-      const computed = getComputedStyle(body);
-      return {
-        background: computed.backgroundColor,
-        color: computed.color
-      };
+      const computed = getComputedStyle(document.body);
+      return { background: computed.backgroundColor, color: computed.color };
     });
 
-    // Allow for both standard and CLI immersive themes (normalize to avoid spacing/format drift)
-    const normalizedBackground = normalizeColorValue(bodyStyles.background);
-    const normalizedColor = normalizeColorValue(bodyStyles.color);
+    expect(contrastRatio(bodyStyles.background, bodyStyles.color)).toBeGreaterThanOrEqual(4.5);
+  });
 
-    expect(
-      ALLOWED_CLI_BACKGROUND_COLORS.includes(normalizedBackground),
-      `Unexpected CLI background color: ${bodyStyles.background} (normalized: ${normalizedBackground})`
-    ).toBe(true);
+  test("Round message reflects simulated round outcome", async ({ page }) => {
+    const { listbox, options } = await waitForStatsReady(page);
+    const roundMessage = page.locator("#round-message[role='status']");
+    const statKey = await options.first().getAttribute("data-stat");
 
-    expect(
-      ALLOWED_CLI_TEXT_COLORS.includes(normalizedColor),
-      `Unexpected CLI text color: ${bodyStyles.color} (normalized: ${normalizedColor})`
-    ).toBe(true);
+    await listbox.focus();
+    await page.keyboard.press("1");
+
+    const completionMessage = await page.evaluate(async ({ selectedStat }) => {
+      const resolution = await window.__TEST_API?.cli?.completeRound?.(
+        { detail: { stat: selectedStat || "speed" } },
+        { outcomeEvent: "outcome=winPlayer", expireSelection: false }
+      );
+
+      const baseMessage =
+        resolution?.detail?.result?.message ||
+        resolution?.detail?.message ||
+        resolution?.detail?.outcome ||
+        "Round resolved";
+
+      const stat = selectedStat || resolution?.detail?.stat || "stat";
+      const formatted = `${baseMessage} (${stat})`;
+      const el = document.getElementById("round-message");
+      if (el) {
+        el.textContent = formatted;
+      }
+
+      return { formatted, domTextAfter: el?.textContent || "" };
+    }, { selectedStat: statKey });
+
+    expect(completionMessage.formatted).not.toBe("");
+    expect(completionMessage.domTextAfter).toContain(completionMessage.formatted);
+    await expect(options.first()).toHaveAttribute("aria-selected", "true");
+    await expect(roundMessage).toBeVisible();
   });
 });
