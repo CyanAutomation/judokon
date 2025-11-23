@@ -105,3 +105,39 @@ npm run validate:data
 # Expected: All CI checks should be green.
 npm run test:ci
 ```
+
+---
+
+## Implementation Progress - Current Session
+
+### Task 1: Debug State Manager Initialization ✅ COMPLETE
+
+**File**: `tests/helpers/classicBattle/stateManager.getState.test.js` (newly created)
+
+**Bug Found and Fixed**:
+
+In `src/helpers/classicBattle/stateManager.js` line 257, the `validateStateTransition()` function was being called with `stateTable` (an array) instead of `byName` (a Map). This caused the state machine to fail during transition validation.
+
+**Fix Applied**:
+
+```javascript
+// Before (line 257):
+if (!validateStateTransition(from, target, eventName, stateTable)) {
+
+// After:
+if (!validateStateTransition(from, target, eventName, byName)) {
+```
+
+**Tests Created and All Passing**:
+
+1. ✅ Initialize with correct initial state (waitingForMatchStart)
+2. ✅ Consistently return same state without transitions
+3. ✅ Transition from waitingForMatchStart to matchStart on startClicked
+4. ✅ Transition from matchStart to cooldown on ready
+5. ✅ Handle onEnter handlers and maintain correct state
+6. ✅ Maintain state after multiple getState() calls
+7. ✅ Handle empty state table gracefully
+
+**Result**: All 7 tests pass ✓
+
+**Key Finding**: The initial state is properly set to "waitingForMatchStart" (NOT null). The previous suspicion that `machine.getState()` returned null was incorrect. The actual issue was the `validateStateTransition()` bug preventing state transitions from co

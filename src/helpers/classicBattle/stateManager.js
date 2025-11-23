@@ -8,6 +8,10 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
 const VALIDATION_WARN_ENABLED = true;
 
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
 /**
  * Build a lookup map from state table and find initial state.
  *
@@ -36,7 +40,7 @@ function initializeStateTable(stateTable) {
  * Build a trigger lookup map for fast O(1) access to transitions.
  *
  * @param {Map} statesByName - State lookup map.
- * @returns {Map} Map of "eventName:stateName" -> target state.
+ * @returns {Map} Map of "stateName:eventName" -> target state.
  */
 function buildTriggerMap(statesByName) {
   const triggerMap = new Map();
@@ -145,6 +149,82 @@ function validateStateTransition(fromState, toState, eventName, statesByName) {
 }
 
 /**
+ * Run onEnter handler for a state, with error suppression in tests.
+ *
+ * @param {string} stateName - State name.
+ * @param {object} machine - Machine reference.
+ * @param {any} payload - Optional payload.
+ * @param {Record<string, Function>} onEnterMap - Handler map.
+ */
+async function runOnEnter(stateName, machine, payload, onEnterMap) {
+  const fn = onEnterMap[stateName];
+
+  if (typeof fn === "function") {
+    debugLog(`stateManager: Executing onEnter handler for '${stateName}'`, {
+      stateName,
+      hasPayload: !!payload
+    });
+    try {
+      await fn(machine, payload);
+      debugLog(`stateManager: onEnter handler completed for '${stateName}'`);
+    } catch (err) {
+      const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
+      if (!IS_VITEST) {
+        logError(errorMsg, err);
+      } else if (!shouldSuppressDebugOutput()) {
+        logDebug(errorMsg, err);
+      }
+      // Don't re-throw to prevent state machine deadlock
+    }
+  } else if (fn !== undefined) {
+    logWarn(
+      `Invalid onEnter handler for state '${stateName}': expected function, got ${typeof fn}`
+    );
+  } else {
+    debugLog(`stateManager: No onEnter handler defined for state '${stateName}'`);
+  }
+}
+
+/**
+ * Validate onEnter handler map and log summary.
+ *
+ * @param {Record<string, Function>} onEnterMap - Handler map.
+ * @param {Set} definedStates - Set of defined state names.
+ */
+function validateHandlerMap(onEnterMap, definedStates) {
+  const statesWithHandlers = Array.from(definedStates).filter(
+    (state) => typeof onEnterMap[state] === "function"
+  );
+  const statesWithoutHandlers = Array.from(definedStates).filter((state) => !(state in onEnterMap));
+
+  if (statesWithoutHandlers.length > 0) {
+    logWarn(
+      `createStateManager: The following states do not have onEnter handlers: ${statesWithoutHandlers.join(", ")}`
+    );
+  }
+
+  debugLog("createStateManager: onEnterMap validation", {
+    totalStates: definedStates.size,
+    statesWithHandlers: statesWithHandlers.length,
+    statesWithoutHandlers: statesWithoutHandlers.length,
+    missingStates: statesWithoutHandlers
+  });
+}
+
+// ============================================================================
+// State Manager Factory
+// ============================================================================
+
+/**
+ * Typedef for state manager.
+ *
+ * @typedef {object} ClassicBattleStateManager
+ * @property {object} context - Machine context.
+ * @property {() => string} getState - Get current state name.
+ * @property {(eventName: string, payload?: any) => Promise<boolean>} dispatch - Dispatch event.
+ */
+
+/**
  * Create a lightweight state manager for the Classic Battle finite-state machine.
  *
  * This factory constructs a minimal machine with `getState()` and
@@ -154,15 +234,13 @@ function validateStateTransition(fromState, toState, eventName, statesByName) {
  * behavior.
  *
  * @pseudocode
- * 1. Build a `byName` map from `stateTable` and determine the initial state.
- * 2. Create `machine` with `context`, `getState()` and async `dispatch()`.
- * 3. In `dispatch()`: locate a trigger for `eventName` and derive the target
- *    state; if none found, and `eventName` matches a state name, use that.
- * 4. Update `current` to the target and call `onTransition` with `{from,to,event}`.
- * 5. Run `runOnEnter(target, payload)` which calls the corresponding handler
- *    from `onEnterMap` if present and swallows errors in test mode.
- * 6. Initialize the machine by invoking `onTransition({from:null,to:init,event:'init'})`
- *    and run the initial state's `onEnter` handler.
+ * 1. Validate state table and context.
+ * 2. Initialize state lookup map and determine initial state.
+ * 3. Build trigger lookup for O(1) event resolution.
+ * 4. Validate handler map coverage.
+ * 5. Create machine with context, getState(), and async dispatch().
+ * 6. In dispatch(): resolve target state, validate transition, run onEnter.
+ * 7. Initialize machine state and run initial onEnter handler.
  *
  * @param {Record<string, Function>} [onEnterMap={}] - Map of state name -> onEnter handler.
  * @param {object} [context={}] - Initial machine context object.
@@ -176,139 +254,93 @@ export async function createStateManager(
   onTransition,
   stateTable = CLASSIC_BATTLE_STATES
 ) {
-  debugLog("createStateManager: stateTable", stateTable);
-  const byName = new Map();
-  let initial = null;
-  for (const s of Array.isArray(stateTable) ? stateTable : []) {
-    byName.set(s.name, s);
-    if (s.type === "initial" || initial === null) {
-      initial = s.name;
-    }
+  // Validate inputs
+  if (!validateStateTable(stateTable)) {
+    throw new Error("Invalid state table provided to createStateManager");
   }
-  const initName = initial || "waitingForMatchStart";
-  let current = initName;
+  if (!validateContext(context)) {
+    throw new Error("Invalid context provided to createStateManager");
+  }
 
-  // Validate onEnterMap integrity: warn if states are missing handlers
-  const definedStates = Array.from(byName.keys());
-  const statesWithHandlers = definedStates.filter(
-    (state) => typeof onEnterMap[state] === "function"
-  );
-  const statesWithoutHandlers = definedStates.filter((state) => !(state in onEnterMap));
-  if (statesWithoutHandlers.length > 0) {
-    logWarn(
-      `createStateManager: The following states do not have onEnter handlers: ${statesWithoutHandlers.join(", ")}`
-    );
-  }
-  debugLog("createStateManager: onEnterMap validation", {
-    totalStates: definedStates.length,
-    statesWithHandlers: statesWithHandlers.length,
-    statesWithoutHandlers: statesWithoutHandlers.length,
-    missingStates: statesWithoutHandlers
+  // Initialize state table
+  const { byName: statesByName, initialState } = initializeStateTable(stateTable);
+  const definedStates = new Set(statesByName.keys());
+  let current = initialState;
+
+  // Build trigger map for O(1) lookup
+  const triggerMap = buildTriggerMap(statesByName);
+
+  // Validate handler coverage
+  validateHandlerMap(onEnterMap, definedStates);
+
+  debugLog("createStateManager: initialized", {
+    initialState,
+    totalStates: definedStates.size,
+    hasOnTransition: typeof onTransition === "function"
   });
 
   const machine = {
     context,
     getState: () => current,
     async dispatch(eventName, payload) {
-      debugLog("stateManager: dispatch called", {
-        event: eventName,
-        payload,
-        current
-      });
-      try {
-        const state = byName.get(current);
-        debugLog("stateManager: current state definition", {
-          state: current,
-          stateFound: !!state,
-          triggers: state?.triggers?.map((t) => t.on) ?? []
-        });
-        const trigger = state?.triggers?.find((t) => t.on === eventName);
-        debugLog("stateManager: trigger search", {
-          eventName,
-          triggerFound: !!trigger,
-          targetFromTrigger: trigger?.target
-        });
-        let target = trigger?.target;
-        if (!target && byName.has(eventName)) target = eventName;
-        debugLog("stateManager: target resolution", {
-          targetFromTrigger: trigger?.target,
-          targetIsStateName: !trigger && byName.has(eventName),
-          finalTarget: target,
-          targetExists: byName.has(target)
-        });
-        if (!target || !byName.has(target)) {
-          logError(
-            "stateManager: dispatch returning false. target:",
-            target,
-            "byName.has(target):",
-            byName.has(target),
-            "current state:",
-            current,
-            "available triggers:",
-            state?.triggers?.map((t) => t.on) ?? []
-          );
-          return false;
-        }
-        const from = current;
-        debugLog("stateManager: before current update", { target, current });
-        current = target;
-        debugLog("stateManager: after current update", { current });
-        // Validate the state transition
-        if (!validateStateTransition(from, target, eventName, byName)) {
-          logError(`State transition validation failed: ${from} -> ${target} via ${eventName}`);
-          return false;
-        }
-        // [TEST DEBUG] log state transition attempt
-        debugLog("stateManager transition", { from, to: target, event: eventName });
-        try {
-          await onTransition?.({ from, to: target, event: eventName });
-        } catch {}
-        await runOnEnter(target, payload);
-        return true;
-      } catch (error) {
-        logError("stateManager: Error in dispatch:", error);
-        throw error; // Re-throw to see the error in orchestrator
+      const from = current;
+      const currentStateDef = statesByName.get(from);
+      const availableTriggers = getAvailableTriggers(currentStateDef);
+
+      // Resolve target state: try trigger map first, then state name fallback
+      const triggerKey = `${from}:${eventName}`;
+      let target = triggerMap.get(triggerKey);
+
+      if (!target && statesByName.has(eventName)) {
+        target = eventName;
       }
+
+      // Validate target resolution
+      if (!target || !statesByName.has(target)) {
+        logError("stateManager: dispatch failed", {
+          event: eventName,
+          currentState: from,
+          availableTriggers,
+          targetResolved: target,
+          targetExists: target ? statesByName.has(target) : false
+        });
+        return false;
+      }
+
+      // Update state
+      current = target;
+
+      // Validate transition
+      if (!validateStateTransition(from, target, eventName, statesByName)) {
+        logError(`State transition validation failed: ${from} -> ${target} via ${eventName}`);
+        return false;
+      }
+
+      debugLog("stateManager: transition", { from, to: target, event: eventName });
+
+      // Call transition hook
+      try {
+        await onTransition?.({ from, to: target, event: eventName });
+      } catch (err) {
+        logError("stateManager: onTransition error:", err);
+        // Don't re-throw; transition already committed
+      }
+
+      // Run onEnter handler
+      await runOnEnter(target, machine, payload, onEnterMap);
+
+      return true;
     }
   };
 
-  async function runOnEnter(stateName, payload) {
-    const fn = onEnterMap[stateName];
-    if (typeof fn === "function") {
-      debugLog(`stateManager: Executing onEnter handler for '${stateName}'`, {
-        stateName,
-        hasPayload: !!payload
-      });
-      try {
-        await fn(machine, payload);
-        debugLog(`stateManager: onEnter handler completed for '${stateName}'`, {
-          stateName
-        });
-      } catch (err) {
-        const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
-        if (!IS_VITEST) {
-          logError(errorMsg, err);
-        } else if (!shouldSuppressDebugOutput()) {
-          logDebug(errorMsg, err);
-        }
-        // Don't re-throw errors in onEnter handlers to prevent state machine deadlock
-        // Log the error and continue with the transition
-      }
-    } else if (fn !== undefined) {
-      logWarn(
-        `Invalid onEnter handler for state '${stateName}': expected function, got ${typeof fn}`
-      );
-    } else {
-      debugLog(`stateManager: No onEnter handler defined for state '${stateName}'`, {
-        stateName
-      });
-    }
-  }
-
+  // Initialize machine
   try {
-    await onTransition?.({ from: null, to: initName, event: "init" });
-  } catch {}
-  await runOnEnter(initName);
+    await onTransition?.({ from: null, to: initialState, event: "init" });
+  } catch (err) {
+    logError("stateManager: onTransition error during init:", err);
+  }
+  await runOnEnter(initialState, machine, undefined, onEnterMap);
+
   return machine;
 }
 
