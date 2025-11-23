@@ -221,13 +221,10 @@ describe("Battle Classic Page Integration", () => {
       console.log = originalLog;
     }
     
-    // Now check what was captured
+    // Now check what was captured - SHOW EVERYTHING
     const logs = window.__TEST_CAPTURED_LOGS || [];
-    const selectStatLogs = logs.filter(log => log.includes("[selectStat]") || log.includes("[handleStatSelection]") || log.includes("[validateSelectionState]"));
-    
-    // Throw with all the logs so we can see them
-    const logSummary = selectStatLogs.map((log, idx) => `${idx}: ${log}`).join("\n");
-    throw new Error(`Got ${selectStatLogs.length} validation logs:\n${logSummary}`);
+    const logSummary = logs.map((log, idx) => `${idx}: ${log}`).join("\n");
+    throw new Error(`Captured ${logs.length} total logs:\n${logSummary}`);
   });
 
   it("initializes the page UI to the correct default state", async () => {
