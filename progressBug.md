@@ -10,6 +10,8 @@
 
 **Next Steps**: Implement a targeted fix by creating a dedicated test helper to manually trigger the orchestrator's state transition, bypassing the problematic event propagation in the test environment.
 
+Note: It's important not to focus solely on making the test pass - if there is an underlying issue, the that should be fixed/addressed. Please amend application code and test code, where relevant - even if needed for debugging. Also, I want to avoid waits in my tests - rather tests should test components or states directly, via APIs or similiar methods.
+
 ---
 
 ## Analysis: Orchestrator State Transition Issue
