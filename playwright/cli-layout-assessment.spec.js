@@ -100,7 +100,7 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     const firstOptionHotkey = await options
       .first()
       .textContent()
-      .then((text) => text?.match(/\(?([0-9])/i)?.[1] || "1");
+      .then((text) => text?.match(/\(?([0-9])\)?/i)?.[1] || "1");
 
     await page.keyboard.press(firstOptionHotkey);
     await expect
