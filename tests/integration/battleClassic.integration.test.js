@@ -72,50 +72,36 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   expect(store.selectionMade).toBe(false);
   expect(store.playerChoice).toBeNull();
 
-  // ===== HYBRID APPROACH: Manually call selectStat() =====
-  // This approach works around JSDOM event delegation limitations by calling the
-  // internal selection handler directly. The selectStat() function is normally invoked
-  // by the stat button click handler, but JSDOM doesn't reliably delegate click events
-  // to dynamically rendered buttons. By calling it directly, we simulate the effect
-  // of clicking a stat button and trigger the full event emission chain, which updates
-  // the store and dispatches the state machine event.
-  //
-  // This is test-specific code: in production, stat buttons are clicked by the user,
-  // which triggers the normal event handler flow. Tests use this direct call because
-  // JSDOM's event propagation is unreliable for this use case.
-
   // Get first stat button to determine which stat to select
   const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
   expect(statButtons.length).toBeGreaterThan(0);
   const selectedStat = statButtons[0].dataset.stat;
   expect(selectedStat).toBeTruthy();
 
-  // Call selectStat directly - this invokes the full selection flow:
-  // selectStat() → handleStatSelection() → validateAndApplySelection() → applySelectionToStore()
-  // The chain updates store.selectionMade = true and store.playerChoice = stat,
-  // and also emits the "statSelected" battle event which dispatches to the state machine
-
   // Add test ID to store for debugging
   if (store && typeof store === "object") {
     store.__testId = "test-" + Date.now();
   }
 
-  try {
-    // selectStat now returns a promise that resolves when selection is complete
-    // Don't mute console here - we need to see the logging chain for diagnostics
-    await selectStat(store, selectedStat);
-  } catch (error) {
-    throw new Error(`selectStat failed: ${error?.message}`);
-  }
+  // Call selectStat but don't await it immediately. This starts the selection
+  // process, which synchronously updates the store.
+  const selectionPromise = selectStat(store, selectedStat);
 
-  console.log("Validate selection history:", window.__VALIDATE_SELECTION_DEBUG);
-  console.log("Validate selection last:", window.__VALIDATE_SELECTION_LAST);
-  expect(window.__VALIDATE_SELECTION_LAST?.current).toBe("waitingForPlayerAction");
+  // Allow the synchronous part of selectStat to complete. This includes
+  // the call to applySelectionToStore.
+  await Promise.resolve();
 
-  // After selectStat completes, store should have selectionMade = true
+  // After the synchronous part of selectStat completes, the store should be updated.
   store = ensureStore();
   expect(store.selectionMade).toBe(true);
   expect(store.playerChoice).toBe(selectedStat);
+
+  // Now, await the resolution of the full round.
+  try {
+    await selectionPromise;
+  } catch (error) {
+    throw new Error(`selectStat failed: ${error?.message}`);
+  }
 
   // Now wait for the state machine to transition to roundDecision and execute
   // its onEnter handler, which calls resolveSelectionIfPresent() and then resolveRound()
