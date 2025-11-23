@@ -52,10 +52,10 @@
 *   **Finding:** The tests were asserting the store state *after* awaiting `selectStat()`, which resolves after the entire round is complete and the store is cleared.
 *   **Solution:** The test helper `performStatSelectionFlow()` will be refactored to assert the store state immediately after dispatching the selection event, before awaiting the promise that resolves the round.
 
-### Task 2: Orchestrator Initialization Failure ✅ COMPLETE
+### Task 2: Orchestrator Initialization Failure 🔄 IN PROGRESS
 
-*   **Finding:** The orchestrator was not being initialized in the test environment because `initClassicBattleOrchestrator()` was not being called correctly, and module-level auto-initialization interfered with the test setup.
-*   **Solution:** The `init()` function in `src/pages/battleClassic.init.js` has been updated to correctly initialize the orchestrator. Test cleanup hooks have been added to ensure a fresh orchestrator instance for each test.
+*   **Finding:** The orchestrator was not being initialized correctly, leading to state transition issues in the test environment. The `selectStat` function is called when the orchestrator is in an invalid state (`matchStart` instead of `waitingForPlayerAction`), causing the selection to be rejected. The expected synchronous update of the store by `selectStat` is not occurring as anticipated in the JSDOM test environment.
+*   **Solution:** Currently investigating why the orchestrator isn't transitioning to `waitingForPlayerAction` as expected after round button clicks, and why `selectStat` is not synchronously updating the store. This may involve examining the `waitForBattleState` helper or the event loop in the JSDOM environment.
 
 ---
 

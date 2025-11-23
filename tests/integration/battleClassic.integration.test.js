@@ -64,8 +64,12 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     roundButtons[0].click();
     // Let the modal's button click handler execute and dispatch startClicked
     await Promise.resolve();
+    // Log state before waiting
+    console.log("[TEST DIAG] Before waitForBattleState (waitingForPlayerAction):", await state.getBattleState());
     // Wait for state machine to reach waitingForPlayerAction state
     await state.waitForBattleState("waitingForPlayerAction", 5000);
+    // Log state after waiting
+    console.log("[TEST DIAG] After waitForBattleState (waitingForPlayerAction):", await state.getBattleState());
   });
 
   store = ensureStore();
@@ -86,6 +90,12 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // Call selectStat but don't await it immediately. This starts the selection
   // process, which synchronously updates the store.
   const selectionPromise = selectStat(store, selectedStat);
+
+  // Log store state right after selectStat and before Promise.resolve()
+  console.log("[TEST DIAG] After selectStat (before Promise.resolve()):", {
+    selectionMade: store.selectionMade,
+    playerChoice: store.playerChoice,
+  });
 
   // Allow the synchronous part of selectStat to complete. This includes
   // the call to applySelectionToStore.
