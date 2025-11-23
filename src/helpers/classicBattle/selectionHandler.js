@@ -287,7 +287,9 @@ function validateSelectionState(store) {
     } catch {}
     try {
       if (IS_VITEST) {
-        console.log("[validateSelectionState] REJECTED: duplicateSelection - selectionMade already true");
+        console.log(
+          "[validateSelectionState] REJECTED: duplicateSelection - selectionMade already true"
+        );
       }
     } catch {}
     try {
@@ -303,7 +305,11 @@ function validateSelectionState(store) {
       debugInfo.allowed = false;
       try {
         if (IS_VITEST) {
-          console.log("[validateSelectionState] REJECTED: invalidState - current state is", current, "expected waitingForPlayerAction or roundDecision");
+          console.log(
+            "[validateSelectionState] REJECTED: invalidState - current state is",
+            current,
+            "expected waitingForPlayerAction or roundDecision"
+          );
         } else {
           console.warn(`Ignored stat selection while in state=${current}`);
         }

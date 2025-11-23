@@ -116,27 +116,30 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     await listbox.focus();
     await page.keyboard.press("1");
 
-    const completionMessage = await page.evaluate(async ({ selectedStat }) => {
-      const resolution = await window.__TEST_API?.cli?.completeRound?.(
-        { detail: { stat: selectedStat || "speed" } },
-        { outcomeEvent: "outcome=winPlayer", expireSelection: false }
-      );
+    const completionMessage = await page.evaluate(
+      async ({ selectedStat }) => {
+        const resolution = await window.__TEST_API?.cli?.completeRound?.(
+          { detail: { stat: selectedStat || "speed" } },
+          { outcomeEvent: "outcome=winPlayer", expireSelection: false }
+        );
 
-      const baseMessage =
-        resolution?.detail?.result?.message ||
-        resolution?.detail?.message ||
-        resolution?.detail?.outcome ||
-        "Round resolved";
+        const baseMessage =
+          resolution?.detail?.result?.message ||
+          resolution?.detail?.message ||
+          resolution?.detail?.outcome ||
+          "Round resolved";
 
-      const stat = selectedStat || resolution?.detail?.stat || "stat";
-      const formatted = `${baseMessage} (${stat})`;
-      const el = document.getElementById("round-message");
-      if (el) {
-        el.textContent = formatted;
-      }
+        const stat = selectedStat || resolution?.detail?.stat || "stat";
+        const formatted = `${baseMessage} (${stat})`;
+        const el = document.getElementById("round-message");
+        if (el) {
+          el.textContent = formatted;
+        }
 
-      return { formatted, domTextAfter: el?.textContent || "" };
-    }, { selectedStat: statKey });
+        return { formatted, domTextAfter: el?.textContent || "" };
+      },
+      { selectedStat: statKey }
+    );
 
     expect(completionMessage.formatted).not.toBe("");
     expect(completionMessage.domTextAfter).toContain(completionMessage.formatted);

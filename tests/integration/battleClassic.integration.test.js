@@ -185,42 +185,42 @@ describe("Battle Classic Page Integration", () => {
     await init();
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
-    
+
     // Quietly initialize
     await withMutedConsole(async () => {
       const isReady = await testApi.init.waitForBattleReady(5000);
       expect(isReady).toBe(true);
     });
-    
+
     // Start a round
     const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
     expect(roundButtons.length).toBeGreaterThan(0);
-    
+
     await withMutedConsole(async () => {
       roundButtons[0].click();
       await Promise.resolve();
       await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
     });
-    
+
     // NOW call selectStat WITHOUT muting so we can see the logs
     const store = testApi.inspect.getBattleStore();
     const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     expect(statButtons.length).toBeGreaterThan(0);
-    
+
     // Capture logs to window global
     window.__TEST_CAPTURED_LOGS = [];
     const originalLog = console.log;
     console.log = (...args) => {
-      const msg = args.map(a => String(a)).join(" ");
+      const msg = args.map((a) => String(a)).join(" ");
       window.__TEST_CAPTURED_LOGS.push(msg);
     };
-    
+
     try {
       await selectStat(store, statButtons[0].dataset.stat);
     } finally {
       console.log = originalLog;
     }
-    
+
     // Now check what was captured - SHOW EVERYTHING
     const logs = window.__TEST_CAPTURED_LOGS || [];
     const logSummary = logs.map((log, idx) => `${idx}: ${log}`).join("\n");

@@ -32,7 +32,14 @@ export function setBattleDispatcher(fn) {
  * @returns {void}
  */
 export function setBattleStateGetter(fn) {
-  if (typeof fn === "function") stateGetter = fn;
+  if (typeof fn === "function") {
+    stateGetter = fn;
+    try {
+      if (typeof process !== "undefined" && !!process.env?.VITEST) {
+        console.log("[eventBus] setBattleStateGetter called, stateGetter updated");
+      }
+    } catch {}
+  }
 }
 
 /**
@@ -65,7 +72,15 @@ export async function dispatchBattleEvent(eventName, payload) {
  */
 export function getBattleState() {
   try {
-    return stateGetter();
+    const result = stateGetter();
+    try {
+      if (typeof process !== "undefined" && !!process.env?.VITEST) {
+        if (!result) {
+          console.log("[eventBus] getBattleState() called, stateGetter returned:", result, "stateGetter fn is:", typeof stateGetter);
+        }
+      }
+    } catch {}
+    return result;
   } catch (error) {
     console.error(`[eventBus] Failed to get battle state:`, error);
     return null;

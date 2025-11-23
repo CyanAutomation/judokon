@@ -14,6 +14,7 @@ import {
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { setBattleStateGetter } from "./eventBus.js";
 import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
@@ -297,6 +298,8 @@ export async function initClassicBattleOrchestrator(
       );
       machine = createdMachine;
       attachListeners(machine);
+      // Register the machine's state getter so eventBus can access current state
+      setBattleStateGetter(() => machine.getState());
       preloadDependencies();
       return machine;
     } catch (error) {
