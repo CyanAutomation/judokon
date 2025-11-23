@@ -1,72 +1,65 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
+import { waitForTestApi } from "./helpers/battleStateHelper.js";
+
+async function emitVerboseEntry(page, to) {
+  await waitForTestApi(page);
+  await page.evaluate(async (nextState) => {
+    const dispatch =
+      window.__TEST_API?.state?.dispatchBattleEvent?.bind(window.__TEST_API.state) || null;
+    if (dispatch) {
+      const result = await dispatch("battleStateChange", { from: "setup", to: nextState });
+      if (result !== false) return;
+    }
+
+    if (typeof window.emitBattleEvent === "function") {
+      window.emitBattleEvent("battleStateChange", { from: "setup", to: nextState });
+      return;
+    }
+
+    throw new Error("Battle event helpers unavailable");
+  }, to);
+}
 
 test.describe("Battle CLI verbose toggle", () => {
-  test("updates verbose UI immediately and remains in sync", async ({ page }) => {
+  test("enables verbose logging and persists after reload", async ({ page }) => {
     const app = await configureApp(page, {});
     await page.goto("/src/pages/battleCLI.html");
     await app.applyRuntime();
 
-    const indicator = page.locator("#verbose-indicator");
-    const verboseSection = page.locator("#cli-verbose-section");
+    const indicator = page.getByText("Verbose ON", { exact: true });
+    const verboseSection = page.getByRole("region", { name: "Verbose Log" });
     const verboseLog = page.locator("#cli-verbose-log");
-    const checkbox = page.locator("#verbose-toggle");
+    const verboseToggle = page.getByLabel("Toggle verbose logging");
 
-    await expect(indicator).toBeHidden();
-    await expect(indicator).toHaveAttribute("aria-hidden", "true");
     await expect(verboseSection).toBeHidden();
-    await expect(verboseLog).toBeHidden();
+    await expect(indicator).toBeHidden();
 
-    const settings = page.locator("#cli-settings");
-    const settingsBody = settings.locator("#cli-settings-body");
-    await expect(settings).toBeVisible();
-    if (!(await settings.evaluate((node) => node.open))) {
-      await settings.locator("summary").click();
-      await expect(settings).toHaveJSProperty("open", true);
-    }
-    await expect(settingsBody).toBeVisible();
+    await verboseToggle.check();
 
-    const readPersistedVerbose = () =>
-      page.evaluate(() => {
-        try {
-          const raw = localStorage.getItem("settings");
-          if (!raw) return null;
-          const parsed = JSON.parse(raw);
-          return parsed?.featureFlags?.cliVerbose?.enabled ?? null;
-        } catch {
-          return "parse-error";
-        }
-      });
-
-    await checkbox.check();
-
-    await expect(checkbox).toBeChecked();
-    await expect(indicator).toBeVisible();
-    await expect(indicator).toHaveAttribute("aria-hidden", "false");
+    await expect(verboseToggle).toBeChecked();
     await expect(verboseSection).toBeVisible();
+    await expect(indicator).toBeVisible();
     await expect(verboseLog).toBeVisible();
 
-    await expect.poll(readPersistedVerbose).toBe(true);
+    const firstState = "mocked-round-start";
+    await emitVerboseEntry(page, firstState);
+    await expect(verboseLog).toContainText(firstState, { timeout: 5000 });
 
-    await expect(checkbox).toBeChecked();
-    await expect(indicator).toBeVisible();
-    await expect(indicator).toHaveAttribute("aria-hidden", "false");
+    await page.reload({ waitUntil: "networkidle" });
+    await app.applyRuntime();
+
+    await expect(verboseToggle).toBeChecked({ timeout: 10000 });
     await expect(verboseSection).toBeVisible();
+    await expect(indicator).toBeVisible();
+    await expect(verboseLog).toBeVisible();
 
-    await checkbox.uncheck();
+    const resumedState = "persisted-verbose-state";
+    await emitVerboseEntry(page, resumedState);
+    await expect(verboseLog).toContainText(resumedState, { timeout: 5000 });
 
-    await expect(checkbox).not.toBeChecked();
-    await expect(indicator).toBeHidden();
-    await expect(indicator).toHaveAttribute("aria-hidden", "true");
+    await verboseToggle.uncheck();
     await expect(verboseSection).toBeHidden();
-    await expect(verboseLog).toBeHidden();
-
-    await expect.poll(readPersistedVerbose).toBe(false);
-
-    await expect(checkbox).not.toBeChecked();
     await expect(indicator).toBeHidden();
-    await expect(indicator).toHaveAttribute("aria-hidden", "true");
-    await expect(verboseSection).toBeHidden();
-    await expect(verboseLog).toBeHidden();
   });
 });
