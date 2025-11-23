@@ -282,6 +282,12 @@ function validateSelectionState(store) {
         const arr = window.__VALIDATE_SELECTION_DEBUG || [];
         arr.push(debugInfo);
         window.__VALIDATE_SELECTION_DEBUG = arr;
+        window.__VALIDATE_SELECTION_LAST = debugInfo;
+      }
+    } catch {}
+    try {
+      if (IS_VITEST) {
+        console.log("[validateSelectionState] REJECTED: duplicateSelection - selectionMade already true");
       }
     } catch {}
     try {
@@ -296,7 +302,11 @@ function validateSelectionState(store) {
     if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
       debugInfo.allowed = false;
       try {
-        if (!IS_VITEST) console.warn(`Ignored stat selection while in state=${current}`);
+        if (IS_VITEST) {
+          console.log("[validateSelectionState] REJECTED: invalidState - current state is", current, "expected waitingForPlayerAction or roundDecision");
+        } else {
+          console.warn(`Ignored stat selection while in state=${current}`);
+        }
       } catch {}
       try {
         emitBattleEvent("input.ignored", { kind: "invalidState", state: current });
@@ -311,13 +321,24 @@ function validateSelectionState(store) {
       } catch {}
       return false;
     }
-  } catch {}
+  } catch (error) {
+    try {
+      if (IS_VITEST) {
+        console.log("[validateSelectionState] ERROR checking battle state:", error);
+      }
+    } catch {}
+  }
   try {
     if (typeof window !== "undefined") {
       const arr = window.__VALIDATE_SELECTION_DEBUG || [];
       arr.push(debugInfo);
       window.__VALIDATE_SELECTION_DEBUG = arr;
       window.__VALIDATE_SELECTION_LAST = debugInfo;
+    }
+  } catch {}
+  try {
+    if (IS_VITEST) {
+      console.log("[validateSelectionState] ALLOWED - state is valid:", debugInfo.current);
     }
   } catch {}
   return true;

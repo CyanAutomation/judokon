@@ -180,6 +180,56 @@ describe("Battle Classic Page Integration", () => {
     // causing the next test's beforeEach to fail when trying to use fs/path functions
   });
 
+  it("DEBUG: Verify validateSelectionState logs are firing", async () => {
+    // Simple test to verify logging is happening
+    await init();
+    const testApi = window.__TEST_API;
+    expect(testApi).toBeDefined();
+    
+    // Quietly initialize
+    await withMutedConsole(async () => {
+      const isReady = await testApi.init.waitForBattleReady(5000);
+      expect(isReady).toBe(true);
+    });
+    
+    // Start a round
+    const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
+    expect(roundButtons.length).toBeGreaterThan(0);
+    
+    await withMutedConsole(async () => {
+      roundButtons[0].click();
+      await Promise.resolve();
+      await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
+    });
+    
+    // NOW call selectStat WITHOUT muting so we can see the logs
+    const store = testApi.inspect.getBattleStore();
+    const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    expect(statButtons.length).toBeGreaterThan(0);
+    
+    // Capture logs to window global
+    window.__TEST_CAPTURED_LOGS = [];
+    const originalLog = console.log;
+    console.log = (...args) => {
+      const msg = args.map(a => String(a)).join(" ");
+      window.__TEST_CAPTURED_LOGS.push(msg);
+    };
+    
+    try {
+      await selectStat(store, statButtons[0].dataset.stat);
+    } finally {
+      console.log = originalLog;
+    }
+    
+    // Now check what was captured
+    const logs = window.__TEST_CAPTURED_LOGS || [];
+    const selectStatLogs = logs.filter(log => log.includes("[selectStat]") || log.includes("[handleStatSelection]") || log.includes("[validateSelectionState]"));
+    
+    // Throw with all the logs so we can see them
+    const logSummary = selectStatLogs.map((log, idx) => `${idx}: ${log}`).join("\n");
+    throw new Error(`Got ${selectStatLogs.length} validation logs:\n${logSummary}`);
+  });
+
   it("initializes the page UI to the correct default state", async () => {
     // Run the main initialization function
     await init();
@@ -325,6 +375,16 @@ describe("Battle Classic Page Integration", () => {
         playerChoiceAfter: storeAfterSelection.playerChoice,
         storeId: storeAfterSelection?.__testId
       });
+
+      // DIAGNOSTIC: Check validation debug info
+      const validationDebug = window.__VALIDATE_SELECTION_LAST;
+      if (validationDebug) {
+        console.log("[TEST DIAG] Validation Debug Info:", validationDebug);
+      }
+      const validationHistory = window.__VALIDATE_SELECTION_DEBUG;
+      if (validationHistory && validationHistory.length > 0) {
+        console.log("[TEST DIAG] Full Validation History:", validationHistory);
+      }
 
       // Verify store was updated
       expect(store.selectionMade).toBe(true);

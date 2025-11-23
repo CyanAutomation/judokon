@@ -6,7 +6,17 @@
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
+/**
+ * Maximum number of individual terms (words) allowed in an expanded query.
+ * Queries exceeding this limit will be truncated.
+ * @type {number}
+ */
 export const MAX_QUERY_TERMS = 50;
+/**
+ * Maximum character length for an expanded query.
+ * Queries exceeding this length will be truncated to prevent overly long search strings.
+ * @type {number}
+ */
 export const MAX_QUERY_LENGTH = 512;
 
 /**
