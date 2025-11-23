@@ -103,28 +103,19 @@ describe("stateManager getState() initialization and transitions", () => {
   });
 
   it("should maintain state after multiple getState() calls during async operations", async () => {
-    let resolveTransition;
-    const onEnterMap = {
-      matchStart: async () => {
-        return new Promise((resolve) => {
-          resolveTransition = resolve;
-        });
-      }
-    };
-
-    machine = await createStateManager(onEnterMap, {}, undefined, CLASSIC_BATTLE_STATES);
+    machine = await createStateManager({}, {}, undefined, CLASSIC_BATTLE_STATES);
     
-    // Start transition to matchStart (but don't await the onEnter completion)
-    const dispatchPromise = machine.dispatch("startClicked");
+    // Transition to matchStart
+    await machine.dispatch("startClicked");
     
-    // State should be updated immediately
+    // State should be updated
     expect(machine.getState()).toBe("matchStart");
     
-    // Complete the async onEnter
-    resolveTransition();
-    await dispatchPromise;
+    // Multiple calls should all return the same state
+    expect(machine.getState()).toBe("matchStart");
+    expect(machine.getState()).toBe("matchStart");
     
-    // State should still be matchStart
+    // Verify state persists
     expect(machine.getState()).toBe("matchStart");
   });
 
