@@ -4,7 +4,16 @@ import { waitForTestApi } from "./helpers/battleStateHelper.js";
 const CLI_URL = "/src/pages/battleCLI.html";
 
 const contrastRatio = (bg, fg) => {
-  const parse = (c) => c.match(/\d+(?:\.\d+)?/g).map(Number);
+  const parse = (c) => {
+    const matches = c.match(/\d+(?:\.\d+)?/g);
+    if (!matches || matches.length < 3) {
+      throw new Error(`Invalid color format: ${c}. Expected format: rgb(r, g, b) or rgba(r, g, b, a)`);
+    }
+    if (matches.length > 4) {
+      throw new Error(`Invalid color format: ${c}. Too many numeric values found`);
+    }
+    return matches.map(Number);
+  };
   const luminance = (r, g, b) => {
     const a = [r, g, b].map((v) => {
       const normalized = v / 255;
@@ -15,10 +24,10 @@ const contrastRatio = (bg, fg) => {
     return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
   };
 
-  const [br, bgVal, bb] = parse(bg);
-  const [fr, fgVal, fb] = parse(fg);
-  const bgLum = luminance(br, bgVal, bb);
-  const fgLum = luminance(fr, fgVal, fb);
+  const [bgR, bgG, bgB] = parse(bg);
+  const [fgR, fgG, fgB] = parse(fg);
+  const bgLum = luminance(bgR, bgG, bgB);
+  const fgLum = luminance(fgR, fgG, fgB);
 
   return (Math.max(bgLum, fgLum) + 0.05) / (Math.min(bgLum, fgLum) + 0.05);
 };
@@ -87,7 +96,13 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     const { listbox, options } = await waitForStatsReady(page);
 
     await listbox.focus();
-    await page.keyboard.press("1");
+
+    const firstOptionHotkey = await options
+      .first()
+      .textContent()
+      .then((text) => text?.match(/\(?([0-9])\)?/i)?.[1] || "1");
+
+    await page.keyboard.press(firstOptionHotkey);
     await expect
       .poll(async () => options.first().getAttribute("aria-selected"), { timeout: 5_000 })
       .toBe("true");
@@ -96,6 +111,10 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     await expect
       .poll(async () => options.nth(1).getAttribute("aria-selected"), { timeout: 5_000 })
       .toBe("true");
+
+    await expect
+      .poll(async () => options.first().getAttribute("aria-selected"), { timeout: 5_000 })
+      .toBe("false");
   });
 
   test("CLI text meets contrast expectations", async ({ page }) => {
@@ -131,7 +150,10 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
       const stat = selectedStat || resolution?.detail?.stat || "stat";
       const formatted = `${baseMessage} (${stat})`;
       const el = document.getElementById("round-message");
-      if (el) {
+
+      if (window.__TEST_API?.ui?.updateRoundMessage) {
+        window.__TEST_API.ui.updateRoundMessage(formatted);
+      } else if (el) {
         el.textContent = formatted;
       }
 
