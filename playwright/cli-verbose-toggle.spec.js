@@ -18,6 +18,7 @@ async function emitVerboseEntry(page, to) {
         return;
       } catch (error) {
         console.warn("emitBattleEvent failed:", error);
+        // Fall through to throw error below since emitBattleEvent failed
       }
     }
 
