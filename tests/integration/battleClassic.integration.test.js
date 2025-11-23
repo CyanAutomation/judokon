@@ -98,7 +98,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // CRITICAL: The store is updated synchronously during selectStat() execution.
   // We need to assert the store state BEFORE awaiting the full selection promise,
   // which includes round resolution and state machine transitions.
-  
+
   // Disable console logging for the selection call to keep test output clean
   let selectionPromise;
   await withMutedConsole(async () => {
@@ -109,7 +109,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
 
   // NOW check that store was updated - this happens synchronously in applySelectionToStore
   store = ensureStore();
-  
+
   // Debug: Check if validation state is available
   const validationDebug = window.__VALIDATE_SELECTION_DEBUG;
   const lastValidation = window.__VALIDATE_SELECTION_LAST;
@@ -121,9 +121,9 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
       );
     }
   }
-  
+
   expect(store.selectionMade).toBe(true);
-  expect(store.playerChoice).toBe(selectedStat);  // Step 5: Now await the full selection promise to complete the round resolution
+  expect(store.playerChoice).toBe(selectedStat); // Step 5: Now await the full selection promise to complete the round resolution
   // This ensures the orchestrator state machine transitions and round is fully complete
   try {
     await withMutedConsole(async () => {

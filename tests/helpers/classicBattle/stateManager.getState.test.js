@@ -14,7 +14,7 @@ describe("stateManager getState() initialization and transitions", () => {
     machine = await createStateManager({}, {}, undefined, CLASSIC_BATTLE_STATES);
     expect(machine).toBeDefined();
     expect(machine.getState).toBeDefined();
-    
+
     const initialState = machine.getState();
     expect(initialState).toBeDefined();
     expect(initialState).not.toBeNull();
@@ -23,11 +23,11 @@ describe("stateManager getState() initialization and transitions", () => {
 
   it("should consistently return the same state without transitions", async () => {
     machine = await createStateManager({}, {}, undefined, CLASSIC_BATTLE_STATES);
-    
+
     const state1 = machine.getState();
     const state2 = machine.getState();
     const state3 = machine.getState();
-    
+
     expect(state1).toBe(state2);
     expect(state2).toBe(state3);
     expect(state1).toBe("waitingForMatchStart");
@@ -40,7 +40,7 @@ describe("stateManager getState() initialization and transitions", () => {
     };
 
     machine = await createStateManager({}, {}, onTransition, CLASSIC_BATTLE_STATES);
-    
+
     const beforeState = machine.getState();
     expect(beforeState).toBe("waitingForMatchStart");
 
@@ -50,7 +50,7 @@ describe("stateManager getState() initialization and transitions", () => {
 
     const afterState = machine.getState();
     expect(afterState).toBe("matchStart");
-    
+
     // Verify transition was recorded
     expect(onTransitionSpy).toContainEqual({
       from: "waitingForMatchStart",
@@ -66,7 +66,7 @@ describe("stateManager getState() initialization and transitions", () => {
     };
 
     machine = await createStateManager({}, {}, onTransition, CLASSIC_BATTLE_STATES);
-    
+
     // First transition to matchStart
     await machine.dispatch("startClicked");
     expect(machine.getState()).toBe("matchStart");
@@ -74,7 +74,7 @@ describe("stateManager getState() initialization and transitions", () => {
     // Then transition to cooldown
     const readyResult = await machine.dispatch("ready");
     expect(readyResult).toBe(true);
-    
+
     const finalState = machine.getState();
     expect(finalState).toBe("cooldown");
   });
@@ -91,7 +91,7 @@ describe("stateManager getState() initialization and transitions", () => {
     };
 
     machine = await createStateManager(onEnterMap, {}, undefined, CLASSIC_BATTLE_STATES);
-    
+
     // Initial state - onEnter should have been called
     expect(onEnterCalls).toContain("waitingForMatchStart");
     expect(machine.getState()).toBe("waitingForMatchStart");
@@ -104,24 +104,24 @@ describe("stateManager getState() initialization and transitions", () => {
 
   it("should maintain state after multiple getState() calls during async operations", async () => {
     machine = await createStateManager({}, {}, undefined, CLASSIC_BATTLE_STATES);
-    
+
     // Transition to matchStart
     await machine.dispatch("startClicked");
-    
+
     // State should be updated
     expect(machine.getState()).toBe("matchStart");
-    
+
     // Multiple calls should all return the same state
     expect(machine.getState()).toBe("matchStart");
     expect(machine.getState()).toBe("matchStart");
-    
+
     // Verify state persists
     expect(machine.getState()).toBe("matchStart");
   });
 
   it("should handle empty state table gracefully", async () => {
     machine = await createStateManager({}, {}, undefined, []);
-    
+
     const state = machine.getState();
     expect(state).toBeDefined();
     // With empty state table, initial state defaults to "waitingForMatchStart"
