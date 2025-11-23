@@ -21,7 +21,7 @@ const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
 const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
 
-const VALID_BATTLE_STATES = ["waitingForPlayerAction", "roundDecision"];
+export const VALID_BATTLE_STATES = ["waitingForPlayerAction", "roundDecision"];
 const FALLBACK_BUFFER_MS = 32;
 const INVALID_STATE_WARNING = (state) => `Ignored stat selection while in state=${state}`;
 
@@ -306,18 +306,6 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
 }
 
 /**
- * Validate whether a stat selection should proceed.
- *
- * @pseudocode
- * 1. Return `false` if a selection was already made.
- * 2. Read the current battle state via `getBattleState()`.
- * 3. Return `false` unless the state is `waitingForPlayerAction` or `roundDecision`.
- * 4. Otherwise return `true`.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @returns {boolean} `true` if the selection is allowed.
- */
-/**
  * Validate that stat selection is allowed in the current battle state.
  *
  * @pseudocode
@@ -330,86 +318,50 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store
  * @returns {boolean} True if selection is allowed, false otherwise
  */
-function validateSelectionState(store) {
+export function validateSelectionState(store) {
   const debugInfo = {
     timestamp: Date.now(),
     selectionMade: !!(store && store.selectionMade),
     current: null,
     allowed: true
   };
+
+  // Check for duplicate selection
   if (store.selectionMade) {
     debugInfo.current = "selectionMade";
     debugInfo.allowed = false;
-    try {
-      if (typeof window !== "undefined") {
-        const arr = window.__VALIDATE_SELECTION_DEBUG || [];
-        arr.push(debugInfo);
-        window.__VALIDATE_SELECTION_DEBUG = arr;
-        window.__VALIDATE_SELECTION_LAST = debugInfo;
-      }
-    } catch {}
-    try {
-      if (IS_VITEST) {
-        console.log(
-          "[validateSelectionState] REJECTED: duplicateSelection - selectionMade already true"
-        );
-      }
-    } catch {}
+    trackDebugInfo(debugInfo);
+    logSelectionDebug(
+      "[validateSelectionState] REJECTED: duplicateSelection - selectionMade already true"
+    );
     try {
       emitBattleEvent("input.ignored", { kind: "duplicateSelection" });
     } catch {}
     return false;
   }
 
+  // Check battle state validity
   try {
     const current = typeof getBattleState === "function" ? getBattleState() : null;
     debugInfo.current = current;
-    if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
+    if (current && !VALID_BATTLE_STATES.includes(current)) {
       debugInfo.allowed = false;
-      try {
-        if (IS_VITEST) {
-          console.log(
-            "[validateSelectionState] REJECTED: invalidState - current state is",
-            current,
-            "expected waitingForPlayerAction or roundDecision"
-          );
-        } else {
-          console.warn(`Ignored stat selection while in state=${current}`);
-        }
-      } catch {}
+      trackDebugInfo(debugInfo);
+      logSelectionDebug("[validateSelectionState] REJECTED: invalidState", current);
+      if (!IS_VITEST) {
+        console.warn(INVALID_STATE_WARNING(current));
+      }
       try {
         emitBattleEvent("input.ignored", { kind: "invalidState", state: current });
-      } catch {}
-      try {
-        if (typeof window !== "undefined") {
-          const arr = window.__VALIDATE_SELECTION_DEBUG || [];
-          arr.push(debugInfo);
-          window.__VALIDATE_SELECTION_DEBUG = arr;
-          window.__VALIDATE_SELECTION_LAST = debugInfo;
-        }
       } catch {}
       return false;
     }
   } catch (error) {
-    try {
-      if (IS_VITEST) {
-        console.log("[validateSelectionState] ERROR checking battle state:", error);
-      }
-    } catch {}
+    logSelectionDebug("[validateSelectionState] ERROR checking battle state:", error);
   }
-  try {
-    if (typeof window !== "undefined") {
-      const arr = window.__VALIDATE_SELECTION_DEBUG || [];
-      arr.push(debugInfo);
-      window.__VALIDATE_SELECTION_DEBUG = arr;
-      window.__VALIDATE_SELECTION_LAST = debugInfo;
-    }
-  } catch {}
-  try {
-    if (IS_VITEST) {
-      console.log("[validateSelectionState] ALLOWED - state is valid:", debugInfo.current);
-    }
-  } catch {}
+
+  trackDebugInfo(debugInfo);
+  logSelectionDebug("[validateSelectionState] ALLOWED - state is valid:", debugInfo.current);
   return true;
 }
 
@@ -428,15 +380,10 @@ function validateSelectionState(store) {
  * @returns {{playerVal: number, opponentVal: number}}
  */
 function applySelectionToStore(store, stat, playerVal, opponentVal) {
-  try {
-    if (IS_VITEST) {
-      console.log("[applySelectionToStore] BEFORE:", {
-        selectionMade: store.selectionMade,
-        playerChoice: store.playerChoice,
-        storeObject: store
-      });
-    }
-  } catch {}
+  logSelectionDebug("[applySelectionToStore] BEFORE:", {
+    selectionMade: store.selectionMade,
+    playerChoice: store.playerChoice
+  });
 
   store.selectionMade = true;
   store.__lastSelectionMade = true;
@@ -444,7 +391,6 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 
   try {
     if (IS_VITEST) {
-      // Immediately re-read to verify persistence
       const afterSelectionMade = store.selectionMade;
       const afterPlayerChoice = store.playerChoice;
 
@@ -454,19 +400,13 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
         );
       }
 
-      console.log("[applySelectionToStore] AFTER:", {
+      logSelectionDebug("[applySelectionToStore] AFTER:", {
         selectionMade: store.selectionMade,
-        playerChoice: store.playerChoice,
-        checkStorePersistence: {
-          viaProperty: store.selectionMade,
-          viaReference: store["selectionMade"]
-        }
+        playerChoice: store.playerChoice
       });
     }
   } catch (error) {
-    if (IS_VITEST) {
-      console.log("[applySelectionToStore] ERROR:", error);
-    }
+    logSelectionDebug("[applySelectionToStore] ERROR:", error);
     throw error;
   }
 
@@ -658,21 +598,6 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
 }
 
 /**
- * Log, validate and apply the player's stat selection.
- *
- * @pseudocode
- * 1. Emit debug logging for Vitest.
- * 2. Validate the selection via `validateSelectionState`.
- * 3. Dispatch `roundResolved` when a duplicate selection occurs.
- * 4. Apply the selection to the store and return coerced stat values.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {number|undefined} playerVal - Optional player value.
- * @param {number|undefined} opponentVal - Optional opponent value.
- * @returns {Promise<{playerVal: number, opponentVal: number}|null>} Values when valid, otherwise `null`.
- */
-/**
  * Validate the selection state and apply the selection to the store.
  *
  * @pseudocode
@@ -689,21 +614,15 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * @returns {Promise<{playerVal: number, opponentVal: number}|null>} Selection values or null if invalid
  */
 export async function validateAndApplySelection(store, stat, playerVal, opponentVal) {
-  try {
-    if (IS_VITEST)
-      console.log("[DEBUG] handleStatSelection called", {
-        stat,
-        playerVal,
-        opponentVal,
-        selectionMade: store.selectionMade
-      });
-  } catch {}
+  logSelectionDebug("[DEBUG] handleStatSelection called", {
+    stat,
+    playerVal,
+    opponentVal,
+    selectionMade: store.selectionMade
+  });
 
   if (!validateSelectionState(store)) {
-    try {
-      if (IS_VITEST)
-        console.log("[test] handleStatSelection: validateSelectionState returned FALSE");
-    } catch {}
+    logSelectionDebug("[test] handleStatSelection: validateSelectionState returned FALSE");
     if (store.selectionMade) {
       try {
         await dispatchBattleEvent("roundResolved");
@@ -712,15 +631,9 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
     return null;
   }
 
-  try {
-    if (IS_VITEST)
-      console.log(
-        "[test] handleStatSelection: validateSelectionState PASSED, calling applySelectionToStore"
-      );
-  } catch {}
-
-  // DEBUG: Throw to force error message
-  // throw new Error(`DEBUG: About to call applySelectionToStore for stat=${stat}`);
+  logSelectionDebug(
+    "[test] handleStatSelection: validateSelectionState PASSED, calling applySelectionToStore"
+  );
   return applySelectionToStore(store, stat, playerVal, opponentVal);
 }
 
@@ -740,56 +653,118 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
  * @returns {Promise<boolean|undefined>} Result from `dispatchBattleEvent`.
  */
 export async function dispatchStatSelected(store, stat, playerVal, opponentVal, opts = {}) {
-  try {
-    if (IS_VITEST) {
-      console.log("[dispatchStatSelected] START:", {
-        stat,
-        playerVal,
-        opponentVal,
-        storeSelectionMade: store.selectionMade,
-        storePlayerChoice: store.playerChoice
-      });
-    }
-  } catch {}
+  logSelectionDebug("[dispatchStatSelected] START:", {
+    stat,
+    playerVal,
+    opponentVal,
+    storeSelectionMade: store.selectionMade,
+    storePlayerChoice: store.playerChoice
+  });
 
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
 
-  try {
-    if (IS_VITEST) {
-      console.log("[dispatchStatSelected] After emitSelectionEvent:", {
-        storeSelectionMade: store.selectionMade,
-        storePlayerChoice: store.playerChoice
-      });
-    }
-  } catch {}
+  logSelectionDebug("[dispatchStatSelected] After emitSelectionEvent:", {
+    storeSelectionMade: store.selectionMade,
+    storePlayerChoice: store.playerChoice
+  });
 
   try {
     const forceDirectResolution =
       IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
     if (forceDirectResolution) {
-      try {
-        if (IS_VITEST) {
-          console.log("[dispatchStatSelected] Returning false (forceDirectResolution)");
-        }
-      } catch {}
+      logSelectionDebug("[dispatchStatSelected] Returning false (forceDirectResolution)");
       return false;
     }
     const result = await dispatchBattleEvent("statSelected");
-    try {
-      if (IS_VITEST) {
-        console.log("[dispatchStatSelected] dispatchBattleEvent returned:", result);
-      }
-    } catch {}
+    logSelectionDebug("[dispatchStatSelected] dispatchBattleEvent returned:", result);
     return result;
   } catch (error) {
-    try {
-      if (IS_VITEST) {
-        console.log("[dispatchStatSelected] Error caught:", error?.message);
-      }
-    } catch {}
+    logSelectionDebug("[dispatchStatSelected] Error caught:", error?.message);
     return undefined;
   }
+}
+
+/**
+ * Handle the fallback timeout when orchestrator doesn't resolve the round.
+ *
+ * Sets battle state to roundDecision, syncs result display, then transitions to roundOver.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} currentState - Current battle state.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player stat value.
+ * @param {number} opponentVal - Opponent stat value.
+ * @param {Record<string, any>} opts - Optional configuration flags.
+ * @param {number} normalizedDelay - Normalized delay in ms.
+ */
+async function handleFallbackResolution(
+  store,
+  currentState,
+  stat,
+  playerVal,
+  opponentVal,
+  opts,
+  normalizedDelay
+) {
+  const selectionWasMade = !!store?.selectionMade;
+  let previousState = null;
+  try {
+    previousState = typeof getBattleState === "function" ? getBattleState() : currentState;
+  } catch {
+    previousState = currentState;
+  }
+
+  // Transition to roundDecision
+  if (typeof document !== "undefined" && document.body) {
+    try {
+      document.body.dataset.battleState = "roundDecision";
+      if (previousState) {
+        document.body.dataset.prevBattleState = String(previousState);
+      } else {
+        delete document.body.dataset.prevBattleState;
+      }
+    } catch {}
+  }
+
+  try {
+    emitBattleEvent("battleStateChange", {
+      from: previousState ?? null,
+      to: "roundDecision"
+    });
+  } catch {}
+
+  // Sync result display
+  try {
+    await syncResultDisplay(store, stat, playerVal, opponentVal, {
+      ...opts,
+      delayMs: normalizedDelay,
+      forceOpponentPrompt: true
+    });
+  } catch {}
+
+  if (selectionWasMade) {
+    try {
+      if (store && typeof store === "object") {
+        store.selectionMade = true;
+      }
+    } catch {}
+  }
+
+  // Transition to roundOver
+  if (typeof document !== "undefined" && document.body) {
+    try {
+      document.body.dataset.battleState = "roundOver";
+      document.body.dataset.prevBattleState = "roundDecision";
+    } catch {}
+  }
+
+  try {
+    emitBattleEvent("battleStateChange", {
+      from: "roundDecision",
+      to: "roundOver"
+    });
+  } catch {}
 }
 
 /**
@@ -828,10 +803,7 @@ export async function resolveWithFallback(
     const orchestrated = isOrchestratorActive(store, currentState);
 
     if (handledByOrchestrator === true) {
-      if (IS_VITEST)
-        try {
-          console.log("[test] handleStatSelection: handledByOrchestrator true");
-        } catch {}
+      logSelectionDebug("[test] handleStatSelection: handledByOrchestrator true");
       return true;
     }
 
@@ -842,69 +814,20 @@ export async function resolveWithFallback(
       const opponentDelay = hasConfiguredDelay ? configuredDelay : delay;
       const normalizedDelay =
         Number.isFinite(opponentDelay) && opponentDelay >= 0 ? opponentDelay : 0;
-      const bufferMs = 32;
-      const fallbackDelay = normalizedDelay + bufferMs;
+      const fallbackDelay = normalizedDelay + FALLBACK_BUFFER_MS;
+
       const timeoutId = setTimeout(async () => {
-        const selectionWasMade = !!store?.selectionMade;
-        let previousState = null;
-        try {
-          previousState = typeof getBattleState === "function" ? getBattleState() : currentState;
-        } catch {
-          previousState = currentState;
-        }
-
-        if (typeof document !== "undefined" && document.body) {
-          try {
-            document.body.dataset.battleState = "roundDecision";
-          } catch {}
-          try {
-            if (previousState) {
-              document.body.dataset.prevBattleState = String(previousState);
-            } else {
-              delete document.body.dataset.prevBattleState;
-            }
-          } catch {}
-        }
-
-        try {
-          emitBattleEvent("battleStateChange", {
-            from: previousState ?? null,
-            to: "roundDecision"
-          });
-        } catch {}
-
-        try {
-          await syncResultDisplay(store, stat, playerVal, opponentVal, {
-            ...opts,
-            delayMs: normalizedDelay,
-            forceOpponentPrompt: true
-          });
-        } catch {}
-
-        if (selectionWasMade) {
-          try {
-            if (store && typeof store === "object") {
-              store.selectionMade = true;
-            }
-          } catch {}
-        }
-
-        if (typeof document !== "undefined" && document.body) {
-          try {
-            document.body.dataset.battleState = "roundOver";
-          } catch {}
-          try {
-            document.body.dataset.prevBattleState = "roundDecision";
-          } catch {}
-        }
-
-        try {
-          emitBattleEvent("battleStateChange", {
-            from: "roundDecision",
-            to: "roundOver"
-          });
-        } catch {}
+        await handleFallbackResolution(
+          store,
+          currentState,
+          stat,
+          playerVal,
+          opponentVal,
+          opts,
+          normalizedDelay
+        );
       }, fallbackDelay);
+
       try {
         getRoundResolvedPromise()
           .then(() => {
@@ -912,10 +835,8 @@ export async function resolveWithFallback(
           })
           .catch(() => {});
       } catch {}
-      if (IS_VITEST)
-        try {
-          console.log("[test] handleStatSelection: orchestrated path; scheduling fallback");
-        } catch {}
+
+      logSelectionDebug("[test] handleStatSelection: orchestrated path; scheduling fallback");
       return true;
     }
 
@@ -925,10 +846,10 @@ export async function resolveWithFallback(
 
     if (orchestrated) {
       if (currentState && currentState !== "roundDecision") {
-        if (IS_VITEST)
-          try {
-            console.log("[test] handleStatSelection: machine in non-decision state", currentState);
-          } catch {}
+        logSelectionDebug(
+          "[test] handleStatSelection: machine in non-decision state",
+          currentState
+        );
         return true;
       }
     }
@@ -984,30 +905,23 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
         }
 
         if (result && scoreEl) {
-          writeScoreDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
+          writeScoreDisplay(normalizeScore(result.playerScore), normalizeScore(result.opponentScore));
         }
       }
     } catch {}
 
-    let playerScore = Number(result?.playerScore);
-    let opponentScore = Number(result?.opponentScore);
-    const scoresAreNumbers = Number.isFinite(playerScore) && Number.isFinite(opponentScore);
+    let playerScore = normalizeScore(result?.playerScore);
+    let opponentScore = normalizeScore(result?.opponentScore);
 
-    if (!scoresAreNumbers) {
+    if (playerScore === 0 && opponentScore === 0) {
       try {
         const engineScores = getScores();
-        playerScore = Number(engineScores?.playerScore);
-        opponentScore = Number(engineScores?.opponentScore);
-        playerScore = Number.isFinite(playerScore) ? playerScore : 0;
-        opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
+        playerScore = normalizeScore(engineScores?.playerScore);
+        opponentScore = normalizeScore(engineScores?.opponentScore);
       } catch {
-        playerScore = 0;
-        opponentScore = 0;
+        // Falls back to 0/0 from normalizeScore
       }
     }
-
-    playerScore = Number.isFinite(playerScore) ? playerScore : 0;
-    opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
 
     try {
       scoreboard.updateScore(playerScore, opponentScore);
@@ -1028,26 +942,11 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
 }
 
 /**
- * Handle the player's stat selection, emit selection events and resolve the round.
+ * Handle the complete stat selection flow from validation to resolution.
  *
  * This function coordinates validation, applying selection to the store,
  * stopping timers, emitting the `statSelected` event, and ensuring the round
  * is resolved either by the state machine or directly by calling the resolver.
- *
- * @pseudocode
- * 1. Validate that a selection is currently allowed via `validateSelectionState`.
- * 2. Apply selection to `store` and coerce stat values with `applySelectionToStore`.
- * 3. Emit `statSelected` with selection details and any testing options.
- * 4. Prefer orchestrator resolution and schedule deterministic fallback.
- * 5. When no orchestrator handles the event, resolve directly and sync DOM.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {{playerVal?: number, opponentVal?: number}} values - Optional precomputed values.
- * @returns {Promise<ReturnType<typeof resolveRound>|void>} The resolved round result when handled locally.
- */
-/**
- * Handle the complete stat selection flow from validation to resolution.
  *
  * @pseudocode
  * 1. Validate selection state and apply selection to store.
@@ -1062,20 +961,16 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
  * @param {object} options - Selection options
  * @param {number} [options.playerVal] - Player stat value
  * @param {number} [options.opponentVal] - Opponent stat value
- * @returns {Promise<void>}
+ * @returns {Promise<ReturnType<typeof resolveRound>|void>}
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
-  try {
-    if (IS_VITEST) {
-      console.log("[handleStatSelection] Called with:", {
-        stat,
-        playerVal,
-        opponentVal,
-        storeId: store?.__testId ?? "no-id",
-        storeSelectionMadeBefore: store?.selectionMade
-      });
-    }
-  } catch {}
+  logSelectionDebug("[handleStatSelection] Called with:", {
+    stat,
+    playerVal,
+    opponentVal,
+    storeId: store?.__testId ?? "no-id",
+    storeSelectionMadeBefore: store?.selectionMade
+  });
 
   const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
   if (!guard.entered) {
@@ -1088,23 +983,15 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   try {
     const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
     if (!values) {
-      try {
-        if (IS_VITEST) {
-          console.log("[handleStatSelection] validateAndApplySelection returned falsy");
-        }
-      } catch {}
+      logSelectionDebug("[handleStatSelection] validateAndApplySelection returned falsy");
       return;
     }
 
-    try {
-      if (IS_VITEST) {
-        console.log("[handleStatSelection] After validateAndApplySelection:", {
-          storeSelectionMade: store.selectionMade,
-          storePlayerChoice: store.playerChoice,
-          valuesReturned: values
-        });
-      }
-    } catch {}
+    logSelectionDebug("[handleStatSelection] After validateAndApplySelection:", {
+      storeSelectionMade: store.selectionMade,
+      storePlayerChoice: store.playerChoice,
+      valuesReturned: values
+    });
 
     ({ playerVal, opponentVal } = values);
 
@@ -1116,15 +1003,11 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       opts
     );
 
-    try {
-      if (IS_VITEST) {
-        console.log("[handleStatSelection] After dispatchStatSelected:", {
-          handledByOrchestrator,
-          storeSelectionMade: store.selectionMade,
-          storePlayerChoice: store.playerChoice
-        });
-      }
-    } catch {}
+    logSelectionDebug("[handleStatSelection] After dispatchStatSelected:", {
+      handledByOrchestrator,
+      storeSelectionMade: store.selectionMade,
+      storePlayerChoice: store.playerChoice
+    });
 
     const handled = await resolveWithFallback(
       store,
@@ -1136,25 +1019,17 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
     );
 
     if (handled) {
-      try {
-        if (IS_VITEST) {
-          console.log("[handleStatSelection] resolveWithFallback returned true (handled)");
-        }
-      } catch {}
+      logSelectionDebug("[handleStatSelection] resolveWithFallback returned true (handled)");
       return;
     }
 
     const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
-    try {
-      if (IS_VITEST) {
-        console.log("[handleStatSelection] After syncResultDisplay:", {
-          storeSelectionMade: store.selectionMade,
-          storePlayerChoice: store.playerChoice,
-          roundsPlayed: store.roundsPlayed,
-          resultMessage: result?.message
-        });
-      }
-    } catch {}
+    logSelectionDebug("[handleStatSelection] After syncResultDisplay:", {
+      storeSelectionMade: store.selectionMade,
+      storePlayerChoice: store.playerChoice,
+      roundsPlayed: store.roundsPlayed,
+      resultMessage: result?.message
+    });
     return result;
   } finally {
     guard.release();
