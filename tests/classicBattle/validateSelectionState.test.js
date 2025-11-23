@@ -247,9 +247,7 @@ describe("validateSelectionState", () => {
       validateSelectionState(store);
 
       expect(window.__VALIDATE_SELECTION_DEBUG.length).toBe(3);
-      expect(window.__VALIDATE_SELECTION_DEBUG[0].current).toBe(
-        "waitingForPlayerAction"
-      );
+      expect(window.__VALIDATE_SELECTION_DEBUG[0].current).toBe("waitingForPlayerAction");
       expect(window.__VALIDATE_SELECTION_DEBUG[1].current).toBe("matchStart");
       expect(window.__VALIDATE_SELECTION_DEBUG[2].current).toBe("roundDecision");
     });
@@ -257,10 +255,7 @@ describe("validateSelectionState", () => {
 
   describe("API coverage - VALID_BATTLE_STATES constant", () => {
     it("exports VALID_BATTLE_STATES constant with expected values", () => {
-      expect(VALID_BATTLE_STATES).toEqual([
-        "waitingForPlayerAction",
-        "roundDecision"
-      ]);
+      expect(VALID_BATTLE_STATES).toEqual(["waitingForPlayerAction", "roundDecision"]);
     });
 
     it("VALID_BATTLE_STATES matches what validateSelectionState checks", () => {

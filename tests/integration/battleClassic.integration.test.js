@@ -98,7 +98,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   // CRITICAL: The store is updated synchronously during selectStat() execution.
   // We need to assert the store state BEFORE awaiting the full selection promise,
   // which includes round resolution and state machine transitions.
-  
+
   // Disable console logging for the selection call to keep test output clean
   let selectionPromise;
   await withMutedConsole(async () => {

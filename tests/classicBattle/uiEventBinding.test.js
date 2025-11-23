@@ -19,7 +19,7 @@ describe("Classic Battle UI Event Binding", () => {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",
       resources: "usable",
-      pretendToBeVisual: true,
+      pretendToBeVisual: true
     });
 
     window = dom.window;
@@ -32,11 +32,11 @@ describe("Classic Battle UI Event Binding", () => {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
-      clear: vi.fn(),
+      clear: vi.fn()
     };
 
     window.__FF_OVERRIDES = {
-      showRoundSelectModal: true,
+      showRoundSelectModal: true
     };
   });
 
@@ -62,11 +62,11 @@ describe("Classic Battle UI Event Binding", () => {
     // Start a round to make stat buttons visible
     const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
     expect(roundButtons.length).toBeGreaterThan(0);
-    
+
     await withMutedConsole(async () => {
-        roundButtons[0].click();
-        await Promise.resolve();
-        await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
+      roundButtons[0].click();
+      await Promise.resolve();
+      await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
     });
 
     const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));

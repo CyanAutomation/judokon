@@ -905,7 +905,10 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
         }
 
         if (result && scoreEl) {
-          writeScoreDisplay(normalizeScore(result.playerScore), normalizeScore(result.opponentScore));
+          writeScoreDisplay(
+            normalizeScore(result.playerScore),
+            normalizeScore(result.opponentScore)
+          );
         }
       }
     } catch {}

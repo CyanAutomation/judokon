@@ -126,6 +126,7 @@ if (!lastValidation.allowed) {
 **Symptom**: Test times out or assertion fails with `store.selectionMade` still `false`.
 
 **Investigation**:
+
 ```javascript
 const history = window.__VALIDATE_SELECTION_DEBUG;
 const rejections = history.filter(entry => !entry.allowed);
@@ -136,6 +137,7 @@ rejections.forEach(entry => {
 ```
 
 **Solution**: Ensure test waits for `waitingForPlayerAction` state before calling `selectStat()`:
+
 ```javascript
 await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
 ```
@@ -145,6 +147,7 @@ await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
 **Symptom**: Second stat selection in the same test fails.
 
 **Investigation**:
+
 ```javascript
 const entries = window.__VALIDATE_SELECTION_DEBUG;
 const lastReject = entries.reverse().find(e => !e.allowed);
@@ -158,6 +161,7 @@ console.log("Was this a duplicate?", lastReject?.selectionMade === true);
 **Symptom**: Need to verify validation logic order (duplicate check before state check).
 
 **Investigation**:
+
 ```javascript
 // Duplicate selection check runs FIRST - before state is even read
 const firstCall = window.__VALIDATE_SELECTION_DEBUG[0];
