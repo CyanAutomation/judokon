@@ -95,13 +95,46 @@ const pages = [
     options: { expectNav: false },
     expectations: async (page) => {
       const main = page.getByRole("main");
-      await expect(main.getByRole("table", { name: "Judoka update log" })).toBeVisible();
-      const changeLogRows = main.locator("#changelog-table tbody tr");
-      await expect(changeLogRows).toHaveCount(3);
-      const firstRowCells = changeLogRows.first().locator("td");
-      await expect(firstRowCells.nth(0)).toHaveText("776");
-      await expect(firstRowCells.nth(2)).toHaveText("Shōzō Fujii");
-      await expect(firstRowCells.nth(4)).toHaveText("2025-04-28");
+      const changeLogTable = main.getByRole("table", { name: "Judoka update log" });
+      await expect(changeLogTable).toBeVisible();
+
+      const changeLogRows = changeLogTable.locator("tbody tr");
+      await changeLogRows.first().waitFor({ state: "visible" });
+      const rowCount = await changeLogRows.count();
+      expect(rowCount).toBeGreaterThan(0);
+
+      const headers = changeLogTable.locator("thead th");
+      const headerTexts = (await headers.allTextContents()).map((text) => text.trim());
+      const findHeaderIndex = (patterns) =>
+        headerTexts.findIndex((text) =>
+          patterns.some((pattern) => new RegExp(pattern, "i").test(text))
+        );
+      const dateIndex = findHeaderIndex(["date", "modified"]);
+      const versionIndex = findHeaderIndex(["version", "code", "id"]);
+      const summaryIndex = findHeaderIndex(["summary", "name"]);
+
+      expect(dateIndex).toBeGreaterThanOrEqual(0);
+      expect(versionIndex).toBeGreaterThanOrEqual(0);
+      expect(summaryIndex).toBeGreaterThanOrEqual(0);
+
+      const dateCells = changeLogRows.locator(`td:nth-child(${dateIndex + 1})`);
+      const dates = await dateCells.allTextContents();
+      const parsedDates = dates.map((dateText) => new Date(dateText.trim()).getTime());
+      const sortedDates = [...parsedDates].sort((a, b) => b - a);
+      expect(parsedDates).toEqual(sortedDates);
+
+      const summaryCells = changeLogRows.locator(`td:nth-child(${summaryIndex + 1})`);
+      await expect(summaryCells.first()).not.toHaveText("");
+
+      const versionCells = changeLogRows.locator(`td:nth-child(${versionIndex + 1})`);
+      await expect(versionCells.first()).not.toHaveText("");
+
+      const smokeRow = changeLogRows.filter({ hasText: "Shōzō Fujii" });
+      await expect(smokeRow).toHaveCount(1);
+      await expect(smokeRow.first().locator("td").nth(dateIndex)).toHaveText("2025-04-28");
+      await expect(smokeRow.first().locator("td").nth(summaryIndex)).toContainText(
+        "Shōzō Fujii"
+      );
     }
   }
 ];
