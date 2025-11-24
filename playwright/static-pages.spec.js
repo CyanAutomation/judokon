@@ -113,13 +113,40 @@ const pages = [
       const versionIndex = findHeaderIndex(["version", "code", "id"]);
       const summaryIndex = findHeaderIndex(["summary", "name"]);
 
+      if (dateIndex === -1) {
+        throw new Error(`Date column not found. Available headers: ${headerTexts.join(", ")}`);
+      }
+      if (versionIndex === -1) {
+        throw new Error(
+          `Version column not found. Available headers: ${headerTexts.join(", ")}`
+        );
+      }
+      if (summaryIndex === -1) {
+        throw new Error(
+          `Summary column not found. Available headers: ${headerTexts.join(", ")}`
+        );
+      }
+
       expect(dateIndex).toBeGreaterThanOrEqual(0);
       expect(versionIndex).toBeGreaterThanOrEqual(0);
       expect(summaryIndex).toBeGreaterThanOrEqual(0);
 
       const dateCells = changeLogRows.locator(`td:nth-child(${dateIndex + 1})`);
       const dates = await dateCells.allTextContents();
-      const parsedDates = dates.map((dateText) => new Date(dateText.trim()).getTime());
+      if (dates.length === 0) {
+        throw new Error("No date cells found in changelog table");
+      }
+      if (dates.some((date) => !date.trim())) {
+        throw new Error("Empty date cells found in changelog table");
+      }
+
+      const parsedDates = dates.map((dateText) => {
+        const timestamp = new Date(dateText.trim()).getTime();
+        if (Number.isNaN(timestamp)) {
+          throw new Error(`Invalid date format: "${dateText.trim()}"`);
+        }
+        return timestamp;
+      });
       const sortedDates = [...parsedDates].sort((a, b) => b - a);
       expect(parsedDates).toEqual(sortedDates);
 
