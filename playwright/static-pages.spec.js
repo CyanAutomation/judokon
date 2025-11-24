@@ -127,9 +127,7 @@ const pages = [
         );
       }
 
-      expect(dateIndex).toBeGreaterThanOrEqual(0);
-      expect(versionIndex).toBeGreaterThanOrEqual(0);
-      expect(summaryIndex).toBeGreaterThanOrEqual(0);
+      // Header validation is now handled by explicit error throwing above
 
       const dateCells = changeLogRows.locator(`td:nth-child(${dateIndex + 1})`);
       const dates = await dateCells.allTextContents();
