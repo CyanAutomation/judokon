@@ -33,7 +33,7 @@ The core issue is a discrepancy between the browser environment and the JSDOM te
 
 1. **State Transition Logic is Sound**: The orchestrator is designed to transition to `waitingForPlayerAction` upon receiving a `roundStarted` event. This works in the browser.
 2. **Event Propagation Failure**: In the JSDOM environment, the `roundStarted` event dispatched by the UI does not reliably trigger the corresponding listener in the orchestrator. This can be due to timing (event loop processing) or binding issues specific to the test setup.
-3. **State Leakage Ruled Out (For Now)**: While module-level state can be a problem, the consistent failure at the *initial* state transition points away from this. The orchestrator never reaches a state that could "leak" into the next test.
+3. **State Leakage Ruled Out (For Now)**: While module-level state can be a problem, the consistent failure at the _initial_ state transition points away from this. The orchestrator never reaches a state that could "leak" into the next test.
 
 The problem lies not in the orchestrator's inability to change state, but in its **failure to receive the signal to do so** within the artificial confines of the test.
 
@@ -48,7 +48,7 @@ We will address this by creating a more robust test harness that acknowledges th
 In a test utility file, create a new function, e.g., `manuallyTransitionToPlayerAction()`. This function will:
 
 1. Access the orchestrator service directly.
-2. Manually send the `START_ROUND` event that the UI *should* have triggered.
+2. Manually send the `START_ROUND` event that the UI _should_ have triggered.
 3. Wait for the orchestrator's state to confirm it has transitioned to `waitingForPlayerAction`.
 
 ### Step 2: Integrate the Helper into Integration Tests
@@ -68,22 +68,22 @@ This approach makes tests more resilient and less dependent on the nuances of JS
 
 ## Completed Work & Debugging Guide
 
-*The following sections are preserved from the original report for context. The debugging guide remains a valuable tool.*
+_The following sections are preserved from the original report for context. The debugging guide remains a valuable tool._
 
 ### Task 1: validateSelectionState() Unit Test ✅ COMPLETE
 
 **File**: `tests/classicBattle/validateSelectionState.test.js`
-*(Details omitted for brevity, see previous report version)*
+_(Details omitted for brevity, see previous report version)_
 
-### Task 2: window.__VALIDATE_SELECTION_DEBUG Documentation ✅ COMPLETE
+### Task 2: window.\_\_VALIDATE_SELECTION_DEBUG Documentation ✅ COMPLETE
 
-*(Details omitted for brevity, see previous report version)*
+_(Details omitted for brevity, see previous report version)_
 
-### Debugging Guide: Reading window.__VALIDATE_SELECTION_DEBUG
+### Debugging Guide: Reading window.\_\_VALIDATE_SELECTION_DEBUG
 
 When investigating why a stat selection was rejected or why tests are failing with selection issues, use the `window.__VALIDATE_SELECTION_DEBUG` array and `window.__VALIDATE_SELECTION_LAST` object to understand what happened.
 
-*(Full guide content is preserved from the previous version of this report)*
+_(Full guide content is preserved from the previous version of this report)_
 
 ---
 
@@ -212,7 +212,7 @@ The state table CORRECTLY defines the transition:
 The `roundDecision` state correctly has onEnter handlers:
 
 ```javascript
-onEnter: ["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"]
+onEnter: ["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"];
 ```
 
 However, when tests call `dispatchBattleEvent("statSelected")`, the function returns `false`, meaning:
