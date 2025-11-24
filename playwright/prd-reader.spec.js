@@ -19,33 +19,49 @@ test.describe("PRD Reader page", () => {
     await verifyPageBasics(page);
   });
 
-  test("forward and back navigation", async ({ page }) => {
+  test("forward and back navigation shows correct content", async ({ page }) => {
     const container = page.locator("#prd-content");
-    let hasOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
-    );
-    expect(hasOverflow).toBe(false);
-    await expect(container).not.toHaveText("");
+    const labels = page.locator(".sidebar-list__label");
+    const radios = page.locator(".sidebar-list input[type='radio']");
+    const docTitle = page.locator("#prd-title");
     const getDocId = () => container.getAttribute("data-rendered-doc");
-    const originalDocId = await getDocId();
-    expect(originalDocId).not.toBeNull();
-    const original = await container.innerHTML();
 
-    // Navigate forward to second document
+    const expectDocA = async () => {
+      await expect(container).toHaveAttribute("data-rendered-doc", "docA");
+      await expect(container).toContainText("DocA");
+      await expect(container).toContainText("Summary");
+      await expect(container).toContainText("[Deep Dive](#deep-dive-a)");
+    };
+
+    const expectDocB = async () => {
+      await expect(container).toHaveAttribute("data-rendered-doc", "docB");
+      await expect(container).toContainText("DocB");
+      await expect(container).toContainText("Overview");
+      await expect(container).toContainText("(#tasks-b)");
+    };
+
+    const expectActiveTab = async (index) => {
+      await expect(radios.nth(index)).toBeChecked();
+      await expect(labels.nth(index)).toHaveAttribute("aria-current", "page");
+    };
+
+    await expect(container).not.toHaveText("");
+    await expectDocA();
+    await expect(docTitle).toHaveText("DocA");
+    await expectActiveTab(0);
+
+    await container.focus();
     await page.keyboard.press("ArrowRight");
-    await expect.poll(getDocId).not.toBe(originalDocId);
-    hasOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
-    );
-    expect(hasOverflow).toBe(false);
-    const afterNext = await page.locator("#prd-content").innerHTML();
-    expect(afterNext).not.toBe(original);
+    await expect.poll(getDocId).toBe("docB");
+    await expectDocB();
+    await expect(docTitle).toHaveText("DocB");
+    await expectActiveTab(1);
 
-    // Navigate back to first document
     await page.keyboard.press("ArrowLeft");
-    await expect.poll(getDocId).toBe(originalDocId);
-    const afterPrev = await page.locator("#prd-content").innerHTML();
-    expect(afterPrev).toBe(original);
+    await expect.poll(getDocId).toBe("docA");
+    await expectDocA();
+    await expect(docTitle).toHaveText("DocA");
+    await expectActiveTab(0);
   });
 
   test("sidebar-tab-traversal", async ({ page }) => {
@@ -62,28 +78,54 @@ test.describe("PRD Reader page", () => {
     await expect(container).not.toBeFocused();
   });
 
-  test("arrow-key-content-switching", async ({ page }) => {
+  test("keyboard traversal announces active document", async ({ page }) => {
     const radios = page.locator(".sidebar-list input[type='radio']");
+    const labels = page.locator(".sidebar-list__label");
     const container = page.locator("#prd-content");
-    await expect(container).not.toHaveText("");
+    const docTitle = page.locator("#prd-title");
     const getDocId = () => container.getAttribute("data-rendered-doc");
-    const initialDocId = await getDocId();
-    expect(initialDocId).not.toBeNull();
+
+    await expect(container).toHaveAttribute("tabindex", "0");
+    await expect(docTitle).toHaveText("DocA");
+    await expect(container).toContainText("DocA");
 
     await radios.first().focus();
     await expect(radios.first()).toBeFocused();
 
     await page.keyboard.press("ArrowDown");
     await expect(container).toBeFocused();
-    await expect.poll(getDocId).not.toBe(initialDocId);
-    const afterDownDocId = await getDocId();
-    expect(afterDownDocId).not.toBe(initialDocId);
+    await expect.poll(getDocId).toBe("docB");
+    await expect(docTitle).toHaveText("DocB");
+    await expect(labels.nth(1)).toHaveAttribute("aria-current", "page");
+    await expect(container).toContainText("DocB");
+
+    await page.keyboard.press("ArrowLeft");
+    await expect(container).toBeFocused();
+    await expect.poll(getDocId).toBe("docA");
+    await expect(docTitle).toHaveText("DocA");
+    await expect(labels.first()).toHaveAttribute("aria-current", "page");
+    await expect(container).toContainText("DocA");
+  });
+
+  test("layout avoids horizontal overflow during navigation", async ({ page }) => {
+    const container = page.locator("#prd-content");
+    const getDocId = () => container.getAttribute("data-rendered-doc");
+    const expectNoOverflow = async () => {
+      const hasOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+      );
+      expect(hasOverflow).toBe(false);
+    };
+
+    await expectNoOverflow();
+    await container.focus();
 
     await page.keyboard.press("ArrowRight");
-    await expect(container).toBeFocused();
-    await expect.poll(getDocId).toBe(initialDocId);
-    const afterNextDocId = await getDocId();
-    expect(afterNextDocId).toBe(initialDocId);
-    await expect(container).not.toHaveText("");
+    await expect.poll(getDocId).toBe("docB");
+    await expectNoOverflow();
+
+    await page.keyboard.press("ArrowLeft");
+    await expect.poll(getDocId).toBe("docA");
+    await expectNoOverflow();
   });
 });
