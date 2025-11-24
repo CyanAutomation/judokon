@@ -30,14 +30,14 @@ test.describe("PRD Reader page", () => {
       await expect(container).toHaveAttribute("data-rendered-doc", "docA");
       await expect(container).toContainText("DocA");
       await expect(container).toContainText("Summary");
-      await expect(container).toContainText("[Deep Dive](#deep-dive-a)");
+      await expect(container).toContainText("Deep Dive");
     };
 
     const expectDocB = async () => {
       await expect(container).toHaveAttribute("data-rendered-doc", "docB");
       await expect(container).toContainText("DocB");
       await expect(container).toContainText("Overview");
-      await expect(container).toContainText("(#tasks-b)");
+      await expect(container).toContainText("tasks section");
     };
 
     const expectActiveTab = async (index) => {
@@ -99,7 +99,8 @@ test.describe("PRD Reader page", () => {
     await expect(labels.nth(1)).toHaveAttribute("aria-current", "page");
     await expect(container).toContainText("DocB");
 
-    await page.keyboard.press("ArrowLeft");
+    await radios.nth(1).focus();
+    await page.keyboard.press("ArrowUp");
     await expect(container).toBeFocused();
     await expect.poll(getDocId).toBe("docA");
     await expect(docTitle).toHaveText("DocA");
