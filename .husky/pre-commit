@@ -33,26 +33,30 @@ else
 fi
 
 # RAG Model Check and Auto-Repair
-echo "Running RAG model file check..."
-
-set +e
-npm run check:rag
-rag_status=$?
-set -e
-if [ $rag_status -ne 0 ]; then
-  printf "\nRAG model files corrupted or missing. Attempting auto-repair...\n"
-  set +e
-  npm run rag:prepare:models -- --force
-  repair_status=$?
-  set -e
-  if [ $repair_status -eq 0 ]; then
-    echo "✅ RAG model files repaired successfully"
-  else
-    printf "\nWARNING: Auto-repair failed. Please run 'npm run rag:prepare:models -- --force' manually.\n"
-    echo "This hook will not block commits."
-  fi
+if [ "$RAG_STRICT_OFFLINE" = "1" ]; then
+  echo "Skipping RAG model check because RAG_STRICT_OFFLINE=1"
 else
-  echo "✅ RAG model check passed"
+  echo "Running RAG model file check..."
+
+  set +e
+  npm run check:rag
+  rag_status=$?
+  set -e
+  if [ $rag_status -ne 0 ]; then
+    printf "\nRAG model files corrupted or missing. Attempting auto-repair...\n"
+    set +e
+    npm run rag:prepare:models -- --force
+    repair_status=$?
+    set -e
+    if [ $repair_status -eq 0 ]; then
+      echo "✅ RAG model files repaired successfully"
+    else
+      printf "\nWARNING: Auto-repair failed. Please run 'npm run rag:prepare:models -- --force' manually.\n"
+      echo "This hook will not block commits."
+    fi
+  else
+    echo "✅ RAG model check passed"
+  fi
 fi
 
 exit 0

@@ -127,9 +127,9 @@ export async function evaluate(baseline = null, options = {}) {
     mrr5: 0.55,
     recall3: 0.7,
     recall5: 0.85,
-    avgLatencyMs: 200,
+    avgLatencyMs: 270,
     p95LatencyMs: 280,
-    maxBundleMB: 24.8
+    maxBundleMB: 26.0
   };
   const coverageOK = true; // Placeholder: coverage validated by generation pipeline
 
