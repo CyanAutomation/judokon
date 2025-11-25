@@ -205,9 +205,21 @@ Reading source code to understand machine registration flow:
 - **Machine is exposed** via `debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef)` (line 580)
 - **eventDispatcher.js** tries two ways to get the machine: `globalThis.__classicBattleDebugRead()` (primary) and `readDebugState()` (fallback)
 
-**Critical Issue Identified**: The flow from `statSelected` event to `roundDecision` state to `roundDecisionEnter` handler should increment `roundsPlayed`. But this is not happening in tests.
+**Critical Finding**: The increment happens in `BattleEngine.handleStatSelection()` at line 319: `this.roundsPlayed += 1;`
 
-Let me trace the `roundDecisionEnter` handler to see what should execute when we enter that state.
+**Flow Trace**:
+
+1. Test calls `selectStat(store, stat)` which calls `handleStatSelection()`
+2. `handleStatSelection()` in selectionHandler.js validates state and calls `dispatchStatSelected()`
+3. `dispatchStatSelected()` calls `await dispatchBattleEvent("statSelected")`
+4. `dispatchBattleEvent()` retrieves machine and calls `await machine.dispatch("statSelected", payload)`
+5. Machine transitions from `waitingForPlayerAction` to `roundDecision` state
+6. `roundDecisionEnter` handler is called
+7. `roundDecisionEnter` calls `resolveSelectionIfPresent(store)`
+8. `resolveSelectionIfPresent()` calls `await resolveRound(store, stat, playerVal, opponentVal, { delayMs })`
+9. **AT THIS POINT: `BattleEngine.handleStatSelection()` should be called to increment `roundsPlayed`**
+
+**Missing Link**: The `resolveRound` function should be calling `BattleEngine.handleStatSelection()`. Let me verify this is happening.
 
 ---
 
