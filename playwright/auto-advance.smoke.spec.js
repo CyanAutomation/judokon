@@ -74,6 +74,14 @@ async function readCooldownSeconds(page) {
   });
 }
 
+/**
+ * Runs an auto-advance scenario test with configurable countdown and stat selection.
+ * @param {import('@playwright/test').Page} page - The Playwright page object
+ * @param {Object} options - Configuration options
+ * @param {number} [options.countdownSeconds=5] - Countdown duration in seconds
+ * @param {Function} [options.selectStat] - Custom stat selection function, defaults to click
+ * @returns {Promise<number>} The number of rounds played before the scenario
+ */
 async function runAutoAdvanceScenario(page, { countdownSeconds = 5, selectStat } = {}) {
   await startClassicBattle(page);
   await waitForBattleReady(page, { allowFallback: false });
