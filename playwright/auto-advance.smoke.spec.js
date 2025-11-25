@@ -114,7 +114,10 @@ async function runAutoAdvanceScenario(page, { countdownSeconds = 5, selectStat }
   );
   expect(cooldownState).toBe("cooldown");
 
-  await page.evaluate((seconds) => window.__TEST_API?.timers?.setCountdown?.(seconds), countdownSeconds);
+  await page.evaluate(
+    (seconds) => window.__TEST_API?.timers?.setCountdown?.(seconds),
+    countdownSeconds
+  );
 
   const cooldownCountdown = await readCooldownSeconds(page);
   expect(cooldownCountdown).not.toBeNull();
