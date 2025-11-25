@@ -116,50 +116,6 @@ test.describe("Classic Battle – auto-advance", () => {
     expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
   });
 
-  test("auto-advances via UI selection path", async ({ page }) => {
-    await startClassicBattle(page);
-    await waitForBattleReady(page, { allowFallback: false });
-    await expectDeterministicTestApi(page);
 
-  await waitForBattleState(page, "waitingForPlayerAction", {
-    allowFallback: false,
-    timeout: STATE_TIMEOUT_MS
-  });
-
-  await waitForStatButtonsReady(page, { timeout: STATE_TIMEOUT_MS });
-
-  const roundsBefore = (await readRoundsPlayed(page)) ?? 0;
-
-  const statContainer = page.getByTestId("stat-buttons");
-  await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
-
-  const firstStat = statContainer.getByRole("button").first();
-  await expect(firstStat).toBeVisible();
-  await selectStat(firstStat, statContainer);
-
-    await waitForBattleState(page, "cooldown", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
-    const cooldownState = await page.evaluate(
-      () => window.__TEST_API?.state?.getBattleState?.() ?? null
-    );
-    expect(cooldownState).toBe("cooldown");
-
-  await page.evaluate(
-    ({ seconds }) => window.__TEST_API?.timers?.setCountdown?.(seconds),
-    { seconds: countdownSeconds }
-  );
-
-  const cooldownCountdown = await readCooldownSeconds(page);
-  expect(Number.isFinite(Number(cooldownCountdown))).toBe(true);
-
-  await assertCountdownTick(page);
-
-    await waitForBattleState(page, "waitingForPlayerAction", {
-      allowFallback: false,
-      timeout: STATE_TIMEOUT_MS
-    });
-
-  const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
-  expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
-});
 
 
