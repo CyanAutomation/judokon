@@ -219,7 +219,24 @@ Reading source code to understand machine registration flow:
 8. `resolveSelectionIfPresent()` calls `await resolveRound(store, stat, playerVal, opponentVal, { delayMs })`
 9. **AT THIS POINT: `BattleEngine.handleStatSelection()` should be called to increment `roundsPlayed`**
 
-**Missing Link**: The `resolveRound` function should be calling `BattleEngine.handleStatSelection()`. Let me verify this is happening.
+**VERIFIED FLOW**:
+
+The complete flow is:
+
+1. `selectStat()` → `handleStatSelection()` (in selectionHandler.js)
+2. → `dispatchStatSelected()` → `dispatchBattleEvent("statSelected")`
+3. → machine.dispatch("statSelected") → state transition to `roundDecision`
+4. → `roundDecisionEnter` called as onEnter handler
+5. → `resolveSelectionIfPresent(store)` (line 56 in roundDecisionEnter.js)
+6. → `resolveRound(store, stat, playerVal, opponentVal)` (roundResolver.js)
+7. → `finalizeRoundResult()` → `computeRoundResult()` → `evaluateOutcome()`
+8. → `engineFacade.handleStatSelection(pVal, oVal)` → **BattleEngine.handleStatSelection() increments roundsPlayed at line 319**
+
+**Critical Question**: Is `resolveSelectionIfPresent()` actually being called in JSDOM tests?
+
+If the machine transitions to `roundDecision` state but the onEnter handlers don't execute, or if they execute but `resolveSelectionIfPresent()` is not called, then `roundsPlayed` won't be incremented.
+
+Let me check if there's an issue with onEnter handlers not being called when state transitions happen via `machine.dispatch()`.
 
 ---
 

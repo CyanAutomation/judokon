@@ -34,15 +34,18 @@ export async function roundDecisionEnter(machine) {
   try {
     if (!machine || typeof machine.dispatch !== "function") {
       debugLog("roundDecisionEnter: invalid machine context");
+      console.warn("[DIAGNOSTIC] roundDecisionEnter: invalid machine context");
       return;
     }
 
     const store = machine?.context?.store;
     if (!store) {
       debugLog("roundDecisionEnter: missing store context");
+      console.warn("[DIAGNOSTIC] roundDecisionEnter: missing store context");
       return;
     }
 
+    console.log("[DIAGNOSTIC] roundDecisionEnter: called with store.playerChoice =", store?.playerChoice);
     recordEntry();
 
     emitBattleEvent("roundDecision", {

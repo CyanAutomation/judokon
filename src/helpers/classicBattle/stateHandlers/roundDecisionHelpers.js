@@ -185,7 +185,10 @@ export function recordEntry() {
  * ```
  */
 export async function resolveSelectionIfPresent(store) {
-  if (!store.playerChoice) return false;
+  if (!store.playerChoice) {
+    console.log("[DIAGNOSTIC] resolveSelectionIfPresent: no playerChoice, returning false");
+    return false;
+  }
   const stat = store.playerChoice;
   const pCard = getElementIfDocument("player-card");
   const oCard = getElementIfDocument("opponent-card");
@@ -203,7 +206,9 @@ export async function resolveSelectionIfPresent(store) {
     debugLog("DEBUG: resolveSelectionIfPresent debugLog error", { error: err.message });
   }
   const delayMs = resolveDelay();
+  console.log("[DIAGNOSTIC] resolveSelectionIfPresent: calling resolveRound with", { stat, playerVal, opponentVal, delayMs });
   await resolveRound(store, stat, playerVal, opponentVal, { delayMs });
+  console.log("[DIAGNOSTIC] resolveSelectionIfPresent: resolveRound completed");
   return true;
 }
 
