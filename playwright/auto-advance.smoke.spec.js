@@ -134,7 +134,7 @@ async function runAutoAdvanceScenario(page, { countdownSeconds = 5, selectStat }
 }
 
 test.describe("Classic Battle – auto-advance", () => {
-test("auto-advances via Test API countdown", async ({ page }, testInfo) => {
+  test("auto-advances via Test API countdown", async ({ page }, testInfo) => {
   const roundsBefore = await runAutoAdvanceScenario(page, {
     countdownSeconds: 2,
     selectStat: async (firstStat) => {
