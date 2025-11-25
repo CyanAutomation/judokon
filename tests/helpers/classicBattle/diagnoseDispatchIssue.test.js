@@ -95,19 +95,20 @@ describe("diagnoseDispatchIssue", () => {
     }
 
     // Check if machine can handle "statSelected" event
-    const canHandle = machine.dispatch?.("statSelected") === false
-      ? "NO (returns false)"
-      : machine.dispatch?.("statSelected") === true
-        ? "YES (returns true)"
-        : "UNKNOWN";
+    const canHandle =
+      machine.dispatch?.("statSelected") === false
+        ? "NO (returns false)"
+        : machine.dispatch?.("statSelected") === true
+          ? "YES (returns true)"
+          : "UNKNOWN";
     console.log("[DIAGNOSE] Can machine handle 'statSelected' event?", canHandle);
 
     // Log the state table to understand valid transitions
     const stateTable = machine.stateTable || readDebugState("stateTable");
     if (stateTable && Array.isArray(stateTable)) {
-      const currentStateConfig = stateTable.find(s => s.name === stateAfterWait);
+      const currentStateConfig = stateTable.find((s) => s.name === stateAfterWait);
       const allowedEvents = currentStateConfig
-        ? currentStateConfig.on?.map(entry => typeof entry === "string" ? entry : entry.on)
+        ? currentStateConfig.on?.map((entry) => (typeof entry === "string" ? entry : entry.on))
         : [];
       console.log(
         `[DIAGNOSE] State "${stateAfterWait}" allows events:`,
