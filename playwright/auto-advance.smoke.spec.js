@@ -147,13 +147,13 @@ test.describe("Classic Battle – auto-advance", () => {
             });
             await firstStat.click();
           }
-      } catch (error) {
-        await testInfo.attach("dispatch-selectStat-error", {
-          body: String(error?.stack ?? error),
-          contentType: "text/plain"
-        });
-        await firstStat.click();
-      }
+        } catch (error) {
+          await testInfo.attach("dispatch-selectStat-error", {
+            body: String(error?.stack ?? error),
+            contentType: "text/plain"
+          });
+          await firstStat.click();
+        }
     }
   });
 
