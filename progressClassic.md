@@ -19,6 +19,7 @@
 Modify the `setup` function in `tests/helpers/integrationHarness.js`.
 
 **Current Code (Incorrect):**
+
 ```javascript
 // in tests/helpers/integrationHarness.js
 
@@ -35,6 +36,7 @@ async function setup() {
 ```
 
 **Proposed Code (Correct):**
+
 ```javascript
 // in tests/helpers/integrationHarness.js
 
@@ -53,8 +55,8 @@ async function setup() {
   // ... rest of setup proceeds as before
 }
 ```
-*Note: The debugging code that pushes to `globalThis.__registeredMockPaths` should also be moved along with the mock registration loop.*
 
+*Note: The debugging code that pushes to `globalThis.__registeredMockPaths` should also be moved along with the mock registration loop.*
 
 ### Step 2: Verify the Fix
 
@@ -77,6 +79,7 @@ npm run test:battles
 All battle-related tests should continue to pass.
 
 ---
+
 ## Files to Modify
 
 - **`tests/helpers/integrationHarness.js`**: Reorder the mock registration loop and the `vi.resetModules()` call within the `setup` function.

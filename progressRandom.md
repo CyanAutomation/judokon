@@ -5,7 +5,8 @@
 **Date**: 2025-11-25  
 **Status**: Investigation Complete. Single root cause identified and documented in `progressClassic.md`.
 
-**Current Test Status**: 
+**Current Test Status**:
+
 - **Passing**: 89 out of 105 tests
 - **Failing**: 16 tests across 5 test files
 - **Primary Cause**: Mock registration timing issue in `tests/helpers/integrationHarness.js`
@@ -52,6 +53,7 @@ All failing tests exhibit the same pattern:
 The `createIntegrationHarness` function in `tests/helpers/integrationHarness.js` executes operations in the wrong order:
 
 **Current (Incorrect) Order:**
+
 ```javascript
 async function setup() {
   // 1. WRONG: Reset modules first
@@ -66,6 +68,7 @@ async function setup() {
 ```
 
 **Required (Correct) Order:**
+
 ```javascript
 async function setup() {
   // 1. CORRECT: Register mocks first (queue them)
@@ -82,6 +85,7 @@ async function setup() {
 ### Why This Breaks Tests
 
 According to Vitest's design:
+
 - `vi.doMock(modulePath, factory)` **queues** mocks for use in the next import cycle
 - `vi.resetModules()` **clears** the module cache but preserves queued mocks
 - If `vi.resetModules()` is called first, the queued mocks don't exist yet, so the reset clears an empty queue
@@ -91,6 +95,7 @@ According to Vitest's design:
 ### Evidence from Test Failures
 
 **Evidence 1: Mocks Never Called**
+
 ```javascript
 // From tests/classicBattle/page-scaffold.test.js
 FAIL: initializes scoreboard regions
@@ -99,6 +104,7 @@ AssertionError: expected [] to deep equally contain [ +0, +0 ]
 ```
 
 **Evidence 2: Components Can't Instantiate**
+
 ```javascript
 // From tests/classicBattle/resolution.test.js
 FAIL: scoreboard reconciles directly to round result
@@ -107,6 +113,7 @@ AssertionError: expected 0 to be greater than 0
 ```
 
 **Evidence 3: Real Code Path Executes**
+
 ```javascript
 // From tests/integration/battleClassic.integration.test.js
 FAIL: keeps roundsPlayed in sync
@@ -210,4 +217,3 @@ Once the mock registration timing is fixed, document access works correctly and 
 ## Conclusion
 
 All 16 test failures are caused by a single root cause: incorrect mock registration timing in the integration harness. The fix is straightforward and documented in `progressClassic.md`. Once implemented, all tests should pass without additional changes or complex refactoring.
-
