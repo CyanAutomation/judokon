@@ -73,12 +73,15 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  */
 export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   debugLog("DEBUG: evaluateOutcome start", { stat, playerVal, opponentVal });
+  console.log("[DIAGNOSTIC] evaluateOutcome called with", { stat, playerVal, opponentVal });
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
 
   try {
+    console.log("[DIAGNOSTIC] evaluateOutcome: calling engineFacade.handleStatSelection");
     const result = engineFacade.handleStatSelection(pVal, oVal);
     debugLog("DEBUG: evaluateOutcome result", result);
+    console.log("[DIAGNOSTIC] evaluateOutcome: handleStatSelection returned", result);
 
     // Add message generation for tests and real usage
     const message = getOutcomeMessage(result.outcome);
@@ -88,6 +91,7 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   } catch (error) {
     // Fallback when engine is not initialized
     debugLog("DEBUG: evaluateOutcome fallback due to error", error);
+    console.error("[DIAGNOSTIC] evaluateOutcome error:", error?.message);
     return evaluateRoundData(pVal, oVal);
   }
 }
