@@ -28,7 +28,6 @@ console.log("  !!global.window:", !!global.window);
 const { getDocumentRef } = await import("./src/helpers/documentHelper.js");
 const { Card } = await import("./src/components/Card.js");
 
-
 console.log("\nAfter imports:");
 console.log("  !!global.document:", !!global.document);
 
