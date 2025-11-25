@@ -1049,6 +1049,7 @@ function renderStatButtons(store) {
  */
 async function beginSelectionTimer(store) {
   const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+  console.log("beginSelectionTimer: IS_VITEST", IS_VITEST, "env", process.env.VITEST);
   if (IS_VITEST) {
     const dur = Number(getDefaultTimer("roundTimer")) || 2;
     const timer = createCountdownTimer(dur, {
