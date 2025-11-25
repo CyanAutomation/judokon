@@ -45,7 +45,10 @@ export async function roundDecisionEnter(machine) {
       return;
     }
 
-    console.log("[DIAGNOSTIC] roundDecisionEnter: called with store.playerChoice =", store?.playerChoice);
+    console.log(
+      "[DIAGNOSTIC] roundDecisionEnter: called with store.playerChoice =",
+      store?.playerChoice
+    );
     recordEntry();
 
     emitBattleEvent("roundDecision", {

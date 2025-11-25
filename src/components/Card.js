@@ -20,6 +20,7 @@
  * @class
  */
 import { getSanitizer } from "../helpers/sanitizeHtml.js";
+import { getDocumentRef } from "../helpers/documentHelper.js";
 
 function applyClasses(el, className) {
   if (!className) return;
@@ -58,7 +59,30 @@ export class Card {
    */
   constructor(content, options = {}) {
     const { id, className, href, onClick, html = false, sanitize = getSanitizer } = options;
-    this.element = href ? document.createElement("a") : document.createElement("div");
+    const doc = getDocumentRef();
+    if (!doc) {
+      // Add debugging info to window for test debugging
+      try {
+        if (typeof globalThis !== "undefined" && globalThis.window) {
+          if (!globalThis.window.__CARD_DEBUG_LOG) {
+            globalThis.window.__CARD_DEBUG_LOG = [];
+          }
+          globalThis.window.__CARD_DEBUG_LOG.push({
+            timestamp: Date.now(),
+            typeofDocument: typeof document,
+            typeofWindow: typeof globalThis?.window,
+            globalThisExists: !!globalThis,
+            globalThisDocument: !!globalThis?.document,
+            globalWindow: !!globalThis?.window,
+            globalWindowDocument: !!globalThis?.window?.document
+          });
+        }
+      } catch (_err) {
+        // silently ignore
+      }
+      throw new Error("Card: Unable to access document (JSDOM or DOM environment required)");
+    }
+    this.element = href ? doc.createElement("a") : doc.createElement("div");
     this.element.classList.add("card");
     if (!content && !id && !className && !onClick && !href) return;
     if (id) this.element.id = id;

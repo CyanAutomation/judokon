@@ -3,6 +3,7 @@ import { t } from "../i18n.js";
 import * as battleEvents from "./battleEvents.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { safeCall } from "./safeCall.js";
+import { safeGetElementById } from "../documentHelper.js";
 
 let opponentDelayMs = 500;
 
@@ -45,7 +46,7 @@ export function getOpponentDelay() {
  * @returns {void}
  */
 export function showSelectionPrompt() {
-  const el = document.getElementById("round-message");
+  const el = safeGetElementById("round-message");
   if (el) el.textContent = "";
   showSnackbar(t("ui.selectMove"));
   safeCall(() => battleEvents.emitBattleEvent("roundPrompt"));

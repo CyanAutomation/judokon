@@ -33,7 +33,9 @@ async function assertCountdownTick(page) {
 
   await expect(timerLocator).not.toHaveText(initialText, { timeout: COUNTDOWN_TICK_TIMEOUT_MS });
 
-  const finalState = await page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
+  const finalState = await page.evaluate(
+    () => window.__TEST_API?.state?.getBattleState?.() ?? null
+  );
   expect(["cooldown", "waitingForPlayerAction"].includes(finalState)).toBe(true);
 }
 
@@ -43,10 +45,7 @@ async function startClassicBattle(page) {
   const startLink = page.getByRole("link", { name: "Start classic battle mode", exact: true });
   await expect(startLink).toBeVisible();
 
-  await Promise.all([
-    page.waitForURL("**/battleClassic.html"),
-    startLink.click()
-  ]);
+  await Promise.all([page.waitForURL("**/battleClassic.html"), startLink.click()]);
 }
 
 async function readCooldownSeconds(page) {
@@ -60,7 +59,8 @@ async function readCooldownSeconds(page) {
     }
 
     const debug = window.__TEST_API?.inspect?.getDebugInfo?.();
-    const remaining = debug?.timers?.cooldown?.remaining ?? debug?.timers?.cooldownRemaining ?? null;
+    const remaining =
+      debug?.timers?.cooldown?.remaining ?? debug?.timers?.cooldownRemaining ?? null;
     if (Number.isFinite(remaining)) return Number(remaining);
 
     const parsedDebug = Number.parseFloat(remaining);
@@ -74,46 +74,42 @@ async function readCooldownSeconds(page) {
   });
 }
 
-async function runAutoAdvanceScenario(page, { countdownSeconds = 2, selectStat }) {
-  await startClassicBattle(page);
-  await waitForBattleReady(page, { allowFallback: false });
-  await expectDeterministicTestApi(page);
+test.describe("Classic Battle – auto-advance", () => {
+  test("auto-advances via Test API countdown", async ({ page }) => {
+    await startClassicBattle(page);
+    await waitForBattleReady(page, { allowFallback: false });
+    await expectDeterministicTestApi(page);
 
-  await waitForBattleState(page, "waitingForPlayerAction", {
-    allowFallback: false,
-    timeout: STATE_TIMEOUT_MS
-  });
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      allowFallback: false,
+      timeout: STATE_TIMEOUT_MS
+    });
 
-  await waitForStatButtonsReady(page, { timeout: STATE_TIMEOUT_MS });
-
-  const roundsBefore = (await readRoundsPlayed(page)) ?? 0;
-
-  const statContainer = page.getByTestId("stat-buttons");
-  await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
+    const roundsBefore = (await readRoundsPlayed(page)) ?? 0;
 
   const firstStat = statContainer.getByRole("button").first();
   await expect(firstStat).toBeVisible();
   await selectStat(firstStat);
 
-  await waitForBattleState(page, "cooldown", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
-  const cooldownState = await page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
-  expect(cooldownState).toBe("cooldown");
+    const statContainer = page.getByTestId("stat-buttons");
+    await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
 
-  await page.evaluate(
-    ({ seconds }) => window.__TEST_API?.timers?.setCountdown?.(seconds),
-    { seconds: countdownSeconds }
-  );
+    const firstStat = statContainer.getByRole("button").first();
+    await expect(firstStat).toBeVisible();
+    await firstStat.click();
 
-  const cooldownCountdown = await readCooldownSeconds(page);
-  expect(Number.isFinite(Number(cooldownCountdown))).toBe(true);
+    await waitForBattleState(page, "cooldown", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
+    const cooldownState = await page.evaluate(
+      () => window.__TEST_API?.state?.getBattleState?.() ?? null
+    );
+    expect(cooldownState).toBe("cooldown");
 
-  await assertCountdownTick(page);
+    await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(5));
 
-  await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
+    const cooldownCountdown = await readCooldownSeconds(page);
+    expect(Number.isFinite(Number(cooldownCountdown))).toBe(true);
 
-  const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
-  expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
-}
+    await assertCountdownTick(page);
 
 test.describe("Classic Battle – auto-advance", () => {
   test("auto-advances via Test API countdown", async ({ page }) => {
@@ -130,12 +126,8 @@ test.describe("Classic Battle – auto-advance", () => {
         }
       }
     });
-  });
 
-  test("auto-advances via UI selection path", async ({ page }) => {
-    await runAutoAdvanceScenario(page, {
-      countdownSeconds: 2,
-      selectStat: async (firstStat) => firstStat.click()
-    });
+    const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
+    expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
   });
 });

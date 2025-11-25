@@ -5,10 +5,18 @@ import { beforeEach, expect, test, vi } from "vitest";
 import { createClassicBattleHarness } from "../helpers/integrationHarness.js";
 import { createTestController } from "../../src/utils/scheduler.js";
 
+console.log("VITEST env at test top", process.env.VITEST);
+
 // Enable test controller access
 globalThis.__TEST__ = true;
 
+if (!process.env.VITEST) {
+  process.env.VITEST = "true";
+}
+
 const STAT_KEYS = ["power", "speed", "technique", "kumikata", "newaza"];
+
+const resolveModulePath = (relativePath) => new URL(relativePath, import.meta.url).href;
 
 let computeRoundResultMock;
 
@@ -49,7 +57,7 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
 
   const mocks = {};
 
-  mocks["../../src/helpers/classicBattle/roundManager.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/roundManager.js")] = {
     createBattleStore: () => store,
     startRound: vi.fn(async () => {
       store.currentPlayerJudoka = { stats: playerStats };
@@ -70,7 +78,7 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     startCooldown: vi.fn()
   };
 
-  mocks["../../src/helpers/timerUtils.js"] = {
+  mocks[resolveModulePath("../../src/helpers/timerUtils.js")] = {
     createCountdownTimer: (duration, options = {}) => ({
       start: () => Promise.resolve(options.onExpired?.()),
       stop: vi.fn(),
@@ -80,11 +88,11 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     getDefaultTimer: () => 1
   };
 
-  mocks["../../src/helpers/classicBattle/roundResolver.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/roundResolver.js")] = {
     computeRoundResult: computeRoundResultMock
   };
 
-  mocks["../../src/helpers/setupScoreboard.js"] = {
+  mocks[resolveModulePath("../../src/helpers/setupScoreboard.js")] = {
     setupScoreboard: vi.fn(),
     updateScore: vi.fn((player, opponent) => {
       const el = document.getElementById("score-display");
@@ -104,7 +112,7 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     updateRoundCounter: vi.fn()
   };
 
-  mocks["../../src/helpers/battleEngineFacade.js"] = {
+  mocks[resolveModulePath("../../src/helpers/battleEngineFacade.js")] = {
     createBattleEngine: vi.fn(),
     STATS: STAT_KEYS,
     on: vi.fn(),
@@ -113,46 +121,46 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   };
 
-  mocks["../../src/helpers/classicBattle/snackbar.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/snackbar.js")] = {
     showSelectionPrompt: vi.fn(),
     getOpponentDelay: () => 0,
     setOpponentDelay: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/statButtons.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/statButtons.js")] = {
     setStatButtonsEnabled: vi.fn(),
     resolveStatButtonsReady: vi.fn(),
     disableStatButtons: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/uiEventHandlers.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/uiEventHandlers.js")] = {
     bindUIHelperEventHandlersDynamic: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/endModal.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/endModal.js")] = {
     showEndModal: vi.fn()
   };
 
-  mocks["../../src/helpers/featureFlags.js"] = {
+  mocks[resolveModulePath("../../src/helpers/featureFlags.js")] = {
     initFeatureFlags: vi.fn(async () => {}),
     isEnabled: vi.fn(() => false),
     featureFlagsEmitter: new EventTarget()
   };
 
-  mocks["../../src/helpers/showSnackbar.js"] = {
+  mocks[resolveModulePath("../../src/helpers/showSnackbar.js")] = {
     showSnackbar: vi.fn()
   };
 
-  mocks["../../src/helpers/i18n.js"] = {
+  mocks[resolveModulePath("../../src/helpers/i18n.js")] = {
     t: (key) => key
   };
 
-  mocks["../../src/helpers/classicBattle/battleEvents.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/battleEvents.js")] = {
     onBattleEvent: vi.fn(),
     emitBattleEvent: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/roundSelectModal.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/roundSelectModal.js")] = {
     initRoundSelectModal: vi.fn(async (onStart) => {
       await onStart();
     })
@@ -171,11 +179,9 @@ test("score updates after auto-select on expiry", async () => {
   const playerStats = { power: 10, speed: 55, technique: 10, kumikata: 10, newaza: 10 };
   const opponentStats = { power: 8, speed: 30, technique: 8, kumikata: 8, newaza: 8 };
   const mocks = mockModules({ playerStats, opponentStats });
-  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
-    vi.doMock(modulePath, () => mockImpl);
-  }
-  const harness = createClassicBattleHarness();
+  const harness = createClassicBattleHarness({ mocks });
   await harness.setup();
+  console.log("registered mocks", globalThis.__registeredMockPaths);
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
   await harness.timerControl.runAllTimersAsync();
@@ -197,10 +203,7 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
     opponent: { speed: "?" }
   };
   const mocks = mockModules({ playerStats, opponentStats, domOverrides });
-  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
-    vi.doMock(modulePath, () => mockImpl);
-  }
-  const harness = createClassicBattleHarness();
+  const harness = createClassicBattleHarness({ mocks });
   await harness.setup();
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
@@ -235,15 +238,10 @@ test("scoreboard reconciles directly to round result", async () => {
     isOrchestratorActive: vi.fn(() => false)
   };
 
-  mocks["../../src/helpers/classicBattle/selectionHandler.js"] = mockedSelection;
+  mocks[resolveModulePath("../../src/helpers/classicBattle/selectionHandler.js")] = mockedSelection;
 
-  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
-    vi.doMock(modulePath, () => mockImpl);
-  }
-
-  const harness = createClassicBattleHarness({ useRafMock: false });
+  const harness = createClassicBattleHarness({ useRafMock: false, mocks });
   await harness.setup();
-
   const testController = createTestController();
 
   const { updateScore } = await import("../../src/helpers/setupScoreboard.js");
@@ -279,10 +277,7 @@ test("match end forwards outcome to end modal", async () => {
   const playerStats = { power: 9, speed: 9, technique: 9, kumikata: 9, newaza: 9 };
   const opponentStats = { power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 };
   const mocks = mockModules({ playerStats, opponentStats });
-  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
-    vi.doMock(modulePath, () => mockImpl);
-  }
-  const harness = createClassicBattleHarness();
+  const harness = createClassicBattleHarness({ mocks });
   await harness.setup();
   const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
   const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");

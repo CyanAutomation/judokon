@@ -206,7 +206,12 @@ export async function resolveSelectionIfPresent(store) {
     debugLog("DEBUG: resolveSelectionIfPresent debugLog error", { error: err.message });
   }
   const delayMs = resolveDelay();
-  console.log("[DIAGNOSTIC] resolveSelectionIfPresent: calling resolveRound with", { stat, playerVal, opponentVal, delayMs });
+  console.log("[DIAGNOSTIC] resolveSelectionIfPresent: calling resolveRound with", {
+    stat,
+    playerVal,
+    opponentVal,
+    delayMs
+  });
   await resolveRound(store, stat, playerVal, opponentVal, { delayMs });
   console.log("[DIAGNOSTIC] resolveSelectionIfPresent: resolveRound completed");
   return true;
