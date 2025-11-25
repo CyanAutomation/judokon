@@ -64,7 +64,9 @@ test.describe("Homepage layout", () => {
 
         for (const namePattern of expectedOrder) {
           await page.keyboard.press("Tab");
-          await expect(page.getByRole("link", { name: namePattern })).toBeFocused();
+          const focusedElement = page.getByRole("link", { name: namePattern });
+          await focusedElement.waitFor({ state: "visible" });
+          await expect(focusedElement).toBeFocused();
         }
       });
 
@@ -78,7 +80,10 @@ test.describe("Homepage layout", () => {
 
       test("honors tooltip overlay feature flag on tiles", async ({ page }) => {
         await page.addInitScript(() => {
-          window.__FF_OVERRIDES = { tooltipOverlayDebug: true };
+          if (!window.__FF_OVERRIDES) {
+            window.__FF_OVERRIDES = {};
+          }
+          window.__FF_OVERRIDES.tooltipOverlayDebug = true;
         });
 
         await gotoHome(page);
@@ -94,17 +99,32 @@ test.describe("Homepage layout", () => {
         await expect(grid).toBeVisible();
 
         const tiles = page.locator(".card");
-        const viewportWidth = page.viewportSize()?.width ?? 0;
-        const viewportHeight = page.viewportSize()?.height ?? 0;
+        const viewport = page.viewportSize();
+        if (!viewport) {
+          throw new Error("Viewport size is not available");
+        }
+        const viewportWidth = viewport.width;
+        const viewportHeight = viewport.height;
 
         const positions = [];
         const count = await tiles.count();
         for (let index = 0; index < count; index += 1) {
-          positions.push(await tiles.nth(index).boundingBox());
+          const box = await tiles.nth(index).boundingBox();
+          if (box) {
+            positions.push(box);
+          }
         }
 
-        const maxRight = Math.max(...positions.map((box) => (box?.x ?? 0) + (box?.width ?? 0)));
-        const maxBottom = Math.max(...positions.map((box) => (box?.y ?? 0) + (box?.height ?? 0)));
+        if (positions.length === 0) {
+          throw new Error("No visible tiles found for layout validation");
+        }
+
+        if (positions.length === 0) {
+          throw new Error("No visible tiles found for layout validation");
+        }
+
+        const maxRight = Math.max(...positions.map((box) => box.x + box.width));
+        const maxBottom = Math.max(...positions.map((box) => box.y + box.height));
 
         expect(maxRight).toBeLessThanOrEqual(viewportWidth + 2);
         expect(maxBottom).toBeLessThan(viewportHeight * 3);
