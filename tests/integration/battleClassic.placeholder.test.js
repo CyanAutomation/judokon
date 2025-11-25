@@ -27,7 +27,7 @@ async function completeFirstRound(document, testApi) {
     // Wait for async handlers and orchestrator state transition to complete
     try {
       await testApi.state.waitForBattleState("waitingForPlayerAction", 5000);
-    } catch (e) {
+    } catch {
       // Fallback if state transition fails
     }
     resolve();

@@ -173,6 +173,34 @@ if (!validateStateTransition(from, target, eventName, byName)) {
 
 ---
 
+### Task 1: Verify Machine Registration ✅ IN PROGRESS
+
+**Investigation**:
+
+Reading source code to understand machine registration flow:
+
+1. **Machine Initialization** (`orchestrator.js:314`):
+   - `setBattleStateGetter(() => machine.getState())` is called after machine creation
+   - Machine is registered in debugHooks at line 580: `debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef)`
+   - Also exposed to global via `globalThis.__classicBattleDebugExpose()` for cross-boundary access
+
+2. **Event Dispatch Mechanism** (`eventDispatcher.js`):
+   - Line 15: Attempts to retrieve machine via both `globalThis.__classicBattleDebugRead()` (primary) and `readDebugState()` (fallback)
+   - Lines 88-96: Logs diagnostic data to debug state before and after dispatch
+   - Line 140: Calls `await machine.dispatch(eventName, payload)`
+   - Line 146: Returns `false` if dispatch returns `false`
+
+3. **Test Initialization** (`initClassicBattleTest.js`):
+   - Calls `__resetClassicBattleBindings()` after mocks
+   - Calls `__ensureClassicBattleBindings({ force: afterMock })` to ensure bindings are set up
+   - Returns battle module for test use
+
+**Key Finding**: All infrastructure appears correct. The machine IS being registered via `debugHooks.exposeDebugState()` and tests have access to it. The issue is not that the machine is missing, but that `machine.dispatch("statSelected")` is returning `false`, meaning the state machine doesn't recognize the "statSelected" event in the current state.
+
+**Next Hypothesis**: The `dispatchBattleEvent` function retrieves a valid machine, but the machine is NOT in the `waitingForPlayerAction` state when `dispatchStatSelected()` is called. Despite the test calling `await state.waitForBattleState("waitingForPlayerAction")`, the state transition may not have completed by the time the selection is processed.
+
+---
+
 ### Task 3: Deep Dive - Event Routing Investigation 🔍 IN PROGRESS
 
 **Architecture Discovered**:
