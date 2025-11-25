@@ -138,7 +138,7 @@ test.describe("Classic Battle – auto-advance", () => {
     const roundsBefore = await runAutoAdvanceScenario(page, {
       countdownSeconds: 2,
       selectStat: async (firstStat) => {
-      try {
+        try {
         const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
         if (!dispatched.ok) {
           await testInfo.attach("dispatch-selectStat-failure", {
