@@ -117,14 +117,10 @@ const pages = [
         throw new Error(`Date column not found. Available headers: ${headerTexts.join(", ")}`);
       }
       if (versionIndex === -1) {
-        throw new Error(
-          `Version column not found. Available headers: ${headerTexts.join(", ")}`
-        );
+        throw new Error(`Version column not found. Available headers: ${headerTexts.join(", ")}`);
       }
       if (summaryIndex === -1) {
-        throw new Error(
-          `Summary column not found. Available headers: ${headerTexts.join(", ")}`
-        );
+        throw new Error(`Summary column not found. Available headers: ${headerTexts.join(", ")}`);
       }
 
       // Header validation is now handled by explicit error throwing above
@@ -157,9 +153,7 @@ const pages = [
       const smokeRow = changeLogRows.filter({ hasText: "Shōzō Fujii" });
       await expect(smokeRow).toHaveCount(1);
       await expect(smokeRow.first().locator("td").nth(dateIndex)).toHaveText("2025-04-28");
-      await expect(smokeRow.first().locator("td").nth(summaryIndex)).toContainText(
-        "Shōzō Fujii"
-      );
+      await expect(smokeRow.first().locator("td").nth(summaryIndex)).toContainText("Shōzō Fujii");
     }
   }
 ];

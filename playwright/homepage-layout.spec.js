@@ -27,7 +27,9 @@ test.describe("Homepage layout", () => {
 
         const classicTile = page.getByRole("link", { name: /start classic battle mode/i });
         await expect(classicTile).toBeVisible();
-        await expect(classicTile.getByRole("heading", { level: 2, name: /classic battle/i })).toBeVisible();
+        await expect(
+          classicTile.getByRole("heading", { level: 2, name: /classic battle/i })
+        ).toBeVisible();
       });
 
       test("supports launching core actions", async ({ page }) => {
