@@ -77,6 +77,7 @@ export class Card {
             globalWindowDocument: !!globalThis?.window?.document
           });
         }
+        // eslint-disable-next-line no-unused-vars
       } catch (_err) {
         // silently ignore
       }
