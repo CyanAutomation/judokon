@@ -55,24 +55,7 @@ import {
   clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
-
-// Helper to safely access document from within async functions and event handlers
-// In test environments with multiple JSDOM instances or when called from event handlers,
-// the document global may not be in scope. This helper ensures consistent access.
-function getDocumentRef() {
-  try {
-    if (typeof document !== "undefined") {
-      return document;
-    }
-    if (typeof globalThis?.document !== "undefined") {
-      return globalThis.document;
-    }
-    if (typeof window?.document !== "undefined") {
-      return window.document;
-    }
-  } catch {}
-  return null;
-}
+import { getDocumentRef } from "../helpers/documentHelper.js";
 
 function updateTimerFallback(value) {
   try {
@@ -139,13 +122,25 @@ import { isDevelopmentEnvironment } from "../helpers/environment.js";
 function broadcastBattleState(state) {
   let from = null;
   try {
-    from = typeof document !== "undefined" ? (document.body?.dataset?.battleState ?? null) : null;
+    const doc =
+      (typeof document !== "undefined" && document) ||
+      (typeof globalThis?.document !== "undefined" && globalThis.document) ||
+      (typeof window?.document !== "undefined" && window.document) ||
+      null;
+    if (doc && typeof doc !== "undefined") {
+      from = doc.body?.dataset?.battleState ?? null;
+    }
   } catch {}
   const detail = { from, to: state };
   emitBattleEvent("battleStateChange", detail);
   try {
-    if (typeof document !== "undefined") {
-      document.body.dataset.battleState = state;
+    const doc =
+      (typeof document !== "undefined" && document) ||
+      (typeof globalThis?.document !== "undefined" && globalThis.document) ||
+      (typeof window?.document !== "undefined" && window.document) ||
+      null;
+    if (doc && typeof doc !== "undefined") {
+      doc.body.dataset.battleState = state;
     }
   } catch (e) {
     // ignore, this is a non-critical side-effect
@@ -932,7 +927,16 @@ async function handleStatButtonClick(store, stat, btn) {
  * 1. Create buttons for STATS, enable them, and handle selection.
  */
 function renderStatButtons(store) {
-  const container = document.getElementById("stat-buttons");
+  const doc =
+    (typeof document !== "undefined" && document) ||
+    (typeof globalThis?.document !== "undefined" && globalThis.document) ||
+    (typeof window?.document !== "undefined" && window.document) ||
+    null;
+  if (!doc) {
+    return;
+  }
+
+  const container = doc.getElementById("stat-buttons");
   if (!container) {
     return;
   }
@@ -999,7 +1003,7 @@ function renderStatButtons(store) {
   detachStatHotkeys = undefined;
   container.innerHTML = "";
   for (const stat of STATS) {
-    const btn = document.createElement("button");
+    const btn = doc.createElement("button");
     btn.type = "button";
     btn.textContent = String(stat);
     btn.classList.add("stat-button");
@@ -1012,9 +1016,9 @@ function renderStatButtons(store) {
     btn.setAttribute("aria-label", `Select ${stat} stat for battle`);
     let desc;
     try {
-      desc = document.getElementById(descId);
+      desc = doc.getElementById(descId);
       if (!desc) {
-        desc = document.createElement("span");
+        desc = doc.createElement("span");
       }
       desc.id = descId;
       desc.className = "sr-only";

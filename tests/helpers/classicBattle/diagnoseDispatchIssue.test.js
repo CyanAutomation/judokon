@@ -5,6 +5,7 @@
 
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
+import { useCanonicalTimers } from "../../../setup/fakeTimers.js";
 
 describe("diagnoseDispatchIssue", () => {
   let dom;
@@ -24,7 +25,7 @@ describe("diagnoseDispatchIssue", () => {
     global.document = document;
 
     // Mock timers for deterministic test execution
-    vi.useFakeTimers();
+    useCanonicalTimers();
   });
 
   afterEach(() => {
@@ -57,7 +58,7 @@ describe("diagnoseDispatchIssue", () => {
     expect(isReady).toBe(true);
 
     // Get initial state
-    const { state: stateApi, inspect } = window.__TEST_API;
+    const { state: stateApi } = window.__TEST_API;
     const initialMachineState = stateApi.getState?.();
     console.log("[DIAGNOSE] Initial machine state:", initialMachineState);
 
@@ -90,7 +91,7 @@ describe("diagnoseDispatchIssue", () => {
       await stateApi.waitForBattleState("waitingForPlayerAction", 2000);
       stateAfterWait = machine.getState?.() ?? "unknown";
       console.log("[DIAGNOSE] Machine state after waitForBattleState:", stateAfterWait);
-    } catch (error) {
+    } catch {
       console.log("[DIAGNOSE] waitForBattleState timed out. State is:", stateAfterWait);
     }
 

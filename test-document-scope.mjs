@@ -19,7 +19,7 @@ console.log("Before import - typeof globalThis.document:", typeof globalThis.doc
 console.log("Before import - typeof global.document:", typeof global.document);
 
 // Now import a module that uses document
-import { init } from "./src/pages/battleClassic.init.js";
+import "./src/pages/battleClassic.init.js";
 
 console.log("\nAfter import - typeof document:", typeof document);
 console.log("After import - typeof globalThis.document:", typeof globalThis.document);

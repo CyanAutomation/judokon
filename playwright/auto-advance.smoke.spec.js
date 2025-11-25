@@ -3,14 +3,12 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import {
   waitForBattleReady,
   waitForBattleState,
-  waitForNextButtonReady,
   waitForStatButtonsReady
 } from "./helpers/battleStateHelper.js";
 import { readRoundsPlayed } from "./helpers/battleApiHelper.js";
 
 const STATE_TIMEOUT_MS = 7_500;
 const COUNTDOWN_TICK_TIMEOUT_MS = 8_000;
-const COUNTDOWN_TICK_INTERVAL_MS = 250;
 
 async function expectDeterministicTestApi(page) {
   const hooks = await page.evaluate(() => {
