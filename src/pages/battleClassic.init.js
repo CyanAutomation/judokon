@@ -1048,9 +1048,11 @@ function renderStatButtons(store) {
  * 1. In Vitest use `createCountdownTimer`; otherwise `startTimer` and compute outcome.
  */
 async function beginSelectionTimer(store) {
-  const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
-  console.log("beginSelectionTimer: IS_VITEST", IS_VITEST, "env", process.env.VITEST);
-  if (IS_VITEST) {
+  const TEST_ENV_FLAG =
+    (typeof process !== "undefined" && process.env?.VITEST === "true") ||
+    (typeof process !== "undefined" && process.env?.NODE_ENV === "test") ||
+    (typeof globalThis !== "undefined" && Boolean(globalThis.__TEST__));
+  if (TEST_ENV_FLAG) {
     const dur = Number(getDefaultTimer("roundTimer")) || 2;
     const timer = createCountdownTimer(dur, {
       onTick: (remaining) => {

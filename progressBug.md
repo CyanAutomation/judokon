@@ -4,21 +4,23 @@
 
 **Status**: Original bug FIXED ✅. Secondary issue discovered and under active investigation 🔍.
 
-**Original Bug (FIXED ✅)**: 
+**Original Bug (FIXED ✅)**:
+
 - `stateManager.js` line 257 was passing `stateTable` (array) instead of `byName` (Map) to `validateStateTransition()`
 - This prevented state transitions from completing
 - **Fix Applied**: Changed line 257 to pass `byName` instead of `stateTable`
 - **Status**: Fixed and verified - state transitions now work correctly
 
-**Current Investigation (ACTIVE 🔍)**: 
+**Current Investigation (ACTIVE 🔍)**:
 Document reference issue preventing Card component from rendering in JSDOM test environment. When event handlers fire during battle initialization (drawCards → renderJudokaCard → JudokaCard → Card constructor), the global `document` reference is unavailable despite JSDOM setup and `global.document` being set in test beforeEach.
 
 **Current Problem**: Component constructor tries to access global `document` but `getDocumentRef()` returns null, preventing card rendering and blocking entire battle flow. This is a DOM environment issue, not a state machine issue.
 
-**Diagnostic Evidence**: 
-- Error: "Card: Unable to access document (JSDOM or DOM environment required)" 
+**Diagnostic Evidence**:
+
+- Error: "Card: Unable to access document (JSDOM or DOM environment required)"
 - Occurs at Card.js:64 when `getDocumentRef()` returns null
-- Happens during `startRoundCycle` → `drawCards` → `renderJudokaCard` 
+- Happens during `startRoundCycle` → `drawCards` → `renderJudokaCard`
 - Test never reaches selectStat() phase because card rendering fails first
 
 **Impact Chain**:
@@ -114,6 +116,7 @@ Added console.log statements to trace execution:
 **Test Execution with Diagnostics:**
 
 When integration test runs with diagnostics enabled:
+
 - Logs reveal which handlers are/aren't being called
 - Shows actual machine state when selectStat() is invoked
 - Identifies where execution stops (validation guard vs. handler)
@@ -221,6 +224,7 @@ Added console.log statements to trace execution:
 **Test Execution with Diagnostics:**
 
 When integration test runs with diagnostics enabled:
+
 - Logs reveal which handlers are/aren't being called
 - Shows actual machine state when selectStat() is invoked
 - Identifies where execution stops (validation guard vs. handler)
@@ -606,6 +610,7 @@ When a function defined in a module is called from an event handler fired during
 **Why getDocumentRef() Fails**:
 
 The helper function checks:
+
 - `typeof document !== "undefined" && document` - presumably fails
 - `globalThis && globalThis.document` - presumably fails
 - `maybeWindow && maybeWindow.document` - presumably fails
