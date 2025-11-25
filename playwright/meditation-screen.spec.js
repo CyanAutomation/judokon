@@ -8,12 +8,12 @@ const quoteFixtures = [
     meta: [{ id: 1, title: "Still Lake" }]
   },
   {
-    fables: [{ id: 1, title: "Still Lake", story: "Calm waters mirror the sky." }],
-    meta: [{ id: 1, title: "Still Lake" }]
+    fables: [{ id: 2, title: "Quiet Forest", story: "Leaves hush the wind into silence." }],
+    meta: [{ id: 2, title: "Quiet Forest" }]
   },
   {
-    fables: [{ id: 1, title: "New Dawn", story: "Fresh light greets patient minds." }],
-    meta: [{ id: 1, title: "New Dawn" }]
+    fables: [{ id: 3, title: "New Dawn", story: "Fresh light greets patient minds." }],
+    meta: [{ id: 3, title: "New Dawn" }]
   }
 ];
 
@@ -93,8 +93,13 @@ test.describe("Meditation screen", () => {
   test("quote refresh updates content and respects animation settings", async ({ page }) => {
     const settingsOverrides = { typewriterEffect: false, motionEffects: false };
     await loadMeditation(page, { settings: settingsOverrides });
-    const initialTitle = await page.locator("#quote-heading").textContent();
-    const initialStory = await page.locator("#quote-content").textContent();
+    await page.waitForFunction(() => {
+      const heading = document.querySelector("#quote-heading");
+      const content = document.querySelector("#quote-content");
+      return heading && content && heading.textContent && content.textContent;
+    });
+    const initialTitle = (await page.locator("#quote-heading").textContent()) ?? "";
+    const initialStory = (await page.locator("#quote-content").textContent()) ?? "";
 
     const appliedSettings = await page.evaluate(async (overrides) => {
       const [{ updateSetting }, cache] = await Promise.all([
@@ -124,8 +129,14 @@ test.describe("Meditation screen", () => {
       await module.loadQuote();
     });
 
-    await expect(page.locator("#quote-heading")).not.toHaveText(initialTitle || "");
-    await expect(page.locator("#quote-content")).not.toHaveText(initialStory || "");
+    await page.waitForFunction(() => {
+      const heading = document.querySelector("#quote-heading");
+      const content = document.querySelector("#quote-content");
+      return heading && content && heading.textContent && content.textContent;
+    });
+
+    await expect(page.locator("#quote-heading")).not.toHaveText(initialTitle);
+    await expect(page.locator("#quote-content")).not.toHaveText(initialStory);
   });
 
   test("keyboard navigation and ARIA landmarks are available", async ({ page }) => {
@@ -138,6 +149,7 @@ test.describe("Meditation screen", () => {
     await expect(page.locator("#language-announcement")).toContainText(/language toggle available/i);
 
     const languageToggle = page.getByTestId("language-toggle");
+    await languageToggle.focus();
     await expect(languageToggle).toBeFocused();
     await page.keyboard.press("Tab");
     const continueLink = page.getByTestId("continue-link");
