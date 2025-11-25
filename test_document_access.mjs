@@ -24,7 +24,7 @@ const { Card } = await import("./src/components/Card.js");
 console.log("\nCard class imported successfully");
 
 try {
-  const card = new Card("test");
+  new Card("test");
   console.log("Card instance created successfully");
 } catch (err) {
   console.error("Card creation failed:", err.message);

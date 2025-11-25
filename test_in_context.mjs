@@ -27,7 +27,7 @@ console.log("  !!global.window:", !!global.window);
 // NOW import modules that depend on document
 const { getDocumentRef } = await import("./src/helpers/documentHelper.js");
 const { Card } = await import("./src/components/Card.js");
-const { init } = await import("./src/pages/battleClassic.init.js");
+const { init: _init } = await import("./src/pages/battleClassic.init.js");
 
 console.log("\nAfter imports:");
 console.log("  !!global.document:", !!global.document);

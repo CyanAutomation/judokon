@@ -14,6 +14,8 @@ if (!process.env.VITEST) {
 
 const STAT_KEYS = ["power", "speed", "technique", "kumikata", "newaza"];
 
+const resolveModulePath = (relativePath) => new URL(relativePath, import.meta.url).href;
+
 let computeRoundResultMock;
 
 function renderCard(id) {
@@ -53,7 +55,7 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
 
   const mocks = {};
 
-  mocks["../../src/helpers/classicBattle/roundManager.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/roundManager.js")] = {
     createBattleStore: () => store,
     startRound: vi.fn(async () => {
       store.currentPlayerJudoka = { stats: playerStats };
@@ -74,7 +76,7 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     startCooldown: vi.fn()
   };
 
-  mocks["../../src/helpers/timerUtils.js"] = {
+  mocks[resolveModulePath("../../src/helpers/timerUtils.js")] = {
     createCountdownTimer: (duration, options = {}) => ({
       start: () => Promise.resolve(options.onExpired?.()),
       stop: vi.fn(),
@@ -84,11 +86,11 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     getDefaultTimer: () => 1
   };
 
-  mocks["../../src/helpers/classicBattle/roundResolver.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/roundResolver.js")] = {
     computeRoundResult: computeRoundResultMock
   };
 
-  mocks["../../src/helpers/setupScoreboard.js"] = {
+  mocks[resolveModulePath("../../src/helpers/setupScoreboard.js")] = {
     setupScoreboard: vi.fn(),
     updateScore: vi.fn((player, opponent) => {
       const el = document.getElementById("score-display");
@@ -108,7 +110,7 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     updateRoundCounter: vi.fn()
   };
 
-  mocks["../../src/helpers/battleEngineFacade.js"] = {
+  mocks[resolveModulePath("../../src/helpers/battleEngineFacade.js")] = {
     createBattleEngine: vi.fn(),
     STATS: STAT_KEYS,
     on: vi.fn(),
@@ -117,46 +119,46 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   };
 
-  mocks["../../src/helpers/classicBattle/snackbar.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/snackbar.js")] = {
     showSelectionPrompt: vi.fn(),
     getOpponentDelay: () => 0,
     setOpponentDelay: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/statButtons.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/statButtons.js")] = {
     setStatButtonsEnabled: vi.fn(),
     resolveStatButtonsReady: vi.fn(),
     disableStatButtons: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/uiEventHandlers.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/uiEventHandlers.js")] = {
     bindUIHelperEventHandlersDynamic: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/endModal.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/endModal.js")] = {
     showEndModal: vi.fn()
   };
 
-  mocks["../../src/helpers/featureFlags.js"] = {
+  mocks[resolveModulePath("../../src/helpers/featureFlags.js")] = {
     initFeatureFlags: vi.fn(async () => {}),
     isEnabled: vi.fn(() => false),
     featureFlagsEmitter: new EventTarget()
   };
 
-  mocks["../../src/helpers/showSnackbar.js"] = {
+  mocks[resolveModulePath("../../src/helpers/showSnackbar.js")] = {
     showSnackbar: vi.fn()
   };
 
-  mocks["../../src/helpers/i18n.js"] = {
+  mocks[resolveModulePath("../../src/helpers/i18n.js")] = {
     t: (key) => key
   };
 
-  mocks["../../src/helpers/classicBattle/battleEvents.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/battleEvents.js")] = {
     onBattleEvent: vi.fn(),
     emitBattleEvent: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/roundSelectModal.js"] = {
+  mocks[resolveModulePath("../../src/helpers/classicBattle/roundSelectModal.js")] = {
     initRoundSelectModal: vi.fn(async (onStart) => {
       await onStart();
     })

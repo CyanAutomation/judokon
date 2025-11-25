@@ -77,7 +77,7 @@ export class Card {
             globalWindowDocument: !!globalThis?.window?.document
           });
         }
-      } catch (err) {
+      } catch (_err) {
         // silently ignore
       }
       throw new Error("Card: Unable to access document (JSDOM or DOM environment required)");
