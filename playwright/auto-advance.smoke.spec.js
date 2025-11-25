@@ -131,20 +131,28 @@ async function runAutoAdvanceScenario(page, { countdownSeconds = 5, selectStat }
 }
 
 test.describe("Classic Battle – auto-advance", () => {
-  test("auto-advances via Test API countdown", async ({ page }) => {
-    const roundsBefore = await runAutoAdvanceScenario(page, {
-      countdownSeconds: 2,
-      selectStat: async (firstStat) => {
-        try {
-          const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
-          if (!dispatched.ok) {
-            await firstStat.click();
-          }
-        } catch (error) {
+test("auto-advances via Test API countdown", async ({ page }, testInfo) => {
+  const roundsBefore = await runAutoAdvanceScenario(page, {
+    countdownSeconds: 2,
+    selectStat: async (firstStat) => {
+      try {
+        const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
+        if (!dispatched.ok) {
+          await testInfo.attach("dispatch-selectStat-failure", {
+            body: JSON.stringify(dispatched, null, 2),
+            contentType: "application/json"
+          });
           await firstStat.click();
         }
+      } catch (error) {
+        await testInfo.attach("dispatch-selectStat-error", {
+          body: String(error?.stack ?? error),
+          contentType: "text/plain"
+        });
+        await firstStat.click();
       }
-    });
+    }
+  });
 
     const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
     expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
