@@ -96,7 +96,9 @@ test.describe("Meditation screen", () => {
     await page.waitForFunction(() => {
       const heading = document.querySelector("#quote-heading");
       const content = document.querySelector("#quote-content");
-      return heading && content && heading.textContent && content.textContent;
+      return heading && content && 
+             heading.textContent && heading.textContent.trim() &&
+             content.textContent && content.textContent.trim();
     });
     const initialTitle = (await page.locator("#quote-heading").textContent()) ?? "";
     const initialStory = (await page.locator("#quote-content").textContent()) ?? "";
