@@ -179,6 +179,7 @@ test("score updates after auto-select on expiry", async () => {
   const mocks = mockModules({ playerStats, opponentStats });
   const harness = createClassicBattleHarness({ mocks });
   await harness.setup();
+  console.log("registered mocks", globalThis.__registeredMockPaths);
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
   await harness.timerControl.runAllTimersAsync();

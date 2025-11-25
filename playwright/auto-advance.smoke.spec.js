@@ -160,6 +160,6 @@ test.describe("Classic Battle – auto-advance", () => {
 
   const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
   expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
-}
+});
 
 

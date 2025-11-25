@@ -230,9 +230,19 @@ export function createIntegrationHarness(config = {}) {
     vi.resetModules();
 
     // Apply mocks before importing any modules
+    if (typeof globalThis !== "undefined") {
+      if (!globalThis.__registeredMockPaths) {
+        globalThis.__registeredMockPaths = [];
+      }
+    }
     for (const [modulePath, mockImpl] of Object.entries(mocks)) {
       const resolvedPath = resolveMockModuleSpecifier(modulePath);
-      console.log("registering mock for", modulePath, "->", resolvedPath);
+      if (typeof globalThis !== "undefined") {
+        globalThis.__registeredMockPaths.push({
+          modulePath,
+          resolvedPath
+        });
+      }
       mockRegistrar(resolvedPath, createMockFactory(mockImpl));
     }
 
