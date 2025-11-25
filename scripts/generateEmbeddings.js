@@ -47,6 +47,7 @@ import { glob } from "glob";
 import * as acorn from "acorn";
 import { walk } from "estree-walker";
 import { CHUNK_SIZE, OVERLAP_RATIO } from "../src/helpers/vectorSearch/chunkConfig.js";
+import { CURRENT_EMBEDDING_VERSION } from "../src/helpers/vectorSearch/loader.js";
 import { deriveContextPath } from "./generation/contextPathHelper.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -514,7 +515,7 @@ function createJsonProcessItem({
       contextPath: deriveContextPath({ source: `${relativePath} [${id}]`, tags }),
       tags,
       metadata,
-      version: 1
+      version: CURRENT_EMBEDDING_VERSION
     });
   };
 }
@@ -1340,7 +1341,7 @@ async function generate() {
           contextPath: deriveContextPath({ source: `${relativePath} [chunk ${index + 1}]`, tags }),
           tags,
           metadata,
-          version: 1
+          version: CURRENT_EMBEDDING_VERSION
         });
       }
     } else if (isJs) {
@@ -1374,7 +1375,7 @@ async function generate() {
           contextPath: deriveContextPath({ source: `${relativePath} [${idSuffix}]`, tags }),
           tags,
           metadata,
-          version: 1
+          version: CURRENT_EMBEDDING_VERSION
         });
       }
     }
@@ -1402,7 +1403,7 @@ async function generate() {
         contextPath: deriveContextPath({ source: `${relativePath} [${idSuffix}]`, tags }),
         tags,
         metadata,
-        version: 1
+        version: CURRENT_EMBEDDING_VERSION
       });
     }
   }
@@ -1419,7 +1420,8 @@ async function generate() {
   const meta = {
     count: entryCount,
     avgVectorLength: avgLength,
-    fileSizeKB: Number((stats.size / 1024).toFixed(2))
+    fileSizeKB: Number((stats.size / 1024).toFixed(2)),
+    version: CURRENT_EMBEDDING_VERSION
   };
   await writeFile(
     path.join(rootDir, "src/data/client_embeddings.meta.json"),
