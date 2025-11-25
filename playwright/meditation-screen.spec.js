@@ -9,22 +9,22 @@ const quoteFixtures = [
   },
   {
     fables: [
-      { id: 1, title: "Still Lake (Echo)", story: "Quiet currents carry yesterday's calm." },
+      { id: 1, title: "Still Lake", story: "Calm waters mirror the sky." },
       { id: 2, title: "Quiet Forest", story: "Leaves hush the wind into silence." }
     ],
     meta: [
-      { id: 1, title: "Still Lake (Echo)" },
+      { id: 1, title: "Still Lake" },
       { id: 2, title: "Quiet Forest" }
     ]
   },
   {
     fables: [
-      { id: 1, title: "Still Lake (Echo)", story: "Quiet currents carry yesterday's calm." },
+      { id: 1, title: "Still Lake", story: "Calm waters mirror the sky." },
       { id: 2, title: "Quiet Forest", story: "Leaves hush the wind into silence." },
       { id: 3, title: "New Dawn", story: "Fresh light greets patient minds." }
     ],
     meta: [
-      { id: 1, title: "Still Lake (Echo)" },
+      { id: 1, title: "Still Lake" },
       { id: 2, title: "Quiet Forest" },
       { id: 3, title: "New Dawn" }
     ]
