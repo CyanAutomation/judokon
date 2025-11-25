@@ -387,6 +387,12 @@ export function validateSelectionState(store) {
   // Check battle state validity
   try {
     const current = typeof getBattleState === "function" ? getBattleState() : null;
+    console.log(
+      "[DIAGNOSTIC] validateSelectionState: current machine state =",
+      current,
+      "VALID_BATTLE_STATES =",
+      VALID_BATTLE_STATES
+    );
     debugInfo.current = current;
     if (current && !VALID_BATTLE_STATES.includes(current)) {
       debugInfo.allowed = false;
@@ -647,6 +653,7 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
   });
 
   if (!validateSelectionState(store)) {
+    console.log("[DIAGNOSTIC] *** VALIDATION FAILED *** Machine state:", store._machineState);
     logSelectionDebug("[test] handleStatSelection: validateSelectionState returned FALSE");
     if (store.selectionMade) {
       try {

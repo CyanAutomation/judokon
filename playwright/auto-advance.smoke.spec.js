@@ -35,7 +35,9 @@ async function assertCountdownTick(page) {
 
   await expect(timerLocator).not.toHaveText(initialText, { timeout: COUNTDOWN_TICK_TIMEOUT_MS });
 
-  const finalState = await page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
+  const finalState = await page.evaluate(
+    () => window.__TEST_API?.state?.getBattleState?.() ?? null
+  );
   expect(["cooldown", "waitingForPlayerAction"].includes(finalState)).toBe(true);
 }
 
@@ -45,10 +47,7 @@ async function startClassicBattle(page) {
   const startLink = page.getByRole("link", { name: "Start classic battle mode", exact: true });
   await expect(startLink).toBeVisible();
 
-  await Promise.all([
-    page.waitForURL("**/battleClassic.html"),
-    startLink.click()
-  ]);
+  await Promise.all([page.waitForURL("**/battleClassic.html"), startLink.click()]);
 }
 
 async function readCooldownSeconds(page) {
@@ -62,7 +61,8 @@ async function readCooldownSeconds(page) {
     }
 
     const debug = window.__TEST_API?.inspect?.getDebugInfo?.();
-    const remaining = debug?.timers?.cooldown?.remaining ?? debug?.timers?.cooldownRemaining ?? null;
+    const remaining =
+      debug?.timers?.cooldown?.remaining ?? debug?.timers?.cooldownRemaining ?? null;
     if (Number.isFinite(remaining)) return Number(remaining);
 
     const parsedDebug = Number.parseFloat(remaining);
@@ -97,7 +97,9 @@ test.describe("Classic Battle – auto-advance", () => {
     await firstStat.click();
 
     await waitForBattleState(page, "cooldown", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
-    const cooldownState = await page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
+    const cooldownState = await page.evaluate(
+      () => window.__TEST_API?.state?.getBattleState?.() ?? null
+    );
     expect(cooldownState).toBe("cooldown");
 
     await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(5));
@@ -107,7 +109,10 @@ test.describe("Classic Battle – auto-advance", () => {
 
     await assertCountdownTick(page);
 
-    await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      allowFallback: false,
+      timeout: STATE_TIMEOUT_MS
+    });
 
     const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
     expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
@@ -135,7 +140,9 @@ test.describe("Classic Battle – auto-advance", () => {
     await firstStat.click();
 
     await waitForBattleState(page, "cooldown", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
-    const cooldownState = await page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
+    const cooldownState = await page.evaluate(
+      () => window.__TEST_API?.state?.getBattleState?.() ?? null
+    );
     expect(cooldownState).toBe("cooldown");
 
     await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(5));
@@ -145,7 +152,10 @@ test.describe("Classic Battle – auto-advance", () => {
 
     await assertCountdownTick(page);
 
-    await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      allowFallback: false,
+      timeout: STATE_TIMEOUT_MS
+    });
 
     const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
     expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);

@@ -152,9 +152,14 @@ test.describe("Meditation screen", () => {
     await page.waitForFunction(() => {
       const heading = document.querySelector("#quote-heading");
       const content = document.querySelector("#quote-content");
-      return heading && content &&
-             heading.textContent && heading.textContent.trim() &&
-             content.textContent && content.textContent.trim();
+      return (
+        heading &&
+        content &&
+        heading.textContent &&
+        heading.textContent.trim() &&
+        content.textContent &&
+        content.textContent.trim()
+      );
     });
 
     await expect(page.locator("#quote-heading")).not.toHaveText(initialTitle);

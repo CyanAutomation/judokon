@@ -56,9 +56,29 @@ import {
 } from "../helpers/classicBattle/timerSchedule.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 
+// Helper to safely access document from within async functions and event handlers
+// In test environments with multiple JSDOM instances or when called from event handlers,
+// the document global may not be in scope. This helper ensures consistent access.
+function getDocumentRef() {
+  try {
+    if (typeof document !== "undefined") {
+      return document;
+    }
+    if (typeof globalThis?.document !== "undefined") {
+      return globalThis.document;
+    }
+    if (typeof window?.document !== "undefined") {
+      return window.document;
+    }
+  } catch {}
+  return null;
+}
+
 function updateTimerFallback(value) {
   try {
-    const el = document.getElementById("next-round-timer");
+    const doc = getDocumentRef();
+    if (!doc) return;
+    const el = doc.getElementById("next-round-timer");
     if (!el) return;
     const valueSpan = el.querySelector('[data-part="value"]');
     const labelSpan = el.querySelector('[data-part="label"]');
@@ -71,8 +91,8 @@ function updateTimerFallback(value) {
       const separator = labelSpan?.nextSibling;
       if (hasValue) {
         if (!separator || separator.nodeType !== 3) {
-          const doc = el.ownerDocument || document;
-          el.insertBefore(doc.createTextNode(" "), valueSpan);
+          const refDoc = el.ownerDocument || doc;
+          el.insertBefore(refDoc.createTextNode(" "), valueSpan);
         } else if (!/\s/.test(separator.textContent || "")) {
           separator.textContent = " ";
         }
