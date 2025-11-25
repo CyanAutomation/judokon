@@ -137,7 +137,7 @@ test.describe("Classic Battle – auto-advance", () => {
   test("auto-advances via Test API countdown", async ({ page }, testInfo) => {
     const roundsBefore = await runAutoAdvanceScenario(page, {
       countdownSeconds: 2,
-    selectStat: async (firstStat) => {
+      selectStat: async (firstStat) => {
       try {
         const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
         if (!dispatched.ok) {
