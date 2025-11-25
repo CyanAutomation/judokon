@@ -22,8 +22,7 @@ async function stubQuoteResponses(page) {
   let metaResponseCount = 0;
 
   await page.route("**/src/data/aesopsFables.json", (route) => {
-    const payload = quoteFixtures[Math.min(fableResponseCount, quoteFixtures.length - 1)]
-      .fables;
+    const payload = quoteFixtures[Math.min(fableResponseCount, quoteFixtures.length - 1)].fables;
     fableResponseCount += 1;
     return route.fulfill({
       status: 200,
@@ -82,12 +81,12 @@ test.describe("Meditation screen", () => {
     });
     await page.getByTestId("continue-link").click();
     await expect(page).toHaveURL(/index\.html/);
-    await expect.poll(() => page.evaluate(() => sessionStorage.getItem("meditationSession"))).toBe(
-      "complete"
-    );
-    await expect.poll(() => page.evaluate(() => window.Sentry?.getCurrentHub?.()?.getClient?.().id)).toBe(
-      "sentry-stub"
-    );
+    await expect
+      .poll(() => page.evaluate(() => sessionStorage.getItem("meditationSession")))
+      .toBe("complete");
+    await expect
+      .poll(() => page.evaluate(() => window.Sentry?.getCurrentHub?.()?.getClient?.().id))
+      .toBe("sentry-stub");
   });
 
   test("quote refresh updates content and respects animation settings", async ({ page }) => {
@@ -135,7 +134,9 @@ test.describe("Meditation screen", () => {
     await expect(page.locator("#quote-loader")).toHaveAttribute("aria-busy", "true");
     await expect(page.locator("#quote")).toHaveAttribute("role", "region");
     await expect(page.locator("#quote")).toHaveAttribute("aria-live", "polite");
-    await expect(page.locator("#language-announcement")).toContainText(/language toggle available/i);
+    await expect(page.locator("#language-announcement")).toContainText(
+      /language toggle available/i
+    );
 
     const languageToggle = page.getByTestId("language-toggle");
     await expect(languageToggle).toBeFocused();
