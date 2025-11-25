@@ -235,7 +235,7 @@ test("scoreboard reconciles directly to round result", async () => {
     isOrchestratorActive: vi.fn(() => false)
   };
 
-  mocks["../../src/helpers/classicBattle/selectionHandler.js"] = mockedSelection;
+  mocks[resolveModulePath("../../src/helpers/classicBattle/selectionHandler.js")] = mockedSelection;
 
   const harness = createClassicBattleHarness({ useRafMock: false, mocks });
   await harness.setup();

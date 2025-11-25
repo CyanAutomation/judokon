@@ -162,23 +162,4 @@ test.describe("Classic Battle – auto-advance", () => {
   expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
 }
 
-test.describe("Classic Battle – auto-advance", () => {
-  test("auto-advances via Test API countdown", async ({ page }) => {
-    await runAutoAdvanceScenario(page, {
-      countdownSeconds: 2,
-      selectStat: async (firstStat) => {
-        const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
-        if (!dispatched.ok) {
-          await firstStat.click();
-        }
-      }
-    });
-  });
 
-  test("auto-advances via UI selection path", async ({ page }) => {
-    await runAutoAdvanceScenario(page, {
-      countdownSeconds: 2,
-      selectStat: async (firstStat) => firstStat.click()
-    });
-  });
-});

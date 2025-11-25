@@ -232,6 +232,7 @@ export function createIntegrationHarness(config = {}) {
     // Apply mocks before importing any modules
     for (const [modulePath, mockImpl] of Object.entries(mocks)) {
       const resolvedPath = resolveMockModuleSpecifier(modulePath);
+      console.log("registering mock for", modulePath, "->", resolvedPath);
       mockRegistrar(resolvedPath, createMockFactory(mockImpl));
     }
 
