@@ -2,15 +2,116 @@
 
 ## Executive Summary
 
-**Status**: Root Cause Identified. Unit tests for the core logic are passing, but integration tests fail due to a state synchronization issue in the JSDOM test environment.
+**Status**: Root Cause Identified and Investigated. Original bug (validateSelectionState byName fix) is COMPLETE. Secondary issue discovered: stat selection validation fails because machine state is not in VALID_BATTLE_STATES when selectStat() is called.
 
-**Problem**: The battle orchestrator's state is not advancing from `matchStart` to `waitingForPlayerAction` after a round begins in our integration tests. This causes the new `validateSelectionState()` guard to correctly reject player input, preventing tests from proceeding.
+**Original Bug (FIXED ✅)**: 
+- `stateManager.js` line 257 was passing `stateTable` (array) instead of `byName` (Map) to `validateStateTransition()`
+- This prevented state transitions from completing
+- **Fix Applied**: Changed line 257 to pass `byName` instead of `stateTable`
+- **Status**: Fixed and verified
 
-**Root Cause**: The `roundStarted` event, which should trigger the state transition, is not being correctly processed by the orchestrator in the test environment. This is likely due to an issue with how event listeners are bound or how the event loop is processed within JSDOM, rather than a flaw in the orchestrator's logic itself.
+**Current Issue (UNDER INVESTIGATION 🔄)**:
+Integration tests fail because when `selectStat()` is called, the orchestrator state machine is not in `waitingForPlayerAction` state. The `validateSelectionState()` guard correctly rejects the selection due to invalid state, preventing the entire stat selection flow from executing.
 
-**Next Steps**: Implement a targeted fix by creating a dedicated test helper to manually trigger the orchestrator's state transition, bypassing the problematic event propagation in the test environment.
+**Current Problem**: The stat selection validation is working as designed (it rejects invalid state), but the state machine is not in the correct state when tests call `selectStat()`. This prevents:
+1. `applySelectionToStore()` from executing
+2. `store.selectionMade` from being set to true
+3. The full round resolution flow from running
+4. `BattleEngine.handleStatSelection()` from being called
+5. `roundsPlayed` from incrementing
+
+**Diagnostic Evidence**: 
+- Test assertion fails: `expect(store.selectionMade).toBe(true)` gets `false`
+- This proves selectStat() validation is rejecting the input
+- Not a roundsPlayed increment issue—it's a much earlier validation failure
 
 Note: It's important not to focus solely on making the test pass - if there is an underlying issue, the that should be fixed/addressed. Please amend application code and test code, where relevant - even if needed for debugging. Also, I want to avoid waits in my tests - rather tests should test components or states directly, via APIs or similiar methods.
+
+---
+
+## Investigation Session: Current State Analysis
+
+### Investigation Phase 1: Machine Registration & Event Dispatch ✅
+
+**Verified Working Components:**
+
+1. **Machine Registration** (orchestrator.js:580)
+   - Machine correctly exposed via `debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef)`
+   - Test helpers can access via `readDebugState()` or `globalThis.__classicBattleDebugRead()`
+   - Fallback mechanism in place for cross-boundary access
+
+2. **Event Dispatch Pipeline** (eventDispatcher.js)
+   - Correctly retrieves machine from debugHooks
+   - Properly awaits `machine.dispatch()` ensuring handlers complete
+   - Returns dispatch result (true/false)
+   - Diagnostic logging in place to track dispatch calls
+
+3. **State Transitions** (stateTable.js)
+   - "statSelected" event correctly maps to target state "roundDecision"
+   - State machine architecture is sound
+   - onEnter handlers properly registered and awaited
+
+4. **Test Helper Initialization** (initClassicBattleTest.js)
+   - Resets bindings after mocks
+   - Ensures debugHooks are properly set up
+   - Returns battle module for test access
+
+### Investigation Phase 2: State Validation Guard Discovery 🎯
+
+**Root Issue Located** (selectionHandler.js:24, 365-410):
+
+- `VALID_BATTLE_STATES = ["waitingForPlayerAction", "roundDecision"]`
+- `validateSelectionState()` checks if current machine state is in VALID_BATTLE_STATES
+- When validation fails (state not valid), `applySelectionToStore()` is never called
+- Result: `store.selectionMade` remains false, blocking entire flow
+
+**Evidence from Test Execution:**
+
+```
+Test: "initializes the page UI to the correct default state"
+Failed Assertion: expect(store.selectionMade).toBe(true)
+Actual Result: store.selectionMade = false
+```
+
+This proves the validation guard is rejecting the stat selection because the machine state is invalid at the time selectStat() is called.
+
+### Investigation Phase 3: State Machine State Analysis 🔍
+
+**Diagnostic Logging Added:**
+
+Added console.log statements to trace execution:
+
+1. **roundDecisionEnter.js** (lines 36, 42)
+   - Logs when handler is called with current store.playerChoice
+   - Helps detect if state transition completes and handler executes
+
+2. **roundDecisionHelpers.js** (lines 201, 212, 214)
+   - Logs when resolveSelectionIfPresent() executes
+   - Tracks when resolveRound() is called
+   - Detects early return if no playerChoice
+
+3. **roundResolver.js** (lines 71, 79, 80)
+   - Logs evaluateOutcome() invocation with stat values
+   - Logs before and after handleStatSelection() call
+   - Tracks engine facade usage
+
+**Test Execution with Diagnostics:**
+
+When integration test runs with diagnostics enabled:
+- Logs reveal which handlers are/aren't being called
+- Shows actual machine state when selectStat() is invoked
+- Identifies where execution stops (validation guard vs. handler)
+
+### Current Hypothesis
+
+The machine state is **NOT** transitioning to `waitingForPlayerAction` when expected. Possible causes:
+
+1. **Event Dispatch Failure**: The initial "ready" or round-start event isn't propagating in JSDOM
+2. **Race Condition**: State transitions, but selectStat() is called before transition completes
+3. **State Leakage**: State transitions successfully but then reverts back to matchStart
+4. **Missing Handler**: Event is dispatched but state machine doesn't recognize event in current state
+
+**Next Step**: Run integration tests with diagnostic logging enabled to determine actual machine state.
 
 ---
 
@@ -36,6 +137,88 @@ The core issue is a discrepancy between the browser environment and the JSDOM te
 3. **State Leakage Ruled Out (For Now)**: While module-level state can be a problem, the consistent failure at the _initial_ state transition points away from this. The orchestrator never reaches a state that could "leak" into the next test.
 
 The problem lies not in the orchestrator's inability to change state, but in its **failure to receive the signal to do so** within the artificial confines of the test.
+
+---
+
+## Investigation Session: Current State Analysis
+
+### Investigation Phase 1: Machine Registration & Event Dispatch ✅
+
+**Verified Working Components:**
+
+1. **Machine Registration** (orchestrator.js:580)
+   - Machine correctly exposed via `debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef)`
+   - Test helpers can access via `readDebugState()` or `globalThis.__classicBattleDebugRead()`
+   - Fallback mechanism in place for cross-boundary access
+
+2. **Event Dispatch Pipeline** (eventDispatcher.js)
+   - Correctly retrieves machine from debugHooks
+   - Properly awaits `machine.dispatch()` ensuring handlers complete
+   - Returns dispatch result (true/false)
+   - Diagnostic logging in place to track dispatch calls
+
+3. **State Transitions** (stateTable.js)
+   - "statSelected" event correctly maps to target state "roundDecision"
+   - State machine architecture is sound
+   - onEnter handlers properly registered and awaited
+
+4. **Test Helper Initialization** (initClassicBattleTest.js)
+   - Resets bindings after mocks
+   - Ensures debugHooks are properly set up
+   - Returns battle module for test access
+
+### Investigation Phase 2: State Validation Guard Discovery
+
+**Root Issue Located** (selectionHandler.js:24, 365-410):
+
+- `VALID_BATTLE_STATES = ["waitingForPlayerAction", "roundDecision"]`
+- `validateSelectionState()` checks if current machine state is in VALID_BATTLE_STATES
+- When validation fails (state not valid), `applySelectionToStore()` is never called
+- Result: `store.selectionMade` remains false, blocking entire flow
+
+**Evidence from Test Execution:**
+
+- Test assertion fails: `expect(store.selectionMade).toBe(true)` gets `false`
+- This proves selectStat() validation is rejecting the input
+- Not a roundsPlayed increment issue—it's a much earlier validation failure
+
+### Investigation Phase 3: Diagnostic Logging Added
+
+**Diagnostic Logging Instrumentation:**
+
+Added console.log statements to trace execution:
+
+1. **roundDecisionEnter.js** (lines 36, 42)
+   - Logs when handler is called with current store.playerChoice
+   - Helps detect if state transition completes and handler executes
+
+2. **roundDecisionHelpers.js** (lines 201, 212, 214)
+   - Logs when resolveSelectionIfPresent() executes
+   - Tracks when resolveRound() is called
+   - Detects early return if no playerChoice
+
+3. **roundResolver.js** (lines 71, 79, 80)
+   - Logs evaluateOutcome() invocation with stat values
+   - Logs before and after handleStatSelection() call
+   - Tracks engine facade usage
+
+**Test Execution with Diagnostics:**
+
+When integration test runs with diagnostics enabled:
+- Logs reveal which handlers are/aren't being called
+- Shows actual machine state when selectStat() is invoked
+- Identifies where execution stops (validation guard vs. handler)
+
+### Current Hypothesis
+
+The machine state is **NOT** transitioning to `waitingForPlayerAction` when expected. Possible causes:
+
+1. **Event Dispatch Failure**: The initial "ready" or round-start event isn't propagating in JSDOM
+2. **Race Condition**: State transitions, but selectStat() is called before transition completes
+3. **State Leakage**: State transitions successfully but then reverts back to matchStart
+4. **Missing Handler**: Event is dispatched but state machine doesn't recognize event in current state
+
+**Next Step**: Run integration tests with diagnostic logging enabled to determine actual machine state.
 
 ---
 
@@ -68,14 +251,14 @@ This approach makes tests more resilient and less dependent on the nuances of JS
 
 ## Completed Work & Debugging Guide
 
-_The following sections are preserved from the original report for context. The debugging guide remains a valuable tool._
+_The following sections document prior work completed in earlier investigation sessions._
 
-### Task 1: validateSelectionState() Unit Test ✅ COMPLETE
+### Original Task 1: validateSelectionState() Unit Test ✅ COMPLETE
 
 **File**: `tests/classicBattle/validateSelectionState.test.js`
 _(Details omitted for brevity, see previous report version)_
 
-### Task 2: window.\_\_VALIDATE_SELECTION_DEBUG Documentation ✅ COMPLETE
+### Original Task 2: window.\_\_VALIDATE_SELECTION_DEBUG Documentation ✅ COMPLETE
 
 _(Details omitted for brevity, see previous report version)_
 
@@ -87,7 +270,7 @@ _(Full guide content is preserved from the previous version of this report)_
 
 ---
 
-## Verification Checklist
+## Verification Checklist for Current Investigation
 
 After implementing the proposed fix, the following checks will validate the solution:
 
