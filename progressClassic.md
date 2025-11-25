@@ -1,110 +1,82 @@
-# Classic Battle Test Harness: Mock Registration Bug
+# Bug Investigation: Classic Battle Test Harness Mock Registration
 
-## Status
+## Executive Summary
 
-- Running `npx vitest run tests/classicBattle/resolution.test.js` reports four failing tests: `score updates after auto-select on expiry`, `timer expiry falls back to store stats when DOM is obscured`, `scoreboard reconciles directly to round result`, and `match end forwards outcome to end modal`.
-- **Root cause verified**: Mocks are being discarded due to incorrect timing with `vi.resetModules()`.
-- Symptoms: mocked `computeRoundResult` never invoked, stat buttons never render, `roundResolved` handler never registered.
+**Status**: Investigation Complete. Root cause verified. Ready for implementation.
 
-## Root Cause Analysis (Verified)
+**Bug**: Multiple tests in `tests/classicBattle/resolution.test.js` are failing because mocks are not being correctly applied. This causes tests to run against real module implementations instead of the intended mocks, leading to failures.
 
-### The Problem: Mock Registration Timing
+**Root Cause**: The test harness at `tests/helpers/integrationHarness.js` incorrectly calls `vi.resetModules()` *before* it registers the mocks via `vi.doMock()`. According to Vitest's design, mocks must be queued *before* the module cache is reset. The current order clears the module cache, and then queues mocks that are never used because the subsequent module imports load the original, non-mocked versions.
 
-Vitest's mock system requires a strict ordering:
+**Solution**: Reorder the operations in the `setup()` function within `createIntegrationHarness`. The mock registration loop must be executed **before** `vi.resetModules()` is called.
 
-1. Call `vi.doMock(modulePath, factory)` to queue mocks for the next import cycle
-2. Call `vi.resetModules()` to clear the module cache (preserving queued mocks)
-3. Import the module — it will use the mocked version
+---
 
-The current harness violates this order:
+## Proposed Fix Plan
 
-- **Line 227 in integrationHarness.js**: calls `vi.resetModules()` first
-- **Lines 230-236**: then calls `mockRegistrar()` (which is `vi.doMock()`)
-- When modules are imported later, they use the real implementations instead of mocks
+### Step 1: Correct the Mock Registration Order
 
-### Evidence
+Modify the `setup` function in `tests/helpers/integrationHarness.js`.
 
-1. Test output shows `computeRoundResultMock` never called (spy was created but never invoked)
-2. The DOM query `document.querySelectorAll("#stat-buttons button[data-stat]")` returns 0 buttons — stat rendering is not triggered
-3. The `onBattleEvent` mock never receives any calls with `"roundResolved"` event
-4. All point to real runtime code executing: `beginSelectionTimer()` skips the Vitest branch, `computeRoundResult` is never called
-5. Test has `globalThis.__TEST__ = true` and `process.env.VITEST = "true"` set correctly, confirming mocks would work if registered in time
-
-### Why This Matters
-
-When `vi.resetModules()` is called:
-
-- **Before queuing mocks**: The reset clears any mocks that were queued, leaving real modules in place for the next import
-- **After queuing mocks**: The queued mocks survive the reset and are applied to the next import
-
-Current code does the former (reset, then mock), but needs the latter (mock, then reset).
-
-## Solution: Reorder Mock and Reset Operations
-
-### Approach
-
-Restructure `integrationHarness.js` to apply mocks **before** calling `vi.resetModules()`:
-
+**Current Code (Incorrect):**
 ```javascript
+// in tests/helpers/integrationHarness.js
+
 async function setup() {
-  // 1. Queue all mocks FIRST
+  // 1. Reset modules to ensure clean state (WRONG ORDER)
+  vi.resetModules();
+
+  // 2. Apply mocks after reset (TOO LATE)
+  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
+    // ... mock registration logic
+  }
+  // ... rest of setup
+}
+```
+
+**Proposed Code (Correct):**
+```javascript
+// in tests/helpers/integrationHarness.js
+
+async function setup() {
+  // 1. Apply mocks FIRST
+  // This queues the mocks to be used in the next import cycle.
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     const resolvedPath = resolveMockModuleSpecifier(modulePath);
     mockRegistrar(resolvedPath, createMockFactory(mockImpl));
   }
 
-  // 2. THEN reset modules (preserves queued mocks)
+  // 2. THEN, reset modules
+  // This clears the module cache but preserves the queued mocks.
   vi.resetModules();
 
-  // 3. Setup timers and fixtures
-  if (useFakeTimers) {
-    timerControl = useCanonicalTimers();
-  }
-  if (useRafMock) {
-    rafControl = installRAFMock();
-  }
-  
-  // 4. Inject fixtures
-  for (const [key, value] of Object.entries(fixtures)) {
-    injectFixture(key, value);
-  }
-
-  if (customSetup) {
-    await customSetup();
-  }
+  // ... rest of setup proceeds as before
 }
 ```
+*Note: The debugging code that pushes to `globalThis.__registeredMockPaths` should also be moved along with the mock registration loop.*
 
-### Why This Works
 
-- Vitest queues mocks internally when `vi.doMock()` is called
-- `vi.resetModules()` clears the module registry but **preserves queued mocks** (by design)
-- Subsequent imports use the mocked modules
-- Test mocks passed via `createClassicBattleHarness({ mocks })` are registered at the right time
+### Step 2: Verify the Fix
 
-## Implementation Steps
+After applying the change, run the affected test file to confirm the fix.
 
-1. **Update `integrationHarness.js`** (lines 222–250):
-   - Move the mock registration loop **before** `vi.resetModules()`
-   - Keep all else the same
+```bash
+npx vitest run tests/classicBattle/resolution.test.js
+```
 
-2. **Verify the fix**:
+All four previously failing tests should now pass.
 
-   ```bash
-   npx vitest run tests/classicBattle/resolution.test.js
-   ```
+### Step 3: Run Regression Tests
 
-   Expected: All four tests pass
-   - `computeRoundResultMock` is called
-   - Stat buttons render successfully
-   - `roundResolved` handler is registered
+Ensure the change has not introduced any side effects in other parts of the test suite.
 
-3. **Verify no regressions** in other tests:
+```bash
+npm run test:battles
+```
 
-   ```bash
-   npm run test:battles
-   ```
+All battle-related tests should continue to pass.
 
-## Files to Change
+---
+## Files to Modify
 
-- `tests/helpers/integrationHarness.js` — lines 222–250 (reorder mock/reset operations)
+- **`tests/helpers/integrationHarness.js`**: Reorder the mock registration loop and the `vi.resetModules()` call within the `setup` function.
