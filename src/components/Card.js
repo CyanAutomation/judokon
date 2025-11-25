@@ -20,6 +20,7 @@
  * @class
  */
 import { getSanitizer } from "../helpers/sanitizeHtml.js";
+import { getDocumentRef } from "../helpers/documentHelper.js";
 
 function applyClasses(el, className) {
   if (!className) return;
@@ -58,7 +59,29 @@ export class Card {
    */
   constructor(content, options = {}) {
     const { id, className, href, onClick, html = false, sanitize = getSanitizer } = options;
-    this.element = href ? document.createElement("a") : document.createElement("div");
+    const doc = getDocumentRef();
+    if (!doc) {
+      // Debug: try accessing document directly - be careful not to reference window in error message
+      const directDoc = typeof document !== "undefined" ? document : null;
+      try {
+        const fallback =
+          typeof globalThis !== "undefined" && globalThis?.document
+            ? "globalThis.document"
+            : typeof window !== "undefined" && window?.document
+              ? "window.document"
+              : "none";
+        console.warn(
+          "Card: getDocumentRef returned null. directDoc:",
+          !!directDoc,
+          "fallback:",
+          fallback
+        );
+      } catch (err) {
+        console.warn("Card: getDocumentRef returned null and debug logging failed");
+      }
+      throw new Error("Card: Unable to access document (JSDOM or DOM environment required)");
+    }
+    this.element = href ? doc.createElement("a") : doc.createElement("div");
     this.element.classList.add("card");
     if (!content && !id && !className && !onClick && !href) return;
     if (id) this.element.id = id;

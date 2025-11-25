@@ -170,12 +170,12 @@ test("score updates after auto-select on expiry", async () => {
   setupDom();
   const playerStats = { power: 10, speed: 55, technique: 10, kumikata: 10, newaza: 10 };
   const opponentStats = { power: 8, speed: 30, technique: 8, kumikata: 8, newaza: 8 };
+  const harness = createClassicBattleHarness();
+  await harness.setup();
   const mocks = mockModules({ playerStats, opponentStats });
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     vi.doMock(modulePath, () => mockImpl);
   }
-  const harness = createClassicBattleHarness();
-  await harness.setup();
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
   await harness.timerControl.runAllTimersAsync();
@@ -196,12 +196,12 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
     player: { speed: "?" },
     opponent: { speed: "?" }
   };
+  const harness = createClassicBattleHarness();
+  await harness.setup();
   const mocks = mockModules({ playerStats, opponentStats, domOverrides });
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     vi.doMock(modulePath, () => mockImpl);
   }
-  const harness = createClassicBattleHarness();
-  await harness.setup();
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
   await harness.timerControl.runAllTimersAsync();
@@ -222,6 +222,8 @@ test("scoreboard reconciles directly to round result", async () => {
 
   const playerStats = { power: 3, speed: 40, technique: 3, kumikata: 3, newaza: 3 };
   const opponentStats = { power: 2, speed: 10, technique: 2, kumikata: 2, newaza: 2 };
+  const harness = createClassicBattleHarness({ useRafMock: false });
+  await harness.setup();
   const mocks = mockModules({ playerStats, opponentStats });
 
   const mockedSelection = {
@@ -240,9 +242,6 @@ test("scoreboard reconciles directly to round result", async () => {
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     vi.doMock(modulePath, () => mockImpl);
   }
-
-  const harness = createClassicBattleHarness({ useRafMock: false });
-  await harness.setup();
 
   const testController = createTestController();
 
@@ -278,12 +277,12 @@ test("match end forwards outcome to end modal", async () => {
   setupDom();
   const playerStats = { power: 9, speed: 9, technique: 9, kumikata: 9, newaza: 9 };
   const opponentStats = { power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 };
+  const harness = createClassicBattleHarness();
+  await harness.setup();
   const mocks = mockModules({ playerStats, opponentStats });
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     vi.doMock(modulePath, () => mockImpl);
   }
-  const harness = createClassicBattleHarness();
-  await harness.setup();
   const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
   const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
   const mod = await import("../../src/pages/battleClassic.init.js");

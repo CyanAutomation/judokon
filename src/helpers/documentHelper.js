@@ -9,16 +9,29 @@
  */
 export function getDocumentRef() {
   try {
-    if (typeof document !== "undefined") {
+    if (typeof document !== "undefined" && document) {
       return document;
     }
-    if (typeof globalThis?.document !== "undefined") {
+  } catch {
+    // Silently ignore
+  }
+  
+  try {
+    if (typeof globalThis !== "undefined" && globalThis?.document) {
       return globalThis.document;
     }
-    if (typeof window?.document !== "undefined") {
+  } catch {
+    // Silently ignore
+  }
+  
+  try {
+    if (typeof window !== "undefined" && window?.document) {
       return window.document;
     }
-  } catch {}
+  } catch {
+    // Silently ignore
+  }
+  
   return null;
 }
 

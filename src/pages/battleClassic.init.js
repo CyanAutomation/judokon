@@ -122,11 +122,7 @@ import { isDevelopmentEnvironment } from "../helpers/environment.js";
 function broadcastBattleState(state) {
   let from = null;
   try {
-    const doc =
-      (typeof document !== "undefined" && document) ||
-      (typeof globalThis?.document !== "undefined" && globalThis.document) ||
-      (typeof window?.document !== "undefined" && window.document) ||
-      null;
+    const doc = getDocumentRef();
     if (doc && typeof doc !== "undefined") {
       from = doc.body?.dataset?.battleState ?? null;
     }
@@ -134,11 +130,7 @@ function broadcastBattleState(state) {
   const detail = { from, to: state };
   emitBattleEvent("battleStateChange", detail);
   try {
-    const doc =
-      (typeof document !== "undefined" && document) ||
-      (typeof globalThis?.document !== "undefined" && globalThis.document) ||
-      (typeof window?.document !== "undefined" && window.document) ||
-      null;
+    const doc = getDocumentRef();
     if (doc && typeof doc !== "undefined") {
       doc.body.dataset.battleState = state;
     }
@@ -927,11 +919,7 @@ async function handleStatButtonClick(store, stat, btn) {
  * 1. Create buttons for STATS, enable them, and handle selection.
  */
 function renderStatButtons(store) {
-  const doc =
-    (typeof document !== "undefined" && document) ||
-    (typeof globalThis?.document !== "undefined" && globalThis.document) ||
-    (typeof window?.document !== "undefined" && window.document) ||
-    null;
+  const doc = getDocumentRef();
   if (!doc) {
     return;
   }
