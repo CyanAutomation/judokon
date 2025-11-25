@@ -118,7 +118,7 @@ test.describe("Classic Battle – auto-advance", () => {
       selectStat: async (firstStat) => {
         try {
           const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
-          if (!dispatched?.ok) {
+          if (!dispatched.ok) {
             await firstStat.click();
           }
         } catch (error) {
