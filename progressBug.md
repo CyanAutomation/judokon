@@ -197,7 +197,17 @@ Reading source code to understand machine registration flow:
 
 **Key Finding**: All infrastructure appears correct. The machine IS being registered via `debugHooks.exposeDebugState()` and tests have access to it. The issue is not that the machine is missing, but that `machine.dispatch("statSelected")` is returning `false`, meaning the state machine doesn't recognize the "statSelected" event in the current state.
 
-**Next Hypothesis**: The `dispatchBattleEvent` function retrieves a valid machine, but the machine is NOT in the `waitingForPlayerAction` state when `dispatchStatSelected()` is called. Despite the test calling `await state.waitForBattleState("waitingForPlayerAction")`, the state transition may not have completed by the time the selection is processed.
+**Key Code Findings**:
+
+- **stateTable.js:75**: The transition IS correctly defined: `{ on: "statSelected", target: "roundDecision" }`
+- **waitingForPlayerAction state** allows: `statSelected`, `timeout`, `interrupt` events
+- **roundDecision state** is triggered by `statSelected`, with onEnter handlers: `["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"]`
+- **Machine is exposed** via `debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef)` (line 580)
+- **eventDispatcher.js** tries two ways to get the machine: `globalThis.__classicBattleDebugRead()` (primary) and `readDebugState()` (fallback)
+
+**Critical Issue Identified**: The flow from `statSelected` event to `roundDecision` state to `roundDecisionEnter` handler should increment `roundsPlayed`. But this is not happening in tests.
+
+Let me trace the `roundDecisionEnter` handler to see what should execute when we enter that state.
 
 ---
 

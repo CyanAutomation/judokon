@@ -9,6 +9,8 @@ let machineIdCounter = 0;
 /**
  * Write deduplication diagnostics when stdout is available.
  *
+ * @internal
+ *
  * @pseudocode
  * 1. Confirm a Node-like `process.stdout.write` function exists.
  * 2. Attempt to write the provided message to stdout.
@@ -33,6 +35,8 @@ function writeDedupeLog(message) {
 
 /**
  * Get a high-resolution timestamp for deduplication tracking.
+ *
+ * @internal
  *
  * @pseudocode
  * 1. Try to use Node.js high-resolution time (process.hrtime.bigint) if available.
@@ -59,6 +63,8 @@ function getTimestamp() {
 /**
  * Get a unique identifier for a machine instance.
  *
+ * @internal
+ *
  * @pseudocode
  * 1. Check if machine is a valid object or function.
  * 2. If machine is not in the WeakMap, assign it a new incremental ID.
@@ -82,6 +88,8 @@ function getMachineId(machine) {
 /**
  * Generate a unique key for event deduplication tracking.
  *
+ * @internal
+ *
  * @pseudocode
  * 1. Validate that eventName is a non-empty string.
  * 2. Return null if eventName is invalid.
@@ -99,7 +107,28 @@ function getDispatchKey(eventName, machine) {
 }
 
 /**
+ * Safely expose debug state, swallowing any errors.
+ *
+ * @internal
+ *
+ * @param {string} key - Debug state key
+ * @param {any} value - Debug state value
+ */
+function safeExposeDebugState(key, value) {
+  try {
+    exposeDebugState(key, value);
+  } catch {
+    // Debug state exposure is best-effort, ignore failures
+  }
+}
+
+/**
  * Register an event dispatch and check for deduplication.
+ *
+ * @internal
+ *
+ * Deduplication only applies to "ready" events to prevent rapid re-initialization
+ * of the battle machine during startup transients. Other events are dispatched normally.
  *
  * @pseudocode
  * 1. Skip deduplication for all events except "ready".
@@ -124,16 +153,12 @@ function registerDispatch(eventName, machine) {
   const now = getTimestamp();
   const last = recentDispatches.get(key);
   if (typeof last === "number" && now - last < DEDUPE_WINDOW_MS) {
-    try {
-      exposeDebugState("dispatchReadySkipped", now - last);
-    } catch {}
+    safeExposeDebugState("dispatchReadySkipped", now - last);
     writeDedupeLog(`[dedupe] skip ${eventName} ${now - last} ${key}
 `);
     return { shouldSkip: true, key, timestamp: last };
   }
-  try {
-    exposeDebugState("dispatchReadyTracked", now);
-  } catch {}
+  safeExposeDebugState("dispatchReadyTracked", now);
   writeDedupeLog(`[dedupe] track ${eventName} ${now} ${key}
 `);
   recentDispatches.set(key, now);
@@ -176,6 +201,8 @@ export function resetDispatchHistory(eventName) {
 /**
  * Reset a specific dispatch key if it matches the given timestamp.
  *
+ * @internal
+ *
  * @pseudocode
  * 1. Return early if no key is provided.
  * 2. Get the current timestamp for the key from recentDispatches.
@@ -194,10 +221,34 @@ function resetDispatchKey(key, timestamp) {
 }
 
 /**
+ * Get machine state safely, handling both function and property access.
+ *
+ * @internal
+ *
+ * @param {any} machine - Machine instance
+ * @returns {any} Machine state or null if unavailable
+ */
+function getMachineState(machine) {
+  try {
+    if (typeof machine?.getState === "function") {
+      return machine.getState();
+    }
+    return machine?.state ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Dispatch an event to the active battle machine.
  *
  * Safe wrapper around `machine.dispatch` that early-returns when no
  * machine is available and emits diagnostic events on failure.
+ *
+ * Return value semantics:
+ * - `false`: Machine not available (early startup state)
+ * - `true`: Dispatch was deduped/skipped
+ * - Other: Result from machine.dispatch()
  *
  * @pseudocode
  * 1. Get machine from debug state to avoid circular dependency.
@@ -208,106 +259,49 @@ function resetDispatchKey(key, timestamp) {
  *
  * @param {string} eventName - Event to send to the machine.
  * @param {any} [payload] - Optional event payload.
- * @returns {Promise<any>|void} Result of the dispatch when available.
+ * @returns {Promise<any>|boolean} Result of dispatch, true if skipped, false if unavailable.
  */
 export async function dispatchBattleEvent(eventName, payload) {
-  // Get machine from debug state to avoid circular dependency
-  let machineSource =
-    typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
-      ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
-      : undefined;
+  const machine = getMachineFromDebugState();
 
-  if (typeof machineSource !== "function") {
-    const fallback = readDebugState("getClassicBattleMachine");
-    if (typeof fallback === "function") {
-      machineSource = fallback;
-    } else if (!machineSource && fallback) {
-      machineSource = fallback;
-    }
-  }
-
-  // Expose raw getter diagnostics so tests can assert visibility across ESM/module boundaries
-  try {
-    const globalGetter =
-      typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
-        ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
-        : undefined;
-    try {
-      exposeDebugState("dispatch_globalGetterType", typeof globalGetter);
-    } catch {}
-  } catch {}
-  const machineSourceType = typeof machineSource;
-  let machine = null;
-  if (machineSourceType === "function") {
-    machine = machineSource();
-  } else if (machineSource) {
-    machine = machineSource;
-  }
-  try {
-    exposeDebugState("dispatch_machineSourceType", machineSourceType);
-  } catch {}
-  try {
-    const invokedType = machineSourceType === "function" ? typeof machine : machineSourceType;
-    exposeDebugState("dispatch_machineSourceInvokedType", invokedType);
-  } catch {}
-  try {
-    exposeDebugState("dispatchMachineAvailable", !!machine);
-  } catch {}
+  safeExposeDebugState("dispatchMachineAvailable", !!machine);
 
   if (!machine) {
     // Not having a machine is an expected state during early startup
     // (for example when the round selection modal runs before the
     // orchestrator initializes). Return `false` to signal the skipped
     // dispatch without emitting console noise in production.
-    try {
-      exposeDebugState("dispatchBattleEventNoMachine", eventName);
-    } catch {}
+    safeExposeDebugState("dispatchBattleEventNoMachine", eventName);
     return false;
   }
 
   const { shouldSkip, key: dispatchKey, timestamp } = registerDispatch(eventName, machine);
   if (shouldSkip) {
-    try {
-      exposeDebugState("dispatchBattleEventSkipped", { event: eventName, key: dispatchKey });
-    } catch {}
+    safeExposeDebugState("dispatchBattleEventSkipped", { event: eventName, key: dispatchKey });
     writeDedupeLog(`[dedupe] short-circuit ${eventName} ${dispatchKey}
 `);
     return true;
   }
 
-  // DEBUG: Log all event dispatches
-  try {
-    exposeDebugState(
-      "dispatchMachineStateBefore",
-      typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null)
-    );
-  } catch {}
-
-  try {
-    exposeDebugState("dispatchBattleEventInvoked", eventName);
-  } catch {}
+  safeExposeDebugState("dispatchMachineStateBefore", getMachineState(machine));
+  safeExposeDebugState("dispatchBattleEventInvoked", eventName);
 
   try {
     // PRD taxonomy: emit interrupt.requested with payload context
     if (eventName === "interrupt") {
       try {
         const scope =
-          payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
+          payload?.scope || (getMachineState(machine) === "matchStart" ? "match" : "round");
         emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
       } catch {
         // ignore: interrupt diagnostics are optional
       }
     }
+
     const result = await machine.dispatch(eventName, payload);
-    try {
-      exposeDebugState("dispatchBattleEventResult", result);
-    } catch {}
-    try {
-      exposeDebugState(
-        "dispatchMachineStateAfter",
-        typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null)
-      );
-    } catch {}
+    safeExposeDebugState("dispatchBattleEventResult", result);
+    safeExposeDebugState("dispatchMachineStateAfter", getMachineState(machine));
+
     if (result === false) {
       resetDispatchKey(dispatchKey, timestamp);
     }
@@ -323,4 +317,54 @@ export async function dispatchBattleEvent(eventName, payload) {
     }
     return false;
   }
+}
+
+/**
+ * Get the battle machine from debug state, with fallback chain.
+ *
+ * @internal
+ *
+ * Attempts to retrieve machine via:
+ * 1. globalThis.__classicBattleDebugRead (ESM module boundary)
+ * 2. readDebugState fallback (same module context)
+ * 3. Direct property access as last resort
+ *
+ * @returns {any|null} Machine instance or null if unavailable
+ */
+function getMachineFromDebugState() {
+  let machineSource =
+    typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
+      ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
+      : undefined;
+
+  if (typeof machineSource !== "function") {
+    const fallback = readDebugState("getClassicBattleMachine");
+    if (typeof fallback === "function") {
+      machineSource = fallback;
+    } else if (!machineSource && fallback) {
+      machineSource = fallback;
+    }
+  }
+
+  safeExposeDebugState(
+    "dispatch_globalGetterType",
+    typeof globalThis?.__classicBattleDebugRead?.("getClassicBattleMachine")
+  );
+  safeExposeDebugState("dispatch_machineSourceType", typeof machineSource);
+
+  const machineSourceType = typeof machineSource;
+  let machine = null;
+
+  if (machineSourceType === "function") {
+    machine = machineSource();
+  } else if (machineSource) {
+    machine = machineSource;
+  }
+
+  safeExposeDebugState(
+    "dispatch_machineSourceInvokedType",
+    machineSourceType === "function" ? typeof machine : machineSourceType
+  );
+
+  return machine;
 }
