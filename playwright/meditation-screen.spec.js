@@ -8,12 +8,26 @@ const quoteFixtures = [
     meta: [{ id: 1, title: "Still Lake" }]
   },
   {
-    fables: [{ id: 2, title: "Quiet Forest", story: "Leaves hush the wind into silence." }],
-    meta: [{ id: 2, title: "Quiet Forest" }]
+    fables: [
+      { id: 1, title: "Still Lake (Echo)", story: "Quiet currents carry yesterday's calm." },
+      { id: 2, title: "Quiet Forest", story: "Leaves hush the wind into silence." }
+    ],
+    meta: [
+      { id: 1, title: "Still Lake (Echo)" },
+      { id: 2, title: "Quiet Forest" }
+    ]
   },
   {
-    fables: [{ id: 3, title: "New Dawn", story: "Fresh light greets patient minds." }],
-    meta: [{ id: 3, title: "New Dawn" }]
+    fables: [
+      { id: 1, title: "Still Lake (Echo)", story: "Quiet currents carry yesterday's calm." },
+      { id: 2, title: "Quiet Forest", story: "Leaves hush the wind into silence." },
+      { id: 3, title: "New Dawn", story: "Fresh light greets patient minds." }
+    ],
+    meta: [
+      { id: 1, title: "Still Lake (Echo)" },
+      { id: 2, title: "Quiet Forest" },
+      { id: 3, title: "New Dawn" }
+    ]
   }
 ];
 
@@ -138,7 +152,9 @@ test.describe("Meditation screen", () => {
     await page.waitForFunction(() => {
       const heading = document.querySelector("#quote-heading");
       const content = document.querySelector("#quote-content");
-      return heading && content && heading.textContent && content.textContent;
+      return heading && content &&
+             heading.textContent && heading.textContent.trim() &&
+             content.textContent && content.textContent.trim();
     });
 
     await expect(page.locator("#quote-heading")).not.toHaveText(initialTitle);
