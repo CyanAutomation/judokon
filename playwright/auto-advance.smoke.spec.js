@@ -70,7 +70,7 @@ async function readCooldownSeconds(page) {
     const parsedGetter = Number.parseFloat(getterValue);
     if (Number.isFinite(parsedGetter)) return parsedGetter;
 
-    return 0;
+    return null;
   });
 }
 
@@ -93,7 +93,7 @@ async function runAutoAdvanceScenario(page, { countdownSeconds = 2, selectStat }
 
   const firstStat = statContainer.getByRole("button").first();
   await expect(firstStat).toBeVisible();
-  await selectStat(firstStat, statContainer);
+  await selectStat(firstStat);
 
   await waitForBattleState(page, "cooldown", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
   const cooldownState = await page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
@@ -120,8 +120,12 @@ test.describe("Classic Battle – auto-advance", () => {
     await runAutoAdvanceScenario(page, {
       countdownSeconds: 2,
       selectStat: async (firstStat) => {
-        const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
-        if (!dispatched.ok) {
+        try {
+          const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
+          if (!dispatched?.ok) {
+            await firstStat.click();
+          }
+        } catch (error) {
           await firstStat.click();
         }
       }
