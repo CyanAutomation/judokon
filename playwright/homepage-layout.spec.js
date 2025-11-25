@@ -117,6 +117,10 @@ test.describe("Homepage layout", () => {
           throw new Error("No visible tiles found for layout validation");
         }
 
+        if (positions.length === 0) {
+          throw new Error("No visible tiles found for layout validation");
+        }
+
         const maxRight = Math.max(...positions.map((box) => box.x + box.width));
         const maxBottom = Math.max(...positions.map((box) => box.y + box.height));
 
