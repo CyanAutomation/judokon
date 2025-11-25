@@ -8,30 +8,35 @@
  * @returns {Document|null} The available document object, or null if none is found
  */
 export function getDocumentRef() {
+  // Try direct document reference (most common case)
   try {
     if (typeof document !== "undefined" && document) {
       return document;
     }
   } catch {
-    // Silently ignore
+    // Silently ignore - window might be a getter that throws
   }
-  
+
+  // Try globalThis.document
   try {
-    if (typeof globalThis !== "undefined" && globalThis?.document) {
+    if (globalThis && globalThis.document) {
       return globalThis.document;
     }
   } catch {
     // Silently ignore
   }
-  
+
+  // Try window.document as fallback (but be very defensive)
   try {
-    if (typeof window !== "undefined" && window?.document) {
-      return window.document;
+    // Use optional chaining to avoid triggering getters that might throw
+    const maybeWindow = globalThis?.window;
+    if (maybeWindow && maybeWindow.document) {
+      return maybeWindow.document;
     }
   } catch {
     // Silently ignore
   }
-  
+
   return null;
 }
 

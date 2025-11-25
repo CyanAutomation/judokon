@@ -8,6 +8,10 @@ import { createTestController } from "../../src/utils/scheduler.js";
 // Enable test controller access
 globalThis.__TEST__ = true;
 
+if (!process.env.VITEST) {
+  process.env.VITEST = "true";
+}
+
 const STAT_KEYS = ["power", "speed", "technique", "kumikata", "newaza"];
 
 let computeRoundResultMock;
@@ -178,6 +182,7 @@ test("score updates after auto-select on expiry", async () => {
   }
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
+  expect(mocks["../../src/helpers/classicBattle/roundSelectModal.js"].initRoundSelectModal).toHaveBeenCalled();
   await harness.timerControl.runAllTimersAsync();
   await Promise.resolve();
   expect(computeRoundResultMock).toHaveBeenCalled();

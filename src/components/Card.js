@@ -61,23 +61,24 @@ export class Card {
     const { id, className, href, onClick, html = false, sanitize = getSanitizer } = options;
     const doc = getDocumentRef();
     if (!doc) {
-      // Debug: try accessing document directly - be careful not to reference window in error message
-      const directDoc = typeof document !== "undefined" ? document : null;
+      // Add debugging info to window for test debugging
       try {
-        const fallback =
-          typeof globalThis !== "undefined" && globalThis?.document
-            ? "globalThis.document"
-            : typeof window !== "undefined" && window?.document
-              ? "window.document"
-              : "none";
-        console.warn(
-          "Card: getDocumentRef returned null. directDoc:",
-          !!directDoc,
-          "fallback:",
-          fallback
-        );
+        if (typeof globalThis !== "undefined" && globalThis.window) {
+          if (!globalThis.window.__CARD_DEBUG_LOG) {
+            globalThis.window.__CARD_DEBUG_LOG = [];
+          }
+          globalThis.window.__CARD_DEBUG_LOG.push({
+            timestamp: Date.now(),
+            typeofDocument: typeof document,
+            typeofWindow: typeof globalThis?.window,
+            globalThisExists: !!globalThis,
+            globalThisDocument: !!globalThis?.document,
+            globalWindow: !!globalThis?.window,
+            globalWindowDocument: !!globalThis?.window?.document
+          });
+        }
       } catch (err) {
-        console.warn("Card: getDocumentRef returned null and debug logging failed");
+        // silently ignore
       }
       throw new Error("Card: Unable to access document (JSDOM or DOM environment required)");
     }
