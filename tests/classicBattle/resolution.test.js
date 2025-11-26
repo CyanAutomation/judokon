@@ -16,10 +16,10 @@ if (!process.env.VITEST) {
 
 const STAT_KEYS = ["power", "speed", "technique", "kumikata", "newaza"];
 
-const resolveModulePath = (relativePath) => new URL(relativePath, import.meta.url).href;
-
 // ============================================================================
+
 // HOISTED MOCK STATE - Shared between vi.mock() factory and tests
+
 // ============================================================================
 
 // This state is used to share configuration between tests and mocks

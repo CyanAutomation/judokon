@@ -338,50 +338,153 @@ Outcome:
 - No breaking changes to existing tests yet
 - Clear path for incremental migration
 
-### Task 2: Migrate Resolution Tests - DISCOVERY
+### Task 2: Audit Test Architecture
 
-**Status**: Investigation Complete - Approach Adjustment Needed
+**Status**: In Progress - Initial Findings Documented
+
+**Scope**: Analyze `tests/classicBattle/resolution.test.js` to understand test dependencies and integration patterns
 
 **Findings**:
 
-After attempting to convert `tests/classicBattle/resolution.test.js` to use top-level `vi.mock()`, discovered that these integration tests have complex interdependencies:
+1. **File Structure**: The file uses real module imports (battleClassic.init.js) with complex initialization
+2. **Mock Requirements**: Needs mocks for 14+ internal modules that have interdependencies
+3. **Current State**: Tests have been partially converted to use top-level `vi.mock()` but **all 4 tests are failing**
+4. **Root Cause Confirmed**: Even with proper top-level mocks + `vi.resetModules()`, tests fail because:
+   - `battleClassic.init()` performs deep initialization across multiple modules
+   - Mocked modules lose their integration points with real modules
+   - Test expectations (spy call checks) don't match actual execution paths
 
-1. **Existing page-scaffold.test.js tests are ALSO failing** with top-level mocks
-2. The issue is not the harness or mock registration timing—it's that `battleClassic.init()` performs deep module initialization that expects many submodules to be loaded and configured properly
-3. Top-level `vi.mock()` works correctly for isolated unit tests, but these integration tests require:
-   - Real module imports to execute their initialization logic
-   - Precise mock injection at specific points in the initialization sequence
-   - State management across multiple module boundaries
+**Why Page-Scaffold Tests Also Fail**: Audited `page-scaffold.test.js` which uses top-level `vi.mock()` without harness - **also failing**. This confirms the issue is architectural, not harness-related.
 
-**Root Cause**: These are **true integration tests**, not unit tests with mocked dependencies. They were designed to test the real module interactions while mocking only external I/O. The original `vi.doMock()` approach was attempting (unsuccessfully) to mock modules after import, which violates Vitest's lifecycle guarantees.
+**Key Insight**: These are **true integration tests** that were designed to test real module interactions. The original broken `vi.doMock()` approach was attempting to mock at runtime (invalid), and top-level `vi.mock()` breaks the module integration graph.
 
-**Conclusion**: These tests need a **different refactoring approach** than a simple "convert to top-level vi.mock()" migration. Two options:
+---
 
-#### Option A: Decompose into Unit Tests (Recommended)
+## 8. Revised Implementation Plan
 
-- Break down integration tests into smaller, focused unit tests
-- Each unit test mocks only its specific module boundaries
-- Use top-level `vi.mock()` at module boundaries
-- Much faster test execution + more maintainable
-- Better test isolation and clarity
+Based on Phase 1a completion and Phase 1b (architecture audit) findings, the refactoring must follow a different path than originally planned:
 
-#### Option B: Redesign Test Architecture
+### Current State
 
-- Create a test fixture/seeding system for pre-configured battle state
-- Mock only external APIs (fetch, localStorage, timers)
-- Let real modules run with controlled inputs/outputs
-- Requires significant test infrastructure changes
+- ✅ `createSimpleHarness()` API created and exported
+- ✅ `createIntegrationHarness()` marked as `@deprecated`
+- ⚠️ Integration tests (`resolution.test.js`, `page-scaffold.test.js`) **cannot use top-level `vi.mock()` as-is**
+- ⚠️ Root cause: these tests have complex module interdependencies that break with mocking
 
-**Next Steps**:
+### Recommended Path Forward
 
-The current task should be **paused** and reclassified as:
+**Immediate (Phase 2 - Next Sprint)**: Do NOT attempt blanket migration to `vi.mock()` for integration tests. Instead:
 
-1. **Phase 1a (Current - COMPLETE)**: Create simplified harness API ✅
-2. **Phase 1b (NEW)**: Audit which tests are true integration vs unit tests
-3. **Phase 2 (DEFERRED)**: Refactor integration tests based on Option A or B decision
-4. **Phase 3**: Port remaining tests to new patterns
+1. **Classify Tests**: Audit all 16-20 failing tests and categorize as:
+   - **True Integration Tests** (9-12 tests): Test real module interactions → Need Option A or B below
+   - **Simpler Unit Tests** (4-8 tests): Test isolated modules → Can use new harness + `vi.mock()`
 
-For now, we'll mark `resolution.test.js` as "migration blocker due to test architecture" and document the discovery.
+2. **For Simpler Tests**: Implement migration to `createSimpleHarness()` with top-level `vi.mock()` (standard pattern)
+
+3. **For Integration Tests**: Choose ONE strategy (Option A or B) below:
+
+   **Option A - Decompose into Unit Tests** (Recommended for maintainability)
+   - Break down complex integration tests into smaller, focused unit tests
+   - Each test mocks only its specific module boundaries
+   - Results in 2-3x more tests but much faster + clearer
+   - Example: `resolution.test.js` (4 tests) → ~10 focused unit tests
+
+   **Option B - Use Real Modules with External Mocks** (Recommended for correctness)
+   - Mock ONLY external dependencies (fetch, localStorage, timers, DOM APIs)
+   - Let real modules run their initialization logic
+   - Requires test fixtures/seeding system for state setup
+   - Keep existing harness for environment (timers, RAF)
+   - Revert `resolution.test.js` to original `vi.doMock()` approach (it's actually closer to correct)
+
+4. **Implementation**: Pick Option A or B and implement for 2-3 representative tests, verify results, then proceed systematically
+
+### Decision Point
+
+**Recommendation**: **Option B + createSimpleHarness()**
+
+- Keeps tests closer to real production behavior
+- Validates true module interactions (the original intent)
+- Uses new `createSimpleHarness()` API for environment setup
+- Mocks only true external dependencies (network, storage, DOM APIs)
+- Creates a pattern that's easier for new tests to follow
+
+## 9. Concrete Implementation Strategy (Option B)
+
+### Pattern for Integration Tests with Option B
+
+```javascript
+/**
+ * STEP 1: Mock ONLY external dependencies (not internal modules)
+ * These are true externalities: network, storage, DOM manipulation APIs
+ */
+vi.mock("@sentry/browser", () => ({
+  captureException: vi.fn(),
+  startSpan: vi.fn((config, fn) => fn({}))
+}));
+
+// Mock fetch if needed
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({})
+  })
+);
+
+/**
+ * STEP 2: Use createSimpleHarness() for environment management
+ * NOT for mocking internal modules
+ */
+beforeEach(async () => {
+  const harness = createSimpleHarness({
+    useFakeTimers: true,
+    useRafMock: true,
+    fixtures: {
+      localStorage: createMockLocalStorage()
+    }
+  });
+  await harness.setup();
+  // Tests run with real modules + external mocks + controlled environment
+});
+
+/**
+ * STEP 3: Test real module interactions
+ * The integration is preserved; only externalities are controlled
+ */
+test("real battle flow with mocked externalities", async () => {
+  // Real modules are loaded
+  const { init } = await import("../../src/pages/battleClassic.init.js");
+  await init();
+  
+  // Test real behavior with controlled externalities
+  // E.g., check that fetch was called, localStorage updated, timers fired
+});
+```
+
+### Files to Review/Update
+
+1. **Tests to Revert** (back to original approach with real modules):
+   - `tests/classicBattle/resolution.test.js` → Use Option B pattern above
+   - `tests/classicBattle/page-scaffold.test.js` → Use Option B pattern above
+   - `tests/integration/battleClassic.integration.test.js` → Use Option B pattern above
+   - (Any others with complex module dependencies)
+
+2. **Tests to Convert** (simpler unit tests that CAN use vi.mock()):
+   - Identify tests that only mock 1-2 modules
+   - These can use `createSimpleHarness()` + top-level `vi.mock()`
+
+3. **Documentation Updates**:
+   - Add example to `AGENTS.md` → "Integration Test Pattern with createSimpleHarness()"
+   - Document "When to use Option A vs Option B" decision tree
+
+### Next Developer Instructions
+
+1. **Run full battle test suite**: `npm run test:battles`
+2. **For each failing test file**:
+   - Check if it's testing a full feature flow (integration) or single module (unit)
+   - If integration: Apply Option B pattern (real modules + external mocks only)
+   - If unit: Apply standard pattern (`createSimpleHarness()` + `vi.mock()`)
+3. **Verify**: Tests pass with new pattern
+4. **Document**: Add code example to AGENTS.md if pattern is new
 
 ---
 
