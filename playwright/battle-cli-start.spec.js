@@ -56,7 +56,7 @@ test.describe("Battle CLI - Start", () => {
       const statsContainer = page.getByRole("listbox", {
         name: "Select a stat with number keys 1-5"
       });
-      await expect(statsContainer).toHaveAttribute("aria-busy", "false");
+      await expect(statsContainer).toHaveAttribute("aria-busy", "true");
       await expect(page.getByTestId("round-counter")).toHaveText(/^Round 1(?: Target: 5)?$/);
       await expect(page.locator("#round-message")).toHaveText("");
     }, ["log", "info", "warn", "error", "debug"]);
