@@ -135,7 +135,6 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
 
 describe("startCooldown fallback timer", () => {
   let harness;
-  let scheduler;
 
   beforeEach(async () => {
     dispatcherMockRef.mockImplementation(() => true);
@@ -200,7 +199,6 @@ describe("startCooldown fallback timer", () => {
 
 describe("startCooldown ready dispatch discipline", () => {
   let harness;
-  let scheduler;
 
   beforeEach(async () => {
     mockState.dispatchSpy = vi.fn(() => undefined);
@@ -396,7 +394,6 @@ describe("bus propagation and deduplication", () => {
 
 describe("fallback readiness flag discipline", () => {
   let harness;
-  let scheduler;
 
   beforeEach(async () => {
     mockState.dispatchSpy = vi.fn(() => true);

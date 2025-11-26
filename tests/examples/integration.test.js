@@ -125,7 +125,7 @@ describe("Integration Test Example: Battle Flow", () => {
     let battle;
     try {
       battle = await initializeBattle({ battleId: 1, enableFallback: true });
-    } catch (e) {
+    } catch {
       // Depending on implementation, may throw or return fallback battle
     }
 
@@ -138,9 +138,7 @@ describe("Integration Test Example: Battle Flow", () => {
     // Setup
     mockFetch.mockResolvedValue(testScenarios.opponentA);
 
-    const { initializeBattle, saveBattleState } = await import(
-      "../../src/helpers/battleState.js"
-    );
+    const { initializeBattle, saveBattleState } = await import("../../src/helpers/battleState.js");
     const battle = await initializeBattle({ battleId: 1 });
 
     // Exercise: save state to mock localStorage
@@ -156,9 +154,7 @@ describe("Integration Test Example: Battle Flow", () => {
     // Setup
     mockFetch.mockResolvedValue(testScenarios.opponentA);
 
-    const { initializeBattle, startCountdown } = await import(
-      "../../src/helpers/battleTimer.js"
-    );
+    const { initializeBattle, startCountdown } = await import("../../src/helpers/battleTimer.js");
     const battle = await initializeBattle({ battleId: 1 });
 
     // Start countdown and verify timing
