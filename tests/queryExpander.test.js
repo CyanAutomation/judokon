@@ -191,8 +191,10 @@ describe("Query Expansion", () => {
     it("should handle query with numbers", async () => {
       const result = await expandQuery("power 123 speed");
       expect(result.original).toBe("power 123 speed");
-      // Expansion should still work
-      expect(result.expanded).toBeTruthy();
+      // Numbers should be retained as-is within the expansion
+      expect(result.expanded).toBe("power 123 speed");
+      expect(result.hasExpansion).toBe(false);
+      expect(result.addedTerms).toHaveLength(0);
     });
 
     it("should trim extremely long single-token queries", async () => {
