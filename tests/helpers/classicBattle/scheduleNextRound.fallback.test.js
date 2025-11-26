@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
-import { createClassicBattleHarness } from "../integrationHarness.js";
+import { createSimpleHarness } from "../integrationHarness.js";
 import { resetDispatchHistory } from "/src/helpers/classicBattle/eventDispatcher.js";
 
 const READY_EVENT = "ready";
@@ -68,75 +68,94 @@ function createBusPropagationMock(globalDispatcher) {
   };
 }
 
+/**
+ * Shared mock state for all test suites.
+ * Uses vi.hoisted() to ensure these are created before module imports.
+ */
+const mockState = vi.hoisted(() => ({
+  dispatchSpy: null,
+  scheduler: null,
+  nextRoundCooldown: 0
+}));
+
+/**
+ * Top-level mocks for dependencies.
+ * These are registered at static analysis time by Vitest.
+ */
+
+// Mock event dispatcher (both specifiers)
+for (const specifier of EVENT_DISPATCHER_SPECIFIERS) {
+  vi.mock(specifier, () => ({
+    dispatchBattleEvent: () => {
+      if (mockState.dispatchSpy) return mockState.dispatchSpy();
+      return true;
+    },
+    resetDispatchHistory: vi.fn()
+  }));
+}
+
+// Mock battle engine facade with scheduler support
+vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+  requireEngine: () => ({
+    startRound: mockMakeTimer,
+    startCoolDown: mockMakeTimer,
+    stopTimer: vi.fn(),
+    STATS: ["a", "b"]
+  }),
+  startRound: mockMakeTimer,
+  startCoolDown: mockMakeTimer,
+  stopTimer: vi.fn(),
+  STATS: ["a", "b"]
+}));
+
+function mockMakeTimer(onTick, onExpired, duration) {
+  onTick(duration);
+  if (duration <= 0) {
+    onExpired();
+    return;
+  }
+  if (!mockState.scheduler) return;
+  for (let i = 1; i <= duration; i++) {
+    mockState.scheduler.setTimeout(() => {
+      const remaining = duration - i;
+      onTick(remaining);
+      if (remaining <= 0) onExpired();
+    }, i * 1000);
+  }
+}
+
+// Mock computeNextRoundCooldown
+vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
+  computeNextRoundCooldown: () => mockState.nextRoundCooldown
+}));
+
+// Mock debugHooks
+vi.mock("../../../src/helpers/classicBattle/debugHooks.js", () => {
+  const mock = {
+    readDebugState: vi.fn(() => null),
+    exposeDebugState: vi.fn()
+  };
+  return { ...mock, default: mock };
+});
+
+// Mock debugPanel
+vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+  updateDebugPanel: vi.fn()
+}));
+
 describe("startCooldown fallback timer", () => {
   let harness;
   let scheduler;
-  /** @type {import('vitest').Mock} */
-  let dispatchSpy;
 
   beforeEach(async () => {
-    dispatchSpy = vi.fn(() => true);
-    harness = createClassicBattleHarness({
-      useFakeTimers: false,
-      mocks: {
-        // Mock the battle engine facade to control timer behavior
-        "../../../src/helpers/battleEngineFacade.js": () => {
-          const makeTimer = (onTick, onExpired, duration) => {
-            onTick(duration);
-            if (duration <= 0) {
-              onExpired();
-              return;
-            }
-            for (let i = 1; i <= duration; i++) {
-              scheduler.setTimeout(() => {
-                const remaining = duration - i;
-                onTick(remaining);
-                if (remaining <= 0) onExpired();
-              }, i * 1000);
-            }
-          };
-          const mockEngine = {
-            startRound: makeTimer,
-            startCoolDown: makeTimer,
-            stopTimer: vi.fn(),
-            STATS: ["a", "b"]
-          };
-          return {
-            requireEngine: () => mockEngine,
-            startRound: makeTimer,
-            startCoolDown: makeTimer,
-            stopTimer: vi.fn(),
-            STATS: ["a", "b"]
-          };
-        },
-        // Mock computeNextRoundCooldown to return 0 for predictable timing
-        "../../../src/helpers/timers/computeNextRoundCooldown.js": () => ({
-          computeNextRoundCooldown: () => 0
-        }),
-        // Mock eventDispatcher to return true for dispatchBattleEvent
-        ...createEventDispatcherMockEntries(() => ({
-          dispatchBattleEvent: dispatchSpy,
-          resetDispatchHistory: vi.fn()
-        })),
-        // Mock debugHooks to return null for readDebugState
-        "../../../src/helpers/classicBattle/debugHooks.js": () => {
-          const debugHooksMock = {
-            readDebugState: vi.fn(() => null),
-            exposeDebugState: vi.fn()
-          };
-          return { ...debugHooksMock, default: debugHooksMock };
-        },
-        // Mock debugPanel to avoid slow updateDebugPanel
-        "../../../src/helpers/classicBattle/debugPanel.js": () => ({
-          updateDebugPanel: vi.fn()
-        })
-      }
-    });
+    mockState.dispatchSpy = vi.fn(() => true);
+    mockState.scheduler = null;
 
+    harness = createSimpleHarness({ useFakeTimers: false });
     await harness.setup();
 
+    mockState.scheduler = createMockScheduler();
     resetDispatchHistory();
-    scheduler = createMockScheduler();
     document.body.innerHTML = "";
     createTimerNodes();
 
@@ -147,39 +166,40 @@ describe("startCooldown fallback timer", () => {
 
   afterEach(() => {
     harness.cleanup();
+    mockState.dispatchSpy = null;
   });
 
   it("resolves ready after fallback timer and enables button", async () => {
     const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
-    const controls = startCooldown({}, scheduler);
+    const controls = startCooldown({}, mockState.scheduler);
     let resolved = false;
     controls.ready.then(() => {
       resolved = true;
     });
-    scheduler.tick(9);
+    mockState.scheduler.tick(9);
     await controls.ready;
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
-    scheduler.tick(1);
+    mockState.scheduler.tick(1);
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
     expect(btn.disabled).toBe(false);
   });
 
   it("resolves ready when dispatcher reports false and enables button", async () => {
-    dispatchSpy.mockImplementation(() => false);
+    mockState.dispatchSpy.mockImplementation(() => false);
     const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
-    const controls = startCooldown({}, scheduler);
+    const controls = startCooldown({}, mockState.scheduler);
     let resolved = false;
     controls.ready.then(() => {
       resolved = true;
     });
 
-    scheduler.tick(9);
+    mockState.scheduler.tick(9);
     await controls.ready;
 
     expect(resolved).toBe(true);

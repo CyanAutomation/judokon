@@ -234,6 +234,7 @@ The refactor will be successful when:
 #### Task 1: Validate createSimpleHarness() Production Readiness ✅ COMPLETED
 
 **Findings**:
+
 - ✅ `createSimpleHarness()` exists and is fully functional (lines 168–329 in `tests/helpers/integrationHarness.js`)
 - ✅ Correctly implements top-level vi.mock() pattern with vi.resetModules()
 - ✅ Does NOT have a `mocks` parameter (enforces top-level pattern)
@@ -258,9 +259,11 @@ The refactor will be successful when:
 **Migration Categorization**:
 
 **UNIT TEST FILES** (mock all dependencies):
+
 - None identified yet; most tests are integration-heavy
 
 **INTEGRATION TEST FILES** (mock only externals):
+
 1. **`scheduleNextRound.fallback.test.js`** (494 lines)
    - Current: Uses deprecated mocks parameter with `createClassicBattleHarness`
    - Dependencies: battleEngineFacade (complex battle engine simulator)
@@ -285,6 +288,7 @@ The refactor will be successful when:
 ### Phase 2: Test Migration (READY TO BEGIN)
 
 Next steps:
+
 1. Start with `scheduleNextRound.fallback.test.js` — convert mocks to top-level pattern
 2. Validate with `npm run test:battles:classic`
 3. Repeat for `settingsPage.test.js`
@@ -294,8 +298,8 @@ Next steps:
 
 ## Appendix A: Vitest Quick Reference
 
--   **`vi.mock(path, factory)`**: Must be at the top level. Replaces a module with your factory function.
--   **`vi.hoisted(factory)`**: Creates a variable that can be shared between a top-level `vi.mock()` factory and the test body. Essential for accessing the mock instance within a test.
--   **`vi.importActual(path)`**: Used inside a mock factory to get a handle on the original module, allowing for partial mocks.
--   **`vi.clearAllMocks()` / `vi.resetAllMocks()`**: Use in `afterEach` to reset mock call history and implementations between tests, ensuring test isolation.
--   **`harness.importModule(path)`**: A helper in our harness that should be used to dynamically import modules *after* `harness.setup()` has run, ensuring they execute in a controlled environment.
+- **`vi.mock(path, factory)`**: Must be at the top level. Replaces a module with your factory function.
+- **`vi.hoisted(factory)`**: Creates a variable that can be shared between a top-level `vi.mock()` factory and the test body. Essential for accessing the mock instance within a test.
+- **`vi.importActual(path)`**: Used inside a mock factory to get a handle on the original module, allowing for partial mocks.
+- **`vi.clearAllMocks()` / `vi.resetAllMocks()`**: Use in `afterEach` to reset mock call history and implementations between tests, ensuring test isolation.
+- **`harness.importModule(path)`**: A helper in our harness that should be used to dynamically import modules *after* `harness.setup()` has run, ensuring they execute in a controlled environment.

@@ -68,10 +68,17 @@ export { getCardStatValue } from "./classicBattle/cardStatUtils.js";
 // ROUND UI & DISPLAY — Use to update visual state during round flow
 // ============================================================================
 
-/** Re-export: Apply UI updates to reflect current round state. */
+/**
+ * @summary Apply UI updates to reflect current round state.
+ * @param {object} state - Round state object.
+ * @returns {void}
+ */
 export { applyRoundUI } from "./classicBattle/roundUI.js";
 
-/** Re-export: Get opponent card data for display and battle logic. */
+/**
+ * @summary Get opponent card data for display and battle logic.
+ * @returns {object} Opponent card data with display info and identifiers.
+ */
 export { getOpponentCardData } from "./classicBattle/opponentController.js";
 
 // ============================================================================
