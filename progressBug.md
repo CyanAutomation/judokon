@@ -414,29 +414,43 @@ Proposed (Working):
 ```javascript
 // BEFORE (resolution.test.js)
 function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
-  const store = { /* ... */ };
-  computeRoundResultMock = vi.fn(async (s, stat, playerVal, opponentVal) => ({ /* ... */ }));
-  const mocks = { /* many mocks built dynamically */ };
+  const store = {
+    /* ... */
+  };
+  computeRoundResultMock = vi.fn(async (s, stat, playerVal, opponentVal) => ({
+    /* ... */
+  }));
+  const mocks = {
+    /* many mocks built dynamically */
+  };
   return mocks;
 }
 
 // AFTER (resolution.test.js)
-const computeRoundResultMock = vi.hoisted(() => 
-  vi.fn(async (s, stat, playerVal, opponentVal) => ({ /* ... */ }))
+const computeRoundResultMock = vi.hoisted(() =>
+  vi.fn(async (s, stat, playerVal, opponentVal) => ({
+    /* ... */
+  }))
 );
 
 const createBattleStoreMock = vi.hoisted(() => {
-  const store = { /* ... */ };
+  const store = {
+    /* ... */
+  };
   return () => store;
 });
 
 vi.mock("../../src/helpers/classicBattle/roundManager.js", () => ({
   createBattleStore: createBattleStoreMock,
-  startRound: vi.fn(async () => { /* ... */ }),
+  startRound: vi.fn(async () => {
+    /* ... */
+  }),
   startCooldown: vi.fn()
 }));
 
-vi.mock("../../src/helpers/timerUtils.js", () => ({ /* ... */ }));
+vi.mock("../../src/helpers/timerUtils.js", () => ({
+  /* ... */
+}));
 // ... other vi.mock() calls
 ```
 
@@ -586,19 +600,19 @@ test("example", async () => {
 
 **Risk: Tests break during migration**
 
-- *Mitigation*: Phase 1 adds new API without removing old one; migrate one file at a time
+- _Mitigation_: Phase 1 adds new API without removing old one; migrate one file at a time
 
 **Risk: Mock registration incompleteness**
 
-- *Mitigation*: Start with simplest test file (`uiEventBinding.test.js`), build experience
+- _Mitigation_: Start with simplest test file (`uiEventBinding.test.js`), build experience
 
 **Risk: Performance regression**
 
-- *Mitigation*: Compare test execution time before/after each phase
+- _Mitigation_: Compare test execution time before/after each phase
 
 **Risk: Fixtures don't work after harness simplification**
 
-- *Mitigation*: Thoroughly test fixtures in Phase 1 before migrating tests in Phase 2
+- _Mitigation_: Thoroughly test fixtures in Phase 1 before migrating tests in Phase 2
 
 ---
 

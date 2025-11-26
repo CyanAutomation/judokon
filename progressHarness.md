@@ -9,7 +9,7 @@
 **The Solution**: We will refactor the test harness architecture to align with Vitest's best practices. This involves a two-pronged strategy:
 
 1.  **For Unit Tests**: Adopt a top-level `vi.mock()` pattern for declaring dependencies.
-2.  **For Integration Tests**: Continue to use real module implementations but mock only true *external* dependencies (e.g., `fetch`, `localStorage`, Sentry).
+2.  **For Integration Tests**: Continue to use real module implementations but mock only true _external_ dependencies (e.g., `fetch`, `localStorage`, Sentry).
 
 A new, simplified `createSimpleHarness()` API has been introduced to manage the test environment (JSDOM, fake timers, fixtures) without handling mock registration, which is now the responsibility of individual tests. This refactor will resolve the failing tests and establish a more reliable and maintainable testing foundation.
 
@@ -19,8 +19,8 @@ A new, simplified `createSimpleHarness()` API has been introduced to manage the 
 
 The core issue is a fundamental misalignment between our test harness and Vitest's module lifecycle.
 
--   **Vitest Lifecycle**: Vitest first scans test files for top-level `vi.mock()` calls and queues them. Then, when a module is imported, it serves the mocked version from the queue.
--   **Current Harness Failure**: Our harness calls `vi.doMock()` inside `beforeEach`. By this point, the modules have already been imported and cached with their real implementations. The mock registration is too late to have any effect.
+- **Vitest Lifecycle**: Vitest first scans test files for top-level `vi.mock()` calls and queues them. Then, when a module is imported, it serves the mocked version from the queue.
+- **Current Harness Failure**: Our harness calls `vi.doMock()` inside `beforeEach`. By this point, the modules have already been imported and cached with their real implementations. The mock registration is too late to have any effect.
 
 This leads to assertion failures where tests expect a mock to have been called, but the call was made to the real implementation instead (e.g., `expected [] to deep equally contain [0, 0]`).
 
@@ -34,17 +34,17 @@ To address both issues, we are adopting a new architecture that separates enviro
 
 ### Guiding Principles
 
--   **Harness Manages Environment**: The test harness is responsible *only* for setting up the test environment: JSDOM, fake timers, `requestAnimationFrame` mocks, and injecting fixtures. It no longer manages mocks.
--   **Tests Declare Dependencies**: Each test file is responsible for declaring its own mocked dependencies. This makes dependencies explicit and easy to understand.
--   **Distinguish Test Types**: We recognize that unit and integration tests have different mocking needs.
+- **Harness Manages Environment**: The test harness is responsible _only_ for setting up the test environment: JSDOM, fake timers, `requestAnimationFrame` mocks, and injecting fixtures. It no longer manages mocks.
+- **Tests Declare Dependencies**: Each test file is responsible for declaring its own mocked dependencies. This makes dependencies explicit and easy to understand.
+- **Distinguish Test Types**: We recognize that unit and integration tests have different mocking needs.
 
 ### The `createSimpleHarness` API
 
 A new `createSimpleHarness()` function is the foundation of this architecture.
 
--   **Accepts**: `{ fixtures, useFakeTimers, useRafMock, customSetup, customTeardown }`
--   **Does NOT Accept**: A `mocks` parameter.
--   **Responsibility**: Pure environment and fixture management.
+- **Accepts**: `{ fixtures, useFakeTimers, useRafMock, customSetup, customTeardown }`
+- **Does NOT Accept**: A `mocks` parameter.
+- **Responsibility**: Pure environment and fixture management.
 
 ### Architecture by Test Type
 
@@ -52,17 +52,17 @@ A new `createSimpleHarness()` function is the foundation of this architecture.
 
 For tests of isolated components or functions.
 
--   **Mocks**: Use top-level `vi.mock()` to mock all internal and external dependencies.
--   **Harness**: Use `createSimpleHarness()` for environment setup.
--   **Goal**: Isolate the unit under test.
+- **Mocks**: Use top-level `vi.mock()` to mock all internal and external dependencies.
+- **Harness**: Use `createSimpleHarness()` for environment setup.
+- **Goal**: Isolate the unit under test.
 
 #### 2. Integration Test Pattern
 
 For tests that verify the interaction between multiple internal modules (e.g., the full battle flow).
 
--   **Mocks**: Mock **only true external dependencies** (e.g., network calls, browser storage, analytics). Do NOT mock internal project modules.
--   **Harness**: Use `createSimpleHarness()` to manage the environment and inject mock fixtures for externalities.
--   **Goal**: Test the integration of real modules in a controlled environment.
+- **Mocks**: Mock **only true external dependencies** (e.g., network calls, browser storage, analytics). Do NOT mock internal project modules.
+- **Harness**: Use `createSimpleHarness()` to manage the environment and inject mock fixtures for externalities.
+- **Goal**: Test the integration of real modules in a controlled environment.
 
 ---
 
@@ -72,9 +72,9 @@ This plan is designed for a safe, incremental migration.
 
 ### Phase 1: Foundational API (Completed)
 
--   [x] **Create `createSimpleHarness()`**: A new, simplified harness API has been created in `tests/helpers/integrationHarness.js`.
--   [x] **Deprecate Old Harness**: The old `createIntegrationHarness` is marked as `@deprecated`.
--   [x] **Backward Compatibility**: Both harnesses coexist to allow for incremental migration without breaking the entire test suite at once.
+- [x] **Create `createSimpleHarness()`**: A new, simplified harness API has been created in `tests/helpers/integrationHarness.js`.
+- [x] **Deprecate Old Harness**: The old `createIntegrationHarness` is marked as `@deprecated`.
+- [x] **Backward Compatibility**: Both harnesses coexist to allow for incremental migration without breaking the entire test suite at once.
 
 ### Phase 2: Test Migration (In Progress)
 
@@ -82,13 +82,13 @@ The core of the work is to migrate the ~16 failing tests to the appropriate new 
 
 **Migration Strategy Matrix**:
 
-| Test File                                         | Strategy                                 | Status    | Notes                                       |
-| ------------------------------------------------- | ---------------------------------------- | --------- | ------------------------------------------- |
-| `tests/classicBattle/page-scaffold.test.js`       | Integration Pattern                      | Pending   | Integration-heavy; keep real battle flow.   |
-| `tests/classicBattle/resolution.test.js`          | Integration Pattern                      | Pending   | Needs external fixture seeding for DOM/state. |
-| `tests/classicBattle/uiEventBinding.test.js`      | Unit Test Pattern                        | Pending   | More isolated; can use top-level mocks.     |
-| `tests/integration/battleClassic.integration.test.js` | Integration Pattern                      | Pending   | Real store rendering; mock only externalities.  |
-| `tests/integration/battleClassic.placeholder.test.js` | Integration Pattern                      | Pending   | Visuals rely on real components.              |
+| Test File                                             | Strategy            | Status  | Notes                                          |
+| ----------------------------------------------------- | ------------------- | ------- | ---------------------------------------------- |
+| `tests/classicBattle/page-scaffold.test.js`           | Integration Pattern | Pending | Integration-heavy; keep real battle flow.      |
+| `tests/classicBattle/resolution.test.js`              | Integration Pattern | Pending | Needs external fixture seeding for DOM/state.  |
+| `tests/classicBattle/uiEventBinding.test.js`          | Unit Test Pattern   | Pending | More isolated; can use top-level mocks.        |
+| `tests/integration/battleClassic.integration.test.js` | Integration Pattern | Pending | Real store rendering; mock only externalities. |
+| `tests/integration/battleClassic.placeholder.test.js` | Integration Pattern | Pending | Visuals rely on real components.               |
 
 **Developer Workflow for Migration**:
 
@@ -100,9 +100,9 @@ The core of the work is to migrate the ~16 failing tests to the appropriate new 
 
 ### Phase 3: Verification and Cleanup (Future)
 
--   [ ] **Full Suite Verification**: Run `npm test` and `npm run test:ci` to confirm all tests pass and there are no regressions.
--   [ ] **Remove Old Logic**: Once all tests are migrated, remove the mock-handling logic from `createIntegrationHarness` and other deprecated helpers.
--   [ ] **Update Documentation**: Ensure `AGENTS.md` and other guides reference the new patterns.
+- [ ] **Full Suite Verification**: Run `npm test` and `npm run test:ci` to confirm all tests pass and there are no regressions.
+- [ ] **Remove Old Logic**: Once all tests are migrated, remove the mock-handling logic from `createIntegrationHarness` and other deprecated helpers.
+- [ ] **Update Documentation**: Ensure `AGENTS.md` and other guides reference the new patterns.
 
 ---
 
@@ -115,17 +115,17 @@ Use this for testing isolated components or helpers.
 ```javascript
 // tests/classicBattle/uiEventBinding.test.js (Example)
 
-import { vi } from 'vitest';
-import { createSimpleHarness } from '../helpers/integrationHarness.js';
+import { vi } from "vitest";
+import { createSimpleHarness } from "../helpers/integrationHarness.js";
 
 /**
  * STEP 1: Mock all dependencies at the top level.
  * Use vi.hoisted() to share mock instances with tests.
  */
 const mockShowSnackbar = vi.hoisted(() => vi.fn());
-vi.mock('../../src/helpers/showSnackbar.js', () => ({ default: mockShowSnackbar }));
+vi.mock("../../src/helpers/showSnackbar.js", () => ({ default: mockShowSnackbar }));
 
-describe('UI Event Binding', () => {
+describe("UI Event Binding", () => {
   let harness;
 
   beforeEach(async () => {
@@ -138,15 +138,15 @@ describe('UI Event Binding', () => {
     await harness.teardown();
   });
 
-  test('should show snackbar on key press', async () => {
+  test("should show snackbar on key press", async () => {
     // STEP 3: Import the module under test and run assertions.
-    const { bindUIEvents } = await harness.importModule('../../src/helpers/uiEventBinding.js');
+    const { bindUIEvents } = await harness.importModule("../../src/helpers/uiEventBinding.js");
     bindUIEvents();
 
     // Simulate event
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'h' }));
-    
-    expect(mockShowSnackbar).toHaveBeenCalledWith('Help message');
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
+
+    expect(mockShowSnackbar).toHaveBeenCalledWith("Help message");
   });
 });
 ```
@@ -158,21 +158,21 @@ Use this for testing complex workflows that involve multiple internal modules.
 ```javascript
 // tests/classicBattle/resolution.test.js (Example)
 
-import { vi } from 'vitest';
-import { createSimpleHarness } from '../helpers/integrationHarness.js';
-import { createMockLocalStorage } from '../fixtures/createMockLocalStorage.js';
+import { vi } from "vitest";
+import { createSimpleHarness } from "../helpers/integrationHarness.js";
+import { createMockLocalStorage } from "../fixtures/createMockLocalStorage.js";
 
 /**
  * STEP 1: Mock ONLY true external dependencies.
  * (e.g., network, storage, analytics).
  * DO NOT mock internal modules like 'setupScoreboard' or 'gameOrchestrator'.
  */
-vi.mock('@sentry/browser', () => ({
+vi.mock("@sentry/browser", () => ({
   captureException: vi.fn(),
-  startSpan: vi.fn((_, fn) => fn()),
+  startSpan: vi.fn((_, fn) => fn())
 }));
 
-describe('Classic Battle Resolution', () => {
+describe("Classic Battle Resolution", () => {
   let harness;
 
   beforeEach(async () => {
@@ -180,24 +180,29 @@ describe('Classic Battle Resolution', () => {
     const mockLocalStorage = createMockLocalStorage();
     harness = createSimpleHarness({
       useFakeTimers: true,
-      fixtures: { localStorage: mockLocalStorage },
+      fixtures: { localStorage: mockLocalStorage }
     });
     await harness.setup();
-    vi.spyOn(mockLocalStorage, 'setItem');
+    vi.spyOn(mockLocalStorage, "setItem");
   });
 
   afterEach(async () => {
     await harness.teardown();
   });
 
-  test('should save score to localStorage on match end', async () => {
+  test("should save score to localStorage on match end", async () => {
     // STEP 3: Import and test the REAL modules.
-    const { init: initClassicBattle } = await harness.importModule('../../src/pages/battleClassic.init.js');
+    const { init: initClassicBattle } = await harness.importModule(
+      "../../src/pages/battleClassic.init.js"
+    );
     await initClassicBattle();
 
     // ... trigger a full match completion ...
 
-    expect(harness.fixtures.localStorage.setItem).toHaveBeenCalledWith('lastMatchResult', expect.any(String));
+    expect(harness.fixtures.localStorage.setItem).toHaveBeenCalledWith(
+      "lastMatchResult",
+      expect.any(String)
+    );
   });
 });
 ```
@@ -208,10 +213,10 @@ describe('Classic Battle Resolution', () => {
 
 This refactor establishes a solid foundation. We can build on it by:
 
--   **Creating a Test Example Directory**: Add a `tests/examples/` directory with `unit.test.js` and `integration.test.js` files that serve as canonical, working templates for developers to copy.
--   **Automating Pattern Detection**: Create a script (e.g., `npm run check:test:patterns`) that warns if a test file uses the deprecated `mocks` parameter, helping to enforce the migration.
--   **Refining Fixture Management**: Improve the `createMockLocalStorage` and other fixture creators to be more robust and reusable across the test suite.
--   **Updating Onboarding Docs**: Add a link to this document (`progressHarness.md`) in the main `CONTRIBUTING.md` so that new contributors learn the correct patterns from day one.
+- **Creating a Test Example Directory**: Add a `tests/examples/` directory with `unit.test.js` and `integration.test.js` files that serve as canonical, working templates for developers to copy.
+- **Automating Pattern Detection**: Create a script (e.g., `npm run check:test:patterns`) that warns if a test file uses the deprecated `mocks` parameter, helping to enforce the migration.
+- **Refining Fixture Management**: Improve the `createMockLocalStorage` and other fixture creators to be more robust and reusable across the test suite.
+- **Updating Onboarding Docs**: Add a link to this document (`progressHarness.md`) in the main `CONTRIBUTING.md` so that new contributors learn the correct patterns from day one.
 
 ---
 
@@ -219,11 +224,11 @@ This refactor establishes a solid foundation. We can build on it by:
 
 The refactor will be successful when:
 
--   [ ] All 16+ failing tests in `tests/classicBattle/` and `tests/integration/` are passing.
--   [ ] The full test suite (`npm test` and `npm run test:ci`) runs without regressions.
--   [ ] The harness API is simplified: `createIntegrationHarness` no longer accepts a `mocks` parameter.
--   [ ] Migrated tests clearly declare their dependencies using the patterns described above.
--   [ ] The new test patterns are documented and discoverable.
+- [ ] All 16+ failing tests in `tests/classicBattle/` and `tests/integration/` are passing.
+- [ ] The full test suite (`npm test` and `npm run test:ci`) runs without regressions.
+- [ ] The harness API is simplified: `createIntegrationHarness` no longer accepts a `mocks` parameter.
+- [ ] Migrated tests clearly declare their dependencies using the patterns described above.
+- [ ] The new test patterns are documented and discoverable.
 
 ---
 
@@ -250,11 +255,11 @@ The refactor will be successful when:
 
 **Files Using Deprecated `mocks` Parameter** (10 matches found):
 
-| File | Line(s) | Usage | Status | Notes |
-|------|---------|-------|--------|-------|
-| `tests/helpers/classicBattle/scheduleNextRound.fallback.test.js` | 81, 201, 275, 347, 423 | `createClassicBattleHarness({ mocks: {...} })` inside `beforeEach` | ⚠️ **CRITICAL** | 5 test groups, mocks battleEngineFacade extensively |
-| `tests/helpers/integrationHarness.test.js` | 31, 56, 78, 179 | `createIntegrationHarness({ mocks: {...} })` in tests | ⚠️ **SELF-TEST** | Tests the deprecated harness itself; needs conversion to new pattern |
-| `tests/helpers/settingsPage.test.js` | 45 | `createSettingsHarness({ mocks: {...} })` | ⚠️ **CRITICAL** | Settings page test, mocks 7+ helpers |
+| File                                                             | Line(s)                | Usage                                                              | Status           | Notes                                                                |
+| ---------------------------------------------------------------- | ---------------------- | ------------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------- |
+| `tests/helpers/classicBattle/scheduleNextRound.fallback.test.js` | 81, 201, 275, 347, 423 | `createClassicBattleHarness({ mocks: {...} })` inside `beforeEach` | ⚠️ **CRITICAL**  | 5 test groups, mocks battleEngineFacade extensively                  |
+| `tests/helpers/integrationHarness.test.js`                       | 31, 56, 78, 179        | `createIntegrationHarness({ mocks: {...} })` in tests              | ⚠️ **SELF-TEST** | Tests the deprecated harness itself; needs conversion to new pattern |
+| `tests/helpers/settingsPage.test.js`                             | 45                     | `createSettingsHarness({ mocks: {...} })`                          | ⚠️ **CRITICAL**  | Settings page test, mocks 7+ helpers                                 |
 
 **Migration Categorization**:
 
@@ -399,7 +404,7 @@ Total: 16 tests PASSED
 - **`vi.hoisted(factory)`**: Creates a variable that can be shared between a top-level `vi.mock()` factory and the test body. Essential for accessing the mock instance within a test.
 - **`vi.importActual(path)`**: Used inside a mock factory to get a handle on the original module, allowing for partial mocks.
 - **`vi.clearAllMocks()` / `vi.resetAllMocks()`**: Use in `afterEach` to reset mock call history and implementations between tests, ensuring test isolation.
-- **`harness.importModule(path)`**: A helper in our harness that should be used to dynamically import modules *after* `harness.setup()` has run, ensuring they execute in a controlled environment.
+- **`harness.importModule(path)`**: A helper in our harness that should be used to dynamically import modules _after_ `harness.setup()` has run, ensuring they execute in a controlled environment.
 
 ---
 
@@ -408,6 +413,7 @@ Total: 16 tests PASSED
 **Completed This Session**: Tasks 1-4 (50% complete)
 
 **Key Results**:
+
 - ✅ Validated `createSimpleHarness()` is production-ready (15 comprehensive tests added)
 - ✅ Migrated 44 tests (100% passing):
   - integrationHarness.test.js: 28 tests (13 existing + 15 new)
@@ -416,12 +422,14 @@ Total: 16 tests PASSED
 - ⏸️ Identified blocker: scheduleNextRound.fallback.test.js requires architectural refactoring
 
 **Next Steps**:
+
 - Task 5: Create example test files (unit.test.js, integration.test.js)
 - Task 6: Consolidate and document fixtures
 - Task 7: Run full validation suite
 - Task 8: Update AGENTS.md with new patterns
 
 **Lessons Learned**:
+
 1. Vitest static analysis strictly requires `vi.mock()` at top level
 2. `vi.hoisted()` is essential for sharing mock state
 3. `resetAllMocks()` helper pattern works well for multiple test suites
@@ -442,6 +450,7 @@ Created three canonical documentation files in `/workspaces/judokon/tests/exampl
 **Purpose**: Template showing complete unit test pattern with all mocks.
 
 **Key Features**:
+
 - Top-level `vi.hoisted()` → shared mock references
 - Top-level `vi.mock()` declarations for all 3 dependencies
 - Per-test configuration via `.mockResolvedValue()`, `.mockRejectedValue()`, etc.
@@ -456,6 +465,7 @@ Created three canonical documentation files in `/workspaces/judokon/tests/exampl
 **Purpose**: Template showing integration test pattern with external-only mocking.
 
 **Key Features**:
+
 - Only external dependencies mocked (network, storage)
 - Internal modules imported and used with real implementations
 - `createSimpleHarness()` configured with fixtures and fake timers
@@ -469,6 +479,7 @@ Created three canonical documentation files in `/workspaces/judokon/tests/exampl
 **Purpose**: Comprehensive developer guide for choosing and applying patterns.
 
 **Key Sections**:
+
 - Overview & file descriptions
 - Migration guide (old vs new pattern)
 - 3 common patterns with code examples

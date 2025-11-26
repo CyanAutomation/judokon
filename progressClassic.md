@@ -20,7 +20,6 @@ That plan includes not only correcting the operation order but also redesigning 
 
 ---
 
-
 ### Step 1: Correct the Mock Registration Order
 
 Modify the `setup` function in `tests/helpers/integrationHarness.js`.
