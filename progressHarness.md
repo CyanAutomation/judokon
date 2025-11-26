@@ -426,3 +426,64 @@ Total: 16 tests PASSED
 2. `vi.hoisted()` is essential for sharing mock state
 3. `resetAllMocks()` helper pattern works well for multiple test suites
 4. New pattern is simpler than deprecated `createSettingsHarness({ mocks: {...} })`
+
+---
+
+## Task 5: Create Example Test Files and Documentation ✅ COMPLETED
+
+**Date**: 2025-01-21 | **Time**: ~15 minutes
+
+### Deliverables
+
+Created three canonical documentation files in `/workspaces/judokon/tests/examples/`:
+
+#### 1. `unit.test.js` (180 lines)
+
+**Purpose**: Template showing complete unit test pattern with all mocks.
+
+**Key Features**:
+- Top-level `vi.hoisted()` → shared mock references
+- Top-level `vi.mock()` declarations for all 3 dependencies
+- Per-test configuration via `.mockResolvedValue()`, `.mockRejectedValue()`, etc.
+- Module imports happen AFTER `harness.setup()`
+- 4 comprehensive test examples showing happy path, error handling, cache hits, edge cases
+- Full pattern documentation with benefits
+
+**Copy instructions**: File is marked `@copyable true` with inline comments.
+
+#### 2. `integration.test.js` (210 lines)
+
+**Purpose**: Template showing integration test pattern with external-only mocking.
+
+**Key Features**:
+- Only external dependencies mocked (network, storage)
+- Internal modules imported and used with real implementations
+- `createSimpleHarness()` configured with fixtures and fake timers
+- 5 comprehensive test examples: init, round selection, network failures, persistence, timers
+- Full pattern documentation with benefits
+
+**Copy instructions**: Marked `@copyable true` with inline guidance.
+
+#### 3. `README.md` (350 lines)
+
+**Purpose**: Comprehensive developer guide for choosing and applying patterns.
+
+**Key Sections**:
+- Overview & file descriptions
+- Migration guide (old vs new pattern)
+- 3 common patterns with code examples
+- Quick reference decision table
+- 4 common issues with solutions
+- 12-point migration checklist
+- References to working examples
+
+### Quality Assurance
+
+✅ All files pass ESLint (no warnings or errors)
+✅ Markdown formatting correct
+✅ Code examples match proven implementations (28 + 16 passing tests)
+✅ Cross-references are accurate
+
+### Next: Task 6
+
+Ready to proceed with consolidating and documenting fixtures.
