@@ -325,6 +325,7 @@ Changes made:
 - ✅ Added new `createSimpleHarness()` function to `tests/helpers/integrationHarness.js`
 - ✅ Function accepts only: `{ fixtures, useFakeTimers, useRafMock, customSetup, customTeardown }`
 - ✅ **NO `mocks` parameter** — all mocks must be registered at file scope using `vi.mock()`
+- ✅ Added `vi.resetModules()` call in setup to clear module cache before test runs
 - ✅ Preserved all existing environment setup logic (timers, RAF, fixtures, DOM cleanup)
 - ✅ Made `createIntegrationHarness()` `@deprecated` with clear migration guidance
 - ✅ Updated JSDoc with detailed examples and Vitest lifecycle explanation
@@ -337,7 +338,50 @@ Outcome:
 - No breaking changes to existing tests yet
 - Clear path for incremental migration
 
-**Next**: Migrate failing tests to use `createSimpleHarness()` with top-level `vi.mock()` calls
+### Task 2: Migrate Resolution Tests - DISCOVERY
+
+**Status**: Investigation Complete - Approach Adjustment Needed
+
+**Findings**:
+
+After attempting to convert `tests/classicBattle/resolution.test.js` to use top-level `vi.mock()`, discovered that these integration tests have complex interdependencies:
+
+1. **Existing page-scaffold.test.js tests are ALSO failing** with top-level mocks
+2. The issue is not the harness or mock registration timing—it's that `battleClassic.init()` performs deep module initialization that expects many submodules to be loaded and configured properly
+3. Top-level `vi.mock()` works correctly for isolated unit tests, but these integration tests require:
+   - Real module imports to execute their initialization logic
+   - Precise mock injection at specific points in the initialization sequence
+   - State management across multiple module boundaries
+
+**Root Cause**: These are **true integration tests**, not unit tests with mocked dependencies. They were designed to test the real module interactions while mocking only external I/O. The original `vi.doMock()` approach was attempting (unsuccessfully) to mock modules after import, which violates Vitest's lifecycle guarantees.
+
+**Conclusion**: These tests need a **different refactoring approach** than a simple "convert to top-level vi.mock()" migration. Two options:
+
+#### Option A: Decompose into Unit Tests (Recommended)
+
+- Break down integration tests into smaller, focused unit tests
+- Each unit test mocks only its specific module boundaries
+- Use top-level `vi.mock()` at module boundaries
+- Much faster test execution + more maintainable
+- Better test isolation and clarity
+
+#### Option B: Redesign Test Architecture
+
+- Create a test fixture/seeding system for pre-configured battle state
+- Mock only external APIs (fetch, localStorage, timers)
+- Let real modules run with controlled inputs/outputs
+- Requires significant test infrastructure changes
+
+**Next Steps**:
+
+The current task should be **paused** and reclassified as:
+
+1. **Phase 1a (Current - COMPLETE)**: Create simplified harness API ✅
+2. **Phase 1b (NEW)**: Audit which tests are true integration vs unit tests
+3. **Phase 2 (DEFERRED)**: Refactor integration tests based on Option A or B decision
+4. **Phase 3**: Port remaining tests to new patterns
+
+For now, we'll mark `resolution.test.js` as "migration blocker due to test architecture" and document the discovery.
 
 ---
 

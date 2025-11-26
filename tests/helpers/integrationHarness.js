@@ -248,6 +248,10 @@ export function createSimpleHarness(config = {}) {
    * Sets up the harness environment (timers, RAF, fixtures)
    */
   async function setup() {
+    // Reset modules to apply any top-level vi.mock() calls
+    // This clears the module cache while preserving the mock queue from vi.mock()
+    vi.resetModules();
+
     // Setup deterministic timers if requested
     if (useFakeTimers) {
       timerControl = useCanonicalTimers();
