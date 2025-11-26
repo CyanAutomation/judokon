@@ -19,14 +19,14 @@
 
 ### Failing Test Files and Counts
 
-| File | Failing Tests | Root Cause |
-|------|---------------|-----------|
-| `tests/classicBattle/page-scaffold.test.js` | 4 | Mock registration timing |
-| `tests/classicBattle/resolution.test.js` | 4 | Mock registration timing |
-| `tests/classicBattle/uiEventBinding.test.js` | 1 | Mock registration timing |
-| `tests/integration/battleClassic.integration.test.js` | 5 | Mock registration timing |
-| `tests/integration/battleClassic.placeholder.test.js` | 1 | Mock registration timing |
-| **Total** | **16 failures** | **Single root cause** |
+| File                                                  | Failing Tests   | Root Cause               |
+| ----------------------------------------------------- | --------------- | ------------------------ |
+| `tests/classicBattle/page-scaffold.test.js`           | 4               | Mock registration timing |
+| `tests/classicBattle/resolution.test.js`              | 4               | Mock registration timing |
+| `tests/classicBattle/uiEventBinding.test.js`          | 1               | Mock registration timing |
+| `tests/integration/battleClassic.integration.test.js` | 5               | Mock registration timing |
+| `tests/integration/battleClassic.placeholder.test.js` | 1               | Mock registration timing |
+| **Total**                                             | **16 failures** | **Single root cause**    |
 
 ### Failure Pattern
 
@@ -205,12 +205,12 @@ Once the mock registration timing is fixed, document access works correctly and 
 
 ## Files Involved
 
-| File | Role | Status |
-|------|------|--------|
-| `tests/helpers/integrationHarness.js` | Root cause location | Needs fix |
-| `progressClassic.md` | Complete analysis & fix spec | Reference this |
-| `progressBug.md` | Earlier hypothesis (now clarified) | Obsolete for this issue |
-| `progressRandom.md` | This file (current status summary) | FYI only |
+| File                                  | Role                               | Status                  |
+| ------------------------------------- | ---------------------------------- | ----------------------- |
+| `tests/helpers/integrationHarness.js` | Root cause location                | Needs fix               |
+| `progressClassic.md`                  | Complete analysis & fix spec       | Reference this          |
+| `progressBug.md`                      | Earlier hypothesis (now clarified) | Obsolete for this issue |
+| `progressRandom.md`                   | This file (current status summary) | FYI only                |
 
 ---
 

@@ -208,7 +208,6 @@ describe("Debug Logger Integration", () => {
       expect(captureStackSpy).not.toHaveBeenCalled();
       expect(outputToConsoleSpy).not.toHaveBeenCalled();
       expect(generateIdSpy).not.toHaveBeenCalled();
-
     });
   });
 });

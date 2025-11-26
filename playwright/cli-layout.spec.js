@@ -91,7 +91,7 @@ test.describe("CLI layout", () => {
 
         expect(layout.pageScrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
         expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth);
-      });
+    });
     });
   }
 });

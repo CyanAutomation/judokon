@@ -6,7 +6,7 @@
 
 **Bug**: Multiple tests in `tests/classicBattle/resolution.test.js` are failing because mocks are not being correctly applied. This causes tests to run against real module implementations instead of the intended mocks, leading to failures.
 
-**Root Cause**: The test harness at `tests/helpers/integrationHarness.js` incorrectly calls `vi.resetModules()` *before* it registers the mocks via `vi.doMock()`. According to Vitest's design, mocks must be queued *before* the module cache is reset. The current order clears the module cache, and then queues mocks that are never used because the subsequent module imports load the original, non-mocked versions.
+**Root Cause**: The test harness at `tests/helpers/integrationHarness.js` incorrectly calls `vi.resetModules()` _before_ it registers the mocks via `vi.doMock()`. According to Vitest's design, mocks must be queued _before_ the module cache is reset. The current order clears the module cache, and then queues mocks that are never used because the subsequent module imports load the original, non-mocked versions.
 
 **Solution**: Reorder the operations in the `setup()` function within `createIntegrationHarness`. The mock registration loop must be executed **before** `vi.resetModules()` is called.
 
@@ -56,7 +56,7 @@ async function setup() {
 }
 ```
 
-*Note: The debugging code that pushes to `globalThis.__registeredMockPaths` should also be moved along with the mock registration loop.*
+_Note: The debugging code that pushes to `globalThis.__registeredMockPaths` should also be moved along with the mock registration loop._
 
 ### Step 2: Verify the Fix
 

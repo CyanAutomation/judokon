@@ -19,6 +19,7 @@ The goal is to apply a consistent, best-practice pattern to all affected test fi
 The following files need to be updated to use the standardized deferred loading pattern.
 
 **Affected Files:**
+
 - `tests/classicBattle/round-select.test.js`
 - `tests/classicBattle/bootstrap.test.js`
 - `tests/classicBattle/end-modal.test.js`
@@ -54,7 +55,8 @@ beforeEach(() => {
   document.body.innerHTML = htmlContent;
 });
 ```
-*Note: If a `beforeEach` hook already exists, add `document.body.innerHTML = htmlContent;` to it rather than creating a new one.*
+
+_Note: If a `beforeEach` hook already exists, add `document.body.innerHTML = htmlContent;` to it rather than creating a new one._
 
 ### Step 2: Verify the Fixes
 

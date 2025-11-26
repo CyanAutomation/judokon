@@ -117,7 +117,7 @@ async function setup() {
   if (useRafMock) {
     rafControl = installRAFMock();
   }
-  
+
   // STEP 4: Inject fixtures
   for (const [key, value] of Object.entries(fixtures)) {
     injectFixture(key, value);
@@ -250,4 +250,84 @@ This bug report was initially believed to be a document access problem. However,
 2. Mock registration is happening but mocks not matching import specifiers
 3. Mock factory might not be creating compatible mocks
 
-**Next Steps**: Investigate whether mock specifier format is causing registration to fail
+### Task 3: Identify Actual Root Cause - Mock Registration Timing at Module Level (IN PROGRESS)
+
+**Critical Discovery**: The real problem is NOT just the order within the `setup()` function. The issue is **WHERE** mocks are registered.
+
+**What Vitest Requires**:
+
+- `vi.mock()` and `vi.doMock()` must be called during **module collection** (top level)
+- Mock registration inside async functions like `beforeEach()` is too late
+- The module collection phase happens BEFORE any tests or setup functions run
+- Mocks registered after module collection don't affect already-imported modules
+
+**Current Architecture Problem**:
+
+- `resolution.test.js` calls `createClassicBattleHarness({ mocks })` in each test
+- `createClassicBattleHarness` returns a harness object with `setup()` method
+- `beforeEach(async () => await harness.setup())` calls `vi.doMock()` inside async function
+- By this time, all module imports have already been resolved
+- Modules import their dependencies at module load, not test-time
+- So `vi.doMock()` in `setup()` cannot affect the already-loaded modules
+
+**Evidence**:
+
+- `page-scaffold.test.js` uses `vi.mock()` at the top level (works correctly)
+- `resolution.test.js` tries to use dynamic mocks via harness (doesn't work)
+- The reordering of `vi.resetModules()` and `vi.doMock()` cannot help because both happen too late
+
+**Solution Paths**:
+
+1. Move all mock registration to top level using `vi.mock()` directly (requires changes to all test files)
+2. Use `vi.hoisted()` to create hoisted mocks that work with the harness pattern
+3. Refactor the harness to support top-level mock registration instead of async setup
+
+**Next Investigation**: Determine which solution path is best and most maintainable
+
+---
+
+## Key Insight: The Reordering Fix Was Incomplete
+
+The reordering of `vi.doMock()` before `vi.resetModules()` in `integrationHarness.js` was correct and necessary, but **it does not fully solve the problem** because:
+
+1. **Module Collection Timing**: When `resolution.test.js` is loaded, Vitest's module collection phase happens first
+2. **Early Imports**: The test file imports from `src/pages/battleClassic.init.js`, which imports its dependencies
+3. **Too Late Registration**: When the test runs `beforeEach(() => harness.setup())`, the test file's module collection is already complete
+4. **Mocks Never Apply**: Although `vi.doMock()` is called in the setup function, the modules have already been imported with real implementations
+
+**What Needs to Happen**:
+
+- Mocks must be registered **before** `battleClassic.init.js` is imported
+- This means mocks must be registered at the **test file's top level**, not in `beforeEach()`
+- Or alternatively, `battleClassic.init.js` must be imported **after** the mocks are registered
+
+**Current State**:
+
+- ✅ `integrationHarness.js` has correct operation ordering
+- ❌ But mocks are still registered too late in the test execution lifecycle
+- ❌ Test failures persist because mocks don't affect module imports
+
+---
+
+## Recommended Next Steps
+
+To actually fix this issue, one of these approaches must be taken:
+
+#### Approach 1: Top-Level Mock Registration (Least Disruptive)
+
+- Convert `resolution.test.js` to use `vi.mock()` at the top level like `page-scaffold.test.js` does
+- This requires minimal changes to the test harness
+- Trade-off: Tests become less flexible but mocks work correctly
+
+#### Approach 2: Refactor Harness with Top-Level Support (Recommended)
+
+- Add a new export from `integrationHarness.js` that wraps mock registration for top-level use
+- Create a helper that tests can call at the top level to register harness-style mocks
+- Allows flexibility while maintaining the harness pattern
+
+#### Approach 3: Complete Harness Redesign (Major Refactoring)
+
+- Redesign the harness to not use dynamic mock registration
+- Make it a simple fixture/setup provider without mock handling
+- Move all mock registration to top-level in tests
+- Most work but cleanest long-term solution
