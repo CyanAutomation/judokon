@@ -227,6 +227,71 @@ The refactor will be successful when:
 
 ---
 
+## 8. IMPLEMENTATION LOG
+
+### Phase 1: Validation & Documentation (IN PROGRESS)
+
+#### Task 1: Validate createSimpleHarness() Production Readiness ✅ COMPLETED
+
+**Findings**:
+- ✅ `createSimpleHarness()` exists and is fully functional (lines 168–329 in `tests/helpers/integrationHarness.js`)
+- ✅ Correctly implements top-level vi.mock() pattern with vi.resetModules()
+- ✅ Does NOT have a `mocks` parameter (enforces top-level pattern)
+- ✅ Already has example working test: `tests/classicBattle/examples/simpleHarnessPattern.test.js`
+- ✅ API surface: `setup()`, `cleanup()`, `importModule()`, timer/raf accessors
+- ✅ Fixture injection works: localStorage, fetch, matchMedia, custom globals
+
+**Outcome**: `createSimpleHarness()` is production-ready and can serve as the foundation for migration.
+
+---
+
+#### Task 2: Document Failing Test Files & Dependencies (IN PROGRESS)
+
+**Files Using Deprecated `mocks` Parameter** (10 matches found):
+
+| File | Line(s) | Usage | Status | Notes |
+|------|---------|-------|--------|-------|
+| `tests/helpers/classicBattle/scheduleNextRound.fallback.test.js` | 81, 201, 275, 347, 423 | `createClassicBattleHarness({ mocks: {...} })` inside `beforeEach` | ⚠️ **CRITICAL** | 5 test groups, mocks battleEngineFacade extensively |
+| `tests/helpers/integrationHarness.test.js` | 31, 56, 78, 179 | `createIntegrationHarness({ mocks: {...} })` in tests | ⚠️ **SELF-TEST** | Tests the deprecated harness itself; needs conversion to new pattern |
+| `tests/helpers/settingsPage.test.js` | 45 | `createSettingsHarness({ mocks: {...} })` | ⚠️ **CRITICAL** | Settings page test, mocks 7+ helpers |
+
+**Migration Categorization**:
+
+**UNIT TEST FILES** (mock all dependencies):
+- None identified yet; most tests are integration-heavy
+
+**INTEGRATION TEST FILES** (mock only externals):
+1. **`scheduleNextRound.fallback.test.js`** (494 lines)
+   - Current: Uses deprecated mocks parameter with `createClassicBattleHarness`
+   - Dependencies: battleEngineFacade (complex battle engine simulator)
+   - Plan: Convert mocks to top-level `vi.mock()` + `vi.hoisted()`; use `createSimpleHarness()` instead
+   - Risk: High—complex mock setup; must preserve mock factory behavior
+
+2. **`settingsPage.test.js`** (578 lines)
+   - Current: Uses deprecated mocks with `createSettingsHarness`
+   - Dependencies: displayMode, motionUtils, featureFlags, layoutDebugPanel, domReady, etc.
+   - Plan: Similar—top-level mocks + `createSimpleHarness()`
+   - Risk: Medium—7+ helpers mocked, some with complex state management
+
+3. **`integrationHarness.test.js`** (self-test of harness)
+   - Current: Tests the deprecated `createIntegrationHarness` function
+   - Plan: Rewrite to test `createSimpleHarness()` instead
+   - Risk: Low—contained test file
+
+**Outcome**: 3 high-priority files identified. Strategy: Migrate `scheduleNextRound.fallback.test.js` first (most complex), then settingsPage, then harness self-test.
+
+---
+
+### Phase 2: Test Migration (READY TO BEGIN)
+
+Next steps:
+1. Start with `scheduleNextRound.fallback.test.js` — convert mocks to top-level pattern
+2. Validate with `npm run test:battles:classic`
+3. Repeat for `settingsPage.test.js`
+4. Update `integrationHarness.test.js` to test new pattern
+
+---
+
 ## Appendix A: Vitest Quick Reference
 
 -   **`vi.mock(path, factory)`**: Must be at the top level. Replaces a module with your factory function.
