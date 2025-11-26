@@ -217,3 +217,37 @@ This bug report was initially believed to be a document access problem. However,
 
 - **Primary Fix**: `tests/helpers/integrationHarness.js` — lines 222–250 (reorder mock/reset operations)
 - **Optional Enhancement**: `src/helpers/documentHelper.js` — add caching (only if needed after primary fix)
+
+---
+
+## Implementation Log
+
+### Task 1: Reorder Mock Registration (COMPLETED)
+
+**Action**: Moved mock registration loop BEFORE `vi.resetModules()` in `tests/helpers/integrationHarness.js` (lines 222-257)
+
+**Changes Made**:
+
+- Moved `vi.doMock()` calls before `vi.resetModules()`
+- Enhanced JSDoc comment explaining Vitest's mock queueing requirement
+- Kept mock path tracking code together with registration
+
+**Status**: ✅ Applied successfully
+
+### Task 2: Verify Fix with Targeted Tests
+
+**Test Run**: `npx vitest run tests/classicBattle/resolution.test.js`
+
+**Result**: ❌ Tests still failing
+
+- 4 tests still fail: "score updates after auto-select on expiry", "timer expiry falls back...", "scoreboard reconciles...", "match end forwards..."
+- Mocks are still not being invoked: `expect(computeRoundResultMock).toHaveBeenCalled()` fails
+- Mock calls array still empty: `scoreboardMock.updateScore.mock.calls` is `[]`
+
+**Analysis**: The reordering alone did not fix the issue. Further investigation needed into:
+
+1. Module specifier mismatch - test uses file:// URLs, app uses relative imports
+2. Mock registration is happening but mocks not matching import specifiers
+3. Mock factory might not be creating compatible mocks
+
+**Next Steps**: Investigate whether mock specifier format is causing registration to fail
