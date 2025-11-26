@@ -733,3 +733,153 @@ export function getJudokaFixture() {
 export function getGokyoFixture() {
   return structuredClone(loadGokyoFixture());
 }
+
+/**
+ * Creates a mock localStorage object for testing
+ *
+ * @pseudocode
+ * 1. Create an in-memory storage object
+ * 2. Implement standard localStorage methods: getItem, setItem, removeItem, clear, key, length
+ * 3. Return the mock object
+ *
+ * @returns {Object} Mock localStorage with all standard methods
+ * @example
+ * ```js
+ * const mockStorage = createMockLocalStorage();
+ * mockStorage.setItem("key", "value");
+ * expect(mockStorage.getItem("key")).toBe("value");
+ * ```
+ */
+export function createMockLocalStorage() {
+  const store = {};
+
+  return {
+    getItem: (key) => store[key] || null,
+    setItem: (key, value) => {
+      store[key] = String(value);
+    },
+    removeItem: (key) => {
+      delete store[key];
+    },
+    clear: () => {
+      Object.keys(store).forEach((key) => {
+        delete store[key];
+      });
+    },
+    key: (index) => {
+      return Object.keys(store)[index] || null;
+    },
+    get length() {
+      return Object.keys(store).length;
+    }
+  };
+}
+
+/**
+ * Creates a mock fetch function for testing network requests
+ *
+ * @pseudocode
+ * 1. Create a vi.fn() mock function
+ * 2. Configure mock to handle URL patterns
+ * 3. Return success or error responses based on configuration
+ * 4. Preserve call history via vi.mock
+ *
+ * @param {Object} defaultResponses - Optional map of URL patterns to responses
+ * @returns {Function} Mock fetch function with vi tracking
+ * @example
+ * ```js
+ * const mockFetch = createMockFetch({
+ *   "/api/opponent": { status: 200, data: { id: 1 } }
+ * });
+ * mockFetch.mockResolvedValue({ status: 200, json: async () => ({ ok: true }) });
+ * ```
+ */
+export function createMockFetch(defaultResponses = {}) {
+  const mockFn = vi.fn();
+
+  mockFn.mockImplementation(async (url) => {
+    const urlStr = String(url);
+
+    // Check for matching pattern in default responses
+    for (const [pattern, response] of Object.entries(defaultResponses)) {
+      if (urlStr.includes(pattern)) {
+        return {
+          status: response.status || 200,
+          ok: (response.status || 200) < 400,
+          json: async () => response.data || response
+        };
+      }
+    }
+
+    // Default: return successful response
+    return {
+      status: 200,
+      ok: true,
+      json: async () => ({})
+    };
+  });
+
+  return mockFn;
+}
+
+/**
+ * Creates a mock matchMedia function for CSS media queries
+ *
+ * @pseudocode
+ * 1. Create in-memory store of media query matches
+ * 2. Return a function that creates MediaQueryList-like objects
+ * 3. Support adding/removing listeners for media query changes
+ * 4. Allow updating match states at runtime
+ *
+ * @param {Object} initialMatches - Map of media queries to their initial match state
+ * @returns {Object} Mock matchMedia with setMatch() for runtime updates
+ * @example
+ * ```js
+ * const mockMatchMedia = createMockMatchMedia({
+ *   "(prefers-color-scheme: dark)": true,
+ *   "(max-width: 768px)": false
+ * });
+ * const result = window.matchMedia("(prefers-color-scheme: dark)");
+ * expect(result.matches).toBe(true);
+ * ```
+ */
+export function createMockMatchMedia(initialMatches = {}) {
+  const matches = { ...initialMatches };
+
+  return {
+    fn: function mockMatchMedia(query) {
+      const listeners = [];
+
+      return {
+        media: query,
+        matches: matches[query] ?? false,
+        addListener: (listener) => {
+          listeners.push(listener);
+        },
+        removeListener: (listener) => {
+          const index = listeners.indexOf(listener);
+          if (index >= 0) listeners.splice(index, 1);
+        },
+        addEventListener: (event, listener) => {
+          if (event === "change") {
+            listeners.push(listener);
+          }
+        },
+        removeEventListener: (event, listener) => {
+          if (event === "change") {
+            const index = listeners.indexOf(listener);
+            if (index >= 0) listeners.splice(index, 1);
+          }
+        }
+      };
+    },
+
+    setMatch: (query, value) => {
+      matches[query] = value;
+    },
+
+    getAllMatches: () => {
+      return { ...matches };
+    }
+  };
+}
