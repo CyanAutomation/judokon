@@ -385,7 +385,10 @@ describe("bus propagation and deduplication", () => {
     expect(mockState.dispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ dispatchBattleEvent: mockState.dispatchSpy, alreadyDispatched: false })
+      expect.objectContaining({
+        dispatchBattleEvent: mockState.dispatchSpy,
+        alreadyDispatched: false
+      })
     );
     expect(directResult).toEqual({ dispatched: true, dedupeTracked: false });
   });

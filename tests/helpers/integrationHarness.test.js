@@ -1,7 +1,11 @@
 import { pathToFileURL } from "node:url";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-import { createIntegrationHarness, createSimpleHarness, createMockFactory } from "./integrationHarness.js";
+import {
+  createIntegrationHarness,
+  createSimpleHarness,
+  createMockFactory
+} from "./integrationHarness.js";
 
 const REPO_ROOT_URL = new URL("../..", import.meta.url);
 
