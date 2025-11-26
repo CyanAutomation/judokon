@@ -211,40 +211,30 @@ describe("startCooldown fallback timer", () => {
 describe("startCooldown ready dispatch discipline", () => {
   let harness;
   let scheduler;
-  /** @type {import('vitest').Mock} */
-  let dispatchSpy;
 
   beforeEach(async () => {
-    dispatchSpy = vi.fn(() => undefined);
+    mockState.dispatchSpy = vi.fn(() => undefined);
+    mockState.nextRoundCooldown = 1;
 
-    harness = createClassicBattleHarness({
-      mocks: {
-        // Mock event dispatcher to track ready events
-        ...createEventDispatcherMockEntries(() => ({
-          dispatchBattleEvent: dispatchSpy,
-          resetDispatchHistory: vi.fn()
-        })),
-        // Mock computeNextRoundCooldown to return 1 second
-        "../../../src/helpers/timers/computeNextRoundCooldown.js": () => ({
-          computeNextRoundCooldown: () => 1
-        })
-      }
-    });
-
+    harness = createSimpleHarness();
     await harness.setup();
+
     scheduler = createMockScheduler();
+    mockState.scheduler = scheduler;
     document.body.innerHTML = "";
     createTimerNodes();
 
     const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_FILE_URL);
-    expect(dispatcherModule.dispatchBattleEvent).toBe(dispatchSpy);
+    expect(dispatcherModule.dispatchBattleEvent).toBe(mockState.dispatchSpy);
     const dispatcherAliasModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
-    expect(dispatcherAliasModule.dispatchBattleEvent).toBe(dispatchSpy);
+    expect(dispatcherAliasModule.dispatchBattleEvent).toBe(mockState.dispatchSpy);
     resetDispatchHistory();
   });
 
   afterEach(() => {
     harness.cleanup();
+    mockState.dispatchSpy = null;
+    mockState.nextRoundCooldown = 0;
   });
 
   it("dispatches ready exactly once when round timer expires", async () => {
@@ -256,8 +246,8 @@ describe("startCooldown ready dispatch discipline", () => {
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
     await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(mockState.dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(mockState.dispatchSpy).toHaveBeenCalledWith("ready");
   });
 
   it("dispatches ready exactly once when fallback timer fires", async () => {
@@ -269,52 +259,44 @@ describe("startCooldown ready dispatch discipline", () => {
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
     scheduler.tick(20);
-    expect(dispatchSpy).not.toHaveBeenCalled();
+    expect(mockState.dispatchSpy).not.toHaveBeenCalled();
     scheduler.tick(1000);
     scheduler.tick(1000);
     await vi.runAllTimersAsync();
     await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(mockState.dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(mockState.dispatchSpy).toHaveBeenCalledWith("ready");
     await vi.runAllTimersAsync();
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(mockState.dispatchSpy).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("handleNextRoundExpiration immediate readiness", () => {
   let harness;
   let scheduler;
-  /** @type {import('vitest').Mock} */
-  let dispatchSpy;
 
   beforeEach(async () => {
-    dispatchSpy = vi.fn();
-    dispatchSpy.mockResolvedValue(undefined);
+    mockState.dispatchSpy = vi.fn();
+    mockState.dispatchSpy = mockState.dispatchSpy.mockResolvedValue(undefined);
 
-    harness = createClassicBattleHarness({
-      mocks: {
-        // Mock event dispatcher
-        ...createEventDispatcherMockEntries(() => ({
-          dispatchBattleEvent: dispatchSpy,
-          resetDispatchHistory: vi.fn()
-        }))
-      }
-    });
-
+    harness = createSimpleHarness();
     await harness.setup();
+
     scheduler = createMockScheduler();
+    mockState.scheduler = scheduler;
     document.body.innerHTML = "";
     createTimerNodes();
 
     const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_FILE_URL);
-    expect(dispatcherModule.dispatchBattleEvent).toBe(dispatchSpy);
+    expect(dispatcherModule.dispatchBattleEvent).toBe(mockState.dispatchSpy);
     const dispatcherAliasModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
-    expect(dispatcherAliasModule.dispatchBattleEvent).toBe(dispatchSpy);
+    expect(dispatcherAliasModule.dispatchBattleEvent).toBe(mockState.dispatchSpy);
     resetDispatchHistory();
   });
 
   afterEach(() => {
     harness.cleanup();
+    mockState.dispatchSpy = null;
   });
 
   it("dispatches ready when state already progressed past cooldown", async () => {
@@ -329,8 +311,8 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     expect(typeof controls.ready.then).toBe("function");
     await vi.runAllTimersAsync();
     await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(mockState.dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(mockState.dispatchSpy).toHaveBeenCalledWith("ready");
   });
 
   it("falls back to machine dispatch when event dispatcher reports no machine", async () => {
@@ -345,55 +327,45 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     expect(typeof controls.ready.then).toBe("function");
     await vi.runAllTimersAsync();
     await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(mockState.dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(mockState.dispatchSpy).toHaveBeenCalledWith("ready");
   });
 });
 
 describe("bus propagation and deduplication", () => {
   let harness;
   let machine;
-  /** @type {import('vitest').SpyInstance} */
   let dispatchReadyViaBusSpy;
-  let globalDispatchSpy;
   let expirationHandlersModule;
 
   beforeEach(async () => {
     machine = { dispatch: vi.fn() };
     machine.state = { value: "idle" };
-    globalDispatchSpy = vi.fn(() => true);
+    mockState.dispatchSpy = vi.fn(() => true);
 
-    harness = createClassicBattleHarness({
-      mocks: {
-        // Provide a controllable global dispatcher for readiness helpers
-        ...createEventDispatcherMockEntries(() => ({
-          dispatchBattleEvent: globalDispatchSpy,
-          resetDispatchHistory: vi.fn()
-        }))
-      }
-    });
-
+    harness = createSimpleHarness();
     await harness.setup();
 
     expirationHandlersModule = await harness.importModule(EXPIRATION_HANDLERS_MODULE);
     dispatchReadyViaBusSpy = vi.spyOn(expirationHandlersModule, "dispatchReadyViaBus");
 
     const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
-    expect(dispatcherModule.dispatchBattleEvent).toBe(globalDispatchSpy);
+    expect(dispatcherModule.dispatchBattleEvent).toBe(mockState.dispatchSpy);
   });
 
   afterEach(() => {
     harness.cleanup();
+    mockState.dispatchSpy = null;
   });
 
   it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
     dispatchReadyViaBusSpy?.mockClear();
-    globalDispatchSpy.mockClear();
+    mockState.dispatchSpy.mockClear();
     const directResult = await expirationHandlersModule.dispatchReadyDirectly({
       machineReader: () => machine
     });
     const busResult = await expirationHandlersModule.dispatchReadyViaBus({
-      dispatchBattleEvent: globalDispatchSpy,
+      dispatchBattleEvent: mockState.dispatchSpy,
       alreadyDispatched: directResult.dispatched && directResult.dedupeTracked
     });
     expect(busResult).toBe(true);
@@ -401,31 +373,31 @@ describe("bus propagation and deduplication", () => {
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
       expect.objectContaining({ alreadyDispatched: true })
     );
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
-    expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
+    expect(mockState.dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(mockState.dispatchSpy).toHaveBeenCalledWith("ready");
     expect(directResult).toEqual({ dispatched: true, dedupeTracked: true });
   });
 
   it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
     dispatchReadyViaBusSpy?.mockClear();
-    globalDispatchSpy.mockClear();
-    dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(globalDispatchSpy));
-    globalDispatchSpy.mockImplementationOnce(() => false);
-    globalDispatchSpy.mockImplementation(() => true);
+    mockState.dispatchSpy.mockClear();
+    dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(mockState.dispatchSpy));
+    mockState.dispatchSpy.mockImplementationOnce(() => false);
+    mockState.dispatchSpy.mockImplementation(() => true);
     const directResult = await expirationHandlersModule.dispatchReadyDirectly({
       machineReader: () => machine
     });
     const busResult = await expirationHandlersModule.dispatchReadyViaBus({
-      dispatchBattleEvent: globalDispatchSpy,
+      dispatchBattleEvent: mockState.dispatchSpy,
       alreadyDispatched: directResult.dispatched && directResult.dedupeTracked
     });
     expect(busResult).toBe(true);
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
+    expect(mockState.dispatchSpy).toHaveBeenCalledTimes(2);
+    expect(mockState.dispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
+    expect(mockState.dispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ dispatchBattleEvent: globalDispatchSpy, alreadyDispatched: false })
+      expect.objectContaining({ dispatchBattleEvent: mockState.dispatchSpy, alreadyDispatched: false })
     );
     expect(directResult).toEqual({ dispatched: true, dedupeTracked: false });
   });
@@ -434,27 +406,22 @@ describe("bus propagation and deduplication", () => {
 describe("fallback readiness flag discipline", () => {
   let harness;
   let scheduler;
-  /** @type {import('vitest').Mock} */
-  let globalDispatchSpy;
 
   beforeEach(async () => {
-    globalDispatchSpy = vi.fn(() => true);
-    harness = createClassicBattleHarness({
-      mocks: {
-        ...createEventDispatcherMockEntries(() => ({
-          dispatchBattleEvent: globalDispatchSpy,
-          resetDispatchHistory: vi.fn()
-        }))
-      }
-    });
+    mockState.dispatchSpy = vi.fn(() => true);
+    harness = createSimpleHarness();
     await harness.setup();
+
     scheduler = createMockScheduler();
+    mockState.scheduler = scheduler;
     document.body.innerHTML = "";
     createTimerNodes();
   });
 
   afterEach(() => {
     harness.cleanup();
+    mockState.dispatchSpy = null;
+    mockState.scheduler = null;
   });
 
   it("marks readiness after fallback dispatch and short-circuits future attempts", async () => {
