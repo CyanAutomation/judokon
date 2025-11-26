@@ -7,7 +7,7 @@ const TOOLTIP_DATA = (() => {
     return JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
   } catch (error) {
     console.error("Failed to load tooltip data for tests", error);
-    return {};
+    throw new Error(`Test setup failed: tooltip data unavailable - ${error.message}`);
   }
 })();
 
