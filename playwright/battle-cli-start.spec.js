@@ -8,7 +8,9 @@ test.describe("Battle CLI - Start", () => {
     });
   };
 
-  test("starts via round select modal with controls ready (start-flow regression)", async ({ page }) => {
+  test("starts via round select modal with controls ready (start-flow regression)", async ({
+    page
+  }) => {
     // Regression coverage: start-flow requirement/bug is tracked in progressPlaywright.md.
     await withMutedConsole(async () => {
       await enableRoundSelectModal(page);
@@ -16,7 +18,9 @@ test.describe("Battle CLI - Start", () => {
 
       const roundModal = page.getByRole("dialog", { name: "Select Match Length" });
       await expect(roundModal).toBeVisible();
-      await expect(roundModal.getByText("Use number keys (1-3) or arrow keys to select")).toBeVisible();
+      await expect(
+        roundModal.getByText("Use number keys (1-3) or arrow keys to select")
+      ).toBeVisible();
 
       await roundModal.getByRole("button", { name: "Medium" }).click();
       await expect(roundModal).toBeHidden();

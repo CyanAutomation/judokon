@@ -154,8 +154,8 @@ test.describe("Classic Battle – auto-advance", () => {
           });
           await firstStat.click();
         }
-    }
-  });
+      }
+    });
 
     const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
     expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);

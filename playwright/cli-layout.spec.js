@@ -39,7 +39,9 @@ test.describe("CLI layout", () => {
         await settingsSummary.press("Enter");
         await expect(settingsSection).toHaveJSProperty("open", true);
 
-        const statsList = page.getByRole("listbox", { name: /select a stat with number keys 1-5/i });
+        const statsList = page.getByRole("listbox", {
+          name: /select a stat with number keys 1-5/i
+        });
         await expect(statsList).toBeVisible();
         await expect(statsList).toHaveAttribute("aria-busy", "false");
 
