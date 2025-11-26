@@ -63,10 +63,11 @@ test.describe("CLI layout", () => {
             await expect(target).toBeFocused();
           }
           if (index < focusOrder.length - 1) {
+          if (index < focusOrder.length - 1) {
             const nextTarget = focusOrder[index + 1];
-            await page.keyboard.press("Tab");
             await nextTarget.waitFor({ state: "attached" });
             await nextTarget.waitFor({ state: "visible" });
+            await page.keyboard.press("Tab");
             await expect(nextTarget).toBeFocused();
           }
         }
