@@ -408,6 +408,18 @@ Based on Phase 1a completion and Phase 1b (architecture audit) findings, the ref
 - Mocks only true external dependencies (network, storage, DOM APIs)
 - Creates a pattern that's easier for new tests to follow
 
+### Phase 2 Migration Matrix
+
+| Test File | Strategy | Status | Notes |
+| --- | --- | --- | --- |
+| `tests/classicBattle/page-scaffold.test.js` | Option B (real modules + external mocks) | Pending | Integration-heavy; keep real battle flow. |
+| `tests/classicBattle/resolution.test.js` | Option B | Pending | Needs external fixture seeding; confirm DOM/state. |
+| `tests/classicBattle/uiEventBinding.test.js` | Option A (top-level mocks) | Pending | More isolated; convert to `createSimpleHarness()`. |
+| `tests/integration/battleClassic.integration.test.js` | Option B | Pending | Real store rendering; mock only externalities. |
+| `tests/integration/battleClassic.placeholder.test.js` | Option B | Pending | Placeholder visuals rely on real components. |
+
+This matrix can be updated as each file migrates; include statuses (Pending, In Progress, Done) and short notes to capture the chosen strategy.
+
 ## 9. Concrete Implementation Strategy (Option B)
 
 ### Pattern for Integration Tests with Option B
@@ -459,6 +471,14 @@ test("real battle flow with mocked externalities", async () => {
   // E.g., check that fetch was called, localStorage updated, timers fired
 });
 ```
+
+### Option B Validation Checklist
+
+- Confirm that only true external dependencies (network, storage, timers, DOM APIs, analytics, logging) are mocked via top-level `vi.mock()` or injected fixtures.
+- Ensure `createSimpleHarness()` is responsible only for environment setup (timers, RAF, fixtures) and that no legacy `mocks` parameter is passed in new tests.
+- Validate that assertions focus on observable outcomes (DOM updates, store state, API calls) so that the real modules actually execute.
+- Document fixture seeds or mock expectations in the test body to explain how the controlled externalities behave.
+- Run the relevant targeted suite (`npm run test:battles:classic`, `npm run test:battles`, etc.) after migration to confirm the real flow remains stable.
 
 ### Files to Review/Update
 
@@ -596,3 +616,20 @@ All 16 failures resolve by moving mock registration to the top level of test fil
 - Test utilities (`tests/utils/`, `tests/setup/`)
 - Integration test infrastructure
 - Test data and fixtures
+
+## 10. Verification Notes
+
+- Verified that `createSimpleHarness()` already follows the described flow in `tests/helpers/integrationHarness.js#L234-L358`: it resets modules before configuring canonical timers/RAF, injects fixtures, and exposes helpers for importing modules with deterministic state.
+- Confirmed that `createIntegrationHarness()` still exposes a `mocks` parameter (see `tests/helpers/integrationHarness.js#L361-L398`), so the deprecation plan is still accurate and migration can happen without breaking existing tests.
+- Observed that the harness cleanup path restores timers, RAF, DOM, and mock state before clearing the module cache, which matches the stated goal of keeping environment management inside the harness while letting tests manage mocks.
+
+## 11. Opportunities for Improvement
+
+- Turn the Phase 2 “classify failing tests” list into a concise matrix (file → Option A or B) and keep it updated as migrations complete; a future step can even include a script that flags files still using the old mock parameter.
+- Create a concrete sample test (perhaps under `tests/classicBattle/examples/`) that demonstrates the full `createSimpleHarness()` + `vi.mock()` pattern, so reviewers can reference a working template when approving migrations.
+- Document how Option B validation differs from Option A (e.g., what external dependencies remain mocked, which assertions prove the real modules run) so reviewers can verify compliance without rereading the entire refactor plan.
+
+## 12. Example Harness Pattern
+
+- `tests/classicBattle/examples/simpleHarnessPattern.test.js` shows the full workflow: `vi.mock()`/`vi.hoisted()` at the top level, a `createSimpleHarness()` setup that injects fixtures (like `localStorage`), and assertions that confirm both the harness fixture and the mocked module behave as expected.
+- `tests/classicBattle/examples/sampleModule.js` is the mocked module used in the example; the test imports it through `harness.importModule()` after `setup()` resets the module cache, mirroring how migrated integration tests should interact with dependencies.
