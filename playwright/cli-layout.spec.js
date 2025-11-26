@@ -65,7 +65,6 @@ test.describe("CLI layout", () => {
             await expect(target).toBeFocused();
           }
           if (index < focusOrder.length - 1) {
-          if (index < focusOrder.length - 1) {
             const nextTarget = focusOrder[index + 1];
             await nextTarget.waitFor({ state: "attached" });
             await nextTarget.waitFor({ state: "visible" });
@@ -91,7 +90,7 @@ test.describe("CLI layout", () => {
 
         expect(layout.pageScrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
         expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth);
-    });
+      });
     });
   }
 });
