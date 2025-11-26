@@ -191,9 +191,6 @@ describe("Debug Logger Integration", () => {
     });
 
     it("should short-circuit all work when disabled", () => {
-    it("should short-circuit all work when disabled", () => {
-      const disabledLogger = new BattleDebugLogger({ enabled: false });
-
       const disabledLogger = new BattleDebugLogger({ enabled: false });
       const addToBufferSpy = vi.spyOn(disabledLogger, "addToBuffer");
       const captureStackSpy = vi.spyOn(disabledLogger, "captureStack");
@@ -212,7 +209,6 @@ describe("Debug Logger Integration", () => {
       expect(outputToConsoleSpy).not.toHaveBeenCalled();
       expect(generateIdSpy).not.toHaveBeenCalled();
 
-    });
     });
   });
 });

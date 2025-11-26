@@ -224,12 +224,14 @@ export function createIntegrationHarness(config = {}) {
 
   /**
    * Sets up the integration environment
+   *
+   * IMPORTANT: Mock registration MUST occur before vi.resetModules()
+   * Vitest queues mocks via vi.doMock() and resetModules() clears the cache
+   * while preserving the queue. Reversing this order breaks all mocks.
    */
   async function setup() {
-    // Reset modules to ensure clean state
-    vi.resetModules();
-
-    // Apply mocks before importing any modules
+    // Register mocks FIRST (queue them with Vitest)
+    // This MUST happen before vi.resetModules()
     if (typeof globalThis !== "undefined") {
       if (!globalThis.__registeredMockPaths) {
         globalThis.__registeredMockPaths = [];
@@ -245,6 +247,10 @@ export function createIntegrationHarness(config = {}) {
       }
       mockRegistrar(resolvedPath, createMockFactory(mockImpl));
     }
+
+    // Reset modules AFTER mock registration
+    // This clears the cache but preserves the mocks queued above
+    vi.resetModules();
 
     // Setup deterministic timers if requested
     if (useFakeTimers) {
