@@ -305,13 +305,13 @@ export function createMockGeolocation(position = {}) {
   } = position;
 
   return {
-    getCurrentPosition: vi.fn((success, error) => {
+    getCurrentPosition: vi.fn((success) => {
       success({
         coords: { latitude, longitude, accuracy, altitude, heading, speed },
         timestamp: Date.now()
       });
     }),
-    watchPosition: vi.fn((success, error) => {
+    watchPosition: vi.fn((success) => {
       success({
         coords: { latitude, longitude, accuracy, altitude, heading, speed },
         timestamp: Date.now()
