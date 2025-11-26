@@ -26,7 +26,48 @@ The previously suspected "document access issue" is merely a symptom of this. Be
 
 ---
 
-## 3. Guiding Principles for the Refactor
+## 3. The Rationale for a Full Harness Redesign
+
+### What This Means in Practice
+
+The current test harness is doing at least three things at once:
+1.  **Environment Setup**: Managing the DOM, timers, globals, and data seeds.
+2.  **Mock Wiring**: Deciding which modules get mocked and how.
+3.  **Scenario Orchestration**: Spinning up a "Classic Battle" in a specific state with given fixtures.
+
+The core problem is that the harness tries to perform dynamic mocking during `beforeEach`, which is fundamentally at odds with Vitest’s model of handling mocks at module collection time. A major redesign means redrawing these boundaries and aligning with Vitest's lifecycle on purpose. It is a shift in our mental model, supported by new APIs and a migration plan.
+
+The new responsibilities will be:
+-   **Harness**: Becomes solely about "spin up a battle with this config" and drops responsibility for mocking entirely. It will be a thin orchestration layer composing smaller, clearer utilities for environment setup and scenario building.
+-   **Tests**: Will explicitly handle all mock registration at the top level, making dependencies clear and respecting the Vitest lifecycle.
+
+### Why We Are Choosing This Approach
+
+1.  **Alignment with Vitest**: The current harness is fundamentally misaligned with Vitest's lifecycle. Fighting the framework leads to brittle, hard-to-debug tests. This redesign allows us to embrace Vitest's strengths, leading to more robust and idiomatic tests.
+
+2.  **Create a Genuine Test Platform**: Given our reliance on automated tests, there is immense value in having a clear, documented, and composable way to build test scenarios. This turns an opaque helper file into a mini-framework for testing battle modes, making it easier for all contributors (human or AI) to use.
+
+3.  **Future-Proofing for Complexity**: JU-DO-KON! is growing, with multiple battle modes and cross-cutting features. A well-designed harness will allow us to add new modes and features with reusable patterns, rather than duplicating setup logic or starting from scratch.
+
+4.  **Reduced Cognitive Load**: The new model will be more readable. Test dependencies (mocks) will be declared at the top, and the test body will focus on execution. This makes tests easier to understand, review, and maintain.
+
+### Risks and Mitigation
+
+1.  **Risk: Scope Creep**: It's easy to get drawn into a full test infrastructure rewrite.
+    *   **Mitigation**: We will bound the scope to redesigning only the mocking and setup structure required for *battle tests*. Unrelated cleanup will be deferred.
+
+2.  **Risk: Widespread Regressions**: A change to a shared harness can break many tests at once.
+    *   **Mitigation**: We will use a dual-path strategy. The new harness API will be added without removing the old one, and tests will be migrated one suite at a time.
+
+3.  **Risk: Blocking Other Work**: An infrastructure project can become a drag on feature development.
+    *   **Mitigation**: The work will be time-boxed and treated as a dedicated infrastructure ticket, separate from a specific bug fix.
+
+4.  **Risk: Over-engineering**: A from-scratch design can lead to overly clever or complex abstractions.
+    *   **Mitigation**: The new design will be proven by migrating the three most important, concrete use cases first (e.g., Classic, Bandit, Quick modes) before generalizing.
+
+---
+
+## 4. Guiding Principles for the Refactor
 
 -   **Embrace Top-Level Mocking**: All mocks will be defined at the top of the test file using `vi.mock()`. This is Vitest's official recommendation.
 -   **Separate Concerns**: The harness will no longer be responsible for mocking. Its only jobs are to inject fixtures (like DOM elements) and manage timers.
@@ -59,7 +100,7 @@ test("...", async () => {
 
 ---
 
-## 4. Implementation Plan
+## 5. Implementation Plan
 
 This plan is designed for a safe, incremental migration.
 
@@ -120,7 +161,7 @@ This plan is designed for a safe, incremental migration.
 
 ---
 
-## 5. Success Criteria
+## 6. Success Criteria
 
 The refactor will be considered a success when:
 
