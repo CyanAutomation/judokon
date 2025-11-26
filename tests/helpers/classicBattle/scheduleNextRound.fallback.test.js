@@ -23,12 +23,6 @@ const ROUND_READY_STATE_MODULE = pathToFileURL(
   resolve(REPO_ROOT, "src/helpers/classicBattle/roundReadyState.js")
 ).href;
 
-const EVENT_DISPATCHER_SPECIFIERS = [EVENT_DISPATCHER_MODULE, EVENT_DISPATCHER_FILE_URL];
-
-function createEventDispatcherMockEntries(factory) {
-  return Object.fromEntries(EVENT_DISPATCHER_SPECIFIERS.map((specifier) => [specifier, factory]));
-}
-
 /**
  * Create a dispatcher mock that replays candidate dispatchers before falling
  * back to the provided global dispatcher.
@@ -73,7 +67,7 @@ function createBusPropagationMock(globalDispatcher) {
  * Uses vi.hoisted() to ensure these are created before module imports.
  */
 const mockState = vi.hoisted(() => ({
-  dispatchSpy: null,
+  dispatchSpyRef: { current: null },
   scheduler: null,
   nextRoundCooldown: 0
 }));
@@ -83,16 +77,12 @@ const mockState = vi.hoisted(() => ({
  * These are registered at static analysis time by Vitest.
  */
 
-// Mock event dispatcher (both specifiers)
-for (const specifier of EVENT_DISPATCHER_SPECIFIERS) {
-  vi.mock(specifier, () => ({
-    dispatchBattleEvent: () => {
-      if (mockState.dispatchSpy) return mockState.dispatchSpy();
-      return true;
-    },
-    resetDispatchHistory: vi.fn()
-  }));
-}
+// Mock event dispatcher (specifier 1: alias)
+const dispatcherMockRef = vi.hoisted(() => vi.fn(() => true));
+vi.mock("/src/helpers/classicBattle/eventDispatcher.js", () => ({
+  dispatchBattleEvent: dispatcherMockRef,
+  resetDispatchHistory: vi.fn()
+}));
 
 // Mock battle engine facade with scheduler support
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
@@ -148,7 +138,7 @@ describe("startCooldown fallback timer", () => {
   let scheduler;
 
   beforeEach(async () => {
-    mockState.dispatchSpy = vi.fn(() => true);
+    dispatcherMockRef.mockImplementation(() => true);
     mockState.scheduler = null;
 
     harness = createSimpleHarness({ useFakeTimers: false });
@@ -166,7 +156,7 @@ describe("startCooldown fallback timer", () => {
 
   afterEach(() => {
     harness.cleanup();
-    mockState.dispatchSpy = null;
+    dispatcherMockRef.mockClear();
   });
 
   it("resolves ready after fallback timer and enables button", async () => {
@@ -189,7 +179,7 @@ describe("startCooldown fallback timer", () => {
   });
 
   it("resolves ready when dispatcher reports false and enables button", async () => {
-    mockState.dispatchSpy.mockImplementation(() => false);
+    dispatcherMockRef.mockImplementation(() => false);
     const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
@@ -224,10 +214,8 @@ describe("startCooldown ready dispatch discipline", () => {
     document.body.innerHTML = "";
     createTimerNodes();
 
-    const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_FILE_URL);
+    const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
     expect(dispatcherModule.dispatchBattleEvent).toBe(mockState.dispatchSpy);
-    const dispatcherAliasModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
-    expect(dispatcherAliasModule.dispatchBattleEvent).toBe(mockState.dispatchSpy);
     resetDispatchHistory();
   });
 
