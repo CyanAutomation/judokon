@@ -400,3 +400,29 @@ Total: 16 tests PASSED
 - **`vi.importActual(path)`**: Used inside a mock factory to get a handle on the original module, allowing for partial mocks.
 - **`vi.clearAllMocks()` / `vi.resetAllMocks()`**: Use in `afterEach` to reset mock call history and implementations between tests, ensuring test isolation.
 - **`harness.importModule(path)`**: A helper in our harness that should be used to dynamically import modules *after* `harness.setup()` has run, ensuring they execute in a controlled environment.
+
+---
+
+## 📊 Session Progress Summary
+
+**Completed This Session**: Tasks 1-4 (50% complete)
+
+**Key Results**:
+- ✅ Validated `createSimpleHarness()` is production-ready (15 comprehensive tests added)
+- ✅ Migrated 44 tests (100% passing):
+  - integrationHarness.test.js: 28 tests (13 existing + 15 new)
+  - settingsPage.test.js: 16 tests (all migrated)
+- ✅ Established working pattern: top-level `vi.mock()` + `vi.hoisted()` + per-test configuration
+- ⏸️ Identified blocker: scheduleNextRound.fallback.test.js requires architectural refactoring
+
+**Next Steps**:
+- Task 5: Create example test files (unit.test.js, integration.test.js)
+- Task 6: Consolidate and document fixtures
+- Task 7: Run full validation suite
+- Task 8: Update AGENTS.md with new patterns
+
+**Lessons Learned**:
+1. Vitest static analysis strictly requires `vi.mock()` at top level
+2. `vi.hoisted()` is essential for sharing mock state
+3. `resetAllMocks()` helper pattern works well for multiple test suites
+4. New pattern is simpler than deprecated `createSettingsHarness({ mocks: {...} })`
