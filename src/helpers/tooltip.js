@@ -148,7 +148,7 @@ function ensureTooltipElement() {
   tooltipEl = document.createElement("div");
   tooltipEl.className = "tooltip";
   tooltipEl.setAttribute("role", "tooltip");
-  tooltipEl.id = tooltipEl.id || "tooltip";
+  tooltipEl.id = "tooltip";
   tooltipEl.setAttribute("aria-hidden", "true");
   tooltipEl.style.position = "absolute";
   tooltipEl.style.display = "none";
@@ -317,7 +317,6 @@ export async function initTooltips(root = globalThis.document) {
       tokens.push(tooltipId);
     }
     target.setAttribute("aria-describedby", tokens.join(" "));
-    target.setAttribute("aria-expanded", "true");
   }
 
   function restoreAriaDescription(target) {
@@ -328,7 +327,6 @@ export async function initTooltips(root = globalThis.document) {
     } else {
       target.setAttribute("aria-describedby", original);
     }
-    target.removeAttribute("aria-expanded");
   }
 
   function show(e) {
