@@ -2,7 +2,6 @@
  * Integration tests for debug logging system integration
  */
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { performance } from "node:perf_hooks";
 import {
   BattleDebugLogger,
   DEBUG_CATEGORIES,
@@ -191,10 +190,14 @@ describe("Debug Logger Integration", () => {
       expect(lastLog.data.index).toBeGreaterThan(1000);
     });
 
-    it("should have minimal overhead when disabled", () => {
-      const disabledLogger = new BattleDebugLogger({ enabled: false });
+    it("should short-circuit all work when disabled", () => {
+      vi.useFakeTimers();
 
-      const startTime = performance.now();
+      const disabledLogger = new BattleDebugLogger({ enabled: false });
+      const addToBufferSpy = vi.spyOn(disabledLogger, "addToBuffer");
+      const captureStackSpy = vi.spyOn(disabledLogger, "captureStack");
+      const outputToConsoleSpy = vi.spyOn(disabledLogger, "outputToConsole");
+      const generateIdSpy = vi.spyOn(disabledLogger, "generateId");
 
       for (let i = 0; i < 100; i++) {
         disabledLogger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, `Message ${i}`, {
@@ -202,13 +205,13 @@ describe("Debug Logger Integration", () => {
         });
       }
 
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-
       expect(disabledLogger.buffer).toHaveLength(0);
+      expect(addToBufferSpy).not.toHaveBeenCalled();
+      expect(captureStackSpy).not.toHaveBeenCalled();
+      expect(outputToConsoleSpy).not.toHaveBeenCalled();
+      expect(generateIdSpy).not.toHaveBeenCalled();
 
-      const maxDuration = process.env.CI ? 100 : 25;
-      expect(duration).toBeLessThan(maxDuration);
+      vi.useRealTimers();
     });
   });
 });
