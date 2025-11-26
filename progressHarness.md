@@ -343,7 +343,53 @@ The refactor will be successful when:
 
 ---
 
-#### Task 4: Migrate settingsPage.test.js (READY TO BEGIN)
+#### Task 4: Migrate settingsPage.test.js ✅ COMPLETED
+
+**File**: `tests/helpers/settingsPage.test.js` (578 lines → 580 lines, 4 describe blocks, 16 tests)
+
+**Result**: ✅ All 16 tests passing
+
+**Migration Pattern Applied**:
+
+- Replaced: `createSettingsHarness({ mocks: {...} })` → `createSimpleHarness()`
+- Created: `vi.hoisted()` shared mock state (BEFORE baseSettings definition)
+- Declared: All ~15 modules at top-level with `vi.mock()`
+- Created: `resetAllMocks()` helper for test-specific configuration
+- Added: `afterEach()` cleanup hook
+
+**Key Challenge - Mock Configuration Per Test**:
+
+When tests need different mock behaviors, the solution is:
+
+- Share mock references via `vi.hoisted()`
+- Register all modules at top-level (static analysis phase)
+- Configure mock behavior in each test using `.mockImplementation()`, `.mockResolvedValue()`, etc.
+
+**Example**:
+
+```javascript
+// File-level setup
+const { mockLoadGameModes } = vi.hoisted(() => ({ mockLoadGameModes: vi.fn() }));
+vi.mock("../../src/helpers/gameModeUtils.js", () => ({
+  loadGameModes: mockLoadGameModes
+}));
+
+// Per-test configuration
+it("test name", () => {
+  mockLoadGameModes.mockResolvedValue([]); // Configure for this test
+  // test logic...
+});
+```
+
+**Test Results**:
+
+```text
+✅ fetchSettingsData (1 test)
+✅ renderSettingsControls (11 tests)
+✅ initializeSettingsPage (2 tests)
+✅ renderWithFallbacks (2 tests)
+Total: 16 tests PASSED
+```
 
 ---
 
