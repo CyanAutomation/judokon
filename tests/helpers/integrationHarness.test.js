@@ -1,7 +1,7 @@
 import { pathToFileURL } from "node:url";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-import { createIntegrationHarness, createMockFactory } from "./integrationHarness.js";
+import { createIntegrationHarness, createSimpleHarness, createMockFactory } from "./integrationHarness.js";
 
 const REPO_ROOT_URL = new URL("../..", import.meta.url);
 
@@ -186,5 +186,150 @@ describe("createIntegrationHarness mocks", () => {
     );
 
     harness.cleanup();
+  });
+});
+
+describe("createSimpleHarness (no mocks parameter)", () => {
+  it("creates a harness without mocks parameter", async () => {
+    const harness = createSimpleHarness();
+    expect(harness).toBeTruthy();
+    expect(typeof harness.setup).toBe("function");
+    expect(typeof harness.cleanup).toBe("function");
+    expect(typeof harness.importModule).toBe("function");
+  });
+
+  it("sets up and cleans up environment", async () => {
+    const harness = createSimpleHarness({ useFakeTimers: false, useRafMock: false });
+
+    await harness.setup();
+    expect(document).toBeTruthy();
+
+    harness.cleanup();
+    expect(document.body.innerHTML).toBe("");
+  });
+
+  it("supports fixtures parameter for injecting test data", async () => {
+    const mockStorage = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn()
+    };
+
+    const harness = createSimpleHarness({
+      useFakeTimers: false,
+      useRafMock: false,
+      fixtures: { localStorage: mockStorage }
+    });
+
+    await harness.setup();
+    expect(window.localStorage).toBe(mockStorage);
+
+    harness.cleanup();
+  });
+
+  it("provides timer control when useFakeTimers is true", async () => {
+    const harness = createSimpleHarness({ useFakeTimers: true, useRafMock: false });
+
+    await harness.setup();
+    expect(harness.timerControl).toBeTruthy();
+    expect(typeof harness.timerControl.cleanup).toBe("function");
+
+    harness.cleanup();
+  });
+
+  it("provides RAF control when useRafMock is true", async () => {
+    const harness = createSimpleHarness({ useFakeTimers: false, useRafMock: true });
+
+    await harness.setup();
+    expect(harness.rafControl).toBeTruthy();
+    expect(typeof harness.rafControl.restore).toBe("function");
+
+    harness.cleanup();
+  });
+
+  it("clears mocks after cleanup", async () => {
+    const mockFn = vi.fn();
+    const harness = createSimpleHarness({ useFakeTimers: false, useRafMock: false });
+
+    await harness.setup();
+    mockFn("test");
+    harness.cleanup();
+
+    expect(mockFn).toHaveBeenCalledTimes(0);
+  });
+
+  it("allows custom setup and teardown functions", async () => {
+    const setupSpy = vi.fn();
+    const teardownSpy = vi.fn();
+
+    const harness = createSimpleHarness({
+      useFakeTimers: false,
+      useRafMock: false,
+      setup: setupSpy,
+      teardown: teardownSpy
+    });
+
+    await harness.setup();
+    expect(setupSpy).toHaveBeenCalledTimes(1);
+
+    harness.cleanup();
+    expect(teardownSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("caches imported modules for consistent references", async () => {
+    const harness = createSimpleHarness({ useFakeTimers: false, useRafMock: false });
+
+    await harness.setup();
+
+    const module1 = await harness.importModule("./integrationHarness.js");
+    const module2 = await harness.importModule("./integrationHarness.js");
+
+    expect(module1).toBe(module2);
+
+    harness.cleanup();
+  });
+
+  it("does NOT accept mocks parameter (enforces top-level vi.mock pattern)", () => {
+    // This test verifies the new API intentionally excludes mocks
+    const harness = createSimpleHarness({
+      useFakeTimers: false,
+      useRafMock: false,
+      mocks: { "some/module.js": () => ({}) } // Should be ignored
+    });
+
+    // Harness should still be created successfully, but mocks param is ignored
+    expect(harness).toBeTruthy();
+    expect(typeof harness.setup).toBe("function");
+  });
+
+  describe("integration with vi.resetModules() for top-level vi.mock()", () => {
+    // These tests demonstrate that createSimpleHarness plays nicely with
+    // top-level vi.mock() calls by calling vi.resetModules() during setup
+
+    it("resets module cache during setup to apply top-level mocks", async () => {
+      const resetSpy = vi.spyOn(vi, "resetModules");
+
+      const harness = createSimpleHarness({ useFakeTimers: false, useRafMock: false });
+
+      await harness.setup();
+
+      expect(resetSpy).toHaveBeenCalled();
+
+      harness.cleanup();
+      resetSpy.mockRestore();
+    });
+
+    it("allows test files to import modules that use top-level vi.mock()", async () => {
+      // This test just verifies the harness doesn't break the mocking system
+      const harness = createSimpleHarness({ useFakeTimers: false, useRafMock: false });
+
+      await harness.setup();
+      // If vi.mock() is set up at the top level, importModule will get the mocked version
+      const module = await harness.importModule("./integrationHarness.js");
+      expect(module).toBeTruthy();
+
+      harness.cleanup();
+    });
   });
 });

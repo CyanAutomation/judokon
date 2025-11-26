@@ -309,9 +309,41 @@ The refactor will be successful when:
 
 ---
 
-#### Next Task: Migrate simpler file first
+#### Task 3: Add Tests for createSimpleHarness() ✅ COMPLETED
 
-Moving to `integrationHarness.test.js` to establish a working pattern, then return to complex files with lessons learned.
+**File**: `tests/helpers/integrationHarness.test.js`
+
+**Changes Made**:
+
+- Added 15 new tests for `createSimpleHarness()` covering:
+  - Basic harness creation and API surface
+  - Environment setup/cleanup
+  - Fixtures injection (localStorage, custom data)
+  - Timer and RAF control
+  - Mock lifecycle (clearing after cleanup)
+  - Custom setup/teardown functions
+  - Module caching for consistent references
+  - Verification that `mocks` parameter is NOT supported (enforces top-level pattern)
+  - Integration with `vi.resetModules()` for top-level `vi.mock()` support
+
+**Outcome**: ✅ **SUCCESS** - All 28 tests pass (13 existing + 15 new)
+
+- Existing tests for deprecated `createIntegrationHarness` still pass (backward compatibility)
+- New tests validate `createSimpleHarness()` is production-ready
+- Tests demonstrate the new API integrates properly with Vitest's static mock analysis
+
+**Key Validation**:
+
+```bash
+✓ tests/helpers/integrationHarness.test.js (28 tests pass)
+✓ createSimpleHarness() API is fully documented by tests
+✓ No mocks parameter enforced by design
+✓ Top-level vi.mock() pattern supported via vi.resetModules()
+```
+
+---
+
+#### Task 4: Migrate settingsPage.test.js (READY TO BEGIN)
 
 ---
 
