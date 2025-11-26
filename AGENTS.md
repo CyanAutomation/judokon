@@ -941,6 +941,249 @@ grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found r
 
 ---
 
+## 🧬 Modern Test Harness Architecture (Vitest 3.2.4+)
+
+### Key Concepts
+
+The JU-DO-KON! project uses a modern test harness pattern that aligns with Vitest's module lifecycle. This pattern separates mock registration (top-level `vi.mock()`) from environment setup (`createSimpleHarness()`), enabling both unit and integration test patterns.
+
+Key Principle: Vitest requires `vi.mock()` calls at the top level of test files during static analysis. Late-stage mock registration (in hooks) no longer works reliably in Vitest 3.x.
+
+### Unit Test Pattern: Mock All Dependencies
+
+For isolated testing of functions, components, or utilities.
+
+```javascript
+// Step 1: Create shared mock references
+const { mockFetch } = vi.hoisted(() => ({
+  mockFetch: vi.fn()
+}));
+
+// Step 2: Register mocks at top level (MUST be top level)
+vi.mock("../../src/services/api.js", () => ({
+  fetchData: mockFetch
+}));
+
+// Step 3: Setup harness
+let harness;
+beforeEach(async () => {
+  mockFetch.mockReset().mockResolvedValue({ id: 1 });
+  harness = createSimpleHarness(); // No mocks parameter
+  await harness.setup();
+});
+
+// Step 4: Import modules AFTER setup()
+it("test", async () => {
+  const { processData } = await import("../../src/helpers/processData.js");
+  // Uses mocked dependencies
+});
+```
+
+**When to use**: Testing isolated utilities, error handling, specific branches.
+
+### Integration Test Pattern: Mock Only Externals
+
+For testing workflows with multiple internal modules interacting.
+
+```javascript
+// Only mock EXTERNAL dependencies (network, storage, browser APIs)
+vi.mock("../../src/services/battleApi.js", () => ({
+  fetchOpponent: vi.fn().mockResolvedValue({ id: 1 })
+}));
+
+// Internal modules are NOT mocked - they use real implementations
+
+let harness;
+beforeEach(async () => {
+  harness = createSimpleHarness({
+    fixtures: {
+      localStorage: createMockLocalStorage(),
+      fetch: createMockFetch()
+    },
+    useFakeTimers: true
+  });
+  await harness.setup();
+});
+
+it("test", async () => {
+  // Imports real battleFlow, battleEngine, helpers
+  // But external API calls and storage are mocked
+  const { initBattle } = await import("../../src/helpers/battleFlow.js");
+  const battle = await initBattle();
+  expect(battle).toBeDefined();
+});
+```
+
+**When to use**: Testing workflows, features, user interactions, state management.
+
+### `createSimpleHarness()` API
+
+```javascript
+const harness = createSimpleHarness({
+  useFakeTimers: true, // Enable fake timers (default: true)
+  useRafMock: true, // Mock requestAnimationFrame (default: true)
+  fixtures: {
+    // Inject test fixtures
+    localStorage: mockStorage,
+    fetch: mockFetch,
+    matchMedia: mockMediaQuery
+  },
+  setup: async () => {
+    // Custom setup function (optional)
+    // Additional setup
+  },
+  teardown: () => {
+    // Custom teardown function (optional)
+    // Additional cleanup
+  }
+});
+
+await harness.setup(); // Apply all configuration
+const module = await harness.importModule("path"); // Import with mocks applied
+harness.cleanup(); // Cleanup after test
+```
+
+### Fixture Factories
+
+**Available Fixtures** (in `tests/utils/testUtils.js`):
+
+- `createMockLocalStorage()` - In-memory storage with standard API
+- `createMockFetch(defaultResponses)` - Network request mocking with URL patterns
+- `createMockMatchMedia(initialMatches)` - CSS media query mocking
+
+**Example Usage**:
+
+```javascript
+const mockStorage = createMockLocalStorage();
+const mockFetch = createMockFetch({
+  "/api/opponent": { status: 200, data: { id: 1 } }
+});
+
+harness = createSimpleHarness({
+  fixtures: { localStorage: mockStorage, fetch: mockFetch }
+});
+```
+
+### Deprecated Pattern (DO NOT USE)
+
+❌ **Old (Deprecated - No Longer Works in Vitest 3.x)**:
+
+```javascript
+beforeEach(() => {
+  vi.doMock("../../src/helpers/myHelper", () => ({
+    helperFn: vi.fn()
+  }));
+  harness = createSettingsHarness({ mocks: { /* ... */ } });
+  await harness.setup();
+});
+```
+
+This pattern no longer works because:
+
+- `vi.doMock()` in hooks is too late in Vitest's module lifecycle
+- Modules are already loaded and cached
+- Mocks never get applied
+
+✅ **New (Current - Vitest 3.x Compatible)**:
+
+```javascript
+const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
+vi.mock("../../src/helpers/myHelper", () => ({ helperFn: mockFn }));
+
+beforeEach(async () => {
+  mockFn.mockReset();
+  harness = createSimpleHarness(); // No mocks parameter
+  await harness.setup();
+});
+```
+
+### Common Patterns
+
+**Per-Test Mock Configuration**:
+
+```javascript
+it("handles success", async () => {
+  mockFetch.mockResolvedValue({ status: 200 });
+  // test code
+});
+
+it("handles error", async () => {
+  mockFetch.mockRejectedValue(new Error("Network error"));
+  // test code
+});
+```
+
+**Module Caching**:
+
+```javascript
+// Module imported once in beforeEach (for integration tests)
+const module = await harness.importModule("../../src/helpers/myHelper.js");
+
+// Or import per-test (for unit tests with different mocks)
+it("test", async () => {
+  const { fn } = await import("../../src/helpers/fn.js");
+  // uses fresh mock state for this test
+});
+```
+
+### Timer Control
+
+```javascript
+it("test timer behavior", async () => {
+  harness = createSimpleHarness({ useFakeTimers: true });
+  await harness.setup();
+
+  // harness.timerControl provides access to timers
+  await harness.timerControl.advanceTimersByTime(5000);
+
+  // Verify behavior after time advancement
+});
+```
+
+### Reference Documentation
+
+- **Implementation**: `tests/helpers/integrationHarness.js`
+- **Test Examples**: `tests/examples/unit.test.js` (all mocks), `tests/examples/integration.test.js` (externals only)
+- **Guide**: `tests/examples/README.md`
+- **Fixtures Reference**: `tests/fixtures.reference.js`
+- **Real-World Examples**:
+  - `tests/helpers/settingsPage.test.js` (16 tests, 100% passing)
+  - `tests/helpers/integrationHarness.test.js` (28 tests, 100% passing)
+
+### Troubleshooting
+
+**Issue**: "Cannot find module" or mock not applying
+
+**Solution**:
+
+1. Ensure `vi.mock()` is at TOP LEVEL (not in functions/loops)
+2. Ensure module imports happen AFTER `harness.setup()`
+3. Use `vi.hoisted()` for shared mock references
+
+**Issue**: Different tests need different mock behaviors
+
+**Solution**: Use `vi.hoisted()` to create shared reference, configure per-test:
+
+```javascript
+const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
+
+it("test 1", async () => {
+  mockFn.mockReturnValue(valueA);
+  // test
+});
+
+it("test 2", async () => {
+  mockFn.mockReturnValue(valueB);
+  // test
+});
+```
+
+**Issue**: Fixtures not injected into code
+
+**Solution**: Import modules AFTER `harness.setup()`, or use `harness.importModule()`
+
+---
+
 ## 🎭 Playwright Test Quality Standards
 
 ### Core Anti-Patterns to Eliminate
