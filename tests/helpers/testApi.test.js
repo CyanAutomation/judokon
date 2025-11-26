@@ -255,7 +255,7 @@ describe("initApi readiness gating", () => {
     });
   });
 
-  it("tracks Battle CLI module reset executions", async () => {
+  it("tracks Battle CLI module reset executions to enforce battle CLI reset reliability", async () => {
     const resetSpy = vi.fn();
     window.__battleCLIinit = { __resetModuleState: resetSpy };
 

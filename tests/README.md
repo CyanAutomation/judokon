@@ -216,6 +216,12 @@ Located in `playwright/fixtures/`:
 - `testHooks.js` - Animation and interaction helpers
 - `classicQuickWin.js` - Deterministic win setup
 
+### Battle CLI reset reliability
+
+Battle CLI pages must clear module-level state between navigations to avoid leaking listeners or counters across Playwright tests.
+The public Test API helper `init.resetBattleCliModuleState` maintains a reset invocation counter so fixtures can verify the reset ran after each navigation.
+This reliability contract is enforced by the unit test `tests/helpers/testApi.test.js` and should remain outside Playwright specs so browser suites focus on user-visible CLI behavior.
+
 ### Common Test Patterns
 
 ```js
