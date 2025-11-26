@@ -148,6 +148,8 @@ function ensureTooltipElement() {
   tooltipEl = document.createElement("div");
   tooltipEl.className = "tooltip";
   tooltipEl.setAttribute("role", "tooltip");
+  tooltipEl.id = tooltipEl.id || "tooltip";
+  tooltipEl.setAttribute("aria-hidden", "true");
   tooltipEl.style.position = "absolute";
   tooltipEl.style.display = "none";
   document.body.appendChild(tooltipEl);
@@ -298,6 +300,36 @@ export async function initTooltips(root = globalThis.document) {
     notifyReady();
     return () => {};
   }
+  const tooltipId = tip.id || "tooltip";
+  const previousDescriptions = new WeakMap();
+
+  function linkAriaDescription(target) {
+    if (!target?.setAttribute) return;
+    if (!previousDescriptions.has(target)) {
+      previousDescriptions.set(target, target.getAttribute("aria-describedby"));
+    }
+    const describedBy = target.getAttribute("aria-describedby") || "";
+    const tokens = describedBy
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean);
+    if (!tokens.includes(tooltipId)) {
+      tokens.push(tooltipId);
+    }
+    target.setAttribute("aria-describedby", tokens.join(" "));
+    target.setAttribute("aria-expanded", "true");
+  }
+
+  function restoreAriaDescription(target) {
+    if (!target?.setAttribute) return;
+    const original = previousDescriptions.get(target);
+    if (original === null || original === undefined || original === "") {
+      target.removeAttribute("aria-describedby");
+    } else {
+      target.setAttribute("aria-describedby", original);
+    }
+    target.removeAttribute("aria-expanded");
+  }
 
   function show(e) {
     const target = e.currentTarget || e.target;
@@ -305,11 +337,15 @@ export async function initTooltips(root = globalThis.document) {
     const text = resolveTooltipText(id, data);
     tip.innerHTML = sanitizeTooltip(text, id, DOMPurify);
     tip.style.display = "block";
+    tip.setAttribute("aria-hidden", "false");
+    linkAriaDescription(target);
     positionTooltip(tip, target);
   }
 
-  function hide() {
+  function hide(e) {
     tip.style.display = "none";
+    tip.setAttribute("aria-hidden", "true");
+    restoreAriaDescription(e?.currentTarget || e?.target);
   }
 
   elements.forEach((el) => {
