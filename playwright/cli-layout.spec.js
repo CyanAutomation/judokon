@@ -53,29 +53,39 @@ test.describe("CLI layout", () => {
           statsList
         ];
 
-        await focusOrder[0].focus();
         for (const [index, target] of focusOrder.entries()) {
+          await target.waitFor({ state: "attached" });
           await target.waitFor({ state: "visible" });
+          if (index === 0) {
+            await target.focus();
+          }
           await expect(target).toBeFocused();
           if (index < focusOrder.length - 1) {
+            const nextTarget = focusOrder[index + 1];
             await page.keyboard.press("Tab");
+            await nextTarget.waitFor({ state: "attached" });
+            await nextTarget.waitFor({ state: "visible" });
+            await expect(nextTarget).toBeFocused();
           }
         }
 
         const layout = await page.evaluate(() => {
           const main = document.getElementById("cli-main");
+          if (!main) {
+            throw new Error("cli-main element not found");
+          }
           const scrollWidth = document.documentElement?.scrollWidth ?? 0;
           const viewportWidth = window.innerWidth;
-          const mainRect = main?.getBoundingClientRect();
+          const mainRect = main.getBoundingClientRect();
           return {
             viewportWidth,
             pageScrollWidth: scrollWidth,
-            mainRight: mainRect ? mainRect.right : 0
+            mainRight: mainRect.right
           };
         });
 
-        expect(layout.pageScrollWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
-        expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth + 1);
+        expect(layout.pageScrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
+        expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth);
       });
     });
   }
