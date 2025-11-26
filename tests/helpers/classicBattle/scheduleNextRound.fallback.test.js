@@ -68,7 +68,7 @@ function createBusPropagationMock(globalDispatcher) {
  */
 const mockState = vi.hoisted(() => ({
   dispatchSpyRef: { current: null },
-  scheduler: null,
+
   nextRoundCooldown: 0
 }));
 
