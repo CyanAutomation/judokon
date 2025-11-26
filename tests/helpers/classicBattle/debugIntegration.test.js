@@ -191,7 +191,8 @@ describe("Debug Logger Integration", () => {
     });
 
     it("should short-circuit all work when disabled", () => {
-      vi.useFakeTimers();
+    it("should short-circuit all work when disabled", () => {
+      const disabledLogger = new BattleDebugLogger({ enabled: false });
 
       const disabledLogger = new BattleDebugLogger({ enabled: false });
       const addToBufferSpy = vi.spyOn(disabledLogger, "addToBuffer");
