@@ -285,14 +285,33 @@ The refactor will be successful when:
 
 ---
 
-### Phase 2: Test Migration (READY TO BEGIN)
+### Phase 2: Test Migration (IN PROGRESS)
 
-Next steps:
+#### Implementation Attempt 1: scheduleNextRound.fallback.test.js
 
-1. Start with `scheduleNextRound.fallback.test.js` — convert mocks to top-level pattern
-2. Validate with `npm run test:battles:classic`
-3. Repeat for `settingsPage.test.js`
-4. Update `integrationHarness.test.js` to test new pattern
+**Attempt**: Convert all 5 describe blocks to use top-level `vi.mock()` + `vi.hoisted()` + `createSimpleHarness()`
+
+**Challenges Encountered**:
+
+1. **Dynamic Mock Values**: The test file creates different mocks for each describe block (e.g., different `computeNextRoundCooldown` return values, different dispatcher implementations).
+2. **Vitest Static Analysis Limitation**: `vi.mock()` must be top-level during static analysis. Cannot use `for` loops to dynamically create mocks based on arrays.
+3. **Mock State Sharing**: Using `vi.hoisted()` to share spy instances is possible, but the test expects the mocks to change behavior between test suites (e.g., sometimes return `undefined`, sometimes return `true`, sometimes return `false`).
+4. **Complexity**: 5 separate test suites + multiple configuration combinations = difficult to refactor without breaking the contract.
+
+**Outcome**: ❌ **BLOCKED** - This file is too complex for the top-level mocking pattern without significant refactoring of test structure.
+
+**Revised Strategy**:
+
+- **Skip this file for now** — Will revisit after establishing the pattern with simpler files
+- **Focus on simpler targets**:
+  1. `integrationHarness.test.js` (self-tests of the harness itself) — SIMPLER, can test both patterns
+  2. `settingsPage.test.js` — More manageable, fewer test suites with clearer mock needs
+
+---
+
+#### Next Task: Migrate simpler file first
+
+Moving to `integrationHarness.test.js` to establish a working pattern, then return to complex files with lessons learned.
 
 ---
 
