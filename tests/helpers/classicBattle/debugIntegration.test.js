@@ -212,7 +212,7 @@ describe("Debug Logger Integration", () => {
       expect(outputToConsoleSpy).not.toHaveBeenCalled();
       expect(generateIdSpy).not.toHaveBeenCalled();
 
-      vi.useRealTimers();
+    });
     });
   });
 });
