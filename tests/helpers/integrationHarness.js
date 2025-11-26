@@ -164,7 +164,17 @@ export function createMockFactory(mockImpl) {
 }
 
 /**
- * Configuration options for the integration harness
+ * Configuration options for the simplified harness (no mocks)
+ * @typedef {Object} SimpleHarnessConfig
+ * @property {boolean} [useFakeTimers=true] - Whether to use fake timers
+ * @property {boolean} [useRafMock=true] - Whether to use RAF mock
+ * @property {Object} [fixtures={}] - Test fixtures to inject
+ * @property {Function} [setup] - Custom setup function
+ * @property {Function} [teardown] - Custom teardown function
+ */
+
+/**
+ * Configuration options for the integration harness (deprecated mocks parameter)
  * @typedef {Object} HarnessConfig
  * @property {boolean} [useFakeTimers=true] - Whether to use fake timers
  * @property {boolean} [useRafMock=true] - Whether to use RAF mock
@@ -176,7 +186,179 @@ export function createMockFactory(mockImpl) {
  */
 
 /**
+ * Creates a simplified integration test harness WITHOUT mock registration.
+ *
+ * This harness manages only fixtures, timers, RAF, and environment setup.
+ * All mocks MUST be registered at the top level of the test file using vi.mock().
+ *
+ * This pattern aligns with Vitest's module lifecycle:
+ * 1. Module Collection Phase (static) - vi.mock() calls are identified
+ * 2. Mock Queuing - Vitest registers mocks internally
+ * 3. Module Execution - vi.resetModules() clears cache while preserving mock queue
+ * 4. Import - Modules are imported with mocks applied
+ *
+ * @param {SimpleHarnessConfig} config - Harness configuration (no mocks parameter)
+ * @returns {Object} Harness control object with setup/cleanup methods
+ *
+ * @example
+ * ```js
+ * // At top level of test file
+ * const scoreboardMock = vi.hoisted(() => ({
+ *   updateScore: vi.fn(),
+ *   setupScoreboard: vi.fn()
+ * }));
+ *
+ * vi.mock("../../src/helpers/setupScoreboard.js", () => scoreboardMock);
+ *
+ * // In test
+ * const harness = createSimpleHarness({
+ *   fixtures: { localStorage: mockStorage }
+ * });
+ *
+ * describe("My Test", () => {
+ *   beforeEach(async () => {
+ *     await harness.setup();
+ *     // Mocks are already applied because vi.mock() was at top level
+ *   });
+ *
+ *   afterEach(() => {
+ *     harness.cleanup();
+ *   });
+ *
+ *   it("tests with mocks", () => {
+ *     expect(scoreboardMock.updateScore).toHaveBeenCalled();
+ *   });
+ * });
+ * ```
+ */
+export function createSimpleHarness(config = {}) {
+  const {
+    useFakeTimers = true,
+    useRafMock = true,
+    fixtures = {},
+    setup: customSetup,
+    teardown: customTeardown
+  } = config;
+
+  let timerControl;
+  let rafControl;
+  let moduleCache = new Map();
+
+  /**
+   * Sets up the harness environment (timers, RAF, fixtures)
+   */
+  async function setup() {
+    // Setup deterministic timers if requested
+    if (useFakeTimers) {
+      timerControl = useCanonicalTimers();
+    }
+
+    // Setup RAF mock if requested
+    if (useRafMock) {
+      rafControl = installRAFMock();
+    }
+
+    // Inject fixtures into global scope or modules as needed
+    for (const [key, value] of Object.entries(fixtures)) {
+      injectFixture(key, value);
+    }
+
+    // Run custom setup if provided
+    if (customSetup) {
+      await customSetup();
+    }
+  }
+
+  /**
+   * Cleans up the harness environment
+   */
+  function cleanup() {
+    // Restore timers
+    if (timerControl) {
+      timerControl.cleanup();
+      timerControl = null;
+    }
+
+    // Restore RAF
+    if (rafControl) {
+      rafControl.restore();
+      rafControl = null;
+    }
+
+    // Clear mocks (from top-level vi.mock() calls)
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+
+    // Clear DOM
+    document.body.innerHTML = "";
+
+    // Run custom teardown if provided
+    if (customTeardown) {
+      customTeardown();
+    }
+
+    // Clear module cache
+    moduleCache.clear();
+  }
+
+  /**
+   * Dynamically imports a module with harness context
+   * @param {string} modulePath - Path to the module to import
+   * @returns {Promise<Module>} The imported module
+   */
+  async function importModule(modulePath) {
+    if (!moduleCache.has(modulePath)) {
+      const module = await import(modulePath);
+      moduleCache.set(modulePath, module);
+    }
+    return moduleCache.get(modulePath);
+  }
+
+  /**
+   * Injects a fixture into the test environment
+   * @private
+   * @param {string} key - Fixture key
+   * @param {*} value - Fixture value
+   */
+  function injectFixture(key, value) {
+    // Common injection patterns - extend as needed
+    switch (key) {
+      case "localStorage":
+        Object.defineProperty(window, "localStorage", {
+          value,
+          writable: true
+        });
+        break;
+      case "fetch":
+        global.fetch = value;
+        break;
+      case "matchMedia":
+        global.matchMedia = value;
+        break;
+      default:
+        // Inject into global scope for custom fixtures
+        global[key] = value;
+    }
+  }
+
+  return {
+    setup,
+    cleanup,
+    importModule,
+    get timerControl() {
+      return timerControl;
+    },
+    get rafControl() {
+      return rafControl;
+    }
+  };
+}
+
+/**
  * Creates an integration test harness that boots real modules with controlled externalities.
+ *
+ * @deprecated Use createSimpleHarness() instead. Register mocks at the top level of test files using vi.mock().
+ * This harness's mock parameter is too late in Vitest's lifecycle to work correctly.
  *
  * @param {HarnessConfig} config - Harness configuration
  * @returns {Object} Harness control object with setup/cleanup methods

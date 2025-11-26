@@ -312,6 +312,35 @@ test("tracks state across calls", async () => {
 
 ---
 
+## 7. Implementation Progress
+
+### Task 1.1: Create `createSimpleHarness()` API
+
+**Status**: Completed ✅
+
+**Action**: Create `createSimpleHarness()` in `tests/helpers/integrationHarness.js`
+
+Changes made:
+
+- ✅ Added new `createSimpleHarness()` function to `tests/helpers/integrationHarness.js`
+- ✅ Function accepts only: `{ fixtures, useFakeTimers, useRafMock, customSetup, customTeardown }`
+- ✅ **NO `mocks` parameter** — all mocks must be registered at file scope using `vi.mock()`
+- ✅ Preserved all existing environment setup logic (timers, RAF, fixtures, DOM cleanup)
+- ✅ Made `createIntegrationHarness()` `@deprecated` with clear migration guidance
+- ✅ Updated JSDoc with detailed examples and Vitest lifecycle explanation
+- ✅ Both functions export and coexist (backward compatible during migration)
+
+Outcome:
+
+- New simplified harness API is available for new tests
+- Old harness remains functional but marked `@deprecated`
+- No breaking changes to existing tests yet
+- Clear path for incremental migration
+
+**Next**: Migrate failing tests to use `createSimpleHarness()` with top-level `vi.mock()` calls
+
+---
+
 ## 7. FAQ & Troubleshooting
 
 ### Q: When should I use `vi.mock()` vs. `vi.doMock()`?
