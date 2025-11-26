@@ -2,17 +2,24 @@
 
 ## Executive Summary
 
-**Status**: Investigation Complete. Root cause verified. Ready for implementation.
+**Status**: Investigation Complete. Root cause verified.
 
-**Bug**: Multiple tests in `tests/classicBattle/resolution.test.js` are failing because mocks are not being correctly applied. This causes tests to run against real module implementations instead of the intended mocks, leading to failures.
+**Bug**: Multiple tests in `tests/classicBattle/resolution.test.js` are failing because mocks are not being correctly applied.
 
-**Root Cause**: The test harness at `tests/helpers/integrationHarness.js` incorrectly calls `vi.resetModules()` _before_ it registers the mocks via `vi.doMock()`. According to Vitest's design, mocks must be queued _before_ the module cache is reset. The current order clears the module cache, and then queues mocks that are never used because the subsequent module imports load the original, non-mocked versions.
-
-**Solution**: Reorder the operations in the `setup()` function within `createIntegrationHarness`. The mock registration loop must be executed **before** `vi.resetModules()` is called.
+**Root Cause**: The test harness at `tests/helpers/integrationHarness.js` incorrectly calls `vi.resetModules()` _before_ it registers the mocks via `vi.doMock()`.
 
 ---
 
-## Proposed Fix Plan
+## Resolution: Superseded by Test Harness Refactoring
+
+The root cause and the immediate fix identified in this document are correct. However, this simple fix has been **superseded by a more comprehensive test harness refactoring** designed to solve this entire class of problem and align our testing strategy with Vitest best practices.
+
+The definitive, forward-looking implementation plan is now documented in **`progressHarness.md`**.
+
+That plan includes not only correcting the operation order but also redesigning the harness to rely on top-level `vi.mock()` calls, which is a more robust and maintainable solution. The plan outlined below should be considered **outdated**.
+
+---
+
 
 ### Step 1: Correct the Mock Registration Order
 

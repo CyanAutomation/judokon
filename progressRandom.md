@@ -5,17 +5,17 @@
 **Date**: 2025-11-25  
 **Status**: Investigation Complete. Single root cause identified and documented in `progressClassic.md`.
 
-**Current Test Status**:
-
-- **Passing**: 89 out of 105 tests
-- **Failing**: 16 tests across 5 test files
-- **Primary Cause**: Mock registration timing issue in `tests/helpers/integrationHarness.js`
-
-**Key Finding**: All current test failures stem from a **single root cause**: the integration harness incorrectly calls `vi.resetModules()` **before** `vi.doMock()`, which violates Vitest's mock registration requirements. This has been comprehensively documented in `progressClassic.md`.
+**Key Finding**: All current test failures stem from a **single root cause**: the integration harness incorrectly calls `vi.resetModules()` **before** `vi.doMock()`, which violates Vitest's mock registration requirements.
 
 ---
 
-## Current Test Failure Status
+## Resolution: Test Harness Refactoring
+
+The single root cause identified in this document—incorrect mock registration timing—is being fully addressed by a comprehensive refactoring of the test harness. This work will resolve all 16 failing tests mentioned herein.
+
+The definitive implementation plan, which involves moving to a more robust, top-level mocking strategy, is detailed in **`progressHarness.md`**. That document supersedes the quick fix summary mentioned below and should be considered the source of truth.
+
+---
 
 ### Failing Test Files and Counts
 

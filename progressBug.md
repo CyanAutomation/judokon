@@ -6,19 +6,19 @@
 
 **Bug**: Components fail to render in test environments and mocks are not being applied, preventing test assertions from passing.
 
-**Root Cause (Verified)**: This is **NOT primarily a document access issue**. The root cause is the mock registration timing problem documented in `progressClassic.md`. When `vi.resetModules()` is called BEFORE `vi.doMock()` in the integration harness, the queued mocks are cleared before they can be applied to module imports. This causes:
-
-1. Real modules to load instead of mocks
-2. `getDocumentRef()` to fail (because JSDOM setup mocks aren't registered)
-3. `Card.js` instantiation to throw errors
-4. Test mocks (e.g., `updateScore`, `onBattleEvent`) to never be invoked
-5. Stat buttons to never render
-
-**Correlation**: The document access symptom is a **secondary consequence** of the mock registration failure. Once the mock registration timing is fixed (see progressClassic.md), `getDocumentRef()` will correctly access the JSDOM-provided document.
+**Root Cause (Verified)**: This is **NOT primarily a document access issue**. The root cause is the mock registration timing problem documented in `progressClassic.md`. When `vi.resetModules()` is called BEFORE `vi.doMock()` in the integration harness, the queued mocks are cleared before they can be applied to module imports.
 
 ---
 
-## Investigation Evidence
+## Resolution: Test Harness Refactoring
+
+The root cause identified in this document—incorrect mock registration timing in the test harness—is being addressed by a comprehensive refactoring of the test harness itself.
+
+The full analysis, implementation plan, and guiding principles for this work are documented in **`progressHarness.md`**. That document should be considered the source of truth for the fix. The solution involves moving to a top-level `vi.mock()` pattern, which is more robust and aligned with Vitest's design.
+
+The plan outlined below is now considered **outdated**.
+
+---
 
 ### Why Document Access Isn't the Primary Issue
 
@@ -400,6 +400,7 @@ Proposed (Working):
 **Objective**: Convert failing test files to use `vi.mock()` at top level with new harness
 
 **Priority Order** (start with most important):
+
 1. `tests/classicBattle/resolution.test.js` (4 failing tests)
 2. `tests/classicBattle/page-scaffold.test.js` (4 failing tests)
 3. `tests/classicBattle/uiEventBinding.test.js` (1 failing test)
@@ -462,11 +463,13 @@ test("example", async () => {
 ```
 
 **Evidence Needed**:
+
 - Each test file still imports correctly with mocks applied
 - Mock functions are properly invoked during test execution
 - Tests pass after conversion
 
 **Files to Modify**:
+
 - `tests/classicBattle/resolution.test.js`
 - `tests/classicBattle/page-scaffold.test.js` (minimal changes - already mostly done)
 - `tests/classicBattle/uiEventBinding.test.js`
@@ -482,6 +485,7 @@ test("example", async () => {
 **Tasks**:
 
 1. **Run targeted tests**
+
    ```bash
    npx vitest run tests/classicBattle/resolution.test.js
    npx vitest run tests/classicBattle/page-scaffold.test.js
@@ -489,6 +493,7 @@ test("example", async () => {
    ```
 
 2. **Run full test suite for regressions**
+
    ```bash
    npm run test:ci
    npm run test:battles
@@ -505,11 +510,13 @@ test("example", async () => {
    - Remove references to dynamic mock registration
 
 **Evidence Needed**:
+
 - All 16 failing tests now pass
 - No new test failures introduced
 - Test suite execution time unchanged or faster
 
 **Files to Modify**:
+
 - `tests/helpers/integrationHarness.js` (remove old mock handling)
 - JSDoc comments in test files
 - Any internal documentation
@@ -578,15 +585,19 @@ test("example", async () => {
 ### Risk Assessment and Mitigation
 
 **Risk: Tests break during migration**
+
 - *Mitigation*: Phase 1 adds new API without removing old one; migrate one file at a time
 
 **Risk: Mock registration incompleteness**
+
 - *Mitigation*: Start with simplest test file (`uiEventBinding.test.js`), build experience
 
 **Risk: Performance regression**
+
 - *Mitigation*: Compare test execution time before/after each phase
 
 **Risk: Fixtures don't work after harness simplification**
+
 - *Mitigation*: Thoroughly test fixtures in Phase 1 before migrating tests in Phase 2
 
 ---
@@ -594,16 +605,19 @@ test("example", async () => {
 ### Evidence Collection Strategy
 
 **Before Implementation** (gather baseline):
+
 - [ ] Document current test execution time: `npm run test:battles:classic --reporter=verbose`
 - [ ] Count current mock-related code lines in test files
 - [ ] Note current harness function complexity (lines of code)
 
 **During Implementation** (Phase by Phase):
+
 - [ ] Run tests after each file conversion, document results
 - [ ] Track fixture-related issues or surprises
 - [ ] Note any mock registration patterns that don't fit the new model
 
 **After Implementation** (Phase 3):
+
 - [ ] Compare test execution time to baseline
 - [ ] Measure harness code reduction
 - [ ] Count mock-related code lines in test files (should decrease)
@@ -614,6 +628,7 @@ test("example", async () => {
 ### Alternative Migration Paths
 
 **Option A: Hybrid Approach (Fastest)**
+
 - Keep old harness for tests that work
 - Only migrate files with failing tests (5 files)
 - Leave working tests alone
@@ -621,12 +636,14 @@ test("example", async () => {
 - Cons: Two harness patterns to maintain
 
 **Option B: Complete Overhaul (Cleanest)**
+
 - Migrate all test files simultaneously (recommended)
 - Remove old harness completely
 - Pros: Clean break, no maintenance burden
 - Cons: More work, higher risk
 
 **Option C: Scheduled Deprecation (Pragmatic)**
+
 - Phase 1-2: Migrate critical tests, keep old harness
 - Phase 3: Mark old harness as deprecated
 - Future: Remove old harness in next major version
@@ -646,4 +663,3 @@ test("example", async () => {
 5. ✅ Test files are easier to read (mocks visible at top)
 6. ✅ No more fighting against Vitest's architecture
 7. ✅ Test maintenance is simpler going forward
-

@@ -7,10 +7,11 @@
 **The Root Cause**: Vitest's module mocking system requires `vi.mock()` or `vi.doMock()` calls to occur at the **top level** of a test file (during static module analysis), *before* any imports execute. The current test harness calls `vi.doMock()` inside `beforeEach` (after imports), so Vitest's cache is already populated with real modules. Later, `vi.resetModules()` is called, but by then it's too late to apply the mocks that were queued after module instantiation.
 
 **The Solution**: Refactor the test harness to:
-1.  Move all mock registration to the **top level** of test files using `vi.mock()` at file scope.
-2.  Simplify the harness to manage only fixtures, timers, RAF, and environment setup—not mock registration.
-3.  Use `vi.hoisted()` to share mock instances between the top-level `vi.mock()` block and test implementations for inspection/setup.
-4.  Migrate failing tests incrementally to this pattern.
+
+1. Move all mock registration to the **top level** of test files using `vi.mock()` at file scope.
+2. Simplify the harness to manage only fixtures, timers, RAF, and environment setup—not mock registration.
+3. Use `vi.hoisted()` to share mock instances between the top-level `vi.mock()` block and test implementations for inspection/setup.
+4. Migrate failing tests incrementally to this pattern.
 
 This refactoring aligns with Vitest best practices, resolves all 16 failing tests, and establishes a reliable, maintainable testing foundation.
 
@@ -57,6 +58,7 @@ The current test harness conflates three separate concerns:
 3. **Scenario Orchestration**: Spinning up a "Classic Battle" in a specific state with given fixtures
 
 This monolithic design worked in early tests but breaks when:
+
 - Tests need to import real modules alongside mocks (common in integration tests)
 - Mocks need to be inspected or configured (e.g., checking call counts, clearing calls)
 - Multiple battle modes have different mock configurations
@@ -71,41 +73,42 @@ Mock registration must happen at the **test file level** (module collection time
 This separation aligns with Vitest's design philosophy: mocks are test dependencies declared upfront, not infrastructure concerns.
 
 The new responsibilities will be:
--   **Harness**: Becomes solely about "spin up a battle with this config" and drops responsibility for mocking entirely. It will be a thin orchestration layer composing smaller, clearer utilities for environment setup and scenario building.
--   **Tests**: Will explicitly handle all mock registration at the top level, making dependencies clear and respecting the Vitest lifecycle.
+
+- **Harness**: Becomes solely about "spin up a battle with this config" and drops responsibility for mocking entirely. It will be a thin orchestration layer composing smaller, clearer utilities for environment setup and scenario building.
+- **Tests**: Will explicitly handle all mock registration at the top level, making dependencies clear and respecting the Vitest lifecycle.
 
 ### Why We Are Choosing This Approach
 
-1.  **Alignment with Vitest**: The current harness is fundamentally misaligned with Vitest's lifecycle. Fighting the framework leads to brittle, hard-to-debug tests. This redesign allows us to embrace Vitest's strengths, leading to more robust and idiomatic tests.
+1. **Alignment with Vitest**: The current harness is fundamentally misaligned with Vitest's lifecycle. Fighting the framework leads to brittle, hard-to-debug tests. This redesign allows us to embrace Vitest's strengths, leading to more robust and idiomatic tests.
 
-2.  **Create a Genuine Test Platform**: Given our reliance on automated tests, there is immense value in having a clear, documented, and composable way to build test scenarios. This turns an opaque helper file into a mini-framework for testing battle modes, making it easier for all contributors (human or AI) to use.
+2. **Create a Genuine Test Platform**: Given our reliance on automated tests, there is immense value in having a clear, documented, and composable way to build test scenarios. This turns an opaque helper file into a mini-framework for testing battle modes, making it easier for all contributors (human or AI) to use.
 
-3.  **Future-Proofing for Complexity**: JU-DO-KON! is growing, with multiple battle modes and cross-cutting features. A well-designed harness will allow us to add new modes and features with reusable patterns, rather than duplicating setup logic or starting from scratch.
+3. **Future-Proofing for Complexity**: JU-DO-KON! is growing, with multiple battle modes and cross-cutting features. A well-designed harness will allow us to add new modes and features with reusable patterns, rather than duplicating setup logic or starting from scratch.
 
-4.  **Reduced Cognitive Load**: The new model will be more readable. Test dependencies (mocks) will be declared at the top, and the test body will focus on execution. This makes tests easier to understand, review, and maintain.
+4. **Reduced Cognitive Load**: The new model will be more readable. Test dependencies (mocks) will be declared at the top, and the test body will focus on execution. This makes tests easier to understand, review, and maintain.
 
 ### Risks and Mitigation
 
-1.  **Risk: Scope Creep**: It's easy to get drawn into a full test infrastructure rewrite.
-    *   **Mitigation**: We will bound the scope to redesigning only the mocking and setup structure required for *battle tests*. Unrelated cleanup will be deferred.
+1. **Risk: Scope Creep**: It's easy to get drawn into a full test infrastructure rewrite.
+    - **Mitigation**: We will bound the scope to redesigning only the mocking and setup structure required for *battle tests*. Unrelated cleanup will be deferred.
 
-2.  **Risk: Widespread Regressions**: A change to a shared harness can break many tests at once.
-    *   **Mitigation**: We will use a dual-path strategy. The new harness API will be added without removing the old one, and tests will be migrated one suite at a time.
+2. **Risk: Widespread Regressions**: A change to a shared harness can break many tests at once.
+    - **Mitigation**: We will use a dual-path strategy. The new harness API will be added without removing the old one, and tests will be migrated one suite at a time.
 
-3.  **Risk: Blocking Other Work**: An infrastructure project can become a drag on feature development.
-    *   **Mitigation**: The work will be time-boxed and treated as a dedicated infrastructure ticket, separate from a specific bug fix.
+3. **Risk: Blocking Other Work**: An infrastructure project can become a drag on feature development.
+    - **Mitigation**: The work will be time-boxed and treated as a dedicated infrastructure ticket, separate from a specific bug fix.
 
-4.  **Risk: Over-engineering**: A from-scratch design can lead to overly clever or complex abstractions.
-    *   **Mitigation**: The new design will be proven by migrating the three most important, concrete use cases first (e.g., Classic, Bandit, Quick modes) before generalizing.
+4. **Risk: Over-engineering**: A from-scratch design can lead to overly clever or complex abstractions.
+    - **Mitigation**: The new design will be proven by migrating the three most important, concrete use cases first (e.g., Classic, Bandit, Quick modes) before generalizing.
 
 ---
 
 ## 4. Guiding Principles for the Refactor
 
--   **Embrace Top-Level Mocking**: All mocks will be defined at the top of the test file using `vi.mock()`. This is Vitest's official recommendation.
--   **Separate Concerns**: The harness will no longer be responsible for mocking. Its only jobs are to inject fixtures (like DOM elements) and manage timers.
--   **Improve Test Clarity**: Mocks will be explicitly visible at the top of each test file, making it easier to understand a test's dependencies at a glance.
--   **Leverage `vi.hoisted()`**: To share mock instances between the top-level `vi.mock` block and the test implementation (e.g., to clear mocks or check calls), we will use `vi.hoisted()`.
+- **Embrace Top-Level Mocking**: All mocks will be defined at the top of the test file using `vi.mock()`. This is Vitest's official recommendation.
+- **Separate Concerns**: The harness will no longer be responsible for mocking. Its only jobs are to inject fixtures (like DOM elements) and manage timers.
+- **Improve Test Clarity**: Mocks will be explicitly visible at the top of each test file, making it easier to understand a test's dependencies at a glance.
+- **Leverage `vi.hoisted()`**: To share mock instances between the top-level `vi.mock` block and the test implementation (e.g., to clear mocks or check calls), we will use `vi.hoisted()`.
 
 **New Architecture:**
 
@@ -142,17 +145,20 @@ This plan is designed for a safe, incremental migration that maintains test stab
 **Goal**: Introduce the new, simplified harness without breaking existing tests. All existing tests continue to work; new tests adopt the new pattern.
 
 **Step 1.1**: Create `createSimpleHarness()` in `tests/helpers/integrationHarness.js`:
+
 - Accept only: `{ fixtures, useFakeTimers, useRafMock, customSetup, customTeardown }`
 - **Never** accept a `mocks` parameter
 - Preserve all existing logic for timers, RAF, and fixtures
 - Make it the public API; existing harness creators delegate to it
 
 **Step 1.2**: Deprecate mock handling in the harness:
+
 - Add `/** @deprecated: Use vi.mock() at the top level of test files instead. */` to `createIntegrationHarness`
 - Remove mock registration logic from `createClassicBattleHarness`, `createSettingsHarness`, etc.
 - Update JSDoc to clarify that these helpers no longer handle mocks
 
 **Step 1.3**: Verify backward compatibility:
+
 - Run full test suite; existing tests should still work (though they'll receive real module implementations)
 - Note which tests now fail due to missing mocks—these are migration candidates
 
@@ -161,6 +167,7 @@ This plan is designed for a safe, incremental migration that maintains test stab
 **Goal**: Fix the 16 currently failing tests by migrating them to the new top-level mock pattern.
 
 **Priority Migration List** (ordered by impact and complexity):
+
 1. `tests/classicBattle/page-scaffold.test.js` (7 failing tests)
 2. `tests/classicBattle/resolution.test.js` (2 failing tests)
 3. `tests/classicBattle/uiEventBinding.test.js` (1+ failing tests)
@@ -215,21 +222,25 @@ test("example", async () => {
 **Goal**: Confirm the migration was successful and there are no regressions.
 
 **Step 3.1**: Run targeted test suites:
+
 ```bash
 npm run test:battles:classic
 ```
 
 **Step 3.2**: Run the full test suite:
+
 ```bash
 npm test
 ```
 
 **Step 3.3**: Once all critical tests are migrated and stable:
+
 - Remove mock-handling logic from `createIntegrationHarness`
 - Remove mock-related parameters from harness creators
 - Clean up deprecated JSDoc comments
 
 **Step 3.4**: Document the new pattern:
+
 - Add `vi.mock()` examples to `AGENTS.md` and test guidelines
 - Update JSDoc in harness creators with clear "mock-free" contracts
 - Create a test migration checklist for future contributors
@@ -248,6 +259,7 @@ npm test
 ### Common Patterns
 
 **Pattern 1: Simple Mock with Spy**
+
 ```javascript
 const myMock = vi.hoisted(() => vi.fn());
 vi.mock("./module.js", () => ({ default: myMock }));
@@ -260,6 +272,7 @@ test("calls the function", async () => {
 ```
 
 **Pattern 2: Partial Mock (Real Module + Spy)**
+
 ```javascript
 vi.mock("./module.js", async () => {
   const real = await vi.importActual("./module.js");
@@ -271,6 +284,7 @@ vi.mock("./module.js", async () => {
 ```
 
 **Pattern 3: Mock with State Inspection**
+
 ```javascript
 const mockState = vi.hoisted(() => ({
   callCount: 0,
@@ -292,7 +306,7 @@ test("tracks state across calls", async () => {
 
 ### Resources
 
-- **Vitest Official Docs**: https://vitest.dev/guide/mocking.html (definitive reference)
+- **Vitest Official Docs**: <https://vitest.dev/guide/mocking.html> (definitive reference)
 - **JU-DO-KON! Agent Guide**: `AGENTS.md` → Search for \"RAG-First Policy\" and \"Unit Test Quality Standards\"
 - **Existing Examples in Codebase**: `tests/classicBattle/page-scaffold.test.js` (lines 1–100) shows the new pattern in action
 
@@ -307,6 +321,7 @@ test("tracks state across calls", async () => {
 ### Q: How do I mock a module and also use the real implementation?
 
 **A**: Use `vi.importActual()` inside the mock factory:
+
 ```javascript
 vi.mock("./module.js", async () => {
   const real = await vi.importActual("./module.js");
@@ -324,6 +339,7 @@ vi.mock("./module.js", async () => {
 ### Q: How do I reset a mock between tests?
 
 **A**: Use `afterEach`:
+
 ```javascript
 afterEach(() => {
   vi.clearAllMocks();  // Clear call history
@@ -355,21 +371,25 @@ The refactor will be considered a success when:
 As of the document's last update, 16 tests are failing across multiple suites:
 
 **`tests/classicBattle/page-scaffold.test.js`** (7 failures):
+
 - Mock functions like `updateScore`, `updateRoundCounter`, `showMessage` are never called
 - Mocks are registered too late; real implementations are used
 - Root cause: Mock timing issue resolved by top-level `vi.mock()`
 
 **`tests/classicBattle/resolution.test.js`** (2+ failures):
+
 - `computeRoundResultMock` expected to be called but never is
 - Real `computeRoundResult` function is used instead of mock
 - Same root cause: Mock registration timing
 
 **`tests/integration/battleClassic.integration.test.js`** (4+ failures):
+
 - Store access (`window.battleStore`) returns undefined
 - DOM elements not rendered due to missing mocks
 - Same root cause cascading through integration tests
 
 **Symptom Pattern**: All failures show one of:
+
 1. Expected spy/mock to be called, but call count is 0
 2. Expected DOM elements or state to exist, but they're undefined
 3. Expected arrays to contain values, but arrays are empty
@@ -381,6 +401,7 @@ All 16 failures resolve by moving mock registration to the top level of test fil
 ## Appendix B: Files to Be Changed
 
 **Primary Changes**:
+
 - `tests/helpers/integrationHarness.js` (remove mock parameter, simplify API)
 - `tests/classicBattle/page-scaffold.test.js` (add top-level mocks, remove from harness call)
 - `tests/classicBattle/resolution.test.js` (add top-level mocks)
@@ -389,12 +410,13 @@ All 16 failures resolve by moving mock registration to the top level of test fil
 - `tests/integration/battleClassic.placeholder.test.js` (add top-level mocks)
 
 **Documentation Updates**:
+
 - `AGENTS.md` → Add \"Vitest Top-Level Mocking Pattern\" section
 - `.github/copilot-instructions.md` → Mirror updates to AGENTS.md
 - `tests/classicBattle/README.md` (if exists) → Add migration guide
 
 **No Changes Required**:
+
 - Test utilities (`tests/utils/`, `tests/setup/`)
 - Integration test infrastructure
 - Test data and fixtures
-
