@@ -1,6 +1,16 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockTimerControllerFn } = vi.hoisted(() => ({
+  mockTimerControllerFn: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/TimerController.js", () => ({
+  TimerController: mockTimerControllerFn
+}));
+
 function mockTimerController(overrides = {}) {
   const timerImpl = {
     startRound: vi.fn(),
@@ -17,11 +27,8 @@ function mockTimerController(overrides = {}) {
     hasActiveTimer: vi.fn(),
     ...overrides
   };
-  const timerControllerMock = vi.fn().mockImplementation(() => timerImpl);
-  vi.doMock("../../src/helpers/TimerController.js", () => ({
-    TimerController: timerControllerMock
-  }));
-  return { ...timerImpl, timerControllerMock };
+  mockTimerControllerFn.mockImplementation(() => timerImpl);
+  return { ...timerImpl, timerControllerMock: mockTimerControllerFn };
 }
 
 /**

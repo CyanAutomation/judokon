@@ -1767,5 +1767,3 @@ if (!isTestEnvironment && typeof document !== "undefined" && document.readyState
     showFatalInitError(err);
   });
 }
-
-

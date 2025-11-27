@@ -48,7 +48,9 @@ describe("appendCards", () => {
       if (container) container.appendChild(card);
       return card;
     });
-    mockGetFallbackJudoka.mockReset().mockResolvedValue({ id: 0, firstname: "Default", surname: "Card" });
+    mockGetFallbackJudoka
+      .mockReset()
+      .mockResolvedValue({ id: 0, firstname: "Default", surname: "Card" });
     mockGetMissingJudokaFields.mockReset().mockReturnValue([]);
     mockHasRequiredJudokaFields.mockReset().mockReturnValue(true);
 
@@ -63,9 +65,7 @@ describe("appendCards", () => {
   });
 
   it("replaces broken images with fallback card", async () => {
-    const { appendCards } = await harness.importModule(
-      "../../src/helpers/carousel/cards.js"
-    );
+    const { appendCards } = await harness.importModule("../../src/helpers/carousel/cards.js");
 
     const container = document.createElement("div");
     const judokaList = [{ id: 1, firstname: "Real", surname: "Judoka" }];

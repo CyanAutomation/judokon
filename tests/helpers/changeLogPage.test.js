@@ -27,10 +27,7 @@ const sample = [
 ];
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const {
-  mockFetchJson,
-  mockInitTooltips
-} = vi.hoisted(() => ({
+const { mockFetchJson, mockInitTooltips } = vi.hoisted(() => ({
   mockFetchJson: vi.fn(),
   mockInitTooltips: vi.fn()
 }));
@@ -69,9 +66,7 @@ describe("changeLogPage", () => {
   });
 
   it("sorts by lastUpdated then name", async () => {
-    const { sortJudoka } = await harness.importModule(
-      "../../src/helpers/changeLogPage.js"
-    );
+    const { sortJudoka } = await harness.importModule("../../src/helpers/changeLogPage.js");
     const sorted = sortJudoka(sample);
     expect(sorted[0].id).toBe(1);
     expect(sorted[1].id).toBe(3);
@@ -79,9 +74,7 @@ describe("changeLogPage", () => {
   });
 
   it("falls back to placeholder portrait", async () => {
-    const { setupChangeLogPage } = await harness.importModule(
-      "../../src/helpers/changeLogPage.js"
-    );
+    const { setupChangeLogPage } = await harness.importModule("../../src/helpers/changeLogPage.js");
 
     mount(`
       <div id="loading-container"></div>

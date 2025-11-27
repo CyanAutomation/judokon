@@ -140,7 +140,7 @@ describe("Classic Battle inter-round cooldown + Next", () => {
   test("settles ready promise when ready dispatch returns false", async () => {
     const timers = useCanonicalTimers();
     document.body.innerHTML = '<button id="next-button" data-next-ready="true"></button>';
-    
+
     mockDispatchBattleEvent.mockResolvedValueOnce(false);
 
     const { advanceWhenReady } = await harness.importModule(
@@ -177,7 +177,7 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     const timers = useCanonicalTimers();
     document.body.innerHTML = '<button id="next-button" data-next-ready="true"></button>';
     const error = new Error("ready-dispatch-error");
-    
+
     mockDispatchBattleEvent.mockRejectedValueOnce(error);
 
     const { advanceWhenReady } = await harness.importModule(
@@ -204,7 +204,7 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     const timers = useCanonicalTimers();
     document.body.innerHTML = '<button id="next-button" disabled></button>';
     document.body.dataset.battleState = "cooldown";
-    
+
     mockDispatchBattleEvent.mockResolvedValueOnce(undefined);
     mockComputeNextRoundCooldown.mockReturnValueOnce(0);
 
