@@ -612,3 +612,44 @@ The JU-DO-KON! project now has:
 - Migrate remaining tests using patterns established in this refactor
 - Fix scheduleNextRound.fallback.test.js (requires architectural refactoring)
 - Onboard team to new test patterns
+
+---
+
+## Phase 2: Test Migration - Implementation (IN PROGRESS)
+
+### Task 1: Migrate cooldown.test.js ✅ COMPLETED
+
+**Date**: 2025-01-27 | **Time**: ~15 minutes
+
+**File**: `tests/classicBattle/cooldown.test.js` (4 tests)
+
+**Changes Made**:
+
+1. **Removed deprecated pattern**: Replaced `createClassicBattleHarness()` singleton with per-test harness initialization
+2. **Top-level mocks**: Converted 6 internal `vi.doMock()` calls to top-level `vi.mock()` declarations:
+   - `setupScoreboard.js`
+   - `classicBattle/debugPanel.js`
+   - `classicBattle/eventDispatcher.js`
+   - `classicBattle/battleEvents.js`
+   - `CooldownRenderer.js`
+   - `timers/computeNextRoundCooldown.js`
+
+3. **Shared mock state**: Added `vi.hoisted()` at file top with all 13 shared mock references
+
+4. **Per-test configuration**: Moved mock setup from inline `vi.doMock()` calls to `beforeEach()` hook with `resetAllMocks()` pattern
+
+5. **Module imports**: Changed direct `import` statements to `harness.importModule()` calls (except test utils which are real)
+
+6. **Timer access**: Replaced `vi.advanceTimersByTimeAsync()` with `harness.timerControl.advanceTimersByTimeAsync()`
+
+**Test Results**: ✅ **All 4 tests passing**
+
+```
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  21:52:21
+   Duration  2.33s
+```
+
+**Migration Complexity**: **MEDIUM** - File had 6 mocks spread across multiple tests; pattern is now clean and maintainable
+
