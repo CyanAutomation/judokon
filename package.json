@@ -50,7 +50,7 @@
     "e2e:value:ci": "CI_ENFORCE_LOW_VALUE=1 node scripts/pw-value-evaluator.js",
     "e2e:flake-scan": "npx playwright test --reporter=json --repeat-each=3 && node scripts/pw-value-evaluator.js",
     "audit:tests": "npm run test:value && npm run e2e:flake-scan",
-    "fix-gpg": "bash ./disable-gpg-signing.sh"
+    "fix-gpg": "bash ./disable_git_gpg_signing.sh"
   },
   "keywords": [],
   "author": "",
