@@ -1767,3 +1767,99 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 
 **🎯 MILESTONE REACHED**: 50 tests passing! Continue to 60+ target.
 
+
+## Session 5: Task 8 - resolveSelectionIfPresent.test.js Migration
+
+**File**: `tests/helpers/classicBattle/resolveSelectionIfPresent.test.js`
+**Challenge**: Single `vi.doMock()` inside second `it()` block with conditional mock behavior
+**Pattern Applied**: Top-level `vi.hoisted()` + `vi.mock()` with mockImplementation for dynamic behavior
+
+### Changes Made:
+- Moved all vi.mock() calls to top-level using hoisted functions
+- Created mockGetOpponentJudoka function to handle both return values (first test: `{ stats: { speed: 40 } }`, second test: `null`)
+- Used `mockImplementation()` in each test to set the correct behavior
+- First test: mockGetOpponentJudoka returns opponent judoka
+- Second test: mockGetOpponentJudoka returns null, falls back to DOM
+
+### Test Results:
+✅ **Individual test**: 2 passed (2) in 1.46s
+✅ **Combined batch (8 files)**: 17 passed (17) in 8.86s
+
+### Key Achievement:
+- Pattern works with conditional behavior via mockImplementation setups
+- Module-level mocks handle tests needing different return values
+- No need for vi.doMock inside tests anymore
+
+---
+
+## Session 5: Task 9 - vectorSearch.context.test.js Migration
+
+**File**: `tests/helpers/vectorSearch.context.test.js`
+**Challenge**: Two `vi.doMock()` calls inside `it()` block for Node.js environment test
+**Pattern Applied**: Top-level vi.hoisted() + vi.mock() for Node APIs
+
+### Changes Made:
+- Moved both vi.doMock() calls (node:fs/promises, node:url) to top-level
+- Created module-level mockReadFile and mockFileURLToPath
+- In first test: set mockReadFile to return the full markdown content
+- Test uses mocked Node APIs without fetch
+
+### Test Results:
+✅ **Individual test**: 4 passed (4) in 1.17s
+✅ **Combined batch (9 files)**: 21 passed (21) in 10.30s
+
+### Key Achievement:
+- Pattern works for Node.js environment mocking
+- Direct mock configuration replaces vi.doMock() dynamic creation
+- All 4 chunk-related tests passing (chunking by heading, chunk sizes, overlap calculation, invalid ID)
+
+---
+
+## Session 5: Task 10 - vectorSearchPage/selectTopMatches.test.js Migration
+
+**File**: `tests/helpers/vectorSearchPage/selectTopMatches.test.js`
+**Challenge**: Two `vi.doMock()` calls with different SIMILARITY_THRESHOLD values per test
+**Pattern Applied**: Module-level state variable + getter in vi.mock()
+
+### Changes Made:
+- Created module-level `similarityThreshold` variable (default 0.4)
+- Registered mock with getter property that returns current threshold value
+- First test: sets threshold to 0.4, imports module
+- Second test: sets threshold to 0.9, calls vi.resetModules() to reload with new value
+
+### Test Results:
+✅ **Individual test**: 2 passed (2) in 1.43s
+✅ **Combined batch (10 files)**: 23 passed (23) in 13.80s
+
+### Key Achievement:
+- Module-level state with getter properties works for dynamic mock behavior
+- vi.resetModules() between tests allows threshold to change between test cases
+- Pattern works for configuration-based mocking
+
+---
+
+## Session 5: Summary
+
+**Session 5 Total Tasks**: 5 (Tasks 6-10)
+**Tests This Session**: 11 passing (2+1+2+4+2)
+**Running Total**: 61 tests across 20 files
+**Success Rate**: 100% (61/61)
+**Regressions**: 0
+
+**Patterns Successfully Validated**:
+✅ Simple inline mocks in test blocks → top-level hoisted
+✅ Local variable shadowing → module-level mock references
+✅ Conditional mock behavior → mockImplementation per test
+✅ Node.js environment mocking → module-level state
+✅ Configuration-based mocks → getter properties with module state
+
+**Cumulative Achievement (All Sessions)**:
+- Session 4: 5 files → 12 tests (Tasks 1-5)
+- Session 5: 5 files → 11 tests (Tasks 6-10)
+- **Total**: 10 files migrated, 23 tests passing this session + 38 from prior, **61 tests across 20 files**
+
+**Remaining Quick-Win Candidates** (identified):
+- ~8-12 more 1-2 mock files for rapid batch
+- Estimated additional 10-20 tests within reach
+- Target: 75-80 tests migrated by end of Session 6
+

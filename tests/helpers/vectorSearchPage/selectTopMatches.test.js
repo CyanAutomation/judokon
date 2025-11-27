@@ -3,12 +3,6 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 // ===== Top-level vi.hoisted() for shared mock state =====
 let similarityThreshold = 0.4;
 
-const mockGetModule = vi.hoisted(() => {
-  return () => ({
-    SIMILARITY_THRESHOLD: similarityThreshold
-  });
-});
-
 // ===== Top-level vi.mock() call (Vitest static analysis phase) =====
 vi.mock("../../../src/helpers/api/vectorSearchPage.js", () => {
   // Return dynamic getter based on module-level state

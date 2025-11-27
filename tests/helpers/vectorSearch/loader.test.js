@@ -3,10 +3,18 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { withMutedConsole } from "../../utils/console.js";
 import { sample, setupMockDataset } from "./mockDataset.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const mockReadFile = vi.fn();
+const mockFileURLToPath = vi.fn((u) => u);
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
   fetchJson: vi.fn(),
   validateWithSchema: vi.fn()
 }));
+
+vi.mock("node:url", () => ({ fileURLToPath: mockFileURLToPath }));
+vi.mock("node:fs/promises", () => ({ readFile: mockReadFile }));
 
 describe("vectorSearch loader helpers", () => {
   beforeEach(() => {
@@ -21,8 +29,6 @@ describe("vectorSearch loader helpers", () => {
   });
 
   it("loads offline embeddings", async () => {
-    vi.doMock("node:url", () => ({ fileURLToPath: (u) => u }));
-    vi.doMock("node:fs/promises", () => ({ readFile: vi.fn() }));
     const meta = {
       vectorLength: 2,
       items: sample.map(({ id, text, source, tags }) => ({ id, text, source, tags }))
@@ -33,8 +39,7 @@ describe("vectorSearch loader helpers", () => {
         sample.flatMap((s) => s.embedding.map((v) => Math.max(-128, Math.min(127, Math.round(v)))))
       ).buffer
     );
-    const { readFile } = await import("node:fs/promises");
-    readFile.mockImplementation((path) => {
+    mockReadFile.mockImplementation((path) => {
       if (String(path).includes("offline_rag_metadata.json")) {
         return Promise.resolve(JSON.stringify(meta));
       }
@@ -43,7 +48,7 @@ describe("vectorSearch loader helpers", () => {
     const { loadOfflineEmbeddings } = await import("../../../src/helpers/vectorSearch/loader.js");
     const result = await loadOfflineEmbeddings();
     expect(result).toEqual(sample);
-    expect(readFile).toHaveBeenCalledTimes(2);
+    expect(mockReadFile).toHaveBeenCalledTimes(2);
   });
 
   it("loads single-file embeddings in browser", async () => {

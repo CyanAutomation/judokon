@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 // ===== Top-level vi.hoisted() for shared mock state =====
 const getStatValue = vi.fn(() => 0);
 const mockGetOpponentJudoka = vi.fn(() => ({ stats: { speed: 40 } }));
-const mockGetOpponentJudokaAlt = vi.fn(() => null);
+
 const resolveRound = vi.fn();
 
 // ===== Top-level vi.mock() calls (Vitest static analysis phase) =====

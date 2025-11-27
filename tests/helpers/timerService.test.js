@@ -3,6 +3,15 @@ import { createMockScheduler } from "./mockScheduler.js";
 import { mount, clearBody } from "./domUtils.js";
 let scheduler;
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const mockAutoSelectStat = vi.fn((onSelect) => {
+  const btn = document.querySelector('#stat-buttons button[data-stat="a"]');
+  if (btn) btn.classList.add("selected");
+  onSelect("a", { delayOpponentMessage: true });
+  return Promise.resolve();
+});
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: () => {},
   updateSnackbar: () => {}
@@ -37,49 +46,47 @@ vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   resetDispatchHistory: vi.fn()
 }));
 
+vi.mock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
+  autoSelectStat: mockAutoSelectStat
+}));
+
+vi.mock("../../src/helpers/battleEngineFacade.js", () => {
+  // Create makeTimer factory function with reference to scheduler
+  const makeTimer = (onTick, onExpired, duration) => {
+    onTick(duration);
+    if (duration <= 0) {
+      onExpired();
+      return;
+    }
+    for (let i = 1; i <= duration; i++) {
+      scheduler.setTimeout(() => {
+        const remaining = duration - i;
+        onTick(remaining);
+        if (remaining <= 0) onExpired();
+      }, i * 1000);
+    }
+  };
+  const mockEngine = {
+    startRound: makeTimer,
+    startCoolDown: makeTimer,
+    stopTimer: vi.fn(),
+    STATS: ["a", "b"]
+  };
+  return {
+    requireEngine: () => mockEngine,
+    startRound: makeTimer,
+    startCoolDown: makeTimer,
+    stopTimer: vi.fn(),
+    STATS: ["a", "b"]
+  };
+});
+
 describe("timerService", () => {
   beforeEach(() => {
     scheduler = createMockScheduler();
     mount();
     vi.clearAllMocks();
     vi.resetModules();
-    vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
-      autoSelectStat: vi.fn((onSelect) => {
-        const btn = document.querySelector('#stat-buttons button[data-stat="a"]');
-        if (btn) btn.classList.add("selected");
-        onSelect("a", { delayOpponentMessage: true });
-        return Promise.resolve();
-      })
-    }));
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => {
-      const makeTimer = (onTick, onExpired, duration) => {
-        onTick(duration);
-        if (duration <= 0) {
-          onExpired();
-          return;
-        }
-        for (let i = 1; i <= duration; i++) {
-          scheduler.setTimeout(() => {
-            const remaining = duration - i;
-            onTick(remaining);
-            if (remaining <= 0) onExpired();
-          }, i * 1000);
-        }
-      };
-      const mockEngine = {
-        startRound: makeTimer,
-        startCoolDown: makeTimer,
-        stopTimer: vi.fn(),
-        STATS: ["a", "b"]
-      };
-      return {
-        requireEngine: () => mockEngine,
-        startRound: makeTimer,
-        startCoolDown: makeTimer,
-        stopTimer: vi.fn(),
-        STATS: ["a", "b"]
-      };
-    });
   });
 
   afterEach(() => {
