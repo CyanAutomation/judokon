@@ -8,8 +8,8 @@
 
 **The Solution**: We will refactor the test harness architecture to align with Vitest's best practices. This involves a two-pronged strategy:
 
-1.  **For Unit Tests**: Adopt a top-level `vi.mock()` pattern for declaring dependencies.
-2.  **For Integration Tests**: Continue to use real module implementations but mock only true _external_ dependencies (e.g., `fetch`, `localStorage`, Sentry).
+1. **For Unit Tests**: Adopt a top-level `vi.mock()` pattern for declaring dependencies.
+2. **For Integration Tests**: Continue to use real module implementations but mock only true _external_ dependencies (e.g., `fetch`, `localStorage`, Sentry).
 
 A new, simplified `createSimpleHarness()` API has been introduced to manage the test environment (JSDOM, fake timers, fixtures) without handling mock registration, which is now the responsibility of individual tests. This refactor will resolve the failing tests and establish a more reliable and maintainable testing foundation.
 
@@ -92,11 +92,11 @@ The core of the work is to migrate the ~16 failing tests to the appropriate new 
 
 **Developer Workflow for Migration**:
 
-1.  Pick a failing test file from the matrix.
-2.  Apply the designated pattern (Unit or Integration). See the **Developer Guide** below for code examples.
-3.  Remove the `mocks` parameter from the harness creation call.
-4.  Run the test file and verify all tests within it now pass.
-5.  Run the relevant suite (`npm run test:battles:classic`) to check for regressions.
+1. Pick a failing test file from the matrix.
+2. Apply the designated pattern (Unit or Integration). See the **Developer Guide** below for code examples.
+3. Remove the `mocks` parameter from the harness creation call.
+4. Run the test file and verify all tests within it now pass.
+5. Run the relevant suite (`npm run test:battles:classic`) to check for regressions.
 
 ### Phase 3: Verification and Cleanup (Future)
 
@@ -1738,7 +1738,7 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Single `vi.doMock()` call inside first `it()` block (line 13)
 **Pattern Applied**: Top-level `vi.hoisted()` + `vi.mock()` for shared mock references
 
-### Changes Made:
+### Changes Made
 
 - Moved `vi.doMock()` from inside `it("dispatches interrupt when drawCards rejects"...)` to top-level
 - Created `vi.hoisted()` function with:
@@ -1747,18 +1747,18 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 - Registered mock at top-level using `vi.mock()` pointing to both hoisted functions
 - Removed original inline `vi.doMock()` call and kept only `vi.resetModules()`
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 2 passed (2) in 1.68s
 ✅ **Combined batch (6 files)**: 14 passed (14) in 5.92s
 
-### Key Achievement:
+### Key Achievement
 
 - Demonstrated pattern works for files with inline `vi.doMock()` in test blocks
 - Module-level state capture works when mockRejectedValue is set in hoisted callback
 - Both test cases (drawCards rejection + startRoundWrapper sync failure) pass correctly
 
-### Cumulative Progress:
+### Cumulative Progress
 
 - **Session 5 Tasks**: 1 (Task 6 roundStartError.test.js)
 - **Tests This Task**: 2 passing
@@ -1772,7 +1772,7 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Single `vi.doMock()` call inside `it()` block with local `on` variable reference
 **Pattern Applied**: Top-level `vi.hoisted()` + `vi.mock()` with module-level mock references
 
-### Changes Made:
+### Changes Made
 
 - Moved `vi.doMock()` from inside test to top-level
 - Created `vi.hoisted()` function with:
@@ -1781,18 +1781,18 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
   - `mockOnEngineCreated`: vi.fn(() => () => {})
 - Replaced local `on` variable references with `mockOn` (in mockClear() and expect() calls)
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 1 passed (1) in 1.56s
 ✅ **Combined batch (7 files)**: 15 passed (15) in 7.70s
 
-### Key Achievement:
+### Key Achievement
 
 - Pattern works when test has local variable shadowing the mock
 - Simple replacement of variable references to use module-level mock name
 - No state complexity needed for this straightforward callback test
 
-### Cumulative Progress:
+### Cumulative Progress
 
 - **Session 5 Tasks**: 2 (Tasks 6-7)
 - **Tests This Session**: 3 passing
@@ -1808,7 +1808,7 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Single `vi.doMock()` inside second `it()` block with conditional mock behavior
 **Pattern Applied**: Top-level `vi.hoisted()` + `vi.mock()` with mockImplementation for dynamic behavior
 
-### Changes Made:
+### Changes Made
 
 - Moved all vi.mock() calls to top-level using hoisted functions
 - Created mockGetOpponentJudoka function to handle both return values (first test: `{ stats: { speed: 40 } }`, second test: `null`)
@@ -1816,12 +1816,12 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 - First test: mockGetOpponentJudoka returns opponent judoka
 - Second test: mockGetOpponentJudoka returns null, falls back to DOM
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 2 passed (2) in 1.46s
 ✅ **Combined batch (8 files)**: 17 passed (17) in 8.86s
 
-### Key Achievement:
+### Key Achievement
 
 - Pattern works with conditional behavior via mockImplementation setups
 - Module-level mocks handle tests needing different return values
@@ -1835,19 +1835,19 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Two `vi.doMock()` calls inside `it()` block for Node.js environment test
 **Pattern Applied**: Top-level vi.hoisted() + vi.mock() for Node APIs
 
-### Changes Made:
+### Changes Made
 
 - Moved both vi.doMock() calls (node:fs/promises, node:url) to top-level
 - Created module-level mockReadFile and mockFileURLToPath
 - In first test: set mockReadFile to return the full markdown content
 - Test uses mocked Node APIs without fetch
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 4 passed (4) in 1.17s
 ✅ **Combined batch (9 files)**: 21 passed (21) in 10.30s
 
-### Key Achievement:
+### Key Achievement
 
 - Pattern works for Node.js environment mocking
 - Direct mock configuration replaces vi.doMock() dynamic creation
@@ -1861,19 +1861,19 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Two `vi.doMock()` calls with different SIMILARITY_THRESHOLD values per test
 **Pattern Applied**: Module-level state variable + getter in vi.mock()
 
-### Changes Made:
+### Changes Made
 
 - Created module-level `similarityThreshold` variable (default 0.4)
 - Registered mock with getter property that returns current threshold value
 - First test: sets threshold to 0.4, imports module
 - Second test: sets threshold to 0.9, calls vi.resetModules() to reload with new value
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 2 passed (2) in 1.43s
 ✅ **Combined batch (10 files)**: 23 passed (23) in 13.80s
 
-### Key Achievement:
+### Key Achievement
 
 - Module-level state with getter properties works for dynamic mock behavior
 - vi.resetModules() between tests allows threshold to change between test cases
@@ -1914,19 +1914,19 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Two `vi.doMock()` calls for Node.js APIs (node:url, node:fs/promises)
 **Pattern Applied**: Top-level vi.mock() with module-level mock functions
 
-### Changes Made:
+### Changes Made
 
 - Moved both vi.doMock() calls from inside first test to top-level
 - Created mockReadFile and mockFileURLToPath at module level
 - First test uses mockReadFile.mockImplementation() to configure per-test behavior
 - Module reload within beforeEach resets all mocks for consistent test isolation
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 6 passed (6) in 1.48s
 ✅ **Combined batch (11 files)**: 31 passed (31) in 12.20s
 
-### Key Achievement:
+### Key Achievement
 
 - Pattern works well for Node.js environment mocking with complex implementations
 - mockImplementation allows per-test behavior configuration
@@ -1940,19 +1940,19 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Two `vi.doMock()` calls inside beforeEach with complex closure-based makeTimer function
 **Pattern Applied**: Module-level state references in mock factory
 
-### Changes Made:
+### Changes Made
 
 - Moved mockAutoSelectStat to module level hoisted function
 - Moved battleEngineFacade mock to top-level vi.mock() with factory
 - Factory function references module-level `scheduler` variable (set in beforeEach)
 - makeTimer closure has access to scheduler via module-level variable
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 4 passed (4) in 1.74s
 ✅ **Combined batch (12 files)**: 33 passed (33) in 12.30s
 
-### Key Achievement:
+### Key Achievement
 
 - Pattern works for complex stateful mocks with closure-based APIs
 - Module-level state variables work when mock factory functions reference them
@@ -1995,19 +1995,19 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: Single `vi.doMock()` inside test block within a describe context
 **Pattern Applied**: Top-level vi.mock() with module-level mock reference
 
-### Changes Made:
+### Changes Made
 
 - Moved vi.doMock() from inside test to top-level vi.mock()
 - Created mockGetBattleEventTarget function at module level
 - Test no longer uses local mocking - uses module-level mock directly
 - Removed inline mock registration, all configuration at top-level
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 13 passed (13) in 1.94s
 ✅ **Combined batch (13 files)**: 46 passed (46) in 17.37s
 
-### Key Achievement:
+### Key Achievement
 
 - Pattern works for event/callback-based mock systems
 - Integration tests with nested mocking work reliably with top-level registration
@@ -2020,19 +2020,19 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 **Challenge**: `vi.doMock()` inside beforeEach for complex multi-mock setup
 **Pattern Applied**: Direct factory function in vi.mock() without hoisted wrapper
 
-### Changes Made:
+### Changes Made
 
 - Moved vi.doMock() from beforeEach to top-level vi.mock()
 - Removed vi.hoisted() - not needed for factory functions in this case
 - Direct factory returns full mock object with all properties
 - Tests continue to work with complex engine/score setup
 
-### Test Results:
+### Test Results
 
 ✅ **Individual test**: 2 passed (2) in 1.79s
 ✅ **Combined batch (14 files)**: 48 passed (48) in 17.99s
 
-### Key Achievement:
+### Key Achievement
 
 - Pattern works for complex beforeEach setups with 20+ lines of mock configuration
 - Demonstrates that vi.hoisted() is optional - direct factory also works
@@ -2930,6 +2930,7 @@ Duration  4.06s
 **Status**: ✅ **COMPLETED** (Session 6)
 
 **File Details**:
+
 - Path: `tests/helpers/randomJudokaPage.drawButton.test.js`
 - Purpose: Test random judoka page draw button behavior and state management
 - Test Count: 5 tests (big win!)
@@ -2942,6 +2943,7 @@ Duration  4.06s
 **Migration Solution**:
 
 **Change 1: Create module-level vi.hoisted() with mock state object**
+
 ```javascript
 const { mocks } = vi.hoisted(() => {
   const mockState = {
@@ -2957,16 +2959,19 @@ const { mocks } = vi.hoisted(() => {
 ```
 
 **Change 2: Convert all 6 vi.doMock() calls to module-level vi.mock()**
+
 - Each vi.mock() references the appropriate mock from hoisted state
 - randomCard uses mocks.generateRandomCard, mocks.loadGokyoLookup, etc.
 - domReady captures mocks.readyCallbacks array
 
 **Change 3: Remove setupRandomJudokaCoreMocks() factory entirely**
+
 - Each test now updates mocks directly: `mocks.generateRandomCard.mockImplementation(...)`
 - Reset array for readyCallbacks test: `mocks.readyCallbacks.length = 0`
 - Update assertions to use `mocks.readyCallbacks` instead of local variable
 
 **Test Results**:
+
 ```
 ✅ Test Files  1 passed (1)
 ✅ Tests  5 passed (5)
@@ -2974,6 +2979,7 @@ Duration  5.63s
 ```
 
 **Key Pattern Achievement**:
+
 - First file with **5 tests** in single migration
 - Factory pattern successfully converted to module-level with mutable state
 - Per-test mock configuration works cleanly with shared mocks object
@@ -2984,6 +2990,7 @@ Duration  5.63s
 ## 🏆 Final Session 6 Extended Milestone
 
 **Test Count History**:
+
 - Sessions 1-5: 69 tests (22 files)
 - After Task 19: 100 tests (29 files) ✅ MILESTONE
 - After Task 20: 101 tests (30 files)
@@ -2995,6 +3002,7 @@ Duration  5.63s
 **Session 6 Tasks Completed**: 12 total (Tasks 13-24)
 
 **Session 6 Extended Statistics**:
+
 - 109 - 100 = **9 new tests added beyond 100+ milestone**
 - 12 tasks completed in rapid succession
 - **5 different complexity patterns successfully migrated**
@@ -3002,6 +3010,7 @@ Duration  5.63s
 - **0 regressions - 100% pass rate maintained (109/109)**
 
 **Pattern Maturity Assessment**:
+
 - ✅ Simple static mocks (baseline)
 - ✅ Promise factories and closures
 - ✅ Complex async callbacks and state managers
@@ -3010,5 +3019,5 @@ Duration  5.63s
 - ✅ Factory pattern conversion to module-level configuration
 
 **Limitations Identified**:
-- ❌ Template literal variables in vi.mock() paths (orchestrator.init.test.js) - acceptable edge case
 
+- ❌ Template literal variables in vi.mock() paths (orchestrator.init.test.js) - acceptable edge case
