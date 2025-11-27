@@ -856,15 +856,23 @@ async function handleStatButtonClick(store, stat, btn) {
  *
  * @summary Creates buttons for each stat, enables them, and wires selection handlers.
  *
- * @param {ReturnType<typeof createBattleStore>} store - Battle store managing state.
+ * @param {object} store - The battle store instance, managing the game's state including selections and rounds.
  * @returns {void}
  * @pseudocode
- * 1. Get the stat-buttons container element.
- * 2. Validate that STATS is an array.
- * 3. For each stat, create a button with accessibility attributes.
- * 4. Attach click handlers that trigger stat selection flow.
- * 5. Wire keyboard hotkeys for stat selection.
- * 6. Track button attachment in test environments.
+ * 1. Obtain references to the document and the stat-buttons container.
+ * 2. Validate that the global `STATS` array is properly defined.
+ * 3. Initialize or update a listener registry for tracking button attachments in test environments.
+ * 4. Reset the cooldown flag in the store.
+ * 5. Disable the "Next Round" button to prevent premature advancement.
+ * 6. Detach any previously wired stat hotkeys.
+ * 7. Clear the existing content of the stat-buttons container.
+ * 8. Iterate through each stat in the `STATS` array:
+ *    a. Create a button element for the stat, setting its text, classes, and accessibility attributes.
+ *    b. Attach a click event listener to the button that calls `handleStatButtonClick` with the store, stat, and button element.
+ *    c. Record the stat button attachment in the listener registry (if active).
+ *    d. Append the button and its accessibility description to the container.
+ * 9. After all buttons are created, set the `data-buttons-ready` attribute on the container.
+ * 10. Enable the newly created stat buttons and wire new keyboard hotkeys for them.
  */
 function renderStatButtons(store) {
   const doc = getDocumentRef();
@@ -1539,14 +1547,16 @@ function wireCardEventHandlers(store) {
  *
  * @summary Sets the initial visibility and content of the battle state badge.
  *
- * @param {Object} [options={}] - Configuration options.
- * @param {boolean} [options.force=true] - Force badge visibility regardless of current state.
+ * @param {object} [options={}] - Configuration options for initializing the badge.
+ * @param {boolean} [options.force=true] - If true, forces the badge's visibility and sets its text to "Lobby", overriding existing content if it doesn't contain "Round".
  * @returns {void}
  * @pseudocode
- * 1. Check for a `battleStateBadge` override in `window.__FF_OVERRIDES`.
- * 2. Get a reference to the `#battle-state-badge` element. If not found, exit.
- * 3. If the override is enabled, set visibility and text content ("Lobby" or existing Round label).
- * 4. Wrap all DOM operations in a try-catch block.
+ * 1. Check if a `battleStateBadge` feature flag override is enabled via `window.__FF_OVERRIDES`.
+ * 2. Attempt to retrieve the DOM element with the ID `battle-state-badge`. If the element is not found, the function exits.
+ * 3. If the `battleStateBadge` override is enabled:
+ *    a. Ensure the badge is visible by setting `hidden` to `false` and removing the `hidden` attribute.
+ *    b. Determine the badge's text content: if `force` is true or the current text does not contain "Round", set the text content to "Lobby". Otherwise, preserve the existing text.
+ * 4. All DOM manipulations are wrapped in a try-catch block to gracefully handle potential errors.
  */
 function initBattleStateBadge(options = {}) {
   const { force = true } = options;
@@ -1696,16 +1706,20 @@ async function initializePhase4_EventHandlers(store) {
 /**
  * Initialize the Classic Battle page.
  *
- * @summary Orchestrates the bootstrap sequence for the Classic Battle interface.
- * Follows a 4-phase initialization: utilities, UI, engine, and event handlers.
+ * @summary Orchestrates the bootstrap sequence for the Classic Battle interface,
+ * following a 5-phase initialization: utilities, UI, engine, event handlers, and match start.
  *
- * @returns {Promise<void>}
+ * @returns {Promise<void>} A Promise that resolves when the Classic Battle page has been fully initialized.
  * @pseudocode
- * 1. Phase 1: Initialize utilities (scheduler, test API, badge).
- * 2. Phase 2: Setup UI (scoreboard, initial state, feature flags).
- * 3. Phase 3: Create battle engine and orchestrator.
- * 4. Phase 4: Wire event handlers and control buttons.
- * 5. Phase 5: Initialize match start (round select modal).
+ * 1. Execute `initializePhase1_Utilities()` to set up core utilities like the scheduler and expose test APIs.
+ * 2. Execute `initializePhase2_UI()` to configure the initial user interface, including the scoreboard and feature flags.
+ * 3. Create a battle store instance using `createBattleStore()` to manage the game's state.
+ * 4. If in a browser environment, expose the created battle store globally as `window.battleStore`.
+ * 5. Execute `initializePhase3_Engine()` to set up the battle engine and orchestrator.
+ * 6. Execute `initializePhase4_EventHandlers()` to wire up all necessary event listeners and control buttons.
+ * 7. Execute `initializeMatchStart()` to initiate the match, typically by showing the round selection modal.
+ * 8. If in a browser environment, set `window.__battleInitComplete` to `true` to signal successful initialization.
+ * 9. Catch any errors during the bootstrap process and display a fatal initialization error to the user.
  */
 async function init() {
   try {

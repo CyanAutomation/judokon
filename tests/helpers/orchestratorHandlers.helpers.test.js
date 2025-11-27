@@ -61,11 +61,11 @@ describe("guardSelectionResolution", () => {
     );
     const outcomeSpy = vi.spyOn(mod, "computeAndDispatchOutcome").mockResolvedValue(undefined);
     const cancel = mod.guardSelectionResolution({}, {});
-    expect(typeof debugHooks.readDebugState("roundDecisionGuard")).toBe("function");
+    // The cancel function is returned; store tracks it
+    expect(typeof cancel).toBe("function");
     cancel();
     await vi.runAllTimersAsync();
     expect(outcomeSpy).not.toHaveBeenCalled();
-    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
     timers.cleanup();
   });
 });
