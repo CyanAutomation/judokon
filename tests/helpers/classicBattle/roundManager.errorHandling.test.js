@@ -10,7 +10,9 @@ const mockDrawCards = vi.fn().mockImplementation(async () => {
   return { playerJudoka: {}, opponentJudoka: {} };
 });
 
-const mockDrawCardsPlaceholder = vi.fn().mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} });
+const mockDrawCardsPlaceholder = vi
+  .fn()
+  .mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} });
 
 // ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
 vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
