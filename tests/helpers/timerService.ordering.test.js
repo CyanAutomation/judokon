@@ -6,12 +6,12 @@ const { dispatchSpy, autoSelectStatMock } = vi.hoisted(() => {
   // Will be reset per-test to create new Promise for timeoutPromise
   let resolveTimeout;
   const createTimeoutPromise = () => new Promise((r) => (resolveTimeout = r));
-  
+
   const dispatchSpyMock = vi.fn((eventName) => {
     if (eventName === "timeout") return createTimeoutPromise();
     return Promise.resolve();
   });
-  
+
   const autoSelectStatMock = vi.fn(async (onSelect) => {
     // Track whether autoSelect kicked off
     window.__autoSelectCalled = true;
@@ -19,7 +19,7 @@ const { dispatchSpy, autoSelectStatMock } = vi.hoisted(() => {
       await onSelect("a", { delayOpponentMessage: true });
     } catch {}
   });
-  
+
   return { dispatchSpy: dispatchSpyMock, autoSelectStatMock };
 });
 
@@ -87,7 +87,7 @@ describe("timerService timeout ordering", () => {
     await mod.startTimer(async () => {}, { selectionMade: false });
 
     // At this point, `timeout` dispatch is pending; ensure autoSelect has begun
-    expect((window as any).__autoSelectCalled).toBe(true);
+    expect(window.__autoSelectCalled).toBe(true);
 
     clearBody();
   });

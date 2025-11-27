@@ -2815,3 +2815,110 @@ Duration  1.52s
 - After Task 21: **102 tests (30 files)** ✅ MOMENTUM CONTINUED
 
 **Session 6 Tasks Completed**: 9 total (Tasks 13-21)
+
+---
+
+### Task 22: Migrate `tests/helpers/timerService.autoSelectDisabled.test.js`
+
+**Status**: ✅ **COMPLETED** (Session 6)
+
+**File Details**:
+
+- Path: `tests/helpers/timerService.autoSelectDisabled.test.js`
+- Purpose: Test timer service timeout when auto-select is disabled
+- Test Count: 1 test
+- Migration Changes: 2 edits (vi.hoisted() header + vi.doMock removal from test)
+
+**Mock Count**: 8 vi.doMock() calls (same modules as Task 21 but with `isEnabled: () => false`)
+
+**Test Results**:
+
+```
+✅ Test Files  1 passed (1)
+✅ Tests  1 passed (1)
+Duration  3.74s
+```
+
+---
+
+### Task 23: Migrate `tests/helpers/timerService.ordering.test.js`
+
+**Status**: ✅ **COMPLETED** (Session 6)
+
+**File Details**:
+
+- Path: `tests/helpers/timerService.ordering.test.js`
+- Purpose: Test that auto-select starts before timeout dispatch resolves
+- Test Count: 1 test
+- Migration Changes: 2 edits (vi.hoisted() header + vi.doMock removal from test)
+
+**Mock Count**: 5 vi.doMock() calls (setupScoreboard, uiHelpers, showSnackbar, timerUtils, orchestrator, autoSelectStat)
+
+**Migration Challenge**: Complex dispatcher mock that returns awaitable Promise and tracking flag
+
+**Migration Solution**:
+
+**Change 1: Add top-level vi.hoisted() with Promise factory**
+
+```javascript
+const { dispatchSpy, autoSelectStatMock } = vi.hoisted(() => {
+  let resolveTimeout;
+  const createTimeoutPromise = () => new Promise((r) => (resolveTimeout = r));
+
+  const dispatchSpyMock = vi.fn((eventName) => {
+    if (eventName === "timeout") return createTimeoutPromise();
+    return Promise.resolve();
+  });
+
+  const autoSelectStatMock = vi.fn(async (onSelect) => {
+    window.__autoSelectCalled = true; // Track execution
+    try {
+      await onSelect("a", { delayOpponentMessage: true });
+    } catch {}
+  });
+
+  return { dispatchSpy: dispatchSpyMock, autoSelectStatMock };
+});
+```
+
+**Change 2: Update test to use window flag instead of closure variable**
+
+- Changed: `expect(autoSelectCalled).toBe(true)` → `expect(window.__autoSelectCalled).toBe(true)`
+- Removed: Manual resolveTimeout() call (no longer needed with module-level Promise)
+
+**Test Results**:
+
+```
+✅ Test Files  1 passed (1)
+✅ Tests  1 passed (1)
+Duration  4.06s
+```
+
+**Key Patterns Validated**:
+
+- Promise factories work in vi.hoisted()
+- Window flag tracking alternative to closure variables
+- Complex dispatcher logic migrates cleanly
+
+---
+
+## 🏆 Updated Cumulative Progress (Session 6 Extended Continued)
+
+**Test Count History**:
+
+- Sessions 1-5: 69 tests (22 files)
+- After Task 19: 100 tests (29 files) ✅ MILESTONE
+- After Task 20: 101 tests (30 files)
+- After Task 21: 102 tests (30 files)
+- After Task 22: 103 tests (30 files)
+- After Task 23: **104 tests (30 files)** ✅ EXTENDED MOMENTUM
+
+**Session 6 Tasks Completed**: 11 total (Tasks 13-23)
+
+**Pattern Validation**:
+
+- ✅ 11 successful migrations with 100% pass rate (104/104 tests)
+- ✅ 5 different mock complexity levels validated
+- ✅ Promise factory pattern proven
+- ✅ Window flag tracking pattern validated
+- ✅ 0 regressions across all migrations

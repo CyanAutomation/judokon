@@ -5,25 +5,22 @@ import { withMutedConsole } from "../utils/console.js";
 
 const harness = createRandomJudokaPageHarness();
 
-beforeEach(async () => {
-  await harness.setup();
-});
-
-const baseSettings = {
-  motionEffects: true,
-  typewriterEffect: true,
-  tooltips: true,
-  displayMode: "light",
-  fullNavigationMap: true,
-  gameModes: {},
-  featureFlags: {
-    enableTestMode: { enabled: false },
-    enableCardInspector: { enabled: false }
-  }
-};
-
-function setupRandomJudokaCoreMocks(overrides = {}) {
-  const mocks = {
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mocks } = vi.hoisted(() => {
+  const baseSettings = {
+    motionEffects: true,
+    typewriterEffect: true,
+    tooltips: true,
+    displayMode: "light",
+    fullNavigationMap: true,
+    gameModes: {},
+    featureFlags: {
+      enableTestMode: { enabled: false },
+      enableCardInspector: { enabled: false }
+    }
+  };
+  
+  const mockState = {
     generateRandomCard: vi.fn().mockResolvedValue({ name: "Test Judoka" }),
     fetchJson: vi.fn().mockResolvedValue([]),
     loadSettings: vi.fn().mockResolvedValue(baseSettings),
@@ -31,28 +28,48 @@ function setupRandomJudokaCoreMocks(overrides = {}) {
     renderJudokaCard: vi.fn().mockResolvedValue(),
     applyMotionPreference: vi.fn(),
     shouldReduceMotionSync: vi.fn().mockReturnValue(false),
-    ...overrides
+    readyCallbacks: [],
+    baseSettings
   };
+  
+  return { mocks: mockState };
+});
 
-  vi.doMock("../../src/helpers/randomCard.js", () => ({
-    generateRandomCard: mocks.generateRandomCard,
-    loadGokyoLookup: mocks.loadGokyoLookup,
-    renderJudokaCard: mocks.renderJudokaCard
-  }));
-  vi.doMock("../../src/helpers/dataUtils.js", async () => ({
-    ...(await vi.importActual("../../src/helpers/dataUtils.js")),
-    fetchJson: mocks.fetchJson
-  }));
-  vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-    loadSettings: mocks.loadSettings
-  }));
-  vi.doMock("../../src/helpers/motionUtils.js", () => ({
-    applyMotionPreference: mocks.applyMotionPreference,
-    shouldReduceMotionSync: mocks.shouldReduceMotionSync
-  }));
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/randomCard.js", () => ({
+  generateRandomCard: mocks.generateRandomCard,
+  loadGokyoLookup: mocks.loadGokyoLookup,
+  renderJudokaCard: mocks.renderJudokaCard
+}));
 
-  return mocks;
-}
+vi.mock("../../src/helpers/dataUtils.js", async () => ({
+  ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+  fetchJson: mocks.fetchJson
+}));
+
+vi.mock("../../src/helpers/settingsStorage.js", () => ({
+  loadSettings: mocks.loadSettings
+}));
+
+vi.mock("../../src/helpers/motionUtils.js", () => ({
+  applyMotionPreference: mocks.applyMotionPreference,
+  shouldReduceMotionSync: mocks.shouldReduceMotionSync
+}));
+
+vi.mock("../../src/helpers/domReady.js", () => ({
+  onDomReady: (fn) => {
+    mocks.readyCallbacks.push(fn);
+  }
+}));
+
+vi.mock("../../src/helpers/constants.js", async () => ({
+  ...(await vi.importActual("../../src/helpers/constants.js")),
+  DATA_DIR: ""
+}));
+
+beforeEach(async () => {
+  await harness.setup();
+});
 
 describe("randomJudokaPage draw button", () => {
   it("updates loading state on draw button while drawing", async () => {
@@ -64,7 +81,8 @@ describe("randomJudokaPage draw button", () => {
       container.appendChild(card);
     });
 
-    setupRandomJudokaCoreMocks({ generateRandomCard });
+    // Update module-level mock for this test
+    mocks.generateRandomCard.mockImplementation(generateRandomCard);
 
     const { section, container } = createRandomCardDom();
     document.body.append(section);
@@ -98,7 +116,8 @@ describe("randomJudokaPage draw button", () => {
       container.appendChild(card);
     });
 
-    setupRandomJudokaCoreMocks({ generateRandomCard });
+    // Update module-level mock for this test
+    mocks.generateRandomCard.mockImplementation(generateRandomCard);
 
     const { section } = createRandomCardDom();
     document.body.append(section);
@@ -134,7 +153,8 @@ describe("randomJudokaPage draw button", () => {
 
     try {
       const generateRandomCard = vi.fn().mockResolvedValue({ name: "Ghost Judoka" });
-      setupRandomJudokaCoreMocks({ generateRandomCard });
+      // Update module-level mock for this test
+      mocks.generateRandomCard.mockImplementation(generateRandomCard);
 
       const { section } = createRandomCardDom();
       document.body.append(section);
@@ -162,27 +182,9 @@ describe("randomJudokaPage draw button", () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const dataUtils = await import("../../src/helpers/dataUtils.js");
     const fetchSpy = vi.spyOn(dataUtils, "fetchJson").mockRejectedValue(new Error("fail"));
-    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const applyMotionPreference = vi.fn();
-
-    const loadGokyoLookup = vi.fn().mockResolvedValue({});
-    const renderJudokaCard = vi.fn().mockResolvedValue();
-
-    vi.doMock("../../src/helpers/randomCard.js", () => ({
-      generateRandomCard: vi.fn(),
-      loadGokyoLookup,
-      renderJudokaCard
-    }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
-    const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({
-      applyMotionPreference,
-      shouldReduceMotionSync
-    }));
-    vi.doMock("../../src/helpers/constants.js", async () => ({
-      ...(await vi.importActual("../../src/helpers/constants.js")),
-      DATA_DIR: ""
-    }));
+    
+    // Update module-level mocks for this test
+    mocks.fetchJson.mockRejectedValue(new Error("fail"));
 
     const { section } = createRandomCardDom();
     document.body.append(section);
@@ -203,14 +205,8 @@ describe("randomJudokaPage draw button", () => {
   it("does not duplicate controls when initialized twice", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
-    const readyCallbacks = [];
-    vi.doMock("../../src/helpers/domReady.js", () => ({
-      onDomReady: (fn) => {
-        readyCallbacks.push(fn);
-      }
-    }));
-
-    setupRandomJudokaCoreMocks();
+    // Reset readyCallbacks for this test
+    mocks.readyCallbacks.length = 0;
 
     const { section } = createRandomCardDom();
     document.body.append(section);
@@ -220,12 +216,12 @@ describe("randomJudokaPage draw button", () => {
     );
 
     await initRandomJudokaPage();
-    expect(readyCallbacks).toHaveLength(1);
+    expect(mocks.readyCallbacks).toHaveLength(1);
 
     await initRandomJudokaPage();
-    expect(readyCallbacks).toHaveLength(1);
+    expect(mocks.readyCallbacks).toHaveLength(1);
 
-    readyCallbacks.forEach((fn) => fn());
+    mocks.readyCallbacks.forEach((fn) => fn());
 
     await randomJudokaReadyPromise;
 
