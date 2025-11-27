@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { createSimpleHarness } from "../helpers/integrationHarness.js";
 

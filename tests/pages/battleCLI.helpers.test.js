@@ -1,6 +1,22 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockEngineFacadeExports } = vi.hoisted(() => ({
+  mockEngineFacadeExports: {
+    setPointsToWin: vi.fn(),
+    getPointsToWin: vi.fn(),
+    getScores: vi.fn(),
+    stopTimer: vi.fn(),
+    on: vi.fn(),
+    emit: vi.fn(),
+    getEngine: vi.fn()
+  }
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/battleEngineFacade.js", () => mockEngineFacadeExports);
 
 function createEngineStub({ pointsToWin = 10, scores } = {}) {
   const bus = new EventTarget();
@@ -28,15 +44,13 @@ function createEngineStub({ pointsToWin = 10, scores } = {}) {
 }
 
 function mockEngineFacade(overrides) {
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-    setPointsToWin: overrides.setPointsToWin,
-    getPointsToWin: overrides.getPointsToWin,
-    getScores: overrides.getScores,
-    stopTimer: overrides.stopTimer,
-    on: overrides.on,
-    emit: overrides.emit,
-    getEngine: overrides.getEngine
-  }));
+  mockEngineFacadeExports.setPointsToWin = overrides.setPointsToWin;
+  mockEngineFacadeExports.getPointsToWin = overrides.getPointsToWin;
+  mockEngineFacadeExports.getScores = overrides.getScores;
+  mockEngineFacadeExports.stopTimer = overrides.stopTimer;
+  mockEngineFacadeExports.on = overrides.on;
+  mockEngineFacadeExports.emit = overrides.emit;
+  mockEngineFacadeExports.getEngine = overrides.getEngine;
 }
 
 describe("Battle CLI helpers", () => {
