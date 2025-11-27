@@ -1,6 +1,21 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
 import { flushUnhandledRejections } from "../utils/flushUnhandledRejections.js";
+
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockGenerateRandomCard, mockShouldReduceMotionSync } = vi.hoisted(() => ({
+  mockGenerateRandomCard: vi.fn(),
+  mockShouldReduceMotionSync: vi.fn().mockReturnValue(false)
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/randomCard.js", () => ({
+  generateRandomCard: mockGenerateRandomCard
+}));
+
+vi.mock("../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: mockShouldReduceMotionSync
+}));
 
 const createDeferred = () => {
   let resolve;
@@ -12,6 +27,11 @@ const createDeferred = () => {
   return { promise, resolve, reject };
 };
 
+beforeEach(() => {
+  mockGenerateRandomCard.mockReset();
+  mockShouldReduceMotionSync.mockReset().mockReturnValue(false);
+});
+
 afterEach(() => {
   vi.restoreAllMocks();
   vi.resetModules();
@@ -20,12 +40,6 @@ afterEach(() => {
 
 const setupTest = async () => {
   vi.resetModules();
-  const generateRandomCard = vi.fn();
-  const shouldReduceMotionSync = vi.fn().mockReturnValue(false);
-
-  vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
-  vi.doMock("../../src/helpers/motionUtils.js", () => ({ shouldReduceMotionSync }));
-
   const module = await import("../../src/game.js");
   const button = document.createElement("button");
   const container = document.createElement("div");
@@ -35,8 +49,8 @@ const setupTest = async () => {
     ...module,
     button,
     container,
-    generateRandomCard,
-    shouldReduceMotionSync
+    generateRandomCard: mockGenerateRandomCard,
+    shouldReduceMotionSync: mockShouldReduceMotionSync
   };
 };
 
