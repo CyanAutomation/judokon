@@ -1,15 +1,29 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { FALLBACK_VISIBILITY_RESUME_DELAY_MS } from "../../src/helpers/fallbackCountdown.js";
 
 const TIMER_UTILS_PATH = "../../src/helpers/timerUtils.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockGetDefaultTimer } = vi.hoisted(() => ({
+  mockGetDefaultTimer: vi.fn(async () => 2)
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock(TIMER_UTILS_PATH, () => ({
+  getDefaultTimer: mockGetDefaultTimer
+}));
+
+beforeEach(() => {
+  vi.resetModules();
+  mockGetDefaultTimer.mockClear();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe("TimerController fallback countdown", () => {
   it("delegates every timeout to the injected scheduler", async () => {
-    vi.resetModules();
-    vi.doMock(TIMER_UTILS_PATH, () => ({
-      getDefaultTimer: vi.fn(async () => 2)
-    }));
-
     const { TimerController } = await import("../../src/helpers/TimerController.js");
 
     const originalSetTimeout = globalThis.setTimeout;
@@ -87,17 +101,10 @@ describe("TimerController fallback countdown", () => {
       controller.stop();
       globalThis.setTimeout = originalSetTimeout;
       globalThis.clearTimeout = originalClearTimeout;
-      vi.doUnmock(TIMER_UTILS_PATH);
-      vi.resetModules();
     }
   });
 
   it("pauses when the document becomes hidden and resumes when visible", async () => {
-    vi.resetModules();
-    vi.doMock(TIMER_UTILS_PATH, () => ({
-      getDefaultTimer: vi.fn(async () => 2)
-    }));
-
     const { TimerController } = await import("../../src/helpers/TimerController.js");
 
     const originalSetTimeout = globalThis.setTimeout;
@@ -207,8 +214,6 @@ describe("TimerController fallback countdown", () => {
       } else {
         Reflect.deleteProperty(document, "hidden");
       }
-      vi.doUnmock(TIMER_UTILS_PATH);
-      vi.resetModules();
     }
   });
 });

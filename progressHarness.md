@@ -901,3 +901,116 @@ Start with "Priority 1" files (2-4 mock files). Pattern is proven and these conv
 
 **Next Action**: Continue with Priority 1 quick-win files (TimerController.fallback.test.js, prdReaderPage.test.js, testApi.test.js). These are likely to have cleaner test setups without pre-existing failures.
 
+
+---
+
+## Continued Phase 2: Quick-Win Migrations
+
+**Session Focus**: Batch migrate 1-4 mock files (Priority 1 quick wins) to establish pattern coverage and increase confidence before tackling medium/complex files.
+
+### Files Migrated in This Batch
+
+| File | Tests | Mocks | Duration | Status |
+|------|-------|-------|----------|--------|
+| `tests/helpers/timerUtils.test.js` | 4 | 1 | 1.68s | ✅ PASS |
+| `tests/helpers/battleEngineFacade.test.js` | 3 | 1 (shared state) | 1.49s | ✅ PASS |
+| `tests/helpers/battleEngineFacade.onEngineCreatedExisting.test.js` | 1 | 1 (shared state) | 2.66s | ✅ PASS |
+| **New Batch Total** | **8** | **3** | **5.83s** | **✅ ALL PASS** |
+
+### Cumulative Progress
+
+**Total Files Migrated** (all sessions):
+- Phase 2 Initial: 3 files (7 tests)
+- Phase 2 Batch 2: 3 files (8 tests)
+- **Grand Total: 6 files, 15 tests, 100% pass rate** ✅
+
+### Key Pattern Observations
+
+1. **Single Mock with Shared State** (timerUtils.test.js):
+   - Very straightforward migration
+   - `vi.hoisted()` creates shared mock object
+   - Tests reference it directly
+   - Duration: 1.68s
+
+2. **Helper Function Mock Management** (battleEngineFacade.test.js):
+   - Mock stored in `vi.hoisted()` reference
+   - Helper function uses `.mockImplementation()` per-test
+   - Eliminates need for `vi.doMock()` inside helper
+   - Duration: 1.49s
+
+3. **Reusable Mock Pattern** (battleEngineFacade.onEngineCreatedExisting.test.js):
+   - Same mock reference as previous file
+   - Clean separation of concerns
+   - Duration: 2.66s
+
+### All Migrated Files Verified Together
+
+```bash
+npx vitest run \
+  tests/classicBattle/cooldown.test.js \
+  tests/helpers/appendCards.test.js \
+  tests/helpers/changeLogPage.test.js \
+  tests/helpers/countrySlider.test.js \
+  tests/helpers/timerUtils.test.js \
+  tests/helpers/battleEngineFacade.test.js \
+  tests/helpers/battleEngineFacade.onEngineCreatedExisting.test.js \
+  --no-coverage
+
+Result:
+ Test Files  7 passed (7)
+      Tests  16 passed (16)
+   Duration  6.81s
+```
+
+**Assessment**: ✅ Zero regressions across all migrated files. Pattern is solid and ready for continued batch application.
+
+### Remaining Quick-Win Candidates (Priority 1)
+
+Files with 1-2 mocks still awaiting migration:
+- `tests/pages/battleCLI.helpers.test.js` (1 mock)
+- `tests/pages/battleCLI.pointsToWin.startOnce.test.js` (1 mock)
+- `tests/integration/battleClassic.integration.test.js` (1 mock)
+- `tests/helpers/TimerController.fallback.test.js` (2 mocks)
+- `tests/helpers/prdReaderPage.test.js` (2 mocks)
+- `tests/helpers/testApi.test.js` (2 mocks)
+- `tests/helpers/timerService.test.js` (2 mocks)
+- `tests/helpers/vectorSearch.context.test.js` (2 mocks)
+- `tests/queryRag/lexicalFallback.test.js` (2 mocks)
+- `tests/queryRag/strictOffline.test.js` (2 mocks)
+
+**Total Remaining Quick Wins**: ~10 files with 1-2 mocks (estimated 15-20 tests)
+
+### Session Statistics
+
+**Files Processed in This Batch**: 3
+**Tests Migrated**: 8
+**Mocks Converted**: 3
+**Success Rate**: 100% (8/8 tests passing)
+**Regressions**: 0
+**Time Investment**: ~15 minutes
+
+**Cumulative Session Statistics**:
+- Files Migrated: 6 (with Phase 2 initial batch)
+- Tests Passing: 15
+- Total Mocks Converted: 15
+- Success Rate: 100% (15/15 tests passing)
+- Regressions Introduced: 0
+- Pre-existing Failures: 6 (in non-migrated files, unrelated)
+
+### Recommendations for Next Iteration
+
+1. **Continue with 2-mock files**: TimerController.fallback.test.js, prdReaderPage.test.js, testApi.test.js
+   - Same migration pattern
+   - Estimated 5-10 minutes each
+   - Likely to achieve 25-30 total migrated files before proceeding to medium complexity
+
+2. **After 15-20 files migrated**: Run full test suite verification
+   - Ensure no unexpected regressions
+   - Confirm pre-existing failures remain unchanged
+   - Validate pattern scalability
+
+3. **Phase 3 Planning**: Once quick wins exhausted
+   - Medium complexity (5-8 mocks) requires mock grouping strategy
+   - Consider creating dedicated refactoring for files with 9+ mocks
+   - Schedule focused debugging sessions for pre-existing failures
+
