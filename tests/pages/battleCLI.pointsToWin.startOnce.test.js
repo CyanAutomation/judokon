@@ -3,18 +3,25 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockInitRoundSelectModal } = vi.hoisted(() => ({
+  mockInitRoundSelectModal: vi.fn().mockRejectedValue(new Error("fail"))
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+  initRoundSelectModal: mockInitRoundSelectModal
+}));
+
 describe("battleCLI start control", () => {
   let timers;
   beforeEach(() => {
     timers = useCanonicalTimers();
-    vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-      initRoundSelectModal: vi.fn().mockRejectedValue(new Error("fail"))
-    }));
+    mockInitRoundSelectModal.mockReset().mockRejectedValue(new Error("fail"));
   });
 
   afterEach(async () => {
     timers.cleanup();
-    vi.doUnmock("../../src/helpers/classicBattle/roundSelectModal.js");
     debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     await cleanupBattleCLI();
   });

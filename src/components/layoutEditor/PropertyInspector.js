@@ -79,7 +79,10 @@ export class PropertyInspector {
 
     // Validate inputs
     if (updates.x < 0 || updates.y < 0 || updates.width < 1 || updates.height < 1) {
-      this.emit("validationError", "Position and size must be non-negative; size must be at least 1");
+      this.emit(
+        "validationError",
+        "Position and size must be non-negative; size must be at least 1"
+      );
       return;
     }
 
