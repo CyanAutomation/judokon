@@ -180,7 +180,6 @@ describe("EditorCanvas", () => {
 
     it("should clamp position to grid bounds", () => {
       const region = canvas.layout.regions[0];
-      const origX = region.rect.x;
 
       // Try to set position beyond grid
       region.rect.x = -100;

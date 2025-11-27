@@ -6,7 +6,17 @@ import { createRoundMessage } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { mockShowMessage, mockShowTemporaryMessage, mockClearTimer, mockUpdateTimer, mockClearMessage, mockUpdateScore, mockShowAutoSelect, mockUpdateRoundCounter, mockClearRoundCounter } = vi.hoisted(() => ({
+const {
+  mockShowMessage,
+  mockShowTemporaryMessage,
+  mockClearTimer,
+  mockUpdateTimer,
+  mockClearMessage,
+  mockUpdateScore,
+  mockShowAutoSelect,
+  mockUpdateRoundCounter,
+  mockClearRoundCounter
+} = vi.hoisted(() => ({
   mockShowMessage: vi.fn(),
   mockShowTemporaryMessage: () => () => {},
   mockClearTimer: vi.fn(),

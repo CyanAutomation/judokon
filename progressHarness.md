@@ -1428,3 +1428,84 @@ Test Files  12 passed (12)
 
 **Next**: Continue with Task 3 from remaining single-mock candidates.
 
+
+---
+
+## Session 4: Task 3 - classicBattle/pauseTimer.test.js Migration
+
+**Task**: Migrate `tests/helpers/classicBattle/pauseTimer.test.js` (1 mock with 9 exports) from deprecated `vi.doMock()` inside `beforeEach()` to modern top-level `vi.mock()` + `vi.hoisted()` pattern.
+
+### Migration Details
+
+**File**: `tests/helpers/classicBattle/pauseTimer.test.js`
+**Tests**: 1
+**Mocks**: 1 (setupScoreboard.js with 9 exports)
+**Complexity**: Complex beforeEach setup with 9 mock functions
+
+**Changes Made**:
+
+1. Added top-level `vi.hoisted()` with 9 shared mock functions
+   - `mockShowMessage`, `mockShowTemporaryMessage`, `mockClearTimer`, `mockUpdateTimer`
+   - `mockClearMessage`, `mockUpdateScore`, `mockShowAutoSelect`
+   - `mockUpdateRoundCounter`, `mockClearRoundCounter`
+
+2. Converted `vi.doMock()` from inside `beforeEach()` to top-level `vi.mock()` using shared references
+
+3. Added per-test mock reset calls in `beforeEach()` hook
+
+4. Updated test assertion to use `mockShowMessage` instead of local `showMessage` variable
+
+**Pattern Applied**: ✅ Multiple exports pattern with shared references
+
+### Test Results
+
+**Individual File Test**:
+```
+Test Files  1 passed (1)
+     Tests  1 passed (1)
+  Duration  1.71s
+```
+
+**Combined Verification** (with all 12 previous files):
+```
+Test Files  13 passed (13)
+     Tests  40 passed (40)
+  Duration  14.87s
+```
+
+**Assessment**: ✅ **ZERO REGRESSIONS** - All 40 tests passing. Complex mock setup validated.
+
+### Progress Metrics
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| **Total Files Migrated** | 12 | 13 | +1 |
+| **Total Tests Passing** | 39 | 40 | +1 |
+| **Success Rate** | 100% | 100% | ✅ |
+| **Regressions** | 0 | 0 | ✅ |
+
+### Key Achievement
+
+✅ **Complex multi-export pattern validated**: Successfully migrated `beforeEach()` hook with 9 mocks/exports. Demonstrates that pattern scales to real-world complexity.
+
+---
+
+## Session 4 Summary: Three More Quick-Win Files Migrated
+
+**Session Total**:
+- ✅ Task 1: game.setupRandomCardButton.test.js (3 tests, 2 mocks)
+- ✅ Task 2: autoSelectStat.min.test.js (1 test, 1 mock with 5 exports)
+- ✅ Task 3: classicBattle/pauseTimer.test.js (1 test, 1 mock with 9 exports)
+- ✅ **Total new tests: 5**
+- ✅ **Cumulative: 40 tests across 13 files**
+- ✅ **Zero regressions**
+
+**Pattern Validation**:
+✅ Single mocks with multiple exports (5, 9 exports)
+✅ Helper function mocks (setupTest pattern)
+✅ beforeEach hook-based mock reset
+✅ Multi-mock scenarios (2-6 mocks in prior sessions)
+✅ Module augmentation with vi.importActual() (prior sessions)
+
+**Next**: Continue with remaining quick-win candidates. Approximately 10-15 more single-mock files available for batch migration.
+
