@@ -1,19 +1,30 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
+
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockGameTimers } = vi.hoisted(() => ({
+  mockGameTimers: [
+    { id: 1, value: 10, default: false, category: "roundTimer" },
+    { id: 2, value: 20, default: true, category: "roundTimer" }
+  ]
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/data/gameTimers.js", () => ({
+  default: mockGameTimers
+}));
 
 beforeEach(() => {
   vi.resetModules();
 });
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe("timerUtils", () => {
   it("returns the default timer for a category", async () => {
-    vi.doMock("../../src/data/gameTimers.js", () => ({
-      default: [
-        { id: 1, value: 10, default: false, category: "roundTimer" },
-        { id: 2, value: 20, default: true, category: "roundTimer" }
-      ]
-    }));
     const { getDefaultTimer } = await import("../../src/helpers/timerUtils.js");
     const val1 = await getDefaultTimer("roundTimer");
     const val2 = await getDefaultTimer("roundTimer");

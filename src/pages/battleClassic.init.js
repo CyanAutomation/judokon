@@ -874,7 +874,7 @@ async function handleStatButtonClick(store, stat, btn) {
  * 9. After all buttons are created, set the `data-buttons-ready` attribute on the container.
  * 10. Enable the newly created stat buttons and wire new keyboard hotkeys for them.
  */
-function renderStatButtons(store) {
+export function renderStatButtons(store) {
   const doc = getDocumentRef();
   if (!doc) {
     return;
@@ -1558,7 +1558,7 @@ function wireCardEventHandlers(store) {
  *    b. Determine the badge's text content: if `force` is true or the current text does not contain "Round", set the text content to "Lobby". Otherwise, preserve the existing text.
  * 4. All DOM manipulations are wrapped in a try-catch block to gracefully handle potential errors.
  */
-function initBattleStateBadge(options = {}) {
+export function initBattleStateBadge(options = {}) {
   const { force = true } = options;
   try {
     const overrideEnabled =
@@ -1721,7 +1721,7 @@ async function initializePhase4_EventHandlers(store) {
  * 8. If in a browser environment, set `window.__battleInitComplete` to `true` to signal successful initialization.
  * 9. Catch any errors during the bootstrap process and display a fatal initialization error to the user.
  */
-async function init() {
+export async function init() {
   try {
     await initializePhase1_Utilities();
     await initializePhase2_UI();
@@ -1768,15 +1768,4 @@ if (!isTestEnvironment && typeof document !== "undefined" && document.readyState
   });
 }
 
-/**
- * Re-export initialization helpers for the Classic Battle page.
- *
- * @summary Provides named exports for `init`, `initBattleStateBadge`, and
- * `renderStatButtons` so tests and bootstrappers can import them from this module.
- *
- * @pseudocode
- * 1. Export `init()` which bootstraps the page, UI, engine, and event handlers.
- * 2. Export `initBattleStateBadge()` which sets initial badge visibility/content.
- * 3. Export `renderStatButtons()` which renders stat button UI for round selection.
- */
-export { init, initBattleStateBadge, renderStatButtons };
+
