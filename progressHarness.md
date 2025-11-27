@@ -2745,3 +2745,73 @@ Duration  1.33s
 - vectorSearchPage/queryBuilding.test.js: 73 lines
 - lexicalFallback.test.js: 68 lines
 - playgroundParser.test.js: Needs assessment
+
+---
+
+### Task 21: Migrate `tests/helpers/timerService.autoSelect.test.js`
+
+**Status**: ✅ **COMPLETED** (Session 6)
+
+**File Details**:
+
+- Path: `tests/helpers/timerService.autoSelect.test.js`
+- Purpose: Test timer service auto-select functionality with spy tracking
+- Test Count: 1 test
+- Migration Changes: 2 edits (vi.hoisted() header + vi.doMock removal from test)
+
+**Mock Count**: 8 vi.doMock() calls (setupScoreboard, uiHelpers, showSnackbar, timerUtils, featureFlags, battleEvents, eventDispatcher, autoSelectStat)
+
+**Migration Solution**:
+
+**Change 1: Add top-level vi.hoisted() for spy references**
+
+```javascript
+const { dispatchSpy, autoSelectSpy } = vi.hoisted(() => {
+  const dispatchSpyMock = vi.fn();
+  const autoSelectSpyMock = vi.fn().mockResolvedValue(undefined);
+  return { dispatchSpy: dispatchSpyMock, autoSelectSpy: autoSelectSpyMock };
+});
+```
+
+**Change 2: Add 8 top-level vi.mock() calls**
+
+- setupScoreboard: Simple empty function stubs
+- uiHelpers: updateDebugPanel stub
+- showSnackbar: Two function stubs
+- timerUtils: getDefaultTimer returns 1
+- featureFlags: isEnabled returns true
+- battleEvents: emitBattleEvent stub
+- eventDispatcher: Uses dispatchSpy from hoisted
+- autoSelectStat: Uses autoSelectSpy from hoisted
+
+**Change 3: Remove vi.doMock() calls from test body**
+
+- Removed all 8 vi.doMock() calls
+- Added comment explaining mocks pre-configured
+
+**Test Results**:
+
+```
+✅ Test Files  1 passed (1)
+✅ Tests  1 passed (1)
+Duration  1.52s
+```
+
+**Key Pattern Recognition**:
+
+- 8 mocks migrated successfully in single edit
+- Spy tracking works seamlessly with vi.hoisted()
+- No test logic changes needed - pure configuration move
+
+---
+
+## 🏆 Updated Cumulative Progress
+
+**Test Count History**:
+
+- Sessions 1-5: 69 tests (22 files)
+- After Task 19: 100 tests (29 files) ✅ MILESTONE
+- After Task 20: 101 tests (30 files)
+- After Task 21: **102 tests (30 files)** ✅ MOMENTUM CONTINUED
+
+**Session 6 Tasks Completed**: 9 total (Tasks 13-21)

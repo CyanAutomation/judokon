@@ -1,6 +1,58 @@
 import { describe, it, expect, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { showMessage, dispatchSpy, autoSelectSpy } = vi.hoisted(() => {
+  const showMessageMock = vi.fn();
+  const dispatchSpyMock = vi.fn();
+  const autoSelectSpyMock = vi.fn();
+  return {
+    showMessage: showMessageMock,
+    dispatchSpy: dispatchSpyMock,
+    autoSelectSpy: autoSelectSpyMock
+  };
+});
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+  clearTimer: () => {},
+  showMessage,
+  showAutoSelect: () => {},
+  showTemporaryMessage: () => () => {},
+  updateTimer: () => {},
+  updateRoundCounter: () => {},
+  clearRoundCounter: () => {}
+}));
+
+vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
+  updateDebugPanel: () => {}
+}));
+
+vi.mock("../../src/helpers/showSnackbar.js", () => ({
+  showSnackbar: () => {},
+  updateSnackbar: () => {}
+}));
+
+vi.mock("../../src/helpers/timerUtils.js", () => ({
+  getDefaultTimer: () => 1
+}));
+
+vi.mock("../../src/helpers/featureFlags.js", () => ({
+  isEnabled: () => false
+}));
+
+vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+  emitBattleEvent: () => {}
+}));
+
+vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+  dispatchBattleEvent: dispatchSpy
+}));
+
+vi.mock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
+  autoSelectStat: autoSelectSpy
+}));
+
 describe("timerService without auto-select", () => {
   it("dispatches timeout when autoSelect disabled", async () => {
     const timers = useCanonicalTimers();
@@ -9,43 +61,8 @@ describe("timerService without auto-select", () => {
     document.body.innerHTML =
       '<div id="next-round-timer"></div><div id="stat-buttons"><button data-stat="a"></button></div>';
 
-    const showMessage = vi.fn();
-    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
-      clearTimer: () => {},
-      showMessage,
-      showAutoSelect: () => {},
-      showTemporaryMessage: () => () => {},
-      updateTimer: () => {},
-      updateRoundCounter: () => {},
-      clearRoundCounter: () => {}
-    }));
-    vi.doMock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-      updateDebugPanel: () => {}
-    }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: () => {},
-      updateSnackbar: () => {}
-    }));
-
-    vi.doMock("../../src/helpers/timerUtils.js", () => ({
-      getDefaultTimer: () => 1
-    }));
-    vi.doMock("../../src/helpers/featureFlags.js", () => ({
-      isEnabled: () => false
-    }));
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: () => {}
-    }));
-
-    const dispatchSpy = vi.fn();
-    vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-      dispatchBattleEvent: dispatchSpy
-    }));
-
-    const autoSelectSpy = vi.fn();
-    vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
-      autoSelectStat: autoSelectSpy
-    }));
+    // All mocks now configured at module-level via vi.mock()
+    // Skip the 8 vi.doMock() calls that were here
 
     const { mockCreateRoundTimer } = await import("./roundTimerMock.js");
     mockCreateRoundTimer({
