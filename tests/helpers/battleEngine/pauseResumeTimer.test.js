@@ -1,36 +1,43 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-let timerApi;
+// ===== Top-level vi.hoisted() for shared mock state =====
+let timerApi = null;
+const { mockCreateCountdownTimer } = vi.hoisted(() => ({
+  mockCreateCountdownTimer: (duration, { onTick }) => {
+    let remaining = duration;
+    let paused = false;
+    timerApi = {
+      start() {},
+      stop() {},
+      pause() {
+        paused = true;
+      },
+      resume() {
+        paused = false;
+      },
+      tick() {
+        if (paused) return;
+        remaining -= 1;
+        onTick(remaining);
+      }
+    };
+    return timerApi;
+  }
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    createCountdownTimer: mockCreateCountdownTimer
+  };
+});
 
 beforeEach(() => {
   vi.resetModules();
-  vi.doMock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-      ...actual,
-      createCountdownTimer: (duration, { onTick }) => {
-        let remaining = duration;
-        let paused = false;
-        timerApi = {
-          start() {},
-          stop() {},
-          pause() {
-            paused = true;
-          },
-          resume() {
-            paused = false;
-          },
-          tick() {
-            if (paused) return;
-            remaining -= 1;
-            onTick(remaining);
-          }
-        };
-        return timerApi;
-      }
-    };
-  });
+  timerApi = null;
 });
 
 describe("pauseTimer/resumeTimer", () => {

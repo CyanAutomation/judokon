@@ -1509,3 +1509,67 @@ Test Files  13 passed (13)
 
 **Next**: Continue with remaining quick-win candidates. Approximately 10-15 more single-mock files available for batch migration.
 
+
+---
+
+## Session 4: Task 4 - battleEngine/interrupts.test.js Migration
+
+**Task**: Migrate `tests/helpers/battleEngine/interrupts.test.js` (1 mock with vi.importActual) from deprecated `vi.doMock()` inside `beforeEach()` to modern top-level `vi.mock()` + `vi.hoisted()` pattern.
+
+### Migration Details
+
+**File**: `tests/helpers/battleEngine/interrupts.test.js`
+**Tests**: 6
+**Mocks**: 1 (timerUtils.js with module augmentation via vi.importActual)
+**Complexity**: Module augmentation pattern with internal state management
+
+**Changes Made**:
+
+1. Added module-level `timerApi` variable (needed by tests to access mock state)
+
+2. Added top-level `vi.hoisted()` with `mockCreateCountdownTimer` function
+   - Captures `timerApi` instance when called by test code
+   - Maintains internal `remaining` counter
+   - Provides mock timer API with start/stop/pause/resume/tick methods
+
+3. Converted `vi.doMock()` from inside `beforeEach()` to top-level `vi.mock()` with `vi.importActual()`
+   - Properly augments existing module exports
+   - Uses shared `mockCreateCountdownTimer` reference
+
+4. Updated `beforeEach()` to reset modules and clear `timerApi` state
+
+**Pattern Applied**: ✅ Module augmentation with vi.importActual() + state capture
+
+### Test Results
+
+**Individual File Test**:
+```
+Test Files  1 passed (1)
+     Tests  6 passed (6)
+  Duration  1.48s
+```
+
+**Combined Verification** (with all 13 previous files):
+```
+Test Files  14 passed (14)
+     Tests  46 passed (46)
+  Duration  25.50s
+```
+
+**Assessment**: ✅ **ZERO REGRESSIONS** - All 46 tests passing. Module augmentation pattern validated.
+
+### Progress Metrics
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| **Total Files Migrated** | 13 | 14 | +1 |
+| **Total Tests Passing** | 40 | 46 | +6 |
+| **Success Rate** | 100% | 100% | ✅ |
+| **Regressions** | 0 | 0 | ✅ |
+
+### Key Achievement
+
+✅ **Module augmentation with state capture validated**: Successfully migrated complex pattern where mock function captures state that tests need to access. Demonstrates flexibility of `vi.hoisted()` for stateful mocks.
+
+**Next**: Continue with remaining quick-win candidates.
+
