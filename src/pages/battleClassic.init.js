@@ -6,7 +6,6 @@ import {
   handleReplay
 } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
-// Removed duplicate import of handleStatSelection
 import {
   disableStatButtons,
   setStatButtonsEnabled,
@@ -56,37 +55,6 @@ import {
 } from "../helpers/classicBattle/timerSchedule.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
-
-function updateTimerFallback(value) {
-  try {
-    const doc = getDocumentRef();
-    if (!doc) return;
-    const el = doc.getElementById("next-round-timer");
-    if (!el) return;
-    const valueSpan = el.querySelector('[data-part="value"]');
-    const labelSpan = el.querySelector('[data-part="label"]');
-    if (valueSpan) {
-      const hasValue = typeof value === "string" && value.length > 0;
-      valueSpan.textContent = value;
-      if (labelSpan) {
-        labelSpan.textContent = hasValue ? "Time Left:" : "";
-      }
-      const separator = labelSpan?.nextSibling;
-      if (hasValue) {
-        if (!separator || separator.nodeType !== 3) {
-          const refDoc = el.ownerDocument || doc;
-          el.insertBefore(refDoc.createTextNode(" "), valueSpan);
-        } else if (!/\s/.test(separator.textContent || "")) {
-          separator.textContent = " ";
-        }
-      } else if (separator && separator.nodeType === 3) {
-        el.removeChild(separator);
-      }
-    } else {
-      el.textContent = value ? `Time Left: ${value}` : "";
-    }
-  } catch {}
-}
 import { t } from "../helpers/i18n.js";
 import {
   showSelectionPrompt,
@@ -119,6 +87,85 @@ import {
 } from "../helpers/classicBattle/cardSelection.js";
 import { isDevelopmentEnvironment } from "../helpers/environment.js";
 
+// =============================================================================
+// Configuration & Constants
+// =============================================================================
+
+const CONFIG = Object.freeze({
+  POST_SELECTION_READY_DELAY_MS: 48,
+  OPPONENT_MESSAGE_BUFFER_MS: 150,
+  READY_SUPPRESSION_WINDOW_MS:
+    typeof window !== "undefined"
+      ? typeof window.__READY_SUPPRESSION_WINDOW_MS === "number"
+        ? window.__READY_SUPPRESSION_WINDOW_MS
+        : 200
+      : 200,
+  COOLDOWN_FLAG: "__uiCooldownStarted",
+  NEXT_FINALIZED_STATE: Object.freeze({
+    PENDING: "pending",
+    COMPLETE: "true"
+  })
+});
+
+const BASE_SELECTION_READY_DELAY_MS = Math.max(
+  CONFIG.POST_SELECTION_READY_DELAY_MS,
+  CONFIG.OPPONENT_MESSAGE_BUFFER_MS
+);
+
+// =============================================================================
+// Global State Management
+// =============================================================================
+
+const STATE = {
+  activeSelectionTimer: null,
+  failSafeTimerId: null,
+  isStartingRoundCycle: false,
+  detachStatHotkeys: undefined,
+  hasLoggedFinalizeSelectionUpdateFailure: false,
+  lastManualRoundStartTimestamp: 0
+};
+
+// =============================================================================
+// Timer & UI Utilities
+// =============================================================================
+
+function updateTimerFallback(value) {
+  try {
+    const doc = getDocumentRef();
+    if (!doc) return;
+    const el = doc.getElementById("next-round-timer");
+    if (!el) return;
+    const valueSpan = el.querySelector('[data-part="value"]');
+    const labelSpan = el.querySelector('[data-part="label"]');
+    if (valueSpan) {
+      const hasValue = typeof value === "string" && value.length > 0;
+      valueSpan.textContent = value;
+      if (labelSpan) {
+        labelSpan.textContent = hasValue ? "Time Left:" : "";
+      }
+      const separator = labelSpan?.nextSibling;
+      if (hasValue) {
+        if (!separator || separator.nodeType !== 3) {
+          const refDoc = el.ownerDocument || doc;
+          el.insertBefore(refDoc.createTextNode(" "), valueSpan);
+        } else if (!/\s/.test(separator.textContent || "")) {
+          separator.textContent = " ";
+        }
+      } else if (separator && separator.nodeType === 3) {
+        el.removeChild(separator);
+      }
+    } else {
+      el.textContent = value ? `Time Left: ${value}` : "";
+    }
+  } catch (err) {
+    safeExecute(
+      () => console.debug("battleClassic: updateTimerFallback failed", err),
+      "updateTimerFallback",
+      ERROR_LEVELS.SILENT
+    );
+  }
+}
+
 function broadcastBattleState(state) {
   let from = null;
   try {
@@ -135,61 +182,14 @@ function broadcastBattleState(state) {
       doc.body.dataset.battleState = state;
     }
   } catch (e) {
-    // ignore, this is a non-critical side-effect
-    console.warn(`Failed to set battleState on body`, e);
+    safeExecute(
+      () => console.debug(`Failed to set battleState on body`, e),
+      "broadcastBattleState",
+      ERROR_LEVELS.SILENT
+    );
   }
 }
 
-// Store the active selection timer for cleanup when stat selection occurs
-let activeSelectionTimer = null;
-// Track the failsafe timeout so it can be cancelled when the timer resolves
-let failSafeTimerId = null;
-// Re-entrancy guard to avoid starting multiple round cycles concurrently
-let isStartingRoundCycle = false;
-let detachStatHotkeys;
-
-const READY_SUPPRESSION_WINDOW_MS = (() => {
-  if (typeof window === "undefined") {
-    return 200;
-  }
-  try {
-    const override = window.__READY_SUPPRESSION_WINDOW_MS;
-    return typeof override === "number" ? override : 200;
-  } catch {
-    return 200;
-  }
-})();
-
-let hasLoggedFinalizeSelectionUpdateFailure = false;
-// Track manual round start for ready event suppression
-let lastManualRoundStartTimestamp = 0;
-
-/**
- * Waits for the stat buttons hydration promise (when present) so UI updates
- * don't race ahead of component initialization.
- * @pseudocode await (window.statButtonsReadyPromise || Promise.resolve())
- */
-async function waitForStatButtonsReady() {
-  const statButtonsReadyPromise =
-    typeof window !== "undefined" && window.statButtonsReadyPromise
-      ? window.statButtonsReadyPromise
-      : Promise.resolve();
-  await statButtonsReadyPromise;
-}
-
-function clearOpponentPromptFallbackTimer() {
-  if (typeof window === "undefined") return;
-  const id = getOpponentPromptFallbackTimerId();
-  if (id) {
-    clearScheduled(id);
-  }
-  setOpponentPromptFallbackTimerId(0);
-}
-/**
- * Toggle header navigation interactivity.
- *
- * @param {boolean} locked
- */
 function setHeaderNavigationLocked(locked) {
   if (typeof document === "undefined") {
     return;
@@ -202,7 +202,6 @@ function setHeaderNavigationLocked(locked) {
   } catch {}
 }
 
-// Wire Main Menu button to quit flow
 function bindHomeButton(store) {
   try {
     const homeBtn = document.getElementById("home-button");
@@ -218,17 +217,9 @@ function bindHomeButton(store) {
   } catch {}
 }
 
-/**
- * Buffer time added to opponent delay to ensure snackbar message is visible.
- * Prevents UI elements from changing too quickly for user comprehension.
- */
-const POST_SELECTION_READY_DELAY_MS = 48;
-const OPPONENT_MESSAGE_BUFFER_MS = 150;
-
-const BASE_SELECTION_READY_DELAY_MS = Math.max(
-  POST_SELECTION_READY_DELAY_MS,
-  OPPONENT_MESSAGE_BUFFER_MS
-);
+// =============================================================================
+// Timing & Delay Calculations
+// =============================================================================
 
 function calculateRemainingOpponentMessageTime() {
   try {
@@ -238,6 +229,17 @@ function calculateRemainingOpponentMessageTime() {
     return Math.max(0, getOpponentPromptMinDuration() - elapsed);
   } catch {}
   return 0;
+}
+
+function computeSelectionReadyDelay() {
+  let delayForReady = BASE_SELECTION_READY_DELAY_MS;
+  try {
+    const opponentDelay = getOpponentDelay?.();
+    if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
+      delayForReady = Math.max(delayForReady, opponentDelay + CONFIG.OPPONENT_MESSAGE_BUFFER_MS);
+    }
+  } catch {}
+  return Math.max(delayForReady, getOpponentPromptMinDuration());
 }
 
 function recordRoundCycleTrigger(source) {
@@ -252,7 +254,7 @@ function recordRoundCycleTrigger(source) {
     } catch (error) {
       safeExecute(
         () => {
-          console.warn("battleClassic: failed to persist lastRoundCycleTrigger", {
+          console.debug("battleClassic: failed to persist lastRoundCycleTrigger", {
             error,
             source,
             timestamp
@@ -265,16 +267,39 @@ function recordRoundCycleTrigger(source) {
   }
 }
 
-function handleCooldownError(store, reason, err) {
+// =============================================================================
+// Cooldown State Management
+// =============================================================================
+
+function resetCooldownFlag(store) {
+  if (!store || typeof store !== "object") return;
   try {
-    store[COOLDOWN_FLAG] = false;
+    store[CONFIG.COOLDOWN_FLAG] = false;
   } catch {}
+}
+
+function markCooldownStarted(store) {
+  if (!store || typeof store !== "object") return false;
+  if (store[CONFIG.COOLDOWN_FLAG]) return false;
   try {
-    console.debug("battleClassic: startCooldown manual trigger failed", {
-      reason: reason || "unknown",
-      error: err
-    });
-  } catch {}
+    store[CONFIG.COOLDOWN_FLAG] = true;
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+function handleCooldownError(reason, err) {
+  safeExecute(
+    () => {
+      console.debug("battleClassic: startCooldown manual trigger failed", {
+        reason: reason || "unknown",
+        error: err
+      });
+    },
+    `handleCooldownError (${reason})`,
+    ERROR_LEVELS.DEBUG
+  );
 }
 
 function invokeStartCooldown(store, reason) {
@@ -282,7 +307,7 @@ function invokeStartCooldown(store, reason) {
     startCooldown(store);
     return true;
   } catch (err) {
-    handleCooldownError(store, reason, err);
+    handleCooldownError(reason, err);
     return false;
   }
 }
@@ -303,48 +328,6 @@ function scheduleDelayedCooldown(delayMs, store, reason) {
   } catch {}
 
   return false;
-}
-
-function computeSelectionReadyDelay() {
-  let delayForReady = BASE_SELECTION_READY_DELAY_MS;
-  try {
-    const opponentDelay = getOpponentDelay?.();
-    if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
-      delayForReady = Math.max(delayForReady, opponentDelay + OPPONENT_MESSAGE_BUFFER_MS);
-    }
-  } catch {}
-  return Math.max(delayForReady, getOpponentPromptMinDuration());
-}
-
-const COOLDOWN_FLAG = "__uiCooldownStarted";
-
-function resolveStatValues(store, stat) {
-  const { playerVal, opponentVal } = getPlayerAndOpponentValues(stat, undefined, undefined, {
-    store
-  });
-
-  return {
-    playerVal: Number.isFinite(playerVal) ? playerVal : 0,
-    opponentVal: Number.isFinite(opponentVal) ? opponentVal : 0
-  };
-}
-
-function resetCooldownFlag(store) {
-  if (!store || typeof store !== "object") return;
-  try {
-    store[COOLDOWN_FLAG] = false;
-  } catch {}
-}
-
-function markCooldownStarted(store) {
-  if (!store || typeof store !== "object") return false;
-  if (store[COOLDOWN_FLAG]) return false;
-  try {
-    store[COOLDOWN_FLAG] = true;
-  } catch {
-    return false;
-  }
-  return true;
 }
 
 function triggerCooldownOnce(store, reason) {
@@ -370,6 +353,10 @@ function triggerCooldownOnce(store, reason) {
   return triggered;
 }
 
+// =============================================================================
+// Next Button Utilities
+// =============================================================================
+
 function getNextRoundButton() {
   try {
     return (
@@ -379,11 +366,6 @@ function getNextRoundButton() {
     return null;
   }
 }
-
-const NEXT_FINALIZED_STATE = Object.freeze({
-  PENDING: "pending",
-  COMPLETE: "true"
-});
 
 function setNextButtonReadyAttributes(btn) {
   if (!btn) return;
@@ -397,7 +379,7 @@ function setNextButtonReadyAttributes(btn) {
     btn.setAttribute("data-next-ready", "true");
     if (btn.dataset) {
       btn.dataset.nextReady = "true";
-      btn.dataset.nextFinalized = NEXT_FINALIZED_STATE.PENDING;
+      btn.dataset.nextFinalized = CONFIG.NEXT_FINALIZED_STATE.PENDING;
     }
   } catch {}
 }
@@ -407,9 +389,11 @@ function safeEnableNextRoundButton(context) {
     enableNextRoundButton();
     return true;
   } catch (err) {
-    try {
-      console.debug(`battleClassic: enableNextRoundButton after ${context} failed`, err);
-    } catch {}
+    safeExecute(
+      () => console.debug(`battleClassic: enableNextRoundButton after ${context} failed`, err),
+      `safeEnableNextRoundButton (${context})`,
+      ERROR_LEVELS.DEBUG
+    );
     return false;
   }
 }
@@ -432,22 +416,53 @@ function logNextButtonRecovery(context, btn, extra = {}) {
   } catch {}
 }
 
-function handleStatSelectionError(store, err) {
-  console.debug("battleClassic: stat selection handler failed", err);
-  let cooldownStarted = false;
-  try {
-    cooldownStarted = triggerCooldownOnce(store, "statSelectionFailed");
-  } catch (cooldownErr) {
-    console.debug("battleClassic: triggerCooldownOnce after selection failure failed", cooldownErr);
+// =============================================================================
+// Selection Utilities
+// =============================================================================
+
+function resolveStatValues(store, stat) {
+  const { playerVal, opponentVal } = getPlayerAndOpponentValues(stat, undefined, undefined, {
+    store
+  });
+
+  return {
+    playerVal: Number.isFinite(playerVal) ? playerVal : 0,
+    opponentVal: Number.isFinite(opponentVal) ? opponentVal : 0
+  };
+}
+
+function stopActiveSelectionTimer() {
+  if (STATE.activeSelectionTimer) {
+    try {
+      STATE.activeSelectionTimer.stop();
+    } catch {}
+    STATE.activeSelectionTimer = null;
   }
   try {
-    resetCooldownFlag(store);
+    const el = document.getElementById("next-round-timer");
+    if (el) el.textContent = "";
   } catch {}
-  const btn = prepareNextButtonForUse("selection failure");
-  if (btn?.dataset) {
-    btn.dataset.nextFinalized = NEXT_FINALIZED_STATE.COMPLETE;
+  if (STATE.failSafeTimerId) {
+    clearTimeout(STATE.failSafeTimerId);
+    STATE.failSafeTimerId = null;
   }
-  logNextButtonRecovery("selection failure", btn, { cooldownStarted });
+}
+
+function clearOpponentPromptFallbackTimer() {
+  if (typeof window === "undefined") return;
+  const id = getOpponentPromptFallbackTimerId();
+  if (id) {
+    clearScheduled(id);
+  }
+  setOpponentPromptFallbackTimerId(0);
+}
+
+async function waitForStatButtonsReady() {
+  const statButtonsReadyPromise =
+    typeof window !== "undefined" && window.statButtonsReadyPromise
+      ? window.statButtonsReadyPromise
+      : Promise.resolve();
+  await statButtonsReadyPromise;
 }
 
 /**
@@ -496,7 +511,6 @@ export function prepareUiBeforeSelection() {
       }, resolvedDelay);
 
       if (scheduled && typeof window !== "undefined") {
-        // Store the timer ID for future cleanup
         setOpponentPromptFallbackTimerId(resolvedDelay);
       }
       return resolvedDelay;
@@ -509,6 +523,15 @@ export function prepareUiBeforeSelection() {
   } catch {}
   return 0;
 }
+
+// Expose globally for use by selectionHandler
+if (typeof window !== "undefined") {
+  window.__battleClassicStopSelectionTimer = stopActiveSelectionTimer;
+}
+
+// =============================================================================
+// Round Result Handling
+// =============================================================================
 
 function ensureScoreboardReflectsResult(result) {
   try {
@@ -570,17 +593,36 @@ async function confirmMatchOutcome(store, result) {
   return true;
 }
 
-function scheduleNextReadyAfterSelection(store) {
-  const scheduleNextReady = () => {
-    const cooldownStarted = triggerCooldownOnce(store, "statSelectionResolved");
-    const nextBtn = prepareNextButtonForUse("selection");
-    logNextButtonRecovery("selection", nextBtn, { cooldownStarted });
-  };
+function handleStatSelectionError(store, err) {
+  console.debug("battleClassic: stat selection handler failed", err);
+  let cooldownStarted = false;
   try {
-    setTimeout(scheduleNextReady, computeSelectionReadyDelay());
+    cooldownStarted = triggerCooldownOnce(store, "statSelectionFailed");
+  } catch (cooldownErr) {
+    console.debug("battleClassic: triggerCooldownOnce after selection failure failed", cooldownErr);
+  }
+  try {
+    resetCooldownFlag(store);
+  } catch {}
+  const btn = prepareNextButtonForUse("selection failure");
+  if (btn?.dataset) {
+    btn.dataset.nextFinalized = CONFIG.NEXT_FINALIZED_STATE.COMPLETE;
+  }
+  logNextButtonRecovery("selection failure", btn, { cooldownStarted });
+}
+
+async function applyRoundDecisionResult(store, result) {
+  if (!result) {
+    return { applied: false, matchEnded: false };
+  }
+
+  try {
+    const matchEnded = await applySelectionResult(store, result);
+    broadcastBattleState("roundOver");
+    return { applied: true, matchEnded: Boolean(matchEnded) };
   } catch (err) {
-    console.debug("battleClassic: scheduling next ready failed", err);
-    scheduleNextReady();
+    handleStatSelectionError(store, err);
+    return { applied: false, matchEnded: false };
   }
 }
 
@@ -656,6 +698,24 @@ async function applySelectionResult(store, result) {
   return matchEnded;
 }
 
+function scheduleNextReadyAfterSelection(store) {
+  const scheduleNextReady = () => {
+    const cooldownStarted = triggerCooldownOnce(store, "statSelectionResolved");
+    const nextBtn = prepareNextButtonForUse("selection");
+    logNextButtonRecovery("selection", nextBtn, { cooldownStarted });
+  };
+  try {
+    setTimeout(scheduleNextReady, computeSelectionReadyDelay());
+  } catch (err) {
+    console.debug("battleClassic: scheduling next ready failed", err);
+    scheduleNextReady();
+  }
+}
+
+// =============================================================================
+// Selection Finalization
+// =============================================================================
+
 function finalizeSelectionReady(store, options = {}) {
   const { shouldStartCooldown = true } = options;
   const finalizeRoundReady = () => {
@@ -681,14 +741,15 @@ function finalizeSelectionReady(store, options = {}) {
         forceWhenEngineMatchesVisible: shouldExpectRoundAdvance
       });
     } catch (err) {
-      if (!hasLoggedFinalizeSelectionUpdateFailure) {
-        hasLoggedFinalizeSelectionUpdateFailure = true;
+      if (!STATE.hasLoggedFinalizeSelectionUpdateFailure) {
+        STATE.hasLoggedFinalizeSelectionUpdateFailure = true;
         if (isDevelopmentEnvironment()) {
-          try {
-            if (typeof console !== "undefined" && typeof console.debug === "function") {
-              console.debug("battleClassic: updateRoundCounterDisplay after selection failed", err);
-            }
-          } catch {}
+          safeExecute(
+            () =>
+              console.debug("battleClassic: updateRoundCounterDisplay after selection failed", err),
+            "finalizeSelectionReady.updateRoundCounterDisplay",
+            ERROR_LEVELS.DEBUG
+          );
         }
       }
     } finally {
@@ -702,11 +763,11 @@ function finalizeSelectionReady(store, options = {}) {
         setNextButtonFinalizedState();
       } catch (contextErr) {
         if (isDevelopmentEnvironment()) {
-          try {
-            if (typeof console !== "undefined" && typeof console.debug === "function") {
-              console.debug("battleClassic: marking next button finalized failed", contextErr);
-            }
-          } catch {}
+          safeExecute(
+            () => console.debug("battleClassic: marking next button finalized failed", contextErr),
+            "finalizeSelectionReady.markFinalized",
+            ERROR_LEVELS.DEBUG
+          );
         }
       }
     }
@@ -745,134 +806,13 @@ function finalizeSelectionReady(store, options = {}) {
   }
 }
 
-/**
- * @summary Apply a computed round decision and emit transition broadcasts.
- * @param {ReturnType<typeof createBattleStore>} store - Battle store reference.
- * @param {any} result - Result payload returned from selection or computation helpers.
- * @returns {Promise<{applied: boolean, matchEnded: boolean}>} Application outcome metadata.
- * @pseudocode
- * 1. Exit early when no result payload is provided.
- * 2. Attempt to apply the result via `applySelectionResult()`.
- * 3. On success, broadcast `roundOver` and return `{ applied: true, matchEnded }`.
- * 4. On failure, invoke `handleStatSelectionError()` and return `{ applied: false, matchEnded: false }`.
- */
-async function applyRoundDecisionResult(store, result) {
-  if (!result) {
-    return { applied: false, matchEnded: false };
-  }
-
-  try {
-    const matchEnded = await applySelectionResult(store, result);
-    broadcastBattleState("roundOver");
-    return { applied: true, matchEnded: Boolean(matchEnded) };
-  } catch (err) {
-    handleStatSelectionError(store, err);
-    return { applied: false, matchEnded: false };
-  }
-}
-
-/**
- * Stop the active selection timer and clear the timer display.
- *
- * @pseudocode
- * 1. Stop the active timer if one exists.
- * 2. Clear the timer display element.
- * 3. Reset the stored timer reference.
- */
-function stopActiveSelectionTimer() {
-  if (activeSelectionTimer) {
-    try {
-      activeSelectionTimer.stop();
-    } catch {}
-    activeSelectionTimer = null;
-  }
-  // Clear the timer display
-  try {
-    const el = document.getElementById("next-round-timer");
-    if (el) el.textContent = "";
-  } catch {}
-  // Clear the fail-safe timer
-  if (failSafeTimerId) {
-    clearTimeout(failSafeTimerId);
-    failSafeTimerId = null;
-  }
-}
-
-// Expose the timer cleanup function globally for use by selectionHandler
-if (typeof window !== "undefined") {
-  window.__battleClassicStopSelectionTimer = stopActiveSelectionTimer;
-}
-
-/**
- * Initializes the battle state badge element based on feature flag state
- * and any runtime overrides.
- *
- * @summary Sets the initial visibility and content of the battle state badge.
- *
- * @param {Object} [options={}] - Configuration options.
- * @param {boolean} [options.force=false] - Force badge visibility regardless of current state.
- *
- * @returns {void}
- *
- * @pseudocode
- * 1. Check for a `battleStateBadge` override in `window.__FF_OVERRIDES`.
- * 2. Get a reference to the `#battle-state-badge` element. If not found, exit.
- * 3. If the override is enabled:
- *    a. Set `badge.hidden` to `false` and remove the `hidden` attribute.
- *    b. Set the `badge.textContent` to "Lobby" (unless force=false and text exists).
- * 4. Wrap all DOM operations in a `try...catch` block.
- */
-function initBattleStateBadge(options = {}) {
-  const { force = true } = options;
-  try {
-    const overrideEnabled =
-      typeof window !== "undefined" &&
-      window.__FF_OVERRIDES &&
-      window.__FF_OVERRIDES.battleStateBadge;
-
-    const badge = document.getElementById("battle-state-badge");
-    if (!badge) return;
-
-    if (overrideEnabled) {
-      badge.hidden = false;
-      badge.removeAttribute("hidden");
-      const txt = String(badge.textContent || "");
-      // Keep any explicit round label; otherwise show Lobby
-      if (force || !/\bRound\b/i.test(txt)) {
-        badge.textContent = "Lobby";
-      }
-    }
-  } catch (err) {
-    console.debug("battleClassic: badge setup failed", err);
-  }
-}
-
-/**
- * Wrapper for updateRoundCounterFromEngine that injects the updateRoundCounter function.
- * This bridges the imported roundTracker module to the local updateRoundCounter DOM function.
- *
- * @param {Object} [options={}] - Configuration options.
- * @param {boolean} [options.expectAdvance=false] - Whether advancement is expected.
- * @param {boolean} [options.forceWhenEngineMatchesVisible=false] - Force advancement when engine matches visible.
- */
-function updateRoundCounterDisplay(options = {}) {
-  try {
-    updateRoundCounterFromEngine({
-      ...options,
-      updateRoundCounterFn: updateRoundCounter
-    });
-  } catch (err) {
-    safeExecute(
-      () => console.debug("battleClassic: updateRoundCounterDisplay failed", err),
-      "updateRoundCounterDisplay",
-      ERROR_LEVELS.DEBUG
-    );
-  }
-}
+// =============================================================================
+// Stat Button Handling
+// =============================================================================
 
 async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
-  window.__statButtonClickCalled = true; // Track for debugging
+  window.__statButtonClickCalled = true;
   if (!btn || btn.disabled) return;
   const container =
     document.getElementById("stat-buttons") ??
@@ -896,7 +836,6 @@ async function handleStatButtonClick(store, stat, btn) {
     return;
   }
 
-  // Disable stat buttons after selection to prevent multiple clicks
   if (buttons.length === 0 && container) {
     const fallbackButtons = Array.from(container.querySelectorAll("button[data-stat]"));
     if (fallbackButtons.length > 0) {
@@ -913,10 +852,19 @@ async function handleStatButtonClick(store, stat, btn) {
 }
 
 /**
- * Render stat buttons and bind click handlers to resolve the round.
+ * Render stat buttons for the current round and bind click handlers.
  *
+ * @summary Creates buttons for each stat, enables them, and wires selection handlers.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle store managing state.
+ * @returns {void}
  * @pseudocode
- * 1. Create buttons for STATS, enable them, and handle selection.
+ * 1. Get the stat-buttons container element.
+ * 2. Validate that STATS is an array.
+ * 3. For each stat, create a button with accessibility attributes.
+ * 4. Attach click handlers that trigger stat selection flow.
+ * 5. Wire keyboard hotkeys for stat selection.
+ * 6. Track button attachment in test environments.
  */
 function renderStatButtons(store) {
   const doc = getDocumentRef();
@@ -929,7 +877,6 @@ function renderStatButtons(store) {
     return;
   }
 
-  // Safety check: ensure STATS is defined and iterable
   if (!Array.isArray(STATS)) {
     console.error("battleClassic: STATS is not an array", STATS);
     return;
@@ -937,7 +884,10 @@ function renderStatButtons(store) {
 
   const listenerRegistry = (() => {
     try {
-      if (typeof window === "undefined" || (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)) {
+      if (
+        typeof window === "undefined" ||
+        (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)
+      ) {
         return null;
       }
       if (window.__classicBattleStatButtonListeners) {
@@ -962,6 +912,7 @@ function renderStatButtons(store) {
       return null;
     }
   })();
+
   const recordStatButtonListenerAttachment = (button, stat) => {
     if (!listenerRegistry) {
       return;
@@ -977,6 +928,7 @@ function renderStatButtons(store) {
       listenerRegistry.updatedAt = Date.now();
     } catch {}
   };
+
   resetCooldownFlag(store);
   try {
     disableNextRoundButton();
@@ -984,12 +936,13 @@ function renderStatButtons(store) {
     console.debug("battleClassic: disableNextRoundButton before selection failed", err);
   }
   try {
-    if (typeof detachStatHotkeys === "function") {
-      detachStatHotkeys();
+    if (typeof STATE.detachStatHotkeys === "function") {
+      STATE.detachStatHotkeys();
     }
   } catch {}
-  detachStatHotkeys = undefined;
+  STATE.detachStatHotkeys = undefined;
   container.innerHTML = "";
+
   for (const stat of STATS) {
     const btn = doc.createElement("button");
     btn.type = "button";
@@ -998,7 +951,6 @@ function renderStatButtons(store) {
     btn.setAttribute("data-stat", String(stat));
     btn.setAttribute("data-player", "0");
     btn.setAttribute("data-testid", "stat-button");
-    // Accessibility: label and description per stat
     const descId = `stat-${String(stat)}-desc`;
     btn.setAttribute("aria-describedby", descId);
     btn.setAttribute("aria-label", `Select ${stat} stat for battle`);
@@ -1023,9 +975,11 @@ function renderStatButtons(store) {
       container.appendChild(desc);
     }
   }
+
   requestAnimationFrame(() => {
     container.dataset.buttonsReady = "true";
   });
+
   try {
     const buttons = container.querySelectorAll("button[data-stat]");
     setStatButtonsEnabled(
@@ -1036,22 +990,21 @@ function renderStatButtons(store) {
       () => {}
     );
     try {
-      detachStatHotkeys = wireStatHotkeys(Array.from(buttons));
+      STATE.detachStatHotkeys = wireStatHotkeys(Array.from(buttons));
     } catch {}
-  } catch {} // Ignore errors if setting stat buttons enabled fails
+  } catch {}
 }
 
-/**
- * Start the round selection timer and enter cooldown on expiration.
- *
- * @pseudocode
- * 1. In Vitest use `createCountdownTimer`; otherwise `startTimer` and compute outcome.
- */
+// =============================================================================
+// Timer Management
+// =============================================================================
+
 async function beginSelectionTimer(store) {
   const TEST_ENV_FLAG =
     (typeof process !== "undefined" && process.env?.VITEST === "true") ||
     (typeof process !== "undefined" && process.env?.NODE_ENV === "test") ||
     (typeof globalThis !== "undefined" && Boolean(globalThis.__TEST__));
+
   if (TEST_ENV_FLAG) {
     const dur = Number(getDefaultTimer("roundTimer")) || 2;
     const timer = createCountdownTimer(dur, {
@@ -1098,15 +1051,15 @@ async function beginSelectionTimer(store) {
       },
       pauseOnHidden: false
     });
-    // Store the timer so it can be stopped when stat selection occurs
-    activeSelectionTimer = timer;
+    STATE.activeSelectionTimer = timer;
     timer.start();
     return;
   }
-  activeSelectionTimer = await startTimer(async (stat) => {
-    if (failSafeTimerId) {
-      clearTimeout(failSafeTimerId);
-      failSafeTimerId = null;
+
+  STATE.activeSelectionTimer = await startTimer(async (stat) => {
+    if (STATE.failSafeTimerId) {
+      clearTimeout(STATE.failSafeTimerId);
+      STATE.failSafeTimerId = null;
     }
     try {
       document.body.dataset.autoSelected = String(stat || "auto");
@@ -1121,7 +1074,6 @@ async function beginSelectionTimer(store) {
         playerVal,
         opponentVal
       );
-      // Defensive direct DOM update to satisfy E2E in case adapter binding fails
       try {
         if (result) {
           syncScoreboardDisplay(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
@@ -1134,7 +1086,6 @@ async function beginSelectionTimer(store) {
       if (!matchEnded) {
         const manualTrigger = triggerCooldownOnce(store, "selectionTimerAutoResolve");
         if (manualTrigger) {
-          // If something interferes with the cooldown wiring, ensure Next is usable
           try {
             enableNextRoundButton();
           } catch {}
@@ -1149,13 +1100,12 @@ async function beginSelectionTimer(store) {
     }
     return Promise.resolve();
   }, store);
-  // Fail-safe: if for any reason the expiration callback path is interrupted,
-  // ensure the round resolves and Next becomes ready shortly after the expected
-  // duration. This keeps E2E deterministic even when optional adapters are missing.
+
+  // Fail-safe: ensure round resolves if timer binding fails
   try {
     const ms = (Number(getDefaultTimer("roundTimer")) || 2) * 1000 + 100;
-    failSafeTimerId = setTimeout(async () => {
-      failSafeTimerId = null;
+    STATE.failSafeTimerId = setTimeout(async () => {
+      STATE.failSafeTimerId = null;
       try {
         const btn = document.getElementById("next-button");
         const scoreEl = document.getElementById("score-display");
@@ -1203,32 +1153,14 @@ async function beginSelectionTimer(store) {
   } catch {}
 }
 
-/**
- * Handle replay button click to restart the match.
- *
- * @pseudocode
- * 1. Reset the battle engine.
- * 2. Clear any existing state.
- * 3. Restart the match.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @returns {Promise<void>}
- */
-/**
- * Start a round cycle: update counter, draw UI, run timer.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle store managing round lifecycle state.
- * @param {{ skipStartRound?: boolean }} [options] - Optional configuration flags for the round start.
- *
- * @pseudocode
- * 1. Update round counter.
- * 2. Render selection UI.
- * 3. Begin selection timer.
- */
+// =============================================================================
+// Round Cycle Management
+// =============================================================================
+
 async function startRoundCycle(store, options = {}) {
   const { skipStartRound = false } = options;
-  if (isStartingRoundCycle) return;
-  isStartingRoundCycle = true;
+  if (STATE.isStartingRoundCycle) return;
+  STATE.isStartingRoundCycle = true;
   try {
     try {
       stopActiveSelectionTimer();
@@ -1243,22 +1175,15 @@ async function startRoundCycle(store, options = {}) {
         roundStarted = true;
       } catch (err) {
         console.error("battleClassic: startRound failed", err);
-        // Re-throw JudokaDataLoadError to trigger proper cleanup in outer handler
         if (err instanceof JudokaDataLoadError) {
           throw err;
         }
-        // For other errors when showing fallback retry UI, we need to signal the error
-        // so the fallback handler can re-show the button. Check if we're in fallback mode.
         if (store && store.__roundSelectFallbackShown) {
           throw new Error(`startRound failed in fallback mode: ${err.message}`);
         }
-        // Don't re-throw other errors - continue with the cycle even if startRound fails
-        // This allows the battle state machine to proceed
       }
     }
 
-    // Clear fallback UI only after successful round start
-    // If startRound failed, the fallback will be re-shown by the click handler's catch block
     if (roundStarted) {
       clearRoundSelectFallback(store);
       broadcastBattleState("roundStart");
@@ -1270,7 +1195,6 @@ async function startRoundCycle(store, options = {}) {
       renderStatButtons(store);
     } catch (err) {
       console.error("battleClassic: renderStatButtons failed", err);
-      // Log the error but continue - don't prevent state transition
     }
     try {
       showSelectionPrompt();
@@ -1284,24 +1208,14 @@ async function startRoundCycle(store, options = {}) {
     broadcastBattleState("waitingForPlayerAction");
   } catch (err) {
     console.error("battleClassic: startRoundCycle outer catch:", err);
-    // Re-throw JudokaDataLoadError or fallback mode errors so they can be handled by callers
     if (err instanceof JudokaDataLoadError || (store && store.__roundSelectFallbackShown)) {
       throw err;
     }
   } finally {
-    isStartingRoundCycle = false;
+    STATE.isStartingRoundCycle = false;
   }
 }
 
-/**
- * Remove the round select fallback UI and reset its tracking flag.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle store object that tracks fallback state.
- *
- * @pseudocode
- * 1. Remove fallback message and button elements when present.
- * 2. Reset the store tracking flag so the fallback can be re-rendered later.
- */
 function clearRoundSelectFallback(store) {
   if (typeof document === "undefined") {
     if (store && typeof store === "object") {
@@ -1322,15 +1236,6 @@ function clearRoundSelectFallback(store) {
   }
 }
 
-/**
- * Display a fallback start button when the round select modal fails.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle store tracking fallback render state.
- *
- * @pseudocode
- * 1. Render error message and start button.
- * 2. Clicking the button starts the round cycle.
- */
 function showRoundSelectFallback(store) {
   const fallbackInDom = Boolean(document.getElementById("round-select-fallback"));
   const fallbackTracked = Boolean(store && store.__roundSelectFallbackShown);
@@ -1388,19 +1293,25 @@ function showRoundSelectFallback(store) {
   document.body.append(msg, btn);
 }
 
-/**
- * Set up scoreboard and initial UI state.
- *
- * @summary Initializes the scoreboard component, opponent card display, and score/round counter defaults.
- *
- * @returns {void}
- *
- * @pseudocode
- * 1. Initialize scoreboard with no-op timer controls.
- * 2. Ensure opponent card visibility.
- * 3. Initialize scoreboard adapter.
- * 4. Seed visible defaults for score and round counter.
- */
+// =============================================================================
+// Scoreboard & UI Setup
+// =============================================================================
+
+function updateRoundCounterDisplay(options = {}) {
+  try {
+    updateRoundCounterFromEngine({
+      ...options,
+      updateRoundCounterFn: updateRoundCounter
+    });
+  } catch (err) {
+    safeExecute(
+      () => console.debug("battleClassic: updateRoundCounterDisplay failed", err),
+      "updateRoundCounterDisplay",
+      ERROR_LEVELS.DEBUG
+    );
+  }
+}
+
 function setupInitialUI() {
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
 
@@ -1426,14 +1337,10 @@ function setupInitialUI() {
   if (rc && !rc.textContent) rc.textContent = "Round 0";
 }
 
-/**
- * Wire event listeners for cooldown transitions.
- *
- * @summary Listens for countdown start events and marks cooldown state.
- *
- * @param {Object} store - Battle store.
- * @returns {void}
- */
+// =============================================================================
+// Event Wiring
+// =============================================================================
+
 function wireCooldownEvents(store) {
   const markFromEvent = () => {
     markCooldownStarted(store);
@@ -1443,14 +1350,6 @@ function wireCooldownEvents(store) {
   onBattleEvent("countdownStart", markFromEvent);
 }
 
-/**
- * Wire global event listeners for round cycles and match events.
- *
- * @summary Binds `roundResolved` and `matchEnded` events to show end-of-match modal.
- *
- * @param {Object} store - Battle store.
- * @returns {void}
- */
 function wireGlobalBattleEvents(store) {
   onBattleEvent("roundResolved", (e) => {
     try {
@@ -1478,14 +1377,6 @@ function wireGlobalBattleEvents(store) {
   });
 }
 
-/**
- * Wire UI control buttons (next, replay, quit, home).
- *
- * @summary Binds click handlers to next round, replay, quit, and home navigation buttons.
- *
- * @param {Object} store - Battle store.
- * @returns {void}
- */
 function wireControlButtons(store) {
   const nextBtn = document.getElementById("next-button");
   if (nextBtn) nextBtn.addEventListener("click", onNextButtonClick);
@@ -1494,7 +1385,7 @@ function wireControlButtons(store) {
   if (replayBtn) {
     replayBtn.addEventListener("click", async () => {
       stopActiveSelectionTimer();
-      isStartingRoundCycle = false;
+      STATE.isStartingRoundCycle = false;
       resetOpponentPromptTimestamp();
       resetRoundCounterTracking();
 
@@ -1521,15 +1412,6 @@ function wireControlButtons(store) {
   bindHomeButton(store);
 }
 
-/**
- * Handle round start event with deduplication.
- *
- * @summary Processes round.start and ready events, with suppression for duplicate manual triggers.
- *
- * @param {Object} store - Battle store.
- * @param {Event} evt - Event object (can be string or event).
- * @returns {Promise<void>}
- */
 async function handleRoundStartEvent(store, evt) {
   const eventType = typeof evt === "string" ? evt : evt?.type;
   const eventDetail = evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
@@ -1540,10 +1422,10 @@ async function handleRoundStartEvent(store, evt) {
     eventDetail?.source === "next-button";
 
   if (manualRoundStart) {
-    lastManualRoundStartTimestamp = getCurrentTimestamp();
+    STATE.lastManualRoundStartTimestamp = getCurrentTimestamp();
     if (typeof window !== "undefined") {
       try {
-        window.__lastManualRoundStartTimestamp = lastManualRoundStartTimestamp;
+        window.__lastManualRoundStartTimestamp = STATE.lastManualRoundStartTimestamp;
       } catch {}
     }
   }
@@ -1551,14 +1433,14 @@ async function handleRoundStartEvent(store, evt) {
   if (eventType === "ready") {
     queueMicrotask(async () => {
       const now = getCurrentTimestamp();
-      const hasManualStamp = lastManualRoundStartTimestamp > 0;
+      const hasManualStamp = STATE.lastManualRoundStartTimestamp > 0;
       const elapsedSinceManual = hasManualStamp
-        ? now - lastManualRoundStartTimestamp
+        ? now - STATE.lastManualRoundStartTimestamp
         : Number.POSITIVE_INFINITY;
       const skipDueToManual =
         hasManualStamp &&
         elapsedSinceManual >= 0 &&
-        elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
+        elapsedSinceManual < CONFIG.READY_SUPPRESSION_WINDOW_MS;
       if (skipDueToManual) {
         return;
       }
@@ -1591,19 +1473,11 @@ async function handleRoundStartEvent(store, evt) {
   if (typeof isMatchEnded === "function" && isMatchEnded()) return;
 }
 
-/**
- * Wire round cycle events (ready, round.start, roundStarted).
- *
- * @summary Binds event handlers for starting round cycles at appropriate times.
- *
- * @param {Object} store - Battle store.
- * @returns {void}
- */
 function wireRoundCycleEvents(store) {
   onBattleEvent("round.start", (evt) => handleRoundStartEvent(store, evt));
   onBattleEvent("ready", (evt) => handleRoundStartEvent(store, evt));
   onBattleEvent("roundStarted", async () => {
-    if (isStartingRoundCycle) return;
+    if (STATE.isStartingRoundCycle) return;
     try {
       await startRoundCycle(store, { skipStartRound: true });
     } catch (err) {
@@ -1617,14 +1491,6 @@ function wireRoundCycleEvents(store) {
   });
 }
 
-/**
- * Handle card retry and error exit events.
- *
- * @summary Wires card selection retry and error exit listeners for graceful error recovery.
- *
- * @param {Object} store - Battle store.
- * @returns {void}
- */
 function wireCardEventHandlers(store) {
   if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
     if (window.__classicBattleRetryListener) {
@@ -1667,14 +1533,69 @@ function wireCardEventHandlers(store) {
   }
 }
 
+// =============================================================================
+// Badge Management
+// =============================================================================
+
 /**
- * Initialize round select modal and handle match start.
+ * Initialize the battle state badge element based on feature flag state.
  *
- * @summary Sets up the round select modal; on selection, starts the first round cycle.
+ * @summary Sets the initial visibility and content of the battle state badge.
  *
- * @param {Object} store - Battle store.
- * @returns {Promise<void>}
+ * @param {Object} [options={}] - Configuration options.
+ * @param {boolean} [options.force=true] - Force badge visibility regardless of current state.
+ * @returns {void}
+ * @pseudocode
+ * 1. Check for a `battleStateBadge` override in `window.__FF_OVERRIDES`.
+ * 2. Get a reference to the `#battle-state-badge` element. If not found, exit.
+ * 3. If the override is enabled, set visibility and text content ("Lobby" or existing Round label).
+ * 4. Wrap all DOM operations in a try-catch block.
  */
+function initBattleStateBadge(options = {}) {
+  const { force = true } = options;
+  try {
+    const overrideEnabled =
+      typeof window !== "undefined" &&
+      window.__FF_OVERRIDES &&
+      window.__FF_OVERRIDES.battleStateBadge;
+
+    const badge = document.getElementById("battle-state-badge");
+    if (!badge) return;
+
+    if (overrideEnabled) {
+      badge.hidden = false;
+      badge.removeAttribute("hidden");
+      const txt = String(badge.textContent || "");
+      if (force || !/\bRound\b/i.test(txt)) {
+        badge.textContent = "Lobby";
+      }
+    }
+  } catch (err) {
+    console.debug("battleClassic: badge setup failed", err);
+  }
+}
+
+function initBadgeSync() {
+  initBattleStateBadge({ force: true });
+}
+
+function setBadgeText(text) {
+  try {
+    const w = typeof window !== "undefined" ? window : null;
+    const overrides = w && w.__FF_OVERRIDES;
+    if (!overrides || !overrides.battleStateBadge) return;
+    const badge = document.getElementById("battle-state-badge");
+    if (!badge) return;
+    badge.hidden = false;
+    badge.removeAttribute("hidden");
+    badge.textContent = String(text || "Lobby");
+  } catch {}
+}
+
+// =============================================================================
+// Match Initialization
+// =============================================================================
+
 async function initializeMatchStart(store) {
   try {
     await initRoundSelectModal(async () => {
@@ -1725,81 +1646,83 @@ async function initializeMatchStart(store) {
   }
 }
 
+// =============================================================================
+// Initialization Phases
+// =============================================================================
+
+async function initializePhase1_Utilities() {
+  removeBackdrops();
+  setupScheduler();
+
+  if (typeof window !== "undefined") {
+    window.__initCalled = true;
+  }
+
+  exposeTestAPI();
+  try {
+    window.__TEST_API?.inspect?.resetCache?.();
+  } catch (err) {
+    console.debug("battleClassic: test cache reset failed", err);
+  }
+}
+
+async function initializePhase2_UI() {
+  initBattleStateBadge();
+  initBattleStateBadge({ force: false });
+
+  await initFeatureFlags();
+  initBattleStateBadge({ force: false });
+  initDebugFlagHud();
+
+  setupInitialUI();
+}
+
+async function initializePhase3_Engine(store) {
+  createBattleEngine(window.__ENGINE_CONFIG || {});
+  bridgeEngineEvents();
+
+  store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
+}
+
+async function initializePhase4_EventHandlers(store) {
+  wireCardEventHandlers(store);
+  wireCooldownEvents(store);
+  bindUIHelperEventHandlersDynamic();
+  wireGlobalBattleEvents(store);
+  initDebugPanel();
+  initBattleStateBadge({ force: false });
+
+  wireControlButtons(store);
+  wireRoundCycleEvents(store);
+}
+
 /**
- * Initializes the battle state badge element based on feature flag state
- * and any runtime overrides.
+ * Initialize the Classic Battle page.
  *
- * @summary Sets the initial visibility and content of the battle state badge.
+ * @summary Orchestrates the bootstrap sequence for the Classic Battle interface.
+ * Follows a 4-phase initialization: utilities, UI, engine, and event handlers.
  *
- * @returns {Promise<void>} A promise that resolves when the Classic Battle page
- * is fully initialized.
- *
+ * @returns {Promise<void>}
  * @pseudocode
- * 1. Mark `window.__initCalled` as true for debugging purposes.
- * 2. Expose the test API using `exposeTestAPI()`.
- * 3. Initialize the battle state badge synchronously using `initBattleStateBadge()`.
- * 4. Initialize feature flags asynchronously using `initFeatureFlags()`.
- * 5. Set up the shared scoreboard component with no-op timer controls using `setupScoreboard()`.
- * 6. Initialize the scoreboard adapter using `initScoreboardAdapter()`.
- * 7. Seed visible UI defaults for score and round counter, and ensure the round counter element is present.
- * 8. Create the battle engine using `createBattleEngine()`.
- * 9. Bridge engine events to UI handlers using `bridgeEngineEvents()`.
- * 10. Create the battle store using `createBattleStore()` and expose it globally as `window.battleStore`.
- * 11. Bind transient UI helper event handlers using `bindUIHelperEventHandlersDynamic()`.
- * 12. Initialize the debug panel using `initDebugPanel()`.
- * 13. Wire control buttons (next, replay, quit, home).
- * 14. Wire cooldown, battle, and round cycle events.
- * 15. Wire card retry and exit event handlers.
- * 16. Initialize the round select modal and handle match start.
+ * 1. Phase 1: Initialize utilities (scheduler, test API, badge).
+ * 2. Phase 2: Setup UI (scoreboard, initial state, feature flags).
+ * 3. Phase 3: Create battle engine and orchestrator.
+ * 4. Phase 4: Wire event handlers and control buttons.
+ * 5. Phase 5: Initialize match start (round select modal).
  */
 async function init() {
   try {
-    removeBackdrops();
-    setupScheduler();
-
-    if (typeof window !== "undefined") {
-      window.__initCalled = true;
-    }
-
-    exposeTestAPI();
-    try {
-      window.__TEST_API?.inspect?.resetCache?.();
-    } catch (err) {
-      console.debug("battleClassic: test cache reset failed", err);
-    }
-
-    initBattleStateBadge();
-    initBattleStateBadge({ force: false });
-
-    await initFeatureFlags();
-    initBattleStateBadge({ force: false });
-    initDebugFlagHud();
-
-    setupInitialUI();
-
-    createBattleEngine(window.__ENGINE_CONFIG || {});
-    bridgeEngineEvents();
+    await initializePhase1_Utilities();
+    await initializePhase2_UI();
 
     const store = createBattleStore();
     if (typeof window !== "undefined") {
       window.battleStore = store;
     }
 
-    // Initialize the battle orchestrator for state machine management
-    // Pass startRound as the startRoundWrapper dependency so orchestrator can trigger round cycles
-    store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
-
-    wireCardEventHandlers(store);
-    wireCooldownEvents(store);
-    bindUIHelperEventHandlersDynamic();
-    wireGlobalBattleEvents(store);
-    initDebugPanel();
-    initBattleStateBadge({ force: false });
-
-    wireControlButtons(store);
+    await initializePhase3_Engine(store);
+    await initializePhase4_EventHandlers(store);
     await initializeMatchStart(store);
-
-    wireRoundCycleEvents(store);
 
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
@@ -1810,35 +1733,14 @@ async function init() {
   }
 }
 
-// Simple synchronous badge initialization
-function initBadgeSync() {
-  initBattleStateBadge({ force: true });
-}
+// =============================================================================
+// Auto-initialization in Browser Context
+// =============================================================================
 
-/**
- * Update badge text to indicate round state (non-destructive if not override).
- *
- * @param {string} text - Text to set on badge (e.g., "Round").
- */
-function setBadgeText(text) {
-  try {
-    const w = typeof window !== "undefined" ? window : null;
-    const overrides = w && w.__FF_OVERRIDES;
-    if (!overrides || !overrides.battleStateBadge) return;
-    const badge = document.getElementById("battle-state-badge");
-    if (!badge) return;
-    badge.hidden = false;
-    badge.removeAttribute("hidden");
-    badge.textContent = String(text || "Lobby");
-  } catch {}
-}
-
-// Only initialize automatically in browser context; in test/Node environments,
-// tests must explicitly call init() and manage setup. Guard against document
-// being undefined at module load time (e.g., in certain test configurations).
 const isTestEnvironment =
   typeof process !== "undefined" &&
   (process.env?.VITEST === "true" || process.env?.NODE_ENV === "test");
+
 if (!isTestEnvironment && typeof document !== "undefined" && document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     initBadgeSync();
@@ -1858,13 +1760,12 @@ if (!isTestEnvironment && typeof document !== "undefined" && document.readyState
 /**
  * Re-export initialization helpers for the Classic Battle page.
  *
- * @summary Provides named exports for `init` and `initBattleStateBadge` so
- * tests and bootstrappers can import them from this module.
+ * @summary Provides named exports for `init`, `initBattleStateBadge`, and
+ * `renderStatButtons` so tests and bootstrappers can import them from this module.
  *
  * @pseudocode
- * 1. Expose `init` which bootstraps the page and UI.
- * 2. Expose `initBattleStateBadge` which sets initial badge visibility/content.
- *
- * @returns {void}
+ * 1. Export `init()` which bootstraps the page, UI, engine, and event handlers.
+ * 2. Export `initBattleStateBadge()` which sets initial badge visibility/content.
+ * 3. Export `renderStatButtons()` which renders stat button UI for round selection.
  */
 export { init, initBattleStateBadge, renderStatButtons };
