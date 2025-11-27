@@ -653,3 +653,72 @@ The JU-DO-KON! project now has:
 
 **Migration Complexity**: **MEDIUM** - File had 6 mocks spread across multiple tests; pattern is now clean and maintainable
 
+
+---
+
+### Task 2: Migrate appendCards.test.js ✅ COMPLETED
+
+**Date**: 2025-01-27 | **Time**: ~10 minutes
+
+**File**: `tests/helpers/appendCards.test.js` (1 test, 3 mocks)
+
+**Changes Made**:
+- Converted 3 `vi.doMock()` calls (cardBuilder, judokaUtils, judokaValidation) to top-level declarations
+- Added `vi.hoisted()` for shared mock references
+- Moved mock initialization to `beforeEach()` with `createSimpleHarness()`
+- Changed module import to `harness.importModule()`
+
+**Test Results**: ✅ **1 test passing**
+
+```
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  1.62s
+```
+
+---
+
+### Task 3: Migrate changeLogPage.test.js ✅ COMPLETED
+
+**Date**: 2025-01-27 | **Time**: ~10 minutes
+
+**File**: `tests/helpers/changeLogPage.test.js` (2 tests, 3 mocks)
+
+**Changes Made**:
+- Converted 3 `vi.doMock()` calls (dataUtils, constants, tooltip) to top-level declarations
+- Added `vi.hoisted()` for shared mock references
+- Moved mock initialization to `beforeEach()` with `createSimpleHarness()`
+- Moved `clearBody()` to `afterEach()` cleanup
+
+**Test Results**: ✅ **2 tests passing**
+
+```
+ Test Files  1 passed (1)
+      Tests  2 tests passed (2)
+   Duration  1.78s
+```
+
+---
+
+## Progress Summary: Phase 2 Implementation
+
+**Files Migrated**: 3 files (9 tests total, 6 distinct mocks)
+
+| File | Tests | Mocks | Duration | Status |
+|------|-------|-------|----------|--------|
+| cooldown.test.js | 4 | 6 | 2.33s | ✅ PASS |
+| appendCards.test.js | 1 | 3 | 1.62s | ✅ PASS |
+| changeLogPage.test.js | 2 | 3 | 1.78s | ✅ PASS |
+| **Total** | **7** | **12** | **5.73s** | **✅ ALL PASS** |
+
+**Key Patterns Validated**:
+✅ Top-level `vi.mock()` with `vi.hoisted()` works reliably
+✅ Per-test mock configuration via `.mockReset().mockResolvedValue()` pattern
+✅ `harness.importModule()` for dynamic imports after setup
+✅ Proper cleanup in `afterEach()` with `harness.cleanup()`
+
+**Migration Complexity Levels Observed**:
+- **SIMPLE** (1 mock): Very straightforward conversion
+- **MEDIUM** (3-6 mocks): Still manageable, clear pattern application
+- **COMPLEX** (9+ mocks, dynamic values): Requires additional architectural planning
+

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount, clearBody } from "./domUtils.js";
+import { createSimpleHarness } from "./integrationHarness.js";
 
 const sample = [
   {
@@ -25,9 +26,52 @@ const sample = [
   }
 ];
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const {
+  mockFetchJson,
+  mockInitTooltips
+} = vi.hoisted(() => ({
+  mockFetchJson: vi.fn(),
+  mockInitTooltips: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/dataUtils.js", () => ({
+  fetchJson: mockFetchJson
+}));
+
+vi.mock("../../src/helpers/constants.js", () => ({
+  DATA_DIR: "",
+  SPINNER_DELAY_MS: 0
+}));
+
+vi.mock("../../src/helpers/tooltip.js", () => ({
+  initTooltips: mockInitTooltips
+}));
+
 describe("changeLogPage", () => {
+  let harness;
+
+  beforeEach(async () => {
+    // Reset mocks before each test
+    mockFetchJson.mockReset().mockResolvedValue([sample[0]]);
+    mockInitTooltips.mockReset().mockResolvedValue(() => {});
+
+    harness = createSimpleHarness();
+    await harness.setup();
+  });
+
+  afterEach(async () => {
+    if (harness) {
+      await harness.cleanup();
+    }
+    clearBody();
+  });
+
   it("sorts by lastUpdated then name", async () => {
-    const { sortJudoka } = await import("../../src/helpers/changeLogPage.js");
+    const { sortJudoka } = await harness.importModule(
+      "../../src/helpers/changeLogPage.js"
+    );
     const sorted = sortJudoka(sample);
     expect(sorted[0].id).toBe(1);
     expect(sorted[1].id).toBe(3);
@@ -35,15 +79,9 @@ describe("changeLogPage", () => {
   });
 
   it("falls back to placeholder portrait", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue([sample[0]])
-    }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "", SPINNER_DELAY_MS: 0 }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({
-      initTooltips: vi.fn().mockResolvedValue(() => {})
-    }));
-
-    const { setupChangeLogPage } = await import("../../src/helpers/changeLogPage.js");
+    const { setupChangeLogPage } = await harness.importModule(
+      "../../src/helpers/changeLogPage.js"
+    );
 
     mount(`
       <div id="loading-container"></div>
@@ -55,6 +93,5 @@ describe("changeLogPage", () => {
     const img = document.querySelector("img");
     img.dispatchEvent(new Event("error"));
     expect(img.src).toMatch(/judokaPortrait-0\.png$/);
-    clearBody();
   });
 });
