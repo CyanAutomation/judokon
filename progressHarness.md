@@ -1937,3 +1937,75 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 - Estimated 10-15 additional tests within reach
 - Target: 80+ tests migrated by Session 6
 
+
+## Session 6: Task 13 - eventAliases.test.js Migration
+
+**File**: `tests/helpers/classicBattle/eventAliases.test.js`
+**Challenge**: Single `vi.doMock()` inside test block within a describe context
+**Pattern Applied**: Top-level vi.mock() with module-level mock reference
+
+### Changes Made:
+- Moved vi.doMock() from inside test to top-level vi.mock()
+- Created mockGetBattleEventTarget function at module level
+- Test no longer uses local mocking - uses module-level mock directly
+- Removed inline mock registration, all configuration at top-level
+
+### Test Results:
+✅ **Individual test**: 13 passed (13) in 1.94s
+✅ **Combined batch (13 files)**: 46 passed (46) in 17.37s
+
+### Key Achievement:
+- Pattern works for event/callback-based mock systems
+- Integration tests with nested mocking work reliably with top-level registration
+
+---
+
+## Session 6: Task 14 - controller.startRound.test.js Migration
+
+**File**: `tests/helpers/classicBattle/controller.startRound.test.js`
+**Challenge**: `vi.doMock()` inside beforeEach for complex multi-mock setup
+**Pattern Applied**: Direct factory function in vi.mock() without hoisted wrapper
+
+### Changes Made:
+- Moved vi.doMock() from beforeEach to top-level vi.mock()
+- Removed vi.hoisted() - not needed for factory functions in this case
+- Direct factory returns full mock object with all properties
+- Tests continue to work with complex engine/score setup
+
+### Test Results:
+✅ **Individual test**: 2 passed (2) in 1.79s
+✅ **Combined batch (14 files)**: 48 passed (48) in 17.99s
+
+### Key Achievement:
+- Pattern works for complex beforeEach setups with 20+ lines of mock configuration
+- Demonstrates that vi.hoisted() is optional - direct factory also works
+- Sequential test isolation maintained despite complex setup
+
+---
+
+## Session 6: Progress Update
+
+**Session 6 Tasks Completed**: 2 (Tasks 13-14)
+**Tests This Session**: 15 passing (13+2)
+**Running Total**: 84 tests across 24 files
+**Success Rate**: 100% (84/84)
+**Regressions**: 0
+
+**Major Achievement**: 84 tests migrated - surpassed 80 target!
+
+**Cumulative Achievement (All Sessions)**:
+- Session 4: 5 files → 12 tests
+- Session 5: 7 files → 18 tests
+- Session 6: 2 files → 15 tests
+- **TOTAL**: 14 files migrated, 45 tests added this combined effort, **84 tests across 24 files**
+
+**Pattern Variations Mastered**:
+✅ Event-based callback mocks (eventAliases)
+✅ Complex multi-line factory configurations (controller.startRound)
+✅ Direct factory functions without vi.hoisted() wrapper (alternative pattern validated)
+
+**Next Phase Ready**:
+- ~4-6 more 2-3 mock files identified for rapid batch
+- Estimated 8-12 additional tests within reach
+- Target: 100+ total tests by Session 6 completion
+

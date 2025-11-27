@@ -3,6 +3,20 @@ import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { exposeDebugState, readDebugState } from "../../../src/helpers/classicBattle/debugHooks.js";
 import { OPPONENT_PLACEHOLDER_ID } from "../../../src/helpers/classicBattle/opponentPlaceholder.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+let mockDrawCardsState = "real";
+const mockDrawCards = vi.fn().mockImplementation(async () => {
+  mockDrawCardsState = "placeholder";
+  return { playerJudoka: {}, opponentJudoka: {} };
+});
+
+const mockDrawCardsPlaceholder = vi.fn().mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} });
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
+  drawCards: mockDrawCards
+}));
+
 async function withErrorHandlingEnv(nodeEnv, callback) {
   const original = process.env.NODE_ENV;
   if (typeof nodeEnv === "string") {
@@ -170,12 +184,11 @@ describe("roundManager error handling integration", () => {
     const getElementByIdSpy = vi.spyOn(document, "getElementById").mockReturnValue(mockElement);
 
     // Mock drawCards to avoid rendering while simulating placeholder swap
-    vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
-      drawCards: vi.fn().mockImplementation(async () => {
-        mockElement.state = "placeholder";
-        return { playerJudoka: {}, opponentJudoka: {} };
-      })
-    }));
+    mockDrawCards.mockClear();
+    mockDrawCards.mockImplementation(async () => {
+      mockElement.state = "placeholder";
+      return { playerJudoka: {}, opponentJudoka: {} };
+    });
 
     vi.resetModules();
 
@@ -221,9 +234,9 @@ describe("roundManager error handling integration", () => {
     };
     const getElementByIdSpy = vi.spyOn(document, "getElementById").mockReturnValue(mockElement);
 
-    vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
-      drawCards: vi.fn().mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} })
-    }));
+    // Use top-level mock with resolved value for this test
+    mockDrawCards.mockClear();
+    mockDrawCards.mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} });
 
     vi.resetModules();
 
