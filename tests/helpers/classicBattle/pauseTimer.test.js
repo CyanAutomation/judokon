@@ -5,6 +5,32 @@ import { createBattleHeader, createBattleCardContainers } from "../../utils/test
 import { createRoundMessage } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockShowMessage, mockShowTemporaryMessage, mockClearTimer, mockUpdateTimer, mockClearMessage, mockUpdateScore, mockShowAutoSelect, mockUpdateRoundCounter, mockClearRoundCounter } = vi.hoisted(() => ({
+  mockShowMessage: vi.fn(),
+  mockShowTemporaryMessage: () => () => {},
+  mockClearTimer: vi.fn(),
+  mockUpdateTimer: vi.fn(),
+  mockClearMessage: vi.fn(),
+  mockUpdateScore: vi.fn(),
+  mockShowAutoSelect: vi.fn(),
+  mockUpdateRoundCounter: vi.fn(),
+  mockClearRoundCounter: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
+  showMessage: mockShowMessage,
+  showTemporaryMessage: mockShowTemporaryMessage,
+  clearTimer: mockClearTimer,
+  updateTimer: mockUpdateTimer,
+  clearMessage: mockClearMessage,
+  updateScore: mockUpdateScore,
+  showAutoSelect: mockShowAutoSelect,
+  updateRoundCounter: mockUpdateRoundCounter,
+  clearRoundCounter: mockClearRoundCounter
+}));
+
 let fetchJsonMock;
 let generateRandomCardMock;
 let getRandomJudokaMock;
@@ -12,7 +38,6 @@ let renderMock;
 
 describe("classicBattle timer pause", () => {
   let timers;
-  let showMessage;
   let battleMod;
   let store;
   let logSpy;
@@ -56,18 +81,14 @@ describe("classicBattle timer pause", () => {
       renderMock
     });
 
-    showMessage = vi.fn();
-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
-      showMessage,
-      showTemporaryMessage: () => () => {},
-      clearTimer: vi.fn(),
-      updateTimer: vi.fn(),
-      clearMessage: vi.fn(),
-      updateScore: vi.fn(),
-      showAutoSelect: vi.fn(),
-      updateRoundCounter: vi.fn(),
-      clearRoundCounter: vi.fn()
-    }));
+    mockShowMessage.mockReset();
+    mockClearTimer.mockReset();
+    mockUpdateTimer.mockReset();
+    mockClearMessage.mockReset();
+    mockUpdateScore.mockReset();
+    mockShowAutoSelect.mockReset();
+    mockUpdateRoundCounter.mockReset();
+    mockClearRoundCounter.mockReset();
 
     battleMod = await import("../../../src/helpers/classicBattle.js");
     store = battleMod.createBattleStore();
@@ -100,7 +121,7 @@ describe("classicBattle timer pause", () => {
     await promise;
     timers.advanceTimersByTime(1000);
     await timers.runAllTimersAsync();
-    const messages = showMessage.mock.calls.map((c) => c[0]);
+    const messages = mockShowMessage.mock.calls.map((c) => c[0]);
     expect(messages.some((m) => /Time's up! Auto-selecting/.test(m))).toBe(false);
   });
 });

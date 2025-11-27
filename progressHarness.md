@@ -1303,3 +1303,128 @@ The modern Vitest 3.2.4 test harness pattern (`vi.mock()` + `vi.hoisted()`) has 
 
 **Next Step**: Continue with remaining quick-win files to expand coverage. Pattern is proven and efficient enough for rapid batch processing.
 
+
+---
+
+## Session 4: Task 1 - game.setupRandomCardButton.test.js Migration
+
+**Task**: Migrate `tests/unit/game.setupRandomCardButton.test.js` (2 mocks) from deprecated `vi.doMock()` inside helper function to modern top-level `vi.mock()` + `vi.hoisted()` pattern.
+
+### Migration Details
+
+**File**: `tests/unit/game.setupRandomCardButton.test.js`
+**Tests**: 3
+**Mocks**: 2 (randomCard.js, motionUtils.js)
+**Complexity**: Helper function with dual mock setup
+
+**Changes Made**:
+
+1. Added `beforeEach` import and top-level `vi.hoisted()` with shared mock references
+   - `mockGenerateRandomCard` (vi.fn())
+   - `mockShouldReduceMotionSync` (vi.fn().mockReturnValue(false))
+
+2. Converted `vi.doMock()` calls from inside `setupTest()` to top-level `vi.mock()` declarations
+   - Mock 1: `randomCard.js` → exports `mockGenerateRandomCard`
+   - Mock 2: `motionUtils.js` → exports `mockShouldReduceMotionSync`
+
+3. Added `beforeEach()` hook for per-test mock reset
+   - `mockGenerateRandomCard.mockReset()`
+   - `mockShouldReduceMotionSync.mockReset().mockReturnValue(false)`
+
+4. Updated `setupTest()` helper to return shared mock references instead of creating local ones
+
+**Pattern Applied**: ✅ Exactly matches proven pattern from previous migrations
+
+### Test Results
+
+**Individual File Test**:
+```
+Test Files  1 passed (1)
+     Tests  3 passed (3)
+  Duration  2.30s
+```
+
+**Combined Verification** (with all 10 previous files):
+```
+Test Files  11 passed (11)
+     Tests  38 passed (38)
+  Duration  15.60s
+```
+
+**Assessment**: ✅ **ZERO REGRESSIONS** - All 38 tests passing. Helper function pattern validated.
+
+### Progress Metrics
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| **Total Files Migrated** | 10 | 11 | +1 |
+| **Total Tests Passing** | 35 | 38 | +3 |
+| **Success Rate** | 100% | 100% | ✅ |
+| **Regressions** | 0 | 0 | ✅ |
+
+### Key Achievement
+
+✅ **Helper function pattern validated**: `setupTest()` converted from creating dual mocks to using top-level shared references. Demonstrates pattern flexibility beyond simple beforeEach scenarios.
+
+**Next**: Continue with Task 2 from remaining quick-win candidates.
+
+
+---
+
+## Session 4: Task 2 - autoSelectStat.min.test.js Migration
+
+**Task**: Migrate `tests/helpers/autoSelectStat.min.test.js` (1 mock) from deprecated `vi.doMock()` to modern top-level `vi.mock()` + `vi.hoisted()` pattern.
+
+### Migration Details
+
+**File**: `tests/helpers/autoSelectStat.min.test.js`
+**Tests**: 1
+**Mocks**: 1 (setupScoreboard.js with 5 exports)
+**Complexity**: Simple top-level mock, minimal setup
+
+**Changes Made**:
+
+1. Added top-level `vi.hoisted()` with shared mock object containing all 5 exports
+   - `mockShowAutoSelect` (vi.fn())
+   - `mockUpdateTimer` (vi.fn())
+   - `mockClearTimer` (vi.fn())
+   - `mockUpdateRoundCounter` (vi.fn())
+   - `mockClearRoundCounter` (vi.fn())
+
+2. Converted `vi.doMock()` to top-level `vi.mock()` using shared mock references
+
+**Pattern Applied**: ✅ Simplified hoisted pattern for single mock with multiple exports
+
+### Test Results
+
+**Individual File Test**:
+```
+Test Files  1 passed (1)
+     Tests  1 passed (1)
+  Duration  2.59s
+```
+
+**Combined Verification** (with all 11 previous files):
+```
+Test Files  12 passed (12)
+     Tests  39 passed (39)
+  Duration  12.99s
+```
+
+**Assessment**: ✅ **ZERO REGRESSIONS** - All 39 tests passing. Top-level mock pattern validated for single-file mocks.
+
+### Progress Metrics
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| **Total Files Migrated** | 11 | 12 | +1 |
+| **Total Tests Passing** | 38 | 39 | +1 |
+| **Success Rate** | 100% | 100% | ✅ |
+| **Regressions** | 0 | 0 | ✅ |
+
+### Key Achievement
+
+✅ **Simplified single-mock pattern**: Demonstrated that `vi.hoisted()` can return multiple mock functions within a single object, eliminating need for multiple `vi.hoisted()` calls for multi-export mocks.
+
+**Next**: Continue with Task 3 from remaining single-mock candidates.
+

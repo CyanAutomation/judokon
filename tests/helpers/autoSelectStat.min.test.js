@@ -1,11 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
-  showAutoSelect: vi.fn(),
-  updateTimer: vi.fn(),
-  clearTimer: vi.fn(),
-  updateRoundCounter: vi.fn(),
-  clearRoundCounter: vi.fn()
+// ===== Top-level vi.hoisted() for shared mock state =====
+const {
+  mockShowAutoSelect,
+  mockUpdateTimer,
+  mockClearTimer,
+  mockUpdateRoundCounter,
+  mockClearRoundCounter
+} = vi.hoisted(() => ({
+  mockShowAutoSelect: vi.fn(),
+  mockUpdateTimer: vi.fn(),
+  mockClearTimer: vi.fn(),
+  mockUpdateRoundCounter: vi.fn(),
+  mockClearRoundCounter: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+  showAutoSelect: mockShowAutoSelect,
+  updateTimer: mockUpdateTimer,
+  clearTimer: mockClearTimer,
+  updateRoundCounter: mockUpdateRoundCounter,
+  clearRoundCounter: mockClearRoundCounter
 }));
 
 describe("autoSelectStat basic path", () => {
