@@ -3,14 +3,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const testPath = "../../../src/helpers";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { preloadTimerUtils1, initScoreboardAdapter1, preloadTimerUtils2, initScoreboardAdapter2 } = vi.hoisted(() => ({
-  preloadTimerUtils1: vi.fn().mockResolvedValue(),
-  initScoreboardAdapter1: vi.fn(),
-  preloadTimerUtils2: vi.fn().mockRejectedValue(new Error("fail")),
-  initScoreboardAdapter2: vi.fn().mockImplementation(() => {
-    throw new Error("fail");
-  })
-}));
+const { preloadTimerUtils1, initScoreboardAdapter1, preloadTimerUtils2, initScoreboardAdapter2 } =
+  vi.hoisted(() => ({
+    preloadTimerUtils1: vi.fn().mockResolvedValue(),
+    initScoreboardAdapter1: vi.fn(),
+    preloadTimerUtils2: vi.fn().mockRejectedValue(new Error("fail")),
+    initScoreboardAdapter2: vi.fn().mockImplementation(() => {
+      throw new Error("fail");
+    })
+  }));
 
 // ===== Top-level vi.mock() calls (static paths with dynamic path variable) =====
 vi.mock(`${testPath}/TimerController.js`, () => ({

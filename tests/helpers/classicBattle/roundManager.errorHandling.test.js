@@ -4,15 +4,11 @@ import { exposeDebugState, readDebugState } from "../../../src/helpers/classicBa
 import { OPPONENT_PLACEHOLDER_ID } from "../../../src/helpers/classicBattle/opponentPlaceholder.js";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-let mockDrawCardsState = "real";
+
 const mockDrawCards = vi.fn().mockImplementation(async () => {
   mockDrawCardsState = "placeholder";
   return { playerJudoka: {}, opponentJudoka: {} };
 });
-
-const mockDrawCardsPlaceholder = vi
-  .fn()
-  .mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} });
 
 // ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
 vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({

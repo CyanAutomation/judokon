@@ -1,20 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-// Replaced test verifying battleStateChange event and optional callback
-
-describe("initClassicBattleOrchestrator state change hooks", () => {
-  beforeEach(() => {
-    vi.resetModules();
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { createStateManager, handlers, resetGame } = vi.hoisted(() => {
+  const createStateManagerMock = vi.fn(async (_onEnter, _context, onTransition) => {
+    await onTransition({ from: "a", to: "b", event: "go" });
+    return { context: {}, getState: () => "b", dispatch: vi.fn() };
   });
-
-  it("emits battleStateChange and invokes onStateChange", async () => {
-    vi.doMock("../../src/helpers/classicBattle/stateManager.js", () => ({
-      createStateManager: vi.fn(async (_onEnter, _context, onTransition) => {
-        await onTransition({ from: "a", to: "b", event: "go" });
-        return { context: {}, getState: () => "b", dispatch: vi.fn() };
-      })
-    }));
-    vi.doMock("../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
+  return {
+    createStateManager: createStateManagerMock,
+    handlers: {
       waitingForMatchStartEnter: vi.fn(),
       matchStartEnter: vi.fn(),
       cooldownEnter: vi.fn(),
@@ -27,11 +21,32 @@ describe("initClassicBattleOrchestrator state change hooks", () => {
       interruptRoundEnter: vi.fn(),
       interruptMatchEnter: vi.fn(),
       roundModificationEnter: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
-      resetGame: vi.fn(),
-      startRound: vi.fn()
-    }));
+    },
+    resetGame: vi.fn()
+  };
+});
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/classicBattle/stateManager.js", () => ({
+  createStateManager
+}));
+
+vi.mock("../../src/helpers/classicBattle/orchestratorHandlers.js", () => handlers);
+
+vi.mock("../../src/helpers/classicBattle/roundManager.js", () => ({
+  resetGame,
+  startRound: vi.fn()
+}));
+
+// Replaced test verifying battleStateChange event and optional callback
+
+describe("initClassicBattleOrchestrator state change hooks", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("emits battleStateChange and invokes onStateChange", async () => {
+    // Mocks already configured at module-level
 
     const { onBattleEvent, __resetBattleEventTarget } = await import(
       "../../src/helpers/classicBattle/battleEvents.js"
