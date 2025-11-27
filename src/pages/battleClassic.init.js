@@ -884,10 +884,7 @@ function renderStatButtons(store) {
 
   const listenerRegistry = (() => {
     try {
-      if (
-        typeof window === "undefined" ||
-        (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)
-      ) {
+      if (typeof window === "undefined" || (!window.__TEST__ && !window.__PLAYWRIGHT_TEST__)) {
         return null;
       }
       if (window.__classicBattleStatButtonListeners) {
