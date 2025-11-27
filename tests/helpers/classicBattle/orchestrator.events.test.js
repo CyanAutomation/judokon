@@ -5,23 +5,26 @@ const clearMessage = vi.fn();
 const showMessage = vi.fn();
 const updateDebugPanel = vi.fn();
 
+// ===== Top-level vi.mock() calls for orchestrator UI events =====
+vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
+  clearMessage,
+  showMessage,
+  clearTimer: vi.fn(),
+  updateTimer: vi.fn(),
+  updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn()
+}));
+
+vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+  updateDebugPanel
+}));
+
 describe("classic battle orchestrator UI events", () => {
   beforeEach(() => {
-    vi.resetModules();
     clearMessage.mockClear();
     showMessage.mockClear();
     updateDebugPanel.mockClear();
-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
-      clearMessage,
-      showMessage,
-      clearTimer: vi.fn(),
-      updateTimer: vi.fn(),
-      updateRoundCounter: vi.fn(),
-      clearRoundCounter: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
-      updateDebugPanel
-    }));
+    vi.resetModules();
   });
 
   it("emits events and triggers UI listeners on init", async () => {

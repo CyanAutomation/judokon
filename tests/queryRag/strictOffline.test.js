@@ -2,25 +2,25 @@
 import { describe, it, expect, vi } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
 
+// ===== Top-level vi.mock() calls for RAG strict offline mode =====
+const pipelineMock = vi.fn();
+
+vi.mock("@xenova/transformers", () => ({
+  pipeline: pipelineMock,
+  env: { allowLocalModels: false, localModelPath: "", backends: { onnx: { wasm: {} } } }
+}));
+
+vi.mock("fs/promises", () => ({
+  stat: vi.fn(async () => {
+    throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+  })
+}));
+
 describe("getExtractor strict offline mode", () => {
   it("throws with actionable message when local model is missing and RAG_STRICT_OFFLINE=1", async () => {
+    pipelineMock.mockClear();
     process.env.RAG_STRICT_OFFLINE = "1";
-
-    // Mock transformers to avoid heavy imports; pipeline should not be called in strict mode.
-    const pipelineMock = vi.fn();
-    vi.doMock("@xenova/transformers", () => ({
-      pipeline: pipelineMock,
-      env: { allowLocalModels: false, localModelPath: "", backends: { onnx: { wasm: {} } } }
-    }));
-
-    // Mock fs/promises.stat to simulate missing local model files and also skip ONNX worker stat
-    vi.doMock("fs/promises", () => ({
-      stat: vi.fn(async () => {
-        throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
-      })
-    }));
-
-    // Import after mocks
+    vi.resetModules();
     const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
 
     await withMutedConsole(async () => {

@@ -1,18 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
-vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
+// ===== Top-level vi.mock() calls (already mostly migrated from vi.doMock) =====
+vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
   drawCards: vi.fn().mockResolvedValue({}),
   _resetForTest: vi.fn()
 }));
 
-vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   getRoundsPlayed: vi.fn(() => 0),
   _resetForTest: vi.fn(),
   onEngineCreated: vi.fn(() => () => {})
 }));
 
-vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn(),
   onBattleEvent: vi.fn()
 }));
