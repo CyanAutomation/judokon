@@ -1,8 +1,33 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import { mockDocsMap, basicParser } from "./prdReaderPage.js";
 import { createTestPrdReader } from "../utils/componentTestUtils.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockInitTooltips, mockGetFeatureFlag } = vi.hoisted(() => ({
+  mockInitTooltips: vi.fn(() => Promise.reject(new Error("tooltip failure"))),
+  mockGetFeatureFlag: vi.fn(() => false)
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/tooltip.js", async () => {
+  const actual = await vi.importActual("../../src/helpers/tooltip.js");
+  return {
+    ...actual,
+    initTooltips: mockInitTooltips
+  };
+});
+
+vi.mock("../../src/helpers/settingsCache.js", async () => {
+  const actual = await vi.importActual("../../src/helpers/settingsCache.js");
+  return { ...actual, getFeatureFlag: mockGetFeatureFlag };
+});
+
 describe("prdReaderPage", () => {
+  beforeEach(() => {
+    mockInitTooltips.mockReset();
+    mockGetFeatureFlag.mockReset().mockReturnValue(false);
+  });
+
   afterEach(() => {
     history.replaceState(null, "", "/");
     vi.resetModules();
@@ -79,15 +104,7 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
     const initError = new Error("tooltip failure");
-    const initMock = vi.fn(() => Promise.reject(initError));
-
-    vi.doMock("../../src/helpers/tooltip.js", async () => {
-      const actual = await vi.importActual("../../src/helpers/tooltip.js");
-      return {
-        ...actual,
-        initTooltips: initMock
-      };
-    });
+    mockInitTooltips.mockImplementation(() => Promise.reject(initError));
 
     const prdReader = createTestPrdReader(docs, parser);
     const unhandled = vi.fn();
@@ -101,8 +118,8 @@ describe("prdReaderPage", () => {
       await Promise.resolve();
 
       expect(prdReader.testApi.getCurrentContent()).toContain("First doc");
-      expect(initMock).toHaveBeenCalled();
-      const callsAfterInit = initMock.mock.calls.length;
+      expect(mockInitTooltips).toHaveBeenCalled();
+      const callsAfterInit = mockInitTooltips.mock.calls.length;
       expect(unhandled).not.toHaveBeenCalled();
 
       prdReader.testApi.navigateNext();
@@ -111,7 +128,7 @@ describe("prdReaderPage", () => {
       expect(prdReader.testApi.getCurrentContent()).toContain("Second doc");
       expect(prdReader.testApi.getSelectedIndex()).toBe(1);
       expect(unhandled).not.toHaveBeenCalled();
-      expect(initMock.mock.calls.length).toBeGreaterThan(callsAfterInit);
+      expect(mockInitTooltips.mock.calls.length).toBeGreaterThan(callsAfterInit);
     } finally {
       window.removeEventListener("unhandledrejection", rejectionHandler);
       prdReader.testApi.cleanup();
@@ -376,10 +393,7 @@ describe("prdReaderPage", () => {
   });
 
   it("skips prefetching when test mode flag is enabled", async () => {
-    vi.doMock("../../src/helpers/settingsCache.js", async () => {
-      const actual = await vi.importActual("../../src/helpers/settingsCache.js");
-      return { ...actual, getFeatureFlag: () => true };
-    });
+    mockGetFeatureFlag.mockReturnValue(true);
 
     const docs = { "a.md": undefined, "b.md": undefined };
     const prdReader = createTestPrdReader(docs, basicParser);
