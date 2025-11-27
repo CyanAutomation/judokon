@@ -580,18 +580,19 @@ Added comprehensive new section to AGENTS.md (after Unit Test Quality Standards 
 
 **Summary of All Tasks**:
 
-| Task | Status | Result |
-|------|--------|--------|
-| 1. Validate API | ✅ Complete | createSimpleHarness() confirmed production-ready |
-| 2. Document files | ✅ Complete | 3 files identified (2 migrated, 1 blocked) |
-| 3. Add tests | ✅ Complete | 15 tests added to integrationHarness.test.js (28 total passing) |
-| 4. Migrate tests | ✅ Complete | settingsPage.test.js migrated (16 tests passing) |
-| 5. Create examples | ✅ Complete | 3 files created (540 lines total) |
-| 6. Document fixtures | ✅ Complete | fixtures.reference.js + testUtils exports |
-| 7. Full validation | ⏸️ Skipped | Per user request |
-| 8. Update docs | ✅ Complete | 500 lines added to AGENTS.md |
+| Task                 | Status      | Result                                                          |
+| -------------------- | ----------- | --------------------------------------------------------------- |
+| 1. Validate API      | ✅ Complete | createSimpleHarness() confirmed production-ready                |
+| 2. Document files    | ✅ Complete | 3 files identified (2 migrated, 1 blocked)                      |
+| 3. Add tests         | ✅ Complete | 15 tests added to integrationHarness.test.js (28 total passing) |
+| 4. Migrate tests     | ✅ Complete | settingsPage.test.js migrated (16 tests passing)                |
+| 5. Create examples   | ✅ Complete | 3 files created (540 lines total)                               |
+| 6. Document fixtures | ✅ Complete | fixtures.reference.js + testUtils exports                       |
+| 7. Full validation   | ⏸️ Skipped  | Per user request                                                |
+| 8. Update docs       | ✅ Complete | 500 lines added to AGENTS.md                                    |
 
 **Total Impact**:
+
 - 44 tests migrated (100% passing)
 - 3 canonical example files created
 - Comprehensive fixture guide documented
@@ -607,6 +608,7 @@ The JU-DO-KON! project now has:
 ✅ Updated developer guide (AGENTS.md)
 
 **Next Steps** (Out of Scope):
+
 - Migrate remaining tests using patterns established in this refactor
 - Fix scheduleNextRound.fallback.test.js (requires architectural refactoring)
 - Onboard team to new test patterns
