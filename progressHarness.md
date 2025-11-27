@@ -1701,3 +1701,36 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 
 **Token Efficiency**: This session achieved 12 new passing tests with efficient pattern application. No token bloat from over-documenting or exploratory work.
 
+
+---
+
+## Session 5: Task 6 - roundStartError.test.js Migration
+
+**File**: `tests/helpers/classicBattle/roundStartError.test.js`
+**Challenge**: Single `vi.doMock()` call inside first `it()` block (line 13)
+**Pattern Applied**: Top-level `vi.hoisted()` + `vi.mock()` for shared mock references
+
+### Changes Made:
+- Moved `vi.doMock()` from inside `it("dispatches interrupt when drawCards rejects"...)` to top-level
+- Created `vi.hoisted()` function with:
+  - `mockDrawCards`: vi.fn() with .mockRejectedValue(new Error("no cards"))
+  - `mockResetForTest`: vi.fn()
+- Registered mock at top-level using `vi.mock()` pointing to both hoisted functions
+- Removed original inline `vi.doMock()` call and kept only `vi.resetModules()`
+
+### Test Results:
+✅ **Individual test**: 2 passed (2) in 1.68s
+✅ **Combined batch (6 files)**: 14 passed (14) in 5.92s
+
+### Key Achievement:
+- Demonstrated pattern works for files with inline `vi.doMock()` in test blocks
+- Module-level state capture works when mockRejectedValue is set in hoisted callback
+- Both test cases (drawCards rejection + startRoundWrapper sync failure) pass correctly
+
+### Cumulative Progress:
+- **Session 5 Tasks**: 1 (Task 6 roundStartError.test.js)
+- **Tests This Task**: 2 passing
+- **Running Total**: 49 tests across 16 files
+- **Success Rate**: 100% (49/49)
+- **Regressions**: 0
+
