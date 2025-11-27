@@ -3,13 +3,21 @@ import { describe, it, expect, vi } from "vitest";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 import { roundStartEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockDrawCards, mockResetForTest } = vi.hoisted(() => ({
+  mockDrawCards: vi.fn().mockRejectedValue(new Error("no cards")),
+  mockResetForTest: vi.fn()
+}));
+
+// ===== Top-level vi.mock() call (Vitest static analysis phase) =====
+vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
+  drawCards: mockDrawCards,
+  _resetForTest: mockResetForTest
+}));
+
 describe("round start error recovery", () => {
   it("dispatches interrupt when drawCards rejects", async () => {
     vi.resetModules();
-    vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
-      drawCards: vi.fn().mockRejectedValue(new Error("no cards")),
-      _resetForTest: vi.fn()
-    }));
     const { startRound } = await import("../../../src/helpers/classicBattle/roundManager.js");
     const states = [
       {
