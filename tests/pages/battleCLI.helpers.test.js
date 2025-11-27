@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
