@@ -4,6 +4,14 @@ import { CHUNK_SIZE, OVERLAP_RATIO } from "../../src/helpers/vectorSearch/chunkC
 
 const originalFetch = global.fetch;
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const mockReadFile = vi.fn().mockResolvedValue("");
+const mockFileURLToPath = vi.fn(() => "/tmp/doc.md");
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("node:fs/promises", () => ({ readFile: mockReadFile }));
+vi.mock("node:url", () => ({ fileURLToPath: mockFileURLToPath }));
+
 afterEach(() => {
   global.fetch = originalFetch;
   vi.unstubAllGlobals();
@@ -14,17 +22,15 @@ describe("vectorSearch context", () => {
   it("loads context around an id in Node without fetch", async () => {
     const sentence = "Lorem ipsum dolor sit amet. ";
     const md = Array(200).fill(sentence).join("");
-    const readFile = vi.fn().mockResolvedValue(md);
-    const fileURLToPath = vi.fn(() => "/tmp/doc.md");
-    vi.doMock("node:fs/promises", () => ({ readFile }));
-    vi.doMock("node:url", () => ({ fileURLToPath }));
+    mockReadFile.mockResolvedValue(md);
+    mockFileURLToPath.mockReturnValue("/tmp/doc.md");
     const fetchSpy = vi.spyOn(global, "fetch");
     const { fetchContextById, chunkMarkdown } = await import(
       "../../src/helpers/vectorSearch/context.js"
     );
     const result = await fetchContextById("doc.md-chunk-3", 1);
     expect(fetchSpy).not.toHaveBeenCalled();
-    expect(readFile).toHaveBeenCalled();
+    expect(mockReadFile).toHaveBeenCalled();
     const expected = chunkMarkdown(md).slice(1, 4);
     expect(result).toEqual(expected);
     for (const chunk of result) {

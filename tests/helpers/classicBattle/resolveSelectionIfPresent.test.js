@@ -1,17 +1,24 @@
 import { describe, it, expect, vi } from "vitest";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const getStatValue = vi.fn(() => 0);
+const mockGetOpponentJudoka = vi.fn(() => ({ stats: { speed: 40 } }));
+const mockGetOpponentJudokaAlt = vi.fn(() => null);
+const resolveRound = vi.fn();
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+// We'll use mockGetOpponentJudoka as primary, but have alt available
 vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
-  getOpponentJudoka: () => ({ stats: { speed: 40 } })
+  getOpponentJudoka: () => mockGetOpponentJudoka()
 }));
 
-const getStatValue = vi.fn(() => 0);
 vi.mock("../../../src/helpers/battle/score.js", () => ({ getStatValue }));
 
-const resolveRound = vi.fn();
 vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({ resolveRound }));
 
 describe("resolveSelectionIfPresent", () => {
   it("uses store judoka stats when DOM is missing", async () => {
+    mockGetOpponentJudoka.mockImplementation(() => ({ stats: { speed: 40 } }));
     const { resolveSelectionIfPresent } = await import(
       "../../../src/helpers/classicBattle/orchestratorHandlers.js"
     );
@@ -33,9 +40,7 @@ describe("resolveSelectionIfPresent", () => {
 
   it("falls back to DOM when store judoka missing", async () => {
     getStatValue.mockReset();
-    vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
-      getOpponentJudoka: () => null
-    }));
+    mockGetOpponentJudoka.mockImplementation(() => null);
     vi.resetModules();
     const { resolveSelectionIfPresent } = await import(
       "../../../src/helpers/classicBattle/orchestratorHandlers.js"

@@ -1734,3 +1734,36 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 - **Success Rate**: 100% (49/49)
 - **Regressions**: 0
 
+
+## Session 5: Task 7 - rebindEngineEvents.test.js Migration
+
+**File**: `tests/helpers/classicBattle/rebindEngineEvents.test.js`
+**Challenge**: Single `vi.doMock()` call inside `it()` block with local `on` variable reference
+**Pattern Applied**: Top-level `vi.hoisted()` + `vi.mock()` with module-level mock references
+
+### Changes Made:
+- Moved `vi.doMock()` from inside test to top-level
+- Created `vi.hoisted()` function with:
+  - `mockOn`: vi.fn()
+  - `mockCreateBattleEngine`: vi.fn()
+  - `mockOnEngineCreated`: vi.fn(() => () => {})
+- Replaced local `on` variable references with `mockOn` (in mockClear() and expect() calls)
+
+### Test Results:
+✅ **Individual test**: 1 passed (1) in 1.56s
+✅ **Combined batch (7 files)**: 15 passed (15) in 7.70s
+
+### Key Achievement:
+- Pattern works when test has local variable shadowing the mock
+- Simple replacement of variable references to use module-level mock name
+- No state complexity needed for this straightforward callback test
+
+### Cumulative Progress:
+- **Session 5 Tasks**: 2 (Tasks 6-7)
+- **Tests This Session**: 3 passing
+- **Running Total**: 50 tests across 17 files
+- **Success Rate**: 100% (50/50)
+- **Regressions**: 0
+
+**🎯 MILESTONE REACHED**: 50 tests passing! Continue to 60+ target.
+

@@ -1,4 +1,27 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+
+// ===== Top-level vi.hoisted() for shared mock state =====
+let similarityThreshold = 0.4;
+
+const mockGetModule = vi.hoisted(() => {
+  return () => ({
+    SIMILARITY_THRESHOLD: similarityThreshold
+  });
+});
+
+// ===== Top-level vi.mock() call (Vitest static analysis phase) =====
+vi.mock("../../../src/helpers/api/vectorSearchPage.js", () => {
+  // Return dynamic getter based on module-level state
+  return {
+    get SIMILARITY_THRESHOLD() {
+      return similarityThreshold;
+    }
+  };
+});
+
+beforeEach(() => {
+  similarityThreshold = 0.4; // reset to default
+});
 
 afterEach(() => {
   vi.resetModules();
@@ -6,9 +29,7 @@ afterEach(() => {
 
 describe("selectTopMatches", () => {
   it("returns only the top match when score gap is large", async () => {
-    vi.doMock("../../../src/helpers/api/vectorSearchPage.js", () => ({
-      SIMILARITY_THRESHOLD: 0.4
-    }));
+    similarityThreshold = 0.4;
     const { selectTopMatches } = await import(
       "../../../src/helpers/vectorSearchPage/selectTopMatches.js"
     );
@@ -19,9 +40,8 @@ describe("selectTopMatches", () => {
   });
 
   it("returns top three weak matches when no strong ones", async () => {
-    vi.doMock("../../../src/helpers/api/vectorSearchPage.js", () => ({
-      SIMILARITY_THRESHOLD: 0.9
-    }));
+    similarityThreshold = 0.9;
+    vi.resetModules();
     const { selectTopMatches } = await import(
       "../../../src/helpers/vectorSearchPage/selectTopMatches.js"
     );
