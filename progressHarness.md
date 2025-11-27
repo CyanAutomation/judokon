@@ -1863,3 +1863,77 @@ Continue with rapid batch migration of remaining simple files. Pattern is fully 
 - Estimated additional 10-20 tests within reach
 - Target: 75-80 tests migrated by end of Session 6
 
+
+## Session 5: Task 11 - vectorSearch/loader.test.js Migration
+
+**File**: `tests/helpers/vectorSearch/loader.test.js`
+**Challenge**: Two `vi.doMock()` calls for Node.js APIs (node:url, node:fs/promises)
+**Pattern Applied**: Top-level vi.mock() with module-level mock functions
+
+### Changes Made:
+- Moved both vi.doMock() calls from inside first test to top-level
+- Created mockReadFile and mockFileURLToPath at module level
+- First test uses mockReadFile.mockImplementation() to configure per-test behavior
+- Module reload within beforeEach resets all mocks for consistent test isolation
+
+### Test Results:
+✅ **Individual test**: 6 passed (6) in 1.48s
+✅ **Combined batch (11 files)**: 31 passed (31) in 12.20s
+
+### Key Achievement:
+- Pattern works well for Node.js environment mocking with complex implementations
+- mockImplementation allows per-test behavior configuration
+- All 6 embedding loader tests passing (offline, single-file, manifest, retry, error cases)
+
+---
+
+## Session 5: Task 12 - timerService.test.js Migration
+
+**File**: `tests/helpers/timerService.test.js`
+**Challenge**: Two `vi.doMock()` calls inside beforeEach with complex closure-based makeTimer function
+**Pattern Applied**: Module-level state references in mock factory
+
+### Changes Made:
+- Moved mockAutoSelectStat to module level hoisted function
+- Moved battleEngineFacade mock to top-level vi.mock() with factory
+- Factory function references module-level `scheduler` variable (set in beforeEach)
+- makeTimer closure has access to scheduler via module-level variable
+
+### Test Results:
+✅ **Individual test**: 4 passed (4) in 1.74s
+✅ **Combined batch (12 files)**: 33 passed (33) in 12.30s
+
+### Key Achievement:
+- Pattern works for complex stateful mocks with closure-based APIs
+- Module-level state variables work when mock factory functions reference them
+- No need for vi.doMock inside hooks - all resolved at module level
+
+---
+
+## Session 5: EXTENDED - Final Status
+
+**Extended Session 5 Total Tasks**: 7 (Tasks 6-12)
+**Tests This Extended Session**: 18 passing (2+1+2+4+2+6+4)
+**Running Total**: 69 tests across 22 files
+**Success Rate**: 100% (69/69)
+**Regressions**: 0
+
+**Major Achievement**: Reached 69 tests migrated - well past 60 target!
+
+**Pattern Mastery Completed**:
+✅ Inline mocks in test blocks (roundStartError, rebindEngineEvents, resolveSelectionIfPresent)
+✅ Conditional/dynamic mock behavior (vectorSearch patterns)
+✅ Node.js environment mocking (vectorSearch.context, loader)
+✅ Configuration-based mocks with state (selectTopMatches, timerService)
+✅ Complex closures with module-level state (timerService makeTimer)
+
+**Cumulative Achievement (All Sessions)**:
+- Session 4: 5 files → 12 tests (Tasks 1-5)
+- Session 5: 7 files → 18 tests (Tasks 6-12)
+- **TOTAL**: 12 files migrated this combined effort, 30 tests added (69 total across 22 files)
+
+**Next Phase Ready**:
+- ~6-8 more 2-3 mock files identified
+- Estimated 10-15 additional tests within reach
+- Target: 80+ tests migrated by Session 6
+

@@ -4,6 +4,24 @@ import { createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 import "./commonMocks.js";
 
+// ===== Top-level vi.mock() call (Vitest static analysis phase) =====
+vi.mock("../../../src/helpers/battleEngineFacade.js", () => {
+  const mockEngine = { on: vi.fn(), off: vi.fn() };
+  const mockGetRoundsPlayed = vi.fn(() => 0);
+  return {
+    startCoolDown: vi.fn(),
+    pauseTimer: vi.fn(),
+    resumeTimer: vi.fn(),
+    createBattleEngine: vi.fn(),
+    getEngine: vi.fn(() => mockEngine),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
+    getRoundsPlayed: mockGetRoundsPlayed,
+    startRound: vi.fn(),
+    STATS: ["power"],
+    OUTCOME: {}
+  };
+});
+
 /**
  * Build a scoreboard header matching the Classic Battle layout.
  */
@@ -146,21 +164,6 @@ describe.sequential("ClassicBattleController.startRound", () => {
         battleStateBadge: { enabled: true }
       }
     });
-
-    const engine = { on: vi.fn(), off: vi.fn() };
-    const getRoundsPlayed = vi.fn(() => 0);
-    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
-      startCoolDown: vi.fn(),
-      pauseTimer: vi.fn(),
-      resumeTimer: vi.fn(),
-      createBattleEngine: vi.fn(),
-      getEngine: vi.fn(() => engine),
-      getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
-      getRoundsPlayed,
-      startRound: vi.fn(),
-      STATS: ["power"],
-      OUTCOME: {}
-    }));
 
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });

@@ -9,6 +9,16 @@ import {
   isDeprecatedEventName
 } from "../../../src/helpers/classicBattle/eventAliases.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const mockGetBattleEventTarget = vi.fn(() => ({
+  dispatchEvent: vi.fn()
+}));
+
+// ===== Top-level vi.mock() call (Vitest static analysis phase) =====
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+  getBattleEventTarget: mockGetBattleEventTarget
+}));
+
 describe("Event Alias System", () => {
   describe("EVENT_ALIASES mapping", () => {
     it("should have correct timer event aliases", () => {
@@ -153,13 +163,6 @@ describe("Event Alias System", () => {
   describe("emitBattleEventWithAliases integration", () => {
     it("should handle old event names by converting to new names", () => {
       const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-      // Mock the battleEvents module
-      vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-        getBattleEventTarget: () => ({
-          dispatchEvent: vi.fn()
-        })
-      }));
 
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = "development";
