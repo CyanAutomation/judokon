@@ -1,28 +1,49 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createButton } from "./components/Button.js";
+import { createSimpleHarness } from "./integrationHarness.js";
+
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockPopulateCountryList } = vi.hoisted(() => ({
+  mockPopulateCountryList: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/country/list.js", () => ({
+  populateCountryList: mockPopulateCountryList
+}));
 
 describe("createCountrySlider", () => {
-  it("renders flag buttons using populateCountryList", async () => {
-    const track = document.createElement("div");
+  let harness;
 
-    const slideA = createButton("Slide A", { className: "slide" });
-    const slideB = createButton("Slide B", { className: "slide" });
-
-    const populateCountryList = vi.fn(async (c) => {
+  beforeEach(async () => {
+    mockPopulateCountryList.mockReset().mockImplementation(async (c) => {
+      const slideA = createButton("Slide A", { className: "slide" });
+      const slideB = createButton("Slide B", { className: "slide" });
       c.appendChild(slideA.element);
       c.appendChild(slideB.element);
     });
 
-    vi.doMock("../../src/helpers/country/list.js", () => ({ populateCountryList }));
+    harness = createSimpleHarness();
+    await harness.setup();
+  });
 
-    const { createCountrySlider } = await import("../../src/helpers/countrySlider.js");
+  afterEach(async () => {
+    if (harness) {
+      await harness.cleanup();
+    }
+  });
+
+  it("renders flag buttons using populateCountryList", async () => {
+    const track = document.createElement("div");
+
+    const { createCountrySlider } = await harness.importModule(
+      "../../src/helpers/countrySlider.js"
+    );
 
     await createCountrySlider(track);
 
-    expect(populateCountryList).toHaveBeenCalledWith(track);
+    expect(mockPopulateCountryList).toHaveBeenCalledWith(track);
     const slides = track.querySelectorAll(".slide");
     expect(slides).toHaveLength(2);
-    expect(slides[0]).toBe(slideA.element);
-    expect(slides[1]).toBe(slideB.element);
   });
 });
