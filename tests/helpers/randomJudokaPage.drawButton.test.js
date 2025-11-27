@@ -19,7 +19,7 @@ const { mocks } = vi.hoisted(() => {
       enableCardInspector: { enabled: false }
     }
   };
-  
+
   const mockState = {
     generateRandomCard: vi.fn().mockResolvedValue({ name: "Test Judoka" }),
     fetchJson: vi.fn().mockResolvedValue([]),
@@ -31,7 +31,7 @@ const { mocks } = vi.hoisted(() => {
     readyCallbacks: [],
     baseSettings
   };
-  
+
   return { mocks: mockState };
 });
 
@@ -182,7 +182,7 @@ describe("randomJudokaPage draw button", () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const dataUtils = await import("../../src/helpers/dataUtils.js");
     const fetchSpy = vi.spyOn(dataUtils, "fetchJson").mockRejectedValue(new Error("fail"));
-    
+
     // Update module-level mocks for this test
     mocks.fetchJson.mockRejectedValue(new Error("fail"));
 

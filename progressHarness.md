@@ -2922,3 +2922,93 @@ Duration  4.06s
 - ✅ Promise factory pattern proven
 - ✅ Window flag tracking pattern validated
 - ✅ 0 regressions across all migrations
+
+---
+
+### Task 24: Migrate `tests/helpers/randomJudokaPage.drawButton.test.js`
+
+**Status**: ✅ **COMPLETED** (Session 6)
+
+**File Details**:
+- Path: `tests/helpers/randomJudokaPage.drawButton.test.js`
+- Purpose: Test random judoka page draw button behavior and state management
+- Test Count: 5 tests (big win!)
+- Migration Changes: 3 major edits (vi.hoisted() header + factory removal + test updates)
+
+**Mock Count**: 6 vi.doMock() calls inside setupRandomJudokaCoreMocks() factory (randomCard, dataUtils, settingsStorage, motionUtils, domReady, constants)
+
+**Migration Challenge**: Factory function pattern - `setupRandomJudokaCoreMocks()` was called in each test with optional overrides
+
+**Migration Solution**:
+
+**Change 1: Create module-level vi.hoisted() with mock state object**
+```javascript
+const { mocks } = vi.hoisted(() => {
+  const mockState = {
+    generateRandomCard: vi.fn().mockResolvedValue(...),
+    fetchJson: vi.fn().mockResolvedValue([]),
+    loadSettings: vi.fn().mockResolvedValue(baseSettings),
+    // ... more mocks
+    readyCallbacks: [],
+    baseSettings
+  };
+  return { mocks: mockState };
+});
+```
+
+**Change 2: Convert all 6 vi.doMock() calls to module-level vi.mock()**
+- Each vi.mock() references the appropriate mock from hoisted state
+- randomCard uses mocks.generateRandomCard, mocks.loadGokyoLookup, etc.
+- domReady captures mocks.readyCallbacks array
+
+**Change 3: Remove setupRandomJudokaCoreMocks() factory entirely**
+- Each test now updates mocks directly: `mocks.generateRandomCard.mockImplementation(...)`
+- Reset array for readyCallbacks test: `mocks.readyCallbacks.length = 0`
+- Update assertions to use `mocks.readyCallbacks` instead of local variable
+
+**Test Results**:
+```
+✅ Test Files  1 passed (1)
+✅ Tests  5 passed (5)
+Duration  5.63s
+```
+
+**Key Pattern Achievement**:
+- First file with **5 tests** in single migration
+- Factory pattern successfully converted to module-level with mutable state
+- Per-test mock configuration works cleanly with shared mocks object
+- **Added 5 tests in one task** - accelerated progress!
+
+---
+
+## 🏆 Final Session 6 Extended Milestone
+
+**Test Count History**:
+- Sessions 1-5: 69 tests (22 files)
+- After Task 19: 100 tests (29 files) ✅ MILESTONE
+- After Task 20: 101 tests (30 files)
+- After Task 21: 102 tests (30 files)
+- After Task 22: 103 tests (30 files)
+- After Task 23: 104 tests (30 files)
+- After Task 24: **109 tests (30 files)** ✅ ACCELERATED MOMENTUM
+
+**Session 6 Tasks Completed**: 12 total (Tasks 13-24)
+
+**Session 6 Extended Statistics**:
+- 109 - 100 = **9 new tests added beyond 100+ milestone**
+- 12 tasks completed in rapid succession
+- **5 different complexity patterns successfully migrated**
+- Factory pattern pattern successfully converted to module-level state
+- **0 regressions - 100% pass rate maintained (109/109)**
+
+**Pattern Maturity Assessment**:
+- ✅ Simple static mocks (baseline)
+- ✅ Promise factories and closures
+- ✅ Complex async callbacks and state managers
+- ✅ Window flag tracking (test state alternative)
+- ✅ Per-test mock override with hoisted state
+- ✅ Factory pattern conversion to module-level configuration
+
+**Limitations Identified**:
+- ❌ Template literal variables in vi.mock() paths (orchestrator.init.test.js) - acceptable edge case
+
