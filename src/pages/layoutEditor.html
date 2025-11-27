@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JU-DO-KON! Layout Editor</title>
+    <link rel="stylesheet" href="../styles/layoutEditor.css" />
+  </head>
+  <body>
+    <div id="editorContainer">
+      <!-- Toolbar -->
+      <div id="toolbar" class="toolbar">
+        <div class="toolbar-section">
+          <select id="layoutMode" class="mode-selector">
+            <option value="">-- Select Layout Mode --</option>
+          </select>
+          <button id="resetButton">Reset to Default</button>
+        </div>
+        <div class="toolbar-section">
+          <button id="exportJsonBtn">Export JSON</button>
+          <button id="exportAsciiBtn">View ASCII</button>
+          <button id="importBtn">Import Layout</button>
+        </div>
+        <div class="toolbar-section">
+          <input type="checkbox" id="gridSnapToggle" checked />
+          <label for="gridSnapToggle">Snap to Grid</label>
+          <input type="checkbox" id="showGridToggle" checked />
+          <label for="showGridToggle">Show Grid</label>
+        </div>
+      </div>
+
+      <!-- Main Editor Area -->
+      <div id="editorMain" class="editor-main">
+        <!-- Canvas Panel -->
+        <div id="canvasPanel" class="canvas-panel">
+          <div id="canvasContainer" class="canvas-container">
+            <canvas id="editorCanvas"></canvas>
+            <div id="regionOverlay" class="region-overlay"></div>
+          </div>
+          <div id="validationMessage" class="validation-message hidden"></div>
+        </div>
+
+        <!-- Property Inspector -->
+        <div id="propertyPanel" class="property-panel">
+          <h3>Region Properties</h3>
+          <div id="noSelection" class="placeholder">Select a region to edit</div>
+          <form id="regionForm" class="hidden">
+            <div class="form-group">
+              <label>ID</label>
+              <input type="text" id="regionId" disabled />
+            </div>
+            <div class="form-group">
+              <label>X (cols)</label>
+              <input type="number" id="regionX" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Y (rows)</label>
+              <input type="number" id="regionY" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Width (cols)</label>
+              <input type="number" id="regionWidth" min="1" />
+            </div>
+            <div class="form-group">
+              <label>Height (rows)</label>
+              <input type="number" id="regionHeight" min="1" />
+            </div>
+            <div class="form-group">
+              <label>Z-Index</label>
+              <input type="number" id="regionZIndex" />
+            </div>
+            <div class="form-group">
+              <label>Feature Flag (optional)</label>
+              <input type="text" id="regionFeatureFlag" />
+            </div>
+            <button type="submit" class="btn-primary">Apply</button>
+            <button type="button" id="deleteRegionBtn" class="btn-danger">Delete Region</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Preview Iframe -->
+      <div id="previewPanel" class="preview-panel hidden">
+        <div class="preview-header">
+          <h3>Live Preview</h3>
+          <button id="closePreviewBtn">&times;</button>
+        </div>
+        <iframe id="battlePreview" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+
+      <!-- Footer Console -->
+      <div id="consolePanel" class="console-panel">
+        <div id="consoleLogs" class="console-logs"></div>
+        <button id="clearConsoleBtn">Clear</button>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Import Layout</h2>
+        <div class="import-options">
+          <div class="option">
+            <h4>Paste JSON</h4>
+            <textarea
+              id="importTextarea"
+              placeholder='{"grid": {...}, "regions": [...]}'
+            ></textarea>
+            <button id="importFromTextBtn">Import</button>
+          </div>
+          <div class="option">
+            <h4>Upload File</h4>
+            <input type="file" id="importFile" accept=".json,.layout.js" />
+            <button id="importFromFileBtn">Import</button>
+          </div>
+          <div class="option">
+            <h4>Load from Registry</h4>
+            <select id="registrySelect"></select>
+            <button id="importFromRegistryBtn">Load</button>
+          </div>
+        </div>
+        <button id="closeImportBtn" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ASCII Export Modal -->
+    <div id="asciiModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>ASCII Preview</h2>
+        <pre id="asciiOutput"></pre>
+        <div class="modal-actions">
+          <button id="copyAsciiBtn">Copy to Clipboard</button>
+          <button id="downloadAsciiBtn">Download</button>
+          <button id="closeAsciiBtn" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../components/layoutEditor/index.js"></script>
+  </body>
+</html>

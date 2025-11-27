@@ -1,15 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { FALLBACK_VISIBILITY_RESUME_DELAY_MS } from "../../src/helpers/fallbackCountdown.js";
 
-const TIMER_UTILS_PATH = "../../src/helpers/timerUtils.js";
-
 // ===== Top-level vi.hoisted() for shared mock state =====
 const { mockGetDefaultTimer } = vi.hoisted(() => ({
   mockGetDefaultTimer: vi.fn(async () => 2)
 }));
 
 // ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
-vi.mock(TIMER_UTILS_PATH, () => ({
+vi.mock("../../src/helpers/timerUtils.js", () => ({
   getDefaultTimer: mockGetDefaultTimer
 }));
 
