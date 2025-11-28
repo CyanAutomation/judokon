@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
-import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { createBattleCardContainers, createBattleHeader } from "../../utils/testUtils.js";
 import { createRoundMessage, createSnackbarContainer, createTimerNodes } from "./domUtils.js";
 import { DEFAULT_MIN_PROMPT_DURATION_MS } from "../../../src/helpers/classicBattle/opponentPromptTracker.js";
 
@@ -97,6 +97,10 @@ describe("countdown resets after stat selection", () => {
   let battleMod;
   let store;
   let snackbarMock;
+  let promptReadySpy;
+  afterEach(() => {
+    promptReadySpy?.mockRestore();
+  });
   beforeEach(async () => {
     document.body.innerHTML = "";
     // Ensure previous tests don't leave snackbars disabled
@@ -109,18 +113,26 @@ describe("countdown resets after stat selection", () => {
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
     createRoundMessage("round-result");
-    const nextButton = document.createElement("button");
-    nextButton.id = "next-button";
-    nextButton.setAttribute("data-role", "next-round");
-    document.body.appendChild(nextButton);
+    const { nextRoundTimer } = createTimerNodes();
+    nextRoundTimer.remove();
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
     createSnackbarContainer();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     battleMod = await initClassicBattleTest({ afterMock: true });
     store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
+    const { bindUIServiceEventHandlersOnce } = await import(
+      "../../../src/helpers/classicBattle/uiService.js"
+    );
+    bindUIServiceEventHandlersOnce();
+    const promptTracker = await import("../../../src/helpers/classicBattle/opponentPromptTracker.js");
+    promptReadySpy = vi.spyOn(promptTracker, "isOpponentPromptReady").mockReturnValue(true);
     if (typeof window !== "undefined") {
-      window.__FF_OVERRIDES = { ...(window.__FF_OVERRIDES || {}), enableTestMode: false };
+      window.__FF_OVERRIDES = {
+        ...(window.__FF_OVERRIDES || {}),
+        enableTestMode: false,
+        skipRoundCooldown: false
+      };
       window.__disableSnackbars = false;
     }
     snackbarMock = await import("../../../src/helpers/showSnackbar.js");
@@ -130,43 +142,28 @@ describe("countdown resets after stat selection", () => {
   it("starts a visible countdown after stat selection", async () => {
     populateCards();
     const timers = useCanonicalTimers();
+    const countdownStarted = battleMod.getCountdownStartedPromise();
     const { randomSpy } = await selectPower(battleMod, store);
-    await vi.advanceTimersByTimeAsync(DEFAULT_MIN_PROMPT_DURATION_MS);
     await vi.runOnlyPendingTimersAsync();
+    await countdownStarted;
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    emitBattleEvent("countdownStart", { duration: 3 });
 
     const timerEl = document.querySelector("#next-round-timer");
     expect(timerEl).not.toBeNull();
     const valueNode = timerEl?.querySelector('[data-part="value"]');
-    const labelNode = timerEl?.querySelector('[data-part="label"]');
-
-    const setTimerValue = (remaining) => {
-      const normalized = Math.max(0, Math.round(Number(remaining) || 0));
-      if (labelNode) labelNode.textContent = normalized >= 0 ? "Time Left:" : "";
-      if (valueNode) {
-        valueNode.textContent = `${normalized}s`;
-      } else if (timerEl) {
-        timerEl.textContent = `Time Left: ${normalized}s`;
-      }
-    };
-
-    let remaining = 3;
-    setTimerValue(remaining);
-    const intervalId = setInterval(() => {
-      remaining -= 1;
-      setTimerValue(remaining);
-      if (remaining <= 0) {
-        clearInterval(intervalId);
-      }
-    }, 1000);
 
     const readings = [];
     const timerTexts = [];
+    const snackbarTexts = [];
 
     const recordTimerState = () => {
       const valueText = valueNode?.textContent || "";
       const remaining = Number(valueText.replace(/\D/g, ""));
       if (Number.isFinite(remaining)) readings.push(remaining);
       timerTexts.push(timerEl?.textContent?.trim() || "");
+      const snackbarText = document.querySelector(".snackbar")?.textContent || "";
+      snackbarTexts.push(snackbarText.trim());
     };
 
     recordTimerState();
@@ -177,15 +174,26 @@ describe("countdown resets after stat selection", () => {
       recordTimerState();
     }
 
-    expect(timerTexts.every((text) => /Time Left:\s*\d+s/.test(text))).toBe(true);
-    expect(readings[0]).toBeGreaterThan(readings[1]);
-    expect(readings[1]).toBeGreaterThanOrEqual(readings[2]);
-
     const snackbarText = document.querySelector(".snackbar")?.textContent || "";
+    const hasTimerPattern =
+      timerTexts.length > 0 && timerTexts.every((text) => /Time Left:\s*\d+s/.test(text));
+    const hasSnackbarPattern =
+      snackbarTexts.length > 0 && snackbarTexts.every((text) => /Next round in:\s*\d+s/.test(text));
+
+    expect(hasTimerPattern || hasSnackbarPattern).toBe(true);
+
+    const fallbackReadings = snackbarTexts
+      .map((text) => Number((text.match(/\d+/)?.[0] ?? NaN)))
+      .filter((value) => Number.isFinite(value));
+    const timerSeries = readings.filter((value) => Number.isFinite(value));
+    const samples = timerSeries.some((value) => value > 0) ? timerSeries : fallbackReadings;
+    expect(samples.length).toBeGreaterThanOrEqual(3);
+    expect(samples[0]).toBeGreaterThan(samples[1]);
+    expect(samples[1]).toBeGreaterThan(samples[2]);
+
     expect(snackbarText).toMatch(/Next round in:/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
-    clearInterval(intervalId);
     timers.cleanup();
     randomSpy.mockRestore();
   });
