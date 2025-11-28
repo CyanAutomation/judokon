@@ -147,6 +147,8 @@ When headless mode is active, rounds resolve back-to-back, dramatically increasi
 | **P2**   | Next Button            | Skips cooldown/timer when pressed; otherwise auto-progress after timer ends.                     |
 | **P3**   | Debug/Testing Mode     | With `enableTestMode`, expose debug panel, seed injection, and state progress list.              |
 
+User behavior linkage: when a player intentionally clicks a Next/Skip control during the cooldown countdown, the UI must stop the countdown snackbar and unlock stat buttons immediately to respect their choice to move on without waiting.
+
 ---
 
 ## Feature Flags
