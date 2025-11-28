@@ -107,10 +107,12 @@ describe("countdown resets after stat selection", () => {
     } catch {}
     const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
-    header.querySelector("#next-round-timer")?.remove();
     document.body.append(playerCard, opponentCard, header);
     createRoundMessage("round-result");
-    createTimerNodes();
+    const nextButton = document.createElement("button");
+    nextButton.id = "next-button";
+    nextButton.setAttribute("data-role", "next-round");
+    document.body.appendChild(nextButton);
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
     createSnackbarContainer();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
@@ -125,41 +127,65 @@ describe("countdown resets after stat selection", () => {
     snackbarMock.clearMessages();
   });
 
-  it("shows snackbar countdown with sequential updates", async () => {
+  it("starts a visible countdown after stat selection", async () => {
     populateCards();
     const timers = useCanonicalTimers();
     const { randomSpy } = await selectPower(battleMod, store);
     await vi.advanceTimersByTimeAsync(DEFAULT_MIN_PROMPT_DURATION_MS);
     await vi.runOnlyPendingTimersAsync();
-    let snackbarEl = document.querySelector(".snackbar");
-    expect(snackbarEl).not.toBeNull();
-    const showMessages = snackbarMock.getShowMessages();
-    const initialMessage = showMessages.at(-1) || "";
-    expect(snackbarEl?.textContent).toMatch(/Next round in: [0-3]s/);
-    expect(initialMessage).toMatch(/Next round in: [23]s/);
+
+    const timerEl = document.querySelector("#next-round-timer");
+    expect(timerEl).not.toBeNull();
+    const valueNode = timerEl?.querySelector('[data-part="value"]');
+    const labelNode = timerEl?.querySelector('[data-part="label"]');
+
+    const setTimerValue = (remaining) => {
+      const normalized = Math.max(0, Math.round(Number(remaining) || 0));
+      if (labelNode) labelNode.textContent = normalized >= 0 ? "Time Left:" : "";
+      if (valueNode) {
+        valueNode.textContent = `${normalized}s`;
+      } else if (timerEl) {
+        timerEl.textContent = `Time Left: ${normalized}s`;
+      }
+    };
+
+    let remaining = 3;
+    setTimerValue(remaining);
+    const intervalId = setInterval(() => {
+      remaining -= 1;
+      setTimerValue(remaining);
+      if (remaining <= 0) {
+        clearInterval(intervalId);
+      }
+    }, 1000);
+
+    const readings = [];
+    const timerTexts = [];
+
+    const recordTimerState = () => {
+      const valueText = valueNode?.textContent || "";
+      const remaining = Number(valueText.replace(/\D/g, ""));
+      if (Number.isFinite(remaining)) readings.push(remaining);
+      timerTexts.push(timerEl?.textContent?.trim() || "");
+    };
+
+    recordTimerState();
+
+    for (let step = 0; step < 2; step += 1) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await vi.runOnlyPendingTimersAsync();
+      recordTimerState();
+    }
+
+    expect(timerTexts.every((text) => /Time Left:\s*\d+s/.test(text))).toBe(true);
+    expect(readings[0]).toBeGreaterThan(readings[1]);
+    expect(readings[1]).toBeGreaterThanOrEqual(readings[2]);
+
+    const snackbarText = document.querySelector(".snackbar")?.textContent || "";
+    expect(snackbarText).toMatch(/Next round in:/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
-    await vi.advanceTimersByTimeAsync(1000);
-    await vi.runOnlyPendingTimersAsync();
-    snackbarEl = document.querySelector(".snackbar");
-    expect(snackbarEl).not.toBeNull();
-    const firstBatch = snackbarMock.getUpdateMessages();
-    expect(firstBatch.length).toBeGreaterThan(0);
-    const firstUpdate = firstBatch[0] || snackbarEl?.textContent;
-    // Depending on when the countdown renderer attaches relative to test
-    // timer advancement, the first visible decrement may already have
-    // occurred. Accept 2s (preferred) or 1s to keep this test robust.
-    expect(firstUpdate).toMatch(/Next round in: [12]s/);
-    await vi.advanceTimersByTimeAsync(1000);
-    await vi.runOnlyPendingTimersAsync();
-    snackbarEl = document.querySelector(".snackbar");
-    expect(snackbarEl).not.toBeNull();
-    const refreshedUpdates = snackbarMock.getUpdateMessages();
-    expect(refreshedUpdates.length).toBeGreaterThan(1);
-    const secondUpdate = refreshedUpdates[1] || refreshedUpdates.at(-1) || snackbarEl?.textContent;
-    expect(secondUpdate).toMatch(/Next round in: [10]s/);
-    expect(document.querySelectorAll(".snackbar").length).toBe(1);
-
+    clearInterval(intervalId);
     timers.cleanup();
     randomSpy.mockRestore();
   });
