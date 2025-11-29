@@ -191,7 +191,7 @@ describe("countdown resets after stat selection", () => {
     const fallbackReadings = snackbarTexts
       .map((text) => Number(text.match(/\d+/)?.[0] ?? NaN))
       .filter((value) => Number.isFinite(value));
-    const normalizedTimerTexts = timerTexts;
+    const timerTextSamples = timerTexts.filter((text) => text.trim().length > 0);
     const timerTextSamples = normalizedTimerTexts.filter((text) => text.trim().length > 0);
     const hasTimerPattern =
       timerTextSamples.length > 0 &&
