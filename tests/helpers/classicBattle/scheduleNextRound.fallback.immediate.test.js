@@ -4,22 +4,20 @@ import { createMockScheduler } from "../mockScheduler.js";
 import { createSimpleHarness } from "../integrationHarness.js";
 import { resetDispatchHistory } from "/src/helpers/classicBattle/eventDispatcher.js";
 
-const READY_EVENT = "ready";
-
 /**
  * Shared mock state for all test suites.
  * Uses vi.hoisted() to ensure these are created before module imports.
  */
 const mockState = vi.hoisted(() => ({
   dispatchSpy: null,
-  scheduler: null,
+  scheduler: null
 }));
 
 // Mock event dispatcher (specifier 1: alias)
 const dispatcherMockRef = vi.hoisted(() => vi.fn(() => true));
 vi.mock("/src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: dispatcherMockRef,
-  resetDispatchHistory: vi.fn(),
+  resetDispatchHistory: vi.fn()
 }));
 
 describe("handleNextRoundExpiration immediate readiness", () => {

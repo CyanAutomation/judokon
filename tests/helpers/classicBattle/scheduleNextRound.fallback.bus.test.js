@@ -1,22 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSimpleHarness } from "../integrationHarness.js";
-import { resetDispatchHistory } from "/src/helpers/classicBattle/eventDispatcher.js";
-
-const READY_EVENT = "ready";
 
 /**
  * Shared mock state for all test suites.
  * Uses vi.hoisted() to ensure these are created before module imports.
  */
 const mockState = vi.hoisted(() => ({
-  dispatchSpy: null,
+  dispatchSpy: null
 }));
 
 // Mock event dispatcher (specifier 1: alias)
 const dispatcherMockRef = vi.hoisted(() => vi.fn(() => true));
 vi.mock("/src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: dispatcherMockRef,
-  resetDispatchHistory: vi.fn(),
+  resetDispatchHistory: vi.fn()
 }));
 
 describe("bus propagation and deduplication", () => {
@@ -42,18 +39,15 @@ describe("bus propagation and deduplication", () => {
     const expirationHandlersModule = await harness.importModule(
       "/src/helpers/classicBattle/nextRound/expirationHandlers.js"
     );
-    const dispatchReadyViaBusSpy = vi.spyOn(
-      expirationHandlersModule,
-      "dispatchReadyViaBus"
-    );
+    const dispatchReadyViaBusSpy = vi.spyOn(expirationHandlersModule, "dispatchReadyViaBus");
 
     mockState.dispatchSpy.mockClear();
     const directResult = await expirationHandlersModule.dispatchReadyDirectly({
-      machineReader: () => machine,
+      machineReader: () => machine
     });
     const busResult = await expirationHandlersModule.dispatchReadyViaBus({
       dispatchBattleEvent: mockState.dispatchSpy,
-      alreadyDispatched: directResult.dispatched && directResult.dedupeTracked,
+      alreadyDispatched: directResult.dispatched && directResult.dedupeTracked
     });
     expect(busResult).toBe(true);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
@@ -69,21 +63,18 @@ describe("bus propagation and deduplication", () => {
     const expirationHandlersModule = await harness.importModule(
       "/src/helpers/classicBattle/nextRound/expirationHandlers.js"
     );
-    const dispatchReadyViaBusSpy = vi.spyOn(
-      expirationHandlersModule,
-      "dispatchReadyViaBus"
-    );
+    const dispatchReadyViaBusSpy = vi.spyOn(expirationHandlersModule, "dispatchReadyViaBus");
 
     mockState.dispatchSpy.mockClear();
     mockState.dispatchSpy.mockImplementationOnce(() => false);
     mockState.dispatchSpy.mockImplementation(() => true);
 
     const directResult = await expirationHandlersModule.dispatchReadyDirectly({
-      machineReader: () => machine,
+      machineReader: () => machine
     });
     const busResult = await expirationHandlersModule.dispatchReadyViaBus({
       dispatchBattleEvent: mockState.dispatchSpy,
-      alreadyDispatched: directResult.dispatched && directResult.dedupeTracked,
+      alreadyDispatched: directResult.dispatched && directResult.dedupeTracked
     });
     expect(busResult).toBe(true);
     expect(mockState.dispatchSpy).toHaveBeenCalledTimes(2);
@@ -93,7 +84,7 @@ describe("bus propagation and deduplication", () => {
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         dispatchBattleEvent: mockState.dispatchSpy,
-        alreadyDispatched: false,
+        alreadyDispatched: false
       })
     );
     expect(directResult).toEqual({ dispatched: true, dedupeTracked: false });

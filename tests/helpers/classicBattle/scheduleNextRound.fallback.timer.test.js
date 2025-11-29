@@ -4,21 +4,19 @@ import { createMockScheduler } from "../mockScheduler.js";
 import { createSimpleHarness } from "../integrationHarness.js";
 import { resetDispatchHistory } from "/src/helpers/classicBattle/eventDispatcher.js";
 
-const READY_EVENT = "ready";
-
 /**
  * Shared mock state for all test suites.
  * Uses vi.hoisted() to ensure these are created before module imports.
  */
 const mockState = vi.hoisted(() => ({
-  scheduler: null,
+  scheduler: null
 }));
 
 // Mock event dispatcher (specifier 1: alias)
 const dispatcherMockRef = vi.hoisted(() => vi.fn(() => true));
 vi.mock("/src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: dispatcherMockRef,
-  resetDispatchHistory: vi.fn(),
+  resetDispatchHistory: vi.fn()
 }));
 
 // Mock battle engine facade with scheduler support
@@ -27,12 +25,12 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
     startRound: mockMakeTimer,
     startCoolDown: mockMakeTimer,
     stopTimer: vi.fn(),
-    STATS: ["a", "b"],
+    STATS: ["a", "b"]
   }),
   startRound: mockMakeTimer,
   startCoolDown: mockMakeTimer,
   stopTimer: vi.fn(),
-  STATS: ["a", "b"],
+  STATS: ["a", "b"]
 }));
 
 function mockMakeTimer(onTick, onExpired, duration) {
@@ -55,14 +53,14 @@ function mockMakeTimer(onTick, onExpired, duration) {
 vi.mock("../../../src/helpers/classicBattle/debugHooks.js", () => {
   const mock = {
     readDebugState: vi.fn(() => null),
-    exposeDebugState: vi.fn(),
+    exposeDebugState: vi.fn()
   };
   return { ...mock, default: mock };
 });
 
 // Mock debugPanel
 vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
-  updateDebugPanel: vi.fn(),
+  updateDebugPanel: vi.fn()
 }));
 
 describe("startCooldown fallback timer", () => {

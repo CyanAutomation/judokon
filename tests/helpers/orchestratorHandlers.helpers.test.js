@@ -25,9 +25,7 @@ beforeEach(async () => {
   harness = createSimpleHarness();
   await harness.setup();
 
-  debugHooks = await harness.importModule(
-    "../../src/helpers/classicBattle/debugHooks.js"
-  );
+  debugHooks = await harness.importModule("../../src/helpers/classicBattle/debugHooks.js");
   document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
   store = {};
   vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {

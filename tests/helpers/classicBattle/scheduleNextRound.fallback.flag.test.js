@@ -9,14 +9,14 @@ import { createSimpleHarness } from "../integrationHarness.js";
  */
 const mockState = vi.hoisted(() => ({
   dispatchSpy: null,
-  scheduler: null,
+  scheduler: null
 }));
 
 // Mock event dispatcher (specifier 1: alias)
 const dispatcherMockRef = vi.hoisted(() => vi.fn(() => true));
 vi.mock("/src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: dispatcherMockRef,
-  resetDispatchHistory: vi.fn(),
+  resetDispatchHistory: vi.fn()
 }));
 
 describe("fallback readiness flag discipline", () => {
@@ -56,10 +56,7 @@ describe("fallback readiness flag discipline", () => {
         capturedCalls.push(options);
         return { dispatched: false, fallbackDispatched: true };
       });
-    const setReadySpy = vi.spyOn(
-      readyStateModule,
-      "setReadyDispatchedForCurrentCooldown"
-    );
+    const setReadySpy = vi.spyOn(readyStateModule, "setReadyDispatchedForCurrentCooldown");
     readyStateModule.setReadyDispatchedForCurrentCooldown(false);
 
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
@@ -72,7 +69,7 @@ describe("fallback readiness flag discipline", () => {
       dispatchBattleEvent: vi.fn(() => false),
       useGlobalReadyFallback: true,
       getClassicBattleMachine: () => ({ state: { value: "cooldown" } }),
-      isOrchestrated: () => true,
+      isOrchestrated: () => true
     });
 
     await vi.runAllTimersAsync();
@@ -82,9 +79,7 @@ describe("fallback readiness flag discipline", () => {
     expect(capturedCalls[0]?.alreadyDispatchedReady).toBe(false);
     expect(capturedCalls[0]?.returnOutcome).toBe(true);
     expect(setReadySpy).toHaveBeenCalledWith(true);
-    expect(
-      readyStateModule.hasReadyBeenDispatchedForCurrentCooldown()
-    ).toBe(true);
+    expect(readyStateModule.hasReadyBeenDispatchedForCurrentCooldown()).toBe(true);
 
     const emitTelemetry = vi.fn();
     const guardStrategies = [vi.fn(() => true)];
@@ -92,23 +87,18 @@ describe("fallback readiness flag discipline", () => {
     setReadySpy.mockRestore();
 
     try {
-      const guardResult =
-        await expirationHandlersModule.runReadyDispatchStrategies({
-          alreadyDispatchedReady:
-            readyStateModule.hasReadyBeenDispatchedForCurrentCooldown(),
-          strategies: guardStrategies,
-          emitTelemetry,
-          returnOutcome: true,
-        });
+      const guardResult = await expirationHandlersModule.runReadyDispatchStrategies({
+        alreadyDispatchedReady: readyStateModule.hasReadyBeenDispatchedForCurrentCooldown(),
+        strategies: guardStrategies,
+        emitTelemetry,
+        returnOutcome: true
+      });
       expect(guardStrategies[0]).not.toHaveBeenCalled();
       expect(guardResult).toEqual({
         dispatched: true,
-        fallbackDispatched: false,
+        fallbackDispatched: false
       });
-      expect(emitTelemetry).toHaveBeenCalledWith(
-        "handleNextRoundDispatchResult",
-        true
-      );
+      expect(emitTelemetry).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
     } finally {
       readyStateModule.setReadyDispatchedForCurrentCooldown(false);
       vi.restoreAllMocks();
