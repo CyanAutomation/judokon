@@ -39,5 +39,5 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
 
   // Ensure subsequent helper writes are reflected visually for players
   await page.evaluate(() => window.__TEST_API.timers.setCountdown(10));
-  await expect(countdown).toHaveText(/Timer: 10/);
+  await expect(countdown).toHaveText(/Timer: 10\b/);
 });
