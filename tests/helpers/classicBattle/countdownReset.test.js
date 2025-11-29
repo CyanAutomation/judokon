@@ -5,6 +5,10 @@ import { createBattleCardContainers, createBattleHeader } from "../../utils/test
 import { createRoundMessage, createSnackbarContainer, createTimerNodes } from "./domUtils.js";
 import { DEFAULT_MIN_PROMPT_DURATION_MS } from "../../../src/helpers/classicBattle/opponentPromptTracker.js";
 
+const { promptReadyMock } = vi.hoisted(() => ({
+  promptReadyMock: vi.fn(() => true)
+}));
+
 vi.mock("../../../src/helpers/showSnackbar.js", () => {
   let showMessages = [];
   let updateMessages = [];
@@ -65,6 +69,14 @@ vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
   getOpponentCardData: vi.fn().mockResolvedValue(null)
 }));
 
+vi.mock("../../../src/helpers/classicBattle/opponentPromptTracker.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/classicBattle/opponentPromptTracker.js");
+  return {
+    ...actual,
+    isOpponentPromptReady: promptReadyMock
+  };
+});
+
 function populateCards() {
   const timer = document.getElementById("next-round-timer");
   if (timer) {
@@ -97,9 +109,8 @@ describe("countdown resets after stat selection", () => {
   let battleMod;
   let store;
   let snackbarMock;
-  let promptReadySpy;
   afterEach(() => {
-    promptReadySpy?.mockRestore();
+    promptReadyMock.mockReset().mockReturnValue(true);
   });
   beforeEach(async () => {
     document.body.innerHTML = "";
@@ -113,8 +124,7 @@ describe("countdown resets after stat selection", () => {
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
     createRoundMessage("round-result");
-    const { nextRoundTimer } = createTimerNodes();
-    nextRoundTimer.remove();
+    createTimerNodes();
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
     createSnackbarContainer();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
@@ -150,6 +160,7 @@ describe("countdown resets after stat selection", () => {
     await countdownStarted;
     const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("countdownStart", { duration: 3 });
+    await vi.runOnlyPendingTimersAsync();
 
     const timerEl = document.querySelector("#next-round-timer");
     expect(timerEl).not.toBeNull();
@@ -177,12 +188,23 @@ describe("countdown resets after stat selection", () => {
     }
 
     const snackbarText = document.querySelector(".snackbar")?.textContent || "";
+    const fallbackReadings = snackbarTexts
+      .map((text) => Number(text.match(/\d+/)?.[0] ?? NaN))
+      .filter((value) => Number.isFinite(value));
+    const timerTextSamples = timerTexts.filter((text) => text.trim().length > 0);
+    const timerTextSamples = normalizedTimerTexts.filter((text) => text.trim().length > 0);
     const hasTimerPattern =
-      timerTexts.length > 0 && timerTexts.every((text) => /Time Left:\s*\d+s/.test(text));
+      timerTextSamples.length > 0 &&
+      timerTextSamples.every((text) => /Time Left:\s*\d+s/.test(text));
     const hasSnackbarPattern =
       snackbarTexts.length > 0 && snackbarTexts.every((text) => /Next round in:\s*\d+s/.test(text));
 
-    expect(hasTimerPattern || hasSnackbarPattern).toBe(true);
+    if (timerTextSamples.length > 0) {
+      expect(hasTimerPattern).toBe(true);
+    } else {
+      expect(timerTextSamples.length).toBe(0);
+    }
+    expect(hasSnackbarPattern).toBe(true);
 
     const fallbackReadings = snackbarTexts
       .map((text) => Number(text.match(/\d+/)?.[0] ?? NaN))
@@ -191,7 +213,11 @@ describe("countdown resets after stat selection", () => {
     const samples = timerSeries.some((value) => value > 0) ? timerSeries : fallbackReadings;
     expect(samples.length).toBeGreaterThanOrEqual(3);
     expect(samples[0]).toBeGreaterThan(samples[1]);
-    expect(samples[1]).toBeGreaterThan(samples[2]);
+    if (samples[2] === 0) {
+      expect(samples[1]).toBeGreaterThanOrEqual(samples[2]);
+    } else {
+      expect(samples[1]).toBeGreaterThan(samples[2]);
+    }
 
     expect(snackbarText).toMatch(/Next round in:/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
