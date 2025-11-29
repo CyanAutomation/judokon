@@ -34,7 +34,7 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
   await page.evaluate(() => window.__TEST_API.timers.setCountdown(12));
 
   const countdown = page.locator("#cli-countdown");
-  await expect(countdown).toHaveText(/Timer: 12/);
+  await expect(countdown).toHaveText(/Timer: 12\b/);
   await expect(countdown).toHaveAttribute("data-remaining-time", "12");
 
   // Ensure subsequent helper writes are reflected visually for players
