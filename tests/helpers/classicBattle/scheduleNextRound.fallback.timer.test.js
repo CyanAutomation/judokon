@@ -92,7 +92,7 @@ describe("startCooldown fallback timer", () => {
 
   it("resolves ready after fallback timer and enables button", async () => {
     const { startCooldown } = await harness.importModule(
-      "../../../../src/helpers/classicBattle/roundManager.js"
+      "/src/helpers/classicBattle/roundManager.js"
     );
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
@@ -114,7 +114,7 @@ describe("startCooldown fallback timer", () => {
   it("resolves ready when dispatcher reports false and enables button", async () => {
     dispatcherMockRef.mockImplementation(() => false);
     const { startCooldown } = await harness.importModule(
-      "../../../../src/helpers/classicBattle/roundManager.js"
+      "/src/helpers/classicBattle/roundManager.js"
     );
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;

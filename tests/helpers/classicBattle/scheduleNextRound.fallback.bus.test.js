@@ -40,7 +40,7 @@ describe("bus propagation and deduplication", () => {
 
   it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
     const expirationHandlersModule = await harness.importModule(
-      "../../../../src/helpers/classicBattle/nextRound/expirationHandlers.js"
+      "/src/helpers/classicBattle/nextRound/expirationHandlers.js"
     );
     const dispatchReadyViaBusSpy = vi.spyOn(
       expirationHandlersModule,
@@ -67,7 +67,7 @@ describe("bus propagation and deduplication", () => {
 
   it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
     const expirationHandlersModule = await harness.importModule(
-      "../../../src/helpers/classicBattle/nextRound/expirationHandlers.js"
+      "/src/helpers/classicBattle/nextRound/expirationHandlers.js"
     );
     const dispatchReadyViaBusSpy = vi.spyOn(
       expirationHandlersModule,

@@ -52,7 +52,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../../src/helpers/classicBattle/roundManager.js"
+      "/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     expect(controls).toBeTruthy();
@@ -70,7 +70,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../../src/helpers/classicBattle/roundManager.js"
+      "/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     expect(controls).toBeTruthy();

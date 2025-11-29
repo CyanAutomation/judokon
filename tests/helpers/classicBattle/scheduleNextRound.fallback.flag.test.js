@@ -44,10 +44,10 @@ describe("fallback readiness flag discipline", () => {
 
   it("marks readiness after fallback dispatch and short-circuits future attempts", async () => {
     const expirationHandlersModule = await harness.importModule(
-      "../../../../src/helpers/classicBattle/nextRound/expirationHandlers.js"
+      "/src/helpers/classicBattle/nextRound/expirationHandlers.js"
     );
     const readyStateModule = await harness.importModule(
-      "../../../../src/helpers/classicBattle/roundReadyState.js"
+      "/src/helpers/classicBattle/roundReadyState.js"
     );
     const capturedCalls = [];
     const runReadySpy = vi
@@ -66,7 +66,7 @@ describe("fallback readiness flag discipline", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../src/helpers/classicBattle/roundManager.js"
+      "/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler, {
       dispatchBattleEvent: vi.fn(() => false),

@@ -68,7 +68,7 @@ describe("startCooldown ready dispatch discipline", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../../src/helpers/classicBattle/roundManager.js"
+      "/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
@@ -83,7 +83,7 @@ describe("startCooldown ready dispatch discipline", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
 
     const { startCooldown } = await harness.importModule(
-      "../../../../src/helpers/classicBattle/roundManager.js"
+      "/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
