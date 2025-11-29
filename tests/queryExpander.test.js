@@ -6,6 +6,15 @@ import {
   getSynonymStats
 } from "../src/helpers/queryExpander.js";
 
+const { mockFetchJson, mockSynonymMap } = vi.hoisted(() => ({
+  mockFetchJson: vi.fn(),
+  mockSynonymMap: {
+    kumikata: ["kumi-kata", "grip fighting"],
+    scoreboard: ["score board"],
+    countdown: ["timer"]
+  }
+}));
+
 describe("Query Expansion", () => {
   describe("Basic Query Expansion", () => {
     it("should expand query with matching synonyms", async () => {
@@ -247,15 +256,28 @@ describe("Query Expansion", () => {
 
     it("should cache synonyms for subsequent calls", async () => {
       vi.resetModules();
-      const dataUtils = await import("../src/helpers/dataUtils.js");
-      const fetchSpy = vi.spyOn(dataUtils, "fetchJson");
-      const { expandQuery: freshExpandQuery } = await import("../src/helpers/queryExpander.js");
+      mockFetchJson.mockReset().mockResolvedValue(mockSynonymMap);
+      vi.doMock("../src/helpers/dataUtils.js", () => ({
+        fetchJson: mockFetchJson
+      }));
+
+      const {
+        expandQuery: freshExpandQuery,
+        resetSynonymCache,
+        getSynonymCacheHits
+      } = await import("../src/helpers/queryExpander.js");
+
+      resetSynonymCache();
 
       await freshExpandQuery("kumikata");
-      const afterFirstLoad = fetchSpy.mock.calls.length;
-      await freshExpandQuery("scoreboard");
+      expect(mockFetchJson).toHaveBeenCalledTimes(1);
+      expect(getSynonymCacheHits()).toBe(0);
 
-      expect(fetchSpy.mock.calls.length).toBe(afterFirstLoad);
+      await freshExpandQuery("scoreboard");
+      expect(mockFetchJson).toHaveBeenCalledTimes(1);
+      expect(getSynonymCacheHits()).toBe(1);
+
+      vi.unmock("../src/helpers/dataUtils.js");
     });
   });
 
