@@ -3,7 +3,8 @@ import {
   MAX_QUERY_LENGTH,
   MAX_QUERY_TERMS,
   expandQuery,
-  getSynonymStats
+  getSynonymStats,
+  resetSynonymCache
 } from "../src/helpers/queryExpander.js";
 
 const { mockFetchJson, mockSynonymMap } = vi.hoisted(() => ({
@@ -16,6 +17,15 @@ const { mockFetchJson, mockSynonymMap } = vi.hoisted(() => ({
 }));
 
 describe("Query Expansion", () => {
+  beforeEach(() => {
+    resetSynonymCache();
+  });
+
+  afterEach(() => {
+    vi.unmock("../src/helpers/dataUtils.js");
+    resetSynonymCache();
+  });
+
   describe("Basic Query Expansion", () => {
     it("should expand query with matching synonyms", async () => {
       const result = await expandQuery("kumikata grip");

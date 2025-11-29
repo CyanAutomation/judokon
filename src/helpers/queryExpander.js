@@ -37,7 +37,8 @@ export const MAX_QUERY_LENGTH = 512;
  */
 
 let synonymsCache;
-let synonymCacheHits = 0;
+let synonymsCachePromise;
+const synonymCacheHits = new Int32Array(new SharedArrayBuffer(4));
 
 /**
  * Load the synonym mapping JSON
@@ -45,18 +46,28 @@ let synonymCacheHits = 0;
  */
 async function loadSynonyms() {
   if (synonymsCache) {
-    synonymCacheHits += 1;
+    Atomics.add(synonymCacheHits, 0, 1);
     return synonymsCache;
   }
 
-  try {
-    synonymsCache = await fetchJson(`${DATA_DIR}synonyms.json`);
-  } catch (err) {
-    console.error("Failed to load synonyms.json:", err.message);
-    synonymsCache = {};
+  if (!synonymsCachePromise) {
+    synonymsCachePromise = (async () => {
+      try {
+        const data = await fetchJson(`${DATA_DIR}synonyms.json`);
+        synonymsCache = data;
+      } catch (err) {
+        console.error("Failed to load synonyms.json:", err.message);
+        synonymsCache = {};
+      } finally {
+        // Ensure the in-flight promise is cleared before future callers increment hits
+        synonymsCachePromise = undefined;
+      }
+
+      return synonymsCache;
+    })();
   }
 
-  return synonymsCache;
+  return synonymsCachePromise;
 }
 
 /**
@@ -232,11 +243,12 @@ export async function getSynonymStats() {
 
 export function resetSynonymCache() {
   synonymsCache = undefined;
-  synonymCacheHits = 0;
+  synonymsCachePromise = undefined;
+  Atomics.store(synonymCacheHits, 0, 0);
 }
 
 export function getSynonymCacheHits() {
-  return synonymCacheHits;
+  return Atomics.load(synonymCacheHits, 0);
 }
 
 export default { expandQuery, getSynonymStats };
