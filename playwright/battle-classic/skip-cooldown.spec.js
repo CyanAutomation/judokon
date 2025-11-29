@@ -31,10 +31,10 @@ test.describe("Classic Battle cooldown skip via UI", () => {
       await expect(snackbar).toBeVisible();
       const timerValue = page.locator("#next-round-timer [data-part='value']");
 
-      const initialCountdown = await expect
+      await expect
         .poll(async () => (await timerValue.textContent())?.trim(), { timeout: 10_000 })
         .not.toBe("0s");
-      const initialSnackbarText = await snackbar.textContent();
+      const initialCountdown = (await timerValue.textContent())?.trim() ?? "";
 
       const nextButton = page.getByTestId("next-button");
       await expect(nextButton).toBeEnabled();
@@ -42,11 +42,13 @@ test.describe("Classic Battle cooldown skip via UI", () => {
 
       const skipControl = page.getByRole("button", { name: /skip/i }).first();
       const controlToUse = (await skipControl.count()) > 0 ? skipControl : nextButton;
+
+      // controlToUse is guaranteed to be either skipControl or nextButton from line 44
       await controlToUse.click();
 
       await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false });
       await expect(snackbar).toBeVisible();
-      await expect(timerValue).not.toHaveText(initialCountdown ?? "");
+      await expect(timerValue).not.toHaveText(initialCountdown);
       await expect(nextButton).not.toHaveAttribute("data-next-ready", "true");
       await expect(statButton).toBeEnabled();
     }, ["log", "info", "warn", "error", "debug"]);

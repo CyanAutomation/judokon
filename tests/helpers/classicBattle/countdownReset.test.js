@@ -135,6 +135,10 @@ describe("countdown resets after stat selection", () => {
       "../../../src/helpers/classicBattle/uiService.js"
     );
     bindUIServiceEventHandlersOnce();
+    const promptTracker = await import(
+      "../../../src/helpers/classicBattle/opponentPromptTracker.js"
+    );
+    promptReadySpy = vi.spyOn(promptTracker, "isOpponentPromptReady").mockReturnValue(true);
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES = {
         ...(window.__FF_OVERRIDES || {}),
@@ -202,6 +206,9 @@ describe("countdown resets after stat selection", () => {
     }
     expect(hasSnackbarPattern).toBe(true);
 
+    const fallbackReadings = snackbarTexts
+      .map((text) => Number(text.match(/\d+/)?.[0] ?? NaN))
+      .filter((value) => Number.isFinite(value));
     const timerSeries = readings.filter((value) => Number.isFinite(value));
     const samples = timerSeries.some((value) => value > 0) ? timerSeries : fallbackReadings;
     expect(samples.length).toBeGreaterThanOrEqual(3);
