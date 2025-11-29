@@ -37,20 +37,25 @@ export const MAX_QUERY_LENGTH = 512;
  */
 
 let synonymsCache;
+let synonymCacheHits = 0;
 
 /**
  * Load the synonym mapping JSON
  * @returns {Promise<Record<string, string[]>>} Synonym map or empty object on failure
  */
 async function loadSynonyms() {
-  if (!synonymsCache) {
-    try {
-      synonymsCache = await fetchJson(`${DATA_DIR}synonyms.json`);
-    } catch (err) {
-      console.error("Failed to load synonyms.json:", err.message);
-      synonymsCache = {};
-    }
+  if (synonymsCache) {
+    synonymCacheHits += 1;
+    return synonymsCache;
   }
+
+  try {
+    synonymsCache = await fetchJson(`${DATA_DIR}synonyms.json`);
+  } catch (err) {
+    console.error("Failed to load synonyms.json:", err.message);
+    synonymsCache = {};
+  }
+
   return synonymsCache;
 }
 
@@ -223,6 +228,15 @@ export async function getSynonymStats() {
       .slice(0, 3)
       .map(([key, synonyms]) => ({ key, synonyms }))
   };
+}
+
+export function resetSynonymCache() {
+  synonymsCache = undefined;
+  synonymCacheHits = 0;
+}
+
+export function getSynonymCacheHits() {
+  return synonymCacheHits;
 }
 
 export default { expandQuery, getSynonymStats };
