@@ -4,7 +4,7 @@ import { mount, clearBody } from "./domUtils.js";
 // ===== Top-level vi.hoisted() for shared mock state =====
 const { dispatchSpy, autoSelectStatMock } = vi.hoisted(() => {
   // Will be reset per-test to create new Promise for timeoutPromise
-  const createTimeoutPromise = () => new Promise((r) => {});
+  const createTimeoutPromise = () => new Promise(() => {});
 
   const dispatchSpyMock = vi.fn((eventName) => {
     if (eventName === "timeout") return createTimeoutPromise();

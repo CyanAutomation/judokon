@@ -3,18 +3,32 @@ import { createTooltipHarness } from "./integrationHarness.js";
 
 const harness = createTooltipHarness();
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { fetchJson, loadSettings } = vi.hoisted(() => ({
+  fetchJson: vi.fn(),
+  loadSettings: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/dataUtils.js", () => ({
+  fetchJson
+}));
+
+vi.mock("../../src/helpers/settingsStorage.js", () => ({
+  loadSettings
+}));
+
 beforeEach(async () => {
   document.body.innerHTML = "";
+  fetchJson.mockClear();
   await harness.setup();
 });
 
 describe("initTooltips", () => {
   it("shows tooltip on hover and parses markdown", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({
-        stat: { test: "**Bold**\n_italic_" }
-      })
-    }));
+    fetchJson.mockResolvedValue({
+      stat: { test: "**Bold**\n_italic_" }
+    });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
@@ -35,8 +49,7 @@ describe("initTooltips", () => {
   });
 
   it("shows fallback text and warns once for unknown ids", async () => {
-    const fetchJson = vi.fn().mockResolvedValue({});
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    fetchJson.mockResolvedValue({});
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
@@ -59,8 +72,7 @@ describe("initTooltips", () => {
   });
 
   it("shows fallback text and warns once when id is missing", async () => {
-    const fetchJson = vi.fn().mockResolvedValue({});
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    fetchJson.mockResolvedValue({});
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
@@ -83,11 +95,9 @@ describe("initTooltips", () => {
   });
 
   it("falls back to leaf keys for parent ids", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({
-        settings: { theme: { description: "Theme description" } }
-      })
-    }));
+    fetchJson.mockResolvedValue({
+      settings: { theme: { description: "Theme description" } }
+    });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
@@ -104,9 +114,7 @@ describe("initTooltips", () => {
   });
 
   it("positions tooltip within viewport for zero-size targets", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ stat: { fix: "text" } })
-    }));
+    fetchJson.mockResolvedValue({ stat: { fix: "text" } });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
@@ -127,9 +135,7 @@ describe("initTooltips", () => {
   });
 
   it("repositions tooltip to avoid right overflow", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ stat: { fix: "text" } })
-    }));
+    fetchJson.mockResolvedValue({ stat: { fix: "text" } });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
@@ -166,9 +172,7 @@ describe("initTooltips", () => {
   });
 
   it("clamps left to zero when tip wider than viewport", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ stat: { fix: "text" } })
-    }));
+    fetchJson.mockResolvedValue({ stat: { fix: "text" } });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
@@ -205,16 +209,14 @@ describe("initTooltips", () => {
   });
 
   it("loads tooltip text for new UI elements", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({
-        ui: {
-          languageToggle: "toggle",
-          next: "advance or skip",
-          quitMatch: "quit",
-          drawCard: "draw"
-        }
-      })
-    }));
+    fetchJson.mockResolvedValue({
+      ui: {
+        languageToggle: "toggle",
+        next: "advance or skip",
+        quitMatch: "quit",
+        drawCard: "draw"
+      }
+    });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
@@ -238,15 +240,12 @@ describe("initTooltips", () => {
   });
 
   it("applies overlay class when flag enabled", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
-    }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-      loadSettings: vi.fn().mockResolvedValue({
-        tooltips: true,
-        featureFlags: { tooltipOverlayDebug: { enabled: true } }
-      })
-    }));
+    fetchJson.mockResolvedValue({ stat: { test: "text" } });
+    loadSettings.mockResolvedValue({
+      tooltips: true,
+      featureFlags: { tooltipOverlayDebug: { enabled: true } }
+    });
+
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
     const el = document.createElement("div");
     el.dataset.tooltipId = "stat.test";
@@ -258,15 +257,12 @@ describe("initTooltips", () => {
   });
 
   it("does not apply overlay class when flag disabled", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
-    }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-      loadSettings: vi.fn().mockResolvedValue({
-        tooltips: true,
-        featureFlags: { tooltipOverlayDebug: { enabled: false } }
-      })
-    }));
+    fetchJson.mockResolvedValue({ stat: { test: "text" } });
+    loadSettings.mockResolvedValue({
+      tooltips: true,
+      featureFlags: { tooltipOverlayDebug: { enabled: false } }
+    });
+
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
     const el = document.createElement("div");
     el.dataset.tooltipId = "stat.test";
@@ -278,9 +274,7 @@ describe("initTooltips", () => {
   });
 
   it("returns cleanup function that removes listeners", async () => {
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
-    }));
+    fetchJson.mockResolvedValue({ stat: { test: "text" } });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 

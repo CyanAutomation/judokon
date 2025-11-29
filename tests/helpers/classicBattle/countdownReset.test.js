@@ -192,7 +192,6 @@ describe("countdown resets after stat selection", () => {
       .map((text) => Number(text.match(/\d+/)?.[0] ?? NaN))
       .filter((value) => Number.isFinite(value));
     const timerTextSamples = timerTexts.filter((text) => text.trim().length > 0);
-    const timerTextSamples = normalizedTimerTexts.filter((text) => text.trim().length > 0);
     const hasTimerPattern =
       timerTextSamples.length > 0 &&
       timerTextSamples.every((text) => /Time Left:\s*\d+s/.test(text));

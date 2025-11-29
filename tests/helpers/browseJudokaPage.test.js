@@ -6,7 +6,22 @@ import { createBrowseJudokaHarness } from "./integrationHarness.js";
 
 const harness = createBrowseJudokaHarness();
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { fetchJson, buildCarousel, judokaUtils } = vi.hoisted(() => ({
+  fetchJson: vi.fn(),
+  buildCarousel: vi.fn(),
+  judokaUtils: { createJudokaCard: vi.fn() }
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+vi.mock("../../src/helpers/carouselBuilder.js", () => ({ buildCarousel }));
+vi.mock("../../src/helpers/judokaUtils.js", () => judokaUtils);
+
 beforeEach(async () => {
+  fetchJson.mockClear();
+  buildCarousel.mockClear();
+  judokaUtils.createJudokaCard.mockClear();
   await harness.setup();
 });
 
