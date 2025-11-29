@@ -10,17 +10,22 @@ const harness = createBrowseJudokaHarness();
 const { fetchJson, buildCarousel, judokaUtils } = vi.hoisted(() => ({
   fetchJson: vi.fn(),
   buildCarousel: vi.fn(),
+  initScrollMarkers: vi.fn(),
   judokaUtils: { createJudokaCard: vi.fn() }
 }));
 
 // ===== Top-level vi.mock() calls =====
 vi.mock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-vi.mock("../../src/helpers/carouselBuilder.js", () => ({ buildCarousel }));
+vi.mock("../../src/helpers/carouselBuilder.js", () => ({
+  buildCardCarousel: buildCarousel,
+  initScrollMarkers
+}));
 vi.mock("../../src/helpers/judokaUtils.js", () => judokaUtils);
 
 beforeEach(async () => {
   fetchJson.mockClear();
   buildCarousel.mockClear();
+  initScrollMarkers.mockClear();
   judokaUtils.createJudokaCard.mockClear();
   await harness.setup();
 });
@@ -239,24 +244,20 @@ describe("browseJudokaPage helpers", () => {
   it("shows a spinner during load and removes it after rendering", async () => {
     vi.resetModules();
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const fetchJson = vi.fn((url) => {
+
+    fetchJson.mockImplementation((url) => {
       if (url.includes("judoka.json")) {
         return Promise.resolve([{ id: 1, country: "JP" }]);
       }
       return Promise.resolve([]);
     });
 
-    const buildCardCarousel = vi.fn(async () => ({
+    buildCarousel.mockImplementation(async () => ({
       querySelector: vi.fn(() => ({}))
     }));
 
-    const initScrollMarkers = vi.fn();
-
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
-      buildCardCarousel,
-      initScrollMarkers
-    }));
+    // Use shared initScrollMarkers from vi.hoisted()
+    // Top-level mocks are already registered
 
     const spinnerCalls = [];
     const runtime = {
@@ -540,25 +541,18 @@ describe("browseJudokaPage helpers", () => {
     vi.resetModules();
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const fetchJson = vi.fn((url) => {
+    fetchJson.mockImplementation((url) => {
       if (url.includes("judoka.json")) {
         return Promise.reject(new Error("fail"));
       }
       return Promise.resolve([]);
     });
 
-    const buildCardCarousel = vi.fn(async () => ({
+    buildCarousel.mockImplementation(async () => ({
       querySelector: vi.fn(() => ({}))
     }));
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
-      buildCardCarousel,
-      initScrollMarkers: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/judokaUtils.js", () => ({
-      getFallbackJudoka: vi.fn(async () => ({ id: 0, firstname: "Fallback" }))
-    }));
+    judokaUtils.createJudokaCard.mockResolvedValue({ id: 0, firstname: "Fallback" });
 
     const runtime = {
       carouselContainer: {},
@@ -605,23 +599,20 @@ describe("browseJudokaPage helpers", () => {
     vi.resetModules();
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const fetchJson = vi.fn((url) => {
+    fetchJson.mockImplementation((url) => {
       if (url.includes("judoka.json")) {
         return Promise.reject(new Error("fail"));
       }
       return Promise.resolve([]);
     });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
-      buildCardCarousel: vi.fn(),
-      initScrollMarkers: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/judokaUtils.js", () => ({
-      getFallbackJudoka: vi.fn(async () => {
-        throw new Error("fallback fail");
-      })
-    }));
+    buildCarousel.mockImplementation(() => {
+      throw new Error("carousel fail");
+    });
+
+    judokaUtils.createJudokaCard.mockImplementation(async () => {
+      throw new Error("fallback fail");
+    });
 
     const container = {
       replaceChildren: vi.fn(),

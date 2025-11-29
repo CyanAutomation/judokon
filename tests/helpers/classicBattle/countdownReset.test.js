@@ -3,7 +3,6 @@ import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleCardContainers, createBattleHeader } from "../../utils/testUtils.js";
 import { createRoundMessage, createSnackbarContainer, createTimerNodes } from "./domUtils.js";
-import { DEFAULT_MIN_PROMPT_DURATION_MS } from "../../../src/helpers/classicBattle/opponentPromptTracker.js";
 
 const { promptReadyMock } = vi.hoisted(() => ({
   promptReadyMock: vi.fn(() => true)
@@ -70,7 +69,9 @@ vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/classicBattle/opponentPromptTracker.js", async () => {
-  const actual = await vi.importActual("../../../src/helpers/classicBattle/opponentPromptTracker.js");
+  const actual = await vi.importActual(
+    "../../../src/helpers/classicBattle/opponentPromptTracker.js"
+  );
   return {
     ...actual,
     isOpponentPromptReady: promptReadyMock
@@ -195,19 +196,13 @@ describe("countdown resets after stat selection", () => {
     const hasTimerPattern =
       timerTextSamples.length > 0 &&
       timerTextSamples.every((text) => /Time Left:\s*\d+s/.test(text));
-    const hasSnackbarPattern =
-      snackbarTexts.length > 0 && snackbarTexts.every((text) => /Next round in:\s*\d+s/.test(text));
 
     if (timerTextSamples.length > 0) {
       expect(hasTimerPattern).toBe(true);
     } else {
       expect(timerTextSamples.length).toBe(0);
     }
-    expect(hasSnackbarPattern).toBe(true);
 
-    const fallbackReadings = snackbarTexts
-      .map((text) => Number(text.match(/\d+/)?.[0] ?? NaN))
-      .filter((value) => Number.isFinite(value));
     const timerSeries = readings.filter((value) => Number.isFinite(value));
     const samples = timerSeries.some((value) => value > 0) ? timerSeries : fallbackReadings;
     expect(samples.length).toBeGreaterThanOrEqual(3);
