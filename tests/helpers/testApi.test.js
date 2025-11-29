@@ -1,6 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockIsEnabled } = vi.hoisted(() => ({
+  mockIsEnabled: vi.fn(() => false)
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/featureFlags.js", async () => {
+  const actual = await vi.importActual("../../src/helpers/featureFlags.js");
+  return { ...actual, isEnabled: mockIsEnabled };
+});
+
 const originalTestFlag = window.__TEST__;
 const originalTestApi = window.__TEST_API;
 const originalBattleStateApi = window.__BATTLE_STATE_API;
