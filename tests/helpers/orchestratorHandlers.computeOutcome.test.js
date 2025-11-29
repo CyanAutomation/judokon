@@ -2,6 +2,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { createTestBattleDom } from "./classicBattle/createTestBattleDom.js";
+
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { getOpponentJudoka, getStatValue } = vi.hoisted(() => ({
+  getOpponentJudoka: vi.fn(),
+  getStatValue: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/classicBattle/cardSelection.js", () => ({
+  getOpponentJudoka
+}));
+
+vi.mock("../../src/helpers/battle/index.js", () => ({
+  getStatValue
+}));
+
 let debugHooks;
 
 let store;
@@ -11,6 +27,8 @@ beforeEach(async () => {
   cleanupBattleDom = null;
   debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
   store = {};
+  getOpponentJudoka.mockClear();
+  getStatValue.mockClear();
   vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
     store[k] = v;
   });
@@ -40,12 +58,8 @@ afterEach(() => {
 describe("computeAndDispatchOutcome", () => {
   it("dispatches outcome and continue events", async () => {
     const timers = useCanonicalTimers();
-    vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
-      getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
-    }));
-    vi.doMock("../../src/helpers/battle/index.js", () => ({
-      getStatValue: vi.fn((el) => (el?.id === "player-card" ? 5 : 3))
-    }));
+    getOpponentJudoka.mockImplementation(() => ({ stats: { strength: 3 } }));
+    getStatValue.mockImplementation((el) => (el?.id === "player-card" ? 5 : 3));
 
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
 
@@ -68,12 +82,8 @@ describe("computeAndDispatchOutcome", () => {
 
   it("waits for user input when autoContinue is disabled", async () => {
     const timers = useCanonicalTimers();
-    vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
-      getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
-    }));
-    vi.doMock("../../src/helpers/battle/index.js", () => ({
-      getStatValue: vi.fn((el) => (el?.id === "player-card" ? 5 : 3))
-    }));
+    getOpponentJudoka.mockImplementation(() => ({ stats: { strength: 3 } }));
+    getStatValue.mockImplementation((el) => (el?.id === "player-card" ? 5 : 3));
 
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
     mod.setAutoContinue(false);
@@ -96,12 +106,8 @@ describe("computeAndDispatchOutcome", () => {
   });
 
   it("dispatches interrupt when no outcome is produced", async () => {
-    vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
-      getOpponentJudoka: vi.fn(() => ({ stats: { strength: 5 } }))
-    }));
-    vi.doMock("../../src/helpers/battle/index.js", () => ({
-      getStatValue: vi.fn(() => NaN)
-    }));
+    getOpponentJudoka.mockImplementation(() => ({ stats: { strength: 5 } }));
+    getStatValue.mockImplementation(() => NaN);
 
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
 

@@ -11,7 +11,10 @@ const { fetchJson, buildCarousel, initScrollMarkers, judokaUtils } = vi.hoisted(
   fetchJson: vi.fn(),
   buildCarousel: vi.fn(),
   initScrollMarkers: vi.fn(),
-  judokaUtils: { createJudokaCard: vi.fn() }
+  judokaUtils: {
+    getFallbackJudoka: vi.fn(),
+    resetFallbackCache: vi.fn()
+  }
 }));
 
 // ===== Top-level vi.mock() calls =====
@@ -26,10 +29,10 @@ beforeEach(async () => {
   fetchJson.mockClear();
   buildCarousel.mockClear();
   initScrollMarkers.mockClear();
-  judokaUtils.createJudokaCard.mockClear();
+  judokaUtils.getFallbackJudoka.mockClear();
+  judokaUtils.resetFallbackCache.mockClear();
   await harness.setup();
 });
-
 describe("browseJudokaPage helpers", () => {
   it("country toggle controller toggles panel and loads flags once", async () => {
     const { createCountryToggleController, setupCountryToggle } = await import(
@@ -552,7 +555,7 @@ describe("browseJudokaPage helpers", () => {
       querySelector: vi.fn(() => ({}))
     }));
 
-    judokaUtils.createJudokaCard.mockResolvedValue({ id: 0, firstname: "Fallback" });
+    judokaUtils.getFallbackJudoka.mockResolvedValue({ id: 0, firstname: "Fallback" });
 
     const runtime = {
       carouselContainer: {},
@@ -610,7 +613,7 @@ describe("browseJudokaPage helpers", () => {
       throw new Error("carousel fail");
     });
 
-    judokaUtils.createJudokaCard.mockImplementation(async () => {
+    judokaUtils.getFallbackJudoka.mockImplementation(async () => {
       throw new Error("fallback fail");
     });
 
