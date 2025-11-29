@@ -127,12 +127,8 @@ describe("testApi.isTestMode", () => {
     // Clean up before testing
     vi.resetModules();
 
-    // Setup mocks BEFORE import, in proper order
-    const mockIsEnabled = vi.fn(() => false);
-    await vi.doMock("../../src/helpers/featureFlags.js", async () => {
-      const actual = await vi.importActual("../../src/helpers/featureFlags.js");
-      return { ...actual, isEnabled: mockIsEnabled };
-    });
+    // Reset mock for this test
+    mockIsEnabled.mockClear().mockImplementation(() => false);
 
     // Set env to simulate non-test environment, but we're in vitest
     // so process.env.VITEST will still be true. That's OK - the test

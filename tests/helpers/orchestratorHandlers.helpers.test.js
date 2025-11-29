@@ -22,16 +22,18 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
 beforeEach(async () => {
   mockEmitBattleEvent.mockReset();
 
-  debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
+  harness = createSimpleHarness();
+  await harness.setup();
+
+  debugHooks = await harness.importModule(
+    "../../src/helpers/classicBattle/debugHooks.js"
+  );
   document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
   store = {};
   vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
     store[k] = v;
   });
   vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
-
-  harness = createSimpleHarness();
-  await harness.setup();
 });
 
 afterEach(() => {
