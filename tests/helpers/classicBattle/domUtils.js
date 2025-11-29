@@ -80,9 +80,15 @@ export function createTimerNodes() {
   nextButton.setAttribute("data-role", "next-round");
   const nextRoundTimer = document.createElement("p");
   nextRoundTimer.id = "next-round-timer";
+  nextRoundTimer.setAttribute("data-testid", "next-round-timer");
   nextRoundTimer.setAttribute("aria-live", "polite");
   nextRoundTimer.setAttribute("aria-atomic", "true");
   nextRoundTimer.setAttribute("role", "status");
+  const labelSpan = document.createElement("span");
+  labelSpan.dataset.part = "label";
+  const valueSpan = document.createElement("span");
+  valueSpan.dataset.part = "value";
+  nextRoundTimer.append(labelSpan, valueSpan);
   document.body.append(nextButton, nextRoundTimer);
   return { nextButton, nextRoundTimer };
 }
