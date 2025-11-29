@@ -7,7 +7,7 @@ import { createBrowseJudokaHarness } from "./integrationHarness.js";
 const harness = createBrowseJudokaHarness();
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { fetchJson, buildCarousel, judokaUtils } = vi.hoisted(() => ({
+const { fetchJson, buildCarousel, initScrollMarkers, judokaUtils } = vi.hoisted(() => ({
   fetchJson: vi.fn(),
   buildCarousel: vi.fn(),
   initScrollMarkers: vi.fn(),
