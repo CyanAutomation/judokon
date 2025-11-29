@@ -30,10 +30,11 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
   await expect(firstStat).toHaveAttribute("data-stat", /.+/);
   await expect(firstStat).toHaveText(/\[\d\]\s+.+/);
 
+  const countdown = page.locator("#cli-countdown");
+  await expect(countdown).toBeVisible();
+
   // Use the timer helper to drive the UI and assert countdown text rather than internal state
   await page.evaluate(() => window.__TEST_API.timers.setCountdown(12));
-
-  const countdown = page.locator("#cli-countdown");
   await expect(countdown).toHaveText(/Timer: 12\b/);
   await expect(countdown).toHaveAttribute("data-remaining-time", "12");
 
