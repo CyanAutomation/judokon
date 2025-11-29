@@ -14,21 +14,30 @@ const buildCliUrl = () => {
 };
 
 test("CLI skeleton and helpers smoke", async ({ page }) => {
+  // User story: a player landing on the CLI can see the stat list hydrate and a live countdown update
+  // while helpers keep the experience responsive for keyboard play.
   await page.goto(buildCliUrl());
 
   await waitForTestApi(page);
 
-  // stats container present (rows may be skeleton or populated, allow racing init)
-  await expect(page.locator("#cli-stats")).toHaveCount(1);
-  // skeleton placeholders ensure keyboard rows exist before data loads
-  const statsCount = await page.locator("#cli-stats .cli-stat").count();
-  expect(statsCount).toBeGreaterThan(0);
+  const stats = page.locator("#cli-stats");
+  await expect(stats).toBeVisible();
+  await expect(stats).toHaveAttribute("aria-busy", "false");
 
-  // set countdown via helper, validate state via Test API, and confirm UI reflects it
+  const firstStat = stats.locator(".cli-stat").first();
+  await expect(firstStat).toBeVisible();
+  await expect(firstStat).not.toHaveClass(/skeleton/);
+  await expect(firstStat).toHaveAttribute("data-stat", /.+/);
+  await expect(firstStat).toHaveText(/\[\d\]\s+.+/);
+
+  // Use the timer helper to drive the UI and assert countdown text rather than internal state
   await page.evaluate(() => window.__TEST_API.timers.setCountdown(12));
-  const countdownValue = await page.evaluate(() => window.__TEST_API.timers.getCountdown());
-  expect(countdownValue).toBe(12);
 
-  const cd = page.locator("#cli-countdown");
-  await expect(cd).toHaveText(/12/);
+  const countdown = page.locator("#cli-countdown");
+  await expect(countdown).toHaveText(/Timer: 12/);
+  await expect(countdown).toHaveAttribute("data-remaining-time", "12");
+
+  // Ensure subsequent helper writes are reflected visually for players
+  await page.evaluate(() => window.__TEST_API.timers.setCountdown(10));
+  await expect(countdown).toHaveText(/Timer: 10/);
 });
