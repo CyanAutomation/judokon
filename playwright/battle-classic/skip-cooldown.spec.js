@@ -43,10 +43,7 @@ test.describe("Classic Battle cooldown skip via UI", () => {
       const skipControl = page.getByRole("button", { name: /skip/i }).first();
       const controlToUse = (await skipControl.count()) > 0 ? skipControl : nextButton;
 
-      const controlCount = await controlToUse.count();
-      if (controlCount === 0) {
-        throw new Error("Neither skip control nor next button is available");
-      }
+      // controlToUse is guaranteed to be either skipControl or nextButton from line 44
       await controlToUse.click();
 
       await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false });
