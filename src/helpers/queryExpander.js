@@ -59,7 +59,7 @@ async function loadSynonyms() {
         console.error("Failed to load synonyms.json:", err.message);
         synonymsCache = {};
       } finally {
-        // Ensure the in-flight promise is cleared before future callers increment hits
+        // Clear the in-flight promise after cache is populated
         synonymsCachePromise = undefined;
       }
 
