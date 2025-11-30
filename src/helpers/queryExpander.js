@@ -248,7 +248,7 @@ export function resetSynonymCache() {
 }
 
 export function getSynonymCacheHits() {
-  return Atomics.load(synonymCacheHits, 0);
+  return synonymCacheHits;
 }
 
 export default { expandQuery, getSynonymStats };
