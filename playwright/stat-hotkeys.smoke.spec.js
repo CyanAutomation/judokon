@@ -11,6 +11,7 @@ async function launchClassicBattle(page, featureFlags) {
     }, featureFlags);
   }
   await page.goto("/index.html");
+  // Feature flag verification is handled in individual tests
   await app.applyRuntime();
 
   await Promise.all([
@@ -61,7 +62,7 @@ test.describe("Classic Battle – stat hotkeys", () => {
       // Pressing 1 should pick the first stat and resolve the round
       await expect(scoreDisplay.locator('[data-side="player"]')).toHaveText(/You:\s*0/);
       await expect(scoreDisplay.locator('[data-side="opponent"]')).toHaveText(/Opponent:\s*0/);
-      await page.keyboard.press("1");
+      await page.keyboard.press("Digit1");
 
       await expect(roundMessage).toContainText(/You picked: /, { timeout: 5000 });
       const roundText = await roundMessage.textContent();
@@ -83,7 +84,7 @@ test.describe("Classic Battle – stat hotkeys", () => {
 
     try {
       await page.focus("body");
-      await page.keyboard.press("1");
+      await page.keyboard.press("Digit1");
 
       await expect(roundMessage).toHaveText(/^\s*$/);
       await expect(scoreDisplay.locator('[data-side="player"]')).toHaveText(/You:\s*0/);
@@ -104,13 +105,13 @@ test.describe("Classic Battle – stat hotkeys", () => {
 
     try {
       await page.focus("body");
-      await page.keyboard.press("9");
+      await page.keyboard.press("Digit9");
 
       await expect(roundMessage).toHaveText(/^\s*$/);
       await expect(firstStat).toBeEnabled();
       await expect(nextButton).toBeDisabled();
 
-      await page.keyboard.press("1");
+      await page.keyboard.press("Digit1");
       await expect(roundMessage).toContainText(/You picked: /, { timeout: 5000 });
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
     } finally {
