@@ -11,9 +11,7 @@ async function launchClassicBattle(page, featureFlags) {
     }, featureFlags);
   }
   await page.goto("/index.html");
-  if (featureFlags && Object.keys(featureFlags).length > 0) {
-    await waitForFeatureFlagOverrides(page, featureFlags);
-  }
+  // Feature flag verification is handled in individual tests
   await app.applyRuntime();
 
   await Promise.all([
