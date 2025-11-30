@@ -46,7 +46,7 @@ let synonymCacheHits = 0;
  */
 async function loadSynonyms() {
   if (synonymsCache) {
-    Atomics.add(synonymCacheHits, 0, 1);
+    synonymCacheHits += 1;
     return synonymsCache;
   }
 
