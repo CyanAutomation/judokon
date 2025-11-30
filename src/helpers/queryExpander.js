@@ -37,6 +37,7 @@ export const MAX_QUERY_LENGTH = 512;
  */
 
 let synonymsCache;
+let synonymsCachePromise;
 let synonymCacheHits = 0;
 
 /**
@@ -49,14 +50,24 @@ async function loadSynonyms() {
     return synonymsCache;
   }
 
-  try {
-    synonymsCache = await fetchJson(`${DATA_DIR}synonyms.json`);
-  } catch (err) {
-    console.error("Failed to load synonyms.json:", err.message);
-    synonymsCache = {};
+  if (!synonymsCachePromise) {
+    synonymsCachePromise = (async () => {
+      try {
+        const data = await fetchJson(`${DATA_DIR}synonyms.json`);
+        synonymsCache = data;
+      } catch (err) {
+        console.error("Failed to load synonyms.json:", err.message);
+        synonymsCache = {};
+      } finally {
+        // Clear the in-flight promise after cache is populated
+        synonymsCachePromise = undefined;
+      }
+
+      return synonymsCache;
+    })();
   }
 
-  return synonymsCache;
+  return synonymsCachePromise;
 }
 
 /**
@@ -232,6 +243,7 @@ export async function getSynonymStats() {
 
 export function resetSynonymCache() {
   synonymsCache = undefined;
+  synonymsCachePromise = undefined;
   synonymCacheHits = 0;
 }
 
