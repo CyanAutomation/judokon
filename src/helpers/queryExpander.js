@@ -38,7 +38,7 @@ export const MAX_QUERY_LENGTH = 512;
 
 let synonymsCache;
 let synonymsCachePromise;
-const synonymCacheHits = new Int32Array(new SharedArrayBuffer(4));
+let synonymCacheHits = 0;
 
 /**
  * Load the synonym mapping JSON
