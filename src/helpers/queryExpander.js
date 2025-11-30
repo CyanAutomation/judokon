@@ -244,7 +244,7 @@ export async function getSynonymStats() {
 export function resetSynonymCache() {
   synonymsCache = undefined;
   synonymsCachePromise = undefined;
-  Atomics.store(synonymCacheHits, 0, 0);
+  synonymCacheHits = 0;
 }
 
 export function getSynonymCacheHits() {
