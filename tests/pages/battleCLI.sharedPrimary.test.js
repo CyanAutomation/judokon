@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { mockScoreboard, mockGetScores, mockFailingScoreboard } = vi.hoisted(() => ({
+const { mockScoreboard, mockGetScores } = vi.hoisted(() => ({
   mockScoreboard: {
     showMessage: vi.fn((text) => {
       const el = document.getElementById("round-message");
@@ -10,15 +10,7 @@ const { mockScoreboard, mockGetScores, mockFailingScoreboard } = vi.hoisted(() =
     updateScore: vi.fn(),
     updateRoundCounter: vi.fn()
   },
-  mockGetScores: vi.fn(() => ({ playerScore: 3, opponentScore: 2 })),
-  mockFailingScoreboard: {
-    showMessage: vi.fn(() => {
-      throw new Error("Component unavailable");
-    }),
-    updateScore: vi.fn(() => {
-      throw new Error("Component unavailable");
-    })
-  }
+  mockGetScores: vi.fn(() => ({ playerScore: 3, opponentScore: 2 }))
 }));
 
 // ===== Top-level vi.mock() calls =====
