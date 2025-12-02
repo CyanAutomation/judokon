@@ -1,44 +1,84 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 
-async function loadHandlers(scores) {
+// ===== Top-level vi.hoisted() for shared mock state =====
+const {
+  mockEmitter,
+  mockGetScores,
+  mockIsEnabled,
+  mockInitFeatureFlags,
+  mockSetFlag,
+  mockSkipRoundCooldown,
+  mockUpdateBattleStateBadge,
+  mockOnBattleEvent,
+  mockEmitBattleEvent,
+  mockCreateBattleStore,
+  mockStartRound,
+  mockResetGame,
+  mockInitOrchestrator,
+  mockFetchJson,
+  mockAutoSelectStat
+} = vi.hoisted(() => {
   const emitter = new EventTarget();
-  vi.doMock("../../src/helpers/featureFlags.js", () => ({
-    initFeatureFlags: vi.fn(),
-    isEnabled: vi.fn(() => false),
-    setFlag: vi.fn(),
-    featureFlagsEmitter: emitter
-  }));
-  vi.doMock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-    skipRoundCooldownIfEnabled: vi.fn(),
-    updateBattleStateBadge: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-    onBattleEvent: vi.fn(),
-    emitBattleEvent: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
-    createBattleStore: vi.fn(() => ({})),
-    startRound: vi.fn(),
-    resetGame: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
-    initClassicBattleOrchestrator: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
-  const getScores = vi.fn(() => scores);
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-    setPointsToWin: vi.fn(),
-    getPointsToWin: vi.fn(),
-    getScores
-  }));
-  vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
-  vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
-  vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
-    autoSelectStat: vi.fn()
-  }));
+  const getScores = vi.fn();
+  return {
+    mockEmitter: emitter,
+    mockGetScores: getScores,
+    mockIsEnabled: vi.fn(() => false),
+    mockInitFeatureFlags: vi.fn(),
+    mockSetFlag: vi.fn(),
+    mockSkipRoundCooldown: vi.fn(),
+    mockUpdateBattleStateBadge: vi.fn(),
+    mockOnBattleEvent: vi.fn(),
+    mockEmitBattleEvent: vi.fn(),
+    mockCreateBattleStore: vi.fn(() => ({})),
+    mockStartRound: vi.fn(),
+    mockResetGame: vi.fn(),
+    mockInitOrchestrator: vi.fn(),
+    mockFetchJson: vi.fn().mockResolvedValue([]),
+    mockAutoSelectStat: vi.fn()
+  };
+});
+
+// ===== Top-level vi.mock() calls (Vitest static analysis phase) =====
+vi.mock("../../src/helpers/featureFlags.js", () => ({
+  initFeatureFlags: mockInitFeatureFlags,
+  isEnabled: mockIsEnabled,
+  setFlag: mockSetFlag,
+  featureFlagsEmitter: mockEmitter
+}));
+vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
+  skipRoundCooldownIfEnabled: mockSkipRoundCooldown,
+  updateBattleStateBadge: mockUpdateBattleStateBadge
+}));
+vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+  onBattleEvent: mockOnBattleEvent,
+  emitBattleEvent: mockEmitBattleEvent
+}));
+vi.mock("../../src/helpers/classicBattle/roundManager.js", () => ({
+  createBattleStore: mockCreateBattleStore,
+  startRound: mockStartRound,
+  resetGame: mockResetGame
+}));
+vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
+  initClassicBattleOrchestrator: mockInitOrchestrator
+}));
+vi.mock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
+vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+  setPointsToWin: vi.fn(),
+  getPointsToWin: vi.fn(),
+  getScores: mockGetScores
+}));
+vi.mock("../../src/helpers/dataUtils.js", () => ({ fetchJson: mockFetchJson }));
+vi.mock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+vi.mock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
+  autoSelectStat: mockAutoSelectStat
+}));
+
+async function loadHandlers(scores) {
+  mockGetScores.mockReturnValue(scores);
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
-  return { handlers: battleCLI, getScoresMock: getScores };
+  return { handlers: battleCLI, getScoresMock: mockGetScores };
 }
 
 describe("battleCLI scoreboard", () => {
@@ -47,16 +87,6 @@ describe("battleCLI scoreboard", () => {
     delete window.__TEST__;
     vi.resetModules();
     vi.clearAllMocks();
-    vi.doUnmock("../../src/helpers/featureFlags.js");
-    vi.doUnmock("../../src/helpers/classicBattle/uiHelpers.js");
-    vi.doUnmock("../../src/helpers/classicBattle/battleEvents.js");
-    vi.doUnmock("../../src/helpers/classicBattle/roundManager.js");
-    vi.doUnmock("../../src/helpers/classicBattle/orchestrator.js");
-    vi.doUnmock("../../src/helpers/BattleEngine.js");
-    vi.doUnmock("../../src/helpers/battleEngineFacade.js");
-    vi.doUnmock("../../src/helpers/dataUtils.js");
-    vi.doUnmock("../../src/helpers/constants.js");
-    vi.doUnmock("../../src/helpers/classicBattle/autoSelectStat.js");
   });
 
   it("updates after player win", async () => {

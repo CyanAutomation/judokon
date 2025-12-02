@@ -1,5 +1,36 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const {
+  mockScoreboard,
+  mockGetScores,
+  mockFailingScoreboard
+} = vi.hoisted(() => ({
+  mockScoreboard: {
+    showMessage: vi.fn((text) => {
+      const el = document.getElementById("round-message");
+      if (el) el.textContent = text || "";
+    }),
+    updateScore: vi.fn(),
+    updateRoundCounter: vi.fn()
+  },
+  mockGetScores: vi.fn(() => ({ playerScore: 3, opponentScore: 2 })),
+  mockFailingScoreboard: {
+    showMessage: vi.fn(() => {
+      throw new Error("Component unavailable");
+    }),
+    updateScore: vi.fn(() => {
+      throw new Error("Component unavailable");
+    })
+  }
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/components/Scoreboard.js", () => mockScoreboard);
+vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+  getScores: mockGetScores
+}));
+
 describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
   let mockSharedScoreboard;
 
@@ -10,16 +41,9 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
   beforeEach(async () => {
     window.__TEST__ = true;
-    // Mock the shared Scoreboard component functions
-    mockSharedScoreboard = {
-      showMessage: vi.fn((text) => {
-        // Simulate the real behavior of updating the #round-message element
-        const el = document.getElementById("round-message");
-        if (el) el.textContent = text || "";
-      }),
-      updateScore: vi.fn(),
-      updateRoundCounter: vi.fn()
-    };
+    // Reset mocks for each test
+    vi.clearAllMocks();
+    mockSharedScoreboard = mockScoreboard;
   });
 
   afterEach(() => {
@@ -31,9 +55,6 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
   });
 
   it("should primarily use shared Scoreboard for round message updates", async () => {
-    // Mock the module's helper reference
-    vi.doMock("../../src/components/Scoreboard.js", () => mockSharedScoreboard);
-
     const { setRoundMessage } = await import("../../src/pages/battleCLI/dom.js");
     await ensureCliDom();
 
@@ -57,11 +78,6 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
   });
 
   it("should primarily use shared Scoreboard for score updates", async () => {
-    // Mock the engine facade
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-      getScores: () => ({ playerScore: 3, opponentScore: 2 })
-    }));
-
     const { updateScoreLine } = await import("../../src/pages/battleCLI/dom.js");
     await ensureCliDom();
     global.sharedScoreboardHelpers = mockSharedScoreboard;
@@ -94,29 +110,23 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
   });
 
   it("should fallback to CLI elements when shared Scoreboard is unavailable", async () => {
-    // Mock shared component to throw error
-    const failingMock = {
-      showMessage: vi.fn(() => {
-        throw new Error("Component unavailable");
-      }),
-      updateScore: vi.fn(() => {
-        throw new Error("Component unavailable");
-      }),
-      updateRoundCounter: vi.fn(() => {
-        throw new Error("Component unavailable");
-      })
-    };
-
-    vi.doMock("../../src/components/Scoreboard.js", () => failingMock);
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-      getScores: () => ({ playerScore: 1, opponentScore: 0 })
-    }));
+    // Reconfigure mocks to throw errors for this test
+    mockScoreboard.showMessage.mockImplementation(() => {
+      throw new Error("Component unavailable");
+    });
+    mockScoreboard.updateScore.mockImplementation(() => {
+      throw new Error("Component unavailable");
+    });
+    mockScoreboard.updateRoundCounter.mockImplementation(() => {
+      throw new Error("Component unavailable");
+    });
+    mockGetScores.mockReturnValue({ playerScore: 1, opponentScore: 0 });
 
     const { setRoundMessage, updateScoreLine, updateRoundHeader } = await import(
       "../../src/pages/battleCLI/dom.js"
     );
     await ensureCliDom();
-    global.sharedScoreboardHelpers = failingMock;
+    global.sharedScoreboardHelpers = mockScoreboard;
 
     // Test fallback behavior
     setRoundMessage("Fallback message");
@@ -129,6 +139,15 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
       "You: 1 Opponent: 0"
     );
     expect(document.getElementById("round-counter").textContent).toBe("Round 2 Target: 3");
+
+    // Reset mocks for next test
+    mockScoreboard.showMessage.mockImplementation((text) => {
+      const el = document.getElementById("round-message");
+      if (el) el.textContent = text || "";
+    });
+    mockScoreboard.updateScore.mockClear();
+    mockScoreboard.updateRoundCounter.mockClear();
+    mockGetScores.mockReturnValue({ playerScore: 3, opponentScore: 2 });
   });
 
   it("should prefer standard scoreboard elements in tests", async () => {
