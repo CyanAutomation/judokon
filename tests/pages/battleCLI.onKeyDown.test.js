@@ -1,13 +1,34 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
-import {
-  emitBattleEvent,
-  __resetBattleEventTarget
-} from "../../src/helpers/classicBattle/battleEvents.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 const fakeTimeout = vi.fn(() => "fake-timeout-id");
 const fakeInterval = vi.fn(() => "fake-interval-id");
+
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockDispatchSpy, mockEmitSpy, mockResetBattleEventTarget } = vi.hoisted(() => ({
+  mockDispatchSpy: vi.fn(),
+  mockEmitSpy: vi.fn(),
+  mockResetBattleEventTarget: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+  emitBattleEvent: mockEmitSpy,
+  __resetBattleEventTarget: mockResetBattleEventTarget
+}));
+vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
+  dispatchBattleEvent: mockDispatchSpy
+}));
+vi.mock("../../src/components/Button.js", () => ({
+  createButton: (label, opts = {}) => {
+    const btn = document.createElement("button");
+    if (opts.id) btn.id = opts.id;
+    if (opts.className) btn.className = opts.className;
+    btn.textContent = label;
+    return btn;
+  }
+}));
 
 describe("battleCLI onKeyDown", () => {
   let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy, emitSpy, timers;
@@ -17,31 +38,17 @@ describe("battleCLI onKeyDown", () => {
     fakeTimeout.mockClear();
     fakeInterval.mockClear();
     vi.resetModules();
-    __resetBattleEventTarget();
+    mockDispatchSpy.mockClear();
+    mockEmitSpy.mockClear();
+    mockResetBattleEventTarget();
     window.__TEST__ = true;
     store = {};
     vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
       store[k] = v;
     });
     vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
-    dispatchSpy = vi.fn();
-    emitSpy = vi.fn();
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: emitSpy,
-      __resetBattleEventTarget
-    }));
-    vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
-      dispatchBattleEvent: dispatchSpy
-    }));
-    vi.doMock("../../src/components/Button.js", () => ({
-      createButton: (label, opts = {}) => {
-        const btn = document.createElement("button");
-        if (opts.id) btn.id = opts.id;
-        if (opts.className) btn.className = opts.className;
-        btn.textContent = label;
-        return btn;
-      }
-    }));
+    dispatchSpy = mockDispatchSpy;
+    emitSpy = mockEmitSpy;
     ({
       onKeyDown,
       battleCLI: __test,

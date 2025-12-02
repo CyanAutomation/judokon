@@ -242,8 +242,11 @@ export async function getSynonymStats() {
 }
 
 /**
- * Clears the in-memory synonym cache and resets the cache hit counter.
- * This is primarily used for testing or to force a fresh load of synonyms.
+ * Resets the internal synonym cache and related state variables.
+ * @pseudocode
+ * 1. Set the global `synonymsCache` to `undefined`.
+ * 2. Set the global `synonymsCachePromise` to `undefined`.
+ * 3. Set the global `synonymCacheHits` counter to `0`.
  */
 export function resetSynonymCache() {
   synonymsCache = undefined;
@@ -252,9 +255,11 @@ export function resetSynonymCache() {
 }
 
 /**
- * Returns the number of times the synonym cache was successfully used
- * instead of reloading from disk.
+ * Returns the current count of synonym cache hits.
  * @returns {number} The current count of synonym cache hits.
+ *
+ * @pseudocode
+ * 1. Return the value of synonymCacheHits.
  */
 export function getSynonymCacheHits() {
   return synonymCacheHits;
