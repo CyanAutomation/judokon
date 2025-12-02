@@ -29,10 +29,7 @@ async function launchClassicBattle(page, featureFlags) {
   const statCount = await statButtons.count();
   expect(statCount).toBeGreaterThan(0);
   await expect(firstStat).toBeVisible();
-  await expect(page.getByTestId("stat-buttons")).toHaveAttribute(
-    "data-buttons-ready",
-    "true"
-  );
+  await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
 
   return {
     app,
@@ -77,8 +74,10 @@ test.describe("Classic Battle – stat hotkeys", () => {
   });
 
   test("keyboard hotkeys stay disabled when the flag is off", async ({ page }) => {
-    const { app, firstStat, nextButton, roundMessage, scoreDisplay } =
-      await launchClassicBattle(page, { statHotkeys: false });
+    const { app, firstStat, nextButton, roundMessage, scoreDisplay } = await launchClassicBattle(
+      page,
+      { statHotkeys: false }
+    );
 
     await waitForFeatureFlagOverrides(page, { statHotkeys: false });
 

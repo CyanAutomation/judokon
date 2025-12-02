@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
+
 // Avoid matchMedia usage in jsdom via reduced motion stub
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -19,8 +20,16 @@ const scoreboardStub = {
 };
 let scoreboard = scoreboardStub;
 
-vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
-  setupScoreboard: vi.fn(),
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockSetupScoreboard, mockGetDefaultTimer, mockStartRound } = vi.hoisted(() => ({
+  mockSetupScoreboard: vi.fn(),
+  mockGetDefaultTimer: vi.fn(),
+  mockStartRound: vi.fn()
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+  setupScoreboard: mockSetupScoreboard,
   showMessage: (...args) => scoreboard.showMessage(...args),
   updateScore: (...args) => scoreboard.updateScore(...args),
   clearMessage: (...args) => scoreboard.clearMessage(...args),
@@ -32,49 +41,47 @@ vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
   clearRoundCounter: (...args) => scoreboard.clearRoundCounter(...args)
 }));
 
+vi.mock("../../src/helpers/timerUtils.js", () => ({
+  getDefaultTimer: mockGetDefaultTimer,
+  _resetForTest: vi.fn()
+}));
+
+vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+  startRound: mockStartRound,
+  stopTimer: vi.fn(),
+  pauseTimer: vi.fn(),
+  resumeTimer: vi.fn(),
+  STATS: ["power"]
+}));
+
+vi.mock("../../src/helpers/showSnackbar.js", () => ({
+  showSnackbar: vi.fn(),
+  updateSnackbar: vi.fn()
+}));
+
 describe("Scoreboard integration without setupScoreboard", () => {
   beforeEach(async () => {
     useCanonicalTimers();
     vi.resetModules();
+    vi.clearAllMocks();
     roundDrift = undefined;
     scoreboard = scoreboardStub;
     document.body.innerHTML = "";
 
-    // Re-mock modules after resetModules using doMock to ensure they take effect
-    // for subsequent imports in this test
-    vi.doMock("../../src/helpers/timerUtils.js", () => ({
-      getDefaultTimer: vi.fn(),
-      _resetForTest: vi.fn()
-    }));
-
-    // Provide engine timers used by startTimer
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-      // Round selection timer: tick down each second and expire
-      startRound: (onTick, onExpired, duration, onDrift) => {
-        roundDrift = onDrift;
+    // Configure mock for this test run
+    mockStartRound.mockImplementation((onTick, onExpired, duration, onDrift) => {
+      roundDrift = onDrift;
+      onTick(duration);
+      const id = setInterval(async () => {
+        duration -= 1;
         onTick(duration);
-        const id = setInterval(async () => {
-          duration -= 1;
-          onTick(duration);
-          if (duration <= 0) {
-            clearInterval(id);
-            await onExpired();
-          }
-        }, 1000);
-        return Promise.resolve();
-      },
-      stopTimer: vi.fn(),
-      pauseTimer: vi.fn(),
-      resumeTimer: vi.fn(),
-      STATS: ["power"]
-      // the rest are not needed in this test
-    }));
-
-    // Silence snackbar noise
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
+        if (duration <= 0) {
+          clearInterval(id);
+          await onExpired();
+        }
+      }, 1000);
+      return Promise.resolve();
+    });
 
     // Header structure as in battleJudoka.html
     const header = document.createElement("header");

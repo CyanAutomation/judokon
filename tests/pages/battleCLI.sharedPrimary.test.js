@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const {
-  mockScoreboard,
-  mockGetScores,
-  mockFailingScoreboard
-} = vi.hoisted(() => ({
+const { mockScoreboard, mockGetScores, mockFailingScoreboard } = vi.hoisted(() => ({
   mockScoreboard: {
     showMessage: vi.fn((text) => {
       const el = document.getElementById("round-message");
