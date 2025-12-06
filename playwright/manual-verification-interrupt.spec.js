@@ -52,6 +52,9 @@ test.describe("Classic battle interrupt recovery", () => {
     const timerValue = page.locator('#next-round-timer [data-part="value"]');
     await expect(timerValue).toHaveText(/\d+s/i);
 
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
+    
+    // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
     await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
     await expect(page.getByTestId("stat-button").first()).toBeEnabled();
