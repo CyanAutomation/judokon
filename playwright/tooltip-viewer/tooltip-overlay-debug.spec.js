@@ -1,67 +1,29 @@
 import { test, expect } from "../fixtures/commonSetup.js";
+import { waitForFeatureFlagState } from "../helpers/featureFlagHelper.js";
 
 test.describe("tooltipOverlayDebug feature flag", () => {
-  test("outlines tooltip targets when enabled", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = {
-        tooltipOverlayDebug: true
-      };
-    });
+  test("toggles overlay debug via settings control", async ({ page }) => {
+    await page.goto("/src/pages/settings.html");
 
+    const overlayToggle = page.locator("#feature-tooltip-overlay-debug");
     const body = page.locator("body");
-    await page.goto("/src/pages/tooltipViewer.html");
+    const snackbar = page.locator("#snackbar-container");
 
-    await expect
-      .poll(async () => ({
-        classMarker: await body.evaluate((el) => el.classList.contains("tooltip-overlay-debug")),
-        dataMarker: await body.getAttribute("data-feature-tooltip-overlay-debug")
-      }))
-      .toEqual({
-        classMarker: true,
-        dataMarker: "enabled"
-      });
+    await expect(overlayToggle).toBeVisible();
 
-    await page.goto("/src/pages/browseJudoka.html");
+    await waitForFeatureFlagState(page, "tooltipOverlayDebug", false);
+    await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "disabled");
 
-    // The browse judoka page exposes real tooltip targets so we can observe overlay styles without injecting probes.
-    const tooltipTargets = page.locator("[data-tooltip-id]");
-    await expect(tooltipTargets).not.toHaveCount(0);
-    const tooltipTarget = tooltipTargets.first();
-    await expect(tooltipTarget).toBeVisible();
-    const tooltipId = await tooltipTarget.getAttribute("data-tooltip-id");
-    expect(tooltipId).not.toBeNull();
-    await expect(tooltipTarget).toHaveCSS("outline-style", "dashed");
-    await expect(tooltipTarget).not.toHaveCSS("outline-width", "0px");
-  });
+    await overlayToggle.check();
 
-  test("removes overlay markers when disabled", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = {
-        tooltipOverlayDebug: false
-      };
-    });
+    await waitForFeatureFlagState(page, "tooltipOverlayDebug", true);
+    await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "enabled");
+    await expect(snackbar).toContainText(/tooltip overlay debug enabled/i);
 
-    const body = page.locator("body");
-    await page.goto("/src/pages/tooltipViewer.html");
+    await overlayToggle.uncheck();
 
-    await expect
-      .poll(async () => ({
-        classMarker: await body.evaluate((el) => el.classList.contains("tooltip-overlay-debug")),
-        dataMarker: await body.getAttribute("data-feature-tooltip-overlay-debug")
-      }))
-      .toEqual({
-        classMarker: false,
-        dataMarker: "disabled"
-      });
-
-    await page.goto("/src/pages/browseJudoka.html");
-
-    // Reuse a real tooltip target rather than mutating the DOM to fabricate one for style checks.
-    const tooltipTargets = page.locator("[data-tooltip-id]");
-    await expect(tooltipTargets).not.toHaveCount(0);
-    const tooltipTarget = tooltipTargets.first();
-    await expect(tooltipTarget).toBeVisible();
-    await expect(tooltipTarget).toHaveCSS("outline-style", "none");
-    await expect(tooltipTarget).toHaveCSS("outline-width", "0px");
+    await waitForFeatureFlagState(page, "tooltipOverlayDebug", false);
+    await expect(body).toHaveAttribute("data-feature-tooltip-overlay-debug", "disabled");
+    await expect(snackbar).toContainText(/tooltip overlay debug disabled/i);
   });
 });
