@@ -15,6 +15,7 @@ if (typeof global.cancelAnimationFrame === "undefined") {
 import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
+import { createMockFetchJson, createDataUtilsMock } from "./helpers/testDataLoader.js";
 // Import battleEvents to ensure it's loaded before vi.resetModules() clears it
 import "../src/helpers/classicBattle/battleEvents.js";
 
@@ -37,7 +38,19 @@ if (typeof window !== "undefined") {
   window.__PROFILE_DEBUG_FLAGS__ = false;
 }
 
-// Global mock removed - individual tests should handle their own mocking
+/**
+ * Setup global mock for dataUtils.fetchJson in JSDOM environments.
+ * This ensures that data loading in integration tests works correctly
+ * without requiring file:// or http:// access to data files.
+ *
+ * Individual tests can override this mock via vi.mock() at the module level.
+ */
+vi.mock("../src/helpers/dataUtils.js", () => {
+  const mockFetchJson = createMockFetchJson();
+  return createDataUtilsMock(mockFetchJson, {
+    importJsonModule: async () => ({})
+  });
+});
 
 // vi.importMz: utility for dynamic imports while preserving mocks
 if (!vi.importMz) {
@@ -78,6 +91,20 @@ async function ensureFreshBattleEngine() {
     const facade = await import("../src/helpers/battleEngineFacade.js");
     if (facade?.createBattleEngine && typeof facade.createBattleEngine === "function") {
       facade.createBattleEngine({ forceCreate: true });
+    }
+  } catch {}
+}
+
+/**
+ * Ensure dataset.target is set with default points-to-win value if missing.
+ * This is a safe default for tests that don't explicitly configure it.
+ */
+async function ensurePointsToWinDataset() {
+  try {
+    if (document?.documentElement) {
+      if (!document.documentElement.dataset.target) {
+        document.documentElement.dataset.target = "5";
+      }
     }
   } catch {}
 }
