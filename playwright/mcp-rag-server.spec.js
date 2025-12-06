@@ -159,7 +159,7 @@ function createMockToolClient() {
       }
 
       if (name === "judokon.getById") {
-        if (args?.id == 0 || args?.id === "0") {
+        if (args?.id === 0 || args?.id === "0") {
           return {
             isError: false,
             found: true,
