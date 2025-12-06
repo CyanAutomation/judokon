@@ -278,6 +278,8 @@ jobs:
     needs: sync
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     name: Verify Agent Docs Sync
     timeout-minutes: 5
     steps:
