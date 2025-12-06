@@ -147,7 +147,7 @@ describe("classicBattle battle control state", () => {
       "../../../src/helpers/classicBattle/roundManager.js"
     );
     window.battleStore = createBattleStore();
-    
+
     // The home link click should trigger the quit flow
     // In the real implementation, this calls quitMatch which opens a modal
     // For this test, we just verify that the event listener is attached

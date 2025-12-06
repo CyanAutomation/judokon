@@ -38,7 +38,9 @@ async function launchClassicBattle(page, options = {}) {
 }
 
 test.describe("Classic battle interrupt recovery", () => {
-  test("interrupt transitions to cooldown and resumes with visible countdown cues", async ({ page }) => {
+  test("interrupt transitions to cooldown and resumes with visible countdown cues", async ({
+    page
+  }) => {
     await launchClassicBattle(page, { cooldownMs: 1500, roundTimerMs: 12 });
 
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
@@ -53,7 +55,7 @@ test.describe("Classic battle interrupt recovery", () => {
     await expect(timerValue).toHaveText(/\d+s/i);
 
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
-    
+
     // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
     await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");

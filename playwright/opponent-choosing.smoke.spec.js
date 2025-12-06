@@ -67,61 +67,63 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     };
   }
 
-  test("delays and clears the snackbar when the flag is enabled (spec: " + FLAG_SPEC_PATH + ")", async ({
-    page
-  }) => {
-    const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
-      opponentDelayMessage: true
-    });
+  test(
+    "delays and clears the snackbar when the flag is enabled (spec: " + FLAG_SPEC_PATH + ")",
+    async ({ page }) => {
+      const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
+        opponentDelayMessage: true
+      });
 
-    await waitForFeatureFlagOverrides(page, {
-      opponentDelayMessage: true
-    });
+      await waitForFeatureFlagOverrides(page, {
+        opponentDelayMessage: true
+      });
 
-    await firstStat.click();
+      await firstStat.click();
 
-    await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
-    await expect(firstStat).toBeDisabled();
+      await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
+      await expect(firstStat).toBeDisabled();
 
-    await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
-      timeout: 6000
-    });
+      await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
+        timeout: 6000
+      });
 
-    await expect(nextButton).toBeEnabled({ timeout: 10000 });
-    await nextButton.click();
+      await expect(nextButton).toBeEnabled({ timeout: 10000 });
+      await nextButton.click();
 
-    await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
-    await expect(snackbar).toBeHidden({ timeout: 5000 });
+      await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+      await expect(snackbar).toBeHidden({ timeout: 5000 });
 
-    await app.cleanup();
-  });
+      await app.cleanup();
+    }
+  );
 
-  test("shows immediate snackbar when flag is disabled (spec fallback: " + FLAG_SPEC_PATH + ")", async ({
-    page
-  }) => {
-    const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
-      opponentDelayMessage: false
-    });
+  test(
+    "shows immediate snackbar when flag is disabled (spec fallback: " + FLAG_SPEC_PATH + ")",
+    async ({ page }) => {
+      const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
+        opponentDelayMessage: false
+      });
 
-    await waitForFeatureFlagOverrides(page, {
-      opponentDelayMessage: false
-    });
+      await waitForFeatureFlagOverrides(page, {
+        opponentDelayMessage: false
+      });
 
-    await firstStat.click();
+      await firstStat.click();
 
-    await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
-    // When flag is disabled, snackbar should appear immediately with shorter timeout
-    await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
-      timeout: 1500
-    });
+      await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
+      // When flag is disabled, snackbar should appear immediately with shorter timeout
+      await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
+        timeout: 1500
+      });
 
-    // Next button should be enabled immediately without delay when flag is disabled
-    await expect(nextButton).toBeEnabled({ timeout: 2000 });
-    await nextButton.click();
+      // Next button should be enabled immediately without delay when flag is disabled
+      await expect(nextButton).toBeEnabled({ timeout: 2000 });
+      await nextButton.click();
 
-    await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
-    await expect(snackbar).toBeHidden({ timeout: 5000 });
+      await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+      await expect(snackbar).toBeHidden({ timeout: 5000 });
 
-    await app.cleanup();
-  });
+      await app.cleanup();
+    }
+  );
 });

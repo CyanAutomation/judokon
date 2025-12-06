@@ -12,7 +12,7 @@ const mockFactory = vi.hoisted(() => {
   const urlObj = new URL("./sampleModule.js", import.meta.url);
   const path = pathToFileURL(urlObj.pathname).href;
   const getBattleMessage = vi.fn(() => "mocked battle message");
-  
+
   return {
     path,
     factory: () => ({ getBattleMessage }),

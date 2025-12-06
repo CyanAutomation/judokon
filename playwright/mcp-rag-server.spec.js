@@ -139,10 +139,7 @@ function createMockToolClient() {
         const baseResults = args.query.toLowerCase().includes("powerful")
           ? rankedResults
           : rankedResults.slice(0, 1);
-        const limitedResults = baseResults.slice(
-          0,
-          Math.min(requestedTopK, baseResults.length)
-        );
+        const limitedResults = baseResults.slice(0, Math.min(requestedTopK, baseResults.length));
 
         return {
           isError: false,
@@ -220,10 +217,7 @@ test.describe("MCP RAG tools (mocked)", () => {
     expect(searchTool?.inputSchema?.properties?.topK?.minimum).toBe(1);
 
     const getByIdTool = tools.find((tool) => tool.name === "judokon.getById");
-    expect(getByIdTool?.inputSchema?.properties?.id?.type).toEqual([
-      "string",
-      "number"
-    ]);
+    expect(getByIdTool?.inputSchema?.properties?.id?.type).toEqual(["string", "number"]);
 
     const ragTool = tools.find((tool) => tool.name === "query_rag");
     expect(ragTool?.inputSchema?.required).toContain("query");

@@ -223,16 +223,19 @@ test.describe("CLI Command History", () => {
     const statRows = page.locator("#cli-stats .cli-stat");
     const statOptions = await statRows.evaluateAll((rows) =>
       rows
-.map((row) => row.dataset.stat?.trim()).filter((value) => value && value.length > 0)
+        .map((row) => row.dataset.stat?.trim())
+        .filter((value) => value && value.length > 0)
         .filter((value) => value.length > 0)
     );
     expect(statOptions.length).toBeGreaterThanOrEqual(2);
 
-const [firstStat, secondStat] = statOptions;
+    const [firstStat, secondStat] = statOptions;
 
-if (!firstStat || !secondStat) {
-  throw new Error(`Expected at least 2 stats, got ${statOptions.length}: ${JSON.stringify(statOptions)}`);
-}
+    if (!firstStat || !secondStat) {
+      throw new Error(
+        `Expected at least 2 stats, got ${statOptions.length}: ${JSON.stringify(statOptions)}`
+      );
+    }
 
     await expect(statRows.first()).toHaveAttribute("data-stat", firstStat);
     await expect(statRows.nth(1)).toHaveAttribute("data-stat", secondStat);
