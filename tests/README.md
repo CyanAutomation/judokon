@@ -105,6 +105,125 @@ it("should handle RAF", () => {
 - Test complete user workflows
 - Located in `playwright/` directory
 
+## Data Loading and Mocking Strategy
+
+JU-DO-KON! tests need consistent access to game data (judoka, gokyo techniques, etc.). JSDOM doesn't have direct filesystem access, so we provide a centralized mocking strategy.
+
+### Problem and Solution
+
+**Problem:** In JSDOM environments, fetch() cannot resolve file:// URLs or relative paths to data files like `src/data/judoka.json`. This prevents state machine initialization from completing, blocking the transition to `waitingForPlayerAction`.
+
+**Solution:** We provide a three-layer approach:
+
+1. **Test Fixtures** - Pre-built judoka and gokyo data in `tests/helpers/testDataLoader.js`
+2. **Unit Test Mocking** - Individual tests use `vi.mock()` with testDataLoader
+3. **Integration Test Harness** - Encapsulated setup in `tests/helpers/createBattleHarness.js`
+
+### Using Test Fixtures
+
+For unit tests that need data mocking, use the test data loader with vi.mock():
+
+```js
+import { 
+  createMockFetchJson,
+  judokaMinimalSet,
+  judokaExtendedSet,
+  gokyoFixtures
+} from "../helpers/testDataLoader.js";
+
+// Create the mock (minimal set: 2 judoka by default)
+const mockFetch = createMockFetchJson();
+
+// Or customize with extended set (3 judoka)
+const mockFetch = createMockFetchJson({
+  judoka: judokaExtendedSet,
+  gokyo: gokyoFixtures
+});
+
+// Apply at module level
+vi.mock("../../src/helpers/dataUtils.js", () => ({
+  fetchJson: mockFetch,
+  importJsonModule: async () => ({}),
+  validateWithSchema: async () => undefined
+}));
+```
+
+### Integration Test Harness
+
+For integration tests involving state machine initialization, use `createBattleHarness`:
+
+```js
+import { createBattleHarness } from "../helpers/createBattleHarness.js";
+
+describe("Battle State Machine", () => {
+  let harness;
+
+  beforeEach(async () => {
+    harness = createBattleHarness({
+      initialState: "waitingForMatchStart",
+      stateTransitionTimeout: 5000
+    });
+    await harness.setup();
+  });
+
+  afterEach(() => {
+    harness.cleanup();
+  });
+
+  it("transitions to waitingForPlayerAction after card draw", async () => {
+    // Wait for round start and card drawing
+    await harness.waitForState("waitingForPlayerAction");
+
+    expect(harness.getState()).toBe("waitingForPlayerAction");
+  });
+
+  it("dispatches events correctly", async () => {
+    await harness.waitForState("waitingForPlayerAction");
+    harness.dispatchEvent("matchOver", { winner: "player" });
+    await harness.waitForState("matchOver");
+  });
+});
+```
+
+### Available Test Data
+
+**Minimal Judoka Set** (default):
+
+- Player (id: 111) - US fighter, balanced stats
+- Opponent (id: 114) - Japan fighter, speed-focused
+
+**Extended Judoka Set**:
+
+- Includes Player, Opponent, and Third Fighter (id: 117, France, lightweight specialist)
+
+**Gokyo Fixtures**:
+
+- id: 0 - O Goshi (hip throw)
+- id: 1 - Seoi Nage (shoulder throw)
+- id: 2 - De Ashi Barai (foot sweep)
+
+### Debugging Data Loading
+
+Enable debug logging in tests:
+
+```js
+const harness = createBattleHarness({
+  enableLogs: true  // Logs state transitions and fetch calls
+});
+```
+
+Or use the debug wrapper:
+
+```js
+import { createDebugTrackingFetchJson } from "../helpers/testDataLoader.js";
+
+const mockFetch = createMockFetchJson();
+const { wrapped, reportCalls } = createDebugTrackingFetchJson(mockFetch);
+
+// Later, see all fetch calls
+reportCalls();  // Logs: ["judoka", "gokyo", ...]
+```
+
 ## Playwright Test API Surface
 
 JU-DO-KON! uses a clear distinction between public and private test APIs for Playwright tests.

@@ -15,7 +15,6 @@ if (typeof global.cancelAnimationFrame === "undefined") {
 import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
-import { createMockFetchJson, createDataUtilsMock } from "./helpers/testDataLoader.js";
 // Import battleEvents to ensure it's loaded before vi.resetModules() clears it
 import "../src/helpers/classicBattle/battleEvents.js";
 
@@ -39,18 +38,15 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Setup global mock for dataUtils.fetchJson in JSDOM environments.
- * This ensures that data loading in integration tests works correctly
- * without requiring file:// or http:// access to data files.
+ * Global mock for dataUtils.fetchJson is NOT applied here.
+ * Instead, each test file that needs data mocking should:
+ * 1. Use the createBattleHarness for integration tests (which handles mocking)
+ * 2. Use vi.mock() at the module level with createMockFetchJson() for unit tests
+ * 3. Tests that need real dataUtils (e.g., schema validation with @vitest-environment node)
+ *    can run without mocking since the real module is available
  *
- * Individual tests can override this mock via vi.mock() at the module level.
+ * This approach avoids conflicts between JSDOM and Node.js test environments.
  */
-vi.mock("../src/helpers/dataUtils.js", () => {
-  const mockFetchJson = createMockFetchJson();
-  return createDataUtilsMock(mockFetchJson, {
-    importJsonModule: async () => ({})
-  });
-});
 
 // vi.importMz: utility for dynamic imports while preserving mocks
 if (!vi.importMz) {
