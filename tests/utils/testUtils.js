@@ -704,7 +704,7 @@ export function resetDom() {
   if (typeof document !== "undefined" && document.body) {
     document.body.innerHTML = "";
   }
-  if (typeof localStorage !== "undefined") {
+  if (typeof localStorage !== "undefined" && typeof localStorage.clear === "function") {
     localStorage.clear();
   }
   vi.restoreAllMocks();
