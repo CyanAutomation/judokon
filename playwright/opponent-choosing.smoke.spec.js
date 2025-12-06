@@ -35,57 +35,91 @@ import { waitForFeatureFlagOverrides } from "./helpers/featureFlagHelper.js";
  * - `playwright/helpers/featureFlagHelper.js` - waitForFeatureFlagOverrides implementation
  */
 const test = base;
+const FLAG_SPEC_PATH = "docs/qa/opponent-delay-message.md";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
-  test("shows snackbar after stat selection", async ({ page }) => {
-    // Register common routes needed for page load (navigation, gameModes, etc.)
+  async function bootClassicBattle(page, featureFlags) {
     await registerCommonRoutes(page);
 
-    // Configure the app with opponentDelayMessage enabled and autoSelect disabled.
-    // configureApp routes the settings fetch to inject these overrides, which survives
-    // route registration because it's applied at the fetch layer, not localStorage.
     const app = await configureApp(page, {
       featureFlags: {
-        opponentDelayMessage: true,
-        autoSelect: false
+        autoSelect: false,
+        ...featureFlags
       }
     });
 
-    // Navigate to battle page
-    // Note: Using "networkidle" instead of "load" since the app may have deferred loading
     await page.goto("/src/pages/battleClassic.html", {
       waitUntil: "networkidle",
       timeout: 15000
     });
 
-    // Wait for stat buttons to be visible and ready
+    const statButtons = page.locator("#stat-buttons");
     const firstStat = page.getByRole("button", { name: /power/i }).first();
     await expect(firstStat).toBeVisible({ timeout: 5000 });
-    await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true", {
-      timeout: 5000
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+
+    return {
+      app,
+      firstStat,
+      statButtons,
+      snackbar: page.locator("#snackbar-container .snackbar"),
+      nextButton: page.getByTestId("next-button")
+    };
+  }
+
+  test("delays and clears the snackbar when the flag is enabled (spec: " + FLAG_SPEC_PATH + ")", async ({
+    page
+  }) => {
+    const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
+      opponentDelayMessage: true
     });
 
-    // Verify that opponentDelayMessage flag is enabled before driving the UI.
-    // This ensures snackbar behavior is deterministic and not dependent on UI copy.
     await waitForFeatureFlagOverrides(page, {
       opponentDelayMessage: true
     });
 
-    // Note: We assert on the feature flag state (source of truth) rather than the opponent
-    // delay value itself, since the flag enables the UI behavior. This makes the test robust
-    // to internal implementation changes while validating that the feature is configured.
-
-    // Click a stat to trigger the opponent choosing state
     await firstStat.click();
 
-    // Snackbar should show the opponent choosing message when opponentDelayMessage is enabled.
-    // This message appears after stat selection because the flag enables the opponent delay UI.
-    const snackbar = page.locator("#snackbar-container .snackbar");
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
+    await expect(firstStat).toBeDisabled();
+
     await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
-      timeout: 5000
+      timeout: 6000
     });
 
-    // Clean up the app configuration
+    await expect(nextButton).toBeEnabled({ timeout: 10000 });
+    await nextButton.click();
+
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+    await expect(snackbar).toBeHidden({ timeout: 5000 });
+
+    await app.cleanup();
+  });
+
+  test("shows immediate snackbar when flag is disabled (spec fallback: " + FLAG_SPEC_PATH + ")", async ({
+    page
+  }) => {
+    const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
+      opponentDelayMessage: false
+    });
+
+    await waitForFeatureFlagOverrides(page, {
+      opponentDelayMessage: false
+    });
+
+    await firstStat.click();
+
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
+    await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
+      timeout: 2000
+    });
+
+    await expect(nextButton).toBeEnabled({ timeout: 10000 });
+    await nextButton.click();
+
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+    await expect(snackbar).toBeHidden({ timeout: 5000 });
+
     await app.cleanup();
   });
 });
