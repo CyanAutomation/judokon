@@ -1,10 +1,10 @@
 import { loadEmbeddings } from "./loader.js";
 
 /** Bonus applied when the query text contains exact terms from the entry. */
-const EXACT_MATCH_BONUS = 0.20;
+const EXACT_MATCH_BONUS = 0.2;
 const SECTION_TITLE_BONUS = 0.05;
 const KEYPATH_BONUS = 0.06; // small nudge for dotted key tokens (e.g., settings.sound)
-const FILENAME_BONUS = 0.50; // Increased from 0.40 for stronger discrimination between chunks
+const FILENAME_BONUS = 0.5; // Increased from 0.40 for stronger discrimination between chunks
 
 function resolveFirstValid(entries) {
   if (entries === null) return { kind: "null" };
