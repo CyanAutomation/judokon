@@ -223,7 +223,7 @@ test.describe("CLI Command History", () => {
     const statRows = page.locator("#cli-stats .cli-stat");
     const statOptions = await statRows.evaluateAll((rows) =>
       rows
-        .map((row) => row.dataset.stat?.trim() || row.textContent?.trim() || "")
+.map((row) => row.dataset.stat?.trim()).filter((value) => value && value.length > 0)
         .filter((value) => value.length > 0)
     );
     expect(statOptions.length).toBeGreaterThanOrEqual(2);
