@@ -220,6 +220,9 @@ test.describe("CLI Command History", () => {
 
     const snackbar = page.locator("#snackbar-container .snackbar");
     const statList = page.locator("#cli-stats");
+    const statOptions = await page.locator("#cli-stats .stat-option").allTextContents();
+    expect(statOptions.length).toBeGreaterThanOrEqual(2);
+    expect(statOptions).toEqual(expect.arrayContaining(["power", "speed"]));
 
     // History navigation should surface the most recent selections
     await page.keyboard.press("ArrowUp");
@@ -235,6 +238,6 @@ test.describe("CLI Command History", () => {
     await expect(snackbar).toHaveText("History: speed");
     await page.keyboard.press("ArrowDown");
     await expect(snackbar).toHaveText("");
-    await expect(statList).not.toHaveAttribute("data-history-preview", "power");
+    await expect(statList).not.toHaveAttribute("data-history-preview");
   });
 });
