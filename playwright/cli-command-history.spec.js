@@ -220,22 +220,35 @@ test.describe("CLI Command History", () => {
 
     const snackbar = page.locator("#snackbar-container .snackbar");
     const statList = page.locator("#cli-stats");
-    const statOptions = await page.locator("#cli-stats .stat-option").allTextContents();
+    const statRows = page.locator("#cli-stats .cli-stat");
+    const statOptions = await statRows.evaluateAll((rows) =>
+      rows
+.map((row) => row.dataset.stat?.trim()).filter((value) => value && value.length > 0)
+        .filter((value) => value.length > 0)
+    );
     expect(statOptions.length).toBeGreaterThanOrEqual(2);
-    expect(statOptions.every(option => typeof option === 'string' && option.length > 0)).toBe(true);
+
+const [firstStat, secondStat] = statOptions;
+
+if (!firstStat || !secondStat) {
+  throw new Error(`Expected at least 2 stats, got ${statOptions.length}: ${JSON.stringify(statOptions)}`);
+}
+
+    await expect(statRows.first()).toHaveAttribute("data-stat", firstStat);
+    await expect(statRows.nth(1)).toHaveAttribute("data-stat", secondStat);
 
     // History navigation should surface the most recent selections
     await page.keyboard.press("ArrowUp");
-    await expect(snackbar).toHaveText("History: speed");
-    await expect(statList).toHaveAttribute("data-history-preview", "speed");
+    await expect(snackbar).toHaveText(`History: ${secondStat}`);
+    await expect(statList).toHaveAttribute("data-history-preview", secondStat);
 
     await page.keyboard.press("ArrowUp");
-    await expect(snackbar).toHaveText("History: power");
-    await expect(statList.locator('.history-preview[data-stat="power"]')).toBeVisible();
+    await expect(snackbar).toHaveText(`History: ${firstStat}`);
+    await expect(statList.locator(`.history-preview[data-stat="${firstStat}"]`)).toBeVisible();
 
     // Navigating forward should clear the preview and return focus to the current prompt
     await page.keyboard.press("ArrowDown");
-    await expect(snackbar).toHaveText("History: speed");
+    await expect(snackbar).toHaveText(`History: ${secondStat}`);
     await page.keyboard.press("ArrowDown");
     await expect(snackbar).toHaveText("");
     await expect(statList).not.toHaveAttribute("data-history-preview");
