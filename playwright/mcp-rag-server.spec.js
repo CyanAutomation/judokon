@@ -239,7 +239,7 @@ test.describe("MCP RAG tools (mocked)", () => {
     expect(result.results).toHaveLength(result.topK);
     expect(result.results[0].score).toBeGreaterThan(result.results[1].score);
     expect(result.results[0]).toMatchObject({ rarity: "Legendary", weightClass: "+100" });
-    expect(await extractText(result)).toContain("Found 2 judoka matching");
+    expect(await extractText(result)).toContain(`Found ${result.topK} judoka matching`);
   });
 
   test("judokon.getById returns detailed record and not-found state", async () => {
