@@ -477,6 +477,15 @@ describe("Random Judoka Selection", () => {
       expect(result.description.length).toBeGreaterThan(0);
     });
 
+    it("should describe supported filters and response metadata", () => {
+      const { description } = getRandomSelectionDocumentation();
+
+      expect(description).toMatch(/country/i);
+      expect(description).toMatch(/rarity/i);
+      expect(description).toMatch(/weight\s*class/i);
+      expect(description).toMatch(/metadata/i);
+    });
+
     it("should have country filter documented", () => {
       const result = getRandomSelectionDocumentation();
       const { country: expectedCountryFilter } = RANDOM_SELECTION_DOCUMENTATION.filters;

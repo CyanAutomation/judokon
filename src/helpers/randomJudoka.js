@@ -57,7 +57,8 @@ function cloneRandomSelectionDocumentation(documentation) {
 }
 
 const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
-  description: "Select a random judoka from the database with optional filtering",
+  description:
+    "Select a random judoka with optional country/rarity/weightClass filters and metadata about the selection",
   filters: {
     country: {
       description: "Filter by country (e.g., 'Japan')",
