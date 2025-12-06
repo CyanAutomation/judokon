@@ -228,7 +228,11 @@ test.describe("CLI Command History", () => {
     );
     expect(statOptions.length).toBeGreaterThanOrEqual(2);
 
-    const [firstStat, secondStat] = statOptions;
+const [firstStat, secondStat] = statOptions;
+
+if (!firstStat || !secondStat) {
+  throw new Error(`Expected at least 2 stats, got ${statOptions.length}: ${JSON.stringify(statOptions)}`);
+}
 
     await expect(statRows.first()).toHaveAttribute("data-stat", firstStat);
     await expect(statRows.nth(1)).toHaveAttribute("data-stat", secondStat);
