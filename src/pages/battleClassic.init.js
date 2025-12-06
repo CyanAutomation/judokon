@@ -1679,12 +1679,12 @@ async function initializePhase2_UI() {
   initBattleStateBadge({ force: false });
 
   await initFeatureFlags();
-  
+
   // Enable test mode if the enableTestMode feature flag is set
   if (isEnabled("enableTestMode")) {
     setTestMode(true);
   }
-  
+
   initBattleStateBadge({ force: false });
   initDebugFlagHud();
 
