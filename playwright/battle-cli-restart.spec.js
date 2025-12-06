@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
 import { configureApp } from "./fixtures/appConfig.js";
+import { completeRoundViaApi } from "./helpers/battleApiHelper.js";
 
 test.describe("Battle CLI - Restart", () => {
   test("should be able to restart a match", async ({ page }) => {
@@ -15,29 +16,46 @@ test.describe("Battle CLI - Restart", () => {
         .poll(() => page.evaluate(() => window.__TEST_API?.engine?.getPointsToWin?.()))
         .toBe(1);
 
-      // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");
       await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
 
-      // Click the first stat button to win the round and the match
-      await page.locator(".cli-stat").first().click();
+      const statButton = page.locator(".cli-stat").first();
+      const statKey = await statButton.getAttribute("data-stat");
+      expect(statKey).toBeTruthy();
+      await statButton.click();
 
-      // Wait for Test API to be available
-      await page.waitForFunction(() => window.__TEST_API?.state?.dispatchBattleEvent);
+      const roundResult = await completeRoundViaApi(page, {
+        detail: {
+          stat: statKey,
+          playerVal: 99,
+          opponentVal: 1,
+          result: {
+            message: "You win the round!",
+            playerScore: 1,
+            opponentScore: 0
+          }
+        }
+      });
 
-      // Dispatch matchOver event using public Test API instead of internal hook
-      await page.evaluate(() => window.__TEST_API.state.dispatchBattleEvent("matchOver"));
+      expect(roundResult.ok, roundResult.reason ?? "round completion failed").toBe(true);
 
-      // Wait for the "Play Again" button to be visible
       const playAgainButton = page.getByRole("button", { name: "Play Again" });
-      await expect(playAgainButton).toBeVisible({ timeout: 10000 }); // Increased timeout
+      await expect(playAgainButton).toBeVisible({ timeout: 10000 });
 
-      // Click the "Play Again" button
       await playAgainButton.click();
 
-      // The stats should be visible again for the new match
-      await expect(statsContainer).toBeVisible({ timeout: 10000 }); // Increased timeout
-      // Removed aria-busy accessibility assertion
+      await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
+
+      await expect(page.locator("#score-display")).toHaveAttribute("data-score-player", "0");
+      await expect(page.locator("#score-display")).toHaveAttribute("data-score-opponent", "0");
+
+      const countdown = page.locator("#cli-countdown");
+      await expect(countdown).toHaveAttribute("data-remaining-time", "0");
+      await expect(countdown).toHaveText(/^$/);
+
+      const statButtons = page.locator(".cli-stat[role="button"]");
+      await expect(statButtons).toHaveCount(5);
+      await expect(statButtons.first()).toBeEnabled();
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
