@@ -70,7 +70,10 @@ const engineCreatedListeners = new Set();
  * @returns {IBattleEngine|null}
  */
 function getCurrentEngine() {
-  return typeof window !== "undefined" ? (battleEngines.get(window) ?? battleEngine) : battleEngine;
+  if (typeof window !== "undefined") {
+    return battleEngines.get(window) ?? null;
+  }
+  return battleEngine;
 }
 
 function shouldLogEngineListenerErrors() {
