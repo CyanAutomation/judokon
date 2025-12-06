@@ -24,18 +24,23 @@ test.describe("Battle CLI - Restart", () => {
       expect(statKey).toBeTruthy();
       await statButton.click();
 
-      const roundResult = await completeRoundViaApi(page, {
-        detail: {
-          stat: statKey,
-          playerVal: 99,
-          opponentVal: 1,
-          result: {
-            message: "You win the round!",
-            playerScore: 1,
-            opponentScore: 0
+      let roundResult;
+      try {
+        roundResult = await completeRoundViaApi(page, {
+          detail: {
+            stat: statKey,
+            playerVal: 99,
+            opponentVal: 1,
+            result: {
+              message: "You win the round!",
+              playerScore: 1,
+              opponentScore: 0
+            }
           }
-        }
-      });
+        });
+      } catch (error) {
+        throw new Error(`Failed to complete round via API: ${error.message}`);
+      }
 
       expect(roundResult.ok, roundResult.reason ?? "round completion failed").toBe(true);
 
