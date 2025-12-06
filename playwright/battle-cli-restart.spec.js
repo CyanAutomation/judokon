@@ -53,7 +53,7 @@ test.describe("Battle CLI - Restart", () => {
       await expect(countdown).toHaveAttribute("data-remaining-time", "0");
       await expect(countdown).toHaveText(/^$/);
 
-      const statButtons = page.locator(".cli-stat[role="button"]");
+      const statButtons = page.locator('.cli-stat[role="button"]');
       await expect(statButtons).toHaveCount(5);
       await expect(statButtons.first()).toBeEnabled();
     }, ["log", "info", "warn", "error", "debug"]);
