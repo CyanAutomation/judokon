@@ -56,9 +56,19 @@ export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
 let battleEngine = null;
 
 // Use a WeakMap to store battle engines per window to avoid sharing across pages.
-// This isolates engines in multi-window environments (e.g., Playwright tests).
-// The module-level `battleEngine` variable provides a Node.js fallback when
-// `window` is unavailable, enabling both browser and server-side testing.
+//
+// **Design Rationale:**
+// - Isolates engines in multi-window environments (e.g., Playwright tests with context switching).
+// - WeakMap keys are garbage-collected when windows are closed, preventing memory leaks.
+// - Circular reference safety: WeakMap does not prevent GC even if the window holds a reference
+//   to data that references the engine. This is safe because we intentionally keep engines
+//   alive via explicit `createBattleEngine()` calls; the WeakMap cleanup is secondary.
+//
+// **Fallback for Node.js:**
+// - The module-level `battleEngine` variable provides fallback storage when `window` is unavailable.
+// - This enables both browser and server-side testing without conditional imports.
+// - Trade-off: In Node.js, only one engine per process; multi-window benefit is browser-only.
+//
 const battleEngines = new WeakMap();
 
 /** @type {Set<(engine: IBattleEngine|null) => void>} */
