@@ -186,7 +186,8 @@ describe("Battle Classic Page Integration", () => {
     // Mock feature flags to ensure a consistent test environment
     window.__FF_OVERRIDES = {
       battleStateBadge: true,
-      showRoundSelectModal: true // Ensure modal is shown for testing
+      showRoundSelectModal: true, // Ensure modal is shown for testing
+      enableTestMode: true // Enable test mode for deterministic timers
     };
   });
 

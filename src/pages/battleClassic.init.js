@@ -35,6 +35,7 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
+import { setTestMode } from "../helpers/testModeUtils.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { initDebugFlagHud } from "../helpers/debugFlagHud.js";
 import { safeExecute, ERROR_LEVELS } from "../helpers/classicBattle/safeExecute.js";
@@ -1678,6 +1679,12 @@ async function initializePhase2_UI() {
   initBattleStateBadge({ force: false });
 
   await initFeatureFlags();
+  
+  // Enable test mode if the enableTestMode feature flag is set
+  if (isEnabled("enableTestMode")) {
+    setTestMode(true);
+  }
+  
   initBattleStateBadge({ force: false });
   initDebugFlagHud();
 
