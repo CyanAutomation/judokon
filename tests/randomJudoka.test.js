@@ -466,15 +466,16 @@ describe("Random Judoka Selection", () => {
   describe("getRandomSelectionDocumentation", () => {
     it("should recompute documentation instead of returning mutated references", () => {
       const firstCall = getRandomSelectionDocumentation();
+      const originalRarityValues = [...RANDOM_SELECTION_DOCUMENTATION.filters.rarity.values];
+      const originalCountryDescription = RANDOM_SELECTION_DOCUMENTATION.filters.country.description;
+
       firstCall.filters.rarity.values.push("Mythic");
       firstCall.filters.country.description = "mutated";
 
       const secondCall = getRandomSelectionDocumentation();
 
-      expect(secondCall.filters.rarity.values).toEqual(RANDOM_SELECTION_DOCUMENTATION.filters.rarity.values);
-      expect(secondCall.filters.country.description).toBe(
-        RANDOM_SELECTION_DOCUMENTATION.filters.country.description
-      );
+      expect(secondCall.filters.rarity.values).toEqual(originalRarityValues);
+      expect(secondCall.filters.country.description).toBe(originalCountryDescription);
     });
 
     it("should have description string", () => {
@@ -483,19 +484,24 @@ describe("Random Judoka Selection", () => {
       expect(result.description.length).toBeGreaterThan(0);
     });
 
-    it("should align filter descriptions and values with validation and available options", () => {
+    it("should align filter types with validation rules", () => {
       const documentation = getRandomSelectionDocumentation();
       const validatedFilters = validateRandomFilters({
         country: " Japan ",
         rarity: "Legendary",
         weightClass: "+100"
       });
-      const availableOptions = getAvailableFilterOptions(mockJudoka);
 
       expect(documentation.filters.country.type).toBe("string");
       expect(documentation.filters.weightClass.type).toBe("string");
-      expect(documentation.filters.rarity.values).toEqual(availableOptions.rarities);
       expect(validatedFilters).toMatchObject({ country: "Japan", rarity: "Legendary", weightClass: "+100" });
+    });
+
+    it("should align filter values with available options", () => {
+      const documentation = getRandomSelectionDocumentation();
+      const availableOptions = getAvailableFilterOptions(mockJudoka);
+
+      expect(documentation.filters.rarity.values).toEqual(availableOptions.rarities);
       expect(availableOptions.countries).toEqual([...availableOptions.countries].sort());
       expect(availableOptions.rarities).toEqual([...availableOptions.rarities].sort());
       expect(availableOptions.weightClasses).toEqual(expect.arrayContaining(["+100", "-60"]));
@@ -512,11 +518,13 @@ describe("Random Judoka Selection", () => {
       const metadata = getRandomJudokaWithMetadata(mockJudoka, { country: "Japan" });
 
       expect(metadata).not.toBeNull();
-      expect(Object.keys(metadata)).toEqual(Object.keys(documentation.responseFormat));
-      expect(metadata.judoka).toMatchObject({ country: "Japan" });
-      expect(typeof metadata.totalCount).toBe("number");
-      expect(typeof metadata.matchCount).toBe("number");
-      expect(metadata.filters).toEqual(validateRandomFilters({ country: "Japan" }));
+      if (metadata) {
+        expect(Object.keys(metadata)).toEqual(Object.keys(documentation.responseFormat));
+        expect(metadata.judoka).toMatchObject({ country: "Japan" });
+        expect(typeof metadata.totalCount).toBe("number");
+        expect(typeof metadata.matchCount).toBe("number");
+        expect(metadata.filters).toEqual(validateRandomFilters({ country: "Japan" }));
+      }
     });
   });
 
