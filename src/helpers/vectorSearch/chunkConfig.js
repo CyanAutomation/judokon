@@ -28,7 +28,7 @@
  * @type {number}
  * @returns {number}
  */
-export const CHUNK_SIZE = 1000;
+export const CHUNK_SIZE = 1800;
 
 /**
  * Defines the fraction (between 0 and 1) of characters that should overlap
@@ -51,4 +51,4 @@ export const CHUNK_SIZE = 1000;
  * @type {number}
  * @returns {number}
  */
-export const OVERLAP_RATIO = 0.2;
+export const OVERLAP_RATIO = 0.3;

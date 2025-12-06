@@ -1,9 +1,10 @@
 import { loadEmbeddings } from "./loader.js";
 
 /** Bonus applied when the query text contains exact terms from the entry. */
-const EXACT_MATCH_BONUS = 0.15;
+const EXACT_MATCH_BONUS = 0.20;
 const SECTION_TITLE_BONUS = 0.05;
 const KEYPATH_BONUS = 0.06; // small nudge for dotted key tokens (e.g., settings.sound)
+const FILENAME_BONUS = 0.50; // Increased from 0.40 for stronger discrimination between chunks
 
 function resolveFirstValid(entries) {
   if (entries === null) return { kind: "null" };
@@ -231,13 +232,13 @@ export function scoreEntries(entries, queryVector, queryText) {
 
       let exactMatchBonus = EXACT_MATCH_BONUS;
       if (entry.tags?.includes("code") || entry.tags?.includes("data")) {
-        exactMatchBonus = 0.2; // Higher bonus for code and data
+        exactMatchBonus = 0.25; // Higher bonus for code and data
       }
 
       // Filename boost: if query explicitly mentions a filename and entry source matches
       let filenameBonus = 0;
       if (queryFilename && entry.source && entry.source.toLowerCase().includes(queryFilename)) {
-        filenameBonus = 0.4; // Strong boost for explicit filename matches
+        filenameBonus = FILENAME_BONUS; // Use constant for better maintainability
       }
 
       const bonus =

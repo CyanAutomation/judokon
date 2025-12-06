@@ -35,5 +35,12 @@
   "component": ["card", "element", "widget"],
   "constants": ["configuration", "constants"],
   "battle cli": ["cli", "command line"],
-  "accessibility": ["a11y", "wcag", "aria"]
+  "accessibility": ["a11y", "wcag", "aria"],
+  "feature flags": ["featureFlags", "feature flag", "flags"],
+  "featureFlags": ["feature flags", "isEnabled", "enable disable"],
+  "battle engine facade": ["battleEngineFacade", "battle facade", "engine facade"],
+  "prd": ["design doc", "product requirements document", "requirements document"],
+  "development standards": ["dev standards", "coding standards", "code standards"],
+  "vector database": ["rag", "retrieval augmented generation", "embeddings"],
+  "rag": ["vector database", "retrieval augmented generation", "semantic search"]
 }

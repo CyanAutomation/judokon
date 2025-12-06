@@ -243,6 +243,10 @@ export async function getSynonymStats() {
 
 /**
  * Resets the internal synonym cache and related state variables.
+ * This function clears the in-memory cache of synonyms, forcing a fresh load
+ * from the `synonyms.json` file on the next `loadSynonyms` call. This is useful
+ * for testing, or when the underlying synonym data is known to have changed.
+ *
  * @pseudocode
  * 1. Set the global `synonymsCache` to `undefined`.
  * 2. Set the global `synonymsCachePromise` to `undefined`.
