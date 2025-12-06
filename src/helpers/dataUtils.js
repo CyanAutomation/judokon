@@ -158,17 +158,8 @@ export async function resolveUrl(url, base) {
  * @returns {Promise<any>} Parsed JSON data.
  */
 export async function readData(parsedUrl, originalUrl) {
-  // In Node (including JSDOM test envs), prefer fs for file: URLs
-  if (parsedUrl.protocol === "file:" && typeof process !== "undefined" && process?.versions?.node) {
-    try {
-      const { readFile } = await import("fs/promises");
-      const { fileURLToPath } = await import("node:url");
-      const filePath = fileURLToPath(parsedUrl.href);
-      return JSON.parse(await readFile(filePath, "utf8"));
-    } catch {
-      // Fall back to fetch if Node imports fail (e.g., in JSDOM with incomplete module setup)
-    }
-  }
+  // Skip Node.js file:// optimization in test environments where fs may not work as expected
+  // (e.g., JSDOM with incomplete module setup). Always use fetch for consistency.
   const response = await fetch(parsedUrl.href);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${originalUrl} (HTTP ${response.status})`);

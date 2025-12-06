@@ -397,11 +397,17 @@ export const interruptMatch = (reason) => requireEngine().interruptMatch(reason)
  * Retrieve the current scores from the engine.
  *
  * @pseudocode
- * 1. Return `battleEngine.getScores()`.
+ * 1. Get engine via requireEngine().
+ * 2. Call getScores() if available, otherwise return object with safe defaults.
+ * 3. Freeze and return the scores to prevent external mutation.
  *
  * @returns {object}
  */
-export const getScores = () => requireEngine().getScores();
+export const getScores = () => {
+  const engine = requireEngine();
+  const scores = engine.getScores?.() ?? { playerScore: 0, opponentScore: 0 };
+  return Object.freeze({ ...scores });
+};
 
 /**
  * Get a shallow, immutable snapshot of current stat values if exposed.
@@ -423,33 +429,49 @@ export const getCurrentStats = () => {
  * Retrieve how many rounds have been played.
  *
  * @pseudocode
- * 1. Return `battleEngine.getRoundsPlayed()`.
+ * 1. Get the engine via requireEngine().
+ * 2. Call getRoundsPlayed() if available, otherwise return 0 as safe default.
+ * 3. Ensure return value is numeric to prevent NaN propagation.
  *
  * @returns {number}
  */
 export const getRoundsPlayed = () => {
-  return requireEngine().getRoundsPlayed();
+  const engine = requireEngine();
+  const count = engine.getRoundsPlayed?.() ?? 0;
+  return typeof count === "number" ? count : 0;
 };
 
 /**
  * Query whether the match has ended.
  *
  * @pseudocode
- * 1. Return `battleEngine.isMatchEnded()`.
+ * 1. Get engine via requireEngine().
+ * 2. Call isMatchEnded() if available, otherwise return false as safe default.
+ * 3. Ensure return value is boolean to prevent truthy/falsy bugs.
  *
  * @returns {boolean}
  */
-export const isMatchEnded = () => requireEngine().isMatchEnded();
+export const isMatchEnded = () => {
+  const engine = requireEngine();
+  const ended = engine.isMatchEnded?.() ?? false;
+  return Boolean(ended);
+};
 
 /**
  * Get timer state (remaining, running, paused) from the engine.
  *
  * @pseudocode
- * 1. Return `battleEngine.getTimerState()`.
+ * 1. Get engine via requireEngine().
+ * 2. Call getTimerState() if available, otherwise return safe default state.
+ * 3. Freeze and return to prevent external mutation.
  *
  * @returns {object}
  */
-export const getTimerState = () => requireEngine().getTimerState();
+export const getTimerState = () => {
+  const engine = requireEngine();
+  const state = engine.getTimerState?.() ?? { remaining: 0, paused: false };
+  return Object.freeze({ ...state });
+};
 
 /**
  * Subscribe to battle engine events.
@@ -590,15 +612,23 @@ export const stopRoundTimer = () => {
  *    the delta, outcome and updated scores.
  * 3. If `statKey` was provided, attach it to the returned result for caller
  *    convenience.
+ * 4. Provide explicit error context if stat evaluation fails.
  *
  * @param {object} opts
  * @param {string} [opts.statKey] - Optional stat identifier selected by the player.
  * @param {number} opts.playerVal - Numeric value chosen by the player.
  * @param {number} opts.opponentVal - Numeric value chosen by the opponent.
  * @returns {{delta:number, outcome:string, matchEnded:boolean, playerScore:number, opponentScore:number, statKey?:string}}
+ * @throws {Error} If engine has no handleStatSelection method or inputs are invalid.
  */
 export function evaluateSelection({ statKey, playerVal, opponentVal }) {
-  const result = requireEngine().handleStatSelection(playerVal, opponentVal);
+  const engine = requireEngine();
+  if (typeof engine.handleStatSelection !== "function") {
+    throw new Error(
+      "Engine does not support stat selection (handleStatSelection method not found)"
+    );
+  }
+  const result = engine.handleStatSelection(playerVal, opponentVal);
   return statKey ? { ...result, statKey } : result;
 }
 
