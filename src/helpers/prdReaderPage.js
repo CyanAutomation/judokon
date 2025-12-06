@@ -424,19 +424,6 @@ export function initNavigationHandlers(sidebar, _files) {
 export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const docData = await loadPrdDocs(docsMap, parserFn);
   const sidebar = setupSidebarUI(docData);
-
-  // Seed history state with the current or requested document index
-  // This ensures the history API is always initialized, even if sidebar UI setup fails
-  if (!sidebar && docData?.files?.length > 0) {
-    const docParam = new URLSearchParams(window.location.search).get("doc");
-    const index = Math.max(
-      0,
-      docParam ? docData.baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0
-    );
-    replaceHistory(docData.baseNames, index);
-    return;
-  }
-
   if (!sidebar) return;
 
   // Bind navigation handlers for buttons, keyboard, and history
