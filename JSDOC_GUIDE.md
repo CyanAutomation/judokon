@@ -26,10 +26,12 @@ This message clearly identifies the file and function that needs attention.
 ### Step 2: Add a Descriptive JSDoc Block
 
 Your first step should be to add a JSDoc block that describes the function's purpose. Based on the project's conventions, this should include:
+
 - A clear summary of what the function does.
 - A `@pseudocode` section explaining the implementation steps.
 
 Initial attempt:
+
 ```javascript
 /**
  * Resets the internal synonym cache and related state variables.
@@ -61,6 +63,7 @@ If it still fails, **do not just guess**. The key to solving the issue is to und
 The most critical step is to **read the validation script** to understand its specific requirements. The relevant script is `scripts/check-jsdoc.mjs`.
 
 By inspecting the `validateJsDoc` function within that file, we can learn the exact criteria for a "complete" JSDoc block. This includes checks for:
+
 - A summary line.
 - `@param` tags for every parameter.
 - An `@returns` tag if the function returns a value.
@@ -77,6 +80,7 @@ This led to the final, successful hypothesis: the JSDoc block must explicitly st
 The final step is to add the missing piece—the `@returns {void}` tag—and re-run the validation.
 
 The passing JSDoc:
+
 ```javascript
 /**
  * Resets the internal synonym cache and related state variables.
@@ -96,6 +100,7 @@ export function resetSynonymCache() {
 ```
 
 Running the check one last time yields success:
+
 ```bash
 > npm run check:jsdoc
 
