@@ -8,7 +8,7 @@ import {
 } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { ClassicBattleView } from "../../../src/helpers/classicBattle/view.js";
 
-function mockQuitMatch(store, trigger) {
+function mockQuitMatch() {
   const msg = document.getElementById("round-message");
   if (msg) msg.textContent = "quit";
 }
