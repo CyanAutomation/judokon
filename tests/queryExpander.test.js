@@ -106,7 +106,6 @@ describe("Query Expansion", () => {
       // backend does not double-weight repeated terms while showing a concise,
       // readable expansion.
       expect(terms).toEqual(expectedTerms);
-      expect(new Set(terms)).toEqual(new Set(expectedTerms));
     });
 
     it("should handle mixed case input", async () => {
