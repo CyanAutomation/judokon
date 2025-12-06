@@ -110,11 +110,13 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await firstStat.click();
 
     await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
+    // When flag is disabled, snackbar should appear immediately with shorter timeout
     await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
-      timeout: 2000
+      timeout: 1500
     });
 
-    await expect(nextButton).toBeEnabled({ timeout: 10000 });
+    // Next button should be enabled immediately without delay when flag is disabled
+    await expect(nextButton).toBeEnabled({ timeout: 2000 });
     await nextButton.click();
 
     await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
