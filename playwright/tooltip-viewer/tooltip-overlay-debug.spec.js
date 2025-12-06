@@ -5,6 +5,9 @@ test.describe("tooltipOverlayDebug feature flag", () => {
   test("toggles overlay debug via settings control", async ({ page }) => {
     await page.goto("/src/pages/settings.html");
 
+    const advancedSection = page.locator('details[data-section-id="advanced"]');
+    await advancedSection.locator("summary").click();
+
     const overlayToggle = page.locator("#feature-tooltip-overlay-debug");
     const body = page.locator("body");
     const snackbar = page.locator("#snackbar-container");
