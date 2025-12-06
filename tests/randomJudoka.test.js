@@ -518,13 +518,11 @@ describe("Random Judoka Selection", () => {
       const metadata = getRandomJudokaWithMetadata(mockJudoka, { country: "Japan" });
 
       expect(metadata).not.toBeNull();
-      if (metadata) {
         expect(Object.keys(metadata)).toEqual(Object.keys(documentation.responseFormat));
         expect(metadata.judoka).toMatchObject({ country: "Japan" });
         expect(typeof metadata.totalCount).toBe("number");
         expect(typeof metadata.matchCount).toBe("number");
         expect(metadata.filters).toEqual(validateRandomFilters({ country: "Japan" }));
-      }
     });
   });
 
