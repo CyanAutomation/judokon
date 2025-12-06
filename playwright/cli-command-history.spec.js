@@ -205,63 +205,36 @@ test.describe("CLI Command History", () => {
       allowFallback: false
     });
 
-    // Round 2: Select stat '2' and store it directly in history via the Test API
-    // This bypasses the timing issues with auto-completing rounds
-    const setHistoryResult = await page.evaluate(() => {
-      try {
-        const currentHistory = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
-        const history = Array.isArray(currentHistory) ? currentHistory : [];
-        // Ensure first selection is in history
-        if (!history.includes("power")) {
-          history.push("power");
-        }
-        // Add second selection
-        if (!history.includes("speed")) {
-          history.push("speed");
-        }
-        localStorage.setItem("cliStatHistory", JSON.stringify(history));
-        return { ok: true, history };
-      } catch (error) {
-        return { ok: false, error: error?.message };
-      }
+    // Round 2: Select stat '2' via keyboard and complete the round to persist history naturally
+    await page.keyboard.press("2");
+    const res2 = await completeRoundViaApi(page);
+    expect(res2.ok, res2.reason).toBe(true);
+
+    const ready2 = await dispatchBattleEvent(page, "ready");
+    expect(ready2.ok, ready2.reason).toBe(true);
+
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      timeout: BATTLE_READY_TIMEOUT_MS,
+      allowFallback: false
     });
 
-    expect(setHistoryResult.ok, "Failed to set command history").toBe(true);
-    expect(setHistoryResult.history, "History should contain both stats").toEqual([
-      "power",
-      "speed"
-    ]);
+    const snackbar = page.locator("#snackbar-container .snackbar");
+    const statList = page.locator("#cli-stats");
 
-    // Now test that history is properly stored via API instead of relying on keyboard navigation timing
-    const historyVerification = await page.evaluate(() => {
-      try {
-        const history = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
+    // History navigation should surface the most recent selections
+    await page.keyboard.press("ArrowUp");
+    await expect(snackbar).toHaveText("History: speed");
+    await expect(statList).toHaveAttribute("data-history-preview", "speed");
 
-        // Verify both stats are in history in correct order
-        if (history.length < 2) {
-          return {
-            ok: false,
-            error: `History should have at least 2 items, got ${history.length}`
-          };
-        }
+    await page.keyboard.press("ArrowUp");
+    await expect(snackbar).toHaveText("History: power");
+    await expect(statList.locator('.history-preview[data-stat="power"]')).toBeVisible();
 
-        if (history[history.length - 2] !== "power" || history[history.length - 1] !== "speed") {
-          return {
-            ok: false,
-            error: `Expected [...'power', 'speed'], got ${JSON.stringify(history)}`
-          };
-        }
-
-        return { ok: true, history };
-      } catch (error) {
-        return { ok: false, error: error?.message };
-      }
-    });
-
-    expect(historyVerification.ok, historyVerification.error || "History verification failed").toBe(
-      true
-    );
-    expect(historyVerification.history).toContain("power");
-    expect(historyVerification.history).toContain("speed");
+    // Navigating forward should clear the preview and return focus to the current prompt
+    await page.keyboard.press("ArrowDown");
+    await expect(snackbar).toHaveText("History: speed");
+    await page.keyboard.press("ArrowDown");
+    await expect(snackbar).toHaveText("");
+    await expect(statList).not.toHaveAttribute("data-history-preview", "power");
   });
 });
