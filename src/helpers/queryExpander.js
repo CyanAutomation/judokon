@@ -200,9 +200,11 @@ export async function expandQuery(query) {
   // Find matching synonyms
   const addedTerms = findSynonymMatches(normalized, synonymMap);
 
-  // Build expanded query by combining original words with new terms
-  const allTerms = Array.from(new Set([...words, ...addedTerms]));
-  const expanded = allTerms.join(" ");
+  // Build expanded query by combining original words with new terms.
+  // Deduplication rule: each normalized term should appear exactly once so
+  // embeddings and keyword search do not overweight repeated tokens.
+  const dedupedTerms = Array.from(new Set([...words, ...addedTerms]));
+  const expanded = dedupedTerms.join(" ");
 
   return {
     original: query,

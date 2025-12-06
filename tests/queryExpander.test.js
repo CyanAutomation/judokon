@@ -98,9 +98,15 @@ describe("Query Expansion", () => {
 
     it("should deduplicate terms in expanded query", async () => {
       const result = await expandQuery("kumikata kumi kata");
-      const terms = result.expanded.split(/\s+/);
-      const uniqueTerms = new Set(terms);
-      expect(terms.length).toBe(uniqueTerms.size);
+      const terms = result.expanded.split(/\s+/).filter(Boolean);
+      const normalizedInputTerms = Array.from(new Set(["kumikata", "kumi", "kata"]));
+      const expectedTerms = Array.from(new Set([...normalizedInputTerms, ...result.addedTerms]));
+
+      // Rationale: end users should see each normalized token once so the search
+      // backend does not double-weight repeated terms while showing a concise,
+      // readable expansion.
+      expect(terms).toEqual(expectedTerms);
+      expect(new Set(terms)).toEqual(new Set(expectedTerms));
     });
 
     it("should handle mixed case input", async () => {
@@ -241,10 +247,12 @@ describe("Query Expansion", () => {
 
     it("should handle repeated words", async () => {
       const result = await expandQuery("kumikata kumikata kumikata");
-      const terms = result.expanded.split(/\s+/);
-      const uniqueTerms = new Set(terms);
-      // Should deduplicate
-      expect(terms.length).toBeLessThanOrEqual(uniqueTerms.size + 1);
+      const terms = result.expanded.split(/\s+/).filter(Boolean);
+      const expectedTerms = Array.from(new Set(["kumikata", ...result.addedTerms]));
+
+      // Rationale: the expansion should present a single instance of each term
+      // so users do not see duplicate tokens in search previews or embeddings.
+      expect(terms).toEqual(expectedTerms);
     });
   });
 
