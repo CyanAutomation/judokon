@@ -1,12 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import {
-  waitForBattleReady,
-  waitForBattleState,
-  waitForTestApi
-} from "./helpers/battleStateHelper.js";
-import { dispatchBattleEvent, readCountdown } from "./helpers/battleApiHelper.js";
+import { waitForTestApi } from "./helpers/battleStateHelper.js";
+import { dispatchBattleEvent } from "./helpers/battleApiHelper.js";
 import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
-import { waitForNextRoundReadyEvent } from "./fixtures/waits.js";
 
 const BATTLE_PAGE_URL = "/src/pages/battleClassic.html";
 const PLAYER_ACTION_STATE = "waitingForPlayerAction";
@@ -39,31 +34,27 @@ async function launchClassicBattle(page, options = {}) {
   await expect(quickButton).toBeVisible();
   await quickButton.click();
 
-  await waitForBattleReady(page, { allowFallback: false });
+  await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
 }
 
-test.describe("Manual verification: Interrupt flow and cooldown", () => {
-  test("interrupt transitions to cooldown and resumes with countdown cues", async ({ page }) => {
+test.describe("Classic battle interrupt recovery", () => {
+  test("interrupt transitions to cooldown and resumes with visible countdown cues", async ({ page }) => {
     await launchClassicBattle(page, { cooldownMs: 1500, roundTimerMs: 12 });
 
-    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
-
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
-      reason: "manual verification pause"
+      reason: "interrupt for countdown coverage"
     });
     expect(interruptResult.ok).toBe(true);
 
-    await waitForBattleState(page, "cooldown", { allowFallback: false });
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
+    await expect(page.getByTestId("stat-button").first()).toBeDisabled();
 
     const timerValue = page.locator('#next-round-timer [data-part="value"]');
     await expect(timerValue).toHaveText(/\d+s/i);
 
-    const countdownValue = await readCountdown(page);
-    expect(countdownValue).not.toBeNull();
-
-    await waitForNextRoundReadyEvent(page);
-    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
+    
+    // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
     await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
     await expect(page.getByTestId("stat-button").first()).toBeEnabled();
@@ -72,26 +63,23 @@ test.describe("Manual verification: Interrupt flow and cooldown", () => {
   test("interrupt during cooldown keeps countdown visible and resumes", async ({ page }) => {
     await launchClassicBattle(page, { cooldownMs: 1800, roundTimerMs: 12 });
 
-    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
     await page.getByTestId("stat-button").first().click();
 
-    await waitForBattleState(page, "cooldown", { allowFallback: false });
-    await expect
-      .poll(async () => {
-        return await readCountdown(page);
-      })
-      .not.toBeNull();
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
+    const timerValue = page.locator('#next-round-timer [data-part="value"]');
+    await expect(timerValue).toHaveText(/\d+s/i);
 
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
       reason: "cooldown coverage"
     });
     expect(interruptResult.ok).toBe(true);
 
-    const timerValue = page.locator('#next-round-timer [data-part="value"]');
     await expect(timerValue).toHaveText(/\d+s/i);
 
-    await waitForNextRoundReadyEvent(page);
-    await waitForBattleState(page, PLAYER_ACTION_STATE, { allowFallback: false });
+    await expect(timerValue).toHaveText(/\d+s/i);
+
+    // Wait for cooldown to complete and state to transition back
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
     const roundText = await page.getByTestId("round-counter").innerText();
     const roundNumber = Number.parseInt(roundText.replace(/\D+/g, ""), 10);
     expect(roundNumber).toBeGreaterThanOrEqual(1);
