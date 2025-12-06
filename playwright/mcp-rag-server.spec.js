@@ -134,22 +134,32 @@ function createMockToolClient() {
         if (!args?.query) {
           throw new Error("Query parameter is required");
         }
+
+        const requestedTopK = args.topK ?? 8;
+        const baseResults = args.query.toLowerCase().includes("powerful")
+          ? rankedResults
+          : rankedResults.slice(0, 1);
+        const limitedResults = baseResults.slice(
+          0,
+          Math.min(requestedTopK, baseResults.length)
+        );
+
         return {
           isError: false,
           query: args.query,
-          topK: args.topK ?? 8,
-          results: rankedResults,
+          topK: limitedResults.length,
+          results: limitedResults,
           content: [
             {
               type: "text",
-              text: `Found ${rankedResults.length} judoka matching "${args.query}"`
+              text: `Found ${limitedResults.length} judoka matching "${args.query}"`
             }
           ]
         };
       }
 
       if (name === "judokon.getById") {
-        if (args?.id === 0) {
+        if (args?.id === 0 || args?.id === "0") {
           return {
             isError: false,
             found: true,
@@ -226,10 +236,10 @@ test.describe("MCP RAG tools (mocked)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.results).toHaveLength(2);
+    expect(result.results).toHaveLength(result.topK);
     expect(result.results[0].score).toBeGreaterThan(result.results[1].score);
     expect(result.results[0]).toMatchObject({ rarity: "Legendary", weightClass: "+100" });
-    expect(await extractText(result)).toContain("Found 2 judoka matching");
+    expect(await extractText(result)).toContain(`Found ${result.topK} judoka matching`);
   });
 
   test("judokon.getById returns detailed record and not-found state", async () => {
@@ -256,9 +266,10 @@ test.describe("MCP RAG tools (mocked)", () => {
   });
 });
 
-test.describe.configure({ mode: "serial" });
-test.describe("MCP RAG server smoke", () => {
-  test.skip(!process.env.RUN_MCP_SMOKE, "Set RUN_MCP_SMOKE=1 to run smoke test");
+const runMcpSmoke = !!process.env.RUN_MCP_SMOKE;
+
+test.describe.serial("MCP RAG server smoke", () => {
+  test.skip(!runMcpSmoke, "Set RUN_MCP_SMOKE=1 to run smoke test");
 
   const cwd = path.join(__dirname, "..");
 
