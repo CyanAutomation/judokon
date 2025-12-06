@@ -478,6 +478,44 @@ export const on = (type, handler) => requireEngine().on(type, handler);
 export const off = (type, handler) => requireEngine().off(type, handler);
 
 /**
+ * PRD Alias Metadata for Timer Control Functions
+ *
+ * @summary Defines timer-control aliases (PRD compatibility) mapping export names
+ * to their corresponding engine method names. This reduces duplication and makes
+ * the alias→implementation mapping explicit.
+ *
+ * @description
+ * - **startRoundTimer** → `startRound` (accepts variadic args, returns Promise)
+ * - **pauseRoundTimer** → `pauseTimer`
+ * - **resumeRoundTimer** → `resumeTimer`
+ * - **stopRoundTimer** → `stopTimer`
+ *
+ * @type {Object<string, {engineMethod: string, acceptsArgs: boolean, description: string}>}
+ */
+const timerAliasMetadata = {
+  startRoundTimer: {
+    engineMethod: "startRound",
+    acceptsArgs: true,
+    description: "PRD alias for starting the round timer"
+  },
+  pauseRoundTimer: {
+    engineMethod: "pauseTimer",
+    acceptsArgs: false,
+    description: "PRD alias for pausing the round timer"
+  },
+  resumeRoundTimer: {
+    engineMethod: "resumeTimer",
+    acceptsArgs: false,
+    description: "PRD alias for resuming the round timer"
+  },
+  stopRoundTimer: {
+    engineMethod: "stopTimer",
+    acceptsArgs: false,
+    description: "PRD alias for stopping the round timer"
+  }
+};
+
+/**
  * startRoundTimer: PRD alias for starting the round timer.
  *
  * @summary Alias kept for Product Requirements Document (PRD) compatibility.
@@ -491,7 +529,11 @@ export const off = (type, handler) => requireEngine().off(type, handler);
  * @param {...any} args - All arguments are forwarded to `BattleEngine.startRound`.
  * @returns {Promise<void>} Resolves when the engine has started the round.
  */
-export const startRoundTimer = (...args) => requireEngine().startRound(...args);
+export const startRoundTimer = (...args) => {
+  const engine = requireEngine();
+  const metadata = timerAliasMetadata.startRoundTimer;
+  return engine[metadata.engineMethod](...args);
+};
 
 /**
  * pauseRoundTimer: PRD alias for pausing the round timer.
@@ -502,7 +544,11 @@ export const startRoundTimer = (...args) => requireEngine().startRound(...args);
  *
  * @returns {void}
  */
-export const pauseRoundTimer = () => requireEngine().pauseTimer();
+export const pauseRoundTimer = () => {
+  const engine = requireEngine();
+  const metadata = timerAliasMetadata.pauseRoundTimer;
+  return engine[metadata.engineMethod]();
+};
 
 /**
  * resumeRoundTimer: PRD alias for resuming the round timer.
@@ -513,7 +559,11 @@ export const pauseRoundTimer = () => requireEngine().pauseTimer();
  *
  * @returns {void}
  */
-export const resumeRoundTimer = () => requireEngine().resumeTimer();
+export const resumeRoundTimer = () => {
+  const engine = requireEngine();
+  const metadata = timerAliasMetadata.resumeRoundTimer;
+  return engine[metadata.engineMethod]();
+};
 
 /**
  * stopRoundTimer: PRD alias for stopping the round timer.
@@ -524,7 +574,11 @@ export const resumeRoundTimer = () => requireEngine().resumeTimer();
  *
  * @returns {void}
  */
-export const stopRoundTimer = () => requireEngine().stopTimer();
+export const stopRoundTimer = () => {
+  const engine = requireEngine();
+  const metadata = timerAliasMetadata.stopRoundTimer;
+  return engine[metadata.engineMethod]();
+};
 
 /**
  * evaluateSelection: PRD-shaped wrapper for stat evaluation.
