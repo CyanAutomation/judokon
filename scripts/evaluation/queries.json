@@ -64,8 +64,8 @@
     "expected_source": "design/productRequirementsDocuments/prdTestingStandards.md"
   },
   {
-    "query": "featureFlags isEnabled function enable disable",
-    "expected_source": "src/helpers/featureFlags.js"
+    "query": "enableTestMode enableCardInspector feature flag boolean setting",
+    "expected_source": "src/data/settings.json"
   },
   {
     "query": "vector database RAG chunking text splitting algorithm configuration",
