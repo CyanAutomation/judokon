@@ -76,6 +76,9 @@ test.describe("Classic battle interrupt recovery", () => {
 
     await expect(timerValue).toHaveText(/\d+s/i);
 
+    await expect(timerValue).toHaveText(/\d+s/i);
+
+    // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
     const roundText = await page.getByTestId("round-counter").innerText();
     const roundNumber = Number.parseInt(roundText.replace(/\D+/g, ""), 10);
