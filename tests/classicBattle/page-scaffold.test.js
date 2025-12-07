@@ -1171,7 +1171,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       resumeTimer: expect.any(Function),
       startCooldown: expect.any(Function)
     });
-    
+
     // Modal may or may not be initialized depending on feature flags
     if (typeof modalMock.onStart === "function") {
       await modalMock.onStart?.();
@@ -1199,7 +1199,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     if (typeof modalMock.onStart === "function") {
       await modalMock.onStart?.();
     }
-    
+
     const initialScoreCalls = scoreboardMock.updateScore.mock.calls.length;
     const initialRoundCalls = scoreboardMock.updateRoundCounter.mock.calls.length;
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");

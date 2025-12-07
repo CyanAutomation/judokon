@@ -192,7 +192,7 @@ describe("Random Judoka Selection", () => {
     it("should filter by rarity", () => {
       const result = filterJudokaByFilters(mockJudoka, { rarity: "Legendary" });
       expect(result).toHaveLength(3);
-      const firstNames = result.map(j => j.firstname).sort();
+      const firstNames = result.map((j) => j.firstname).sort();
       expect(firstNames).toContain("Tatsuuma");
       expect(firstNames).toContain("Kenji");
       expect(firstNames).toContain("Michael");

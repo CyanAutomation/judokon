@@ -72,7 +72,17 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
     country: {
       description: "Filter by country (e.g., 'Japan')",
       type: "string",
-      values: ["Bhutan", "Brazil", "France", "Georgia", "Jamaica", "Japan", "Portugal", "United States", "Vanuatu"]
+      values: [
+        "Bhutan",
+        "Brazil",
+        "France",
+        "Georgia",
+        "Jamaica",
+        "Japan",
+        "Portugal",
+        "United States",
+        "Vanuatu"
+      ]
     },
     rarity: {
       description: "Filter by rarity level",
