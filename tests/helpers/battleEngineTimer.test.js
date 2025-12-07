@@ -1,11 +1,34 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockTimers = [{ id: 1, value: 42, default: true, category: "roundTimer" }];
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockGameTimers, mockGetDefaultTimer, mockCreateCountdownTimer } = vi.hoisted(() => ({
+  mockGameTimers: [{ id: 1, value: 42, default: true, category: "roundTimer" }],
+  mockGetDefaultTimer: vi.fn().mockResolvedValue(42),
+  mockCreateCountdownTimer: vi.fn(() => ({
+    start: vi.fn(),
+    stop: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn()
+  }))
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/data/gameTimers.js", () => ({ default: mockGameTimers }));
+
+vi.mock("../../src/helpers/timerUtils.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getDefaultTimer: mockGetDefaultTimer,
+    createCountdownTimer: mockCreateCountdownTimer
+  };
+});
 
 beforeEach(() => {
   vi.resetModules();
-  vi.doMock("../../src/data/gameTimers.js", () => ({ default: mockTimers }));
+  mockGameTimers.length = 0;
+  mockGameTimers.push({ id: 1, value: 42, default: true, category: "roundTimer" });
 });
 
 describe("timer defaults", () => {
@@ -23,19 +46,13 @@ describe("timer defaults", () => {
     let timerUtils;
 
     beforeEach(async () => {
-      vi.doMock("../../src/helpers/timerUtils.js", async (importOriginal) => {
-        const actual = await importOriginal();
-        return {
-          ...actual,
-          getDefaultTimer: vi.fn().mockResolvedValue(42),
-          createCountdownTimer: vi.fn(() => ({
-            start: vi.fn(),
-            stop: vi.fn(),
-            pause: vi.fn(),
-            resume: vi.fn()
-          }))
-        };
-      });
+      mockGetDefaultTimer.mockClear().mockResolvedValue(42);
+      mockCreateCountdownTimer.mockClear().mockImplementation(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn()
+      }));
 
       ({ createBattleEngine, startRound, startCoolDown } = await import(
         "../../src/helpers/battleEngineFacade.js"

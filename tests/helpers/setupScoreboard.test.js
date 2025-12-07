@@ -3,6 +3,26 @@ import { createScoreboardHeader } from "../utils/testUtils.js";
 import { createMockScheduler } from "./mockScheduler.js";
 import { withMutedConsole } from "../utils/console.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockScoreboardModule } = vi.hoisted(() => ({
+  mockScoreboardModule: {
+    __esModule: true,
+    initScoreboard: vi.fn(),
+    showMessage: vi.fn(),
+    updateScore: vi.fn(),
+    clearMessage: vi.fn(),
+    showTemporaryMessage: vi.fn(() => () => {}),
+    clearTimer: vi.fn(),
+    updateTimer: vi.fn(),
+    showAutoSelect: vi.fn(),
+    updateRoundCounter: vi.fn(),
+    clearRoundCounter: vi.fn()
+  }
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../src/components/Scoreboard.js", () => mockScoreboardModule);
+
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
@@ -93,7 +113,9 @@ describe("setupScoreboard", () => {
     vi.resetModules();
     document.body.innerHTML = "";
     const stub = createScoreboardStub();
-    vi.doMock("../../src/components/Scoreboard.js", () => stub);
+    
+    // Configure the shared mock with test-specific stub
+    Object.assign(mockScoreboardModule, stub);
 
     const mod = await import("../../src/helpers/setupScoreboard.js");
     mod.clearMessage();
@@ -119,7 +141,9 @@ describe("setupScoreboard", () => {
     vi.resetModules();
     document.body.innerHTML = "";
     const stub = createScoreboardStub();
-    vi.doMock("../../src/components/Scoreboard.js", () => stub);
+    
+    // Configure the shared mock with test-specific stub
+    Object.assign(mockScoreboardModule, stub);
 
     const mod = await import("../../src/helpers/setupScoreboard.js");
     mod.showMessage("First");
@@ -224,7 +248,10 @@ describe("setupScoreboard", () => {
         throw new Error("boom");
       })
     });
-    vi.doMock("../../src/components/Scoreboard.js", () => stub);
+    
+    // Configure the shared mock with test-specific stub
+    Object.assign(mockScoreboardModule, stub);
+    
     const loggerModule = await import("../../src/helpers/logger.js");
     const errorSpy = vi.spyOn(loggerModule.default, "error").mockImplementation(() => {});
 
@@ -249,7 +276,9 @@ describe("setupScoreboard", () => {
   it("skips helper execution when DOM is unavailable", async () => {
     vi.resetModules();
     const stub = createScoreboardStub();
-    vi.doMock("../../src/components/Scoreboard.js", () => stub);
+    
+    // Configure the shared mock with test-specific stub
+    Object.assign(mockScoreboardModule, stub);
 
     await withNonDomEnvironment(async () => {
       // Simulate execution in a non-DOM environment before module import.
