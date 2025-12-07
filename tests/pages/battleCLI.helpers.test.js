@@ -3,7 +3,15 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { mockSetPointsToWin, mockGetPointsToWin, mockGetScores, mockStopTimer, mockOn, mockEmit, mockGetEngine } = vi.hoisted(() => ({
+const {
+  mockSetPointsToWin,
+  mockGetPointsToWin,
+  mockGetScores,
+  mockStopTimer,
+  mockOn,
+  mockEmit,
+  mockGetEngine
+} = vi.hoisted(() => ({
   mockSetPointsToWin: vi.fn((value) => undefined),
   mockGetPointsToWin: vi.fn(() => 10),
   mockGetScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),

@@ -2,32 +2,38 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createManualTimingControls } from "../../utils/manualTimingControls.js";
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { mockTrackerMock, mockSnackbarMock, mockOnBattleEventMock, mockOffBattleEventMock } = vi.hoisted(() => {
-  let eventHandlers = new Map();
+const { mockTrackerMock, mockSnackbarMock, mockOnBattleEventMock, mockOffBattleEventMock } =
+  vi.hoisted(() => {
+    let eventHandlers = new Map();
 
-  const trackerMock = {
-    getOpponentPromptTimestamp: vi.fn(() => 0),
-    getOpponentPromptMinDuration: vi.fn(() => 0)
-  };
+    const trackerMock = {
+      getOpponentPromptTimestamp: vi.fn(() => 0),
+      getOpponentPromptMinDuration: vi.fn(() => 0)
+    };
 
-  const snackbarMock = {
-    getOpponentDelay: vi.fn(() => 0)
-  };
+    const snackbarMock = {
+      getOpponentDelay: vi.fn(() => 0)
+    };
 
-  const onBattleEventMock = vi.fn((eventName, handler) => {
-    if (!eventHandlers.has(eventName)) {
-      eventHandlers.set(eventName, new Set());
-    }
-    eventHandlers.get(eventName).add(handler);
+    const onBattleEventMock = vi.fn((eventName, handler) => {
+      if (!eventHandlers.has(eventName)) {
+        eventHandlers.set(eventName, new Set());
+      }
+      eventHandlers.get(eventName).add(handler);
+    });
+
+    const offBattleEventMock = vi.fn((eventName, handler) => {
+      const set = eventHandlers.get(eventName);
+      set?.delete(handler);
+    });
+
+    return {
+      mockTrackerMock: trackerMock,
+      mockSnackbarMock: snackbarMock,
+      mockOnBattleEventMock: onBattleEventMock,
+      mockOffBattleEventMock: offBattleEventMock
+    };
   });
-
-  const offBattleEventMock = vi.fn((eventName, handler) => {
-    const set = eventHandlers.get(eventName);
-    set?.delete(handler);
-  });
-
-  return { mockTrackerMock: trackerMock, mockSnackbarMock: snackbarMock, mockOnBattleEventMock: onBattleEventMock, mockOffBattleEventMock: offBattleEventMock };
-});
 
 // ===== Top-level vi.mock() calls =====
 vi.mock("../../../src/helpers/classicBattle/opponentPromptTracker.js", () => mockTrackerMock);

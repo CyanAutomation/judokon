@@ -113,7 +113,7 @@ describe("setupScoreboard", () => {
     vi.resetModules();
     document.body.innerHTML = "";
     const stub = createScoreboardStub();
-    
+
     // Configure the shared mock with test-specific stub
     Object.assign(mockScoreboardModule, stub);
 
@@ -141,7 +141,7 @@ describe("setupScoreboard", () => {
     vi.resetModules();
     document.body.innerHTML = "";
     const stub = createScoreboardStub();
-    
+
     // Configure the shared mock with test-specific stub
     Object.assign(mockScoreboardModule, stub);
 
@@ -248,10 +248,10 @@ describe("setupScoreboard", () => {
         throw new Error("boom");
       })
     });
-    
+
     // Configure the shared mock with test-specific stub
     Object.assign(mockScoreboardModule, stub);
-    
+
     const loggerModule = await import("../../src/helpers/logger.js");
     const errorSpy = vi.spyOn(loggerModule.default, "error").mockImplementation(() => {});
 
@@ -276,7 +276,7 @@ describe("setupScoreboard", () => {
   it("skips helper execution when DOM is unavailable", async () => {
     vi.resetModules();
     const stub = createScoreboardStub();
-    
+
     // Configure the shared mock with test-specific stub
     Object.assign(mockScoreboardModule, stub);
 

@@ -78,7 +78,9 @@ describe("Integration Test Example: Battle Flow", () => {
 
     // This is the key pattern: import real internal modules (NOT mocked)
     // They will use the mocked external service via dependency injection
-    const { markBattlePartReady, battleReadyPromise } = await import("../../src/helpers/battleInit.js");
+    const { markBattlePartReady, battleReadyPromise } = await import(
+      "../../src/helpers/battleInit.js"
+    );
 
     // Exercise real internal code with controlled external dependencies
     expect(mockFetch).not.toHaveBeenCalled(); // Not called yet
@@ -97,7 +99,9 @@ describe("Integration Test Example: Battle Flow", () => {
       .mockResolvedValueOnce({ round: 1, score: 5 });
 
     // Import multiple real internal modules - they work together naturally
-    const { markBattlePartReady, battleReadyPromise } = await import("../../src/helpers/battleInit.js");
+    const { markBattlePartReady, battleReadyPromise } = await import(
+      "../../src/helpers/battleInit.js"
+    );
 
     // Simulate page initialization flow with real module
     markBattlePartReady("home");
@@ -149,7 +153,9 @@ describe("Integration Test Example: Battle Flow", () => {
     // Only that it fulfills its contract: tracking parts and signaling readiness
     mockFetch.mockResolvedValue(testScenarios.opponentB);
 
-    const { markBattlePartReady, battleReadyPromise } = await import("../../src/helpers/battleInit.js");
+    const { markBattlePartReady, battleReadyPromise } = await import(
+      "../../src/helpers/battleInit.js"
+    );
 
     // Exercise the module's public API
     markBattlePartReady("home");

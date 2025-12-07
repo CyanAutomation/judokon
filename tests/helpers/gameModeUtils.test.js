@@ -4,7 +4,16 @@ import navFixture from "../fixtures/navigationItems.js";
 import gameModesFixture from "../fixtures/gameModes.json" with { type: "json" };
 
 // ===== Top-level vi.hoisted() for shared mock state =====
-const { mockNavigationCacheLoad, mockNavigationCacheSave, mockFetchJson, mockValidateWithSchema, mockImportJsonModule, mockGetItem, mockSetItem, mockRemoveItem } = vi.hoisted(() => ({
+const {
+  mockNavigationCacheLoad,
+  mockNavigationCacheSave,
+  mockFetchJson,
+  mockValidateWithSchema,
+  mockImportJsonModule,
+  mockGetItem,
+  mockSetItem,
+  mockRemoveItem
+} = vi.hoisted(() => ({
   mockNavigationCacheLoad: vi.fn().mockResolvedValue([]),
   mockNavigationCacheSave: vi.fn(),
   mockFetchJson: vi.fn().mockResolvedValue([]),
@@ -59,20 +68,20 @@ describe("loadNavigationItems", () => {
   it("merges cached navigation items with fetched game modes and caches the result", async () => {
     vi.resetModules();
     const navSubset = navFixture.slice(0, 3).map((item) => ({ ...item }));
-    
+
     // Configure mocks for this test
     mockNavigationCacheLoad.mockResolvedValue(navSubset);
     mockNavigationCacheSave.mockClear();
-    
+
     const fetchedGameModes = cloneGameModes();
     mockFetchJson.mockResolvedValue(fetchedGameModes);
     mockValidateWithSchema.mockResolvedValue();
     mockImportJsonModule.mockClear();
-    
+
     mockGetItem.mockReturnValue(null);
     mockSetItem.mockClear();
     mockRemoveItem.mockClear();
-    
+
     const { fetchMock, restore } = setupSchemaFetch();
     try {
       const mod = await import("../../src/helpers/gameModeUtils.js");
@@ -114,23 +123,23 @@ describe("loadNavigationItems", () => {
     vi.resetModules();
     const navSubset = navFixture.slice(0, 2).map((item) => ({ ...item }));
     const cacheError = new Error("cache fail");
-    
+
     // Configure mocks for this test
     mockNavigationCacheLoad
       .mockReset()
       .mockRejectedValueOnce(cacheError)
       .mockResolvedValue(navSubset);
     mockNavigationCacheSave.mockClear();
-    
+
     const fetchedGameModes = cloneGameModes();
     mockFetchJson.mockReset().mockResolvedValue(fetchedGameModes);
     mockValidateWithSchema.mockReset().mockResolvedValue();
     mockImportJsonModule.mockReset();
-    
+
     mockGetItem.mockReset().mockReturnValueOnce(null).mockReturnValue(fetchedGameModes);
     mockSetItem.mockReset();
     mockRemoveItem.mockReset();
-    
+
     const { fetchMock, restore } = setupSchemaFetch();
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
