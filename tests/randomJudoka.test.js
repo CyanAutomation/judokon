@@ -508,9 +508,10 @@ describe("Random Judoka Selection", () => {
 
       const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
       try {
-        const selectedRarities = documentedRarities.map(
-          (rarity) => selectRandomJudoka(mockJudoka, { rarity })?.rarity
-        );
+        const selectedRarities = documentedRarities.map((rarity) => {
+          const selected = selectRandomJudoka(mockJudoka, { rarity });
+          return selected?.rarity || null;
+        });
 
         expect(selectedRarities).toEqual(documentedRarities);
       } finally {
