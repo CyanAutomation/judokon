@@ -1,6 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import { getCountdownValue, waitForCountdownDecrease } from "../helpers/timerHelper.js";
 
 test.describe("Classic Battle timer", () => {
   test("displays and counts down selection timer after round selection", async ({ page }) => {
@@ -31,18 +30,22 @@ test.describe("Classic Battle timer", () => {
       const timerLocator = page.getByTestId("next-round-timer");
       await expect(timerLocator).toContainText(/Time Left: \d+s/);
 
-      const initialCountdown = await getCountdownValue(page);
-      expect(typeof initialCountdown).toBe("number");
-      expect(initialCountdown).toBeGreaterThan(0);
-      const initialCountdownValue = /** @type {number} */ (initialCountdown);
-      await expect(timerLocator).toContainText(new RegExp(`Time Left: ${initialCountdownValue}s`));
+      const parseTimerValue = async () => {
+        const text = (await timerLocator.textContent()) || "";
+        const match = text.match(/Time Left:\s*(\d+)s/i);
+        return match ? Number.parseInt(match[1], 10) : null;
+      };
 
-      const decreasedCountdown = await waitForCountdownDecrease(page, initialCountdownValue);
+      await expect
+        .poll(parseTimerValue, { timeout: 5_000 })
+        .toBeGreaterThan(0);
 
-      expect(typeof decreasedCountdown).toBe("number");
-      expect(decreasedCountdown).toBeLessThan(initialCountdownValue);
+      const initialCountdownValue = await parseTimerValue();
+      expect(typeof initialCountdownValue).toBe("number");
 
-      await expect(timerLocator).toContainText(new RegExp(`Time Left: ${decreasedCountdown}s`));
+      await expect
+        .poll(parseTimerValue, { timeout: 5_000 })
+        .toBeLessThan(/** @type {number} */ (initialCountdownValue));
 
       // Verify battle state is properly initialized
       await expect(page.locator("body")).toHaveAttribute("data-target", "5");

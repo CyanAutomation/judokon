@@ -1446,7 +1446,21 @@ export function startSelectionCountdown(seconds = 30) {
   const el = byId("cli-countdown");
   if (!el) return;
   stopSelectionCountdown();
-  let remaining = seconds;
+  const normalizedSeconds = (() => {
+    try {
+      const overrideSeconds = Number(
+        (typeof window !== "undefined" && window.__FF_OVERRIDES?.selectionCountdownSeconds) ?? seconds
+      );
+
+      if (Number.isFinite(overrideSeconds) && overrideSeconds > 0) {
+        return Math.max(1, Math.round(overrideSeconds));
+      }
+    } catch {}
+
+    return seconds;
+  })();
+
+  let remaining = normalizedSeconds;
   const finish = async () => {
     if (selectionCancelled) return;
     // Clear UI and cancel any residual listeners
