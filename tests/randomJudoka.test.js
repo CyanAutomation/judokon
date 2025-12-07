@@ -486,13 +486,25 @@ describe("Random Judoka Selection", () => {
       expect(description).toMatch(/metadata/i);
     });
 
-    it("should have country filter documented", () => {
-      const result = getRandomSelectionDocumentation();
-      const { country: expectedCountryFilter } = RANDOM_SELECTION_DOCUMENTATION.filters;
+    it("should align country documentation with validation and available options", () => {
+      const { filters } = getRandomSelectionDocumentation();
+      const { country: documentedCountry } = filters;
 
-      expect(result.filters.country.type).toBe(expectedCountryFilter.type);
-      expect(result.filters.country.description).toBe(expectedCountryFilter.description);
-      expect(result.filters.country.values ?? []).toEqual(expectedCountryFilter.values ?? []);
+      expect(documentedCountry.type).toBe("string");
+      expect(documentedCountry.description).toBe(RANDOM_SELECTION_DOCUMENTATION.filters.country.description);
+
+      const validatedCountry = validateRandomFilters({ country: "Japan" });
+      const rejectedCountry = validateRandomFilters({ country: 42 });
+
+      expect(validatedCountry).toEqual({ country: "Japan" });
+      expect(rejectedCountry).not.toHaveProperty("country");
+
+      const availableCountries = getAvailableFilterOptions(mockJudoka).countries;
+      const documentedValues = documentedCountry.values;
+
+// Always verify that available countries match what the system can actually provide
+expect(documentedValues).toBeDefined();
+expect(documentedValues.sort()).toEqual(availableCountries.sort());
     });
 
     it("should align documented rarity values with validation and selection", () => {
