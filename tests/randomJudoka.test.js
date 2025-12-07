@@ -495,11 +495,35 @@ describe("Random Judoka Selection", () => {
       expect(result.filters.country.values ?? []).toEqual(expectedCountryFilter.values ?? []);
     });
 
-    it("should have rarity filter with valid values", () => {
-      const result = getRandomSelectionDocumentation();
-      expect(result.filters.rarity.values).toContain("Common");
-      expect(result.filters.rarity.values).toContain("Epic");
-      expect(result.filters.rarity.values).toContain("Legendary");
+    it("should align documented rarity values with validation and selection", () => {
+      const documentedRarities = getRandomSelectionDocumentation().filters.rarity.values;
+      const invalidRarity = "Mythic";
+
+      const validatedRarities = documentedRarities
+        .map((rarity) => validateRandomFilters({ rarity }).rarity)
+        .filter(Boolean)
+        .sort();
+
+      expect(validatedRarities).toEqual([...documentedRarities].sort());
+
+      const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+      try {
+        const selectedRarities = documentedRarities.map((rarity) => {
+          const selected = selectRandomJudoka(mockJudoka, { rarity });
+          return selected?.rarity || null;
+        });
+
+        const availableRarities = selectedRarities.filter(Boolean);
+        const expectedRarities = documentedRarities.filter(rarity => 
+          mockJudoka.some(judoka => judoka.rarity === rarity)
+        );
+        expect(availableRarities).toEqual(expectedRarities);
+      } finally {
+        randomSpy.mockRestore();
+      }
+
+      expect(documentedRarities).not.toContain(invalidRarity);
+      expect(validateRandomFilters({ rarity: invalidRarity })).toEqual({});
     });
 
     it("should document examples that mirror real selection payloads", () => {
