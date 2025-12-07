@@ -43,6 +43,9 @@ test.describe("Classic Battle timer", () => {
       const initialCountdownValue = await parseTimerValue();
       expect(typeof initialCountdownValue).toBe("number");
 
+      // Wait a moment to ensure timer has time to tick
+      await page.waitForTimeout(1_100);
+
       await expect
         .poll(parseTimerValue, { timeout: 5_000 })
         .toBeLessThan(/** @type {number} */ (initialCountdownValue));
