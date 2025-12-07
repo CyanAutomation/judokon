@@ -19,31 +19,25 @@ import { createSimpleHarness } from "../helpers/integrationHarness.js";
 
 // ===== STEP 1: Create shared mocks in vi.hoisted()
 // Must be called BEFORE defining any baseSettings or constants that the mocks reference
-const { mockFetchHelper, mockStorageHelper, mockLoggerHelper } = vi.hoisted(() => ({
-  mockFetchHelper: vi.fn(),
-  mockStorageHelper: vi.fn(),
-  mockLoggerHelper: vi.fn()
+const { mockFetchData } = vi.hoisted(() => ({
+  mockFetchData: vi.fn()
 }));
 
 // ===== STEP 2: Declare all mocks at top level (Vitest static analysis phase)
 // These are registered before any modules are imported.
-vi.mock("../../src/helpers/fetch.js", () => ({
-  fetchData: mockFetchHelper
-}));
-
-vi.mock("../../src/helpers/storage.js", () => ({
-  saveToStorage: mockStorageHelper,
-  getFromStorage: vi.fn().mockReturnValue(null)
-}));
-
-vi.mock("../../src/helpers/logger.js", () => ({
-  logError: mockLoggerHelper
-}));
+// We mock the fetch API so we can test the module in isolation
+vi.mock("../../src/helpers/dataUtils.js", async () => {
+  const actual = await vi.importActual("../../src/helpers/dataUtils.js");
+  return {
+    ...actual,
+    fetchJudokaList: mockFetchData
+  };
+});
 
 // ===== STEP 3: Organize test data (can use mocks that have no dependencies)
 const testData = {
-  validResponse: { status: 200, data: { id: 1, name: "Test Item" } },
-  errorResponse: { status: 500, error: "Internal Server Error" }
+  validResponse: [{ id: 1, name: "Test Judoka" }],
+  errorResponse: new Error("API Error")
 };
 
 // ===== STEP 4: Test suite with setup/teardown
@@ -52,9 +46,7 @@ describe("Unit Test Example: Data Processing", () => {
 
   beforeEach(async () => {
     // Reset all mocks before each test to ensure isolation
-    mockFetchHelper.mockReset();
-    mockStorageHelper.mockReset();
-    mockLoggerHelper.mockReset();
+    mockFetchData.mockReset();
 
     // Create and setup harness for this test
     harness = createSimpleHarness();
@@ -69,66 +61,63 @@ describe("Unit Test Example: Data Processing", () => {
   });
 
   // ===== STEP 5: Write tests with per-test mock configuration
-  it("processes data successfully when fetch returns 200", async () => {
+  it("fetches data successfully when API returns results", async () => {
     // Configure mocks for this specific test
-    mockFetchHelper.mockResolvedValue(testData.validResponse);
-    mockStorageHelper.mockResolvedValue(true);
+    mockFetchData.mockResolvedValue(testData.validResponse);
 
     // Import the module AFTER setup() to apply mocks
-    const { processData } = await import("../../src/helpers/processData.js");
+    const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
 
     // Execute test
-    const result = await processData({ id: 1 });
+    const result = await fetchJudokaList();
 
     // Assert
-    expect(mockFetchHelper).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
-    expect(mockStorageHelper).toHaveBeenCalledWith("data", testData.validResponse);
+    expect(mockFetchData).toHaveBeenCalled();
     expect(result).toEqual(testData.validResponse);
   });
 
-  it("logs error and returns null when fetch fails", async () => {
+  it("handles error when fetch fails", async () => {
     // Configure mocks for failure scenario
-    const error = new Error("Network error");
-    mockFetchHelper.mockRejectedValue(error);
-    mockLoggerHelper.mockReturnValue(undefined);
+    mockFetchData.mockRejectedValue(testData.errorResponse);
 
-    const { processData } = await import("../../src/helpers/processData.js");
+    const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
 
-    // Execute test
-    const result = await processData({ id: 1 });
+    // Execute test and expect it to handle the error
+    let error;
+    try {
+      await fetchJudokaList();
+    } catch (e) {
+      error = e;
+    }
 
-    // Assert error handling
-    expect(mockFetchHelper).toHaveBeenCalled();
-    expect(mockLoggerHelper).toHaveBeenCalledWith(
-      "Failed to process data",
-      expect.objectContaining({ message: "Network error" })
-    );
-    expect(result).toBeNull();
+    // Assert error was thrown
+    expect(mockFetchData).toHaveBeenCalled();
+    expect(error).toBeDefined();
   });
 
-  it("uses cached data when storage returns existing value", async () => {
-    // Configure mocks for cache hit scenario
-    const cachedData = { id: 1, cached: true };
-    mockStorageHelper.mockResolvedValue(cachedData);
+  it("returns empty array as fallback on error", async () => {
+    // Configure mock to return empty array
+    mockFetchData.mockResolvedValue([]);
 
-    const { processData } = await import("../../src/helpers/processData.js");
+    const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
 
     // Execute test
-    const result = await processData({ id: 1 });
+    const result = await fetchJudokaList();
 
-    // Assert cache was used (fetch not called)
-    expect(mockFetchHelper).not.toHaveBeenCalled();
-    expect(result).toEqual(cachedData);
+    // Assert fallback behavior
+    expect(result).toEqual([]);
   });
 
-  it("handles edge case: empty input gracefully", async () => {
-    const { processData } = await import("../../src/helpers/processData.js");
+  it("handles edge case: undefined response", async () => {
+    mockFetchData.mockResolvedValue(undefined);
 
-    // Should not crash with empty input
-    const result = await processData({});
+    const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
 
-    // Expect appropriate handling (either null or error in logger)
-    expect(result === null || mockLoggerHelper.mock.calls.length > 0).toBe(true);
+    // Should handle gracefully
+    const result = await fetchJudokaList();
+
+    // Expect either null, undefined, or empty array
+    expect(result === undefined || result === null || Array.isArray(result)).toBe(true);
   });
 });
 

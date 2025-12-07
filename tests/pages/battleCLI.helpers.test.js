@@ -2,6 +2,28 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockSetPointsToWin, mockGetPointsToWin, mockGetScores, mockStopTimer, mockOn, mockEmit, mockGetEngine } = vi.hoisted(() => ({
+  mockSetPointsToWin: vi.fn((value) => undefined),
+  mockGetPointsToWin: vi.fn(() => 10),
+  mockGetScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
+  mockStopTimer: vi.fn(),
+  mockOn: vi.fn((eventName, handler) => {}),
+  mockEmit: vi.fn(),
+  mockGetEngine: vi.fn(() => null)
+}));
+
+// ===== Top-level vi.mock() call =====
+vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+  setPointsToWin: mockSetPointsToWin,
+  getPointsToWin: mockGetPointsToWin,
+  getScores: mockGetScores,
+  stopTimer: mockStopTimer,
+  on: mockOn,
+  emit: mockEmit,
+  getEngine: mockGetEngine
+}));
+
 function createEngineStub({ pointsToWin = 10, scores } = {}) {
   const bus = new EventTarget();
   let target = pointsToWin;
@@ -27,16 +49,14 @@ function createEngineStub({ pointsToWin = 10, scores } = {}) {
   };
 }
 
-function mockEngineFacade(overrides) {
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-    setPointsToWin: overrides.setPointsToWin,
-    getPointsToWin: overrides.getPointsToWin,
-    getScores: overrides.getScores,
-    stopTimer: overrides.stopTimer,
-    on: overrides.on,
-    emit: overrides.emit,
-    getEngine: overrides.getEngine
-  }));
+function configureEngineFacadeMock(engineStub) {
+  mockSetPointsToWin.mockImplementation(engineStub.setPointsToWin);
+  mockGetPointsToWin.mockImplementation(engineStub.getPointsToWin);
+  mockGetScores.mockImplementation(engineStub.getScores);
+  mockStopTimer.mockImplementation(engineStub.stopTimer);
+  mockOn.mockImplementation(engineStub.on);
+  mockEmit.mockImplementation(engineStub.emit);
+  mockGetEngine.mockImplementation(engineStub.getEngine);
 }
 
 describe("Battle CLI helpers", () => {
@@ -88,7 +108,7 @@ describe("Battle CLI helpers", () => {
         }
         return undefined;
       });
-      mockEngineFacade(engineStub);
+      configureEngineFacadeMock(engineStub);
 
       const mod = await loadBattleCLI({ mockBattleEngine: false, verbose: false });
       await mod.init();
@@ -117,7 +137,7 @@ describe("Battle CLI helpers", () => {
         stopTimer: vi.fn(),
         getEngine: vi.fn(() => null)
       };
-      mockEngineFacade(engineStub);
+      configureEngineFacadeMock(engineStub);
 
       const mod = await loadBattleCLI({ mockBattleEngine: false, verbose: false });
       await mod.init();
@@ -186,7 +206,7 @@ describe("Battle CLI helpers", () => {
   describe("subscribeEngine", () => {
     it("updates countdown and match messaging when engine events fire", async () => {
       const engineStub = createEngineStub();
-      mockEngineFacade(engineStub);
+      configureEngineFacadeMock(engineStub);
 
       const mod = await loadBattleCLI({ mockBattleEngine: false });
       await mod.init();
