@@ -1,43 +1,74 @@
 import { test, expect } from "./fixtures/battleCliFixture.js";
 import { withMutedConsole } from "../tests/utils/console.js";
-import { waitForCountdownValue } from "./helpers/timerHelper.js";
-
-// Improved countdown test using direct Test API access instead of waiting for timers
 
 test.describe("Battle CLI countdown timing", () => {
-  test("setCountdown updates data-remaining-time instantly via Test API", async ({ page }) =>
+  test("shows countdown ticks and advances to the next round", async ({ page }) =>
     withMutedConsole(async () => {
-      const url = process.env.CLI_TEST_URL || "http://127.0.0.1:5000/src/pages/battleCLI.html";
-      await page.goto(url);
+      await page.addInitScript(() => {
+        const existingOverrides = typeof window !== "undefined" ? window.__FF_OVERRIDES || {} : {};
+        window.__FF_OVERRIDES = { ...existingOverrides, selectionCountdownSeconds: 5 };
+      });
 
-      // Wait for Test API to be available
-      await page.waitForFunction(() => window.__TEST_API !== undefined, { timeout: 5000 });
+      await page.goto("/src/pages/battleCLI.html?autostart=1");
 
-      // Ensure the countdown element exists
-      const countdownLocator = page.locator("#cli-countdown");
-      await expect(countdownLocator).toHaveCount(1);
+      const countdown = page.locator("#cli-countdown");
+      await expect(countdown).toBeVisible({ timeout: 5_000 });
 
-      const expectCountdownValue = async (value) => {
-        const resolved = await waitForCountdownValue(page, value);
-        expect(resolved).toBe(value);
-
-        const remaining = await countdownLocator.getAttribute("data-remaining-time");
-        expect(remaining).toBe(String(value));
+      const readCountdownText = async () => {
+        const text = (await countdown.textContent()) || "";
+        const match = text.match(/Time remaining:\s*(\d+)/i);
+        return match ? Number.parseInt(match[1], 10) : null;
       };
 
-      // Use Test API to set countdown - no waiting required!
-      await page.evaluate(() => window.__TEST_API.timers.setCountdown(3));
-      await expectCountdownValue(3);
+      await expect
+        .poll(readCountdownText, { timeout: 6_000 })
+        .toBeGreaterThanOrEqual(3);
 
-      // Test countdown progression using Test API - instant updates!
-      await page.evaluate(() => window.__TEST_API.timers.setCountdown(2));
-      await expectCountdownValue(2);
+      await expect
+        .poll(readCountdownText, { timeout: 6_000 })
+        .toBeLessThan(5);
 
-      await page.evaluate(() => window.__TEST_API.timers.setCountdown(1));
-      await expectCountdownValue(1);
+      const statButton = page.locator(".cli-stat").first();
+      await expect(statButton).toBeVisible({ timeout: 5_000 });
+      await expect(statButton).toBeEnabled({ timeout: 5_000 });
+      await statButton.click();
 
-      // Test countdown expiration
-      await page.evaluate(() => window.__TEST_API.timers.setCountdown(0));
-      await expectCountdownValue(0);
+      await expect(page.locator("#snackbar-container .snackbar"))
+        .toHaveText(/You Picked:/, { timeout: 2_000 });
+
+      const completion = await page.evaluate(async () => {
+        const api = window.__TEST_API?.cli;
+        if (typeof api?.completeRound !== "function") {
+          return { ok: false, reason: "completeRound unavailable" };
+        }
+
+        try {
+          const result = await api.completeRound(
+            {
+              detail: {
+                stat: "agi",
+                playerVal: 88,
+                opponentVal: 42,
+                result: { message: "Round resolved", playerScore: 1, opponentScore: 0 }
+              }
+            },
+            { opponentResolveDelayMs: 0 }
+          );
+
+          return { ok: true, finalState: result?.finalState ?? null };
+        } catch (error) {
+          return { ok: false, reason: error?.message ?? "completeRound failed" };
+        }
+      });
+
+      expect(completion.ok).toBe(true);
+
+      const roundCounter = page.getByTestId("round-counter");
+      await expect(roundCounter).toHaveText(/Round\s+2/, { timeout: 6_000 });
+
+      await expect(statButton).toBeEnabled({ timeout: 6_000 });
+      await expect
+        .poll(readCountdownText, { timeout: 5_000 })
+        .toBeGreaterThanOrEqual(4);
     }, ["log", "warn", "error"]));
 });
