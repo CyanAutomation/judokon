@@ -1,15 +1,47 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createManualTimingControls } from "../../utils/manualTimingControls.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockTrackerMock, mockSnackbarMock, mockOnBattleEventMock, mockOffBattleEventMock } = vi.hoisted(() => {
+  let eventHandlers = new Map();
+
+  const trackerMock = {
+    getOpponentPromptTimestamp: vi.fn(() => 0),
+    getOpponentPromptMinDuration: vi.fn(() => 0)
+  };
+
+  const snackbarMock = {
+    getOpponentDelay: vi.fn(() => 0)
+  };
+
+  const onBattleEventMock = vi.fn((eventName, handler) => {
+    if (!eventHandlers.has(eventName)) {
+      eventHandlers.set(eventName, new Set());
+    }
+    eventHandlers.get(eventName).add(handler);
+  });
+
+  const offBattleEventMock = vi.fn((eventName, handler) => {
+    const set = eventHandlers.get(eventName);
+    set?.delete(handler);
+  });
+
+  return { mockTrackerMock: trackerMock, mockSnackbarMock: snackbarMock, mockOnBattleEventMock: onBattleEventMock, mockOffBattleEventMock: offBattleEventMock };
+});
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../../src/helpers/classicBattle/opponentPromptTracker.js", () => mockTrackerMock);
+vi.mock("../../../src/helpers/classicBattle/snackbar.js", () => mockSnackbarMock);
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+  onBattleEvent: mockOnBattleEventMock,
+  offBattleEvent: mockOffBattleEventMock
+}));
+
 describe("waitForDelayedOpponentPromptDisplay", () => {
   let timestamp = 0;
   let minDuration = 0;
   let opponentDelayMs = 0;
   let eventHandlers = new Map();
-  let trackerMock;
-  let snackbarMock;
-  let onBattleEventMock;
-  let offBattleEventMock;
 
   function emitEvent(type, detail) {
     const handlers = Array.from(eventHandlers.get(type) || []);
@@ -30,33 +62,20 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
     opponentDelayMs = 0;
     eventHandlers = new Map();
 
-    // Set up mocks
-    trackerMock = {
-      getOpponentPromptTimestamp: vi.fn(() => timestamp),
-      getOpponentPromptMinDuration: vi.fn(() => minDuration)
-    };
-    snackbarMock = {
-      getOpponentDelay: vi.fn(() => opponentDelayMs)
-    };
-
-    onBattleEventMock = vi.fn((eventName, handler) => {
+    // Configure shared mocks for this test
+    mockTrackerMock.getOpponentPromptTimestamp.mockClear().mockImplementation(() => timestamp);
+    mockTrackerMock.getOpponentPromptMinDuration.mockClear().mockImplementation(() => minDuration);
+    mockSnackbarMock.getOpponentDelay.mockClear().mockImplementation(() => opponentDelayMs);
+    mockOnBattleEventMock.mockClear().mockImplementation((eventName, handler) => {
       if (!eventHandlers.has(eventName)) {
         eventHandlers.set(eventName, new Set());
       }
       eventHandlers.get(eventName).add(handler);
     });
-    offBattleEventMock = vi.fn((eventName, handler) => {
+    mockOffBattleEventMock.mockClear().mockImplementation((eventName, handler) => {
       const set = eventHandlers.get(eventName);
       set?.delete(handler);
     });
-
-    // Use vi.doMock to set up mocks dynamically
-    vi.doMock("../../../src/helpers/classicBattle/opponentPromptTracker.js", () => trackerMock);
-    vi.doMock("../../../src/helpers/classicBattle/snackbar.js", () => snackbarMock);
-    vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-      onBattleEvent: onBattleEventMock,
-      offBattleEvent: offBattleEventMock
-    }));
   });
 
   afterEach(() => {

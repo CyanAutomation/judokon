@@ -1,6 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTestController } from "../../../src/utils/scheduler.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
+const { mockCreateModal, mockInitTooltips } = vi.hoisted(() => ({
+  mockCreateModal: vi.fn(),
+  mockInitTooltips: vi.fn(() => Promise.resolve(() => {}))
+}));
+
+// ===== Top-level vi.mock() calls =====
+vi.mock("../../../src/components/Modal.js", () => ({
+  createModal: mockCreateModal
+}));
+
+vi.mock("../../../src/helpers/tooltip.js", () => ({
+  initTooltips: mockInitTooltips
+}));
+
 let modalInstance;
 let modalCloseSpy;
 let testController;
@@ -8,7 +23,7 @@ let testController;
 // Enable test controller access
 globalThis.__TEST__ = true;
 
-function mockModalReturning(backdrop) {
+function configureModalMock(backdrop) {
   modalCloseSpy = vi.fn();
   modalInstance = {
     element: backdrop,
@@ -16,9 +31,7 @@ function mockModalReturning(backdrop) {
     close: modalCloseSpy,
     destroy: vi.fn()
   };
-  vi.doMock("../../../src/components/Modal.js", () => ({
-    createModal: vi.fn(() => modalInstance)
-  }));
+  mockCreateModal.mockReturnValue(modalInstance);
 }
 
 describe("roundSelectModal responsive inset and cleanup", () => {
@@ -29,6 +42,9 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     testController = createTestController();
     modalInstance = null;
     modalCloseSpy = null;
+    // Reset mocks for this test
+    mockCreateModal.mockClear().mockReturnValue(null);
+    mockInitTooltips.mockClear().mockResolvedValue(() => {});
   });
 
   afterEach(() => {
@@ -47,14 +63,10 @@ describe("roundSelectModal responsive inset and cleanup", () => {
 
     const backdrop = document.createElement("dialog");
     backdrop.className = "modal";
-    mockModalReturning(backdrop);
+    configureModalMock(backdrop);
 
     const addSpy = vi.spyOn(window, "addEventListener");
     const removeSpy = vi.spyOn(window, "removeEventListener");
-
-    vi.doMock("../../../src/helpers/tooltip.js", () => ({
-      initTooltips: () => Promise.resolve(() => {})
-    }));
 
     const { initRoundSelectModal } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
@@ -94,12 +106,7 @@ describe("roundSelectModal responsive inset and cleanup", () => {
 
     const backdrop = document.createElement("dialog");
     backdrop.className = "modal";
-    mockModalReturning(backdrop);
-
-    // Mock tooltips to resolve quickly
-    vi.doMock("../../../src/helpers/tooltip.js", () => ({
-      initTooltips: () => Promise.resolve(() => {})
-    }));
+    configureModalMock(backdrop);
 
     const { initRoundSelectModal } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
