@@ -32,18 +32,26 @@ const roundManagerState = vi.hoisted(() => ({
 // ============================================================================
 
 vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
+  const startRoundFn = vi.fn(async () => {
+    // Store and DOM will be set by test
+  });
+
   return {
     createBattleStore: () => roundManagerState.store,
-    startRound: vi.fn(async () => {
-      // Store and DOM will be set by test
-    }),
-    startCooldown: vi.fn()
+    startRound: startRoundFn,
+    startCooldown: vi.fn(),
+    __setStore: (store) => {
+      roundManagerState.store = store;
+    }
   };
 });
 
 vi.mock("../../src/helpers/timerUtils.js", () => ({
   createCountdownTimer: (duration, options = {}) => ({
-    start: () => Promise.resolve(options.onExpired?.()),
+    start: async () => {
+      // Call onExpired immediately and wait for it to complete
+      await options.onExpired?.();
+    },
     stop: vi.fn(),
     pause: vi.fn(),
     resume: vi.fn()
@@ -161,6 +169,7 @@ function setupDom() {
     ${renderCard("player-card")}
     ${renderCard("opponent-card")}
     <div id="score-display"></div>
+    <div id="stat-buttons"></div>
     <button id="next-button"></button>
     <div id="round-counter"></div>
   `;
@@ -255,14 +264,6 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
     currentOpponentJudoka: null
   };
 
-  const computeRoundResultMock = vi.fn(async (s, stat, playerVal, opponentVal) => ({
-    matchEnded: false,
-    outcome: playerVal >= opponentVal ? "winPlayer" : "winOpponent",
-    playerScore: playerVal >= opponentVal ? 1 : 0,
-    opponentScore: playerVal >= opponentVal ? 0 : 1
-  }));
-
-  computeRoundResultState.mock = computeRoundResultMock;
   roundManagerMod.__setStore(store);
 
   const { startRound } = roundManagerMod;
@@ -302,6 +303,13 @@ test("scoreboard reconciles directly to round result", async () => {
   setupDom();
   const statContainer = document.createElement("div");
   statContainer.id = "stat-buttons";
+  const statKeys = ["power", "speed", "technique", "kumikata", "newaza"];
+  statKeys.forEach((stat) => {
+    const btn = document.createElement("button");
+    btn.dataset.stat = stat;
+    btn.textContent = stat;
+    statContainer.appendChild(btn);
+  });
   document.body.appendChild(statContainer);
 
   const playerStats = { power: 3, speed: 40, technique: 3, kumikata: 3, newaza: 3 };
