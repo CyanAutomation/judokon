@@ -34,7 +34,16 @@
  *   rarity: RandomSelectionDocumentationFilter & { values: string[] },
  *   weightClass: RandomSelectionDocumentationFilter
  * }} filters - Filter metadata available to the tool.
- * @property {{ description: string, input: { filters: Record<string, string> } }[]} examples - Usage examples.
+ * @property {{
+ *   description: string,
+ *   input: { filters: Record<string, string> },
+ *   response?: {
+ *     judoka: JudokaRecord,
+ *     filters: RandomFilterInput,
+ *     totalCount: number,
+ *     matchCount: number
+ *   }
+ * }[]} examples - Usage examples with optional sample responses.
  * @property {{
  *   judoka: string,
  *   filters: string,
@@ -89,7 +98,20 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
     },
     {
       description: "Select random heavyweight from Japan",
-      input: { filters: { country: "Japan", weightClass: "+100" } }
+      input: { filters: { country: "Japan", weightClass: "+100" } },
+      response: {
+        judoka: {
+          id: 3,
+          firstname: "Kenji",
+          surname: "Yamamoto",
+          country: "Japan",
+          rarity: "Legendary",
+          weightClass: "+100"
+        },
+        filters: { country: "Japan", weightClass: "+100" },
+        totalCount: 5,
+        matchCount: 1
+      }
     }
   ],
   responseFormat: {
