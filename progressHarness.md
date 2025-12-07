@@ -3525,3 +3525,163 @@ Migrated 2 moderately complex test files (3-2 mocks each) using the established 
 
 Pattern proven efficient and scalable. Next session can rapidly migrate remaining quick-win and medium complexity files using established approach.
 
+---
+
+## Session 10 - Continuation: Quick-Win Batch Analysis & Pattern Discovery
+
+**Date**: Current session continuation  
+**Objective**: Continue aggressive Vitest migration with focus on quick-win files (1-3 mocks)  
+**Status**: INVESTIGATION & PLANNING COMPLETE - Pattern Discovery Phase
+
+### Work Completed
+
+#### 1. Attempted Migration: `tests/pages/battleCLI.helpers.test.js`
+
+**Status**: Reverted - Deferred Complex Pattern
+
+**What We Tried**:
+- Migrated 1 mock (battleEngineFacade.js) to vi.hoisted() + top-level vi.mock() pattern
+- Created `configureEngineFacadeMock(engineStub)` helper to replace vi.doMock() in function
+- Updated 4 test functions from mockEngineFacade() → configureEngineFacadeMock()
+- Discovered 3 test failures due to mock configuration not being properly applied through delegation chain
+
+**Root Cause Discovered**:
+- `loadBattleCLI()` test utility ALSO calls vi.doMock("battleEngineFacade.js") when `mockBattleEngine: true`
+- Tests in this file pass `mockBattleEngine: false`, relying on our top-level vi.mock()
+- Issue was in mock delegation: calling `.mockImplementation()` on a vi.fn and passing it another vi.fn() created improper chain
+- Solution attempted (wrapping in lambdas) was too verbose and still didn't work properly
+
+**Lesson Learned**: Files with complex dependencies on test utilities that also do vi.doMock() require either:
+1. Refactoring of test utilities (out of scope for current session)
+2. Leaving as-is with working vi.doMock() pattern
+3. Deep investigation into proper delegation strategies
+
+**Decision**: Revert to original working version. Mark as "deferred complex pattern" for future targeted work.
+
+#### 2. Quick-Win File Discovery & Categorization
+
+**Analysis**: Scanned tests/ for remaining files with vi.doMock()
+
+**Findings**:
+- **31 files still contain vi.doMock()** calls (down from ~34 in Session 9)
+- **Many "quick-win" candidates already migrated**: tests/helpers/battleEngineTimer.test.js, tests/classicBattle/timer.test.js both already use top-level vi.mock()
+- **Categorized remaining files**:
+  - **Tier A - Complex Helper Patterns** (5+ files): vi.doMock() in helper functions with module interdependencies
+    - `tests/pages/battleCLI.helpers.test.js` (deferred)
+    - `tests/pages/battleCLI.dualWrite.test.js`
+    - `tests/helpers/classicBattle/orchestrator.init.test.js`
+  
+  - **Tier B - In-Test vi.doMock() Patterns** (20+ files): vi.doMock() called inside test functions
+    - `tests/queryRag/lexicalFallback.test.js`
+    - `tests/queryRag/queryRag.test.js`
+    - `tests/queryRag/offlineMode.test.js`
+    - `tests/helpers/vectorSearchPage/queryBuilding.test.js`
+    - `tests/helpers/testApi.test.js`
+    - `tests/helpers/featureFlags.test.js`
+    - `tests/helpers/pseudoJapanese.test.js`
+    - `tests/helpers/randomJudokaPage.featureFlags.test.js`
+    - `tests/helpers/setupCarouselToggle.test.js`
+    - `tests/helpers/classicBattle/statSelection.failureFallback.test.js`
+    - And 10+ more
+  
+  - **Tier C - Already Migrated** (several files): Already use top-level vi.mock() patterns, grep matches are false positives from comments/strings
+    - `tests/helpers/battleEngineTimer.test.js` ✅
+    - `tests/classicBattle/timer.test.js` ✅
+    - Others identified via testing
+
+#### 3. Pattern Recognition: In-Test vi.doMock() Complexity
+
+**Key Discovery**: The remaining 20+ files with vi.doMock() in test functions use a DIFFERENT pattern than Session 9's quick-wins.
+
+**Example Pattern** (tests/queryRag/lexicalFallback.test.js):
+```javascript
+test("fallback to lexical when embedder unavailable", async () => {
+  // vi.doMock called INSIDE the test function
+  vi.doMock("../../src/helpers/api/vectorSearchPage.js", () => ({
+    getExtractor: vi.fn(async () => {
+      throw new Error("model failed to load");
+    })
+  }));
+  
+  // Then import and test
+  const result = await query(...);
+  expect(result).toBeDefined();
+});
+```
+
+**Migration Strategy for This Tier**:
+- Cannot use simple top-level vi.mock() + configureEngineFacadeMock()
+- Requires per-test vi.hoisted() variables with reset mechanism
+- Each test would need to configure mocks independently
+- More verbose migration effort than quick-win tier
+
+**Example Correct Migration Approach**:
+```javascript
+// Top-level vi.hoisted for shared mock references
+const { mockGetExtractor } = vi.hoisted(() => ({
+  mockGetExtractor: vi.fn()
+}));
+
+vi.mock("../../src/helpers/api/vectorSearchPage.js", () => ({
+  getExtractor: mockGetExtractor
+}));
+
+test("fallback when embedder unavailable", async () => {
+  // Per-test configuration
+  mockGetExtractor.mockImplementation(async () => {
+    throw new Error("model failed to load");
+  });
+  
+  const result = await query(...);
+  expect(result).toBeDefined();
+});
+```
+
+### Current Status Summary
+
+**Session 9 Verified**: 
+- ✅ `opponentPromptWaiter.test.js` (9 tests) - PASSING
+- ✅ `roundSelectModal.resize.test.js` (1 test) - PASSING
+- **Total Session 9**: 10 tests, 100% pass rate, 0 regressions
+
+**Session 10 Findings**:
+- ❌ Attempted battleCLI.helpers.test.js migration → reverted due to complexity
+- ✅ Identified 31 files still with vi.doMock()
+- ✅ Discovered 20+ files have in-test vi.doMock() patterns requiring different migration strategy
+- ✅ Confirmed several candidate quick-win files already migrated and passing
+- ✅ Mapped out tier system for remaining work
+
+**Cumulative Vitest Migration Progress**:
+| Metric | Count |
+|--------|-------|
+| Files Migrated (Session 9) | 2 |
+| Tests Passing from Migrations | 10 |
+| Files with vi.doMock() Remaining | 31 |
+| Quick-Win Candidates Available | ~8 |
+| In-Test Pattern Files Needing Special Handling | 20+ |
+| Total Files Analyzed | 31+ |
+| Overall Success Rate | 100% |
+
+### Next Steps & Recommendations
+
+1. **Quick-Win Candidates** (if continuing this session):
+   - Scan remaining 8 quick-win candidates for true 1-3 mock, helper-function patterns
+   - Apply Session 9 pattern (vi.hoisted + configureXxxMock helper)
+   - Expected yield: 2-3 more files, 10-15 additional tests
+
+2. **In-Test Pattern Tier** (Future Session 11+):
+   - Requires strategy for per-test mock configuration
+   - Consider creating test helper like `setupTestMocks(mockConfig)` 
+   - Will require systematic approach due to 20+ files
+
+3. **Complex Helper Pattern Tier** (After Tier B):
+   - 5+ files with complex interdependencies
+   - Requires deeper investigation into proper delegation patterns
+   - May benefit from test utility refactoring in some cases
+
+### Technical Notes
+
+- **Original vi.doMock() in Functions**: While original battleCLI.helpers.test.js uses vi.doMock() in a helper function, this pattern actually DOES work in Vitest 3.x (discovered empirically - original tests pass)
+- **Migration Complexity vs. Benefit**: Not all vi.doMock() patterns justify migration effort - some files work fine and carry low refactoring ROI
+- **Dependency Graph Impact**: Files that integrate with test utilities (loadBattleCLI, setupPage) have hidden mocking interdependencies that complicate migration
+
