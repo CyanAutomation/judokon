@@ -51,6 +51,46 @@ const mockJudoka = [
     country: "Brazil",
     rarity: "Epic",
     weightClass: "-60"
+  },
+  {
+    id: 5,
+    firstname: "Pemba",
+    surname: "Dorji",
+    country: "Bhutan",
+    rarity: "Common",
+    weightClass: "-66"
+  },
+  {
+    id: 6,
+    firstname: "Giorgi",
+    surname: "Savanishvili",
+    country: "Georgia",
+    rarity: "Epic",
+    weightClass: "-81"
+  },
+  {
+    id: 7,
+    firstname: "Trevor",
+    surname: "Brown",
+    country: "Jamaica",
+    rarity: "Common",
+    weightClass: "-73"
+  },
+  {
+    id: 8,
+    firstname: "João",
+    surname: "Silva",
+    country: "Portugal",
+    rarity: "Epic",
+    weightClass: "-90"
+  },
+  {
+    id: 9,
+    firstname: "Michael",
+    surname: "Johnson",
+    country: "United States",
+    rarity: "Legendary",
+    weightClass: "-100"
   }
 ];
 
@@ -371,7 +411,7 @@ describe("Random Judoka Selection", () => {
 
     it("should have correct match count without filters", () => {
       const result = getRandomJudokaWithMetadata(mockJudoka);
-      expect(result.matchCount).toBe(5);
+      expect(result.matchCount).toBe(10);
     });
 
     it("should have correct match count with filters", () => {
@@ -607,15 +647,15 @@ describe("Random Judoka Selection", () => {
     it("should select from full dataset correctly", () => {
       randomSpy
         .mockReturnValueOnce(0.05) // selects first judoka (index 0)
-        .mockReturnValueOnce(0.4) // selects third judoka (index 2)
-        .mockReturnValueOnce(0.6); // selects second filtered judoka (index 1 of Japanese judoka)
+        .mockReturnValueOnce(0.4) // with 10 judoka, selects index 4
+        .mockReturnValueOnce(0.6); // for Japan filter (2 judoka at indices 1, 3), selects index 1 → mockJudoka[3]
 
       const firstSelection = selectRandomJudoka(mockJudoka);
       const secondSelection = selectRandomJudoka(mockJudoka);
       const filteredSelection = selectRandomJudoka(mockJudoka, { country: "Japan" });
 
       expect(firstSelection).toEqual(mockJudoka[0]);
-      expect(secondSelection).toEqual(mockJudoka[2]);
+      expect(secondSelection).toEqual(mockJudoka[4]);
       expect(filteredSelection).toEqual(mockJudoka[3]);
       expect(randomSpy).toHaveBeenCalledTimes(3);
     });
