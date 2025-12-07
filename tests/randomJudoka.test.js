@@ -537,12 +537,19 @@ describe("Random Judoka Selection", () => {
       expect(documentedExample).toBeDefined();
       expect(documentedExample.input).toEqual({ filters: exampleFilters });
 
-      expect(documentedExample.response).toMatchObject({
+      const { response } = documentedExample;
+
+      const expectedMatchCount = mockJudoka.filter(
+        (judoka) => judoka.country === exampleFilters.country && judoka.weightClass === exampleFilters.weightClass
+      ).length;
+
+      expect(response).toMatchObject({
         filters: exampleFilters,
-        totalCount: expect.any(Number),
-        matchCount: expect.any(Number),
+        totalCount: mockJudoka.length,
+        matchCount: expectedMatchCount,
         judoka: expect.objectContaining({
           country: "Japan",
+          rarity: expect.any(String),
           weightClass: "+100"
         })
       });
