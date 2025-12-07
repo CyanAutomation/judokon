@@ -7,6 +7,7 @@ import {
   resetSynonymCache
 } from "../src/helpers/queryExpander.js";
 
+// ===== Top-level vi.hoisted() for shared mock state =====
 const { mockFetchJson, mockSynonymMap } = vi.hoisted(() => ({
   mockFetchJson: vi.fn(),
   mockSynonymMap: {
@@ -16,14 +17,19 @@ const { mockFetchJson, mockSynonymMap } = vi.hoisted(() => ({
   }
 }));
 
+// ===== Top-level vi.mock() call =====
+vi.mock("../src/helpers/dataUtils.js", () => ({
+  fetchJson: mockFetchJson
+}));
+
 describe("Query Expansion", () => {
   beforeEach(() => {
     resetSynonymCache();
   });
 
   afterEach(() => {
-    vi.unmock("../src/helpers/dataUtils.js");
     resetSynonymCache();
+    mockFetchJson.mockReset();
   });
 
   describe("Basic Query Expansion", () => {
@@ -274,9 +280,6 @@ describe("Query Expansion", () => {
     it("should cache synonyms for subsequent calls", async () => {
       vi.resetModules();
       mockFetchJson.mockReset().mockResolvedValue(mockSynonymMap);
-      vi.doMock("../src/helpers/dataUtils.js", () => ({
-        fetchJson: mockFetchJson
-      }));
 
       const {
         expandQuery: freshExpandQuery,
@@ -293,8 +296,6 @@ describe("Query Expansion", () => {
       await freshExpandQuery("scoreboard");
       expect(mockFetchJson).toHaveBeenCalledTimes(1);
       expect(getSynonymCacheHits()).toBe(1);
-
-      vi.unmock("../src/helpers/dataUtils.js");
     });
   });
 

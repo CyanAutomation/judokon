@@ -105,9 +105,9 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
     } finally {
       restoreTime();
     }
-    expect(trackerMock.getOpponentPromptTimestamp.mock.calls.length).toBeGreaterThan(1);
+    expect(mockTrackerMock.getOpponentPromptTimestamp.mock.calls.length).toBeGreaterThan(1);
     handlers.forEach((handler) => {
-      expect(offBattleEventMock).toHaveBeenCalledWith("opponentPromptReady", handler);
+      expect(mockOffBattleEventMock).toHaveBeenCalledWith("opponentPromptReady", handler);
     });
   });
 
@@ -127,7 +127,7 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
     } finally {
       restoreTime();
     }
-    expect(trackerMock.getOpponentPromptTimestamp.mock.calls.length).toBeGreaterThan(0);
+    expect(mockTrackerMock.getOpponentPromptTimestamp.mock.calls.length).toBeGreaterThan(0);
     expect(eventHandlers.get("opponentPromptReady")?.size ?? 0).toBe(0);
   });
 
@@ -145,7 +145,7 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
       "../../../src/helpers/classicBattle/opponentPromptWaiter.js"
     );
     await waitForDelayedOpponentPromptDisplay({ totalMs: Number.NaN });
-    expect(onBattleEventMock).not.toHaveBeenCalled();
+    expect(mockOnBattleEventMock).not.toHaveBeenCalled();
     expect(eventHandlers.get("opponentPromptReady")?.size ?? 0).toBe(0);
   });
 
