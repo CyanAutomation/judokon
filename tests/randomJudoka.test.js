@@ -549,7 +549,7 @@ describe("Random Judoka Selection", () => {
         matchCount: expectedMatchCount,
         judoka: expect.objectContaining({
           country: "Japan",
-          rarity: expect.any(String),
+            rarity: expect.any(String),
           weightClass: "+100"
         })
       });
