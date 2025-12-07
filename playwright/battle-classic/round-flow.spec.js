@@ -1,6 +1,7 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import selectors from "../helpers/selectors.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { configureApp } from "../fixtures/appConfig.js";
 import {
   MUTED_CONSOLE_LEVELS,
   PLAYER_SCORE_PATTERN,
@@ -10,6 +11,7 @@ import {
   setOpponentResolveDelay,
   waitForRoundsPlayed
 } from "./support/opponentRevealTestSupport.js";
+import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHelper.js";
 
 async function resolveRoundViaCli(page) {
   return await page.evaluate(async () => {
@@ -133,6 +135,53 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
       const snackbar = page.locator(selectors.snackbarContainer());
       await expect(snackbar).toContainText(/Opponent is choosing/i);
+    }, MUTED_CONSOLE_LEVELS));
+
+  test("enables Next during cooldown without orchestrator and advances", async ({ page }) =>
+    withMutedConsole(async () => {
+      const app = await configureApp(page, {
+        testMode: "disable",
+        requireRoundSelectModal: true
+      });
+
+      try {
+        await page.goto("/src/pages/battleClassic.html");
+        await app.applyRuntime();
+
+        await page.getByRole("dialog").waitFor();
+        await page.getByRole("button", { name: "Medium" }).click();
+        await expect(page.getByRole("dialog")).not.toBeVisible();
+
+        await waitForBattleReady(page, { allowFallback: false });
+
+        const roundCounter = page.locator("#round-counter");
+        const initialRoundLabel = (await roundCounter.textContent()) ?? "";
+        const initialRound = Number(initialRoundLabel.match(/(\d+)/)?.[1]) || 1;
+        const expectedRound = initialRound + 1;
+
+        const nextButton = page
+          .locator("#next-button, [data-role='next-round']")
+          .first();
+
+        const firstStat = page.locator(selectors.statButton()).first();
+        await firstStat.click();
+
+        await waitForBattleState(page, "cooldown", { allowFallback: false });
+
+        await expect(nextButton).toBeEnabled({ timeout: 10_000 });
+        await expect(nextButton).toHaveAttribute("data-next-ready", "true");
+
+        await nextButton.click();
+
+        await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false });
+
+        await expect(roundCounter).toContainText(
+          new RegExp(`Round\\s*${expectedRound}`, "i")
+        );
+        await expect(page.locator(selectors.statButton()).first()).toBeEnabled();
+      } finally {
+        await app.cleanup();
+      }
     }, MUTED_CONSOLE_LEVELS));
 
   test("opponent reveal state is properly managed between rounds", async ({ page }) =>
