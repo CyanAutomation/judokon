@@ -25,10 +25,12 @@
 **Status**: ✅ Proven in production, all tests passing  
 
 ### Files Migrated
+
 1. `tests/helpers/classicBattle/opponentPromptWaiter.test.js` (9 tests) ✅
 2. `tests/helpers/classicBattle/roundSelectModal.resize.test.js` (1 test) ✅
 
 ### Pattern Template
+
 ```javascript
 // 1. Create hoisted reference
 const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
@@ -43,6 +45,7 @@ beforeEach(() => {
 ```
 
 ### Test Results
+
 ```
 ✅ 2 Test Files PASSED
 ✅ 10 Tests PASSED
@@ -58,10 +61,12 @@ beforeEach(() => {
 **Result**: ALL PASSING with zero regressions  
 
 ### Batch 1: 13-File Comprehensive Test (52 tests)
+
 **Duration**: 20.34s  
 **Status**: ✅ ALL PASSING
 
 Files tested:
+
 - timerService variants (autoSelect, autoSelectDisabled, ordering)
 - vectorSearchPage/queryBuilding
 - classicBattlePage.syncScoreDisplay
@@ -75,10 +80,12 @@ Files tested:
 - pseudoJapanese
 
 ### Batch 2: 5-File ClassicBattle Test (15 tests)
+
 **Duration**: 11.21s  
 **Status**: ✅ ALL PASSING
 
 Files tested:
+
 - timerService.drift
 - statSelection.failureFallback
 - cooldown.skipHandlerReady
@@ -86,6 +93,7 @@ Files tested:
 - playerChoiceReset
 
 ### Key Finding: Mixed Pattern Works
+
 File: `tests/helpers/testApi.test.js` (6 tests)  
 Pattern: **BOTH vi.mock() at top AND vi.doMock() in beforeEach**  
 Status: ✅ **ALL TESTS PASSING**
@@ -99,6 +107,7 @@ This proves Vitest 3.x handles even conflicting patterns gracefully.
 ### Total Files Scanned: 31+
 
 #### Tier A: Complex Helper Patterns (5+ files)
+
 **Complexity**: High - Test utility interdependencies  
 **Examples**: battleCLI.helpers, battleCLI.dualWrite, orchestrator.init  
 **Migration Effort**: High relative to benefit  
@@ -106,6 +115,7 @@ This proves Vitest 3.x handles even conflicting patterns gracefully.
 **Current Status**: ✅ All verified passing
 
 #### Tier B: In-Test vi.doMock() Patterns (20+ files)
+
 **Complexity**: Medium - Setup inside test functions  
 **Effort**: Moderate but low-priority  
 **Migration Need**: Low - All working correctly  
@@ -113,6 +123,7 @@ This proves Vitest 3.x handles even conflicting patterns gracefully.
 **Current Status**: ✅ Samples verified passing
 
 #### Tier C: Already Migrated
+
 **Status**: ✅ Several files already using vi.mock() pattern  
 **Examples**: Some timer service files  
 
@@ -123,24 +134,28 @@ This proves Vitest 3.x handles even conflicting patterns gracefully.
 ### ✅ Confirmed Working Patterns
 
 #### Pattern 1: Top-Level vi.mock() + vi.hoisted()
+
 - **Status**: PROVEN (Session 9)
 - **Recommendation**: USE FOR NEW TESTS
 - **Test Files**: opponentPromptWaiter, roundSelectModal.resize
 - **Pass Rate**: 100% (10/10 tests)
 
 #### Pattern 2: Legacy vi.doMock() in Helpers
+
 - **Status**: WORKING
 - **Recommendation**: LEAVE AS-IS
 - **Tested**: battleCLI.helpers (7 tests)
 - **Pass Rate**: 100% (7/7 tests)
 
 #### Pattern 3: In-Test vi.doMock()
+
 - **Status**: WORKING
 - **Recommendation**: MIGRATE IF REFACTORING
 - **Tested**: vectorSearchPage, multiple timer services
 - **Pass Rate**: 100% (20+/20+ tests)
 
 #### Pattern 4: Mixed vi.mock() + vi.doMock()
+
 - **Status**: WORKING
 - **Recommendation**: NOT IDEAL but functional
 - **Tested**: testApi (6 tests), orchestrator.init
@@ -151,16 +166,19 @@ This proves Vitest 3.x handles even conflicting patterns gracefully.
 ## Recommendations
 
 ### ✅ For Immediate Action
+
 1. Continue normal development
 2. Use vi.mock() + vi.hoisted() pattern for new tests
 3. Trust existing patterns - they work
 
 ### 🟡 For Future (Not Urgent)
+
 1. Optional: Migrate 3-4 simple files (15-20 tests)
 2. Create style guide for contributing docs
 3. Monitor CI/CD for any actual issues (unlikely)
 
 ### 🔴 Not Needed
+
 1. Forced migration of all 31 remaining files
 2. Complex refactoring of Tier A helpers
 3. Urgent vi.doMock() removal campaign
@@ -200,20 +218,23 @@ This proves Vitest 3.x handles even conflicting patterns gracefully.
 
 **The test harness migration concern has been addressed through comprehensive verification.**
 
-### What We Know Now:
+### What We Know Now
+
 - Vitest 3.x is fully compatible with all existing mock patterns
 - Session 9's pattern is proven and works great
 - All 87+ tested files passing with zero regressions
 - No urgent migration work needed
 - Legacy patterns continue to work perfectly
 
-### What We'll Do:
+### What We'll Do
+
 - Continue development with confidence
 - Use proven pattern for new tests
 - Refactor selectively only when touching other code
 - Trust empirical evidence over theoretical concerns
 
-### What Changed:
+### What Changed
+
 - Initial migration urgency: **High** → Actual necessity: **Low**
 - Expected failures: Multiple → Actual failures: None
 - Confidence level: **Low** → Confirmed: **High**

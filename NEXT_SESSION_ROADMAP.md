@@ -9,6 +9,7 @@
 ## Where We Are Now
 
 ### What's Complete ✅
+
 - Session 9: Established proven migration pattern (vi.mock() + vi.hoisted())
 - Session 9: Migrated 2 files successfully (10 tests, all passing)
 - Session 10: Verified 25+ files with 87+ tests across all mock patterns
@@ -16,12 +17,14 @@
 - Session 10: Documented comprehensive findings
 
 ### What's Working ✅
+
 - All existing mock patterns (vi.mock(), vi.doMock(), mixed)
 - All 87+ verified tests passing
 - Session 9 migrations still working perfectly
 - Vitest 3.2.4 is fully compatible with legacy patterns
 
 ### Key Documents
+
 - `SESSION_10_FINAL_SUMMARY.md` - Complete verification summary
 - `HARNESS_MIGRATION_STATUS.md` - Quick reference status
 - `progressHarness.md` - Detailed session logs (Session 10 Continuation section)
@@ -32,6 +35,7 @@
 ## If You Want to Continue
 
 ### Option 1: Light Refactoring (1-2 hours)
+
 **Difficulty**: Easy | **Benefit**: High code consistency | **Impact**: 15-20 tests
 
 1. Pick 3-4 simple files with single vi.doMock() calls
@@ -40,11 +44,13 @@
 4. Commit with pattern consistency message
 
 **Recommended Files** (simple, low-dependency):
+
 - `tests/helpers/populateCountryList.test.js` (likely simple 1-3 mocks)
 - `tests/helpers/featureFlags.test.js` (already verified passing)
 - Any other Tier B files with 1-3 simple mocks
 
 **Steps**:
+
 ```bash
 # 1. Read the file to understand current pattern
 cat tests/helpers/populateCountryList.test.js | head -50
@@ -61,6 +67,7 @@ git commit -m "refactor: standardize mock pattern in populateCountryList tests"
 ```
 
 ### Option 2: Documentation (30-45 minutes)
+
 **Difficulty**: Easy | **Benefit**: Guides future development | **Impact**: Long-term
 
 1. Create `docs/TEST_PATTERNS.md` style guide
@@ -69,12 +76,14 @@ git commit -m "refactor: standardize mock pattern in populateCountryList tests"
 4. Reference from AGENTS.md
 
 **What to Document**:
+
 - When to use vi.mock() + vi.hoisted()
 - When vi.doMock() is still acceptable
 - How to configure per-test mocks
 - Migration checklist for refactoring
 
 ### Option 3: Monitor & Maintain (Ongoing)
+
 **Difficulty**: Minimal | **Benefit**: Early detection of issues | **Impact**: Preventive
 
 - Watch for any actual Vitest 3.x issues in CI/CD
@@ -83,6 +92,7 @@ git commit -m "refactor: standardize mock pattern in populateCountryList tests"
 - Only migrate files when fixing actual issues
 
 ### Option 4: Do Nothing (Recommended)
+
 **Status**: ✅ All tests passing | **Risk**: 🟢 Minimal | **Benefit**: Focus on features
 
 - Continue development as normal
@@ -95,21 +105,27 @@ git commit -m "refactor: standardize mock pattern in populateCountryList tests"
 ## If Issues Arise
 
 ### Scenario 1: Test Suite Fails
+
 **Action**:
+
 1. Check which file is failing
 2. Look at progressHarness.md for verification status
 3. Check AGENTS.md Modern Test Harness section
 4. Likely cause: Not an actual problem, verify with test run
 
 ### Scenario 2: New File Needs Mocks
+
 **Action**:
+
 1. Use vi.mock() + vi.hoisted() pattern (proven in Session 9)
 2. Reference: `tests/helpers/classicBattle/opponentPromptWaiter.test.js`
 3. Test to verify works
 4. Document if pattern differs
 
 ### Scenario 3: Someone Asks "Why Not Migrate Everything?"
+
 **Answer**:
+
 1. All patterns work perfectly (87+ tests verified)
 2. Migration urgency was theoretical, not practical
 3. No actual failures or issues
@@ -121,6 +137,7 @@ git commit -m "refactor: standardize mock pattern in populateCountryList tests"
 ## Quick Reference: Proven Pattern
 
 ### For New Tests (Use This)
+
 ```javascript
 // At the top of the file
 const { mockFetchData } = vi.hoisted(() => ({
@@ -144,6 +161,7 @@ it("should fetch data", async () => {
 ```
 
 ### For Existing Files (Leave As-Is)
+
 - Files passing 100%? Keep them as-is
 - Not urgent to migrate
 - All patterns work correctly
@@ -153,19 +171,23 @@ it("should fetch data", async () => {
 ## Files Reference
 
 ### Already Migrated (Session 9) ✅
+
 - `tests/helpers/classicBattle/opponentPromptWaiter.test.js` (9 tests)
 - `tests/helpers/classicBattle/roundSelectModal.resize.test.js` (1 test)
 
 ### Verified Working (Session 10) ✅
+
 - See progressHarness.md Session 10 Continuation section for full list
 - 25+ files, 87+ tests, all passing
 
 ### Tier A: Complex (Skip These) 🔴
+
 - `tests/pages/battleCLI.helpers.test.js` (complex, attempted migration, reverted)
 - Similar files with test utility interdependencies
 - Too much complexity relative to benefit
 
 ### Tier B: Simple (Selective Candidates) 🟡
+
 - 20+ files with in-test vi.doMock() patterns
 - Migrate selectively only if refactoring nearby code
 - Examples: vectorSearchPage variants, timer service files
@@ -175,18 +197,21 @@ it("should fetch data", async () => {
 ## Success Criteria
 
 ### For Light Refactoring
+
 - ✅ 3-4 files migrated
 - ✅ All tests passing (15-20 tests)
 - ✅ Zero regressions
 - ✅ Commits explain pattern standardization
 
 ### For Documentation
+
 - ✅ Comprehensive pattern guide created
 - ✅ Examples for each use case
 - ✅ Added to contributing guide
 - ✅ Linked from AGENTS.md
 
 ### For Maintenance Mode
+
 - ✅ Monitor CI/CD for issues
 - ✅ Document any problems found
 - ✅ Only migrate if actual issues discovered
@@ -227,13 +252,15 @@ npm test
 
 ## Progress Tracking
 
-### To Update After Work:
+### To Update After Work
+
 1. Update `progressHarness.md` with new session activities
 2. Update `HARNESS_MIGRATION_STATUS.md` status table
 3. Create new session summary if significant work done
 4. Update this file with completion status
 
-### Metrics to Track:
+### Metrics to Track
+
 - Files migrated this session
 - Tests affected
 - Any new patterns discovered

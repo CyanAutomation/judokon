@@ -23,6 +23,7 @@ After comprehensive verification across **87+ tests** in **25+ files**, we have 
 ## Verification Results
 
 ### Session 9 Migrations (Still Passing)
+
 - `tests/helpers/classicBattle/opponentPromptWaiter.test.js` - **9 tests** ✅
 - `tests/helpers/classicBattle/roundSelectModal.resize.test.js` - **1 test** ✅
 - **Total**: 10 tests, 100% passing
@@ -34,6 +35,7 @@ After comprehensive verification across **87+ tests** in **25+ files**, we have 
 
 **Command**: 13-file comprehensive test of various mock patterns  
 **Files Tested**:
+
 1. `tests/helpers/timerService.autoSelectDisabled.test.js` ✅
 2. `tests/helpers/timerService.autoSelect.test.js` ✅
 3. `tests/helpers/vectorSearchPage/queryBuilding.test.js` ✅
@@ -54,6 +56,7 @@ After comprehensive verification across **87+ tests** in **25+ files**, we have 
 
 **Command**: 5-file classicBattle helpers test  
 **Files Tested**:
+
 1. `tests/helpers/classicBattle/timerService.drift.test.js` (3 tests) ✅
 2. `tests/helpers/classicBattle/statSelection.failureFallback.test.js` (3 tests) ✅
 3. `tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js` (3 tests) ✅
@@ -145,10 +148,12 @@ Pattern: Complex multi-layer mocking with both vi.mock() and vi.doMock()
 ### Key Insights
 
 **Expected (Pre-Verification)**:
+
 - vi.doMock() patterns might be problematic in Vitest 3.x
 - Aggressive migration needed to ensure compatibility
 
 **Actual (Post-Verification)**:
+
 - All 87+ tested files with various patterns passing perfectly
 - No actual failures or issues encountered
 - Migration urgency was theoretical, not empirical
@@ -158,21 +163,25 @@ Pattern: Complex multi-layer mocking with both vi.mock() and vi.doMock()
 ## Test Patterns Verified as Working
 
 ### Pattern 1: Top-Level vi.mock() + vi.hoisted()
+
 **Files**: opponentPromptWaiter, roundSelectModal.resize (Session 9 migrations)  
 **Status**: ✅ PROVEN IN PRODUCTION  
 **Recommendation**: Use for new tests
 
 ### Pattern 2: Legacy vi.doMock() in Helpers
+
 **Files**: battleCLI.helpers (attempted migration, reverted)  
 **Status**: ✅ WORKING - Too complex to migrate  
 **Recommendation**: Leave as-is
 
 ### Pattern 3: In-Test vi.doMock()
+
 **Files**: vectorSearchPage/queryBuilding, lexicalFallback  
 **Status**: ✅ WORKING  
 **Recommendation**: Migrate selectively only if refactoring nearby code
 
 ### Pattern 4: Mixed vi.mock() + vi.doMock()
+
 **Files**: testApi, orchestrator.init  
 **Status**: ✅ WORKING  
 **Recommendation**: Not ideal, but functional - migrate if touching file
@@ -182,6 +191,7 @@ Pattern: Complex multi-layer mocking with both vi.mock() and vi.doMock()
 ## Strategic Recommendations
 
 ### For New Tests
+
 ✅ Use vi.mock() + vi.hoisted() pattern (proven in Session 9)
 
 ```javascript
@@ -197,6 +207,7 @@ beforeEach(() => {
 ```
 
 ### For Existing Tests
+
 ✅ Leave working patterns as-is - migration not urgent
 
 - Files passing 100%? Keep them as-is
@@ -204,6 +215,7 @@ beforeEach(() => {
 - No active failures? No forced migration needed
 
 ### For Future Migration
+
 🟡 Selective refactoring approach
 
 1. **Light Priority** (Do if touching file):
@@ -223,20 +235,25 @@ beforeEach(() => {
 ## Lessons Learned
 
 ### What Went Right
+
 ✅ Session 9 established a proven, working pattern (vi.mock() + vi.hoisted())  
 ✅ Session 10 comprehensive verification confirmed all patterns work  
 ✅ Zero regressions across 87+ tested files  
 ✅ Codebase is healthier than initial concerns suggested  
 
 ### What Surprised Us
+
 🎯 **Major Finding**: Vitest 3.x is more compatible than expected  
+
 - Legacy vi.doMock() patterns still work perfectly
 - Mixed patterns (both in same file) work correctly
 - In-function vi.doMock() still functions properly
 - Initial migration urgency was theoretical, not practical
 
 ### What We'll Do Differently
+
 📝 **Going Forward**:
+
 - Trust empirical verification over theoretical concerns
 - Focus migration efforts only on actual failures or refactoring opportunities
 - Use Session 9's proven pattern for new tests
@@ -247,16 +264,19 @@ beforeEach(() => {
 ## Remaining Work
 
 ### Completed ✅
+
 - Session 9: 2 files migrated (10 tests)
 - Session 10: 25+ files verified (77 additional tests)
 - Total verified: 87+ tests across 25+ files
 
 ### Optional (Not Urgent) 🟡
+
 - Migrate 3-4 additional simple files (15-20 tests)
 - Create comprehensive style guide for future development
 - Document migration patterns in contributing guide
 
 ### Deferred (Unnecessary) 🔴
+
 - Aggressive forced migration of all 31 remaining files
 - Complex helper pattern refactoring (Ti A)
 - Comprehensive in-test vi.doMock() migration (Tier B)
@@ -268,6 +288,7 @@ beforeEach(() => {
 **The Vitest 3.x test harness is solid.**
 
 After comprehensive verification, we can confidently say:
+
 - All 87+ tested files passing with 100% success rate
 - Zero regressions detected
 - All mock patterns (vi.mock(), vi.doMock(), mixed) functioning correctly

@@ -14,16 +14,19 @@
 **File**: `tests/pages/battleCLI.helpers.test.js` (1 mock, 7 tests)
 
 **What We Tried**:
+
 - Migrated single vi.doMock() call from helper function to vi.hoisted() + top-level vi.mock() pattern
 - Created `configureEngineFacadeMock()` helper to replace the vi.doMock() call
 - Updated test code to call the configuration function
 
 **What Failed**:
+
 - 3 of 7 tests failed with assertion mismatches
 - Mock implementations weren't being properly applied through delegation chain
 - Root cause: Attempted to pass vi.fn to .mockImplementation() of another vi.fn - improper chain
 
 **Why It's Complex**:
+
 - The `loadBattleCLI()` test utility also mocks the same module with vi.doMock()
 - This creates hidden module-level mock interdependencies
 - Tests pass `mockBattleEngine: false` to avoid loadBattleCLI's internal mock
@@ -39,16 +42,19 @@
 **Categorized into Tiers**:
 
 #### Tier A: Complex Helper Patterns (5+ files)
+
 - vi.doMock() in helper functions with module interdependencies
 - Examples: battleCLI.helpers, battleCLI.dualWrite, orchestrator.init
 - Status: Deferred (requires test utility refactoring)
 
 #### Tier B: In-Test vi.doMock() Patterns (20+ files)
+
 - vi.doMock() called INSIDE test functions
 - Examples: lexicalFallback.test.js, queryRag.test.js, vectorSearchPage/queryBuilding.test.js
 - Status: Requires different migration strategy (per-test mock configuration)
 
 #### Tier C: Already Migrated (several files)
+
 - Already using top-level vi.mock() patterns
 - Examples: battleEngineTimer.test.js, classicBattle/timer.test.js
 - Status: ✅ Complete and passing
@@ -56,6 +62,7 @@
 ### 3. Key Discovery: In-Test vi.doMock() Pattern
 
 **Pattern Found** (tests/queryRag/lexicalFallback.test.js example):
+
 ```javascript
 test("fallback when embedder unavailable", async () => {
   // vi.doMock() called INSIDE the test function
@@ -71,11 +78,13 @@ test("fallback when embedder unavailable", async () => {
 ```
 
 **Why This Is Different**:
+
 - Cannot use simple configureXxxMock() approach from Session 9
 - Each test needs per-test mock configuration
 - Requires vi.hoisted() with per-test reset mechanism
 
 **Correct Migration for This Pattern**:
+
 ```javascript
 // Top-level hoisted for shared references
 const { mockGetExtractor } = vi.hoisted(() => ({
@@ -122,7 +131,7 @@ test("fallback when embedder unavailable", async () => {
 
 1. **Priority 1 - In-Test Pattern Tier (Tier B)**:
    - 20+ files waiting with clear migration path identified
-   - Create test helper like `setupPerTestMocks(mockConfig)` 
+   - Create test helper like `setupPerTestMocks(mockConfig)`
    - Could yield 40-50+ additional tests
    - Medium effort, high payoff
 
@@ -139,17 +148,20 @@ test("fallback when embedder unavailable", async () => {
 ## Technical Insights
 
 ### What Worked (Session 9)
+
 - ✅ Simple helper function patterns (configureXxxMock)
 - ✅ Shared vi.hoisted() state with per-test reset
 - ✅ Files with minimal external dependencies
 - ✅ ~10 tests from 2 files, zero regressions
 
 ### What Didn't Work (Session 10)
+
 - ❌ Passing vi.fn to .mockImplementation() of another vi.fn
 - ❌ Ignoring module-level test utility interdependencies
 - ❌ Trying to migrate files with internal mocking from other utilities
 
 ### Key Learnings
+
 1. vi.doMock() in helper functions DOES work in Vitest 3.x (contrary to initial assumption)
 2. Not all vi.doMock() patterns justify migration effort
 3. In-test vi.doMock() patterns require completely different strategy than helper function patterns
@@ -159,7 +171,7 @@ test("fallback when embedder unavailable", async () => {
 
 - ✅ tests/helpers/battleEngineTimer.test.js (1 mock, 4 tests)
 - ✅ tests/classicBattle/timer.test.js (1 mock, 6 tests)
-- ✅ tests/helpers/classicBattle/opponentPromptWaiter.test.js (9 tests) 
+- ✅ tests/helpers/classicBattle/opponentPromptWaiter.test.js (9 tests)
 - ✅ tests/helpers/classicBattle/roundSelectModal.resize.test.js (1 test)
 - ✅ tests/pages/battleCLI.helpers.test.js (7 tests)
 - ✅ All verified with zero regressions
@@ -175,6 +187,7 @@ test("fallback when embedder unavailable", async () => {
 Session 10 successfully mapped the remaining 31 files and identified two distinct migration patterns beyond Session 9's quick-win approach. While the battleCLI.helpers migration proved complex, the systematic analysis revealed a clear path forward with Tier B (in-test patterns) being the next logical step. The pattern is now understood and documented for efficient execution in future sessions.
 
 **Success Metrics**:
+
 - ✅ Pattern discovery complete
 - ✅ Migration strategy identified for 20+ files
 - ✅ Zero regressions on verified migrations
