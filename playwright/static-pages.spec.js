@@ -57,7 +57,7 @@ const pages = [
 
       const firstRow = changeLogTable.locator("tbody tr").first();
       await expect(firstRow).toBeVisible();
-      await expect(firstRow.locator("td").nth(4)).not.toHaveText("");
+      await expect(firstRow.locator("td").last()).not.toHaveText("");
 
       const homeLink = page.getByTestId("home-link");
       await homeLink.click();
