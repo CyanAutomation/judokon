@@ -73,6 +73,13 @@ vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => {
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   setupScoreboard: vi.fn(),
+  cleanupScoreboard: vi.fn(),
+  showMessage: vi.fn(),
+  clearMessage: vi.fn(),
+  showTemporaryMessage: vi.fn(() => () => {}),
+  clearTimer: vi.fn(),
+  updateTimer: vi.fn(),
+  showAutoSelect: vi.fn(),
   updateScore: vi.fn((player, opponent) => {
     const el = document.getElementById("score-display");
     if (!el) return;
@@ -87,7 +94,11 @@ vi.mock("../../src/helpers/setupScoreboard.js", () => ({
     el.appendChild(document.createTextNode("\n"));
     el.appendChild(opponentSpan);
   }),
-  updateRoundCounter: vi.fn()
+  updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn(),
+  scoreboard: {
+    reset: vi.fn()
+  }
 }));
 
 vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
@@ -151,7 +162,30 @@ vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
     playerScore: 4,
     opponentScore: 1
   })),
-  getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 9, opponentVal: 3 })),
+  getPlayerAndOpponentValues: vi.fn((stat, playerCard, opponentCard, { store } = {}) => {
+    const readFromStore = (sideStoreStats, key) => {
+      const value = sideStoreStats?.[key];
+      return Number.isFinite(Number(value)) ? Number(value) : undefined;
+    };
+
+    const selectedStatIndex = STAT_KEYS.indexOf(stat);
+
+    const readFromDom = (selector) => {
+      const spans = document.querySelectorAll(`${selector} li.stat span`);
+      if (selectedStatIndex >= 0 && spans[selectedStatIndex]) {
+        const parsed = Number(spans[selectedStatIndex].textContent);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+      return 0;
+    };
+
+    const playerVal =
+      readFromStore(store?.currentPlayerJudoka?.stats, stat) ?? readFromDom("#player-card");
+    const opponentVal =
+      readFromStore(store?.currentOpponentJudoka?.stats, stat) ?? readFromDom("#opponent-card");
+
+    return { playerVal, opponentVal };
+  }),
   isOrchestratorActive: vi.fn(() => false)
 }));
 
@@ -232,17 +266,8 @@ test("score updates after auto-select on expiry", async () => {
     });
   });
 
-  const consoleErrorSpy = vi
-    .spyOn(console, "error")
-    .mockImplementation(() => {});
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
-  if (consoleErrorSpy.mock.calls.length > 0) {
-    process.stderr.write(
-      `console.error calls: ${JSON.stringify(consoleErrorSpy.mock.calls)}\n`
-    );
-  }
-  consoleErrorSpy.mockRestore();
   expect(initRoundSelectModal).toHaveBeenCalled();
   expect(startRound).toHaveBeenCalled();
   await harness.timerControl.runAllTimersAsync();
