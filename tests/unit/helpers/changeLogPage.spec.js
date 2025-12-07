@@ -65,7 +65,7 @@ describe("changeLogPage", () => {
   it("sorts judoka newest-first with name tie-breakers", async () => {
     const { sortJudoka } = await import("../../../src/helpers/changeLogPage.js");
 
-    const sorted = sortJudoka(fixtureEntries);
+    const sorted = sortJudoka([...fixtureEntries]);
 
     expect(sorted.map((entry) => entry.id)).toEqual([1, 3, 2]);
     expect(fixtureEntries.map((entry) => entry.id)).toEqual([2, 1, 3]);
