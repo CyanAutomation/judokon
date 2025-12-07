@@ -78,7 +78,7 @@ describe("Integration Test Example: Battle Flow", () => {
 
     // This is the key pattern: import real internal modules (NOT mocked)
     // They will use the mocked external service via dependency injection
-    const { markBattlePartReady, battleReadyPromise } = await import(
+    const { markBattlePartReady, battleReadyPromise: _battleReadyPromise } = await import(
       "../../src/helpers/battleInit.js"
     );
 
@@ -89,7 +89,7 @@ describe("Integration Test Example: Battle Flow", () => {
 
     // Assert: real module execution completed
     expect(mockFetch).not.toHaveBeenCalled(); // battleInit doesn't call external API
-    expect(battleReadyPromise).toBeDefined();
+    expect(_battleReadyPromise).toBeDefined();
   });
 
   it("demonstrates workflow spanning multiple real modules", async () => {
