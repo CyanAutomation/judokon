@@ -36,19 +36,22 @@ test.describe("Classic Battle timer", () => {
         return match ? Number.parseInt(match[1], 10) : null;
       };
 
-      await expect
-        .poll(parseTimerValue, { timeout: 5_000 })
-        .toBeGreaterThan(0);
+      await expect.poll(parseTimerValue, { timeout: 5_000 }).toBeGreaterThan(0);
 
       const initialCountdownValue = await parseTimerValue();
       expect(typeof initialCountdownValue).toBe("number");
 
       // Wait a moment to ensure timer has time to tick
       // Wait for timer to tick by polling until value changes
-      await expect.poll(async () => {
-        const currentValue = await parseTimerValue();
-        return currentValue !== initialCountdownValue;
-      }, { timeout: 5_000 }).toBe(true);
+      await expect
+        .poll(
+          async () => {
+            const currentValue = await parseTimerValue();
+            return currentValue !== initialCountdownValue;
+          },
+          { timeout: 5_000 }
+        )
+        .toBe(true);
 
       await expect
         .poll(parseTimerValue, { timeout: 5_000 })

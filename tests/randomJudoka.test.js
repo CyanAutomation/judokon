@@ -491,7 +491,9 @@ describe("Random Judoka Selection", () => {
       const { country: documentedCountry } = filters;
 
       expect(documentedCountry.type).toBe("string");
-      expect(documentedCountry.description).toBe(RANDOM_SELECTION_DOCUMENTATION.filters.country.description);
+      expect(documentedCountry.description).toBe(
+        RANDOM_SELECTION_DOCUMENTATION.filters.country.description
+      );
 
       const validatedCountry = validateRandomFilters({ country: "Japan" });
       const rejectedCountry = validateRandomFilters({ country: 42 });
@@ -502,9 +504,9 @@ describe("Random Judoka Selection", () => {
       const availableCountries = getAvailableFilterOptions(mockJudoka).countries;
       const documentedValues = documentedCountry.values;
 
-// Always verify that available countries match what the system can actually provide
-expect(documentedValues).toBeDefined();
-expect(documentedValues.sort()).toEqual(availableCountries.sort());
+      // Always verify that available countries match what the system can actually provide
+      expect(documentedValues).toBeDefined();
+      expect(documentedValues.sort()).toEqual(availableCountries.sort());
     });
 
     it("should align documented rarity values with validation and selection", () => {
@@ -526,8 +528,8 @@ expect(documentedValues.sort()).toEqual(availableCountries.sort());
         });
 
         const availableRarities = selectedRarities.filter(Boolean);
-        const expectedRarities = documentedRarities.filter(rarity => 
-          mockJudoka.some(judoka => judoka.rarity === rarity)
+        const expectedRarities = documentedRarities.filter((rarity) =>
+          mockJudoka.some((judoka) => judoka.rarity === rarity)
         );
         expect(availableRarities).toEqual(expectedRarities);
       } finally {
@@ -552,7 +554,9 @@ expect(documentedValues.sort()).toEqual(availableCountries.sort());
       const { response } = documentedExample;
 
       const expectedMatchCount = mockJudoka.filter(
-        (judoka) => judoka.country === exampleFilters.country && judoka.weightClass === exampleFilters.weightClass
+        (judoka) =>
+          judoka.country === exampleFilters.country &&
+          judoka.weightClass === exampleFilters.weightClass
       ).length;
 
       expect(response).toMatchObject({
@@ -561,7 +565,7 @@ expect(documentedValues.sort()).toEqual(availableCountries.sort());
         matchCount: expectedMatchCount,
         judoka: expect.objectContaining({
           country: "Japan",
-            rarity: expect.any(String),
+          rarity: expect.any(String),
           weightClass: "+100"
         })
       });

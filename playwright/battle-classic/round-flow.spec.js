@@ -164,9 +164,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         const initialRound = Number(initialRoundLabel.match(/(\d+)/)?.[1]) || 1;
         const expectedRound = initialRound + 1;
 
-        const nextButton = page
-          .locator("#next-button, [data-role='next-round']")
-          .first();
+        const nextButton = page.locator("#next-button, [data-role='next-round']").first();
 
         const firstStat = page.locator(selectors.statButton()).first();
         await firstStat.click();
@@ -183,14 +181,12 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false });
 
         // Verify the state actually transitioned from cooldown
-        const currentState = await page.evaluate(() => 
-          window.__TEST_API?.state?.getBattleState?.() ?? null
+        const currentState = await page.evaluate(
+          () => window.__TEST_API?.state?.getBattleState?.() ?? null
         );
         expect(currentState).toBe("waitingForPlayerAction");
 
-        await expect(roundCounter).toContainText(
-          new RegExp(`Round\\s*${expectedRound}`, "i")
-        );
+        await expect(roundCounter).toContainText(new RegExp(`Round\\s*${expectedRound}`, "i"));
         await expect(page.locator(selectors.statButton()).first()).toBeEnabled();
       } finally {
         await app.cleanup();

@@ -1449,7 +1449,8 @@ export function startSelectionCountdown(seconds = 30) {
   const normalizedSeconds = (() => {
     try {
       const overrideSeconds = Number(
-        (typeof window !== "undefined" && window.__FF_OVERRIDES?.selectionCountdownSeconds) ?? seconds
+        (typeof window !== "undefined" && window.__FF_OVERRIDES?.selectionCountdownSeconds) ??
+          seconds
       );
 
       if (Number.isFinite(overrideSeconds) && overrideSeconds > 0) {

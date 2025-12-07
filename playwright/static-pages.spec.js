@@ -28,7 +28,7 @@ const pages = [
     navLinks: [{ id: NAV_SETTINGS, text: "Settings", href: "./settings.html" }],
     assertions: [
       { type: "role", role: "main" },
-      { type: "locator", selector: "[data-testid=\"layout-mode-toggle\"]" },
+      { type: "locator", selector: '[data-testid="layout-mode-toggle"]' },
       { type: "locator", selector: "#country-toggle" }
     ],
     options: { expectNav: false },
@@ -67,14 +67,7 @@ const pages = [
 ];
 
 test.describe("Static pages", () => {
-  for (const {
-    url,
-    name,
-    assertions,
-    navLinks = [],
-    options = {},
-    expectations
-  } of pages) {
+  for (const { url, name, assertions, navLinks = [], options = {}, expectations } of pages) {
     test(`${name} page loads and has correct content`, async ({ page }) => {
       await page.goto(url);
       await verifyPageBasics(page, navLinks, assertions, options);

@@ -20,21 +20,18 @@ test.describe("Battle CLI countdown timing", () => {
         return match ? Number.parseInt(match[1], 10) : null;
       };
 
-      await expect
-        .poll(readCountdownText, { timeout: 6_000 })
-        .toBeGreaterThanOrEqual(3);
+      await expect.poll(readCountdownText, { timeout: 6_000 }).toBeGreaterThanOrEqual(3);
 
-      await expect
-        .poll(readCountdownText, { timeout: 6_000 })
-        .toBeLessThan(5);
+      await expect.poll(readCountdownText, { timeout: 6_000 }).toBeLessThan(5);
 
       const statButton = page.locator(".cli-stat").first();
       await expect(statButton).toBeVisible({ timeout: 5_000 });
       await expect(statButton).toBeEnabled({ timeout: 5_000 });
       await statButton.click();
 
-      await expect(page.locator("#snackbar-container .snackbar"))
-        .toHaveText(/You Picked:/, { timeout: 2_000 });
+      await expect(page.locator("#snackbar-container .snackbar")).toHaveText(/You Picked:/, {
+        timeout: 2_000
+      });
 
       const completion = await page.evaluate(async () => {
         const api = window.__TEST_API?.cli;
@@ -67,8 +64,6 @@ test.describe("Battle CLI countdown timing", () => {
       await expect(roundCounter).toHaveText(/Round\s+2/, { timeout: 6_000 });
 
       await expect(statButton).toBeEnabled({ timeout: 6_000 });
-      await expect
-        .poll(readCountdownText, { timeout: 5_000 })
-        .toBeGreaterThanOrEqual(4);
+      await expect.poll(readCountdownText, { timeout: 5_000 }).toBeGreaterThanOrEqual(4);
     }, ["log", "warn", "error"]));
 });

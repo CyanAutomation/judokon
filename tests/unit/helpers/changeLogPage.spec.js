@@ -82,9 +82,13 @@ describe("changeLogPage", () => {
 
     const firstRowCells = rows[0].querySelectorAll("td");
     const idCell = firstRowCells[0];
-    const nameCell = Array.from(firstRowCells).find(cell => cell.textContent.includes("Charlie Delta"));
-    const dateCell = Array.from(firstRowCells).find(cell => cell.textContent.includes("2024-02-15"));
-    
+    const nameCell = Array.from(firstRowCells).find((cell) =>
+      cell.textContent.includes("Charlie Delta")
+    );
+    const dateCell = Array.from(firstRowCells).find((cell) =>
+      cell.textContent.includes("2024-02-15")
+    );
+
     expect(idCell.textContent).toBe("1");
     expect(nameCell).toBeTruthy();
     expect(dateCell).toBeTruthy();
