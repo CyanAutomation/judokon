@@ -152,7 +152,12 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         await page.getByRole("button", { name: "Medium" }).click();
         await expect(page.getByRole("dialog")).not.toBeVisible();
 
-        await waitForBattleReady(page, { allowFallback: false });
+        try {
+          await waitForBattleReady(page, { allowFallback: false });
+        } catch (error) {
+          await app.cleanup();
+          throw new Error(`Battle initialization failed: ${error.message}`);
+        }
 
         const roundCounter = page.locator("#round-counter");
         const initialRoundLabel = (await roundCounter.textContent()) ?? "";
