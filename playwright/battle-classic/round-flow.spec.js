@@ -168,6 +168,8 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
         await waitForBattleState(page, "cooldown", { allowFallback: false });
 
+        // Verify cooldown is actually active before checking Next button
+        await expect(nextButton).toBeDisabled({ timeout: 1000 });
         await expect(nextButton).toBeEnabled({ timeout: 10_000 });
         await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
