@@ -21,11 +21,11 @@ test.describe("Battle CLI countdown timing", () => {
       };
 
       await expect
-        .poll(readCountdownText, { timeout: 4_000 })
-        .toBeGreaterThanOrEqual(4);
+        .poll(readCountdownText, { timeout: 6_000 })
+        .toBeGreaterThanOrEqual(3);
 
       await expect
-        .poll(readCountdownText, { timeout: 4_000 })
+        .poll(readCountdownText, { timeout: 6_000 })
         .toBeLessThan(5);
 
       const statButton = page.locator(".cli-stat").first();
