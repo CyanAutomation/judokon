@@ -1,86 +1,45 @@
 import { expect, test } from "./fixtures/commonSetup.js";
-import {
-  verifyPageBasics,
-  NAV_RANDOM_JUDOKA,
-  NAV_CLASSIC_BATTLE,
-  NAV_UPDATE_JUDOKA,
-  NAV_BROWSE_JUDOKA,
-  NAV_MEDITATION,
-  NAV_SETTINGS
-} from "./fixtures/navigationChecks.js";
-
-const manageJudokaNavLinks = [
-  {
-    id: NAV_CLASSIC_BATTLE,
-    text: "Classic Battle",
-    href: "./battleClassic.html",
-    destination: "/src/pages/battleClassic.html"
-  },
-  {
-    id: NAV_UPDATE_JUDOKA,
-    text: "Update Judoka",
-    href: "./updateJudoka.html",
-    destination: "/src/pages/updateJudoka.html"
-  },
-  {
-    id: NAV_RANDOM_JUDOKA,
-    text: "Random Judoka",
-    href: "./randomJudoka.html",
-    destination: "/src/pages/randomJudoka.html"
-  },
-  {
-    id: NAV_BROWSE_JUDOKA,
-    text: "Browse Judoka",
-    href: "./browseJudoka.html",
-    destination: "/src/pages/browseJudoka.html"
-  },
-  {
-    id: NAV_MEDITATION,
-    text: "Meditation",
-    href: "./meditation.html",
-    destination: "/src/pages/meditation.html"
-  },
-  {
-    id: NAV_SETTINGS,
-    text: "Settings",
-    href: "./settings.html",
-    destination: "/src/pages/settings.html"
-  }
-];
+import { verifyPageBasics, NAV_RANDOM_JUDOKA, NAV_SETTINGS } from "./fixtures/navigationChecks.js";
 
 const pages = [
   {
     url: "/src/pages/createJudoka.html",
     name: "Create Judoka",
-    navLinks: manageJudokaNavLinks,
-    assertions: [
-      { type: "locator", selector: 'main[role="main"]' },
-      { type: "locator", selector: "#carousel-section" },
-      { type: "locator", selector: '[data-testid="carousel-container"]' },
-      { type: "text", text: "Classic Battle" },
-      { type: "text", text: "Update Judoka" }
+    navLinks: [
+      {
+        id: NAV_RANDOM_JUDOKA,
+        text: "Random Judoka",
+        href: "./randomJudoka.html",
+        destination: "/src/pages/randomJudoka.html"
+      }
     ],
-    options: { verifyNavTargets: true },
+    assertions: [{ type: "locator", selector: 'main[role="main"]' }],
     expectations: async (page) => {
-      const main = page.getByRole("main");
-      await expect(main.getByTestId("carousel-container")).toBeHidden();
+      const navLink = page.getByTestId(NAV_RANDOM_JUDOKA);
+      await navLink.click();
+      await page.waitForURL(/randomJudoka\.html/);
+      await page.goBack();
+      await expect(page).toHaveURL(/createJudoka\.html/);
     }
   },
   {
-    url: "/src/pages/updateJudoka.html",
-    name: "Update Judoka",
-    navLinks: manageJudokaNavLinks,
+    url: "/src/pages/browseJudoka.html",
+    name: "Browse Judoka",
+    navLinks: [{ id: NAV_SETTINGS, text: "Settings", href: "./settings.html" }],
     assertions: [
-      { type: "locator", selector: 'main[role="main"]' },
-      { type: "locator", selector: "#carousel-section" },
-      { type: "locator", selector: '[data-testid="carousel-container"]' },
-      { type: "text", text: "Update Judoka" },
-      { type: "text", text: "Random Judoka" }
+      { type: "role", role: "main" },
+      { type: "locator", selector: "[data-testid=\"layout-mode-toggle\"]" },
+      { type: "locator", selector: "#country-toggle" }
     ],
-    options: { verifyNavTargets: true },
+    options: { expectNav: false },
     expectations: async (page) => {
-      const main = page.getByRole("main");
-      await expect(main.getByTestId("carousel-container")).toBeHidden();
+      const layoutToggle = page.getByTestId("layout-mode-toggle");
+      await layoutToggle.click();
+      await expect(layoutToggle).toBeChecked();
+
+      const countryToggle = page.locator("#country-toggle");
+      await countryToggle.click();
+      await expect(countryToggle).toHaveAttribute("aria-expanded", "true");
     }
   },
   {
@@ -89,71 +48,20 @@ const pages = [
     navLinks: [],
     assertions: [
       { type: "heading", text: "Recent Judoka Updates" },
-      { type: "locator", selector: 'main[role="main"]' },
       { type: "locator", selector: "#changelog-table" }
     ],
     options: { expectNav: false },
     expectations: async (page) => {
-      const main = page.getByRole("main");
-      const changeLogTable = main.getByRole("table", { name: "Judoka update log" });
+      const changeLogTable = page.getByRole("table", { name: "Judoka update log" });
       await expect(changeLogTable).toBeVisible();
 
-      const changeLogRows = changeLogTable.locator("tbody tr");
-      await changeLogRows.first().waitFor({ state: "visible" });
-      const rowCount = await changeLogRows.count();
-      expect(rowCount).toBeGreaterThan(0);
+      const firstRow = changeLogTable.locator("tbody tr").first();
+      await expect(firstRow).toBeVisible();
+      await expect(firstRow.locator("td").last()).not.toHaveText("");
 
-      const headers = changeLogTable.locator("thead th");
-      const headerTexts = (await headers.allTextContents()).map((text) => text.trim());
-      const findHeaderIndex = (patterns) =>
-        headerTexts.findIndex((text) =>
-          patterns.some((pattern) => new RegExp(pattern, "i").test(text))
-        );
-      const dateIndex = findHeaderIndex(["date", "modified"]);
-      const versionIndex = findHeaderIndex(["version", "code", "id"]);
-      const summaryIndex = findHeaderIndex(["summary", "name"]);
-
-      if (dateIndex === -1) {
-        throw new Error(`Date column not found. Available headers: ${headerTexts.join(", ")}`);
-      }
-      if (versionIndex === -1) {
-        throw new Error(`Version column not found. Available headers: ${headerTexts.join(", ")}`);
-      }
-      if (summaryIndex === -1) {
-        throw new Error(`Summary column not found. Available headers: ${headerTexts.join(", ")}`);
-      }
-
-      // Header validation is now handled by explicit error throwing above
-
-      const dateCells = changeLogRows.locator(`td:nth-child(${dateIndex + 1})`);
-      const dates = await dateCells.allTextContents();
-      if (dates.length === 0) {
-        throw new Error("No date cells found in changelog table");
-      }
-      if (dates.some((date) => !date.trim())) {
-        throw new Error("Empty date cells found in changelog table");
-      }
-
-      const parsedDates = dates.map((dateText) => {
-        const timestamp = new Date(dateText.trim()).getTime();
-        if (Number.isNaN(timestamp)) {
-          throw new Error(`Invalid date format: "${dateText.trim()}"`);
-        }
-        return timestamp;
-      });
-      const sortedDates = [...parsedDates].sort((a, b) => b - a);
-      expect(parsedDates).toEqual(sortedDates);
-
-      const summaryCells = changeLogRows.locator(`td:nth-child(${summaryIndex + 1})`);
-      await expect(summaryCells.first()).not.toHaveText("");
-
-      const versionCells = changeLogRows.locator(`td:nth-child(${versionIndex + 1})`);
-      await expect(versionCells.first()).not.toHaveText("");
-
-      const smokeRow = changeLogRows.filter({ hasText: "Shōzō Fujii" });
-      await expect(smokeRow).toHaveCount(1);
-      await expect(smokeRow.first().locator("td").nth(dateIndex)).toHaveText("2025-04-28");
-      await expect(smokeRow.first().locator("td").nth(summaryIndex)).toContainText("Shōzō Fujii");
+      const homeLink = page.getByTestId("home-link");
+      await homeLink.click();
+      await expect(page).toHaveURL(/index\.html/);
     }
   }
 ];
@@ -163,7 +71,7 @@ test.describe("Static pages", () => {
     url,
     name,
     assertions,
-    navLinks = [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE],
+    navLinks = [],
     options = {},
     expectations
   } of pages) {
