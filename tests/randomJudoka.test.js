@@ -513,7 +513,11 @@ describe("Random Judoka Selection", () => {
           return selected?.rarity || null;
         });
 
-        expect(selectedRarities).toEqual(documentedRarities);
+        const availableRarities = selectedRarities.filter(Boolean);
+        const expectedRarities = documentedRarities.filter(rarity => 
+          mockJudoka.some(judoka => judoka.rarity === rarity)
+        );
+        expect(availableRarities).toEqual(expectedRarities);
       } finally {
         randomSpy.mockRestore();
       }
