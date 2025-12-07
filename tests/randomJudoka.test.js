@@ -502,10 +502,32 @@ describe("Random Judoka Selection", () => {
       expect(result.filters.rarity.values).toContain("Legendary");
     });
 
-    it("should have examples array", () => {
+    it("should document examples that mirror real selection payloads", () => {
+      const deterministicRandom = vi.spyOn(Math, "random").mockReturnValue(0.42);
+      const exampleFilters = { country: "Japan", weightClass: "+100" };
+
+      const generatedExample = getRandomJudokaWithMetadata(mockJudoka, exampleFilters);
+
+      deterministicRandom.mockRestore();
+
       const result = getRandomSelectionDocumentation();
-      expect(Array.isArray(result.examples)).toBe(true);
-      expect(result.examples.length).toBeGreaterThan(0);
+      const documentedExample = result.examples.find(
+        (example) => example.description === "Select random heavyweight from Japan"
+      );
+
+      expect(documentedExample).toBeDefined();
+      expect(documentedExample.input).toEqual({ filters: exampleFilters });
+      expect(documentedExample.response).toEqual(generatedExample);
+      expect(documentedExample.response).toMatchObject({
+        filters: exampleFilters,
+        totalCount: mockJudoka.length,
+        matchCount: 1,
+        judoka: expect.objectContaining({
+          country: "Japan",
+          rarity: "Legendary",
+          weightClass: "+100"
+        })
+      });
     });
 
     it("should have response format documented", () => {
