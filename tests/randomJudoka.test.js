@@ -502,11 +502,9 @@ describe("Random Judoka Selection", () => {
       const availableCountries = getAvailableFilterOptions(mockJudoka).countries;
       const documentedValues = documentedCountry.values;
 
-      if (documentedValues) {
-        expect(documentedValues.sort()).toEqual(availableCountries.sort());
-      } else {
-        expect(documentedValues).toBeUndefined();
-      }
+// Always verify that available countries match what the system can actually provide
+expect(documentedValues).toBeDefined();
+expect(documentedValues.sort()).toEqual(availableCountries.sort());
     });
 
     it("should align documented rarity values with validation and selection", () => {
