@@ -99,9 +99,7 @@ describe("Integration Test Example: Battle Flow", () => {
       .mockResolvedValueOnce({ round: 1, score: 5 });
 
     // Import multiple real internal modules - they work together naturally
-    const { markBattlePartReady, battleReadyPromise } = await import(
-      "../../src/helpers/battleInit.js"
-    );
+    const { markBattlePartReady } = await import("../../src/helpers/battleInit.js");
 
     // Simulate page initialization flow with real module
     markBattlePartReady("home");
@@ -151,9 +149,7 @@ describe("Integration Test Example: Battle Flow", () => {
   it("demonstrates real module integration without breaking on refactor", async () => {
     // This test shows the benefit: it doesn't care HOW markBattlePartReady works internally
     // Only that it fulfills its contract: tracking parts and signaling readiness
-    mockFetch.mockResolvedValue(testScenarios.opponentB);
-
-    const { markBattlePartReady, battleReadyPromise } = await import(
+    const { markBattlePartReady, battleReadyPromise: _battleReadyPromise } = await import(
       "../../src/helpers/battleInit.js"
     );
 
@@ -162,7 +158,7 @@ describe("Integration Test Example: Battle Flow", () => {
     markBattlePartReady("state");
 
     // Assert on observable behavior, not implementation details
-    expect(battleReadyPromise).toBeDefined();
+    expect(_battleReadyPromise).toBeDefined();
   });
 });
 
