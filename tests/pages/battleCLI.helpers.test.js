@@ -58,13 +58,14 @@ function createEngineStub({ pointsToWin = 10, scores } = {}) {
 }
 
 function configureEngineFacadeMock(engineStub) {
-  mockSetPointsToWin.mockImplementation(engineStub.setPointsToWin);
-  mockGetPointsToWin.mockImplementation(engineStub.getPointsToWin);
-  mockGetScores.mockImplementation(engineStub.getScores);
-  mockStopTimer.mockImplementation(engineStub.stopTimer);
-  mockOn.mockImplementation(engineStub.on);
-  mockEmit.mockImplementation(engineStub.emit);
-  mockGetEngine.mockImplementation(engineStub.getEngine);
+  // Delegate to engineStub - works for both vi.fn and plain functions
+  mockSetPointsToWin.mockImplementation(engineStub.setPointsToWin ? (value) => engineStub.setPointsToWin(value) : () => undefined);
+  mockGetPointsToWin.mockImplementation(engineStub.getPointsToWin ? () => engineStub.getPointsToWin() : () => 10);
+  mockGetScores.mockImplementation(engineStub.getScores ? () => engineStub.getScores() : () => ({ playerScore: 0, opponentScore: 0 }));
+  mockStopTimer.mockImplementation(engineStub.stopTimer ? () => engineStub.stopTimer() : () => undefined);
+  mockOn.mockImplementation(engineStub.on ? (eventName, handler) => engineStub.on(eventName, handler) : () => undefined);
+  mockEmit.mockImplementation(engineStub.emit ? (eventName, detail) => engineStub.emit(eventName, detail) : () => undefined);
+  mockGetEngine.mockImplementation(engineStub.getEngine ? () => engineStub.getEngine() : () => null);
 }
 
 describe("Battle CLI helpers", () => {
@@ -241,7 +242,7 @@ describe("Battle CLI helpers", () => {
   describe("resetMatch", () => {
     it("resets visible state synchronously", async () => {
       const engineStub = createEngineStub({ pointsToWin: 9 });
-      mockEngineFacade(engineStub);
+      configureEngineFacadeMock(engineStub);
 
       const mod = await loadBattleCLI({ mockBattleEngine: false });
       await mod.init();
