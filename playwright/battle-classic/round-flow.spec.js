@@ -182,6 +182,12 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
         await waitForBattleState(page, "waitingForPlayerAction", { allowFallback: false });
 
+        // Verify the state actually transitioned from cooldown
+        const currentState = await page.evaluate(() => 
+          window.__TEST_API?.state?.getBattleState?.() ?? null
+        );
+        expect(currentState).toBe("waitingForPlayerAction");
+
         await expect(roundCounter).toContainText(
           new RegExp(`Round\\s*${expectedRound}`, "i")
         );
