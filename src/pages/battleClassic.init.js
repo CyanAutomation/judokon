@@ -1605,6 +1605,7 @@ function setBadgeText(text) {
 // =============================================================================
 
 async function initializeMatchStart(store) {
+  console.log("battleClassic: initializeMatchStart");
   try {
     await initRoundSelectModal(async () => {
       try {
@@ -1659,6 +1660,7 @@ async function initializeMatchStart(store) {
 // =============================================================================
 
 async function initializePhase1_Utilities() {
+  console.log("battleClassic: initializePhase1_Utilities");
   removeBackdrops();
   setupScheduler();
 
@@ -1675,6 +1677,7 @@ async function initializePhase1_Utilities() {
 }
 
 async function initializePhase2_UI() {
+  console.log("battleClassic: initializePhase2_UI");
   initBattleStateBadge();
   initBattleStateBadge({ force: false });
 
@@ -1692,6 +1695,7 @@ async function initializePhase2_UI() {
 }
 
 async function initializePhase3_Engine(store) {
+  console.log("battleClassic: initializePhase3_Engine");
   createBattleEngine(window.__ENGINE_CONFIG || {});
   bridgeEngineEvents();
 
@@ -1699,6 +1703,7 @@ async function initializePhase3_Engine(store) {
 }
 
 async function initializePhase4_EventHandlers(store) {
+  console.log("battleClassic: initializePhase4_EventHandlers");
   wireCardEventHandlers(store);
   wireCooldownEvents(store);
   bindUIHelperEventHandlersDynamic();
@@ -1729,6 +1734,7 @@ async function initializePhase4_EventHandlers(store) {
  * 9. Catch any errors during the bootstrap process and display a fatal initialization error to the user.
  */
 export async function init() {
+  console.log("battleClassic: init()");
   try {
     await initializePhase1_Utilities();
     await initializePhase2_UI();

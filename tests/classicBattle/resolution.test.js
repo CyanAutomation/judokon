@@ -193,10 +193,6 @@ test("score updates after auto-select on expiry", async () => {
   const playerStats = { power: 10, speed: 55, technique: 10, kumikata: 10, newaza: 10 };
   const opponentStats = { power: 8, speed: 30, technique: 8, kumikata: 8, newaza: 8 };
 
-  // Setup mocks for this test
-  const { computeRoundResult } = await import("../../src/helpers/classicBattle/roundResolver.js");
-  const { startRound } = await import("../../src/helpers/classicBattle/roundManager.js");
-
   const store = {
     selectionMade: false,
     stallTimeoutMs: 35000,
@@ -208,6 +204,15 @@ test("score updates after auto-select on expiry", async () => {
     currentPlayerJudoka: null,
     currentOpponentJudoka: null
   };
+
+  const harness = createClassicBattleHarness({});
+  await harness.setup();
+
+  const { computeRoundResult } = await import("../../src/helpers/classicBattle/roundResolver.js");
+  const { startRound } = await import("../../src/helpers/classicBattle/roundManager.js");
+  const { initRoundSelectModal } = await import(
+    "../../src/helpers/classicBattle/roundSelectModal.js"
+  );
 
   roundManagerState.store = store;
 
@@ -227,11 +232,19 @@ test("score updates after auto-select on expiry", async () => {
     });
   });
 
-  const harness = createClassicBattleHarness({});
-  await harness.setup();
-
+  const consoleErrorSpy = vi
+    .spyOn(console, "error")
+    .mockImplementation(() => {});
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
+  if (consoleErrorSpy.mock.calls.length > 0) {
+    process.stderr.write(
+      `console.error calls: ${JSON.stringify(consoleErrorSpy.mock.calls)}\n`
+    );
+  }
+  consoleErrorSpy.mockRestore();
+  expect(initRoundSelectModal).toHaveBeenCalled();
+  expect(startRound).toHaveBeenCalled();
   await harness.timerControl.runAllTimersAsync();
   await Promise.resolve();
 
@@ -249,9 +262,6 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
   const playerStats = { power: 5, speed: 70, technique: 5, kumikata: 5, newaza: 5 };
   const opponentStats = { power: 4, speed: 12, technique: 4, kumikata: 4, newaza: 4 };
 
-  const { computeRoundResult } = await import("../../src/helpers/classicBattle/roundResolver.js");
-  const roundManagerMod = await import("../../src/helpers/classicBattle/roundManager.js");
-
   const store = {
     selectionMade: false,
     stallTimeoutMs: 35000,
@@ -263,6 +273,12 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
     currentPlayerJudoka: null,
     currentOpponentJudoka: null
   };
+
+  const harness = createClassicBattleHarness({});
+  await harness.setup();
+
+  const { computeRoundResult } = await import("../../src/helpers/classicBattle/roundResolver.js");
+  const roundManagerMod = await import("../../src/helpers/classicBattle/roundManager.js");
 
   roundManagerMod.__setStore(store);
 
@@ -281,9 +297,6 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
       }
     });
   });
-
-  const harness = createClassicBattleHarness({});
-  await harness.setup();
 
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
