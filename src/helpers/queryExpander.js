@@ -198,20 +198,28 @@ export async function expandQuery(query) {
   const words = new Set(normalized.split(/\s+/).filter(Boolean));
 
   // Find matching synonyms
-  const addedTerms = findSynonymMatches(normalized, synonymMap);
+  const synonymMatches = findSynonymMatches(normalized, synonymMap);
+
+  // Split multi-word synonyms into individual terms to prevent duplication in expanded query.
+  // E.g., "grip fighting" becomes ["grip", "fighting"] so each word is treated atomically
+  // during deduplication, avoiding double-weighting in embeddings and keyword search.
+  const addedTermsArray = Array.from(synonymMatches).flatMap((term) =>
+    term.split(/\s+/).filter(Boolean)
+  );
+  const addedTermsSet = new Set(addedTermsArray);
 
   // Build expanded query by combining original words with new terms.
   // Deduplication rule: each normalized term should appear exactly once so
   // embeddings and keyword search do not overweight repeated tokens.
-  const dedupedTerms = Array.from(new Set([...words, ...addedTerms]));
+  const dedupedTerms = Array.from(new Set([...words, ...addedTermsSet]));
   const expanded = dedupedTerms.join(" ");
 
   return {
     original: query,
     expanded: expanded.trim(),
-    addedTerms: Array.from(addedTerms),
-    synonymsUsed: addedTerms.size,
-    hasExpansion: addedTerms.size > 0
+    addedTerms: addedTermsArray,
+    synonymsUsed: addedTermsSet.size,
+    hasExpansion: addedTermsSet.size > 0
   };
 }
 
