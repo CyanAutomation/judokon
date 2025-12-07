@@ -110,7 +110,7 @@ const RANDOM_DOCUMENTATION_BASE = /** @type {RandomSelectionDocumentation} */ ({
           weightClass: "+100"
         },
         filters: { country: "Japan", weightClass: "+100" },
-        totalCount: 5,
+        totalCount: 10,
         matchCount: 1
       }
     }

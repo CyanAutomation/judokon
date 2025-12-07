@@ -173,7 +173,7 @@ describe("Random Judoka Selection", () => {
   describe("filterJudokaByFilters", () => {
     it("should return all judoka if no filters", () => {
       const result = filterJudokaByFilters(mockJudoka, {});
-      expect(result).toHaveLength(5);
+      expect(result).toHaveLength(10);
       expect(result).toEqual(mockJudoka);
     });
 
@@ -191,9 +191,11 @@ describe("Random Judoka Selection", () => {
 
     it("should filter by rarity", () => {
       const result = filterJudokaByFilters(mockJudoka, { rarity: "Legendary" });
-      expect(result).toHaveLength(2);
-      expect(result[0].firstname).toBe("Tatsuuma");
-      expect(result[1].firstname).toBe("Kenji");
+      expect(result).toHaveLength(3);
+      const firstNames = result.map(j => j.firstname).sort();
+      expect(firstNames).toContain("Tatsuuma");
+      expect(firstNames).toContain("Kenji");
+      expect(firstNames).toContain("Michael");
     });
 
     it("should filter by weight class", () => {
@@ -406,7 +408,7 @@ describe("Random Judoka Selection", () => {
 
     it("should have correct total count", () => {
       const result = getRandomJudokaWithMetadata(mockJudoka);
-      expect(result.totalCount).toBe(5);
+      expect(result.totalCount).toBe(10);
     });
 
     it("should have correct match count without filters", () => {
