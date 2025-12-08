@@ -174,7 +174,9 @@ describe("Battle Classic Page Integration", () => {
     document = window.document;
 
     global.window = window;
-    global.document = document;
+    global.document = window.document;
+    globalThis.document = window.document;
+    globalThis.window = window;
     global.navigator = window.navigator;
     global.localStorage = {
       getItem: vi.fn(() => null),
@@ -188,7 +190,7 @@ describe("Battle Classic Page Integration", () => {
       const fs = require("fs");
       const path = require("path");
       const urlStr = typeof url === "string" ? url : url.toString();
-      
+
       // Extract relative path from URL (e.g., /src/data/judoka.json)
       const match = urlStr.match(/\/src\/data\/[\w-]+\.json$/);
       if (match) {
@@ -200,7 +202,7 @@ describe("Battle Classic Page Integration", () => {
           text: async () => content
         };
       }
-      
+
       // Default: return empty array/object for unknown URLs
       return {
         ok: true,
@@ -208,6 +210,9 @@ describe("Battle Classic Page Integration", () => {
         text: async () => "[]"
       };
     });
+
+    // Also set fetch on the window object
+    window.fetch = global.fetch;
 
     // Mock feature flags to ensure a consistent test environment
     window.__FF_OVERRIDES = {
