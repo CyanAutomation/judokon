@@ -183,6 +183,32 @@ describe("Battle Classic Page Integration", () => {
       clear: vi.fn()
     };
 
+    // Mock fetch to load JSON data files from disk
+    global.fetch = vi.fn(async (url) => {
+      const fs = require("fs");
+      const path = require("path");
+      const urlStr = typeof url === "string" ? url : url.toString();
+      
+      // Extract relative path from URL (e.g., /src/data/judoka.json)
+      const match = urlStr.match(/\/src\/data\/[\w-]+\.json$/);
+      if (match) {
+        const filePath = path.join(process.cwd(), match[0]);
+        const content = fs.readFileSync(filePath, "utf-8");
+        return {
+          ok: true,
+          json: async () => JSON.parse(content),
+          text: async () => content
+        };
+      }
+      
+      // Default: return empty array/object for unknown URLs
+      return {
+        ok: true,
+        json: async () => [],
+        text: async () => "[]"
+      };
+    });
+
     // Mock feature flags to ensure a consistent test environment
     window.__FF_OVERRIDES = {
       battleStateBadge: true,
