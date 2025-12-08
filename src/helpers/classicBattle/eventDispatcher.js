@@ -271,12 +271,15 @@ export async function dispatchBattleEvent(eventName, payload) {
     // (for example when the round selection modal runs before the
     // orchestrator initializes). Return `false` to signal the skipped
     // dispatch without emitting console noise in production.
+    console.log("[dispatchBattleEvent] No machine available for event:", eventName);
     safeExposeDebugState("dispatchBattleEventNoMachine", eventName);
     return false;
   }
 
+  console.log("[dispatchBattleEvent] Machine available, dispatching:", eventName);
   const { shouldSkip, key: dispatchKey, timestamp } = registerDispatch(eventName, machine);
   if (shouldSkip) {
+    console.log("[dispatchBattleEvent] Dispatch skipped (dedupe):", eventName);
     safeExposeDebugState("dispatchBattleEventSkipped", { event: eventName, key: dispatchKey });
     writeDedupeLog(`[dedupe] short-circuit ${eventName} ${dispatchKey}
 `);
@@ -298,7 +301,9 @@ export async function dispatchBattleEvent(eventName, payload) {
       }
     }
 
+    console.log("[dispatchBattleEvent] Calling machine.dispatch for:", eventName);
     const result = await machine.dispatch(eventName, payload);
+    console.log("[dispatchBattleEvent] machine.dispatch returned:", result);
     safeExposeDebugState("dispatchBattleEventResult", result);
     safeExposeDebugState("dispatchMachineStateAfter", getMachineState(machine));
 
