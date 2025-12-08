@@ -49,6 +49,7 @@ function persistRoundAndLog(value) {
 }
 
 async function startRound(value, onStart, emitEvents) {
+  console.log("[roundSelectModal] startRound called with value:", value);
   setPointsToWin(value);
   try {
     document.body.dataset.target = String(value);
@@ -62,14 +63,19 @@ async function startRound(value, onStart, emitEvents) {
   } catch {}
   try {
     if (typeof onStart === "function") {
+      console.log("[roundSelectModal] calling onStart callback");
       await onStart();
+      console.log("[roundSelectModal] onStart callback returned");
     }
     if (emitEvents) {
+      console.log("[roundSelectModal] emitting battleStateChange DOM event");
       emitBattleEvent("startClicked");
     }
     // Always dispatch to state machine, regardless of emitEvents flag
     // emitEvents controls DOM event emission but not state machine transitions
+    console.log("[roundSelectModal] dispatching startClicked to state machine");
     const dispatched = await dispatchBattleEvent("startClicked");
+    console.log("[roundSelectModal] dispatchBattleEvent returned:", dispatched);
     if (!dispatched) {
       console.warn("Modal: dispatchBattleEvent failed for startClicked");
     }
