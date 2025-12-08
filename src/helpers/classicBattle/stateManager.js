@@ -158,6 +158,7 @@ function validateStateTransition(fromState, toState, eventName, statesByName) {
  */
 async function runOnEnter(stateName, machine, payload, onEnterMap) {
   const fn = onEnterMap[stateName];
+  console.log("[runOnEnter] Running onEnter for state:", stateName, "has handler:", typeof fn);
 
   if (typeof fn === "function") {
     debugLog(`stateManager: Executing onEnter handler for '${stateName}'`, {
@@ -165,7 +166,9 @@ async function runOnEnter(stateName, machine, payload, onEnterMap) {
       hasPayload: !!payload
     });
     try {
+      console.log("[runOnEnter] Executing handler for:", stateName);
       await fn(machine, payload);
+      console.log("[runOnEnter] Handler completed for:", stateName);
       debugLog(`stateManager: onEnter handler completed for '${stateName}'`);
     } catch (err) {
       const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
