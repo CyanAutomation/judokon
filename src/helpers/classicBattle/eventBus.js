@@ -91,3 +91,17 @@ export function getBattleState() {
     return null;
   }
 }
+
+/**
+ * Reset the event bus to initial state (for testing purposes).
+ *
+ * @pseudocode
+ * 1. Reset dispatcher to default no-op function.
+ * 2. Reset stateGetter to default null-returning function.
+ *
+ * @returns {void}
+ */
+export function resetEventBus() {
+  dispatcher = async () => {};
+  stateGetter = () => null;
+}

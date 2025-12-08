@@ -14,7 +14,7 @@ import {
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
-import { setBattleStateGetter } from "./eventBus.js";
+import { setBattleStateGetter, resetEventBus } from "./eventBus.js";
 import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
@@ -743,6 +743,7 @@ export function resetOrchestratorForTest() {
   debugLogListener = null;
   visibilityHandler = null;
   timerEventHandlers = {};
+  resetEventBus();
   if (typeof window !== "undefined") {
     delete window.__ORCHESTRATOR_INITIAL_STATE;
     delete window.__INIT_ORCHESTRATOR_CALLED;
