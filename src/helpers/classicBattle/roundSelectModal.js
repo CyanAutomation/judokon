@@ -66,10 +66,12 @@ async function startRound(value, onStart, emitEvents) {
     }
     if (emitEvents) {
       emitBattleEvent("startClicked");
-      const dispatched = await dispatchBattleEvent("startClicked");
-      if (!dispatched) {
-        console.warn("Modal: dispatchBattleEvent failed for startClicked");
-      }
+    }
+    // Always dispatch to state machine, regardless of emitEvents flag
+    // emitEvents controls DOM event emission but not state machine transitions
+    const dispatched = await dispatchBattleEvent("startClicked");
+    if (!dispatched) {
+      console.warn("Modal: dispatchBattleEvent failed for startClicked");
     }
   } catch (err) {
     console.error("Failed to start battle:", err);
