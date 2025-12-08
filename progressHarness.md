@@ -3479,17 +3479,17 @@ Migrated 2 moderately complex test files (3-2 mocks each) using the established 
 
 ### Files Migrated
 
-| File | Tests | Mocks | Status |
-|------|-------|-------|--------|
-| `tests/helpers/classicBattle/opponentPromptWaiter.test.js` | 9 | 3 | ✅ PASS |
-| `tests/helpers/classicBattle/roundSelectModal.resize.test.js` | 2 | 2 | ✅ PASS |
-| **Session 9 Total** | **11** | **5** | **✅ ALL PASS** |
+| File                                                          | Tests  | Mocks | Status          |
+| ------------------------------------------------------------- | ------ | ----- | --------------- |
+| `tests/helpers/classicBattle/opponentPromptWaiter.test.js`    | 9      | 3     | ✅ PASS         |
+| `tests/helpers/classicBattle/roundSelectModal.resize.test.js` | 2      | 2     | ✅ PASS         |
+| **Session 9 Total**                                           | **11** | **5** | **✅ ALL PASS** |
 
 ### Comprehensive Test Results
 
 ```
 ✅ Test Files: 6 passed
-✅ Tests: 14 passing (11 new + 4 verified pre-migrated)  
+✅ Tests: 14 passing (11 new + 4 verified pre-migrated)
 ✅ Duration: 6.29s
 ✅ Zero regressions
 ✅ Success Rate: 100%
@@ -3505,21 +3505,22 @@ Migrated 2 moderately complex test files (3-2 mocks each) using the established 
 ### Remaining Work
 
 **32 files identified with vi.doMock( calls**:
+
 - Quick-wins (1-3 mocks): 8 files, ~15 tests
-- Medium (4-5 mocks): 6 files, ~25 tests  
+- Medium (4-5 mocks): 6 files, ~25 tests
 - Complex (6-8 mocks): 5 files, ~33 tests
 - Advanced (9-11 mocks): 5 files, ~45 tests
 - Expert Tier (12+ mocks): 4 files, ~100+ tests
 
 ### Cumulative Metrics (Sessions 1-9)
 
-| Metric | Total |
-|--------|-------|
-| Files Migrated | 10+ |
-| Tests Passing | 36+ |
-| Mocks Converted | 23+ |
-| Success Rate | 100% |
-| Regressions | 0 |
+| Metric          | Total |
+| --------------- | ----- |
+| Files Migrated  | 10+   |
+| Tests Passing   | 36+   |
+| Mocks Converted | 23+   |
+| Success Rate    | 100%  |
+| Regressions     | 0     |
 
 ### Ready for Continuation
 
@@ -3540,18 +3541,21 @@ Pattern proven efficient and scalable. Next session can rapidly migrate remainin
 **Status**: Reverted - Deferred Complex Pattern
 
 **What We Tried**:
+
 - Migrated 1 mock (battleEngineFacade.js) to vi.hoisted() + top-level vi.mock() pattern
 - Created `configureEngineFacadeMock(engineStub)` helper to replace vi.doMock() in function
 - Updated 4 test functions from mockEngineFacade() → configureEngineFacadeMock()
 - Discovered 3 test failures due to mock configuration not being properly applied through delegation chain
 
 **Root Cause Discovered**:
+
 - `loadBattleCLI()` test utility ALSO calls vi.doMock("battleEngineFacade.js") when `mockBattleEngine: true`
 - Tests in this file pass `mockBattleEngine: false`, relying on our top-level vi.mock()
 - Issue was in mock delegation: calling `.mockImplementation()` on a vi.fn and passing it another vi.fn() created improper chain
 - Solution attempted (wrapping in lambdas) was too verbose and still didn't work properly
 
 **Lesson Learned**: Files with complex dependencies on test utilities that also do vi.doMock() require either:
+
 1. Refactoring of test utilities (out of scope for current session)
 2. Leaving as-is with working vi.doMock() pattern
 3. Deep investigation into proper delegation strategies
@@ -3563,6 +3567,7 @@ Pattern proven efficient and scalable. Next session can rapidly migrate remainin
 **Analysis**: Scanned tests/ for remaining files with vi.doMock()
 
 **Findings**:
+
 - **31 files still contain vi.doMock()** calls (down from ~34 in Session 9)
 - **Many "quick-win" candidates already migrated**: tests/helpers/battleEngineTimer.test.js, tests/classicBattle/timer.test.js both already use top-level vi.mock()
 - **Categorized remaining files**:
@@ -3570,7 +3575,6 @@ Pattern proven efficient and scalable. Next session can rapidly migrate remainin
     - `tests/pages/battleCLI.helpers.test.js` (deferred)
     - `tests/pages/battleCLI.dualWrite.test.js`
     - `tests/helpers/classicBattle/orchestrator.init.test.js`
-  
   - **Tier B - In-Test vi.doMock() Patterns** (20+ files): vi.doMock() called inside test functions
     - `tests/queryRag/lexicalFallback.test.js`
     - `tests/queryRag/queryRag.test.js`
@@ -3583,7 +3587,6 @@ Pattern proven efficient and scalable. Next session can rapidly migrate remainin
     - `tests/helpers/setupCarouselToggle.test.js`
     - `tests/helpers/classicBattle/statSelection.failureFallback.test.js`
     - And 10+ more
-  
   - **Tier C - Already Migrated** (several files): Already use top-level vi.mock() patterns, grep matches are false positives from comments/strings
     - `tests/helpers/battleEngineTimer.test.js` ✅
     - `tests/classicBattle/timer.test.js` ✅
@@ -3594,6 +3597,7 @@ Pattern proven efficient and scalable. Next session can rapidly migrate remainin
 **Key Discovery**: The remaining 20+ files with vi.doMock() in test functions use a DIFFERENT pattern than Session 9's quick-wins.
 
 **Example Pattern** (tests/queryRag/lexicalFallback.test.js):
+
 ```javascript
 test("fallback to lexical when embedder unavailable", async () => {
   // vi.doMock called INSIDE the test function
@@ -3602,7 +3606,7 @@ test("fallback to lexical when embedder unavailable", async () => {
       throw new Error("model failed to load");
     })
   }));
-  
+
   // Then import and test
   const result = await query(...);
   expect(result).toBeDefined();
@@ -3610,12 +3614,14 @@ test("fallback to lexical when embedder unavailable", async () => {
 ```
 
 **Migration Strategy for This Tier**:
+
 - Cannot use simple top-level vi.mock() + configureEngineFacadeMock()
 - Requires per-test vi.hoisted() variables with reset mechanism
 - Each test would need to configure mocks independently
 - More verbose migration effort than quick-win tier
 
 **Example Correct Migration Approach**:
+
 ```javascript
 // Top-level vi.hoisted for shared mock references
 const { mockGetExtractor } = vi.hoisted(() => ({
@@ -3631,7 +3637,7 @@ test("fallback when embedder unavailable", async () => {
   mockGetExtractor.mockImplementation(async () => {
     throw new Error("model failed to load");
   });
-  
+
   const result = await query(...);
   expect(result).toBeDefined();
 });
@@ -3639,12 +3645,14 @@ test("fallback when embedder unavailable", async () => {
 
 ### Current Status Summary
 
-**Session 9 Verified**: 
+**Session 9 Verified**:
+
 - ✅ `opponentPromptWaiter.test.js` (9 tests) - PASSING
 - ✅ `roundSelectModal.resize.test.js` (1 test) - PASSING
 - **Total Session 9**: 10 tests, 100% pass rate, 0 regressions
 
 **Session 10 Findings**:
+
 - ❌ Attempted battleCLI.helpers.test.js migration → reverted due to complexity
 - ✅ Identified 31 files still with vi.doMock()
 - ✅ Discovered 20+ files have in-test vi.doMock() patterns requiring different migration strategy
@@ -3671,7 +3679,7 @@ test("fallback when embedder unavailable", async () => {
 
 2. **In-Test Pattern Tier** (Future Session 11+):
    - Requires strategy for per-test mock configuration
-   - Consider creating test helper like `setupTestMocks(mockConfig)` 
+   - Consider creating test helper like `setupTestMocks(mockConfig)`
    - Will require systematic approach due to 20+ files
 
 3. **Complex Helper Pattern Tier** (After Tier B):
@@ -3698,6 +3706,7 @@ test("fallback when embedder unavailable", async () => {
 **Comprehensive Test Run** (13 files, 52 tests):
 
 Files tested:
+
 - tests/helpers/timerService.autoSelectDisabled.test.js ✅
 - tests/helpers/timerService.autoSelect.test.js ✅
 - tests/helpers/vectorSearchPage/queryBuilding.test.js ✅
@@ -3715,6 +3724,7 @@ Files tested:
 **Results**: 13 Test Files PASSED | 52 Tests PASSED | Duration: 20.34s
 
 **Additional Tests Verified**:
+
 - tests/helpers/classicBattle/timerService.drift.test.js ✅ (3 tests)
 - tests/helpers/classicBattle/statSelection.failureFallback.test.js ✅ (3 tests)
 - tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js ✅ (3 tests)
@@ -3724,6 +3734,7 @@ Files tested:
 **Batch Results**: 5 Test Files PASSED | 15 Tests PASSED
 
 **Session 9 Verified**:
+
 - tests/helpers/classicBattle/opponentPromptWaiter.test.js (9 tests) ✅
 - tests/helpers/classicBattle/roundSelectModal.resize.test.js (1 test) ✅
 - tests/pages/battleCLI.helpers.test.js (7 tests) ✅
@@ -3732,21 +3743,22 @@ Files tested:
 
 ### Cumulative Results After Verification
 
-| Category | Count | Status |
-|----------|-------|--------|
-| Test Files with vi.doMock() Verified | 23+ | ✅ All Passing |
-| Total Tests Verified | 77+ | ✅ All Passing |
-| Files Fully Migrated (Session 9) | 2 | ✅ 10 tests |
-| Files Partially Migrated | 8+ | ✅ Mixed patterns, all passing |
-| Files Using vi.doMock() Only | 15+ | ✅ All working |
-| Overall Success Rate | 100% | ✅ Zero Regressions |
-| Regressions Detected | 0 | ✅ Clean |
+| Category                             | Count | Status                         |
+| ------------------------------------ | ----- | ------------------------------ |
+| Test Files with vi.doMock() Verified | 23+   | ✅ All Passing                 |
+| Total Tests Verified                 | 77+   | ✅ All Passing                 |
+| Files Fully Migrated (Session 9)     | 2     | ✅ 10 tests                    |
+| Files Partially Migrated             | 8+    | ✅ Mixed patterns, all passing |
+| Files Using vi.doMock() Only         | 15+   | ✅ All working                 |
+| Overall Success Rate                 | 100%  | ✅ Zero Regressions            |
+| Regressions Detected                 | 0     | ✅ Clean                       |
 
 ### Key Discovery: Vitest 3.x Compatibility
 
-**Major Finding**: Despite initial concerns about vi.doMock() patterns, **Vitest 3.x is fully compatible with the mixed patterns currently in use**. 
+**Major Finding**: Despite initial concerns about vi.doMock() patterns, **Vitest 3.x is fully compatible with the mixed patterns currently in use**.
 
 Evidence:
+
 1. Files using top-level vi.mock() + vi.hoisted() patterns: ✅ All passing
 2. Files using vi.doMock() in functions: ✅ All passing
 3. Files using mixed patterns: ✅ All passing (e.g., testApi.test.js)
@@ -3757,12 +3769,14 @@ Evidence:
 ### Migration Status Assessment
 
 **Current State** (After Verification):
+
 - 77+ tests verified passing across 23+ files with various mocking patterns
 - Zero regressions detected
 - Both Session 9 migrations (10 tests) still passing
 - No broken tests from attempts to migrate
 
 **Recommendation**: Given that all tested files are passing with the current mocking patterns:
+
 1. Session 9's 2 fully migrated files (10 tests) demonstrate that migration IS feasible
 2. Remaining files work fine as-is, with no urgency for migration
 3. Future refactoring should prioritize **code clarity over pattern standardization** rather than forcing all files to a single pattern
@@ -3784,4 +3798,3 @@ Session 10's comprehensive verification revealed that the Vitest test suite is i
 **Vitest 3.x Status**: ✅ **FULLY COMPATIBLE** with current test patterns  
 **Priority**: 🟢 **LOW** - No urgent refactoring needed  
 **Recommendation**: Focus on new tests following best practices rather than retrofitting existing working tests
-
