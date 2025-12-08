@@ -15,7 +15,6 @@
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 import { buildFeatureFlagSnapshot } from "./featureFlagSnapshot.js";
 import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
-import { getBattleState as getEventBusState } from "./classicBattle/eventBus.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
@@ -426,12 +425,6 @@ const stateApi = {
    * @returns {string|null} Current state name
    */
   getBattleState() {
-    // First, try the eventBus getter which is the source of truth
-    // (it's registered by the orchestrator and stays in sync with the machine)
-    const eventBusState = getEventBusState();
-    if (eventBusState) return eventBusState;
-
-    // Fallback to getting the machine directly
     const tryGetState = (getter) => {
       try {
         const state = getter();

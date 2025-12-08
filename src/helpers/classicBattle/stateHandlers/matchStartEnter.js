@@ -33,8 +33,12 @@ export async function matchStartEnter(machine) {
       timestamp: Date.now()
     });
 
-    await machine.dispatch("ready", { initial: true });
+    const dispatchResult = await machine.dispatch("ready", { initial: true });
+    if (!dispatchResult) {
+      debugLog("matchStartEnter: dispatch('ready') returned false");
+    }
   } catch (error) {
+    debugLog("matchStartEnter: error during dispatch", error);
     reportSentryError(error, {
       contexts: { location: "matchStartEnter" }
     });
