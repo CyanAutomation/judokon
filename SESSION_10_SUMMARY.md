@@ -71,7 +71,7 @@ test("fallback when embedder unavailable", async () => {
       throw new Error("model failed to load");
     })
   }));
-  
+
   const result = await query(...);
   expect(result).toBeDefined();
 });
@@ -100,7 +100,7 @@ test("fallback when embedder unavailable", async () => {
   mockGetExtractor.mockImplementation(async () => {
     throw new Error("model failed to load");
   });
-  
+
   const result = await query(...);
   expect(result).toBeDefined();
 });
@@ -116,14 +116,14 @@ test("fallback when embedder unavailable", async () => {
 
 ## Current Status
 
-| Category | Count | Status |
-|----------|-------|--------|
-| Files Migrated (Session 9) | 2 | ✅ Complete |
-| Tests Passing from Migrations | 10 | ✅ Verified |
-| Files with vi.doMock() Remaining | 31 | 📊 Analyzed |
-| Tier A (Complex Helpers) | 5+ | 🔴 Deferred |
-| Tier B (In-Test Patterns) | 20+ | 🟡 Requires New Strategy |
-| Tier C (Already Migrated) | Several | ✅ Complete |
+| Category                         | Count   | Status                   |
+| -------------------------------- | ------- | ------------------------ |
+| Files Migrated (Session 9)       | 2       | ✅ Complete              |
+| Tests Passing from Migrations    | 10      | ✅ Verified              |
+| Files with vi.doMock() Remaining | 31      | 📊 Analyzed              |
+| Tier A (Complex Helpers)         | 5+      | 🔴 Deferred              |
+| Tier B (In-Test Patterns)        | 20+     | 🟡 Requires New Strategy |
+| Tier C (Already Migrated)        | Several | ✅ Complete              |
 
 ## Roadmap for Future Work
 
