@@ -18,9 +18,9 @@
  * @returns {void}
  */
 export function pushHistory(baseNames, index) {
-  const url = new URL(window.location);
+  const url = new URL(window.location.href);
   url.searchParams.set("doc", baseNames[index]);
-  history.pushState({ index }, "", url.pathname + url.search);
+  history.pushState({ index }, "", url.href);
 }
 
 /**
@@ -44,9 +44,9 @@ export function pushHistory(baseNames, index) {
  * @returns {void}
  */
 export function replaceHistory(baseNames, index) {
-  const url = new URL(window.location);
+  const url = new URL(window.location.href);
   url.searchParams.set("doc", baseNames[index]);
-  history.replaceState({ index }, "", url.pathname + url.search);
+  history.replaceState({ index }, "", url.href);
 }
 
 /**
