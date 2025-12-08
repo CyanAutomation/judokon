@@ -374,7 +374,12 @@ describe("prdReaderPage", () => {
     prdReader.testApi.navigateNext();
     expect(history.state.index).toBe(1);
     expect(container.innerHTML).toContain("Second");
-    history.replaceState({ index: 0 }, "", "?doc=a");
+
+    // Use full URL for history operations to work correctly in test environment
+    const url = new URL(window.location.href);
+    url.searchParams.set("doc", "a");
+    history.replaceState({ index: 0 }, "", url.href);
+
     window.dispatchEvent(new PopStateEvent("popstate", { state: { index: 0 } }));
     expect(history.state.index).toBe(0);
     expect(container.innerHTML).toContain("First");
