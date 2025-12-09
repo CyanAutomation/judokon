@@ -445,9 +445,9 @@ describe("Random Judoka Selection", () => {
         filters,
         totalCount: mockJudoka.length
       });
+      expect(expectedCandidates.length).toBeGreaterThan(0); // Ensure test data validity
       expect(matchCount).toBe(expectedCandidates.length);
       expect(matchCount).toBeGreaterThan(0);
-      expect(matchCount).toBeLessThanOrEqual(mockJudoka.length);
 
       expect(expectedCandidates).toContainEqual(judoka);
       expect(judoka).toMatchObject({
