@@ -12,9 +12,9 @@ let cachedData;
 const loggedMissing = new Set();
 const loggedUnbalanced = new Set();
 let tooltipEl;
-const SHOW_DELAY_MS = 120;
-const HIDE_DELAY_MS = 80;
-const DISMISS_HINT = "Press Escape to close the tooltip";
+export const SHOW_DELAY_MS = 120;
+export const HIDE_DELAY_MS = 80;
+export const DISMISS_HINT = "Press Escape to close the tooltip";
 
 /**
  * Recursively flatten a tooltip object using dot notation.
@@ -308,14 +308,18 @@ export async function initTooltips(root = globalThis.document) {
   let showTimer = null;
   let hideTimer = null;
   let activeTarget = null;
+  let pendingHideTarget = null;
 
-  function clearTimers() {
   function clearTimers() {
     if (showTimer !== null) {
       clearTimeout(showTimer);
       showTimer = null;
     }
     if (hideTimer !== null) {
+      if (pendingHideTarget) {
+        restoreAriaDescription(pendingHideTarget);
+        pendingHideTarget = null;
+      }
       clearTimeout(hideTimer);
       hideTimer = null;
     }
@@ -382,13 +386,14 @@ export async function initTooltips(root = globalThis.document) {
         tip.dataset.dismissedBy = reason;
       }
       restoreAriaDescription(target);
-      restoreAriaDescription(target);
       if (activeTarget === target) {
         activeTarget = null;
       }
+      pendingHideTarget = null;
     };
 
     clearTimers();
+    pendingHideTarget = target;
     if (immediate) {
       performHide();
       return;
@@ -416,8 +421,6 @@ export async function initTooltips(root = globalThis.document) {
   });
   root?.addEventListener?.("keydown", handleKeydown);
   notifyReady();
-  return () => {
-    root?.removeEventListener?.("keydown", handleKeydown);
   return () => {
     clearTimers();
     root?.removeEventListener?.("keydown", handleKeydown);
