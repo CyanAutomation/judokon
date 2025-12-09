@@ -84,7 +84,7 @@ describe("initTooltips", () => {
     fetchJson.mockResolvedValue({});
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { initTooltips, SHOW_DELAY_MS, HIDE_DELAY_MS } = await import(
+    const { initTooltips } = await import(
       "../../src/helpers/tooltip.js"
     );
 
