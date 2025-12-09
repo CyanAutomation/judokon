@@ -310,13 +310,14 @@ export async function initTooltips(root = globalThis.document) {
   let activeTarget = null;
 
   function clearTimers() {
-    if (showTimer) {
+  function clearTimers() {
+    if (showTimer !== null) {
       clearTimeout(showTimer);
-      showTimer = undefined;
+      showTimer = null;
     }
-    if (hideTimer) {
+    if (hideTimer !== null) {
       clearTimeout(hideTimer);
-      hideTimer = undefined;
+      hideTimer = null;
     }
   }
 
