@@ -102,7 +102,7 @@ describe("battleCLI accessibility smoke tests", () => {
       expect(main).toBeTruthy();
 
       skip?.focus();
-      skip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+      skip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
       skip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
       skip?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", bubbles: true }));
 
