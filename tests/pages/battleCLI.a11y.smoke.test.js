@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 let battleCLI;
 
@@ -79,5 +80,47 @@ describe("battleCLI accessibility smoke tests", () => {
     );
     expect(focusables[0]?.classList.contains("skip-link")).toBe(true);
     expect(focusables[1]?.getAttribute("data-testid")).toBe("home-link");
+  });
+
+  describe("skip link interactions", () => {
+    afterEach(async () => {
+      await cleanupBattleCLI();
+      window.__TEST__ = true;
+    });
+
+    it("focuses the main region when activated via keyboard", async () => {
+      const cli = await loadBattleCLI();
+      await cli.init();
+
+      const focusables = Array.from(document.querySelectorAll("a[href], button, [tabindex]")).filter(
+        (el) => !el.hasAttribute("disabled") && el.tabIndex >= 0
+      );
+      const skip = focusables[0];
+      const main = document.getElementById("cli-main");
+
+      expect(skip?.classList.contains("skip-link")).toBe(true);
+      expect(main).toBeTruthy();
+
+      skip?.focus();
+      skip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      skip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      skip?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", bubbles: true }));
+
+      expect(document.activeElement).toBe(main);
+    });
+
+    it("preserves landmarks after CLI initialization and dynamic changes", async () => {
+      const cli = await loadBattleCLI();
+      await cli.init();
+
+      const root = document.getElementById("cli-root");
+      root?.insertAdjacentHTML("beforeend", '<div data-probe="true"></div>');
+
+      expect(document.querySelector("a.skip-link")).toBeTruthy();
+      expect(document.querySelector("header[role='banner']")).toBeTruthy();
+      const main = document.querySelector("main[role='main']");
+      expect(main).toBeTruthy();
+      expect(main?.id).toBe("cli-main");
+    });
   });
 });

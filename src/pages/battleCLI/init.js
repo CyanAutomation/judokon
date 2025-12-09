@@ -385,6 +385,43 @@ try {
 const statDisplayNames = {};
 let cachedStatDefs = null;
 
+function focusMainRegion() {
+  const main = byId("cli-main");
+  if (!main) return null;
+
+  if (!main.hasAttribute("tabindex")) {
+    main.setAttribute("tabindex", "-1");
+  }
+
+  try {
+    main.focus?.();
+  } catch {}
+
+  return main;
+}
+
+function bindSkipLinkFocusTarget() {
+  if (typeof document === "undefined") return;
+
+  const skipLink = document.querySelector("a.skip-link");
+  if (!skipLink || skipLink.dataset.boundSkipLink === "true") return;
+
+  const handleSkipLinkActivate = (event) => {
+    if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    const main = focusMainRegion();
+    if (main) {
+      event.preventDefault();
+    }
+  };
+
+  skipLink.dataset.boundSkipLink = "true";
+  skipLink.addEventListener("click", handleSkipLinkActivate);
+  skipLink.addEventListener("keydown", handleSkipLinkActivate);
+}
+
 /**
  * Ensure the CLI DOM scaffold exists for tests.
  *
@@ -442,6 +479,8 @@ export function ensureCliDomForTest({ reset = false } = {}) {
   if (countdown && !countdown.dataset.remainingTime) {
     countdown.dataset.remainingTime = "0";
   }
+
+  bindSkipLinkFocusTarget();
 
   return document.getElementById("cli-root");
 }
@@ -3294,6 +3333,7 @@ export async function init() {
   initSeed();
   store = createBattleStore();
   normalizeShortcutCopy();
+  bindSkipLinkFocusTarget();
   updateControlsHint();
   ensureVerboseScrollHandling();
   // Enable outcome confirmation pause for better UX
