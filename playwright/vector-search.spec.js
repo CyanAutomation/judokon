@@ -32,7 +32,7 @@ async function gotoVectorSearch(page, options) {
 async function runSearch(page, query = TEST_QUERY) {
   await page.getByRole("searchbox").fill(query);
   await page.getByRole("button", { name: /search/i }).click();
-  await page.evaluate(() => window.vectorSearchResultsPromise);
+  await page.evaluate(() => window.vectorSearchResultsPromise?.then?.() || Promise.resolve());
 }
 
 test.describe("Vector search page", () => {
