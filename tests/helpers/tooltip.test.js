@@ -30,7 +30,9 @@ describe("initTooltips", () => {
       stat: { test: "**Bold**\n_italic_" }
     });
 
-    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+    const { initTooltips } = await import(
+      "../../src/helpers/tooltip.js"
+    );
 
     const el = document.createElement("button");
     el.dataset.tooltipId = "stat.test";
@@ -54,7 +56,9 @@ describe("initTooltips", () => {
     fetchJson.mockResolvedValue({});
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+    const { initTooltips } = await import(
+      "../../src/helpers/tooltip.js"
+    );
 
     const el = document.createElement("div");
     el.dataset.tooltipId = "missing";
@@ -80,7 +84,9 @@ describe("initTooltips", () => {
     fetchJson.mockResolvedValue({});
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+    const { initTooltips } = await import(
+      "../../src/helpers/tooltip.js"
+    );
 
     const el = document.createElement("div");
     el.setAttribute("data-tooltip-id", "");
@@ -320,7 +326,9 @@ describe("initTooltips", () => {
   it("delays hover display and hides after the configured dismissal interval", async () => {
     fetchJson.mockResolvedValue({ ui: { countryFilter: "filter copy" } });
 
-    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+    const { initTooltips, SHOW_DELAY_MS, HIDE_DELAY_MS } = await import(
+      "../../src/helpers/tooltip.js"
+    );
 
     const el = document.createElement("button");
     el.dataset.tooltipId = "ui.countryFilter";
@@ -333,7 +341,7 @@ describe("initTooltips", () => {
     expect(tip.style.display).toBe("none");
 
     // Test that tooltip doesn't show before delay
-    vi.advanceTimersByTime(119); // SHOW_DELAY_MS - 1
+    vi.advanceTimersByTime(SHOW_DELAY_MS - 1);
     expect(tip.style.display).toBe("none");
 
     // Test that tooltip shows after delay
@@ -344,7 +352,7 @@ describe("initTooltips", () => {
     expect(tip.style.display).toBe("block");
 
     // Test that tooltip hides after hide delay
-    vi.advanceTimersByTime(80); // HIDE_DELAY_MS
+    vi.advanceTimersByTime(HIDE_DELAY_MS);
     expect(tip.style.display).toBe("none");
   });
 
