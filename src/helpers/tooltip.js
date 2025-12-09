@@ -305,9 +305,9 @@ export async function initTooltips(root = globalThis.document) {
   }
   const tooltipId = tip.id || "tooltip";
   const previousDescriptions = new WeakMap();
-  let showTimer;
-  let hideTimer;
-  let activeTarget;
+  let showTimer = null;
+  let hideTimer = null;
+  let activeTarget = null;
 
   function clearTimers() {
     if (showTimer) {
