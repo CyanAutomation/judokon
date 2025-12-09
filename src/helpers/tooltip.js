@@ -418,7 +418,9 @@ export async function initTooltips(root = globalThis.document) {
   notifyReady();
   return () => {
     root?.removeEventListener?.("keydown", handleKeydown);
+  return () => {
     clearTimers();
+    root?.removeEventListener?.("keydown", handleKeydown);
     elements.forEach((el) => {
       el.removeEventListener("mouseenter", show);
       el.removeEventListener("mouseover", show);
