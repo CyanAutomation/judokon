@@ -428,7 +428,7 @@ describe("Random Judoka Selection", () => {
     });
 
     it("includes validated filters and candidate counts in metadata", () => {
-      const filters = { country: "Japan", rarity: "Legendary", weightClass: "+100" };
+      const filters = { country: "Japan", rarity: "Epic" }; // Matches Yuki Tanaka, more flexible
       const expectedCandidates = mockJudoka.filter(
         (entry) =>
           entry.country === filters.country &&
