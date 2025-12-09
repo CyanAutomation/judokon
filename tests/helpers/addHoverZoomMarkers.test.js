@@ -97,7 +97,7 @@ describe("clearLegacyHoverZoomMarkers", () => {
     card.classList.add("hover-test");
     const styles = window.getComputedStyle(card);
     expect(document.activeElement).toBe(card);
-    expect(styles.getPropertyValue("transition")).toBe("none");
     expect(styles.getPropertyValue("transform")).toMatch(/scale/i);
+    expect(styles.getPropertyValue("transition")).toBe("none");
   });
 });
