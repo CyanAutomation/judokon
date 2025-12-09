@@ -2,10 +2,12 @@ import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from "vites
 import { readFileSync } from "node:fs";
 
 let battleCLI;
+let engineFacade;
 
 beforeAll(async () => {
   window.__TEST__ = true;
   ({ battleCLI } = await import("../../src/pages/index.js"));
+  engineFacade = await import("../../src/helpers/battleEngineFacade.js");
 });
 
 afterAll(() => {
@@ -25,6 +27,29 @@ describe("battleCLI accessibility smoke tests", () => {
     expect(roundMsg?.getAttribute("role")).toBe("status");
     expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
     expect(countdown?.getAttribute("role")).toBe("status");
+  });
+
+  it("announces selection countdown ticks via the live region", async () => {
+    vi.useFakeTimers();
+
+    try {
+      const countdown = document.getElementById("cli-countdown");
+      battleCLI.startSelectionCountdown(3);
+
+      expect(countdown?.textContent).toBe("Time remaining: 3");
+
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(countdown?.textContent).toBe("Time remaining: 2");
+
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(countdown?.textContent).toBe("Time remaining: 1");
+
+      await vi.runOnlyPendingTimersAsync();
+      vi.clearAllTimers();
+    } finally {
+      vi.useRealTimers();
+      battleCLI.setSelectionTimers?.(null, null);
+    }
   });
 
   it("includes static controls hint near footer", () => {
@@ -61,6 +86,30 @@ describe("battleCLI accessibility smoke tests", () => {
     );
   });
 
+  it("announces round results through the polite live region", () => {
+    const getScoresSpy = vi.spyOn(engineFacade, "getScores").mockReturnValue({
+      playerScore: 1,
+      opponentScore: 0
+    });
+
+    try {
+      battleCLI.handleRoundResolved({
+        detail: {
+          result: { message: "Victory!", playerScore: 1, opponentScore: 0 },
+          stat: "speed",
+          playerVal: 7,
+          opponentVal: 5
+        }
+      });
+
+      const roundMsg = document.getElementById("round-message");
+      expect(roundMsg?.textContent).toContain("Victory!");
+      expect(roundMsg?.textContent).toContain("You: 7 Opponent: 5");
+    } finally {
+      getScoresSpy.mockRestore();
+    }
+  });
+
   it("includes skip link and landmark roles", () => {
     const html = readFileSync("src/pages/battleCLI.html", "utf8");
     document.documentElement.innerHTML = html;
@@ -79,5 +128,39 @@ describe("battleCLI accessibility smoke tests", () => {
     );
     expect(focusables[0]?.classList.contains("skip-link")).toBe(true);
     expect(focusables[1]?.getAttribute("data-testid")).toBe("home-link");
+  });
+
+  it("wires snackbar hints through mutation observers for screen reader announcements", async () => {
+    vi.useFakeTimers();
+    const originalObserver = window.MutationObserver;
+    const observeSpy = vi.fn();
+    const disconnectSpy = vi.fn();
+    let observerCallback;
+    window.MutationObserver = vi.fn((callback) => {
+      observerCallback = callback;
+      return { observe: observeSpy, disconnect: disconnectSpy };
+    });
+
+    window.__FF_OVERRIDES = { statHotkeys: true };
+
+    try {
+      battleCLI.handleWaitingForPlayerActionKey("9");
+
+      const container = document.getElementById("snackbar-container");
+      const bar = container?.querySelector(".snackbar");
+      expect(bar?.textContent).toBe("Use 1-5, press H for help");
+      expect(observeSpy).toHaveBeenCalledWith(container, { childList: true });
+
+      bar?.remove();
+      observerCallback?.([{ removedNodes: [bar] }]);
+      expect(disconnectSpy).toHaveBeenCalled();
+
+      await vi.runOnlyPendingTimersAsync();
+      vi.clearAllTimers();
+    } finally {
+      vi.useRealTimers();
+      window.MutationObserver = originalObserver;
+      delete window.__FF_OVERRIDES;
+    }
   });
 });
