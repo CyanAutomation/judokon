@@ -332,16 +332,19 @@ describe("initTooltips", () => {
     el.dispatchEvent(new Event("mouseover"));
     expect(tip.style.display).toBe("none");
 
-    vi.advanceTimersByTime(119);
+    // Test that tooltip doesn't show before delay
+    vi.advanceTimersByTime(119); // SHOW_DELAY_MS - 1
     expect(tip.style.display).toBe("none");
 
+    // Test that tooltip shows after delay
     vi.advanceTimersByTime(1);
     expect(tip.style.display).toBe("block");
 
     el.dispatchEvent(new Event("mouseout"));
     expect(tip.style.display).toBe("block");
 
-    vi.advanceTimersByTime(80);
+    // Test that tooltip hides after hide delay
+    vi.advanceTimersByTime(80); // HIDE_DELAY_MS
     expect(tip.style.display).toBe("none");
   });
 
