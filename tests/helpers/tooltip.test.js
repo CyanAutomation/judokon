@@ -30,7 +30,7 @@ describe("initTooltips", () => {
       stat: { test: "**Bold**\n_italic_" }
     });
 
-    const { initTooltips, SHOW_DELAY_MS, HIDE_DELAY_MS } = await import(
+    const { initTooltips } = await import(
       "../../src/helpers/tooltip.js"
     );
 
