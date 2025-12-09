@@ -21,15 +21,21 @@ import { reportSentryError } from "./sentryReporter.js";
 export async function matchStartEnter(machine) {
   try {
     console.log("[matchStartEnter] ENTERING matchStartEnter handler");
-    
+
     if (!machine || typeof machine.dispatch !== "function") {
-      console.log("[matchStartEnter] Invalid machine context:", { hasMachine: !!machine, hasDispatch: machine?.dispatch ? "yes" : "no" });
+      console.log("[matchStartEnter] Invalid machine context:", {
+        hasMachine: !!machine,
+        hasDispatch: machine?.dispatch ? "yes" : "no"
+      });
       debugLog("matchStartEnter: invalid machine context");
       return;
     }
 
     const store = machine?.context?.store ?? {};
-    console.log("[matchStartEnter] Store context:", { winTarget: store.winTarget, firstPlayer: store.firstPlayer });
+    console.log("[matchStartEnter] Store context:", {
+      winTarget: store.winTarget,
+      firstPlayer: store.firstPlayer
+    });
 
     emitBattleEvent("matchStart", {
       winTarget: store.winTarget,
@@ -41,7 +47,7 @@ export async function matchStartEnter(machine) {
     console.log("[matchStartEnter] about to dispatch 'ready' event");
     const dispatchResult = await machine.dispatch("ready", { initial: true });
     console.log("[matchStartEnter] machine.dispatch('ready') returned:", dispatchResult);
-    
+
     if (!dispatchResult) {
       debugLog("matchStartEnter: dispatch('ready') returned false");
     }
