@@ -46,7 +46,10 @@ test.describe("Vector search page", () => {
     await expect(rows.nth(1)).toContainText("docB.md");
 
     const scores = await rows.evaluateAll((elements) =>
-      elements.map((el) => parseFloat(el.querySelector("td:last-child")?.textContent ?? "0"))
+      elements.map((el) => {
+        const scoreCell = el.querySelector("td[data-score], td:nth-child(4)");
+        return parseFloat(scoreCell?.textContent?.trim() ?? "0");
+      })
     );
     expect(scores[0]).toBeGreaterThanOrEqual(scores[1]);
     expect(scores[0]).toBeGreaterThan(0.7);
