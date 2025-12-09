@@ -1,7 +1,10 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import tooltips from "../../src/data/tooltips.json" assert { type: "json" };
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { uiTooltipManifest } from "../fixtures/uiTooltipManifest.js";
+
+const tooltips = JSON.parse(readFileSync(resolve("src/data/tooltips.json"), "utf8"));
 
 function get(obj, path) {
   return path.split(".").reduce((o, k) => (o ? o[k] : undefined), obj);
