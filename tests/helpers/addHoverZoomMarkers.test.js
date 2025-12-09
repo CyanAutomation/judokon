@@ -32,7 +32,13 @@ function renderCarouselCard(className = "card") {
   carousel.appendChild(card);
   document.body.appendChild(carousel);
 
-  cleanupTasks.push(() => testApi.cleanup());
+  cleanupTasks.push(() => {
+    try {
+      testApi.cleanup();
+    } catch (error) {
+      console.warn('Cleanup task failed:', error);
+    }
+  });
 
   return { card };
 }
