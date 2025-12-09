@@ -12,6 +12,9 @@ let cachedData;
 const loggedMissing = new Set();
 const loggedUnbalanced = new Set();
 let tooltipEl;
+const SHOW_DELAY_MS = 120;
+const HIDE_DELAY_MS = 80;
+const DISMISS_HINT = "Press Escape to close the tooltip";
 
 /**
  * Recursively flatten a tooltip object using dot notation.
@@ -302,6 +305,21 @@ export async function initTooltips(root = globalThis.document) {
   }
   const tooltipId = tip.id || "tooltip";
   const previousDescriptions = new WeakMap();
+  let showTimer = null;
+  let hideTimer = null;
+  let activeTarget = null;
+
+  function clearTimers() {
+  function clearTimers() {
+    if (showTimer !== null) {
+      clearTimeout(showTimer);
+      showTimer = null;
+    }
+    if (hideTimer !== null) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
+    }
+  }
 
   function linkAriaDescription(target) {
     if (!target?.setAttribute) return;
@@ -333,36 +351,86 @@ export async function initTooltips(root = globalThis.document) {
     const target = e.currentTarget || e.target;
     const id = target?.dataset?.tooltipId;
     const text = resolveTooltipText(id, data);
-    tip.innerHTML = sanitizeTooltip(text, id, DOMPurify);
-    tip.style.display = "block";
-    tip.setAttribute("aria-hidden", "false");
-    linkAriaDescription(target);
-    positionTooltip(tip, target);
+    const render = () => {
+      activeTarget = target;
+      tip.dataset.showDelayMs = String(SHOW_DELAY_MS);
+      tip.dataset.hideDelayMs = String(HIDE_DELAY_MS);
+      tip.dataset.dismissHint = DISMISS_HINT;
+      tip.removeAttribute("data-dismissed-by");
+      tip.innerHTML = sanitizeTooltip(text, id, DOMPurify);
+      tip.style.display = "block";
+      tip.setAttribute("aria-hidden", "false");
+      linkAriaDescription(target);
+      positionTooltip(tip, target);
+    };
+
+    clearTimers();
+    if (e?.type === "focus" || e?.type === "touchstart") {
+      render();
+      return;
+    }
+
+    showTimer = globalThis.setTimeout(render, SHOW_DELAY_MS);
   }
 
-  function hide(e) {
-    tip.style.display = "none";
-    tip.setAttribute("aria-hidden", "true");
-    restoreAriaDescription(e?.currentTarget || e?.target);
+  function hide(e, { immediate = false, reason } = {}) {
+    const target = e?.currentTarget || e?.target || activeTarget;
+    const performHide = () => {
+      tip.style.display = "none";
+      tip.setAttribute("aria-hidden", "true");
+      if (reason) {
+        tip.dataset.dismissedBy = reason;
+      }
+      restoreAriaDescription(target);
+      restoreAriaDescription(target);
+      if (activeTarget === target) {
+        activeTarget = null;
+      }
+    };
+
+    clearTimers();
+    if (immediate) {
+      performHide();
+      return;
+    }
+
+    hideTimer = globalThis.setTimeout(performHide, HIDE_DELAY_MS);
+  }
+
+  function handleKeydown(event) {
+    if (event?.key === "Escape" && tip.style.display === "block") {
+      hide({ currentTarget: activeTarget }, { immediate: true, reason: "escape" });
+    }
   }
 
   elements.forEach((el) => {
     el.addEventListener("mouseenter", show);
     el.addEventListener("mouseover", show);
     el.addEventListener("focus", show);
+    el.addEventListener("touchstart", show);
     el.addEventListener("mouseleave", hide);
     el.addEventListener("mouseout", hide);
     el.addEventListener("blur", hide);
+    el.addEventListener("touchend", hide);
+    el.addEventListener("touchcancel", hide);
   });
+  root?.addEventListener?.("keydown", handleKeydown);
   notifyReady();
   return () => {
+    root?.removeEventListener?.("keydown", handleKeydown);
+  return () => {
+    clearTimers();
+    root?.removeEventListener?.("keydown", handleKeydown);
     elements.forEach((el) => {
       el.removeEventListener("mouseenter", show);
       el.removeEventListener("mouseover", show);
       el.removeEventListener("focus", show);
+      el.removeEventListener("touchstart", show);
       el.removeEventListener("mouseleave", hide);
       el.removeEventListener("mouseout", hide);
       el.removeEventListener("blur", hide);
+      el.removeEventListener("touchend", hide);
+      el.removeEventListener("touchcancel", hide);
     });
   };
 }

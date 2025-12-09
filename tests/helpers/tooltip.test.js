@@ -39,12 +39,14 @@ describe("initTooltips", () => {
     await initTooltips();
 
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
 
     const tip = document.querySelector(".tooltip");
     expect(tip.innerHTML.replace(/\n/g, "")).toBe("<strong>Bold</strong><br><em>italic</em>");
     expect(tip.style.display).toBe("block");
 
     el.dispatchEvent(new Event("mouseout"));
+    vi.runAllTimers();
     expect(tip.style.display).toBe("none");
   });
 
@@ -63,9 +65,12 @@ describe("initTooltips", () => {
     const tip = document.querySelector(".tooltip");
 
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
     expect(tip.textContent).toBe("More info coming…");
     el.dispatchEvent(new Event("mouseout"));
+    vi.runAllTimers();
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
 
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
@@ -86,9 +91,12 @@ describe("initTooltips", () => {
     const tip = document.querySelector(".tooltip");
 
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
     expect(tip.textContent).toBe("More info coming…");
     el.dispatchEvent(new Event("mouseout"));
+    vi.runAllTimers();
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
 
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
@@ -109,6 +117,7 @@ describe("initTooltips", () => {
 
     const tip = document.querySelector(".tooltip");
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
 
     expect(tip.textContent).toBe("Theme description");
   });
@@ -129,6 +138,7 @@ describe("initTooltips", () => {
     el.getBoundingClientRect = () => ({ bottom: 0, left: 0, width: 0, height: 0 });
 
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
 
     expect(tip.style.top).toBe(`${window.innerHeight - 10}px`);
     expect(tip.style.left).toBe("0px");
@@ -161,6 +171,7 @@ describe("initTooltips", () => {
       });
 
       el.dispatchEvent(new Event("mouseover"));
+      vi.runAllTimers();
 
       expect(tip.style.left).toBe("60px");
     } finally {
@@ -198,6 +209,7 @@ describe("initTooltips", () => {
       });
 
       el.dispatchEvent(new Event("mouseover"));
+      vi.runAllTimers();
 
       expect(tip.style.left).toBe("0px");
     } finally {
@@ -208,35 +220,41 @@ describe("initTooltips", () => {
     }
   });
 
-  it("loads tooltip text for new UI elements", async () => {
+  it("shows the correct descriptions for filter controls", async () => {
     fetchJson.mockResolvedValue({
       ui: {
-        languageToggle: "toggle",
-        next: "advance or skip",
-        quitMatch: "quit",
-        drawCard: "draw"
+        countryFilter: "**Country filter**\nToggle the panel to pick flags and narrow the roster.",
+        clearFilter: "**Clear filter**\nShow all judoka."
       }
     });
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
-    const ids = ["ui.languageToggle", "ui.next", "ui.quitMatch", "ui.drawCard"];
-    const text = ["toggle", "advance or skip", "quit", "draw"];
-    const els = ids.map((id) => {
-      const el = document.createElement("button");
-      el.dataset.tooltipId = id;
-      document.body.appendChild(el);
-      return el;
-    });
+    const countryFilterToggle = document.createElement("button");
+    countryFilterToggle.dataset.tooltipId = "ui.countryFilter";
+    document.body.appendChild(countryFilterToggle);
+
+    const clearFilterButton = document.createElement("button");
+    clearFilterButton.dataset.tooltipId = "ui.clearFilter";
+    document.body.appendChild(clearFilterButton);
 
     await initTooltips();
 
     const tip = document.querySelector(".tooltip");
-    els.forEach((el, i) => {
-      el.dispatchEvent(new Event("mouseover"));
-      expect(tip.textContent).toBe(text[i]);
-      el.dispatchEvent(new Event("mouseout"));
-    });
+
+    countryFilterToggle.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
+    expect(tip.textContent).toContain("Country filter");
+    expect(tip.textContent).toContain("Toggle the panel to pick flags and narrow the roster.");
+    countryFilterToggle.dispatchEvent(new Event("mouseout"));
+    vi.runAllTimers();
+
+    clearFilterButton.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
+    expect(tip.textContent).toContain("Clear filter");
+    expect(tip.textContent).toContain("Show all judoka.");
+    clearFilterButton.dispatchEvent(new Event("mouseout"));
+    vi.runAllTimers();
   });
 
   it("applies overlay class when flag enabled", async () => {
@@ -286,13 +304,92 @@ describe("initTooltips", () => {
 
     const tip = document.querySelector(".tooltip");
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
     expect(tip.style.display).toBe("block");
     el.dispatchEvent(new Event("mouseout"));
+    vi.runAllTimers();
     expect(tip.style.display).toBe("none");
 
     cleanup();
 
     el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
+    expect(tip.style.display).toBe("none");
+  });
+
+  it("delays hover display and hides after the configured dismissal interval", async () => {
+    fetchJson.mockResolvedValue({ ui: { countryFilter: "filter copy" } });
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("button");
+    el.dataset.tooltipId = "ui.countryFilter";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    el.dispatchEvent(new Event("mouseover"));
+    expect(tip.style.display).toBe("none");
+
+    // Test that tooltip doesn't show before delay
+    vi.advanceTimersByTime(119); // SHOW_DELAY_MS - 1
+    expect(tip.style.display).toBe("none");
+
+    // Test that tooltip shows after delay
+    vi.advanceTimersByTime(1);
+    expect(tip.style.display).toBe("block");
+
+    el.dispatchEvent(new Event("mouseout"));
+    expect(tip.style.display).toBe("block");
+
+    // Test that tooltip hides after hide delay
+    vi.advanceTimersByTime(80); // HIDE_DELAY_MS
+    expect(tip.style.display).toBe("none");
+  });
+
+  it("supports touch interactions and restores aria descriptions after finger navigation", async () => {
+    fetchJson.mockResolvedValue({ ui: { countryFilter: "filter copy" } });
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("button");
+    el.dataset.tooltipId = "ui.countryFilter";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    el.dispatchEvent(new Event("touchstart", { bubbles: true }));
+    expect(tip.style.display).toBe("block");
+    expect(el.getAttribute("aria-describedby")).toContain(tip.id);
+
+    el.dispatchEvent(new Event("touchend", { bubbles: true }));
+    vi.runAllTimers();
+    expect(tip.style.display).toBe("none");
+    expect(el.hasAttribute("aria-describedby")).toBe(false);
+  });
+
+  it("dismisses tooltips with Escape and records the user-visible cue", async () => {
+    fetchJson.mockResolvedValue({ ui: { clearFilter: "clear copy" } });
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("button");
+    el.dataset.tooltipId = "ui.clearFilter";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    el.dispatchEvent(new Event("mouseover"));
+    vi.runAllTimers();
+
+    expect(tip.dataset.dismissHint).toContain("Escape");
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+
+    expect(tip.dataset.dismissedBy).toBe("escape");
     expect(tip.style.display).toBe("none");
   });
 });
