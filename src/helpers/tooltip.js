@@ -382,7 +382,10 @@ export async function initTooltips(root = globalThis.document) {
         tip.dataset.dismissedBy = reason;
       }
       restoreAriaDescription(target);
-      activeTarget = undefined;
+      restoreAriaDescription(target);
+      if (activeTarget === target) {
+        activeTarget = null;
+      }
     };
 
     clearTimers();
