@@ -398,41 +398,63 @@ describe("Random Judoka Selection", () => {
       expect(result).toBeNull();
     });
 
-    it("should return metadata object with judoka", () => {
+    it("describes payload schema when selection succeeds without filters", () => {
       const result = getRandomJudokaWithMetadata(mockJudoka);
-      expect(result).toHaveProperty("judoka");
-      expect(result).toHaveProperty("filters");
-      expect(result).toHaveProperty("totalCount");
-      expect(result).toHaveProperty("matchCount");
-    });
 
-    it("should have correct total count", () => {
-      const result = getRandomJudokaWithMetadata(mockJudoka);
-      expect(result.totalCount).toBe(10);
-    });
+      expect(result).not.toBeNull();
 
-    it("should have correct match count without filters", () => {
-      const result = getRandomJudokaWithMetadata(mockJudoka);
-      expect(result.matchCount).toBe(10);
-    });
+      const { judoka, filters, totalCount, matchCount } = result;
 
-    it("should have correct match count with filters", () => {
-      const result = getRandomJudokaWithMetadata(mockJudoka, {
-        country: "Japan"
+      expect(result).toMatchObject({
+        filters: {},
+        totalCount: mockJudoka.length
       });
-      expect(result.matchCount).toBe(2);
+      expect(matchCount).toBe(mockJudoka.length);
+      expect(matchCount).toBeGreaterThan(0);
+
+      expect(typeof totalCount).toBe("number");
+      expect(mockJudoka).toContainEqual(judoka);
+      expect(filters).toEqual({});
+      expect(judoka).toEqual(
+        expect.objectContaining({
+          id: expect.any(Number),
+          firstname: expect.any(String),
+          surname: expect.any(String),
+          country: expect.any(String),
+          rarity: expect.stringMatching(/^(Common|Epic|Legendary)$/),
+          weightClass: expect.any(String)
+        })
+      );
     });
 
-    it("should have selected judoka in results", () => {
-      const result = getRandomJudokaWithMetadata(mockJudoka);
-      expect(mockJudoka).toContain(result.judoka);
-    });
+    it("includes validated filters and candidate counts in metadata", () => {
+      const filters = { country: "Japan", rarity: "Legendary", weightClass: "+100" };
+      const expectedCandidates = mockJudoka.filter(
+        (entry) =>
+          entry.country === filters.country &&
+          entry.rarity === filters.rarity &&
+          entry.weightClass === filters.weightClass
+      );
+      const result = getRandomJudokaWithMetadata(mockJudoka, filters);
 
-    it("should include applied filters in metadata", () => {
-      const result = getRandomJudokaWithMetadata(mockJudoka, {
-        country: "France"
+      expect(result).not.toBeNull();
+
+      const { judoka, matchCount } = result;
+
+      expect(result).toMatchObject({
+        filters,
+        totalCount: mockJudoka.length
       });
-      expect(result.filters).toEqual({ country: "France" });
+      expect(matchCount).toBe(expectedCandidates.length);
+      expect(matchCount).toBeGreaterThan(0);
+      expect(matchCount).toBeLessThanOrEqual(mockJudoka.length);
+
+      expect(expectedCandidates).toContainEqual(judoka);
+      expect(judoka).toMatchObject({
+        country: filters.country,
+        rarity: filters.rarity,
+        weightClass: filters.weightClass
+      });
     });
 
     it("should return null if no matches found", () => {
