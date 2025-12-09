@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { createTestCarousel } from "../utils/componentTestUtils.js";
 import { clearLegacyHoverZoomMarkers } from "../../src/helpers/setupHoverZoom.js";
 
 const CARD_STYLE_SNIPPET = `
@@ -8,7 +9,9 @@ const CARD_STYLE_SNIPPET = `
 }
 
 .card.hover-test,
-.judoka-card.hover-test {
+.judoka-card.hover-test,
+.card:focus,
+.judoka-card:focus {
   transform: scale(1.05);
 }
 
@@ -19,9 +22,30 @@ body[data-test-disable-animations] .judoka-card {
 `;
 
 let styleElement = null;
+let cleanupTasks = [];
+
+function renderCarouselCard(className = "card") {
+  const { element: carousel, testApi } = createTestCarousel();
+  const card = document.createElement("div");
+  card.className = className;
+  card.tabIndex = 0;
+  carousel.appendChild(card);
+  document.body.appendChild(carousel);
+
+  cleanupTasks.push(() => {
+    try {
+      testApi.cleanup();
+    } catch (error) {
+      console.warn('Cleanup task failed:', error);
+    }
+  });
+
+  return { card };
+}
 
 beforeEach(() => {
   document.body.innerHTML = "";
+  cleanupTasks = [];
   if (styleElement) {
     styleElement.remove();
     styleElement = null;
@@ -32,6 +56,14 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanupTasks.forEach((fn) => {
+    try {
+      fn();
+    } catch (error) {
+      console.warn('Cleanup task failed:', error);
+    }
+  });
+  cleanupTasks = [];
   if (styleElement) {
     styleElement.remove();
     styleElement = null;
@@ -40,55 +72,32 @@ afterEach(() => {
 });
 
 describe("clearLegacyHoverZoomMarkers", () => {
-  it("removes legacy hover zoom attributes from cards", () => {
-    const card = document.createElement("div");
-    card.className = "card";
+  it("removes legacy markers while keeping zoom affordance on class toggle", () => {
+    const { card } = renderCarouselCard();
     card.setAttribute("data-enlarge-listener-attached", "true");
     card.setAttribute("data-enlarged", "true");
-    document.body.appendChild(card);
 
     clearLegacyHoverZoomMarkers();
 
     expect(card.hasAttribute("data-enlarge-listener-attached")).toBe(false);
     expect(card.hasAttribute("data-enlarged")).toBe(false);
-  });
-
-  it("verifies CSS hover transforms work correctly for standard cards", () => {
-    const card = document.createElement("div");
-    card.className = "card";
-    document.body.appendChild(card);
-
-    clearLegacyHoverZoomMarkers();
 
     card.classList.add("hover-test");
     const transform = window.getComputedStyle(card).getPropertyValue("transform");
     expect(transform).toMatch(/scale/i);
   });
 
-  it("verifies CSS hover transforms work correctly for judoka cards", () => {
-    const card = document.createElement("div");
-    card.className = "judoka-card";
-    document.body.appendChild(card);
-
-    clearLegacyHoverZoomMarkers();
-
-    card.classList.add("hover-test");
-    const transform = window.getComputedStyle(card).getPropertyValue("transform");
-    expect(transform).toMatch(/scale/i);
-  });
-
-  it("allows tests to disable transitions via the body attribute", () => {
-    const card = document.createElement("div");
-    card.className = "card";
+  it("honors reduced motion hints and keyboard focus on carousel cards", () => {
     document.body.setAttribute("data-test-disable-animations", "true");
-    document.body.appendChild(card);
+    const { card } = renderCarouselCard("judoka-card");
 
     clearLegacyHoverZoomMarkers();
 
+    card.focus();
     card.classList.add("hover-test");
-    const transform = window.getComputedStyle(card).getPropertyValue("transform");
-    const transition = window.getComputedStyle(card).getPropertyValue("transition");
-    expect(transform).toMatch(/scale/i);
-    expect(transition).toBe("none");
+    const styles = window.getComputedStyle(card);
+    expect(document.activeElement).toBe(card);
+    expect(styles.getPropertyValue("transform")).toMatch(/scale/i);
+    expect(styles.getPropertyValue("transition")).toBe("none");
   });
 });
