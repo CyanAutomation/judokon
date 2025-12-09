@@ -56,7 +56,13 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  cleanupTasks.forEach((fn) => fn());
+  cleanupTasks.forEach((fn) => {
+    try {
+      fn();
+    } catch (error) {
+      console.warn('Cleanup task failed:', error);
+    }
+  });
   cleanupTasks = [];
   if (styleElement) {
     styleElement.remove();
