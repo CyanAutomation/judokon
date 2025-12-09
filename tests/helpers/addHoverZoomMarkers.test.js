@@ -24,6 +24,12 @@ body[data-test-disable-animations] .judoka-card {
 let styleElement = null;
 let cleanupTasks = [];
 
+describe("test harness utilities", () => {
+  it("exposes createTestCarousel helper", () => {
+    expect(typeof createTestCarousel).toBe("function");
+  });
+});
+
 function renderCarouselCard(className = "card") {
   const { element: carousel, testApi } = createTestCarousel();
   const card = document.createElement("div");
