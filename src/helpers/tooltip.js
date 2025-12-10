@@ -316,12 +316,13 @@ export async function initTooltips(root = globalThis.document) {
       showTimer = null;
     }
     if (hideTimer !== null) {
-      if (pendingHideTarget) {
-        restoreAriaDescription(pendingHideTarget);
-        pendingHideTarget = null;
-      }
+      const targetToRestore = pendingHideTarget;
+      pendingHideTarget = null;
       clearTimeout(hideTimer);
       hideTimer = null;
+      if (targetToRestore) {
+        restoreAriaDescription(targetToRestore);
+      }
     }
   }
 

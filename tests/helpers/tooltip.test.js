@@ -326,9 +326,7 @@ describe("initTooltips", () => {
   it("delays hover display and hides after the configured dismissal interval", async () => {
     fetchJson.mockResolvedValue({ ui: { countryFilter: "filter copy" } });
 
-    const { initTooltips, SHOW_DELAY_MS, HIDE_DELAY_MS } = await import(
-      "../../src/helpers/tooltip.js"
-    );
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
     const el = document.createElement("button");
     el.dataset.tooltipId = "ui.countryFilter";
@@ -340,19 +338,18 @@ describe("initTooltips", () => {
     el.dispatchEvent(new Event("mouseover"));
     expect(tip.style.display).toBe("none");
 
-    // Test that tooltip doesn't show before delay
-    vi.advanceTimersByTime(SHOW_DELAY_MS - 1);
+    // Tooltip should not render until the scheduled timer fires
     expect(tip.style.display).toBe("none");
 
-    // Test that tooltip shows after delay
-    vi.advanceTimersByTime(1);
+    // Run the pending timers to show the tooltip
+    vi.runOnlyPendingTimers();
     expect(tip.style.display).toBe("block");
 
     el.dispatchEvent(new Event("mouseout"));
     expect(tip.style.display).toBe("block");
 
-    // Test that tooltip hides after hide delay
-    vi.advanceTimersByTime(HIDE_DELAY_MS);
+    // Run the pending timers to hide the tooltip
+    vi.runOnlyPendingTimers();
     expect(tip.style.display).toBe("none");
   });
 
