@@ -9,57 +9,99 @@ test.describe("View Judoka screen", () => {
     await expect(page.locator("nav.top-navbar")).toHaveCount(0);
   });
 
-  test("random judoka elements visible", async ({ page }) => {
-    await expect(page.getByTestId("draw-button")).toBeVisible();
+  test("draw controls expose accessible name", async ({ page }) => {
+    const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
+    await expect(drawButton).toBeVisible();
+    await expect(drawButton).toHaveAttribute("aria-live", /polite/i);
   });
 
-  // Removed accessibility-focused test
-  /*
-  test("draw button accessible name constant", async ({ page }) => {
-    const btn = page.getByTestId("draw-button");
-    await expect(btn).toHaveText(/draw card/i);
-
-    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
-
-    await btn.click();
-    await expect(btn).toHaveText(/drawing/i);
-    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
+  test("draw button keeps accessible name while busy state toggles", async ({ page }) => {
+    const btn = page.getByRole("button", { name: /draw a random judoka card/i });
 
     await expect(btn).toHaveText(/draw card/i);
-    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
-
-    // Wait for the draw operation to fully settle before the next interaction.
     await expect(btn).not.toHaveAttribute("aria-busy");
 
     await btn.click();
     await expect(btn).toHaveText(/drawing/i);
+    await expect(btn).toHaveAttribute("aria-busy", "true");
     await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
 
     await expect(btn).toHaveText(/draw card/i);
+    await expect(btn).not.toHaveAttribute("aria-busy");
     await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
-  });*/
+  });
 
   test("draw card populates container", async ({ page }) => {
-    await page.getByTestId("draw-button").click();
+    await page.getByRole("button", { name: /draw a random judoka card/i }).click();
     const card = page.getByTestId("card-container").locator(".judoka-card");
     await expect(card).toHaveCount(1);
-    await expect(card).toBeVisible();
+    await expect(card).toHaveAccessibleName(/card/i);
     const flag = card.locator(".card-top-bar img");
     await expect(flag).toHaveAttribute("alt", /(Portugal|USA|Japan) flag/i);
   });
 
-  // Removed accessibility attribute assertion test
-  /*
-  test("draw button shows loading state", async ({ page }) => {
-    const btn = page.getByTestId("draw-button");
-    await btn.click();
-    await expect(btn).toHaveText(/drawing/i);
-    await expect(btn).toHaveAttribute("aria-busy", "true");
-    await expect(btn).toHaveText(/draw card/i);
-    await expect(btn).not.toHaveAttribute("aria-busy");
-  });*/
+  test("successive draws render different cards when RNG is stubbed", async ({ page }) => {
+    await page.evaluate(async () => {
+      const { setTestMode } = await import("/src/helpers/testModeUtils.js");
+      setTestMode(false);
 
-  // Removed portrait/landscape layout test to focus on desktop only
+      const sequence = [0.1, 0.9];
+      let idx = 0;
+      Math.random = () => sequence[idx++ % sequence.length];
+    });
+
+    const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
+
+    await drawButton.click();
+    const firstCard = page
+      .getByTestId("card-container")
+      .locator(".judoka-card")
+      .first();
+    await expect(firstCard).toHaveAccessibleName(/card/i);
+    const firstName = await firstCard.getAttribute("aria-label");
+
+    await expect(drawButton).toHaveText(/draw card/i);
+    await drawButton.click();
+    const secondCard = page
+      .getByTestId("card-container")
+      .locator(".judoka-card")
+      .first();
+    await expect(secondCard).toHaveAccessibleName(/card/i);
+    const secondName = await secondCard.getAttribute("aria-label");
+
+    expect(secondName).not.toEqual(firstName);
+  });
+
+  test("shows error state with accessible messaging when preload fails", async ({ page }) => {
+    await page.route("**/src/data/judoka.json", (route) => route.abort("failed"));
+    await page.route("**/src/data/gokyo.json", (route) => route.abort("failed"));
+
+    await page.reload();
+    await page.locator('body[data-random-judoka-ready="true"]').waitFor();
+
+    const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
+    await expect(drawButton).toBeDisabled();
+    await expect(drawButton).toHaveAttribute("aria-disabled", "true");
+    await expect(page.getByRole("alert")).toHaveText(/unable to load judoka data/i);
+  });
+
+  test("falls back to default card when deck is empty", async ({ page }) => {
+    await page.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({
+        contentType: "application/json",
+        body: "[]"
+      })
+    );
+
+    await page.reload();
+    await page.locator('body[data-random-judoka-ready="true"]').waitFor();
+
+    const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
+    await drawButton.click();
+
+    const card = page.getByTestId("card-container").locator(".judoka-card");
+    await expect(card).toHaveAccessibleName(/Tatsuuma Ushiyama card/i);
+  });
 
   test("draw button remains within viewport", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
@@ -71,67 +113,17 @@ test.describe("View Judoka screen", () => {
     expect(bottom).toBeLessThanOrEqual(innerHeight + ALLOWED_OFFSET);
   });
 
-  test("history panel focus management - focus moves to summary on open", async ({ page }) => {
-    const historyBtn = page.locator("#toggle-history-btn");
-
-    // Initially, focus should not be on the summary
-    const focusedElement = await page.evaluate(() => document.activeElement?.id);
-    expect(focusedElement).not.toBe("toggle-history-btn");
-
-    // Click history button to open
-    await historyBtn.click();
-
-    // Focus should now be on the toggle button (summary element)
-    await expect(page.locator("#toggle-history-btn")).toBeFocused();
-  });
-
-  test("history panel focus management - native details element handles Escape", async ({
-    page
-  }) => {
+  test("history panel toggles via keyboard with focus restored", async ({ page }) => {
     const historyBtn = page.locator("#toggle-history-btn");
     const historyPanel = page.locator("#history-panel");
 
-    // Open the panel
-    await historyBtn.click();
-    // Note: With native details element, we check for open attribute instead
+    await expect(historyBtn).toHaveAccessibleName(/history/i);
+    await historyBtn.press("Enter");
     await expect(historyPanel).toHaveAttribute("open", "");
+    await expect(historyBtn).toBeFocused();
 
-    // Press Escape - native details element will close automatically
     await page.press("body", "Escape");
-
-    // Panel should be closed (open attribute should be gone)
     await expect(historyPanel).not.toHaveAttribute("open");
-  });
-
-  test("history panel focus management - focus returns to button on close", async ({ page }) => {
-    const historyBtn = page.locator("#toggle-history-btn");
-
-    // Open the panel
-    await historyBtn.click();
-
-    // Close the panel by pressing Escape
-    await page.press("body", "Escape");
-
-    // Focus should return to the toggle button
-    await expect(page.locator("#toggle-history-btn")).toBeFocused();
-  });
-
-  test("history panel focus management - clicking button again also closes and restores focus", async ({
-    page
-  }) => {
-    const historyBtn = page.locator("#toggle-history-btn");
-    const historyPanel = page.locator("#history-panel");
-
-    // Open the panel
-    await historyBtn.click();
-    await expect(historyPanel).toHaveAttribute("open", "");
-
-    // Click button again to close
-    await historyBtn.click();
-    await expect(historyPanel).not.toHaveAttribute("open");
-
-    // Focus should be on the button
-    const focusedId = await page.evaluate(() => document.activeElement?.id);
-    expect(focusedId).toBe("toggle-history-btn");
+    await expect(historyBtn).toBeFocused();
   });
 });
