@@ -84,6 +84,7 @@ describe("JSON_FIELD_ALLOWLIST", () => {
 function pickSampleEntry(data, allowlist) {
   if (Array.isArray(data)) {
     const firstItem = data[0];
+    if (!firstItem) return undefined;
     if (Array.isArray(allowlist) && shouldUseNestedValue(firstItem, allowlist)) {
       return extractNestedValue(firstItem);
     }
