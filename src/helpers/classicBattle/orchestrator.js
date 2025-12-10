@@ -300,24 +300,12 @@ export async function initClassicBattleOrchestrator(
     const onTransition = createTransitionHook(hookSet);
 
     try {
-      // Create a placeholder machine reference for listener setup
-      // The listener will be properly connected after machine creation
-      const machineRef = { dispatch: null };
-      
-      // Setup the readyForCooldown listener BEFORE creating the state machine
-      // so that when matchStartEnter emits the event, the listener is ready
-      setupReadyForCooldownListener(machineRef);
-      
       const createdMachine = await createStateManager(
         onEnterMap,
         context,
         onTransition,
         context.stateTable
       );
-      
-      // Update machineRef so listener can use the actual machine
-      machineRef.dispatch = createdMachine.dispatch.bind(createdMachine);
-      
       machine = createdMachine;
       attachListeners(machine);
       // Register the machine's state getter so eventBus can access current state
@@ -558,17 +546,19 @@ function createOnEnterMap() {
 }
 
 /**
- * Setup the readyForCooldown event listener.
- * This must be called before state machine initialization so the event
- * emitted from matchStartEnter onEnter handler is caught.
+ * Attach listeners and expose debug helpers for a battle machine.
  *
- * @param {object} machineRef - State machine reference
  * @pseudocode
- * 1. Register listener for readyForCooldown event
- * 2. Schedule dispatch("ready") using Promise.resolve to run after current call stack
- * 3. This avoids nested dispatch deadlock while ensuring event is received
+ * 1. Register DOM and debug listeners for `battleStateChange`.
+ * 2. Emit initial state, snapshot, and catalog events.
+ * 3. Expose debug getters and handle visibility, timer drift, and injected errors.
+ * 4. Swallow non-critical errors to keep setup resilient.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
  */
-function setupReadyForCooldownListener(machineRef) {
+function attachListeners(machineRef) {
+  // Setup listener for readyForCooldown event emitted from matchStartEnter
+  // This dispatcher "ready" from outside the dispatch context to avoid deadlock
   onBattleEvent("readyForCooldown", (event) => {
     const detail = event?.detail ?? {};
     // Schedule dispatch to occur after current call stack completes to avoid nested dispatch
@@ -582,20 +572,7 @@ function setupReadyForCooldownListener(machineRef) {
       }
     });
   });
-}
 
-/**
- * Attach listeners and expose debug helpers for a battle machine.
- *
- * @pseudocode
- * 1. Register DOM and debug listeners for `battleStateChange`.
- * 2. Emit initial state, snapshot, and catalog events.
- * 3. Expose debug getters and handle visibility, timer drift, and injected errors.
- * 4. Swallow non-critical errors to keep setup resilient.
- *
- * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
- */
-function attachListeners(machineRef) {
   debugLogListener = createDebugLogListener(machineRef);
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);

@@ -20,14 +20,20 @@ import { reportSentryError } from "./sentryReporter.js";
  */
 export async function matchStartEnter(machine) {
   try {
-    console.log("[matchStartEnter] Entering handler");
-
     if (!machine || typeof machine.dispatch !== "function") {
       debugLog("matchStartEnter: invalid machine context");
       return;
     }
 
     const store = machine?.context?.store ?? {};
+
+    if (!store.winTarget || typeof store.firstPlayer === "undefined") {
+      debugLog("matchStartEnter: incomplete store context", {
+        winTarget: store.winTarget,
+        firstPlayer: store.firstPlayer
+      });
+      return;
+    }
 
     emitBattleEvent("matchStart", {
       winTarget: store.winTarget,
@@ -37,9 +43,7 @@ export async function matchStartEnter(machine) {
 
     // Emit readyForCooldown event; orchestrator will dispatch "ready" from outside this context
     // This avoids nested dispatch calls which cause deadlock
-    console.log("[matchStartEnter] About to emit readyForCooldown event");
     emitBattleEvent("readyForCooldown", { initial: true });
-    console.log("[matchStartEnter] Emitted readyForCooldown event");
   } catch (error) {
     debugLog("matchStartEnter: error during initialization", error);
     reportSentryError(error, {
@@ -47,5 +51,3 @@ export async function matchStartEnter(machine) {
     });
   }
 }
-
-export default matchStartEnter;
