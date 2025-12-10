@@ -35,14 +35,9 @@ export async function matchStartEnter(machine) {
       firstPlayer: store.firstPlayer
     });
 
-    if (!store.winTarget || typeof store.firstPlayer === "undefined") {
-      console.log("[matchStartEnter] EARLY RETURN: incomplete store context");
-      debugLog("matchStartEnter: incomplete store context", {
-        winTarget: store.winTarget,
-        firstPlayer: store.firstPlayer
-      });
-      return;
-    }
+    // Note: winTarget and firstPlayer may not be set yet; that's OK
+    // The onEnter handler just needs to emit the event
+    // The actual values will be populated by other handlers
 
     console.log("[matchStartEnter] About to emit matchStart and readyForCooldown events");
 
