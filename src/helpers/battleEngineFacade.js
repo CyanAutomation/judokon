@@ -42,7 +42,6 @@ export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
  * @property {() => object} getTimerState
  */
 
-/** @type {IBattleEngine|undefined} */
 /**
  * Internal reference to the active BattleEngine instance.
  *
@@ -200,10 +199,16 @@ function attemptInternalReset(engine) {
  * Create a new battle engine instance.
  *
  * @summary Factory returning a fresh `BattleEngine` instance.
+ *
+ * @description
+ * In browser environments, each window/frame gets its own isolated engine instance via WeakMap.
+ * This prevents cross-window state sharing (e.g., in Playwright tests with multiple contexts).
+ * In Node.js, uses a module-level variable; only one engine per process.
+ *
  * @pseudocode
  * 1. Check if an engine already exists and reuse it if forceCreate is not set.
  * 2. Construct a new `BattleEngine` with default classic config merged with `config`.
- * 3. Store the instance for use by exported wrapper helpers.
+ * 3. Store the instance in window-isolated (WeakMap) or module-level (Node.js) storage.
  * 4. Apply seed configuration if provided.
  * 5. Notify listeners that engine was created.
  * 6. Return the new instance.
@@ -408,31 +413,27 @@ export const interruptMatch = (reason) => requireEngine().interruptMatch(reason)
  *
  * @pseudocode
  * 1. Get engine via requireEngine().
- * 2. Call getScores() if available, otherwise return object with safe defaults.
- * 3. Freeze and return the scores to prevent external mutation.
+ * 2. Call getScores() and return a frozen copy to prevent external mutation.
  *
  * @returns {object}
  */
 export const getScores = () => {
   const engine = requireEngine();
-  const scores = engine.getScores?.() ?? { playerScore: 0, opponentScore: 0 };
-  return Object.freeze({ ...scores });
+  return Object.freeze({ ...engine.getScores() });
 };
 
 /**
- * Get a shallow, immutable snapshot of current stat values if exposed.
+ * Get a shallow, immutable snapshot of current stat values.
  *
  * @pseudocode
- * 1. Prefer engine.getCurrentStats if present.
- * 2. Otherwise, return an empty object to avoid null checks in consumers.
- * 3. Freeze a shallow copy to prevent external mutation.
+ * 1. Get the engine via requireEngine().
+ * 2. Call getCurrentStats() and return a frozen copy.
  *
  * @returns {Readonly<object>} Frozen snapshot object.
  */
 export const getCurrentStats = () => {
   const engine = requireEngine();
-  const raw = engine.getCurrentStats?.() || {};
-  return Object.freeze({ ...raw });
+  return Object.freeze({ ...engine.getCurrentStats() });
 };
 
 /**
@@ -440,14 +441,13 @@ export const getCurrentStats = () => {
  *
  * @pseudocode
  * 1. Get the engine via requireEngine().
- * 2. Call getRoundsPlayed() if available, otherwise return 0 as safe default.
- * 3. Ensure return value is numeric to prevent NaN propagation.
+ * 2. Call getRoundsPlayed() and ensure return value is numeric.
  *
  * @returns {number}
  */
 export const getRoundsPlayed = () => {
   const engine = requireEngine();
-  const count = engine.getRoundsPlayed?.() ?? 0;
+  const count = engine.getRoundsPlayed();
   return typeof count === "number" ? count : 0;
 };
 
@@ -456,15 +456,13 @@ export const getRoundsPlayed = () => {
  *
  * @pseudocode
  * 1. Get engine via requireEngine().
- * 2. Call isMatchEnded() if available, otherwise return false as safe default.
- * 3. Ensure return value is boolean to prevent truthy/falsy bugs.
+ * 2. Call isMatchEnded() and ensure return value is boolean.
  *
  * @returns {boolean}
  */
 export const isMatchEnded = () => {
   const engine = requireEngine();
-  const ended = engine.isMatchEnded?.() ?? false;
-  return Boolean(ended);
+  return Boolean(engine.isMatchEnded());
 };
 
 /**
@@ -472,15 +470,13 @@ export const isMatchEnded = () => {
  *
  * @pseudocode
  * 1. Get engine via requireEngine().
- * 2. Call getTimerState() if available, otherwise return safe default state.
- * 3. Freeze and return to prevent external mutation.
+ * 2. Call getTimerState() and return a frozen copy to prevent external mutation.
  *
  * @returns {object}
  */
 export const getTimerState = () => {
   const engine = requireEngine();
-  const state = engine.getTimerState?.() ?? { remaining: 0, paused: false };
-  return Object.freeze({ ...state });
+  return Object.freeze({ ...engine.getTimerState() });
 };
 
 /**
@@ -521,31 +517,7 @@ export const off = (type, handler) => requireEngine().off(type, handler);
  * - **pauseRoundTimer** → `pauseTimer`
  * - **resumeRoundTimer** → `resumeTimer`
  * - **stopRoundTimer** → `stopTimer`
- *
- * @type {Object<string, {engineMethod: string, acceptsArgs: boolean, description: string}>}
  */
-const timerAliasMetadata = {
-  startRoundTimer: {
-    engineMethod: "startRound",
-    acceptsArgs: true,
-    description: "PRD alias for starting the round timer"
-  },
-  pauseRoundTimer: {
-    engineMethod: "pauseTimer",
-    acceptsArgs: false,
-    description: "PRD alias for pausing the round timer"
-  },
-  resumeRoundTimer: {
-    engineMethod: "resumeTimer",
-    acceptsArgs: false,
-    description: "PRD alias for resuming the round timer"
-  },
-  stopRoundTimer: {
-    engineMethod: "stopTimer",
-    acceptsArgs: false,
-    description: "PRD alias for stopping the round timer"
-  }
-};
 
 /**
  * startRoundTimer: PRD alias for starting the round timer.
@@ -561,11 +533,7 @@ const timerAliasMetadata = {
  * @param {...any} args - All arguments are forwarded to `BattleEngine.startRound`.
  * @returns {Promise<void>} Resolves when the engine has started the round.
  */
-export const startRoundTimer = (...args) => {
-  const engine = requireEngine();
-  const metadata = timerAliasMetadata.startRoundTimer;
-  return engine[metadata.engineMethod](...args);
-};
+export const startRoundTimer = (...args) => requireEngine().startRound(...args);
 
 /**
  * pauseRoundTimer: PRD alias for pausing the round timer.
@@ -576,11 +544,7 @@ export const startRoundTimer = (...args) => {
  *
  * @returns {void}
  */
-export const pauseRoundTimer = () => {
-  const engine = requireEngine();
-  const metadata = timerAliasMetadata.pauseRoundTimer;
-  return engine[metadata.engineMethod]();
-};
+export const pauseRoundTimer = () => requireEngine().pauseTimer();
 
 /**
  * resumeRoundTimer: PRD alias for resuming the round timer.
@@ -591,11 +555,7 @@ export const pauseRoundTimer = () => {
  *
  * @returns {void}
  */
-export const resumeRoundTimer = () => {
-  const engine = requireEngine();
-  const metadata = timerAliasMetadata.resumeRoundTimer;
-  return engine[metadata.engineMethod]();
-};
+export const resumeRoundTimer = () => requireEngine().resumeTimer();
 
 /**
  * stopRoundTimer: PRD alias for stopping the round timer.
@@ -606,11 +566,7 @@ export const resumeRoundTimer = () => {
  *
  * @returns {void}
  */
-export const stopRoundTimer = () => {
-  const engine = requireEngine();
-  const metadata = timerAliasMetadata.stopRoundTimer;
-  return engine[metadata.engineMethod]();
-};
+export const stopRoundTimer = () => requireEngine().stopTimer();
 
 /**
  * evaluateSelection: PRD-shaped wrapper for stat evaluation.

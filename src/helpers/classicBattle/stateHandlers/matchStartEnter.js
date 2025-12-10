@@ -21,7 +21,7 @@ import { reportSentryError } from "./sentryReporter.js";
 export async function matchStartEnter(machine) {
   try {
     console.log("[matchStartEnter] ENTERING handler");
-    
+
     if (!machine || typeof machine.dispatch !== "function") {
       console.log("[matchStartEnter] EARLY RETURN: invalid machine context");
       debugLog("matchStartEnter: invalid machine context");
