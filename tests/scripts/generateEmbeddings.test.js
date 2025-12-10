@@ -110,7 +110,10 @@ function shouldUseNestedValue(candidate, allowlist) {
 }
 
 function extractNestedValue(obj) {
-  const [, firstValue] = Object.entries(obj)[0] ?? [];
+function extractNestedValue(obj) {
+  const entries = Object.entries(obj);
+  if (entries.length === 0) return obj;
+  const [, firstValue] = entries[0];
   return firstValue !== undefined ? firstValue : obj;
 }
 
