@@ -336,6 +336,32 @@ const interruptResolutionMap = {
 };
 
 /**
+ * Expose timer state to debug hooks and shared store for test inspection.
+ *
+ * @param {any} timerState - The timer state to expose.
+ * @summary Write timer state to shared store and expose via debug hooks.
+ * @pseudocode
+ * 1. Check if timerState is provided.
+ * 2. Write to machine context store if available.
+ * 3. Expose via globalThis debug function or debugHooks.
+ * 4. Swallow errors to keep transitions resilient.
+ */
+function exposeTimerStateForDebugging(timerState) {
+  if (!timerState) return;
+  try {
+    const s = machine?.context?.store;
+    if (s && typeof s === "object") s.classicBattleTimerState = timerState;
+  } catch {}
+  try {
+    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+      globalThis.__classicBattleDebugExpose("classicBattleTimerState", timerState);
+    } else {
+      debugHooks.exposeDebugState("classicBattleTimerState", timerState);
+    }
+  } catch {}
+}
+
+/**
  * Emit diagnostic events on transitions.
  *
  * @pseudocode
@@ -414,20 +440,7 @@ function emitStateChange(from, to) {
     });
 
     // Mirror timer state for tests/diagnostics
-    if (context.timerState) {
-      try {
-        // Also write onto the shared store for tests that spy on debug hooks
-        try {
-          const s = machine?.context?.store;
-          if (s && typeof s === "object") s.classicBattleTimerState = context.timerState;
-        } catch {}
-        if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-          globalThis.__classicBattleDebugExpose("classicBattleTimerState", context.timerState);
-        } else {
-          debugHooks.exposeDebugState("classicBattleTimerState", context.timerState);
-        }
-      } catch {}
-    }
+    exposeTimerStateForDebugging(context.timerState);
     emitBattleEvent("control.state.changed", {
       from,
       to,
@@ -444,15 +457,8 @@ function emitStateChange(from, to) {
  *
  * @pseudocode
  * 1. Read `engine` from the current machine context.
- * 2. If `engine.getTimerState` exists, call it and expose the result via
- *    `exposeDebugState('classicBattleTimerState', state)`.
+ * 2. If `engine.getTimerState` exists, call it and expose via `exposeTimerStateForDebugging`.
  * 3. Swallow errors to keep transitions resilient.
- * Mirror the timer state from the engine to debug hooks and shared store.
- *
- * @pseudocode
- * 1. Retrieve timer state from engine.
- * 2. Write to shared store for test inspection.
- * 3. Expose via debug hooks (globalThis or debugHooks).
  *
  * @returns {void}
  */
@@ -460,20 +466,7 @@ function mirrorTimerState() {
   try {
     const engine = machine?.context?.engine;
     const state = typeof engine?.getTimerState === "function" ? engine.getTimerState() : undefined;
-    if (state) {
-      // Also write onto the shared store for tests that spy on debug hooks
-      try {
-        const s = machine?.context?.store;
-        if (s && typeof s === "object") s.classicBattleTimerState = state;
-      } catch {}
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        try {
-          globalThis.__classicBattleDebugExpose("classicBattleTimerState", state);
-        } catch {}
-      } else {
-        debugHooks.exposeDebugState("classicBattleTimerState", state);
-      }
-    }
+    exposeTimerStateForDebugging(state);
   } catch {
     // ignore: timer state exposure is best-effort for tests
   }
@@ -546,20 +539,12 @@ function createOnEnterMap() {
 }
 
 /**
- * Attach listeners and expose debug helpers for a battle machine.
- *
- * @pseudocode
- * 1. Register DOM and debug listeners for `battleStateChange`.
- * 2. Emit initial state, snapshot, and catalog events.
- * 3. Expose debug getters and handle visibility, timer drift, and injected errors.
- * 4. Swallow non-critical errors to keep setup resilient.
+ * Setup listener for readyForCooldown event to dispatch 'ready' outside dispatch context.
  *
  * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
  */
-function attachListeners(machineRef) {
-  // Setup listener for readyForCooldown event emitted from matchStartEnter
-  // This dispatcher "ready" from outside the dispatch context to avoid deadlock
-  debugLog("attachListeners: Setting up readyForCooldown listener");
+function setupReadyForCooldownListener(machineRef) {
+  debugLog("setupReadyForCooldownListener: Setting up readyForCooldown listener");
   onBattleEvent("readyForCooldown", (event) => {
     debugLog("readyForCooldown-listener: CALLED with event detail:", event?.detail);
     const detail = event?.detail ?? {};
@@ -587,8 +572,15 @@ function attachListeners(machineRef) {
       }
     }, 0);
   });
-  debugLog("attachListeners: readyForCooldown listener setup complete");
+  debugLog("setupReadyForCooldownListener: readyForCooldown listener setup complete");
+}
 
+/**
+ * Setup state change listeners and emit initial diagnostics.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
+ */
+function setupStateChangeListeners(machineRef) {
   debugLogListener = createDebugLogListener(machineRef);
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);
@@ -609,6 +601,14 @@ function attachListeners(machineRef) {
   } catch {
     // ignore: catalog event is informational
   }
+}
+
+/**
+ * Expose debug getters for accessing the machine and orchestrator state.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
+ */
+function exposeDebugGetters(machineRef) {
   debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef);
   debugLog("orchestrator: exposing machineRef", machineRef);
   if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
@@ -625,6 +625,14 @@ function attachListeners(machineRef) {
       }
     } catch {}
   } catch {}
+}
+
+/**
+ * Setup visibility change handler for tab inactive/active events.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
+ */
+function setupVisibilityHandler(machineRef) {
   if (typeof document !== "undefined") {
     visibilityHandler = () => {
       const engine = machineRef.context?.engine;
@@ -632,71 +640,84 @@ function attachListeners(machineRef) {
     };
     document.addEventListener("visibilitychange", visibilityHandler);
   }
-  const engine = machineRef.context?.engine;
-  if (engine) {
-    engine.onTimerDrift = (drift) => {
-      emitBattleEvent("scoreboardShowMessage", "Waiting…");
+}
+
+/**
+ * Setup timer event handlers for pause, resume, stop, drift, and tab visibility.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
+ * @param {any} engine - The battle engine.
+ */
+function setupTimerEventHandlers(machineRef, engine) {
+  if (!engine) return;
+
+  engine.onTimerDrift = (drift) => {
+    emitBattleEvent("scoreboardShowMessage", "Waiting…");
+    emitBattleEvent("debugPanelUpdate");
+    engine.handleTimerDrift(drift);
+  };
+
+  // Listen to timer lifecycle events for UI updates and logging
+  timerEventHandlers.onPaused = () => {
+    emitBattleEvent("scoreboardShowMessage", "Timer paused");
+  };
+  engine.on("timerPaused", timerEventHandlers.onPaused);
+
+  timerEventHandlers.onResumed = () => {
+    emitBattleEvent("scoreboardShowMessage", "Timer resumed");
+  };
+  engine.on("timerResumed", timerEventHandlers.onResumed);
+
+  timerEventHandlers.onStopped = () => {
+    emitBattleEvent("scoreboardShowMessage", "Timer stopped");
+  };
+  engine.on("timerStopped", timerEventHandlers.onStopped);
+
+  timerEventHandlers.onDriftRecorded = ({ driftAmount }) => {
+    emitBattleEvent("scoreboardShowMessage", `Drift detected: ${driftAmount}s`);
+  };
+  engine.on("timerDriftRecorded", timerEventHandlers.onDriftRecorded);
+
+  timerEventHandlers.onTabInactive = () => {
+    emitBattleEvent("scoreboardShowMessage", "Page hidden - timer paused");
+  };
+  engine.on("tabInactive", timerEventHandlers.onTabInactive);
+
+  timerEventHandlers.onTabActive = () => {
+    emitBattleEvent("scoreboardShowMessage", "Page visible - timer resumed");
+  };
+  engine.on("tabActive", timerEventHandlers.onTabActive);
+}
+
+/**
+ * Setup initial timer state exposure and error injection for engine.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
+ * @param {any} engine - The battle engine.
+ */
+function setupEngineDebugFeatures(machineRef, engine) {
+  if (!engine) return;
+
+  // Expose initial timer state for tests/diagnostics
+  try {
+    const ts = typeof engine.getTimerState === "function" ? engine.getTimerState() : null;
+    exposeTimerStateForDebugging(ts);
+  } catch {}
+
+  if (typeof window !== "undefined") {
+    window.injectClassicBattleError = (msg) => {
+      engine.injectError(msg);
+      emitBattleEvent("scoreboardShowMessage", `Injected error: ${msg}`);
       emitBattleEvent("debugPanelUpdate");
-      engine.handleTimerDrift(drift);
+      machineRef.dispatch("interruptMatch", { reason: msg });
     };
-
-    // Listen to timer lifecycle events for UI updates and logging
-    timerEventHandlers.onPaused = () => {
-      emitBattleEvent("scoreboardShowMessage", "Timer paused");
-    };
-    engine.on("timerPaused", timerEventHandlers.onPaused);
-
-    timerEventHandlers.onResumed = () => {
-      emitBattleEvent("scoreboardShowMessage", "Timer resumed");
-    };
-    engine.on("timerResumed", timerEventHandlers.onResumed);
-
-    timerEventHandlers.onStopped = () => {
-      emitBattleEvent("scoreboardShowMessage", "Timer stopped");
-    };
-    engine.on("timerStopped", timerEventHandlers.onStopped);
-
-    timerEventHandlers.onDriftRecorded = ({ driftAmount }) => {
-      emitBattleEvent("scoreboardShowMessage", `Drift detected: ${driftAmount}s`);
-    };
-    engine.on("timerDriftRecorded", timerEventHandlers.onDriftRecorded);
-
-    timerEventHandlers.onTabInactive = () => {
-      emitBattleEvent("scoreboardShowMessage", "Page hidden - timer paused");
-    };
-    engine.on("tabInactive", timerEventHandlers.onTabInactive);
-
-    timerEventHandlers.onTabActive = () => {
-      emitBattleEvent("scoreboardShowMessage", "Page visible - timer resumed");
-    };
-    engine.on("tabActive", timerEventHandlers.onTabActive);
-
-    // Expose initial timer state for tests/diagnostics
-    try {
-      const ts = typeof engine.getTimerState === "function" ? engine.getTimerState() : null;
-      if (ts) {
-        try {
-          const s = machineRef?.context?.store;
-          if (s && typeof s === "object") s.classicBattleTimerState = ts;
-        } catch {}
-        try {
-          if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-            globalThis.__classicBattleDebugExpose("classicBattleTimerState", ts);
-          } else {
-            debugHooks.exposeDebugState("classicBattleTimerState", ts);
-          }
-        } catch {}
-      }
-    } catch {}
-    if (typeof window !== "undefined") {
-      window.injectClassicBattleError = (msg) => {
-        engine.injectError(msg);
-        emitBattleEvent("scoreboardShowMessage", `Injected error: ${msg}`);
-        emitBattleEvent("debugPanelUpdate");
-        machineRef.dispatch("interruptMatch", { reason: msg });
-      };
-    }
   }
+}
+
+/**
+ * Setup global snapshot getter for test inspection.
+ */
+function setupSnapshotGetter() {
   if (typeof window !== "undefined") {
     window.getBattleStateSnapshot = () => {
       try {
@@ -706,6 +727,28 @@ function attachListeners(machineRef) {
       }
     };
   }
+}
+
+/**
+ * Attach listeners and expose debug helpers for a battle machine.
+ *
+ * @pseudocode
+ * 1. Setup readyForCooldown listener and state change listeners.
+ * 2. Expose debug getters and initial diagnostics.
+ * 3. Setup visibility and timer event handlers.
+ * 4. Setup engine debug features and snapshot getter.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
+ */
+function attachListeners(machineRef) {
+  setupReadyForCooldownListener(machineRef);
+  setupStateChangeListeners(machineRef);
+  exposeDebugGetters(machineRef);
+  setupVisibilityHandler(machineRef);
+  const engine = machineRef.context?.engine;
+  setupTimerEventHandlers(machineRef, engine);
+  setupEngineDebugFeatures(machineRef, engine);
+  setupSnapshotGetter();
 }
 
 /**
