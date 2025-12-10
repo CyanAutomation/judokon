@@ -137,10 +137,7 @@ describe("countdown resets after stat selection", () => {
       "../../../src/helpers/classicBattle/uiService.js"
     );
     bindUIServiceEventHandlersOnce();
-    const promptTracker = await import(
-      "../../../src/helpers/classicBattle/opponentPromptTracker.js"
-    );
-    vi.spyOn(promptTracker, "isOpponentPromptReady").mockReturnValue(true);
+
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES = {
         ...(window.__FF_OVERRIDES || {}),

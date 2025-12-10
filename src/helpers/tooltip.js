@@ -12,8 +12,23 @@ let cachedData;
 const loggedMissing = new Set();
 const loggedUnbalanced = new Set();
 let tooltipEl;
+
+/**
+ * Delay in milliseconds before showing a tooltip.
+ * @type {number}
+ */
 export const SHOW_DELAY_MS = 120;
+
+/**
+ * Delay in milliseconds before hiding a tooltip.
+ * @type {number}
+ */
 export const HIDE_DELAY_MS = 80;
+
+/**
+ * Hint text displayed to users about how to dismiss tooltips.
+ * @type {string}
+ */
 export const DISMISS_HINT = "Press Escape to close the tooltip";
 
 /**
