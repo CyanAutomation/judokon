@@ -3,6 +3,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 const TEST_QUERY = "alpha";
 const EMBEDDINGS_FIXTURE = "tests/fixtures/client_embeddings_vector.json";
 const TRANSFORMER_STUB = "export async function pipeline(){return async()=>({ data:[1,1]});}";
+const VECTOR_RESULTS_TIMEOUT = 5_000;
 
 async function stubVectorSearch(page, { embeddingsBody, transformerFailure } = {}) {
   await page.route("**/client_embeddings.json", (route) => {
@@ -32,7 +33,26 @@ async function gotoVectorSearch(page, options) {
 async function runSearch(page, query = TEST_QUERY) {
   await page.getByRole("searchbox").fill(query);
   await page.getByRole("button", { name: /search/i }).click();
-  await page.evaluate(() => window.vectorSearchResultsPromise?.then?.() || Promise.resolve());
+  await page.waitForFunction(
+    () => window.vectorSearchResultsPromise,
+    { timeout: VECTOR_RESULTS_TIMEOUT }
+  );
+  await page.evaluate((timeoutMs) => {
+    const { vectorSearchResultsPromise } = window;
+    if (!vectorSearchResultsPromise?.then) {
+      throw new Error("vectorSearchResultsPromise was not set by the app");
+    }
+
+    return Promise.race([
+      vectorSearchResultsPromise,
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Vector search did not resolve in time")),
+          timeoutMs
+        )
+      )
+    ]);
+  }, VECTOR_RESULTS_TIMEOUT);
 }
 
 test.describe("Vector search page", () => {
@@ -41,9 +61,19 @@ test.describe("Vector search page", () => {
     await runSearch(page);
 
     const rows = page.locator("#vector-results-table tbody tr");
-    await expect(rows).toHaveCount.toBeGreaterThan(0);
-    await expect(rows.nth(0)).toBeVisible();
-    await expect(rows.nth(1)).toBeVisible();
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThanOrEqual(2);
+
+    const firstRow = rows.nth(0);
+    const secondRow = rows.nth(1);
+    await expect(firstRow).toBeVisible();
+    await expect(secondRow).toBeVisible();
+    await expect(firstRow.locator(".snippet-summary")).toContainText(
+      "Alpha insights align with alpha guidelines across multiple contexts"
+    );
+    await expect(secondRow.locator(".snippet-summary")).toHaveText("Beta text");
+    await expect(firstRow.locator("td").nth(1)).toHaveText("docA.md");
+    await expect(secondRow.locator("td").nth(1)).toHaveText("docB.md");
 
     const scores = await rows.evaluateAll((elements) =>
       elements.map((el) => {
@@ -51,10 +81,10 @@ test.describe("Vector search page", () => {
         return parseFloat(scoreCell?.textContent?.trim() ?? "0");
       })
     );
-    expect(scores[0]).toBeGreaterThanOrEqual(scores[1]);
-    expect(scores[0]).toBeGreaterThanOrEqual(scores[1]);
-    expect(scores[0]).toBeGreaterThan(0);
-    expect(scores[1]).toBeGreaterThan(0);
+    const sortedScores = [...scores].sort((a, b) => b - a);
+
+    expect(scores).toEqual(sortedScores);
+    scores.forEach((score) => expect(score).toBeGreaterThan(0));
   });
 
   test("shows empty state when no embeddings are available", async ({ page }) => {
@@ -62,6 +92,7 @@ test.describe("Vector search page", () => {
     await runSearch(page);
 
     await expect(page.locator("#vector-results-table tbody tr")).toHaveCount(0);
+    await expect(page.locator("#search-results-message")).toBeVisible();
     await expect(page.locator("#search-results-message")).toHaveText(
       "No close matches found — refine your query."
     );
@@ -71,8 +102,8 @@ test.describe("Vector search page", () => {
     await gotoVectorSearch(page, { transformerFailure: 500 });
     await runSearch(page);
 
-    await expect(page.locator("#search-results-message")).toHaveText(
-      "An error occurred while searching."
-    );
+    const errorMessage = page.locator("#search-results-message");
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toHaveText("An error occurred while searching.");
   });
 });
