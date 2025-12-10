@@ -559,19 +559,25 @@ function createOnEnterMap() {
 function attachListeners(machineRef) {
   // Setup listener for readyForCooldown event emitted from matchStartEnter
   // This dispatcher "ready" from outside the dispatch context to avoid deadlock
+  console.log("[orchestrator.attachListeners] Setting up readyForCooldown listener");
   onBattleEvent("readyForCooldown", (event) => {
+    console.log("[readyForCooldown-listener] CALLED with event:", event?.detail);
     const detail = event?.detail ?? {};
     // Schedule dispatch to occur after current call stack completes to avoid nested dispatch
     Promise.resolve().then(async () => {
       try {
+        console.log("[readyForCooldown-listener] Scheduling dispatch('ready') with detail:", detail);
         debugLog("orchestrator: readyForCooldown listener dispatching ready");
         await machineRef.dispatch("ready", detail);
+        console.log("[readyForCooldown-listener] dispatch('ready') completed");
         debugLog("orchestrator: readyForCooldown listener completed");
       } catch (error) {
+        console.log("[readyForCooldown-listener] dispatch('ready') FAILED:", error);
         debugLog("orchestrator: failed to dispatch 'ready' for readyForCooldown", error);
       }
     });
   });
+  console.log("[orchestrator.attachListeners] readyForCooldown listener setup complete");
 
   debugLogListener = createDebugLogListener(machineRef);
   onBattleEvent("battleStateChange", domStateListener);

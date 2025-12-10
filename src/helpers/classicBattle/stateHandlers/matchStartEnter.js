@@ -35,15 +35,21 @@ export async function matchStartEnter(machine) {
       return;
     }
 
+    console.log("[matchStartEnter] About to emit matchStart and readyForCooldown events");
+
     emitBattleEvent("matchStart", {
       winTarget: store.winTarget,
       firstPlayer: store.firstPlayer,
       timestamp: Date.now()
     });
 
+    console.log("[matchStartEnter] Emitted matchStart, about to emit readyForCooldown");
+
     // Emit readyForCooldown event; orchestrator will dispatch "ready" from outside this context
     // This avoids nested dispatch calls which cause deadlock
     emitBattleEvent("readyForCooldown", { initial: true });
+
+    console.log("[matchStartEnter] Successfully emitted readyForCooldown event");
   } catch (error) {
     debugLog("matchStartEnter: error during initialization", error);
     reportSentryError(error, {
