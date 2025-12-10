@@ -47,7 +47,13 @@ test.describe("View Judoka screen", () => {
 
       const sequence = [0.1, 0.9];
       let idx = 0;
+      const originalRandom = Math.random;
       Math.random = () => sequence[idx++ % sequence.length];
+      
+      // Restore after test completes
+      page.on('close', () => {
+        Math.random = originalRandom;
+      });
     });
 
     const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
