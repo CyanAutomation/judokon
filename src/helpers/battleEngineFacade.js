@@ -98,6 +98,10 @@ function invokeEngineCreatedListener(listener, engine) {
   } catch (error) {
     if (shouldLogEngineListenerErrors()) {
       console.warn("Engine creation listener failed:", error);
+      // In test environments, rethrow to catch listener bugs early
+      if (isTestEnvironment()) {
+        throw error;
+      }
     }
   }
 }
@@ -250,29 +254,31 @@ export function createBattleEngine(config = {}) {
 }
 
 /**
- * Reset the battle engine to a fresh instance while preserving overrides.
+ * Reset the battle engine to a fresh instance while preserving configuration overrides.
  *
  * @summary Rebuilds the engine so match state (scores, rounds, flags) returns
- * to defaults while reapplying configuration tweaks such as `pointsToWin`.
+ * to defaults while optionally reapplying configuration tweaks such as `pointsToWin`.
  *
  * @pseudocode
  * 1. Attempt to capture the current `pointsToWin` value when an engine exists.
  * 2. Try to reset the existing engine via `_resetForTest()` method.
  * 3. If that fails, create a fresh engine via `createBattleEngine({ forceCreate: true })`.
- * 4. Reapply captured overrides like `pointsToWin` on the engine before returning.
+ * 4. Reapply captured and provided config overrides on the engine before returning.
  *
+ * @param {object} [preserveConfig] - Additional config values to preserve (e.g., { pointsToWin: 2 })
  * @returns {IBattleEngine} Refreshed engine instance.
  */
-export function resetBattleEnginePreservingConfig() {
-  let preservedPointsToWin = null;
+export function resetBattleEnginePreservingConfig(preserveConfig = {}) {
+  let config = { ...preserveConfig };
   let existingEngine = null;
 
   try {
     existingEngine = requireEngine();
-    if (existingEngine && typeof existingEngine.getPointsToWin === "function") {
+    // Preserve pointsToWin unless explicitly overridden
+    if (!("pointsToWin" in preserveConfig) && typeof existingEngine.getPointsToWin === "function") {
       const candidate = Number(existingEngine.getPointsToWin());
       if (Number.isFinite(candidate)) {
-        preservedPointsToWin = candidate;
+        config.pointsToWin = candidate;
       }
     }
   } catch {
@@ -287,14 +293,16 @@ export function resetBattleEnginePreservingConfig() {
   // Update module-level reference to ensure all subsequent calls get the reset engine
   battleEngine = engine;
 
-  if (typeof preservedPointsToWin === "number" && Number.isFinite(preservedPointsToWin)) {
+  // Reapply any configuration overrides
+  if (typeof config.pointsToWin === "number" && Number.isFinite(config.pointsToWin)) {
     try {
-      engine?.setPointsToWin?.(preservedPointsToWin);
+      engine?.setPointsToWin?.(config.pointsToWin);
     } catch (error) {
       // Ignore failures so replay flow can proceed with default thresholds.
       logger.warn("Failed to restore pointsToWin after reset:", error);
     }
   }
+
   return engine;
 }
 
