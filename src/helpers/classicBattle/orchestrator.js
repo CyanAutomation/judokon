@@ -555,10 +555,14 @@ function createOnEnterMap() {
 function setupReadyForCooldownListener(machineRef) {
   debugLog("setupReadyForCooldownListener: Setting up readyForCooldown listener");
   onBattleEvent("readyForCooldown", (event) => {
-    debugLog("readyForCooldown-listener: CALLED - noting to do for now");
-    // TODO: Dispatch ready to continue state machine
-    // This is currently disabled because it was causing hangs.
-    // We need to find a way to dispatch("ready") without deadlocking.
+    debugLog("readyForCooldown-listener: CALLED");
+    const detail = event?.detail ?? {};
+    try {
+      machineRef.dispatch("ready", detail);
+      debugLog("readyForCooldown-listener: dispatch('ready') completed");
+    } catch (error) {
+      debugLog("readyForCooldown-listener: dispatch('ready') threw error:", error);
+    }
   });
   debugLog("setupReadyForCooldownListener: listener setup complete");
 }

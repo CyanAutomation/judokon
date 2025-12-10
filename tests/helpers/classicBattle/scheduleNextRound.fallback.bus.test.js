@@ -78,8 +78,8 @@ describe("bus propagation and deduplication", () => {
     });
     expect(busResult).toBe(true);
     expect(mockState.dispatchSpy).toHaveBeenCalledTimes(2);
-    expect(mockState.dispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
-    expect(mockState.dispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
+    expect(mockState.dispatchSpy).toHaveBeenNthCalledWith(1, "ready");
+    expect(mockState.dispatchSpy).toHaveBeenNthCalledWith(2, "ready");
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
       expect.objectContaining({
