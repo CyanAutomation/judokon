@@ -87,7 +87,7 @@ describe("battleCLI accessibility smoke tests", () => {
   });
 
   it("announces round results through the polite live region", () => {
-    const getScoresSpy = vi.spyOn(engineFacade, "getScores").mockReturnValue({
+    const getScoresSpy = vi.spyOn(engineFacade.default || engineFacade, "getScores").mockReturnValue({
       playerScore: 1,
       opponentScore: 0
     });
@@ -151,6 +151,7 @@ describe("battleCLI accessibility smoke tests", () => {
       expect(bar?.textContent).toBe("Use 1-5, press H for help");
       expect(observeSpy).toHaveBeenCalledWith(container, { childList: true });
 
+      expect(observerCallback).toBeDefined();
       bar?.remove();
       observerCallback?.([{ removedNodes: [bar] }]);
       expect(disconnectSpy).toHaveBeenCalled();
