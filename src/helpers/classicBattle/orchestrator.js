@@ -559,28 +559,33 @@ function createOnEnterMap() {
 function attachListeners(machineRef) {
   // Setup listener for readyForCooldown event emitted from matchStartEnter
   // This dispatcher "ready" from outside the dispatch context to avoid deadlock
-  console.log("[orchestrator.attachListeners] Setting up readyForCooldown listener");
-  onBattleEvent("readyForCooldown", async (event) => {
-    console.log("[readyForCooldown-listener] CALLED with event:", event?.detail);
+  debugLog("attachListeners: Setting up readyForCooldown listener");
+  onBattleEvent("readyForCooldown", (event) => {
+    debugLog("readyForCooldown-listener: CALLED with event detail:", event?.detail);
     const detail = event?.detail ?? {};
-    // Dispatch and await the result - the event context is outside the dispatch call
-    // so there's no nested dispatch deadlock
-    try {
-      console.log("[readyForCooldown-listener] About to dispatch('ready') with detail:", detail);
-      // Dispatch synchronously and await the returned promise
-      const result = machineRef.dispatch("ready", detail);
-      console.log("[readyForCooldown-listener] dispatch('ready') returned:", result);
-      // If it returned a promise, wait for it
-      if (result && typeof result.then === "function") {
-        await result;
-        console.log("[readyForCooldown-listener] dispatch('ready') promise resolved");
+    // Schedule dispatch to happen after current call stack but synchronously
+    // Use setTimeout with 0ms delay to ensure we're outside the dispatch context
+    setTimeout(() => {
+      debugLog("readyForCooldown-listener: setTimeout fired, about to dispatch('ready')");
+      try {
+        const result = machineRef.dispatch("ready", detail);
+        debugLog("readyForCooldown-listener: dispatch('ready') returned:", result);
+        // If it returned a promise, log when it completes
+        if (result && typeof result.then === "function") {
+          result.then(() => {
+            debugLog("readyForCooldown-listener: dispatch('ready') promise resolved");
+          }).catch((error) => {
+            debugLog("readyForCooldown-listener: dispatch('ready') promise rejected:", error);
+            debugLog("orchestrator: dispatch('ready') promise rejected", error);
+          });
+        }
+      } catch (error) {
+        debugLog("readyForCooldown-listener: dispatch('ready') threw error:", error);
+        debugLog("orchestrator: failed to dispatch 'ready' for readyForCooldown", error);
       }
-    } catch (error) {
-      console.log("[readyForCooldown-listener] dispatch('ready') FAILED:", error);
-      debugLog("orchestrator: failed to dispatch 'ready' for readyForCooldown", error);
-    }
+    }, 0);
   });
-  console.log("[orchestrator.attachListeners] readyForCooldown listener setup complete");
+  debugLog("attachListeners: readyForCooldown listener setup complete");
 
   debugLogListener = createDebugLogListener(machineRef);
   onBattleEvent("battleStateChange", domStateListener);
