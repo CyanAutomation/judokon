@@ -107,6 +107,9 @@ describe("battleCLI accessibility smoke tests", () => {
       const positiveTabIndexElements = getTabbableElements().filter((el) => el.tabIndex > 0);
       expect(positiveTabIndexElements).toHaveLength(0);
 
+      // Ensure no element is focused initially
+      document.activeElement?.blur();
+      
       await user.tab();
       expect(document.activeElement).toBe(skip);
 
