@@ -203,6 +203,13 @@ function resolveMachineContext(overrides, deps) {
   const startRoundWrapper = overrides.startRoundWrapper ?? deps.startRoundWrapper ?? null;
   const stateTable = overrides.stateTable ?? deps.stateTable ?? null;
 
+  if (!store) {
+    debugLog("Warning: resolveMachineContext - no store provided");
+  }
+  if (!scheduler) {
+    debugLog("Warning: resolveMachineContext - no scheduler provided");
+  }
+
   const context = { ...overrides };
   if (!("store" in context)) context.store = store;
   if (scheduler && !("scheduler" in context)) context.scheduler = scheduler;
@@ -287,6 +294,7 @@ export async function initClassicBattleOrchestrator(
 
   if (machineInitPromise) {
     window.__ORCHESTRATOR_EARLY_RETURN_PROMISE = true;
+    debugLog("initClassicBattleOrchestrator: already initializing, returning machineInitPromise");
     return machineInitPromise;
   }
   window.__ORCHESTRATOR_STARTING_INIT = true;
@@ -316,6 +324,7 @@ export async function initClassicBattleOrchestrator(
       return machine;
     } catch (error) {
       machine = null;
+      debugLog("initClassicBattleOrchestrator: failed to initialize state manager", error);
       throw error;
     } finally {
       machineInitPromise = null;
