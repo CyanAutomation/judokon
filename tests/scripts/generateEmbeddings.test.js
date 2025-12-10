@@ -120,8 +120,13 @@ function extractNestedValue(obj) {
 async function loadDataFile(dataDir, base) {
   const filePath = path.join(dataDir, base);
   if (base.endsWith(".json")) {
+  if (base.endsWith(".json")) {
     const raw = await readFile(filePath, "utf8");
-    return JSON.parse(raw);
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      throw new Error(`Failed to parse JSON file ${base}: ${error.message}`);
+    }
   }
   const module = await import(pathToFileURL(filePath));
   return module.default ?? module;
