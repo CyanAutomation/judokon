@@ -13,7 +13,7 @@ const createJSDOMUserEvent = () => ({
     const active = document.activeElement;
     const currentIndex = tabbables.indexOf(active);
     const delta = shift ? -1 : 1;
-    const nextIndex = Math.min(Math.max(currentIndex + delta, 0), tabbables.length - 1);
+    const nextIndex = (currentIndex + delta + tabbables.length) % tabbables.length;
     active?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
     tabbables[nextIndex]?.focus();
     tabbables[nextIndex]?.dispatchEvent(new KeyboardEvent("keyup", { key: "Tab", bubbles: true }));
