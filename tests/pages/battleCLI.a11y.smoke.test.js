@@ -2,6 +2,25 @@ import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } 
 import { readFileSync } from "node:fs";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
+const getTabbableElements = () =>
+  Array.from(document.querySelectorAll("a[href], button, [tabindex]"))
+    .filter((el) => !el.hasAttribute("disabled"))
+    .filter((el) => el.tabIndex >= 0);
+
+const createJSDOMUserEvent = () => ({
+  async tab({ shift = false } = {}) {
+    const tabbables = getTabbableElements();
+    const active = document.activeElement;
+    const currentIndex = tabbables.indexOf(active);
+    const delta = shift ? -1 : 1;
+    const nextIndex = Math.min(Math.max(currentIndex + delta, 0), tabbables.length - 1);
+    active?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    tabbables[nextIndex]?.focus();
+    tabbables[nextIndex]?.dispatchEvent(new KeyboardEvent("keyup", { key: "Tab", bubbles: true }));
+    await Promise.resolve();
+  }
+});
+
 let battleCLI;
 
 beforeAll(async () => {
@@ -72,14 +91,41 @@ describe("battleCLI accessibility smoke tests", () => {
     expect(document.querySelector("main[role='main']")).toBeTruthy();
   });
 
-  it("places skip link first in focus order", () => {
-    const html = readFileSync("src/pages/battleCLI.html", "utf8");
-    document.documentElement.innerHTML = html;
-    const focusables = Array.from(document.querySelectorAll("a[href], button, [tabindex]")).filter(
-      (el) => !el.hasAttribute("disabled") && el.tabIndex >= 0
-    );
-    expect(focusables[0]?.classList.contains("skip-link")).toBe(true);
-    expect(focusables[1]?.getAttribute("data-testid")).toBe("home-link");
+  it("places skip link first in focus order", async () => {
+    const cli = await loadBattleCLI();
+
+    try {
+      await cli.init();
+
+      const user = createJSDOMUserEvent();
+      const skip = document.querySelector("a.skip-link");
+      const home = document.querySelector("[data-testid='home-link']");
+
+      expect(skip?.tabIndex).toBe(0);
+      expect(home?.tabIndex ?? 0).toBe(0);
+
+      const positiveTabIndexElements = getTabbableElements().filter((el) => el.tabIndex > 0);
+      expect(positiveTabIndexElements).toHaveLength(0);
+
+      await user.tab();
+      expect(document.activeElement).toBe(skip);
+
+      await user.tab();
+      expect(document.activeElement).toBe(home);
+
+      const lateFocusable = document.createElement("button");
+      lateFocusable.type = "button";
+      lateFocusable.id = "probe-focusable";
+      lateFocusable.textContent = "Probe focus";
+      document.getElementById("cli-root")?.append(lateFocusable);
+
+      const tabbables = getTabbableElements();
+      expect(tabbables[0]).toBe(skip);
+      expect(tabbables[1]).toBe(home);
+    } finally {
+      await cleanupBattleCLI();
+      window.__TEST__ = true;
+    }
   });
 
   describe("skip link interactions", () => {
