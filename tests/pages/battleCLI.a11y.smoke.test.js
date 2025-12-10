@@ -11,7 +11,7 @@ const createJSDOMUserEvent = () => ({
   async tab({ shift = false } = {}) {
     const tabbables = getTabbableElements();
     const active = document.activeElement;
-    const currentIndex = tabbables.indexOf(active);
+    const currentIndex = active === document.body ? -1 : tabbables.indexOf(active);
     const delta = shift ? -1 : 1;
     const nextIndex = (currentIndex + delta + tabbables.length) % tabbables.length;
     active?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
