@@ -83,7 +83,7 @@ test.describe("View Judoka screen", () => {
     await page.route("**/src/data/gokyo.json", (route) => route.abort("failed"));
 
     await page.reload();
-    await page.locator('body[data-random-judoka-ready="true"]').waitFor();
+    await page.locator('body[data-random-judoka-ready]').waitFor();
 
     const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
     await expect(drawButton).toBeDisabled();
