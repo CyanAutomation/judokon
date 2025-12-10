@@ -109,7 +109,7 @@ describe("battleCLI accessibility smoke tests", () => {
 
       // Ensure no element is focused initially
       document.activeElement?.blur();
-      
+
       await user.tab();
       expect(document.activeElement).toBe(skip);
 
@@ -125,7 +125,7 @@ describe("battleCLI accessibility smoke tests", () => {
       const tabbables = getTabbableElements();
       expect(tabbables[0]).toBe(skip);
       expect(tabbables[1]).toBe(home);
-      
+
       // Clean up test element
       lateFocusable.remove();
     } finally {
@@ -144,9 +144,9 @@ describe("battleCLI accessibility smoke tests", () => {
       const cli = await loadBattleCLI();
       await cli.init();
 
-      const focusables = Array.from(document.querySelectorAll("a[href], button, [tabindex]")).filter(
-        (el) => !el.hasAttribute("disabled") && el.tabIndex >= 0
-      );
+      const focusables = Array.from(
+        document.querySelectorAll("a[href], button, [tabindex]")
+      ).filter((el) => !el.hasAttribute("disabled") && el.tabIndex >= 0);
       const skip = focusables[0];
       const main = document.getElementById("cli-main");
 

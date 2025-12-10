@@ -30,9 +30,7 @@ describe("initTooltips", () => {
       stat: { test: "**Bold**\n_italic_" }
     });
 
-    const { initTooltips } = await import(
-      "../../src/helpers/tooltip.js"
-    );
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
     const el = document.createElement("button");
     el.dataset.tooltipId = "stat.test";
@@ -56,9 +54,7 @@ describe("initTooltips", () => {
     fetchJson.mockResolvedValue({});
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { initTooltips } = await import(
-      "../../src/helpers/tooltip.js"
-    );
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
     const el = document.createElement("div");
     el.dataset.tooltipId = "missing";
@@ -84,9 +80,7 @@ describe("initTooltips", () => {
     fetchJson.mockResolvedValue({});
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { initTooltips } = await import(
-      "../../src/helpers/tooltip.js"
-    );
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
     const el = document.createElement("div");
     el.setAttribute("data-tooltip-id", "");

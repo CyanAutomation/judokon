@@ -42,7 +42,7 @@ function renderCarouselCard(className = "card") {
     try {
       testApi.cleanup();
     } catch (error) {
-      console.warn('Cleanup task failed:', error);
+      console.warn("Cleanup task failed:", error);
     }
   });
 
@@ -66,7 +66,7 @@ afterEach(() => {
     try {
       fn();
     } catch (error) {
-      console.warn('Cleanup task failed:', error);
+      console.warn("Cleanup task failed:", error);
     }
   });
   cleanupTasks = [];
