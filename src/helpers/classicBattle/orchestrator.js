@@ -557,29 +557,20 @@ function setupReadyForCooldownListener(machineRef) {
   onBattleEvent("readyForCooldown", (event) => {
     debugLog("readyForCooldown-listener: CALLED with event detail:", event?.detail);
     const detail = event?.detail ?? {};
-    // Schedule dispatch to happen after current call stack but synchronously
-    // Use setTimeout with 0ms delay to ensure we're outside the dispatch context
-    setTimeout(() => {
-      debugLog("readyForCooldown-listener: setTimeout fired, about to dispatch('ready')");
-      try {
-        const result = machineRef.dispatch("ready", detail);
-        debugLog("readyForCooldown-listener: dispatch('ready') returned:", result);
-        // If it returned a promise, log when it completes
-        if (result && typeof result.then === "function") {
-          result
-            .then(() => {
-              debugLog("readyForCooldown-listener: dispatch('ready') promise resolved");
-            })
-            .catch((error) => {
-              debugLog("readyForCooldown-listener: dispatch('ready') promise rejected:", error);
-              debugLog("orchestrator: dispatch('ready') promise rejected", error);
-            });
-        }
-      } catch (error) {
-        debugLog("readyForCooldown-listener: dispatch('ready') threw error:", error);
+    // Dispatch using Promise.resolve().then() to schedule after current microtask
+    // This ensures we're outside the nested dispatch context
+    Promise.resolve()
+      .then(() => {
+        debugLog("readyForCooldown-listener: microtask firing, dispatching('ready')");
+        return machineRef.dispatch("ready", detail);
+      })
+      .then((result) => {
+        debugLog("readyForCooldown-listener: dispatch('ready') completed:", result);
+      })
+      .catch((error) => {
+        debugLog("readyForCooldown-listener: dispatch('ready') failed:", error);
         debugLog("orchestrator: failed to dispatch 'ready' for readyForCooldown", error);
-      }
-    }, 0);
+      });
   });
   debugLog("setupReadyForCooldownListener: readyForCooldown listener setup complete");
 }
