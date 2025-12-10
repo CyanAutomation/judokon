@@ -125,6 +125,9 @@ describe("battleCLI accessibility smoke tests", () => {
       const tabbables = getTabbableElements();
       expect(tabbables[0]).toBe(skip);
       expect(tabbables[1]).toBe(home);
+      
+      // Clean up test element
+      lateFocusable.remove();
     } finally {
       await cleanupBattleCLI();
       window.__TEST__ = true;
