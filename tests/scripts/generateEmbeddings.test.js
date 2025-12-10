@@ -29,9 +29,7 @@ describe("JSON_FIELD_ALLOWLIST", () => {
 
   it("emits only allowlisted values for sample data entries", async () => {
     const dataDir = path.resolve(__dirname, "../../src/data");
-    const allowlists = Object.entries(JSON_FIELD_ALLOWLIST).filter(
-      ([base]) => base !== "default"
-    );
+    const allowlists = Object.entries(JSON_FIELD_ALLOWLIST).filter(([base]) => base !== "default");
     const unexpectedValue = "unexpected-field";
 
     for (const [base, allowlist] of allowlists) {
@@ -43,6 +41,7 @@ describe("JSON_FIELD_ALLOWLIST", () => {
         continue;
       }
 
+      const sampleEntry = pickSampleEntry(data, allowlist);
       expect(sampleEntry, `${base} should provide sample data`).toBeDefined();
 
       const entryWithUnexpected = addUnexpectedField(sampleEntry, unexpectedValue);
@@ -109,12 +108,9 @@ function shouldUseNestedValue(candidate, allowlist) {
     return false;
   }
   const flattenedKeys = Object.keys(flattenSample(candidate));
-  return !flattenedKeys.some((key) =>
-    allowlist.some((field) => matchesAllowlistedKey(key, field))
-  );
+  return !flattenedKeys.some((key) => allowlist.some((field) => matchesAllowlistedKey(key, field)));
 }
 
-function extractNestedValue(obj) {
 function extractNestedValue(obj) {
   const entries = Object.entries(obj);
   if (entries.length === 0) return obj;
