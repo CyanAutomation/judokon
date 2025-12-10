@@ -35,6 +35,7 @@ export async function matchStartEnter(machine) {
 
     // Emit readyForCooldown event; orchestrator will dispatch "ready" from outside this context
     // This avoids nested dispatch calls which cause deadlock
+    debugLog("matchStartEnter: emitting readyForCooldown event");
     emitBattleEvent("readyForCooldown", { initial: true });
   } catch (error) {
     debugLog("matchStartEnter: error during initialization", error);

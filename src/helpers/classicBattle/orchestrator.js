@@ -560,6 +560,20 @@ function attachListeners(machineRef) {
   debugLogListener = createDebugLogListener(machineRef);
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);
+  
+  // Listen for readyForCooldown event emitted from matchStartEnter onEnter handler
+  // and dispatch "ready" from outside the dispatch context to avoid nested dispatch deadlock
+  onBattleEvent("readyForCooldown", async (event) => {
+    const detail = event?.detail ?? {};
+    try {
+      debugLog("orchestrator: readyForCooldown listener triggered, dispatching ready");
+      await machineRef.dispatch("ready", detail);
+      debugLog("orchestrator: readyForCooldown listener completed");
+    } catch (error) {
+      debugLog("orchestrator: failed to dispatch 'ready' for readyForCooldown", error);
+    }
+  });
+  
   const initialDetail = { from: null, to: machineRef.getState(), event: "init" };
   domStateListener({ detail: initialDetail });
   debugLogListener({ detail: initialDetail });

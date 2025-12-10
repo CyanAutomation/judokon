@@ -35,7 +35,6 @@ describe("JSON_FIELD_ALLOWLIST", () => {
     const unexpectedValue = "unexpected-field";
 
     for (const [base, allowlist] of allowlists) {
-    for (const [base, allowlist] of allowlists) {
       let data;
       try {
         data = await loadDataFile(dataDir, base);
@@ -125,7 +124,6 @@ function extractNestedValue(obj) {
 
 async function loadDataFile(dataDir, base) {
   const filePath = path.join(dataDir, base);
-  if (base.endsWith(".json")) {
   if (base.endsWith(".json")) {
     const raw = await readFile(filePath, "utf8");
     try {
