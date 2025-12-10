@@ -20,42 +20,28 @@ import { reportSentryError } from "./sentryReporter.js";
  */
 export async function matchStartEnter(machine) {
   try {
-    console.log("[matchStartEnter] ENTERING handler");
-
     if (!machine || typeof machine.dispatch !== "function") {
-      console.log("[matchStartEnter] EARLY RETURN: invalid machine context");
       debugLog("matchStartEnter: invalid machine context");
       return;
     }
 
     const store = machine?.context?.store ?? {};
-    console.log("[matchStartEnter] Store context:", {
-      hasStore: !!store,
-      winTarget: store.winTarget,
-      firstPlayer: store.firstPlayer
-    });
 
-    // Note: winTarget and firstPlayer may not be set yet; that's OK
-    // The onEnter handler just needs to emit the event
-    // The actual values will be populated by other handlers
-
-    console.log("[matchStartEnter] About to emit matchStart and readyForCooldown events");
-
+    // Emit matchStart event for UI/analytics
     emitBattleEvent("matchStart", {
       winTarget: store.winTarget,
       firstPlayer: store.firstPlayer,
       timestamp: Date.now()
     });
 
-    console.log("[matchStartEnter] Emitted matchStart, about to emit readyForCooldown");
-
-    // Emit readyForCooldown event; orchestrator will dispatch "ready" from outside this context
-    // This avoids nested dispatch calls which cause deadlock
+    // NOTE: Previously this handler tried to dispatch("ready") to transition to cooldown.
+    // This caused a nested dispatch deadlock. We now rely on a separate mechanism
+    // to handle the state transition. The readyForCooldown event will be emitted,
+    // and the orchestrator listener will dispatch("ready") to continue the chain.
+    
+    // Emit the readyForCooldown event to signal the orchestrator to dispatch ready
     emitBattleEvent("readyForCooldown", { initial: true });
-
-    console.log("[matchStartEnter] Successfully emitted readyForCooldown event");
   } catch (error) {
-    debugLog("matchStartEnter: error during initialization", error);
     reportSentryError(error, {
       contexts: { location: "matchStartEnter" }
     });

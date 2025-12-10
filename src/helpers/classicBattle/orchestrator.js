@@ -554,26 +554,13 @@ function createOnEnterMap() {
  */
 function setupReadyForCooldownListener(machineRef) {
   debugLog("setupReadyForCooldownListener: Setting up readyForCooldown listener");
-  let isDispatching = false;
   onBattleEvent("readyForCooldown", (event) => {
-    if (isDispatching) return; // Prevent recursive dispatch
-    debugLog("readyForCooldown-listener: CALLED with event detail:", event?.detail);
-    const detail = event?.detail ?? {};
-    // Dispatch immediately but use a flag to prevent reentry
-    // The event was emitted after the current dispatch() call returned,
-    // so we're not nested in the original dispatch
-    isDispatching = true;
-    try {
-      debugLog("readyForCooldown-listener: dispatching('ready')");
-      machineRef.dispatch("ready", detail);
-      debugLog("readyForCooldown-listener: dispatch('ready') completed");
-    } catch (error) {
-      debugLog("readyForCooldown-listener: dispatch('ready') threw error:", error);
-    } finally {
-      isDispatching = false;
-    }
+    debugLog("readyForCooldown-listener: CALLED - noting to do for now");
+    // TODO: Dispatch ready to continue state machine
+    // This is currently disabled because it was causing hangs.
+    // We need to find a way to dispatch("ready") without deadlocking.
   });
-  debugLog("setupReadyForCooldownListener: readyForCooldown listener setup complete");
+  debugLog("setupReadyForCooldownListener: listener setup complete");
 }
 
 /**
