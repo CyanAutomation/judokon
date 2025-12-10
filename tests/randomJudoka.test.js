@@ -428,12 +428,9 @@ describe("Random Judoka Selection", () => {
     });
 
     it("includes validated filters and candidate counts in metadata", () => {
-      const filters = { country: "Japan", rarity: "Epic" }; // Matches Yuki Tanaka, more flexible
+      const filters = { country: "Japan", rarity: "Epic" }; // Matches Yuki Tanaka
       const expectedCandidates = mockJudoka.filter(
-        (entry) =>
-          entry.country === filters.country &&
-          entry.rarity === filters.rarity &&
-          entry.weightClass === filters.weightClass
+        (entry) => entry.country === filters.country && entry.rarity === filters.rarity
       );
       const result = getRandomJudokaWithMetadata(mockJudoka, filters);
 
@@ -452,8 +449,7 @@ describe("Random Judoka Selection", () => {
       expect(expectedCandidates).toContainEqual(judoka);
       expect(judoka).toMatchObject({
         country: filters.country,
-        rarity: filters.rarity,
-        weightClass: filters.weightClass
+        rarity: filters.rarity
       });
     });
 

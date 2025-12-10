@@ -20,14 +20,23 @@ import { reportSentryError } from "./sentryReporter.js";
  */
 export async function matchStartEnter(machine) {
   try {
+    console.log("[matchStartEnter] ENTERING handler");
+    
     if (!machine || typeof machine.dispatch !== "function") {
+      console.log("[matchStartEnter] EARLY RETURN: invalid machine context");
       debugLog("matchStartEnter: invalid machine context");
       return;
     }
 
     const store = machine?.context?.store ?? {};
+    console.log("[matchStartEnter] Store context:", {
+      hasStore: !!store,
+      winTarget: store.winTarget,
+      firstPlayer: store.firstPlayer
+    });
 
     if (!store.winTarget || typeof store.firstPlayer === "undefined") {
+      console.log("[matchStartEnter] EARLY RETURN: incomplete store context");
       debugLog("matchStartEnter: incomplete store context", {
         winTarget: store.winTarget,
         firstPlayer: store.firstPlayer
