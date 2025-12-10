@@ -110,6 +110,7 @@ describe("countdown resets after stat selection", () => {
   let battleMod;
   let store;
   let snackbarMock;
+  let promptReadySpy;
   afterEach(() => {
     promptReadyMock.mockReset().mockReturnValue(true);
   });
