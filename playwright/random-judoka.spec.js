@@ -110,7 +110,7 @@ test.describe("View Judoka screen", () => {
   });
 
   test("draw button remains within viewport", async ({ page }) => {
-    const btn = page.getByTestId("draw-button");
+    const btn = page.getByRole("button", { name: /draw a random judoka card/i });
     const { bottom, innerHeight } = await btn.evaluate((el) => {
       const rect = el.getBoundingClientRect();
       return { bottom: rect.bottom, innerHeight: window.innerHeight };
