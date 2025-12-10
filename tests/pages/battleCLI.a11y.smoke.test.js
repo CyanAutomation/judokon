@@ -144,7 +144,7 @@ describe("battleCLI accessibility smoke tests", () => {
     window.__FF_OVERRIDES = { statHotkeys: true };
 
     try {
-      battleCLI.handleWaitingForPlayerActionKey("6");
+      battleCLI.handleWaitingForPlayerActionKey("9");
 
       const container = document.getElementById("snackbar-container");
       const bar = container?.querySelector(".snackbar");
