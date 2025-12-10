@@ -572,12 +572,14 @@ function attachListeners(machineRef) {
         debugLog("readyForCooldown-listener: dispatch('ready') returned:", result);
         // If it returned a promise, log when it completes
         if (result && typeof result.then === "function") {
-          result.then(() => {
-            debugLog("readyForCooldown-listener: dispatch('ready') promise resolved");
-          }).catch((error) => {
-            debugLog("readyForCooldown-listener: dispatch('ready') promise rejected:", error);
-            debugLog("orchestrator: dispatch('ready') promise rejected", error);
-          });
+          result
+            .then(() => {
+              debugLog("readyForCooldown-listener: dispatch('ready') promise resolved");
+            })
+            .catch((error) => {
+              debugLog("readyForCooldown-listener: dispatch('ready') promise rejected:", error);
+              debugLog("orchestrator: dispatch('ready') promise rejected", error);
+            });
         }
       } catch (error) {
         debugLog("readyForCooldown-listener: dispatch('ready') threw error:", error);
