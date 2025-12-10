@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import path from "node:path";
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import {
   JSON_FIELD_ALLOWLIST,
   BOILERPLATE_STRINGS,
@@ -25,7 +26,147 @@ describe("JSON_FIELD_ALLOWLIST", () => {
       expect(JSON_FIELD_ALLOWLIST).toHaveProperty(file);
     }
   });
+
+  it("emits only allowlisted values for sample data entries", async () => {
+    const dataDir = path.resolve(__dirname, "../../src/data");
+    const allowlists = Object.entries(JSON_FIELD_ALLOWLIST).filter(
+      ([base]) => base !== "default"
+    );
+    const unexpectedValue = "unexpected-field";
+
+    for (const [base, allowlist] of allowlists) {
+      const data = await loadDataFile(dataDir, base);
+      const sampleEntry = pickSampleEntry(data, allowlist);
+
+      expect(sampleEntry, `${base} should provide sample data`).toBeDefined();
+
+      const entryWithUnexpected = addUnexpectedField(sampleEntry, unexpectedValue);
+      const output = extractAllowedValues(base, entryWithUnexpected);
+
+      if (allowlist === false) {
+        expect(output).toBeUndefined();
+        continue;
+      }
+
+      const flattened = flattenSample(sampleEntry);
+      const allowlistedKeys = Array.isArray(allowlist)
+        ? Object.keys(flattened).filter((key) =>
+            allowlist.some((field) => matchesAllowlistedKey(key, field))
+          )
+        : Object.keys(flattened);
+      const allowlistedValues = allowlistedKeys
+        .map((key) => stringifyAllowedValue(flattened[key]))
+        .filter((value) => value !== undefined);
+
+      expect(allowlistedValues.length).toBeGreaterThan(0);
+
+      const baselineOutput = extractAllowedValues(base, sampleEntry);
+
+      if (allowlist === true) {
+        expect(output).toBeDefined();
+        for (const value of allowlistedValues) {
+          expect(output).toContain(value);
+        }
+        expect(output).toContain(unexpectedValue);
+        continue;
+      }
+
+      expect(output).toBe(baselineOutput);
+      expect(output).toBeDefined();
+      for (const value of allowlistedValues) {
+        expect(output).toContain(value);
+      }
+      expect(output).not.toContain(unexpectedValue);
+    }
+  });
 });
+
+function pickSampleEntry(data, allowlist) {
+  if (Array.isArray(data)) {
+    const firstItem = data[0];
+    if (Array.isArray(allowlist) && shouldUseNestedValue(firstItem, allowlist)) {
+      return extractNestedValue(firstItem);
+    }
+    return firstItem;
+  }
+  if (data && typeof data === "object") {
+    if (Array.isArray(allowlist) && shouldUseNestedValue(data, allowlist)) {
+      return extractNestedValue(data);
+    }
+    return data;
+  }
+  return data;
+}
+
+function shouldUseNestedValue(candidate, allowlist) {
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+    return false;
+  }
+  const flattenedKeys = Object.keys(flattenSample(candidate));
+  return !flattenedKeys.some((key) =>
+    allowlist.some((field) => matchesAllowlistedKey(key, field))
+  );
+}
+
+function extractNestedValue(obj) {
+  const [, firstValue] = Object.entries(obj)[0] ?? [];
+  return firstValue !== undefined ? firstValue : obj;
+}
+
+async function loadDataFile(dataDir, base) {
+  const filePath = path.join(dataDir, base);
+  if (base.endsWith(".json")) {
+    const raw = await readFile(filePath, "utf8");
+    return JSON.parse(raw);
+  }
+  const module = await import(pathToFileURL(filePath));
+  return module.default ?? module;
+}
+
+function addUnexpectedField(entry, unexpectedValue) {
+  if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+    return { ...entry, unexpectedField: unexpectedValue };
+  }
+  return { value: entry, unexpectedField: unexpectedValue };
+}
+
+function flattenSample(obj, prefix = "") {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+    return { [prefix || "value"]: obj };
+  }
+
+  return Object.entries(obj).reduce((acc, [key, value]) => {
+    const id = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      Object.assign(acc, flattenSample(value, id));
+    } else {
+      acc[id] = value;
+    }
+    return acc;
+  }, {});
+}
+
+function matchesAllowlistedKey(key, field) {
+  return key === field || key.startsWith(`${field}.`);
+}
+
+function stringifyAllowedValue(value) {
+  if (value === undefined || value === null) return undefined;
+  if (Array.isArray(value)) {
+    const items = value
+      .map((item) => stringifyAllowedValue(item))
+      .filter((item) => item !== undefined);
+    return items.length ? items.join(", ") : undefined;
+  }
+  if (typeof value === "object") {
+    const items = Object.values(value)
+      .map((item) => stringifyAllowedValue(item))
+      .filter((item) => item !== undefined);
+    return items.length ? items.join(", ") : undefined;
+  }
+  const text = String(value).trim();
+  return text ? text : undefined;
+}
 
 describe("extractAllowedValues", () => {
   it("returns only allowlisted fields", () => {
