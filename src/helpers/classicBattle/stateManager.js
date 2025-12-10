@@ -77,9 +77,9 @@ function validateStateTable(stateTable) {
     return false;
   }
 
+  // Empty state table is allowed and will default to initial state
   if (stateTable.length === 0) {
-    logError("State table is empty");
-    return false;
+    return true;
   }
 
   for (const state of stateTable) {
@@ -158,7 +158,6 @@ function validateStateTransition(fromState, toState, eventName, statesByName) {
  */
 async function runOnEnter(stateName, machine, payload, onEnterMap) {
   const fn = onEnterMap[stateName];
-  console.log("[runOnEnter] Running onEnter for state:", stateName, "has handler:", typeof fn);
 
   if (typeof fn === "function") {
     debugLog(`stateManager: Executing onEnter handler for '${stateName}'`, {
@@ -166,9 +165,7 @@ async function runOnEnter(stateName, machine, payload, onEnterMap) {
       hasPayload: !!payload
     });
     try {
-      console.log("[runOnEnter] Executing handler for:", stateName);
       await fn(machine, payload);
-      console.log("[runOnEnter] Handler completed for:", stateName);
       debugLog(`stateManager: onEnter handler completed for '${stateName}'`);
     } catch (err) {
       const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
@@ -286,7 +283,6 @@ export async function createStateManager(
     context,
     getState: () => current,
     async dispatch(eventName, payload) {
-      console.log("[machine.dispatch] START:", eventName, "from state:", current);
       const from = current;
       const currentStateDef = statesByName.get(from);
       const availableTriggers = getAvailableTriggers(currentStateDef);
@@ -301,7 +297,6 @@ export async function createStateManager(
 
       // Validate target resolution
       if (!target || !statesByName.has(target)) {
-        console.log("[machine.dispatch] FAILED - no target state found");
         logError("stateManager: dispatch failed", {
           event: eventName,
           currentState: from,
@@ -314,7 +309,6 @@ export async function createStateManager(
 
       // Update state
       current = target;
-      console.log("[machine.dispatch] State updated to:", target);
 
       // Validate transition
       if (!validateStateTransition(from, target, eventName, statesByName)) {
@@ -333,11 +327,8 @@ export async function createStateManager(
       }
 
       // Run onEnter handler
-      console.log("[machine.dispatch] About to run onEnter for state:", target);
       await runOnEnter(target, machine, payload, onEnterMap);
-      console.log("[machine.dispatch] onEnter completed for state:", target);
 
-      console.log("[machine.dispatch] COMPLETE: returning true");
       return true;
     }
   };

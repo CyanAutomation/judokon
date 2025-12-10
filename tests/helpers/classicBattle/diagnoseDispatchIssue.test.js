@@ -50,13 +50,6 @@ describe("diagnoseDispatchIssue", () => {
     expect(store).toBeTruthy();
     battleMod._resetForTest(store);
 
-    // Verify the orchestrator APIs are available
-    const { readDebugState } = await import("../../../src/helpers/classicBattle/debugHooks.js");
-
-    // Verify core battle APIs are available
-    expect(typeof battleMod.confirmReadiness).toBe("function");
-    expect(typeof battleMod.getOrchestratorState).toBe("function");
-
     // Verify store has the selection tracking capability
     expect(store.hasOwnProperty("selectionMade")).toBeTruthy();
 

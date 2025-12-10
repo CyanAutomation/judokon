@@ -28,17 +28,13 @@ export async function matchStartEnter(machine) {
     const store = machine?.context?.store ?? {};
 
     // Emit matchStart event for UI/analytics
+    debugLog("matchStartEnter: emitting matchStart event");
     emitBattleEvent("matchStart", {
       winTarget: store.winTarget,
       firstPlayer: store.firstPlayer,
       timestamp: Date.now()
     });
 
-    // NOTE: Previously this handler tried to dispatch("ready") to transition to cooldown.
-    // This caused a nested dispatch deadlock. We now rely on a separate mechanism
-    // to handle the state transition. The readyForCooldown event will be emitted,
-    // and the orchestrator listener will dispatch("ready") to continue the chain.
-    
     // Emit the readyForCooldown event to signal the orchestrator to dispatch ready
     emitBattleEvent("readyForCooldown", { initial: true });
   } catch (error) {
@@ -47,3 +43,4 @@ export async function matchStartEnter(machine) {
     });
   }
 }
+

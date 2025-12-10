@@ -110,7 +110,7 @@ describe("countdown resets after stat selection", () => {
   let battleMod;
   let store;
   let snackbarMock;
-  let promptReadySpy;
+
   afterEach(() => {
     promptReadyMock.mockReset().mockReturnValue(true);
   });
@@ -140,7 +140,7 @@ describe("countdown resets after stat selection", () => {
     const promptTracker = await import(
       "../../../src/helpers/classicBattle/opponentPromptTracker.js"
     );
-    promptReadySpy = vi.spyOn(promptTracker, "isOpponentPromptReady").mockReturnValue(true);
+    vi.spyOn(promptTracker, "isOpponentPromptReady").mockReturnValue(true);
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES = {
         ...(window.__FF_OVERRIDES || {}),
