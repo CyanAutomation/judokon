@@ -300,12 +300,24 @@ export async function initClassicBattleOrchestrator(
     const onTransition = createTransitionHook(hookSet);
 
     try {
+      // Create a placeholder machine reference for listener setup
+      // The listener will be properly connected after machine creation
+      const machineRef = { dispatch: null };
+      
+      // Setup the readyForCooldown listener BEFORE creating the state machine
+      // so that when matchStartEnter emits the event, the listener is ready
+      setupReadyForCooldownListener(machineRef);
+      
       const createdMachine = await createStateManager(
         onEnterMap,
         context,
         onTransition,
         context.stateTable
       );
+      
+      // Update machineRef so listener can use the actual machine
+      machineRef.dispatch = createdMachine.dispatch.bind(createdMachine);
+      
       machine = createdMachine;
       attachListeners(machine);
       // Register the machine's state getter so eventBus can access current state
@@ -546,6 +558,33 @@ function createOnEnterMap() {
 }
 
 /**
+ * Setup the readyForCooldown event listener.
+ * This must be called before state machine initialization so the event
+ * emitted from matchStartEnter onEnter handler is caught.
+ *
+ * @param {object} machineRef - State machine reference
+ * @pseudocode
+ * 1. Register listener for readyForCooldown event
+ * 2. Schedule dispatch("ready") using Promise.resolve to run after current call stack
+ * 3. This avoids nested dispatch deadlock while ensuring event is received
+ */
+function setupReadyForCooldownListener(machineRef) {
+  onBattleEvent("readyForCooldown", (event) => {
+    const detail = event?.detail ?? {};
+    // Schedule dispatch to occur after current call stack completes to avoid nested dispatch
+    Promise.resolve().then(async () => {
+      try {
+        debugLog("orchestrator: readyForCooldown listener dispatching ready");
+        await machineRef.dispatch("ready", detail);
+        debugLog("orchestrator: readyForCooldown listener completed");
+      } catch (error) {
+        debugLog("orchestrator: failed to dispatch 'ready' for readyForCooldown", error);
+      }
+    });
+  });
+}
+
+/**
  * Attach listeners and expose debug helpers for a battle machine.
  *
  * @pseudocode
@@ -560,23 +599,6 @@ function attachListeners(machineRef) {
   debugLogListener = createDebugLogListener(machineRef);
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);
-
-  // Listen for readyForCooldown event emitted from matchStartEnter onEnter handler
-  // and dispatch "ready" from outside the dispatch context to avoid nested dispatch deadlock
-  onBattleEvent("readyForCooldown", (event) => {
-    const detail = event?.detail ?? {};
-    // Schedule dispatch to occur after current call stack completes to avoid nested dispatch
-    Promise.resolve().then(async () => {
-      try {
-        debugLog("orchestrator: readyForCooldown listener dispatching ready");
-        await machineRef.dispatch("ready", detail);
-        debugLog("orchestrator: readyForCooldown listener completed");
-      } catch (error) {
-        debugLog("orchestrator: failed to dispatch 'ready' for readyForCooldown", error);
-      }
-    });
-  });
-
   const initialDetail = { from: null, to: machineRef.getState(), event: "init" };
   domStateListener({ detail: initialDetail });
   debugLogListener({ detail: initialDetail });
