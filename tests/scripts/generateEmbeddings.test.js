@@ -128,8 +128,12 @@ async function loadDataFile(dataDir, base) {
       throw new Error(`Failed to parse JSON file ${base}: ${error.message}`);
     }
   }
-  const module = await import(pathToFileURL(filePath));
-  return module.default ?? module;
+  try {
+    const module = await import(pathToFileURL(filePath));
+    return module.default ?? module;
+  } catch (error) {
+    throw new Error(`Failed to import module ${base}: ${error.message}`);
+  }
 }
 
 function addUnexpectedField(entry, unexpectedValue) {
