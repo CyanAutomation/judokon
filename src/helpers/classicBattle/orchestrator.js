@@ -560,7 +560,7 @@ function attachListeners(machineRef) {
   debugLogListener = createDebugLogListener(machineRef);
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);
-  
+
   // Listen for readyForCooldown event emitted from matchStartEnter onEnter handler
   // and dispatch "ready" from outside the dispatch context to avoid nested dispatch deadlock
   onBattleEvent("readyForCooldown", (event) => {
@@ -576,7 +576,7 @@ function attachListeners(machineRef) {
       }
     });
   });
-  
+
   const initialDetail = { from: null, to: machineRef.getState(), event: "init" };
   domStateListener({ detail: initialDetail });
   debugLogListener({ detail: initialDetail });
