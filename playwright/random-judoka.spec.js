@@ -23,7 +23,7 @@ test.describe("View Judoka screen", () => {
 
     await btn.click();
     await expect(btn).toHaveText(/drawing/i);
-    await expect(btn).toHaveAttribute("aria-busy", "true");
+    await expect(btn).toHaveAttribute("aria-busy", "true", { timeout: 1000 });
     await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
 
     await expect(btn).toHaveText(/draw card/i);
