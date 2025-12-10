@@ -20,40 +20,24 @@ import { reportSentryError } from "./sentryReporter.js";
  */
 export async function matchStartEnter(machine) {
   try {
-    console.log("[matchStartEnter] ENTERING matchStartEnter handler");
-
     if (!machine || typeof machine.dispatch !== "function") {
-      console.log("[matchStartEnter] Invalid machine context:", {
-        hasMachine: !!machine,
-        hasDispatch: machine?.dispatch ? "yes" : "no"
-      });
       debugLog("matchStartEnter: invalid machine context");
       return;
     }
 
     const store = machine?.context?.store ?? {};
-    console.log("[matchStartEnter] Store context:", {
-      winTarget: store.winTarget,
-      firstPlayer: store.firstPlayer
-    });
 
     emitBattleEvent("matchStart", {
       winTarget: store.winTarget,
       firstPlayer: store.firstPlayer,
       timestamp: Date.now()
     });
-    console.log("[matchStartEnter] emitted matchStart event");
 
-    console.log("[matchStartEnter] about to dispatch 'ready' event");
-    const dispatchResult = await machine.dispatch("ready", { initial: true });
-    console.log("[matchStartEnter] machine.dispatch('ready') returned:", dispatchResult);
-
-    if (!dispatchResult) {
-      debugLog("matchStartEnter: dispatch('ready') returned false");
-    }
+    // Emit readyForCooldown event; orchestrator will dispatch "ready" from outside this context
+    // This avoids nested dispatch calls which cause deadlock
+    emitBattleEvent("readyForCooldown", { initial: true });
   } catch (error) {
-    console.log("[matchStartEnter] CAUGHT ERROR:", error);
-    debugLog("matchStartEnter: error during dispatch", error);
+    debugLog("matchStartEnter: error during initialization", error);
     reportSentryError(error, {
       contexts: { location: "matchStartEnter" }
     });

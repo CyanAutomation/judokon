@@ -49,9 +49,9 @@ test.describe("View Judoka screen", () => {
       let idx = 0;
       const originalRandom = Math.random;
       Math.random = () => sequence[idx++ % sequence.length];
-      
+
       // Restore after test completes
-      page.on('close', () => {
+      page.on("close", () => {
         Math.random = originalRandom;
       });
     });
@@ -59,19 +59,13 @@ test.describe("View Judoka screen", () => {
     const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
 
     await drawButton.click();
-    const firstCard = page
-      .getByTestId("card-container")
-      .locator(".judoka-card")
-      .first();
+    const firstCard = page.getByTestId("card-container").locator(".judoka-card").first();
     await expect(firstCard).toHaveAccessibleName(/card/i);
     const firstName = await firstCard.getAttribute("aria-label");
 
     await expect(drawButton).toHaveText(/draw card/i);
     await drawButton.click();
-    const secondCard = page
-      .getByTestId("card-container")
-      .locator(".judoka-card")
-      .first();
+    const secondCard = page.getByTestId("card-container").locator(".judoka-card").first();
     await expect(secondCard).toHaveAccessibleName(/card/i);
     const secondName = await secondCard.getAttribute("aria-label");
 
@@ -83,7 +77,7 @@ test.describe("View Judoka screen", () => {
     await page.route("**/src/data/gokyo.json", (route) => route.abort("failed"));
 
     await page.reload();
-    await page.locator('body[data-random-judoka-ready]').waitFor();
+    await page.locator("body[data-random-judoka-ready]").waitFor();
 
     const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
     await expect(drawButton).toBeDisabled();

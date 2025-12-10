@@ -55,7 +55,9 @@ test.describe("Static pages", () => {
     await page.goto("/src/pages/changeLog.html");
 
     await expect(page).toHaveTitle(/Change Log/i);
-    await expect(page.getByRole("heading", { level: 1, name: "Recent Judoka Updates" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Recent Judoka Updates" })
+    ).toBeVisible();
 
     const changeLogTable = page.getByRole("table", { name: "Judoka update log" });
     await expect(changeLogTable).toBeVisible();

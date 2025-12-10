@@ -33,10 +33,9 @@ async function gotoVectorSearch(page, options) {
 async function runSearch(page, query = TEST_QUERY) {
   await page.getByRole("searchbox").fill(query);
   await page.getByRole("button", { name: /search/i }).click();
-  await page.waitForFunction(
-    () => window.vectorSearchResultsPromise,
-    { timeout: VECTOR_RESULTS_TIMEOUT }
-  );
+  await page.waitForFunction(() => window.vectorSearchResultsPromise, {
+    timeout: VECTOR_RESULTS_TIMEOUT
+  });
   await page.evaluate((timeoutMs) => {
     const { vectorSearchResultsPromise } = window;
     if (!vectorSearchResultsPromise?.then) {
@@ -46,10 +45,7 @@ async function runSearch(page, query = TEST_QUERY) {
     return Promise.race([
       vectorSearchResultsPromise,
       new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Vector search did not resolve in time")),
-          timeoutMs
-        )
+        setTimeout(() => reject(new Error("Vector search did not resolve in time")), timeoutMs)
       )
     ]).catch((error) => {
       // Allow the test to continue if it's just a timeout, but log the issue
