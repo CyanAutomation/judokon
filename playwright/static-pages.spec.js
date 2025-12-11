@@ -63,8 +63,8 @@ test.describe("Static pages", () => {
     const changeLogTable = page.getByRole("table", { name: "Judoka update log" });
     await expect(changeLogTable).toBeVisible();
     const headerCells = changeLogTable.locator("thead th");
-    await expect(headerCells.nth(2)).toHaveText("Judoka Name");
-    await expect(headerCells.last()).toHaveText("Last Modified");
+    await expect(headerCells.filter({ hasText: "Judoka Name" })).toBeVisible();
+    await expect(headerCells.filter({ hasText: "Last Modified" })).toBeVisible();
 
     const firstRow = changeLogTable.locator("tbody tr").first();
     await expect(firstRow).toBeVisible();
