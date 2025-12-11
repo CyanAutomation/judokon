@@ -711,13 +711,14 @@ const stateApi = {
         onComplete();
       };
       const rejectWithTimeout = () =>
-        cleanup(() =>
-          reject(
-            new Error(
-              `Timed out after ${timeout}ms waiting for battle state "${stateName}"`
-            )
-          )
-        );
+        cleanup(() => {
+          const error = new Error(
+            `Timed out after ${timeout}ms waiting for battle state "${stateName}"`
+          );
+          error.name = 'BattleStateTimeoutError';
+          error.code = 'BATTLE_STATE_TIMEOUT';
+          reject(error);
+        });
       const resolveMatch = () => cleanup(() => resolve(true));
       const currentMatches = () => {
         try {
