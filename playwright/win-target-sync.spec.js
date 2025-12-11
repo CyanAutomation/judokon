@@ -105,7 +105,7 @@ async function finishMatchAtTarget(page, targetPoints) {
 
       return {
         ok: lastOk,
-        reason: lastOk ? null : "battle event dispatch failed",
+        reason: lastOk ? null : `battle event dispatch failed at: ${failedEvent}`,
         playerScore: Number(scores?.player ?? scores?.playerScore ?? store?.playerScore ?? 0)
       };
     } catch (error) {
