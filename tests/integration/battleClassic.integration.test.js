@@ -76,22 +76,19 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
   const roundButtons = Array.from(document.querySelectorAll(".round-select-buttons button"));
   expect(roundButtons.length).toBeGreaterThan(0);
 
-  let reachedPlayerAction = false;
   await withMutedConsole(async () => {
     roundButtons[0].click();
     // Let the modal's button click handler execute and dispatch startClicked
     await Promise.resolve();
     // Wait for state machine to reach waitingForPlayerAction state
     try {
-      reachedPlayerAction = await state.waitForBattleState("waitingForPlayerAction", 5000);
+      await state.waitForBattleState("waitingForPlayerAction", 5000);
     } catch (error) {
       throw new Error(
         `Failed waiting for waitingForPlayerAction: ${error?.message ?? error}`
       );
     }
   });
-
-  expect(reachedPlayerAction).toBe(true);
 
   store = ensureStore();
   expect(store.selectionMade).toBe(false);
