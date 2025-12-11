@@ -26,9 +26,11 @@ async function readTimerSeconds(timerValueLocator) {
 }
 
 test.describe("Classic Battle – auto-advance", () => {
-  test("auto-advances via visible countdown", async ({ page }) => {
+  test.beforeAll(() => {
     expect(typeof applyDeterministicCooldown).toBe("function");
+  });
 
+  test("auto-advances via visible countdown", async ({ page }) => {
     await applyDeterministicCooldown(page, {
       cooldownMs: 1_500,
       roundTimerMs: 1,
