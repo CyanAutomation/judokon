@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-const { emitBattleEvent, exposeDebugState, cancelRoundDecisionGuard, debugLog } = vi.hoisted(() => ({
-  emitBattleEvent: vi.fn(),
-  exposeDebugState: vi.fn(),
-  cancelRoundDecisionGuard: vi.fn(),
-  debugLog: vi.fn()
-}));
+const { emitBattleEvent, exposeDebugState, cancelRoundDecisionGuard, debugLog } = vi.hoisted(
+  () => ({
+    emitBattleEvent: vi.fn(),
+    exposeDebugState: vi.fn(),
+    cancelRoundDecisionGuard: vi.fn(),
+    debugLog: vi.fn()
+  })
+);
 
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent
