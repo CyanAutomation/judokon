@@ -38,7 +38,7 @@ const test = base;
 const FLAG_SPEC_PATH = "docs/qa/opponent-delay-message.md";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
-  async function bootClassicBattle(page, featureFlags) {
+  async function launchClassicBattle(page, featureFlags) {
     await registerCommonRoutes(page);
 
     const app = await configureApp(page, {
@@ -57,6 +57,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     const firstStat = page.getByRole("button", { name: /power/i }).first();
     await expect(firstStat).toBeVisible({ timeout: 5000 });
     await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+    await waitForFeatureFlagOverrides(page, featureFlags);
 
     return {
       app,
@@ -67,25 +68,45 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     };
   }
 
+  async function measureSnackbarAppearance({
+    firstStat,
+    statButtons,
+    snackbar,
+    expectDeferred
+  }) {
+    const selectionStartedAt = Date.now();
+
+    await firstStat.click();
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
+    await expect(firstStat).toBeDisabled();
+
+    if (expectDeferred) {
+      await expect(snackbar).toBeHidden({ timeout: 350 });
+    }
+
+    await expect(snackbar).toContainText(/opponent is choosing/i, {
+      timeout: expectDeferred ? 6000 : 1500
+    });
+    await expect(snackbar).toBeVisible();
+
+    return Date.now() - selectionStartedAt;
+  }
+
   test(
-    "delays and clears the snackbar when the flag is enabled (spec: " + FLAG_SPEC_PATH + ")",
+    `[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar is deferred, shown, and cleared when flag is enabled`,
     async ({ page }) => {
-      const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
+      const { app, statButtons, snackbar, nextButton, firstStat } = await launchClassicBattle(page, {
         opponentDelayMessage: true
       });
 
-      await waitForFeatureFlagOverrides(page, {
-        opponentDelayMessage: true
+      const visibleDelay = await measureSnackbarAppearance({
+        firstStat,
+        statButtons,
+        snackbar,
+        expectDeferred: true
       });
 
-      await firstStat.click();
-
-      await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
-      await expect(firstStat).toBeDisabled();
-
-      await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
-        timeout: 6000
-      });
+      expect(visibleDelay).toBeGreaterThanOrEqual(500);
 
       await expect(nextButton).toBeEnabled({ timeout: 10000 });
       await nextButton.click();
@@ -98,25 +119,21 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
   );
 
   test(
-    "shows immediate snackbar when flag is disabled (spec fallback: " + FLAG_SPEC_PATH + ")",
+    `[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar fires immediately when flag is disabled`,
     async ({ page }) => {
-      const { app, firstStat, statButtons, snackbar, nextButton } = await bootClassicBattle(page, {
+      const { app, statButtons, snackbar, nextButton, firstStat } = await launchClassicBattle(page, {
         opponentDelayMessage: false
       });
 
-      await waitForFeatureFlagOverrides(page, {
-        opponentDelayMessage: false
+      const visibleDelay = await measureSnackbarAppearance({
+        firstStat,
+        statButtons,
+        snackbar,
+        expectDeferred: false
       });
 
-      await firstStat.click();
+      expect(visibleDelay).toBeLessThan(500);
 
-      await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
-      // When flag is disabled, snackbar should appear immediately with shorter timeout
-      await expect(snackbar).toContainText(/Opponent is choosing|choosing/i, {
-        timeout: 1500
-      });
-
-      // Next button should be enabled immediately without delay when flag is disabled
       await expect(nextButton).toBeEnabled({ timeout: 2000 });
       await nextButton.click();
 
