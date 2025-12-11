@@ -5,6 +5,7 @@ import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
 
 const BATTLE_PAGE_URL = "/src/pages/battleClassic.html";
 const PLAYER_ACTION_STATE = "waitingForPlayerAction";
+const COUNTDOWN_PATTERN = /time left:\s*\d+(\.\d+)?s/i;
 
 async function navigateToBattle(page, options = {}) {
   const { cooldownMs = 1200, roundTimerMs = 16 } = options;
@@ -55,7 +56,7 @@ test.describe("Classic battle interrupt recovery", () => {
     const timerMessage = page
       .getByRole("status")
       .filter({ hasText: /time left:/i });
-    await expect(timerMessage).toContainText(/time left:\s*\d+s/i);
+    await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
 
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
 
@@ -74,14 +75,14 @@ test.describe("Classic battle interrupt recovery", () => {
     const timerMessage = page
       .getByRole("status")
       .filter({ hasText: /time left:/i });
-    await expect(timerMessage).toContainText(/time left:\s*\d+s/i);
+    await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
 
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
       reason: "cooldown coverage"
     });
     expect(interruptResult.ok).toBe(true);
 
-    await expect(timerMessage).toContainText(/time left:\s*\d+s/i);
+    await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
 
     // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
