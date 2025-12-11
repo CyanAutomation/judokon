@@ -58,11 +58,12 @@ test.describe("Classic Battle – auto-advance", () => {
         return (message ?? "").trim().length > 0;
       })
       .toBe(true);
-    const cooldownBanner = await roundMessage.textContent();
 
     await expect
       .poll(() => readTimerSeconds(timerValue), { timeout: 10_000 })
       .toBeGreaterThan(0);
+
+    const cooldownBanner = await roundMessage.textContent();
 
     await expect
       .poll(() => readRoundNumber(roundCounter), { timeout: 10_000 })
