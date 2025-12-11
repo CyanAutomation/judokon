@@ -51,7 +51,7 @@ import { debugLog } from "../debugLog.js";
  * import { cleanupInterruptState } from "./interruptStateCleanup.js";
  * const store = machine.context?.store;
  * cleanupInterruptState(store); // Safe even if store is null
- * 
+ *
  * // In interrupt handler - reset selection state
  * cleanupInterruptState(store, { resetSelectionState: true });
  *

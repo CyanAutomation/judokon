@@ -68,12 +68,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     };
   }
 
-  async function measureSnackbarAppearance({
-    firstStat,
-    statButtons,
-    snackbar,
-    expectDeferred
-  }) {
+  async function measureSnackbarAppearance({ firstStat, statButtons, snackbar, expectDeferred }) {
     const selectionStartedAt = Date.now();
 
     await firstStat.click();
@@ -92,55 +87,53 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     return Date.now() - selectionStartedAt;
   }
 
-  test(
-    `[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar is deferred, shown, and cleared when flag is enabled`,
-    async ({ page }) => {
-      const { app, statButtons, snackbar, nextButton, firstStat } = await launchClassicBattle(page, {
-        opponentDelayMessage: true
-      });
+  test(`[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar is deferred, shown, and cleared when flag is enabled`, async ({
+    page
+  }) => {
+    const { app, statButtons, snackbar, nextButton, firstStat } = await launchClassicBattle(page, {
+      opponentDelayMessage: true
+    });
 
-      const visibleDelay = await measureSnackbarAppearance({
-        firstStat,
-        statButtons,
-        snackbar,
-        expectDeferred: true
-      });
+    const visibleDelay = await measureSnackbarAppearance({
+      firstStat,
+      statButtons,
+      snackbar,
+      expectDeferred: true
+    });
 
-      expect(visibleDelay).toBeGreaterThanOrEqual(400);
+    expect(visibleDelay).toBeGreaterThanOrEqual(400);
 
-      await expect(nextButton).toBeEnabled({ timeout: 10000 });
-      await nextButton.click();
+    await expect(nextButton).toBeEnabled({ timeout: 10000 });
+    await nextButton.click();
 
-      await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
-      await expect(snackbar).toBeHidden({ timeout: 5000 });
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+    await expect(snackbar).toBeHidden({ timeout: 5000 });
 
-      await app.cleanup();
-    }
-  );
+    await app.cleanup();
+  });
 
-  test(
-    `[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar fires immediately when flag is disabled`,
-    async ({ page }) => {
-      const { app, statButtons, snackbar, nextButton, firstStat } = await launchClassicBattle(page, {
-        opponentDelayMessage: false
-      });
+  test(`[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar fires immediately when flag is disabled`, async ({
+    page
+  }) => {
+    const { app, statButtons, snackbar, nextButton, firstStat } = await launchClassicBattle(page, {
+      opponentDelayMessage: false
+    });
 
-      const visibleDelay = await measureSnackbarAppearance({
-        firstStat,
-        statButtons,
-        snackbar,
-        expectDeferred: false
-      });
+    const visibleDelay = await measureSnackbarAppearance({
+      firstStat,
+      statButtons,
+      snackbar,
+      expectDeferred: false
+    });
 
-      expect(visibleDelay).toBeLessThan(600);
+    expect(visibleDelay).toBeLessThan(600);
 
-      await expect(nextButton).toBeEnabled({ timeout: 2000 });
-      await nextButton.click();
+    await expect(nextButton).toBeEnabled({ timeout: 2000 });
+    await nextButton.click();
 
-      await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
-      await expect(snackbar).toBeHidden({ timeout: 5000 });
+    await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
+    await expect(snackbar).toBeHidden({ timeout: 5000 });
 
-      await app.cleanup();
-    }
-  );
+    await app.cleanup();
+  });
 });

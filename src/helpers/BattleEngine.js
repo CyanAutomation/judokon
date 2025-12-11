@@ -581,8 +581,7 @@ export class BattleEngine {
   }
 
   #refreshCurrentStats(stats) {
-    const shouldRefresh =
-      stats && typeof stats === "object" && !Array.isArray(stats);
+    const shouldRefresh = stats && typeof stats === "object" && !Array.isArray(stats);
 
     this._currentStats = Object.freeze(shouldRefresh ? { ...stats } : {});
   }

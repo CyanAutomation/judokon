@@ -53,9 +53,7 @@ test.describe("Classic battle interrupt recovery", () => {
     const firstStatButton = page.getByTestId("stat-button").first();
     await expect(firstStatButton).toBeDisabled({ timeout: 10000 });
 
-    const timerMessage = page
-      .getByRole("status")
-      .filter({ hasText: /time left:/i });
+    const timerMessage = page.getByRole("status").filter({ hasText: /time left:/i });
     await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
 
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
@@ -72,9 +70,7 @@ test.describe("Classic battle interrupt recovery", () => {
     await page.getByTestId("stat-button").first().click();
 
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
-    const timerMessage = page
-      .getByRole("status")
-      .filter({ hasText: /time left:/i });
+    const timerMessage = page.getByRole("status").filter({ hasText: /time left:/i });
     await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
 
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
@@ -92,7 +88,6 @@ test.describe("Classic battle interrupt recovery", () => {
     await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
     await expect(page.getByTestId("stat-button").first()).toBeEnabled();
   });
-
 });
 
 test.describe("Classic battle debug surface", () => {

@@ -45,7 +45,9 @@ test.describe("Browse Judoka screen", () => {
     await toggle.click();
     await expect(panel).toBeVisible();
 
-    await page.addStyleTag({ content: ".country-flag-slide-track { animation: none !important; }" });
+    await page.addStyleTag({
+      content: ".country-flag-slide-track { animation: none !important; }"
+    });
     const countryOptions = page.getByTestId(COUNTRY_FLAG_OPTION);
     await expect(countryOptions).toHaveCount(EXPECTED_COUNTRY_SLIDE_COUNT);
     await expect(countryOptions.first().locator("img")).toHaveAttribute("alt", /all countries/i);

@@ -1,9 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
-import {
-  getPlayerScore,
-  waitForBattleReady
-} from "./helpers/battleStateHelper.js";
+import { getPlayerScore, waitForBattleReady } from "./helpers/battleStateHelper.js";
 import { parseScores } from "./helpers/scoreUtils.js";
 
 async function openSettingsPanel(page) {
@@ -71,52 +68,58 @@ async function finishMatchAtTarget(page, targetPoints) {
   await page.waitForTimeout(100);
   await waitForBattleReady(page, { timeout: 15_000, allowFallback: true });
 
-  const completion = await page.evaluate(async ({ targetPoints }) => {
-    try {
-      const stateApi = window.__TEST_API?.state;
-      const store = window.__TEST_API?.inspect?.getBattleStore?.();
-      if (!stateApi?.dispatchBattleEvent) {
-        return { ok: false, reason: "dispatchBattleEvent unavailable" };
-      }
-
-      if (store) {
-        store.playerScore = targetPoints;
-        store.opponentScore = 0;
-      }
-
-      const detail = {
-        result: { matchEnded: true, playerScore: targetPoints, opponentScore: 0 },
-        scores: { player: targetPoints, opponent: 0 }
-      };
-      const events = ["roundResolved", "matchPointReached", "match.concluded"];
-
-      let lastOk = true;
-      let failedEvent = null;
-      for (const eventName of events) {
-        const result = stateApi.dispatchBattleEvent(eventName, detail);
-        const outcome = result && typeof result.then === 'function' ? await result : result;
-        if (outcome === false) {
-          lastOk = false;
-          failedEvent = eventName;
-          break; // Stop processing on first failure
+  const completion = await page.evaluate(
+    async ({ targetPoints }) => {
+      try {
+        const stateApi = window.__TEST_API?.state;
+        const store = window.__TEST_API?.inspect?.getBattleStore?.();
+        if (!stateApi?.dispatchBattleEvent) {
+          return { ok: false, reason: "dispatchBattleEvent unavailable" };
         }
+
+        if (store) {
+          store.playerScore = targetPoints;
+          store.opponentScore = 0;
+        }
+
+        const detail = {
+          result: { matchEnded: true, playerScore: targetPoints, opponentScore: 0 },
+          scores: { player: targetPoints, opponent: 0 }
+        };
+        const events = ["roundResolved", "matchPointReached", "match.concluded"];
+
+        let lastOk = true;
+        let failedEvent = null;
+        for (const eventName of events) {
+          const result = stateApi.dispatchBattleEvent(eventName, detail);
+          const outcome = result && typeof result.then === "function" ? await result : result;
+          if (outcome === false) {
+            lastOk = false;
+            failedEvent = eventName;
+            break; // Stop processing on first failure
+          }
+        }
+
+        const scores = stateApi?.getScores?.();
+
+        return {
+          ok: lastOk,
+          reason: lastOk ? null : `battle event dispatch failed at: ${failedEvent}`,
+          playerScore: Number(scores?.player ?? scores?.playerScore ?? store?.playerScore ?? 0)
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          reason: error instanceof Error ? error.message : String(error ?? "unknown")
+        };
       }
-
-      const scores = stateApi?.getScores?.();
-
-      return {
-        ok: lastOk,
-        reason: lastOk ? null : `battle event dispatch failed at: ${failedEvent}`,
-        playerScore: Number(scores?.player ?? scores?.playerScore ?? store?.playerScore ?? 0)
-      };
-    } catch (error) {
-      return { ok: false, reason: error instanceof Error ? error.message : String(error ?? "unknown") };
-    }
-  }, { targetPoints });
+    },
+    { targetPoints }
+  );
 
   expect(completion.ok, completion.reason ?? "match completion dispatch failed").toBe(true);
-  const computedScore = Number.isFinite(completion.playerScore) 
-    ? completion.playerScore 
+  const computedScore = Number.isFinite(completion.playerScore)
+    ? completion.playerScore
     : Number(await readPlayerScore(page));
   const finalPlayerScore = Math.max(
     targetPoints,
@@ -154,14 +157,18 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   });
 
   for (const { key, points, name } of testCases) {
-    test(`${WIN_TARGET_SPEC} - ${name} selection ends match at ${points} target`, async ({ page }) => {
+    test(`${WIN_TARGET_SPEC} - ${name} selection ends match at ${points} target`, async ({
+      page
+    }) => {
       await selectWinTargetAndVerify(page, { key, points });
 
       await finishMatchAtTarget(page, Number(points));
     });
   }
 
-  test("Spec: CLI-WIN-TARGET-02 - persists win target selection across reload", async ({ page }) => {
+  test("Spec: CLI-WIN-TARGET-02 - persists win target selection across reload", async ({
+    page
+  }) => {
     await openSettingsPanel(page);
 
     const dropdown = page.locator("#points-select");

@@ -64,7 +64,7 @@ function resolveStatsSnapshot(store) {
   if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
     return undefined;
   }
-  
+
   return { ...candidate };
 }
 

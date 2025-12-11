@@ -84,9 +84,7 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     try {
       await state.waitForBattleState("waitingForPlayerAction", 5000);
     } catch (error) {
-      throw new Error(
-        `Failed waiting for waitingForPlayerAction: ${error?.message ?? error}`
-      );
+      throw new Error(`Failed waiting for waitingForPlayerAction: ${error?.message ?? error}`);
     }
   });
 
