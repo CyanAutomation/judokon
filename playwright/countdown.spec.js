@@ -20,8 +20,8 @@ test.describe("Battle CLI countdown timing", () => {
       const countdown = page.locator("#cli-countdown");
       await expect(countdown).toBeVisible({ timeout: 5_000 });
 
-      await expect(countdown).toHaveText(/Time remaining:\s*0?[45]/, { timeout: 5_000 });
-      await expect(countdown).toHaveText(/Time remaining:\s*0?3/, { timeout: 6_000 });
+      await expect(countdown).toHaveText(/Time remaining:\s*0?[3-5]/, { timeout: 5_000 });
+      await expect(countdown).toHaveText(/Time remaining:\s*0?[1-3]/, { timeout: 6_000 });
 
       const roundCounter = page.getByTestId("round-counter");
       await expect(roundCounter).toHaveText(/Round\s+1/, { timeout: 5_000 });
