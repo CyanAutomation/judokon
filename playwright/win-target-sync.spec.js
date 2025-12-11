@@ -67,6 +67,8 @@ async function finishMatchAtTarget(page, targetPoints) {
     } catch {}
   });
 
+  // Wait for reset to complete before proceeding
+  await page.waitForTimeout(100);
   await waitForBattleReady(page, { timeout: 15_000, allowFallback: true });
 
   const completion = await page.evaluate(({ targetPoints }) => {
