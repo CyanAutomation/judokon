@@ -596,7 +596,6 @@ export class BattleEngine {
    * @returns {Readonly<object>}
    */
   getCurrentStats() {
-    this.#refreshCurrentStats();
     return this._currentStats;
   }
 
