@@ -4,6 +4,12 @@ import { withMutedConsole } from "../tests/utils/console.js";
 test.describe("Battle CLI countdown timing", () => {
   test("shows countdown ticks and advances to the next round", async ({ page }) =>
     withMutedConsole(async () => {
+      // Countdown contract:
+      // - Selection countdown renders user-facing text in the format "Time remaining: {n}"
+      //   using the configured duration for the round.
+      // - The text ticks down each second while waiting for the player to pick a stat.
+      // - After a stat is chosen, the countdown clears before resetting to the full
+      //   duration when the next round starts (reflected by the round counter increment).
       await page.addInitScript(() => {
         const existingOverrides = typeof window !== "undefined" ? window.__FF_OVERRIDES || {} : {};
         window.__FF_OVERRIDES = { ...existingOverrides, selectionCountdownSeconds: 5 };
@@ -14,15 +20,11 @@ test.describe("Battle CLI countdown timing", () => {
       const countdown = page.locator("#cli-countdown");
       await expect(countdown).toBeVisible({ timeout: 5_000 });
 
-      const readCountdownText = async () => {
-        const text = (await countdown.textContent()) || "";
-        const match = text.match(/Time remaining:\s*(\d+)/i);
-        return match ? Number.parseInt(match[1], 10) : null;
-      };
+      await expect(countdown).toHaveText(/Time remaining:\s*0?[45]/, { timeout: 5_000 });
+      await expect(countdown).toHaveText(/Time remaining:\s*0?3/, { timeout: 6_000 });
 
-      await expect.poll(readCountdownText, { timeout: 6_000 }).toBeGreaterThanOrEqual(3);
-
-      await expect.poll(readCountdownText, { timeout: 6_000 }).toBeLessThan(5);
+      const roundCounter = page.getByTestId("round-counter");
+      await expect(roundCounter).toHaveText(/Round\s+1/, { timeout: 5_000 });
 
       const statButton = page.locator(".cli-stat").first();
       await expect(statButton).toBeVisible({ timeout: 5_000 });
@@ -33,37 +35,11 @@ test.describe("Battle CLI countdown timing", () => {
         timeout: 2_000
       });
 
-      const completion = await page.evaluate(async () => {
-        const api = window.__TEST_API?.cli;
-        if (typeof api?.completeRound !== "function") {
-          return { ok: false, reason: "completeRound unavailable" };
-        }
+      await expect(countdown).toHaveText(/^(\s*)?$/, { timeout: 7_000 });
 
-        try {
-          const result = await api.completeRound(
-            {
-              detail: {
-                stat: "agi",
-                playerVal: 88,
-                opponentVal: 42,
-                result: { message: "Round resolved", playerScore: 1, opponentScore: 0 }
-              }
-            },
-            { opponentResolveDelayMs: 0 }
-          );
-
-          return { ok: true, finalState: result?.finalState ?? null };
-        } catch (error) {
-          return { ok: false, reason: error?.message ?? "completeRound failed" };
-        }
-      });
-
-      expect(completion.ok).toBe(true);
-
-      const roundCounter = page.getByTestId("round-counter");
-      await expect(roundCounter).toHaveText(/Round\s+2/, { timeout: 6_000 });
+      await expect(roundCounter).toHaveText(/Round\s+2/, { timeout: 12_000 });
 
       await expect(statButton).toBeEnabled({ timeout: 6_000 });
-      await expect.poll(readCountdownText, { timeout: 5_000 }).toBeGreaterThanOrEqual(4);
+      await expect(countdown).toHaveText(/Time remaining:\s*0?[45]/, { timeout: 8_000 });
     }, ["log", "warn", "error"]));
 });
