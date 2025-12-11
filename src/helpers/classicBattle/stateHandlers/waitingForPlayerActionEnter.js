@@ -1,6 +1,6 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import { startTimer } from "../timerService.js";
-import { handleStatSelection } from "../selectionHandler.js";
+import { handleStatSelection, logSelectionMutation } from "../selectionHandler.js";
 import { getCardStatValue } from "../cardStatUtils.js";
 import { getOpponentJudoka } from "../cardSelection.js";
 import {
@@ -36,14 +36,12 @@ export async function waitingForPlayerActionEnter(machine) {
     currentState: machine?.currentState
   });
 
-  // Defensive: ensure selection state is reset when entering this state
-  // This handles cases where state transitions are too fast for startRound to have completed
+  // Trace selection flags when the state machine enters this state
   const store = machine?.context?.store;
-  if (store) {
-    store.selectionMade = false;
-    store.__lastSelectionMade = false;
-    store.playerChoice = null;
-  }
+
+  logSelectionMutation("waitingForPlayerActionEnter.enter", store, {
+    machineState: machine?.currentState ?? null
+  });
 
   // Also reset the finalization flag
   try {

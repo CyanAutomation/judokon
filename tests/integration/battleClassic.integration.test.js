@@ -542,13 +542,21 @@ describe("Battle Classic Page Integration", () => {
     });
 
     const postStatStore = getBattleStore();
+    const selectionTrace = window.__SELECTION_FLAG_TRACE || [];
+    const lastSelectionTrace = selectionTrace.at(-1) ?? null;
+
     expect(postStatStore).toBe(initialStore);
     expect(postStatStore.selectionMade).toBe(true);
+    expect(lastSelectionTrace?.selectionMade ?? null).toBe(true);
 
     // Wait for roundDecision state
     await withMutedConsole(async () => {
       await testApi.state.waitForBattleState("roundDecision", 5000);
     });
+
+    const postDecisionStore = getBattleStore();
+    expect(postDecisionStore.selectionMade).toBe(true);
+    expect(postDecisionStore.playerChoice).toBe(selectedStat);
 
     const debugAfter = testApi.inspect.getDebugInfo();
     const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;
