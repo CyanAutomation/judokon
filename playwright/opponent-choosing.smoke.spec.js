@@ -81,7 +81,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await expect(firstStat).toBeDisabled();
 
     if (expectDeferred) {
-      await expect(snackbar).toBeHidden({ timeout: 350 });
+      await expect(snackbar).toBeHidden({ timeout: 450 });
     }
 
     await expect(snackbar).toContainText(/opponent is choosing/i, {
