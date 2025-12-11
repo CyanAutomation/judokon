@@ -6,6 +6,7 @@
  */
 let dispatcher = async () => {};
 let stateGetter = () => null;
+let lastBroadcastState = null;
 
 /**
  * Register the event dispatcher used for battle state transitions.
@@ -43,6 +44,17 @@ export function setBattleStateGetter(fn) {
 }
 
 /**
+ * Record the most recent battle state broadcast for fallback access.
+ *
+ * @param {string|null|undefined} state
+ */
+export function setBattleStateSnapshot(state) {
+  if (typeof state === "string" && state.length > 0) {
+    lastBroadcastState = state;
+  }
+}
+
+/**
  * Dispatch a battle event through the registered dispatcher.
  *
  * @pseudocode
@@ -73,6 +85,13 @@ export async function dispatchBattleEvent(eventName, payload) {
 export function getBattleState() {
   try {
     const result = stateGetter();
+    const hasResult = typeof result === "string" && result.length > 0;
+    const snapshot = typeof lastBroadcastState === "string" ? lastBroadcastState : null;
+
+    if (hasResult && snapshot && snapshot !== result) {
+      return snapshot;
+    }
+
     try {
       if (typeof process !== "undefined" && !!process.env?.VITEST) {
         if (!result) {
@@ -85,10 +104,13 @@ export function getBattleState() {
         }
       }
     } catch {}
-    return result;
+    if (hasResult) {
+      return result;
+    }
+    return snapshot;
   } catch (error) {
     console.error(`[eventBus] Failed to get battle state:`, error);
-    return null;
+    return typeof lastBroadcastState === "string" ? lastBroadcastState : null;
   }
 }
 
@@ -104,4 +126,5 @@ export function getBattleState() {
 export function resetEventBus() {
   dispatcher = async () => {};
   stateGetter = () => null;
+  lastBroadcastState = null;
 }
