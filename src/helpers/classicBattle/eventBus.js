@@ -89,7 +89,7 @@ export function getBattleState() {
     const snapshot = typeof lastBroadcastState === "string" ? lastBroadcastState : null;
 
     if (hasResult && snapshot && snapshot !== result) {
-      return snapshot;
+      return result;
     }
 
     try {
