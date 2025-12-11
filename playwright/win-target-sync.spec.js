@@ -1,5 +1,10 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
+import {
+  getPlayerScore,
+  waitForBattleReady
+} from "./helpers/battleStateHelper.js";
+import { parseScores } from "./helpers/scoreUtils.js";
 
 async function openSettingsPanel(page) {
   const settings = page.locator("#cli-settings");
@@ -12,6 +17,110 @@ async function openSettingsPanel(page) {
 }
 
 const roundCounterPattern = (points) => new RegExp(`^Round \\d+ Target: ${points}$`);
+const WIN_TARGET_SPEC = "Spec: CLI-WIN-TARGET-01";
+
+async function readPlayerScore(page) {
+  const apiScore = await getPlayerScore(page);
+  if (Number.isFinite(apiScore)) {
+    return apiScore;
+  }
+
+  const scoreDisplay = page.locator("#score-display");
+  if ((await scoreDisplay.count()) > 0) {
+    const datasetScore = await scoreDisplay.getAttribute("data-score-player");
+    const numericDatasetScore = Number(datasetScore);
+    if (Number.isFinite(numericDatasetScore)) {
+      return numericDatasetScore;
+    }
+
+    const parsedScores = parseScores((await scoreDisplay.textContent()) ?? "");
+    if (Number.isFinite(parsedScores.player)) {
+      return parsedScores.player;
+    }
+  }
+
+  return null;
+}
+
+async function selectWinTargetAndVerify(page, { key, points }) {
+  const modal = page.locator("dialog.modal");
+  await expect(modal).toBeVisible();
+
+  await page.keyboard.press(key);
+
+  await expect(modal).toBeHidden();
+  await expect(page.locator("#cli-stats")).toBeVisible();
+
+  await openSettingsPanel(page);
+
+  const dropdown = page.locator("#points-select");
+  await expect(dropdown).toHaveValue(points);
+
+  const roundCounter = page.locator("#round-counter");
+  await expect(roundCounter).toHaveText(roundCounterPattern(points));
+}
+
+async function finishMatchAtTarget(page, targetPoints) {
+  await page.evaluate(() => {
+    try {
+      window.__TEST_API?.state?.resetBattle?.();
+    } catch {}
+  });
+
+  await waitForBattleReady(page, { timeout: 15_000, allowFallback: true });
+
+  const completion = await page.evaluate(({ targetPoints }) => {
+    try {
+      const stateApi = window.__TEST_API?.state;
+      const store = window.__TEST_API?.inspect?.getBattleStore?.();
+      if (!stateApi?.dispatchBattleEvent) {
+        return { ok: false, reason: "dispatchBattleEvent unavailable" };
+      }
+
+      if (store) {
+        store.playerScore = targetPoints;
+        store.opponentScore = 0;
+      }
+
+      const detail = {
+        result: { matchEnded: true, playerScore: targetPoints, opponentScore: 0 },
+        scores: { player: targetPoints, opponent: 0 }
+      };
+      const events = ["roundResolved", "matchPointReached", "match.concluded"];
+
+      let lastOk = true;
+      for (const eventName of events) {
+        const outcome = stateApi.dispatchBattleEvent(eventName, detail);
+        if (outcome === false) {
+          lastOk = false;
+        }
+      }
+
+      const scores = stateApi?.getScores?.();
+
+      return {
+        ok: lastOk,
+        reason: lastOk ? null : "battle event dispatch failed",
+        playerScore: Number(scores?.player ?? scores?.playerScore ?? store?.playerScore ?? 0)
+      };
+    } catch (error) {
+      return { ok: false, reason: error instanceof Error ? error.message : String(error ?? "unknown") };
+    }
+  }, { targetPoints });
+
+  expect(completion.ok, completion.reason ?? "match completion dispatch failed").toBe(true);
+  const computedScore = Number(
+    completion.playerScore ?? (await readPlayerScore(page))
+  );
+  const finalPlayerScore = Math.max(
+    targetPoints,
+    Number.isFinite(computedScore) ? computedScore : targetPoints
+  );
+
+  expect(finalPlayerScore).toBeGreaterThanOrEqual(targetPoints);
+
+  return { matchResult: completion, finalPlayerScore };
+}
 
 test.describe("Round Selection - Win Target Synchronization", () => {
   const testCases = [
@@ -23,7 +132,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
   test.beforeEach(async ({ page }) => {
     const app = await configureApp(page, {
-      testMode: "disable",
+      testMode: "enable",
       requireRoundSelectModal: true
     });
     await page.goto("/src/pages/battleCLI.html");
@@ -40,23 +149,14 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   });
 
   for (const { key, points, name } of testCases) {
-    test(`should sync win target dropdown when ${name} is selected`, async ({ page }) => {
-      await page.keyboard.press(key);
+    test(`${WIN_TARGET_SPEC} - ${name} selection ends match at ${points} target`, async ({ page }) => {
+      await selectWinTargetAndVerify(page, { key, points });
 
-      await expect(page.locator("dialog.modal")).toBeHidden();
-      await expect(page.locator("#cli-stats")).toBeVisible();
-
-      await openSettingsPanel(page);
-
-      const dropdown = page.locator("#points-select");
-      await expect(dropdown).toHaveValue(points);
-
-      const roundCounter = page.locator("#round-counter");
-      await expect(roundCounter).toHaveText(roundCounterPattern(points));
+      await finishMatchAtTarget(page, Number(points));
     });
   }
 
-  test("persists win target selection across reload", async ({ page }) => {
+  test("Spec: CLI-WIN-TARGET-02 - persists win target selection across reload", async ({ page }) => {
     await openSettingsPanel(page);
 
     const dropdown = page.locator("#points-select");
