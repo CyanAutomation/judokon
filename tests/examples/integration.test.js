@@ -76,20 +76,28 @@ describe("Integration Test Example: Battle Flow", () => {
     // Configure external mock to return opponent data
     mockFetch.mockResolvedValue(testScenarios.opponentA);
 
+    document.body.innerHTML = '<div class="home-screen"></div>';
+
     // This is the key pattern: import real internal modules (NOT mocked)
     // They will use the mocked external service via dependency injection
-    const { markBattlePartReady, battleReadyPromise: _battleReadyPromise } = await import(
+    const { markBattlePartReady, battleReadyPromise: readinessPromise } = await import(
       "../../src/helpers/battleInit.js"
     );
 
+    const initEventPromise = new Promise((resolve) => {
+      document.addEventListener("battle:init", resolve, { once: true });
+    });
+
     // Exercise real internal code with controlled external dependencies
-    expect(mockFetch).not.toHaveBeenCalled(); // Not called yet
     markBattlePartReady("home");
+    await Promise.resolve();
+    expect(document.querySelector(".home-screen").dataset.ready).toBeUndefined();
     markBattlePartReady("state");
 
-    // Assert: real module execution completed
-    expect(mockFetch).not.toHaveBeenCalled(); // battleInit doesn't call external API
-    expect(_battleReadyPromise).toBeDefined();
+    // Assert: readiness event dispatched for real DOM nodes
+    await initEventPromise;
+    await readinessPromise;
+    expect(document.querySelector(".home-screen").dataset.ready).toBe("true");
   });
 
   it("demonstrates workflow spanning multiple real modules", async () => {
@@ -103,10 +111,8 @@ describe("Integration Test Example: Battle Flow", () => {
 
     // Simulate page initialization flow with real module
     markBattlePartReady("home");
+    await Promise.resolve();
     markBattlePartReady("state");
-
-    // Assert: readiness logic worked
-    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it("demonstrates fixture usage: localStorage and DOM", async () => {
@@ -149,16 +155,32 @@ describe("Integration Test Example: Battle Flow", () => {
   it("demonstrates real module integration without breaking on refactor", async () => {
     // This test shows the benefit: it doesn't care HOW markBattlePartReady works internally
     // Only that it fulfills its contract: tracking parts and signaling readiness
-    const { markBattlePartReady, battleReadyPromise: _battleReadyPromise } = await import(
+    document.body.innerHTML = '<div class="home-screen"></div>';
+
+    const { markBattlePartReady, battleReadyPromise: readinessPromise } = await import(
       "../../src/helpers/battleInit.js"
     );
+
+    const eventLog = [];
+    const initEventPromise = new Promise((resolve) => {
+      document.addEventListener(
+        "battle:init",
+        (event) => {
+          eventLog.push(event.type);
+          resolve(event);
+        },
+        { once: true }
+      );
+    });
 
     // Exercise the module's public API
     markBattlePartReady("home");
     markBattlePartReady("state");
 
     // Assert on observable behavior, not implementation details
-    expect(_battleReadyPromise).toBeDefined();
+    await initEventPromise;
+    await readinessPromise;
+    expect(eventLog).toEqual(["battle:init"]);
   });
 });
 

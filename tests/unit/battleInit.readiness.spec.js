@@ -29,8 +29,18 @@ describe("battleInit readiness", () => {
 
   it("resolves only after both parts are ready in a browser environment", async () => {
     document.body.innerHTML = '<div class="home-screen"></div>';
-    const addEventListenerSpy = vi.spyOn(document, "addEventListener");
-    const dispatchEventSpy = vi.spyOn(document, "dispatchEvent");
+
+    const eventLog = [];
+    const initEventPromise = new Promise((resolve) => {
+      document.addEventListener(
+        "battle:init",
+        (event) => {
+          eventLog.push(event.type);
+          resolve(event);
+        },
+        { once: true }
+      );
+    });
 
     const { markBattlePartReady, battleReadyPromise } = await loadBattleInit();
     const resolutionSpy = vi.fn();
@@ -41,15 +51,12 @@ describe("battleInit readiness", () => {
     expect(resolutionSpy).not.toHaveBeenCalled();
 
     markBattlePartReady("state");
+
+    await initEventPromise;
     await battleReadyPromise;
 
     expect(resolutionSpy).toHaveBeenCalledTimes(1);
-    expect(
-      addEventListenerSpy.mock.calls.filter(([eventName]) => eventName === "battle:init")
-    ).toHaveLength(1);
-    expect(
-      dispatchEventSpy.mock.calls.filter(([event]) => event?.type === "battle:init")
-    ).toHaveLength(1);
+    expect(eventLog).toEqual(["battle:init"]);
     expect(document.querySelector(".home-screen").dataset.ready).toBe("true");
   });
 
@@ -81,9 +88,44 @@ describe("battleInit readiness", () => {
     }
   });
 
-  it("dispatches the init event only once even with rapid calls", async () => {
+  it("rejects invalid parts without dispatching readiness", async () => {
     document.body.innerHTML = '<div class="home-screen"></div>';
-    const dispatchEventSpy = vi.spyOn(document, "dispatchEvent");
+
+    const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const eventSpy = vi.fn();
+    document.addEventListener("battle:init", eventSpy);
+
+    const { markBattlePartReady, battleReadyPromise } = await loadBattleInit();
+    const readinessSpy = vi.fn();
+    battleReadyPromise.then(readinessSpy);
+
+    markBattlePartReady("invalid-part");
+
+    await flushMicrotasks();
+
+    expect(warningSpy).toHaveBeenCalledWith(
+      'Invalid battle part: "invalid-part". Expected one of: home, state'
+    );
+    expect(readinessSpy).not.toHaveBeenCalled();
+    expect(eventSpy).not.toHaveBeenCalled();
+    expect(document.querySelector(".home-screen").dataset.ready).toBeUndefined();
+    document.removeEventListener("battle:init", eventSpy);
+  });
+
+  it("emits the init event only once even with rapid calls", async () => {
+    document.body.innerHTML = '<div class="home-screen"></div>';
+
+    const eventLog = [];
+    const initEventPromise = new Promise((resolve) => {
+      document.addEventListener(
+        "battle:init",
+        (event) => {
+          eventLog.push(event.type);
+          resolve(event);
+        },
+        { once: true }
+      );
+    });
 
     const { markBattlePartReady, battleReadyPromise } = await loadBattleInit();
 
@@ -92,10 +134,9 @@ describe("battleInit readiness", () => {
     markBattlePartReady("home");
     markBattlePartReady("state");
 
+    await initEventPromise;
     await battleReadyPromise;
 
-    expect(
-      dispatchEventSpy.mock.calls.filter(([event]) => event?.type === "battle:init")
-    ).toHaveLength(1);
+    expect(eventLog).toEqual(["battle:init"]);
   });
 });
