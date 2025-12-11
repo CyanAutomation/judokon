@@ -92,10 +92,6 @@ describe("battleInit readiness", () => {
     document.body.innerHTML = '<div class="home-screen"></div>';
 
     const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-  it("rejects invalid parts without dispatching readiness", async () => {
-    document.body.innerHTML = '<div class="home-screen"></div>';
-
-    const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const eventSpy = vi.fn();
     document.addEventListener("battle:init", eventSpy);
 
