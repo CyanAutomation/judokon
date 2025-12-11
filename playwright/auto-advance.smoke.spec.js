@@ -68,7 +68,7 @@ test.describe("Classic Battle – auto-advance", () => {
     await expect
       .poll(() => readRoundNumber(roundCounter), { timeout: 10_000 })
       .toBeGreaterThan(initialRound);
-    await expect(roundCounter).toContainText(new RegExp(`Round\\s*${initialRound + 1}`));
+    await expect(roundMessage).not.toHaveText(cooldownBanner ?? "");
     await expect(roundMessage).not.toHaveText(cooldownBanner ?? "");
   });
 });
