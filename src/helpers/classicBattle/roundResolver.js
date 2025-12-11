@@ -61,9 +61,11 @@ function resolveStatsSnapshot(store) {
   if (!store || typeof store !== "object") return undefined;
 
   const candidate = store.currentPlayerJudoka?.stats || store.lastPlayerStats;
-  return candidate && typeof candidate === "object" && !Array.isArray(candidate)
-    ? { ...candidate }
-    : undefined;
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+    return undefined;
+  }
+  
+  return { ...candidate };
 }
 
 /**
