@@ -55,6 +55,7 @@ import {
   clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
+import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
 import { t } from "../helpers/i18n.js";
 import {
@@ -167,7 +168,7 @@ function updateTimerFallback(value) {
   }
 }
 
-function broadcastBattleState(state) {
+export function broadcastBattleState(state) {
   let from = null;
   try {
     const doc = getDocumentRef();
@@ -176,6 +177,13 @@ function broadcastBattleState(state) {
     }
   } catch {}
   const detail = { from, to: state };
+  try {
+    setBattleStateSnapshot(state);
+    const w = typeof window !== "undefined" ? window : undefined;
+    if (w) {
+      w.__LAST_BATTLE_STATE_DETAIL = detail;
+    }
+  } catch {}
   emitBattleEvent("battleStateChange", detail);
   try {
     const doc = getDocumentRef();

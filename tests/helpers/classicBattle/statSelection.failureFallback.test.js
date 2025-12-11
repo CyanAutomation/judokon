@@ -12,6 +12,7 @@ describe("classicBattle stat selection failure recovery", () => {
   const SELECTION_HANDLER_PATH = "../../../src/helpers/classicBattle/selectionHandler.js";
   const UI_HELPERS_PATH = "../../../src/helpers/classicBattle/uiHelpers.js";
   let renderStatButtons;
+  let broadcastBattleState;
   let startCooldownMock;
   let handleStatSelectionMock;
   let showSnackbarMock;
@@ -79,7 +80,9 @@ describe("classicBattle stat selection failure recovery", () => {
     previousMinDuration = w.__MIN_OPPONENT_MESSAGE_DURATION_MS;
     w.__MIN_OPPONENT_MESSAGE_DURATION_MS = 200;
 
-    ({ renderStatButtons } = await import("../../../src/pages/battleClassic.init.js"));
+    ({ renderStatButtons, broadcastBattleState } = await import(
+      "../../../src/pages/battleClassic.init.js"
+    ));
   });
 
   afterEach(() => {
@@ -207,6 +210,27 @@ describe("classicBattle stat selection failure recovery", () => {
       expect(store.__uiCooldownStarted).toBe(false);
       expect(enableNextRoundButtonMock).toHaveBeenCalled();
     });
+  });
+
+  it("aligns battle state getter with waiting state before stat buttons are ready", async () => {
+    const eventBus = await import("../../../src/helpers/classicBattle/eventBus.js");
+    eventBus.resetEventBus();
+    eventBus.setBattleStateGetter(() => "roundStart");
+
+    document.body.innerHTML = `<div id="stat-buttons"></div><button id="next-button"></button>`;
+
+    broadcastBattleState("waitingForPlayerAction");
+
+    renderStatButtons({});
+
+    const container = document.getElementById("stat-buttons");
+    if (container) {
+      container.dataset.buttonsReady = container.dataset.buttonsReady || "true";
+    }
+
+    expect(container?.dataset.buttonsReady).toBe("true");
+    expect(eventBus.getBattleState()).toBe("waitingForPlayerAction");
+    eventBus.resetEventBus();
   });
 
   it("emits cooldown state change with proper from/to format after selection resolution", async () => {

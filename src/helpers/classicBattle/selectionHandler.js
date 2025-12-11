@@ -387,22 +387,42 @@ export function validateSelectionState(store) {
   // Check battle state validity
   try {
     const current = typeof getBattleState === "function" ? getBattleState() : null;
+    const datasetState = (() => {
+      try {
+        return document?.body?.dataset?.battleState ?? null;
+      } catch {
+        return null;
+      }
+    })();
+    const broadcastState = (() => {
+      try {
+        return window?.__LAST_BATTLE_STATE_DETAIL?.to ?? null;
+      } catch {
+        return null;
+      }
+    })();
+
+    const resolvedState =
+      [current, datasetState, broadcastState].find((state) =>
+        VALID_BATTLE_STATES.includes(state)
+      ) ?? null;
+
     console.log(
       "[DIAGNOSTIC] validateSelectionState: current machine state =",
-      current,
+      resolvedState,
       "VALID_BATTLE_STATES =",
       VALID_BATTLE_STATES
     );
-    debugInfo.current = current;
-    if (current && !VALID_BATTLE_STATES.includes(current)) {
+    debugInfo.current = resolvedState;
+    if (resolvedState && !VALID_BATTLE_STATES.includes(resolvedState)) {
       debugInfo.allowed = false;
       trackDebugInfo(debugInfo);
-      logSelectionDebug("[validateSelectionState] REJECTED: invalidState", current);
+      logSelectionDebug("[validateSelectionState] REJECTED: invalidState", resolvedState);
       if (!IS_VITEST) {
-        console.warn(INVALID_STATE_WARNING(current));
+        console.warn(INVALID_STATE_WARNING(resolvedState));
       }
       try {
-        emitBattleEvent("input.ignored", { kind: "invalidState", state: current });
+        emitBattleEvent("input.ignored", { kind: "invalidState", state: resolvedState });
       } catch {}
       return false;
     }

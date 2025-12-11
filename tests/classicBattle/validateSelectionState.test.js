@@ -47,6 +47,8 @@ describe("validateSelectionState", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    document.body.innerHTML = "";
+    delete document.body.dataset.battleState;
   });
 
   describe("Happy path - valid states", () => {
@@ -75,6 +77,16 @@ describe("validateSelectionState", () => {
 
       expect(result).toBe(true);
       expect(emitBattleEvent).not.toHaveBeenCalled();
+    });
+
+    it("falls back to DOM dataset when getter is stale", () => {
+      eventBus.getBattleState.mockReturnValue("roundStart");
+      document.body.dataset.battleState = "waitingForPlayerAction";
+
+      const result = validateSelectionState(store);
+
+      expect(result).toBe(true);
+      expect(window.__VALIDATE_SELECTION_DEBUG[0].current).toBe("waitingForPlayerAction");
     });
   });
 
