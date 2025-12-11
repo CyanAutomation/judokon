@@ -20,4 +20,20 @@ describe("waitingForPlayerActionEnter", () => {
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
   });
+
+  it("clears stale selection flags when re-entered after rapid transitions", async () => {
+    const mod = await import("../../../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js");
+    const store = {
+      selectionMade: true,
+      __lastSelectionMade: true,
+      playerChoice: "speed"
+    };
+    const machine = { context: { store }, currentState: "cooldown" };
+
+    await mod.waitingForPlayerActionEnter(machine);
+
+    expect(store.selectionMade).toBe(false);
+    expect(store.__lastSelectionMade).toBe(false);
+    expect(store.playerChoice).toBeNull();
+  });
 });
