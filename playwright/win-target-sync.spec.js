@@ -91,10 +91,13 @@ async function finishMatchAtTarget(page, targetPoints) {
       const events = ["roundResolved", "matchPointReached", "match.concluded"];
 
       let lastOk = true;
+      let failedEvent = null;
       for (const eventName of events) {
         const outcome = stateApi.dispatchBattleEvent(eventName, detail);
         if (outcome === false) {
           lastOk = false;
+          failedEvent = eventName;
+          break; // Stop processing on first failure
         }
       }
 
