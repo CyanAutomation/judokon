@@ -168,6 +168,17 @@ function updateTimerFallback(value) {
   }
 }
 
+/**
+ * Broadcast the current battle state to listeners and document metadata.
+ *
+ * @pseudocode
+ * 1. Read the previous battle state from the document body dataset if available.
+ * 2. Create a detail payload with `from` and `to` states and store a snapshot.
+ * 3. Emit the `battleStateChange` event and mirror the new state onto the body dataset.
+ *
+ * @param {string|null|undefined} state
+ * @returns {void}
+ */
 export function broadcastBattleState(state) {
   let from = null;
   try {
