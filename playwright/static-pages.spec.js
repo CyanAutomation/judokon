@@ -17,7 +17,6 @@ test.describe("Static pages", () => {
     const carouselContainer = page.getByTestId("carousel-container");
     await expect(carouselContainer).toHaveClass(/hidden/);
 
-    // Visibility check removed - focus() already verifies element is focusable
     await randomLink.focus();
     await expect(randomLink).toBeFocused();
     await randomLink.press("Enter");
@@ -63,10 +62,9 @@ test.describe("Static pages", () => {
 
     const changeLogTable = page.getByRole("table", { name: "Judoka update log" });
     await expect(changeLogTable).toBeVisible();
-    await expect(changeLogTable.locator("thead th")).toContainText([
-      "Judoka Name",
-      "Last Modified"
-    ]);
+    const headerCells = changeLogTable.locator("thead th");
+    await expect(headerCells.filter({ hasText: "Judoka Name" })).toBeVisible();
+    await expect(headerCells.filter({ hasText: "Last Modified" })).toBeVisible();
 
     const firstRow = changeLogTable.locator("tbody tr").first();
     await expect(firstRow).toBeVisible();
