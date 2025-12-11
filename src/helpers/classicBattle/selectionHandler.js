@@ -182,7 +182,7 @@ export function logSelectionMutation(source, store, extra = {}) {
           extra
         });
         window.__SELECTION_FLAG_TRACE = trace;
-      } catch (windowError) {
+      } catch {
         // Ignore window property assignment errors in restricted environments
       }
     }
