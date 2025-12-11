@@ -23,6 +23,10 @@ vi.mock("../../../src/helpers/classicBattle/debugLog.js", () => ({
   debugLog
 }));
 
+vi.mock("../../../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js", () => ({
+  cleanupInterruptState: vi.fn()
+}));
+
 import { interruptMatchEnter } from "../../../src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js";
 import { interruptRoundEnter } from "../../../src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js";
 
