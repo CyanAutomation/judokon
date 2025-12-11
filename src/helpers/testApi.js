@@ -684,7 +684,7 @@ const stateApi = {
    * Wait for a specific battle state to be reached
    * @param {string} stateName - Target state name
    * @param {number} timeout - Timeout in milliseconds
-   * @returns {Promise<boolean>} Resolves true when state reached, rejects on timeout
+   * @returns {Promise<boolean>} Resolves true when state reached, throws on timeout
    * @pseudocode
    * 1. Resolve immediately when the requested state is already active.
    * 2. Subscribe to `battleStateChange` to observe upcoming transitions.
