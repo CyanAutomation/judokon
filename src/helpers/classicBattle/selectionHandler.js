@@ -172,15 +172,19 @@ export function logSelectionMutation(source, store, extra = {}) {
     });
 
     if (typeof window !== "undefined") {
-      const trace = window.__SELECTION_FLAG_TRACE || [];
-      trace.push({
-        source,
-        selectionMade: store?.selectionMade ?? null,
-        lastSelectionMade: store?.__lastSelectionMade ?? null,
-        playerChoice: store?.playerChoice ?? null,
-        extra
-      });
-      window.__SELECTION_FLAG_TRACE = trace;
+      try {
+        const trace = window.__SELECTION_FLAG_TRACE || [];
+        trace.push({
+          source,
+          selectionMade: store?.selectionMade ?? null,
+          lastSelectionMade: store?.__lastSelectionMade ?? null,
+          playerChoice: store?.playerChoice ?? null,
+          extra
+        });
+        window.__SELECTION_FLAG_TRACE = trace;
+      } catch (windowError) {
+        // Ignore window property assignment errors in restricted environments
+      }
     }
   } catch {}
 }
