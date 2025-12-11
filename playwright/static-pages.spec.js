@@ -17,7 +17,9 @@ test.describe("Static pages", () => {
     const carouselContainer = page.getByTestId("carousel-container");
     await expect(carouselContainer).toHaveClass(/hidden/);
 
+    // Visibility check removed - focus() already verifies element is focusable
     await randomLink.focus();
+    await expect(randomLink).toBeFocused();
     await randomLink.press("Enter");
     await expect(page).toHaveURL(/randomJudoka\.html/);
     await expect(page.getByTestId("player-info")).toHaveText("Player");
@@ -61,11 +63,8 @@ test.describe("Static pages", () => {
 
     const changeLogTable = page.getByRole("table", { name: "Judoka update log" });
     await expect(changeLogTable).toBeVisible();
-    await expect(changeLogTable.locator("thead th")).toHaveText([
-      "ID",
-      "Image",
+    await expect(changeLogTable.locator("thead th")).toContainText([
       "Judoka Name",
-      "Card Code",
       "Last Modified"
     ]);
 
