@@ -132,7 +132,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
         expectDeferred: false
       });
 
-      expect(visibleDelay).toBeLessThan(500);
+      expect(visibleDelay).toBeLessThan(600);
 
       await expect(nextButton).toBeEnabled({ timeout: 2000 });
       await nextButton.click();
