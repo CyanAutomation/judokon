@@ -92,21 +92,39 @@ describe("Integration Test Example: Battle Flow", () => {
     expect(_battleReadyPromise).toBeDefined();
   });
 
-  it("demonstrates workflow spanning multiple real modules", async () => {
-    // Setup: mock external service
-    mockFetch
-      .mockResolvedValueOnce(testScenarios.opponentA)
-      .mockResolvedValueOnce({ round: 1, score: 5 });
+  it("resolves readiness when home link and state progress initialize", async () => {
+    document.body.innerHTML = `
+      <div class="home-screen">
+        <a data-testid="home-link" href="/">Home</a>
+        <ul id="battle-state-progress"></ul>
+      </div>
+    `;
+    document.body.dataset.battleState = "waitingForMatchStart";
 
-    // Import multiple real internal modules - they work together naturally
-    const { markBattlePartReady } = await import("../../src/helpers/battleInit.js");
+    // Enable the state progress feature so the progress renderer runs
+    window.__FF_OVERRIDES = { ...window.__FF_OVERRIDES, battleStateProgress: true };
 
-    // Simulate page initialization flow with real module
-    markBattlePartReady("home");
-    markBattlePartReady("state");
+    // Provide the store eagerly so setupClassicBattleHomeLink can mark the home part ready
+    window.battleStore = { selectionMade: false };
 
-    // Assert: readiness logic worked
-    expect(mockFetch).not.toHaveBeenCalled();
+    const { battleReadyPromise } = await harness.importModule("../../src/helpers/battleInit.js");
+    const { setupClassicBattleHomeLink } = await harness.importModule(
+      "../../src/helpers/setupClassicBattleHomeLink.js"
+    );
+    const { initBattleStateProgress, battleStateProgressReadyPromise } = await harness.importModule(
+      "../../src/helpers/battleStateProgress.js"
+    );
+
+    setupClassicBattleHomeLink();
+    await initBattleStateProgress();
+    await battleStateProgressReadyPromise;
+
+    await battleReadyPromise;
+
+    expect(document.querySelector(".home-screen")?.dataset.ready).toBe("true");
+    expect(document.querySelector("[data-testid=\"home-link\"]")?.dataset.homeLinkBound).toBe("true");
+    expect(document.getElementById("battle-state-progress")?.dataset.featureBattleStateReady).toBe("true");
+    expect(document.body.dataset.battleState).toBe("waitingForMatchStart");
   });
 
   it("demonstrates fixture usage: localStorage and DOM", async () => {
