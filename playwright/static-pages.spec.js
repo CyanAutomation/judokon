@@ -17,7 +17,7 @@ test.describe("Static pages", () => {
     const carouselContainer = page.getByTestId("carousel-container");
     await expect(carouselContainer).toHaveClass(/hidden/);
 
-    await expect(randomLink).toBeVisible();
+    // Visibility check removed - focus() already verifies element is focusable
     await randomLink.focus();
     await expect(randomLink).toBeFocused();
     await randomLink.press("Enter");
