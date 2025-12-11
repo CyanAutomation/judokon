@@ -92,29 +92,32 @@ describe("battleInit readiness", () => {
     document.body.innerHTML = '<div class="home-screen"></div>';
 
     const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("rejects invalid parts without dispatching readiness", async () => {
+    document.body.innerHTML = '<div class="home-screen"></div>';
+
+    const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const eventSpy = vi.fn();
-    const eventListener = document.addEventListener("battle:init", eventSpy);
+    document.addEventListener("battle:init", eventSpy);
 
-    const { markBattlePartReady, battleReadyPromise } = await loadBattleInit();
-    const readinessSpy = vi.fn();
-    battleReadyPromise.then(readinessSpy);
+    try {
+      const { markBattlePartReady, battleReadyPromise } = await loadBattleInit();
+      const readinessSpy = vi.fn();
+      battleReadyPromise.then(readinessSpy);
 
-    markBattlePartReady("invalid-part");
+      markBattlePartReady("invalid-part");
 
-    await flushMicrotasks();
+      await flushMicrotasks();
 
-    expect(warningSpy).toHaveBeenCalledWith(
-      'Invalid battle part: "invalid-part". Expected one of: home, state'
-    );
-    expect(readinessSpy).not.toHaveBeenCalled();
-    expect(eventSpy).not.toHaveBeenCalled();
-    expect(document.querySelector(".home-screen").dataset.ready).toBeUndefined();
-    expect(document.querySelector(".home-screen").dataset.ready).toBeUndefined();
-    
-    warningSpy.mockRestore();
-  } finally {
-    document.removeEventListener("battle:init", eventSpy);
-  }
+      expect(warningSpy).toHaveBeenCalledWith(
+        'Invalid battle part: "invalid-part". Expected one of: home, state'
+      );
+      expect(readinessSpy).not.toHaveBeenCalled();
+      expect(eventSpy).not.toHaveBeenCalled();
+      expect(document.querySelector(".home-screen").dataset.ready).toBeUndefined();
+    } finally {
+      document.removeEventListener("battle:init", eventSpy);
+      warningSpy.mockRestore();
+    }
   });
 
   it("emits the init event only once even with rapid calls", async () => {
