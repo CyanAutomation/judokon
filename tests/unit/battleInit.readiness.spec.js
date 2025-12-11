@@ -109,7 +109,12 @@ describe("battleInit readiness", () => {
     expect(readinessSpy).not.toHaveBeenCalled();
     expect(eventSpy).not.toHaveBeenCalled();
     expect(document.querySelector(".home-screen").dataset.ready).toBeUndefined();
+    expect(document.querySelector(".home-screen").dataset.ready).toBeUndefined();
+    
+    warningSpy.mockRestore();
+  } finally {
     document.removeEventListener("battle:init", eventSpy);
+  }
   });
 
   it("emits the init event only once even with rapid calls", async () => {
