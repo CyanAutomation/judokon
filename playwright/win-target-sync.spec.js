@@ -71,7 +71,7 @@ async function finishMatchAtTarget(page, targetPoints) {
   await page.waitForTimeout(100);
   await waitForBattleReady(page, { timeout: 15_000, allowFallback: true });
 
-  const completion = await page.evaluate(({ targetPoints }) => {
+  const completion = await page.evaluate(async ({ targetPoints }) => {
     try {
       const stateApi = window.__TEST_API?.state;
       const store = window.__TEST_API?.inspect?.getBattleStore?.();
@@ -93,7 +93,8 @@ async function finishMatchAtTarget(page, targetPoints) {
       let lastOk = true;
       let failedEvent = null;
       for (const eventName of events) {
-        const outcome = stateApi.dispatchBattleEvent(eventName, detail);
+        const result = stateApi.dispatchBattleEvent(eventName, detail);
+        const outcome = result && typeof result.then === 'function' ? await result : result;
         if (outcome === false) {
           lastOk = false;
           failedEvent = eventName;
@@ -131,8 +132,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   const testCases = [
     { key: "1", points: "3", name: "Quick" },
     { key: "2", points: "5", name: "Medium" },
-    { key: "3", points: "10", name: "Long" },
-    { key: "1", points: "3", name: "Quick (sync check)" } // Additional case for sync
+    { key: "3", points: "10", name: "Long" }
   ];
 
   test.beforeEach(async ({ page }) => {
