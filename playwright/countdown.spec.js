@@ -35,7 +35,7 @@ test.describe("Battle CLI countdown timing", () => {
         timeout: 2_000
       });
 
-      await expect(countdown).toHaveText(/^(\s*)?$/, { timeout: 7_000 });
+      await expect(countdown).toHaveText("", { timeout: 7_000 });
 
       await expect(roundCounter).toHaveText(/Round\s+2/, { timeout: 12_000 });
 
