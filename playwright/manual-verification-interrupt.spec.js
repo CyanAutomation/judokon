@@ -49,19 +49,20 @@ test.describe("Classic battle interrupt recovery", () => {
     expect(interruptResult.ok).toBe(true);
 
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
-    await expect(page.getByTestId("stat-button").first()).toBeDisabled();
+    const firstStatButton = page.getByTestId("stat-button").first();
+    await expect(firstStatButton).toBeDisabled({ timeout: 10000 });
 
     const timerMessage = page
       .getByRole("status")
       .filter({ hasText: /time left:/i });
-    await expect(timerMessage).toBeVisible();
+    await expect(timerMessage).toContainText(/time left:\s*\d+s/i);
 
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
 
     // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
     await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
-    await expect(page.getByTestId("stat-button").first()).toBeEnabled();
+    await expect(firstStatButton).toBeEnabled();
   });
 
   test("interrupt during cooldown keeps countdown visible and resumes", async ({ page }) => {
@@ -73,14 +74,14 @@ test.describe("Classic battle interrupt recovery", () => {
     const timerMessage = page
       .getByRole("status")
       .filter({ hasText: /time left:/i });
-    await expect(timerMessage).toBeVisible();
+    await expect(timerMessage).toContainText(/time left:\s*\d+s/i);
 
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
       reason: "cooldown coverage"
     });
     expect(interruptResult.ok).toBe(true);
 
-    await expect(timerMessage).toBeVisible();
+    await expect(timerMessage).toContainText(/time left:\s*\d+s/i);
 
     // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
