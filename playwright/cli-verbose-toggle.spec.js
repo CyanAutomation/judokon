@@ -23,9 +23,9 @@ const isVerboseEnabled = async (page) =>
     try {
       const storedSettings = JSON.parse(localStorage.getItem("settings") || "{}");
       return storedSettings?.featureFlags?.cliVerbose?.enabled ?? null;
-    } catch {
+    } catch (error) {
+      console.warn('Failed to read verbose settings from localStorage:', error);
       return null;
-    }
   });
 
 async function startMatch(page) {
