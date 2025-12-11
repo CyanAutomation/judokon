@@ -27,6 +27,8 @@ async function readTimerSeconds(timerValueLocator) {
 
 test.describe("Classic Battle – auto-advance", () => {
   test("auto-advances via visible countdown", async ({ page }) => {
+    expect(typeof applyDeterministicCooldown).toBe("function");
+
     await applyDeterministicCooldown(page, {
       cooldownMs: 1_500,
       roundTimerMs: 1,
@@ -63,12 +65,11 @@ test.describe("Classic Battle – auto-advance", () => {
       .poll(() => readTimerSeconds(timerValue), { timeout: 10_000 })
       .toBeGreaterThan(0);
 
-    const cooldownBanner = await roundMessage.textContent();
+    const cooldownBanner = (await roundMessage.textContent())?.trim();
 
     await expect
       .poll(() => readRoundNumber(roundCounter), { timeout: 10_000 })
       .toBeGreaterThan(initialRound);
-    await expect(roundMessage).not.toHaveText(cooldownBanner ?? "");
     await expect(roundMessage).not.toHaveText(cooldownBanner ?? "");
   });
 });
