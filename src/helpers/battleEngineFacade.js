@@ -441,6 +441,9 @@ export const getScores = () => {
  */
 export const getCurrentStats = () => {
   const engine = requireEngine();
+  if (typeof engine.getCurrentStats !== "function") {
+    return Object.freeze({});
+  }
   return Object.freeze({ ...engine.getCurrentStats() });
 };
 
