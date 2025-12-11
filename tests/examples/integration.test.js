@@ -127,7 +127,14 @@ describe("Integration Test Example: Battle Flow", () => {
     expect(document.querySelector(".home-screen")?.dataset.ready).toBe("true");
     expect(document.querySelector("[data-testid=\"home-link\"]")?.dataset.homeLinkBound).toBe("true");
     expect(document.getElementById("battle-state-progress")?.dataset.featureBattleStateReady).toBe("true");
+    expect(document.querySelector(".home-screen")?.dataset.ready).toBe("true");
+    expect(document.querySelector("[data-testid=\"home-link\"]")?.dataset.homeLinkBound).toBe("true");
+    expect(document.getElementById("battle-state-progress")?.dataset.featureBattleStateReady).toBe("true");
     expect(document.body.dataset.battleState).toBe("waitingForMatchStart");
+
+    // Cleanup global state
+    window.__FF_OVERRIDES = originalOverrides;
+    window.battleStore = originalBattleStore;
   });
 
   it("demonstrates fixture usage: localStorage and DOM", async () => {
