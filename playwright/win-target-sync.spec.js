@@ -93,7 +93,8 @@ async function finishMatchAtTarget(page, targetPoints) {
       let lastOk = true;
       let failedEvent = null;
       for (const eventName of events) {
-        const outcome = await stateApi.dispatchBattleEvent(eventName, detail);
+        const result = stateApi.dispatchBattleEvent(eventName, detail);
+        const outcome = result && typeof result.then === 'function' ? await result : result;
         if (outcome === false) {
           lastOk = false;
           failedEvent = eventName;
