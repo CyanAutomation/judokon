@@ -102,9 +102,12 @@ describe("Integration Test Example: Battle Flow", () => {
     document.body.dataset.battleState = "waitingForMatchStart";
 
     // Enable the state progress feature so the progress renderer runs
+    // Enable the state progress feature so the progress renderer runs
+    const originalOverrides = window.__FF_OVERRIDES;
     window.__FF_OVERRIDES = { ...window.__FF_OVERRIDES, battleStateProgress: true };
 
     // Provide the store eagerly so setupClassicBattleHomeLink can mark the home part ready
+    const originalBattleStore = window.battleStore;
     window.battleStore = { selectionMade: false };
 
     const { battleReadyPromise } = await harness.importModule("../../src/helpers/battleInit.js");
