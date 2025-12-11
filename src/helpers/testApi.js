@@ -684,21 +684,21 @@ const stateApi = {
    * Wait for a specific battle state to be reached
    * @param {string} stateName - Target state name
    * @param {number} timeout - Timeout in milliseconds
-   * @returns {Promise<boolean>} Resolves true when state reached, false on timeout
+   * @returns {Promise<boolean>} Resolves true when state reached, throws on timeout
    * @pseudocode
    * 1. Resolve immediately when the requested state is already active.
    * 2. Subscribe to `battleStateChange` to observe upcoming transitions.
    * 3. Poll the state as a safety net while tracking the timeout window.
-   * 4. Resolve `true` on observation, otherwise resolve `false` when time expires.
+   * 4. Resolve `true` on observation, otherwise reject when time expires.
    */
   async waitForBattleState(stateName, timeout = 5000) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const startTime = Date.now();
       let finished = false,
         pollId,
         timeoutId,
         listener;
-      const cleanup = (result) => {
+      const cleanup = (onComplete) => {
         if (finished) return;
         finished = true;
         if (timeoutId) clearTimeout(timeoutId);
@@ -708,8 +708,18 @@ const stateApi = {
             offBattleEvent("battleStateChange", listener);
           } catch {}
         }
-        resolve(result);
+        onComplete();
       };
+      const rejectWithTimeout = () =>
+        cleanup(() => {
+          const error = new Error(
+            `Timed out after ${timeout}ms waiting for battle state "${stateName}"`
+          );
+          error.name = 'BattleStateTimeoutError';
+          error.code = 'BATTLE_STATE_TIMEOUT';
+          reject(error);
+        });
+      const resolveMatch = () => cleanup(() => resolve(true));
       const currentMatches = () => {
         try {
           return this.getBattleState() === stateName;
@@ -718,7 +728,7 @@ const stateApi = {
         }
       };
       if (currentMatches()) {
-        cleanup(true);
+        resolveMatch();
         return;
       }
       listener = (event) => {
@@ -727,7 +737,7 @@ const stateApi = {
           typeof detail === "string"
             ? detail
             : (detail?.to ?? detail?.state ?? detail?.next ?? null);
-        if (nextState === stateName) cleanup(true);
+        if (nextState === stateName) resolveMatch();
       };
       try {
         onBattleEvent("battleStateChange", listener);
@@ -735,10 +745,10 @@ const stateApi = {
         listener = undefined;
       }
       pollId = setInterval(() => {
-        if (currentMatches()) cleanup(true);
-        else if (Date.now() - startTime > timeout) cleanup(false);
+        if (currentMatches()) resolveMatch();
+        else if (Date.now() - startTime > timeout) rejectWithTimeout();
       }, 50);
-      timeoutId = setTimeout(() => cleanup(false), timeout);
+      timeoutId = setTimeout(() => rejectWithTimeout(), timeout);
     });
   },
 
