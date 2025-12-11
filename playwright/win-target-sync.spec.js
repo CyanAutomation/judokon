@@ -114,9 +114,9 @@ async function finishMatchAtTarget(page, targetPoints) {
   }, { targetPoints });
 
   expect(completion.ok, completion.reason ?? "match completion dispatch failed").toBe(true);
-  const computedScore = Number(
-    completion.playerScore ?? (await readPlayerScore(page))
-  );
+  const computedScore = Number.isFinite(completion.playerScore) 
+    ? completion.playerScore 
+    : Number(await readPlayerScore(page));
   const finalPlayerScore = Math.max(
     targetPoints,
     Number.isFinite(computedScore) ? computedScore : targetPoints
