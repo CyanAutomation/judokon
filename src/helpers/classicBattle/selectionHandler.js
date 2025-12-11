@@ -405,7 +405,7 @@ export function validateSelectionState(store) {
     const resolvedState =
       [current, datasetState, broadcastState].find((state) =>
         VALID_BATTLE_STATES.includes(state)
-      ) ?? current ?? datasetState ?? broadcastState ?? null;
+      ) ?? null;
 
     console.log(
       "[DIAGNOSTIC] validateSelectionState: current machine state =",
