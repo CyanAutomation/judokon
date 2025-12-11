@@ -15,7 +15,7 @@ import { reportSentryError } from "./sentryReporter.js";
  * 1. Validate machine parameter has required dispatch method.
  * 2. Extract match configuration from store (win target, scores, first player).
  * 3. Emit `matchStart` event with initialization detail for UI and analytics.
- * 4. Dispatch `ready` with `{ initial: true }` to transition to cooldown.
+ * 4. Fire dispatch(`ready`) without awaiting to transition to cooldown.
  * 5. Capture errors to Sentry for observability.
  */
 export async function matchStartEnter(machine) {
@@ -35,9 +35,12 @@ export async function matchStartEnter(machine) {
       timestamp: Date.now()
     });
 
-    // Emit the readyForCooldown event to signal the orchestrator to dispatch ready
-    emitBattleEvent("readyForCooldown", { initial: true });
+    // Fire dispatch('ready') without awaiting to avoid nested dispatch deadlock
+    // The state machine will handle the transition asynchronously
+    debugLog("matchStartEnter: firing dispatch('ready') - fire and forget");
+    machine.dispatch("ready", { initial: true }); // Do not await
   } catch (error) {
+    debugLog("matchStartEnter: error occurred", error);
     reportSentryError(error, {
       contexts: { location: "matchStartEnter" }
     });

@@ -553,18 +553,9 @@ function createOnEnterMap() {
  * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
  */
 function setupReadyForCooldownListener(machineRef) {
-  debugLog("setupReadyForCooldownListener: Setting up readyForCooldown listener");
-  onBattleEvent("readyForCooldown", (event) => {
-    debugLog("readyForCooldown-listener: CALLED");
-    const detail = event?.detail ?? {};
-    try {
-      machineRef.dispatch("ready", detail);
-      debugLog("readyForCooldown-listener: dispatch('ready') completed");
-    } catch (error) {
-      debugLog("readyForCooldown-listener: dispatch('ready') threw error:", error);
-    }
-  });
-  debugLog("setupReadyForCooldownListener: listener setup complete");
+  // NOTE: This listener is no longer used. The dispatch("ready") is now called
+  // directly from matchStartEnter via Promise.resolve().then() to avoid
+  // nested dispatch deadlock issues. Keeping this function for compatibility.
 }
 
 /**
