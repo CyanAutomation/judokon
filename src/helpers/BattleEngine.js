@@ -581,8 +581,7 @@ export class BattleEngine {
   }
 
   #refreshCurrentStats(stats) {
-  #refreshCurrentStats(stats) {
-    if (stats && typeof stats === "object" && !Array.isArray(stats)) {
+    if (stats && typeof stats === "object") {
       this._currentStats = Object.freeze({ ...stats });
       return;
     }
