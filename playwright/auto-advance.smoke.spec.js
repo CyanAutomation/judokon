@@ -1,43 +1,8 @@
-// Playwright smoke test: verifies inter-round cooldown auto-advances
+// Contract: this smoke test must prove the inter-round cooldown countdown is visible
+// and that the battle auto-advances to the next round without any manual input.
 import { test, expect } from "./fixtures/commonSetup.js";
-import {
-  waitForBattleReady,
-  waitForBattleState,
-  waitForStatButtonsReady
-} from "./helpers/battleStateHelper.js";
-import { dispatchBattleEvent, readRoundsPlayed } from "./helpers/battleApiHelper.js";
-
-const STATE_TIMEOUT_MS = 7_500;
-const COUNTDOWN_TICK_TIMEOUT_MS = 8_000;
-
-async function expectDeterministicTestApi(page) {
-  const hooks = await page.evaluate(() => {
-    const stateApi = window.__TEST_API?.state;
-    const timersApi = window.__TEST_API?.timers;
-
-    return {
-      hasStateWait: typeof stateApi?.waitForBattleState === "function",
-      hasDispatchBattleEvent: typeof stateApi?.dispatchBattleEvent === "function",
-      hasCountdown: typeof timersApi?.getCountdown === "function"
-    };
-  });
-
-  expect(hooks.hasStateWait, "__TEST_API.state.waitForBattleState unavailable").toBe(true);
-  expect(hooks.hasDispatchBattleEvent, "Test API dispatchBattleEvent unavailable").toBe(true);
-  expect(hooks.hasCountdown, "__TEST_API.timers.getCountdown unavailable").toBe(true);
-}
-
-async function assertCountdownTick(page) {
-  const timerLocator = page.getByTestId("next-round-timer");
-  const initialText = (await timerLocator.innerText()).trim();
-
-  await expect(timerLocator).not.toHaveText(initialText, { timeout: COUNTDOWN_TICK_TIMEOUT_MS });
-
-  const finalState = await page.evaluate(
-    () => window.__TEST_API?.state?.getBattleState?.() ?? null
-  );
-  expect(["cooldown", "waitingForPlayerAction"].includes(finalState)).toBe(true);
-}
+import { waitForBattleReady } from "./helpers/battleStateHelper.js";
+import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
 
 async function startClassicBattle(page) {
   await page.goto("/index.html");
@@ -48,116 +13,61 @@ async function startClassicBattle(page) {
   await Promise.all([page.waitForURL("**/battleClassic.html"), startLink.click()]);
 }
 
-async function readCooldownSeconds(page) {
-  return await page.evaluate(() => {
-    const timerEl = document.querySelector('[data-testid="next-round-timer"]');
-    const timerText = timerEl?.textContent ?? "";
-    const textMatch = timerText.match(/(\d+)/);
-    if (textMatch) {
-      const parsed = Number.parseFloat(textMatch[1]);
-      if (Number.isFinite(parsed)) return parsed;
-    }
-
-    const debug = window.__TEST_API?.inspect?.getDebugInfo?.();
-    const remaining =
-      debug?.timers?.cooldown?.remaining ?? debug?.timers?.cooldownRemaining ?? null;
-    if (Number.isFinite(remaining)) return Number(remaining);
-
-    const parsedDebug = Number.parseFloat(remaining);
-    if (Number.isFinite(parsedDebug)) return parsedDebug;
-
-    const getterValue = window.__TEST_API?.timers?.getCountdown?.();
-    const parsedGetter = Number.parseFloat(getterValue);
-    if (Number.isFinite(parsedGetter)) return parsedGetter;
-
-    return null;
-  });
+async function readRoundNumber(roundCounterLocator) {
+  const text = await roundCounterLocator.textContent();
+  const match = text?.match(/Round\s*(\d+)/i);
+  return match ? Number.parseInt(match[1], 10) : 0;
 }
 
-/**
- * Runs an auto-advance scenario test with configurable countdown and stat selection.
- * @param {import('@playwright/test').Page} page - The Playwright page object
- * @param {Object} options - Configuration options
- * @param {number} [options.countdownSeconds=5] - Countdown duration in seconds
- * @param {Function} [options.selectStat] - Custom stat selection function, defaults to click
- * @returns {Promise<number>} The number of rounds played before the scenario
- */
-async function runAutoAdvanceScenario(page, { countdownSeconds = 5, selectStat } = {}) {
-  await startClassicBattle(page);
-  await waitForBattleReady(page, { allowFallback: false });
-  await expectDeterministicTestApi(page);
-
-  await waitForBattleState(page, "waitingForPlayerAction", {
-    allowFallback: false,
-    timeout: STATE_TIMEOUT_MS
-  });
-
-  const roundsBefore = (await readRoundsPlayed(page)) ?? 0;
-
-  await waitForStatButtonsReady(page, { timeout: STATE_TIMEOUT_MS });
-
-  const statContainer = page.getByTestId("stat-buttons");
-  await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
-
-  const firstStat = statContainer.getByRole("button").first();
-  await expect(firstStat).toBeVisible();
-
-  if (typeof selectStat === "function") {
-    await selectStat(firstStat);
-  } else {
-    await firstStat.click();
-  }
-
-  await waitForBattleState(page, "cooldown", { allowFallback: false, timeout: STATE_TIMEOUT_MS });
-  const cooldownState = await page.evaluate(
-    () => window.__TEST_API?.state?.getBattleState?.() ?? null
-  );
-  expect(cooldownState).toBe("cooldown");
-
-  await page.evaluate(
-    (seconds) => window.__TEST_API?.timers?.setCountdown?.(seconds),
-    countdownSeconds
-  );
-
-  const cooldownCountdown = await readCooldownSeconds(page);
-  expect(cooldownCountdown).not.toBeNull();
-  expect(Number.isFinite(Number(cooldownCountdown))).toBe(true);
-
-  await assertCountdownTick(page);
-
-  await waitForBattleState(page, "waitingForPlayerAction", {
-    allowFallback: false,
-    timeout: STATE_TIMEOUT_MS
-  });
-
-  return roundsBefore;
+async function readTimerSeconds(timerValueLocator) {
+  const text = await timerValueLocator.textContent();
+  const match = text?.match(/(\d+)s/);
+  return match ? Number.parseInt(match[1], 10) : 0;
 }
 
 test.describe("Classic Battle – auto-advance", () => {
-  test("auto-advances via Test API countdown", async ({ page }, testInfo) => {
-    const roundsBefore = await runAutoAdvanceScenario(page, {
-      countdownSeconds: 2,
-      selectStat: async (firstStat) => {
-        try {
-          const dispatched = await dispatchBattleEvent(page, "selectStat", { index: 0 });
-          if (!dispatched.ok) {
-            await testInfo.attach("dispatch-selectStat-failure", {
-              body: JSON.stringify(dispatched, null, 2),
-              contentType: "application/json"
-            });
-            await firstStat.click();
-          }
-        } catch (error) {
-          await testInfo.attach("dispatch-selectStat-error", {
-            body: String(error?.stack ?? error),
-            contentType: "text/plain"
-          });
-          await firstStat.click();
-        }
-      }
+  test("auto-advances via visible countdown", async ({ page }) => {
+    await applyDeterministicCooldown(page, {
+      cooldownMs: 1_500,
+      roundTimerMs: 1,
+      showRoundSelectModal: false
     });
 
-    const roundsAfter = (await readRoundsPlayed(page)) ?? 0;
-    expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore + 1);
+    await startClassicBattle(page);
+    await waitForBattleReady(page, { allowFallback: false });
+
+    const roundCounter = page.getByTestId("round-counter");
+    const timerValue = page.locator("#next-round-timer [data-part='value']");
+    const roundMessage = page.locator("#round-message");
+
+    await expect
+      .poll(() => readRoundNumber(roundCounter), { timeout: 10_000 })
+      .toBeGreaterThanOrEqual(1);
+    const initialRound = await readRoundNumber(roundCounter);
+
+    const statContainer = page.getByTestId("stat-buttons");
+    await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
+
+    const firstStat = statContainer.getByRole("button").first();
+    await expect(firstStat).toBeVisible();
+    await firstStat.click();
+
+    await expect
+      .poll(async () => {
+        const message = await roundMessage.textContent();
+        return (message ?? "").trim().length > 0;
+      })
+      .toBe(true);
+    const cooldownBanner = await roundMessage.textContent();
+
+    await expect
+      .poll(() => readTimerSeconds(timerValue), { timeout: 10_000 })
+      .toBeGreaterThan(0);
+
+    await expect
+      .poll(() => readRoundNumber(roundCounter), { timeout: 10_000 })
+      .toBeGreaterThan(initialRound);
+    await expect(roundCounter).toContainText(new RegExp(`Round\\s*${initialRound + 1}`));
+    await expect(roundMessage).not.toHaveText(cooldownBanner ?? "");
   });
 });
