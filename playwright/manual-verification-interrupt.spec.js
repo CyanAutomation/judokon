@@ -41,7 +41,7 @@ test.describe("Classic battle interrupt recovery", () => {
   test("interrupt transitions to cooldown and resumes with visible countdown cues", async ({
     page
   }) => {
-    await launchClassicBattle(page, { cooldownMs: 900, roundTimerMs: 8 });
+    await launchClassicBattle(page, { cooldownMs: 1200, roundTimerMs: 8 });
 
     const interruptResult = await dispatchBattleEvent(page, "interrupt", {
       reason: "interrupt for countdown coverage"
