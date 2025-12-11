@@ -65,7 +65,7 @@ test.describe("Classic battle interrupt recovery", () => {
   });
 
   test("interrupt during cooldown keeps countdown visible and resumes", async ({ page }) => {
-    await launchClassicBattle(page, { cooldownMs: 1000, roundTimerMs: 8 });
+    await launchClassicBattle(page, { cooldownMs: 1500, roundTimerMs: 8 });
 
     await page.getByTestId("stat-button").first().click();
 
