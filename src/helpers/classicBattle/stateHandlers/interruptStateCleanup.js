@@ -14,56 +14,28 @@ import { debugLog } from "../debugLog.js";
  *
  * @pseudocode
  * 1. Clear any running timers to prevent stale callbacks.
- * 2. Reset player choice and selection flags.
+ * 2. Reset player choice and selection flags (default behavior).
  * 3. Clear window instrumentation properties used in tests.
  * 4. Log errors but continue - never throw (safe for interrupt handlers).
  *
  * @example
- * // In interrupt handler
+ * // In interrupt handler - reset selection state (default)
  * import { cleanupInterruptState } from "./interruptStateCleanup.js";
  * const store = machine.context?.store;
  * cleanupInterruptState(store); // Safe even if store is null
  *
- * @param {object} [store] - Battle state store to clean up. May be null/undefined.
- * @returns {void}
- * @note This function will never throw - all errors are logged and suppressed
- *       to ensure interrupt handlers always succeed.
- */
-/**
- * Shared state cleanup utility for match and round interrupts.
- *
- * This function safely cleans up all player selection state during interrupts.
- * It combines timer cleanup, player state reset, and test instrumentation cleanup
- * into a single, atomic operation with comprehensive error handling. Errors are
- * logged but suppressed to ensure interrupt handlers always succeed.
- *
- * Use this when interrupting a round or match to ensure consistent state cleanup.
- * Called by: interruptRoundEnter, interruptMatchEnter
- *
- * @pseudocode
- * 1. Clear any running timers to prevent stale callbacks.
- * 2. Reset player choice and selection flags (only if resetSelectionState=true).
- * 3. Clear window instrumentation properties used in tests.
- * 4. Log errors but continue - never throw (safe for interrupt handlers).
- *
- * @example
- * // In interrupt handler - preserve selection state
- * import { cleanupInterruptState } from "./interruptStateCleanup.js";
- * const store = machine.context?.store;
- * cleanupInterruptState(store); // Safe even if store is null
- *
- * // In interrupt handler - reset selection state
- * cleanupInterruptState(store, { resetSelectionState: true });
+ * // In interrupt handler - opt out of selection reset (rare)
+ * cleanupInterruptState(store, { resetSelectionState: false });
  *
  * @param {object} [store] - Battle state store to clean up. May be null/undefined.
  * @param {object} [options] - Configuration options.
- * @param {boolean} [options.resetSelectionState=false] - Whether to reset selection flags.
- *   Set to true for match interrupts, false for cooldown/transition interrupts.
+ * @param {boolean} [options.resetSelectionState=true] - Whether to reset selection flags.
+ *   Defaults to true so interrupts cannot preserve stale selection state.
  * @returns {void}
  * @note This function will never throw - all errors are logged and suppressed
  *       to ensure interrupt handlers always succeed.
  */
-export function cleanupInterruptState(store, { resetSelectionState = false } = {}) {
+export function cleanupInterruptState(store, { resetSelectionState = true } = {}) {
   // Clear any running timers to prevent stale callbacks
   // (Defensive check: cleanupTimers handles null internally, but fail early to prevent propagation)
   if (store) {
@@ -74,7 +46,7 @@ export function cleanupInterruptState(store, { resetSelectionState = false } = {
     }
   }
 
-  // Reset player choice and selection state only when explicitly requested
+  // Reset player choice and selection state unless explicitly preserved
   // (Required check: direct property assignment needs non-null store)
   if (store) {
     try {

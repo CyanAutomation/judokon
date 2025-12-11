@@ -25,7 +25,7 @@ export async function interruptMatchEnter(machine, payload) {
 
   // Cleanup timers and selection state
   const store = machine.context?.store;
-  cleanupInterruptState(store);
+  cleanupInterruptState(store, { resetSelectionState: true });
 
   // Update UI to reflect interrupted state
   emitBattleEvent("scoreboardClearMessage");

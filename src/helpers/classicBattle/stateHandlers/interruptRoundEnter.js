@@ -34,7 +34,7 @@ export async function interruptRoundEnter(machine, payload) {
   const store = machine.context?.store;
 
   // Cleanup timers and selection state
-  cleanupInterruptState(store);
+  cleanupInterruptState(store, { resetSelectionState: true });
 
   // Cancel round decision guard to prevent duplicate selections
   cancelRoundDecisionGuard();
