@@ -119,7 +119,8 @@ describe("Integration Test Example: Battle Flow", () => {
     );
 
     setupClassicBattleHomeLink();
-    await initBattleStateProgress();
+    setupClassicBattleHomeLink();
+    const initResult = await initBattleStateProgress();
     await battleStateProgressReadyPromise;
 
     await battleReadyPromise;
