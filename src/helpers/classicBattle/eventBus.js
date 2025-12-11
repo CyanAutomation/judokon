@@ -46,7 +46,12 @@ export function setBattleStateGetter(fn) {
 /**
  * Record the most recent battle state broadcast for fallback access.
  *
+ * @pseudocode
+ * 1. Ignore non-string or empty inputs.
+ * 2. Store the provided battle state for later retrieval.
+ *
  * @param {string|null|undefined} state
+ * @returns {void}
  */
 export function setBattleStateSnapshot(state) {
   if (typeof state === "string" && state.length > 0) {
