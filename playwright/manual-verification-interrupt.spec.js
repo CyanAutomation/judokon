@@ -5,7 +5,7 @@ import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
 
 const BATTLE_PAGE_URL = "/src/pages/battleClassic.html";
 const PLAYER_ACTION_STATE = "waitingForPlayerAction";
-const COUNTDOWN_PATTERN = /time left:\s*\d+(\.\d+)?s/i;
+const COUNTDOWN_PATTERN = /\btime left:\s*\d+(\.\d+)?s\b/i;
 
 async function navigateToBattle(page, options = {}) {
   const { cooldownMs = 1200, roundTimerMs = 16 } = options;
