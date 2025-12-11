@@ -581,13 +581,10 @@ export class BattleEngine {
   }
 
   #refreshCurrentStats(stats) {
-    if (stats && typeof stats === "object") {
-      this._currentStats = Object.freeze({ ...stats });
-      return;
-    }
+    const shouldRefresh =
+      stats && typeof stats === "object" && !Array.isArray(stats);
 
-    // Always ensure _currentStats is a valid frozen object
-    this._currentStats = Object.freeze({});
+    this._currentStats = Object.freeze(shouldRefresh ? { ...stats } : {});
   }
 
   /**

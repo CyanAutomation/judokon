@@ -57,6 +57,15 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
   return evaluateRoundData(playerVal, opponentVal);
 }
 
+function resolveStatsSnapshot(store) {
+  if (!store || typeof store !== "object") return undefined;
+
+  const candidate = store.currentPlayerJudoka?.stats || store.lastPlayerStats;
+  return candidate && typeof candidate === "object" && !Array.isArray(candidate)
+    ? { ...candidate }
+    : undefined;
+}
+
 /**
  * Normalize inputs and evaluate the round.
  *
@@ -76,10 +85,11 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   console.log("[DIAGNOSTIC] evaluateOutcome called with", { stat, playerVal, opponentVal });
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
+  const statsSnapshot = resolveStatsSnapshot(store);
 
   try {
     console.log("[DIAGNOSTIC] evaluateOutcome: calling engineFacade.handleStatSelection");
-    const result = engineFacade.handleStatSelection(pVal, oVal);
+    const result = engineFacade.handleStatSelection(pVal, oVal, statsSnapshot);
     debugLog("DEBUG: evaluateOutcome result", result);
     console.log("[DIAGNOSTIC] evaluateOutcome: handleStatSelection returned", result);
 

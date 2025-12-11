@@ -595,17 +595,18 @@ export const stopRoundTimer = () => requireEngine().stopTimer();
  * @param {string} [opts.statKey] - Optional stat identifier selected by the player.
  * @param {number} opts.playerVal - Numeric value chosen by the player.
  * @param {number} opts.opponentVal - Numeric value chosen by the opponent.
+ * @param {object} [opts.stats] - Optional stat snapshot to cache in the engine.
  * @returns {{delta:number, outcome:string, matchEnded:boolean, playerScore:number, opponentScore:number, statKey?:string}}
  * @throws {Error} If engine has no handleStatSelection method or inputs are invalid.
  */
-export function evaluateSelection({ statKey, playerVal, opponentVal }) {
+export function evaluateSelection({ statKey, playerVal, opponentVal, stats }) {
   const engine = requireEngine();
   if (typeof engine.handleStatSelection !== "function") {
     throw new Error(
       "Engine does not support stat selection (handleStatSelection method not found)"
     );
   }
-  const result = engine.handleStatSelection(playerVal, opponentVal);
+  const result = engine.handleStatSelection(playerVal, opponentVal, stats);
   return statKey ? { ...result, statKey } : result;
 }
 
