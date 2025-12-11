@@ -93,7 +93,7 @@ describe("battleInit readiness", () => {
 
     const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const eventSpy = vi.fn();
-    document.addEventListener("battle:init", eventSpy);
+    const eventListener = document.addEventListener("battle:init", eventSpy);
 
     const { markBattlePartReady, battleReadyPromise } = await loadBattleInit();
     const readinessSpy = vi.fn();
