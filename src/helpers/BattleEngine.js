@@ -141,6 +141,7 @@ export class BattleEngine {
     this.lastInterruptReason = "";
     this.lastError = "";
     this.lastModification = null;
+    this._currentStats = Object.freeze({});
     this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks, seed: this.seed };
     return emitter || new SimpleEmitter();
   }
@@ -297,9 +298,10 @@ export class BattleEngine {
    *
    * @param {number} playerVal - Value selected by the player.
    * @param {number} opponentVal - Value selected by the opponent.
+   * @param {object} [stats] - Optional stat snapshot to refresh emitted payloads.
    * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
-  handleStatSelection(playerVal, opponentVal) {
+  handleStatSelection(playerVal, opponentVal, stats) {
     this.#safeLog("BattleEngine.handleStatSelection", { playerVal, opponentVal });
     if (this.matchEnded) {
       return this.#resultWhenMatchEnded(playerVal, opponentVal);
@@ -308,6 +310,7 @@ export class BattleEngine {
     const outcome = determineOutcome(playerVal, opponentVal);
     this.#safeLog("BattleEngine.determineOutcome", outcome);
     applyOutcome(this, outcome);
+    this.#refreshCurrentStats(stats);
     // Notify listeners that stats-related values used for UI may need refresh.
     this.#safeEmit("statsUpdated", {
       stats: undefined // UI may query snapshots; payload optional by design
@@ -459,6 +462,7 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
+    this.#refreshCurrentStats(modification?.stats);
     this.#safeEmit("statsUpdated", { stats: undefined });
     return result;
   }
@@ -576,6 +580,27 @@ export class BattleEngine {
     return { timer, transitions: Array.isArray(transitions) ? transitions : [] };
   }
 
+  #refreshCurrentStats(stats) {
+    if (stats && typeof stats === "object") {
+      this._currentStats = Object.freeze({ ...stats });
+      return;
+    }
+
+    if (!this._currentStats || typeof this._currentStats !== "object") {
+      this._currentStats = Object.freeze({});
+    }
+  }
+
+  /**
+   * Return the latest stat snapshot tracked by the engine.
+   *
+   * @returns {Readonly<object>}
+   */
+  getCurrentStats() {
+    this.#refreshCurrentStats();
+    return this._currentStats;
+  }
+
   /**
    * Get the deterministic seed associated with this engine instance, if any.
    *
@@ -679,6 +704,7 @@ export class BattleEngine {
     this.lastInterruptReason = "";
     this.lastError = "";
     this.lastModification = null;
+    this._currentStats = Object.freeze({});
     this.timer = new TimerController();
   }
 }
