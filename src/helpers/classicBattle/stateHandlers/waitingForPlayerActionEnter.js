@@ -39,6 +39,19 @@ export async function waitingForPlayerActionEnter(machine) {
   // Trace selection flags when the state machine enters this state
   const store = machine?.context?.store;
 
+  if (store) {
+    try {
+      store.selectionMade = false;
+      store.__lastSelectionMade = false;
+      store.playerChoice = null;
+      logSelectionMutation("waitingForPlayerActionEnter.reset", store);
+    } catch (err) {
+      stateLogger.warn("Failed to reset selection flags on entry", {
+        error: err?.message
+      });
+    }
+  }
+
   logSelectionMutation("waitingForPlayerActionEnter.enter", store, {
     machineState: machine?.currentState ?? null
   });
