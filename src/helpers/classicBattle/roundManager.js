@@ -3,6 +3,7 @@ import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { bridgeEngineEvents } from "./engineBridge.js";
+import { logSelectionMutation } from "./selectionHandler.js";
 
 // Utilities
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
@@ -272,6 +273,9 @@ export async function startRound(store, onRoundStart) {
     store.selectionMade = false;
     store.__lastSelectionMade = false;
     store.playerChoice = null;
+    logSelectionMutation("startRound.reset", store, {
+      currentRoundsPlayed: store.roundsPlayed
+    });
     try {
       if (typeof window !== "undefined") {
         window.__classicBattleSelectionFinalized = false;
@@ -307,6 +311,9 @@ export async function startRound(store, onRoundStart) {
         try {
           store.selectionMade = false;
           store.__lastSelectionMade = false;
+          logSelectionMutation("startRound.microtaskReset", store, {
+            currentRoundsPlayed: store.roundsPlayed
+          });
         } catch {
           // Safely ignore any errors resetting selection state
         }

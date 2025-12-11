@@ -1,4 +1,4 @@
-import { cleanupTimers } from "../selectionHandler.js";
+import { cleanupTimers, logSelectionMutation } from "../selectionHandler.js";
 import { debugLog } from "../debugLog.js";
 
 /**
@@ -29,7 +29,7 @@ import { debugLog } from "../debugLog.js";
  * @note This function will never throw - all errors are logged and suppressed
  *       to ensure interrupt handlers always succeed.
  */
-export function cleanupInterruptState(store) {
+export function cleanupInterruptState(store, { resetSelectionState = false } = {}) {
   // Clear any running timers to prevent stale callbacks
   // (Defensive check: cleanupTimers handles null internally, but fail early to prevent propagation)
   if (store) {
@@ -40,16 +40,21 @@ export function cleanupInterruptState(store) {
     }
   }
 
-  // Reset player choice and selection state
+  // Reset player choice and selection state only when explicitly requested
   // (Required check: direct property assignment needs non-null store)
   if (store) {
     try {
-      // playerChoice: The stat key selected by the player (e.g., 'power', 'speed')
-      store.playerChoice = null;
-      // selectionMade: Whether the player has completed stat selection
-      store.selectionMade = false;
-      // __lastSelectionMade: Finalization state to prevent duplicate selection processing
-      store.__lastSelectionMade = false;
+      if (resetSelectionState) {
+        // playerChoice: The stat key selected by the player (e.g., 'power', 'speed')
+        store.playerChoice = null;
+        // selectionMade: Whether the player has completed stat selection
+        store.selectionMade = false;
+        // __lastSelectionMade: Finalization state to prevent duplicate selection processing
+        store.__lastSelectionMade = false;
+        logSelectionMutation("interrupt.cleanup.reset", store);
+      } else {
+        logSelectionMutation("interrupt.cleanup.preserve", store);
+      }
     } catch (err) {
       debugLog("Player state cleanup failed during interrupt:", err);
     }

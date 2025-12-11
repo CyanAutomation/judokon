@@ -155,6 +155,37 @@ function logSelectionDebug(message, data) {
 }
 
 /**
+ * Trace mutations to the selection flags during Vitest runs.
+ *
+ * @param {string} source - Identifier describing where the mutation occurred.
+ * @param {ReturnType<typeof createBattleStore>|null|undefined} store - Store being mutated.
+ * @param {Record<string, any>} [extra] - Additional context to log.
+ */
+export function logSelectionMutation(source, store, extra = {}) {
+  if (!IS_VITEST) return;
+  try {
+    console.log(`[selectionFlag:${source}]`, {
+      selectionMade: store?.selectionMade ?? null,
+      lastSelectionMade: store?.__lastSelectionMade ?? null,
+      playerChoice: store?.playerChoice ?? null,
+      ...extra
+    });
+
+    if (typeof window !== "undefined") {
+      const trace = window.__SELECTION_FLAG_TRACE || [];
+      trace.push({
+        source,
+        selectionMade: store?.selectionMade ?? null,
+        lastSelectionMade: store?.__lastSelectionMade ?? null,
+        playerChoice: store?.playerChoice ?? null,
+        extra
+      });
+      window.__SELECTION_FLAG_TRACE = trace;
+    }
+  } catch {}
+}
+
+/**
  * Track debug information about selection validation in tests.
  *
  * @param {object} debugInfo - Debug information to record.
@@ -229,6 +260,15 @@ export function isOrchestratorActive(store, currentState = undefined) {
   } catch {
     return false;
   }
+}
+
+function syncRoundsPlayedFromRoundStore(store) {
+  try {
+    const currentRound = roundStore?.getCurrentRound?.();
+    if (currentRound && Number.isFinite(Number(currentRound.number))) {
+      store.roundsPlayed = Number(currentRound.number);
+    }
+  } catch {}
 }
 
 /**
@@ -458,6 +498,8 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.selectionMade = true;
   store.__lastSelectionMade = true;
   store.playerChoice = stat;
+
+  logSelectionMutation("applySelectionToStore", store, { stat });
 
   if (IS_VITEST) {
     if (store.selectionMade !== true || store.playerChoice !== stat) {
@@ -1028,6 +1070,12 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       valuesReturned: values
     });
 
+    logSelectionMutation("handleStatSelection.afterApply", store, {
+      stat,
+      playerVal,
+      opponentVal
+    });
+
     ({ playerVal, opponentVal } = values);
 
     const handledByOrchestrator = await dispatchStatSelected(
@@ -1055,15 +1103,31 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
 
     if (handled) {
       logSelectionDebug("[handleStatSelection] resolveWithFallback returned true (handled)");
+      syncRoundsPlayedFromRoundStore(store);
+      logSelectionMutation("handleStatSelection.handled", store, {
+        stat,
+        playerVal,
+        opponentVal,
+        roundsPlayed: store.roundsPlayed
+      });
       return;
     }
 
     const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
+    syncRoundsPlayedFromRoundStore(store);
+
     logSelectionDebug("[handleStatSelection] After syncResultDisplay:", {
       storeSelectionMade: store.selectionMade,
       storePlayerChoice: store.playerChoice,
       roundsPlayed: store.roundsPlayed,
       resultMessage: result?.message
+    });
+
+    logSelectionMutation("handleStatSelection.afterSync", store, {
+      stat,
+      playerVal,
+      opponentVal,
+      roundsPlayed: store.roundsPlayed
     });
     return result;
   } finally {
