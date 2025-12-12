@@ -272,7 +272,7 @@ describe("Battle Classic Page Integration", () => {
     // Verify validation was called
     const validationHistory = window.__VALIDATE_SELECTION_DEBUG || [];
     expect(validationHistory.length).toBeGreaterThan(0);
-    
+
     // Verify the validation passed (allowed=true for at least one entry)
     const validationPassed = validationHistory.some((entry) => entry.allowed === true);
     expect(validationPassed).toBe(true);
