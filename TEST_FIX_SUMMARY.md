@@ -14,21 +14,25 @@ Five integration tests in `tests/integration/battleClassic.integration.test.js` 
 **Root Cause**: Tests were asserting on transient state that gets reset during normal state machine transitions.
 
 **Flow**:
+
 1. User selects a stat → `store.selectionMade = true` (in `applySelectionToStore`)
 2. Round resolves → state transitions: `waitingForPlayerAction` → `roundDecision` → `roundOver` → `waitingForPlayerAction` (next round)
 3. When entering `waitingForPlayerAction`, selection flags are reset: `store.selectionMade = false` (in `waitingForPlayerActionEnter.js:44`)
 
 **Why This is Correct Application Behavior**:
+
 - `selectionMade` is a guard flag to prevent duplicate selections **during** a round
 - It must be reset when starting the **next** round
 - The flag is transient by design, not persistent state
 
 **Why Tests Were Failing**:
+
 - Tests waited for `roundDecision` state using `waitForBattleState("roundDecision")`
 - By the time the promise resolved and test code executed, the state machine had already transitioned to the next round
 - The next round's `waitingForPlayerAction` handler had already reset `selectionMade = false`
 
-**The Fix**: 
+**The Fix**:
+
 - Removed incorrect assertions on `selectionMade` after round completion
 - Tests now assert on **persistent state** (rounds played, scores) instead of **transient flags**
 - Changed wait from `roundDecision` to `roundOver` for better timing (round fully resolved but not yet transitioned to next round)
@@ -38,17 +42,20 @@ Five integration tests in `tests/integration/battleClassic.integration.test.js` 
 **Root Cause**: Tests were checking engine state too early in the resolution flow.
 
 **Flow**:
+
 1. Selection triggers orchestrator path: `handleStatSelection` → `dispatchStatSelected` → orchestrator handles resolution
 2. Orchestrator enters `roundDecision` state → calls `resolveSelectionIfPresent` → calls `resolveRound`
 3. `resolveRound` → `finalizeRoundResult` → `computeRoundResult` → `evaluateOutcome` → **`engine.handleStatSelection`** (increments `engine.roundsPlayed`)
 
 **Why Tests Were Failing**:
+
 - Tests waited for `roundDecision` state, but engine rounds are incremented **during** evaluation which happens **within** that state
 - There was a race between:
   - State machine entering `roundDecision` (test wait completes)
   - Round evaluation completing (engine incremented)
 
 **The Fix**:
+
 - Changed test wait from `roundDecision` to `roundOver`
 - `roundOver` is entered **after** evaluation completes and engine has been updated
 - This ensures tests check engine state after it's been properly updated
@@ -60,7 +67,6 @@ Five integration tests in `tests/integration/battleClassic.integration.test.js` 
 1. **Removed transient state assertions**:
    - `expect(postSelectionStore.selectionMade).toBe(true)` ❌ → Removed
    - `expect(debugAfter?.store?.selectionMade).toBe(true)` ❌ → Removed
-   
 2. **Added proper persistent state assertions**:
    - `expect(roundsAfter).toBeGreaterThan(roundsBefore)` ✅
    - `expect(result.engineRounds).toBe(result.roundsAfter)` ✅
@@ -98,6 +104,7 @@ The tests were simply asserting on the wrong things at the wrong time.
 ## Test Results
 
 All 7 tests now pass:
+
 - ✅ verifies validateSelectionState validation executes during selection
 - ✅ initializes the page UI to the correct default state
 - ✅ keeps roundsPlayed in sync between engine and store in non-orchestrated flow
