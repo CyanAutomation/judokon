@@ -39,7 +39,7 @@ function initializeStateTable(stateTable) {
 
 /**
  * Build a trigger lookup map for fast O(1) access to transitions.
- * 
+ *
  * Note: This map is used as a fast path for triggers without guards.
  * When guards are present, dispatch() will fall back to linear search through triggers array.
  *
@@ -337,15 +337,13 @@ export async function createStateManager(
 
       // First, check if there are any triggers with guards that need evaluation
       const triggersForEvent = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
-      
+
       if (triggersForEvent.length > 0) {
         // Evaluate guards to find the first matching trigger
         for (const trigger of triggersForEvent) {
           const guardPassed = evaluateGuard(trigger.guard, context);
-          debugLog(`stateManager: evaluating guard "${trigger.guard}" for ${from}->${trigger.target}: ${guardPassed}`);
           if (guardPassed) {
             target = trigger.target;
-            debugLog(`stateManager: guard passed, targeting ${target}`);
             break;
           }
         }

@@ -2545,14 +2545,11 @@ const inspectionApi = {
 
       if (!isValidBattleSnapshot(snapshot)) {
         if (isDevelopmentEnvironment()) {
-          logDevWarning(
-            "testApi.inspect.getBattleSnapshot: Invalid snapshot structure detected",
-            {
-              hasRoundsPlayed: snapshot.roundsPlayed !== null,
-              hasPlayerScore: snapshot.playerScore !== null,
-              hasOpponentScore: snapshot.opponentScore !== null
-            }
-          );
+          logDevWarning("testApi.inspect.getBattleSnapshot: Invalid snapshot structure detected", {
+            hasRoundsPlayed: snapshot.roundsPlayed !== null,
+            hasPlayerScore: snapshot.playerScore !== null,
+            hasOpponentScore: snapshot.opponentScore !== null
+          });
         }
         return null;
       }
@@ -2577,20 +2574,20 @@ const inspectionApi = {
       const opponentStats = store?.currentOpponentJudoka?.stats ?? null;
       if (!playerStats || !opponentStats) {
         if (isDevelopmentEnvironment() && (playerStats || opponentStats)) {
-          logDevWarning(
-            "testApi.getRoundStatComparison: Missing one or both stats objects",
-            { hasPlayerStats: !!playerStats, hasOpponentStats: !!opponentStats }
-          );
+          logDevWarning("testApi.getRoundStatComparison: Missing one or both stats objects", {
+            hasPlayerStats: !!playerStats,
+            hasOpponentStats: !!opponentStats
+          });
         }
         return [];
       }
 
       if (!isValidStatsObject(playerStats) || !isValidStatsObject(opponentStats)) {
         if (isDevelopmentEnvironment()) {
-          logDevWarning(
-            "testApi.getRoundStatComparison: Invalid stats structure detected",
-            { playerValid: isValidStatsObject(playerStats), opponentValid: isValidStatsObject(opponentStats) }
-          );
+          logDevWarning("testApi.getRoundStatComparison: Invalid stats structure detected", {
+            playerValid: isValidStatsObject(playerStats),
+            opponentValid: isValidStatsObject(opponentStats)
+          });
         }
         return [];
       }
@@ -3208,13 +3205,19 @@ const cliApi = {
               try {
                 await stateApi.dispatchBattleEvent(followupEvent, detail);
               } catch (error) {
-                logDevDebug("[completeRound] Follow-up event dispatch error", { followupEvent, error });
+                logDevDebug("[completeRound] Follow-up event dispatch error", {
+                  followupEvent,
+                  error
+                });
               }
             }
           }
         }
       } catch (error) {
-        logDevDebug("[completeRound] Outcome dispatch error", { outcomeEvent: resolvedOutcomeEvent, error });
+        logDevDebug("[completeRound] Outcome dispatch error", {
+          outcomeEvent: resolvedOutcomeEvent,
+          error
+        });
         outcomeDispatched = false;
       }
     }
@@ -3231,7 +3234,8 @@ const cliApi = {
       timeoutMs
     );
 
-    const normalizedState = stateResult.lastSuccessfulState ?? stateResult.finalState ?? stateApi.getBattleState();
+    const normalizedState =
+      stateResult.lastSuccessfulState ?? stateResult.finalState ?? stateApi.getBattleState();
 
     return {
       detail,

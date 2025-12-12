@@ -126,7 +126,10 @@ export const CLASSIC_BATTLE_STATES = [
     type: "initial",
     description:
       "Idle state before the match begins. UI shows Start/Ready and win target selection (5, 10, or 15).",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.RENDER_MATCH_LOBBY, CLASSIC_BATTLE_ACTIONS.RESET_SCORES_AND_UI],
+    onEnter: [
+      CLASSIC_BATTLE_ACTIONS.RENDER_MATCH_LOBBY,
+      CLASSIC_BATTLE_ACTIONS.RESET_SCORES_AND_UI
+    ],
     triggers: [
       { on: "startClicked", target: "matchStart" },
       {
@@ -158,7 +161,10 @@ export const CLASSIC_BATTLE_STATES = [
     name: "cooldown",
     description:
       "Short pacing pause before the first round and between rounds; allows animations and readability.",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.TIMER_START_SHORT_COUNTDOWN, CLASSIC_BATTLE_ACTIONS.ANNOUNCE_NEXT_ROUND],
+    onEnter: [
+      CLASSIC_BATTLE_ACTIONS.TIMER_START_SHORT_COUNTDOWN,
+      CLASSIC_BATTLE_ACTIONS.ANNOUNCE_NEXT_ROUND
+    ],
     triggers: [
       { on: "ready", target: "roundStart" },
       { on: "interrupt", target: "interruptRound" }
@@ -169,7 +175,11 @@ export const CLASSIC_BATTLE_STATES = [
     name: "roundStart",
     description:
       "Begins a new round. Randomly draws judoka for user and opponent, reveals both, user is the active chooser.",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.DRAW_RANDOM_JUDOKA, CLASSIC_BATTLE_ACTIONS.REVEAL_ROUND_CARDS, CLASSIC_BATTLE_ACTIONS.SET_ACTIVE_PLAYER_USER],
+    onEnter: [
+      CLASSIC_BATTLE_ACTIONS.DRAW_RANDOM_JUDOKA,
+      CLASSIC_BATTLE_ACTIONS.REVEAL_ROUND_CARDS,
+      CLASSIC_BATTLE_ACTIONS.SET_ACTIVE_PLAYER_USER
+    ],
     triggers: [
       { on: "cardsRevealed", target: "waitingForPlayerAction" },
       { on: "interrupt", target: "interruptRound" }
@@ -180,7 +190,11 @@ export const CLASSIC_BATTLE_STATES = [
     name: "waitingForPlayerAction",
     description:
       "Awaiting the user's stat choice. If no action within the round timer, optional auto-select may fire.",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.PROMPT_CHOOSE_STAT, CLASSIC_BATTLE_ACTIONS.TIMER_START_STAT_SELECTION, CLASSIC_BATTLE_ACTIONS.A11Y_EXPOSE_TIMER_STATUS],
+    onEnter: [
+      CLASSIC_BATTLE_ACTIONS.PROMPT_CHOOSE_STAT,
+      CLASSIC_BATTLE_ACTIONS.TIMER_START_STAT_SELECTION,
+      CLASSIC_BATTLE_ACTIONS.A11Y_EXPOSE_TIMER_STATUS
+    ],
     triggers: [
       { on: "statSelected", target: "roundDecision" },
       {
@@ -202,7 +216,11 @@ export const CLASSIC_BATTLE_STATES = [
     id: 5,
     name: "roundDecision",
     description: "Compares the selected stat and determines the round outcome.",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.COMPARE_SELECTED_STAT, CLASSIC_BATTLE_ACTIONS.COMPUTE_ROUND_OUTCOME, CLASSIC_BATTLE_ACTIONS.ANNOUNCE_ROUND_OUTCOME],
+    onEnter: [
+      CLASSIC_BATTLE_ACTIONS.COMPARE_SELECTED_STAT,
+      CLASSIC_BATTLE_ACTIONS.COMPUTE_ROUND_OUTCOME,
+      CLASSIC_BATTLE_ACTIONS.ANNOUNCE_ROUND_OUTCOME
+    ],
     triggers: [
       { on: "outcome=winPlayer", target: "roundOver" },
       { on: "outcome=winOpponent", target: "roundOver" },
@@ -231,7 +249,10 @@ export const CLASSIC_BATTLE_STATES = [
     id: 8,
     name: "matchDecision",
     description: "Determines the overall winner once a player reaches the selected win target.",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.COMPUTE_MATCH_OUTCOME, CLASSIC_BATTLE_ACTIONS.RENDER_MATCH_SUMMARY],
+    onEnter: [
+      CLASSIC_BATTLE_ACTIONS.COMPUTE_MATCH_OUTCOME,
+      CLASSIC_BATTLE_ACTIONS.RENDER_MATCH_SUMMARY
+    ],
     triggers: [
       { on: "finalize", target: "matchOver" },
       { on: "interrupt", target: "interruptMatch" }
@@ -259,7 +280,11 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.LOG_ANALYTICS_INTERRUPT_ROUND
     ],
     triggers: [
-      { on: "roundModifyFlag", target: "roundModification", guard: GUARD_CONDITIONS.FF_ROUND_MODIFY },
+      {
+        on: "roundModifyFlag",
+        target: "roundModification",
+        guard: GUARD_CONDITIONS.FF_ROUND_MODIFY
+      },
       { on: "restartRound", target: "cooldown" },
       { on: "resumeLobby", target: "waitingForMatchStart" },
       { on: "abortMatch", target: "matchOver" }
@@ -280,7 +305,11 @@ export const CLASSIC_BATTLE_STATES = [
     name: "interruptMatch",
     description:
       "Match-level interruption from setup or critical error. Cleans up context and returns to lobby on request.",
-    onEnter: [CLASSIC_BATTLE_ACTIONS.TIMER_CLEAR_IF_RUNNING, CLASSIC_BATTLE_ACTIONS.TEARDOWN_MATCH_CONTEXT, CLASSIC_BATTLE_ACTIONS.LOG_ANALYTICS_INTERRUPT_MATCH],
+    onEnter: [
+      CLASSIC_BATTLE_ACTIONS.TIMER_CLEAR_IF_RUNNING,
+      CLASSIC_BATTLE_ACTIONS.TEARDOWN_MATCH_CONTEXT,
+      CLASSIC_BATTLE_ACTIONS.LOG_ANALYTICS_INTERRUPT_MATCH
+    ],
     triggers: [
       { on: "restartMatch", target: "matchStart" },
       { on: "toLobby", target: "waitingForMatchStart" }
