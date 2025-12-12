@@ -452,10 +452,14 @@ export function validateSelectionState(store) {
       }
     })();
 
+    // First try to find a valid state from the available sources
+    const validState = [current, datasetState, broadcastState].find((state) =>
+      VALID_BATTLE_STATES.includes(state)
+    );
+
+    // If no valid state found, use the first non-null state to report the error
     const resolvedState =
-      [current, datasetState, broadcastState].find((state) =>
-        VALID_BATTLE_STATES.includes(state)
-      ) ?? null;
+      validState ?? [current, datasetState, broadcastState].find((state) => state !== null) ?? null;
 
     console.log(
       "[DIAGNOSTIC] validateSelectionState: current machine state =",
