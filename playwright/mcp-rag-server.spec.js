@@ -262,7 +262,7 @@ test.describe("MCP RAG tools (mocked)", () => {
 
 const runMcpSmoke = !!process.env.RUN_MCP_SMOKE;
 
-test.describe.sequential("MCP RAG server smoke", () => {
+test.describe.serial("MCP RAG server smoke", () => {
   test.skip(!runMcpSmoke, "Set RUN_MCP_SMOKE=1 to run smoke test");
 
   const cwd = path.join(__dirname, "..");
