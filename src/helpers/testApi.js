@@ -145,20 +145,25 @@ function collectMatchUiSnapshot() {
 }
 
 function normalizeMatchScores(primary, scoreboard) {
-  const ensureScores = (candidate) => {
-    if (!candidate || typeof candidate !== "object") return null;
+  /**
+   * Extract and validate scores from a candidate object.
+   * @param {any} candidate - Object with player/playerScore and opponent/opponentScore
+   * @returns {{player: number, opponent: number}|null} Validated scores or null if invalid
+   */
+  const extractValidScores = (candidate) => {
+    if (!isValidScoresObject(candidate)) {
+      return null;
+    }
     const player = toFiniteNumber(candidate.player ?? candidate.playerScore);
     const opponent = toFiniteNumber(candidate.opponent ?? candidate.opponentScore);
-    if (player === null || opponent === null) return null;
-    if (player < 0 || opponent < 0) return null;
     return { player, opponent };
   };
 
-  const normalizedPrimary = ensureScores(primary);
+  const normalizedPrimary = extractValidScores(primary);
   if (normalizedPrimary) return normalizedPrimary;
 
   if (scoreboard) {
-    const fallback = ensureScores({
+    const fallback = extractValidScores({
       player: scoreboard.player,
       opponent: scoreboard.opponent
     });
@@ -418,37 +423,169 @@ export function isTestMode() {
   }
 }
 
+/**
+ * Read rounds played from all available sources with fallback chain.
+ * Single source of truth for rounds reading to eliminate duplication.
+ *
+ * @pseudocode
+ * 1. Try engine facade first via getRoundsPlayed()
+ * 2. Fall back to window.battleStore.roundsPlayed
+ * 3. Fall back to inspect API getBattleSnapshot().roundsPlayed
+ * 4. Return first non-null result or null if all fail
+ *
+ * @returns {number|null} Rounds played or null if unavailable
+ * @internal
+ */
+function readRoundsPlayedFromAllSources() {
+  // Try engine API first
+  try {
+    if (stateApi && typeof stateApi.getRoundsPlayed === "function") {
+      const engineRounds = stateApi.getRoundsPlayed();
+      if (typeof engineRounds === "number" && Number.isFinite(engineRounds)) {
+        return engineRounds;
+      }
+    }
+  } catch {}
+
+  // Fall back to store
+  try {
+    const store = isWindowAvailable() ? window.battleStore : null;
+    const fromStore = toFiniteNumber(store?.roundsPlayed);
+    if (typeof fromStore === "number") {
+      return fromStore;
+    }
+  } catch {}
+
+  // Fall back to inspect API
+  try {
+    const inspectApi =
+      (isWindowAvailable() && window.__TEST_API?.inspect) ||
+      (isWindowAvailable() && window.__INSPECT_API);
+    if (inspectApi) {
+      const snapshot =
+        typeof inspectApi.getBattleSnapshot === "function"
+          ? inspectApi.getBattleSnapshot()
+          : (inspectApi.getDebugInfo?.()?.store ?? null);
+      const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
+      if (typeof fromSnapshot === "number") {
+        return fromSnapshot;
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
+/**
+ * Validate that an object has valid scores (player and opponent as finite numbers).
+ * @param {any} scores - Object to validate
+ * @returns {boolean} True if scores object has valid structure
+ * @pseudocode
+ * 1. Check object is not null/undefined
+ * 2. Check has player and opponent properties
+ * 3. Check both are finite numbers
+ * 4. Return true only if all checks pass
+ */
+function isValidScoresObject(scores) {
+  if (!scores || typeof scores !== "object") return false;
+  const player = toFiniteNumber(scores.player ?? scores.playerScore);
+  const opponent = toFiniteNumber(scores.opponent ?? scores.opponentScore);
+  return player !== null && opponent !== null && player >= 0 && opponent >= 0;
+}
+
+/**
+ * Validate that an object has valid stat values (all numeric and within range).
+ * @param {any} stats - Object to validate
+ * @returns {boolean} True if stats object has valid structure
+ * @pseudocode
+ * 1. Check object is not null/undefined
+ * 2. Check all values are finite numbers
+ * 3. Check values are in expected range (0-9 for judoka stats typically)
+ * 4. Return true only if all checks pass
+ */
+function isValidStatsObject(stats) {
+  if (!stats || typeof stats !== "object") return false;
+  const entries = Object.entries(stats);
+  if (entries.length === 0) return false;
+  return entries.every(([key, value]) => {
+    const num = toFiniteNumber(value);
+    return num !== null && num >= 0;
+  });
+}
+
+/**
+ * Validate that a battle snapshot has required fields and valid values.
+ * @param {any} snapshot - Snapshot to validate
+ * @returns {boolean} True if snapshot has required fields with valid values
+ * @pseudocode
+ * 1. Check snapshot is not null/undefined
+ * 2. Check required fields exist (roundsPlayed, playerScore, opponentScore)
+ * 3. Check required fields have valid values
+ * 4. Return true only if all checks pass
+ */
+function isValidBattleSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") return false;
+  const roundsPlayed = toFiniteNumber(snapshot.roundsPlayed);
+  const playerScore = toFiniteNumber(snapshot.playerScore);
+  const opponentScore = toFiniteNumber(snapshot.opponentScore);
+  return (
+    roundsPlayed !== null &&
+    playerScore !== null &&
+    opponentScore !== null &&
+    roundsPlayed >= 0 &&
+    playerScore >= 0 &&
+    opponentScore >= 0
+  );
+}
+
 // State management API
+/**
+ * Get current battle state from multiple sources (machine → body dataset → data attribute).
+ * Tries each source in order and returns the first non-null string state found.
+ * @returns {string|null} Current state name or null if unavailable
+ * @pseudocode
+ * 1. Try to get state from battle state machine
+ * 2. Fall back to body.dataset.battleState
+ * 3. Fall back to [data-battle-state] attribute
+ * 4. Return null if no source provides a state
+ */
+function unifiedGetBattleState() {
+  const tryGetState = (getter) => {
+    try {
+      const state = getter();
+      return typeof state === "string" && state ? state : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Try state machine first
+  const machineState = tryGetState(() => {
+    const machine = getBattleStateMachine();
+    return machine?.getState?.();
+  });
+  if (machineState) return machineState;
+
+  // Fall back to body dataset
+  const bodyState = tryGetState(() => document.body?.dataset?.battleState);
+  if (bodyState) return bodyState;
+
+  // Fall back to data attribute
+  const attrState = tryGetState(() =>
+    document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state")
+  );
+  if (attrState) return attrState;
+
+  return null;
+}
+
 const stateApi = {
   /**
    * Get current battle state directly from state machine
    * @returns {string|null} Current state name
    */
   getBattleState() {
-    const tryGetState = (getter) => {
-      try {
-        const state = getter();
-        return typeof state === "string" && state ? state : null;
-      } catch {
-        return null;
-      }
-    };
-
-    const machineState = tryGetState(() => {
-      const machine = getBattleStateMachine();
-      return machine?.getState?.();
-    });
-    if (machineState) return machineState;
-
-    const bodyState = tryGetState(() => document.body?.dataset?.battleState);
-    if (bodyState) return bodyState;
-
-    const attrState = tryGetState(() =>
-      document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state")
-    );
-    if (attrState) return attrState;
-
-    return null;
+    return unifiedGetBattleState();
   },
 
   /**
@@ -498,8 +635,7 @@ const stateApi = {
   getRoundsPlayed() {
     try {
       const value = facadeGetRoundsPlayed();
-      const numeric = Number(value);
-      return Number.isFinite(numeric) ? numeric : null;
+      return toFiniteNumber(value);
     } catch {
       return null;
     }
@@ -517,43 +653,13 @@ const stateApi = {
    * 4. Abort with `false` when the timeout window elapses.
    */
   async waitForRoundsPlayed(targetRounds, timeout = 5000) {
-    const desired = Number(targetRounds);
-    if (!Number.isFinite(desired) || desired < 0) {
+    const desired = toFiniteNumber(targetRounds);
+    if (desired === null || desired < 0) {
       return false;
     }
 
-    const readCurrentRounds = () => {
-      const engineRounds = this.getRoundsPlayed();
-      if (typeof engineRounds === "number" && Number.isFinite(engineRounds)) {
-        return engineRounds;
-      }
-
-      try {
-        const store = isWindowAvailable() ? window.battleStore : null;
-        const fromStore = toFiniteNumber(store?.roundsPlayed);
-        if (typeof fromStore === "number") {
-          return fromStore;
-        }
-      } catch {}
-
-      try {
-        const inspectApi =
-          (isWindowAvailable() && window.__TEST_API?.inspect) ||
-          (isWindowAvailable() && window.__INSPECT_API);
-        if (inspectApi) {
-          const snapshot =
-            typeof inspectApi.getBattleSnapshot === "function"
-              ? inspectApi.getBattleSnapshot()
-              : (inspectApi.getDebugInfo?.()?.store ?? null);
-          const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
-          if (typeof fromSnapshot === "number") {
-            return fromSnapshot;
-          }
-        }
-      } catch {}
-
-      return null;
-    };
+    // Delegate to unified rounds reading helper
+    const readCurrentRounds = () => readRoundsPlayedFromAllSources();
 
     return new Promise((resolve) => {
       const startTime = Date.now();
@@ -836,60 +942,51 @@ const stateApi = {
    * @returns {Promise<boolean>} Resolves true when ready, false on timeout
    */
   async waitForNextButtonReady(timeout = 5000) {
-    return new Promise((resolve) => {
-      const startTime = Date.now();
-      const cachedButtons = [];
+    const cachedButtons = [];
 
-      const refreshButtons = () => {
-        // Keep only connected references between checks.
-        for (let i = cachedButtons.length - 1; i >= 0; i -= 1) {
-          if (!cachedButtons[i]?.isConnected) {
-            cachedButtons.splice(i, 1);
-          }
+    const refreshButtons = () => {
+      // Keep only connected references between checks.
+      for (let i = cachedButtons.length - 1; i >= 0; i -= 1) {
+        if (!cachedButtons[i]?.isConnected) {
+          cachedButtons.splice(i, 1);
         }
-        if (cachedButtons.length === 0) {
-          const nextById = document.getElementById("next-button");
-          const nextByRole = document.querySelector("[data-role='next-round']");
-          if (nextById) {
-            cachedButtons.push(nextById);
-          }
-          if (nextByRole && nextByRole !== nextById) {
-            cachedButtons.push(nextByRole);
-          }
+      }
+      if (cachedButtons.length === 0) {
+        const nextById = document.getElementById("next-button");
+        const nextByRole = document.querySelector("[data-role='next-round']");
+        if (nextById) {
+          cachedButtons.push(nextById);
         }
-        return cachedButtons;
-      };
+        if (nextByRole && nextByRole !== nextById) {
+          cachedButtons.push(nextByRole);
+        }
+      }
+      return cachedButtons;
+    };
 
-      const isButtonReady = (btn) => {
-        if (!btn) return false;
-        const ariaDisabled =
-          typeof btn.getAttribute === "function" ? btn.getAttribute("aria-disabled") : null;
-        return (
-          btn.dataset?.nextReady === "true" &&
-          btn.dataset?.nextFinalized === "true" &&
-          btn.disabled !== true &&
-          ariaDisabled !== "true"
-        );
-      };
+    const isButtonReady = (btn) => {
+      if (!btn) return false;
+      const ariaDisabled =
+        typeof btn.getAttribute === "function" ? btn.getAttribute("aria-disabled") : null;
+      return (
+        btn.dataset?.nextReady === "true" &&
+        btn.dataset?.nextFinalized === "true" &&
+        btn.disabled !== true &&
+        ariaDisabled !== "true"
+      );
+    };
 
-      const check = () => {
+    return createPollingPromise({
+      condition: () => {
         try {
           const buttons = refreshButtons();
-          if (buttons.some((btn) => isButtonReady(btn))) {
-            resolve(true);
-            return;
-          }
-        } catch {}
-
-        if (Date.now() - startTime > timeout) {
-          resolve(false);
-          return;
+          return buttons.some((btn) => isButtonReady(btn));
+        } catch {
+          return false;
         }
-
-        setTimeout(check, 50);
-      };
-
-      check();
+      },
+      timeout,
+      pollInterval: 50
     });
   },
 
@@ -1378,8 +1475,8 @@ const timerApi = {
         return true;
       }
 
-      const numeric = Number(delayMs);
-      if (!Number.isFinite(numeric) || numeric < 0) {
+      const numeric = toFiniteNumber(delayMs);
+      if (numeric === null || numeric < 0) {
         throw new Error(`Invalid delay value: ${delayMs}. Must be a non-negative finite number.`);
       }
 
@@ -1408,8 +1505,7 @@ const timerApi = {
         return null;
       }
 
-      const numeric = Number(value);
-      return Number.isFinite(numeric) ? numeric : null;
+      return toFiniteNumber(value);
     } catch (error) {
       if (isDevelopmentEnvironment()) {
         logDevWarning("Failed to read opponent resolve delay", error);
@@ -1493,8 +1589,7 @@ const engineApi = {
   getPointsToWin() {
     try {
       const value = facadeGetPointsToWin();
-      const numeric = Number(value);
-      return Number.isFinite(numeric) ? numeric : null;
+      return toFiniteNumber(value);
     } catch (error) {
       if (isDevelopmentEnvironment()) {
         logDevWarning("Failed to get points to win", error);
@@ -1536,8 +1631,7 @@ const engineApi = {
   getRoundsPlayed() {
     try {
       const value = facadeGetRoundsPlayed();
-      const numeric = Number(value);
-      return Number.isFinite(numeric) ? numeric : null;
+      return toFiniteNumber(value);
     } catch (error) {
       if (isDevelopmentEnvironment()) {
         logDevWarning("Failed to read rounds played", error);
@@ -1553,8 +1647,8 @@ const engineApi = {
    * @returns {Promise<boolean>} Resolves true when the target is observed.
    */
   async waitForPointsToWin(target, timeout = 5000) {
-    const desired = Number(target);
-    if (!Number.isFinite(desired)) {
+    const desired = toFiniteNumber(target);
+    if (desired === null) {
       return false;
     }
 
@@ -1601,8 +1695,8 @@ const engineApi = {
    * @returns {Promise<boolean>} Resolves true when threshold met, false on timeout.
    */
   async waitForRoundsPlayed(targetRounds, timeout = 5000) {
-    const desired = Number(targetRounds);
-    if (!Number.isFinite(desired) || desired < 0) {
+    const desired = toFiniteNumber(targetRounds);
+    if (desired === null || desired < 0) {
       return false;
     }
 
@@ -1619,31 +1713,8 @@ const engineApi = {
       }
     }
 
-    const readCurrentRounds = () => {
-      const engineRounds = this.getRoundsPlayed();
-      if (typeof engineRounds === "number" && Number.isFinite(engineRounds)) {
-        return engineRounds;
-      }
-
-      try {
-        const inspectApi =
-          (isWindowAvailable() && window.__TEST_API?.inspect) ||
-          (isWindowAvailable() && window.__INSPECT_API);
-        if (inspectApi && typeof inspectApi.getBattleSnapshot === "function") {
-          const snapshot = inspectApi.getBattleSnapshot();
-          const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
-          if (typeof fromSnapshot === "number") {
-            return fromSnapshot;
-          }
-        }
-      } catch (error) {
-        if (isDevelopmentEnvironment()) {
-          logDevDebug("[engine.waitForRoundsPlayed] inspect fallback failed", error);
-        }
-      }
-
-      return null;
-    };
+    // Delegate to unified rounds reading helper
+    const readCurrentRounds = () => readRoundsPlayedFromAllSources();
 
     return new Promise((resolve) => {
       const startTime = Date.now();
@@ -1953,8 +2024,8 @@ const initApi = {
             delete globalTarget.__OVERRIDE_TIMERS.roundTimer;
           }
         } else {
-          const numeric = Number(roundTimerMs);
-          if (!Number.isFinite(numeric) || numeric < 0) {
+          const numeric = toFiniteNumber(roundTimerMs);
+          if (numeric === null || numeric < 0) {
             throw new Error(`Invalid roundTimerMs value: ${roundTimerMs}`);
           }
           const existing =
@@ -1982,8 +2053,8 @@ const initApi = {
             delete globalTarget.__NEXT_ROUND_COOLDOWN_MS;
           }
         } else {
-          const numeric = Number(cooldownMs);
-          if (!Number.isFinite(numeric) || numeric < 0) {
+          const numeric = toFiniteNumber(cooldownMs);
+          if (numeric === null || numeric < 0) {
             throw new Error(`Invalid cooldownMs value: ${cooldownMs}`);
           }
           if (globalTarget) {
@@ -2465,12 +2536,28 @@ const inspectionApi = {
         opponentScore = extract("opponentScore", (value) => toFiniteNumber(value));
       }
 
-      return {
+      const snapshot = {
         roundsPlayed: extract("roundsPlayed", (value) => toFiniteNumber(value)),
         selectionMade: resolvedSelection,
         playerScore,
         opponentScore
       };
+
+      if (!isValidBattleSnapshot(snapshot)) {
+        if (isDevelopmentEnvironment()) {
+          logDevWarning(
+            "testApi.inspect.getBattleSnapshot: Invalid snapshot structure detected",
+            {
+              hasRoundsPlayed: snapshot.roundsPlayed !== null,
+              hasPlayerScore: snapshot.playerScore !== null,
+              hasOpponentScore: snapshot.opponentScore !== null
+            }
+          );
+        }
+        return null;
+      }
+
+      return snapshot;
     } catch (error) {
       if (isDevelopmentEnvironment()) {
         logDevWarning("testApi.inspect.getBattleSnapshot failed", error);
@@ -2489,6 +2576,22 @@ const inspectionApi = {
       const playerStats = store?.currentPlayerJudoka?.stats ?? null;
       const opponentStats = store?.currentOpponentJudoka?.stats ?? null;
       if (!playerStats || !opponentStats) {
+        if (isDevelopmentEnvironment() && (playerStats || opponentStats)) {
+          logDevWarning(
+            "testApi.getRoundStatComparison: Missing one or both stats objects",
+            { hasPlayerStats: !!playerStats, hasOpponentStats: !!opponentStats }
+          );
+        }
+        return [];
+      }
+
+      if (!isValidStatsObject(playerStats) || !isValidStatsObject(opponentStats)) {
+        if (isDevelopmentEnvironment()) {
+          logDevWarning(
+            "testApi.getRoundStatComparison: Invalid stats structure detected",
+            { playerValid: isValidStatsObject(playerStats), opponentValid: isValidStatsObject(opponentStats) }
+          );
+        }
         return [];
       }
 
@@ -2811,6 +2914,110 @@ const inspectionApi = {
   }
 };
 
+/**
+ * Wait for battle state to transition into a target set of states.
+ * Handles both "outcome dispatch" case (waiting for success states) and
+ * "no outcome" case (waiting for non-transitional states).
+ *
+ * @param {boolean} outcomePending - Whether an outcome event was dispatched
+ * @param {Set<string>} successStates - States that indicate completion when outcome pending
+ * @param {Set<string>} transitionalStates - Transitional states to skip when no outcome
+ * @param {number} timeoutMs - Timeout in milliseconds
+ * @returns {Promise<{finalState: string|null, lastSuccessfulState: string|null, roundOverObserved: boolean, timedOut: boolean}>}
+ * @internal
+ */
+async function waitForStateTransition(
+  outcomePending,
+  successStates,
+  transitionalStates,
+  timeoutMs
+) {
+  const readCurrentState = () => {
+    try {
+      return stateApi.getBattleState();
+    } catch (error) {
+      logDevDebug("[waitForStateTransition] Failed to read battle state", error);
+      return null;
+    }
+  };
+
+  const captureState = (tracker, state) => {
+    if (!state) return;
+    if (state === "roundOver") {
+      tracker.roundOverObserved = true;
+    }
+    if (successStates.has(state)) {
+      tracker.lastSuccessfulState = state;
+    }
+  };
+
+  const tracker = { finalState: null, lastSuccessfulState: null, roundOverObserved: false };
+  const deadline = Date.now() + timeoutMs;
+  let timedOut = false;
+
+  while (true) {
+    tracker.finalState = readCurrentState();
+    captureState(tracker, tracker.finalState);
+
+    if (outcomePending && successStates.has(tracker.finalState)) {
+      break;
+    }
+    if (!outcomePending && !transitionalStates.has(tracker.finalState)) {
+      break;
+    }
+    if (Date.now() >= deadline) {
+      timedOut = true;
+      break;
+    }
+
+    await waitForNextFrame();
+  }
+
+  return { ...tracker, timedOut };
+}
+
+/**
+ * Map outcome result to a state machine event name.
+ * Handles various outcome formats returned from round resolution.
+ *
+ * @param {string|null|undefined} outcome - Outcome string from result
+ * @returns {string|null} Event name like "outcome=winPlayer" or null
+ * @internal
+ */
+function mapOutcomeToEvent(outcome) {
+  if (typeof outcome !== "string" || outcome.length === 0) {
+    return null;
+  }
+  if (outcome === "winPlayer" || outcome === "matchWinPlayer") {
+    return "outcome=winPlayer";
+  }
+  if (outcome === "winOpponent" || outcome === "matchWinOpponent") {
+    return "outcome=winOpponent";
+  }
+  if (outcome === "draw") {
+    return "outcome=draw";
+  }
+  return null;
+}
+
+/**
+ * Standard error message builder for dispatch failures.
+ * Normalizes error objects into readable strings for logging.
+ *
+ * @param {Error|string|any|null} error - The error object
+ * @returns {string} Human-readable error message
+ * @internal
+ */
+function mapDispatchError(error) {
+  if (!error) return "Unknown dispatch error";
+  if (typeof error === "string") return error;
+  if (error instanceof Error) return error.message;
+  try {
+    return JSON.stringify(error);
+  } catch {}
+  return String(error);
+}
+
 // Battle CLI API
 const cliApi = {
   /**
@@ -2972,178 +3179,66 @@ const cliApi = {
       }
     }
 
-    const stateBeforeResolve = stateApi.getBattleState();
     const resolution = await this.resolveRound(roundInput);
     const detail = resolution?.detail ?? {};
 
-    const mapDispatchError = (error) => {
-      if (!error) return "Unknown dispatch error";
-      if (typeof error === "string") return error;
-      if (error instanceof Error) return error.message;
-      try {
-        return JSON.stringify(error);
-      } catch {}
-      return String(error);
-    };
-
-    const readCurrentState = () => {
-      try {
-        return stateApi.getBattleState();
-      } catch (error) {
-        logDevDebug("[completeRound] Failed to read battle state", error);
-        return null;
-      }
-    };
-
-    const mapOutcomeToEvent = (outcome) => {
-      if (typeof outcome !== "string" || outcome.length === 0) {
-        return null;
-      }
-      if (outcome === "winPlayer" || outcome === "matchWinPlayer") {
-        return "outcome=winPlayer";
-      }
-      if (outcome === "winOpponent" || outcome === "matchWinOpponent") {
-        return "outcome=winOpponent";
-      }
-      if (outcome === "draw") {
-        return "outcome=draw";
-      }
-      return null;
-    };
-
+    // Determine outcome event to dispatch
     const detailOutcomeEvent =
       typeof detail?.result?.outcomeEvent === "string" && detail?.result?.outcomeEvent?.length
         ? detail.result.outcomeEvent
         : null;
     const derivedOutcomeEvent =
       detailOutcomeEvent ?? mapOutcomeToEvent(detail?.result?.outcome ?? detail?.outcome);
+    const resolvedOutcomeEvent = outcomeEvent ?? derivedOutcomeEvent ?? null;
 
-    let resolvedOutcomeEvent = outcomeEvent ?? derivedOutcomeEvent ?? null;
     let outcomeDispatched = false;
 
+    // Dispatch outcome event if needed
     if (resolvedOutcomeEvent) {
       try {
-        const stateBeforeOutcome = stateApi.getBattleState();
-        logDevDebug("[completeRound] About to dispatch outcome event", {
-          outcomeEvent: resolvedOutcomeEvent,
-          stateBeforeResolve,
-          stateBeforeOutcome,
-          machine: stateApi.getBattleStateMachine()
-        });
         const dispatched = await stateApi.dispatchBattleEvent(resolvedOutcomeEvent, detail);
         outcomeDispatched = dispatched !== false;
-        logDevDebug("[completeRound] Outcome dispatch result", {
-          outcomeEvent: resolvedOutcomeEvent,
-          dispatched,
-          outcomeDispatched,
-          stateAfterOutcome: stateApi.getBattleState()
-        });
 
+        // If auto-dispatched, handle follow-up events
         if (!outcomeEvent && outcomeDispatched) {
-          const postOutcomeState = readCurrentState();
+          const postOutcomeState = stateApi.getBattleState();
           if (postOutcomeState === "roundOver") {
             const followupEvent = detail?.result?.matchEnded ? "matchPointReached" : "continue";
             if (followupEvent) {
               try {
                 await stateApi.dispatchBattleEvent(followupEvent, detail);
               } catch (error) {
-                logDevDebug("[completeRound] Follow-up event dispatch error", {
-                  followupEvent,
-                  error: mapDispatchError(error)
-                });
+                logDevDebug("[completeRound] Follow-up event dispatch error", { followupEvent, error });
               }
             }
           }
         }
       } catch (error) {
-        logDevDebug("[completeRound] Outcome dispatch error", {
-          outcomeEvent: resolvedOutcomeEvent,
-          error
-        });
+        logDevDebug("[completeRound] Outcome dispatch error", { outcomeEvent: resolvedOutcomeEvent, error });
         outcomeDispatched = false;
       }
     }
 
+    // Wait for state transitions
     const successStates = new Set(["roundOver", "cooldown", "matchDecision", "matchOver"]);
     const transitionalStates = new Set(["roundDecision", "roundOver"]);
-    let finalState = null;
-    let lastSuccessfulState = null;
-    let roundOverObserved = false;
+    const timeoutMs = autoWaitTimeoutMs ?? 2_000;
 
-    const captureState = (state) => {
-      if (!state) {
-        return;
-      }
-      if (state === "roundOver") {
-        roundOverObserved = true;
-      }
-      if (successStates.has(state)) {
-        lastSuccessfulState = state;
-      }
-    };
+    const stateResult = await waitForStateTransition(
+      !!resolvedOutcomeEvent,
+      successStates,
+      transitionalStates,
+      timeoutMs
+    );
 
-    if (resolvedOutcomeEvent) {
-      // Wait for the outcome event to be processed and the state to stabilize
-      const timeoutMs = autoWaitTimeoutMs ?? 2_000;
-      const deadline = Date.now() + timeoutMs;
-      let timedOut = false;
-
-      while (true) {
-        finalState = readCurrentState();
-        captureState(finalState);
-        if (successStates.has(finalState)) {
-          break;
-        }
-        if (Date.now() >= deadline) {
-          timedOut = true;
-          break;
-        }
-        await waitForNextFrame();
-      }
-
-      if (timedOut && !successStates.has(finalState)) {
-        logDevDebug("[completeRound] Timed out waiting for roundOver after outcome dispatch", {
-          timeoutMs,
-          finalState,
-          outcomeEvent
-        });
-      }
-    } else {
-      const timeoutMs = autoWaitTimeoutMs ?? 2_000;
-      const deadline = Date.now() + timeoutMs;
-      let timedOut = false;
-
-      while (true) {
-        finalState = readCurrentState();
-        captureState(finalState);
-        if (!transitionalStates.has(finalState)) {
-          break;
-        }
-        if (Date.now() >= deadline) {
-          timedOut = true;
-          break;
-        }
-        await waitForNextFrame();
-      }
-
-      if (timedOut && transitionalStates.has(finalState)) {
-        logDevDebug("[completeRound] Timed out waiting for post-round state", {
-          timeoutMs,
-          lastState: finalState,
-          roundOverObserved
-        });
-      }
-    }
-
-    const normalizedState = lastSuccessfulState ?? finalState ?? readCurrentState();
-    captureState(normalizedState);
+    const normalizedState = stateResult.lastSuccessfulState ?? stateResult.finalState ?? stateApi.getBattleState();
 
     return {
       detail,
       outcomeEvent: resolvedOutcomeEvent,
       outcomeDispatched,
       finalState: normalizedState ?? null,
-      roundOverObserved,
+      roundOverObserved: stateResult.roundOverObserved,
       dispatched: resolution?.dispatched ?? false,
       emitted: resolution?.emitted ?? false
     };
