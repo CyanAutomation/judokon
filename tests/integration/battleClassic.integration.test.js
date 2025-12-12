@@ -473,7 +473,6 @@ describe("Battle Classic Page Integration", () => {
       // Verify store was updated (fall back to selection trace when transient flags reset)
       const finalSelectionTrace = window.__SELECTION_FLAG_TRACE?.[window.__SELECTION_FLAG_TRACE.length - 1];
       const selectionMadeFinal =
-      const selectionMadeFinal =
         store.selectionMade || store.__lastSelectionMade || finalSelectionTrace?.selectionMade;
       const playerChoiceFinal = store.playerChoice || finalSelectionTrace?.playerChoice || selectedStat;
       expect(selectionMadeFinal).toBeTruthy();
