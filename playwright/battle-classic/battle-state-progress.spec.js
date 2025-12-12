@@ -2,6 +2,7 @@ import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHelper.js";
 import { completeRoundViaApi, dispatchBattleEvent } from "../helpers/battleApiHelper.js";
+// eslint-disable-next-line no-unused-vars
 import { triggerAutoSelect } from "../helpers/autoSelectHelper.js";
 
 test.describe("Battle state progress list", () => {
@@ -306,7 +307,8 @@ test.describe("Battle state progress list", () => {
 
       await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
 
-      await triggerAutoSelect(page);
+      const result = await triggerAutoSelect(page);
+      expect(result.success).toBe(true);
 
       // After triggerAutoSelect with guards working correctly, the state should transition
       // from waitingForPlayerAction -> roundDecision (via timeout + autoSelect guard)
