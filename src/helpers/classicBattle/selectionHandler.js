@@ -1175,7 +1175,6 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
     }
   })();
 
-  roundResolutionPromise.selectionApplied = selectionApplied.promise;
   roundResolutionPromise.selectionAppliedPromise = selectionApplied.promise;
 
   return roundResolutionPromise;
