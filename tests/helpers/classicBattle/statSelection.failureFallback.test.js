@@ -291,7 +291,7 @@ describe("classicBattle stat selection failure recovery", () => {
     } finally {
       try {
         offBattleEvent("battleStateChange", eventHandler);
-      } catch (error) {}
+      } catch {}
     }
   });
 });

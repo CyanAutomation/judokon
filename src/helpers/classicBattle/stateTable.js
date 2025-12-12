@@ -36,6 +36,89 @@
  *
  * @type {BattleState[]}
  */
+
+/**
+ * Guard condition constants for state transitions.
+ * Use these to avoid typos and enable refactoring across the codebase.
+ *
+ * @typedef {Object} ClassicBattleGuards
+ * @property {string} AUTO_SELECT_ENABLED - Check if FF_AUTO_SELECT feature flag is enabled
+ * @property {string} AUTO_SELECT_DISABLED - Check if FF_AUTO_SELECT feature flag is disabled
+ * @property {string} FF_ROUND_MODIFY - Admin-only feature flag for round modification
+ * @property {string} WIN_CONDITION_MET - Evaluate if either player has reached the win target
+ */
+export const GUARD_CONDITIONS = {
+  AUTO_SELECT_ENABLED: "autoSelectEnabled",
+  AUTO_SELECT_DISABLED: "!autoSelectEnabled",
+  FF_ROUND_MODIFY: "FF_ROUND_MODIFY",
+  WIN_CONDITION_MET: "playerScore >= winTarget || opponentScore >= winTarget"
+};
+
+/**
+ * Action name constants for state onEnter handlers.
+ * Use these to avoid typos and enable refactoring across the codebase.
+ *
+ * @typedef {Object} ClassicBattleActions
+ * @property {string} RENDER_MATCH_LOBBY - Display match lobby UI
+ * @property {string} RESET_SCORES_AND_UI - Clear scores and reset UI elements
+ * @property {string} INIT_MATCH_CONTEXT - Initialize match context and metadata
+ * @property {string} STORE_WIN_TARGET - Store user's selected win target (3/5/10)
+ * @property {string} RESET_SCORES - Clear player and opponent scores
+ * @property {string} SET_FIRST_PLAYER_USER - Fix user as first player for all rounds
+ * @property {string} TIMER_START_SHORT_COUNTDOWN - Begin short inter-round pause
+ * @property {string} ANNOUNCE_NEXT_ROUND - Display next round notification
+ * @property {string} DRAW_RANDOM_JUDOKA - Randomly select judoka for both players
+ * @property {string} REVEAL_ROUND_CARDS - Display selected judoka to user
+ * @property {string} SET_ACTIVE_PLAYER_USER - Mark user as the active chooser
+ * @property {string} PROMPT_CHOOSE_STAT - Display stat selection prompt
+ * @property {string} TIMER_START_STAT_SELECTION - Begin stat selection countdown
+ * @property {string} A11Y_EXPOSE_TIMER_STATUS - Announce timer status for accessibility
+ * @property {string} COMPARE_SELECTED_STAT - Compare user's stat choice
+ * @property {string} COMPUTE_ROUND_OUTCOME - Calculate round winner
+ * @property {string} ANNOUNCE_ROUND_OUTCOME - Display round result
+ * @property {string} UPDATE_SCORE - Increment winner's score
+ * @property {string} UPDATE_UI_ROUND_SUMMARY - Display round summary UI
+ * @property {string} COMPUTE_MATCH_OUTCOME - Determine overall match winner
+ * @property {string} RENDER_MATCH_SUMMARY - Display match summary screen
+ * @property {string} SHOW_MATCH_RESULT_SCREEN - Display final result with rematch option
+ * @property {string} TIMER_CLEAR_IF_RUNNING - Stop and clear active timers
+ * @property {string} ROLLBACK_ROUND_CONTEXT - Restore round state if needed
+ * @property {string} LOG_ANALYTICS_INTERRUPT_ROUND - Log round interruption
+ * @property {string} OPEN_ROUND_MODIFICATION_PANEL - Open admin round editor
+ * @property {string} TEARDOWN_MATCH_CONTEXT - Clean up match data
+ * @property {string} LOG_ANALYTICS_INTERRUPT_MATCH - Log match interruption
+ */
+export const CLASSIC_BATTLE_ACTIONS = {
+  RENDER_MATCH_LOBBY: "render:matchLobby",
+  RESET_SCORES_AND_UI: "reset:scoresAndUI",
+  INIT_MATCH_CONTEXT: "init:matchContext",
+  STORE_WIN_TARGET: "store:winTargetSelection",
+  RESET_SCORES: "reset:scores",
+  SET_FIRST_PLAYER_USER: "set:firstPlayerUser",
+  TIMER_START_SHORT_COUNTDOWN: "timer:startShortCountdown",
+  ANNOUNCE_NEXT_ROUND: "announce:nextRoundInUI",
+  DRAW_RANDOM_JUDOKA: "draw:randomJudokaBothSides",
+  REVEAL_ROUND_CARDS: "reveal:roundCards",
+  SET_ACTIVE_PLAYER_USER: "set:activePlayerUser",
+  PROMPT_CHOOSE_STAT: "prompt:chooseStat",
+  TIMER_START_STAT_SELECTION: "timer:startStatSelection",
+  A11Y_EXPOSE_TIMER_STATUS: "a11y:exposeTimerStatus",
+  COMPARE_SELECTED_STAT: "compare:selectedStat",
+  COMPUTE_ROUND_OUTCOME: "compute:roundOutcome",
+  ANNOUNCE_ROUND_OUTCOME: "announce:roundOutcome",
+  UPDATE_SCORE: "update:score",
+  UPDATE_UI_ROUND_SUMMARY: "update:UIRoundSummary",
+  COMPUTE_MATCH_OUTCOME: "compute:matchOutcome",
+  RENDER_MATCH_SUMMARY: "render:matchSummary",
+  SHOW_MATCH_RESULT_SCREEN: "show:matchResultScreen",
+  TIMER_CLEAR_IF_RUNNING: "timer:clearIfRunning",
+  ROLLBACK_ROUND_CONTEXT: "rollback:roundContextIfNeeded",
+  LOG_ANALYTICS_INTERRUPT_ROUND: "log:analyticsInterruptRound",
+  OPEN_ROUND_MODIFICATION_PANEL: "open:roundModificationPanel",
+  TEARDOWN_MATCH_CONTEXT: "teardown:matchContext",
+  LOG_ANALYTICS_INTERRUPT_MATCH: "log:analyticsInterruptMatch"
+};
+
 export const CLASSIC_BATTLE_STATES = [
   {
     id: 1,
@@ -204,85 +287,3 @@ export const CLASSIC_BATTLE_STATES = [
     ]
   }
 ];
-
-/**
- * Guard condition constants for state transitions.
- * Use these to avoid typos and enable refactoring across the codebase.
- *
- * @typedef {Object} ClassicBattleGuards
- * @property {string} AUTO_SELECT_ENABLED - Check if FF_AUTO_SELECT feature flag is enabled
- * @property {string} AUTO_SELECT_DISABLED - Check if FF_AUTO_SELECT feature flag is disabled
- * @property {string} FF_ROUND_MODIFY - Admin-only feature flag for round modification
- * @property {string} WIN_CONDITION_MET - Evaluate if either player has reached the win target
- */
-export const GUARD_CONDITIONS = {
-  AUTO_SELECT_ENABLED: "autoSelectEnabled",
-  AUTO_SELECT_DISABLED: "!autoSelectEnabled",
-  FF_ROUND_MODIFY: "FF_ROUND_MODIFY",
-  WIN_CONDITION_MET: "playerScore >= winTarget || opponentScore >= winTarget"
-};
-
-/**
- * Action name constants for state onEnter handlers.
- * Use these to avoid typos and enable refactoring across the codebase.
- *
- * @typedef {Object} ClassicBattleActions
- * @property {string} RENDER_MATCH_LOBBY - Display match lobby UI
- * @property {string} RESET_SCORES_AND_UI - Clear scores and reset UI elements
- * @property {string} INIT_MATCH_CONTEXT - Initialize match context and metadata
- * @property {string} STORE_WIN_TARGET - Store user's selected win target (3/5/10)
- * @property {string} RESET_SCORES - Clear player and opponent scores
- * @property {string} SET_FIRST_PLAYER_USER - Fix user as first player for all rounds
- * @property {string} TIMER_START_SHORT_COUNTDOWN - Begin short inter-round pause
- * @property {string} ANNOUNCE_NEXT_ROUND - Display next round notification
- * @property {string} DRAW_RANDOM_JUDOKA - Randomly select judoka for both players
- * @property {string} REVEAL_ROUND_CARDS - Display selected judoka to user
- * @property {string} SET_ACTIVE_PLAYER_USER - Mark user as the active chooser
- * @property {string} PROMPT_CHOOSE_STAT - Display stat selection prompt
- * @property {string} TIMER_START_STAT_SELECTION - Begin stat selection countdown
- * @property {string} A11Y_EXPOSE_TIMER_STATUS - Announce timer status for accessibility
- * @property {string} COMPARE_SELECTED_STAT - Compare user's stat choice
- * @property {string} COMPUTE_ROUND_OUTCOME - Calculate round winner
- * @property {string} ANNOUNCE_ROUND_OUTCOME - Display round result
- * @property {string} UPDATE_SCORE - Increment winner's score
- * @property {string} UPDATE_UI_ROUND_SUMMARY - Display round summary UI
- * @property {string} COMPUTE_MATCH_OUTCOME - Determine overall match winner
- * @property {string} RENDER_MATCH_SUMMARY - Display match summary screen
- * @property {string} SHOW_MATCH_RESULT_SCREEN - Display final result with rematch option
- * @property {string} TIMER_CLEAR_IF_RUNNING - Stop and clear active timers
- * @property {string} ROLLBACK_ROUND_CONTEXT - Restore round state if needed
- * @property {string} LOG_ANALYTICS_INTERRUPT_ROUND - Log round interruption
- * @property {string} OPEN_ROUND_MODIFICATION_PANEL - Open admin round editor
- * @property {string} TEARDOWN_MATCH_CONTEXT - Clean up match data
- * @property {string} LOG_ANALYTICS_INTERRUPT_MATCH - Log match interruption
- */
-export const CLASSIC_BATTLE_ACTIONS = {
-  RENDER_MATCH_LOBBY: "render:matchLobby",
-  RESET_SCORES_AND_UI: "reset:scoresAndUI",
-  INIT_MATCH_CONTEXT: "init:matchContext",
-  STORE_WIN_TARGET: "store:winTargetSelection",
-  RESET_SCORES: "reset:scores",
-  SET_FIRST_PLAYER_USER: "set:firstPlayerUser",
-  TIMER_START_SHORT_COUNTDOWN: "timer:startShortCountdown",
-  ANNOUNCE_NEXT_ROUND: "announce:nextRoundInUI",
-  DRAW_RANDOM_JUDOKA: "draw:randomJudokaBothSides",
-  REVEAL_ROUND_CARDS: "reveal:roundCards",
-  SET_ACTIVE_PLAYER_USER: "set:activePlayerUser",
-  PROMPT_CHOOSE_STAT: "prompt:chooseStat",
-  TIMER_START_STAT_SELECTION: "timer:startStatSelection",
-  A11Y_EXPOSE_TIMER_STATUS: "a11y:exposeTimerStatus",
-  COMPARE_SELECTED_STAT: "compare:selectedStat",
-  COMPUTE_ROUND_OUTCOME: "compute:roundOutcome",
-  ANNOUNCE_ROUND_OUTCOME: "announce:roundOutcome",
-  UPDATE_SCORE: "update:score",
-  UPDATE_UI_ROUND_SUMMARY: "update:UIRoundSummary",
-  COMPUTE_MATCH_OUTCOME: "compute:matchOutcome",
-  RENDER_MATCH_SUMMARY: "render:matchSummary",
-  SHOW_MATCH_RESULT_SCREEN: "show:matchResultScreen",
-  TIMER_CLEAR_IF_RUNNING: "timer:clearIfRunning",
-  ROLLBACK_ROUND_CONTEXT: "rollback:roundContextIfNeeded",
-  LOG_ANALYTICS_INTERRUPT_ROUND: "log:analyticsInterruptRound",
-  OPEN_ROUND_MODIFICATION_PANEL: "open:roundModificationPanel",
-  TEARDOWN_MATCH_CONTEXT: "teardown:matchContext",
-  LOG_ANALYTICS_INTERRUPT_MATCH: "log:analyticsInterruptMatch"
-};

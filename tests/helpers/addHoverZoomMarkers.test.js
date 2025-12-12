@@ -31,21 +31,18 @@ describe("test harness utilities", () => {
 });
 
 function renderCarouselCard(className = "card") {
-  const { element: carousel, testApi } = createTestCarousel();
+  const { element: carousel } = createTestCarousel();
   const card = document.createElement("div");
   card.className = className;
   card.tabIndex = 0;
   carousel.appendChild(card);
   document.body.appendChild(carousel);
 
-    } catch (error) {
-    }
-
   return { card };
 }
 
 beforeEach(() => {
-  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, "warn").mockImplementation(() => {});
   document.body.innerHTML = "";
   cleanupTasks = [];
   if (styleElement) {
@@ -61,8 +58,7 @@ afterEach(() => {
   cleanupTasks.forEach((fn) => {
     try {
       fn();
-    } catch (error) {
-    }
+    } catch {}
   });
   cleanupTasks = [];
   if (styleElement) {

@@ -427,7 +427,7 @@ describe("Battle Classic Page Integration", () => {
         try {
           await testApi.state.waitForBattleState("waitingForPlayerAction", 2000);
           console.log("[TEST DIAG] Re-synced to waitingForPlayerAction");
-        } catch (syncError) {}
+        } catch {}
       }
 
       try {
@@ -492,7 +492,6 @@ describe("Battle Classic Page Integration", () => {
       if (validationHistory && validationHistory.length > 0) {
         console.log("[TEST DIAG] Full Validation History:", validationHistory);
         // Check if validation failed due to invalid state
-        const lastValidation = validationHistory[validationHistory.length - 1];
       }
 
       // Verify store was updated (fall back to selection trace when transient flags reset)
