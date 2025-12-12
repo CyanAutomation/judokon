@@ -7,8 +7,7 @@
  * @pseudocode
  * 1. Evaluate code in the browser context via page.evaluate
  * 2. Access the Test API's auto-select module at window.__TEST_API?.autoSelect?.triggerAutoSelect
- * 3. Call triggerAutoSelect with awaitCompletion: false to allow Playwright to continue
- *    independently while the battle engine progresses asynchronously
+ * 3. Call triggerAutoSelect with specified awaitCompletion option (default: true)
  * 4. Use optional chaining (?.) for safe property access with null coalescing (??) fallback to false
  * 5. Catch any exceptions (API missing, serialization errors, timeouts) and capture error details
  * 6. Wrap the page.evaluate call with a timeout promise to prevent indefinite hangs
@@ -16,11 +15,24 @@
  *
  * @param {import("@playwright/test").Page} page - Playwright page instance.
  * @param {number} [timeoutMs=5000] - Timeout in milliseconds for the Test API call.
+ * @param {boolean} [awaitCompletion=true] - Whether to await full auto-select completion.
+ *                                           When true, the helper waits for the auto-select
+ *                                           flow to complete before returning. When false,
+ *                                           the helper returns after dispatching the timeout
+ *                                           event, allowing the async auto-select to proceed.
+ * @param {boolean} [debug=false] - When enabled, logs diagnostic information for troubleshooting.
+ *                                  Useful for understanding why the trigger might fail or
+ *                                  for verifying that the Test API is available and working.
  * @returns {Promise<{success: boolean, error?: string}>} Result object with success flag and optional error message.
  *          On success: {success: true}
  *          On failure: {success: false, error: "descriptive error message"}
  */
-export async function triggerAutoSelect(page, timeoutMs = 5000) {
+export async function triggerAutoSelect(
+  page,
+  timeoutMs = 5000,
+  awaitCompletion = true,
+  debug = false
+) {
   /**
    * Execute promise with timeout protection.
    * @param {Promise} promise - Promise to execute.
@@ -37,15 +49,22 @@ export async function triggerAutoSelect(page, timeoutMs = 5000) {
     ]);
   }
 
+  if (debug) {
+    console.log("[autoSelectHelper] Triggering auto-select with:", {
+      timeoutMs,
+      awaitCompletion,
+      debug
+    });
+  }
+
   try {
     const didTrigger = await withTimeout(
-      page.evaluate(async () => {
+      page.evaluate(async (awaitCompletionValue) => {
         try {
           return (
-            // Use awaitCompletion: false to allow Playwright tests to continue
-            // awaiting roundOver state independently after timeout transition
+            // Pass awaitCompletion option to Test API to control async behavior
             (await window.__TEST_API?.autoSelect?.triggerAutoSelect?.({
-              awaitCompletion: false
+              awaitCompletion: awaitCompletionValue
             })) ?? false
           );
         } catch (innerError) {
@@ -55,33 +74,45 @@ export async function triggerAutoSelect(page, timeoutMs = 5000) {
             message: innerError instanceof Error ? innerError.message : String(innerError)
           };
         }
-      }),
+      }, awaitCompletion),
       timeoutMs,
       `Auto-select trigger timed out after ${timeoutMs}ms`
     );
 
+    if (debug) {
+      console.log("[autoSelectHelper] Test API returned:", didTrigger);
+    }
+
     // Check if browser context returned an error
     if (didTrigger?._error) {
-      return {
+      const result = {
         success: false,
         error: `Test API threw an error: ${didTrigger.message}`
       };
+      if (debug) console.warn("[autoSelectHelper] Result:", result);
+      return result;
     }
 
     // Check if API call succeeded
     if (!didTrigger) {
-      return {
+      const result = {
         success: false,
         error: "Test API unavailable: window.__TEST_API?.autoSelect?.triggerAutoSelect not found"
       };
+      if (debug) console.warn("[autoSelectHelper] Result:", result);
+      return result;
     }
 
-    return { success: true };
+    const result = { success: true };
+    if (debug) console.log("[autoSelectHelper] Result:", result);
+    return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
+    const result = {
       success: false,
       error: `Failed to trigger auto-select via Test API: ${errorMessage}`
     };
+    if (debug) console.error("[autoSelectHelper] Exception caught:", result);
+    return result;
   }
 }
