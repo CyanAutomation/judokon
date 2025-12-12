@@ -1,13 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-const { emitBattleEvent, exposeDebugState, cancelRoundDecisionGuard, debugLog } = vi.hoisted(
-  () => ({
-    emitBattleEvent: vi.fn(),
-    exposeDebugState: vi.fn(),
-    cancelRoundDecisionGuard: vi.fn(),
-    debugLog: vi.fn()
-  })
-);
+const {
+  emitBattleEvent,
+  exposeDebugState,
+  cancelRoundDecisionGuard,
+  debugLog,
+  cleanupTimers,
+  logSelectionMutation
+} = vi.hoisted(() => ({
+  emitBattleEvent: vi.fn(),
+  exposeDebugState: vi.fn(),
+  cancelRoundDecisionGuard: vi.fn(),
+  debugLog: vi.fn(),
+  cleanupTimers: vi.fn(),
+  logSelectionMutation: vi.fn()
+}));
 
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent
@@ -25,8 +32,9 @@ vi.mock("../../../src/helpers/classicBattle/debugLog.js", () => ({
   debugLog
 }));
 
-vi.mock("../../../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js", () => ({
-  cleanupInterruptState: vi.fn()
+vi.mock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
+  cleanupTimers,
+  logSelectionMutation
 }));
 
 import { interruptMatchEnter } from "../../../src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js";
