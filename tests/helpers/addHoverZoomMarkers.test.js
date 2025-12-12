@@ -38,18 +38,14 @@ function renderCarouselCard(className = "card") {
   carousel.appendChild(card);
   document.body.appendChild(carousel);
 
-  cleanupTasks.push(() => {
-    try {
-      testApi.cleanup();
     } catch (error) {
-      console.warn("Cleanup task failed:", error);
     }
-  });
 
   return { card };
 }
 
 beforeEach(() => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
   document.body.innerHTML = "";
   cleanupTasks = [];
   if (styleElement) {
@@ -66,7 +62,6 @@ afterEach(() => {
     try {
       fn();
     } catch (error) {
-      console.warn("Cleanup task failed:", error);
     }
   });
   cleanupTasks = [];
@@ -75,6 +70,7 @@ afterEach(() => {
     styleElement = null;
   }
   document.body.removeAttribute("data-test-disable-animations");
+  vi.restoreAllMocks();
 });
 
 describe("clearLegacyHoverZoomMarkers", () => {

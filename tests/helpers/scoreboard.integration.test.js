@@ -61,6 +61,7 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
 
 describe("Scoreboard integration without setupScoreboard", () => {
   beforeEach(async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     useCanonicalTimers();
     vi.resetModules();
     vi.clearAllMocks();
@@ -135,6 +136,10 @@ describe("Scoreboard integration without setupScoreboard", () => {
     await initClassicBattleTest({ afterMock: true });
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders messages, score, round counter, and round timer without setup", async () => {
     // Messages
     scoreboard.showMessage("Ready to fight!");
@@ -184,10 +189,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
     startTimer(async () => {}, { selectionMade: false });
     await vi.advanceTimersByTimeAsync(1);
     if (typeof roundDrift !== "function") {
-      console.error(
-        "[test-debug] roundDrift is not a function after startTimer, value:",
-        roundDrift
-      );
+
     }
     roundDrift(2);
     expect(showMessageSpy).toHaveBeenCalledWith("Waiting…");

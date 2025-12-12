@@ -37,8 +37,6 @@ describe("JSON_FIELD_ALLOWLIST", () => {
       try {
         data = await loadDataFile(dataDir, base);
       } catch (error) {
-        console.warn(`Skipping ${base}: ${error.message}`);
-        continue;
       }
 
       const sampleEntry = pickSampleEntry(data, allowlist);

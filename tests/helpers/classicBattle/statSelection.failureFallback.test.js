@@ -292,7 +292,6 @@ describe("classicBattle stat selection failure recovery", () => {
       try {
         offBattleEvent("battleStateChange", eventHandler);
       } catch (error) {
-        console.error("Failed to remove event handler:", error);
       }
     }
   });

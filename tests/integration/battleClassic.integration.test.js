@@ -110,7 +110,9 @@ async function performStatSelectionFlow(testApi, { orchestrated = false } = {}) 
     const selectionResult = selectStat(store, selectedStat);
     selectionPromise = selectionResult;
     roundResolutionPromise =
-      selectionResult?.roundResolutionPromise || selectionResult?.roundResolution || selectionResult;
+      selectionResult?.roundResolutionPromise ||
+      selectionResult?.roundResolution ||
+      selectionResult;
     await selectionPromise;
   });
 
@@ -270,7 +272,9 @@ describe("Battle Classic Page Integration", () => {
     // Perform selection
     const selectionResult = selectStat(store, statButtons[0].dataset.stat);
     const roundResolutionPromise =
-      selectionResult?.roundResolutionPromise || selectionResult?.roundResolution || selectionResult;
+      selectionResult?.roundResolutionPromise ||
+      selectionResult?.roundResolution ||
+      selectionResult;
 
     await withMutedConsole(async () => {
       await roundResolutionPromise;
@@ -407,6 +411,28 @@ describe("Battle Classic Page Integration", () => {
         storeId: storeBeforeSelection?.__testId
       });
 
+      // RE-VERIFY: Ensure we're still in waitingForPlayerAction state before selection
+      // (Race condition: state may have transitioned since the initial wait)
+      const currentBattleState =
+        typeof testApi?.state?.getBattleState === "function"
+          ? testApi.state.getBattleState()
+          : (document?.body?.dataset?.battleState ?? null);
+      console.log("[TEST DIAG] Pre-selection battle state:", currentBattleState);
+
+      if (
+        currentBattleState &&
+        !["waitingForPlayerAction", "roundDecision"].includes(currentBattleState)
+      ) {
+
+        // Attempt to re-sync to correct state
+        try {
+          await testApi.state.waitForBattleState("waitingForPlayerAction", 2000);
+          console.log("[TEST DIAG] Re-synced to waitingForPlayerAction");
+        } catch (syncError) {
+
+        }
+      }
+
       try {
         // selectStat now resolves after selection is applied; round resolution is exposed separately
         const selectStatPromise = selectStat(store, selectedStat);
@@ -468,13 +494,22 @@ describe("Battle Classic Page Integration", () => {
       const validationHistory = window.__VALIDATE_SELECTION_DEBUG;
       if (validationHistory && validationHistory.length > 0) {
         console.log("[TEST DIAG] Full Validation History:", validationHistory);
+        // Check if validation failed due to invalid state
+        const lastValidation = validationHistory[validationHistory.length - 1];
+
       }
 
       // Verify store was updated (fall back to selection trace when transient flags reset)
-      const finalSelectionTrace = window.__SELECTION_FLAG_TRACE?.[window.__SELECTION_FLAG_TRACE.length - 1];
+      const finalSelectionTrace =
+        window.__SELECTION_FLAG_TRACE?.[window.__SELECTION_FLAG_TRACE.length - 1];
       const selectionMadeFinal =
         store.selectionMade || store.__lastSelectionMade || finalSelectionTrace?.selectionMade;
-      const playerChoiceFinal = store.playerChoice || finalSelectionTrace?.playerChoice || selectedStat;
+      const playerChoiceFinal =
+        store.playerChoice || finalSelectionTrace?.playerChoice || selectedStat;
+
+      // DIAGNOSTIC: If selection failed, log comprehensive failure info before assertion
+
+
       expect(selectionMadeFinal).toBeTruthy();
       expect(playerChoiceFinal).toBe(selectedStat);
 
@@ -499,9 +534,9 @@ describe("Battle Classic Page Integration", () => {
     );
     expect(roundsAfter).toBeGreaterThanOrEqual(roundsBefore);
     // Assert on persistent state: rounds played and scores
-    expect(["roundDecision", "roundOver", "cooldown"].includes(document.body.dataset.battleState)).toBe(
-      true
-    );
+    expect(
+      ["roundDecision", "roundOver", "cooldown"].includes(document.body.dataset.battleState)
+    ).toBe(true);
   });
 
   it("keeps roundsPlayed in sync between engine and store in non-orchestrated flow", async () => {
@@ -565,7 +600,9 @@ describe("Battle Classic Page Integration", () => {
 
     const selectionResult = selectStat(initialStore, selectedStat);
     const roundResolutionPromise =
-      selectionResult?.roundResolutionPromise || selectionResult?.roundResolution || selectionResult;
+      selectionResult?.roundResolutionPromise ||
+      selectionResult?.roundResolution ||
+      selectionResult;
 
     await withMutedConsole(async () => {
       await selectionResult;

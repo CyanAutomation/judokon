@@ -10,7 +10,6 @@ beforeAll(() => {
     try {
       htmlContent = readFileSync(`${process.cwd()}/src/pages/battleClassic.html`, "utf-8");
     } catch (err) {
-      console.error("Failed to read battle HTML:", err);
       throw err;
     }
   }
