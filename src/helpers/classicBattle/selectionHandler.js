@@ -1168,7 +1168,7 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
       });
       return result;
     } catch (error) {
-      resolveSelectionApplied({ playerVal, opponentVal });
+      resolveSelectionApplied(null);
       throw error;
     } finally {
       guard.release();
