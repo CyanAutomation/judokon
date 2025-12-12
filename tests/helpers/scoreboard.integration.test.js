@@ -61,7 +61,7 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
 
 describe("Scoreboard integration without setupScoreboard", () => {
   beforeEach(async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
     useCanonicalTimers();
     vi.resetModules();
     vi.clearAllMocks();
@@ -189,7 +189,6 @@ describe("Scoreboard integration without setupScoreboard", () => {
     startTimer(async () => {}, { selectionMade: false });
     await vi.advanceTimersByTimeAsync(1);
     if (typeof roundDrift !== "function") {
-
     }
     roundDrift(2);
     expect(showMessageSpy).toHaveBeenCalledWith("Waiting…");

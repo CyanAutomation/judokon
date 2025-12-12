@@ -43,7 +43,7 @@ export const CLASSIC_BATTLE_STATES = [
     type: "initial",
     description:
       "Idle state before the match begins. UI shows Start/Ready and win target selection (5, 10, or 15).",
-    onEnter: ["render:matchLobby", "reset:scoresAndUI"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.RENDER_MATCH_LOBBY, CLASSIC_BATTLE_ACTIONS.RESET_SCORES_AND_UI],
     triggers: [
       { on: "startClicked", target: "matchStart" },
       {
@@ -59,10 +59,10 @@ export const CLASSIC_BATTLE_STATES = [
     description:
       "Initialises match context. Stores selected win target, resets scores, and fixes user as first player for all rounds.",
     onEnter: [
-      "init:matchContext",
-      "store:winTargetSelection",
-      "reset:scores",
-      "set:firstPlayerUser"
+      CLASSIC_BATTLE_ACTIONS.INIT_MATCH_CONTEXT,
+      CLASSIC_BATTLE_ACTIONS.STORE_WIN_TARGET,
+      CLASSIC_BATTLE_ACTIONS.RESET_SCORES,
+      CLASSIC_BATTLE_ACTIONS.SET_FIRST_PLAYER_USER
     ],
     triggers: [
       { on: "ready", target: "cooldown" },
@@ -75,7 +75,7 @@ export const CLASSIC_BATTLE_STATES = [
     name: "cooldown",
     description:
       "Short pacing pause before the first round and between rounds; allows animations and readability.",
-    onEnter: ["timer:startShortCountdown", "announce:nextRoundInUI"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.TIMER_START_SHORT_COUNTDOWN, CLASSIC_BATTLE_ACTIONS.ANNOUNCE_NEXT_ROUND],
     triggers: [
       { on: "ready", target: "roundStart" },
       { on: "interrupt", target: "interruptRound" }
@@ -86,7 +86,7 @@ export const CLASSIC_BATTLE_STATES = [
     name: "roundStart",
     description:
       "Begins a new round. Randomly draws judoka for user and opponent, reveals both, user is the active chooser.",
-    onEnter: ["draw:randomJudokaBothSides", "reveal:roundCards", "set:activePlayerUser"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.DRAW_RANDOM_JUDOKA, CLASSIC_BATTLE_ACTIONS.REVEAL_ROUND_CARDS, CLASSIC_BATTLE_ACTIONS.SET_ACTIVE_PLAYER_USER],
     triggers: [
       { on: "cardsRevealed", target: "waitingForPlayerAction" },
       { on: "interrupt", target: "interruptRound" }
@@ -97,19 +97,19 @@ export const CLASSIC_BATTLE_STATES = [
     name: "waitingForPlayerAction",
     description:
       "Awaiting the user's stat choice. If no action within the round timer, optional auto-select may fire.",
-    onEnter: ["prompt:chooseStat", "timer:startStatSelection", "a11y:exposeTimerStatus"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.PROMPT_CHOOSE_STAT, CLASSIC_BATTLE_ACTIONS.TIMER_START_STAT_SELECTION, CLASSIC_BATTLE_ACTIONS.A11Y_EXPOSE_TIMER_STATUS],
     triggers: [
       { on: "statSelected", target: "roundDecision" },
       {
         on: "timeout",
         target: "roundDecision",
-        guard: "autoSelectEnabled",
+        guard: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
         note: "If FF_AUTO_SELECT is ON, engine auto-picks a stat on timeout."
       },
       {
         on: "timeout",
         target: "interruptRound",
-        guard: "!autoSelectEnabled",
+        guard: GUARD_CONDITIONS.AUTO_SELECT_DISABLED,
         note: "If FF_AUTO_SELECT is OFF, treat timeout as an interrupt path."
       },
       { on: "interrupt", target: "interruptRound" }
@@ -119,7 +119,7 @@ export const CLASSIC_BATTLE_STATES = [
     id: 5,
     name: "roundDecision",
     description: "Compares the selected stat and determines the round outcome.",
-    onEnter: ["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.COMPARE_SELECTED_STAT, CLASSIC_BATTLE_ACTIONS.COMPUTE_ROUND_OUTCOME, CLASSIC_BATTLE_ACTIONS.ANNOUNCE_ROUND_OUTCOME],
     triggers: [
       { on: "outcome=winPlayer", target: "roundOver" },
       { on: "outcome=winOpponent", target: "roundOver" },
@@ -132,12 +132,12 @@ export const CLASSIC_BATTLE_STATES = [
     id: 6,
     name: "roundOver",
     description: "Updates scores and presents a brief summary. No card transfers occur.",
-    onEnter: ["update:score", "update:UIRoundSummary"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.UPDATE_SCORE, CLASSIC_BATTLE_ACTIONS.UPDATE_UI_ROUND_SUMMARY],
     triggers: [
       {
         on: "matchPointReached",
         target: "matchDecision",
-        guard: "playerScore >= winTarget || opponentScore >= winTarget",
+        guard: GUARD_CONDITIONS.WIN_CONDITION_MET,
         note: "Checks the user-selected win target (3/5/10)."
       },
       { on: "continue", target: "cooldown" },
@@ -148,7 +148,7 @@ export const CLASSIC_BATTLE_STATES = [
     id: 8,
     name: "matchDecision",
     description: "Determines the overall winner once a player reaches the selected win target.",
-    onEnter: ["compute:matchOutcome", "render:matchSummary"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.COMPUTE_MATCH_OUTCOME, CLASSIC_BATTLE_ACTIONS.RENDER_MATCH_SUMMARY],
     triggers: [
       { on: "finalize", target: "matchOver" },
       { on: "interrupt", target: "interruptMatch" }
@@ -159,7 +159,7 @@ export const CLASSIC_BATTLE_STATES = [
     name: "matchOver",
     type: "final",
     description: "Match completed. Offer Rematch or Home. Final score remains visible.",
-    onEnter: ["show:matchResultScreen"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.SHOW_MATCH_RESULT_SCREEN],
     triggers: [
       { on: "rematch", target: "waitingForMatchStart" },
       { on: "home", target: "waitingForMatchStart" }
@@ -171,12 +171,12 @@ export const CLASSIC_BATTLE_STATES = [
     description:
       "Round-level interruption (quit, navigation, or error). Performs safe rollback and offers options.",
     onEnter: [
-      "timer:clearIfRunning",
-      "rollback:roundContextIfNeeded",
-      "log:analyticsInterruptRound"
+      CLASSIC_BATTLE_ACTIONS.TIMER_CLEAR_IF_RUNNING,
+      CLASSIC_BATTLE_ACTIONS.ROLLBACK_ROUND_CONTEXT,
+      CLASSIC_BATTLE_ACTIONS.LOG_ANALYTICS_INTERRUPT_ROUND
     ],
     triggers: [
-      { on: "roundModifyFlag", target: "roundModification", guard: "FF_ROUND_MODIFY" },
+      { on: "roundModifyFlag", target: "roundModification", guard: GUARD_CONDITIONS.FF_ROUND_MODIFY },
       { on: "restartRound", target: "cooldown" },
       { on: "resumeLobby", target: "waitingForMatchStart" },
       { on: "abortMatch", target: "matchOver" }
@@ -186,7 +186,7 @@ export const CLASSIC_BATTLE_STATES = [
     id: 97,
     name: "roundModification",
     description: "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
-    onEnter: ["open:roundModificationPanel"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.OPEN_ROUND_MODIFICATION_PANEL],
     triggers: [
       { on: "modifyRoundDecision", target: "roundDecision" },
       { on: "cancelModification", target: "interruptRound" }
@@ -197,13 +197,30 @@ export const CLASSIC_BATTLE_STATES = [
     name: "interruptMatch",
     description:
       "Match-level interruption from setup or critical error. Cleans up context and returns to lobby on request.",
-    onEnter: ["timer:clearIfRunning", "teardown:matchContext", "log:analyticsInterruptMatch"],
+    onEnter: [CLASSIC_BATTLE_ACTIONS.TIMER_CLEAR_IF_RUNNING, CLASSIC_BATTLE_ACTIONS.TEARDOWN_MATCH_CONTEXT, CLASSIC_BATTLE_ACTIONS.LOG_ANALYTICS_INTERRUPT_MATCH],
     triggers: [
       { on: "restartMatch", target: "matchStart" },
       { on: "toLobby", target: "waitingForMatchStart" }
     ]
   }
 ];
+
+/**
+ * Guard condition constants for state transitions.
+ * Use these to avoid typos and enable refactoring across the codebase.
+ *
+ * @typedef {Object} ClassicBattleGuards
+ * @property {string} AUTO_SELECT_ENABLED - Check if FF_AUTO_SELECT feature flag is enabled
+ * @property {string} AUTO_SELECT_DISABLED - Check if FF_AUTO_SELECT feature flag is disabled
+ * @property {string} FF_ROUND_MODIFY - Admin-only feature flag for round modification
+ * @property {string} WIN_CONDITION_MET - Evaluate if either player has reached the win target
+ */
+export const GUARD_CONDITIONS = {
+  AUTO_SELECT_ENABLED: "autoSelectEnabled",
+  AUTO_SELECT_DISABLED: "!autoSelectEnabled",
+  FF_ROUND_MODIFY: "FF_ROUND_MODIFY",
+  WIN_CONDITION_MET: "playerScore >= winTarget || opponentScore >= winTarget"
+};
 
 /**
  * Action name constants for state onEnter handlers.

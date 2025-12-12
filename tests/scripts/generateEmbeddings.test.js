@@ -36,8 +36,7 @@ describe("JSON_FIELD_ALLOWLIST", () => {
       let data;
       try {
         data = await loadDataFile(dataDir, base);
-      } catch (error) {
-      }
+      } catch (error) {}
 
       const sampleEntry = pickSampleEntry(data, allowlist);
       expect(sampleEntry, `${base} should provide sample data`).toBeDefined();

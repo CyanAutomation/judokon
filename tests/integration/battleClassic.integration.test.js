@@ -423,14 +423,11 @@ describe("Battle Classic Page Integration", () => {
         currentBattleState &&
         !["waitingForPlayerAction", "roundDecision"].includes(currentBattleState)
       ) {
-
         // Attempt to re-sync to correct state
         try {
           await testApi.state.waitForBattleState("waitingForPlayerAction", 2000);
           console.log("[TEST DIAG] Re-synced to waitingForPlayerAction");
-        } catch (syncError) {
-
-        }
+        } catch (syncError) {}
       }
 
       try {
@@ -496,7 +493,6 @@ describe("Battle Classic Page Integration", () => {
         console.log("[TEST DIAG] Full Validation History:", validationHistory);
         // Check if validation failed due to invalid state
         const lastValidation = validationHistory[validationHistory.length - 1];
-
       }
 
       // Verify store was updated (fall back to selection trace when transient flags reset)
@@ -508,7 +504,6 @@ describe("Battle Classic Page Integration", () => {
         store.playerChoice || finalSelectionTrace?.playerChoice || selectedStat;
 
       // DIAGNOSTIC: If selection failed, log comprehensive failure info before assertion
-
 
       expect(selectionMadeFinal).toBeTruthy();
       expect(playerChoiceFinal).toBe(selectedStat);
