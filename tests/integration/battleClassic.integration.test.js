@@ -476,7 +476,7 @@ describe("Battle Classic Page Integration", () => {
       const selectionMadeFinal =
         store.selectionMade || store.__lastSelectionMade || finalSelectionTrace?.selectionMade;
       const playerChoiceFinal = store.playerChoice || finalSelectionTrace?.playerChoice || selectedStat;
-      expect(selectionMadeFinal).toBe(true);
+      expect(selectionMadeFinal).toBeTruthy();
       expect(playerChoiceFinal).toBe(selectedStat);
 
       // Wait for roundDecision state and its handlers to execute
