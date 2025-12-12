@@ -157,9 +157,15 @@ function logSelectionDebug(message, data) {
 /**
  * Trace mutations to the selection flags during Vitest runs.
  *
+ * @pseudocode
+ * 1. If not in Vitest environment, return immediately.
+ * 2. Log selection state to console with source and extra context.
+ * 3. If window is defined, push selection trace to `window.__SELECTION_FLAG_TRACE`.
+ *
  * @param {string} source - Identifier describing where the mutation occurred.
- * @param {ReturnType<typeof createBattleStore>|null|undefined} store - Store being mutated.
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>|null|undefined} store - Store being mutated.
  * @param {Record<string, any>} [extra] - Additional context to log.
+ * @returns {void}
  */
 export function logSelectionMutation(source, store, extra = {}) {
   if (!IS_VITEST) return;

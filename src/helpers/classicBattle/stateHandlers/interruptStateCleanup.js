@@ -11,10 +11,11 @@ import { debugLog } from "../debugLog.js";
  *   inherits stale selections; set to `false` only when a match-level interrupt needs to preserve
  *   the last selection for debugging or post-match analysis.
  * @returns {void}
- * @description
+ * @pseudocode
  * 1. Clear any active timers to prevent stale callbacks.
  * 2. Reset or preserve selection fields according to `resetSelectionState`.
  * 3. Clear window instrumentation flags; log and suppress any errors.
+ * @description
  * @note This function will never throw - all errors are logged and suppressed to ensure interrupt
  *       handlers always succeed.
  */
