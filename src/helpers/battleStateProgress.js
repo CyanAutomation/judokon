@@ -206,20 +206,10 @@ export function initProgressListener(list, initialApplied = false) {
   let ready = initialApplied;
   const handler = (e) => {
     const detail = e?.detail;
-    let state =
+    const state =
       (typeof detail === "string" ? detail : detail?.to) ||
+      document.body?.dataset?.battleState ||
       "";
-    
-    // If we didn't get a state from the event detail, fall back to reading from DOM
-    if (!state) {
-      state = document.body?.dataset?.battleState || "";
-    }
-    
-    // If still no state, try to get the current list's recorded state as a last resort
-    if (!state) {
-      state = list.getAttribute(CONFIG.activeOriginal) || "";
-    }
-    
     if (!state) return;
     updateActiveState(list, state);
     if (!ready) {

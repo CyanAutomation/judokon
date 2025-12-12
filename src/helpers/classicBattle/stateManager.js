@@ -1,6 +1,7 @@
 import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
 import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
+import { isEnabled } from "../featureFlags.js";
 
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
@@ -38,21 +39,66 @@ function initializeStateTable(stateTable) {
 
 /**
  * Build a trigger lookup map for fast O(1) access to transitions.
+ * 
+ * Note: This map is used as a fast path for triggers without guards.
+ * When guards are present, dispatch() will fall back to linear search through triggers array.
  *
  * @param {Map} statesByName - State lookup map.
- * @returns {Map} Map of "stateName:eventName" -> target state.
+ * @returns {Map} Map of "stateName:eventName" -> target state (only for unguarded triggers).
  */
 function buildTriggerMap(statesByName) {
   const triggerMap = new Map();
 
   for (const [stateName, stateDef] of statesByName) {
     for (const trigger of stateDef.triggers || []) {
-      const key = `${stateName}:${trigger.on}`;
-      triggerMap.set(key, trigger.target);
+      // Only add unguarded triggers to the fast-path map
+      // Guarded triggers must be evaluated in dispatch()
+      if (!trigger.guard) {
+        const key = `${stateName}:${trigger.on}`;
+        triggerMap.set(key, trigger.target);
+      }
     }
   }
 
   return triggerMap;
+}
+
+/**
+ * Evaluate a guard condition.
+ *
+ * @param {string} guard - Guard condition string (e.g., "autoSelectEnabled", "!autoSelectEnabled").
+ * @param {object} context - State machine context.
+ * @returns {boolean} True if guard passes, false otherwise.
+ */
+function evaluateGuard(guard, context) {
+  if (!guard || typeof guard !== "string") {
+    return true; // No guard means always pass
+  }
+
+  // Handle negation
+  const isNegated = guard.startsWith("!");
+  const guardName = isNegated ? guard.slice(1) : guard;
+
+  let result = false;
+
+  // Evaluate known guards
+  switch (guardName) {
+    case "autoSelectEnabled":
+      result = isEnabled("autoSelect") === true;
+      break;
+    case "winConditionMet":
+      result = context?.engine?.isMatchOver?.() === true;
+      break;
+    case "FF_ROUND_MODIFY":
+      result = isEnabled("roundModify") === true;
+      break;
+    default:
+      // Unknown guard - log warning and default to false for safety
+      logWarn(`Unknown guard condition: ${guardName}`);
+      result = false;
+  }
+
+  return isNegated ? !result : result;
 }
 
 /**
@@ -287,10 +333,28 @@ export async function createStateManager(
       const currentStateDef = statesByName.get(from);
       const availableTriggers = getAvailableTriggers(currentStateDef);
 
-      // Resolve target state: try trigger map first, then state name fallback
-      const triggerKey = `${from}:${eventName}`;
-      let target = triggerMap.get(triggerKey);
+      let target = null;
 
+      // First, check if there are any triggers with guards that need evaluation
+      const triggersForEvent = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
+      
+      if (triggersForEvent.length > 0) {
+        // Evaluate guards to find the first matching trigger
+        for (const trigger of triggersForEvent) {
+          if (evaluateGuard(trigger.guard, context)) {
+            target = trigger.target;
+            break;
+          }
+        }
+      }
+
+      // If no guarded trigger matched, try the fast-path trigger map
+      if (!target) {
+        const triggerKey = `${from}:${eventName}`;
+        target = triggerMap.get(triggerKey);
+      }
+
+      // Fallback: check if event name is a direct state name
       if (!target && statesByName.has(eventName)) {
         target = eventName;
       }
@@ -302,7 +366,8 @@ export async function createStateManager(
           currentState: from,
           availableTriggers,
           targetResolved: target,
-          targetExists: target ? statesByName.has(target) : false
+          targetExists: target ? statesByName.has(target) : false,
+          triggersWithGuards: triggersForEvent.length
         });
         return false;
       }

@@ -6,28 +6,32 @@
 import { emitBattleEvent } from "./battleEvents.js";
 import { logStateTransition } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
+import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
 
 /**
- * Sync battle state transitions to DOM attributes for UI and tests.
+ * Create a listener that syncs battle state transitions to DOM attributes for UI and tests.
  *
+ * @returns {(e: CustomEvent<{from:string|null,to:string,event:string|null}>) => void}
+ *   Listener function that updates document.body.dataset attributes
  * @pseudocode
- * 1. Read `from` and `to` from the event detail.
- * 2. If `document` exists, update `document.body.dataset.battleState` and `prevBattleState`.
- *
- * @param {CustomEvent<{from:string|null,to:string,event:string|null}>} e - Event containing transition detail.
- * @returns {void}
+ * 1. Return a function handling the `battleStateChange` event.
+ * 2. Inside the handler:
+ *    a. Read `from` and `to` from the event detail.
+ *    b. If `document` exists, update `document.body.dataset.battleState` and `prevBattleState`.
  */
-export function domStateListener(e) {
-  const { from, to } = e.detail || {};
-  if (typeof document === "undefined") return;
-  try {
-    const ds = document.body?.dataset;
-    if (ds) {
-      ds.battleState = to;
-      if (from) ds.prevBattleState = from;
-      else delete ds.prevBattleState;
-    }
-  } catch {}
+export function createDomStateListener() {
+  return function domStateListener(e) {
+    const { from, to } = e.detail || {};
+    if (typeof document === "undefined") return;
+    try {
+      const ds = document.body?.dataset;
+      if (ds) {
+        ds.battleState = to;
+        if (from) ds.prevBattleState = from;
+        else delete ds.prevBattleState;
+      }
+    } catch {}
+  };
 }
 
 /**
@@ -57,5 +61,32 @@ export function createDebugLogListener(machine) {
       }
     } catch {}
     emitBattleEvent("debugPanelUpdate");
+  };
+}
+
+/**
+ * Register all state transition listeners with the event bus.
+ * Consolidated utility for registering both DOM and debug listeners.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager|null} machine
+ *   Active battle machine (passed to debug listener)
+ * @returns {() => void}
+ *   Cleanup function that unregisters both listeners
+ * @pseudocode
+ * 1. Create both listener instances (DOM and debug)
+ * 2. Register both with the battleStateChange event
+ * 3. Return a cleanup function that unregisters both
+ */
+export function registerStateTransitionListeners(machine) {
+  const domListener = createDomStateListener();
+  const debugListener = createDebugLogListener(machine);
+
+  onBattleEvent("battleStateChange", domListener);
+  onBattleEvent("battleStateChange", debugListener);
+
+  // Return cleanup function
+  return () => {
+    offBattleEvent("battleStateChange", domListener);
+    offBattleEvent("battleStateChange", debugListener);
   };
 }
