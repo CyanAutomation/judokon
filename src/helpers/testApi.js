@@ -507,7 +507,7 @@ function isValidStatsObject(stats) {
   if (!stats || typeof stats !== "object") return false;
   const entries = Object.entries(stats);
   if (entries.length === 0) return false;
-  return entries.every(([key, value]) => {
+  return entries.every(([_key, value]) => {
     const num = toFiniteNumber(value);
     return num !== null && num >= 0;
   });
@@ -738,8 +738,8 @@ const stateApi = {
         let playerReady = false;
         let opponentReady = false;
         for (const _key of keys) {
-          const playerValue = extractStatValue(playerStats, key);
-          const opponentValue = extractStatValue(opponentStats, key);
+          const playerValue = extractStatValue(playerStats, _key);
+          const opponentValue = extractStatValue(opponentStats, _key);
           if (Number.isFinite(playerValue)) {
             playerReady = true;
           }
@@ -2996,8 +2996,6 @@ function mapOutcomeToEvent(outcome) {
   }
   return null;
 }
-
-
 
 // Battle CLI API
 const cliApi = {

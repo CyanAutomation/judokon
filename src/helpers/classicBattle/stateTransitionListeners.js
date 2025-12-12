@@ -8,8 +8,6 @@ import { logStateTransition } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
 
-
-
 // Debug state key constant
 const DEBUG_STATE_KEY = "classicBattleTimerState";
 
