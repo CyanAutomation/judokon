@@ -82,8 +82,11 @@ export async function dispatchBattleEvent(eventName, payload) {
  * Get the current battle state (string) if available.
  *
  * @pseudocode
- * 1. Invoke the stored `stateGetter`.
- * 2. If invocation throws, log the error and return `null`.
+ * 1. Invoke the stored `stateGetter` to get the machine state.
+ * 2. Check the last broadcast state snapshot.
+ * 3. If both exist and differ, prefer the snapshot (most recently broadcast state).
+ * 4. Otherwise return the getter result if available, or snapshot as fallback.
+ * 5. If invocation throws, log the error and return snapshot or `null`.
  *
  * @returns {string|null}
  */
@@ -94,7 +97,7 @@ export function getBattleState() {
     const snapshot = typeof lastBroadcastState === "string" ? lastBroadcastState : null;
 
     if (hasResult && snapshot && snapshot !== result) {
-      return result;
+      return snapshot;
     }
 
     try {
