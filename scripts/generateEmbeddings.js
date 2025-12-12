@@ -33,7 +33,7 @@
  *      analysis.
  * 6. Stream each output object directly to `client_embeddings.json` as a JSON array.
  *    Each entry is streamed sequentially: [entry1, entry2, entry3, ...]
- *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (28.8 MB).
+ *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (38.8 MB).
  *    - The root structure is always an array, maintained throughout the stream.
  * 7. After writing the file, record the total count, average vector length,
  *    and output size in `client_embeddings.meta.json`.
@@ -210,7 +210,7 @@ function createSparseVector(text) {
 
 let codeGraphs = { modules: {} };
 
-const MAX_OUTPUT_SIZE = 28.8 * 1024 * 1024;
+const MAX_OUTPUT_SIZE = 38.8 * 1024 * 1024;
 
 const DATA_FIELD_ALLOWLIST = {
   "battleRounds.js": ["label", "description", "category"],
@@ -1267,7 +1267,7 @@ async function generate() {
     const size = Buffer.byteLength(chunk + "\n]", "utf8");
     if (bytesWritten + size > MAX_OUTPUT_SIZE) {
       writer.end();
-      throw new Error("Output exceeds 28.8mb");
+      throw new Error("Output exceeds 38.8mb");
     }
     writer.write(chunk);
     bytesWritten += Buffer.byteLength(chunk, "utf8");
@@ -1411,7 +1411,7 @@ async function generate() {
   const endStr = "\n]\n";
   if (bytesWritten + Buffer.byteLength(endStr, "utf8") > MAX_OUTPUT_SIZE) {
     writer.end();
-    throw new Error("Output exceeds 28.8mb");
+    throw new Error("Output exceeds 38.8mb");
   }
   writer.end(endStr);
   await new Promise((resolve) => writer.on("finish", resolve));
