@@ -2,6 +2,7 @@ import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHelper.js";
 import { completeRoundViaApi, dispatchBattleEvent } from "../helpers/battleApiHelper.js";
+// eslint-disable-next-line no-unused-vars
 import { triggerAutoSelect } from "../helpers/autoSelectHelper.js";
 
 test.describe("Battle state progress list", () => {
@@ -308,11 +309,14 @@ test.describe("Battle state progress list", () => {
 
       await triggerAutoSelect(page);
 
-      // After triggerAutoSelect, the state should transition through roundDecision very quickly
-      // to roundOver (since roundDecision immediately computes outcome and transitions).
-      // So we wait for roundOver instead of roundDecision.
+      // After triggerAutoSelect with guards working correctly, the state should transition
+      // from waitingForPlayerAction -> roundDecision (via timeout + autoSelect guard)
+      // -> roundOver (via outcome event from roundDecision onEnter actions).
+      // Since roundDecision is transient and immediately triggers outcome computation,
+      // we wait for roundOver as the observable stable state.
       await waitForBattleState(page, "roundOver", { timeout: 10_000 });
 
+      // Verify the progress list tracked the transition to roundOver
       await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundOver");
       await expect(progress).toHaveAttribute(
         "data-feature-battle-state-active-original",

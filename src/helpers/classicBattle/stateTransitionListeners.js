@@ -8,8 +8,7 @@ import { logStateTransition } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
 
-// Singleton instance for backward compatibility with direct export
-const _domStateListenerInstance = null;
+
 
 // Debug state key constant
 const DEBUG_STATE_KEY = "classicBattleTimerState";

@@ -737,7 +737,7 @@ const stateApi = {
 
         let playerReady = false;
         let opponentReady = false;
-        for (const key of keys) {
+        for (const _key of keys) {
           const playerValue = extractStatValue(playerStats, key);
           const opponentValue = extractStatValue(opponentStats, key);
           if (Number.isFinite(playerValue)) {
@@ -2997,23 +2997,7 @@ function mapOutcomeToEvent(outcome) {
   return null;
 }
 
-/**
- * Standard error message builder for dispatch failures.
- * Normalizes error objects into readable strings for logging.
- *
- * @param {Error|string|any|null} error - The error object
- * @returns {string} Human-readable error message
- * @internal
- */
-function mapDispatchError(error) {
-  if (!error) return "Unknown dispatch error";
-  if (typeof error === "string") return error;
-  if (error instanceof Error) return error.message;
-  try {
-    return JSON.stringify(error);
-  } catch {}
-  return String(error);
-}
+
 
 // Battle CLI API
 const cliApi = {

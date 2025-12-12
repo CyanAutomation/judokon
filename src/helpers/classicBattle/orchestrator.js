@@ -13,7 +13,7 @@ import {
   roundModificationEnter
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
-import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { setBattleStateGetter, resetEventBus } from "./eventBus.js";
 import { domStateListener, registerStateTransitionListeners } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
