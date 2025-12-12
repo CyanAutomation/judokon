@@ -507,6 +507,7 @@ function isValidStatsObject(stats) {
   if (!stats || typeof stats !== "object") return false;
   const entries = Object.entries(stats);
   if (entries.length === 0) return false;
+  // eslint-disable-next-line no-unused-vars
   return entries.every(([_key, value]) => {
     const num = toFiniteNumber(value);
     return num !== null && num >= 0;
