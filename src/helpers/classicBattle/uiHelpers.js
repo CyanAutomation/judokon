@@ -856,7 +856,6 @@ export function selectStat(store, stat) {
 
   if (selectionPromise && roundResolutionPromise) {
     try {
-      selectionPromise.roundResolution = roundResolutionPromise;
       selectionPromise.roundResolutionPromise = roundResolutionPromise;
     } catch {}
   }
