@@ -806,6 +806,7 @@ export function selectStat(store, stat) {
   // Return a promise that resolves when selection completes
   // This allows tests to await the full selection flow
   let selectionPromise = Promise.resolve();
+  let roundResolutionPromise = null;
   try {
     const selectionOptions = delayOpponentMessage
       ? { playerVal, opponentVal, delayOpponentMessage: true }
@@ -818,7 +819,11 @@ export function selectStat(store, stat) {
         storeSelectionMadeBefore: store.selectionMade
       });
     } catch {}
-    selectionPromise = handleStatSelection(store, stat, selectionOptions).catch((error) => {
+    const selectionFlow = handleStatSelection(store, stat, selectionOptions);
+    selectionPromise =
+      selectionFlow?.selectionApplied || selectionFlow?.selectionAppliedPromise || selectionFlow;
+    roundResolutionPromise = selectionFlow;
+    selectionFlow?.catch?.((error) => {
       try {
         console.log("[selectStat] handleStatSelection error caught:", error?.message);
       } catch {}
@@ -846,6 +851,13 @@ export function selectStat(store, stat) {
     // Fallback: if nothing is displayed, show a message
     try {
       showSnackbar(`You Picked: ${label}`);
+    } catch {}
+  }
+
+  if (selectionPromise && roundResolutionPromise) {
+    try {
+      selectionPromise.roundResolution = roundResolutionPromise;
+      selectionPromise.roundResolutionPromise = roundResolutionPromise;
     } catch {}
   }
 
