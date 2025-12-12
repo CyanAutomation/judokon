@@ -22,7 +22,9 @@ describe("waitingForPlayerActionEnter", () => {
   });
 
   it("clears stale selection flags when re-entered after rapid transitions", async () => {
-    const mod = await import("../../../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js");
+    const mod = await import(
+      "../../../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js"
+    );
     const store = {
       selectionMade: true,
       __lastSelectionMade: true,
