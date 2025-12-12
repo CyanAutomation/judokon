@@ -16,6 +16,16 @@ import { getScheduler } from "../scheduler.js";
 
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
+function createDeferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
 const hasOwn = Object.prototype.hasOwnProperty;
 const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
@@ -1054,97 +1064,118 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
  * @param {number} [options.opponentVal] - Opponent stat value
  * @returns {Promise<ReturnType<typeof resolveRound>|void>}
  */
-export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
-  logSelectionDebug("[handleStatSelection] Called with:", {
-    stat,
-    playerVal,
-    opponentVal,
-    storeId: store?.__testId ?? "no-id",
-    storeSelectionMadeBefore: store?.selectionMade
-  });
+export function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+  const selectionApplied = createDeferred();
+  let selectionAppliedResolved = false;
+  const resolveSelectionApplied = (value) => {
+    if (selectionAppliedResolved) return;
+    selectionAppliedResolved = true;
+    selectionApplied.resolve?.(value);
+  };
 
-  const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
-  if (!guard.entered) {
-    try {
-      emitBattleEvent("input.ignored", { kind: "selectionInProgress" });
-    } catch {}
-    return getHiddenStoreValue(store, LAST_ROUND_RESULT);
-  }
+  const roundResolutionPromise = (async () => {
+    logSelectionDebug("[handleStatSelection] Called with:", {
+      stat,
+      playerVal,
+      opponentVal,
+      storeId: store?.__testId ?? "no-id",
+      storeSelectionMadeBefore: store?.selectionMade
+    });
 
-  try {
-    const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
-    if (!values) {
-      logSelectionDebug("[handleStatSelection] validateAndApplySelection returned falsy");
-      return;
+    const guard = enterGuard(store, SELECTION_IN_FLIGHT_GUARD);
+    if (!guard.entered) {
+      try {
+        emitBattleEvent("input.ignored", { kind: "selectionInProgress" });
+      } catch {}
+      resolveSelectionApplied({ playerVal, opponentVal });
+      return getHiddenStoreValue(store, LAST_ROUND_RESULT);
     }
 
-    logSelectionDebug("[handleStatSelection] After validateAndApplySelection:", {
-      storeSelectionMade: store.selectionMade,
-      storePlayerChoice: store.playerChoice,
-      valuesReturned: values
-    });
+    try {
+      const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
+      if (!values) {
+        logSelectionDebug("[handleStatSelection] validateAndApplySelection returned falsy");
+        resolveSelectionApplied(null);
+        return;
+      }
 
-    logSelectionMutation("handleStatSelection.afterApply", store, {
-      stat,
-      playerVal,
-      opponentVal
-    });
+      resolveSelectionApplied(values || { playerVal, opponentVal });
 
-    ({ playerVal, opponentVal } = values);
+      logSelectionDebug("[handleStatSelection] After validateAndApplySelection:", {
+        storeSelectionMade: store.selectionMade,
+        storePlayerChoice: store.playerChoice,
+        valuesReturned: values
+      });
 
-    const handledByOrchestrator = await dispatchStatSelected(
-      store,
-      stat,
-      playerVal,
-      opponentVal,
-      opts
-    );
+      logSelectionMutation("handleStatSelection.afterApply", store, {
+        stat,
+        playerVal,
+        opponentVal
+      });
 
-    logSelectionDebug("[handleStatSelection] After dispatchStatSelected:", {
-      handledByOrchestrator,
-      storeSelectionMade: store.selectionMade,
-      storePlayerChoice: store.playerChoice
-    });
+      ({ playerVal, opponentVal } = values);
 
-    const handled = await resolveWithFallback(
-      store,
-      stat,
-      playerVal,
-      opponentVal,
-      opts,
-      handledByOrchestrator
-    );
+      const handledByOrchestrator = await dispatchStatSelected(
+        store,
+        stat,
+        playerVal,
+        opponentVal,
+        opts
+      );
 
-    if (handled) {
-      logSelectionDebug("[handleStatSelection] resolveWithFallback returned true (handled)");
+      logSelectionDebug("[handleStatSelection] After dispatchStatSelected:", {
+        handledByOrchestrator,
+        storeSelectionMade: store.selectionMade,
+        storePlayerChoice: store.playerChoice
+      });
+
+      const handled = await resolveWithFallback(
+        store,
+        stat,
+        playerVal,
+        opponentVal,
+        opts,
+        handledByOrchestrator
+      );
+
+      if (handled) {
+        logSelectionDebug("[handleStatSelection] resolveWithFallback returned true (handled)");
+        syncRoundsPlayedFromRoundStore(store);
+        logSelectionMutation("handleStatSelection.handled", store, {
+          stat,
+          playerVal,
+          opponentVal,
+          roundsPlayed: store.roundsPlayed
+        });
+        return;
+      }
+
+      const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
       syncRoundsPlayedFromRoundStore(store);
-      logSelectionMutation("handleStatSelection.handled", store, {
+
+      logSelectionDebug("[handleStatSelection] After syncResultDisplay:", {
+        storeSelectionMade: store.selectionMade,
+        storePlayerChoice: store.playerChoice,
+        roundsPlayed: store.roundsPlayed,
+        resultMessage: result?.message
+      });
+
+      logSelectionMutation("handleStatSelection.afterSync", store, {
         stat,
         playerVal,
         opponentVal,
         roundsPlayed: store.roundsPlayed
       });
-      return;
+      return result;
+    } catch (error) {
+      resolveSelectionApplied(null);
+      throw error;
+    } finally {
+      guard.release();
     }
+  })();
 
-    const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
-    syncRoundsPlayedFromRoundStore(store);
+  roundResolutionPromise.selectionAppliedPromise = selectionApplied.promise;
 
-    logSelectionDebug("[handleStatSelection] After syncResultDisplay:", {
-      storeSelectionMade: store.selectionMade,
-      storePlayerChoice: store.playerChoice,
-      roundsPlayed: store.roundsPlayed,
-      resultMessage: result?.message
-    });
-
-    logSelectionMutation("handleStatSelection.afterSync", store, {
-      stat,
-      playerVal,
-      opponentVal,
-      roundsPlayed: store.roundsPlayed
-    });
-    return result;
-  } finally {
-    guard.release();
-  }
+  return roundResolutionPromise;
 }
