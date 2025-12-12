@@ -341,8 +341,11 @@ export async function createStateManager(
       if (triggersForEvent.length > 0) {
         // Evaluate guards to find the first matching trigger
         for (const trigger of triggersForEvent) {
-          if (evaluateGuard(trigger.guard, context)) {
+          const guardPassed = evaluateGuard(trigger.guard, context);
+          debugLog(`stateManager: evaluating guard "${trigger.guard}" for ${from}->${trigger.target}: ${guardPassed}`);
+          if (guardPassed) {
             target = trigger.target;
+            debugLog(`stateManager: guard passed, targeting ${target}`);
             break;
           }
         }

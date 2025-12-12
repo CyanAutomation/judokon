@@ -15,7 +15,7 @@ import {
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { setBattleStateGetter, resetEventBus } from "./eventBus.js";
-import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
+import { domStateListener, registerStateTransitionListeners } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
 import stateCatalog from "./stateCatalog.js";
@@ -31,6 +31,7 @@ import { debugLog } from "./debugLog.js";
 let machine = null;
 let machineInitPromise = null;
 let debugLogListener = null;
+let stateTransitionListenersCleanup = null;
 let visibilityHandler = null;
 let timerEventHandlers = {};
 
@@ -564,12 +565,14 @@ function setupReadyForCooldownListener() {
  * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
  */
 function setupStateChangeListeners(machineRef) {
-  debugLogListener = createDebugLogListener(machineRef);
-  onBattleEvent("battleStateChange", domStateListener);
-  onBattleEvent("battleStateChange", debugLogListener);
+  // Register all state transition listeners and store cleanup function
+  stateTransitionListenersCleanup = registerStateTransitionListeners(machineRef);
+
+  // Maintain debugLogListener reference for backward compatibility
+  // (it's created internally by registerStateTransitionListeners)
+
   const initialDetail = { from: null, to: machineRef.getState(), event: "init" };
   domStateListener({ detail: initialDetail });
-  debugLogListener({ detail: initialDetail });
   try {
     const snap = getStateSnapshot();
     emitBattleEvent("debug.state.snapshot", {
@@ -745,6 +748,13 @@ function attachListeners(machineRef) {
  * @returns {void}
  */
 export function disposeClassicBattleOrchestrator() {
+  // Call cleanup function if it exists
+  if (stateTransitionListenersCleanup) {
+    stateTransitionListenersCleanup();
+    stateTransitionListenersCleanup = null;
+  }
+
+  // Clean up any remaining listeners (backward compatibility)
   offBattleEvent("battleStateChange", domStateListener);
   if (debugLogListener) {
     offBattleEvent("battleStateChange", debugLogListener);
@@ -799,6 +809,7 @@ export function resetOrchestratorForTest() {
   machine = null;
   machineInitPromise = null;
   debugLogListener = null;
+  stateTransitionListenersCleanup = null;
   visibilityHandler = null;
   timerEventHandlers = {};
   resetEventBus();
