@@ -1095,7 +1095,7 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
       const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
       if (!values) {
         logSelectionDebug("[handleStatSelection] validateAndApplySelection returned falsy");
-        resolveSelectionApplied({ playerVal, opponentVal });
+        resolveSelectionApplied(null);
         return;
       }
 
