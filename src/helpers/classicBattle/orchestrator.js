@@ -552,7 +552,7 @@ function createOnEnterMap() {
  *
  * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
  */
-function setupReadyForCooldownListener() {
+function setupReadyForCooldownListener(machineRef) {
   // NOTE: This listener is no longer used. The dispatch("ready") is now called
   // directly from matchStartEnter via Promise.resolve().then() to avoid
   // nested dispatch deadlock issues. Keeping this function for compatibility.
@@ -724,7 +724,7 @@ function setupSnapshotGetter() {
  * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
  */
 function attachListeners(machineRef) {
-  setupReadyForCooldownListener();
+  setupReadyForCooldownListener(machineRef);
   setupStateChangeListeners(machineRef);
   exposeDebugGetters(machineRef);
   setupVisibilityHandler(machineRef);
