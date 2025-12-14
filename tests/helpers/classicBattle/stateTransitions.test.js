@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { CLASSIC_BATTLE_STATES, GUARD_CONDITIONS } from "../../../src/helpers/classicBattle/stateTable.js";
+import {
+  CLASSIC_BATTLE_STATES,
+  GUARD_CONDITIONS
+} from "../../../src/helpers/classicBattle/stateTable.js";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 import * as featureFlags from "../../../src/helpers/featureFlags.js";
 import {
