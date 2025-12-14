@@ -66,8 +66,16 @@ function buildTriggerMap(statesByName) {
 /**
  * Evaluate a guard condition.
  *
- * @param {string} guard - Guard condition string (e.g., "autoSelectEnabled", "!autoSelectEnabled").
- * @param {object} context - State machine context.
+ * @pseudocode
+ * 1. Handle null/empty guards (pass by default).
+ * 2. Parse negation prefix (e.g., "!guardName").
+ * 3. Evaluate known guard types:
+ *    - Feature flags: autoSelectEnabled, FF_ROUND_MODIFY
+ *    - Score-based: playerScore >= winTarget || opponentScore >= winTarget
+ * 4. Return result, applying negation if present.
+ *
+ * @param {string} guard - Guard condition string (e.g., "autoSelectEnabled", "playerScore >= winTarget || opponentScore >= winTarget").
+ * @param {object} context - State machine context with optional engine.
  * @returns {boolean} True if guard passes, false otherwise.
  */
 function evaluateGuard(guard, context) {
@@ -86,12 +94,33 @@ function evaluateGuard(guard, context) {
     case "autoSelectEnabled":
       result = isEnabled("autoSelect") === true;
       break;
-    case "winConditionMet":
-      result = context?.engine?.isMatchOver?.() === true;
-      break;
     case "FF_ROUND_MODIFY":
       result = isEnabled("roundModify") === true;
       break;
+    case "playerScore >= winTarget || opponentScore >= winTarget": {
+      // Score-based guard: check if either player has reached their win target
+      if (!context?.engine) {
+        logWarn("evaluateGuard: WIN_CONDITION_MET guard evaluated but context.engine is missing");
+        result = false;
+        break;
+      }
+
+      const scores = context.engine.getScores?.();
+      const pointsToWin = context.engine.pointsToWin;
+
+      if (!scores || typeof pointsToWin !== "number") {
+        logWarn(
+          "evaluateGuard: WIN_CONDITION_MET guard evaluated but scores or pointsToWin is missing",
+          { scores, pointsToWin }
+        );
+        result = false;
+        break;
+      }
+
+      const { playerScore, opponentScore } = scores;
+      result = playerScore >= pointsToWin || opponentScore >= pointsToWin;
+      break;
+    }
     default:
       // Unknown guard - log warning and default to false for safety
       logWarn(`Unknown guard condition: ${guardName}`);
