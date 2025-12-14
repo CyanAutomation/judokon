@@ -17,6 +17,11 @@ import {
   OPPONENT_CARD_CONTAINER_ARIA_LABEL,
   OPPONENT_PLACEHOLDER_ID
 } from "./opponentPlaceholder.js";
+import {
+  getOpponentPromptFallbackTimerId,
+  setOpponentPromptFallbackTimerId
+} from "./globalState.js";
+import { clearScheduled } from "./timerSchedule.js";
 
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
@@ -29,14 +34,11 @@ function clearOpponentSnackbarTimeout() {
 }
 
 function clearFallbackPromptTimer() {
-  if (typeof window === "undefined") return;
-  try {
-    const id = window.__battleClassicOpponentPromptFallback;
-    if (id) clearTimeout(id);
-  } catch {}
-  try {
-    window.__battleClassicOpponentPromptFallback = 0;
-  } catch {}
+  const id = getOpponentPromptFallbackTimerId();
+  if (id) {
+    clearScheduled(id);
+  }
+  setOpponentPromptFallbackTimerId(0);
 }
 
 function waitForNextFrame() {

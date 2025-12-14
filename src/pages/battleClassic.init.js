@@ -522,7 +522,7 @@ export function prepareUiBeforeSelection() {
   if (flagEnabled) {
     setOpponentDelay(resolvedDelay);
     if (resolvedDelay > 0) {
-      const scheduled = scheduleDelayed(() => {
+      const timeoutId = scheduleDelayed(() => {
         try {
           showSnackbar(t("ui.opponentChoosing"));
           recordOpponentPromptTimestamp(getCurrentTimestamp());
@@ -530,8 +530,8 @@ export function prepareUiBeforeSelection() {
         clearOpponentPromptFallbackTimer();
       }, resolvedDelay);
 
-      if (scheduled && typeof window !== "undefined") {
-        setOpponentPromptFallbackTimerId(resolvedDelay);
+      if (timeoutId !== null && typeof window !== "undefined") {
+        setOpponentPromptFallbackTimerId(timeoutId);
       }
       return resolvedDelay;
     }

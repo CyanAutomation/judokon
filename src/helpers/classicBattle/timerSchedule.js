@@ -33,29 +33,27 @@ export function getCurrentTimestamp() {
  *
  * @param {Function} fn - Function to execute.
  * @param {number} delayMs - Delay in milliseconds.
- * @returns {boolean} True if scheduled successfully, false otherwise.
+ * @returns {number|null} Timeout ID if scheduled successfully, null otherwise.
  *
  * @pseudocode
- * 1. Try window.setTimeout first if available.
- * 2. Fall back to global setTimeout.
- * 3. Return false if both fail.
+ * 1. Try window.setTimeout first if available and capture the returned timeout ID.
+ * 2. Fall back to global setTimeout and capture the returned timeout ID.
+ * 3. Return null if both fail.
  */
 export function scheduleDelayed(fn, delayMs) {
   try {
     if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
-      window.setTimeout(fn, delayMs);
-      return true;
+      return window.setTimeout(fn, delayMs);
     }
   } catch {}
 
   try {
     if (typeof setTimeout === "function") {
-      setTimeout(fn, delayMs);
-      return true;
+      return setTimeout(fn, delayMs);
     }
   } catch {}
 
-  return false;
+  return null;
 }
 
 /**
@@ -65,12 +63,12 @@ export function scheduleDelayed(fn, delayMs) {
  * @returns {boolean} True if cleared, false otherwise.
  *
  * @pseudocode
- * 1. Validate the timeoutId to ensure it is a finite, non-zero number.
+ * 1. Validate the timeoutId to ensure it is a finite, positive number (not null, 0, or undefined).
  * 2. Attempt to clear the timeout and report success.
  * 3. On failure or invalid input, return false.
  */
 export function clearScheduled(timeoutId) {
-  if (!Number.isFinite(timeoutId) || timeoutId === 0) {
+  if (!Number.isFinite(timeoutId) || timeoutId === 0 || timeoutId === null) {
     return false;
   }
 

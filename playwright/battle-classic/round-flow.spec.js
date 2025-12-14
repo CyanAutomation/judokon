@@ -335,4 +335,82 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       }, MUTED_CONSOLE_LEVELS)
     );
   }
+
+  test.describe("opponent prompt fallback timer probe", () => {
+    test("displays opponent prompt immediately when no delay configured", async ({ page }) =>
+      withMutedConsole(async () => {
+        await initializeBattle(page, {
+          matchSelector: "#round-select-2",
+          timerOverrides: { roundTimer: 5 },
+          resolveDelay: 0
+        });
+
+        const firstStat = page.locator(selectors.statButton()).first();
+        await firstStat.click();
+
+        const snackbar = page.locator(selectors.snackbarContainer());
+        await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
+      }, MUTED_CONSOLE_LEVELS));
+
+    test("displays opponent prompt after configured delay with fallback timer", async ({ page }) =>
+      withMutedConsole(async () => {
+        await initializeBattle(page, {
+          matchSelector: "#round-select-2",
+          timerOverrides: { roundTimer: 5 },
+          resolveDelay: 150
+        });
+
+        const snackbar = page.locator(selectors.snackbarContainer());
+        const firstStat = page.locator(selectors.statButton()).first();
+
+        await firstStat.click();
+
+        // Should appear after the configured delay
+        await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 300 });
+      }, MUTED_CONSOLE_LEVELS));
+
+    test("clears fallback timer when next round starts", async ({ page }) =>
+      withMutedConsole(async () => {
+        await initializeBattle(page, {
+          matchSelector: "#round-select-3",
+          timerOverrides: { roundTimer: 10 },
+          nextRoundCooldown: 500,
+          resolveDelay: 200
+        });
+
+        const snackbar = page.locator(selectors.snackbarContainer());
+        const firstStat = page.locator(selectors.statButton()).first();
+
+        // Round 1
+        await firstStat.click();
+        await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 300 });
+
+        await ensureRoundResolved(page);
+        await waitForRoundsPlayed(page, 1);
+
+        const nextButton = page.locator("#next-button");
+        await expect(nextButton).toBeEnabled();
+        await nextButton.click();
+
+        // Round 2
+        await expect
+          .poll(
+            async () => {
+              const snapshot = await getBattleSnapshot(page);
+              return snapshot?.selectionMade === false;
+            },
+            { timeout: 5_000 }
+          )
+          .toBe(true);
+
+        const secondStat = page.locator(selectors.statButton()).nth(1);
+        await secondStat.click();
+
+        // Timer should be cleared and re-scheduled for new round
+        await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 300 });
+
+        await ensureRoundResolved(page);
+        await waitForRoundsPlayed(page, 2);
+      }, MUTED_CONSOLE_LEVELS));
+  });
 });
