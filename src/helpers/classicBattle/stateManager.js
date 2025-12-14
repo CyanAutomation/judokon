@@ -72,10 +72,13 @@ function initializeDefaultGuards() {
     const pointsToWin = context.engine.pointsToWin;
 
     if (!scores || typeof pointsToWin !== "number") {
-      logWarn("evaluateGuard: WIN_CONDITION_MET guard evaluated but scores or pointsToWin is missing", {
-        scores,
-        pointsToWin
-      });
+      logWarn(
+        "evaluateGuard: WIN_CONDITION_MET guard evaluated but scores or pointsToWin is missing",
+        {
+          scores,
+          pointsToWin
+        }
+      );
       return false;
     }
 
@@ -353,7 +356,14 @@ function validateHandlerMap(onEnterMap, definedStates) {
  * @param {object} context - Machine context for guard evaluation.
  * @returns {string|null} Target state name or null if no valid transition.
  */
-function resolveTransitionTarget(currentState, eventName, currentStateDef, triggerMap, statesByName, context) {
+function resolveTransitionTarget(
+  currentState,
+  eventName,
+  currentStateDef,
+  triggerMap,
+  statesByName,
+  context
+) {
   let target = null;
 
   // First, check if there are any triggers with guards that need evaluation
@@ -611,11 +621,20 @@ export async function createStateManager(
       const availableTriggers = getAvailableTriggers(currentStateDef);
 
       // Resolve target state via priority: guarded triggers -> fast-path -> fallback
-      const target = resolveTransitionTarget(from, eventName, currentStateDef, triggerMap, statesByName, context);
+      const target = resolveTransitionTarget(
+        from,
+        eventName,
+        currentStateDef,
+        triggerMap,
+        statesByName,
+        context
+      );
 
       // Validate target resolution
       if (!target || !statesByName.has(target)) {
-        const triggersForEvent = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
+        const triggersForEvent = (currentStateDef?.triggers || []).filter(
+          (t) => t.on === eventName
+        );
         logError("stateManager: dispatch failed", {
           event: eventName,
           currentState: from,

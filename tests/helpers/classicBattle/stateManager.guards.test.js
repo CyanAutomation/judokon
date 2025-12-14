@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
-import {
-  CLASSIC_BATTLE_STATES
-} from "../../../src/helpers/classicBattle/stateTable.js";
+import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
 import "./commonMocks.js";
 
 /**
