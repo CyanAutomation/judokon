@@ -1,4 +1,4 @@
-import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
+import { CLASSIC_BATTLE_STATES, GUARD_CONDITIONS } from "./stateTable.js";
 import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 import { isEnabled } from "../featureFlags.js";
@@ -10,8 +10,82 @@ const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
 const VALIDATION_WARN_ENABLED = true;
 
 // ============================================================================
+// Guard Evaluator Registry
+// ============================================================================
+
+/**
+ * Registry of guard evaluator functions.
+ * Maps guard condition identifiers to evaluation logic.
+ * Each evaluator receives (guard, context) and returns boolean.
+ *
+ * @type {Map<string, (guard: string, context: object) => boolean>}
+ */
+const guardEvaluators = new Map();
+
+// ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Register a guard evaluator function.
+ * Allows dynamic registration of custom guard logic without modifying evaluateGuard().
+ *
+ * @param {string} guardId - Unique identifier for the guard (e.g., "autoSelectEnabled").
+ * @param {(context: object) => boolean} evaluatorFn - Function that evaluates the guard.
+ */
+export function registerGuardEvaluator(guardId, evaluatorFn) {
+  if (typeof evaluatorFn !== "function") {
+    throw new Error(`Guard evaluator for '${guardId}' must be a function`);
+  }
+  guardEvaluators.set(guardId, evaluatorFn);
+  debugLog(`Guard evaluator registered: ${guardId}`);
+}
+
+/**
+ * Initialize default guard evaluators.
+ * Called once at module load to set up built-in guards.
+ *
+ * @pseudocode
+ * 1. Register autoSelectEnabled (feature flag).
+ * 2. Register FF_ROUND_MODIFY (admin flag).
+ * 3. Register WIN_CONDITION_MET (score-based logic).
+ */
+function initializeDefaultGuards() {
+  // Feature flag: autoSelectEnabled
+  registerGuardEvaluator(GUARD_CONDITIONS.AUTO_SELECT_ENABLED, (context) => {
+    return isEnabled("autoSelect") === true;
+  });
+
+  // Feature flag: FF_ROUND_MODIFY
+  registerGuardEvaluator(GUARD_CONDITIONS.FF_ROUND_MODIFY, (context) => {
+    return isEnabled("roundModify") === true;
+  });
+
+  // Score-based guard: WIN_CONDITION_MET
+  registerGuardEvaluator(GUARD_CONDITIONS.WIN_CONDITION_MET, (context) => {
+    if (!context?.engine) {
+      logWarn("evaluateGuard: WIN_CONDITION_MET guard evaluated but context.engine is missing");
+      return false;
+    }
+
+    const scores = context.engine.getScores?.();
+    const pointsToWin = context.engine.pointsToWin;
+
+    if (!scores || typeof pointsToWin !== "number") {
+      logWarn("evaluateGuard: WIN_CONDITION_MET guard evaluated but scores or pointsToWin is missing", {
+        scores,
+        pointsToWin
+      });
+      return false;
+    }
+
+    const { playerScore, opponentScore } = scores;
+    return playerScore >= pointsToWin || opponentScore >= pointsToWin;
+  });
+}
+
+// Initialize guards at module load
+initializeDefaultGuards();
 
 /**
  * Build a lookup map from state table and find initial state.
@@ -64,17 +138,16 @@ function buildTriggerMap(statesByName) {
 }
 
 /**
- * Evaluate a guard condition.
+ * Evaluate a guard condition using the registered evaluators.
  *
  * @pseudocode
  * 1. Handle null/empty guards (pass by default).
  * 2. Parse negation prefix (e.g., "!guardName").
- * 3. Evaluate known guard types:
- *    - Feature flags: autoSelectEnabled, FF_ROUND_MODIFY
- *    - Score-based: playerScore >= winTarget || opponentScore >= winTarget
- * 4. Return result, applying negation if present.
+ * 3. Look up evaluator in guardEvaluators registry.
+ * 4. Execute evaluator and apply negation if present.
+ * 5. Log warning if evaluator not found (unknown guard).
  *
- * @param {string} guard - Guard condition string (e.g., "autoSelectEnabled", "playerScore >= winTarget || opponentScore >= winTarget").
+ * @param {string} guard - Guard condition string or identifier.
  * @param {object} context - State machine context with optional engine.
  * @returns {boolean} True if guard passes, false otherwise.
  */
@@ -83,48 +156,25 @@ function evaluateGuard(guard, context) {
     return true; // No guard means always pass
   }
 
-  // Handle negation
+  // Handle negation prefix
   const isNegated = guard.startsWith("!");
   const guardName = isNegated ? guard.slice(1) : guard;
 
+  // Look up evaluator in registry
+  const evaluator = guardEvaluators.get(guardName);
+
+  if (!evaluator) {
+    logWarn(`Unknown guard condition: ${guardName}`);
+    return false; // Unknown guard defaults to false for safety
+  }
+
+  // Execute evaluator and apply negation
   let result = false;
-
-  // Evaluate known guards
-  switch (guardName) {
-    case "autoSelectEnabled":
-      result = isEnabled("autoSelect") === true;
-      break;
-    case "FF_ROUND_MODIFY":
-      result = isEnabled("roundModify") === true;
-      break;
-    case "playerScore >= winTarget || opponentScore >= winTarget": {
-      // Score-based guard: check if either player has reached their win target
-      if (!context?.engine) {
-        logWarn("evaluateGuard: WIN_CONDITION_MET guard evaluated but context.engine is missing");
-        result = false;
-        break;
-      }
-
-      const scores = context.engine.getScores?.();
-      const pointsToWin = context.engine.pointsToWin;
-
-      if (!scores || typeof pointsToWin !== "number") {
-        logWarn(
-          "evaluateGuard: WIN_CONDITION_MET guard evaluated but scores or pointsToWin is missing",
-          { scores, pointsToWin }
-        );
-        result = false;
-        break;
-      }
-
-      const { playerScore, opponentScore } = scores;
-      result = playerScore >= pointsToWin || opponentScore >= pointsToWin;
-      break;
-    }
-    default:
-      // Unknown guard - log warning and default to false for safety
-      logWarn(`Unknown guard condition: ${guardName}`);
-      result = false;
+  try {
+    result = evaluator(context);
+  } catch (err) {
+    logError(`Guard evaluator failed for '${guardName}':`, err);
+    result = false;
   }
 
   return isNegated ? !result : result;
@@ -286,6 +336,172 @@ function validateHandlerMap(onEnterMap, definedStates) {
   });
 }
 
+/**
+ * Resolve the target state for a given event in a specific state.
+ *
+ * @pseudocode
+ * 1. Evaluate guarded triggers first (in order of definition).
+ * 2. If no guarded trigger passes, check fast-path trigger map (O(1) unguarded triggers).
+ * 3. If no trigger matches, check if event name is a valid state name (fallback).
+ * 4. Return target state name or null if no valid transition exists.
+ *
+ * @param {string} currentState - Current state name.
+ * @param {string} eventName - Event/trigger name.
+ * @param {object} currentStateDef - State definition for the current state.
+ * @param {Map} triggerMap - Fast-path trigger map for O(1) lookups (unguarded only).
+ * @param {Map} statesByName - Map of state name -> state definition.
+ * @param {object} context - Machine context for guard evaluation.
+ * @returns {string|null} Target state name or null if no valid transition.
+ */
+function resolveTransitionTarget(currentState, eventName, currentStateDef, triggerMap, statesByName, context) {
+  let target = null;
+
+  // First, check if there are any triggers with guards that need evaluation
+  const triggersForEvent = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
+
+  if (triggersForEvent.length > 0) {
+    // Evaluate guards to find the first matching trigger
+    for (const trigger of triggersForEvent) {
+      const guardPassed = evaluateGuard(trigger.guard, context);
+      if (guardPassed) {
+        target = trigger.target;
+        break;
+      }
+    }
+  }
+
+  // If no guarded trigger matched, try the fast-path trigger map
+  if (!target) {
+    const triggerKey = `${currentState}:${eventName}`;
+    target = triggerMap.get(triggerKey);
+  }
+
+  // Fallback: check if event name is a direct state name
+  if (!target && statesByName.has(eventName)) {
+    target = eventName;
+  }
+
+  return target;
+}
+
+/**
+ * Execute a validated state transition with side effects.
+ * Handles state update, transition hook, and onEnter handler.
+ *
+ * @pseudocode
+ * 1. Validate state transition against allowed triggers.
+ * 2. Update current state reference (must be mutable closure var).
+ * 3. Invoke onTransition hook (if defined) and log errors.
+ * 4. Execute onEnter handler for target state.
+ * 5. Return true on success, log and return false on critical failure.
+ *
+ * @param {string} fromState - Source state name.
+ * @param {string} toState - Target state name.
+ * @param {string} eventName - Event that triggered the transition.
+ * @param {Map} statesByName - State lookup map.
+ * @param {object} machine - Machine reference (for onEnter context).
+ * @param {any} payload - Optional payload to pass to onEnter.
+ * @param {Function} onTransition - Optional transition hook.
+ * @param {Record<string, Function>} onEnterMap - onEnter handler map.
+ * @param {Function} updateCurrentState - Callback to update current state closure var.
+ * @returns {Promise<boolean>} True if transition completed, false if critical error.
+ */
+async function executeTransition(
+  fromState,
+  toState,
+  eventName,
+  statesByName,
+  machine,
+  payload,
+  onTransition,
+  onEnterMap,
+  updateCurrentState
+) {
+  // Validate transition
+  if (!validateStateTransition(fromState, toState, eventName, statesByName)) {
+    logError(`State transition validation failed: ${fromState} -> ${toState} via ${eventName}`);
+    return false;
+  }
+
+  debugLog("stateManager: transition", { from: fromState, to: toState, event: eventName });
+
+  // Update state
+  updateCurrentState(toState);
+
+  // Call transition hook
+  try {
+    await onTransition?.({ from: fromState, to: toState, event: eventName });
+  } catch (err) {
+    logError("stateManager: onTransition error:", err);
+    // Don't re-throw; transition already committed
+  }
+
+  // Run onEnter handler
+  await runOnEnter(toState, machine, payload, onEnterMap);
+
+  return true;
+}
+
+/**
+ * Get available transitions (triggers) for a given state.
+ * Useful for debugging, UI hints, or testing.
+ *
+ * @param {string} stateName - State name to query.
+ * @param {Map} statesByName - State lookup map.
+ * @returns {Array<{event: string, target: string, guard?: string}>} Array of available triggers.
+ */
+export function getAvailableTransitions(stateName, statesByName) {
+  const stateDef = statesByName?.get(stateName);
+  if (!stateDef) {
+    return [];
+  }
+  return (stateDef.triggers || []).map((t) => ({
+    event: t.on,
+    target: t.target,
+    ...(t.guard && { guard: t.guard })
+  }));
+}
+
+/**
+ * Debug utility: Print the state machine table in human-readable format.
+ * Useful for understanding FSM structure and verifying state definitions.
+ *
+ * @pseudocode
+ * 1. For each state, print name and type.
+ * 2. For each trigger, print event, target, and guard (if present).
+ * 3. Format with indentation and separators for readability.
+ *
+ * @param {Map} statesByName - State lookup map.
+ * @param {object} [options] - Display options.
+ * @param {boolean} [options.includeGuards=true] - Include guard conditions in output.
+ * @param {boolean} [options.useConsole=false] - Use console.log instead of debugLog.
+ * @returns {string} Formatted state table string.
+ */
+export function debugStateTable(statesByName, options = {}) {
+  const { includeGuards = true, useConsole = false } = options;
+  const logFn = useConsole ? console.log : debugLog;
+
+  let output = "\n=== State Machine Debug Table ===\n";
+
+  for (const [stateName, stateDef] of statesByName) {
+    output += `STATE: ${stateName}${stateDef.type === "initial" ? " [INITIAL]" : ""}\n`;
+    const triggers = stateDef.triggers || [];
+
+    if (triggers.length === 0) {
+      output += "  (no transitions)\n";
+    } else {
+      for (const trigger of triggers) {
+        const guardStr = includeGuards && trigger.guard ? ` [guard: ${trigger.guard}]` : "";
+        output += `  --[${trigger.on}]-->  ${trigger.target}${guardStr}\n`;
+      }
+    }
+    output += "\n";
+  }
+
+  logFn(output);
+  return output;
+}
+
 // ============================================================================
 // State Manager Factory
 // ============================================================================
@@ -296,7 +512,8 @@ function validateHandlerMap(onEnterMap, definedStates) {
  * @typedef {object} ClassicBattleStateManager
  * @property {object} context - Machine context.
  * @property {() => string} getState - Get current state name.
- * @property {(eventName: string, payload?: any) => Promise<boolean>} dispatch - Dispatch event.
+ * @property {() => Array<{event: string, target: string, guard?: string}>} getAvailableTransitions - Get available transitions from current state.
+ * @property {(eventName: string, payload?: any) => Promise<boolean>} dispatch - Dispatch event and transition state.
  */
 
 /**
@@ -309,6 +526,36 @@ function validateHandlerMap(onEnterMap, definedStates) {
  * behavior.
  *
  * @pseudocode
+ * 1. Validate state table and context.
+ * 2. Initialize state lookup map and determine initial state.
+ * 3. Build trigger lookup for O(1) event resolution.
+ * 4. Validate handler map coverage.
+ * 5. Create machine with context, getState(), dispatch(), and getAvailableTransitions().
+ * 6. In dispatch(): resolve target state, validate transition, run onEnter.
+ * 7. Initialize machine state and run initial onEnter handler.
+ *
+ * @example
+ * const machine = await createStateManager({
+ *   waitingForMatchStart: (machine) => console.log('Match started'),
+ *   statSelected: (machine, payload) => console.log('Stat:', payload)
+ * }, { engine: battleEngine });
+ *
+ * console.log(machine.getState()); // 'waitingForMatchStart'
+ * await machine.dispatch('startClicked');
+ * console.log(machine.getState()); // Next state
+ * console.log(machine.getAvailableTransitions()); // Available events from current state
+ *
+ * @example
+ * // Debug FSM structure
+ * import { debugStateTable } from './stateManager.js';
+ * const { byName } = initializeStateTable(CLASSIC_BATTLE_STATES);
+ * debugStateTable(byName, { useConsole: true });
+ *
+ * @example
+ * // Register custom guard evaluator
+ * import { registerGuardEvaluator } from './stateManager.js';
+ * registerGuardEvaluator('customGuard', (context) => context.value > 10);
+ *
  * 1. Validate state table and context.
  * 2. Initialize state lookup map and determine initial state.
  * 3. Build trigger lookup for O(1) event resolution.
@@ -357,40 +604,18 @@ export async function createStateManager(
   const machine = {
     context,
     getState: () => current,
+    getAvailableTransitions: () => getAvailableTransitions(current, statesByName),
     async dispatch(eventName, payload) {
       const from = current;
       const currentStateDef = statesByName.get(from);
       const availableTriggers = getAvailableTriggers(currentStateDef);
 
-      let target = null;
-
-      // First, check if there are any triggers with guards that need evaluation
-      const triggersForEvent = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
-
-      if (triggersForEvent.length > 0) {
-        // Evaluate guards to find the first matching trigger
-        for (const trigger of triggersForEvent) {
-          const guardPassed = evaluateGuard(trigger.guard, context);
-          if (guardPassed) {
-            target = trigger.target;
-            break;
-          }
-        }
-      }
-
-      // If no guarded trigger matched, try the fast-path trigger map
-      if (!target) {
-        const triggerKey = `${from}:${eventName}`;
-        target = triggerMap.get(triggerKey);
-      }
-
-      // Fallback: check if event name is a direct state name
-      if (!target && statesByName.has(eventName)) {
-        target = eventName;
-      }
+      // Resolve target state via priority: guarded triggers -> fast-path -> fallback
+      const target = resolveTransitionTarget(from, eventName, currentStateDef, triggerMap, statesByName, context);
 
       // Validate target resolution
       if (!target || !statesByName.has(target)) {
+        const triggersForEvent = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
         logError("stateManager: dispatch failed", {
           event: eventName,
           currentState: from,
@@ -402,29 +627,20 @@ export async function createStateManager(
         return false;
       }
 
-      // Update state
-      current = target;
-
-      // Validate transition
-      if (!validateStateTransition(from, target, eventName, statesByName)) {
-        logError(`State transition validation failed: ${from} -> ${target} via ${eventName}`);
-        return false;
-      }
-
-      debugLog("stateManager: transition", { from, to: target, event: eventName });
-
-      // Call transition hook
-      try {
-        await onTransition?.({ from, to: target, event: eventName });
-      } catch (err) {
-        logError("stateManager: onTransition error:", err);
-        // Don't re-throw; transition already committed
-      }
-
-      // Run onEnter handler
-      await runOnEnter(target, machine, payload, onEnterMap);
-
-      return true;
+      // Execute the validated transition
+      return executeTransition(
+        from,
+        target,
+        eventName,
+        statesByName,
+        machine,
+        payload,
+        onTransition,
+        onEnterMap,
+        (newState) => {
+          current = newState;
+        }
+      );
     }
   };
 
@@ -438,5 +654,3 @@ export async function createStateManager(
 
   return machine;
 }
-
-export {};
