@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { CLASSIC_BATTLE_STATES, GUARD_CONDITIONS } from "../../../src/helpers/classicBattle/stateTable.js";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
+import * as featureFlags from "../../../src/helpers/featureFlags.js";
 import {
   emitBattleEvent,
   onBattleEvent,
@@ -14,6 +15,10 @@ beforeEach(() => {
   document.body.innerHTML = "";
 });
 
+afterEach(() => {
+  vi.resetAllMocks();
+});
+
 // Generates a state manager scoped to a single transition
 async function createMachineForTransition(state, trigger, onTransition) {
   const source = { ...state, triggers: [trigger], type: "initial" };
@@ -25,7 +30,31 @@ async function createMachineForTransition(state, trigger, onTransition) {
     };
     machineStates.push(target);
   }
-  return createStateManager({}, {}, onTransition, machineStates);
+
+  // Build context to support guard evaluation
+  let context = {};
+
+  // For WIN_CONDITION_MET guard, provide a mock engine that satisfies the condition
+  if (trigger.guard === GUARD_CONDITIONS.WIN_CONDITION_MET) {
+    context.engine = {
+      getScores: () => ({ playerScore: 3, opponentScore: 0 }),
+      pointsToWin: 3
+    };
+  }
+
+  // For feature flag guards, mock isEnabled to return appropriate value
+  if (trigger.guard === GUARD_CONDITIONS.AUTO_SELECT_DISABLED) {
+    // Guard is "!autoSelectEnabled", so we want autoSelect to be false (disabled)
+    vi.spyOn(featureFlags, "isEnabled").mockReturnValue(false);
+  } else if (trigger.guard === GUARD_CONDITIONS.FF_ROUND_MODIFY) {
+    // Guard is "FF_ROUND_MODIFY", so we want roundModify to be true (enabled)
+    vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) => {
+      if (flag === "roundModify") return true;
+      return false;
+    });
+  }
+
+  return createStateManager({}, context, onTransition, machineStates);
 }
 
 describe("createStateManager", () => {
