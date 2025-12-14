@@ -30,8 +30,14 @@ const guardEvaluators = new Map();
  * Register a guard evaluator function.
  * Allows dynamic registration of custom guard logic without modifying evaluateGuard().
  *
+ * @pseudocode
+ * 1. Validate that evaluatorFn is a function.
+ * 2. Store evaluator in guardEvaluators map by guardId.
+ * 3. Log confirmation of registration for debugging.
+ *
  * @param {string} guardId - Unique identifier for the guard (e.g., "autoSelectEnabled").
  * @param {(context: object) => boolean} evaluatorFn - Function that evaluates the guard.
+ * @returns {void}
  */
 export function registerGuardEvaluator(guardId, evaluatorFn) {
   if (typeof evaluatorFn !== "function") {
@@ -41,23 +47,23 @@ export function registerGuardEvaluator(guardId, evaluatorFn) {
   debugLog(`Guard evaluator registered: ${guardId}`);
 }
 
-/**
- * Initialize default guard evaluators.
- * Called once at module load to set up built-in guards.
- *
- * @pseudocode
- * 1. Register autoSelectEnabled (feature flag).
- * 2. Register FF_ROUND_MODIFY (admin flag).
- * 3. Register WIN_CONDITION_MET (score-based logic).
- */
+// Initialize default guard evaluators.
+// Called once at module load to set up built-in guards.
+//
+// @pseudocode
+// 1. Register autoSelectEnabled (feature flag).
+// 2. Register FF_ROUND_MODIFY (admin flag).
+// 3. Register WIN_CONDITION_MET (score-based logic).
 function initializeDefaultGuards() {
   // Feature flag: autoSelectEnabled
-  registerGuardEvaluator(GUARD_CONDITIONS.AUTO_SELECT_ENABLED, (context) => {
+  // eslint-disable-next-line no-unused-vars
+  registerGuardEvaluator(GUARD_CONDITIONS.AUTO_SELECT_ENABLED, (_context) => {
     return isEnabled("autoSelect") === true;
   });
 
   // Feature flag: FF_ROUND_MODIFY
-  registerGuardEvaluator(GUARD_CONDITIONS.FF_ROUND_MODIFY, (context) => {
+  // eslint-disable-next-line no-unused-vars
+  registerGuardEvaluator(GUARD_CONDITIONS.FF_ROUND_MODIFY, (_context) => {
     return isEnabled("roundModify") === true;
   });
 
@@ -455,6 +461,12 @@ async function executeTransition(
 /**
  * Get available transitions (triggers) for a given state.
  * Useful for debugging, UI hints, or testing.
+ *
+ * @pseudocode
+ * 1. Look up state definition by name.
+ * 2. If state not found, return empty array.
+ * 3. Map triggers array to simple objects with event, target, and optional guard.
+ * 4. Return array of available transitions for the state.
  *
  * @param {string} stateName - State name to query.
  * @param {Map} statesByName - State lookup map.
