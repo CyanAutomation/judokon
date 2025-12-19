@@ -18,7 +18,7 @@ const VALIDATION_WARN_ENABLED = true;
  * Maps guard condition identifiers to evaluation logic.
  * Each evaluator receives (guard, context) and returns boolean.
  *
- * @type {Map<string, (guard: string, context: object) => boolean>}
+ * @type {Map<string, (guard: string, context: object, guardOverrides?: Record<string, boolean>) => boolean>}
  */
 const guardEvaluators = new Map();
 
@@ -36,7 +36,7 @@ const guardEvaluators = new Map();
  * 3. Log confirmation of registration for debugging.
  *
  * @param {string} guardId - Unique identifier for the guard (e.g., "autoSelectEnabled").
- * @param {(context: object) => boolean} evaluatorFn - Function that evaluates the guard.
+ * @param {(context: object, guardOverrides?: Record<string, boolean>) => boolean} evaluatorFn - Function that evaluates the guard.
  * @returns {void}
  */
 export function registerGuardEvaluator(guardId, evaluatorFn) {
@@ -45,6 +45,18 @@ export function registerGuardEvaluator(guardId, evaluatorFn) {
   }
   guardEvaluators.set(guardId, evaluatorFn);
   debugLog(`Guard evaluator registered: ${guardId}`);
+}
+
+function resolveGuardToggle({ guardName, featureFlagKey, context, guardOverrides }) {
+  if (guardOverrides && guardName in guardOverrides) {
+    return !!guardOverrides[guardName];
+  }
+
+  if (context?.flags && featureFlagKey in context.flags) {
+    return !!context.flags[featureFlagKey];
+  }
+
+  return isEnabled(featureFlagKey) === true;
 }
 
 // Initialize default guard evaluators.
@@ -57,14 +69,24 @@ export function registerGuardEvaluator(guardId, evaluatorFn) {
 function initializeDefaultGuards() {
   // Feature flag: autoSelectEnabled
   // eslint-disable-next-line no-unused-vars
-  registerGuardEvaluator(GUARD_CONDITIONS.AUTO_SELECT_ENABLED, (_context) => {
-    return isEnabled("autoSelect") === true;
+  registerGuardEvaluator(GUARD_CONDITIONS.AUTO_SELECT_ENABLED, (context, guardOverrides) => {
+    return resolveGuardToggle({
+      guardName: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
+      featureFlagKey: "autoSelect",
+      context,
+      guardOverrides
+    });
   });
 
   // Feature flag: FF_ROUND_MODIFY
   // eslint-disable-next-line no-unused-vars
-  registerGuardEvaluator(GUARD_CONDITIONS.FF_ROUND_MODIFY, (_context) => {
-    return isEnabled("roundModify") === true;
+  registerGuardEvaluator(GUARD_CONDITIONS.FF_ROUND_MODIFY, (context, guardOverrides) => {
+    return resolveGuardToggle({
+      guardName: GUARD_CONDITIONS.FF_ROUND_MODIFY,
+      featureFlagKey: "roundModify",
+      context,
+      guardOverrides
+    });
   });
 
   // Score-based guard: WIN_CONDITION_MET
@@ -158,9 +180,10 @@ function buildTriggerMap(statesByName) {
  *
  * @param {string} guard - Guard condition string or identifier.
  * @param {object} context - State machine context with optional engine.
+ * @param {Record<string, boolean>} [guardOverrides] - Optional guard override map.
  * @returns {boolean} True if guard passes, false otherwise.
  */
-function evaluateGuard(guard, context) {
+function evaluateGuard(guard, context, guardOverrides) {
   if (!guard || typeof guard !== "string") {
     return true; // No guard means always pass
   }
@@ -180,7 +203,7 @@ function evaluateGuard(guard, context) {
   // Execute evaluator and apply negation
   let result = false;
   try {
-    result = evaluator(context);
+    result = evaluator(context, guardOverrides);
   } catch (err) {
     logError(`Guard evaluator failed for '${guardName}':`, err);
     result = false;
@@ -368,7 +391,8 @@ function resolveTransitionTarget(
   currentStateDef,
   triggerMap,
   statesByName,
-  context
+  context,
+  guardOverrides
 ) {
   let target = null;
 
@@ -378,7 +402,7 @@ function resolveTransitionTarget(
   if (triggersForEvent.length > 0) {
     // Evaluate guards to find the first matching trigger
     for (const trigger of triggersForEvent) {
-      const guardPassed = evaluateGuard(trigger.guard, context);
+      const guardPassed = evaluateGuard(trigger.guard, context, guardOverrides);
       if (guardPassed) {
         target = trigger.target;
         break;
@@ -590,13 +614,15 @@ export function debugStateTable(statesByName, options = {}) {
  * @param {object} [context={}] - Initial machine context object.
  * @param {(args:{from:string|null,to:string,event:string|null})=>Promise<void>|void} [onTransition] - Optional transition hook.
  * @param {Array} [stateTable=CLASSIC_BATTLE_STATES] - Array of state definitions used by the machine.
+ * @param {Record<string, boolean>} [guardOverrides] - Optional guard override map to force guard results for testing/admin flows.
  * @returns {Promise<ClassicBattleStateManager>} Resolves with the constructed machine.
  */
 export async function createStateManager(
   onEnterMap = {},
   context = {},
   onTransition,
-  stateTable = CLASSIC_BATTLE_STATES
+  stateTable = CLASSIC_BATTLE_STATES,
+  guardOverrides
 ) {
   // Validate inputs
   if (!validateStateTable(stateTable)) {
@@ -610,6 +636,8 @@ export async function createStateManager(
   const { byName: statesByName, initialState } = initializeStateTable(stateTable);
   const definedStates = new Set(statesByName.keys());
   let current = initialState;
+  // Resolve guard overrides with precedence: parameter > context.guardOverrides
+  const resolvedGuardOverrides = guardOverrides || context?.guardOverrides;
 
   // Build trigger map for O(1) lookup
   const triggerMap = buildTriggerMap(statesByName);
@@ -639,7 +667,8 @@ export async function createStateManager(
         currentStateDef,
         triggerMap,
         statesByName,
-        context
+        context,
+        resolvedGuardOverrides
       );
 
       // Validate target resolution
