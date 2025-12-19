@@ -128,6 +128,7 @@ test.describe("Classic battle interrupt recovery", () => {
     const firstStatButton = page.getByTestId("stat-button").first();
     await expect(firstStatButton).toBeDisabled({ timeout: 10000 });
 
+    // Wait for cooldown to complete and state to transition back
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
     await expect(firstStatButton).toBeEnabled();
   });
