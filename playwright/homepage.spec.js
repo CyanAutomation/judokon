@@ -10,6 +10,26 @@ test.describe("Homepage", () => {
     await expect(page.locator("h1")).toContainText("JU-DO-KON!");
   });
 
+  test("hero landmark exposes JU-DO-KON! brand heading", async ({ page }) => {
+    await expect(page.getByRole("main")).toBeVisible();
+    await expect(hero).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toBeVisible();
+  });
+
+  test("primary classic battle CTA is advertised and points to battle page", async ({ page }) => {
+    const primaryCta = page.getByRole("link", { name: "Start classic battle mode" });
+    await expect(primaryCta).toBeVisible();
+    await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
+  });
+
+  test("selecting the classic battle tile navigates into classic battle experience", async ({ page }) => {
+    await page.getByRole("link", { name: "Start classic battle mode" }).click();
+
+    await expect(page).toHaveURL(/\/src\/pages\/battleClassic\.html$/);
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole("group", { name: "Choose a stat" })).toBeVisible();
+  });
+
   test("keyboard navigation focuses tiles", async ({ page }) => {
     const tiles = page.locator(".card");
 
