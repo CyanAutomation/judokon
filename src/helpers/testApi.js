@@ -590,16 +590,32 @@ const stateApi = {
   },
 
   /**
-   * Dispatch an event to the battle state machine
+   * Dispatch an event to the battle state machine or emit as battle event.
    * @param {string} eventName - Event to dispatch
    * @param {any} payload - Optional payload
    * @returns {Promise<boolean>} Success status
+   * @pseudocode
+   * 1. Try to dispatch to state machine if it's a valid transition
+   * 2. If dispatch succeeds, return true
+   * 3. If dispatch fails or state machine unavailable, emit as battle event
+   * 4. Battle events are listened to by UI handlers
    */
   async dispatchBattleEvent(eventName, payload) {
     try {
       const machine = getBattleStateMachine();
-      if (!machine?.dispatch) return false;
-      return await machine.dispatch(eventName, payload);
+      if (machine?.dispatch) {
+        const result = await machine.dispatch(eventName, payload);
+        if (result === true) {
+          return true;
+        }
+      }
+    } catch {
+      // Ignore machine dispatch errors; fall through to emitting event
+    }
+    // If machine dispatch failed or unavailable, emit as battle event
+    try {
+      emitBattleEvent(eventName, payload);
+      return true;
     } catch {
       return false;
     }
