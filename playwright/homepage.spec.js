@@ -11,7 +11,7 @@ test.describe("Homepage", () => {
   });
 
   test("hero landmark exposes JU-DO-KON! brand heading", async ({ page }) => {
-    const hero = page.getByRole("main");
+    await expect(page.getByRole("main")).toBeVisible();
     await expect(hero).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toBeVisible();
   });
