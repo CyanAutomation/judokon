@@ -636,6 +636,7 @@ export async function createStateManager(
   const { byName: statesByName, initialState } = initializeStateTable(stateTable);
   const definedStates = new Set(statesByName.keys());
   let current = initialState;
+  // Resolve guard overrides with precedence: parameter > context.guardOverrides
   const resolvedGuardOverrides = guardOverrides || context?.guardOverrides;
 
   // Build trigger map for O(1) lookup
