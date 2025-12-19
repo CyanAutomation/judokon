@@ -26,6 +26,7 @@ test.describe("Homepage", () => {
     await page.getByRole("link", { name: "Start classic battle mode" }).click();
 
     await expect(page).toHaveURL(/\/src\/pages\/battleClassic\.html$/);
+    await page.waitForLoadState('networkidle');
     await expect(page.getByRole("group", { name: "Choose a stat" })).toBeVisible();
   });
 
