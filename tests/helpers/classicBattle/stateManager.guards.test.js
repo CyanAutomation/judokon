@@ -294,6 +294,68 @@ describe("stateManager guard evaluation", () => {
     });
   });
 
+  describe("context-driven guard configuration", () => {
+    it("should route timeout to roundDecision when autoSelect flag is enabled in context", async () => {
+      context = { flags: { autoSelect: true } };
+      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
+
+      await machine.dispatch("startClicked");
+      await machine.dispatch("ready");
+      await machine.dispatch("ready");
+      await machine.dispatch("cardsRevealed");
+
+      const result = await machine.dispatch("timeout");
+      expect(result).toBe(true);
+      expect(machine.getState()).toBe("roundDecision");
+    });
+
+    it("should route timeout to interruptRound when autoSelect flag is disabled in context", async () => {
+      context = { flags: { autoSelect: false } };
+      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
+
+      await machine.dispatch("startClicked");
+      await machine.dispatch("ready");
+      await machine.dispatch("ready");
+      await machine.dispatch("cardsRevealed");
+
+      const result = await machine.dispatch("timeout");
+      expect(result).toBe(true);
+      expect(machine.getState()).toBe("interruptRound");
+    });
+
+    it("should allow roundModifyFlag branch when roundModify flag is enabled in context", async () => {
+      context = { flags: { roundModify: true } };
+      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES);
+
+      await machine.dispatch("startClicked");
+      await machine.dispatch("ready");
+      await machine.dispatch("ready");
+      await machine.dispatch("cardsRevealed");
+
+      await machine.dispatch("interrupt");
+      expect(machine.getState()).toBe("interruptRound");
+
+      const result = await machine.dispatch("roundModifyFlag");
+      expect(result).toBe(true);
+      expect(machine.getState()).toBe("roundModification");
+    });
+
+    it("should respect explicit guardOverrides when provided to createStateManager", async () => {
+      context = { flags: { autoSelect: false } };
+      const guardOverrides = { autoSelectEnabled: true };
+      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES, guardOverrides);
+
+      await machine.dispatch("startClicked");
+      await machine.dispatch("ready");
+      await machine.dispatch("ready");
+      await machine.dispatch("cardsRevealed");
+
+      const result = await machine.dispatch("timeout");
+      expect(result).toBe(true);
+      expect(machine.getState()).toBe("roundDecision");
+    });
+  });
+
   describe("FF_ROUND_MODIFY guard", () => {
     it("should handle FF_ROUND_MODIFY guard (admin flag)", async () => {
       // This test verifies the guard mechanism works for admin flags
