@@ -16,9 +16,9 @@ const VALIDATION_WARN_ENABLED = true;
 /**
  * Registry of guard evaluator functions.
  * Maps guard condition identifiers to evaluation logic.
- * Each evaluator receives (guard, context) and returns boolean.
+ * Each evaluator receives (context, guardOverrides?) and returns boolean.
  *
- * @type {Map<string, (guard: string, context: object, guardOverrides?: Record<string, boolean>) => boolean>}
+ * @type {Map<string, (context: object, guardOverrides?: Record<string, boolean>) => boolean>}
  */
 const guardEvaluators = new Map();
 
@@ -48,7 +48,7 @@ export function registerGuardEvaluator(guardId, evaluatorFn) {
 }
 
 function resolveGuardToggle({ guardName, featureFlagKey, context, guardOverrides }) {
-  if (guardOverrides && guardName in guardOverrides) {
+  if (guardOverrides && Object.prototype.hasOwnProperty.call(guardOverrides, guardName)) {
     return !!guardOverrides[guardName];
   }
 
@@ -614,7 +614,7 @@ export function debugStateTable(statesByName, options = {}) {
  * @param {object} [context={}] - Initial machine context object.
  * @param {(args:{from:string|null,to:string,event:string|null})=>Promise<void>|void} [onTransition] - Optional transition hook.
  * @param {Array} [stateTable=CLASSIC_BATTLE_STATES] - Array of state definitions used by the machine.
- * @param {Record<string, boolean>} [guardOverrides] - Optional guard override map to force guard results for testing/admin flows.
+ * @param {Record<string, boolean>} [guardOverrides] - Optional guard override map to force guard results for testing/admin flows. Overrides passed directly to this function take precedence over context.guardOverrides.
  * @returns {Promise<ClassicBattleStateManager>} Resolves with the constructed machine.
  */
 export async function createStateManager(
