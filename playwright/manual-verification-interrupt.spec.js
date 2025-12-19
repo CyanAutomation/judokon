@@ -8,7 +8,11 @@ const PLAYER_ACTION_STATE = "waitingForPlayerAction";
 const COUNTDOWN_PATTERN = /\btime left:\s*\d+(\.\d+)?s\b/i;
 
 async function navigateToBattle(page, options = {}) {
-  const { cooldownMs = 1200, roundTimerMs = 16 } = options;
+  const {
+    cooldownMs = 1200,
+    roundTimerMs = 16,
+    featureFlagOverrides = { enableTestMode: true, showRoundSelectModal: true }
+  } = options;
 
   await applyDeterministicCooldown(page, {
     cooldownMs,
@@ -16,13 +20,14 @@ async function navigateToBattle(page, options = {}) {
     showRoundSelectModal: true
   });
 
-  await page.addInitScript(() => {
-    window.__FF_OVERRIDES = {
-      ...(window.__FF_OVERRIDES || {}),
-      enableTestMode: true,
-      showRoundSelectModal: true
-    };
-  });
+  if (featureFlagOverrides && Object.keys(featureFlagOverrides).length > 0) {
+    await page.addInitScript((overrides) => {
+      window.__FF_OVERRIDES = {
+        ...(window.__FF_OVERRIDES || {}),
+        ...overrides
+      };
+    }, featureFlagOverrides);
+  }
 
   await page.goto(BATTLE_PAGE_URL);
   await waitForTestApi(page);
@@ -88,25 +93,42 @@ test.describe("Classic battle interrupt recovery", () => {
     await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
     await expect(page.getByTestId("stat-button").first()).toBeEnabled();
   });
-});
 
-test.describe("Classic battle debug surface", () => {
-  test("should expose debug state when available", async ({ page }) => {
-    await navigateToBattle(page);
+  test("enabling test mode via settings keeps countdown cues during interrupts", async ({ page }) => {
+    await page.goto("/src/pages/settings.html");
 
-    const diagnostics = await page.evaluate(() => {
-      const api = window.__TEST_API ?? null;
-      return {
-        hasStateApi: typeof api?.state === "object", // core bridge
-        hasInitHelper: typeof api?.init?.waitForBattleReady === "function",
-        hasDispatch: typeof api?.state?.dispatchBattleEvent === "function",
-        hasStateGetter: typeof api?.state?.getBattleState === "function"
-      };
+    const advancedSummary = page.locator('details[data-section-id="advanced"] summary');
+    await advancedSummary.click();
+
+    const testModeToggle = page.locator("#feature-enable-test-mode");
+    await expect(testModeToggle).toBeVisible();
+    if (!(await testModeToggle.isChecked())) {
+      await testModeToggle.click();
+    }
+    await expect(testModeToggle).toBeChecked();
+
+    await launchClassicBattle(page, {
+      cooldownMs: 1200,
+      roundTimerMs: 8,
+      featureFlagOverrides: { showRoundSelectModal: true }
     });
 
-    expect(diagnostics.hasStateApi).toBe(true);
-    expect(diagnostics.hasInitHelper).toBe(true);
-    expect(diagnostics.hasDispatch).toBe(true);
-    expect(diagnostics.hasStateGetter).toBe(true);
+    const battleArea = page.locator("#battle-area");
+    await expect(battleArea).toHaveAttribute("data-test-mode", "true");
+    await expect(page.getByTestId("test-mode-banner")).toContainText(/test mode active/i);
+
+    const interruptResult = await dispatchBattleEvent(page, "interrupt", {
+      reason: "settings enabled test mode"
+    });
+    expect(interruptResult.ok).toBe(true);
+
+    const timerMessage = page.getByRole("status").filter({ hasText: /time left:/i });
+    await expect(timerMessage).toContainText(COUNTDOWN_PATTERN);
+
+    const firstStatButton = page.getByTestId("stat-button").first();
+    await expect(firstStatButton).toBeDisabled({ timeout: 10000 });
+
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", PLAYER_ACTION_STATE);
+    await expect(firstStatButton).toBeEnabled();
   });
 });
