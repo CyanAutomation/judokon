@@ -48,11 +48,11 @@ export function registerGuardEvaluator(guardId, evaluatorFn) {
 }
 
 function resolveGuardToggle({ guardName, featureFlagKey, context, guardOverrides }) {
-  if (guardOverrides && Object.prototype.hasOwnProperty.call(guardOverrides, guardName)) {
+  if (guardOverrides && guardName in guardOverrides) {
     return !!guardOverrides[guardName];
   }
 
-  if (context?.flags && Object.prototype.hasOwnProperty.call(context.flags, featureFlagKey)) {
+  if (context?.flags && featureFlagKey in context.flags) {
     return !!context.flags[featureFlagKey];
   }
 
