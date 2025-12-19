@@ -18,7 +18,7 @@ const VALIDATION_WARN_ENABLED = true;
  * Maps guard condition identifiers to evaluation logic.
  * Each evaluator receives (guard, context) and returns boolean.
  *
- * @type {Map<string, (context: object, guardOverrides?: Record<string, boolean>) => boolean>}
+ * @type {Map<string, (guard: string, context: object, guardOverrides?: Record<string, boolean>) => boolean>}
  */
 const guardEvaluators = new Map();
 
