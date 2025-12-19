@@ -7,13 +7,15 @@ test.describe("Homepage", () => {
 
   test("homepage loads", async ({ page }) => {
     await expect(page).toHaveTitle(/JU-DO-KON!/);
-    await expect(page.locator("h1")).toContainText("JU-DO-KON!");
   });
 
   test("hero landmark exposes JU-DO-KON! brand heading", async ({ page }) => {
-    await expect(page.getByRole("main")).toBeVisible();
+    const hero = page.getByRole("main");
+
     await expect(hero).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toBeVisible();
+    await expect(hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toHaveText(
+      "JU-DO-KON!",
+    );
   });
 
   test("primary classic battle CTA is advertised and points to battle page", async ({ page }) => {
