@@ -621,7 +621,7 @@ async function confirmMatchOutcome(store, result) {
     return null;
   })();
 
-  if (!matchEnded && Number.isFinite(targetPoints) && targetPoints > 0) {
+  if (!matchEnded && targetPoints !== null) {
     if (scores.player >= targetPoints || scores.opponent >= targetPoints) {
       matchEnded = true;
       snapshot = snapshot || {};
