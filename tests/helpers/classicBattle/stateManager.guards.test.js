@@ -343,7 +343,13 @@ describe("stateManager guard evaluation", () => {
     it("should respect explicit guardOverrides when provided to createStateManager", async () => {
       context = { flags: { autoSelect: false } };
       const guardOverrides = { autoSelectEnabled: true };
-      machine = await createStateManager({}, context, undefined, CLASSIC_BATTLE_STATES, guardOverrides);
+      machine = await createStateManager(
+        {},
+        context,
+        undefined,
+        CLASSIC_BATTLE_STATES,
+        guardOverrides
+      );
 
       await machine.dispatch("startClicked");
       await machine.dispatch("ready");

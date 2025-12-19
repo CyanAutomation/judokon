@@ -94,7 +94,9 @@ test.describe("Classic battle interrupt recovery", () => {
     await expect(page.getByTestId("stat-button").first()).toBeEnabled();
   });
 
-  test("enabling test mode via settings keeps countdown cues during interrupts", async ({ page }) => {
+  test("enabling test mode via settings keeps countdown cues during interrupts", async ({
+    page
+  }) => {
     await page.goto("/src/pages/settings.html");
 
     const advancedSummary = page.locator('details[data-section-id="advanced"] summary');

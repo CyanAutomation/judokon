@@ -68,7 +68,7 @@ function resolveGuardToggle({ guardName, featureFlagKey, context, guardOverrides
 // 3. Register WIN_CONDITION_MET (score-based logic).
 function initializeDefaultGuards() {
   // Feature flag: autoSelectEnabled
-  // eslint-disable-next-line no-unused-vars
+
   registerGuardEvaluator(GUARD_CONDITIONS.AUTO_SELECT_ENABLED, (context, guardOverrides) => {
     return resolveGuardToggle({
       guardName: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
@@ -79,7 +79,7 @@ function initializeDefaultGuards() {
   });
 
   // Feature flag: FF_ROUND_MODIFY
-  // eslint-disable-next-line no-unused-vars
+
   registerGuardEvaluator(GUARD_CONDITIONS.FF_ROUND_MODIFY, (context, guardOverrides) => {
     return resolveGuardToggle({
       guardName: GUARD_CONDITIONS.FF_ROUND_MODIFY,

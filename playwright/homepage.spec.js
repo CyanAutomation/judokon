@@ -15,7 +15,7 @@ test.describe("Homepage", () => {
     await expect(hero).toBeVisible();
     await expect(hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toBeVisible();
     await expect(hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toHaveText(
-      "JU-DO-KON!",
+      "JU-DO-KON!"
     );
   });
 
@@ -25,11 +25,13 @@ test.describe("Homepage", () => {
     await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
   });
 
-  test("selecting the classic battle tile navigates into classic battle experience", async ({ page }) => {
+  test("selecting the classic battle tile navigates into classic battle experience", async ({
+    page
+  }) => {
     await page.getByRole("link", { name: "Start classic battle mode" }).click();
 
     await expect(page).toHaveURL(/\/src\/pages\/battleClassic\.html$/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
     await expect(page.getByRole("group", { name: "Choose a stat" })).toBeVisible();
   });
 
