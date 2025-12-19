@@ -609,11 +609,16 @@ async function confirmMatchOutcome(store, result) {
   };
 
   const targetPoints = (() => {
+    // First try snapshot or engine scores
     const candidatePoints = Number(snapshot?.pointsToWin ?? engineScores?.pointsToWin);
     if (Number.isFinite(candidatePoints) && candidatePoints > 0) {
       return candidatePoints;
     }
-    return enginePointsToWin;
+    // Fallback to engine points to win
+    if (Number.isFinite(enginePointsToWin) && enginePointsToWin > 0) {
+      return enginePointsToWin;
+    }
+    return null;
   })();
 
   if (!matchEnded && Number.isFinite(targetPoints) && targetPoints > 0) {
