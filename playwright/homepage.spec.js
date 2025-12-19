@@ -13,6 +13,7 @@ test.describe("Homepage", () => {
     const hero = page.getByRole("main");
 
     await expect(hero).toBeVisible();
+    await expect(hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toBeVisible();
     await expect(hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toHaveText(
       "JU-DO-KON!",
     );
