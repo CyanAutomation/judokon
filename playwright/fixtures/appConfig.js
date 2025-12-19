@@ -142,7 +142,6 @@ async function overrideSettingsFetch(page, overrides) {
       contentType: "application/json",
       body: JSON.stringify(overrides)
     });
-    await page.unroute(pattern);
   });
   return async () => {
     try {
