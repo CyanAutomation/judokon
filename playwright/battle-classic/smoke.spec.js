@@ -134,6 +134,10 @@ test.describe("Classic Battle page", () => {
     await waitForBattleReady(page, { allowFallback: false });
     await setPointsToWin(page, 1, { timeout: 10_000 });
 
+    const endModalCallCountBefore = await page.evaluate(
+      () => window.__classicBattleEndModalCount ?? 0
+    );
+
     const matchTracker = createMatchCompletionTracker(page, {
       timeout: 28_000,
       allowFallback: true
@@ -194,6 +198,7 @@ test.describe("Classic Battle page", () => {
     // Verify the showEndModal function was called via its counter (Test API approach)
     const endModalCallCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
     expect(endModalCallCount).toBeGreaterThan(0);
+    expect(endModalCallCount).toBeGreaterThan(endModalCallCountBefore);
 
     // Verify UI state captured atomically by Test API when modal appeared
     expect(matchResult.uiState).toBeTruthy();

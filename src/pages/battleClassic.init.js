@@ -26,7 +26,8 @@ import {
   on as onEngine,
   getRoundsPlayed,
   isMatchEnded,
-  getScores
+  getScores,
+  getPointsToWin
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
@@ -579,6 +580,7 @@ async function confirmMatchOutcome(store, result) {
   let snapshot = result && typeof result === "object" ? { ...result } : null;
   let matchEnded = Boolean(snapshot?.matchEnded);
   let engineScores = null;
+  let enginePointsToWin = null;
   try {
     if (!matchEnded && typeof isMatchEnded === "function" && isMatchEnded()) {
       matchEnded = true;
@@ -589,18 +591,41 @@ async function confirmMatchOutcome(store, result) {
         engineScores = getScores();
       } catch {}
     }
+    if (typeof getPointsToWin === "function") {
+      try {
+        const candidate = Number(getPointsToWin());
+        if (Number.isFinite(candidate)) {
+          enginePointsToWin = candidate;
+        }
+      } catch {}
+    }
   } catch (err) {
     console.debug("battleClassic: checking match end failed", err);
-  }
-
-  if (!matchEnded) {
-    return false;
   }
 
   const scores = {
     player: Number(snapshot?.playerScore ?? engineScores?.playerScore) || 0,
     opponent: Number(snapshot?.opponentScore ?? engineScores?.opponentScore) || 0
   };
+
+  const targetPoints = (() => {
+    const candidatePoints = Number(snapshot?.pointsToWin ?? engineScores?.pointsToWin);
+    if (Number.isFinite(candidatePoints) && candidatePoints > 0) {
+      return candidatePoints;
+    }
+    return enginePointsToWin;
+  })();
+
+  if (!matchEnded && Number.isFinite(targetPoints) && targetPoints > 0) {
+    if (scores.player >= targetPoints || scores.opponent >= targetPoints) {
+      matchEnded = true;
+      snapshot = snapshot || {};
+    }
+  }
+
+  if (!matchEnded) {
+    return false;
+  }
 
   let outcome = typeof snapshot?.outcome === "string" ? snapshot.outcome : "";
   if (!outcome) {
