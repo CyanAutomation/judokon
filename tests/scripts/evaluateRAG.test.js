@@ -112,6 +112,25 @@ describe("evaluateRAG", () => {
     expect(error).toHaveBeenCalledWith("RAG evaluation failed thresholds.");
   });
 
+  it("treats undefined query responses as empty results without throwing", async () => {
+    const log = vi.fn();
+    const error = vi.fn();
+    const summary = await evaluate(null, {
+      queries: TEST_QUERIES.slice(0, 1),
+      queryFn: vi.fn(async () => undefined),
+      hrtime: createHrtimeStub(),
+      logger: { log, error }
+    });
+
+    expect(summary.pass).toBe(false);
+    expect(process.exitCode).toBe(1);
+    expect(error).toHaveBeenCalledWith("RAG evaluation failed thresholds.");
+    expect(summary.metrics.mrr5).toBe(0);
+    expect(summary.metrics.recall3).toBe(0);
+    expect(summary.metrics.recall5).toBe(0);
+    expect(summary.queries[0].matches).toEqual([]);
+  });
+
   it("does not fetch when network is blocked", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(() => {
       throw new Error("network blocked");
