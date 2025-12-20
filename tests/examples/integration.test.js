@@ -55,6 +55,7 @@ describe("Integration Test Example: Battle Flow", () => {
     // Create harness with fixtures (DOM, timers, storage, etc.)
     harness = createSimpleHarness({
       fixtures: {
+        fetch: mockFetch,
         localStorage: mockStorage
       },
       useFakeTimers: true
@@ -152,20 +153,23 @@ describe("Integration Test Example: Battle Flow", () => {
     window.battleStore = originalBattleStore;
   });
 
-  it("demonstrates fixture usage: localStorage and DOM", async () => {
-    // Setup: mock external service
-    mockFetch.mockResolvedValue(testScenarios.opponentA);
+  it("initializes battle flow using stored battleId", async () => {
+    const storedBattleId = "battle-777";
+    mockStorage.setItem("battleId", storedBattleId);
 
-    // Use harness-provided mock storage
-    mockStorage.setItem("battleId", "1");
-    expect(mockStorage.getItem("battleId")).toBe("1");
+    mockFetch.mockResolvedValue({
+      status: 200,
+      ok: true,
+      json: async () => ({ battleId: storedBattleId, status: "hydrated" })
+    });
 
-    // Import real module to verify storage interaction
-    const { markBattlePartReady } = await import("../../src/helpers/battleInit.js");
-    markBattlePartReady("home");
+    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
 
-    // Assert: mock storage still works
-    expect(mockStorage.getItem("battleId")).toBe("1");
+    const result = await initBattleFlowFromStorage();
+
+    expect(mockFetch).toHaveBeenCalledWith(`/api/battles/${storedBattleId}`);
+    expect(document.body.dataset.battleId).toBe(storedBattleId);
+    expect(result).toEqual({ battleId: storedBattleId, response: { battleId: storedBattleId, status: "hydrated" } });
   });
 
   it("demonstrates fake timer control", async () => {
