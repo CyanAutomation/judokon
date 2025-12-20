@@ -65,7 +65,7 @@ test.describe("Homepage", () => {
 
     // Shift-tabbing confirms focus can be returned to the previous tile after forward navigation.
     await page.keyboard.press("Shift+Tab");
-    await expect(page.getByRole("link", { name: expectedTiles.at(-2).name })).toBeFocused();
+    await expect(page.getByRole("link", { name: expectedTiles[expectedTiles.length - 2].name })).toBeFocused();
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {
