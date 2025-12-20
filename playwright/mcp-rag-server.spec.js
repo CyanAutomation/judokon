@@ -96,10 +96,16 @@ test.describe.serial("MCP RAG server smoke", () => {
       );
 
       const sampleQuery = "judoka search smoke check";
-      const toolResult = await client.callTool({
-        name: "judokon.search",
-        arguments: { query: sampleQuery, topK: 1 }
-      });
+      const sampleQuery = "judoka search smoke check";
+      let toolResult;
+      try {
+        toolResult = await client.callTool({
+          name: "judokon.search",
+          arguments: { query: sampleQuery, topK: 1 }
+        });
+      } catch (error) {
+        throw new Error(`Tool call failed: ${error.message}`);
+      }
 
       expect(toolResult.isError ?? false).toBe(false);
       const responseText = extractTextContent(toolResult);
