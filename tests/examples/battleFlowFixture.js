@@ -27,7 +27,7 @@ export async function initBattleFlowFromStorage() {
 
     if (!response?.ok) {
       const statusCode = response?.status ?? "unknown";
-      const statusText = response?.statusText ?? "Unknown";
+      const statusText = response?.statusText ?? "Unknown Error";
       return { battleId, response: null, error: `HTTP ${statusCode}: ${statusText}` };
     }
 
