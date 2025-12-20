@@ -140,7 +140,7 @@ test.describe("Homepage", () => {
           const cs = getComputedStyle(node);
           return {
             fg: cs.color,
-            bg: cs.backgroundColor === "rgba(0, 0, 0, 0)" ? fallback : cs.backgroundColor
+            bg: cs.backgroundColor === "rgba(0, 0, 0, 0)" || cs.backgroundColor === "transparent" ? fallback : cs.backgroundColor
           };
         }, pageBgColor);
 
