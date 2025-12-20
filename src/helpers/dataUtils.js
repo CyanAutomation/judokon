@@ -328,7 +328,7 @@ export async function fetchJudokaList({
     return rawList.map((entry, index) => normalizeJudokaEntry(entry, index));
   }
 
-  throw lastError;
+  throw lastError || new Error("Failed to fetch judoka list after all retries");
 }
 
 /**
