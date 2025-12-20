@@ -19,8 +19,8 @@ import { createSimpleHarness } from "../helpers/integrationHarness.js";
 
 // ===== STEP 1: Create shared mocks in vi.hoisted()
 // Must be called BEFORE defining any baseSettings or constants that the mocks reference
-const { mockFetchData } = vi.hoisted(() => ({
-  mockFetchData: vi.fn()
+const { mockFetchJson } = vi.hoisted(() => ({
+  mockFetchJson: vi.fn()
 }));
 
 // ===== STEP 2: Declare all mocks at top level (Vitest static analysis phase)
@@ -30,13 +30,28 @@ vi.mock("../../src/helpers/dataUtils.js", async () => {
   const actual = await vi.importActual("../../src/helpers/dataUtils.js");
   return {
     ...actual,
-    fetchJudokaList: mockFetchData
+    fetchJson: mockFetchJson,
+    fetchJudokaList: (options) =>
+      actual.fetchJudokaList({
+        ...options,
+        fetcher: mockFetchJson
+      })
   };
 });
 
 // ===== STEP 3: Organize test data (can use mocks that have no dependencies)
 const testData = {
-  validResponse: [{ id: 1, name: "Test Judoka" }],
+  normalizedList: [
+    {
+      id: 7,
+      firstname: " Kana ",
+      surname: "Yamada",
+      country: "Japan",
+      countryCode: "JP",
+      stats: { power: 5 },
+      bio: "Test bio"
+    }
+  ],
   errorResponse: new Error("API Error")
 };
 
@@ -46,7 +61,7 @@ describe("Unit Test Example: Data Processing", () => {
 
   beforeEach(async () => {
     // Reset all mocks before each test to ensure isolation
-    mockFetchData.mockReset();
+    mockFetchJson.mockReset();
 
     // Create and setup harness for this test
     harness = createSimpleHarness();
@@ -61,63 +76,59 @@ describe("Unit Test Example: Data Processing", () => {
   });
 
   // ===== STEP 5: Write tests with per-test mock configuration
-  it("fetches data successfully when API returns results", async () => {
-    // Configure mocks for this specific test
-    mockFetchData.mockResolvedValue(testData.validResponse);
+  it("normalizes judoka entries and fills defaults", async () => {
+    mockFetchJson.mockResolvedValue(testData.normalizedList);
 
-    // Import the module AFTER setup() to apply mocks
     const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
 
-    // Execute test
-    const result = await fetchJudokaList();
+    const result = await fetchJudokaList({ url: "/data/mock.json" });
 
-    // Assert
-    expect(mockFetchData).toHaveBeenCalled();
-    expect(result).toEqual(testData.validResponse);
+    expect(mockFetchJson).toHaveBeenCalledWith("/data/mock.json");
+    expect(result).toEqual([
+      {
+        id: 7,
+        firstname: "Kana",
+        surname: "Yamada",
+        name: "Kana Yamada",
+        country: "Japan",
+        countryCode: "jp",
+        rarity: "Common",
+        weightClass: "",
+        signatureMoveId: "",
+        stats: {
+          power: 5,
+          speed: 0,
+          technique: 0,
+          kumikata: 0,
+          newaza: 0
+        },
+        bio: "Test bio"
+      }
+    ]);
   });
 
-  it("handles error when fetch fails", async () => {
-    // Configure mocks for failure scenario
-    mockFetchData.mockRejectedValue(testData.errorResponse);
+  it("retries failed fetches before succeeding", async () => {
+    mockFetchJson
+      .mockRejectedValueOnce(testData.errorResponse)
+      .mockResolvedValueOnce(testData.normalizedList);
 
     const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
 
-    // Execute test and expect it to handle the error
-    let error;
-    try {
-      await fetchJudokaList();
-    } catch (e) {
-      error = e;
-    }
+    const result = await fetchJudokaList({ retries: 1, delayMs: 0 });
 
-    // Assert error was thrown
-    expect(mockFetchData).toHaveBeenCalled();
-    expect(error).toBeDefined();
+    expect(mockFetchJson).toHaveBeenCalledTimes(2);
+    expect(result[0].countryCode).toBe("jp");
   });
 
-  it("returns empty array as fallback on error", async () => {
-    // Configure mock to return empty array
-    mockFetchData.mockResolvedValue([]);
+  it("throws after exhausting retries", async () => {
+    mockFetchJson.mockRejectedValue(testData.errorResponse);
 
     const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
 
-    // Execute test
-    const result = await fetchJudokaList();
-
-    // Assert fallback behavior
-    expect(result).toEqual([]);
-  });
-
-  it("handles edge case: undefined response", async () => {
-    mockFetchData.mockResolvedValue(undefined);
-
-    const { fetchJudokaList } = await import("../../src/helpers/dataUtils.js");
-
-    // Should handle gracefully
-    const result = await fetchJudokaList();
-
-    // Expect either null, undefined, or empty array
-    expect(result === undefined || result === null || Array.isArray(result)).toBe(true);
+    await expect(fetchJudokaList({ retries: 1, delayMs: 0 })).rejects.toThrow(
+      testData.errorResponse
+    );
+    expect(mockFetchJson).toHaveBeenCalledTimes(2);
   });
 });
 
