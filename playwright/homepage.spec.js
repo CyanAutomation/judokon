@@ -94,7 +94,7 @@ test.describe("Homepage", () => {
       const parts = color.match(/\d+(?:\.\d+)?/g);
       if (!parts || parts.length < 3) return fallbackHex;
 
-      const [r, g, b] = parts.map((part) => Math.round(Math.max(0, Math.min(255, Number(part)))));
+      const [r, g, b] = parts.map((part) => Math.round(Math.max(0, Math.min(255, parseFloat(part)))));
       return `#${[r, g, b]
         .map((component) => component.toString(16).padStart(2, "0"))
         .join("")}`;
