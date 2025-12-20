@@ -53,7 +53,7 @@ test.describe("Homepage", () => {
       const tile = page.getByRole("link", { name: tileMeta.name });
 
       await expect(tile).toHaveAttribute("href", tileMeta.href);
-      await expect(tile).toHaveAttribute("aria-label", tileMeta.name);
+      await expect(tile).toHaveAccessibleName(tileMeta.name);
       await expect(tile).toBeFocused();
 
       // Keep advancing focus so that the next assertion verifies the following tile in the grid
