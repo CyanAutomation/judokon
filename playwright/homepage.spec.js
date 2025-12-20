@@ -36,10 +36,36 @@ test.describe("Homepage", () => {
   });
 
   test("keyboard navigation focuses tiles", async ({ page }) => {
-    const tiles = page.locator(".card");
+    const expectedTiles = [
+      { name: "Start classic battle mode", href: "./src/pages/battleClassic.html" },
+      { name: "Start classic battle (CLI)", href: "./src/pages/battleCLI.html" },
+      { name: "View a random judoka", href: "./src/pages/randomJudoka.html" },
+      { name: "Open meditation screen", href: "./src/pages/meditation.html" },
+      { name: "Browse Judoka", href: "./src/pages/browseJudoka.html" },
+      { name: "Open settings", href: "./src/pages/settings.html" }
+    ];
 
+    // The grid only contains these six anchor tiles in DOM order, so tabbing from the top of the
+    // page should move focus through them sequentially without interruption.
     await page.keyboard.press("Tab");
-    await expect(tiles.first()).toBeFocused();
+
+    for (const [index, tileMeta] of expectedTiles.entries()) {
+      const tile = page.getByRole("link", { name: tileMeta.name });
+
+      await expect(tile).toHaveAttribute("href", tileMeta.href);
+      await expect(tile).toHaveAttribute("aria-label", tileMeta.name);
+      await expect(tile).toBeFocused();
+
+      // Keep advancing focus so that the next assertion verifies the following tile in the grid
+      // receives focus in order.
+      if (index < expectedTiles.length - 1) {
+        await page.keyboard.press("Tab");
+      }
+    }
+
+    // Shift-tabbing confirms focus can be returned to the previous tile after forward navigation.
+    await page.keyboard.press("Shift+Tab");
+    await expect(page.getByRole("link", { name: expectedTiles.at(-2).name })).toBeFocused();
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {
