@@ -92,7 +92,6 @@ describe("Integration Test Example: Battle Flow", () => {
     markBattlePartReady("home");
 
     // Assert that readiness is still pending when only one part is ready
-    // Assert that readiness is still pending when only one part is ready
     await Promise.resolve();
     expect(readinessSettled).toBe(false);
 
