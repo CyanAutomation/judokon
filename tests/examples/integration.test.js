@@ -78,18 +78,27 @@ describe("Integration Test Example: Battle Flow", () => {
 
     // This is the key pattern: import real internal modules (NOT mocked)
     // They will use the mocked external service via dependency injection
-    const { markBattlePartReady, battleReadyPromise: _battleReadyPromise } = await import(
-      "../../src/helpers/battleInit.js"
-    );
+    const { markBattlePartReady, battleReadyPromise } = await import("../../src/helpers/battleInit.js");
 
     // Exercise real internal code with controlled external dependencies
     expect(mockFetch).not.toHaveBeenCalled(); // Not called yet
+    const readiness = battleReadyPromise.then(() => "resolved");
+    let readinessSettled = false;
+    readiness.finally(() => {
+      readinessSettled = true;
+    });
+
     markBattlePartReady("home");
+
+    // Assert that readiness is still pending when only one part is ready
+    await Promise.resolve();
+    expect(readinessSettled).toBe(false);
+
     markBattlePartReady("state");
 
-    // Assert: real module execution completed
+    // Assert: real module execution completed once both parts are ready
+    await expect(readiness).resolves.toBe("resolved");
     expect(mockFetch).not.toHaveBeenCalled(); // battleInit doesn't call external API
-    expect(_battleReadyPromise).toBeDefined();
   });
 
   it("resolves readiness when home link and state progress initialize", async () => {
