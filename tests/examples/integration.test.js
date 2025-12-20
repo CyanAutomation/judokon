@@ -93,7 +93,7 @@ describe("Integration Test Example: Battle Flow", () => {
 
     // Assert that readiness is still pending when only one part is ready
     // Assert that readiness is still pending when only one part is ready
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await Promise.resolve();
     expect(readinessSettled).toBe(false);
 
     markBattlePartReady("state");
@@ -170,6 +170,48 @@ describe("Integration Test Example: Battle Flow", () => {
     expect(mockFetch).toHaveBeenCalledWith(`/api/battles/${storedBattleId}`);
     expect(document.body.dataset.battleId).toBe(storedBattleId);
     expect(result).toEqual({ battleId: storedBattleId, response: { battleId: storedBattleId, status: "hydrated" } });
+  });
+
+  it("handles missing localStorage gracefully", async () => {
+    const originalLocalStorage = globalThis.localStorage;
+    // @ts-expect-error simulate missing storage
+    globalThis.localStorage = undefined;
+
+    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
+
+    const result = await initBattleFlowFromStorage();
+
+    expect(result).toEqual({ battleId: null, response: null });
+    expect(mockFetch).not.toHaveBeenCalled();
+
+    globalThis.localStorage = originalLocalStorage;
+  });
+
+  it("returns early when no battleId is present", async () => {
+    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
+
+    const result = await initBattleFlowFromStorage();
+
+    expect(result).toEqual({ battleId: null, response: null });
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("captures HTTP errors from the battle fetch", async () => {
+    const storedBattleId = "battle-999";
+    mockStorage.setItem("battleId", storedBattleId);
+
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Server Error"
+    });
+
+    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
+
+    const result = await initBattleFlowFromStorage();
+
+    expect(mockFetch).toHaveBeenCalledWith(`/api/battles/${storedBattleId}`);
+    expect(result).toEqual({ battleId: storedBattleId, response: null, error: "HTTP 500: Server Error" });
   });
 
   it("demonstrates fake timer control", async () => {
