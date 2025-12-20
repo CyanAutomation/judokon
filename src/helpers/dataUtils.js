@@ -311,10 +311,10 @@ export async function fetchJudokaList({
       rawList = await fetcher(url);
     } catch (error) {
       lastError = error;
-      if (attempt >= retries) {
+      attempt += 1;
+      if (attempt > retries) {
         throw error;
       }
-      attempt += 1;
       if (delayMs > 0) {
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
