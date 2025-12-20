@@ -293,6 +293,7 @@ function normalizeJudokaEntry(entry, index) {
  * @param {string|URL} [options.url="/data/judoka.json"] - Data source URL.
  * @param {number} [options.retries=2] - Number of retry attempts on fetch failure.
  * @param {number} [options.delayMs=0] - Delay between retries in milliseconds.
+ * @param {Function} [options.fetcher=fetchJson] - Function to use for fetching data.
  * @returns {Promise<Array>} Normalized judoka list.
  */
 export async function fetchJudokaList({
