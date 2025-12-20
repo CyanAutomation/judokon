@@ -79,7 +79,9 @@ describe("Integration Test Example: Battle Flow", () => {
 
     // This is the key pattern: import real internal modules (NOT mocked)
     // They will use the mocked external service via dependency injection
-    const { markBattlePartReady, battleReadyPromise } = await import("../../src/helpers/battleInit.js");
+    const { markBattlePartReady, battleReadyPromise } = await import(
+      "../../src/helpers/battleInit.js"
+    );
 
     // Exercise real internal code with controlled external dependencies
     expect(mockFetch).not.toHaveBeenCalled(); // Not called yet
@@ -162,13 +164,18 @@ describe("Integration Test Example: Battle Flow", () => {
       json: async () => ({ battleId: storedBattleId, status: "hydrated" })
     });
 
-    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
+    const { initBattleFlowFromStorage } = await harness.importModule(
+      "../examples/battleFlowFixture.js"
+    );
 
     const result = await initBattleFlowFromStorage();
 
     expect(mockFetch).toHaveBeenCalledWith(`/api/battles/${storedBattleId}`);
     expect(document.body.dataset.battleId).toBe(storedBattleId);
-    expect(result).toEqual({ battleId: storedBattleId, response: { battleId: storedBattleId, status: "hydrated" } });
+    expect(result).toEqual({
+      battleId: storedBattleId,
+      response: { battleId: storedBattleId, status: "hydrated" }
+    });
   });
 
   it("handles missing localStorage gracefully", async () => {
@@ -176,7 +183,9 @@ describe("Integration Test Example: Battle Flow", () => {
     // @ts-expect-error simulate missing storage
     globalThis.localStorage = undefined;
 
-    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
+    const { initBattleFlowFromStorage } = await harness.importModule(
+      "../examples/battleFlowFixture.js"
+    );
 
     const result = await initBattleFlowFromStorage();
 
@@ -187,7 +196,9 @@ describe("Integration Test Example: Battle Flow", () => {
   });
 
   it("returns early when no battleId is present", async () => {
-    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
+    const { initBattleFlowFromStorage } = await harness.importModule(
+      "../examples/battleFlowFixture.js"
+    );
 
     const result = await initBattleFlowFromStorage();
 
@@ -205,12 +216,18 @@ describe("Integration Test Example: Battle Flow", () => {
       statusText: "Server Error"
     });
 
-    const { initBattleFlowFromStorage } = await harness.importModule("../examples/battleFlowFixture.js");
+    const { initBattleFlowFromStorage } = await harness.importModule(
+      "../examples/battleFlowFixture.js"
+    );
 
     const result = await initBattleFlowFromStorage();
 
     expect(mockFetch).toHaveBeenCalledWith(`/api/battles/${storedBattleId}`);
-    expect(result).toEqual({ battleId: storedBattleId, response: null, error: "HTTP 500: Server Error" });
+    expect(result).toEqual({
+      battleId: storedBattleId,
+      response: null,
+      error: "HTTP 500: Server Error"
+    });
   });
 
   it("advances a real cooldown timer and emits expiration", async () => {

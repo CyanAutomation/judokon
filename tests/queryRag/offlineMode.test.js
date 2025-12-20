@@ -259,11 +259,9 @@ describe("queryRag offline mode with local MiniLM model", () => {
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toMatch(/Network unreachable while loading remote MiniLM model/i);
     expect(error.cause).toBe(networkFailure);
-    expect(pipelineMock).toHaveBeenCalledWith(
-      "feature-extraction",
-      "Xenova/all-MiniLM-L6-v2",
-      { quantized: true }
-    );
+    expect(pipelineMock).toHaveBeenCalledWith("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+      quantized: true
+    });
     // Cleanup handled by afterEach
   });
 

@@ -47,7 +47,7 @@ test.describe("Homepage", () => {
 
     // The grid only contains these six anchor tiles in DOM order, so tabbing from the top of the
     // page should move focus through them sequentially without interruption.
-    
+
     // Ensure we start from a known focus state
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: expectedTiles[0].name })).toBeFocused();
@@ -70,7 +70,9 @@ test.describe("Homepage", () => {
 
     // Shift-tabbing confirms focus can be returned to the previous tile after forward navigation.
     await page.keyboard.press("Shift+Tab");
-    await expect(page.getByRole("link", { name: expectedTiles[expectedTiles.length - 2].name })).toBeFocused();
+    await expect(
+      page.getByRole("link", { name: expectedTiles[expectedTiles.length - 2].name })
+    ).toBeFocused();
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {
