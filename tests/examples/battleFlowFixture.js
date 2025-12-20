@@ -5,7 +5,7 @@
  * for downstream consumers, and triggers the network call used to resume or
  * hydrate the battle.
  *
- * @returns {Promise<{ battleId: string | null, response: any }>} Parsed result
+ * @returns {Promise<{ battleId: string | null, response: any, error?: string }>} Parsed result
  *   including the battle identifier and fetched payload.
  */
 export async function initBattleFlowFromStorage() {
@@ -24,9 +24,17 @@ export async function initBattleFlowFromStorage() {
 
   try {
     const response = await fetch(`/api/battles/${battleId}`);
+
+    if (!response?.ok) {
+      const statusCode = response?.status ?? "unknown";
+      const statusText = response?.statusText ?? "Unknown Error";
+      return { battleId, response: null, error: `HTTP ${statusCode}: ${statusText}` };
+    }
+
     const payload = typeof response?.json === "function" ? await response.json() : response;
     return { battleId, response: payload };
   } catch (error) {
-    return { battleId, response: null, error: error.message };
+    const message = typeof error?.message === "string" ? error.message : String(error);
+    return { battleId, response: null, error: message };
   }
 }
