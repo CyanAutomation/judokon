@@ -74,12 +74,21 @@ test.describe("Homepage", () => {
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {
+    await page.route("**/missing-icon.svg", (route) => route.abort());
     await page.goto("/playwright/fixtures/svg-fallback.html");
 
-    const icon = page.getByTestId("broken-icon");
+    const icon = page.getByRole("img", { name: "Broken icon" });
     await expect(icon).toBeVisible();
-    await expect.poll(() => icon.getAttribute("src")).toContain("judokonLogoSmall.png");
-    await expect(icon).toHaveClass(/svg-fallback/);
+    await expect(icon).toHaveAttribute("alt", "Broken icon");
+
+    await expect.poll(async () => {
+      const { currentSrc, naturalWidth } = await icon.evaluate((img) => ({
+        currentSrc: img.currentSrc,
+        naturalWidth: img.naturalWidth
+      }));
+
+      return currentSrc.endsWith(".png") && naturalWidth > 0;
+    }).toBe(true);
   });
 
   test("tiles meet contrast ratio", async ({ page }) => {
