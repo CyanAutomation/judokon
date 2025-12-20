@@ -302,4 +302,30 @@ describe("applyLayout", () => {
     expect(result.appliedRegions).toEqual([]);
     expect(logger.error).toHaveBeenCalled();
   });
+
+  it("returns fallback result and logs when root is missing", () => {
+    const layout = {
+      id: "missing-root-layout",
+      grid: { cols: 2, rows: 2 },
+      regions: [
+        {
+          id: "arena",
+          rect: { x: 0, y: 0, width: 2, height: 2 }
+        }
+      ]
+    };
+    const logger = { warn: vi.fn(), error: vi.fn() };
+    const logEventSpy = vi.spyOn(telemetry, "logEvent").mockImplementation(() => {});
+
+    const result = applyLayout(layout, { root: "#does-not-exist", logger });
+
+    expect(result.appliedLayoutId).toBe("unknown");
+    expect(result.appliedRegions).toEqual([]);
+    expect(result.skippedRegions).toEqual([]);
+    expect(result.missingAnchors).toEqual([]);
+    expect(result.errors).toEqual(["Layout root element could not be resolved."]);
+    expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    expect(logger.error).toHaveBeenCalledWith("layoutEngine.applyLayout: root element not found.");
+    expect(logEventSpy).not.toHaveBeenCalled();
+  });
 });
