@@ -89,7 +89,13 @@ test.describe("Homepage", () => {
         return fallbackHex;
       }
 
-      if (color.startsWith("#")) return color;
+      if (color.startsWith("#")) {
+        // Validate hex format
+        if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
+          return fallbackHex;
+        }
+        return color;
+      }
 
       const parts = color.match(/\d+(?:\.\d+)?/g);
       if (!parts || parts.length < 3) return fallbackHex;
