@@ -264,7 +264,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
       "Xenova/all-MiniLM-L6-v2",
       { quantized: true }
     );
-    vi.resetModules();
+    // Cleanup handled by afterEach
   });
 
   /**
