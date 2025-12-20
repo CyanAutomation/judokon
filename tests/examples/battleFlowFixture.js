@@ -22,7 +22,11 @@ export async function initBattleFlowFromStorage() {
     document.body.dataset.battleId = battleId;
   }
 
-  const response = await fetch(`/api/battles/${battleId}`);
-  const payload = typeof response?.json === "function" ? await response.json() : response;
-  return { battleId, response: payload };
+  try {
+    const response = await fetch(`/api/battles/${battleId}`);
+    const payload = typeof response?.json === "function" ? await response.json() : response;
+    return { battleId, response: payload };
+  } catch (error) {
+    return { battleId, response: null, error: error.message };
+  }
 }
