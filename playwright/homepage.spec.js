@@ -63,6 +63,8 @@ test.describe("Homepage", () => {
       // receives focus in order.
       if (index < expectedTiles.length - 1) {
         await page.keyboard.press("Tab");
+        // Wait for focus to settle before next iteration
+        await expect(page.getByRole("link", { name: expectedTiles[index + 1].name })).toBeFocused();
       }
     }
 
