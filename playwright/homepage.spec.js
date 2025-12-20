@@ -74,7 +74,7 @@ test.describe("Homepage", () => {
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {
-    await page.route("**/missing-icon.svg", (route) => route.abort());
+    await page.route("/playwright/fixtures/missing-icon.svg", (route) => route.abort());
     await page.goto("/playwright/fixtures/svg-fallback.html");
 
     const icon = page.getByRole("img", { name: "Broken icon" });
