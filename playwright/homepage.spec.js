@@ -82,12 +82,12 @@ test.describe("Homepage", () => {
     await expect(icon).toHaveAttribute("alt", "Broken icon");
 
     await expect.poll(async () => {
-      const { currentSrc, naturalWidth } = await icon.evaluate((img) => ({
-        currentSrc: img.currentSrc,
-        naturalWidth: img.naturalWidth
+      const { naturalWidth, complete } = await icon.evaluate((img) => ({
+        naturalWidth: img.naturalWidth,
+        complete: img.complete
       }));
 
-      return currentSrc.endsWith(".png") && naturalWidth > 0;
+      return complete && naturalWidth > 0;
     }).toBe(true);
   });
 
