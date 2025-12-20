@@ -244,6 +244,94 @@ export async function fetchJson(url, schema) {
   }
 }
 
+const DEFAULT_JUDOKA_STATS = {
+  power: 0,
+  speed: 0,
+  technique: 0,
+  kumikata: 0,
+  newaza: 0
+};
+
+function normalizeJudokaEntry(entry, index) {
+  const firstname = (entry.firstname ?? "").toString().trim();
+  const surname = (entry.surname ?? "").toString().trim();
+  const rawName = entry.name ?? `${firstname} ${surname}`;
+
+  const normalized = {
+    id: Number.isFinite(Number(entry.id)) ? Number(entry.id) : index,
+    firstname,
+    surname,
+    name: rawName.trim(),
+    country: entry.country ?? "",
+    countryCode: entry.countryCode ? entry.countryCode.toLowerCase() : "",
+    rarity: entry.rarity ?? "Common",
+    weightClass: entry.weightClass ?? "",
+    signatureMoveId: entry.signatureMoveId ?? "",
+    stats: {
+      ...DEFAULT_JUDOKA_STATS,
+      ...(entry.stats ?? {})
+    },
+    bio: entry.bio ?? ""
+  };
+
+  validateData(normalized, "judoka");
+
+  return normalized;
+}
+
+/**
+ * Fetch and normalize the list of judoka with retry support.
+ *
+ * @pseudocode
+ * 1. Attempt to fetch JSON data using `fetchJson`.
+ * 2. On fetch failure, retry up to `retries` times with optional delay.
+ * 3. Ensure the response is an array; throw otherwise.
+ * 4. Normalize each entry (trim names, lowercase country codes, merge default stats).
+ * 5. Return the normalized list.
+ *
+ * @param {object} [options] - Optional configuration.
+ * @param {string|URL} [options.url="/data/judoka.json"] - Data source URL.
+ * @param {number} [options.retries=2] - Number of retry attempts on fetch failure.
+ * @param {number} [options.delayMs=0] - Delay between retries in milliseconds.
+ * @param {Function} [options.fetcher=fetchJson] - Function to use for fetching data.
+ * @returns {Promise<Array>} Normalized judoka list.
+ */
+export async function fetchJudokaList({
+  url = "/data/judoka.json",
+  retries = 2,
+  delayMs = 0,
+  fetcher = fetchJson
+} = {}) {
+  let attempt = 0;
+  let lastError;
+
+  while (attempt <= retries) {
+    let rawList;
+
+    try {
+      rawList = await fetcher(url);
+    } catch (error) {
+      lastError = error;
+      attempt += 1;
+      if (attempt > retries) {
+        throw error;
+      }
+      if (delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+      continue;
+    }
+
+    if (!Array.isArray(rawList)) {
+      throw new Error("Invalid judoka list format: expected an array");
+    }
+
+    return rawList.map((entry, index) => normalizeJudokaEntry(entry, index));
+  }
+
+  throw lastError || new Error("Failed to fetch judoka list after all retries");
+}
+
 /**
  * Validates the provided data to ensure it is a non-null object and, for specific types,
  * checks for the presence of required fields.
@@ -335,6 +423,7 @@ export default {
   readData,
   validateAndCache,
   fetchJson,
+  fetchJudokaList,
   validateData,
   validateWithSchema,
   importJsonModule,
