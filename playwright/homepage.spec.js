@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { hex } from "wcag-contrast";
 
 test.describe("Homepage", () => {
   test.beforeEach(async ({ page }) => {
@@ -82,28 +83,79 @@ test.describe("Homepage", () => {
     await expect(icon).toHaveClass(/svg-fallback/);
   });
 
-  test("tiles meet contrast ratio", async ({ page }) => {
-    const tile = page.locator(".card").first();
-    const styles = await tile.evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return { bg: cs.backgroundColor, color: cs.color };
-    });
+  test("tiles meet WCAG AA contrast targets", async ({ page }) => {
+    const toHex = (color, fallbackHex) => {
+      if (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)") {
+        return fallbackHex;
+      }
 
-    const parse = (c) => c.match(/\d+(?:\.\d+)?/g).map(Number);
-    const luminance = (r, g, b) => {
-      const a = [r, g, b].map((v) => {
-        v /= 255;
-        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-      });
-      return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+      if (color.startsWith("#")) return color;
+
+      const parts = color.match(/\d+(?:\.\d+)?/g);
+      if (!parts || parts.length < 3) return fallbackHex;
+
+      const [r, g, b] = parts.map((part) => Math.round(Math.max(0, Math.min(255, Number(part)))));
+      return `#${[r, g, b]
+        .map((component) => component.toString(16).padStart(2, "0"))
+        .join("")}`;
     };
 
-    const [br, bg, bb] = parse(styles.bg);
-    const [cr, cg, cb] = parse(styles.color);
-    const ratio =
-      (Math.max(luminance(br, bg, bb), luminance(cr, cg, cb)) + 0.05) /
-      (Math.min(luminance(br, bg, bb), luminance(cr, cg, cb)) + 0.05);
+    const tiles = page.locator(".card");
+    const tileCount = await tiles.count();
+    expect(tileCount).toBeGreaterThan(0);
 
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
+    const pageBgColor = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    const pageBgHex = toHex(pageBgColor, "#000000");
+
+    const states = [
+      { label: "default", apply: async () => {} },
+      {
+        label: "hovered",
+        apply: async (tile) => {
+          await tile.hover();
+        },
+        cleanup: async (pageRef) => {
+          await pageRef.mouse.move(0, 0);
+        }
+      },
+      {
+        label: "focused",
+        apply: async (tile) => {
+          await tile.focus();
+        },
+        cleanup: async (pageRef) => {
+          await pageRef.evaluate(() => document.activeElement?.blur());
+        }
+      }
+    ];
+
+    for (let index = 0; index < tileCount; index += 1) {
+      const tile = tiles.nth(index);
+      const name = (await tile.getAttribute("aria-label")) ?? `Tile ${index + 1}`;
+
+      for (const state of states) {
+        await state.apply(tile);
+
+        const { fg, bg } = await tile.evaluate((node, fallback) => {
+          const cs = getComputedStyle(node);
+          return {
+            fg: cs.color,
+            bg: cs.backgroundColor === "rgba(0, 0, 0, 0)" ? fallback : cs.backgroundColor
+          };
+        }, pageBgColor);
+
+        const ratio = hex(toHex(bg, pageBgHex), toHex(fg, "#000000"));
+
+        const failureMessage = `"${name}" ${state.label} contrast ${ratio.toFixed(
+          2
+        )}:1 fell below WCAG AA minimum of 4.5:1`;
+
+        expect(ratio, failureMessage).toBeGreaterThanOrEqual(4.5);
+
+        if (state.cleanup) {
+          await state.cleanup(page);
+        }
+      }
+    }
   });
 });
