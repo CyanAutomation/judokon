@@ -213,25 +213,34 @@ describe("Integration Test Example: Battle Flow", () => {
     expect(result).toEqual({ battleId: storedBattleId, response: null, error: "HTTP 500: Server Error" });
   });
 
-  it("demonstrates fake timer control", async () => {
-    // Setup: mock external service
-    mockFetch.mockResolvedValue(testScenarios.opponentA);
+  it("advances a real cooldown timer and emits expiration", async () => {
+    const { TimerController } = await harness.importModule("../../src/helpers/TimerController.js");
 
-    // Use real setTimeout with fake timers controlled by harness
-    let timerFired = false;
-    const timerId = setTimeout(() => {
-      timerFired = true;
-    }, 5000);
+    const ticks = [];
+    const onExpired = vi.fn();
+    const controller = new TimerController();
 
-    // Verify timer hasn't fired yet
-    expect(timerFired).toBe(false);
+    await controller.startCoolDown((remaining) => ticks.push(remaining), onExpired, 3);
 
-    // Use harness timer control to advance deterministically
-    await harness.timerControl.advanceTimersByTime(5000);
+    expect(controller.getState()).toMatchObject({ remaining: 3, category: "coolDownTimer" });
 
-    // Verify timer fired
-    expect(timerFired).toBe(true);
-    clearTimeout(timerId);
+    await harness.timerControl.advanceTimersByTimeAsync(1100);
+
+    expect(ticks).toEqual([3, 2]);
+    expect(controller.getState()).toMatchObject({ remaining: 2, paused: false });
+
+    await harness.timerControl.advanceTimersByTimeAsync(1000);
+
+    expect(ticks).toEqual([3, 2, 1]);
+    expect(controller.getState()).toMatchObject({ remaining: 1, paused: false });
+
+    await harness.timerControl.advanceTimersByTimeAsync(1000);
+
+    expect(ticks).toEqual([3, 2, 1, 0]);
+    expect(onExpired).toHaveBeenCalledTimes(1);
+    expect(controller.getState()).toMatchObject({ remaining: 0, category: "coolDownTimer" });
+
+    controller.stop();
   });
 
   it("demonstrates real module integration without breaking on refactor", async () => {
