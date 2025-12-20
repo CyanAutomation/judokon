@@ -144,7 +144,12 @@ test.describe("Homepage", () => {
           };
         }, pageBgColor);
 
-        const ratio = hex(toHex(bg, pageBgHex), toHex(fg, "#000000"));
+        let ratio;
+        try {
+          ratio = hex(toHex(bg, pageBgHex), toHex(fg, "#000000"));
+        } catch (error) {
+          throw new Error(`Failed to calculate contrast ratio for "${name}" ${state.label}: ${error.message}. Background: ${bg}, Foreground: ${fg}`);
+        }
 
         const failureMessage = `"${name}" ${state.label} contrast ${ratio.toFixed(
           2
