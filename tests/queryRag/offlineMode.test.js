@@ -217,7 +217,8 @@ describe("queryRag offline mode with local MiniLM model", () => {
     const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
 
     // Should succeed without network
-    await expect(getExtractor()).resolves.toBeDefined();
+    const extractor = await getExtractor();
+    expect(typeof extractor).toBe("function");
 
     // Verify fetch was not called
     expect(fetchSpy).not.toHaveBeenCalled();
@@ -226,7 +227,48 @@ describe("queryRag offline mode with local MiniLM model", () => {
   });
 
   /**
-   * Test 5: Verify lexical fallback works when enabled and model unavailable
+   * Test 5: Verify hydration guidance is surfaced when CDN fetch fails
+   * Edge case: missing local assets triggers CDN path that cannot fetch
+   */
+  it("returns hydration guidance when CDN fetch fails", async () => {
+    const networkFailure = new TypeError("fetch failed");
+
+    vi.doMock("fs/promises", () => ({
+      stat: vi.fn(async () => {
+        throw new Error("missing");
+      })
+    }));
+
+    const pipelineMock = vi.fn(async () => {
+      throw networkFailure;
+    });
+
+    vi.doMock("@xenova/transformers", () => ({
+      pipeline: pipelineMock,
+      env: {
+        allowLocalModels: true,
+        localModelPath: undefined,
+        backends: { onnx: { wasm: {} } }
+      }
+    }));
+
+    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+
+    const error = await getExtractor().catch((err) => err);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toMatch(/Network unreachable while loading remote MiniLM model/i);
+    expect(error.cause).toBe(networkFailure);
+    expect(pipelineMock).toHaveBeenCalledWith(
+      "feature-extraction",
+      "Xenova/all-MiniLM-L6-v2",
+      { quantized: true }
+    );
+    vi.resetModules();
+  });
+
+  /**
+   * Test 6: Verify lexical fallback works when enabled and model unavailable
    * Edge case: offline mode with fallback enabled, no network
    */
   it("uses lexical fallback when RAG_ALLOW_LEXICAL_FALLBACK=1 and model unavailable", async () => {
@@ -288,7 +330,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
   });
 
   /**
-   * Test 6: Verify model path resolution is consistent
+   * Test 7: Verify model path resolution is consistent
    * Ensures prepareLocalModel.mjs and vectorSearchPage.js use same path
    */
   it("resolves model path consistently between prepare and load", async () => {
@@ -332,7 +374,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
   });
 
   /**
-   * Test 7: Verify diagnostic info is available
+   * Test 8: Verify diagnostic info is available
    * Ensures withDiagnostics option works for offline mode
    */
   it("provides diagnostic info including model source when requested", async () => {
