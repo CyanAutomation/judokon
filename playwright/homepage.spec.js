@@ -36,10 +36,41 @@ test.describe("Homepage", () => {
   });
 
   test("keyboard navigation focuses tiles", async ({ page }) => {
-    const tiles = page.locator(".card");
+    const expectedTiles = [
+      { name: "Start classic battle mode", href: "./src/pages/battleClassic.html" },
+      { name: "Start classic battle (CLI)", href: "./src/pages/battleCLI.html" },
+      { name: "View a random judoka", href: "./src/pages/randomJudoka.html" },
+      { name: "Open meditation screen", href: "./src/pages/meditation.html" },
+      { name: "Browse Judoka", href: "./src/pages/browseJudoka.html" },
+      { name: "Open settings", href: "./src/pages/settings.html" }
+    ];
 
+    // The grid only contains these six anchor tiles in DOM order, so tabbing from the top of the
+    // page should move focus through them sequentially without interruption.
+    
+    // Ensure we start from a known focus state
     await page.keyboard.press("Tab");
-    await expect(tiles.first()).toBeFocused();
+    await expect(page.getByRole("link", { name: expectedTiles[0].name })).toBeFocused();
+
+    for (const [index, tileMeta] of expectedTiles.entries()) {
+      const tile = page.getByRole("link", { name: tileMeta.name });
+
+      await expect(tile).toHaveAttribute("href", tileMeta.href);
+      await expect(tile).toHaveAccessibleName(tileMeta.name);
+      await expect(tile).toBeFocused();
+
+      // Keep advancing focus so that the next assertion verifies the following tile in the grid
+      // receives focus in order.
+      if (index < expectedTiles.length - 1) {
+        await page.keyboard.press("Tab");
+        // Wait for focus to settle before next iteration
+        await expect(page.getByRole("link", { name: expectedTiles[index + 1].name })).toBeFocused();
+      }
+    }
+
+    // Shift-tabbing confirms focus can be returned to the previous tile after forward navigation.
+    await page.keyboard.press("Shift+Tab");
+    await expect(page.getByRole("link", { name: expectedTiles[expectedTiles.length - 2].name })).toBeFocused();
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {
