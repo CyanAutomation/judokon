@@ -56,7 +56,7 @@ describe("Classic Battle opponent delay behavior", () => {
     resetOpponentPromptTimestamp();
 
     const snackbar = await harness.importModule("../../src/helpers/classicBattle/snackbar.js");
-    snackbar.setOpponentDelay(150);
+    snackbar.setOpponentDelay(300);
 
     const opponentPlaceholder = await harness.importModule(
       "../../src/helpers/classicBattle/opponentPlaceholder.js"
