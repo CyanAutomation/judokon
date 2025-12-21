@@ -68,14 +68,17 @@ import {
   getRoundCounter,
   getReplayButton,
   getQuitButton,
-  getBattleStateBadge,
-  getStatDescription
+  getBattleStateBadge
 } from "../helpers/classicBattle/UIElements.js";
 import {
   getCurrentTimestamp,
   scheduleDelayed,
   clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
+import {
+  computeSelectionReadyDelay as computeSelectionReadyDelayFromCalculator,
+  getSelectionDelayOverride
+} from "../helpers/classicBattle/selectionDelayCalculator.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
@@ -879,8 +882,7 @@ async function handleStatButtonClick(store, stat, btn) {
   window.__statButtonClickCalled = true;
   if (!btn || btn.disabled) return;
   const container =
-    getStatButtonsContainer() ??
-    (btn instanceof HTMLElement ? btn.parentElement : null);
+    getStatButtonsContainer() ?? (btn instanceof HTMLElement ? btn.parentElement : null);
   const buttons = container ? getStatButtons(container) : [];
   const targets = buttons.length > 0 ? buttons : [btn];
   disableStatButtons(targets, container ?? undefined);

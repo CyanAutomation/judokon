@@ -45,9 +45,7 @@ export function getStatButtons(container) {
 export function getNextButton(doc = document) {
   try {
     return (
-      doc?.getElementById("next-button") ||
-      doc?.querySelector('[data-role="next-round"]') ||
-      null
+      doc?.getElementById("next-button") || doc?.querySelector('[data-role="next-round"]') || null
     );
   } catch {
     return null;
@@ -75,9 +73,7 @@ export function getScoreDisplay(doc = document) {
 export function getPlayerScoreValue(scoreEl) {
   if (!scoreEl) return undefined;
   try {
-    return scoreEl
-      ?.querySelector('[data-side="player"] [data-part="value"]')
-      ?.textContent?.trim();
+    return scoreEl?.querySelector('[data-side="player"] [data-part="value"]')?.textContent?.trim();
   } catch {
     return undefined;
   }
