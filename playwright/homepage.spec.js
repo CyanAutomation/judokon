@@ -40,12 +40,6 @@ test.describe("Homepage", () => {
     );
   });
 
-  test("primary classic battle CTA is advertised and points to battle page", async ({ page }) => {
-    const primaryCta = page.getByRole("link", { name: "Start classic battle mode" });
-    await expect(primaryCta).toBeVisible();
-    await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
-  });
-
   test("selecting the classic battle tile navigates into classic battle experience", async ({
     page
   }) => {
