@@ -79,17 +79,37 @@ test.describe("Static pages", () => {
 
     const changeLogTable = page.getByRole("table", { name: "Judoka update log" });
     await expect(changeLogTable).toBeVisible();
+    await expect(changeLogTable.locator("caption")).toHaveText(/recent judoka updates/i);
     const headerCells = changeLogTable.locator("thead th");
-    await expect(headerCells.filter({ hasText: "Judoka Name" })).toBeVisible();
-    await expect(headerCells.filter({ hasText: "Last Modified" })).toBeVisible();
+    await expect(headerCells.filter({ hasText: "Judoka Name" })).toHaveAttribute("scope", "col");
+    await expect(headerCells.filter({ hasText: "Last Modified" })).toHaveAttribute("scope", "col");
+    const headerScopes = await headerCells.evaluateAll((cells) => cells.map((cell) => cell.getAttribute("scope")));
+    expect(headerScopes.every((scope) => scope === "col")).toBe(true);
 
-    const firstRow = changeLogTable.locator("tbody tr").first();
-    await expect(firstRow).toBeVisible();
+    const rows = changeLogTable.locator("tbody tr");
+    await expect(rows).toHaveCount(20);
+
+    const dateCells = rows.locator("td:nth-child(5)");
+    const dateStrings = await dateCells.allTextContents();
+    expect(dateStrings.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))).toBe(true);
+
+    const parsedDates = dateStrings.map((value) => new Date(value).getTime());
+    expect(parsedDates.every((value, index) => (index === 0 ? true : value <= parsedDates[index - 1]))).toBe(true);
+
+    const detailLinks = rows.locator("td:nth-child(3) a");
+    await expect(detailLinks).toHaveCount(await rows.count());
+    const hrefs = await detailLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+    expect(hrefs.every((href) => typeof href === "string" && href.length > 0)).toBe(true);
+
+    const firstRow = rows.first();
     await expect(firstRow.locator("td").last()).not.toHaveText("");
 
     const homeLink = page.getByTestId("home-link");
     await expect(homeLink).toHaveAttribute("href", "../../index.html");
+    await homeLink.focus();
+    await expect(homeLink).toBeFocused();
     await homeLink.click();
     await expect(page).toHaveURL(/index\.html/);
+    await expect(page.getByRole("main")).toBeVisible();
   });
 });

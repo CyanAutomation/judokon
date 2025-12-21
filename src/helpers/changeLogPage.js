@@ -47,7 +47,13 @@ function createRow(judoka) {
   row.appendChild(portraitCell);
 
   const nameCell = document.createElement("td");
-  nameCell.textContent = `${judoka.firstname} ${judoka.surname}`;
+  const detailLink = document.createElement("a");
+  detailLink.href = judoka.profileUrl || "./updateJudoka.html";
+  detailLink.textContent = `${judoka.firstname} ${judoka.surname}`;
+  detailLink.target = "_blank";
+  detailLink.rel = "noopener noreferrer";
+  detailLink.dataset.testid = "judoka-detail-link";
+  nameCell.appendChild(detailLink);
   row.appendChild(nameCell);
 
   const codeCell = document.createElement("td");
