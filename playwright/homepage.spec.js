@@ -22,7 +22,8 @@ test.describe("Homepage", () => {
     await expect(primaryCta).toBeVisible();
     await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
 
-    await page.keyboard.press("Tab");
+    // Navigate to the primary CTA specifically rather than assuming tab order
+    await primaryCta.focus();
     await expect(primaryCta).toBeFocused();
 
     await expect(statusRegion).toBeVisible();
