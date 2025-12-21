@@ -51,7 +51,7 @@ function createRow(judoka) {
   detailLink.href = judoka.profileUrl || "./updateJudoka.html";
   detailLink.textContent = `${judoka.firstname} ${judoka.surname}`;
   detailLink.target = "_blank";
-  detailLink.rel = "noreferrer noopener";
+  detailLink.rel = "noopener noreferrer";
   detailLink.dataset.testid = "judoka-detail-link";
   nameCell.appendChild(detailLink);
   row.appendChild(nameCell);
