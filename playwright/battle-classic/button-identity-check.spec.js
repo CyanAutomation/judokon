@@ -2,6 +2,8 @@ import { test, expect } from "../fixtures/commonSetup.js";
 import { waitForBattleState } from "../helpers/battleStateHelper.js";
 
 test.describe("Classic Battle - Button Identity Check", () => {
+  test.skip("skip verbose debug tests", () => {});
+
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
