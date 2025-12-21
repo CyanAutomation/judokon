@@ -1,6 +1,28 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { hex } from "wcag-contrast";
 
+const toHex = (color, fallbackHex) => {
+  if (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)") {
+    return fallbackHex;
+  }
+
+  if (color.startsWith("#")) {
+    // Validate hex format
+    if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
+      return fallbackHex;
+    }
+    return color;
+  }
+
+  const parts = color.match(/\d+(?:\.\d+)?/g);
+  if (!parts || parts.length < 3) return fallbackHex;
+
+  const [r, g, b] = parts.map((part) => Math.round(Math.max(0, Math.min(255, parseFloat(part)))));
+  return `#${[r, g, b]
+    .map((component) => component.toString(16).padStart(2, "0"))
+    .join("")}`;
+};
+
 test.describe("Homepage", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
@@ -8,19 +30,23 @@ test.describe("Homepage", () => {
   });
 
   test("homepage load surfaces brand hero, CTA, and status areas", async ({ page }) => {
-    const mainLandmark = page.getByRole("main");
+    const mainLandmark = page.getByRole("main", { name: "Game mode selection" });
     const heroHeading = page.getByRole("heading", { level: 1, name: "JU-DO-KON!" });
     const bannerImage = page.getByRole("img", { name: "JU-DO-KON! Logo" });
     const primaryCta = page.getByRole("link", { name: "Start classic battle mode" });
+    const heroTileHeading = primaryCta.getByRole("heading", { level: 2, name: "Classic Battle" });
     const statusRegion = page.getByRole("status");
 
     await expect(page).toHaveTitle(/JU-DO-KON!/);
     await expect(mainLandmark).toBeVisible();
+    await expect(mainLandmark).toHaveAttribute("aria-label", "Game mode selection");
     await expect(heroHeading).toBeVisible();
     await expect(bannerImage).toBeVisible();
 
     await expect(primaryCta).toBeVisible();
     await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
+    await expect(primaryCta).not.toHaveAttribute("target", "_blank");
+    await expect(heroTileHeading).toBeVisible();
 
     // Navigate to the primary CTA specifically rather than assuming tab order
     await primaryCta.focus();
@@ -28,6 +54,68 @@ test.describe("Homepage", () => {
 
     await expect(statusRegion).toBeVisible();
     await expect(statusRegion).toHaveAttribute("aria-live", "polite");
+
+    const headingOrder = await page.$$eval("h1, h2, h3", (nodes) =>
+      nodes.map((node) => ({
+        level: Number(node.tagName.replace("H", "")),
+        text: node.textContent?.trim() || ""
+      }))
+    );
+
+    expect(headingOrder[0]?.level).toBe(1);
+    expect(
+      headingOrder.every((heading, index, arr) => {
+        if (index === 0) return true;
+        const prevLevel = arr[index - 1].level;
+        // Heading level can only increase by 1 or stay the same/decrease to any valid level
+        return heading.level <= prevLevel + 1;
+      })
+    ).toBe(true);
+  });
+
+  test.describe("hero responsiveness", () => {
+    const viewports = [
+      { label: "desktop", size: { width: 1280, height: 720 } },
+      { label: "mobile", size: { width: 390, height: 844 } }
+    ];
+
+    for (const viewport of viewports) {
+      test(`hero maintains accessible heading and CTA on ${viewport.label}`, async ({ page }) => {
+        await page.setViewportSize(viewport.size);
+        await page.reload({ waitUntil: "networkidle" });
+        
+        // Wait for any CSS transitions to complete
+        await page.waitForTimeout(100);
+
+        const mainLandmark = page.getByRole("main", { name: "Game mode selection" });
+        const heroHeading = page.getByRole("heading", { level: 1, name: "JU-DO-KON!" });
+        const primaryCta = page.getByRole("link", { name: "Start classic battle mode" });
+
+        await expect(mainLandmark).toBeVisible();
+        await expect(heroHeading).toBeVisible();
+        await expect(primaryCta).toBeVisible();
+
+        const pageBgHex = toHex(
+          await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+          "#000000"
+        );
+        const { fg, bg } = await primaryCta.evaluate((node, fallbackBg) => {
+          const cs = getComputedStyle(node);
+          return {
+            fg: cs.color,
+            bg:
+              cs.backgroundColor === "rgba(0, 0, 0, 0)" || cs.backgroundColor === "transparent"
+                ? fallbackBg
+                : cs.backgroundColor
+          };
+        }, pageBgHex);
+
+        const ctaContrast = hex(toHex(bg, pageBgHex), toHex(fg, "#000000"));
+        expect(ctaContrast).toBeGreaterThanOrEqual(4.5);
+
+        await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
+      });
+    }
   });
 
   test("hero landmark exposes JU-DO-KON! brand heading", async ({ page }) => {
@@ -109,28 +197,6 @@ test.describe("Homepage", () => {
   });
 
   test("tiles meet WCAG AA contrast targets", async ({ page }) => {
-    const toHex = (color, fallbackHex) => {
-      if (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)") {
-        return fallbackHex;
-      }
-
-      if (color.startsWith("#")) {
-        // Validate hex format
-        if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
-          return fallbackHex;
-        }
-        return color;
-      }
-
-      const parts = color.match(/\d+(?:\.\d+)?/g);
-      if (!parts || parts.length < 3) return fallbackHex;
-
-      const [r, g, b] = parts.map((part) => Math.round(Math.max(0, Math.min(255, parseFloat(part)))));
-      return `#${[r, g, b]
-        .map((component) => component.toString(16).padStart(2, "0"))
-        .join("")}`;
-    };
-
     const tiles = page.locator(".card");
     const tileCount = await tiles.count();
     expect(tileCount).toBeGreaterThan(0);
