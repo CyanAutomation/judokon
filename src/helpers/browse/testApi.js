@@ -241,7 +241,7 @@ async function addTestCard(judoka) {
  * @returns {{ removed: number, appendedMessage: boolean, cardCount: number }}
  */
 function clearCarouselCards(options) {
-  const appendEmptyState = options?.appendEmptyState !== false;
+  const appendEmptyState = options?.appendEmptyState ?? true;
   if (!state.container) {
     return { removed: 0, appendedMessage: false, cardCount: 0 };
   }
