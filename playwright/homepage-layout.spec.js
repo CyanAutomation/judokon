@@ -33,7 +33,7 @@ async function captureHomeLayout(page) {
   }
 
   if (positions.length === 0) {
-    throw new Error("No visible tiles found for layout validation");
+    throw new Error(`No visible tiles found for layout validation. Found ${count} tiles but none had valid bounding boxes.`);
   }
 
   const maxRight = Math.max(...positions.map((box) => box.x + box.width));
