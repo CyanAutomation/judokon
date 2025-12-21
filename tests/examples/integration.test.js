@@ -1,17 +1,6 @@
 /**
- * @fileoverview Integration Test Template: Selective Mocking Pattern
- *
- * This file demonstrates integration testing for the JU-DO-KON! project.
- * It mocks only EXTERNAL dependencies (network, filesystem, etc.) while allowing
- * real internal module interactions to occur.
- *
- * Key principles:
- * - Mock ONLY external dependencies (fetch, localStorage, matchMedia, etc.)
- * - Allow real interactions between internal modules
- * - Use createSimpleHarness() with controlled fixtures
- * - One harness per test for DOM and timer isolation
- * - Test full workflows, not isolated functions
- *
+ * @fileoverview Integration Test Template: Selective Mocking Pattern (skipped in CI).
+ * Template guidance now lives in docs/TESTING_ARCHITECTURE.md.
  * @copyable true
  */
 
@@ -41,7 +30,8 @@ const testScenarios = {
 };
 
 // ===== STEP 3: Test suite with harness setup
-describe("Integration Test Example: Battle Flow", () => {
+// Template suite intentionally skipped to keep CI focused on functional coverage; see docs/TESTING_ARCHITECTURE.md
+describe.skip("Integration Test Example: Battle Flow (template)", () => {
   let harness;
   let mockStorage;
 
