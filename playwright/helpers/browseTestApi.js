@@ -147,3 +147,14 @@ export async function resetBrowseTestState(page) {
 export async function addBrowseCard(page, judoka) {
   await callBrowseApi(page, "addCard", [judoka]);
 }
+
+/**
+ * Clear all browse cards using the browse test API.
+ *
+ * @param {import("@playwright/test").Page} page - The Playwright page object
+ * @param {{ appendEmptyState?: boolean }} [options] - Optional configuration to append the empty-state message
+ * @returns {Promise<unknown>} Result payload from the browse test API
+ */
+export async function clearBrowseCarousel(page, options = {}) {
+  return callBrowseApi(page, "clearCarouselCards", [options]);
+}

@@ -37,6 +37,7 @@ function ensureBrowseTestApi() {
     disableHoverAnimations,
     enableHoverAnimations,
     addCard: addTestCard,
+    clearCarouselCards,
     whenCarouselReady,
     reset: resetState,
     getSnapshot: createReadySnapshot
@@ -225,6 +226,52 @@ async function addTestCard(judoka) {
   if (hasNewNodes) {
     clearLegacyHoverZoomMarkers();
   }
+}
+
+/**
+ * Remove all judoka cards from the carousel and optionally append the empty-state message.
+ *
+ * @pseudocode
+ * 1. Exit early when the carousel container is unavailable.
+ * 2. Remove all `.judoka-card` elements using `replaceChildren` when supported.
+ * 3. Optionally append the existing "No judoka available." message to indicate an empty state.
+ * 4. Update the readiness snapshot to reflect the cleared carousel.
+ *
+ * @param {{ appendEmptyState?: boolean }} [options] - Toggle for appending the empty-state message.
+ * @returns {{ removed: number, appendedMessage: boolean, cardCount: number }}
+ */
+function clearCarouselCards(options) {
+  const appendEmptyState = options?.appendEmptyState ?? true;
+  if (!state.container) {
+    return { removed: 0, appendedMessage: false, cardCount: 0 };
+  }
+
+  const removed = state.container.querySelectorAll(".judoka-card").length;
+
+  if (typeof state.container.replaceChildren === "function") {
+    state.container.replaceChildren();
+  } else if ("innerHTML" in state.container) {
+    state.container.innerHTML = "";
+  }
+
+  let appendedMessage = false;
+  if (appendEmptyState) {
+    const docRef = state.container.ownerDocument ?? globalThis.document;
+    const message = docRef?.createElement?.("div");
+    if (message) {
+      message.className = "no-results-message";
+      message.setAttribute("role", "status");
+      message.setAttribute("aria-live", "polite");
+      message.textContent = "No judoka available.";
+      state.container.appendChild(message);
+      appendedMessage = true;
+    }
+  }
+
+  const snapshot = createReadySnapshot();
+  updateInitSnapshot(snapshot);
+
+  return { removed, appendedMessage, cardCount: snapshot.cardCount };
 }
 
 /**
