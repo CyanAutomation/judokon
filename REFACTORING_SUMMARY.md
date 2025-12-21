@@ -2,11 +2,9 @@
 
 ## Current Status
 
-**Partially Completed**
+**COMPLETED** ✅
 
-This document summarizes a major refactoring of `battleClassic.init.js`. While the initial refactoring was successful and significantly improved the codebase, this review found that some "Future Improvement" tasks have not been completed and the validation section was out of date.
-
-This document has been updated to reflect the current state of the project. It should be kept until the remaining refactoring tasks are complete.
+This document summarizes a major refactoring of `battleClassic.init.js`. All refactoring tasks, including previously pending "Future Improvements," have been successfully completed.
 
 ## Overview
 
@@ -39,6 +37,32 @@ Successfully refactored `/workspaces/judokon/src/pages/battleClassic.init.js` to
 ### 5. `src/helpers/classicBattle/timerSchedule.js`
 
 **Purpose:** Safe timer and timestamp utilities
+
+### 6. `src/helpers/classicBattle/UIElements.js` (NEW)
+
+**Purpose:** Centralized DOM element access with safe getters for frequently accessed elements
+- getStatButtonsContainer, getStatButtons
+- getNextButton, getScoreDisplay, getPlayerScoreValue, getOpponentScoreValue
+- getNextRoundTimer, getTimerParts
+- getHomeButton, getHeaderLinks
+- getRoundSelectFallback, getRoundSelectError, hasRoundSelectFallback
+- getOpponentCard, getRoundCounter
+- getReplayButton, getQuitButton, getBattleStateBadge
+
+### 7. `src/helpers/classicBattle/selectionDelayCalculator.js` (NEW)
+
+**Purpose:** Encapsulates delay calculation logic for stat selection
+- getBaseSelectionReadyDelay
+- getSelectionDelayOverride
+- computeDelayWithOpponentBuffer
+
+### 8. `src/helpers/classicBattle/badgeManager.js` (NEW)
+
+**Purpose:** Centralized battle state badge management
+- initBattleStateBadge (with configuration options)
+- setBadgeText
+- initBadgeSync
+- ensureLobbyBadge
 
 ## Validation
 
