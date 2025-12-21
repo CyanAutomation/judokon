@@ -63,10 +63,16 @@ export async function verifyPageBasics(page, linkIds = [], assertions = [], opti
   await expect(page).toHaveTitle(/Ju-Do-Kon!/i);
   const navLinks = normalizeNavLinks(linkIds);
   const shouldExpectNav = options.expectNav ?? true;
+  const navigation = page.getByRole("navigation").first();
+  const logo = page.getByRole("img", { name: "JU-DO-KON! Logo" });
+  const banner = page.getByRole("banner");
+  const main = page.getByRole("main");
   if (shouldExpectNav) {
-    await expect(page.getByRole("navigation").first()).toBeVisible();
+    await expect(navigation).toBeVisible();
   }
-  await expect(page.getByRole("img", { name: "JU-DO-KON! Logo" })).toBeVisible();
+  await expect(logo).toBeVisible();
+  await expect(banner).toBeVisible();
+  await expect(main).toBeVisible();
   if (shouldExpectNav) {
     await assertNavLinks(page, navLinks);
   }
@@ -74,6 +80,7 @@ export async function verifyPageBasics(page, linkIds = [], assertions = [], opti
   if (options.verifyNavTargets && shouldExpectNav) {
     await verifyNavigationTargets(page, navLinks);
   }
+  return { navigation, logo, banner, main };
 }
 
 export async function verifyNavigationTargets(page, linkIds = []) {

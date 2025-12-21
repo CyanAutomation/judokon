@@ -2,7 +2,23 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("PRD Reader page", () => {
+  let indexResponsePromise;
+  let docAResponsePromise;
+  let sanitizerResponsePromise;
+
   test.beforeEach(async ({ page }) => {
+    await page.route("**/prdIndex.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/prdIndex.json" })
+    );
+    await page.route("**/docA.md", (route) => route.fulfill({ path: "tests/fixtures/docA.md" }));
+    await page.route("**/docB.md", (route) => route.fulfill({ path: "tests/fixtures/docB.md" }));
+    await page.route("", (route) =>
+      route.fulfill({ path: "node_modules/dompurify/dist/purify.es.mjs" })
+    );
+    
+    indexResponsePromise = page.waitForResponse("**/prdIndex.json");
+    docAResponsePromise = page.waitForResponse("**/docA.md");
+    sanitizerResponsePromise = page.waitForResponse("");
     await page.route("**/prdIndex.json", (route) =>
       route.fulfill({ path: "tests/fixtures/prdIndex.json" })
     );
@@ -16,7 +32,33 @@ test.describe("PRD Reader page", () => {
   });
 
   test("PRD reader basics", async ({ page }) => {
-    await verifyPageBasics(page);
+    // Smoke check for PRD Viewer acceptance criteria: initial load, sidebar list, and motion prefs (prdPRDViewer.md).
+    const { main, navigation } = await verifyPageBasics(page);
+    const container = page.locator("#prd-content");
+    const docTitle = page.locator("#prd-title");
+    const sidebarLegend = page.getByText("Product Requirement Documents");
+    const sidebarLabels = page.locator(".sidebar-list__label");
+    const [indexResponse, docAResponse, sanitizerResponse] = await Promise.all([
+      indexResponsePromise,
+      docAResponsePromise,
+      sanitizerResponsePromise
+    ]);
+
+    expect(indexResponse.ok()).toBeTruthy();
+    expect(docAResponse.ok()).toBeTruthy();
+    expect(sanitizerResponse.ok()).toBeTruthy();
+
+    await expect(navigation).toHaveAttribute("aria-label", "PRD list");
+    await expect(main).toBeVisible();
+    await expect(sidebarLegend).toBeVisible();
+    await expect(sidebarLabels).toHaveText(["Doc A", "Doc B"]);
+
+    await expect(container).toHaveAttribute("data-rendered-doc", "docA");
+    await expect(docTitle).toHaveText("DocA");
+    await expect(container.getByRole("heading", { level: 2, name: "Summary" })).toBeVisible();
+    await expect(container.getByRole("heading", { level: 2, name: "Deep Dive A" })).toBeVisible();
+
+    await expect(page.locator("body")).toHaveClass(/reduce-motion/);
   });
 
   test("forward and back navigation shows correct content", async ({ page }) => {
