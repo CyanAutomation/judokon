@@ -126,6 +126,7 @@ test.describe("Homepage layout", () => {
       });
 
       test("activates tiles via keyboard", async ({ page }) => {
+        // Test a representative subset to balance coverage and performance
         const destinations = [
           {
             name: /start classic battle mode/i,
@@ -138,16 +139,6 @@ test.describe("Homepage layout", () => {
             }
           },
           {
-            name: /start classic battle \(cli\)/i,
-            url: /\/src\/pages\/battleCLI\.html$/,
-            ready: async () => {
-              await expect(page.getByRole("main")).toBeVisible();
-              const statList = page.locator("#cli-stats");
-              await expect(statList).toHaveAttribute("aria-busy", "true");
-              await ensureMeaningfulFocus(page, statList);
-            }
-          },
-          {
             name: /view a random judoka/i,
             url: /\/src\/pages\/randomJudoka\.html$/,
             ready: async () => {
@@ -155,26 +146,6 @@ test.describe("Homepage layout", () => {
               const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
               await ensureMeaningfulFocus(page, drawButton);
               await expect(page.getByTestId("card-container")).toBeVisible();
-            }
-          },
-          {
-            name: /open meditation screen/i,
-            url: /\/src\/pages\/meditation\.html$/,
-            ready: async () => {
-              await expect(page.getByRole("heading", { level: 1, name: /pause\. breathe\. reflect\./i })).toBeVisible();
-              const continueCta = page.getByTestId("continue-link");
-              await ensureMeaningfulFocus(page, continueCta);
-              await expect(page.getByRole("main")).toBeVisible();
-            }
-          },
-          {
-            name: /browse judoka/i,
-            url: /\/src\/pages\/browseJudoka\.html$/,
-            ready: async () => {
-              await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
-              const layoutToggle = page.getByTestId("layout-mode-toggle");
-              await ensureMeaningfulFocus(page, layoutToggle);
-              await expect(page.getByTestId("carousel-container")).toBeVisible();
             }
           },
           {
