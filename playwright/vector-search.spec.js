@@ -102,11 +102,50 @@ test.describe("Vector search page", () => {
   });
 
   test("shows error state when the model fails to load", async ({ page }) => {
-    await gotoVectorSearch(page, { transformerFailure: 500 });
+    const consoleMessages = [];
+    page.on("console", (message) => consoleMessages.push(message));
+
+    await gotoVectorSearch(page);
+    await runSearch(page);
+
+    const rows = page.locator("#vector-results-table tbody tr");
+    await expect(rows).not.toHaveCount(0);
+
+    await page.unroute("**/transformers.min.js");
+    await page.route("**/transformers.min.js", (route) => route.fulfill({ status: 500 }));
+    
+    // Wait for route to be established before proceeding
+    await page.waitForTimeout(100);
+
     await runSearch(page);
 
     const errorMessage = page.locator("#search-results-message");
     await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toHaveAttribute("aria-live", /polite/i);
     await expect(errorMessage).toHaveText("An error occurred while searching.");
+
+    const spinner = page.locator(".loading-spinner");
+    await expect(spinner).toBeHidden();
+    await expect(rows).toHaveCount(0);
+
+    const searchButton = page.getByRole("button", { name: /search/i });
+    await expect(searchButton).toBeEnabled();
+
+    const errors = consoleMessages.filter((message) => message.type() === "error");
+    expect(errors.length).toBeGreaterThan(0);
+
+    await page.unroute("**/transformers.min.js");
+    await page.route("**/transformers.min.js", (route) =>
+      route.fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
+    );
+
+    // Wait for route to be established before proceeding
+    await page.waitForTimeout(100);
+
+    await runSearch(page);
+
+    await expect(searchButton).toBeEnabled();
+    await expect(rows).not.toHaveCount(0);
+    await expect(errorMessage).not.toBeVisible();
   });
 });
