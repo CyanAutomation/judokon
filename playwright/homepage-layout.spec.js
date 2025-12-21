@@ -5,10 +5,64 @@ const viewports = [
   { name: "mobile", viewport: { width: 430, height: 900 } }
 ];
 
+async function captureHomeLayout(page) {
+  const grid = page.locator("main.game-mode-grid");
+  await expect(grid).toBeVisible();
+
+  const tiles = grid.locator(".card");
+  const viewport = page.viewportSize();
+  if (!viewport) {
+    throw new Error("Viewport size is not available");
+  }
+
+  const columns = await grid.evaluate((node) => {
+    const template = getComputedStyle(node).gridTemplateColumns;
+    return template
+      .split(" ")
+      .filter(Boolean)
+      .length;
+  });
+
+  const positions = [];
+  const count = await tiles.count();
+  for (let index = 0; index < count; index += 1) {
+    const box = await tiles.nth(index).boundingBox();
+    if (box) {
+      positions.push(box);
+    }
+  }
+
+  if (positions.length === 0) {
+    throw new Error("No visible tiles found for layout validation");
+  }
+
+  const maxRight = Math.max(...positions.map((box) => box.x + box.width));
+  const maxBottom = Math.max(...positions.map((box) => box.y + box.height));
+
+  expect(maxRight).toBeLessThanOrEqual(viewport.width + 2);
+  expect(maxBottom).toBeLessThan(viewport.height * 3);
+
+  return { columns, count, positions };
+}
+
 async function gotoHome(page) {
   await page.goto("/index.html");
   await page.waitForLoadState("domcontentloaded");
   await expect(page.locator("main.game-mode-grid")).toBeVisible();
+}
+
+async function ensureMeaningfulFocus(page, locator) {
+  await expect(locator).toBeVisible();
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const hasFocus = await locator.evaluate((node) => node === document.activeElement);
+    if (hasFocus) {
+      return;
+    }
+    await page.keyboard.press("Tab");
+  }
+
+  await expect(locator).toBeFocused();
 }
 
 test.describe("Homepage layout", () => {
@@ -71,11 +125,79 @@ test.describe("Homepage layout", () => {
       });
 
       test("activates tiles via keyboard", async ({ page }) => {
-        await page.keyboard.press("Tab");
-        await expect(page.getByRole("link", { name: /start classic battle mode/i })).toBeFocused();
+        const destinations = [
+          {
+            name: /start classic battle mode/i,
+            url: /\/src\/pages\/battleClassic\.html$/,
+            ready: async () => {
+              const statButtons = page.getByTestId("stat-buttons");
+              await expect(statButtons).toHaveAttribute("data-buttons-ready", "true");
+              await expect(statButtons.getByRole("group", { name: /choose a stat/i })).toBeVisible();
+              await ensureMeaningfulFocus(page, page.getByTestId("stat-button").first());
+            }
+          },
+          {
+            name: /start classic battle \(cli\)/i,
+            url: /\/src\/pages\/battleCLI\.html$/,
+            ready: async () => {
+              await expect(page.getByRole("main")).toBeVisible();
+              const statList = page.locator("#cli-stats");
+              await expect(statList).toHaveAttribute("aria-busy", "true");
+              await ensureMeaningfulFocus(page, statList);
+            }
+          },
+          {
+            name: /view a random judoka/i,
+            url: /\/src\/pages\/randomJudoka\.html$/,
+            ready: async () => {
+              await page.locator('body[data-random-judoka-ready="true"]').waitFor();
+              const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
+              await ensureMeaningfulFocus(page, drawButton);
+              await expect(page.getByTestId("card-container")).toBeVisible();
+            }
+          },
+          {
+            name: /open meditation screen/i,
+            url: /\/src\/pages\/meditation\.html$/,
+            ready: async () => {
+              await expect(page.getByRole("heading", { level: 1, name: /pause\. breathe\. reflect\./i })).toBeVisible();
+              const continueCta = page.getByTestId("continue-link");
+              await ensureMeaningfulFocus(page, continueCta);
+              await expect(page.getByRole("main")).toBeVisible();
+            }
+          },
+          {
+            name: /browse judoka/i,
+            url: /\/src\/pages\/browseJudoka\.html$/,
+            ready: async () => {
+              await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
+              const layoutToggle = page.getByTestId("layout-mode-toggle");
+              await ensureMeaningfulFocus(page, layoutToggle);
+              await expect(page.getByTestId("carousel-container")).toBeVisible();
+            }
+          },
+          {
+            name: /open settings/i,
+            url: /\/src\/pages\/settings\.html$/,
+            ready: async () => {
+              await expect(page.getByRole("heading", { name: /settings/i })).toBeVisible();
+              const displayModeLight = page.locator("#display-mode-light");
+              await ensureMeaningfulFocus(page, displayModeLight);
+              await expect(page.getByRole("main")).toContainText(/display mode/i);
+            }
+          }
+        ];
 
-        await page.keyboard.press("Enter");
-        await expect(page).toHaveURL(/\/src\/pages\/battleClassic\.html$/);
+        for (const destination of destinations) {
+          await page.getByRole("link", { name: destination.name }).focus();
+          await page.keyboard.press("Enter");
+
+          await expect(page).toHaveURL(destination.url);
+          await destination.ready();
+
+          await page.goBack();
+          await gotoHome(page);
+        }
       });
 
       test("honors tooltip overlay feature flag on tiles", async ({ page }) => {
@@ -95,39 +217,23 @@ test.describe("Homepage layout", () => {
       });
 
       test("adapts tile layout to the viewport", async ({ page }) => {
-        const grid = page.locator("main.game-mode-grid");
-        await expect(grid).toBeVisible();
+        await captureHomeLayout(page);
+      });
 
-        const tiles = page.locator(".card");
-        const viewport = page.viewportSize();
-        if (!viewport) {
-          throw new Error("Viewport size is not available");
-        }
-        const viewportWidth = viewport.width;
-        const viewportHeight = viewport.height;
+      test("preserves viewport layout after navigating away and back", async ({ page }) => {
+        const initialLayout = await captureHomeLayout(page);
 
-        const positions = [];
-        const count = await tiles.count();
-        for (let index = 0; index < count; index += 1) {
-          const box = await tiles.nth(index).boundingBox();
-          if (box) {
-            positions.push(box);
-          }
-        }
+        const classicTile = page.getByRole("link", { name: /start classic battle mode/i });
+        await classicTile.focus();
+        await page.keyboard.press("Enter");
 
-        if (positions.length === 0) {
-          throw new Error("No visible tiles found for layout validation");
-        }
+        await expect(page).toHaveURL(/\/src\/pages\/battleClassic\.html$/);
+        await page.goBack();
+        await gotoHome(page);
 
-        if (positions.length === 0) {
-          throw new Error("No visible tiles found for layout validation");
-        }
-
-        const maxRight = Math.max(...positions.map((box) => box.x + box.width));
-        const maxBottom = Math.max(...positions.map((box) => box.y + box.height));
-
-        expect(maxRight).toBeLessThanOrEqual(viewportWidth + 2);
-        expect(maxBottom).toBeLessThan(viewportHeight * 3);
+        const restoredLayout = await captureHomeLayout(page);
+        expect(restoredLayout.columns).toBe(initialLayout.columns);
+        expect(restoredLayout.count).toBe(initialLayout.count);
       });
     });
   }
