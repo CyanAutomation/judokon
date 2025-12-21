@@ -113,7 +113,7 @@ test.describe("Vector search page", () => {
 
     await page.unroute("**/transformers.min.js");
     await page.route("**/transformers.min.js", (route) => route.fulfill({ status: 500 }));
-    
+
     // Wait for route to be established before proceeding
     await page.waitForTimeout(100);
 

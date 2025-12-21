@@ -15,7 +15,7 @@ test.describe("PRD Reader page", () => {
     await page.route("", (route) =>
       route.fulfill({ path: "node_modules/dompurify/dist/purify.es.mjs" })
     );
-    
+
     indexResponsePromise = page.waitForResponse("**/prdIndex.json");
     docAResponsePromise = page.waitForResponse("**/docA.md");
     sanitizerResponsePromise = page.waitForResponse("");

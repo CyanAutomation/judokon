@@ -148,7 +148,9 @@ describe("MCP RAG tools (mocked)", () => {
     const { tools } = await client.listTools({});
 
     const toolNames = tools.map((tool) => tool.name);
-    expect(toolNames).toEqual(expect.arrayContaining(["query_rag", "judokon.search", "judokon.getById"]));
+    expect(toolNames).toEqual(
+      expect.arrayContaining(["query_rag", "judokon.search", "judokon.getById"])
+    );
 
     const searchTool = tools.find((tool) => tool.name === "judokon.search");
     expect(searchTool?.inputSchema?.properties?.query?.type).toBe("string");

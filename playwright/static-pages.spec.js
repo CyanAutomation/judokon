@@ -83,7 +83,9 @@ test.describe("Static pages", () => {
     const headerCells = changeLogTable.locator("thead th");
     await expect(headerCells.filter({ hasText: "Judoka Name" })).toHaveAttribute("scope", "col");
     await expect(headerCells.filter({ hasText: "Last Modified" })).toHaveAttribute("scope", "col");
-    const headerScopes = await headerCells.evaluateAll((cells) => cells.map((cell) => cell.getAttribute("scope")));
+    const headerScopes = await headerCells.evaluateAll((cells) =>
+      cells.map((cell) => cell.getAttribute("scope"))
+    );
     expect(headerScopes.every((scope) => scope === "col")).toBe(true);
 
     const rows = changeLogTable.locator("tbody tr");
@@ -94,11 +96,15 @@ test.describe("Static pages", () => {
     expect(dateStrings.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))).toBe(true);
 
     const parsedDates = dateStrings.map((value) => new Date(value).getTime());
-    expect(parsedDates.every((value, index) => (index === 0 ? true : value <= parsedDates[index - 1]))).toBe(true);
+    expect(
+      parsedDates.every((value, index) => (index === 0 ? true : value <= parsedDates[index - 1]))
+    ).toBe(true);
 
     const detailLinks = rows.locator("td:nth-child(3) a");
     await expect(detailLinks).toHaveCount(await rows.count());
-    const hrefs = await detailLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+    const hrefs = await detailLinks.evaluateAll((links) =>
+      links.map((link) => link.getAttribute("href"))
+    );
     expect(hrefs.every((href) => typeof href === "string" && href.length > 0)).toBe(true);
 
     const firstRow = rows.first();

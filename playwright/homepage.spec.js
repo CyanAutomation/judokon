@@ -18,9 +18,7 @@ const toHex = (color, fallbackHex) => {
   if (!parts || parts.length < 3) return fallbackHex;
 
   const [r, g, b] = parts.map((part) => Math.round(Math.max(0, Math.min(255, parseFloat(part)))));
-  return `#${[r, g, b]
-    .map((component) => component.toString(16).padStart(2, "0"))
-    .join("")}`;
+  return `#${[r, g, b].map((component) => component.toString(16).padStart(2, "0")).join("")}`;
 };
 
 test.describe("Homepage", () => {
@@ -83,7 +81,7 @@ test.describe("Homepage", () => {
       test(`hero maintains accessible heading and CTA on ${viewport.label}`, async ({ page }) => {
         await page.setViewportSize(viewport.size);
         await page.reload({ waitUntil: "networkidle" });
-        
+
         // Wait for any CSS transitions to complete
         await page.waitForTimeout(100);
 
@@ -186,14 +184,16 @@ test.describe("Homepage", () => {
     await expect(icon).toBeVisible();
     await expect(icon).toHaveAttribute("alt", "Broken icon");
 
-    await expect.poll(async () => {
-      const { naturalWidth, complete } = await icon.evaluate((img) => ({
-        naturalWidth: img.naturalWidth,
-        complete: img.complete
-      }));
+    await expect
+      .poll(async () => {
+        const { naturalWidth, complete } = await icon.evaluate((img) => ({
+          naturalWidth: img.naturalWidth,
+          complete: img.complete
+        }));
 
-      return complete && naturalWidth > 0;
-    }).toBe(true);
+        return complete && naturalWidth > 0;
+      })
+      .toBe(true);
   });
 
   test("tiles meet WCAG AA contrast targets", async ({ page }) => {
@@ -237,7 +237,10 @@ test.describe("Homepage", () => {
           const cs = getComputedStyle(node);
           return {
             fg: cs.color,
-            bg: cs.backgroundColor === "rgba(0, 0, 0, 0)" || cs.backgroundColor === "transparent" ? fallback : cs.backgroundColor
+            bg:
+              cs.backgroundColor === "rgba(0, 0, 0, 0)" || cs.backgroundColor === "transparent"
+                ? fallback
+                : cs.backgroundColor
           };
         }, pageBgColor);
 
@@ -245,7 +248,9 @@ test.describe("Homepage", () => {
         try {
           ratio = hex(toHex(bg, pageBgHex), toHex(fg, "#000000"));
         } catch (error) {
-          throw new Error(`Failed to calculate contrast ratio for "${name}" ${state.label}: ${error.message}. Background: ${bg}, Foreground: ${fg}`);
+          throw new Error(
+            `Failed to calculate contrast ratio for "${name}" ${state.label}: ${error.message}. Background: ${bg}, Foreground: ${fg}`
+          );
         }
 
         const failureMessage = `"${name}" ${state.label} contrast ${ratio.toFixed(

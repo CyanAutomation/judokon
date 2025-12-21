@@ -85,8 +85,8 @@ describe("Battle Classic opponent placeholder integration", () => {
     emitBattleEvent("roundResolved", { store: {}, result: { message: "" } });
 
     // Wait for event handlers to complete
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
     const waitForFrame = () =>
       new Promise((resolve) => {
         if (typeof window.requestAnimationFrame === "function") {

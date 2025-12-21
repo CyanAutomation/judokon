@@ -17,10 +17,7 @@ async function captureHomeLayout(page) {
 
   const columns = await grid.evaluate((node) => {
     const template = getComputedStyle(node).gridTemplateColumns;
-    return template
-      .split(" ")
-      .filter(Boolean)
-      .length;
+    return template.split(" ").filter(Boolean).length;
   });
 
   const positions = [];
@@ -33,7 +30,9 @@ async function captureHomeLayout(page) {
   }
 
   if (positions.length === 0) {
-    throw new Error(`No visible tiles found for layout validation. Found ${count} tiles but none had valid bounding boxes.`);
+    throw new Error(
+      `No visible tiles found for layout validation. Found ${count} tiles but none had valid bounding boxes.`
+    );
   }
 
   const maxRight = Math.max(...positions.map((box) => box.x + box.width));
@@ -136,7 +135,9 @@ test.describe("Homepage layout", () => {
             ready: async () => {
               const statButtons = page.getByTestId("stat-buttons");
               await expect(statButtons).toHaveAttribute("data-buttons-ready", "true");
-              await expect(statButtons.getByRole("group", { name: /choose a stat/i })).toBeVisible();
+              await expect(
+                statButtons.getByRole("group", { name: /choose a stat/i })
+              ).toBeVisible();
               await ensureMeaningfulFocus(page, page.getByTestId("stat-button").first());
             }
           },
@@ -208,9 +209,13 @@ test.describe("Homepage layout", () => {
         const restoredLayout = await captureHomeLayout(page);
         expect(restoredLayout.columns).toBe(initialLayout.columns);
         expect(restoredLayout.count).toBe(initialLayout.count);
-        
+
         // Verify tile positions are preserved within reasonable tolerance
-        for (let i = 0; i < Math.min(initialLayout.positions.length, restoredLayout.positions.length); i++) {
+        for (
+          let i = 0;
+          i < Math.min(initialLayout.positions.length, restoredLayout.positions.length);
+          i++
+        ) {
           const initial = initialLayout.positions[i];
           const restored = restoredLayout.positions[i];
           expect(Math.abs(restored.x - initial.x)).toBeLessThanOrEqual(2);

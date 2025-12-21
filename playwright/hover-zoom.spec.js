@@ -358,7 +358,7 @@ test.describe("Hover Zoom Functionality", () => {
       await expect(page.locator("body")).toBeVisible();
 
       await expect(allCards).toHaveCount(0);
-      await expect(page.locator(".judoka-card[style*=\"transform\"]")).toHaveCount(0);
+      await expect(page.locator('.judoka-card[style*="transform"]')).toHaveCount(0);
       await expect(page.locator("body")).toBeFocused();
     });
   });
