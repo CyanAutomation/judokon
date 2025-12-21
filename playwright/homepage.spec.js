@@ -64,7 +64,12 @@ test.describe("Homepage", () => {
 
     expect(headingOrder[0]?.level).toBe(1);
     expect(
-      headingOrder.every((heading, index, arr) => index === 0 || heading.level <= arr[index - 1].level + 1)
+      headingOrder.every((heading, index, arr) => {
+        if (index === 0) return true;
+        const prevLevel = arr[index - 1].level;
+        // Heading level can only increase by 1 or stay the same/decrease to any valid level
+        return heading.level <= prevLevel + 1;
+      })
     ).toBe(true);
   });
 
