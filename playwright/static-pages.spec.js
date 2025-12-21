@@ -10,6 +10,15 @@ test.describe("Static pages", () => {
     await expect(page.getByRole("img", { name: "JU-DO-KON! Logo" })).toBeVisible();
     await expect(page.getByRole("main")).toBeAttached();
 
+    const createForm = page.getByTestId("create-judoka-form");
+    await expect(createForm).toBeVisible();
+    await expect(page.getByTestId("create-help-text")).toBeVisible();
+    await expect(page.getByLabel("First name")).toBeVisible();
+    await expect(page.getByLabel("Last name")).toBeVisible();
+    await expect(page.getByLabel("Country")).toBeVisible();
+    await expect(page.getByLabel("Weight class")).toBeVisible();
+    await expect(page.getByTestId("create-form-hint")).toContainText("required");
+
     const randomLink = page.getByTestId(NAV_RANDOM_JUDOKA);
     await expect(randomLink).toHaveText("Random Judoka");
     await expect(randomLink).toHaveAttribute("href", "./randomJudoka.html");
@@ -22,10 +31,16 @@ test.describe("Static pages", () => {
     await randomLink.press("Enter");
     await expect(page).toHaveURL(/randomJudoka\.html/);
     await expect(page.getByTestId("player-info")).toHaveText("Player");
+    const cardContainer = page.getByTestId("card-container");
+    await expect(cardContainer.getByTestId("placeholder-card")).toBeVisible();
+    await expect(cardContainer.getByTestId("placeholder-card")).toContainText("Draw Card!");
 
     await page.goBack();
     await expect(page).toHaveURL(/createJudoka\.html/);
     await expect(page.getByTestId(NAV_RANDOM_JUDOKA)).toBeVisible();
+    await expect(carouselContainer).toHaveClass(/hidden/);
+    await randomLink.focus();
+    await expect(randomLink).toBeFocused();
   });
 
   test("Browse Judoka toggles layout and country filters", async ({ page }) => {

@@ -51,6 +51,74 @@
     </nav>
 
     <main class="container" role="main">
+      <section class="form-panel" aria-labelledby="create-form-title">
+        <div class="form-header">
+          <h1 id="create-form-title">Create a Judoka</h1>
+          <p id="create-form-help" data-testid="create-help-text">
+            Enter a judoka's basics to preview their card before saving.
+          </p>
+        </div>
+
+        <form aria-describedby="create-form-help" data-testid="create-judoka-form">
+          <div class="form-group">
+            <label for="judoka-first-name">First name</label>
+            <input
+              id="judoka-first-name"
+              name="firstname"
+              type="text"
+              autocomplete="given-name"
+              data-testid="create-firstname"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="judoka-last-name">Last name</label>
+            <input
+              id="judoka-last-name"
+              name="lastname"
+              type="text"
+              autocomplete="family-name"
+              data-testid="create-lastname"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="judoka-country">Country</label>
+            <select id="judoka-country" name="country" data-testid="create-country" required>
+              <option value="">Select a country</option>
+              <option value="JPN">Japan</option>
+              <option value="FRA">France</option>
+              <option value="USA">United States</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="judoka-weight">Weight class</label>
+            <input
+              id="judoka-weight"
+              name="weight"
+              type="text"
+              inputmode="numeric"
+              placeholder="-73kg"
+              data-testid="create-weight"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <button type="submit" class="primary-button" data-testid="create-submit">
+              Create Judoka
+            </button>
+          </div>
+
+          <p class="form-hint" data-testid="create-form-hint">
+            Fields are required for card previews and creation.
+          </p>
+        </form>
+      </section>
+
       <!-- Section for the carousel -->
       <section id="carousel-section">
         <div id="carousel-container" data-testid="carousel-container" class="hidden"></div>
