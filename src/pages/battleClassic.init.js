@@ -51,6 +51,27 @@ import {
 } from "../helpers/classicBattle/roundTracker.js";
 import { recordJudokaLoadFailureTelemetry } from "../helpers/classicBattle/judokaTelemetry.js";
 import {
+  getStatButtonsContainer,
+  getStatButtons,
+  getNextButton,
+  getScoreDisplay,
+  getPlayerScoreValue,
+  getOpponentScoreValue,
+  getNextRoundTimer,
+  getTimerParts,
+  getHomeButton,
+  getHeaderLinks,
+  getRoundSelectFallback,
+  getRoundSelectError,
+  hasRoundSelectFallback,
+  getOpponentCard,
+  getRoundCounter,
+  getReplayButton,
+  getQuitButton,
+  getBattleStateBadge,
+  getStatDescription
+} from "../helpers/classicBattle/UIElements.js";
+import {
   getCurrentTimestamp,
   scheduleDelayed,
   clearScheduled
@@ -136,10 +157,9 @@ function updateTimerFallback(value) {
   try {
     const doc = getDocumentRef();
     if (!doc) return;
-    const el = doc.getElementById("next-round-timer");
+    const el = getNextRoundTimer(doc);
     if (!el) return;
-    const valueSpan = el.querySelector('[data-part="value"]');
-    const labelSpan = el.querySelector('[data-part="label"]');
+    const { value: valueSpan, label: labelSpan } = getTimerParts(el);
     if (valueSpan) {
       const hasValue = typeof value === "string" && value.length > 0;
       valueSpan.textContent = value;
@@ -216,7 +236,7 @@ function setHeaderNavigationLocked(locked) {
     return;
   }
   try {
-    const headerLinks = document.querySelectorAll("header a");
+    const headerLinks = getHeaderLinks();
     headerLinks.forEach((link) => {
       link.style.pointerEvents = locked ? "none" : "";
     });
@@ -225,7 +245,7 @@ function setHeaderNavigationLocked(locked) {
 
 function bindHomeButton(store) {
   try {
-    const homeBtn = document.getElementById("home-button");
+    const homeBtn = getHomeButton();
     if (!homeBtn) return;
     if (!homeBtn.__boundQuit) {
       homeBtn.addEventListener("click", () => {
@@ -378,14 +398,8 @@ function triggerCooldownOnce(store, reason) {
 // Next Button Utilities
 // =============================================================================
 
-function getNextRoundButton() {
-  try {
-    return (
-      document.getElementById("next-button") || document.querySelector('[data-role="next-round"]')
-    );
-  } catch {
-    return null;
-  }
+function getNextRoundButtonElement() {
+  return getNextButton();
 }
 
 function setNextButtonReadyAttributes(btn) {
@@ -420,7 +434,7 @@ function safeEnableNextRoundButton(context) {
 }
 
 function prepareNextButtonForUse(context) {
-  const btn = getNextRoundButton();
+  const btn = getNextRoundButtonElement();
   safeEnableNextRoundButton(context);
   setNextButtonReadyAttributes(btn);
   return btn;
@@ -460,7 +474,7 @@ function stopActiveSelectionTimer() {
     STATE.activeSelectionTimer = null;
   }
   try {
-    const el = document.getElementById("next-round-timer");
+    const el = getNextRoundTimer();
     if (el) el.textContent = "";
   } catch {}
   if (STATE.failSafeTimerId) {
@@ -804,7 +818,7 @@ function finalizeSelectionReady(store, options = {}) {
       }
     } finally {
       try {
-        const finalizedBtn = getNextRoundButton();
+        const finalizedBtn = getNextRoundButtonElement();
         if (finalizedBtn) {
           try {
             setNextButtonReadyAttributes(finalizedBtn);
@@ -865,9 +879,9 @@ async function handleStatButtonClick(store, stat, btn) {
   window.__statButtonClickCalled = true;
   if (!btn || btn.disabled) return;
   const container =
-    document.getElementById("stat-buttons") ??
+    getStatButtonsContainer() ??
     (btn instanceof HTMLElement ? btn.parentElement : null);
-  const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
+  const buttons = container ? getStatButtons(container) : [];
   const targets = buttons.length > 0 ? buttons : [btn];
   disableStatButtons(targets, container ?? undefined);
 
@@ -887,7 +901,7 @@ async function handleStatButtonClick(store, stat, btn) {
   }
 
   if (buttons.length === 0 && container) {
-    const fallbackButtons = Array.from(container.querySelectorAll("button[data-stat]"));
+    const fallbackButtons = getStatButtons(container);
     if (fallbackButtons.length > 0) {
       disableStatButtons(fallbackButtons, container);
     }
@@ -1162,14 +1176,10 @@ async function beginSelectionTimer(store) {
     STATE.failSafeTimerId = setTimeout(async () => {
       STATE.failSafeTimerId = null;
       try {
-        const btn = document.getElementById("next-button");
-        const scoreEl = document.getElementById("score-display");
-        const playerValue = scoreEl
-          ?.querySelector('[data-side="player"] [data-part="value"]')
-          ?.textContent?.trim();
-        const opponentValue = scoreEl
-          ?.querySelector('[data-side="opponent"] [data-part="value"]')
-          ?.textContent?.trim();
+        const btn = getNextButton();
+        const scoreEl = getScoreDisplay();
+        const playerValue = getPlayerScoreValue(scoreEl);
+        const opponentValue = getOpponentScoreValue(scoreEl);
         const needsScore =
           scoreEl && playerValue !== undefined && opponentValue !== undefined
             ? playerValue === "0" && opponentValue === "0"
@@ -1278,11 +1288,11 @@ function clearRoundSelectFallback(store) {
     }
     return;
   }
-  const fallbackBtn = document.getElementById("round-select-fallback");
+  const fallbackBtn = getRoundSelectFallback();
   if (fallbackBtn) {
     fallbackBtn.remove();
   }
-  const fallbackMsg = document.getElementById("round-select-error");
+  const fallbackMsg = getRoundSelectError();
   if (fallbackMsg) {
     fallbackMsg.remove();
   }
@@ -1292,7 +1302,7 @@ function clearRoundSelectFallback(store) {
 }
 
 function showRoundSelectFallback(store) {
-  const fallbackInDom = Boolean(document.getElementById("round-select-fallback"));
+  const fallbackInDom = hasRoundSelectFallback();
   const fallbackTracked = Boolean(store && store.__roundSelectFallbackShown);
 
   if (!fallbackInDom && fallbackTracked && store) {
@@ -1370,7 +1380,7 @@ function updateRoundCounterDisplay(options = {}) {
 function setupInitialUI() {
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
 
-  const opponentCard = document.getElementById("opponent-card");
+  const opponentCard = getOpponentCard();
   if (opponentCard) {
     opponentCard.classList.remove("opponent-hidden");
     opponentCard.classList.add("is-obscured");
@@ -1379,7 +1389,7 @@ function setupInitialUI() {
   initScoreboardAdapter();
   updateScore(0, 0);
 
-  const sd = document.getElementById("score-display");
+  const sd = getScoreDisplay();
   if (sd) {
     const hasExcessWhitespace = /\n\s{2,}/.test(sd.innerHTML);
     if (hasExcessWhitespace) {
@@ -1388,7 +1398,7 @@ function setupInitialUI() {
   }
 
   updateRoundCounter(0);
-  const rc = document.getElementById("round-counter");
+  const rc = getRoundCounter();
   if (rc && !rc.textContent) rc.textContent = "Round 0";
 }
 
@@ -1433,10 +1443,10 @@ function wireGlobalBattleEvents(store) {
 }
 
 function wireControlButtons(store) {
-  const nextBtn = document.getElementById("next-button");
+  const nextBtn = getNextButton();
   if (nextBtn) nextBtn.addEventListener("click", onNextButtonClick);
 
-  const replayBtn = document.getElementById("replay-button");
+  const replayBtn = getReplayButton();
   if (replayBtn) {
     replayBtn.addEventListener("click", async () => {
       stopActiveSelectionTimer();
@@ -1461,7 +1471,7 @@ function wireControlButtons(store) {
     });
   }
 
-  const quitBtn = document.getElementById("quit-button");
+  const quitBtn = getQuitButton();
   if (quitBtn) quitBtn.addEventListener("click", () => quitMatch(store, quitBtn));
 
   bindHomeButton(store);
@@ -1578,7 +1588,7 @@ function wireCardEventHandlers(store) {
         showSnackbar("");
       } catch {}
       try {
-        if (!document.getElementById("round-select-error")) {
+        if (!getRoundSelectError()) {
           showRoundSelectFallback(store);
         }
       } catch {}
@@ -1616,7 +1626,7 @@ export function initBattleStateBadge(options = {}) {
       window.__FF_OVERRIDES &&
       window.__FF_OVERRIDES.battleStateBadge;
 
-    const badge = document.getElementById("battle-state-badge");
+    const badge = getBattleStateBadge();
     if (!badge) return;
 
     if (overrideEnabled) {
@@ -1641,7 +1651,7 @@ function setBadgeText(text) {
     const w = typeof window !== "undefined" ? window : null;
     const overrides = w && w.__FF_OVERRIDES;
     if (!overrides || !overrides.battleStateBadge) return;
-    const badge = document.getElementById("battle-state-badge");
+    const badge = getBattleStateBadge();
     if (!badge) return;
     badge.hidden = false;
     badge.removeAttribute("hidden");
