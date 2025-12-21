@@ -206,6 +206,14 @@ test.describe("Homepage layout", () => {
         const restoredLayout = await captureHomeLayout(page);
         expect(restoredLayout.columns).toBe(initialLayout.columns);
         expect(restoredLayout.count).toBe(initialLayout.count);
+        
+        // Verify tile positions are preserved within reasonable tolerance
+        for (let i = 0; i < Math.min(initialLayout.positions.length, restoredLayout.positions.length); i++) {
+          const initial = initialLayout.positions[i];
+          const restored = restoredLayout.positions[i];
+          expect(Math.abs(restored.x - initial.x)).toBeLessThanOrEqual(2);
+          expect(Math.abs(restored.y - initial.y)).toBeLessThanOrEqual(2);
+        }
       });
     });
   }
