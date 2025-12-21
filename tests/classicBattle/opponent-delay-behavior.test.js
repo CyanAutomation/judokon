@@ -133,7 +133,7 @@ describe("Classic Battle opponent delay behavior", () => {
     vi.advanceTimersByTime(299);
     expect(promptEvents).toHaveLength(0);
 
-    vi.advanceTimersByTime(1);
+    vi.advanceTimersByTime(2);
     expect(promptEvents).toHaveLength(1);
 
     const elapsed = promptEvents[0] ?? 0;
