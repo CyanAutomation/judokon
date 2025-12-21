@@ -112,7 +112,7 @@ describe("Classic Battle opponent delay behavior", () => {
     });
 
     emitBattleEvent("opponentReveal");
-    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true, delayMs: 150 } });
+    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true, delayMs: 300 } });
     await Promise.resolve();
 
     const snackbarNode = document.querySelector("#snackbar-container .snackbar");
