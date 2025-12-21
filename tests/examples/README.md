@@ -37,28 +37,12 @@ Both patterns use:
 - Testing utility functions in `src/utils/`
 - Writing tests for pure functions with external dependencies
 
-### `integration.test.js`
+### Integration pattern
 
-**Purpose**: Canonical integration test template showing selective mocking (externals only).
-
-**When to use this pattern**:
-- Testing workflows that span multiple internal modules
-- You want to verify real module interactions work correctly
-- Testing user-facing features that involve multiple systems
-- You need to verify state management and data flow
-
-**Key characteristics**:
-- Only EXTERNAL dependencies are mocked (fetch, localStorage, etc.)
-- Internal modules run with real implementations
-- Tests exercise real code paths and integration points
-- DOM and timers are controlled via harness fixtures
-- More resilient to internal refactoring (API-level contract matters, not implementation)
-
-**Copy this file when**:
-- Creating tests for battle pages (`battleClassic.html`, `battleCLI.html`)
-- Testing page initialization or setup flows
-- Testing features that interact with multiple helpers
-- Testing state persistence or complex workflows
+The former `integration.test.js` template was removed to keep CI focused on concrete
+feature coverage instead of placeholder examples. When adding integration tests, follow
+the guidance in this document and back the scenarios with real requirements so they run
+in CI by default.
 
 ## Migration Guide: From Old Pattern to New
 
