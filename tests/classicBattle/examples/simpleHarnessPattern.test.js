@@ -24,7 +24,8 @@ vi.mock(mockFactory.path, () => mockFactory.factory());
 
 const harness = createSimpleHarness({ fixtures: { localStorage: fakeStorage } });
 
-describe("Simple harness pattern", () => {
+// Template suite intentionally skipped; see docs/TESTING_ARCHITECTURE.md for guidance
+describe.skip("Simple harness pattern (template)", () => {
   beforeEach(async () => {
     await harness.setup();
   });

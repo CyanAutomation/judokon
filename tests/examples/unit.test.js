@@ -1,16 +1,6 @@
 /**
- * @fileoverview Unit Test Template: Top-Level Mocking Pattern
- *
- * This file demonstrates the modern unit testing pattern for the JU-DO-KON! project.
- * It uses top-level vi.mock() declarations to mock all external dependencies and
- * createSimpleHarness() for environment setup (DOM, timers, fixtures).
- *
- * Key principles:
- * - Mock ALL dependencies (both internal and external)
- * - Use vi.hoisted() to share mock references for per-test configuration
- * - Import modules AFTER harness.setup() to apply mocks
- * - One harness per test (for isolation)
- *
+ * @fileoverview Unit Test Template: Top-Level Mocking Pattern (skipped in CI).
+ * Template documentation now lives in docs/TESTING_ARCHITECTURE.md.
  * @copyable true
  */
 
@@ -55,8 +45,8 @@ const testData = {
   errorResponse: new Error("API Error")
 };
 
-// ===== STEP 4: Test suite with setup/teardown
-describe("Unit Test Example: Data Processing", () => {
+// Template suite intentionally skipped to avoid CI runtime; see docs/TESTING_ARCHITECTURE.md
+describe.skip("Unit Test Example: Data Processing (template)", () => {
   let harness;
 
   beforeEach(async () => {
@@ -75,7 +65,6 @@ describe("Unit Test Example: Data Processing", () => {
     }
   });
 
-  // ===== STEP 5: Write tests with per-test mock configuration
   it("normalizes judoka entries and fills defaults", async () => {
     mockFetchJson.mockResolvedValue(testData.normalizedList);
 
@@ -131,30 +120,3 @@ describe("Unit Test Example: Data Processing", () => {
     expect(mockFetchJson).toHaveBeenCalledTimes(2);
   });
 });
-
-/**
- * ===== PATTERN SUMMARY =====
- *
- * MOCK REGISTRATION:
- * 1. vi.hoisted() - Create shared mocks (BEFORE constants)
- * 2. vi.mock() - Register at top level (static phase)
- * 3. Per-test config - Use .mockImplementation(), .mockResolvedValue(), etc.
- *
- * HARNESS SETUP:
- * 1. beforeEach - Create harness, call setup()
- * 2. afterEach - Call cleanup()
- *
- * MODULE IMPORT:
- * - Import modules AFTER harness.setup()
- * - Mocks are applied at import time
- * - Each test gets isolated environment
- *
- * BENEFITS:
- * - All dependencies are mocked (no real side effects)
- * - Tests are fast and deterministic
- * - Easy to understand what is mocked and why
- * - Mocks are visible at file top
- * - Per-test configuration enables flexible scenarios
- *
- * ===== END PATTERN SUMMARY =====
- */
