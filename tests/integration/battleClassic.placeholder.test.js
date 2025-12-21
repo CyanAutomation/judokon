@@ -1,36 +1,27 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import { JSDOM } from "jsdom";
 import { init } from "../../src/pages/battleClassic.init.js";
+import {
+  emitBattleEvent,
+  __resetBattleEventTarget
+} from "../../src/helpers/classicBattle/battleEvents.js";
+import {
+  OPPONENT_CARD_CONTAINER_ARIA_LABEL,
+  OPPONENT_PLACEHOLDER_ARIA_LABEL
+} from "../../src/helpers/classicBattle/opponentPlaceholder.js";
+import { bindUIHelperEventHandlersDynamic } from "../../src/helpers/classicBattle/uiEventHandlers.js";
+import { createRealHtmlTestEnvironment } from "../utils/realHtmlTestUtils.js";
 
 /**
  * @fileoverview Integration tests validating the Battle Classic opponent placeholder lifecycle.
  * @testsetup Uses the real battle init flow with JSDOM to verify placeholder accessibility and replacement logic.
  */
 describe("Battle Classic opponent placeholder integration", () => {
-  let dom;
-  let window;
-  let document;
+  let cleanup;
 
-  beforeEach(async () => {
-    // Read HTML file using Node's built-in require to bypass vi.resetModules() issues
-    const fs = require("fs");
-    const path = require("path");
-    const htmlPath = path.join(process.cwd(), "src/pages/battleClassic.html");
-    const htmlContent = fs.readFileSync(htmlPath, "utf-8");
-
-    dom = new JSDOM(htmlContent, {
-      url: "http://localhost:3000/battleClassic.html",
-      runScripts: "dangerously",
-      resources: "usable",
-      pretendToBeVisual: true
-    });
-
-    window = dom.window;
-    document = window.document;
-
-    global.window = window;
-    global.document = document;
-    global.navigator = window.navigator;
+  beforeEach(() => {
+    const env = createRealHtmlTestEnvironment();
+    cleanup = env.cleanup;
+    global.navigator = env.window.navigator;
     global.localStorage = {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
@@ -38,17 +29,15 @@ describe("Battle Classic opponent placeholder integration", () => {
       clear: vi.fn()
     };
 
-    window.__FF_OVERRIDES = {
+    env.window.__FF_OVERRIDES = {
       battleStateBadge: true,
       showRoundSelectModal: true
     };
   });
 
   afterEach(() => {
-    dom?.window?.close();
+    cleanup?.();
     vi.clearAllMocks();
-    // Note: vi.resetModules() is not used because it clears ALL modules including Node.js built-ins,
-    // causing the next test's beforeEach to fail when trying to use fs/path functions
   });
 
   it("renders an accessible opponent placeholder card before any reveal", async () => {
@@ -61,7 +50,7 @@ describe("Battle Classic opponent placeholder integration", () => {
     const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
     expect(placeholder.classList.contains("card")).toBe(true);
-    expect(placeholder.getAttribute("aria-label")).toBe("Mystery opponent card");
+    expect(placeholder.getAttribute("aria-label")).toBe(OPPONENT_PLACEHOLDER_ARIA_LABEL);
   });
 
   it("replaces the placeholder with the revealed opponent card after the first stat resolution", async () => {
@@ -70,33 +59,51 @@ describe("Battle Classic opponent placeholder integration", () => {
     const opponentCard = document.getElementById("opponent-card");
     expect(opponentCard).not.toBeNull();
 
-    const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
+    const renderOpponentCard = vi.fn(async (cardData, container) => {
+      const cardContainer = container.ownerDocument.createElement("div");
+      cardContainer.className = "card-container";
+      const card = container.ownerDocument.createElement("div");
+      card.className = "judoka-card";
+      card.setAttribute("aria-label", `Opponent: ${cardData.name}`);
+      cardContainer.appendChild(card);
+      container.appendChild(cardContainer);
+    });
+
+    const getOpponentCardData = vi.fn(async () => ({ name: "Test Fighter" }));
+
+    __resetBattleEventTarget();
+    bindUIHelperEventHandlersDynamic({ renderOpponentCard, getOpponentCardData });
+
+    emitBattleEvent("opponentReveal");
+    const placeholder = opponentCard?.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
+    expect(placeholder?.getAttribute("aria-label")).toBe(OPPONENT_PLACEHOLDER_ARIA_LABEL);
+    expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
 
-    // Simulate opponent reveal by directly manipulating the DOM to show the revealed card
-    // In the real application, this happens via cardSelection.upgradePlaceholder()
-    // For testing, we verify the structure exists and can be revealed
-    const revealedCard = document.createElement("div");
-    revealedCard.className = "judoka-card";
-    revealedCard.setAttribute("aria-label", "Opponent: Test Fighter");
+    emitBattleEvent("roundResolved", { store: {}, result: { message: "" } });
 
-    const cardContainer = document.createElement("div");
-    cardContainer.className = "card-container";
-    cardContainer.appendChild(revealedCard);
+    const waitForFrame = () =>
+      new Promise((resolve) => {
+        if (typeof window.requestAnimationFrame === "function") {
+          window.requestAnimationFrame(() => resolve());
+        } else {
+          setTimeout(resolve, 0);
+        }
+      });
 
-    // Remove placeholder and add revealed card
-    placeholder.remove();
-    opponentCard.appendChild(cardContainer);
-    opponentCard.classList.remove("is-obscured");
+    await waitForFrame();
+    await waitForFrame();
 
-    // Verify placeholder is gone
-    expect(opponentCard.querySelector("#mystery-card-placeholder")).toBeNull();
-    const revealedContainer = opponentCard.querySelector(".card-container");
+    expect(renderOpponentCard).toHaveBeenCalled();
+    expect(getOpponentCardData).toHaveBeenCalled();
+    expect(opponentCard?.classList.contains("is-obscured")).toBe(false);
+    expect(opponentCard?.querySelector("#mystery-card-placeholder")).toBeNull();
+
+    const revealedContainer = opponentCard?.querySelector(".card-container");
     expect(revealedContainer).not.toBeNull();
     const currentCard = revealedContainer?.querySelector(".judoka-card");
     expect(currentCard).not.toBeNull();
-    expect(currentCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
-    expect(opponentCard?.getAttribute("aria-label")).toBe("Opponent card");
-    expect(opponentCard?.classList.contains("is-obscured")).toBe(false);
+    expect(currentCard?.getAttribute("aria-label")).toBe("Opponent: Test Fighter");
+    expect(opponentCard?.getAttribute("aria-label")).toBe(OPPONENT_CARD_CONTAINER_ARIA_LABEL);
   });
 });
