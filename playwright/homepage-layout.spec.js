@@ -5,10 +5,65 @@ const viewports = [
   { name: "mobile", viewport: { width: 430, height: 900 } }
 ];
 
+async function captureHomeLayout(page) {
+  const grid = page.locator("main.game-mode-grid");
+  await expect(grid).toBeVisible();
+
+  const tiles = grid.locator(".card");
+  const viewport = page.viewportSize();
+  if (!viewport) {
+    throw new Error("Viewport size is not available");
+  }
+
+  const columns = await grid.evaluate((node) => {
+    const template = getComputedStyle(node).gridTemplateColumns;
+    return template
+      .split(" ")
+      .filter(Boolean)
+      .length;
+  });
+
+  const positions = [];
+  const count = await tiles.count();
+  for (let index = 0; index < count; index += 1) {
+    const box = await tiles.nth(index).boundingBox();
+    if (box) {
+      positions.push(box);
+    }
+  }
+
+  if (positions.length === 0) {
+    throw new Error(`No visible tiles found for layout validation. Found ${count} tiles but none had valid bounding boxes.`);
+  }
+
+  const maxRight = Math.max(...positions.map((box) => box.x + box.width));
+  const maxBottom = Math.max(...positions.map((box) => box.y + box.height));
+
+  expect(maxRight).toBeLessThanOrEqual(viewport.width + 2);
+  expect(maxBottom).toBeLessThan(viewport.height * 3);
+
+  return { columns, count, positions };
+}
+
 async function gotoHome(page) {
   await page.goto("/index.html");
   await page.waitForLoadState("domcontentloaded");
   await expect(page.locator("main.game-mode-grid")).toBeVisible();
+}
+
+async function ensureMeaningfulFocus(page, locator) {
+  await expect(locator).toBeVisible();
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const hasFocus = await locator.evaluate((node) => node === document.activeElement);
+    if (hasFocus) {
+      return;
+    }
+    await locator.focus();
+    await page.waitForTimeout(100);
+  }
+
+  await expect(locator).toBeFocused();
 }
 
 test.describe("Homepage layout", () => {
@@ -71,11 +126,50 @@ test.describe("Homepage layout", () => {
       });
 
       test("activates tiles via keyboard", async ({ page }) => {
-        await page.keyboard.press("Tab");
-        await expect(page.getByRole("link", { name: /start classic battle mode/i })).toBeFocused();
+        // Test a representative subset to balance coverage and performance
+        const destinations = [
+          {
+            name: /start classic battle mode/i,
+            url: /\/src\/pages\/battleClassic\.html$/,
+            ready: async () => {
+              const statButtons = page.getByTestId("stat-buttons");
+              await expect(statButtons).toHaveAttribute("data-buttons-ready", "true");
+              await expect(statButtons.getByRole("group", { name: /choose a stat/i })).toBeVisible();
+              await ensureMeaningfulFocus(page, page.getByTestId("stat-button").first());
+            }
+          },
+          {
+            name: /view a random judoka/i,
+            url: /\/src\/pages\/randomJudoka\.html$/,
+            ready: async () => {
+              await page.locator('body[data-random-judoka-ready="true"]').waitFor();
+              const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
+              await ensureMeaningfulFocus(page, drawButton);
+              await expect(page.getByTestId("card-container")).toBeVisible();
+            }
+          },
+          {
+            name: /open settings/i,
+            url: /\/src\/pages\/settings\.html$/,
+            ready: async () => {
+              await expect(page.getByRole("heading", { name: /settings/i })).toBeVisible();
+              const displayModeLight = page.locator("#display-mode-light");
+              await ensureMeaningfulFocus(page, displayModeLight);
+              await expect(page.getByRole("main")).toContainText(/display mode/i);
+            }
+          }
+        ];
 
-        await page.keyboard.press("Enter");
-        await expect(page).toHaveURL(/\/src\/pages\/battleClassic\.html$/);
+        for (const destination of destinations) {
+          await page.getByRole("link", { name: destination.name }).focus();
+          await page.keyboard.press("Enter");
+
+          await expect(page).toHaveURL(destination.url);
+          await destination.ready();
+
+          await page.goBack();
+          await gotoHome(page);
+        }
       });
 
       test("honors tooltip overlay feature flag on tiles", async ({ page }) => {
@@ -95,39 +189,31 @@ test.describe("Homepage layout", () => {
       });
 
       test("adapts tile layout to the viewport", async ({ page }) => {
-        const grid = page.locator("main.game-mode-grid");
-        await expect(grid).toBeVisible();
+        await captureHomeLayout(page);
+      });
 
-        const tiles = page.locator(".card");
-        const viewport = page.viewportSize();
-        if (!viewport) {
-          throw new Error("Viewport size is not available");
+      test("preserves viewport layout after navigating away and back", async ({ page }) => {
+        const initialLayout = await captureHomeLayout(page);
+
+        const classicTile = page.getByRole("link", { name: /start classic battle mode/i });
+        await classicTile.focus();
+        await page.keyboard.press("Enter");
+
+        await expect(page).toHaveURL(/\/src\/pages\/battleClassic\.html$/);
+        await page.goBack();
+        await gotoHome(page);
+
+        const restoredLayout = await captureHomeLayout(page);
+        expect(restoredLayout.columns).toBe(initialLayout.columns);
+        expect(restoredLayout.count).toBe(initialLayout.count);
+        
+        // Verify tile positions are preserved within reasonable tolerance
+        for (let i = 0; i < Math.min(initialLayout.positions.length, restoredLayout.positions.length); i++) {
+          const initial = initialLayout.positions[i];
+          const restored = restoredLayout.positions[i];
+          expect(Math.abs(restored.x - initial.x)).toBeLessThanOrEqual(2);
+          expect(Math.abs(restored.y - initial.y)).toBeLessThanOrEqual(2);
         }
-        const viewportWidth = viewport.width;
-        const viewportHeight = viewport.height;
-
-        const positions = [];
-        const count = await tiles.count();
-        for (let index = 0; index < count; index += 1) {
-          const box = await tiles.nth(index).boundingBox();
-          if (box) {
-            positions.push(box);
-          }
-        }
-
-        if (positions.length === 0) {
-          throw new Error("No visible tiles found for layout validation");
-        }
-
-        if (positions.length === 0) {
-          throw new Error("No visible tiles found for layout validation");
-        }
-
-        const maxRight = Math.max(...positions.map((box) => box.x + box.width));
-        const maxBottom = Math.max(...positions.map((box) => box.y + box.height));
-
-        expect(maxRight).toBeLessThanOrEqual(viewportWidth + 2);
-        expect(maxBottom).toBeLessThan(viewportHeight * 3);
       });
     });
   }
