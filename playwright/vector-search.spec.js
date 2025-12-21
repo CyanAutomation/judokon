@@ -139,6 +139,9 @@ test.describe("Vector search page", () => {
       route.fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
     );
 
+    // Wait for route to be established before proceeding
+    await page.waitForTimeout(100);
+
     await runSearch(page);
 
     await expect(searchButton).toBeEnabled();
