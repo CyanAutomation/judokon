@@ -59,7 +59,8 @@ async function ensureMeaningfulFocus(page, locator) {
     if (hasFocus) {
       return;
     }
-    await page.keyboard.press("Tab");
+    await locator.focus();
+    await page.waitForTimeout(100);
   }
 
   await expect(locator).toBeFocused();
