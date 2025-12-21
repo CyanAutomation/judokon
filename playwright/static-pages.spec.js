@@ -38,7 +38,8 @@ test.describe("Static pages", () => {
     await page.goBack();
     await expect(page).toHaveURL(/createJudoka\.html/);
     await expect(page.getByTestId(NAV_RANDOM_JUDOKA)).toBeVisible();
-    await expect(carouselContainer).toHaveClass(/hidden/);
+    const carouselContainerAfterReturn = page.getByTestId("carousel-container");
+    await expect(carouselContainerAfterReturn).toHaveClass(/hidden/);
     await randomLink.focus();
     await expect(randomLink).toBeFocused();
   });
