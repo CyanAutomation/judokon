@@ -40,8 +40,9 @@ test.describe("Static pages", () => {
     await expect(page.getByTestId(NAV_RANDOM_JUDOKA)).toBeVisible();
     const carouselContainerAfterReturn = page.getByTestId("carousel-container");
     await expect(carouselContainerAfterReturn).toHaveClass(/hidden/);
-    await randomLink.focus();
-    await expect(randomLink).toBeFocused();
+    const randomLinkAfterReturn = page.getByTestId(NAV_RANDOM_JUDOKA);
+    await randomLinkAfterReturn.focus();
+    await expect(randomLinkAfterReturn).toBeFocused();
   });
 
   test("Browse Judoka toggles layout and country filters", async ({ page }) => {
