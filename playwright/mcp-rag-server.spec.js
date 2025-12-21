@@ -96,7 +96,6 @@ test.describe.serial("MCP RAG server smoke", () => {
       );
 
       const sampleQuery = "judoka search smoke check";
-      const sampleQuery = "judoka search smoke check";
       let toolResult;
       try {
         toolResult = await client.callTool({
