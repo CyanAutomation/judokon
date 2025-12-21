@@ -2,6 +2,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBrowseReady } from "./fixtures/waits.js";
 import {
   addBrowseCard,
+  clearBrowseCarousel,
   disableBrowseHoverAnimations,
   ensureBrowseCarouselReady,
   resetBrowseTestState
@@ -47,6 +48,14 @@ async function expectToBeCollapsed(locator) {
   await expectScale(locator, 1);
 }
 
+async function expectHoverState(locator, hovered) {
+  await expect
+    .poll(async () => locator.evaluate((node) => node.matches(":hover")), {
+      message: hovered ? "expected element to be hovered" : "expected element to not be hovered"
+    })
+    .toBe(hovered);
+}
+
 async function movePointerAwayFromCards(page) {
   await page.mouse.move(0, 0);
 }
@@ -89,10 +98,14 @@ test.describe("Hover Zoom Functionality", () => {
       // Hover over the card
       await firstCard.hover();
 
+      await expectHoverState(firstCard, true);
+
       await expectToBeEnlarged(firstCard);
 
       // Move mouse away
       await movePointerAwayFromCards(page);
+
+      await expectHoverState(firstCard, false);
 
       // Verify zoom is removed (if it was applied)
       await expectToBeCollapsed(firstCard);
@@ -303,38 +316,50 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("handles missing DOM elements gracefully", async ({ page }) => {
-      await gotoBrowsePage(page);
+      const pageErrors = [];
+      const consoleErrors = [];
+      page.on("pageerror", (error) => pageErrors.push(error));
+      page.on("console", (message) => {
+        if (message.type() === "error") {
+          consoleErrors.push(message);
+        }
+      });
 
-      // Verify page doesn't crash if no cards exist
-      await expect(page.locator("body")).toBeVisible();
+      await gotoBrowsePage(page, { disableAnimations: true });
 
-      // Should be able to navigate without errors
-      const navLinks = page.locator("nav a");
-      if ((await navLinks.count()) > 0) {
-        await expect(navLinks.first()).toBeVisible();
-      }
+      const clearResult = await clearBrowseCarousel(page, { appendEmptyState: true });
+      expect(clearResult.cardCount).toBe(0);
+
+      await expect(page.locator(".judoka-card")).toHaveCount(0);
+      await expect(page.locator(".no-results-message")).toHaveText(/No judoka available\./);
+      await expect(
+        page.locator("[data-enlarge-listener-attached], [data-enlarged], .judoka-card.hovering")
+      ).toHaveCount(0);
+
+      await expect(page.locator("body")).toBeVisible({ timeout: 2000 });
+
+      expect(pageErrors).toHaveLength(0);
+      expect(consoleErrors).toHaveLength(0);
     });
 
     test("handles page navigation during hover", async ({ page }) => {
       await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
+      const allCards = page.locator(".judoka-card");
 
       // Start hover
       await firstCard.hover();
+      await expectHoverState(firstCard, true);
       await expectToBeEnlarged(firstCard);
 
       // Navigate to another page
       await page.goto("/src/pages/index.html", { waitUntil: "networkidle" });
-
-      // Verify navigation succeeded
       await expect(page.locator("body")).toBeVisible();
 
-      // Should not have any lingering hover states (hover cleared during navigation)
-      const postNavCards = page.locator(".judoka-card");
-      if ((await postNavCards.count()) > 0) {
-        await expectToBeCollapsed(postNavCards.first());
-      }
+      await expect(allCards).toHaveCount(0);
+      await expect(page.locator(".judoka-card[style*=\"transform\"]")).toHaveCount(0);
+      await expect(page.locator("body")).toBeFocused();
     });
   });
 
