@@ -67,8 +67,7 @@ import {
   getOpponentCard,
   getRoundCounter,
   getReplayButton,
-  getQuitButton,
-  getBattleStateBadge
+  getQuitButton
 } from "../helpers/classicBattle/UIElements.js";
 import {
   getCurrentTimestamp,
@@ -84,6 +83,11 @@ import {
   getOpponentDelay,
   setOpponentDelay
 } from "../helpers/classicBattle/snackbar.js";
+import {
+  initBattleStateBadge,
+  setBadgeText,
+  initBadgeSync
+} from "../helpers/classicBattle/badgeManager.js";
 import {
   removeBackdrops,
   enableNextRoundButton,
@@ -1596,66 +1600,8 @@ function wireCardEventHandlers(store) {
   }
 }
 
-// =============================================================================
-// Badge Management
-// =============================================================================
-
-/**
- * Initialize the battle state badge element based on feature flag state.
- *
- * @summary Sets the initial visibility and content of the battle state badge.
- *
- * @param {object} [options={}] - Configuration options for initializing the badge.
- * @param {boolean} [options.force=true] - If true, forces the badge's visibility and sets its text to "Lobby", overriding existing content if it doesn't contain "Round".
- * @returns {void}
- * @pseudocode
- * 1. Check if a `battleStateBadge` feature flag override is enabled via `window.__FF_OVERRIDES`.
- * 2. Attempt to retrieve the DOM element with the ID `battle-state-badge`. If the element is not found, the function exits.
- * 3. If the `battleStateBadge` override is enabled:
- *    a. Ensure the badge is visible by setting `hidden` to `false` and removing the `hidden` attribute.
- *    b. Determine the badge's text content: if `force` is true or the current text does not contain "Round", set the text content to "Lobby". Otherwise, preserve the existing text.
- * 4. All DOM manipulations are wrapped in a try-catch block to gracefully handle potential errors.
- */
-export function initBattleStateBadge(options = {}) {
-  const { force = true } = options;
-  try {
-    const overrideEnabled =
-      typeof window !== "undefined" &&
-      window.__FF_OVERRIDES &&
-      window.__FF_OVERRIDES.battleStateBadge;
-
-    const badge = getBattleStateBadge();
-    if (!badge) return;
-
-    if (overrideEnabled) {
-      badge.hidden = false;
-      badge.removeAttribute("hidden");
-      const txt = String(badge.textContent || "");
-      if (force || !/\bRound\b/i.test(txt)) {
-        badge.textContent = "Lobby";
-      }
-    }
-  } catch (err) {
-    console.debug("battleClassic: badge setup failed", err);
-  }
-}
-
-function initBadgeSync() {
-  initBattleStateBadge({ force: true });
-}
-
-function setBadgeText(text) {
-  try {
-    const w = typeof window !== "undefined" ? window : null;
-    const overrides = w && w.__FF_OVERRIDES;
-    if (!overrides || !overrides.battleStateBadge) return;
-    const badge = getBattleStateBadge();
-    if (!badge) return;
-    badge.hidden = false;
-    badge.removeAttribute("hidden");
-    badge.textContent = String(text || "Lobby");
-  } catch {}
-}
+// Badge Management functions moved to badgeManager.js
+// Imported: initBattleStateBadge, setBadgeText, initBadgeSync
 
 // =============================================================================
 // Match Initialization

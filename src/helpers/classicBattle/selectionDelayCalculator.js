@@ -24,10 +24,7 @@ export function getBaseSelectionReadyDelay() {
   // Lazy-load to avoid circular dependencies
   try {
     const { CONFIG } = require("../config/constants.js");
-    return Math.max(
-      CONFIG.POST_SELECTION_READY_DELAY_MS,
-      CONFIG.OPPONENT_MESSAGE_BUFFER_MS
-    );
+    return Math.max(CONFIG.POST_SELECTION_READY_DELAY_MS, CONFIG.OPPONENT_MESSAGE_BUFFER_MS);
   } catch {
     // Fallback to reasonable defaults if CONFIG unavailable
     return 50;
