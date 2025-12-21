@@ -7,9 +7,18 @@ test.describe("PRD Reader page", () => {
   let sanitizerResponsePromise;
 
   test.beforeEach(async ({ page }) => {
+    await page.route("**/prdIndex.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/prdIndex.json" })
+    );
+    await page.route("**/docA.md", (route) => route.fulfill({ path: "tests/fixtures/docA.md" }));
+    await page.route("**/docB.md", (route) => route.fulfill({ path: "tests/fixtures/docB.md" }));
+    await page.route("", (route) =>
+      route.fulfill({ path: "node_modules/dompurify/dist/purify.es.mjs" })
+    );
+    
     indexResponsePromise = page.waitForResponse("**/prdIndex.json");
     docAResponsePromise = page.waitForResponse("**/docA.md");
-    sanitizerResponsePromise = page.waitForResponse("https://esm.sh/dompurify@3.2.6");
+    sanitizerResponsePromise = page.waitForResponse("");
     await page.route("**/prdIndex.json", (route) =>
       route.fulfill({ path: "tests/fixtures/prdIndex.json" })
     );
