@@ -146,6 +146,6 @@ test.describe("Vector search page", () => {
 
     await expect(searchButton).toBeEnabled();
     await expect(rows).not.toHaveCount(0);
-    await expect(errorMessage).toHaveText("");
+    await expect(errorMessage).not.toBeVisible();
   });
 });
