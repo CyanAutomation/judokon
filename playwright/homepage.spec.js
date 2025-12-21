@@ -4,10 +4,30 @@ import { hex } from "wcag-contrast";
 test.describe("Homepage", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
+    await page.waitForLoadState("networkidle");
   });
 
-  test("homepage loads", async ({ page }) => {
+  test("homepage load surfaces brand hero, CTA, and status areas", async ({ page }) => {
+    const mainLandmark = page.getByRole("main");
+    const heroHeading = page.getByRole("heading", { level: 1, name: "JU-DO-KON!" });
+    const bannerImage = page.getByRole("img", { name: "JU-DO-KON! Logo" });
+    const primaryCta = page.getByRole("link", { name: "Start classic battle mode" });
+    const statusRegion = page.getByRole("status");
+
     await expect(page).toHaveTitle(/JU-DO-KON!/);
+    await expect(mainLandmark).toBeVisible();
+    await expect(heroHeading).toBeVisible();
+    await expect(bannerImage).toBeVisible();
+
+    await expect(primaryCta).toBeVisible();
+    await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
+
+    // Navigate to the primary CTA specifically rather than assuming tab order
+    await primaryCta.focus();
+    await expect(primaryCta).toBeFocused();
+
+    await expect(statusRegion).toBeVisible();
+    await expect(statusRegion).toHaveAttribute("aria-live", "polite");
   });
 
   test("hero landmark exposes JU-DO-KON! brand heading", async ({ page }) => {
