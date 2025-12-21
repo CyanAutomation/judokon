@@ -55,15 +55,17 @@ async function ensureMeaningfulFocus(page, locator) {
   await expect(locator).toBeVisible();
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const hasFocus = await locator.evaluate((node) => node === document.activeElement);
-    if (hasFocus) {
-      return;
-    }
     await locator.focus();
-    await page.waitForTimeout(100);
-  }
 
-  await expect(locator).toBeFocused();
+    try {
+      await expect(locator).toBeFocused({ timeout: 200 });
+      return;
+    } catch (error) {
+      if (attempt === 2) {
+        throw error;
+      }
+    }
+  }
 }
 
 test.describe("Homepage layout", () => {
