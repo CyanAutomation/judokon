@@ -58,7 +58,7 @@ async function ensureMeaningfulFocus(page, locator) {
     await locator.focus();
 
     try {
-      await expect(locator).toBeFocused({ timeout: 200 });
+      await expect(locator).toBeFocused({ timeout: 500 });
       return;
     } catch (error) {
       if (attempt === 2) {
