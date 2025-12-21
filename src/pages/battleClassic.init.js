@@ -75,10 +75,6 @@ import {
   scheduleDelayed,
   clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
-import {
-  computeSelectionReadyDelay as computeSelectionReadyDelayFromCalculator,
-  getSelectionDelayOverride
-} from "../helpers/classicBattle/selectionDelayCalculator.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
