@@ -83,6 +83,9 @@ test.describe("Homepage", () => {
       test(`hero maintains accessible heading and CTA on ${viewport.label}`, async ({ page }) => {
         await page.setViewportSize(viewport.size);
         await page.reload({ waitUntil: "networkidle" });
+        
+        // Wait for any CSS transitions to complete
+        await page.waitForTimeout(100);
 
         const mainLandmark = page.getByRole("main", { name: "Game mode selection" });
         const heroHeading = page.getByRole("heading", { level: 1, name: "JU-DO-KON!" });
