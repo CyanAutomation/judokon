@@ -9,6 +9,7 @@ import { resolveDelay } from "./timerUtils.js";
 import * as sb from "../setupScoreboard.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { cancelRoundDecisionGuard } from "./stateHandlers/guardCancellation.js";
+import { getAutoContinue } from "./autoContinue.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -145,7 +146,7 @@ export async function dispatchOutcomeEvents(result) {
     await dispatchBattleEvent(outcomeEvent);
     if (result.matchEnded) {
       await dispatchBattleEvent("matchPointReached");
-    } else {
+    } else if (getAutoContinue()) {
       await dispatchBattleEvent("continue");
     }
   } catch (error) {

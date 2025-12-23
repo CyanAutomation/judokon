@@ -40,7 +40,10 @@ import { wrap } from "../../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../../config/battleDefaults.js";
 import * as debugHooks from "../../helpers/classicBattle/debugHooks.js";
-import { setAutoContinue, getAutoContinue } from "../../helpers/classicBattle/orchestratorHandlers.js";
+import {
+  setAutoContinue,
+  getAutoContinue
+} from "../../helpers/classicBattle/orchestratorHandlers.js";
 import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
 import { domStateListener } from "../../helpers/classicBattle/stateTransitionListeners.js";
 import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";

@@ -20,11 +20,9 @@ export function getAutoContinue() {
   if (typeof window !== "undefined") {
     const override = window.__AUTO_CONTINUE;
     if (typeof override === "boolean") {
-      console.log("[autoContinue] Using window.__AUTO_CONTINUE:", override);
       return override;
     }
   }
-  console.log("[autoContinue] Using _autoContinue:", _autoContinue);
   return _autoContinue;
 }
 
