@@ -352,7 +352,7 @@ test.describe("Hover Zoom Functionality", () => {
 
       const recoveredCardLocator = page.locator(".judoka-card").first();
       await expect(recoveredCardLocator).toBeVisible();
-      await expect(recoveredCardLocator).not.toHaveAttribute("data-enlarge-listener-attached", "false");
+      await expect(recoveredCardLocator).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       await recoveredCardLocator.hover();
       await expectToBeEnlarged(recoveredCardLocator);
