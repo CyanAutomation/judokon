@@ -45,7 +45,7 @@ export class LRUCache {
    */
   isExpired(key) {
     const timestamp = this.timestamps.get(key);
-    if (!timestamp) return true;
+    if (timestamp === undefined) return true;
     return Date.now() - timestamp > this.ttlMs;
   }
 

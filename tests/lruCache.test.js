@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { LRUCache } from "../src/helpers/lruCache.js";
 
 /**
@@ -10,7 +11,7 @@ describe("LRUCache", () => {
   let cache;
 
   beforeEach(() => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     vi.setSystemTime(0);
     cache = new LRUCache(3, 1000); // 3 items max, 1 second TTL
   });
