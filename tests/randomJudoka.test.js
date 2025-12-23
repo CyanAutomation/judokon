@@ -524,6 +524,28 @@ describe("Random Judoka Selection", () => {
   });
 
   describe("getRandomSelectionDocumentation", () => {
+    it("should return fresh documentation objects without mutation bleed-through", () => {
+      const pristine = getRandomSelectionDocumentation();
+      const mutated = getRandomSelectionDocumentation();
+
+      mutated.description = "Mutated description";
+      mutated.filters.country.description = "Mutated filter";
+      if (mutated.examples.length > 0) {
+        mutated.examples[0].input.filters.country = "Mutated country";
+      }
+      mutated.responseFormat.judoka = "Mutated response";
+
+      const fresh = getRandomSelectionDocumentation();
+
+      expect(fresh).toEqual(pristine);
+      expect(fresh).not.toEqual(mutated);
+      expect(fresh.filters.country.description).toBe(pristine.filters.country.description);
+      if (fresh.examples.length > 0) {
+        expect(fresh.examples[0].input.filters).toEqual(pristine.examples[0].input.filters);
+      }
+      expect(fresh.responseFormat.judoka).toBe(pristine.responseFormat.judoka);
+    });
+
     it("should match the documented schema", () => {
       const expectedDocumentation = JSON.parse(JSON.stringify(RANDOM_SELECTION_DOCUMENTATION));
       const result = getRandomSelectionDocumentation();
@@ -598,6 +620,39 @@ describe("Random Judoka Selection", () => {
 
       expect(documentedRarities).not.toContain(invalidRarity);
       expect(validateRandomFilters({ rarity: invalidRarity })).toEqual({});
+    });
+
+    it("should ensure examples use validated filters and match response keys", () => {
+      const documentation = getRandomSelectionDocumentation();
+      const runtimeResponse = getRandomJudokaWithMetadata(mockJudoka);
+
+      expect(runtimeResponse).not.toBeNull();
+
+      const responseKeys = Object.keys(runtimeResponse).sort();
+      expect(Object.keys(documentation.responseFormat).sort()).toEqual(responseKeys);
+
+      documentation.examples.forEach((example) => {
+        const exampleFilters = example.input?.filters ?? {};
+        const validatedFilters = validateRandomFilters(exampleFilters);
+
+        Object.entries(exampleFilters).forEach(([key, value]) => {
+          expect(validatedFilters).toHaveProperty(key, value);
+        });
+
+        if (example.response) {
+          expect(Object.keys(example.response).sort()).toEqual(responseKeys);
+        }
+      });
+    });
+
+    it("should align documented rarity values with validation allowlist", () => {
+      const documentedRarities = getRandomSelectionDocumentation().filters.rarity.values;
+      const candidateRarities = [...documentedRarities, "Mythic", "Ultra"];
+      const validatedRarities = candidateRarities
+        .map((rarity) => validateRandomFilters({ rarity }).rarity)
+        .filter(Boolean);
+
+      expect(validatedRarities.sort()).toEqual([...documentedRarities].sort());
     });
 
     it("should document examples that mirror real selection payloads", () => {
