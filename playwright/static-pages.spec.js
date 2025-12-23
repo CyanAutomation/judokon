@@ -126,7 +126,7 @@ test.describe("Static pages", () => {
     const firstDetailLink = firstRow.locator("td:nth-child(3) a");
     const detailHref = await firstDetailLink.getAttribute("href");
     expect(detailHref).not.toBeNull();
-    const resolvedHref = new URL(detailHref, page.url()).toString();
+    const resolvedHref = new URL(detailHref!, page.url()).toString();
     const popupPromise = page.waitForEvent("popup", { timeout: 2000 }).catch(() => null);
     await firstDetailLink.click();
     const popup = await popupPromise;
