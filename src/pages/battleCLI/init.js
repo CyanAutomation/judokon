@@ -40,7 +40,7 @@ import { wrap } from "../../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../../config/battleDefaults.js";
 import * as debugHooks from "../../helpers/classicBattle/debugHooks.js";
-import { setAutoContinue, autoContinue } from "../../helpers/classicBattle/orchestratorHandlers.js";
+import { setAutoContinue, getAutoContinue } from "../../helpers/classicBattle/orchestratorHandlers.js";
 import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
 import { domStateListener } from "../../helpers/classicBattle/stateTransitionListeners.js";
 import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";
@@ -2854,7 +2854,7 @@ function updateUiForState(battleState) {
   } else {
     stopSelectionCountdown();
   }
-  if (battleState === "roundOver" && !autoContinue) {
+  if (battleState === "roundOver" && !getAutoContinue()) {
     showBottomLine("Press Enter to continue");
   }
 }
@@ -2933,7 +2933,7 @@ function logStateChange(from, to) {
 function handleBattleState(ev) {
   const { from, to } = ev.detail || {};
   updateUiForState(to);
-  if (to === "roundOver" && !autoContinue) ensureNextRoundButton();
+  if (to === "roundOver" && !getAutoContinue()) ensureNextRoundButton();
   if (verboseEnabled) logStateChange(from, to);
 }
 

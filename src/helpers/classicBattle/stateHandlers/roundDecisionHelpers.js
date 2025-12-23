@@ -114,7 +114,13 @@ function determineOutcomeEvent(store) {
 async function dispatchOutcomeEvent(outcomeEvent, machine) {
   try {
     await machine.dispatch(outcomeEvent);
-    if (getAutoContinue()) await machine.dispatch("continue");
+    const shouldContinue = getAutoContinue();
+    console.log("[dispatchOutcomeEvent] autoContinue check:", {
+      shouldContinue,
+      windowOverride: typeof window !== "undefined" ? window.__AUTO_CONTINUE : "no window",
+      outcomeEvent
+    });
+    if (shouldContinue) await machine.dispatch("continue");
   } catch (err) {
     debugLog("DEBUG: dispatchOutcomeEvent error", { outcomeEvent, error: err.message });
   }
