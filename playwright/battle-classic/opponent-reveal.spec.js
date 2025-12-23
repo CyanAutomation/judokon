@@ -99,7 +99,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       if (!result.success) {
         throw new Error(`Failed to advance round: ${result.error}`);
       }
-      
+
       // Wait for cooldown to complete and next round to start
       await waitForBattleState(page, "cooldown");
       await waitForBattleState(page, "roundStart");
