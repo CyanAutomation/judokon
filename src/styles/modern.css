@@ -1047,7 +1047,7 @@
 }
 
 @media (min-width: 960px) {
-  .theme-modern form.settings-form {
+  .theme-modern form#settings-form.settings-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
   }
