@@ -124,18 +124,18 @@ svg {
   padding: 0;
   /*
     Fill roughly 60% of the viewport on small screens while
-    maintaining a 260px size on larger displays.
+    maintaining a 280px size on larger displays.
     This prevents the card text from overflowing on mobile Safari
     and keeps the focused card fully visible.
   */
-  --card-width: clamp(200px, 60vw, 260px);
+  --card-width: clamp(220px, 65vw, 280px);
   --card-height: calc(var(--card-width) * 1.5);
   /* Override the global touch target to maintain 10% proportions */
-  --touch-target-size: 44px;
+  --touch-target-size: 48px;
   width: var(--card-width);
   min-height: var(--card-height);
   height: auto;
-  border: 12px solid var(--card-border-color);
+  border: 10px solid var(--card-border-color);
   border-radius: var(--radius-lg);
   background-color: var(--card-bg-color);
   box-shadow: var(--shadow-base);
@@ -143,10 +143,10 @@ svg {
   overflow-y: visible;
   display: grid;
   grid-template-rows:
-    0.14fr
-    0.42fr
-    0.34fr
-    minmax(var(--touch-target-size), 0.1fr); /* Keep signature band at least touch-target tall */
+    auto
+    1fr
+    auto
+    auto; /* Keep signature band at least touch-target tall */
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out;
@@ -268,14 +268,15 @@ svg {
 .card-top-bar {
   background-color: var(--card-bg-color);
   color: var(--color-text-inverted);
-  justify-content: space-around;
-  display: inline-flex;
+  justify-content: space-between;
+  display: flex;
   align-items: center;
-  padding: var(--space-medium) var(--space-small);
+  padding: var(--space-md) var(--space-sm);
   flex-direction: row;
-  min-height: var(--touch-target-size, 44px);
+  min-height: 56px;
   box-sizing: border-box;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
+  gap: var(--space-sm);
   /* border: 2px solid red; */
 }
 
@@ -285,26 +286,29 @@ svg {
   padding: 0;
   white-space: nowrap;
   display: flex;
-  justify-content: left;
-  max-width: 250px;
-  min-width: 100px;
-  flex: 1 1 0;
-  margin-left: min(var(--space-sm), 5dvw);
+  justify-content: flex-start;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .card-name .firstname {
-  font-size: min(5vw, 1.1rem);
+  font-size: clamp(0.85rem, 4vw, 1rem);
   font-weight: normal;
   display: block;
-  line-height: 1;
+  line-height: 1.2;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-name .surname {
-  font-size: min(6vw, 1.5rem);
+  font-size: clamp(1rem, 5vw, 1.35rem);
   font-weight: bold;
-  line-height: 1;
+  line-height: 1.2;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-flag {
@@ -312,20 +316,15 @@ svg {
   margin: 0;
   display: flex;
   align-items: center;
-  padding-left: var(--space-sm);
-  justify-content: right;
-  max-width: 60px;
-  min-width: 35px;
-  flex: 1 1 0;
-  margin-right: min(var(--space-xs), 1.4vw);
+  justify-content: flex-end;
+  flex: 0 0 auto;
 }
 
 .card-flag img {
-  width: min(50px, 60dvw);
+  width: clamp(40px, 12vw, 56px);
   height: auto;
   aspect-ratio: 3/2;
-  max-width: 60px;
-  border-radius: min(var(--radius-sm), 1vw);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-tertiary);
 }
 .card-portrait {
@@ -334,9 +333,8 @@ svg {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  /* height: 42%; */
-  overflow-x: hidden;
-  overflow-y: hidden;
+  aspect-ratio: 1 / 1.1;
+  overflow: hidden;
   margin-bottom: 0;
   /* border: 2px solid red; */
   background: linear-gradient(
@@ -351,22 +349,21 @@ svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  overflow-x: hidden;
-  overflow-y: visible;
   object-position: center top;
 }
 
 .card-weight-class {
   position: absolute;
-  margin-top: var(--space-small);
-  right: var(--space-small);
-  background-color: transparent;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  background-color: rgba(0, 0, 0, 0.7);
   border-radius: var(--radius-sm);
   color: #fff;
   font-weight: bold;
-  padding: var(--space-small) var(--space-medium);
-  font-size: var(--font-medium);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
   z-index: 2;
+  backdrop-filter: blur(4px);
 }
 
 .card-weight-class::after {
@@ -378,7 +375,7 @@ svg {
 .card-stats {
   background-color: var(--card-stats-bg, var(--color-secondary));
   color: var(--color-text-inverted);
-  padding: 0 var(--space-small);
+  padding: var(--space-sm);
   margin: 0;
   display: flex;
   justify-content: space-between;
@@ -386,9 +383,7 @@ svg {
   align-items: stretch;
   font-size: var(--font-medium);
   flex-direction: column;
-  /* Stats area ~38.67% of card height accounting for padding */
-  /* height: 38.67%; */
-  /* flex: 0 0 40%; */
+  /* Stats area optimized for readability */
   /* border: 2px solid red; */
 }
 
@@ -401,17 +396,17 @@ svg {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  gap: 0;
+  gap: var(--space-xs);
   /* border: 2px solid red; */
 }
 
 .card-stats li {
   margin: 0;
-  padding: 4px min(1px, 0.6vh);
-  border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
+  padding: var(--space-xs) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   font-family: "Open Sans", sans-serif;
-  font-size: min(5vw, var(--font-medium));
-  line-height: 1.2;
+  font-size: clamp(0.85rem, 3.8vw, 1rem);
+  line-height: 1.3;
   font-weight: bold;
 }
 
@@ -465,33 +460,32 @@ svg {
 
 .signature-move-container {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   flex-direction: row;
   width: 100%;
-  /* Maintain ~10% (~45px) height as specified in the PRD */
-  /* height: max(10%, var(--touch-target-size)); */
-  line-height: max(15%, var(--touch-target-size));
+  min-height: var(--touch-target-size);
   font-weight: bold;
-  /* Ensure visible at small screen sizes */
   box-sizing: border-box;
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
-  justify-content: center;
+  justify-content: stretch;
+  overflow: hidden;
   /* border: 2px solid var(--card-stats-bg); */
-  border: 2px solid var(--card-signature-move-bg);
 }
 
 .signature-move-label,
 .signature-move-value {
   display: flex;
-  width: 100%;
+  flex: 1 1 50%;
   justify-content: center;
   border-radius: 0;
   white-space: nowrap;
   box-sizing: border-box;
-  padding: min(var(--space-sm), 2.3vw) var(--space-sm);
-  font-size: min(14px, 4vw);
+  padding: var(--space-sm);
+  font-size: clamp(0.75rem, 3.5vw, 0.95rem);
   align-items: center;
-  line-height: 1;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .signature-move-label {
