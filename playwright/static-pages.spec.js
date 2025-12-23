@@ -92,13 +92,19 @@ test.describe("Static pages", () => {
     await expect(rows).toHaveCount(20);
 
     const dateCells = rows.locator("td:nth-child(5)");
-    const dateStrings = await dateCells.allTextContents();
-    expect(dateStrings.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))).toBe(true);
+    await expect(dateCells.first()).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
 
-    const parsedDates = dateStrings.map((value) => new Date(value).getTime());
-    expect(
-      parsedDates.every((value, index) => (index === 0 ? true : value <= parsedDates[index - 1]))
-    ).toBe(true);
+    const sampleCount = 5;
+    await expect.poll(async () => {
+      const values = await dateCells.evaluateAll(
+        (cells, count) => cells.slice(0, count).map((cell) => cell.textContent?.trim() || ""),
+        sampleCount
+      );
+      if (values.length < sampleCount) return false;
+      if (!values.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))) return false;
+      const timestamps = values.map((value) => new Date(value).getTime());
+      return timestamps.every((value, index) => (index === 0 ? true : value <= timestamps[index - 1]));
+    }).toBe(true);
 
     const detailLinks = rows.locator("td:nth-child(3) a");
     await expect(detailLinks).toHaveCount(await rows.count());
@@ -108,7 +114,29 @@ test.describe("Static pages", () => {
     expect(hrefs.every((href) => typeof href === "string" && href.length > 0)).toBe(true);
 
     const firstRow = rows.first();
-    await expect(firstRow.locator("td").last()).not.toHaveText("");
+    const firstDateText = await firstRow.locator("td:nth-child(5)").textContent();
+    expect(firstDateText).not.toBeNull();
+    const firstDate = new Date(firstDateText!.trim());
+    const now = Date.now();
+    const maxAgeMs = 1000 * 60 * 60 * 24 * 365;
+    expect(Number.isNaN(firstDate.getTime())).toBe(false);
+    expect(firstDate.getTime()).toBeLessThanOrEqual(now);
+    expect(firstDate.getTime()).toBeGreaterThanOrEqual(now - maxAgeMs);
+
+    const firstDetailLink = firstRow.locator("td:nth-child(3) a");
+    const detailHref = await firstDetailLink.getAttribute("href");
+    expect(detailHref).not.toBeNull();
+    const resolvedHref = new URL(detailHref!, page.url()).toString();
+    const popupPromise = page.waitForEvent("popup", { timeout: 2000 }).catch(() => null);
+    await firstDetailLink.click();
+    const popup = await popupPromise;
+    if (popup) {
+      await expect(popup).toHaveURL(resolvedHref);
+      await popup.close();
+    } else {
+      await expect(page).toHaveURL(resolvedHref);
+      await page.goBack();
+    }
 
     const homeLink = page.getByTestId("home-link");
     await expect(homeLink).toHaveAttribute("href", "../../index.html");
