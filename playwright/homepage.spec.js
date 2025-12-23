@@ -27,6 +27,44 @@ test.describe("Homepage", () => {
     await page.waitForLoadState("networkidle");
   });
 
+  for (const motionPref of ["no-preference", "reduce"]) {
+    test(`hero CTA becomes actionable with status updates (${motionPref})`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: motionPref });
+      await page.reload({ waitUntil: "networkidle" });
+
+      const statusRegion = page.getByRole("status");
+      const primaryCta = page.getByRole("link", { name: "Start classic battle mode" });
+
+      // PRD §Homepage hero CTA readiness: wait for the grid to signal readiness before navigation.
+      await expect(page.locator("body")).toHaveAttribute("data-home-ready", "true");
+      await expect(primaryCta).toBeVisible();
+      await expect(primaryCta).toBeEnabled();
+
+      const initialStatus = (await statusRegion.textContent())?.trim() ?? "";
+
+      await page.route("**/src/pages/battleClassic.html", async (route) => {
+        // Allow the status region to announce navigation intent before leaving the homepage.
+        await expect
+          .poll(async () => (await statusRegion.textContent())?.trim() ?? "", {
+            timeout: 3_000,
+            intervals: [100, 250, 500]
+          })
+          .not.toBe(initialStatus);
+        await route.continue();
+      });
+
+      const navigation = page.waitForNavigation({ url: /\/src\/pages\/battleClassic\.html$/ });
+      await primaryCta.click();
+      await navigation;
+
+      const statButtons = page.getByTestId("stat-buttons");
+
+      // PRD §Battle classic entry: CTA must land on a ready-to-play stat grid.
+      await expect(statButtons).toHaveAttribute("data-buttons-ready", "true");
+      await expect(statButtons.getByRole("group", { name: /choose a stat/i })).toBeVisible();
+    });
+  }
+
   test("homepage load surfaces brand hero, CTA, and status areas", async ({ page }) => {
     const mainLandmark = page.getByRole("main", { name: "Game mode selection" });
     const heroHeading = page.getByRole("heading", { level: 1, name: "JU-DO-KON!" });
@@ -118,12 +156,37 @@ test.describe("Homepage", () => {
 
   test("hero landmark exposes JU-DO-KON! brand heading", async ({ page }) => {
     const hero = page.getByRole("main");
+    const banner = page.getByRole("banner");
+    const heading = hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" });
+    const primaryCta = page.getByRole("link", { name: "Start classic battle mode" });
 
+    await expect(banner).toBeVisible();
     await expect(hero).toBeVisible();
-    await expect(hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toBeVisible();
-    await expect(hero.getByRole("heading", { level: 1, name: "JU-DO-KON!" })).toHaveText(
-      "JU-DO-KON!"
-    );
+    await expect(heading).toBeVisible();
+    await expect(hero).toHaveAttribute("aria-label", "Game mode selection");
+
+    const viewports = [
+      { label: "desktop", size: { width: 1280, height: 720 } },
+      { label: "mobile", size: { width: 430, height: 900 } }
+    ];
+
+    for (const viewport of viewports) {
+      for (const reducedMotion of ["no-preference", "reduce"]) {
+        await page.emulateMedia({ reducedMotion });
+        await page.setViewportSize(viewport.size);
+        await page.reload({ waitUntil: "networkidle" });
+
+        const ctaBoxBefore = await primaryCta.boundingBox();
+        await primaryCta.focus();
+        const ctaBoxAfter = await primaryCta.boundingBox();
+
+        await expect(heading).toHaveText("JU-DO-KON!");
+        await expect(primaryCta).toBeVisible();
+        await expect(primaryCta).toBeFocused();
+        expect(Math.abs((ctaBoxAfter?.x ?? 0) - (ctaBoxBefore?.x ?? 0))).toBeLessThanOrEqual(2);
+        expect(Math.abs((ctaBoxAfter?.y ?? 0) - (ctaBoxBefore?.y ?? 0))).toBeLessThanOrEqual(2);
+      }
+    }
   });
 
   test("selecting the classic battle tile navigates into classic battle experience", async ({
