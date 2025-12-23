@@ -114,7 +114,7 @@ function determineOutcomeEvent(store) {
 async function dispatchOutcomeEvent(outcomeEvent, machine) {
   try {
     await machine.dispatch(outcomeEvent);
-    if (autoContinue) await machine.dispatch("continue");
+    if (getAutoContinue()) await machine.dispatch("continue");
   } catch (err) {
     debugLog("DEBUG: dispatchOutcomeEvent error", { outcomeEvent, error: err.message });
   }

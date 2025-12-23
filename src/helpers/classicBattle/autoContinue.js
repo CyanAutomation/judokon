@@ -17,18 +17,16 @@ let _autoContinue = true;
  * @returns {boolean}
  */
 export function getAutoContinue() {
-  if (typeof window !== "undefined" && typeof window.__AUTO_CONTINUE === "boolean") {
-    return window.__AUTO_CONTINUE;
+  if (typeof window !== "undefined") {
+    const override = window.__AUTO_CONTINUE;
+    if (typeof override === "boolean") {
+      console.log("[autoContinue] Using window.__AUTO_CONTINUE:", override);
+      return override;
+    }
   }
+  console.log("[autoContinue] Using _autoContinue:", _autoContinue);
   return _autoContinue;
 }
-
-/**
- * Deprecated: Use getAutoContinue() function instead.
- * This export exists for backwards compatibility but captures value at import time.
- * @deprecated
- */
-export const autoContinue = getAutoContinue();
 
 /**
  * Update the auto-continue flag.

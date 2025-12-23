@@ -3298,7 +3298,7 @@ const testApi = {
      * @returns {boolean} Current autoContinue value.
      */
     getAutoContinue() {
-      return getAutoContinue;
+      return getAutoContinue();
     }
   }
 };

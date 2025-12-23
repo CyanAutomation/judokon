@@ -1,5 +1,5 @@
 import stateHandlers from "./stateHandlers.js";
-import { autoContinue, setAutoContinue } from "./autoContinue.js";
+import { getAutoContinue, setAutoContinue } from "./autoContinue.js";
 /**
  * Re-export of the `stateHandlers` object, which maps battle state names
  * to their corresponding `onEnter` and `onExit` handler functions.
@@ -18,19 +18,19 @@ import { autoContinue, setAutoContinue } from "./autoContinue.js";
 export { stateHandlers };
 
 /**
- * Controls whether the battle automatically proceeds to the next round/state.
+ * Get the current autoContinue setting.
  *
- * @summary Re-export of the `autoContinue` flag from `./autoContinue.js`.
+ * @summary Re-export of the `getAutoContinue` function from `./autoContinue.js`.
  * When `true`, the battle will automatically advance after certain states
  * (e.g., `roundOver`). When `false`, it will pause, requiring explicit user
  * action or event dispatch to proceed.
  *
  * @pseudocode
- * 1. Re-export `autoContinue` from `./autoContinue.js`.
- * @type {boolean}
+ * 1. Re-export `getAutoContinue` from `./autoContinue.js`.
+ * @type {() => boolean}
  * @returns {boolean}
  */
-export { autoContinue };
+export { getAutoContinue };
 
 /**
  * Sets the `autoContinue` flag.
