@@ -530,7 +530,9 @@ describe("Random Judoka Selection", () => {
 
       mutated.description = "Mutated description";
       mutated.filters.country.description = "Mutated filter";
-      mutated.examples[0].input.filters.country = "Mutated country";
+      if (mutated.examples.length > 0) {
+        mutated.examples[0].input.filters.country = "Mutated country";
+      }
       mutated.responseFormat.judoka = "Mutated response";
 
       const fresh = getRandomSelectionDocumentation();
