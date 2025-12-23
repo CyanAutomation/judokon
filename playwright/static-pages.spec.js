@@ -116,7 +116,7 @@ test.describe("Static pages", () => {
     const firstRow = rows.first();
     const firstDateText = await firstRow.locator("td:nth-child(5)").textContent();
     expect(firstDateText).not.toBeNull();
-    const firstDate = new Date(firstDateText.trim());
+    const firstDate = new Date(firstDateText!.trim());
     const now = Date.now();
     const maxAgeMs = 1000 * 60 * 60 * 24 * 365;
     expect(Number.isNaN(firstDate.getTime())).toBe(false);
