@@ -64,17 +64,22 @@ export function createBrowsePageRuntime(documentRef = document) {
   const countryPanel = documentRef?.getElementById?.("country-panel") ?? null;
   const clearBtn = documentRef?.getElementById?.("clear-filter") ?? null;
 
+  let judokaData = null;
+
   return {
     carouselContainer,
     countryListContainer,
     toggleBtn,
     countryPanel,
     clearBtn,
+    setJudokaData(data) {
+      judokaData = data;
+    },
     ensurePanelHidden() {
       toggleCountryPanel(toggleBtn, countryPanel, false);
     },
     setupToggle() {
-      setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
+      setupCountryToggle(toggleBtn, countryPanel, countryListContainer, judokaData);
     },
     createSpinnerController(forceSpinner) {
       const spinner = createSpinner(carouselContainer, {
@@ -289,6 +294,10 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
     };
     try {
       const { allJudoka, gokyoData } = await loadData();
+
+      // Set judoka data for country toggle
+      pageRuntime.setJudokaData?.(allJudoka);
+
       const render = (list) => pageRuntime.renderCarousel(list, gokyoData);
       await pageRuntime.renderCarousel(allJudoka, gokyoData);
       pageRuntime.markReady?.();

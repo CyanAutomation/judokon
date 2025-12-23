@@ -22,8 +22,7 @@ export function setupCountrySearch(searchInput, countryListContainer) {
     let visibleCount = 0;
 
     labels.forEach((label) => {
-      const countryValue =
-        label.getAttribute("data-country-value")?.toLowerCase() || "";
+      const countryValue = label.getAttribute("data-country-value")?.toLowerCase() || "";
       const countryText = label.textContent?.toLowerCase() || "";
 
       const matches =
@@ -107,20 +106,15 @@ export function setupKeyboardNavigation(countryListContainer) {
     lastKey = key;
     lastKeyTime = now;
 
-    const fieldset = countryListContainer.querySelector(
-      "fieldset.country-filter-group"
-    );
+    const fieldset = countryListContainer.querySelector("fieldset.country-filter-group");
     if (!fieldset) return;
 
     const labels = Array.from(fieldset.querySelectorAll("label.flag-button"));
-    const visibleLabels = labels.filter(
-      (label) => label.style.display !== "none"
-    );
+    const visibleLabels = labels.filter((label) => label.style.display !== "none");
 
     // Find matches starting with the typed letter
     const matches = visibleLabels.filter((label) => {
-      const countryValue =
-        label.getAttribute("data-country-value")?.toLowerCase() || "";
+      const countryValue = label.getAttribute("data-country-value")?.toLowerCase() || "";
       return countryValue.startsWith(key) && countryValue !== "all";
     });
 
@@ -135,9 +129,7 @@ export function setupKeyboardNavigation(countryListContainer) {
       input.checked = true;
       input.focus();
       // Trigger change event to apply filter
-      input.dispatchEvent(
-        new Event("input", { bubbles: true, cancelable: true })
-      );
+      input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
     }
   });
 }

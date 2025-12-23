@@ -1,5 +1,6 @@
 import { createCountrySlider } from "../countrySlider.js";
 import { toggleCountryPanel } from "../countryPanel.js";
+import { setupCountrySearch, setupKeyboardNavigation } from "../country/search.js";
 
 /**
  * Build a DOM adapter that exposes the imperative interactions required by the
@@ -13,6 +14,7 @@ import { toggleCountryPanel } from "../countryPanel.js";
  * @param {HTMLElement} toggleButton - Summary element that toggles the panel.
  * @param {HTMLDetailsElement} panel - Panel element that holds the country list.
  * @param {Element} listContainer - Container that receives the lazily-created flag buttons.
+ * @param {Array<Judoka>} [judokaData] - Optional judoka data for calculating counts.
  * @param {object} [dependencies]
  * @param {typeof toggleCountryPanel} [dependencies.toggleCountryPanelImpl]
  * @param {typeof createCountrySlider} [dependencies.createCountrySliderImpl]
@@ -22,6 +24,7 @@ export function createCountryToggleAdapter(
   toggleButton,
   panel,
   listContainer,
+  judokaData,
   {
     toggleCountryPanelImpl = toggleCountryPanel,
     createCountrySliderImpl = createCountrySlider
@@ -36,7 +39,14 @@ export function createCountryToggleAdapter(
       if (!listContainer || listContainer.children.length > 0) {
         return;
       }
-      await createCountrySliderImpl(listContainer);
+      await createCountrySliderImpl(listContainer, judokaData);
+
+      // Setup search and keyboard navigation after flags are loaded
+      const searchInput = document.getElementById("country-search");
+      if (searchInput) {
+        setupCountrySearch(searchInput, listContainer);
+      }
+      setupKeyboardNavigation(listContainer);
     },
     hasFlags: () => !!listContainer && listContainer.children.length > 0
   };
@@ -107,11 +117,19 @@ export function createCountryToggleController(adapter) {
  * @param {HTMLElement} toggleButton - Summary element controlling the panel.
  * @param {HTMLDetailsElement} panel - Country panel element.
  * @param {Element} listContainer - Container for flag buttons.
+ * @param {Array<Judoka>} [judokaData] - Optional judoka data for calculating counts.
  * @param {{ adapter?: CountryToggleAdapter }} [options] - Optional override adapter used primarily for tests.
  * @returns {() => boolean} Function that reports whether the flag slider has been loaded.
  */
-export function setupCountryToggle(toggleButton, panel, listContainer, { adapter } = {}) {
-  const resolvedAdapter = adapter ?? createCountryToggleAdapter(toggleButton, panel, listContainer);
+export function setupCountryToggle(
+  toggleButton,
+  panel,
+  listContainer,
+  judokaData,
+  { adapter } = {}
+) {
+  const resolvedAdapter =
+    adapter ?? createCountryToggleAdapter(toggleButton, panel, listContainer, judokaData);
   const controller = createCountryToggleController(resolvedAdapter);
   const ownerDocument = panel?.ownerDocument ?? toggleButton?.ownerDocument ?? document;
 

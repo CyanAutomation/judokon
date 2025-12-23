@@ -17,10 +17,11 @@ import { populateCountryList } from "./country/list.js";
  * See PRD: Country Picker Filter and PRD: Browse Judoka for full requirements.
  *
  * @param {HTMLElement} container - The slide track element that receives the flag buttons.
+ * @param {Array<Judoka>} [judokaData] - Optional judoka data for calculating per-country counts.
  * @returns {Promise<void>} Resolves when the slider has been created.
  */
-export async function createCountrySlider(container) {
+export async function createCountrySlider(container, judokaData) {
   if (!container) return;
 
-  await populateCountryList(container);
+  await populateCountryList(container, judokaData);
 }
