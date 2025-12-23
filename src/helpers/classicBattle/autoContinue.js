@@ -15,6 +15,10 @@ let _autoContinue = true;
  * Get the current autoContinue value, checking window override first.
  *
  * @returns {boolean}
+ * @pseudocode
+ * 1. Read window.__AUTO_CONTINUE when available.
+ * 2. Use the override when it is a boolean.
+ * 3. Otherwise return the module-scoped fallback.
  */
 export function getAutoContinue() {
   if (typeof window !== "undefined") {
