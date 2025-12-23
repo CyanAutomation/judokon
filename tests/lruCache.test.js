@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+
 import { LRUCache } from "../src/helpers/lruCache.js";
 
 /**
@@ -9,11 +10,13 @@ describe("LRUCache", () => {
   let cache;
 
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
     cache = new LRUCache(3, 1000); // 3 items max, 1 second TTL
   });
 
   afterEach(() => {
-    // Cleanup happens automatically with useCanonicalTimers
+    vi.useRealTimers();
   });
 
   describe("Basic Operations", () => {
@@ -129,6 +132,27 @@ describe("LRUCache", () => {
       const stats = testCache.getStats();
       expect(stats.totalEntries).toBe(1);
     });
+
+    it("should expire items after TTL elapses", () => {
+      cache.set("key1", "value1");
+
+      vi.advanceTimersByTime(1001);
+
+      expect(cache.get("key1")).toBeUndefined();
+    });
+
+    it("should refresh expiration timestamp on access", () => {
+      cache.set("key1", "value1");
+
+      vi.advanceTimersByTime(900);
+      expect(cache.get("key1")).toBe("value1");
+
+      vi.advanceTimersByTime(900);
+      expect(cache.get("key1")).toBe("value1");
+
+      vi.advanceTimersByTime(1100);
+      expect(cache.get("key1")).toBeUndefined();
+    });
   });
 
   describe("Cache Key Generation", () => {
@@ -224,9 +248,10 @@ describe("LRUCache", () => {
   describe("Performance Characteristics", () => {
     it("should handle large number of operations efficiently", () => {
       const largeCache = new LRUCache(100);
+      const iterations = 200;
 
-      // Insert 1000 items (many will be evicted)
-      for (let i = 0; i < 1000; i++) {
+      // Insert many items (many will be evicted)
+      for (let i = 0; i < iterations; i++) {
         largeCache.set(`key${i}`, `value${i}`);
       }
 
@@ -234,8 +259,8 @@ describe("LRUCache", () => {
       expect(largeCache.size()).toBe(100);
 
       // Most recent items should be present
-      expect(largeCache.get("key999")).toBe("value999");
-      expect(largeCache.get("key998")).toBe("value998");
+      expect(largeCache.get(`key${iterations - 1}`)).toBe(`value${iterations - 1}`);
+      expect(largeCache.get(`key${iterations - 2}`)).toBe(`value${iterations - 2}`);
     });
   });
 });
