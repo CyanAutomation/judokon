@@ -294,6 +294,8 @@ test.describe("Battle state progress list", () => {
         };
         // Set resolve delay to 0 for faster test execution
         window.__OPPONENT_RESOLVE_DELAY_MS = 0;
+        // Disable autoContinue so roundOver state is observable
+        window.__AUTO_CONTINUE = false;
       });
 
       await page.goto("/src/pages/battleClassic.html");
@@ -308,11 +310,6 @@ test.describe("Battle state progress list", () => {
         .toBe("true");
 
       await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
-
-      // Disable autoContinue so roundOver state is observable
-      await page.evaluate(() => {
-        window.__TEST_API?.autoSelect?.setAutoContinue?.(false);
-      });
 
       const result = await triggerAutoSelect(page, 10_000);
       if (!result.success) {

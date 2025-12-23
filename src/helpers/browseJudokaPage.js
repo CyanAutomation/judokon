@@ -198,7 +198,6 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
     return;
   }
   pageRuntime.ensurePanelHidden?.();
-  pageRuntime.setupToggle?.();
 
   /**
    * Fetch judoka and gokyo data concurrently.
@@ -297,6 +296,8 @@ export async function setupBrowseJudokaPage({ runtime } = {}) {
 
       // Set judoka data for country toggle
       pageRuntime.setJudokaData?.(allJudoka);
+      // Now setup the toggle with the judoka data available
+      pageRuntime.setupToggle?.();
 
       const render = (list) => pageRuntime.renderCarousel(list, gokyoData);
       await pageRuntime.renderCarousel(allJudoka, gokyoData);
