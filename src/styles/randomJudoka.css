@@ -94,10 +94,10 @@
 
 .history-list {
   position: fixed;
-  top: 0;
+  top: calc(var(--header-height) + env(safe-area-inset-top));
   right: 0;
   z-index: 11;
-  height: 100dvh;
+  height: calc(100dvh - var(--header-height) - env(safe-area-inset-top));
   width: min(90vw, 260px);
   min-width: 240px;
   max-width: 320px;
