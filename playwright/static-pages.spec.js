@@ -1,5 +1,7 @@
 import { expect, test } from "./fixtures/commonSetup.js";
 import { NAV_RANDOM_JUDOKA } from "./fixtures/navigationChecks.js";
+import { waitForBrowseReady } from "./fixtures/waits.js";
+import judoka from "../tests/fixtures/judoka.json" with { type: "json" };
 
 test.describe("Static pages", () => {
   test("Create Judoka navigates to Random flow and back", async ({ page }) => {
@@ -52,21 +54,52 @@ test.describe("Static pages", () => {
     await expect(page.getByRole("main")).toBeAttached();
     await expect(page.getByTestId("home-link")).toHaveAttribute("href", "../../index.html");
 
+    const readiness = await waitForBrowseReady(page);
+    expect(
+      readiness.ok,
+      readiness.reason ?? "waitForBrowseReady should resolve with a ready snapshot via Test API"
+    ).toBe(true);
+
+    const cardList = page.getByRole("list", { name: "Judoka card carousel" });
+    const cardItems = cardList.getByRole("listitem");
+    await expect(cardItems).toHaveCount(judoka.length);
+
     const layoutToggle = page.getByTestId("layout-mode-toggle");
     await expect(layoutToggle).toBeVisible();
-    await layoutToggle.click();
-    await expect(layoutToggle).toBeChecked();
 
     const countryToggle = page.getByTestId("country-toggle");
-    const countryPanel = page.locator("#country-panel");
-    await expect(countryToggle).toHaveAttribute("aria-expanded", "false");
-    await expect(countryPanel).not.toHaveAttribute("open", "");
     await countryToggle.click();
-    await expect(countryPanel).toHaveAttribute("open", "");
-    await expect(page.getByRole("region", { name: "Country filter panel" })).toBeVisible();
+    const countryPanel = page.getByRole("region", { name: "Country filter panel" });
+    await expect(countryPanel).toBeVisible();
 
-    const clearFilter = page.getByTestId("clear-filter");
-    await expect(clearFilter).toBeVisible();
+    const countryGroup = page.getByRole("group", { name: /filter judoka by country/i });
+    await expect(countryGroup).toBeVisible();
+    const baseColumns = await countryGroup.evaluate(
+      (el) => getComputedStyle(el).gridTemplateColumns
+    );
+
+    await layoutToggle.click();
+    await expect(layoutToggle).toBeChecked();
+    await expect.poll(async () => {
+      return await countryGroup.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+    }).not.toBe(baseColumns);
+
+    const counts = judoka.reduce((acc, entry) => {
+      acc.set(entry.country, (acc.get(entry.country) ?? 0) + 1);
+      return acc;
+    }, new Map());
+    const selection = Array.from(counts.entries()).find(
+      ([country]) => country !== "All"
+    );
+    expect(selection).toBeTruthy();
+    const [selectedCountry, expectedCount] = selection;
+    const escapedCountry = selectedCountry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const countryOption = page.getByRole("radio", {
+      name: new RegExp(`Filter by\\s+${escapedCountry}`, "i")
+    });
+    await countryOption.check();
+    await expect(cardItems).toHaveCount(expectedCount);
   });
 
   test("Change Log lists recent updates and links home", async ({ page }) => {
