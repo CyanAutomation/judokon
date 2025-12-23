@@ -22,7 +22,7 @@ export async function roundOverEnter(machine) {
   if (!getAutoContinue()) {
     try {
       enableNextRoundButton();
-    } catch (error) {
+    } catch {
       // Ignore UI errors in test environments where DOM may not be fully available
     }
   }
