@@ -88,6 +88,11 @@ function makeBadgeVisible(badge) {
  *
  * @param {string} text - The text to display in the badge
  * @returns {void}
+ * @pseudocode
+ * 1. If the battle state badge feature is disabled, exit early.
+ * 2. Retrieve the badge element and exit if it is missing.
+ * 3. Make the badge visible so the update is user-visible.
+ * 4. Set the badge text to the provided value, defaulting to "Lobby" when empty.
  */
 export function setBadgeText(text) {
   try {
@@ -104,6 +109,9 @@ export function setBadgeText(text) {
  * This is a convenience wrapper for initial badge setup.
  *
  * @returns {void}
+ * @pseudocode
+ * 1. Call `initBattleStateBadge` with `force: true` to ensure visibility.
+ * 2. Allow downstream logic to overwrite the text with the current state.
  */
 export function initBadgeSync() {
   initBattleStateBadge({ force: true });
@@ -114,6 +122,9 @@ export function initBadgeSync() {
  * Force the badge to show "Lobby" text without overriding existing "Round" text.
  *
  * @returns {void}
+ * @pseudocode
+ * 1. Invoke `initBattleStateBadge` with `force: false`.
+ * 2. Preserve existing "Round" text while making the badge visible when needed.
  */
 export function ensureLobbyBadge() {
   initBattleStateBadge({ force: false });
