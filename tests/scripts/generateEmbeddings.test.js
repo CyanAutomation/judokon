@@ -27,7 +27,7 @@ describe("JSON_FIELD_ALLOWLIST", () => {
       const allowlist = JSON_FIELD_ALLOWLIST[file];
       if (allowlist === false) continue;
       if (allowlist === true || Array.isArray(allowlist)) {
-        const data = await loadDataFile(dataDir, file);
+        const data = await loadDataFile(dataDir, file).catch(() => null);
         const sampleEntry = pickSampleEntry(data, allowlist);
         expect(sampleEntry, `${file} should provide sample data`).toBeDefined();
         const flattened = flattenSample(sampleEntry);
