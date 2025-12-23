@@ -24,6 +24,23 @@ describe("JSON_FIELD_ALLOWLIST", () => {
     );
     for (const file of files) {
       expect(JSON_FIELD_ALLOWLIST).toHaveProperty(file);
+      const allowlist = JSON_FIELD_ALLOWLIST[file];
+      if (allowlist === false) continue;
+      if (allowlist === true || Array.isArray(allowlist)) {
+        const data = await loadDataFile(dataDir, file);
+        const sampleEntry = pickSampleEntry(data, allowlist);
+        expect(sampleEntry, `${file} should provide sample data`).toBeDefined();
+        const flattened = flattenSample(sampleEntry);
+        const flattenedKeys = Object.keys(flattened);
+        expect(flattenedKeys.length, `${file} should have sample keys`).toBeGreaterThan(0);
+
+        if (Array.isArray(allowlist)) {
+          for (const field of allowlist) {
+            const hasMatch = flattenedKeys.some((key) => matchesAllowlistedKey(key, field));
+            expect(hasMatch, `${file} allowlist missing ${field}`).toBe(true);
+          }
+        }
+      }
     }
   });
 
