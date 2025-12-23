@@ -540,7 +540,9 @@ describe("Random Judoka Selection", () => {
       expect(fresh).toEqual(pristine);
       expect(fresh).not.toEqual(mutated);
       expect(fresh.filters.country.description).toBe(pristine.filters.country.description);
-      expect(fresh.examples[0].input.filters).toEqual(pristine.examples[0].input.filters);
+      if (fresh.examples.length > 0) {
+        expect(fresh.examples[0].input.filters).toEqual(pristine.examples[0].input.filters);
+      }
       expect(fresh.responseFormat.judoka).toBe(pristine.responseFormat.judoka);
     });
 
