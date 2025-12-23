@@ -2,17 +2,33 @@
  * Control automatic continuation after round outcomes.
  *
  * @pseudocode
- * 1. Initialize `autoContinue` checking for window override first.
- * 2. The value can be modified by calling `setAutoContinue(newValue)`.
- * 3. Tests can set window.__AUTO_CONTINUE before page load to control initial value.
+ * 1. Check window.__AUTO_CONTINUE override on each access.
+ * 2. Fall back to internal _autoContinue flag.
+ * 3. Tests can set window.__AUTO_CONTINUE before page load to control behavior.
  *
  * @type {boolean}
  * @returns {boolean}
  */
-export let autoContinue =
-  typeof window !== "undefined" && typeof window.__AUTO_CONTINUE === "boolean"
-    ? window.__AUTO_CONTINUE
-    : true;
+let _autoContinue = true;
+
+/**
+ * Get the current autoContinue value, checking window override first.
+ *
+ * @returns {boolean}
+ */
+export function getAutoContinue() {
+  if (typeof window !== "undefined" && typeof window.__AUTO_CONTINUE === "boolean") {
+    return window.__AUTO_CONTINUE;
+  }
+  return _autoContinue;
+}
+
+/**
+ * Deprecated: Use getAutoContinue() function instead.
+ * This export exists for backwards compatibility but captures value at import time.
+ * @deprecated
+ */
+export const autoContinue = getAutoContinue();
 
 /**
  * Update the auto-continue flag.
@@ -21,10 +37,10 @@ export let autoContinue =
  * @returns {void}
  * @pseudocode
  * 1. Coerce `val` to boolean (`false` disables).
- * 2. Store in module-scoped `autoContinue`.
+ * 2. Store in module-scoped `_autoContinue`.
  */
 export function setAutoContinue(val) {
-  autoContinue = val !== false;
+  _autoContinue = val !== false;
 }
 
-export default autoContinue;
+export default getAutoContinue;

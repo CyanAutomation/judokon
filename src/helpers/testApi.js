@@ -34,10 +34,7 @@ import {
   refreshStatButtonSnapshotFromDom
 } from "./testing/statButtonTracker.js";
 import { createStatButtonTestApi } from "./classicBattle/statButtonTestSignals.js";
-import {
-  autoContinue as getAutoContinue,
-  setAutoContinue
-} from "./classicBattle/autoContinue.js";
+import { autoContinue as getAutoContinue, setAutoContinue } from "./classicBattle/autoContinue.js";
 
 const FRAME_DELAY_MS = 16;
 

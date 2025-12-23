@@ -79,10 +79,10 @@ test.describe("Browse Judoka screen", () => {
 
     await toggle.click();
     await expect(panel).toBeVisible();
-    
+
     // Wait for flags to load (they load lazily when panel opens)
     await page.waitForSelector('input[data-country-code="all"]', { timeout: 5000 });
-    
+
     await page.getByTestId("clear-filter").click();
     await expect(page.getByRole("radio", { name: "Show all countries" })).toBeChecked();
     await expect(cards).toHaveCount(initialCount);

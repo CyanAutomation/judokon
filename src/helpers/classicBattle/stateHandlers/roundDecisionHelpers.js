@@ -6,7 +6,7 @@ import { resolveRound } from "../roundResolver.js";
 import { resolveDelay } from "../timerUtils.js";
 import { guard, guardAsync, scheduleGuard } from "../guard.js";
 import { exposeDebugState, readDebugState } from "../debugHooks.js";
-import { autoContinue } from "../autoContinue.js";
+import { getAutoContinue } from "../autoContinue.js";
 import isStateTransition from "../isStateTransition.js";
 
 // Magic number constants for timing coordination
