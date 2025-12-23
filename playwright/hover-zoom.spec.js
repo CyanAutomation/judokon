@@ -335,11 +335,33 @@ test.describe("Hover Zoom Functionality", () => {
       await expect(
         page.locator("[data-enlarge-listener-attached], [data-enlarged], .judoka-card.hovering")
       ).toHaveCount(0);
+      await expect(page.locator(".judoka-card[onmouseenter], .judoka-card[onmouseleave]")).toHaveCount(0);
 
       await expect(page.locator("body")).toBeVisible({ timeout: 2000 });
 
+      const recoveredCard = await addBrowseCard(page, {
+        firstname: "Recovered",
+        surname: "Card",
+        country: "Recoveria",
+        countryCode: "us",
+        stats: { power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 },
+        weightClass: "60kg",
+        signatureMoveId: 1,
+        rarity: "common"
+      });
+
+      const recoveredCardLocator = page.locator(".judoka-card").first();
+      await expect(recoveredCardLocator).toBeVisible();
+      await expect(recoveredCardLocator).not.toHaveAttribute("data-enlarge-listener-attached", "false");
+
+      await recoveredCardLocator.hover();
+      await expectToBeEnlarged(recoveredCardLocator);
+      await movePointerAwayFromCards(page);
+      await expectToBeCollapsed(recoveredCardLocator);
+
       expect(pageErrors).toHaveLength(0);
       expect(consoleErrors).toHaveLength(0);
+      expect(recoveredCard).toBeDefined();
     });
 
     test("handles page navigation during hover", async ({ page }) => {
@@ -352,6 +374,7 @@ test.describe("Hover Zoom Functionality", () => {
       await firstCard.hover();
       await expectHoverState(firstCard, true);
       await expectToBeEnlarged(firstCard);
+      await expect(firstCard).toHaveClass(/hover/);
 
       // Navigate to another page
       await page.goto("/src/pages/index.html", { waitUntil: "networkidle" });
@@ -360,6 +383,22 @@ test.describe("Hover Zoom Functionality", () => {
       await expect(allCards).toHaveCount(0);
       await expect(page.locator('.judoka-card[style*="transform"]')).toHaveCount(0);
       await expect(page.locator("body")).toBeFocused();
+
+      // Return to browse page and ensure hover timers/listeners are reset
+      await page.goBack();
+      await waitForBrowseReady(page);
+      await ensureBrowseCarouselReady(page);
+      await expect(page.locator(".judoka-card.hovering")).toHaveCount(0);
+      const listenerCount = await page
+        .locator(".judoka-card[data-enlarge-listener-attached='true']")
+        .count();
+      expect(listenerCount).toBeGreaterThan(0);
+
+      const restoredFirstCard = page.locator(".judoka-card").first();
+      await restoredFirstCard.hover();
+      await expectToBeEnlarged(restoredFirstCard);
+      await movePointerAwayFromCards(page);
+      await expectToBeCollapsed(restoredFirstCard);
     });
   });
 

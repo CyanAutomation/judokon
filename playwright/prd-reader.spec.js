@@ -1,6 +1,4 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics } from "./fixtures/navigationChecks.js";
-
 test.describe("PRD Reader page", () => {
   test.beforeEach(async ({ page }) => {
     // Set up routes FIRST
@@ -18,22 +16,51 @@ test.describe("PRD Reader page", () => {
   });
 
   test("PRD reader basics", async ({ page }) => {
-    // Smoke check for PRD Viewer acceptance criteria: initial load, sidebar list, and motion prefs (prdPRDViewer.md).
-    const { main, navigation } = await verifyPageBasics(page);
+    const main = page.getByRole("main");
+    const navigation = page.getByRole("navigation", { name: "PRD list" });
     const container = page.locator("#prd-content");
     const docTitle = page.locator("#prd-title");
     const sidebarLegend = page.getByText("Product Requirement Documents");
     const sidebarLabels = page.locator(".sidebar-list__label");
 
-    await expect(navigation).toHaveAttribute("aria-label", "PRD list");
     await expect(main).toBeVisible();
+    await expect(main).toHaveAttribute("role", "main");
+    await expect(navigation).toHaveAttribute("aria-label", "PRD list");
+    await expect(container).toHaveAttribute("tabindex", "0");
     await expect(sidebarLegend).toBeVisible();
     await expect(sidebarLabels).toHaveText(["doc A", "doc B"]);
+
+    // PRD §Content sanitization: DOMPurify must be available before markdown render.
+    await expect
+      .poll(async () => page.evaluate(() => typeof window.DOMPurify))
+      .toBe("object");
 
     await expect(container).toHaveAttribute("data-rendered-doc", "docA");
     await expect(docTitle).toHaveText("DocA");
     await expect(container).toContainText("Summary");
     await expect(container).toContainText("Deep Dive A");
+  });
+
+  test("PRD reader surfaces ARIA structure and error flows", async ({ page }) => {
+    const container = page.locator("#prd-content");
+    const docTitle = page.locator("#prd-title");
+    const errorBanner = page.getByRole("alert");
+
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(container).toHaveAttribute("data-rendered-doc", "docA");
+    await expect(container.locator("h1, h2").first()).toHaveText(/DocA|Summary/);
+    await expect(docTitle).toHaveText("DocA");
+
+    // Mock a 404 for a follow-up navigation to verify resilience per PRD §Error handling.
+    await page.unroute("**/docB.md");
+    await page.route("**/docB.md", (route) => route.fulfill({ status: 404, body: "" }));
+
+    await container.focus();
+    await page.keyboard.press("ArrowRight");
+
+    await expect(container).toHaveAttribute("data-rendered-doc", "docB");
+    await expect(errorBanner).toHaveText(/Content unavailable/i);
+    await expect(errorBanner).toHaveAttribute("aria-live", /polite/i);
   });
 
   test("forward and back navigation shows correct content", async ({ page }) => {
