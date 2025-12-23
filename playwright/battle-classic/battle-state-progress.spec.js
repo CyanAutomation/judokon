@@ -292,6 +292,10 @@ test.describe("Battle state progress list", () => {
           showRoundSelectModal: true,
           autoSelect: true
         };
+        // Set resolve delay to 0 to prevent guard timeout during auto-select
+        window.__OPPONENT_RESOLVE_DELAY_MS = 0;
+        // Set longer guard delay to prevent race condition with auto-select
+        window.__GUARD_SELECTION_RESOLUTION_DELAY_MS = 3000;
       });
 
       await page.goto("/src/pages/battleClassic.html");
