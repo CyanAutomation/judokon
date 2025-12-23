@@ -335,7 +335,9 @@ test.describe("Hover Zoom Functionality", () => {
       await expect(
         page.locator("[data-enlarge-listener-attached], [data-enlarged], .judoka-card.hovering")
       ).toHaveCount(0);
-      await expect(page.locator(".judoka-card[onmouseenter], .judoka-card[onmouseleave]")).toHaveCount(0);
+      await expect(
+        page.locator(".judoka-card[onmouseenter], .judoka-card[onmouseleave]")
+      ).toHaveCount(0);
 
       await expect(page.locator("body")).toBeVisible({ timeout: 2000 });
 
