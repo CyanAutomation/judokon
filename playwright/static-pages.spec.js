@@ -24,7 +24,7 @@ test.describe("Static pages", () => {
     await expect(weightField).toHaveJSProperty("validationMessage", /.+/);
 
     await page.getByTestId(NAV_RANDOM_JUDOKA).click();
-    await verifyPageBasics(page, [], [], { expectNav: false });
+    await verifyPageBasics(page, [], { expectNav: false });
     await expect(page.getByTestId("player-info")).toHaveText("Player");
     const cardContainer = page.getByTestId("card-container");
     await expect(cardContainer.getByTestId("placeholder-card")).toBeVisible();
