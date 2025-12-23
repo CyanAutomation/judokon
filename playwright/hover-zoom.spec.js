@@ -374,7 +374,8 @@ test.describe("Hover Zoom Functionality", () => {
       await firstCard.hover();
       await expectHoverState(firstCard, true);
       await expectToBeEnlarged(firstCard);
-      await expect(firstCard).toHaveClass(/hover/);
+      await expectHoverState(firstCard, true);
+      await expectToBeEnlarged(firstCard);
 
       // Navigate to another page
       await page.goto("/src/pages/index.html", { waitUntil: "networkidle" });
