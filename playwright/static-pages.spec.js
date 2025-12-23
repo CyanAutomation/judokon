@@ -21,6 +21,7 @@ test.describe("Static pages", () => {
     await expect(countryField).toBeInvalid();
     await expect(weightField).toBeInvalid();
     await expect(countryField).toHaveJSProperty("validationMessage", /.+/);
+    await expect(weightField).toHaveJSProperty("validationMessage", /.+/);
 
     await page.getByTestId(NAV_RANDOM_JUDOKA).click();
     await verifyPageBasics(page, [], [], { expectNav: false });
