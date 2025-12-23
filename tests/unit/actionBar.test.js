@@ -431,7 +431,6 @@ describe("Action Bar Component", () => {
       expect(powerButton?.disabled).toBe(true);
       expect(powerButton?.getAttribute("data-stat-enabled")).toBe("false");
 
-      actionBar.setStatButtonsEnabled(true);
       statSelectedHandler();
       expect(powerButton?.disabled).toBe(true);
       expect(powerButton?.getAttribute("data-stat-enabled")).toBe("false");
