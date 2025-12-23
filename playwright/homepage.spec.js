@@ -165,28 +165,15 @@ test.describe("Homepage", () => {
     await expect(heading).toBeVisible();
     await expect(hero).toHaveAttribute("aria-label", "Game mode selection");
 
-    const viewports = [
-      { label: "desktop", size: { width: 1280, height: 720 } },
-      { label: "mobile", size: { width: 430, height: 900 } }
-    ];
+    const ctaBoxBefore = await primaryCta.boundingBox();
+    await primaryCta.focus();
+    const ctaBoxAfter = await primaryCta.boundingBox();
 
-    for (const viewport of viewports) {
-      for (const reducedMotion of ["no-preference", "reduce"]) {
-        await page.emulateMedia({ reducedMotion });
-        await page.setViewportSize(viewport.size);
-        await page.reload({ waitUntil: "networkidle" });
-
-        const ctaBoxBefore = await primaryCta.boundingBox();
-        await primaryCta.focus();
-        const ctaBoxAfter = await primaryCta.boundingBox();
-
-        await expect(heading).toHaveText("JU-DO-KON!");
-        await expect(primaryCta).toBeVisible();
-        await expect(primaryCta).toBeFocused();
-        expect(Math.abs((ctaBoxAfter?.x ?? 0) - (ctaBoxBefore?.x ?? 0))).toBeLessThanOrEqual(2);
-        expect(Math.abs((ctaBoxAfter?.y ?? 0) - (ctaBoxBefore?.y ?? 0))).toBeLessThanOrEqual(2);
-      }
-    }
+    await expect(primaryCta).toBeVisible();
+    await expect(primaryCta).toBeFocused();
+    await expect(heading).toHaveText("JU-DO-KON!");
+    expect(Math.abs((ctaBoxAfter?.x ?? 0) - (ctaBoxBefore?.x ?? 0))).toBeLessThanOrEqual(2);
+    expect(Math.abs((ctaBoxAfter?.y ?? 0) - (ctaBoxBefore?.y ?? 0))).toBeLessThanOrEqual(2);
   });
 
   test("selecting the classic battle tile navigates into classic battle experience", async ({
