@@ -9,6 +9,7 @@
  *
  * @param {HTMLInputElement} searchInput - The search input element.
  * @param {Element} countryListContainer - Container with country radio options.
+ * @returns {void}
  */
 export function setupCountrySearch(searchInput, countryListContainer) {
   if (!searchInput || !countryListContainer) return;
@@ -76,6 +77,7 @@ export function setupCountrySearch(searchInput, countryListContainer) {
  * 4. Support repeated presses to cycle through matches.
  *
  * @param {Element} countryListContainer - Container with country radio options.
+ * @returns {void}
  */
 export function setupKeyboardNavigation(countryListContainer) {
   if (!countryListContainer) return;

@@ -35,14 +35,18 @@ describe("createCountrySlider", () => {
 
   it("renders flag buttons using populateCountryList", async () => {
     const track = document.createElement("div");
+    const mockJudokaData = [
+      { id: 1, country: "Japan", countryCode: "jp" },
+      { id: 2, country: "Brazil", countryCode: "br" }
+    ];
 
     const { createCountrySlider } = await harness.importModule(
       "../../src/helpers/countrySlider.js"
     );
 
-    await createCountrySlider(track);
+    await createCountrySlider(track, mockJudokaData);
 
-    expect(mockPopulateCountryList).toHaveBeenCalledWith(track);
+    expect(mockPopulateCountryList).toHaveBeenCalledWith(track, mockJudokaData);
     const slides = track.querySelectorAll(".slide");
     expect(slides).toHaveLength(2);
   });
