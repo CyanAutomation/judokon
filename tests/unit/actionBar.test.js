@@ -13,6 +13,7 @@ describe("Action Bar Component", () => {
   let container;
   let mockEngine;
   let actionBar;
+  let engineHandlers;
 
   beforeEach(() => {
     // Create a test container
@@ -20,9 +21,18 @@ describe("Action Bar Component", () => {
     document.body.appendChild(container);
 
     // Create a mock battle engine with event emitter
+    engineHandlers = new Map();
     mockEngine = {
-      on: vi.fn(),
-      off: vi.fn(),
+      on: vi.fn((event, handler) => {
+        engineHandlers.set(event, handler);
+        return mockEngine;
+      }),
+      off: vi.fn((event, handler) => {
+        if (engineHandlers.get(event) === handler) {
+          engineHandlers.delete(event);
+        }
+        return mockEngine;
+      }),
       emit: vi.fn()
     };
   });
@@ -398,20 +408,48 @@ describe("Action Bar Component", () => {
   });
 
   describe("Lifecycle", () => {
-    it("should subscribe to engine events", () => {
+    it("should subscribe to engine events and toggle stat buttons", () => {
       actionBar = createActionBar({ engine: mockEngine, container });
       actionBar.render();
 
-      expect(mockEngine.on).toHaveBeenCalled();
+      const roundStartHandler = engineHandlers.get("roundStart");
+      const roundEndHandler = engineHandlers.get("roundEnd");
+      const statSelectedHandler = engineHandlers.get("statSelected");
+      expect(roundStartHandler).toBeInstanceOf(Function);
+      expect(roundEndHandler).toBeInstanceOf(Function);
+      expect(statSelectedHandler).toBeInstanceOf(Function);
+
+      const powerButton = container.querySelector('[data-action-button-id="power"]');
+      expect(powerButton?.disabled).toBe(true);
+      expect(powerButton?.getAttribute("data-stat-enabled")).toBe("false");
+
+      roundStartHandler();
+      expect(powerButton?.disabled).toBe(false);
+      expect(powerButton?.getAttribute("data-stat-enabled")).toBe("true");
+
+      roundEndHandler();
+      expect(powerButton?.disabled).toBe(true);
+      expect(powerButton?.getAttribute("data-stat-enabled")).toBe("false");
+
+      actionBar.setStatButtonsEnabled(true);
+      statSelectedHandler();
+      expect(powerButton?.disabled).toBe(true);
+      expect(powerButton?.getAttribute("data-stat-enabled")).toBe("false");
     });
 
     it("should clean up on destroy", () => {
       actionBar = createActionBar({ engine: mockEngine, container });
       actionBar.render();
 
+      const roundStartHandler = engineHandlers.get("roundStart");
+      const roundEndHandler = engineHandlers.get("roundEnd");
+      const statSelectedHandler = engineHandlers.get("statSelected");
+
       actionBar.destroy();
 
-      expect(mockEngine.off).toHaveBeenCalled();
+      expect(mockEngine.off).toHaveBeenCalledWith("roundStart", roundStartHandler);
+      expect(mockEngine.off).toHaveBeenCalledWith("roundEnd", roundEndHandler);
+      expect(mockEngine.off).toHaveBeenCalledWith("statSelected", statSelectedHandler);
       expect(container.querySelector(".action-bar")).toBeNull();
     });
 
