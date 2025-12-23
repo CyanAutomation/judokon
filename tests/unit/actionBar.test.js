@@ -221,102 +221,127 @@ describe("Action Bar Component", () => {
   });
 
   describe("Keyboard Shortcuts", () => {
-    beforeEach(() => {
-      actionBar = createActionBar({ engine: mockEngine, container });
-      actionBar.render();
-    });
+    const createKeyboardEvent = (key) => {
+      const event = new KeyboardEvent("keydown", { key });
+      const preventDefault = vi.fn();
 
-    it("should trigger stat 1 when pressing key 1", () => {
-      const handler = vi.fn();
-      actionBar = createActionBar({
-        engine: mockEngine,
-        container,
-        handlers: { onStatSelected: handler }
+      Object.defineProperty(event, "preventDefault", {
+        value: preventDefault,
+        writable: true
       });
-      actionBar.render();
-      actionBar.setStatButtonsEnabled(true);
 
-      const event = new KeyboardEvent("keydown", { key: "1" });
-      document.dispatchEvent(event);
+      return { event, preventDefault };
+    };
 
-      expect(handler).toHaveBeenCalledWith("power");
-    });
+    const shortcutScenarios = [
+      ...STATS.map((stat, index) => ({
+        description: `pressing ${index + 1} triggers ${stat} when stat buttons enabled`,
+        handlerName: "onStatSelected",
+        expectedArg: stat,
+        key: `${index + 1}`,
+        statButtonsEnabled: true,
+        expectInvocation: true
+      })),
+      {
+        description: "pressing o triggers options",
+        handlerName: "onOptionsClick",
+        key: "o",
+        expectInvocation: true
+      },
+      {
+        description: "pressing Enter triggers action",
+        handlerName: "onActionClick",
+        expectedArg: "next",
+        key: "Enter",
+        expectInvocation: true
+      },
+      {
+        description: "pressing Space triggers action",
+        handlerName: "onActionClick",
+        expectedArg: "next",
+        key: " ",
+        expectInvocation: true
+      },
+      {
+        description: "does not trigger stat shortcut when buttons are disabled",
+        handlerName: "onStatSelected",
+        expectedArg: STATS[0],
+        key: "1",
+        statButtonsEnabled: false,
+        expectInvocation: false
+      },
+      {
+        description: "ignores Enter when an input is focused",
+        handlerName: "onActionClick",
+        expectedArg: "next",
+        key: "Enter",
+        activeElementTag: "INPUT",
+        expectInvocation: false
+      },
+      {
+        description: "ignores Space when an input is focused",
+        handlerName: "onActionClick",
+        expectedArg: "next",
+        key: " ",
+        activeElementTag: "INPUT",
+        expectInvocation: false
+      }
+    ];
 
-    it("should trigger stat 5 when pressing key 5", () => {
-      const handler = vi.fn();
-      actionBar = createActionBar({
-        engine: mockEngine,
-        container,
-        handlers: { onStatSelected: handler }
-      });
-      actionBar.render();
-      actionBar.setStatButtonsEnabled(true);
+    shortcutScenarios.forEach(
+      ({
+        description,
+        handlerName,
+        expectedArg,
+        key,
+        statButtonsEnabled,
+        activeElementTag,
+        expectInvocation
+      }) => {
+        it(`handles keyboard shortcut: ${description}`, () => {
+          const handler = vi.fn();
 
-      const event = new KeyboardEvent("keydown", { key: "5" });
-      document.dispatchEvent(event);
+          actionBar = createActionBar({
+            engine: mockEngine,
+            container,
+            handlers: { [handlerName]: handler }
+          });
+          actionBar.render();
 
-      expect(handler).toHaveBeenCalledWith("newaza");
-    });
+          if (statButtonsEnabled) {
+            actionBar.setStatButtonsEnabled(true);
+          }
 
-    it("should not trigger stat shortcut if buttons are disabled", () => {
-      const handler = vi.fn();
-      actionBar = createActionBar({
-        engine: mockEngine,
-        container,
-        handlers: { onStatSelected: handler }
-      });
-      actionBar.render();
+          let activeElement;
+          if (activeElementTag) {
+            activeElement = document.createElement(activeElementTag.toLowerCase());
+            document.body.appendChild(activeElement);
+            activeElement.focus();
+          }
 
-      const event = new KeyboardEvent("keydown", { key: "1" });
-      document.dispatchEvent(event);
+          const { event, preventDefault } = createKeyboardEvent(key);
 
-      expect(handler).not.toHaveBeenCalled();
-    });
+          document.dispatchEvent(event);
 
-    it("should trigger options when pressing O", () => {
-      const handler = vi.fn();
-      actionBar = createActionBar({
-        engine: mockEngine,
-        container,
-        handlers: { onOptionsClick: handler }
-      });
-      actionBar.render();
+          if (activeElement) {
+            activeElement.remove();
+            document.body.focus();
+          }
 
-      const event = new KeyboardEvent("keydown", { key: "o" });
-      document.dispatchEvent(event);
-
-      expect(handler).toHaveBeenCalled();
-    });
-
-    it("should trigger action when pressing Enter", () => {
-      const handler = vi.fn();
-      actionBar = createActionBar({
-        engine: mockEngine,
-        container,
-        handlers: { onActionClick: handler }
-      });
-      actionBar.render();
-
-      const event = new KeyboardEvent("keydown", { key: "Enter" });
-      document.dispatchEvent(event);
-
-      expect(handler).toHaveBeenCalledWith("next");
-    });
-
-    it("should trigger action when pressing Space", () => {
-      const handler = vi.fn();
-      actionBar = createActionBar({
-        engine: mockEngine,
-        container,
-        handlers: { onActionClick: handler }
-      });
-      actionBar.render();
-
-      const event = new KeyboardEvent("keydown", { key: " " });
-      document.dispatchEvent(event);
-
-      expect(handler).toHaveBeenCalledWith("next");
-    });
+          if (expectInvocation) {
+            if (expectedArg !== undefined) {
+              expect(handler).toHaveBeenCalledWith(expectedArg);
+            } else {
+              expect(handler).toHaveBeenCalled();
+            }
+            expect(preventDefault).toHaveBeenCalled();
+          } else {
+            expect(handler).not.toHaveBeenCalled();
+            expect(preventDefault).not.toHaveBeenCalled();
+          }
+        });
+      }
+    );
 
     it("should not trigger keyboard shortcut after destroy", () => {
       const handler = vi.fn();
@@ -328,10 +353,11 @@ describe("Action Bar Component", () => {
       actionBar.render();
       actionBar.destroy();
 
-      const event = new KeyboardEvent("keydown", { key: "Enter" });
+      const { event, preventDefault } = createKeyboardEvent("Enter");
       document.dispatchEvent(event);
 
       expect(handler).not.toHaveBeenCalled();
+      expect(preventDefault).not.toHaveBeenCalled();
     });
   });
 
