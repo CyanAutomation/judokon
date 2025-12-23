@@ -154,6 +154,19 @@ describe("LRUCache", () => {
       vi.advanceTimersByTime(1100);
       expect(cache.get("key1")).toBeUndefined();
     });
+
+    it("should treat zero-valued timestamps as valid until TTL runs out", () => {
+      cache.set("keyZero", "valueZero");
+
+      // Stored timestamp is zero because system time is mocked to 0 in beforeEach.
+      expect(cache.isExpired("keyZero")).toBe(false);
+      expect(cache.getStats().expiredCount).toBe(0);
+      expect(cache.get("keyZero")).toBe("valueZero");
+
+      vi.advanceTimersByTime(1001);
+      expect(cache.isExpired("keyZero")).toBe(true);
+      expect(cache.get("keyZero")).toBeUndefined();
+    });
   });
 
   describe("Cache Key Generation", () => {

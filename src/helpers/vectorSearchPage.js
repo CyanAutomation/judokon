@@ -5,7 +5,7 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { prepareSearchUi, getSelectedTags } from "./vectorSearchPage/queryUi.js";
 import { renderResults } from "./vectorSearchPage/renderResults.js";
-import { preloadExtractor } from "./api/vectorSearchPage.js";
+import { preloadExtractor, __setExtractor } from "./api/vectorSearchPage.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { createSpinner } from "../components/Spinner.js";
 import { buildQueryVector } from "./vectorSearchPage/buildQueryVector.js";
@@ -200,6 +200,10 @@ function renderSearchResults(tbody, messageEl, matches, terms) {
  */
 export async function init() {
   preloadExtractor();
+  // Expose test helper for resetting extractor cache
+  if (typeof window !== "undefined") {
+    window.__setExtractor = __setExtractor;
+  }
   const container = document.querySelector(".vector-search-container") || document.body;
   spinner = createSpinner(container);
   const form = document.getElementById("vector-search-form");

@@ -111,6 +111,13 @@ test.describe("Vector search page", () => {
     const rows = page.locator("#vector-results-table tbody tr");
     await expect(rows).not.toHaveCount(0);
 
+    // Clear the extractor cache so the second search will attempt to reload it
+    await page.evaluate(() => {
+      if (window.__setExtractor) {
+        window.__setExtractor(null);
+      }
+    });
+
     await page.unroute("**/transformers.min.js");
     await page.route("**/transformers.min.js", (route) => route.fulfill({ status: 500 }));
 
