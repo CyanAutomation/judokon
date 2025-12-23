@@ -262,7 +262,9 @@
   color: var(--color-text);
   font-size: var(--font-medium);
   font-family: inherit;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .country-search-input:focus {
@@ -445,12 +447,12 @@
   #layout-mode-toggle:checked ~ #country-panel > .country-panel__content {
     transition: none;
   }
-  
+
   #layout-mode-toggle,
   #layout-mode-toggle::after {
     transition: none;
   }
-  
+
   .country-filter-group {
     transition: none;
   }

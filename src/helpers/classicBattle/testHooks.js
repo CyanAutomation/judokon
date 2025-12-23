@@ -319,16 +319,10 @@ export async function triggerRoundTimeoutNow(store, options = {}) {
   try {
     emitBattleEvent("roundTimeout");
   } catch {}
-  // Dispatch the timeout to transition state (e.g., waitingForPlayerAction -> roundDecision).
-  // Use Promise.resolve() to return a settled promise that still needs awaiting,
-  // then grant the browser a chance to update the DOM via setTimeout(0) before
-  // proceeding with auto-select. This ensures intermediate state changes are observable.
-  await dispatchBattleEvent("timeout");
 
-  // Allow the browser event loop to process DOM updates before proceeding with auto-select
-  await new Promise((resolve) => setTimeout(resolve, 0));
-
-  // Complete auto-select after the state has settled and DOM has updated
+  // CRITICAL FIX: Perform auto-select BEFORE transitioning to roundDecision.
+  // This ensures store.playerChoice is set when roundDecisionEnter checks for it,
+  // avoiding the race condition where the guard timeout fires before selection completes.
   try {
     const autoSelectPromise = autoSelectStat(onExpiredSelect, 0);
     if (awaitCompletion) {
@@ -343,6 +337,11 @@ export async function triggerRoundTimeoutNow(store, options = {}) {
       }
     }
   } catch {}
+
+  // Now dispatch the timeout to transition state (waitingForPlayerAction -> roundDecision).
+  // At this point, store.playerChoice should already be set by autoSelectStat,
+  // so roundDecisionEnter will find the selection and resolve immediately.
+  await dispatchBattleEvent("timeout");
 }
 
 /**
