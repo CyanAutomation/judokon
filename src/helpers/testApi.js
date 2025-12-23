@@ -1215,6 +1215,55 @@ const stateApi = {
         reason: error instanceof Error ? error.message : String(error)
       };
     }
+  },
+
+  /**
+   * Advance from roundOver to cooldown state by dispatching the continue event.
+   *
+   * This is useful for tests that disable autoContinue and need to manually
+   * progress through rounds. It bypasses UI interactions (clicking Next button)
+   * and directly dispatches the state machine event.
+   *
+   * @returns {Promise<{success: boolean, error?: string, previousState?: string, nextState?: string}>}
+   * @pseudocode
+   * 1. Get the battle state machine
+   * 2. Check if current state is roundOver
+   * 3. If yes, dispatch "continue" event to transition to cooldown
+   * 4. Return success status with state information
+   * 5. If not at roundOver or machine unavailable, return error
+   */
+  async advanceRound() {
+    try {
+      const machine = getBattleStateMachine();
+      if (!machine) {
+        return { success: false, error: "State machine unavailable" };
+      }
+
+      const previousState = machine.getState?.() ?? null;
+
+      if (previousState !== "roundOver") {
+        return {
+          success: false,
+          error: `Cannot advance: not at roundOver (current: ${previousState})`,
+          previousState
+        };
+      }
+
+      await machine.dispatch("continue");
+
+      const nextState = machine.getState?.() ?? null;
+
+      return {
+        success: true,
+        previousState,
+        nextState
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
   }
 };
 

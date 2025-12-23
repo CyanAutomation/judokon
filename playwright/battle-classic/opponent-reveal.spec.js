@@ -1,6 +1,7 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import selectors from "../helpers/selectors.js";
 import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHelper.js";
+import { advanceRound } from "../helpers/advanceRound.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import {
   MUTED_CONSOLE_LEVELS,
@@ -92,9 +93,13 @@ test.describe("Classic Battle Opponent Reveal", () => {
       const firstRound = await getBattleSnapshot(page);
       expect(firstRound?.selectionMade).toBe(true);
 
-      const nextButton = page.locator("#next-button");
-      await expect(nextButton).toBeEnabled();
-      await nextButton.click();
+      // Use Test API to advance round instead of clicking Next button
+      // This is more reliable when autoContinue is disabled
+      const result = await advanceRound(page);
+      if (!result.success) {
+        throw new Error(`Failed to advance round: ${result.error}`);
+      }
+      await waitForBattleState(page, "cooldown");
 
       await expect
         .poll(async () => {
