@@ -94,7 +94,8 @@ describe("browseJudokaPage helpers", () => {
       }
     };
 
-    const loaded = setupCountryToggle(toggleButton, panel, null, { adapter });
+    const mockJudokaData = [{ id: 1, country: "Japan" }];
+    const loaded = setupCountryToggle(toggleButton, panel, null, mockJudokaData, { adapter });
 
     expect(toggleButton.addEventListener).not.toHaveBeenCalled();
     expect(panel.addEventListener).toHaveBeenCalledWith("toggle", expect.any(Function));

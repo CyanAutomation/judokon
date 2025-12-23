@@ -80,7 +80,7 @@ test.describe("Browse Judoka screen", () => {
     await toggle.click();
     await expect(panel).toBeVisible();
     await page.getByTestId("clear-filter").click();
-    await expect(page.getByRole("radio", { name: "All" })).toBeChecked();
+    await expect(page.getByRole("radio", { name: "Show all countries" })).toBeChecked();
     await expect(cards).toHaveCount(initialCount);
 
     const carousel = page.getByTestId("carousel");

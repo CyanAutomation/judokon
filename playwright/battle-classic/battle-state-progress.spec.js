@@ -294,8 +294,6 @@ test.describe("Battle state progress list", () => {
         };
         // Set resolve delay to 0 for faster test execution
         window.__OPPONENT_RESOLVE_DELAY_MS = 0;
-        // Disable autoContinue so roundOver state is observable
-        window.__AUTO_CONTINUE = false;
       });
 
       await page.goto("/src/pages/battleClassic.html");
@@ -311,25 +309,28 @@ test.describe("Battle state progress list", () => {
 
       await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
 
+      // Disable autoContinue so roundOver state is observable
+      await page.evaluate(() => {
+        window.__TEST_API?.autoSelect?.setAutoContinue?.(false);
+      });
+
       const result = await triggerAutoSelect(page, 10_000);
       if (!result.success) {
         throw new Error(`Failed to trigger auto-select: ${result.error}`);
       }
 
-      // After triggerAutoSelect with guards working correctly, the state should transition
+      // After triggerAutoSelect with the fix, the state should transition
       // from waitingForPlayerAction -> roundDecision (via statSelected from auto-select)
-      // -> roundOver (via outcome event from roundDecision onEnter actions)
-      // -> cooldown (via autoContinue).
-      // Since roundOver is transient when autoContinue is enabled, we wait for cooldown
-      // as the observable stable state after the round completes.
-      await waitForBattleState(page, "cooldown", { timeout: 10_000 });
+      // -> roundOver (via outcome event from roundDecision onEnter actions).
+      // With autoContinue disabled, roundOver will be stable and observable.
+      await waitForBattleState(page, "roundOver", { timeout: 10_000 });
 
-      // Verify the progress list tracked the transition through roundOver
-      // (even though we're now in cooldown, the progress should have recorded roundOver)
-      const progressState = await progress.getAttribute("data-feature-battle-state-active");
-      console.log("Current progress state:", progressState);
-      
-      // The progress tracking should show that we've completed a round
+      // Verify the progress list tracked the transition to roundOver
+      await expect(progress).toHaveAttribute("data-feature-battle-state-active", "roundOver");
+      await expect(progress).toHaveAttribute(
+        "data-feature-battle-state-active-original",
+        "roundOver"
+      );
       await expect(progress.locator('li[data-feature-battle-state-active="true"]')).toHaveCount(1);
     }, ["log", "info", "warn", "error", "debug"]));
 });

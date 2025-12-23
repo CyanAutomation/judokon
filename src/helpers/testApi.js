@@ -34,6 +34,10 @@ import {
   refreshStatButtonSnapshotFromDom
 } from "./testing/statButtonTracker.js";
 import { createStatButtonTestApi } from "./classicBattle/statButtonTestSignals.js";
+import {
+  autoContinue as getAutoContinue,
+  setAutoContinue
+} from "./classicBattle/autoContinue.js";
 
 const FRAME_DELAY_MS = 16;
 
@@ -3275,6 +3279,29 @@ const testApi = {
       } catch {
         return false;
       }
+    },
+
+    /**
+     * Control whether rounds automatically continue after completion.
+     *
+     * @param {boolean} enabled - Whether to enable automatic continuation between rounds.
+     * @returns {void}
+     * @pseudocode
+     * 1. Call setAutoContinue with the provided value.
+     * 2. When enabled=false, rounds will pause at roundOver state.
+     * 3. When enabled=true, rounds will automatically transition to cooldown.
+     */
+    setAutoContinue(enabled) {
+      setAutoContinue(enabled);
+    },
+
+    /**
+     * Get the current autoContinue setting.
+     *
+     * @returns {boolean} Current autoContinue value.
+     */
+    getAutoContinue() {
+      return getAutoContinue;
     }
   }
 };
