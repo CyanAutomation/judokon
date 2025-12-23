@@ -79,7 +79,7 @@ function ensureRadioGroup(container) {
   return fieldset;
 }
 
-function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt }) {
+function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt, judokaCount }) {
   const doc = fieldset.ownerDocument ?? document;
   const rawValue = typeof value === "string" ? value : String(value ?? "");
   const normalized = rawValue.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
@@ -143,16 +143,26 @@ function createRadioOption(fieldset, { value, label, ariaLabel, imageAlt }) {
 
   labelEl.append(flagImg, textEl);
 
+  // Add judoka count badge if provided
+  if (typeof judokaCount === "number" && judokaCount > 0) {
+    const countBadge = doc.createElement("span");
+    countBadge.className = "judoka-count";
+    countBadge.textContent = String(judokaCount);
+    countBadge.setAttribute("aria-label", `${judokaCount} judoka`);
+    labelEl.appendChild(countBadge);
+  }
+
   return { input, flagImg, labelEl };
 }
 
-function renderAllButton(container) {
+function renderAllButton(container, totalCount) {
   const fieldset = ensureRadioGroup(container);
   const { input, flagImg, labelEl } = createRadioOption(fieldset, {
     value: "all",
     label: "All",
     ariaLabel: "Show all countries",
-    imageAlt: "All countries"
+    imageAlt: "All countries",
+    judokaCount: totalCount
   });
   flagImg.src = "https://flagcdn.com/w320/vu.png";
   input.checked = true;
@@ -200,13 +210,15 @@ function initLazyFlagLoader(scrollContainer) {
   );
 }
 
-async function renderCountryBatch(fieldset, countries, nameToCode, imageObserver) {
+async function renderCountryBatch(fieldset, countries, nameToCode, imageObserver, countryCounts) {
   for (const countryName of countries) {
+    const judokaCount = countryCounts ? countryCounts.get(countryName) : undefined;
     const { input, flagImg, labelEl } = createRadioOption(fieldset, {
       value: countryName,
       label: countryName,
       ariaLabel: `Filter by ${countryName}`,
-      imageAlt: `${countryName} Flag`
+      imageAlt: `${countryName} Flag`,
+      judokaCount
     });
     try {
       const code = nameToCode.get(countryName);
@@ -249,10 +261,10 @@ export async function loadNextCountryBatch(container) {
   if (!state) {
     return;
   }
-  const { activeCountries, nameToCode, batchSize, imageObserver } = state;
+  const { activeCountries, nameToCode, batchSize, imageObserver, countryCounts } = state;
   state.fieldset ||= ensureRadioGroup(container);
   const batch = activeCountries.slice(state.rendered, state.rendered + batchSize);
-  await renderCountryBatch(state.fieldset, batch, nameToCode, imageObserver);
+  await renderCountryBatch(state.fieldset, batch, nameToCode, imageObserver, countryCounts);
   state.rendered += batch.length;
 }
 
@@ -262,16 +274,18 @@ export async function loadNextCountryBatch(container) {
  * @pseudocode
  * 1. Call `fetchActiveCountries` to get active names and code map.
  * 2. Show a message and exit when no active countries are returned.
- * 3. Render the "All" button.
- * 4. Determine batch size from connection info.
- * 5. Initialize a lazy flag loader via `IntersectionObserver`.
- * 6. Render batches of country buttons and attach a scroll listener for lazy loading.
- * 7. Replace contents with "No countries available." on error.
+ * 3. Calculate judoka counts per country from judoka data.
+ * 4. Render the "All" button with total count.
+ * 5. Determine batch size from connection info.
+ * 6. Initialize a lazy flag loader via `IntersectionObserver`.
+ * 7. Render batches of country buttons and attach a scroll listener for lazy loading.
+ * 8. Replace contents with "No countries available." on error.
  *
  * @param {HTMLElement} container - Element where buttons will be appended.
+ * @param {Array<Judoka>} [judokaData] - Optional judoka data for calculating counts.
  * @returns {Promise<void>} Resolves when the list is populated.
  */
-export async function populateCountryList(container) {
+export async function populateCountryList(container, judokaData) {
   try {
     const { activeCountries, nameToCode } = await fetchActiveCountries();
     if (activeCountries.length === 0) {
@@ -281,7 +295,20 @@ export async function populateCountryList(container) {
       return;
     }
 
-    const fieldset = renderAllButton(container);
+    // Calculate judoka counts per country
+    let countryCounts = new Map();
+    let totalCount = 0;
+    if (Array.isArray(judokaData)) {
+      totalCount = judokaData.length;
+      for (const judoka of judokaData) {
+        const country = judoka.country;
+        if (typeof country === "string" && country.trim()) {
+          countryCounts.set(country, (countryCounts.get(country) || 0) + 1);
+        }
+      }
+    }
+
+    const fieldset = renderAllButton(container, totalCount);
 
     const scrollContainer = container.parentElement || container;
     const connection = typeof navigator !== "undefined" ? navigator.connection : undefined;
@@ -293,7 +320,8 @@ export async function populateCountryList(container) {
       batchSize,
       imageObserver,
       fieldset,
-      rendered: 0
+      rendered: 0,
+      countryCounts
     };
     batchState.set(container, state);
 

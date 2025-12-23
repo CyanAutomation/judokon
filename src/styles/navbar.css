@@ -86,7 +86,8 @@
   transition:
     background-color 150ms ease-in-out,
     color 150ms ease-in-out,
-    outline-color 150ms ease-in-out;
+    outline-color 150ms ease-in-out,
+    transform 150ms ease-in-out;
   background-color: var(--button-bg);
   color: var(--button-text-color);
   border: none;
@@ -103,6 +104,7 @@
     no-repeat center / contain;
   -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%20-960%20960%20960%22%3E%3Cpath%20d%3D%22M80-80v-280h280v280H80Zm0-340v-280h280v280H80Zm340%20340v-280h280v280H420Zm0-340v-280h280v280H420Z%22/%3E%3C/svg%3E")
     no-repeat center / contain;
+  transition: transform 200ms ease-in-out;
 }
 
 #layout-mode-toggle:focus-visible {
@@ -113,6 +115,14 @@
 #layout-mode-toggle:checked {
   background-color: var(--color-primary);
   color: var(--color-text-inverted);
+}
+
+#layout-mode-toggle:checked::after {
+  transform: rotate(90deg);
+}
+
+#layout-mode-toggle:active {
+  transform: scale(0.95);
 }
 
 #layout-mode-toggle:checked ~ #country-panel {
@@ -178,8 +188,8 @@
   top: var(--header-height);
   bottom: var(--footer-height);
   right: 0;
-  width: 75vw;
-  max-width: 320px;
+  width: min(85vw, 480px);
+  max-width: 480px;
   background: var(--color-primary);
   overflow-y: auto;
   padding: var(--space-md);
@@ -226,12 +236,43 @@
   .country-flag-slide-track
   > fieldset {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fit, minmax(clamp(80px, 12vw, 120px), 1fr));
+  gap: clamp(var(--space-sm), 2vw, var(--space-lg));
 }
 
 #layout-mode-toggle:checked ~ #country-panel > .country-panel__content .slide {
   display: flex;
+}
+
+/* Country search styling */
+.country-search-wrapper {
+  padding: 0 0 var(--space-md) 0;
+  position: sticky;
+  top: 0;
+  background: var(--color-primary);
+  z-index: 10;
+}
+
+.country-search-input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  font-size: var(--font-medium);
+  font-family: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.country-search-input:focus {
+  outline: none;
+  border-color: var(--color-text-inverted);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.country-search-input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
 }
 
 /* Panel is off-screen by default; visibility toggled by the native `open` attribute */
@@ -240,9 +281,10 @@
   border: 0;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+  transition: grid-template-columns 300ms ease;
 }
 
 .country-filter-group > input[type="radio"] {
@@ -290,6 +332,21 @@
 
 [type="radio"][name="country-filter"]:checked + .flag-button {
   border-color: var(--color-primary);
+}
+
+.flag-button .judoka-count {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--color-text-inverted);
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  min-width: 20px;
+  text-align: center;
+  pointer-events: none;
 }
 
 .clear-filter-button {
@@ -388,10 +445,43 @@
   #layout-mode-toggle:checked ~ #country-panel > .country-panel__content {
     transition: none;
   }
+  
+  #layout-mode-toggle,
+  #layout-mode-toggle::after {
+    transition: none;
+  }
+  
+  .country-filter-group {
+    transition: none;
+  }
 }
 
 .reduce-motion .country-panel__content,
 .reduce-motion .country-panel[open] > .country-panel__content,
 .reduce-motion #layout-mode-toggle:checked ~ #country-panel > .country-panel__content {
   transition: none;
+}
+
+.reduce-motion #layout-mode-toggle,
+.reduce-motion #layout-mode-toggle::after {
+  transition: none;
+}
+
+.reduce-motion .country-filter-group {
+  transition: none;
+}
+
+/* Responsive breakpoints for country panel */
+@media (max-width: 400px) {
+  .country-panel__content {
+    width: 90vw;
+    max-width: none;
+  }
+}
+
+@media (min-width: 401px) and (max-width: 600px) {
+  .country-panel__content {
+    width: 85vw;
+    max-width: 400px;
+  }
 }

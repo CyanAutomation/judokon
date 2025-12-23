@@ -79,6 +79,17 @@
               role="region"
               aria-label="Country filter panel"
             >
+              <div class="country-search-wrapper">
+                <input
+                  type="search"
+                  id="country-search"
+                  class="country-search-input"
+                  placeholder="Search countries..."
+                  aria-label="Filter country list by name"
+                  autocomplete="off"
+                  data-testid="country-search"
+                />
+              </div>
               <div class="country-flag-slider">
                 <div class="country-flag-slide-track" id="country-list">
                   <!-- Country names will be dynamically inserted here -->

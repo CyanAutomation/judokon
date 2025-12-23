@@ -11,7 +11,7 @@ import isStateTransition from "../isStateTransition.js";
 
 // Magic number constants for timing coordination
 const PLAYER_CHOICE_POLL_INTERVAL_MS = 50;
-const PLAYER_CHOICE_TIMEOUT_MS = 1500;
+const PLAYER_CHOICE_TIMEOUT_MS = 3000;
 const GUARD_SELECTION_RESOLUTION_DELAY_MS = 2500;
 const POST_RESOLVE_WATCHDOG_DELAY_MS = 600;
 
