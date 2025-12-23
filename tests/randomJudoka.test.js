@@ -652,7 +652,7 @@ describe("Random Judoka Selection", () => {
         .map((rarity) => validateRandomFilters({ rarity }).rarity)
         .filter(Boolean);
 
-      expect([...new Set(validatedRarities)].sort()).toEqual([...documentedRarities].sort());
+      expect(validatedRarities.sort()).toEqual([...documentedRarities].sort());
     });
 
     it("should document examples that mirror real selection payloads", () => {
