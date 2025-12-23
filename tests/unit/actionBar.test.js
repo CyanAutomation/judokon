@@ -325,6 +325,7 @@ describe("Action Bar Component", () => {
 
           if (activeElement) {
             activeElement.remove();
+            document.body.focus();
           }
 
           if (expectInvocation) {
