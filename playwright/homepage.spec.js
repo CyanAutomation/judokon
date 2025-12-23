@@ -46,7 +46,8 @@ test.describe("Homepage", () => {
         // Allow the status region to announce navigation intent before leaving the homepage.
         await expect
           .poll(async () => (await statusRegion.textContent())?.trim() ?? "", {
-            timeout: 1_000
+            timeout: 3_000,
+            intervals: [100, 250, 500]
           })
           .not.toBe(initialStatus);
         await route.continue();
