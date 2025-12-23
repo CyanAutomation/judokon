@@ -39,12 +39,30 @@ describe("battleCLI accessibility smoke tests", () => {
     document.documentElement.innerHTML = html;
   });
 
-  it("marks countdown and round message as polite live regions", () => {
-    const roundMsg = document.getElementById("round-message");
-    const countdown = document.getElementById("cli-countdown");
-    expect(roundMsg?.getAttribute("role")).toBe("status");
-    expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
-    expect(countdown?.getAttribute("role")).toBe("status");
+  it("marks countdown and round message as polite live regions", async () => {
+    const cli = await loadBattleCLI();
+
+    try {
+      await cli.init();
+
+      const roundMsg = document.getElementById("round-message");
+      const countdown = document.getElementById("cli-countdown");
+      expect(roundMsg?.getAttribute("role")).toBe("status");
+      expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
+      expect(countdown?.getAttribute("role")).toBe("status");
+      expect(countdown?.getAttribute("aria-live")).toBe("polite");
+
+      cli.handleCountdownStart({ detail: { duration: 0 } });
+      cli.showShortcutsPanel();
+
+      expect(roundMsg?.getAttribute("role")).toBe("status");
+      expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
+      expect(countdown?.getAttribute("role")).toBe("status");
+      expect(countdown?.getAttribute("aria-live")).toBe("polite");
+    } finally {
+      await cleanupBattleCLI();
+      window.__TEST__ = true;
+    }
   });
 
   it("includes static controls hint near footer", () => {
@@ -81,14 +99,22 @@ describe("battleCLI accessibility smoke tests", () => {
     );
   });
 
-  it("includes skip link and landmark roles", () => {
-    const html = readFileSync("src/pages/battleCLI.html", "utf8");
-    document.documentElement.innerHTML = html;
-    const skip = document.querySelector("a.skip-link");
-    expect(skip).toBeTruthy();
-    expect(skip?.getAttribute("href")).toBe("#cli-main");
-    expect(document.querySelector("header[role='banner']")).toBeTruthy();
-    expect(document.querySelector("main[role='main']")).toBeTruthy();
+  it("includes skip link and landmark roles", async () => {
+    const cli = await loadBattleCLI();
+
+    try {
+      await cli.init();
+      cli.showShortcutsPanel();
+
+      const skip = document.querySelector("a.skip-link");
+      expect(skip).toBeTruthy();
+      expect(skip?.getAttribute("href")).toBe("#cli-main");
+      expect(document.querySelector("header[role='banner']")).toBeTruthy();
+      expect(document.querySelector("main[role='main']")).toBeTruthy();
+    } finally {
+      await cleanupBattleCLI();
+      window.__TEST__ = true;
+    }
   });
 
   it("places skip link first in focus order", async () => {
@@ -116,18 +142,12 @@ describe("battleCLI accessibility smoke tests", () => {
       await user.tab();
       expect(document.activeElement).toBe(home);
 
-      const lateFocusable = document.createElement("button");
-      lateFocusable.type = "button";
-      lateFocusable.id = "probe-focusable";
-      lateFocusable.textContent = "Probe focus";
-      document.getElementById("cli-root")?.append(lateFocusable);
+      cli.showShortcutsPanel();
 
       const tabbables = getTabbableElements();
       expect(tabbables[0]).toBe(skip);
       expect(tabbables[1]).toBe(home);
-
-      // Clean up test element
-      lateFocusable.remove();
+      expect(tabbables.length).toBeGreaterThan(2);
     } finally {
       await cleanupBattleCLI();
       window.__TEST__ = true;
@@ -165,8 +185,8 @@ describe("battleCLI accessibility smoke tests", () => {
       const cli = await loadBattleCLI();
       await cli.init();
 
-      const root = document.getElementById("cli-root");
-      root?.insertAdjacentHTML("beforeend", '<div data-probe="true"></div>');
+      cli.showShortcutsPanel();
+      cli.hideShortcutsPanel();
 
       expect(document.querySelector("a.skip-link")).toBeTruthy();
       expect(document.querySelector("header[role='banner']")).toBeTruthy();
