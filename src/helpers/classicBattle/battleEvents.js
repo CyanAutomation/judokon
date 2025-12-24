@@ -81,13 +81,22 @@ function __tuneMaxListenersIfNode(target) {
  * @pseudocode
  * 1. Check if the global event target exists on `globalThis`.
  * 2. If it doesn't exist, create a new `EventTarget`, store it on `globalThis`, and adjust Node.js listener limits if applicable.
- * 3. Return the existing or newly created event target.
+ * 3. Stamp the target with a stable debug ID for identity tracking.
+ * 4. Return the existing or newly created event target.
  */
 function getTarget() {
   if (!globalThis[EVENT_TARGET_KEY]) {
     const t = new EventTarget();
     globalThis[EVENT_TARGET_KEY] = t;
     __tuneMaxListenersIfNode(t);
+    
+    // DIAGNOSTIC: Stamp EventTarget with stable ID for identity tracking
+    t.__debugId = `target_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    t.__createdAt = new Date().toISOString();
+    
+    if (isVitest() || typeof window !== "undefined") {
+      console.log(`[EventTarget] Created new target: ${t.__debugId} at ${t.__createdAt}`);
+    }
   }
   return globalThis[EVENT_TARGET_KEY];
 }
@@ -182,6 +191,7 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
  * @pseudocode
  * 1. Create a new `EventTarget`.
  * 2. Store it under `EVENT_TARGET_KEY` on `globalThis`.
+ * 3. Stamp the target with a stable debug ID for identity tracking.
  *
  * @returns {void}
  */
@@ -189,6 +199,14 @@ export function __resetBattleEventTarget() {
   const t = new EventTarget();
   globalThis[EVENT_TARGET_KEY] = t;
   __tuneMaxListenersIfNode(t);
+  
+  // DIAGNOSTIC: Stamp EventTarget with stable ID for identity tracking
+  t.__debugId = `target_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  t.__createdAt = new Date().toISOString();
+  
+  if (isVitest() || typeof window !== "undefined") {
+    console.log(`[EventTarget] Reset to new target: ${t.__debugId} at ${t.__createdAt}`);
+  }
 }
 
 /**

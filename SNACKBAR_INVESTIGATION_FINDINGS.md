@@ -6,31 +6,68 @@
 
 **Root Cause Hypothesis**: Event handler registration system desynchronization - handlers may not be registered on the EventTarget that receives the events.
 
+**Status**: ✅ **DIAGNOSTICS IN PROGRESS** - Identity tracking and diagnostic tests added
+
+---
+
+## Implementation Progress
+
+### ✅ Phase 1: EventTarget Identity Tracking (COMPLETED)
+
+**Changes Made**:
+
+1. **File**: `src/helpers/classicBattle/battleEvents.js`
+   - Added stable ID stamping in `getTarget()` function
+   - Each EventTarget now stamped with `__debugId` and `__createdAt`
+   - Console logging when EventTarget is created or reset
+   - Updated `__resetBattleEventTarget()` to also stamp new targets
+
+2. **File**: `playwright/battle-classic/snackbar-diagnostic.spec.js` (NEW)
+   - Created comprehensive diagnostic test suite
+   - Test 1: Verifies EventTarget identity consistency before/after stat selection
+   - Test 2: Instruments showSnackbar calls to verify execution chain
+   - Captures detailed diagnostic data for analysis
+
+**What We Can Now Verify**:
+
+- ✅ EventTarget identity remains consistent throughout test
+- ✅ Bootstrap initialization completes successfully
+- ✅ Handler registration test via synthetic event dispatch
+- ✅ showSnackbar invocation tracking
+- ✅ Snackbar DOM existence check
+
+**Next Step**: Run diagnostic tests to see which theory is validated
+
 ---
 
 ## Evidence Gathered
 
 ### 1. ✅ Event Emission Works
+
 - **File**: `src/helpers/classicBattle/selectionHandler.js:687`
 - **Code**: `emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts })`
 - **Proof**: `document.body.setAttribute("data-stat-selected", "true")` is set (line 685)
 - **Conclusion**: The stat selection code path IS executed and events ARE emitted
 
 ### 2. ✅ showSnackbar Function Exists
+
 - **File**: `src/helpers/showSnackbar.js`
 - **Proof**: Function is imported in `uiEventHandlers.js:4`
 - **Conclusion**: The snackbar mechanism itself works (used elsewhere successfully)
 
 ### 3. ❓ Event Handler Registration
+
 - **File**: `src/helpers/classicBattle/uiEventHandlers.js:88-300`
 - **Registration**: `onBattleEvent("statSelected", async (e) => { ... })`  (line 219)
 - **Handler Action**: Shows opponent choosing prompt via `displayOpponentChoosingPrompt()`
 - **Question**: Is this handler actually registered when the test runs?
 
 ### 4. 🔍 WeakSet Guard System
+
 - **File**: `src/helpers/classicBattle/uiEventHandlers.js:109-115`
 - **Purpose**: Prevent duplicate handler registration
 - **Mechanism**:
+
   ```javascript
   const KEY = "__cbUIHelpersDynamicBoundTargets";
   target = getBattleEventTarget();
@@ -40,15 +77,18 @@
   }
   set.add(target);
   ```
+
 - **Risk**: If WeakSet has stale data, handlers won't be registered
 
 ### 5. ✅ Bootstrap Initialization
+
 - **File**: `src/helpers/classicBattle/bootstrap.js:77`
 - **Code**: `bindUIHelperEventHandlers()` is called during initialization
 - **Expected**: Handlers registered once on page load
 - **Question**: Does this run in Playwright tests?
 
 ### 6. ✅ No Playwright Reset
+
 - **Finding**: `grep -rn "__resetBattleEventTarget" playwright/` returned NO matches
 - **Conclusion**: Playwright tests do NOT reset the EventTarget
 - **Implication**: Bootstrap handlers should remain intact throughout test
@@ -58,9 +98,11 @@
 ## Root Cause Theories
 
 ### Theory A: Bootstrap Never Runs in Playwright ⚠️
+
 **Hypothesis**: The initialization code that registers handlers is never executed in Playwright tests.
 
 **How This Would Happen**:
+
 1. Playwright navigates to `/src/pages/battleClassic.html`
 2. HTML loads but bootstrap initialization fails or is skipped
 3. EventTarget exists but has no listeners
@@ -68,6 +110,7 @@
 5. **Result**: No snackbar appears ❌
 
 **How to Verify**:
+
 ```javascript
 const status = await page.evaluate(() => ({
   initCalled: window.__initCalled,
@@ -78,6 +121,7 @@ const status = await page.evaluate(() => ({
 ```
 
 **Expected if Theory A is Correct**:
+
 - `initCalled: false`
 - `eventTargetExists: true` (created lazily)
 - `testAPI: false`
@@ -86,9 +130,11 @@ const status = await page.evaluate(() => ({
 ---
 
 ### Theory B: Handler Registration Silently Fails ⚠️
+
 **Hypothesis**: `bindUIHelperEventHandlersDynamic()` is called but an error prevents handler registration.
 
 **How This Would Happen**:
+
 1. Bootstrap runs and calls `bindUIHelperEventHandlers()`
 2. `bindUIHelperEventHandlersDynamic()` executes
 3. WeakSet check passes (not in set)
@@ -97,6 +143,7 @@ const status = await page.evaluate(() => ({
 
 **How to Verify**:
 Instrument the handler registration:
+
 ```javascript
 // In uiEventHandlers.js
 onBattleEvent("statSelected", async (e) => {
@@ -106,6 +153,7 @@ onBattleEvent("statSelected", async (e) => {
 ```
 
 Then check console in test:
+
 ```javascript
 const logs = await page.evaluate(() => {
   return window.__consoleHistory || [];
@@ -115,9 +163,11 @@ const logs = await page.evaluate(() => {
 ---
 
 ### Theory C: EventTarget Identity Mismatch ⚠️
+
 **Hypothesis**: Events are emitted to one EventTarget but handlers are registered on a different one.
 
 **How This Would Happen**:
+
 1. Bootstrap registers handlers on EventTarget A
 2. Some code creates a new EventTarget B and stores it in `globalThis.__classicBattleEventTarget`
 3. Stat selection emits to EventTarget B (current target)
@@ -125,6 +175,7 @@ const logs = await page.evaluate(() => {
 5. **Result**: Events dispatched but no listeners receive them ❌
 
 **How to Verify**:
+
 ```javascript
 // Before stat selection
 const beforeTargetId = await page.evaluate(() => {
@@ -144,17 +195,20 @@ expect(beforeTargetId).toBe(afterTargetId); // Should be the same
 ---
 
 ### Theory D: WeakSet Contamination 🔴 MOST LIKELY
+
 **Hypothesis**: The WeakSet guard has the EventTarget already marked as "bound" even though handlers were never actually registered.
 
 **How This Would Happen**:
+
 1. First test runs: handlers registered, EventTarget added to WeakSet ✅
-2. Page reloads/test cleanup: **EventTarget is cleared but WeakSet is NOT** 
+2. Page reloads/test cleanup: **EventTarget is cleared but WeakSet is NOT**
 3. Second test runs: Bootstrap tries to register handlers
 4. WeakSet check: `set.has(target)` returns TRUE (stale data)
 5. Early return - handlers NOT registered ❌
 6. **Result**: No handlers, no snackbar ❌
 
 **Critical Code**:
+
 ```javascript
 // uiEventHandlers.js:109-115
 const KEY = "__cbUIHelpersDynamicBoundTargets";
@@ -165,6 +219,7 @@ if (set.has(target)) {
 ```
 
 **Why This Is Most Likely**:
+
 - WeakSet is stored on `globalThis` with a static key
 - `globalThis` persists across page navigations in Playwright
 - EventTarget is recreated on page load
@@ -177,9 +232,11 @@ if (set.has(target)) {
 ---
 
 ### Theory E: Async Timing Race Condition ⚠️
+
 **Hypothesis**: Handler registration happens AFTER the first stat selection attempt.
 
 **How This Would Happen**:
+
 1. Page loads, bootstrap starts (async)
 2. Test immediately clicks stat button
 3. Stat selection code runs and emits event
@@ -188,6 +245,7 @@ if (set.has(target)) {
 
 **How to Verify**:
 Add timing instrumentation:
+
 ```javascript
 await page.evaluate(() => {
   window.__timingLog = [];
@@ -290,6 +348,7 @@ test("diagnose snackbar issue", async ({ page }) => {
 ## Proposed Solutions (Pending Verification)
 
 ### Solution 1: Clear WeakSet on Page Load
+
 ```javascript
 // In battleEvents.js or bootstrap.js
 function clearHandlerTrackingOnPageLoad() {
@@ -303,6 +362,7 @@ clearHandlerTrackingOnPageLoad();
 ```
 
 ### Solution 2: Force Handler Re-registration API
+
 ```javascript
 export function forceRebindHandlers() {
   // Clear WeakSet
@@ -316,6 +376,7 @@ export function forceRebindHandlers() {
 ```
 
 ### Solution 3: Remove WeakSet Guard
+
 ```javascript
 // Simply remove the early return logic
 export function bindUIHelperEventHandlersDynamic(deps = {}) {
