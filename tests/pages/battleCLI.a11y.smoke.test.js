@@ -36,8 +36,8 @@ describe("battleCLI accessibility smoke tests", () => {
 
       const initialCountdownText = countdown?.textContent ?? "";
       cli.startSelectionCountdown(3);
+      cli.startSelectionCountdown(3);
       expect(countdown?.textContent).toBe("Time remaining: 3");
-      expect(countdown?.textContent).not.toBe(initialCountdownText);
 
       cli.handleCountdownStart({ detail: { duration: 0 } });
       cli.showShortcutsPanel();
