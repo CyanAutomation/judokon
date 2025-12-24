@@ -72,6 +72,18 @@ export function naturalKeypress(element, key, options = {}) {
 }
 
 /**
+ * Get tabbable elements within a container.
+ * @param {ParentNode} [root=document] - Root node to search.
+ * @returns {HTMLElement[]} Tabbable elements.
+ */
+export function getTabbableElements(root = document) {
+  if (!root) return [];
+  return Array.from(root.querySelectorAll("a[href], button, [tabindex]"))
+    .filter((el) => !el.hasAttribute("disabled"))
+    .filter((el) => el.tabIndex >= 0);
+}
+
+/**
  * Create a Card component with test API access
  * @param {string|Node} content - Card content
  * @param {object} options - Card options
@@ -442,6 +454,32 @@ export function createTestEnvironment() {
 export const interactions = {
   click: naturalClick,
   keypress: naturalKeypress,
+
+  /**
+   * Simulate natural tab navigation through focusable elements.
+   * @param {object} [options]
+   * @param {boolean} [options.shift=false] - Move backwards when true.
+   * @param {ParentNode} [options.root=document] - Root node to search.
+   * @returns {Promise<HTMLElement|null>} Newly focused element.
+   */
+  async tab({ shift = false, root = document } = {}) {
+    const tabbables = getTabbableElements(root);
+    if (!tabbables.length) return null;
+
+    const active = document.activeElement;
+    const currentIndex = active === document.body ? -1 : tabbables.indexOf(active);
+    const delta = shift ? -1 : 1;
+    const nextIndex = (currentIndex + delta + tabbables.length) % tabbables.length;
+    const target = tabbables[nextIndex] ?? null;
+
+    naturalKeypress(active ?? document.body, "Tab", { shiftKey: shift });
+    if (target && typeof target.focus === "function") {
+      target.focus();
+    }
+
+    await Promise.resolve();
+    return target;
+  },
 
   /**
    * Simulate focus on element
