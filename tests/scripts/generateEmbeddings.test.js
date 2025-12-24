@@ -29,6 +29,7 @@ describe("JSON_FIELD_ALLOWLIST", () => {
       if (allowlist === true || Array.isArray(allowlist)) {
         const data = await loadDataFile(dataDir, file).catch(() => null);
         const sampleEntry = pickSampleEntry(data, allowlist);
+        expect(sampleEntry, `${file} should provide sample data`).toBeDefined();
         const flattened = flattenSample(sampleEntry);
         const flattenedKeys = Object.keys(flattened);
         expect(flattenedKeys.length, `${file} should have sample keys`).toBeGreaterThan(0);
@@ -38,6 +39,19 @@ describe("JSON_FIELD_ALLOWLIST", () => {
             const hasMatch = flattenedKeys.some((key) => matchesAllowlistedKey(key, field));
             expect(hasMatch, `${file} allowlist missing ${field}`).toBe(true);
           }
+        }
+
+        const allowlistedValues = flattenedKeys
+          .map((key) => stringifyAllowedValue(flattened[key]))
+          .filter((value) => value !== undefined);
+          const output = extractAllowedValues(file, sampleEntry);
+          expect(output, `${file} should produce output when allowlist is true`).toBeDefined();
+
+          const hasKnownValue = allowlistedValues.some((value) => output.includes(value));
+          expect(
+            hasKnownValue,
+            `${file} output should include at least one sample value`
+          ).toBe(true);
         }
       }
     }
