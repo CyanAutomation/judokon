@@ -89,11 +89,11 @@ function getTarget() {
     const t = new EventTarget();
     globalThis[EVENT_TARGET_KEY] = t;
     __tuneMaxListenersIfNode(t);
-    
+
     // DIAGNOSTIC: Stamp EventTarget with stable ID for identity tracking
     t.__debugId = `target_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     t.__createdAt = new Date().toISOString();
-    
+
     if (isVitest() || typeof window !== "undefined") {
       console.log(`[EventTarget] Created new target: ${t.__debugId} at ${t.__createdAt}`);
     }
@@ -199,11 +199,11 @@ export function __resetBattleEventTarget() {
   const t = new EventTarget();
   globalThis[EVENT_TARGET_KEY] = t;
   __tuneMaxListenersIfNode(t);
-  
+
   // DIAGNOSTIC: Stamp EventTarget with stable ID for identity tracking
   t.__debugId = `target_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   t.__createdAt = new Date().toISOString();
-  
+
   if (isVitest() || typeof window !== "undefined") {
     console.log(`[EventTarget] Reset to new target: ${t.__debugId} at ${t.__createdAt}`);
   }

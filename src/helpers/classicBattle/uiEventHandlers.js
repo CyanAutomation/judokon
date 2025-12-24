@@ -109,18 +109,18 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     const KEY = "__cbUIHelpersDynamicBoundTargets";
     target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
-    
+
     // DIAGNOSTIC: Log WeakSet guard decision
     const targetId = target?.__debugId || "NO_ID";
     const hasTarget = set.has(target);
-    
+
     console.log(`[Handler Registration] Target: ${targetId}, In WeakSet: ${hasTarget}`);
-    
+
     if (hasTarget) {
       console.log(`[Handler Registration] EARLY RETURN - Target ${targetId} already has handlers`);
       return;
     }
-    
+
     console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${targetId}`);
     set.add(target);
   } catch (err) {
@@ -185,7 +185,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       notifyReady,
       showSnackbarFnExists: typeof showSnackbarFn === "function"
     });
-    
+
     try {
       const message = tFn("ui.opponentChoosing");
       console.log("[displayOpponentChoosingPrompt] Calling showSnackbar with:", message);
@@ -245,7 +245,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       detail: e?.detail,
       timestamp: Date.now()
     });
-    
+
     try {
       scoreboardObj.clearTimer?.();
     } catch {
@@ -262,7 +262,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       clearFallbackPromptTimer();
 
       if (!shouldDelay) {
-        console.log("[statSelected Handler] No delay - calling displayOpponentChoosingPrompt immediately");
+        console.log(
+          "[statSelected Handler] No delay - calling displayOpponentChoosingPrompt immediately"
+        );
         displayOpponentChoosingPrompt();
         return;
       }
@@ -273,12 +275,16 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
       if (resolvedDelay <= 0) {
-        console.log("[statSelected Handler] Resolved delay <= 0 - calling displayOpponentChoosingPrompt immediately");
+        console.log(
+          "[statSelected Handler] Resolved delay <= 0 - calling displayOpponentChoosingPrompt immediately"
+        );
         displayOpponentChoosingPrompt();
         return;
       }
 
-      console.log(`[statSelected Handler] Scheduling displayOpponentChoosingPrompt with delay: ${resolvedDelay}ms`);
+      console.log(
+        `[statSelected Handler] Scheduling displayOpponentChoosingPrompt with delay: ${resolvedDelay}ms`
+      );
       const minDuration = Number(getOpponentPromptMinDurationFn());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 

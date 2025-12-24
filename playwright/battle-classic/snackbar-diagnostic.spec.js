@@ -81,7 +81,7 @@ test.describe("Snackbar diagnostic tests", () => {
 
       console.log("BEFORE stat selection:", JSON.stringify(beforeState, null, 2));
 
-      // Log some key findings immediately  
+      // Log some key findings immediately
       if (!beforeState.initCalled) {
         console.error("❌ BOOTSTRAP NEVER RAN");
       }
