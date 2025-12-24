@@ -83,6 +83,8 @@ test.describe("Vector search page", () => {
     const initialBottomScore = rows.nth(rowCount - 1).locator("td").nth(3);
     await expect(initialTopScore).toHaveText("1.00");
     await expect(initialBottomScore).toHaveText("0.85");
+    const initialTopScoreText = await initialTopScore.textContent();
+    const initialBottomScoreText = await initialBottomScore.textContent();
 
     await scoreHeader.click();
 
@@ -90,6 +92,8 @@ test.describe("Vector search page", () => {
     const sortedBottomScore = rows.nth(rowCount - 1).locator("td").nth(3);
     await expect(sortedTopScore).toHaveText("0.85");
     await expect(sortedBottomScore).toHaveText("1.00");
+    await expect(sortedTopScore).not.toHaveText(initialTopScoreText ?? "");
+    await expect(sortedBottomScore).not.toHaveText(initialBottomScoreText ?? "");
   });
 
   test("shows empty state when no embeddings are available", async ({ page }) => {
