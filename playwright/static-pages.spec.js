@@ -93,7 +93,8 @@ test.describe("Static pages", () => {
     );
     expect(selection).toBeTruthy();
     const [selectedCountry, expectedCount] = selection;
-    const escapedCountry = selectedCountry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapeRegex = /[.*+?^${}()|[\]\\]/g;
+    const escapedCountry = selectedCountry.replace(escapeRegex, "\\$&");
 
     const countryOption = page.getByRole("radio", {
       name: new RegExp(`Filter by\\s+${escapedCountry}`, "i")
