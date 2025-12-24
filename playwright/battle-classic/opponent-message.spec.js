@@ -30,7 +30,7 @@ const buildMessageConfig = (overrides = {}) => ({
 const runMessageTest = (title, testFn, overrides = {}) => {
   // Special handling for the snackbar test - skip console muting for debugging
   const skipMuting = title.includes("shows opponent feedback snackbar");
-  
+
   test(title, async ({ page }) => {
     const testBody = async () => {
       const config = buildMessageConfig(overrides);
@@ -44,7 +44,7 @@ const runMessageTest = (title, testFn, overrides = {}) => {
 
       await testFn({ page, config });
     };
-    
+
     if (skipMuting) {
       await testBody();
     } else {
@@ -198,22 +198,22 @@ test.describe("Classic Battle Opponent Messages", () => {
         // Track selectStat calls
         window.__selectStatCalled = false;
         window.__selectStatArgs = null;
-        
+
         // Track showSnackbar calls
         window.__snackbarCalls = [];
-        
+
         // Track event emissions
         window.__battleEventsEmitted = [];
       });
 
       await setOpponentResolveDelay(page, 1_200);
-      
+
       // After initialization, wrap key functions to log their calls
       await page.evaluate(() => {
         // Intercept showSnackbar
         if (window.showSnackbar) {
           const originalShowSnackbar = window.showSnackbar;
-          window.showSnackbar = function(...args) {
+          window.showSnackbar = function (...args) {
             window.__snackbarCalls.push({
               message: args[0],
               timestamp: Date.now()
@@ -221,69 +221,81 @@ test.describe("Classic Battle Opponent Messages", () => {
             return originalShowSnackbar.apply(this, args);
           };
         }
-        
+
         // Track battle events
         const target = window.__classicBattleEventTarget || globalThis.__classicBattleEventTarget;
         if (target) {
-          target.addEventListener('statSelected', (e) => {
+          target.addEventListener("statSelected", (e) => {
             window.__battleEventsEmitted.push({
-              type: 'statSelected',
+              type: "statSelected",
               detail: e.detail,
               timestamp: Date.now()
             });
           });
         }
       });
-      
+
       const firstStat = page.locator(selectors.statButton()).first();
-      
+
       // Log state before click
       const beforeClick = await page.evaluate(() => {
-        const buttons = document.querySelectorAll('#stat-buttons button[data-stat]');
+        const buttons = document.querySelectorAll("#stat-buttons button[data-stat]");
         const firstButton = buttons[0];
         return {
-          snackbarText: document.getElementById('snackbar-container')?.textContent || '',
-          snackbarChildren: document.getElementById('snackbar-container')?.children?.length || 0,
+          snackbarText: document.getElementById("snackbar-container")?.textContent || "",
+          snackbarChildren: document.getElementById("snackbar-container")?.children?.length || 0,
           buttonCount: buttons.length,
           firstButtonDisabled: firstButton?.disabled,
           firstButtonDataStat: firstButton?.dataset?.stat,
-          hasClickHandler: firstButton?.onclick !== null || 
-                          (firstButton?.parentElement?.__classicBattleStatHandler !== undefined)
+          hasClickHandler:
+            firstButton?.onclick !== null ||
+            firstButton?.parentElement?.__classicBattleStatHandler !== undefined
         };
       });
-      console.log('[TEST] Before click:', beforeClick);
-      
+      console.log("[TEST] Before click:", beforeClick);
+
       await firstStat.click();
       
+      // Immediately check if button became disabled
+      const rightAfterClick = await page.evaluate(() => {
+        const buttons = document.querySelectorAll("#stat-buttons button[data-stat]");
+        const firstButton = buttons[0];
+        return {
+          firstButtonDisabled: firstButton?.disabled,
+          bodyDataStatSelected: document.body?.dataset?.statSelected
+        };
+      });
+      console.log("[TEST] Right after click:", rightAfterClick);
+
       // Wait a bit for events to process
       await page.waitForTimeout(300);
-      
+
       // Check what happened
       const afterClick = await page.evaluate(() => ({
         selectStatCalled: window.__selectStatCalled,
         selectStatArgs: window.__selectStatArgs,
         snackbarCalls: window.__snackbarCalls,
         battleEvents: window.__battleEventsEmitted,
-        snackbarText: document.getElementById('snackbar-container')?.textContent || '',
-        snackbarHTML: document.getElementById('snackbar-container')?.innerHTML || '',
+        snackbarText: document.getElementById("snackbar-container")?.textContent || "",
+        snackbarHTML: document.getElementById("snackbar-container")?.innerHTML || "",
         featureFlag: window.__FF_OVERRIDES?.opponentDelayMessage
       }));
-      
-      console.log('[TEST] After click:', JSON.stringify(afterClick, null, 2));
-      console.log('[TEST] Snackbar calls:', afterClick.snackbarCalls?.length || 0);
-      console.log('[TEST] Battle events:', afterClick.battleEvents?.length || 0);
-      console.log('[TEST] Current snackbar text:', afterClick.snackbarText);
-      
+
+      console.log("[TEST] After click:", JSON.stringify(afterClick, null, 2));
+      console.log("[TEST] Snackbar calls:", afterClick.snackbarCalls?.length || 0);
+      console.log("[TEST] Battle events:", afterClick.battleEvents?.length || 0);
+      console.log("[TEST] Current snackbar text:", afterClick.snackbarText);
+
       if (afterClick.snackbarCalls && afterClick.snackbarCalls.length > 0) {
-        console.log('[TEST] Snackbar was called with:', afterClick.snackbarCalls);
+        console.log("[TEST] Snackbar was called with:", afterClick.snackbarCalls);
       } else {
-        console.log('[TEST] WARNING: showSnackbar was never called after click!');
+        console.log("[TEST] WARNING: showSnackbar was never called after click!");
       }
-      
+
       if (afterClick.battleEvents && afterClick.battleEvents.length > 0) {
-        console.log('[TEST] Battle events emitted:', afterClick.battleEvents);
+        console.log("[TEST] Battle events emitted:", afterClick.battleEvents);
       } else {
-        console.log('[TEST] WARNING: No statSelected events were emitted!');
+        console.log("[TEST] WARNING: No statSelected events were emitted!");
       }
 
       const snack = page.locator(selectors.snackbarContainer());
