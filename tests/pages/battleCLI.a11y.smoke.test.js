@@ -1,25 +1,7 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
-
-const getTabbableElements = () =>
-  Array.from(document.querySelectorAll("a[href], button, [tabindex]"))
-    .filter((el) => !el.hasAttribute("disabled"))
-    .filter((el) => el.tabIndex >= 0);
-
-const createJSDOMUserEvent = () => ({
-  async tab({ shift = false } = {}) {
-    const tabbables = getTabbableElements();
-    const active = document.activeElement;
-    const currentIndex = active === document.body ? -1 : tabbables.indexOf(active);
-    const delta = shift ? -1 : 1;
-    const nextIndex = (currentIndex + delta + tabbables.length) % tabbables.length;
-    active?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
-    tabbables[nextIndex]?.focus();
-    tabbables[nextIndex]?.dispatchEvent(new KeyboardEvent("keyup", { key: "Tab", bubbles: true }));
-    await Promise.resolve();
-  }
-});
+import { interactions, getTabbableElements } from "../utils/componentTestUtils.js";
 
 let battleCLI;
 
@@ -51,6 +33,11 @@ describe("battleCLI accessibility smoke tests", () => {
       expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
       expect(countdown?.getAttribute("role")).toBe("status");
       expect(countdown?.getAttribute("aria-live")).toBe("polite");
+
+      const initialCountdownText = countdown?.textContent ?? "";
+      cli.startSelectionCountdown(3);
+      cli.startSelectionCountdown(3);
+      expect(countdown?.textContent).toBe("Time remaining: 3");
 
       cli.handleCountdownStart({ detail: { duration: 0 } });
       cli.showShortcutsPanel();
@@ -123,7 +110,6 @@ describe("battleCLI accessibility smoke tests", () => {
     try {
       await cli.init();
 
-      const user = createJSDOMUserEvent();
       const skip = document.querySelector("a.skip-link");
       const home = document.querySelector("[data-testid='home-link']");
 
@@ -134,12 +120,12 @@ describe("battleCLI accessibility smoke tests", () => {
       expect(positiveTabIndexElements).toHaveLength(0);
 
       // Ensure no element is focused initially
-      document.activeElement?.blur();
+      interactions.blur(document.activeElement);
 
-      await user.tab();
+      await interactions.tab();
       expect(document.activeElement).toBe(skip);
 
-      await user.tab();
+      await interactions.tab();
       expect(document.activeElement).toBe(home);
 
       cli.showShortcutsPanel();
@@ -173,10 +159,8 @@ describe("battleCLI accessibility smoke tests", () => {
       expect(skip?.classList.contains("skip-link")).toBe(true);
       expect(main).toBeTruthy();
 
-      skip?.focus();
-      skip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-      skip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-      skip?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", bubbles: true }));
+      interactions.focus(skip);
+      interactions.keypress(skip, "Enter");
 
       expect(document.activeElement).toBe(main);
     });
@@ -185,6 +169,7 @@ describe("battleCLI accessibility smoke tests", () => {
       const cli = await loadBattleCLI();
       await cli.init();
 
+      // Toggling the shortcuts panel exercises runtime DOM state while preserving landmarks.
       cli.showShortcutsPanel();
       cli.hideShortcutsPanel();
 
