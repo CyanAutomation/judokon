@@ -107,5 +107,14 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
     container.classList.add("is-obscured");
   } catch {}
 
+  // Update the container's aria-label to indicate mystery state
+  try {
+    if (targetContainer) {
+      targetContainer.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
+    } else if (container) {
+      container.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
+    }
+  } catch {}
+
   return placeholder;
 }

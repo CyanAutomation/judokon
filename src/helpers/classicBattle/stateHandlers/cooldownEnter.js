@@ -4,6 +4,19 @@ import { exposeDebugState } from "../debugHooks.js";
 import { debugLog } from "../debugLog.js";
 import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
+import { guard } from "../guard.js";
+
+/**
+ * State name constant for cooldown phase.
+ * @type {string}
+ */
+const STATE_COOLDOWN = "cooldown";
+
+/**
+ * Handler name constant for cooldown enter handler.
+ * @type {string}
+ */
+const HANDLER_COOLDOWN_ENTER = "cooldownEnter";
 
 /**
  * Mark cooldownEnter handler invocation in debug window (test-only).
@@ -66,12 +79,46 @@ function computeNextRoundNumber(currentRound) {
 }
 
 /**
+ * Disable stat buttons during cooldown to prevent race conditions.
+ *
+ * @pseudocode
+ * 1. Query DOM for stat buttons container if document exists.
+ * 2. Extract button elements from container.
+ * 3. Use guard utility to safely disable buttons without disrupting flow.
+ * 4. Logs errors for diagnostics but never throws.
+ *
+ * @returns {void}
+ */
+function disableStatButtonsDuringCooldown() {
+  guard(() => {
+    if (typeof document === "undefined") return;
+
+    const container = document.getElementById("stat-buttons");
+    if (!container) {
+      debugLog("cooldownEnter: stat-buttons container not found");
+      return;
+    }
+
+    const buttons = Array.from(container.querySelectorAll("button[data-stat]"));
+    if (buttons.length === 0) {
+      debugLog("cooldownEnter: no stat buttons found to disable");
+      return;
+    }
+
+    if (typeof disableStatButtons === "function") {
+      disableStatButtons(buttons, container);
+      debugLog("cooldownEnter: disabled stat buttons", { count: buttons.length });
+    }
+  });
+}
+
+/**
  * Safely execute a round store operation with error handling.
  *
  * @pseudocode
  * 1. Combine round state and round number updates into atomic operation.
  * 2. Compute next round number first to ensure validity.
- * 3. If error occurs, log failure and re-throw for caller to handle.
+ * 3. Update round store state using constants to prevent typos.
  * 4. Ensures round state consistency.
  *
  * @param {object} round - Current round from store.
@@ -80,7 +127,7 @@ function computeNextRoundNumber(currentRound) {
 function updateRoundStateAtomically(round) {
   const nextRoundNumber = computeNextRoundNumber(round);
   debugLog("cooldownEnter: updating round state", { nextRoundNumber });
-  roundStore.setRoundState("cooldown", "cooldownEnter");
+  roundStore.setRoundState(STATE_COOLDOWN, HANDLER_COOLDOWN_ENTER);
   roundStore.setRoundNumber(nextRoundNumber);
 }
 
@@ -107,18 +154,8 @@ export async function cooldownEnter(machine, payload) {
 
   setupDebugState(payload);
 
-  // Disable stat buttons during cooldown to prevent interaction
-  try {
-    const container =
-      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
-    const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
-    if (buttons.length > 0) {
-      disableStatButtons(buttons, container);
-      // Keep selectionInProgress flag true throughout cooldown to prevent premature button re-enabling
-    }
-  } catch (error) {
-    debugLog("cooldownEnter: failed to disable stat buttons", error);
-  }
+  // Prevent user interaction with stat buttons during state transition
+  disableStatButtonsDuringCooldown();
 
   if (payload?.initial) {
     await initStartCooldown(machine);
@@ -134,9 +171,8 @@ export async function cooldownEnter(machine, payload) {
   });
   debugLog("cooldownEnter: startCooldown completed");
 
-  try {
+  // Update round state atomically; errors logged but non-blocking
+  guard(() => {
     updateRoundStateAtomically(roundStore.getCurrentRound());
-  } catch (error) {
-    debugLog(`cooldownEnter: failed to update round state - ${error.message}`);
-  }
+  });
 }
