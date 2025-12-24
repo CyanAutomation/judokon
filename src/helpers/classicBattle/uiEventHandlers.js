@@ -115,8 +115,8 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     set.add(target);
   } catch (err) {
     // Log binding failure but continue to register handlers
-    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
-      console.warn('[bindUIHelperEventHandlersDynamic] WeakSet tracking failed:', err);
+    if (typeof console !== "undefined" && typeof console.warn === "function") {
+      console.warn("[bindUIHelperEventHandlersDynamic] WeakSet tracking failed:", err);
     }
     // Still try to get target if not already set
     if (!target) {
@@ -178,9 +178,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         showSnackbarFn("Opponent is choosing…");
       } catch {
         // Final fallback: log to console in development
-        if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+        if (typeof console !== "undefined" && typeof console.warn === "function") {
           try {
-            console.warn('[displayOpponentChoosingPrompt] Failed to show snackbar:', err);
+            console.warn("[displayOpponentChoosingPrompt] Failed to show snackbar:", err);
           } catch {}
         }
       }
