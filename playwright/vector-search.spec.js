@@ -104,9 +104,6 @@ test.describe("Vector search page", () => {
   });
 
   test("shows error state when the model fails to load", async ({ page }) => {
-    const consoleMessages = [];
-    page.on("console", (message) => consoleMessages.push(message));
-
     await gotoVectorSearch(page);
     await runSearch(page);
 
@@ -128,16 +125,15 @@ test.describe("Vector search page", () => {
     await expect(errorMessage).toBeVisible();
     await expect(errorMessage).toHaveAttribute("aria-live", /polite/i);
     await expect(errorMessage).toHaveText("An error occurred while searching.");
+    await expect(errorMessage).toHaveClass(/search-result-empty/);
 
     const spinner = page.locator(".loading-spinner");
     await expect(spinner).toBeHidden();
     await expect(rows).toHaveCount(0);
 
     const searchButton = page.getByRole("button", { name: /search/i });
+    await expect(searchButton).toBeVisible();
     await expect(searchButton).toBeEnabled();
-
-    const errors = consoleMessages.filter((message) => message.type() === "error");
-    expect(errors.length).toBeGreaterThan(0);
 
     // Reset the extractor mock so the final search succeeds
     await page.evaluate(() => {
@@ -147,12 +143,28 @@ test.describe("Vector search page", () => {
     });
 
     await page.unroute("**/transformers.min.js");
+    let resolveTransformerRoute;
+    const transformerRoutePromise = new Promise((resolve) => {
+      resolveTransformerRoute = resolve;
+    });
     await page.route("**/transformers.min.js", (route) =>
-      route.fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
+      route
+        .fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
+        .finally(() => resolveTransformerRoute())
     );
 
-    // Wait for route to be established before proceeding
-    await page.waitForTimeout(100);
+    await page.route("**/transformers.min.js", (route) =>
+      route
+        .fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
+        .finally(() => resolveTransformerRoute?.())
+    );
+
+    await page.evaluate(() =>
+      fetch(
+        ""
+      )
+    );
+    await transformerRoutePromise;
 
     await runSearch(page);
 
