@@ -48,12 +48,12 @@ describe("JSON_FIELD_ALLOWLIST", () => {
 
         if (allowlist === true) {
           if (allowlistedValues.length === 0) {
-            const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-            console.warn(`${file} has no extractable allowlisted values`);
-            expect(warnSpy).toHaveBeenCalledWith(
-              `${file} has no extractable allowlisted values`
-            );
-            warnSpy.mockRestore();
+          const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+          console.warn(`${file} has no extractable allowlisted values`);
+          expect(warnSpy).toHaveBeenCalledWith(
+            `${file} has no extractable allowlisted values`
+          );
+          warnSpy.mockRestore();
             continue;
           }
 
