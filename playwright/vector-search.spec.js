@@ -151,9 +151,15 @@ test.describe("Vector search page", () => {
         .finally(() => resolveTransformerRoute?.())
     );
 
+    await page.route("**/transformers.min.js", (route) =>
+      route
+        .fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
+        .finally(() => resolveTransformerRoute?.())
+    );
+
     await page.evaluate(() =>
       fetch(
-        "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
+        ""
       )
     );
     await transformerRoutePromise;
