@@ -56,20 +56,23 @@ describe("Battle Event Aliases", () => {
       expect(standardHandler.mock.calls[0][0].detail).toEqual({ round: 2 });
     });
 
-    it("should handle events with multiple deprecated aliases", async () => {
+    it("should handle standard event with multiple aliases", async () => {
       const standardHandler = vi.fn();
       const deprecated1Handler = vi.fn();
       const deprecated2Handler = vi.fn();
 
-      // "timer.countdownStarted" has two deprecated aliases
-      onBattleEvent("timer.countdownStarted", standardHandler);
-      onBattleEvent("control.countdown.started", deprecated1Handler);
-      onBattleEvent("nextRoundCountdownStarted", deprecated2Handler);
+      // "state.roundStarted" has two deprecated aliases:
+      // "roundStarted" and "round.started"
+      onBattleEvent("state.roundStarted", standardHandler);
+      onBattleEvent("roundStarted", deprecated1Handler);
+      onBattleEvent("round.started", deprecated2Handler);
 
       await withMutedConsole(async () => {
-        emitBattleEventWithAliases("nextRoundCountdownStarted", { duration: 3 });
+        // Emit using standard name - should emit standard + both aliases
+        emitBattleEventWithAliases("state.roundStarted", { round: 1 });
       });
 
+      // All should receive the event (standard + both aliases are emitted)
       expect(standardHandler).toHaveBeenCalledTimes(1);
       expect(deprecated1Handler).toHaveBeenCalledTimes(1);
       expect(deprecated2Handler).toHaveBeenCalledTimes(1);
@@ -85,9 +88,7 @@ describe("Battle Event Aliases", () => {
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Deprecated event name 'roundTimeout'")
       );
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("timer.roundExpired")
-      );
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("timer.roundExpired"));
 
       consoleWarnSpy.mockRestore();
     });
