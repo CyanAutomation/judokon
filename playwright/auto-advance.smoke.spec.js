@@ -49,7 +49,8 @@ test.describe("Classic Battle – auto-advance", () => {
     await page.waitForSelector("#next-round-timer [data-part='value']", { state: "visible" });
     await expect(timerValue).toHaveText(/\d+s/);
 
-    await expect(roundCounter).toContainText(/Round\s*2/i);
+    // Wait for auto-advance to complete before checking Round 2
+    await expect(roundCounter).toContainText(/Round\s*2/i, { timeout: 10_000 });
     await expect(roundMessage).toContainText(/Round\s*2/i);
   });
 });
