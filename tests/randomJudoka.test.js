@@ -6,8 +6,7 @@ import {
   selectRandomJudoka,
   getRandomJudokaWithMetadata,
   getAvailableFilterOptions,
-  getRandomSelectionDocumentation,
-  RANDOM_SELECTION_DOCUMENTATION
+  getRandomSelectionDocumentation
 } from "../src/helpers/randomJudoka.js";
 
 // Test data
@@ -546,80 +545,46 @@ describe("Random Judoka Selection", () => {
       expect(fresh.responseFormat.judoka).toBe(pristine.responseFormat.judoka);
     });
 
-    it("should match the documented schema", () => {
-      const expectedDocumentation = JSON.parse(JSON.stringify(RANDOM_SELECTION_DOCUMENTATION));
-      const result = getRandomSelectionDocumentation();
-
-      expect(result).toEqual(expectedDocumentation);
-    });
-
-    it("should have description string", () => {
-      const result = getRandomSelectionDocumentation();
-      expect(typeof result.description).toBe("string");
-      expect(result.description.length).toBeGreaterThan(0);
-    });
-
-    it("should describe supported filters and response metadata", () => {
+    it("should describe filter usage and metadata context", () => {
       const { description } = getRandomSelectionDocumentation();
 
+      expect(typeof description).toBe("string");
+      expect(description).toMatch(/filter/i);
+      expect(description).toMatch(/metadata/i);
       expect(description).toMatch(/country/i);
       expect(description).toMatch(/rarity/i);
       expect(description).toMatch(/weight\s*class/i);
-      expect(description).toMatch(/metadata/i);
     });
 
-    it("should align country documentation with validation and available options", () => {
+    it("should align documented filters with validation and available options", () => {
       const { filters } = getRandomSelectionDocumentation();
-      const { country: documentedCountry } = filters;
+      const availableOptions = getAvailableFilterOptions(mockJudoka);
 
-      expect(documentedCountry.type).toBe("string");
-      expect(documentedCountry.description).toBe(
-        RANDOM_SELECTION_DOCUMENTATION.filters.country.description
-      );
+      const documentedCountries = filters.country.values ?? [];
+      expect(filters.country.type).toBe("string");
+      expect(documentedCountries.sort()).toEqual(availableOptions.countries.sort());
+      documentedCountries.forEach((country) => {
+        expect(validateRandomFilters({ country })).toEqual({ country });
+      });
+      expect(validateRandomFilters({ country: 42 })).toEqual({});
 
-      const validatedCountry = validateRandomFilters({ country: "Japan" });
-      const rejectedCountry = validateRandomFilters({ country: 42 });
+      const documentedRarities = filters.rarity.values;
+      expect(filters.rarity.type).toBe("string");
+      expect(documentedRarities.sort()).toEqual(availableOptions.rarities.sort());
+      documentedRarities.forEach((rarity) => {
+        expect(validateRandomFilters({ rarity })).toEqual({ rarity });
+      });
+      expect(validateRandomFilters({ rarity: "Mythic" })).toEqual({});
 
-      expect(validatedCountry).toEqual({ country: "Japan" });
-      expect(rejectedCountry).not.toHaveProperty("country");
-
-      const availableCountries = getAvailableFilterOptions(mockJudoka).countries;
-      const documentedValues = documentedCountry.values;
-
-      // Always verify that available countries match what the system can actually provide
-      expect(documentedValues).toBeDefined();
-      expect(documentedValues.sort()).toEqual(availableCountries.sort());
-    });
-
-    it("should align documented rarity values with validation and selection", () => {
-      const documentedRarities = getRandomSelectionDocumentation().filters.rarity.values;
-      const invalidRarity = "Mythic";
-
-      const validatedRarities = documentedRarities
-        .map((rarity) => validateRandomFilters({ rarity }).rarity)
-        .filter(Boolean)
-        .sort();
-
-      expect(validatedRarities).toEqual([...documentedRarities].sort());
-
-      const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
-      try {
-        const selectedRarities = documentedRarities.map((rarity) => {
-          const selected = selectRandomJudoka(mockJudoka, { rarity });
-          return selected?.rarity || null;
-        });
-
-        const availableRarities = selectedRarities.filter(Boolean);
-        const expectedRarities = documentedRarities.filter((rarity) =>
-          mockJudoka.some((judoka) => judoka.rarity === rarity)
-        );
-        expect(availableRarities).toEqual(expectedRarities);
-      } finally {
-        randomSpy.mockRestore();
+      const documentedWeightClasses = filters.weightClass.values ?? availableOptions.weightClasses;
+      expect(filters.weightClass.type).toBe("string");
+      if (filters.weightClass.values) {
+        expect(filters.weightClass.values.sort()).toEqual(availableOptions.weightClasses.sort());
       }
-
-      expect(documentedRarities).not.toContain(invalidRarity);
-      expect(validateRandomFilters({ rarity: invalidRarity })).toEqual({});
+      documentedWeightClasses.forEach((weightClass) => {
+        expect(validateRandomFilters({ weightClass })).toEqual({ weightClass });
+      });
+      expect(validateRandomFilters({ weightClass: 123 })).toEqual({});
     });
 
     it("should ensure examples use validated filters and match response keys", () => {
@@ -645,60 +610,40 @@ describe("Random Judoka Selection", () => {
       });
     });
 
-    it("should align documented rarity values with validation allowlist", () => {
-      const documentedRarities = getRandomSelectionDocumentation().filters.rarity.values;
-      const candidateRarities = [...documentedRarities, "Mythic", "Ultra"];
-      const validatedRarities = candidateRarities
-        .map((rarity) => validateRandomFilters({ rarity }).rarity)
-        .filter(Boolean);
-
-      expect(validatedRarities.sort()).toEqual([...documentedRarities].sort());
-    });
-
     it("should document examples that mirror real selection payloads", () => {
       const exampleFilters = { country: "Japan", weightClass: "+100" };
+      const randomSpy = vi.spyOn(Math, "random").mockImplementation(createSeededRng(2025));
 
-      const result = getRandomSelectionDocumentation();
-      const documentedExample = result.examples.find(
-        (example) => example.description === "Select random heavyweight from Japan"
-      );
+      try {
+        const result = getRandomSelectionDocumentation();
+        const documentedExample = result.examples.find(
+          (example) => example.description === "Select random heavyweight from Japan"
+        );
 
-      expect(documentedExample).toBeDefined();
-      expect(documentedExample.input).toEqual({ filters: exampleFilters });
+        expect(documentedExample).toBeDefined();
+        expect(documentedExample.input).toEqual({ filters: exampleFilters });
 
-      const { response } = documentedExample;
-
-      const expectedMatchCount = mockJudoka.filter(
-        (judoka) =>
-          judoka.country === exampleFilters.country &&
-          judoka.weightClass === exampleFilters.weightClass
-      ).length;
-
-      expect(response).toMatchObject({
-        filters: exampleFilters,
-        totalCount: mockJudoka.length,
-        matchCount: expectedMatchCount,
-        judoka: expect.objectContaining({
-          country: "Japan",
-          rarity: expect.any(String),
-          weightClass: "+100"
-        })
-      });
+        const expectedResponse = getRandomJudokaWithMetadata(mockJudoka, exampleFilters);
+        expect(expectedResponse).not.toBeNull();
+        expect(documentedExample.response).toEqual(expectedResponse);
+      } finally {
+        randomSpy.mockRestore();
+      }
     });
 
-    it("should have response format documented", () => {
+    it("should have response format documented with runtime key parity", () => {
       const result = getRandomSelectionDocumentation();
       const { responseFormat } = result;
-      const expectedResponseFormat = RANDOM_SELECTION_DOCUMENTATION.responseFormat;
+      const runtimeResponse = getRandomJudokaWithMetadata(mockJudoka);
 
-      expect(Object.keys(responseFormat).sort()).toEqual(
-        Object.keys(expectedResponseFormat).sort()
-      );
-      expect(responseFormat).toEqual(expectedResponseFormat);
-      expect(responseFormat.judoka.length).toBeGreaterThan(0);
-      expect(responseFormat.filters.length).toBeGreaterThan(0);
-      expect(responseFormat.totalCount.length).toBeGreaterThan(0);
-      expect(responseFormat.matchCount.length).toBeGreaterThan(0);
+      expect(runtimeResponse).not.toBeNull();
+
+      const runtimeKeys = Object.keys(runtimeResponse).sort();
+      expect(Object.keys(responseFormat).sort()).toEqual(runtimeKeys);
+      expect(responseFormat.judoka).toMatch(/judoka|record/i);
+      expect(responseFormat.filters).toMatch(/filter/i);
+      expect(responseFormat.totalCount).toMatch(/total/i);
+      expect(responseFormat.matchCount).toMatch(/match/i);
     });
   });
 
