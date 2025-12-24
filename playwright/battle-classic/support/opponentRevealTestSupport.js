@@ -9,6 +9,81 @@ import {
 export const MUTED_CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"];
 export const PLAYER_SCORE_PATTERN = /You:\s*\d/;
 
+// Timeout constants
+const TIMEOUTS = {
+  BATTLE_READY: 3_500,
+  BUTTON_VISIBILITY: 7_000,
+  STATE_DISPATCH_BUDGET: 750,
+  STATE_SYNC: 2_000,
+  ROUND_RESOLUTION_VERIFY: 3_000,
+  ROUNDS_PLAYED_DEFAULT: 5_000,
+  RESOLUTION_DEADLINE: 1500
+};
+
+// Battle state constants
+const STATE_CONSTANTS = {
+  ROUND_OVER: "roundOver",
+  WAITING_FOR_PLAYER_ACTION: "waitingForPlayerAction",
+  COOLDOWN: "cooldown",
+  MATCH_DECISION: "matchDecision",
+  MATCH_OVER: "matchOver"
+};
+
+const MATCH_END_STATES = [STATE_CONSTANTS.MATCH_DECISION, STATE_CONSTANTS.MATCH_OVER];
+
+// State utility functions
+const isMatchEndState = (state) => MATCH_END_STATES.includes(state);
+const isRoundOverState = (state) => state === STATE_CONSTANTS.ROUND_OVER;
+const isWaitingForPlayerAction = (...states) =>
+  states.some((state) => state === STATE_CONSTANTS.WAITING_FOR_PLAYER_ACTION);
+
+/**
+ * Executes round resolution by calling the production resolution pipeline.
+ * @pseudocode
+ * - Retrieve battle store from Test API or global window
+ * - Import resolveRound, getStatValue, and getOpponentJudoka helpers
+ * - Extract player choice, player card, and opponent card from store
+ * - Calculate stat values for both players
+ * - Call resolveRound to execute full pipeline (outcome evaluation, score update, event emission)
+ * - Return success status with reason if operation fails
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @returns {Promise<{success: boolean, reason?: string}>} Resolution result
+ */
+async function executeRoundResolution(page) {
+  return await page
+    .evaluate(async () => {
+      try {
+        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+        if (!store || !store.playerChoice) {
+          return { success: false, reason: "no_selection" };
+        }
+
+        const { resolveRound } = await import("/src/helpers/classicBattle/roundResolver.js");
+        const { getStatValue } = await import("/src/helpers/battle/index.js");
+        const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
+
+        const stat = store.playerChoice;
+        const playerCard = store.playerCard;
+        const opponentCard = getOpponentJudoka(store);
+
+        if (!playerCard || !opponentCard) {
+          return { success: false, reason: "missing_cards" };
+        }
+
+        const playerVal = getStatValue(playerCard, stat);
+        const opponentVal = getStatValue(opponentCard, stat);
+
+        await resolveRound(store, stat, playerVal, opponentVal);
+
+        return { success: true };
+      } catch (error) {
+        return { success: false, reason: error.message || String(error), error: true };
+      }
+    })
+    .catch((error) => ({ success: false, reason: String(error) }));
+}
+
 export async function setOpponentResolveDelay(page, delayMs) {
   const result = await page.evaluate((value) => {
     const timerApi = window.__TEST_API?.timers;
@@ -35,6 +110,19 @@ export async function setOpponentResolveDelay(page, delayMs) {
   expect(result.success).toBe(true);
 }
 
+/**
+ * Retrieves a normalized snapshot of the current battle state.
+ * @pseudocode
+ * - Access Test API inspect interface for battle snapshot
+ * - If getBattleSnapshot exists, return it directly
+ * - Otherwise, manually construct snapshot from battle store
+ * - Normalize numeric values and boolean flags for consistency
+ * - Handle selectionMade flag with fallback to last known value
+ * - Return snapshot with roundsPlayed, selectionMade, playerScore, opponentScore
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @returns {Promise<{roundsPlayed: number|null, selectionMade: boolean|null, playerScore: number|null, opponentScore: number|null}|null>} Battle state snapshot or null if unavailable
+ */
 export async function getBattleSnapshot(page) {
   return await page.evaluate(() => {
     const inspectApi = window.__TEST_API?.inspect;
@@ -97,7 +185,7 @@ export async function getBattleSnapshot(page) {
  * @returns {Promise<void>}
  */
 async function waitForBattleReadyWithFallbacks(page, options = {}) {
-  const { timeout = 3_500 } = options;
+  const { timeout = TIMEOUTS.BATTLE_READY } = options;
 
   try {
     await waitForBattleReady(page, { timeout, allowFallback: false });
@@ -174,12 +262,26 @@ function buildBattleFallbackFailureMessage(errors) {
   );
 }
 
+/**
+ * Starts a battle match by clicking the provided selector and ensures battle readiness.
+ * @pseudocode
+ * - Locate the start button using the provided selector
+ * - Define helper to verify stat selection buttons are visible
+ * - Define helper to ensure battle is ready using fallback strategies
+ * - Attempt to click the start button with visibility check
+ * - If click fails, verify battle is already ready without clicking
+ * - After click (or fallback), ensure battle readiness and stat visibility
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {string} selector - CSS selector for the start match button
+ * @returns {Promise<void>}
+ */
 export async function startMatch(page, selector) {
   const button = page.locator(selector);
 
   const ensureStatSelectionVisible = async () => {
     await expect(page.locator(selectors.statButton()).first()).toBeVisible({
-      timeout: 7_000
+      timeout: TIMEOUTS.BUTTON_VISIBILITY
     });
   };
 
@@ -188,10 +290,10 @@ export async function startMatch(page, selector) {
     await ensureStatSelectionVisible();
   };
 
-  let ensuredDuringFallback = false;
+  let battleReadyViaFallback = false;
 
   try {
-    await expect(button).toBeVisible({ timeout: 7_000 });
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.BUTTON_VISIBILITY });
     await button.click();
   } catch (error) {
     const readyWithoutClick = await ensureBattleReady()
@@ -199,13 +301,13 @@ export async function startMatch(page, selector) {
       .catch(() => false);
 
     if (readyWithoutClick) {
-      ensuredDuringFallback = true;
+      battleReadyViaFallback = true;
     } else {
       throw error;
     }
   }
 
-  if (!ensuredDuringFallback) {
+  if (!battleReadyViaFallback) {
     try {
       await ensureBattleReady();
     } catch (error) {
@@ -218,6 +320,16 @@ export async function startMatch(page, selector) {
   }
 }
 
+/**
+ * Starts a battle match and waits for stat buttons to become visible.
+ * @pseudocode
+ * - Call startMatch with provided selector
+ * - Internally ensures battle readiness and stat visibility
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {string} selector - CSS selector for the start match button
+ * @returns {Promise<void>}
+ */
 export async function startMatchAndAwaitStats(page, selector) {
   await startMatch(page, selector);
 }
@@ -231,13 +343,6 @@ export async function startMatchAndAwaitStats(page, selector) {
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @returns {Promise<void>}
  */
-const ROUND_OVER_STATE = "roundOver";
-const WAITING_FOR_PLAYER_ACTION = "waitingForPlayerAction";
-const COOLDOWN_STATE = "cooldown";
-const MATCH_DECISION_STATE = "matchDecision";
-const MATCH_OVER_STATE = "matchOver";
-
-const MATCH_END_STATES = [MATCH_DECISION_STATE, MATCH_OVER_STATE];
 
 /**
  * Safely retrieves the current battle state, returning a fallback value if an error occurs.
@@ -259,62 +364,10 @@ async function safeGetBattleState(page, fallback = null) {
 }
 
 async function attemptCliResolution(page) {
-  const result = await page
-    .evaluate(async () => {
-      try {
-        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-        if (!store || !store.playerChoice) {
-          console.log("[attemptCliResolution] No store or playerChoice");
-          return { success: false, reason: "no_selection" };
-        }
-
-        // Import and call actual resolution logic
-        const { resolveRound } = await import("/src/helpers/classicBattle/roundResolver.js");
-        const { getStatValue } = await import("/src/helpers/battle/index.js");
-        const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
-
-        const stat = store.playerChoice;
-        const playerCard = store.playerCard;
-        const opponentCard = getOpponentJudoka(store);
-
-        console.log("[attemptCliResolution] Got cards", {
-          stat,
-          hasPlayerCard: !!playerCard,
-          hasOpponentCard: !!opponentCard
-        });
-
-        if (!playerCard || !opponentCard) {
-          return { success: false, reason: "missing_cards" };
-        }
-
-        const playerVal = getStatValue(playerCard, stat);
-        const opponentVal = getStatValue(opponentCard, stat);
-
-        console.log("[attemptCliResolution] Calling resolveRound", {
-          stat,
-          playerVal,
-          opponentVal
-        });
-
-        // Execute full resolution pipeline
-        await resolveRound(store, stat, playerVal, opponentVal);
-
-        console.log("[attemptCliResolution] Resolution complete");
-        return { success: true };
-      } catch (error) {
-        console.error("[attemptCliResolution] Error:", error);
-        return { success: false, reason: error.message || String(error) };
-      }
-    })
-    .catch((error) => {
-      console.error("[attemptCliResolution page.evaluate] Error:", error);
-      return { success: false, reason: String(error) };
-    });
+  await executeRoundResolution(page);
 
   const stateAfterCli = await safeGetBattleState(page);
-  const resolved = stateAfterCli === ROUND_OVER_STATE;
-
-  console.log("[attemptCliResolution] Result:", { result, stateAfterCli, resolved });
+  const resolved = stateAfterCli === STATE_CONSTANTS.ROUND_OVER;
 
   return { resolved, stateAfterCli };
 }
@@ -336,7 +389,7 @@ async function attemptCliResolution(page) {
  */
 async function manuallySyncBattleState(
   page,
-  { fromState = null, finalState = ROUND_OVER_STATE, timeout = 2_000 } = {}
+  { fromState = null, finalState = STATE_CONSTANTS.ROUND_OVER, timeout = TIMEOUTS.STATE_SYNC } = {}
 ) {
   const syncResult = await page.evaluate(
     async ({ fromState: priorState, finalState: targetState }) => {
@@ -381,24 +434,6 @@ async function manuallySyncBattleState(
           ? performance.now()
           : Date.now();
 
-      const logCritical = (eventName, errorMessage) => {
-        if (typeof errorMessage !== "string" || errorMessage.length === 0) {
-          return;
-        }
-
-        try {
-          const logger = window.__TEST_API?.log;
-          if (logger && typeof logger.warn === "function") {
-            logger.warn(`Critical dispatch error for ${eventName}: ${errorMessage}`);
-            return;
-          }
-
-          if (typeof console !== "undefined" && typeof console.warn === "function") {
-            console.warn(`Critical dispatch error for ${eventName}:`, errorMessage);
-          }
-        } catch {}
-      };
-
       if (typeof stateApi.dispatchBattleEvent === "function") {
         const dispatch = stateApi.dispatchBattleEvent.bind(stateApi);
         for (const eventName of eventCandidates) {
@@ -418,18 +453,12 @@ async function manuallySyncBattleState(
               });
               return ok;
             } catch (error) {
-              const errorMessage = error instanceof Error ? error.message : String(error);
               attempts.push({
                 strategy: "state.dispatchBattleEvent",
                 eventName,
                 ok: false,
-                error: errorMessage
+                error: error instanceof Error ? error.message : String(error)
               });
-              const critical =
-                errorMessage.includes("TypeError") || errorMessage.includes("ReferenceError");
-              if (critical) {
-                logCritical(eventName, errorMessage);
-              }
               return false;
             }
           });
@@ -468,7 +497,7 @@ async function manuallySyncBattleState(
 
       let success = initialState === targetState;
       const dispatchStart = nowMs();
-      const dispatchBudgetMs = 750;
+      const dispatchBudgetMs = TIMEOUTS.STATE_DISPATCH_BUDGET;
 
       for (const attempt of dispatchers) {
         if (success) {
@@ -563,39 +592,7 @@ async function manuallySyncBattleState(
 async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
   // Execute the actual resolution logic (not just dispatch event)
   // This calls resolveRound which increments roundsPlayed and emits events
-  await page
-    .evaluate(async () => {
-      try {
-        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-        if (!store || !store.playerChoice) {
-          return { success: false, reason: "no_selection" };
-        }
-
-        // Import roundResolver and call resolveRound to execute full pipeline
-        const { resolveRound } = await import("/src/helpers/classicBattle/roundResolver.js");
-        const { getStatValue } = await import("/src/helpers/battle/index.js");
-        const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
-
-        const stat = store.playerChoice;
-        const playerCard = store.playerCard;
-        const opponentCard = getOpponentJudoka(store);
-
-        if (!playerCard || !opponentCard) {
-          return { success: false, reason: "missing_cards" };
-        }
-
-        const playerVal = getStatValue(playerCard, stat);
-        const opponentVal = getStatValue(opponentCard, stat);
-
-        // Execute full resolution: evaluates outcome, increments roundsPlayed, dispatches events
-        await resolveRound(store, stat, playerVal, opponentVal);
-
-        return { success: true };
-      } catch (error) {
-        return { success: false, reason: error.message || String(error), error: true };
-      }
-    })
-    .catch((error) => ({ success: false, reason: String(error) }));
+  await executeRoundResolution(page);
 
   let stateAfterTransition = await safeGetBattleState(page, stateAfterCli);
 
@@ -604,32 +601,28 @@ async function triggerRoundResolvedFallback(page, hasResolved, stateAfterCli) {
 
     const syncedState = await manuallySyncBattleState(page, {
       fromState: previousState,
-      finalState: ROUND_OVER_STATE,
-      timeout: 2_000
+      finalState: STATE_CONSTANTS.ROUND_OVER,
+      timeout: TIMEOUTS.STATE_SYNC
     });
 
     if (typeof syncedState === "string" && syncedState) {
       stateAfterTransition = syncedState;
     } else {
-      stateAfterTransition = await safeGetBattleState(page, ROUND_OVER_STATE);
+      stateAfterTransition = await safeGetBattleState(page, STATE_CONSTANTS.ROUND_OVER);
     }
   }
 
-  const resolved = stateAfterTransition === ROUND_OVER_STATE ? true : await hasResolved();
+  const resolved = isRoundOverState(stateAfterTransition) ? true : await hasResolved();
 
   return { resolved, stateAfterTransition };
 }
 
-function isWaitingForPlayerAction(...states) {
-  return states.some((state) => state === WAITING_FOR_PLAYER_ACTION);
-}
-
 function shouldForceRoundOver(state) {
-  if (state === ROUND_OVER_STATE) {
+  if (isRoundOverState(state)) {
     return false;
   }
 
-  return state === WAITING_FOR_PLAYER_ACTION || state === COOLDOWN_STATE;
+  return state === STATE_CONSTANTS.WAITING_FOR_PLAYER_ACTION || state === STATE_CONSTANTS.COOLDOWN;
 }
 
 async function clickNextButtonFallback(page, { hasResolved, stateAfterCli, stateAfterTransition }) {
@@ -649,8 +642,8 @@ async function clickNextButtonFallback(page, { hasResolved, stateAfterCli, state
 
   if (
     waitingDetected ||
-    latestState === WAITING_FOR_PLAYER_ACTION ||
-    (latestState !== ROUND_OVER_STATE && !(await hasResolved()))
+    latestState === STATE_CONSTANTS.WAITING_FOR_PLAYER_ACTION ||
+    (!isRoundOverState(latestState) && !(await hasResolved()))
   ) {
     await nextBtn.click();
   }
@@ -659,11 +652,11 @@ async function clickNextButtonFallback(page, { hasResolved, stateAfterCli, state
 async function resolveRoundDeterministic(page) {
   const hasResolved = async () => {
     const state = await safeGetBattleState(page);
-    if (state === ROUND_OVER_STATE) {
+    if (isRoundOverState(state)) {
       return true;
     }
 
-    if (typeof state !== "string" || !MATCH_END_STATES.includes(state)) {
+    if (typeof state !== "string" || !isMatchEndState(state)) {
       return false;
     }
 
@@ -686,7 +679,7 @@ async function resolveRoundDeterministic(page) {
   let stateForFallback = stateAfterCli;
   if (resolvedViaCli) {
     const latestState = await safeGetBattleState(page, stateAfterCli);
-    if (MATCH_END_STATES.includes(latestState)) {
+    if (isMatchEndState(latestState)) {
       return;
     }
     stateForFallback = latestState;
@@ -699,24 +692,6 @@ async function resolveRoundDeterministic(page) {
     if (finalResolutionCheck) {
       return;
     }
-
-    await page
-      .evaluate(() => {
-        const logger = window.__TEST_API?.log;
-        if (logger && typeof logger.warn === "function") {
-          logger.warn(
-            "Resolution mismatch detected: transition resolved but hasResolved() returned false"
-          );
-          return;
-        }
-
-        if (typeof console !== "undefined" && typeof console.warn === "function") {
-          console.warn(
-            "Resolution mismatch detected: transition resolved but hasResolved() returned false"
-          );
-        }
-      })
-      .catch(() => {});
   }
 
   await clickNextButtonFallback(page, {
@@ -727,7 +702,7 @@ async function resolveRoundDeterministic(page) {
 }
 
 function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
-  if (state !== COOLDOWN_STATE) {
+  if (state !== STATE_CONSTANTS.COOLDOWN) {
     return false;
   }
 
@@ -737,8 +712,8 @@ function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
       if (!entry || typeof entry !== "object") {
         continue;
       }
-      if (entry.to === COOLDOWN_STATE) {
-        if (entry.from === ROUND_OVER_STATE) {
+      if (entry.to === STATE_CONSTANTS.COOLDOWN) {
+        if (entry.from === STATE_CONSTANTS.ROUND_OVER) {
           return true;
         }
         for (let prior = index - 1; prior >= 0; prior -= 1) {
@@ -746,27 +721,27 @@ function cooldownImmediatelyFollowsRoundOver(state, log, prev) {
           if (!previous || typeof previous !== "object") {
             continue;
           }
-          if (previous.to === ROUND_OVER_STATE) {
+          if (previous.to === STATE_CONSTANTS.ROUND_OVER) {
             return true;
           }
         }
         break;
       }
-      if (entry.to === ROUND_OVER_STATE) {
+      if (entry.to === STATE_CONSTANTS.ROUND_OVER) {
         return true;
       }
     }
   }
 
-  return prev === ROUND_OVER_STATE;
+  return prev === STATE_CONSTANTS.ROUND_OVER;
 }
 
 function matchFlowAdvancedBeyondRoundOver(state, log, prev) {
-  if (!MATCH_END_STATES.includes(state)) {
+  if (!isMatchEndState(state)) {
     return false;
   }
 
-  if (prev === ROUND_OVER_STATE) {
+  if (prev === STATE_CONSTANTS.ROUND_OVER) {
     return true;
   }
 
@@ -774,7 +749,7 @@ function matchFlowAdvancedBeyondRoundOver(state, log, prev) {
     return false;
   }
 
-  let trackingTerminal = false;
+  let inMatchEndSequence = false;
 
   for (let index = log.length - 1; index >= 0; index -= 1) {
     const entry = log[index];
@@ -782,15 +757,15 @@ function matchFlowAdvancedBeyondRoundOver(state, log, prev) {
       continue;
     }
 
-    if (MATCH_END_STATES.includes(entry.to)) {
-      trackingTerminal = true;
-      if (entry.from === ROUND_OVER_STATE) {
+    if (isMatchEndState(entry.to)) {
+      inMatchEndSequence = true;
+      if (entry.from === STATE_CONSTANTS.ROUND_OVER) {
         return true;
       }
       continue;
     }
 
-    if (trackingTerminal && entry.to === ROUND_OVER_STATE) {
+    if (inMatchEndSequence && entry.to === STATE_CONSTANTS.ROUND_OVER) {
       return true;
     }
   }
@@ -857,7 +832,7 @@ async function readBattleStateDiagnostics(page) {
  */
 export async function confirmRoundResolved(page, options = {}) {
   const {
-    timeout = 3_000,
+    timeout = TIMEOUTS.ROUND_RESOLUTION_VERIFY,
     message = 'Expected battle state to reach "roundOver" (or progress into cooldown/match end) after deterministic resolution'
   } = options;
 
@@ -893,7 +868,7 @@ export async function confirmRoundResolved(page, options = {}) {
 
         return {
           resolved:
-            currentState === ROUND_OVER_STATE || cooldownAfterRoundOver || matchEndedAfterRoundOver,
+            isRoundOverState(currentState) || cooldownAfterRoundOver || matchEndedAfterRoundOver,
           state: currentState,
           cooldownAfterRoundOver,
           matchEndedAfterRoundOver,
@@ -907,8 +882,27 @@ export async function confirmRoundResolved(page, options = {}) {
     .toMatchObject({ resolved: true });
 }
 
+/**
+ * Ensures a round is resolved by attempting multiple resolution strategies.
+ * @pseudocode
+ * - If forceResolve is false, first attempt to wait for roundOver state naturally
+ * - If natural resolution fails or forceResolve is true, execute deterministic resolution
+ * - Call resolveRoundDeterministic to try CLI resolution and fallback strategies
+ * - Verify resolution succeeded using confirmRoundResolved with timeout
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {Object} [options] - Resolution configuration
+ * @param {number} [options.deadline=1500] - Timeout for natural resolution attempt in ms
+ * @param {number} [options.verifyTimeout=3000] - Timeout for resolution verification in ms
+ * @param {boolean} [options.forceResolve=false] - Skip natural resolution and force deterministic
+ * @returns {Promise<void>}
+ */
 export async function ensureRoundResolved(page, options = {}) {
-  const { deadline = 1500, verifyTimeout = 3_000, forceResolve = false } = options;
+  const {
+    deadline = TIMEOUTS.RESOLUTION_DEADLINE,
+    verifyTimeout = TIMEOUTS.ROUND_RESOLUTION_VERIFY,
+    forceResolve = false
+  } = options;
 
   if (!forceResolve) {
     try {
@@ -1002,7 +996,7 @@ export async function initializeBattle(page, config = {}) {
  * @returns {Promise<void>}
  */
 export async function waitForRoundsPlayed(page, expectedRounds, options = {}) {
-  const { timeout = 5_000 } = options;
+  const { timeout = TIMEOUTS.ROUNDS_PLAYED_DEFAULT } = options;
   const apiResult = await page.evaluate(
     async ({ rounds, waitTimeout }) => {
       const stateApi = window.__TEST_API?.state;
