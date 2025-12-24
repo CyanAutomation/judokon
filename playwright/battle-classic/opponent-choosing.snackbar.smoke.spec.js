@@ -1,8 +1,8 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { waitForBattleState } from "../helpers/battleStateHelper.js";
 
-test.describe("Cooldown countdown snackbar", () => {
-  test("shows after selecting a stat", async ({ page }) => {
+test.describe("Cooldown countdown display", () => {
+  test("shows countdown timer after selecting a stat", async ({ page }) => {
     await page.goto("/src/pages/battleClassic.html");
 
     // Wait for stat buttons to be ready
@@ -17,9 +17,13 @@ test.describe("Cooldown countdown snackbar", () => {
     // Wait for cooldown state after selection
     await waitForBattleState(page, "cooldown");
 
-    // Expect snackbar to show cooldown countdown text
-    // The cooldown renderer should update the snackbar immediately on first render
-    const snackbar = page.locator(".snackbar.show");
-    await expect(snackbar).toHaveText(/Next round in/i);
+    // Verify the next-round-timer element shows the countdown
+    // The cooldown renderer updates both the snackbar and the timer display
+    // Note: The snackbar may show other messages like "Opponent is choosing..." or
+    // "First to 5 points wins." during transitions, but the timer element reliably
+    // shows the countdown value.
+    const timer = page.getByTestId("next-round-timer");
+    await expect(timer).toBeVisible();
+    await expect(timer).toContainText(/\d+s/, { timeout: 5_000 });
   });
 });

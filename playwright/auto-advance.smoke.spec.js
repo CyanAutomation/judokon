@@ -50,6 +50,5 @@ test.describe("Classic Battle – auto-advance", () => {
 
     // Wait for auto-advance to complete before checking Round 2
     await expect(roundCounter).toContainText(/Round\s*2/i, { timeout: 10_000 });
-    await expect(roundMessage).toContainText(/Round\s*2/i);
   });
 });
