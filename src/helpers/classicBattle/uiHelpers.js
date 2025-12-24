@@ -26,8 +26,7 @@ import {
 import { guard } from "./guard.js";
 import { updateDebugPanel as updateDebugPanelImpl, setDebugPanelEnabled } from "./debugPanel.js";
 import { emitStatButtonTestEvent } from "./statButtonTestSignals.js";
-/**
- * Re-export of updateDebugPanel from debugPanel.js
+
 /**
  * Re-export of updateDebugPanel from debugPanel.js
  *
@@ -43,6 +42,18 @@ import { writeScoreDisplay } from "./scoreDisplay.js";
 import { bindUIHelperEventHandlersDynamic } from "./uiEventHandlers.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { getCurrentSeed } from "../testModeUtils.js";
+
+/**
+ * Animation duration for stat comparison transitions (milliseconds).
+ * @type {number}
+ */
+const STAT_COMPARISON_ANIMATION_DURATION = 500;
+
+/**
+ * Initial scoreboard text shown before any rounds are played.
+ * @type {string}
+ */
+export const INITIAL_SCOREBOARD_TEXT = "You: 0 Opponent: 0";
 
 /**
  * Determine whether round cooldowns should be skipped and optionally invoke a fast path.
@@ -141,8 +152,6 @@ export function applyBattleFeatureFlags(battleArea, banner) {
   return testModeEnabled;
 }
 
-export const INITIAL_SCOREBOARD_TEXT = "You: 0 Opponent: 0";
-
 /**
  * Ensure the scoreboard has initial text.
  *
@@ -192,48 +201,7 @@ runWhenIdle(preloadUiService);
  * @param {HTMLElement | null} panel Debug panel element.
  */
 
-/**
- * Display a snackbar prompting the player to choose a stat.
- *
- * @pseudocode
- * 1. Clear any existing text in `#round-message`.
- * 2. Show "Select your move" via `showSnackbar`.
- */
-
-/**
- * Prompt the player to select a stat via snackbar and clear round message.
- *
- * @pseudocode
- * 1. Clear `#round-message` text if present.
- * 2. Show a snackbar prompting the player to select a move.
- * 3. Emit a `roundPrompt` battle event for listeners.
- */
-// showSelectionPrompt moved to ./snackbar.js
-
-/**
- * Render the opponent card inside a container element.
- *
- * @pseudocode
- * 1. Extract lookup and inspector flag from `judoka`.
- * 2. Create a `JudokaCard` instance and render it to a DOM node.
- * 3. Clear and update the container, preserving the debug panel.
- * 4. Initialize lazy portrait loading when supported.
- *
- * @param {{lookup: object, enableInspector?: boolean}} judoka Judoka data plus render deps.
- * @param {HTMLElement | null} container Target container for the card.
- */
-
-/**
- * Render the opponent's Judoka card into a container.
- *
- * @pseudocode
- * 1. Validate inputs and construct a `JudokaCard` instance with `judoka` and `lookup`.
- * 2. Call `render()` and append the resulting node to `container`.
- * 3. Preserve and reattach the debug panel if present and initialize lazy portraits.
- *
- * @param {object} judoka
- * @param {HTMLElement|null} container
- */
+// Note: Note: showSelectionPrompt moved to ./snackbar.js
 
 /**
  * Render the opponent's Judoka card into the given container element.
@@ -576,7 +544,7 @@ export function showStatComparison(store, stat, playerVal, compVal) {
     return;
   }
   const startTime = performance.now();
-  const duration = 500;
+  const duration = STAT_COMPARISON_ANIMATION_DURATION;
   let id = 0;
   const step = (now) => {
     const progress = Math.min((now - startTime) / duration, 1);
@@ -740,9 +708,11 @@ export function registerRoundStartErrorHandler(retryFn) {
  * @returns {Promise<void>} Promise that resolves when selection completes (primarily for testing).
  */
 export function selectStat(store, stat) {
-  try {
-    console.log("[selectStat] Called with stat:", stat);
-  } catch {}
+  guard(() => {
+    if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+      console.debug("[selectStat] Called with stat:", stat);
+    }
+  });
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
   const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
@@ -811,32 +781,53 @@ export function selectStat(store, stat) {
     const selectionOptions = delayOpponentMessage
       ? { playerVal, opponentVal, delayOpponentMessage: true }
       : { playerVal, opponentVal };
-    try {
-      console.log("[selectStat] Calling handleStatSelection with:", {
-        stat,
-        playerVal,
-        opponentVal,
-        storeSelectionMadeBefore: store.selectionMade
-      });
-    } catch {}
+    guard(() => {
+      if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+        console.debug("[selectStat] Calling handleStatSelection with:", {
+          stat,
+          playerVal,
+          opponentVal,
+          storeSelectionMadeBefore: store.selectionMade
+        });
+      }
+    });
     const selectionFlow = handleStatSelection(store, stat, selectionOptions);
     selectionPromise =
       selectionFlow?.selectionApplied || selectionFlow?.selectionAppliedPromise || selectionFlow;
     roundResolutionPromise = selectionFlow;
     selectionFlow?.catch?.((error) => {
-      try {
-        console.log("[selectStat] handleStatSelection error caught:", error?.message);
-      } catch {}
+      guard(() => {
+        if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+          console.debug("[selectStat] handleStatSelection error caught:", error?.message);
+        }
+      });
       throw error;
     });
   } catch (error) {
-    try {
-      console.log("[selectStat] Outer catch error:", error);
-    } catch {}
+    guard(() => {
+      if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+        console.debug("[selectStat] Outer catch error:", error);
+      }
+    });
   }
 
   // Display snackbar feedback
+  guard(() => {
+    if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+      console.debug("[selectStat] Snackbar logic:", {
+        shouldDisplaySelection: shouldDisplaySelectionSnackbar(store, delayOpponentMessage),
+        delayOpponentMessage,
+        storeDelayFlag: store?.__delayOpponentMessage
+      });
+    }
+  });
+
   if (shouldDisplaySelectionSnackbar(store, delayOpponentMessage)) {
+    guard(() => {
+      if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+        console.debug("[selectStat] Showing 'You Picked' snackbar");
+      }
+    });
     try {
       showSnackbar(`You Picked: ${label}`);
     } catch {}
@@ -845,10 +836,26 @@ export function selectStat(store, stat) {
     try {
       const opponentMsg =
         typeof t === "function" ? t("ui.opponentChoosing") : "Opponent is choosing…";
+      guard(() => {
+        if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+          console.debug("[selectStat] Showing opponent choosing snackbar:", opponentMsg);
+        }
+      });
       showSnackbar(opponentMsg);
-    } catch {}
+    } catch (err) {
+      guard(() => {
+        if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+          console.debug("[selectStat] Error showing snackbar:", err);
+        }
+      });
+    }
   } else {
     // Fallback: if nothing is displayed, show a message
+    guard(() => {
+      if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+        console.debug("[selectStat] Showing fallback 'You Picked' snackbar");
+      }
+    });
     try {
       showSnackbar(`You Picked: ${label}`);
     } catch {}
@@ -912,21 +919,6 @@ function registerStatButtonClickHandler(container, store) {
 }
 
 /**
- * Attach the Next button click handler to the DOM Next control.
- *
- * @pseudocode
- * 1. Query the DOM for `#next-button` and fallback to `[data-role="next-round"]`.
- * 2. If not found, emit optional test-mode warnings and return.
- * 3. Attach `onNextButtonClick` to the `click` event of the discovered button.
- *
- * @returns {void}
- */
-export function attachNextButtonHandler() {
-  // Implementation would go here - but this seems to be a missing function
-  // For now, leaving as placeholder to fix the structure
-}
-
-/**
  * Remove modal backdrops and destroy any active quit modal stored on `store`.
  *
  * @pseudocode
@@ -953,16 +945,13 @@ export function removeBackdrops(store) {
 }
 
 /**
- * Replace the Next button with a fresh disabled clone and wire the click handler.
+ * Replace the Next button with a fresh disabled clone to drop attached listeners.
  *
  * @pseudocode
- * 1. Attempt to locate the `#next-button` element in the DOM.
- * 2. If the button is found:
- *    a. Create a deep clone of the button.
- *    b. Disable the cloned button.
- *    c. Remove the `data-next-ready` attribute from the clone.
- *    d. Attach the `onNextButtonClick` event listener to the cloned button.
- *    e. Replace the original button in the DOM with the newly created clone.
+ * 1. Query `#next-button` and return early if missing.
+ * 2. Clone the node, disable the clone and remove `data-next-ready`.
+ * 3. Attach `onNextButtonClick` to the clone and replace the original in the DOM.
+ *
  * @returns {void}
  */
 export function resetNextButton() {
@@ -1010,16 +999,6 @@ export function resetQuitButton() {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
   }
 }
-
-/**
- * Replace the Quit button with an inert clone to remove existing event listeners.
- *
- * @pseudocode
- * 1. Locate `#quit-button` in the DOM and fall back to `#quit-match-button` when needed.
- * 2. Replace it with `cloneNode(true)` so existing listeners are dropped.
- *
- * @returns {void}
- */
 
 /**
  * Clear scoreboard messages/timers and synchronize the scoreboard display.
@@ -1236,22 +1215,6 @@ export async function applyStatLabels() {
 }
 
 /**
- * Update the battle state badge text content to reflect the current state.
- *
- * @pseudocode
- * 1. Query `#battle-state-badge` and exit if missing.
- * 2. Set its text content to `State: <state>` or `State: —` when `state` is null.
- *
- * @param {string|null} state - Current battle state or null when unknown.
- * @returns {void}
- */
-
-/**
- * Update the text content of the battle state badge.
- *
- * @param {string | null} state The current battle state.
- */
-/**
  * Update the battle state badge with the current state text.
  *
  * Updates the DOM element `#battle-state-badge` to reflect the provided
@@ -1347,20 +1310,6 @@ export function resetBattleUI() {
   clearScoreboardAndMessages();
   updateDebugPanelImpl();
 }
-
-/**
- * Reset all battle UI elements to their initial state.
- *
- * @pseudocode
- * 1. Call `removeBackdrops(store)` to dismiss any open modals and their backdrops.
- * 2. Call `resetNextButton()` to reset the "Next Round" button to its initial disabled state.
- * 3. Call `resetQuitButton()` to reset the "Quit Match" button, removing any attached listeners.
- * 4. Call `clearScoreboardAndMessages()` to clear all messages, timers, and results from the scoreboard.
- * 5. Call `updateDebugPanel()` to refresh the debug panel's display to reflect the reset state.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store] - Optional store used to destroy active modals.
- * @returns {void}
- */
 
 // --- Event bindings ---
 
