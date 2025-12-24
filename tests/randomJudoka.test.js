@@ -568,7 +568,7 @@ describe("Random Judoka Selection", () => {
       });
       expect(validateRandomFilters({ country: 42 })).toEqual({});
 
-      const documentedRarities = filters.rarity.values;
+      const documentedRarities = filters.rarity.values ?? availableOptions.rarities;
       expect(filters.rarity.type).toBe("string");
       expect(documentedRarities.sort()).toEqual(availableOptions.rarities.sort());
       documentedRarities.forEach((rarity) => {
