@@ -92,8 +92,8 @@ test.describe("Vector search page", () => {
     const sortedBottomScore = rows.nth(rowCount - 1).locator("td").nth(3);
     await expect(sortedTopScore).toHaveText("0.85");
     await expect(sortedBottomScore).toHaveText("1.00");
-    await expect(sortedTopScore).not.toHaveText(initialTopScoreText ?? "");
-    await expect(sortedBottomScore).not.toHaveText(initialBottomScoreText ?? "");
+    await expect(sortedTopScore).not.toHaveText(initialTopScoreText);
+    await expect(sortedBottomScore).not.toHaveText(initialBottomScoreText);
   });
 
   test("shows empty state when no embeddings are available", async ({ page }) => {
