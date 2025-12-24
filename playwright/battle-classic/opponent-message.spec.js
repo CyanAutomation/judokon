@@ -204,7 +204,7 @@ test.describe("Classic Battle Opponent Messages", () => {
 
         // Track event emissions
         window.__battleEventsEmitted = [];
-        
+
         // Wrap showSnackbar EARLY (before battle init)
         const originalSetup = () => {
           if (window.showSnackbar && !window.__snackbarWrapped) {
@@ -218,7 +218,7 @@ test.describe("Classic Battle Opponent Messages", () => {
               return originalShowSnackbar.apply(this, args);
             };
           }
-          
+
           // Also try to listen to events early
           const target = window.__classicBattleEventTarget || globalThis.__classicBattleEventTarget;
           if (target && !window.__eventListenerAttached) {
@@ -232,15 +232,15 @@ test.describe("Classic Battle Opponent Messages", () => {
             });
           }
         };
-        
+
         // Try to set up immediately
         originalSetup();
-        
+
         // Also try after DOM ready
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', originalSetup);
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", originalSetup);
         }
-        
+
         // And keep trying periodically for a bit
         let attempts = 0;
         const interval = setInterval(() => {
@@ -272,7 +272,7 @@ test.describe("Classic Battle Opponent Messages", () => {
       console.log("[TEST] Before click:", beforeClick);
 
       await firstStat.click();
-      
+
       // Immediately check if button became disabled
       const rightAfterClick = await page.evaluate(() => {
         const buttons = document.querySelectorAll("#stat-buttons button[data-stat]");
@@ -290,9 +290,9 @@ test.describe("Classic Battle Opponent Messages", () => {
       // Check what happened
       const afterClick = await page.evaluate(() => {
         // Debug: check if our wrapper is still in place
-        const snackbarFnString = window.showSnackbar ? window.showSnackbar.toString() : 'undefined';
-        const hasOurWrapper = snackbarFnString.includes('__snackbarCalls');
-        
+        const snackbarFnString = window.showSnackbar ? window.showSnackbar.toString() : "undefined";
+        const hasOurWrapper = snackbarFnString.includes("__snackbarCalls");
+
         return {
           selectStatCalled: window.__selectStatCalled,
           selectStatArgs: window.__selectStatArgs,
@@ -302,7 +302,7 @@ test.describe("Classic Battle Opponent Messages", () => {
           snackbarHTML: document.getElementById("snackbar-container")?.innerHTML || "",
           featureFlag: window.__FF_OVERRIDES?.opponentDelayMessage,
           hasOurWrapper,
-          showSnackbarExists: typeof window.showSnackbar === 'function'
+          showSnackbarExists: typeof window.showSnackbar === "function"
         };
       });
 

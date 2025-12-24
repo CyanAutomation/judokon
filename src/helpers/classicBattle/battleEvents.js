@@ -190,14 +190,7 @@ export function __resetBattleEventTarget() {
   globalThis[EVENT_TARGET_KEY] = t;
   __tuneMaxListenersIfNode(t);
 }
-/**
- * @summary Low-level helpers for testing and cross-module coordination.
- * @pseudocode
- * 1. Provide a stable global EventTarget so isolated modules and tests can
- *    share a single event bus without importing runtime instances.
- * 2. Expose small helpers (`onBattleEvent`, `offBattleEvent`, `emitBattleEvent`)
- *    to keep call-sites terse and readable.
- */
+
 /**
  * Get the global EventTarget used by classic battle.
  *
@@ -209,27 +202,3 @@ export function __resetBattleEventTarget() {
 export function getBattleEventTarget() {
   return getTarget();
 }
-/**
- * Re-export the shared event target getter for external modules.
- *
- * @summary Allows consumers to access the global Classic Battle EventTarget
- * without importing internal helpers.
- *
- * @pseudocode
- * 1. Export the `getTarget` function defined above for public consumption.
- *
- * @returns {EventTarget} The shared Classic Battle event bus target.
- */
-export { getTarget };
-
-/**
- * Default export of the shared event target getter.
- *
- * @summary Provides a convenient default export alias for `getTarget`.
- *
- * @pseudocode
- * 1. Export `getTarget` as the default export from this module.
- *
- * @returns {EventTarget} The shared Classic Battle event bus target.
- */
-export default getTarget;
