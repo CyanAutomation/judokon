@@ -107,12 +107,13 @@ export function applyOpponentCardPlaceholder(container, { documentRef } = {}) {
     container.classList.add("is-obscured");
   } catch {}
 
-  // Update the container's aria-label to indicate mystery state
+  // Keep the container's aria-label as "Opponent card" for semantic consistency
+  // The placeholder element itself already has its own "Mystery opponent card" label
   try {
     if (targetContainer) {
-      targetContainer.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
+      targetContainer.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
     } else if (container) {
-      container.setAttribute("aria-label", OPPONENT_PLACEHOLDER_ARIA_LABEL);
+      container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
     }
   } catch {}
 

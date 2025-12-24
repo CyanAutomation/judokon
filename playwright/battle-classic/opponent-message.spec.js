@@ -204,36 +204,53 @@ test.describe("Classic Battle Opponent Messages", () => {
 
         // Track event emissions
         window.__battleEventsEmitted = [];
+        
+        // Wrap showSnackbar EARLY (before battle init)
+        const originalSetup = () => {
+          if (window.showSnackbar && !window.__snackbarWrapped) {
+            window.__snackbarWrapped = true;
+            const originalShowSnackbar = window.showSnackbar;
+            window.showSnackbar = function (...args) {
+              window.__snackbarCalls.push({
+                message: args[0],
+                timestamp: Date.now()
+              });
+              return originalShowSnackbar.apply(this, args);
+            };
+          }
+          
+          // Also try to listen to events early
+          const target = window.__classicBattleEventTarget || globalThis.__classicBattleEventTarget;
+          if (target && !window.__eventListenerAttached) {
+            window.__eventListenerAttached = true;
+            target.addEventListener("statSelected", (e) => {
+              window.__battleEventsEmitted.push({
+                type: "statSelected",
+                detail: e.detail,
+                timestamp: Date.now()
+              });
+            });
+          }
+        };
+        
+        // Try to set up immediately
+        originalSetup();
+        
+        // Also try after DOM ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', originalSetup);
+        }
+        
+        // And keep trying periodically for a bit
+        let attempts = 0;
+        const interval = setInterval(() => {
+          originalSetup();
+          attempts++;
+          if (attempts > 20) clearInterval(interval);
+        }, 50);
       });
 
       await setOpponentResolveDelay(page, 1_200);
-
-      // After initialization, wrap key functions to log their calls
-      await page.evaluate(() => {
-        // Intercept showSnackbar
-        if (window.showSnackbar) {
-          const originalShowSnackbar = window.showSnackbar;
-          window.showSnackbar = function (...args) {
-            window.__snackbarCalls.push({
-              message: args[0],
-              timestamp: Date.now()
-            });
-            return originalShowSnackbar.apply(this, args);
-          };
-        }
-
-        // Track battle events
-        const target = window.__classicBattleEventTarget || globalThis.__classicBattleEventTarget;
-        if (target) {
-          target.addEventListener("statSelected", (e) => {
-            window.__battleEventsEmitted.push({
-              type: "statSelected",
-              detail: e.detail,
-              timestamp: Date.now()
-            });
-          });
-        }
-      });
 
       const firstStat = page.locator(selectors.statButton()).first();
 
@@ -271,15 +288,23 @@ test.describe("Classic Battle Opponent Messages", () => {
       await page.waitForTimeout(300);
 
       // Check what happened
-      const afterClick = await page.evaluate(() => ({
-        selectStatCalled: window.__selectStatCalled,
-        selectStatArgs: window.__selectStatArgs,
-        snackbarCalls: window.__snackbarCalls,
-        battleEvents: window.__battleEventsEmitted,
-        snackbarText: document.getElementById("snackbar-container")?.textContent || "",
-        snackbarHTML: document.getElementById("snackbar-container")?.innerHTML || "",
-        featureFlag: window.__FF_OVERRIDES?.opponentDelayMessage
-      }));
+      const afterClick = await page.evaluate(() => {
+        // Debug: check if our wrapper is still in place
+        const snackbarFnString = window.showSnackbar ? window.showSnackbar.toString() : 'undefined';
+        const hasOurWrapper = snackbarFnString.includes('__snackbarCalls');
+        
+        return {
+          selectStatCalled: window.__selectStatCalled,
+          selectStatArgs: window.__selectStatArgs,
+          snackbarCalls: window.__snackbarCalls,
+          battleEvents: window.__battleEventsEmitted,
+          snackbarText: document.getElementById("snackbar-container")?.textContent || "",
+          snackbarHTML: document.getElementById("snackbar-container")?.innerHTML || "",
+          featureFlag: window.__FF_OVERRIDES?.opponentDelayMessage,
+          hasOurWrapper,
+          showSnackbarExists: typeof window.showSnackbar === 'function'
+        };
+      });
 
       console.log("[TEST] After click:", JSON.stringify(afterClick, null, 2));
       console.log("[TEST] Snackbar calls:", afterClick.snackbarCalls?.length || 0);
