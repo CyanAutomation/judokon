@@ -69,6 +69,7 @@ test.describe("Vector search page", () => {
 
     const firstRow = rows.nth(0);
     const secondRow = rows.nth(1);
+    const scoreHeader = page.getByRole("columnheader", { name: "Score" });
     await expect(firstRow).toBeVisible();
     await expect(secondRow).toBeVisible();
     await expect(firstRow.locator(".snippet-summary")).toContainText(
@@ -78,16 +79,17 @@ test.describe("Vector search page", () => {
     await expect(firstRow.locator("td").nth(1)).toHaveText("docA.md");
     await expect(secondRow.locator("td").nth(1)).toHaveText("docB.md");
 
-    const scores = await rows.evaluateAll((elements) =>
-      elements.map((el) => {
-        const scoreCell = el.querySelector("td[data-score], td:nth-child(4)");
-        return parseFloat(scoreCell?.textContent?.trim() ?? "0");
-      })
-    );
-    const sortedScores = [...scores].sort((a, b) => b - a);
+    const initialTopScore = firstRow.locator("td").nth(3);
+    const initialBottomScore = rows.nth(rowCount - 1).locator("td").nth(3);
+    await expect(initialTopScore).toHaveText("1.00");
+    await expect(initialBottomScore).toHaveText("0.85");
 
-    expect(scores).toEqual(sortedScores);
-    scores.forEach((score) => expect(score).toBeGreaterThan(0));
+    await scoreHeader.click();
+
+    const sortedTopScore = rows.nth(0).locator("td").nth(3);
+    const sortedBottomScore = rows.nth(rowCount - 1).locator("td").nth(3);
+    await expect(sortedTopScore).toHaveText("0.85");
+    await expect(sortedBottomScore).toHaveText("1.00");
   });
 
   test("shows empty state when no embeddings are available", async ({ page }) => {
