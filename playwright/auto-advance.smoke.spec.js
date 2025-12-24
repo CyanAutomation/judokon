@@ -13,18 +13,6 @@ async function startClassicBattle(page) {
   await Promise.all([page.waitForURL("**/battleClassic.html"), startLink.click()]);
 }
 
-async function readRoundNumber(roundCounterLocator) {
-  const text = await roundCounterLocator.textContent();
-  const match = text?.match(/Round\s*(\d+)/i);
-  return match ? Number.parseInt(match[1], 10) : 0;
-}
-
-async function readTimerSeconds(timerValueLocator) {
-  const text = await timerValueLocator.textContent();
-  const match = text?.match(/(\d+)s/);
-  return match ? Number.parseInt(match[1], 10) : 0;
-}
-
 test.describe("Classic Battle – auto-advance", () => {
   test.beforeAll(() => {
     expect(typeof applyDeterministicCooldown).toBe("function");
@@ -41,13 +29,11 @@ test.describe("Classic Battle – auto-advance", () => {
     await waitForBattleReady(page, { allowFallback: false });
 
     const roundCounter = page.getByTestId("round-counter");
+    const nextRoundTimer = page.getByTestId("next-round-timer");
     const timerValue = page.locator("#next-round-timer [data-part='value']");
     const roundMessage = page.locator("#round-message");
 
-    await expect
-      .poll(() => readRoundNumber(roundCounter), { timeout: 10_000 })
-      .toBeGreaterThanOrEqual(1);
-    const initialRound = await readRoundNumber(roundCounter);
+    await expect(roundCounter).toContainText(/Round\s*1/i);
 
     const statContainer = page.getByTestId("stat-buttons");
     await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
@@ -56,20 +42,14 @@ test.describe("Classic Battle – auto-advance", () => {
     await expect(firstStat).toBeVisible();
     await firstStat.click();
 
-    await expect
-      .poll(async () => {
-        const message = await roundMessage.textContent();
-        return (message ?? "").trim().length > 0;
-      })
-      .toBe(true);
+    await expect(roundMessage).toBeVisible();
+    await expect(roundMessage).toContainText(/picked/i);
 
-    await expect.poll(() => readTimerSeconds(timerValue), { timeout: 10_000 }).toBeGreaterThan(0);
+    await expect(nextRoundTimer).toBeVisible();
+    await page.waitForSelector("#next-round-timer [data-part='value']", { state: "visible" });
+    await expect(timerValue).toHaveText(/\d+s/);
 
-    const cooldownBanner = (await roundMessage.textContent())?.trim();
-
-    await expect
-      .poll(() => readRoundNumber(roundCounter), { timeout: 10_000 })
-      .toBeGreaterThan(initialRound);
-    await expect(roundMessage).not.toHaveText(cooldownBanner ?? "");
+    await expect(roundCounter).toContainText(/Round\s*2/i);
+    await expect(roundMessage).toContainText(/Round\s*2/i);
   });
 });
