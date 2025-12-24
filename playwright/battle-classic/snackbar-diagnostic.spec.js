@@ -81,6 +81,14 @@ test.describe("Snackbar diagnostic tests", () => {
 
       console.log("BEFORE stat selection:", JSON.stringify(beforeState, null, 2));
 
+      // Log some key findings immediately  
+      if (!beforeState.initCalled) {
+        console.error("❌ BOOTSTRAP NEVER RAN");
+      }
+      if (!beforeState.handlerRegistrationTest.handlerCalled) {
+        console.error("❌ TEST HANDLER NOT CALLED - EventTarget may have no listeners");
+      }
+
       // Verify bootstrap completed
       expect(beforeState.initCalled).toBe(true);
       expect(beforeState.eventTargetExists).toBe(true);
@@ -108,6 +116,13 @@ test.describe("Snackbar diagnostic tests", () => {
       });
 
       console.log("AFTER stat selection:", JSON.stringify(afterState, null, 2));
+
+      // Log console output from page
+      console.log("\n=== Page Console Logs ===");
+      consoleLogs.forEach((log) => {
+        console.log(`[${log.type}] ${log.text}`);
+      });
+      console.log("=========================\n");
 
       // CRITICAL: Verify EventTarget identity didn't change
       expect(afterState.eventTargetId).toBe(beforeState.eventTargetId);

@@ -6,7 +6,55 @@
 
 **Root Cause Hypothesis**: Event handler registration system desynchronization - handlers may not be registered on the EventTarget that receives the events.
 
-**Status**: ✅ **DIAGNOSTICS IN PROGRESS** - Identity tracking and diagnostic tests added
+**Status**: 🔍 **ROOT CAUSE IDENTIFIED** - Wrong snackbar is showing
+
+---
+
+## 🎯 ROOT CAUSE DISCOVERED
+
+### The Real Problem
+
+The snackbar **DOES** appear, but it shows **"First to 5 points wins."** instead of **"Opponent is choosing..."**
+
+### Evidence
+
+1. **Test Failure**: Snackbar exists but contains wrong text
+   ```
+   Expected substring: "Opponent"
+   Received string:    "First to 5 points wins."
+   ```
+
+2. **Source of Wrong Snackbar**: `src/helpers/classicBattle/roundSelectModal.js:62`
+   ```javascript
+   showSnackbar(`First to ${value} points wins.`);
+   ```
+   This is called in `startRound()` function when modal is confirmed
+
+3. **Timeline of Events**:
+   - ✅ User clicks "Medium" button in modal
+   - ✅ Modal calls `startRound(5, onStart, true)`
+   - ✅ `startRound()` shows "First to 5 points wins." snackbar
+   - ✅ Modal calls `onStart()` callback (bootstrap continues)
+   - ✅ User clicks stat button
+   - ✅ `statSelected` event fires
+   - ❓ **Handler tries to show "Opponent is choosing..."**
+   - ❌ **But "First to 5 points wins." snackbar is STILL VISIBLE**
+   - ❌ **New snackbar never replaces the old one**
+
+### Root Cause: Snackbar Timing + Lifecycle Issue
+
+**Hypothesis**: The "First to 5 points wins." snackbar is shown when the modal is confirmed and has a long duration. When the stat selection happens shortly after, the "Opponent is choosing..." snackbar either:
+
+1. **Doesn't replace the existing snackbar** (showSnackbar doesn't clear previous ones?)
+2. **Gets cleared immediately** by some other code
+3. **Never gets called** because the handler isn't registered yet
+
+### Next Investigation Steps
+
+1. ✅ Check showSnackbar implementation - does it clear previous snackbars?
+2. ✅ Check timing - how long does "First to 5 points wins." snackbar stay visible?
+3. ✅ Verify statSelected handler is actually being called
+4. ✅ Add timestamps to track exact order of snackbar calls
 
 ---
 

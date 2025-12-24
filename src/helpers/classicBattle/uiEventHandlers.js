@@ -109,9 +109,19 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     const KEY = "__cbUIHelpersDynamicBoundTargets";
     target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
-    if (set.has(target)) {
+    
+    // DIAGNOSTIC: Log WeakSet guard decision
+    const targetId = target?.__debugId || "NO_ID";
+    const hasTarget = set.has(target);
+    
+    console.log(`[Handler Registration] Target: ${targetId}, In WeakSet: ${hasTarget}`);
+    
+    if (hasTarget) {
+      console.log(`[Handler Registration] EARLY RETURN - Target ${targetId} already has handlers`);
       return;
     }
+    
+    console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${targetId}`);
     set.add(target);
   } catch (err) {
     // Log binding failure but continue to register handlers
@@ -169,14 +179,27 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   // Create local helper that uses injected dependencies
   function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
+    // DIAGNOSTIC: Log that function was called
+    console.log("[displayOpponentChoosingPrompt] Called", {
+      markTimestamp,
+      notifyReady,
+      showSnackbarFnExists: typeof showSnackbarFn === "function"
+    });
+    
     try {
       const message = tFn("ui.opponentChoosing");
+      console.log("[displayOpponentChoosingPrompt] Calling showSnackbar with:", message);
       showSnackbarFn(message);
+      console.log("[displayOpponentChoosingPrompt] showSnackbar completed successfully");
     } catch (err) {
+      console.error("[displayOpponentChoosingPrompt] Primary showSnackbar failed:", err);
       // Fallback: try with hardcoded message if translation fails
       try {
+        console.log("[displayOpponentChoosingPrompt] Trying fallback message");
         showSnackbarFn("Opponent is choosing…");
-      } catch {
+        console.log("[displayOpponentChoosingPrompt] Fallback showSnackbar completed");
+      } catch (fallbackErr) {
+        console.error("[displayOpponentChoosingPrompt] Fallback also failed:", fallbackErr);
         // Final fallback: log to console in development
         if (typeof console !== "undefined" && typeof console.warn === "function") {
           try {
@@ -217,6 +240,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   });
 
   onBattleEvent("statSelected", async (e) => {
+    // DIAGNOSTIC: Log that handler was called
+    console.log("[statSelected Handler] Event received", {
+      detail: e?.detail,
+      timestamp: Date.now()
+    });
+    
     try {
       scoreboardObj.clearTimer?.();
     } catch {
@@ -233,6 +262,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       clearFallbackPromptTimer();
 
       if (!shouldDelay) {
+        console.log("[statSelected Handler] No delay - calling displayOpponentChoosingPrompt immediately");
         displayOpponentChoosingPrompt();
         return;
       }
@@ -243,10 +273,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
       if (resolvedDelay <= 0) {
+        console.log("[statSelected Handler] Resolved delay <= 0 - calling displayOpponentChoosingPrompt immediately");
         displayOpponentChoosingPrompt();
         return;
       }
 
+      console.log(`[statSelected Handler] Scheduling displayOpponentChoosingPrompt with delay: ${resolvedDelay}ms`);
       const minDuration = Number(getOpponentPromptMinDurationFn());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
