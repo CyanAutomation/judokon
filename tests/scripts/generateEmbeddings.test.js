@@ -44,20 +44,10 @@ describe("JSON_FIELD_ALLOWLIST", () => {
         const allowlistedValues = flattenedKeys
           .map((key) => stringifyAllowedValue(flattened[key]))
           .filter((value) => value !== undefined);
-        const output = extractAllowedValues(file, sampleEntry);
+          const output = extractAllowedValues(file, sampleEntry);
+          expect(output, `${file} should produce output when allowlist is true`).toBeDefined();
 
-        if (allowlist === true) {
-          if (allowlistedValues.length === 0) {
-          const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-          console.warn(`${file} has no extractable allowlisted values`);
-          expect(warnSpy).toHaveBeenCalledWith(
-            `${file} has no extractable allowlisted values`
-          );
-          warnSpy.mockRestore();
-            continue;
-          }
-
-          const hasKnownValue = allowlistedValues.some((value) => output?.includes(value));
+          const hasKnownValue = allowlistedValues.some((value) => output.includes(value));
           expect(
             hasKnownValue,
             `${file} output should include at least one sample value`
