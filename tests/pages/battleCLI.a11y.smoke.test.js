@@ -34,7 +34,6 @@ describe("battleCLI accessibility smoke tests", () => {
       expect(countdown?.getAttribute("role")).toBe("status");
       expect(countdown?.getAttribute("aria-live")).toBe("polite");
 
-      const initialCountdownText = countdown?.textContent ?? "";
       cli.startSelectionCountdown(3);
       cli.startSelectionCountdown(3);
       expect(countdown?.textContent).toBe("Time remaining: 3");

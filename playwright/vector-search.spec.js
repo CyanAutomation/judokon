@@ -80,7 +80,10 @@ test.describe("Vector search page", () => {
     await expect(secondRow.locator("td").nth(1)).toHaveText("docB.md");
 
     const initialTopScore = firstRow.locator("td").nth(3);
-    const initialBottomScore = rows.nth(rowCount - 1).locator("td").nth(3);
+    const initialBottomScore = rows
+      .nth(rowCount - 1)
+      .locator("td")
+      .nth(3);
     await expect(initialTopScore).toHaveText("1.00");
     await expect(initialBottomScore).toHaveText("0.85");
     const initialTopScoreText = await initialTopScore.textContent();
@@ -89,7 +92,10 @@ test.describe("Vector search page", () => {
     await scoreHeader.click();
 
     const sortedTopScore = rows.nth(0).locator("td").nth(3);
-    const sortedBottomScore = rows.nth(rowCount - 1).locator("td").nth(3);
+    const sortedBottomScore = rows
+      .nth(rowCount - 1)
+      .locator("td")
+      .nth(3);
     await expect(sortedTopScore).toHaveText("0.85");
     await expect(sortedBottomScore).toHaveText("1.00");
     await expect(sortedTopScore).not.toHaveText(initialTopScoreText);
@@ -163,11 +169,7 @@ test.describe("Vector search page", () => {
         .finally(() => resolveTransformerRoute?.())
     );
 
-    await page.evaluate(() =>
-      fetch(
-        ""
-      )
-    );
+    await page.evaluate(() => fetch(""));
     await transformerRoutePromise;
 
     await runSearch(page);

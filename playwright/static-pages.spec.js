@@ -81,16 +81,20 @@ test.describe("Static pages", () => {
     await expect(dateCells.first()).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
 
     const sampleCount = 5;
-    await expect.poll(async () => {
-      const values = await dateCells.evaluateAll(
-        (cells, count) => cells.slice(0, count).map((cell) => cell.textContent?.trim() || ""),
-        sampleCount
-      );
-      if (values.length < sampleCount) return false;
-      if (!values.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))) return false;
-      const timestamps = values.map((value) => new Date(value).getTime());
-      return timestamps.every((value, index) => (index === 0 ? true : value <= timestamps[index - 1]));
-    }).toBe(true);
+    await expect
+      .poll(async () => {
+        const values = await dateCells.evaluateAll(
+          (cells, count) => cells.slice(0, count).map((cell) => cell.textContent?.trim() || ""),
+          sampleCount
+        );
+        if (values.length < sampleCount) return false;
+        if (!values.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))) return false;
+        const timestamps = values.map((value) => new Date(value).getTime());
+        return timestamps.every((value, index) =>
+          index === 0 ? true : value <= timestamps[index - 1]
+        );
+      })
+      .toBe(true);
 
     const detailLinks = rows.locator("td:nth-child(3) a");
     await expect(detailLinks).toHaveCount(await rows.count());
@@ -102,7 +106,7 @@ test.describe("Static pages", () => {
     const firstRow = rows.first();
     const firstDateText = await firstRow.locator("td:nth-child(5)").textContent();
     expect(firstDateText).not.toBeNull();
-    const firstDate = new Date(firstDateText!.trim());
+    const firstDate = new Date(firstDateText.trim());
     const now = Date.now();
     const maxAgeMs = 1000 * 60 * 60 * 24 * 365;
     expect(Number.isNaN(firstDate.getTime())).toBe(false);
@@ -112,7 +116,7 @@ test.describe("Static pages", () => {
     const firstDetailLink = firstRow.locator("td:nth-child(3) a");
     const detailHref = await firstDetailLink.getAttribute("href");
     expect(detailHref).not.toBeNull();
-    const resolvedHref = new URL(detailHref!, page.url()).toString();
+    const resolvedHref = new URL(detailHref, page.url()).toString();
     const popupPromise = page.waitForEvent("popup", { timeout: 2000 }).catch(() => null);
     await firstDetailLink.click();
     const popup = await popupPromise;

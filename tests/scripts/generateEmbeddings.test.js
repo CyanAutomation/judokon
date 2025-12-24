@@ -44,15 +44,11 @@ describe("JSON_FIELD_ALLOWLIST", () => {
         const allowlistedValues = flattenedKeys
           .map((key) => stringifyAllowedValue(flattened[key]))
           .filter((value) => value !== undefined);
-          const output = extractAllowedValues(file, sampleEntry);
-          expect(output, `${file} should produce output when allowlist is true`).toBeDefined();
+        const output = extractAllowedValues(file, sampleEntry);
+        expect(output, `${file} should produce output when allowlist is true`).toBeDefined();
 
-          const hasKnownValue = allowlistedValues.some((value) => output.includes(value));
-          expect(
-            hasKnownValue,
-            `${file} output should include at least one sample value`
-          ).toBe(true);
-        }
+        const hasKnownValue = allowlistedValues.some((value) => output.includes(value));
+        expect(hasKnownValue, `${file} output should include at least one sample value`).toBe(true);
       }
     }
   });
