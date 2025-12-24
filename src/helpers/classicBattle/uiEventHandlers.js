@@ -104,16 +104,29 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     applyOpponentCardPlaceholder: applyOpponentCardPlaceholderFn = applyOpponentCardPlaceholder
   } = deps;
   // Ensure we only bind once per EventTarget instance
+  let target;
   try {
     const KEY = "__cbUIHelpersDynamicBoundTargets";
-    const target = getBattleEventTarget();
+    target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
     if (set.has(target)) {
       return;
     }
     set.add(target);
-  } catch {
-    // Silently skip if binding setup fails
+  } catch (err) {
+    // Log binding failure but continue to register handlers
+    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+      console.warn('[bindUIHelperEventHandlersDynamic] WeakSet tracking failed:', err);
+    }
+    // Still try to get target if not already set
+    if (!target) {
+      try {
+        target = getBattleEventTarget();
+      } catch {
+        // Cannot proceed without target
+        return;
+      }
+    }
   }
 
   // Create local helper that uses injected dependencies
@@ -159,8 +172,18 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     try {
       const message = tFn("ui.opponentChoosing");
       showSnackbarFn(message);
-    } catch {
-      // Non-critical: snackbar display failures don't block the battle flow
+    } catch (err) {
+      // Fallback: try with hardcoded message if translation fails
+      try {
+        showSnackbarFn("Opponent is choosing…");
+      } catch {
+        // Final fallback: log to console in development
+        if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+          try {
+            console.warn('[displayOpponentChoosingPrompt] Failed to show snackbar:', err);
+          } catch {}
+        }
+      }
     }
     let recordedTimestamp;
     if (markTimestamp) {
