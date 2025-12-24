@@ -215,6 +215,7 @@ export async function loadBattleCLI(options = {}) {
       setAutoContinue: vi.fn((v) => {
         __autoContinue = v !== false;
       }),
+      getAutoContinue: vi.fn(() => __autoContinue),
       get autoContinue() {
         return __autoContinue;
       }

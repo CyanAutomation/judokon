@@ -24,7 +24,7 @@ describe("battleCLI accessibility", () => {
         "../../src/helpers/classicBattle/orchestratorHandlers.js"
       );
       setAutoContinue(false);
-      emitBattleEvent("battleStateChange", { to: "roundOver" });
+      emitBattleEvent("battleStateChange", { from: "waitingForPlayerAction", to: "roundOver" });
       const bar = document.querySelector("#snackbar-container .snackbar");
       expect(bar?.textContent).toBe("Press Enter to continue");
       const nextButton = document.getElementById("next-round-button");
