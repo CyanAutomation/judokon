@@ -148,7 +148,7 @@ test.describe("Vector search page", () => {
     await page.route("**/transformers.min.js", (route) =>
       route
         .fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
-        .finally(() => resolveTransformerRoute?.())
+        .finally(() => resolveTransformerRoute())
     );
 
     await page.route("**/transformers.min.js", (route) =>
