@@ -161,6 +161,12 @@ function resetTimers() {
  * @returns {void}
  */
 export function showSnackbar(message) {
+  // DIAGNOSTIC: Log all showSnackbar calls with stack trace
+  console.log(`[showSnackbar] Called with message: "${message}"`, {
+    timestamp: Date.now(),
+    stack: new Error().stack?.split('\n').slice(2, 5).join('\n') || 'no stack'
+  });
+  
   if (isSnackbarsDisabled()) return;
   const doc = ensureDomOrReset();
   if (!doc) {

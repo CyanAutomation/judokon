@@ -20,7 +20,7 @@ test.describe("Snackbar console diagnostic (NO MUTING)", () => {
     // Start the match via modal
     console.log("\n========== CLICKING MEDIUM BUTTON ==========");
     await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-    await page.getByRole("button", { name: "Medium" })).click();
+    await page.getByRole("button", { name: "Medium" }).click();
 
     console.log("\n========== WAITING FOR STAT BUTTONS ==========");
     const container = page.getByTestId("stat-buttons");
@@ -51,12 +51,13 @@ test.describe("Snackbar console diagnostic (NO MUTING)", () => {
     console.log("Stat selected:", snackbarState.statSelected);
 
     console.log("\n========== CONSOLE LOGS SUMMARY ==========");
-    const handlerLogs = consoleLogs.filter((log) =>
-      log.text.includes("[Handler Registration]") ||
-      log.text.includes("[statSelected Handler]") ||
-      log.text.includes("[displayOpponentChoosingPrompt]") ||
-      log.text.includes("[EventTarget]") ||
-      log.text.includes("[roundSelectModal]")
+    const handlerLogs = consoleLogs.filter(
+      (log) =>
+        log.text.includes("[Handler Registration]") ||
+        log.text.includes("[statSelected Handler]") ||
+        log.text.includes("[displayOpponentChoosingPrompt]") ||
+        log.text.includes("[EventTarget]") ||
+        log.text.includes("[roundSelectModal]")
     );
 
     handlerLogs.forEach((log) => {
@@ -68,19 +69,23 @@ test.describe("Snackbar console diagnostic (NO MUTING)", () => {
 
     // Report findings
     console.log("\n========== ANALYSIS ==========");
-    if (handlerLogs.filter(l => l.text.includes("[statSelected Handler]")).length === 0) {
+    if (handlerLogs.filter((l) => l.text.includes("[statSelected Handler]")).length === 0) {
       console.log("❌ statSelected handler was NEVER CALLED - Event not received!");
     } else {
       console.log("✅ statSelected handler was called");
     }
 
-    if (handlerLogs.filter(l => l.text.includes("[Handler Registration] PROCEEDING")).length === 0) {
+    if (
+      handlerLogs.filter((l) => l.text.includes("[Handler Registration] PROCEEDING")).length === 0
+    ) {
       console.log("❌ Handlers were NEVER REGISTERED - WeakSet blocked or error occurred!");
     } else {
       console.log("✅ Handlers were registered");
     }
 
-    if (handlerLogs.filter(l => l.text.includes("[displayOpponentChoosingPrompt]")).length === 0) {
+    if (
+      handlerLogs.filter((l) => l.text.includes("[displayOpponentChoosingPrompt]")).length === 0
+    ) {
       console.log("❌ displayOpponentChoosingPrompt was NEVER CALLED");
     } else {
       console.log("✅ displayOpponentChoosingPrompt was called");

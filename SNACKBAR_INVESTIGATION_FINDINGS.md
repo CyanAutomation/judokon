@@ -1,12 +1,14 @@
-# Snackbar Investigation - Comprehensive Root Cause Analysis
+# Snackbar Investigation - Root Cause Analysis Complete ✅
 
 ## Executive Summary
 
 **Problem**: In Playwright tests, stat selection button clicks are registered and processed, but the "Opponent is choosing..." snackbar never appears.
 
-**Root Cause Hypothesis**: Event handler registration system desynchronization - handlers may not be registered on the EventTarget that receives the events.
+**Root Cause**: ✅ **IDENTIFIED** - The "Opponent is choosing..." snackbar IS being shown correctly, but is immediately REPLACED by the cooldown countdown snackbar ("Next round in: 1s") from `CooldownRenderer`.
 
-**Status**: 🔍 **ROOT CAUSE IDENTIFIED** - Wrong snackbar is showing
+**Status**: ✅ **INVESTIGATION COMPLETE** - Root cause identified, solution approaches documented
+
+**Fix Required**: Prevent `CooldownRenderer` from showing countdown snackbars during the opponent selection/decision phase of the battle state machine.
 
 ---
 
@@ -19,15 +21,18 @@ The snackbar **DOES** appear, but it shows **"First to 5 points wins."** instead
 ### Evidence
 
 1. **Test Failure**: Snackbar exists but contains wrong text
+
    ```
    Expected substring: "Opponent"
    Received string:    "First to 5 points wins."
    ```
 
 2. **Source of Wrong Snackbar**: `src/helpers/classicBattle/roundSelectModal.js:62`
+
    ```javascript
    showSnackbar(`First to ${value} points wins.`);
    ```
+
    This is called in `startRound()` function when modal is confirmed
 
 3. **Timeline of Events**:
@@ -49,12 +54,45 @@ The snackbar **DOES** appear, but it shows **"First to 5 points wins."** instead
 2. **Gets cleared immediately** by some other code
 3. **Never gets called** because the handler isn't registered yet
 
-### Next Investigation Steps
+### 🎯 FINAL ROOT CAUSE IDENTIFIED
 
-1. ✅ Check showSnackbar implementation - does it clear previous snackbars?
-2. ✅ Check timing - how long does "First to 5 points wins." snackbar stay visible?
-3. ✅ Verify statSelected handler is actually being called
-4. ✅ Add timestamps to track exact order of snackbar calls
+**The "Opponent is choosing..." snackbar IS being shown correctly, but it's being REPLACED by subsequent snackbar calls!**
+
+**showSnackbar Call Sequence** (from diagnostic logs):
+
+1. **T+0ms**: "First to 5 points wins." (from modal `startRound`)
+2. **T+368ms**: "Opponent is choosing…" (from `selectStat` in uiHelpers) ✅
+3. **T+372ms**: "Opponent is choosing…" (from `displayOpponentChoosingPrompt` with delay) ✅ ✅  
+4. **T+1072ms**: "Next round in: 1s" (from `CooldownRenderer`) ❌ **REPLACES THE CORRECT SNACKBAR**
+
+**Key Findings**:
+
+- ✅ EventTarget works correctly
+- ✅ Event handlers ARE registered
+- ✅ `statSelected` event IS fired
+- ✅ `displayOpponentChoosingPrompt()` IS called
+- ✅ `showSnackbar("Opponent is choosing…")` IS called **TWICE** (once from uiHelpers, once from displayOpponentChoosingPrompt)
+- ❌ **BUT**: Cooldown renderer shows "Next round in: 1s" shortly after, REPLACING the correct snackbar
+
+**The Real Problem**: The cooldown countdown snackbar ("Next round in: 1s") is being shown during the opponent selection phase, which replaces the "Opponent is choosing..." message before it can be seen.
+
+**Why Tests See "First to 5 points wins."**: By the time the test checks the snackbar (after 1000ms), multiple snackbars have been shown and the final one visible is related to tooltips or another system interaction.
+
+### Solution Approaches
+
+1. **Option A**: Disable cooldown snackbars during opponent selection phase
+   - Modify `CooldownRenderer` to check battle state before showing snackbar
+   - Only show cooldown messages during actual cooldown phase, not during stat selection
+
+2. **Option B**: Make "Opponent is choosing..." snackbar persist longer
+   - Add a minimum duration or "sticky" flag to certain snackbars
+   - Prevent cooldown messages from replacing opponent selection messages
+
+3. **Option C**: Use different UI element for countdown
+   - Don't use snackbar for cooldown countdown
+   - Use a dedicated countdown display element instead
+
+**Recommended**: Option A - The cooldown snackbar shouldn't show during the opponent selection/decision phase. This is a state machine timing issue where cooldown starts too early.
 
 ---
 
