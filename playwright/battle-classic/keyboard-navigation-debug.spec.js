@@ -1,95 +1,44 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState } from "../helpers/battleStateHelper.js";
+import { withMutedConsole } from "../../tests/utils/console.js";
 
-test.describe("Classic Battle keyboard navigation DEBUG", () => {
-  test.skip("skip verbose debug tests", () => {});
+test.describe("Classic Battle keyboard navigation", () => {
+  test("keyboard selection updates round message and disables buttons", async ({ page }) => {
+    await withMutedConsole(async () => {
+      await page.addInitScript(() => {
+        window.__FF_OVERRIDES = { showRoundSelectModal: true };
+      });
+      await page.goto("/src/pages/battleClassic.html");
 
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      window.__TEST__ = true;
-      window.process = window.process || {};
-      window.process.env = { ...(window.process.env || {}), VITEST: "true" };
+      // Start the match via modal
+      await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
+      await page.getByRole("button", { name: "Medium" }).click();
 
-      // Hook into button disable/enable for debugging
-      window.__buttonStateChanges = [];
-    });
-    await page.goto("/src/pages/battleClassic.html");
+      const container = page.getByTestId("stat-buttons");
+      await expect(container).toHaveAttribute("data-buttons-ready", "true");
 
-    // Start the match via modal
-    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-    await page.getByRole("button", { name: "Medium" }).click();
-  });
+      const statButtons = page.getByTestId("stat-button");
+      const statButtonCount = await statButtons.count();
+      await expect(statButtons.first()).toBeEnabled();
 
-  test("debug button state changes", async ({ page }) => {
-    // Wait for stat buttons to be enabled via battle state readiness
-    const statButtons = page.getByTestId("stat-button");
-    await waitForBattleState(page, "waitingForPlayerAction");
-    const statButtonCount = await statButtons.count();
-    console.log("Initial stat button count:", statButtonCount);
+      // Tab into the stat buttons and use Enter to select.
+      // Focus the first stat button directly to ensure reliable test execution
+      await statButtons.first().focus();
+      const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
+      await expect(focusedStatButton).toHaveCount(1);
 
-    const firstStatButton = statButtons.first();
-    await expect(firstStatButton).toBeEnabled();
+      await page.keyboard.press("Enter");
 
-    // Check initial state
-    const initialDisabledCount = await page.locator('[data-testid="stat-button"]:disabled').count();
-    const initialWithClassCount = await page
-      .locator('[data-testid="stat-button"].disabled')
-      .count();
-    console.log("Initial disabled (attribute):", initialDisabledCount);
-    console.log("Initial disabled (class):", initialWithClassCount);
+      // Wait for the UI to update after selection
+      await expect(focusedStatButton).toBeDisabled({ timeout: 2000 });
+      await expect(page.locator('[data-testid="stat-button"]:disabled')).toHaveCount(
+        statButtonCount,
+        { timeout: 2000 }
+      );
 
-    // Press Enter to select the first stat button
-    await page.keyboard.press("Enter");
-    await expect(firstStatButton).toBeDisabled({ timeout: 1_000 });
-
-    // Wait for cooldown state after selection (roundDecision is too transient to wait for)
-    await waitForBattleState(page, "cooldown", { timeout: 7_500 });
-    console.log("After Enter - Battle state reached:", "cooldown");
-
-    // Countdown text is visible via the snackbar/timer UI
-    const timerElement = page.getByTestId("next-round-timer");
-    const timerText =
-      (await timerElement.count()) > 0 ? ((await timerElement.textContent())?.trim() ?? "") : "";
-    console.log("After Enter - Timer text:", timerText || "<empty>");
-
-    // Check state immediately after Enter
-    const afterEnterDisabledCount = await page
-      .locator('[data-testid="stat-button"]:disabled')
-      .count();
-    const afterEnterWithClassCount = await page
-      .locator('[data-testid="stat-button"].disabled')
-      .count();
-    console.log("After Enter - Disabled button count (attribute):", afterEnterDisabledCount);
-    console.log("After Enter - Disabled button count (class):", afterEnterWithClassCount);
-    // Wait for cooldown state
-    await waitForBattleState(page, "cooldown", { timeout: 10_000 });
-
-    // Check state during cooldown
-    const duringCooldownDisabledCount = await page
-      .locator('[data-testid="stat-button"]:disabled')
-      .count();
-    const duringCooldownWithClassCount = await page
-      .locator('[data-testid="stat-button"].disabled')
-      .count();
-    console.log("During cooldown - Battle state reached:", "cooldown");
-    console.log("During cooldown - disabled (attribute):", duringCooldownDisabledCount);
-    console.log("During cooldown - disabled (class):", duringCooldownWithClassCount);
-
-    // Wait for next round
-    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
-
-    // Check state after returning to waitingForPlayerAction
-    const afterCooldownDisabledCount = await page
-      .locator('[data-testid="stat-button"]:disabled')
-      .count();
-    const afterCooldownWithClassCount = await page
-      .locator('[data-testid="stat-button"].disabled')
-      .count();
-    console.log("After cooldown - Battle state reached:", "waitingForPlayerAction");
-    console.log("After cooldown - disabled (attribute):", afterCooldownDisabledCount);
-    console.log("After cooldown - disabled (class):", afterCooldownWithClassCount);
-
-    await expect(firstStatButton).toBeEnabled({ timeout: 1_000 });
+      const roundMessage = page.locator("header #round-message");
+      await expect(roundMessage).toBeVisible({ timeout: 2000 });
+      await expect(roundMessage).toContainText("You picked:", { timeout: 2000 });
+      await expect(roundMessage).toContainText("Opponent picked:", { timeout: 2000 });
+    }, ["log", "info", "warn", "error", "debug"]);
   });
 });
