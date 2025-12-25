@@ -69,15 +69,18 @@ export function createInspectorPanel(container, judoka) {
       if (panel.open === wasOpen) {
         panel.open = !wasOpen;
       }
-
-      updateDataset();
-    }, 0);
-
+  summary.addEventListener("click", () => {
+    const wasOpen = panel.open;
+    
     setTimeout(() => {
+      // Check if native toggle event fired by checking if toggleSeen is still false
       if (toggleSeen) {
+        // Native toggle fired, reset flag and exit
+        toggleSeen = false;
         return;
       }
 
+      // Native toggle didn't fire, apply fallback
       if (panel.open === wasOpen) {
         panel.open = !wasOpen;
       }
