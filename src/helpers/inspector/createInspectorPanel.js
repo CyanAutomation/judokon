@@ -50,7 +50,44 @@ export function createInspectorPanel(container, judoka) {
     }
   }
 
-  panel.addEventListener("toggle", updateDataset);
+  let toggleSeen = false;
+
+  panel.addEventListener("toggle", () => {
+    toggleSeen = true;
+    updateDataset();
+  });
+
+  summary.addEventListener("click", () => {
+    const wasOpen = panel.open;
+    // Reset flag after setTimeout to avoid race conditions
+    setTimeout(() => {
+      toggleSeen = false;
+      if (toggleSeen) {
+        return;
+      }
+
+      if (panel.open === wasOpen) {
+        panel.open = !wasOpen;
+      }
+  summary.addEventListener("click", () => {
+    const wasOpen = panel.open;
+    
+    setTimeout(() => {
+      // Check if native toggle event fired by checking if toggleSeen is still false
+      if (toggleSeen) {
+        // Native toggle fired, reset flag and exit
+        toggleSeen = false;
+        return;
+      }
+
+      // Native toggle didn't fire, apply fallback
+      if (panel.open === wasOpen) {
+        panel.open = !wasOpen;
+      }
+
+      updateDataset();
+    }, 0);
+  });
   updateDataset();
 
   return panel;
