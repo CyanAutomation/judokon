@@ -27,7 +27,8 @@ test.describe("Classic Battle — stability probe", () => {
         return Boolean(current && current !== previousText);
       },
       selectors.roundMessage(),
-      initialRoundText?.trim() ?? ""
+      initialRoundText?.trim() ?? "",
+      { timeout: 10000 }
     );
   });
 });
