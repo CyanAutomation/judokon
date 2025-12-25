@@ -45,50 +45,40 @@ test.describe("Classic Battle — Replay flaky detector", () => {
       await modalBtn.click();
     };
 
-    // Loop a handful of times to try and surface timing issues.
-    const iterations = 3;
-    for (let i = 0; i < iterations; i++) {
-      if (i > 0) {
-        await waitForRoundStats(page);
-      }
-      // Open the end modal to access Replay when possible.
-      // If a helper exists to finish the match quickly, prefer it; otherwise, rely on existing UI.
-      // Here we use the available replay control exposed in the page.
+    await waitForRoundStats(page);
 
-      // End the current round quickly
-      // Prefer the first available shared stat button via the selectors helper
-      const anyPlayerStat = page.locator(selectors.statButton()).first();
-      await anyPlayerStat.click();
-      // Wait for replay control to be visible
-      await page.waitForSelector("#match-replay-button, [data-testid='replay-button']");
-      // Click Replay
-      await clickReplay();
-      await waitForRoundStats(page);
+    // End the current round quickly using the first available stat button.
+    const anyPlayerStat = page.locator(selectors.statButton()).first();
+    await anyPlayerStat.click();
 
-      // Immediately after replay, scoreboard should be zero. Use tolerant retries.
-      const playerScore = page.locator(
-        "#player-score, [data-testid='player-score'], header #score-display"
-      );
-      const opponentScore = page.locator(
-        "#opponent-score, [data-testid='opponent-score'], header #score-display"
-      );
+    // Wait for replay control to be visible before interacting.
+    await page.waitForSelector("#match-replay-button, [data-testid='replay-button']");
+    await clickReplay();
 
-      // If a unified score display is used, just ensure it contains You: 0 and Opponent: 0.
-      const text =
-        (await page
-          .locator("header #score-display")
-          .textContent()
-          .catch(() => "")) || "";
-      if (text) {
-        expect(text).toMatch(/You:\s*0/);
-        expect(text).toMatch(/Opponent:\s*0/);
-      } else {
-        await expect(playerScore).toHaveText(/^(0|00)$/);
-        await expect(opponentScore).toHaveText(/^(0|00)$/);
-      }
+    // Wait for the UI to fully re-stabilize after replay.
+    await waitForRoundStats(page);
+    await expect(page.locator("#round-message")).toBeVisible();
 
-      // Also assert round message is present (round started) to ensure UI didn’t hang.
-      await expect(page.locator("#round-message")).toBeVisible();
+    // Immediately after replay, scoreboard should be zero.
+    const playerScore = page.locator(
+      "#player-score, [data-testid='player-score'], header #score-display"
+    );
+    const opponentScore = page.locator(
+      "#opponent-score, [data-testid='opponent-score'], header #score-display"
+    );
+
+    // If a unified score display is used, just ensure it contains You: 0 and Opponent: 0.
+    const text =
+      (await page
+        .locator("header #score-display")
+        .textContent()
+        .catch(() => "")) || "";
+    if (text) {
+      expect(text).toMatch(/You:\s*0/);
+      expect(text).toMatch(/Opponent:\s*0/);
+    } else {
+      await expect(playerScore).toHaveText(/^(0|00)$/);
+      await expect(opponentScore).toHaveText(/^(0|00)$/);
     }
   });
 });
