@@ -48,7 +48,7 @@ test.describe("Cooldown countdown display", () => {
     await nextButton.click();
     await waitForBattleState(page, "waitingForPlayerAction");
 
-    await expect(timer).toContainText(/Time Left:\s*\d+s/);
+    await expect(timer).toContainText(/Time Left:\s*\d+s/, { timeout: 5_000 });
     const selectionValue = await parseTimerValue();
     expect(selectionValue).not.toBeNull();
     expect(/** @type {number} */ (selectionValue)).toBeGreaterThanOrEqual(
