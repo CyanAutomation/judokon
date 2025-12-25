@@ -47,13 +47,22 @@ describe("Test API integration", () => {
       const urlStr = typeof url === "string" ? url : url.toString();
       const match = urlStr.match(/\/src\/data\/[\w-]+\.json$/);
       if (match) {
-        const filePath = path.join(process.cwd(), match[0]);
-        const content = fs.readFileSync(filePath, "utf-8");
-        return {
-          ok: true,
-          json: async () => JSON.parse(content),
-          text: async () => content
-        };
+        try {
+          const filePath = path.join(process.cwd(), match[0]);
+          const content = fs.readFileSync(filePath, "utf-8");
+          return {
+            ok: true,
+            json: async () => JSON.parse(content),
+            text: async () => content
+          };
+        } catch (error) {
+          return {
+            ok: false,
+            status: 404,
+            json: async () => { throw new Error(`File not found: ${match[0]}`); },
+            text: async () => { throw new Error(`File not found: ${match[0]}`); }
+          };
+        }
       }
 
       return {
