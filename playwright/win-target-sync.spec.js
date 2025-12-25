@@ -179,11 +179,12 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await confirmButton.click();
     await expect(confirmButton).toBeHidden();
 
-    await expect(page.locator("#round-counter")).toHaveText(roundCounterPattern("10"));
-    await expect(dropdown).toHaveValue("10");
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
+
+    await expect(page.locator("#round-counter")).toHaveText(roundCounterPattern("10"));
+    await expect(dropdown).toHaveValue("10");
     await page.reload();
 
     await expect(page.locator("dialog.modal")).toBeVisible();
