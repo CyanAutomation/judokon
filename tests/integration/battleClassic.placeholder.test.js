@@ -9,6 +9,7 @@ import {
   OPPONENT_PLACEHOLDER_ARIA_LABEL
 } from "../../src/helpers/classicBattle/opponentPlaceholder.js";
 import { bindUIHelperEventHandlersDynamic } from "../../src/helpers/classicBattle/uiEventHandlers.js";
+import { getRoundResolvedPromise } from "../../src/helpers/classicBattle/promises.js";
 import { createRealHtmlTestEnvironment } from "../utils/realHtmlTestUtils.js";
 
 /**
@@ -40,6 +41,7 @@ describe("Battle Classic opponent placeholder integration", () => {
   afterEach(() => {
     cleanup?.();
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it("renders an accessible opponent placeholder card before any reveal", async () => {
@@ -56,6 +58,7 @@ describe("Battle Classic opponent placeholder integration", () => {
   });
 
   it("replaces the placeholder with the revealed opponent card after the first stat resolution", async () => {
+    vi.useFakeTimers();
     await init();
 
     const opponentCard = document.getElementById("opponent-card");
@@ -82,22 +85,10 @@ describe("Battle Classic opponent placeholder integration", () => {
     expect(placeholder?.getAttribute("aria-label")).toBe(OPPONENT_PLACEHOLDER_ARIA_LABEL);
     expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
 
+    const resolved = getRoundResolvedPromise();
     emitBattleEvent("roundResolved", { store: {}, result: { message: "" } });
-
-    // Wait for event handlers to complete
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
-    const waitForFrame = () =>
-      new Promise((resolve) => {
-        if (typeof window.requestAnimationFrame === "function") {
-          window.requestAnimationFrame(() => resolve());
-        } else {
-          setTimeout(resolve, 0);
-        }
-      });
-
-    await waitForFrame();
-    await waitForFrame();
+    await resolved;
+    await vi.runAllTimersAsync();
 
     expect(renderOpponentCard).toHaveBeenCalled();
     expect(getOpponentCardData).toHaveBeenCalled();
