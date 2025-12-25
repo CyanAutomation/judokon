@@ -59,7 +59,19 @@ export function createInspectorPanel(container, judoka) {
 
   summary.addEventListener("click", () => {
     const wasOpen = panel.open;
-    toggleSeen = false;
+    // Reset flag after setTimeout to avoid race conditions
+    setTimeout(() => {
+      toggleSeen = false;
+      if (toggleSeen) {
+        return;
+      }
+
+      if (panel.open === wasOpen) {
+        panel.open = !wasOpen;
+      }
+
+      updateDataset();
+    }, 0);
 
     setTimeout(() => {
       if (toggleSeen) {
