@@ -25,8 +25,11 @@ describe("debugFlagPerformance", () => {
       expect(window.__PROFILE_DEBUG_FLAGS__).toBe(true);
       expect(() => measureDebugFlagToggle("tooltipOverlayDebug", () => {})).not.toThrow();
       expect(infoSpy).toHaveBeenCalledWith(
-        expect.stringContaining("[debugFlagPerf]"),
-        expect.any(Object)
+        "[debugFlagPerf]",
+        expect.any(String),
+        "duration:",
+        expect.stringMatching(/ms$/),
+        expect.anything()
       );
     } finally {
       infoSpy.mockRestore();
