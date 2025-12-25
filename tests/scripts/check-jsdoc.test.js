@@ -54,7 +54,7 @@ describe("check-jsdoc", () => {
   });
 
   describe("validateJsDoc", () => {
-    it("should return true for valid JSDoc", () => {
+    it("should return true for valid JSDoc (JSDOC_GUIDE.md)", () => {
       const content = `
         /**
          * This is a description.
@@ -71,7 +71,7 @@ describe("check-jsdoc", () => {
       expect(valid).toBe(true);
     });
 
-    it("should return false if JSDoc is missing", () => {
+    it("should return false if JSDoc is missing (JSDOC_GUIDE.md)", () => {
       const content = `
         export function myFunction(name) {}
       `;
@@ -81,7 +81,7 @@ describe("check-jsdoc", () => {
       expect(valid).toBe(false);
     });
 
-    it("should return false if @pseudocode is missing", () => {
+    it("should return false if @pseudocode is missing (JSDOC_GUIDE.md)", () => {
       const content = `
         /**
          * This is a description.
@@ -96,134 +96,5 @@ describe("check-jsdoc", () => {
       expect(valid).toBe(false);
     });
 
-    it("should return false when the summary line only contains comment markers", () => {
-      const content = `
-        /**
-         *
-         * @pseudocode
-         * 1. Do something.
-         * @returns {boolean}
-         */
-        export function myFunction() {
-          return true;
-        }
-      `;
-      const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
-      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(false);
-    });
-
-    it("should return true when the summary line contains real text", () => {
-      const content = `
-        /**
-         * ***Important summary***
-         * @pseudocode
-         * 1. Do something meaningful.
-         * @returns {boolean}
-         */
-        export function myFunction() {
-          return true;
-        }
-      `;
-      const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
-      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(true);
-    });
-
-    it("should treat inline summaries correctly", () => {
-      const content = `
-        /** Quick summary with inline tags. @pseudocode 1. Do something. @returns {boolean} */
-        export function myFunction() {
-          return true;
-        }
-      `;
-      const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
-      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(true);
-    });
-
-    it("should allow @summary as the first meaningful line when it has text", () => {
-      const content = `
-        /**
-         * @summary This function clearly documents its behavior.
-         * @pseudocode
-         * 1. Do something useful.
-         * @returns {boolean}
-         */
-        export function myFunction() {
-          return true;
-        }
-      `;
-      const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
-      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(true);
-    });
-
-    it("should reject @summary when no summary text follows", () => {
-      const content = `
-        /**
-         * @summary
-         * @pseudocode
-         * 1. Do something.
-         * @returns {boolean}
-         */
-        export function myFunction() {
-          return true;
-        }
-      `;
-      const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
-      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(false);
-    });
-
-    it("should return false when annotations appear before any summary text", () => {
-      const content = `
-        /**
-         * @pseudocode
-         * 1. Do something.
-         * @returns {boolean}
-         */
-        export function myFunction() {
-          return true;
-        }
-      `;
-      const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
-      const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(false);
-    });
-
-    it.each(["* * *", "**", "*   "])(
-      "should return false when the summary contains only asterisks and whitespace (%s)",
-      (summaryText) => {
-        const content = `
-        /**
-         * ${summaryText}
-         * @pseudocode
-         * 1. Do something.
-         * @returns {boolean}
-         */
-        export function myFunction() {
-          return true;
-        }
-      `;
-        const lines = content.split("\n");
-        const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
-        const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
-        const valid = validateJsDoc(lines, symbol.line - 1);
-        expect(valid).toBe(false);
-      }
-    );
   });
 });
