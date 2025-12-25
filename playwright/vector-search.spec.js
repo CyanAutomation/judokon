@@ -107,10 +107,27 @@ test.describe("Vector search page", () => {
     await runSearch(page);
 
     await expect(page.locator("#vector-results-table tbody tr")).toHaveCount(0);
-    await expect(page.locator("#search-results-message")).toBeVisible();
-    await expect(page.locator("#search-results-message")).toHaveText(
+    const message = page.locator("#search-results-message");
+    await expect(message).toBeVisible();
+    await expect(message).toHaveAttribute("aria-live", /polite/i);
+    await expect(message).toHaveClass(/search-result-empty/);
+    await expect(message).toHaveText(
       "No close matches found — refine your query."
     );
+
+    const searchInput = page.getByRole("searchbox");
+    const tagFilter = page.getByRole("combobox", { name: "Tag filter" });
+    const searchButton = page.getByRole("button", { name: /search/i });
+    await expect(searchInput).toBeEnabled();
+    await expect(tagFilter).toBeEnabled();
+    await expect(searchButton).toBeEnabled();
+
+    await page.waitForFunction(() => {
+      const activeId = document.activeElement?.id;
+      return activeId === "vector-search-input" || activeId === "vector-search-btn";
+    });
+    const activeId = await page.evaluate(() => document.activeElement?.id);
+    expect(["vector-search-input", "vector-search-btn"]).toContain(activeId);
   });
 
   test("shows error state when the model fails to load", async ({ page }) => {
