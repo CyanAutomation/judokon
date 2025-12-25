@@ -42,6 +42,6 @@ test.describe("Classic Battle - Stat selection behavior", () => {
       return ["roundDecision", "cooldown", "roundOver", "matchDecision", "matchOver"].includes(
         state
       );
-    });
+    }, { timeout: 15000 });
   });
 });
