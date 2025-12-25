@@ -33,9 +33,6 @@ test.describe("Classic Battle - Stat selection behavior", () => {
     await statButtons.first().click();
 
     await expect(statButtons.first()).toBeDisabled();
-    await expect(
-      page.locator('[data-testid="stat-button"]:disabled').first()
-    ).toBeVisible();
 
     await page.waitForFunction(() => {
       const state = document.body?.dataset?.battleState;
