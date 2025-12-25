@@ -4,6 +4,11 @@ import { vi } from "vitest";
  * Queue-based mock for requestAnimationFrame/cancelAnimationFrame.
  * Provides deterministic control over animation frame scheduling in tests.
  *
+ * Expected behavior (contract):
+ * - Callbacks are queued in FIFO order.
+ * - flushNext executes only the next queued callback.
+ * - flushAll drains the queue in order.
+ *
  * Debug mode can be enabled with RAF_MOCK_DEBUG=1 or DEBUG_RAF=1 environment variables.
  * When enabled, logs queue operations, callback counts, and pending callbacks.
  *
