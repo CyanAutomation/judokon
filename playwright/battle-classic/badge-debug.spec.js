@@ -5,7 +5,7 @@ test.describe("State badge", () => {
       window.__FF_OVERRIDES = {
         enableTestMode: true,
         battleStateBadge: true,
-        showRoundSelectModal: true
+        battleStateBadge: true
       };
     });
 
