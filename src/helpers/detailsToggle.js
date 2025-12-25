@@ -38,5 +38,5 @@ export function setDetailsOpen(details, shouldOpen, options = {}) {
     }
   }
 
-  return true;
+  return details.open !== wasOpen;
 }
