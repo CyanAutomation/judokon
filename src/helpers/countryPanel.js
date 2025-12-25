@@ -1,16 +1,17 @@
+import { setDetailsOpen } from "./detailsToggle.js";
+
 /**
  * Synchronize the disclosure state of the country flag panel and manage focus affordances.
  *
- * @summary This helper leans on the native `<details>` behaviour by toggling the
- * `open` property directly and handling focus transitions.
+ * @summary This helper leans on the native `<details>` behaviour by clicking the
+ * toggle control and handling focus transitions.
  *
  * @pseudocode
  * 1. Determine the next state using the optional `show` parameter and the panel's
  *    native `open` property.
  * 2. Capture the previous open state (either the provided `previousOpen` hint or
  *    the panel's current state) so focus only moves on real transitions.
- * 3. Set the `open` property accordingly to let CSS and the browser manage
- *    visibility.
+ * 3. Toggle the disclosure by clicking the summary control when needed.
  * 4. When opening, focus the first flag button to keep keyboard navigation fluid.
  *    When closing, return focus to the toggle control.
  *
@@ -30,14 +31,15 @@ export function toggleCountryPanel(toggleButton, panel, show, options) {
   const wasOpen = details.open;
   const shouldOpen = typeof show === "boolean" ? show : !details.open;
   const previousOpen = options?.previousOpen ?? wasOpen;
-  details.open = shouldOpen;
+  setDetailsOpen(details, shouldOpen, { toggle: toggleButton });
+  const nowOpen = details.open;
 
-  const stateChanged = previousOpen !== shouldOpen;
+  const stateChanged = previousOpen !== nowOpen;
 
-  if (shouldOpen && stateChanged) {
+  if (nowOpen && stateChanged) {
     const firstRadio = details.querySelector('input[type="radio"][name="country-filter"]');
     firstRadio?.focus?.();
-  } else if (stateChanged && wasOpen && !shouldOpen) {
+  } else if (stateChanged && wasOpen && !nowOpen) {
     toggleButton?.focus?.();
   }
 }

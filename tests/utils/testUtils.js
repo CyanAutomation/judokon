@@ -418,7 +418,7 @@ function createSectionCard({ sectionId, summaryText, open = false }) {
   const details = document.createElement("details");
   details.className = "settings-section";
   details.dataset.sectionId = sectionId;
-  details.open = open;
+  details.toggleAttribute("open", open);
 
   const summary = document.createElement("summary");
   summary.textContent = summaryText;

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, test } from "vitest";
 import { toggleCountryPanel } from "../../src/helpers/countryPanel.js";
+import { naturalClick } from "../utils/componentTestUtils.js";
 
 function setup({ open = false } = {}) {
   document.body.innerHTML = `
@@ -64,7 +65,7 @@ describe("toggleCountryPanel", () => {
     const { details, toggle, radio } = setup({ open: false });
 
     toggle.focus();
-    details.open = true;
+    naturalClick(toggle);
 
     toggleCountryPanel(toggle, details, details.open, { previousOpen: false });
 

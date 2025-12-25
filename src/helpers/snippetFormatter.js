@@ -60,7 +60,7 @@ export function createSnippetElement(text, terms = []) {
   details.appendChild(full);
 
   if (!needsTruncate) {
-    details.open = true;
+    details.setAttribute("open", "");
     details.classList.add("snippet-details-static");
     summary.hidden = true;
   }

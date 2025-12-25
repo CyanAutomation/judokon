@@ -35,6 +35,7 @@ import { showSnackbar } from "./showSnackbar.js";
 import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
 import { getSetting, setCachedSettings } from "./settingsCache.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
+import { setDetailsOpen } from "./detailsToggle.js";
 
 let randomJudokaPageInitialized = false;
 let randomJudokaInitPromise = null;
@@ -226,6 +227,7 @@ function addToHistory(historyManager, historyList, judoka) {
  * @param {HTMLElement} toggleHistoryBtn - The summary button element
  */
 let activeHistoryPanel = null;
+let activeHistoryToggle = null;
 let historyPanelEscapeHandlerBound = false;
 let historyPanelUnloadHandlerBound = false;
 
@@ -241,6 +243,7 @@ function removeHistoryPanelEscapeHandler() {
   }
   historyPanelEscapeHandlerBound = false;
   activeHistoryPanel = null;
+  activeHistoryToggle = null;
 }
 
 /**
@@ -280,7 +283,7 @@ function handleHistoryPanelVisibilityChange() {
 function handleHistoryPanelEscape(event) {
   if (event.key === "Escape" && activeHistoryPanel?.open) {
     event.preventDefault();
-    activeHistoryPanel.open = false;
+    setDetailsOpen(activeHistoryPanel, false, { toggle: activeHistoryToggle });
   }
 }
 
@@ -306,6 +309,7 @@ function bindHistoryPanelInteractions(historyPanel, toggleHistoryBtn) {
   historyPanel.addEventListener("toggle", focusToggle);
   toggleHistoryBtn.addEventListener("click", focusToggle);
   activeHistoryPanel = historyPanel;
+  activeHistoryToggle = toggleHistoryBtn;
 
   if (!historyPanelEscapeHandlerBound && typeof document !== "undefined") {
     document.addEventListener("keydown", handleHistoryPanelEscape);

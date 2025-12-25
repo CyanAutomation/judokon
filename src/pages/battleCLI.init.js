@@ -1,5 +1,6 @@
 // Lightweight initialization helpers for battleCLI
 import { exposeTestAPI } from "../helpers/testApi.js";
+import { setDetailsOpen } from "../helpers/detailsToggle.js";
 
 const byId = (id) => document.getElementById(id);
 
@@ -108,7 +109,7 @@ function initSettingsCollapse() {
     const v = localStorage.getItem("battleCLI.settingsCollapsed");
     shouldOpen = v !== "1";
   } catch {}
-  settings.open = shouldOpen;
+  setDetailsOpen(settings, shouldOpen);
   settings.addEventListener("toggle", () => {
     try {
       localStorage.setItem("battleCLI.settingsCollapsed", settings.open ? "0" : "1");
@@ -160,7 +161,7 @@ function init() {
       try {
         localStorage.setItem("battleCLI.settingsCollapsed", collapsed ? "1" : "0");
       } catch {}
-      details.open = !collapsed;
+      setDetailsOpen(details, !collapsed);
       return true;
     };
   } catch {}

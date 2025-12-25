@@ -21,6 +21,7 @@ import { fetchJson } from "../../helpers/dataUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { showSnackbar } from "../../helpers/showSnackbar.js";
+import { setDetailsOpen } from "../../helpers/detailsToggle.js";
 import {
   initFeatureFlags,
   isEnabled,
@@ -956,7 +957,7 @@ function updateCliShortcutsVisibility() {
   if (!enabled) {
     const wasOpen = section.open;
     if (section.open) {
-      section.open = false;
+      setDetailsOpen(section, false);
     }
     section.hidden = true;
     if (persistedCollapsed === false || wasOpen) {
@@ -974,7 +975,7 @@ function updateCliShortcutsVisibility() {
   const shouldBeOpen = persistedCollapsed === null ? false : persistedCollapsed === false;
 
   if (shouldBeOpen !== section.open) {
-    section.open = shouldBeOpen;
+    setDetailsOpen(section, shouldBeOpen);
   }
   updateShortcutsFallback(enabled);
   updateControlsHint();
@@ -991,7 +992,7 @@ function updateCliShortcutsVisibility() {
 function showCliShortcuts() {
   const sec = byId("cli-shortcuts");
   if (sec) {
-    sec.open = true;
+    setDetailsOpen(sec, true);
     sec.hidden = false;
     state.shortcutsOverlay = true;
     // Ensure toggle event is fired for listeners (test environments may not fire it automatically)
@@ -1014,7 +1015,7 @@ function showCliShortcuts() {
 function hideCliShortcuts() {
   const sec = byId("cli-shortcuts");
   if (sec) {
-    sec.open = false;
+    setDetailsOpen(sec, false);
     // Restore focus before clearing the reference
     try {
       state.shortcutsReturnFocus?.focus();
