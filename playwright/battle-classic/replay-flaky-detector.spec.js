@@ -57,7 +57,6 @@ test.describe("Classic Battle — Replay flaky detector", () => {
 
     // Wait for the UI to fully re-stabilize after replay.
     await waitForRoundStats(page);
-    await expect(page.locator("#round-message")).toBeVisible();
 
     // Immediately after replay, scoreboard should be zero.
     const playerScore = page.locator(
@@ -80,5 +79,8 @@ test.describe("Classic Battle — Replay flaky detector", () => {
       await expect(playerScore).toHaveText(/^(0|00)$/);
       await expect(opponentScore).toHaveText(/^(0|00)$/);
     }
+
+    // Also assert round message is present (round started) to ensure UI didn't hang.
+    await expect(page.locator("#round-message")).toBeVisible();
   });
 });
