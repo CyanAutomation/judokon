@@ -44,7 +44,7 @@ export function naturalClick(element, options = {}) {
  * @returns {boolean} The new open state
  */
 export function toggleDetails(panel) {
-  if (!panel || panel.tagName !== "DETAILS") {
+  if (!panel || panel.tagName.toUpperCase() !== "DETAILS") {
     throw new Error("toggleDetails requires a <details> element");
   }
 
