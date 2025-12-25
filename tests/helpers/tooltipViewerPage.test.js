@@ -23,6 +23,7 @@ describe("setupTooltipViewerPage (Enhanced API)", () => {
   });
 
   afterEach(() => {
+    window.dispatchEvent(new Event("pagehide"));
     if (tooltipViewer) {
       tooltipViewer.testApi.cleanup();
     }
@@ -105,6 +106,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
   });
 
   afterEach(() => {
+    window.dispatchEvent(new Event("pagehide"));
     if (legacyViewer) {
       legacyViewer.testApi.cleanup();
     }
