@@ -59,7 +59,6 @@ export function createInspectorPanel(container, judoka) {
 
   summary.addEventListener("click", () => {
     const wasOpen = panel.open;
-    toggleSeen = false;
 
     queueMicrotask(() => {
       if (toggleSeen) {
