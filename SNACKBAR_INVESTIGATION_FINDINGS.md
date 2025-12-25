@@ -62,7 +62,7 @@ The snackbar **DOES** appear, but it shows **"First to 5 points wins."** instead
 
 1. **T+0ms**: "First to 5 points wins." (from modal `startRound`)
 2. **T+368ms**: "Opponent is choosing…" (from `selectStat` in uiHelpers) ✅
-3. **T+372ms**: "Opponent is choosing…" (from `displayOpponentChoosingPrompt` with delay) ✅ ✅  
+3. **T+372ms**: "Opponent is choosing…" (from `displayOpponentChoosingPrompt` with delay) ✅ ✅
 4. **T+1072ms**: "Next round in: 1s" (from `CooldownRenderer`) ❌ **REPLACES THE CORRECT SNACKBAR**
 
 **Key Findings**:
@@ -144,7 +144,7 @@ The snackbar **DOES** appear, but it shows **"First to 5 points wins."** instead
 ### 3. ❓ Event Handler Registration
 
 - **File**: `src/helpers/classicBattle/uiEventHandlers.js:88-300`
-- **Registration**: `onBattleEvent("statSelected", async (e) => { ... })`  (line 219)
+- **Registration**: `onBattleEvent("statSelected", async (e) => { ... })` (line 219)
 - **Handler Action**: Shows opponent choosing prompt via `displayOpponentChoosingPrompt()`
 - **Question**: Is this handler actually registered when the test runs?
 
@@ -335,11 +335,11 @@ Add timing instrumentation:
 ```javascript
 await page.evaluate(() => {
   window.__timingLog = [];
-  
+
   const origEmit = globalThis.__classicBattleEventTarget?.dispatchEvent;
   if (origEmit) {
-    globalThis.__classicBattleEventTarget.dispatchEvent = function(event) {
-      window.__timingLog.push({ time: Date.now(), type: 'emit', event: event.type });
+    globalThis.__classicBattleEventTarget.dispatchEvent = function (event) {
+      window.__timingLog.push({ time: Date.now(), type: "emit", event: event.type });
       return origEmit.apply(this, arguments);
     };
   }
@@ -357,69 +357,73 @@ Create a comprehensive diagnostic to test all theories:
 ```javascript
 test("diagnose snackbar issue", async ({ page }) => {
   await page.goto("/src/pages/battleClassic.html");
-  
+
   // Start match
   await page.getByRole("button", { name: "Medium" }).click();
   await waitForBattleState(page, "waitingForPlayerAction");
-  
+
   // BEFORE clicking stat button, gather diagnostic data
   const beforeState = await page.evaluate(() => {
     const target = globalThis.__classicBattleEventTarget;
-    
+
     // Mark the target for identity tracking
     if (target) {
       target.__debugId = target.__debugId || `target_${Date.now()}`;
     }
-    
+
     return {
       // Bootstrap status
       initCalled: window.__initCalled,
       testAPI: !!window.__TEST_API,
-      
+
       // EventTarget status
       eventTargetExists: !!target,
       eventTargetId: target?.__debugId,
-      
+
       // WeakSet status
       weakSetExists: globalThis.__cbUIHelpersDynamicBoundTargets instanceof WeakSet,
-      
+
       // Test if statSelected handler is registered
       handlerTest: (() => {
-        if (!target) return { error: 'no target' };
-        
+        if (!target) return { error: "no target" };
+
         let handlerCalled = false;
-        const testHandler = () => { handlerCalled = true; };
-        
-        target.addEventListener('statSelected', testHandler);
-        target.dispatchEvent(new CustomEvent('statSelected', { 
-          detail: { store: {}, stat: 'power', playerVal: 5, opponentVal: 5, opts: {} } 
-        }));
-        target.removeEventListener('statSelected', testHandler);
-        
+        const testHandler = () => {
+          handlerCalled = true;
+        };
+
+        target.addEventListener("statSelected", testHandler);
+        target.dispatchEvent(
+          new CustomEvent("statSelected", {
+            detail: { store: {}, stat: "power", playerVal: 5, opponentVal: 5, opts: {} }
+          })
+        );
+        target.removeEventListener("statSelected", testHandler);
+
         return { handlerCalled };
       })()
     };
   });
-  
-  console.log('BEFORE stat selection:', JSON.stringify(beforeState, null, 2));
-  
+
+  console.log("BEFORE stat selection:", JSON.stringify(beforeState, null, 2));
+
   // Click stat button
   await page.getByTestId("stat-button").first().click();
   await page.waitForTimeout(1000);
-  
+
   // AFTER clicking, check state again
   const afterState = await page.evaluate(() => {
     const target = globalThis.__classicBattleEventTarget;
-    
+
     return {
       eventTargetId: target?.__debugId,
-      bodyDataStatSelected: document.body.getAttribute('data-stat-selected'),
-      snackbarExists: !!document.querySelector('.snackbar')
+      bodyDataStatSelected: document.body.getAttribute("data-stat-selected"),
+      snackbarExists: !!document.querySelector(".snackbar")
     };
   });
-  
-  console.log('AFTER stat selection:', JSON.stringify(afterState, null, 2));
-  
+
+  console.log("AFTER stat selection:", JSON.stringify(afterState, null, 2));
+
   // Assertions based on findings
   expect(beforeState.initCalled).toBe(true); // Theory A
   expect(beforeState.eventTargetExists).toBe(true); // Sanity check
@@ -455,7 +459,7 @@ export function forceRebindHandlers() {
   try {
     delete globalThis.__cbUIHelpersDynamicBoundTargets;
   } catch {}
-  
+
   // Re-register all handlers
   bindUIHelperEventHandlersDynamic();
 }
@@ -468,7 +472,7 @@ export function forceRebindHandlers() {
 export function bindUIHelperEventHandlersDynamic(deps = {}) {
   // Remove WeakSet check
   // Always register handlers (handlers automatically deduplicate via EventTarget)
-  
+
   onBattleEvent("statSelected", async (e) => {
     // ... handler code
   });
