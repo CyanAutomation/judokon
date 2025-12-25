@@ -1,9 +1,6 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState } from "../helpers/battleStateHelper.js";
 
-test.describe("Classic Battle - Button Identity Check", () => {
-  test.skip("skip verbose debug tests", () => {});
-
+test.describe("Classic Battle - Stat selection behavior", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
@@ -21,74 +18,30 @@ test.describe("Classic Battle - Button Identity Check", () => {
     }
   });
 
-  test("check if button element is replaced", async ({ page }) => {
-    // Wait for stat buttons to be enabled
+  test("disables stat buttons and advances the round after a selection", async ({ page }) => {
+    const statContainer = page.getByTestId("stat-buttons");
     const statButtons = page.getByTestId("stat-button");
-    await waitForBattleState(page, "waitingForPlayerAction");
+
+    await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
     await expect(statButtons.first()).toBeEnabled();
 
-    // Capture the rendered button identity via the test API
-    const initialSnapshot = await page.evaluate(() =>
-      window.__TEST_API.inspect.getStatButtonSnapshot({ refresh: true })
-    );
-    console.log("Initial stat button snapshot:", JSON.stringify(initialSnapshot, null, 2));
-
-    expect(initialSnapshot.buttons.length).toBeGreaterThan(0);
-    const trackedButton = initialSnapshot.buttons[0];
-
-    // Confirm readiness via deterministic helper
-    const stableSnapshot = await page.evaluate(async () => {
-      await window.__TEST_API.state.waitForStatButtonsReady();
-      return window.__TEST_API.inspect.getStatButtonSnapshot();
+    await page.waitForFunction(() => {
+      const state = document.body?.dataset?.battleState;
+      return state === "waitingForPlayerAction";
     });
 
-    console.log("Stable stat button snapshot:", JSON.stringify(stableSnapshot, null, 2));
-    expect(stableSnapshot.buttons[0]?.id).toBe(trackedButton?.id);
-
-    // Check if init functions were called
-    const initStatButtonsCalled = await page.evaluate(
-      () => window.__initStatButtonsCalled || false
-    );
-    const renderCalled = await page.evaluate(() => window.__renderStatButtonsCalled || false);
-    const clickListenersAttached = await page.evaluate(
-      () => window.__clickListenerAttachedFor || []
-    );
-    console.log("initStatButtons called:", initStatButtonsCalled);
-    console.log("renderStatButtons called:", renderCalled);
-    console.log("Click listeners attached for stats (renderStatButtons):", clickListenersAttached);
-
-    // Now click the button
     await statButtons.first().click();
 
-    const snapshotAfterClick = await page.evaluate(async () => {
-      await window.__TEST_API.state.waitForBattleState("roundDecision");
-      return window.__TEST_API.inspect.getStatButtonSnapshot({ refresh: true });
+    await expect(statButtons.first()).toBeDisabled();
+    await expect(
+      page.locator('[data-testid="stat-button"]:disabled').first()
+    ).toBeVisible();
+
+    await page.waitForFunction(() => {
+      const state = document.body?.dataset?.battleState;
+      return ["roundDecision", "cooldown", "roundOver", "matchDecision", "matchOver"].includes(
+        state
+      );
     });
-
-    console.log(
-      "Snapshot after click:",
-      JSON.stringify({ before: trackedButton, after: snapshotAfterClick.buttons[0] }, null, 2)
-    );
-
-    const appHandlerCalled = await page.evaluate(() => window.__statButtonClickCalled || false);
-    const uiHelpersHandlerCalled = await page.evaluate(
-      () => window.__statButtonClickHandlerTriggered || false
-    );
-    const selectStatCalledDisable = await page.evaluate(
-      () => window.__selectStatCalledDisable || false
-    );
-    const disableStatButtonsCalled = await page.evaluate(
-      () => window.__disableStatButtonsCalled || false
-    );
-    const disableCount = await page.evaluate(() => window.__disableStatButtonsCount || 0);
-
-    console.log("App click handler called (battleClassic.init.js):", appHandlerCalled);
-    console.log("UIHelpers click handler called (uiHelpers.js):", uiHelpersHandlerCalled);
-    console.log("selectStat called disableStatButtons:", selectStatCalledDisable);
-    console.log("disableStatButtons function called:", disableStatButtonsCalled);
-    console.log("Number of buttons passed to disableStatButtons:", disableCount);
-
-    // Check if button is still the same after click
-    expect(snapshotAfterClick.buttons[0]?.id).toBe(trackedButton?.id);
   });
 });
