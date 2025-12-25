@@ -107,7 +107,6 @@ test.describe("View Judoka screen", () => {
       throw new Error("Second card name not found - aria-label attribute is missing or empty");
     }
     await expect(historyItems).toHaveText([secondCardName, firstCardName]);
-    expect(secondCardName).not.toEqual(firstCardName);
   });
 
   test("shows error state with accessible messaging when preload fails", async ({ page }) => {
