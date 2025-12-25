@@ -92,7 +92,7 @@ describe("Test API integration", () => {
     await init();
 
     const testApi = window.__TEST_API;
-
+    expect(testApi).toBeDefined();
     await withMutedConsole(async () => {
       const ready = await testApi.init.waitForBattleReady(5000);
       expect(ready).toBe(true);
