@@ -39,6 +39,22 @@ export function naturalClick(element, options = {}) {
 }
 
 /**
+ * Toggle a details panel in JSDOM by updating `open` and firing a `toggle` event.
+ * @param {HTMLDetailsElement} panel - Details element to toggle
+ * @returns {boolean} The new open state
+ */
+export function toggleDetails(panel) {
+  if (!panel || panel.tagName !== "DETAILS") {
+    throw new Error("toggleDetails requires a <details> element");
+  }
+
+  panel.open = !panel.open;
+  panel.dispatchEvent(new Event("toggle"));
+
+  return panel.open;
+}
+
+/**
  * Natural keyboard simulation for accessibility testing
  * @param {HTMLElement} element - Element to send keys to
  * @param {string} key - Key to press (e.g., "Enter", "ArrowDown")
