@@ -22,6 +22,7 @@ describe("debugFlagPerformance", () => {
     try {
       expect(() => measureDebugFlagToggle("layoutDebugPanel", () => {})).not.toThrow();
       window.__PROFILE_DEBUG_FLAGS__ = true;
+      expect(window.__PROFILE_DEBUG_FLAGS__).toBe(true);
       expect(() => measureDebugFlagToggle("tooltipOverlayDebug", () => {})).not.toThrow();
       expect(infoSpy).toHaveBeenCalled();
     } finally {
