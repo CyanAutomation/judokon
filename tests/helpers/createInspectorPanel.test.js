@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mountInspectorPanel } from "./mountInspectorPanel.js";
+import { naturalClick } from "../utils/componentTestUtils.js";
 
 const judoka = {};
 
@@ -11,6 +12,7 @@ describe("createInspectorPanel accessibility", () => {
     const container = panel.parentElement;
 
     expect(panel.getAttribute("aria-label")).toBe("Inspector panel");
+    expect(summary).toBeTruthy();
     expect(summary?.hasAttribute("tabindex")).toBe(false);
     expect(summary.getAttribute("aria-expanded")).toBe("false");
     expect(summary.style.minHeight).toBe("");
@@ -19,14 +21,12 @@ describe("createInspectorPanel accessibility", () => {
 
     expect(container?.dataset.inspector).toBeUndefined();
 
-    panel.open = true;
-    panel.dispatchEvent(new Event("toggle"));
+    naturalClick(summary);
     expect(panel.open).toBe(true);
     expect(summary.getAttribute("aria-expanded")).toBe("true");
     expect(container?.dataset.inspector).toBe("true");
 
-    panel.open = false;
-    panel.dispatchEvent(new Event("toggle"));
+    naturalClick(summary);
     expect(panel.open).toBe(false);
     expect(summary.getAttribute("aria-expanded")).toBe("false");
     expect(container?.dataset.inspector).toBeUndefined();

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { JSDOM } from "jsdom";
 import { createBrowseJudokaHarness } from "./integrationHarness.js";
+import { naturalClick } from "../utils/componentTestUtils.js";
 
 const harness = createBrowseJudokaHarness();
 
@@ -338,11 +339,13 @@ describe("browseJudokaPage helpers", () => {
     const toggleButton = document.createElement("button");
     const panel = document.createElement("details");
     panel.className = "country-panel";
-    panel.open = true;
+    const panelSummary = document.createElement("summary");
+    panelSummary.textContent = "Countries";
     const panelContent = document.createElement("div");
     panelContent.className = "country-panel__content";
-    panel.appendChild(panelContent);
+    panel.append(panelSummary, panelContent);
     root.appendChild(panel);
+    naturalClick(panelSummary);
 
     const carouselEl = document.createElement("div");
     const wrapper = document.createElement("div");
@@ -397,7 +400,7 @@ describe("browseJudokaPage helpers", () => {
     cardContainer.scrollTo.mockClear();
     cardContainer.scrollLeft = 200;
     render.mockClear();
-    panel.open = true;
+    naturalClick(panelSummary);
     brazilRadio.checked = true;
     japanRadio.checked = false;
     brazilRadio.dispatchEvent(new Event("input", { bubbles: true }));
@@ -452,11 +455,13 @@ describe("browseJudokaPage helpers", () => {
     const toggleButton = document.createElement("button");
     const panel = document.createElement("details");
     panel.className = "country-panel";
-    panel.open = true;
+    const panelSummary = document.createElement("summary");
+    panelSummary.textContent = "Countries";
     const panelContent = document.createElement("div");
     panelContent.className = "country-panel__content";
-    panel.appendChild(panelContent);
+    panel.append(panelSummary, panelContent);
     root.appendChild(panel);
+    naturalClick(panelSummary);
 
     const carouselEl = document.createElement("div");
     const wrapper = document.createElement("div");
@@ -515,7 +520,7 @@ describe("browseJudokaPage helpers", () => {
     render.mockClear();
     controller.setPage.mockClear();
     cardContainer.scrollTo.mockClear();
-    panel.open = true;
+    naturalClick(panelSummary);
     japanRadio.checked = true;
     allRadio.checked = false;
     japanRadio.dispatchEvent(new Event("input", { bubbles: true }));

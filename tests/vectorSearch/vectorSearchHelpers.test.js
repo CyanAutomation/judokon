@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { selectMatches } from "../../src/helpers/api/vectorSearchPage.js";
 import { createSnippetElement } from "../../src/helpers/snippetFormatter.js";
 import { formatSourcePath, formatTags } from "../../src/helpers/vectorSearchPage/renderUtils.js";
+import { naturalClick } from "../utils/componentTestUtils.js";
 
 /**
  * Unit tests for vector search helper utilities.
@@ -83,9 +84,10 @@ describe("createSnippetElement", () => {
     expect(summary?.hidden).toBe(false);
     expect(summary?.textContent?.includes("\u2026")).toBe(true);
     expect(summary?.innerHTML).toContain("<mark>alpha</mark>");
+    expect(summary).toBeTruthy();
     const full = element.querySelector(".snippet-full");
     expect(full?.innerHTML).toContain("<mark>alpha</mark>");
-    element.open = true;
+    naturalClick(summary);
     expect(full?.innerHTML).toContain("<mark>alpha</mark>");
   });
 });

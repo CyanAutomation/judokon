@@ -1,6 +1,7 @@
 import { getScores, getTimerState, isMatchEnded } from "../battleEngineFacade.js";
 import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
 import { isEnabled } from "../featureFlags.js";
+import { setDetailsOpen } from "../detailsToggle.js";
 import { createButton } from "../../components/Button.js";
 import { safeCall } from "./safeCall.js";
 import { getStateSnapshot } from "./battleDebug.js";
@@ -139,7 +140,7 @@ function persistDebugPanelState(panel) {
   if (!panel) return;
   safeCall(() => {
     const saved = localStorage.getItem("battleDebugOpen");
-    panel.open = saved ? saved === "true" : true;
+    setDetailsOpen(panel, saved ? saved === "true" : true);
   });
   if (!debugPanelToggleListeners.has(panel)) {
     const handler = () => {

@@ -4,6 +4,7 @@ import {
   isDebugFlagProfilingEnabled,
   resetDebugFlagMetrics
 } from "./debugFlagPerformance.js";
+import { setDetailsOpen } from "./detailsToggle.js";
 
 const HUD_ID = "debug-flag-performance-hud";
 const HUD_STYLE_ID = "debug-flag-performance-hud-style";
@@ -281,7 +282,7 @@ function renderAlertHistorySection(expandOnLatest = false) {
   if (entries.length === 0) {
     hudHistoryEmpty.hidden = false;
     if (hudHistorySection) {
-      hudHistorySection.open = false;
+      setDetailsOpen(hudHistorySection, false);
       hudHistorySection.removeAttribute("data-recent");
     }
     return;
@@ -305,7 +306,7 @@ function renderAlertHistorySection(expandOnLatest = false) {
   });
   if (hudHistorySection) {
     if (expandOnLatest) {
-      hudHistorySection.open = true;
+      setDetailsOpen(hudHistorySection, true);
       hudHistorySection.setAttribute("data-recent", "true");
     } else {
       hudHistorySection.removeAttribute("data-recent");

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { JudokaCard } from "../../src/components/JudokaCard.js";
 import { toggleInspectorPanels } from "../../src/helpers/cardUtils.js";
+import { naturalClick } from "../utils/componentTestUtils.js";
 
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
@@ -41,9 +42,10 @@ describe("JudokaCard", () => {
   it("injects inspector panel when enabled", async () => {
     const card = await new JudokaCard(judoka, gokyoLookup, { enableInspector: true }).render();
     const panel = card.querySelector(".debug-panel");
+    const summary = panel?.querySelector("summary");
     expect(panel).toBeTruthy();
-    panel.open = true;
-    panel.dispatchEvent(new Event("toggle"));
+    expect(summary).toBeTruthy();
+    naturalClick(summary);
     expect(card.dataset.inspector).toBe("true");
     expect(card.getAttribute("data-feature-card-inspector")).toBe("enabled");
     expect(card.querySelector(".judoka-card")?.getAttribute("data-feature-card-inspector")).toBe(

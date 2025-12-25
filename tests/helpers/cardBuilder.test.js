@@ -3,6 +3,7 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import * as cardRender from "../../src/helpers/cardRender.js";
 import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
 import { withMutedConsole } from "../utils/console.js";
+import { naturalClick } from "../utils/componentTestUtils.js";
 
 const VALID_JUDOKA = {
   id: 1,
@@ -118,13 +119,13 @@ describe("generateJudokaCardHTML", () => {
       enableInspector: true
     });
     const panel = container.querySelector(".debug-panel");
+    const summary = panel?.querySelector("summary");
     expect(panel).toBeTruthy();
+    expect(summary).toBeTruthy();
     expect(container.dataset.inspector).toBeUndefined();
-    panel.open = true;
-    panel.dispatchEvent(new Event("toggle"));
+    naturalClick(summary);
     expect(container.dataset.inspector).toBe("true");
-    panel.open = false;
-    panel.dispatchEvent(new Event("toggle"));
+    naturalClick(summary);
     expect(container.dataset.inspector).toBeUndefined();
   });
 });

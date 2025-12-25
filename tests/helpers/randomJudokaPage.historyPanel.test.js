@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRandomJudokaPageHarness } from "./integrationHarness.js";
 import { createRandomCardDom } from "../utils/testUtils.js";
+import { naturalClick } from "../utils/componentTestUtils.js";
 
 const harness = createRandomJudokaPageHarness();
 
@@ -45,14 +46,14 @@ describe("randomJudokaPage history panel", () => {
     await initRandomJudokaPage();
 
     const historyPanel = document.getElementById("history-panel");
+    const toggleBtn = document.getElementById("toggle-history-btn");
     expect(historyPanel.open).toBe(false);
 
-    // Directly toggle open state instead of clicking (to avoid async click propagation issues)
-    historyPanel.open = true;
+    naturalClick(toggleBtn);
     await Promise.resolve();
     expect(historyPanel.open).toBe(true);
 
-    historyPanel.open = false;
+    naturalClick(toggleBtn);
     await Promise.resolve();
     expect(historyPanel.open).toBe(false);
   });
@@ -117,9 +118,10 @@ describe("randomJudokaPage history panel", () => {
     }
 
     const historyPanel = document.getElementById("history-panel");
+    const toggleBtn = document.getElementById("toggle-history-btn");
     expect(historyPanel.open).toBe(false);
 
-    historyPanel.open = true;
+    naturalClick(toggleBtn);
     await Promise.resolve();
     expect(historyPanel.open).toBe(true);
 
@@ -161,7 +163,7 @@ describe("randomJudokaPage history panel", () => {
     const toggleBtn = document.getElementById("toggle-history-btn");
 
     // Open the panel
-    toggleBtn.click();
+    naturalClick(toggleBtn);
     // Wait for the microtask that moves focus
     await Promise.resolve();
 
@@ -203,9 +205,9 @@ describe("randomJudokaPage history panel", () => {
     const toggleBtn = document.getElementById("toggle-history-btn");
 
     // Open and then close the panel
-    toggleBtn.click();
+    naturalClick(toggleBtn);
     await Promise.resolve();
-    toggleBtn.click();
+    naturalClick(toggleBtn);
 
     // Focus should return to the toggle button
     await Promise.resolve();

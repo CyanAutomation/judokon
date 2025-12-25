@@ -4,6 +4,7 @@ import { onDomReady } from "./domReady.js";
 import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
 import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
 import { getSanitizer } from "./sanitizeHtml.js";
+import { setDetailsOpen } from "./detailsToggle.js";
 
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
@@ -416,9 +417,9 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
       const collapsible = previewEl.scrollHeight > PREVIEW_COLLAPSE_THRESHOLD;
       previewContainer.dataset.collapsible = collapsible ? "true" : "false";
       if (collapsible) {
-        previewContainer.open = false;
+        setDetailsOpen(previewContainer, false);
       } else {
-        previewContainer.open = true;
+        setDetailsOpen(previewContainer, true);
       }
     }, 0);
   };
@@ -466,7 +467,7 @@ export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs =
     void previewEl.offsetWidth;
     previewEl.classList.add("fade-in");
     if (previewContainer.dataset.collapsible !== "false") {
-      previewContainer.open = false;
+      setDetailsOpen(previewContainer, false);
     }
     schedulePreviewMeasurement();
   }
