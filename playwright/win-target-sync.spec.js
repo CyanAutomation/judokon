@@ -116,8 +116,7 @@ async function finishMatchAtTarget(page, targetPoints) {
   const scoreCandidates = [
     finalScore,
     Number.isFinite(observedScore) ? Number(observedScore) : null,
-    Number.isFinite(matchResult?.scores?.player) ? matchResult.scores.player : null,
-    Number.isFinite(matchResult?.scores?.opponent) ? matchResult.scores.opponent : null
+    Number.isFinite(matchResult?.scores?.player) ? matchResult.scores.player : null
   ].filter((value) => value !== null);
   const maxScore = scoreCandidates.length > 0 ? Math.max(...scoreCandidates) : finalScore;
 
