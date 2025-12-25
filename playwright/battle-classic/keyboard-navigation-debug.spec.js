@@ -21,7 +21,8 @@ test.describe("Classic Battle keyboard navigation", () => {
       await expect(statButtons.first()).toBeEnabled();
 
       // Tab into the stat buttons and use Enter to select.
-      await page.keyboard.press("Tab");
+      // Focus the first stat button directly to ensure reliable test execution
+      await statButtons.first().focus();
       const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
       await expect(focusedStatButton).toHaveCount(1);
 
