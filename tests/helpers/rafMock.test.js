@@ -48,4 +48,10 @@ describe("RafMock", () => {
     flushNext();
     expect(calls).toEqual([1, 2]);
   });
+
+  it("handles empty queue gracefully", () => {
+    expect(() => flushNext()).not.toThrow();
+    expect(() => flushAll()).not.toThrow();
+  });
+});
 });
