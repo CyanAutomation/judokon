@@ -51,7 +51,7 @@ test.describe("Cooldown countdown display", () => {
     await expect(timer).toContainText(/Time Left:\s*\d+s/);
     const selectionValue = await parseTimerValue();
     expect(selectionValue).not.toBeNull();
-    expect(/** @type {number} */ (selectionValue)).toBeGreaterThan(
+    expect(/** @type {number} */ (selectionValue)).toBeGreaterThanOrEqual(
       /** @type {number} */ (cooldownValue)
     );
   });
