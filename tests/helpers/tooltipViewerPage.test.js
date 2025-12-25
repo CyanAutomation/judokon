@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
-import { createTestTooltipViewer } from "../utils/componentTestUtils.js";
+import { createTestTooltipViewer, naturalClick } from "../utils/componentTestUtils.js";
 
 const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
 const originalClipboard = navigator.clipboard;
@@ -97,26 +97,17 @@ describe("setupTooltipViewerPage (Enhanced API)", () => {
 // Legacy tests using original DOM manipulation patterns
 // (Will be refactored in subsequent phases)
 describe("setupTooltipViewerPage (Legacy DOM)", () => {
+  let legacyViewer;
+
   beforeEach(() => {
     vi.resetModules();
-    document.body.innerHTML = `
-      <input id="tooltip-search" />
-      <ul id="tooltip-list"></ul>
-      <details id="tooltip-preview-container" class="preview-container">
-        <summary class="preview-summary">
-          <span class="summary-label summary-label--closed">Expand preview</span>
-          <span class="summary-label summary-label--open">Collapse preview</span>
-        </summary>
-        <div id="tooltip-preview" class="preview-body"></div>
-      </details>
-      <div id="tooltip-warning"></div>
-      <pre id="tooltip-raw"></pre>
-      <button id="copy-key-btn"></button>
-      <button id="copy-body-btn"></button>
-    `;
+    legacyViewer = createTestTooltipViewer();
   });
 
   afterEach(() => {
+    if (legacyViewer) {
+      legacyViewer.testApi.cleanup();
+    }
     if (originalReadyState) {
       Object.defineProperty(document, "readyState", originalReadyState);
     }
@@ -124,7 +115,6 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     Element.prototype.scrollIntoView = originalScrollIntoView;
     location.hash = originalHash;
     vi.useRealTimers();
-    window.dispatchEvent(new Event("pagehide"));
   });
 
   it("updates preview when a list item is clicked (legacy)", async () => {
@@ -203,11 +193,13 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
 
   it("toggles preview expansion for long content", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+    const timers = useCanonicalTimers();
 
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.tip": "long" }));
 
     await init(mod);
+    timers.runAllTimers();
 
     const preview = document.getElementById("tooltip-preview");
     Object.defineProperty(preview, "scrollHeight", { value: 400, configurable: true });
@@ -217,27 +209,30 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     input.checked = true;
     input.dispatchEvent(new Event("change", { bubbles: true }));
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    timers.runAllTimers();
 
     const container = document.getElementById("tooltip-preview-container");
     expect(container.dataset.collapsible).toBe("true");
     expect(container.open).toBe(false);
 
     const summary = container.querySelector("summary");
-    summary.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    naturalClick(summary);
     expect(container.open).toBe(true);
 
-    summary.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    naturalClick(summary);
     expect(container.open).toBe(false);
+    timers.cleanup();
   });
 
   it("keeps preview expanded and hides summary when content is short", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+    const timers = useCanonicalTimers();
 
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.tip": "short" }));
 
     await init(mod);
+    timers.runAllTimers();
 
     const preview = document.getElementById("tooltip-preview");
     Object.defineProperty(preview, "scrollHeight", { value: 200, configurable: true });
@@ -247,11 +242,12 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     input.checked = true;
     input.dispatchEvent(new Event("change", { bubbles: true }));
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    timers.runAllTimers();
 
     const container = document.getElementById("tooltip-preview-container");
     expect(container.dataset.collapsible).toBe("false");
     expect(container.open).toBe(true);
+    timers.cleanup();
   });
 
   it("shows feedback when copying", async () => {
