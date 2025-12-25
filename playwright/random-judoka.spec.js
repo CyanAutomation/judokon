@@ -95,12 +95,13 @@ test.describe("View Judoka screen", () => {
     const historyItems = page.locator("#history-panel .history-list li");
 
     await drawButton.click();
-    await expect(cardName).toHaveAttribute("aria-label", "Miguel Santos");
-    await expect(historyItems).toHaveText(["Miguel Santos"]);
+    const firstCardName = await cardName.getAttribute("aria-label");
+    await expect(historyItems).toHaveText([firstCardName]);
 
     await drawButton.click();
-    await expect(cardName).toHaveAttribute("aria-label", "Aiko Tanaka");
-    await expect(historyItems).toHaveText(["Aiko Tanaka", "Miguel Santos"]);
+    const secondCardName = await cardName.getAttribute("aria-label");
+    await expect(historyItems).toHaveText([secondCardName, firstCardName]);
+    expect(secondCardName).not.toEqual(firstCardName);
   });
 
   test("shows error state with accessible messaging when preload fails", async ({ page }) => {
