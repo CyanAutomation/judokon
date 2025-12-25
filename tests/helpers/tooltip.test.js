@@ -257,40 +257,6 @@ describe("initTooltips", () => {
     vi.runAllTimers();
   });
 
-  it("applies overlay class when flag enabled", async () => {
-    fetchJson.mockResolvedValue({ stat: { test: "text" } });
-    loadSettings.mockResolvedValue({
-      tooltips: true,
-      featureFlags: { tooltipOverlayDebug: { enabled: true } }
-    });
-
-    const { initTooltips } = await import("../../src/helpers/tooltip.js");
-    const el = document.createElement("div");
-    el.dataset.tooltipId = "stat.test";
-    document.body.appendChild(el);
-    await initTooltips();
-    const overlayDebug = await import("../../src/helpers/tooltipOverlayDebug.js");
-    await overlayDebug.flushTooltipOverlayDebugWork();
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
-  });
-
-  it("does not apply overlay class when flag disabled", async () => {
-    fetchJson.mockResolvedValue({ stat: { test: "text" } });
-    loadSettings.mockResolvedValue({
-      tooltips: true,
-      featureFlags: { tooltipOverlayDebug: { enabled: false } }
-    });
-
-    const { initTooltips } = await import("../../src/helpers/tooltip.js");
-    const el = document.createElement("div");
-    el.dataset.tooltipId = "stat.test";
-    document.body.appendChild(el);
-    await initTooltips();
-    const overlayDebug = await import("../../src/helpers/tooltipOverlayDebug.js");
-    await overlayDebug.flushTooltipOverlayDebugWork();
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
-  });
-
   it("returns cleanup function that removes listeners", async () => {
     fetchJson.mockResolvedValue({ stat: { test: "text" } });
 

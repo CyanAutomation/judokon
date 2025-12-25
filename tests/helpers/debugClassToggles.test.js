@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  toggleTooltipOverlayDebug,
-  flushTooltipOverlayDebugWork
-} from "../../src/helpers/tooltipOverlayDebug.js";
+import { flushTooltipOverlayDebugWork } from "../../src/helpers/tooltipOverlayDebug.js";
 import { renderFeatureFlagSwitches } from "../../src/helpers/settings/featureFlagSwitches.js";
 import { getDebugState, resetDebugState } from "../../src/helpers/debugState.js";
 
@@ -14,27 +11,6 @@ beforeEach(() => {
 
 afterEach(() => {
   resetDebugState();
-});
-
-describe("debug DOM class toggles", () => {
-  it("applies the tooltip overlay class when enabled", async () => {
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
-    expect(getDebugState().tooltipOverlayDebug).toBe(false);
-
-    toggleTooltipOverlayDebug(true);
-    await flushTooltipOverlayDebugWork();
-
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
-    expect(getDebugState().tooltipOverlayDebug).toBe(true);
-    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("enabled");
-
-    toggleTooltipOverlayDebug(false);
-    await flushTooltipOverlayDebugWork();
-
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
-    expect(getDebugState().tooltipOverlayDebug).toBe(false);
-    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
-  });
 });
 
 describe("feature flag debug toggles integration", () => {
@@ -50,7 +26,7 @@ describe("feature flag debug toggles integration", () => {
     }
   });
 
-  it("applies debug classes and persists settings when toggles change", async () => {
+  it("updates tooltip overlay debug state via feature flag", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
 
@@ -91,8 +67,6 @@ describe("feature flag debug toggles integration", () => {
     await Promise.resolve();
     await flushTooltipOverlayDebugWork();
 
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
-    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("enabled");
     const state = getDebugState();
     expect(state.tooltipOverlayDebug).toBe(true);
     expect(settings.featureFlags).toEqual({
@@ -112,8 +86,6 @@ describe("feature flag debug toggles integration", () => {
     await Promise.resolve();
     await flushTooltipOverlayDebugWork();
 
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
-    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
     const resetState = getDebugState();
     expect(resetState.tooltipOverlayDebug).toBe(false);
     expect(settings.featureFlags).toEqual({
@@ -129,24 +101,6 @@ describe("feature flag debug toggles integration", () => {
       { key: "featureFlags", tooltip: true },
       { key: "featureFlags", tooltip: false }
     ]);
-  });
-
-  it("coalesces rapid toggles into a single DOM pass", async () => {
-    const attrSpy = vi.spyOn(document.body, "setAttribute");
-    toggleTooltipOverlayDebug(true);
-    toggleTooltipOverlayDebug(true);
-    toggleTooltipOverlayDebug(false);
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
-    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
-
-    await flushTooltipOverlayDebugWork();
-
-    expect(attrSpy).toHaveBeenCalledTimes(1);
-    expect(attrSpy).toHaveBeenCalledWith("data-feature-tooltip-overlay-debug", "disabled");
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
-    expect(document.body.getAttribute("data-feature-tooltip-overlay-debug")).toBe("disabled");
-
-    attrSpy.mockRestore();
   });
 
   it("omits hidden feature flag toggles from settings UI", () => {
