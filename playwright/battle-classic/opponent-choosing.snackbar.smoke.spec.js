@@ -1,8 +1,12 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { waitForBattleState } from "../helpers/battleStateHelper.js";
 
+const SPEC_PATH = "design/productRequirementsDocuments/prdBattleClassic.md";
+
 test.describe("Cooldown countdown display", () => {
-  test("shows countdown timer after selecting a stat", async ({ page }) => {
+  test(`[Spec: ${SPEC_PATH}] shows cooldown countdown promptly and resets for the next round`, async ({
+    page
+  }) => {
     await page.goto("/src/pages/battleClassic.html");
 
     // Wait for stat buttons to be ready
@@ -23,7 +27,32 @@ test.describe("Cooldown countdown display", () => {
     // "First to 5 points wins." during transitions, but the timer element reliably
     // shows the countdown value.
     const timer = page.getByTestId("next-round-timer");
+    const parseTimerValue = async () => {
+      const text = (await timer.textContent()) || "";
+      const match = text.match(/Time Left:\s*(\d+)s/i);
+      return match ? Number.parseInt(match[1], 10) : null;
+    };
+
+    const countdownStartedAt = Date.now();
     await expect(timer).toBeVisible();
-    await expect(timer).toContainText(/\d+s/, { timeout: 5_000 });
+    await expect(timer).toContainText(/Time Left:\s*\d+s/, { timeout: 2_000 });
+    const countdownDelayMs = Date.now() - countdownStartedAt;
+    expect(countdownDelayMs).toBeLessThan(2_000);
+
+    const cooldownValue = await parseTimerValue();
+    expect(cooldownValue).not.toBeNull();
+
+    const nextButton = page.getByTestId("next-button");
+    await expect(nextButton).toHaveAttribute("data-next-ready", "true", { timeout: 10_000 });
+
+    await nextButton.click();
+    await waitForBattleState(page, "waitingForPlayerAction");
+
+    await expect(timer).toContainText(/Time Left:\s*\d+s/);
+    const selectionValue = await parseTimerValue();
+    expect(selectionValue).not.toBeNull();
+    expect(/** @type {number} */ (selectionValue)).toBeGreaterThan(
+      /** @type {number} */ (cooldownValue)
+    );
   });
 });
