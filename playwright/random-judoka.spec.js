@@ -41,35 +41,66 @@ test.describe("View Judoka screen", () => {
   });
 
   test("successive draws render different cards when RNG is stubbed", async ({ page }) => {
+    const fixtureJudoka = [
+      {
+        id: 101,
+        firstname: "Aiko",
+        surname: "Tanaka",
+        country: "Japan",
+        countryCode: "jp",
+        rarity: "Common",
+        weightClass: "-60",
+        signatureMoveId: 0,
+        stats: {
+          power: 4,
+          speed: 6,
+          technique: 5,
+          kumikata: 4,
+          newaza: 5
+        }
+      },
+      {
+        id: 202,
+        firstname: "Miguel",
+        surname: "Santos",
+        country: "Portugal",
+        countryCode: "pt",
+        rarity: "Common",
+        weightClass: "-66",
+        signatureMoveId: 0,
+        stats: {
+          power: 5,
+          speed: 4,
+          technique: 6,
+          kumikata: 5,
+          newaza: 4
+        }
+      }
+    ];
+
+    await page.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify(fixtureJudoka)
+      })
+    );
+
     await page.evaluate(async () => {
       const { setTestMode } = await import("/src/helpers/testModeUtils.js");
-      setTestMode(false);
-
-      const sequence = [0.1, 0.9];
-      let idx = 0;
-      const originalRandom = Math.random;
-      Math.random = () => sequence[idx++ % sequence.length];
-
-      // Restore after test completes
-      page.on("close", () => {
-        Math.random = originalRandom;
-      });
+      setTestMode({ enabled: true, seed: 2 });
     });
 
     const drawButton = page.getByRole("button", { name: /draw a random judoka card/i });
+    const cardName = page.locator(".card-name");
+    const historyItems = page.locator("#history-panel .history-list li");
 
     await drawButton.click();
-    const firstCard = page.getByTestId("card-container").locator(".judoka-card").first();
-    await expect(firstCard).toHaveAccessibleName(/card/i);
-    const firstName = await firstCard.getAttribute("aria-label");
+    await expect(cardName).toHaveAttribute("aria-label", "Miguel Santos");
+    await expect(historyItems).toHaveText(["Miguel Santos"]);
 
-    await expect(drawButton).toHaveText(/draw card/i);
     await drawButton.click();
-    const secondCard = page.getByTestId("card-container").locator(".judoka-card").first();
-    await expect(secondCard).toHaveAccessibleName(/card/i);
-    const secondName = await secondCard.getAttribute("aria-label");
-
-    expect(secondName).not.toEqual(firstName);
+    await expect(cardName).toHaveAttribute("aria-label", "Aiko Tanaka");
+    await expect(historyItems).toHaveText(["Aiko Tanaka", "Miguel Santos"]);
   });
 
   test("shows error state with accessible messaging when preload fails", async ({ page }) => {
