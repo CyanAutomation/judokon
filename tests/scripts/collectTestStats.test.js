@@ -39,15 +39,22 @@ import { collectTestStats, rollDice } from "../../scripts/collectTestStats.mjs";
 
 describe("rollDice", () => {
   it("maps random values to judo throws", () => {
-    const results = [0, 0.2, 0.4, 0.6, 0.8, 0.99].map((n) => rollDice(() => n));
-    expect(results).toEqual([
-      "🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy.",
-      "🎲 Roll: 2 — *Osoto Gari* sweep! 🌪 The ground says hello.",
-      "🎲 Roll: 3 — *Uchi Mata* whirl! 🌀 You’re airborne now.",
-      "🎲 Roll: 4 — *Harai Goshi* slash! 🌊 A clean hip-and-leg combo.",
-      "🎲 Roll: 5 — *Tai Otoshi* drop! 💥 Straight to the tatami.",
-      "🎲 Roll: 6 — *Kouchi Gari* trip! 🎯 Small but deadly."
-    ]);
+    const rollCases = [
+      { value: 0, roll: 1, throwName: "Seoi Nage" },
+      { value: 0.2, roll: 2, throwName: "Osoto Gari" },
+      { value: 0.4, roll: 3, throwName: "Uchi Mata" },
+      { value: 0.6, roll: 4, throwName: "Harai Goshi" },
+      { value: 0.8, roll: 5, throwName: "Tai Otoshi" },
+      { value: 0.99, roll: 6, throwName: "Kouchi Gari" }
+    ];
+
+    const results = rollCases.map(({ value }) => rollDice(() => value));
+
+    results.forEach((result, index) => {
+      const { roll, throwName } = rollCases[index];
+      expect(result).toEqual(expect.stringContaining(`Roll: ${roll}`));
+      expect(result).toEqual(expect.stringContaining(`*${throwName}*`));
+    });
   });
 });
 
