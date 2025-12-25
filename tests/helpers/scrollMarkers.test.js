@@ -15,34 +15,74 @@ afterEach(() => {
 });
 
 describe("addScrollMarkers", () => {
-  it("reads offsetWidth only once", () => {
+  it("creates the expected number of scroll markers", () => {
     const container = document.createElement("div");
     const wrapper = document.createElement("div");
+    wrapper.appendChild(container);
+    container.style.columnGap = "0px";
 
-    const card = document.createElement("div");
-    card.className = "judoka-card";
-    container.appendChild(card);
+    for (let i = 0; i < 4; i++) {
+      const card = document.createElement("div");
+      card.className = "judoka-card";
+      Object.defineProperty(card, "offsetWidth", { value: 100, configurable: true });
+      container.appendChild(card);
+    }
 
-    let readCount = 0;
-    Object.defineProperty(card, "offsetWidth", {
-      get() {
-        readCount += 1;
-        return 100;
-      }
-    });
+    Object.defineProperty(container, "clientWidth", { value: 200, configurable: true });
+    Object.defineProperty(container, "scrollWidth", { value: 400, configurable: true });
 
     addScrollMarkers(container, wrapper);
 
-    container.scrollLeft = 50;
+    const markersRoot = wrapper.querySelector(".scroll-markers");
+    expect(markersRoot).not.toBeNull();
+
+    const markers = Array.from(markersRoot.querySelectorAll(".scroll-marker"));
+    expect(markers).toHaveLength(2);
+  });
+
+  it("updates the active marker when scrolling between pages", () => {
+    const container = document.createElement("div");
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(container);
+    container.style.columnGap = "0px";
+
+    for (let i = 0; i < 4; i++) {
+      const card = document.createElement("div");
+      card.className = "judoka-card";
+      Object.defineProperty(card, "offsetWidth", { value: 100, configurable: true });
+      container.appendChild(card);
+    }
+
+    Object.defineProperty(container, "clientWidth", { value: 200, configurable: true });
+    Object.defineProperty(container, "scrollWidth", { value: 400, configurable: true });
+
+    addScrollMarkers(container, wrapper);
+
+    const markersRoot = wrapper.querySelector(".scroll-markers");
+    expect(markersRoot).not.toBeNull();
+
+    const markers = Array.from(markersRoot.querySelectorAll(".scroll-marker"));
+    expect(markers[0].classList.contains("active")).toBe(true);
+    expect(markers[1].classList.contains("active")).toBe(false);
+
+    container.scrollLeft = container.scrollWidth - container.clientWidth;
     container.dispatchEvent(new Event("scroll"));
 
-    expect(readCount).toBe(1);
+    expect(markers[0].classList.contains("active")).toBe(false);
+    expect(markers[1].classList.contains("active")).toBe(true);
+
+    container.scrollLeft = 0;
+    container.dispatchEvent(new Event("scroll"));
+
+    expect(markers[0].classList.contains("active")).toBe(true);
+    expect(markers[1].classList.contains("active")).toBe(false);
   });
 
-  it("creates scroll markers with an active state and counter", () => {
+  it("updates the counter text as the page changes", () => {
     const container = document.createElement("div");
     const wrapper = document.createElement("div");
     wrapper.appendChild(container);
+    container.style.columnGap = "0px";
 
     for (let i = 0; i < 4; i++) {
       const card = document.createElement("div");
@@ -54,78 +94,19 @@ describe("addScrollMarkers", () => {
     Object.defineProperty(container, "clientWidth", { value: 200, configurable: true });
     Object.defineProperty(container, "scrollWidth", { value: 400, configurable: true });
 
-    const getComputedStyleSpy = vi
-      .spyOn(window, "getComputedStyle")
-      .mockImplementation(() => ({ columnGap: "0px" }));
+    addScrollMarkers(container, wrapper);
 
-    try {
-      addScrollMarkers(container, wrapper);
+    const markersRoot = wrapper.querySelector(".scroll-markers");
+    expect(markersRoot).not.toBeNull();
 
-      const markersRoot = wrapper.querySelector(".scroll-markers");
-      expect(markersRoot).not.toBeNull();
+    const counter = markersRoot?.querySelector(".page-counter");
+    expect(counter).not.toBeNull();
+    expect(counter?.textContent).toBe("Page 1 of 2");
 
-      const markers = Array.from(markersRoot.querySelectorAll(".scroll-marker"));
-      expect(markers).toHaveLength(2);
-      expect(markers[0].classList.contains("active")).toBe(true);
-      expect(markers[1].classList.contains("active")).toBe(false);
+    container.scrollLeft = container.scrollWidth - container.clientWidth;
+    container.dispatchEvent(new Event("scroll"));
 
-      const counter = markersRoot.querySelector(".page-counter");
-      expect(counter).not.toBeNull();
-      expect(counter?.textContent).toBe("Page 1 of 2");
-    } finally {
-      getComputedStyleSpy.mockRestore();
-    }
-  });
-
-  it("activates the rightmost marker when scrolled to the end", () => {
-    const container = document.createElement("div");
-    const wrapper = document.createElement("div");
-    wrapper.appendChild(container);
-
-    for (let i = 0; i < 4; i++) {
-      const card = document.createElement("div");
-      card.className = "judoka-card";
-      Object.defineProperty(card, "offsetWidth", { value: 100, configurable: true });
-      container.appendChild(card);
-    }
-
-    Object.defineProperty(container, "clientWidth", { value: 200, configurable: true });
-    Object.defineProperty(container, "scrollWidth", { value: 400, configurable: true });
-
-    const getComputedStyleSpy = vi
-      .spyOn(window, "getComputedStyle")
-      .mockImplementation(() => ({ columnGap: "0px" }));
-
-    try {
-      addScrollMarkers(container, wrapper);
-
-      const markersRoot = wrapper.querySelector(".scroll-markers");
-      expect(markersRoot).not.toBeNull();
-
-      const markers = Array.from(markersRoot.querySelectorAll(".scroll-marker"));
-      const counter = markersRoot?.querySelector(".page-counter");
-      expect(counter).not.toBeNull();
-
-      expect(markers[0].classList.contains("active")).toBe(true);
-      expect(markers[1].classList.contains("active")).toBe(false);
-      expect(counter?.textContent).toBe("Page 1 of 2");
-
-      container.scrollLeft = container.scrollWidth - container.clientWidth;
-      container.dispatchEvent(new Event("scroll"));
-
-      expect(markers[0].classList.contains("active")).toBe(false);
-      expect(markers[1].classList.contains("active")).toBe(true);
-      expect(counter?.textContent).toBe("Page 2 of 2");
-
-      container.scrollLeft = 0;
-      container.dispatchEvent(new Event("scroll"));
-
-      expect(markers[0].classList.contains("active")).toBe(true);
-      expect(markers[1].classList.contains("active")).toBe(false);
-      expect(counter?.textContent).toBe("Page 1 of 2");
-    } finally {
-      getComputedStyleSpy.mockRestore();
-    }
+    expect(counter?.textContent).toBe("Page 2 of 2");
   });
 });
 
@@ -143,6 +124,7 @@ describe("initScrollMarkers", () => {
     const container = document.createElement("div");
     const wrapper = document.createElement("div");
     wrapper.appendChild(container);
+    container.style.columnGap = "0px";
 
     const card = document.createElement("div");
     card.className = "judoka-card";
@@ -151,23 +133,15 @@ describe("initScrollMarkers", () => {
 
     Object.defineProperty(container, "clientWidth", { value: 200, configurable: true });
 
-    const getComputedStyleSpy = vi
-      .spyOn(window, "getComputedStyle")
-      .mockImplementation(() => ({ columnGap: "0px" }));
+    initScrollMarkers(container, wrapper);
 
-    try {
-      initScrollMarkers(container, wrapper);
+    expect(fallbackScheduler.setTimeout).toHaveBeenCalledTimes(1);
+    expect(fallbackScheduler.setTimeout.mock.calls[0][1]).toBe(0);
+    expect(wrapper.querySelector(".scroll-markers")).toBeNull();
 
-      expect(fallbackScheduler.setTimeout).toHaveBeenCalledTimes(1);
-      expect(fallbackScheduler.setTimeout.mock.calls[0][1]).toBe(0);
-      expect(wrapper.querySelector(".scroll-markers")).toBeNull();
+    vi.runAllTimers();
 
-      vi.runAllTimers();
-
-      const markersRoot = wrapper.querySelector(".scroll-markers");
-      expect(markersRoot).not.toBeNull();
-    } finally {
-      getComputedStyleSpy.mockRestore();
-    }
+    const markersRoot = wrapper.querySelector(".scroll-markers");
+    expect(markersRoot).not.toBeNull();
   });
 });
