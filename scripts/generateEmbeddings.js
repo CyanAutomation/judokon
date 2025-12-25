@@ -243,11 +243,22 @@ const DATA_FIELD_ALLOWLIST = {
     "gameModeId"
   ],
   "statNames.js": ["name", "japanese", "description", "category", "power", "speed", "technique"],
-  "settings.json": ["displayMode", "aiDifficulty", "sound", "defaults", "volume"],
+  "settings.json": [
+    "sound",
+    "motionEffects",
+    "typewriterEffect",
+    "tooltips",
+    "showCardOfTheDay",
+    "displayMode",
+    "fullNavigationMap",
+    "aiDifficulty",
+    "tooltipIds",
+    "featureFlags"
+  ],
   "svgCodes.json": ["name", "category"],
   "synonyms.json": true,
   "tooltips.json": true, // Allow all fields
-  "weightCategories.json": ["gender", "description", "categories.descriptor"],
+  "weightCategories.json": ["gender", "description", "categories"],
   default: ["name", "description", "label"]
 };
 
