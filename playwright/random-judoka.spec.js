@@ -103,6 +103,9 @@ test.describe("View Judoka screen", () => {
 
     await drawButton.click();
     const secondCardName = await cardName.getAttribute("aria-label");
+    if (!secondCardName) {
+      throw new Error("Second card name not found - aria-label attribute is missing or empty");
+    }
     await expect(historyItems).toHaveText([secondCardName, firstCardName]);
     expect(secondCardName).not.toEqual(firstCardName);
   });
