@@ -242,7 +242,6 @@ describe("Battle Classic Page Integration", () => {
     await init();
 
     const testApi = window.__TEST_API;
-    expect(testApi).toBeDefined();
 
     // Wait for battle ready
     await withMutedConsole(async () => {

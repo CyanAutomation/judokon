@@ -130,33 +130,17 @@ describe("testApi.isTestMode", () => {
     // Reset mock for this test
     mockIsEnabled.mockClear().mockImplementation(() => false);
 
-    // Set env to simulate non-test environment, but we're in vitest
-    // so process.env.VITEST will still be true. That's OK - the test
-    // is primarily testing the webdriver detection logic
-    setNavigatorWebdriver(false);
-    // Ensure window.__TEST__ is set so exposeTestAPI() is called during module load
-    window.__TEST__ = true;
+    vi.stubEnv("VITEST", "");
+    vi.stubEnv("NODE_ENV", "production");
+
+    setNavigatorWebdriver(true);
+    delete window.__TEST__;
 
     const mod = await import("../../src/helpers/testApi.js");
     const { isTestMode } = mod;
 
-    // Since we're in Vitest, process.env.VITEST is true, so isTestMode() will return true
-    // regardless of webdriver. The important thing is that the webdriver check exists.
-    // Let's focus on testing the webdriver-specific parts:
-
-    setNavigatorWebdriver(true);
-    // Should still return true because VITEST env is set
+    // Should return true based on webdriver automation signals.
     expect(isTestMode()).toBe(true);
-
-    // The key test: when webdriver is false AND we're not in Vitest,
-    // isTestMode should check webdriver. We can't easily test this in Vitest,
-    // so we'll accept the known limitation and just verify the function exists
-    // and behaves consistently.
-
-    setNavigatorWebdriver(false);
-    // Will still be true because VITEST, but that's expected in Vitest
-    expect(typeof isTestMode).toBe("function");
-    expect(window.__INIT_API).toBeDefined();
 
     const originalInitCalled = window.__initCalled;
     window.__initCalled = true;
