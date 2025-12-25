@@ -10,10 +10,14 @@ describe("Test API integration", () => {
   let document;
 
   beforeEach(async () => {
-    const fs = require("fs");
-    const path = require("path");
-    const htmlPath = path.join(process.cwd(), "src/pages/battleClassic.html");
-    const htmlContent = fs.readFileSync(htmlPath, "utf-8");
+    try {
+      const fs = require("fs");
+      const path = require("path");
+      const htmlPath = path.join(process.cwd(), "src/pages/battleClassic.html");
+      const htmlContent = fs.readFileSync(htmlPath, "utf-8");
+    } catch (error) {
+      throw new Error(`Failed to load HTML file: ${error.message}`);
+    }
 
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
