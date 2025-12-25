@@ -56,7 +56,7 @@ export function createInspectorPanel(container, judoka) {
 
   panel.addEventListener("toggle", () => {
     const pendingClickId = pendingClickIds.shift();
-    if (pendingClickId != null) {
+    if (pendingClickId !== null) {
       toggleSeenIds.add(pendingClickId);
     }
     updateDataset();
