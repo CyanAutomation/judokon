@@ -79,13 +79,13 @@ describe("Battle Classic opponent placeholder integration", () => {
     __resetBattleEventTarget();
     bindUIHelperEventHandlersDynamic({ renderOpponentCard, getOpponentCardData });
 
+    const resolved = getRoundResolvedPromise();
     emitBattleEvent("opponentReveal");
     const placeholder = opponentCard?.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
     expect(placeholder?.getAttribute("aria-label")).toBe(OPPONENT_PLACEHOLDER_ARIA_LABEL);
     expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
 
-    const resolved = getRoundResolvedPromise();
     emitBattleEvent("roundResolved", { store: {}, result: { message: "" } });
     await resolved;
     await vi.runAllTimersAsync();
