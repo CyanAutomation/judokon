@@ -28,7 +28,7 @@ test.describe("Classic Battle - Stat selection behavior", () => {
     await page.waitForFunction(() => {
       const state = document.body?.dataset?.battleState;
       return state === "waitingForPlayerAction";
-    });
+    }, { timeout: 10000 });
 
     await statButtons.first().click();
 
