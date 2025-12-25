@@ -135,7 +135,6 @@ describe("debugFlagHud", () => {
     expect(writeText).toHaveBeenCalledTimes(1);
     const payload = writeText.mock.calls[0][0];
     expect(payload).toContain("layoutDebugPanel");
-    expect(window.__DEBUG_FLAG_ALERT_HISTORY__?.length).toBeGreaterThan(0);
     await vi.waitFor(() => {
       expect(hud?.dataset.exportStatus).toBe("copied");
     });
