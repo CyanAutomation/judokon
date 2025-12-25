@@ -14,7 +14,7 @@ test.describe("Classic Battle — stability probe", () => {
 
     const roundMessage = page.locator(selectors.roundMessage());
     await expect(roundMessage).toBeVisible();
-    const initialRoundText = await roundMessage.textContent();
+    const initialRoundText = await roundMessage.textContent() ?? "";
 
     const btn = page.locator(selectors.statButton());
     await expect(btn.first()).toBeEnabled({ timeout: 10000 });
