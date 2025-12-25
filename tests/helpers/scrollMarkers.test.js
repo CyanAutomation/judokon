@@ -63,8 +63,6 @@ describe("addScrollMarkers", () => {
 
     const markers = Array.from(markersRoot.querySelectorAll(".scroll-marker"));
     
-    // Clean up any existing markers to prevent test interference
-    markers.forEach(marker => marker.classList.remove("active"));
     expect(markers[0].classList.contains("active")).toBe(true);
     expect(markers[1].classList.contains("active")).toBe(false);
 
