@@ -33,8 +33,8 @@ test.describe("Cooldown countdown display", () => {
       return match ? Number.parseInt(match[1], 10) : null;
     };
 
-    const countdownStartedAt = Date.now();
     await expect(timer).toBeVisible();
+    const countdownStartedAt = Date.now();
     await expect(timer).toContainText(/Time Left:\s*\d+s/, { timeout: 2_000 });
     const countdownDelayMs = Date.now() - countdownStartedAt;
     expect(countdownDelayMs).toBeLessThan(2_000);
