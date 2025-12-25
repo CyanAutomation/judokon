@@ -122,6 +122,10 @@ test.describe("Vector search page", () => {
     await expect(tagFilter).toBeEnabled();
     await expect(searchButton).toBeEnabled();
 
+    await page.waitForFunction(() => {
+      const activeId = document.activeElement?.id;
+      return activeId === "vector-search-input" || activeId === "vector-search-btn";
+    });
     const activeId = await page.evaluate(() => document.activeElement?.id);
     expect(["vector-search-input", "vector-search-btn"]).toContain(activeId);
   });
