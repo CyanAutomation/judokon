@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
-import { getPlayerScore, waitForBattleReady } from "./helpers/battleStateHelper.js";
+import { getPlayerScore, getPointsToWin, waitForBattleReady } from "./helpers/battleStateHelper.js";
 import { parseScores } from "./helpers/scoreUtils.js";
 
 async function openSettingsPanel(page) {
@@ -181,31 +181,20 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     await expect(page.locator("#round-counter")).toHaveText(roundCounterPattern("10"));
     await expect(dropdown).toHaveValue("10");
-    const revisit = await page.context().newPage();
-    try {
-      await revisit.addInitScript(() => {
-        window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      });
-      await revisit.goto("/src/pages/battleCLI.html");
-      await expect(revisit.locator("dialog.modal")).toBeVisible();
-      await expect
-        .poll(async () =>
-          revisit.evaluate(() => {
-            try {
-              return localStorage.getItem("battle.pointsToWin");
-            } catch {
-              return null;
-            }
-          })
-        )
-        .toBe("10");
-      await expect(revisit.locator("#points-select")).toHaveValue("10");
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
+    });
+    await page.reload();
 
-      await revisit.keyboard.press("3");
-      await expect(revisit.locator("dialog.modal")).toBeHidden();
-      await expect(revisit.locator("#round-counter")).toHaveText(roundCounterPattern("10"));
-    } finally {
-      await revisit.close();
-    }
+    await expect(page.locator("dialog.modal")).toBeVisible();
+    await expect.poll(async () => await getPointsToWin(page)).toBe(10);
+
+    await openSettingsPanel(page);
+    await expect(dropdown).toHaveValue("10");
+    await expect(page.locator("#round-counter")).toHaveText(roundCounterPattern("10"));
+
+    await page.keyboard.press("3");
+    await expect(page.locator("dialog.modal")).toBeHidden();
+    await expect(page.locator("#round-counter")).toHaveText(roundCounterPattern("10"));
   });
 });

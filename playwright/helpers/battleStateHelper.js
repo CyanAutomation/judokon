@@ -599,6 +599,36 @@ export async function setPointsToWin(page, pointsToWin, options = {}) {
 }
 
 /**
+ * Read the Classic Battle points-to-win target from the Test API.
+ * @pseudocode
+ * WAIT for the Test API bootstrap to be available.
+ * READ engine.getPointsToWin when present.
+ * NORMALIZE the value to a finite number, otherwise return null.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {object} [options] - Options object
+ * @param {number} [options.timeout=5_000] - Timeout in ms
+ * @returns {Promise<number | null>} points-to-win target or null when unavailable
+ */
+export async function getPointsToWin(page, options = {}) {
+  const { timeout = 5_000 } = options;
+
+  await waitForTestApi(page, { timeout });
+
+  return await page.evaluate(() => {
+    try {
+      const engine = window.__TEST_API?.engine;
+      if (!engine || typeof engine.getPointsToWin !== "function") {
+        return null;
+      }
+      const value = Number(engine.getPointsToWin());
+      return Number.isFinite(value) ? value : null;
+    } catch {
+      return null;
+    }
+  });
+}
+
+/**
  * Wait for round stats availability using the Test API battle store.
  * @pseudocode
  * WAIT for the Playwright Test API bootstrap to be ready.
