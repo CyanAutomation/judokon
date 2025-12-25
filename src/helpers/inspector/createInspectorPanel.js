@@ -51,13 +51,13 @@ export function createInspectorPanel(container, judoka) {
   }
 
   let clickId = 0;
-  let lastClickId = 0;
+  const pendingClickIds = [];
   const toggleSeenIds = new Set();
 
   panel.addEventListener("toggle", () => {
-    if (lastClickId > 0) {
-      toggleSeenIds.add(lastClickId);
-      lastClickId = 0;
+    const pendingClickId = pendingClickIds.shift();
+    if (pendingClickId !== null) {
+      toggleSeenIds.add(pendingClickId);
     }
     updateDataset();
   });
@@ -65,7 +65,7 @@ export function createInspectorPanel(container, judoka) {
   summary.addEventListener("click", () => {
     const wasOpen = panel.open;
     const currentClickId = ++clickId;
-    lastClickId = currentClickId;
+    pendingClickIds.push(currentClickId);
 
     queueMicrotask(() => {
       if (toggleSeenIds.delete(currentClickId)) {
