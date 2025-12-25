@@ -52,8 +52,8 @@ describe("rollDice", () => {
 
     results.forEach((result, index) => {
       const { roll, throwName } = rollCases[index];
-      expect(result).toEqual(expect.stringContaining(`Roll: ${roll}`));
-      expect(result).toEqual(expect.stringContaining(`*${throwName}*`));
+      expect(result).toContain(`Roll: ${roll}`);
+      expect(result).toContain(`*${throwName}*`);
     });
   });
 });
