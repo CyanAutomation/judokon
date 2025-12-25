@@ -1,7 +1,15 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
-import { getPlayerScore, waitForBattleReady } from "./helpers/battleStateHelper.js";
+import { waitForSnackbar } from "./fixtures/waits.js";
+import { completeRoundViaApi } from "./helpers/battleApiHelper.js";
+import {
+  createMatchCompletionTracker,
+  getPlayerScore,
+  waitForBattleReady
+} from "./helpers/battleStateHelper.js";
 import { parseScores } from "./helpers/scoreUtils.js";
+
+const DETERMINISTIC_SEED = 1337;
 
 async function openSettingsPanel(page) {
   const settings = page.locator("#cli-settings");
@@ -64,71 +72,59 @@ async function finishMatchAtTarget(page, targetPoints) {
     } catch {}
   });
 
-  // Wait for reset to complete before proceeding
-  await page.waitForTimeout(100);
   await waitForBattleReady(page, { timeout: 15_000, allowFallback: true });
 
-  const completion = await page.evaluate(
-    async ({ targetPoints }) => {
-      try {
-        const stateApi = window.__TEST_API?.state;
-        const store = window.__TEST_API?.inspect?.getBattleStore?.();
-        if (!stateApi?.dispatchBattleEvent) {
-          return { ok: false, reason: "dispatchBattleEvent unavailable" };
-        }
+  const matchTracker = createMatchCompletionTracker(page, {
+    timeout: 30_000,
+    allowFallback: true
+  });
+  const statList = page.locator("#cli-stats");
+  const snackbar = page.locator("#snackbar-container .snackbar");
+  const maxRounds = Math.max(targetPoints * 3, 5);
+  let finalScore = 0;
 
-        if (store) {
-          store.playerScore = targetPoints;
-          store.opponentScore = 0;
-        }
+  for (let round = 0; round < maxRounds; round += 1) {
+    if (matchTracker.isComplete()) {
+      break;
+    }
 
-        const detail = {
-          result: { matchEnded: true, playerScore: targetPoints, opponentScore: 0 },
-          scores: { player: targetPoints, opponent: 0 }
-        };
-        const events = ["roundResolved", "matchPointReached", "match.concluded"];
+    await expect(statList).toBeVisible();
+    await expect(statList).toHaveAttribute("aria-busy", "false");
+    await statList.focus();
+    await page.keyboard.press("1");
 
-        let lastOk = true;
-        let failedEvent = null;
-        for (const eventName of events) {
-          const result = stateApi.dispatchBattleEvent(eventName, detail);
-          const outcome = result && typeof result.then === "function" ? await result : result;
-          if (outcome === false) {
-            lastOk = false;
-            failedEvent = eventName;
-            break; // Stop processing on first failure
-          }
-        }
+    await waitForSnackbar(page, "You Picked");
+    await expect(snackbar).toContainText("You Picked", { timeout: 5_000 });
 
-        const scores = stateApi?.getScores?.();
+    const completion = await completeRoundViaApi(page, {
+      options: { expireSelection: false, opponentResolveDelayMs: 0 }
+    });
+    expect(completion.ok, completion.reason ?? "cli.completeRound failed").toBe(true);
 
-        return {
-          ok: lastOk,
-          reason: lastOk ? null : `battle event dispatch failed at: ${failedEvent}`,
-          playerScore: Number(scores?.player ?? scores?.playerScore ?? store?.playerScore ?? 0)
-        };
-      } catch (error) {
-        return {
-          ok: false,
-          reason: error instanceof Error ? error.message : String(error ?? "unknown")
-        };
+    const roundScore = await readPlayerScore(page);
+    if (Number.isFinite(roundScore)) {
+      finalScore = Math.max(finalScore, Number(roundScore));
+      if (finalScore >= targetPoints) {
+        break;
       }
-    },
-    { targetPoints }
-  );
+    }
+  }
 
-  expect(completion.ok, completion.reason ?? "match completion dispatch failed").toBe(true);
-  const computedScore = Number.isFinite(completion.playerScore)
-    ? completion.playerScore
-    : Number(await readPlayerScore(page));
-  const finalPlayerScore = Math.max(
-    targetPoints,
-    Number.isFinite(computedScore) ? computedScore : targetPoints
-  );
+  const matchResult = await matchTracker.promise;
+  expect(matchResult.timedOut).toBe(false);
+  const observedScore = await readPlayerScore(page);
+  const scoreCandidates = [
+    finalScore,
+    Number.isFinite(observedScore) ? Number(observedScore) : null,
+    Number.isFinite(matchResult?.scores?.player) ? matchResult.scores.player : null,
+    Number.isFinite(matchResult?.scores?.opponent) ? matchResult.scores.opponent : null
+  ].filter((value) => value !== null);
+  const maxScore = scoreCandidates.length > 0 ? Math.max(...scoreCandidates) : finalScore;
 
-  expect(finalPlayerScore).toBeGreaterThanOrEqual(targetPoints);
+  await expect(page.locator("#round-message")).toContainText("Match over");
+  expect(maxScore).toBeGreaterThanOrEqual(targetPoints);
 
-  return { matchResult: completion, finalPlayerScore };
+  return { matchResult, finalScore: maxScore };
 }
 
 test.describe("Round Selection - Win Target Synchronization", () => {
@@ -139,6 +135,12 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   ];
 
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript((seed) => {
+      try {
+        localStorage.setItem("battleCLI.seed", String(seed));
+      } catch {}
+    }, DETERMINISTIC_SEED);
+
     const app = await configureApp(page, {
       testMode: "enable",
       requireRoundSelectModal: true
@@ -152,6 +154,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await page.evaluate(() => {
       try {
         localStorage.removeItem("battle.pointsToWin");
+        localStorage.removeItem("battleCLI.seed");
       } catch {}
     });
   });
