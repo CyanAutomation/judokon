@@ -28,15 +28,17 @@ test.describe("Classic Battle keyboard navigation", () => {
 
       await page.keyboard.press("Enter");
 
-      await expect(focusedStatButton).toBeDisabled();
+      // Wait for the UI to update after selection
+      await expect(focusedStatButton).toBeDisabled({ timeout: 2000 });
       await expect(page.locator('[data-testid="stat-button"]:disabled')).toHaveCount(
-        statButtonCount
+        statButtonCount,
+        { timeout: 2000 }
       );
 
       const roundMessage = page.locator("header #round-message");
-      await expect(roundMessage).toBeVisible();
-      await expect(roundMessage).toContainText("You picked:");
-      await expect(roundMessage).toContainText("Opponent picked:");
+      await expect(roundMessage).toBeVisible({ timeout: 2000 });
+      await expect(roundMessage).toContainText("You picked:", { timeout: 2000 });
+      await expect(roundMessage).toContainText("Opponent picked:", { timeout: 2000 });
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
