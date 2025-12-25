@@ -50,7 +50,29 @@ export function createInspectorPanel(container, judoka) {
     }
   }
 
-  panel.addEventListener("toggle", updateDataset);
+  let toggleSeen = false;
+
+  panel.addEventListener("toggle", () => {
+    toggleSeen = true;
+    updateDataset();
+  });
+
+  summary.addEventListener("click", () => {
+    const wasOpen = panel.open;
+    toggleSeen = false;
+
+    setTimeout(() => {
+      if (toggleSeen) {
+        return;
+      }
+
+      if (panel.open === wasOpen) {
+        panel.open = !wasOpen;
+      }
+
+      updateDataset();
+    }, 0);
+  });
   updateDataset();
 
   return panel;
