@@ -128,6 +128,9 @@ describe("classicBattle opponent delay", () => {
       delayOpponentMessage: true
     });
 
+    // The message should be shown immediately, but we need to allow for microtasks
+    await Promise.resolve();
+
     // Verify updateSnackbar (not showSnackbar) is called immediately with the message
     expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     expect(showSnackbar).not.toHaveBeenCalled();
