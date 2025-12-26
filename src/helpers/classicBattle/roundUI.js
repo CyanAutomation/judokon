@@ -381,9 +381,9 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   if (store && typeof store === "object") {
     store.roundReadyForInput = true;
   }
+  let container = null;
   try {
-    const container =
-      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    container = typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     if (container && typeof container.dataset !== "undefined") {
       container.dataset.selectionInProgress = "false";
     }
@@ -392,9 +392,6 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   // But don't re-enable if a selection is in progress
   try {
     const selectionInProgress = container?.dataset?.selectionInProgress;
-
-    if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
-
     if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
       // Only emit the event - the handler in setupUIBindings will call enable()
       emitBattleEvent("statButtons:enable");
