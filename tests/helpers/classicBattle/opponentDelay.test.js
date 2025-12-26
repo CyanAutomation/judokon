@@ -6,6 +6,7 @@ let showMessage;
 let clearMessage;
 let clearTimer;
 let showSnackbar;
+let updateSnackbar;
 let startCooldown;
 let renderOpponentCard;
 let resetStatButtons;
@@ -17,6 +18,8 @@ beforeEach(() => {
   showMessage = vi.fn();
   clearMessage = vi.fn();
   clearTimer = vi.fn();
+  showSnackbar = vi.fn();
+  updateSnackbar = vi.fn();
   startCooldown = vi.fn();
   renderOpponentCard = vi.fn();
   resetStatButtons = vi.fn();
@@ -35,7 +38,7 @@ beforeEach(() => {
 
   vi.mock("../../../src/helpers/showSnackbar.js", () => ({
     showSnackbar: (...args) => showSnackbar(...args),
-    updateSnackbar: vi.fn()
+    updateSnackbar: (...args) => updateSnackbar(...args)
   }));
 
   vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
@@ -52,7 +55,7 @@ beforeEach(() => {
   vi.mock("../../../src/helpers/classicBattle/snackbar.js", () => ({
     showSelectionPrompt: vi.fn(),
     setOpponentDelay: vi.fn(),
-    getOpponentDelay: () => 0
+    getOpponentDelay: vi.fn().mockReturnValue(300)
   }));
 
   vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
@@ -108,9 +111,15 @@ describe("classicBattle opponent delay", () => {
     vi.spyOn(mod, "evaluateRound").mockReturnValue({ matchEnded: false });
     const store = mod.createBattleStore();
 
-    showSnackbar = vi.fn();
-    // Bind the UI event handlers so the statSelected event is handled
-    bindUIHelperEventHandlersDynamic();
+    // Reset mocks before binding handlers
+    showSnackbar.mockClear();
+    updateSnackbar.mockClear();
+
+    // Bind the UI event handlers with dependency injection
+    bindUIHelperEventHandlersDynamic({
+      updateSnackbar,
+      showSnackbar
+    });
 
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(1);
     const promise = mod.handleStatSelection(store, mod.simulateOpponentStat(), {
@@ -119,9 +128,11 @@ describe("classicBattle opponent delay", () => {
       delayOpponentMessage: true
     });
 
+    // Verify updateSnackbar (not showSnackbar) is called immediately with the message
+    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     expect(showSnackbar).not.toHaveBeenCalled();
+
     await vi.runAllTimersAsync();
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     await promise;
     timers.cleanup();
     randomSpy.mockRestore();
