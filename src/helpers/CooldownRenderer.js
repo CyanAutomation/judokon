@@ -181,6 +181,9 @@ const SUPPRESSED_BATTLE_STATES = new Set(["waitingForPlayerAction", "roundDecisi
 function isSelectionOrDecisionPhase() {
   try {
     const battleState = document?.body?.dataset?.battleState;
+    if (typeof battleState !== 'string') {
+      return false;
+    }
     return SUPPRESSED_BATTLE_STATES.has(battleState);
   } catch {}
   return false;
