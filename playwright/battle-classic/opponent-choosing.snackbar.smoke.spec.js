@@ -7,7 +7,15 @@ test.describe("Cooldown countdown display", () => {
   test(`[Spec: ${SPEC_PATH}] shows cooldown countdown promptly and resets for the next round`, async ({
     page
   }) => {
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
+    });
+    
     await page.goto("/src/pages/battleClassic.html");
+
+    // Wait for modal and select difficulty
+    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
+    await page.getByRole("button", { name: "Medium" }).click();
 
     // Wait for stat buttons to be ready
     await waitForBattleState(page, "waitingForPlayerAction");
@@ -59,7 +67,15 @@ test.describe("Cooldown countdown display", () => {
   test(`[Spec: ${SPEC_PATH}] does not show cooldown countdown snackbar during opponent selection`, async ({
     page
   }) => {
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
+    });
+    
     await page.goto("/src/pages/battleClassic.html");
+
+    // Wait for modal and select difficulty
+    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
+    await page.getByRole("button", { name: "Medium" }).click();
 
     // Wait for stat buttons to be ready
     await waitForBattleState(page, "waitingForPlayerAction");
