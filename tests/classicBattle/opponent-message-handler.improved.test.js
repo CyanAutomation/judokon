@@ -180,8 +180,7 @@ describe("UI handlers: opponent message events", () => {
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(updateSnackbar).toHaveBeenCalledTimes(1);
+    expect(updateSnackbar).not.toHaveBeenCalled();
     expect(showSnackbar).not.toHaveBeenCalled();
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: false });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
@@ -191,7 +190,8 @@ describe("UI handlers: opponent message events", () => {
 
     vi.runOnlyPendingTimers();
 
-    expect(updateSnackbar).toHaveBeenCalledTimes(2);
+    expect(updateSnackbar).toHaveBeenCalledTimes(1);
+    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     expect(recordOpponentPromptTimestamp).toHaveBeenCalledTimes(1);
     expect(recordOpponentPromptTimestamp).toHaveBeenCalledWith(123.45);
     expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
