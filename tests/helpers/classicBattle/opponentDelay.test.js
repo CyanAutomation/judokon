@@ -66,21 +66,6 @@ beforeEach(() => {
     handleReplay: vi.fn().mockResolvedValue(undefined),
     isOrchestrated: vi.fn(() => false)
   }));
-
-  vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
-    attachCooldownRenderer: vi.fn(() => vi.fn()),
-    createPromptDelayController: vi.fn(() => ({
-      queueTick: vi.fn(),
-      clear: vi.fn(),
-      shouldDefer: vi.fn(() => false),
-      getRemainingPromptDelayMs: vi.fn(() => 0)
-    }))
-  }));
-
-  vi.mock("../../../src/helpers/featureFlags.js", () => ({
-    isEnabled: vi.fn((flag) => flag === "opponentDelayMessage"),
-    getFeatureFlags: vi.fn(() => ({ opponentDelayMessage: true }))
-  }));
   vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
     startTimer: vi.fn()
   }));
@@ -103,20 +88,12 @@ beforeEach(() => {
   }));
 
   vi.mock("../../../src/helpers/i18n.js", () => ({
-    t: (key, params) => {
-      if (key === "ui.opponentChoosing") return "Opponent is choosing…";
-      if (key === "ui.nextRoundIn") return `Next round in: ${params?.seconds ?? 0}s`;
-      return key;
-    }
+    t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key)
   }));
 });
 
 describe("classicBattle opponent delay", () => {
-  // FIXME: This test is currently broken due to event emission issues in the mocked environment.
-  // The `statSelected` event is not being emitted, which prevents the opponent delay message from showing.
-  // This needs a proper investigation of the battle flow and event system.
-  // Related: Our CooldownRenderer improvements exposed this pre-existing issue.
-  it.skip("shows snackbar during opponent delay and clears before outcome", async () => {
+  it("shows snackbar during opponent delay and clears before outcome", async () => {
     const timers = useCanonicalTimers();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
@@ -135,18 +112,6 @@ describe("classicBattle opponent delay", () => {
     // Bind the UI event handlers so the statSelected event is handled
     bindUIHelperEventHandlersDynamic();
 
-    // Verify the mock is working
-    expect(typeof showSnackbar).toBe("function");
-    expect(showSnackbar.mock).toBeDefined();
-
-    // Spy on battle event to see if it's being emitted
-    const { getBattleEventTarget } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
-    const eventTarget = getBattleEventTarget();
-    const statSelectedSpy = vi.fn();
-    eventTarget.addEventListener("statSelected", statSelectedSpy);
-
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(1);
     const promise = mod.handleStatSelection(store, mod.simulateOpponentStat(), {
       playerVal: 5,
@@ -155,7 +120,6 @@ describe("classicBattle opponent delay", () => {
     });
 
     expect(showSnackbar).not.toHaveBeenCalled();
-    expect(statSelectedSpy).toHaveBeenCalledTimes(1); // Check if event was emitted
     await vi.runAllTimersAsync();
     expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     await promise;
