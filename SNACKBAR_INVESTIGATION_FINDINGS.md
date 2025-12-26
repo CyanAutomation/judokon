@@ -1,5 +1,7 @@
 # Snackbar Investigation - Root Cause Analysis Complete ✅
 
+> **✅ FIX IMPLEMENTED**: See [SNACKBAR_FIX_SUMMARY.md](./SNACKBAR_FIX_SUMMARY.md) for implementation details and verification results.
+
 ## Executive Summary
 
 **Problem**: In Playwright tests, stat selection button clicks are registered and processed, but the "Opponent is choosing..." snackbar never appears.

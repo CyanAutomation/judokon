@@ -88,7 +88,11 @@ beforeEach(() => {
   }));
 
   vi.mock("../../../src/helpers/i18n.js", () => ({
-    t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key)
+    t: (key, params) => {
+      if (key === "ui.opponentChoosing") return "Opponent is choosing…";
+      if (key === "ui.nextRoundIn") return `Next round in: ${params?.seconds ?? 0}s`;
+      return key;
+    }
   }));
 });
 

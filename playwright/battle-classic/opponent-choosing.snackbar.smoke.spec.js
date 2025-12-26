@@ -10,7 +10,7 @@ test.describe("Cooldown countdown display", () => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
-    
+
     await page.goto("/src/pages/battleClassic.html");
 
     // Wait for modal and select difficulty
@@ -19,7 +19,9 @@ test.describe("Cooldown countdown display", () => {
 
     // Wait for stat buttons to be ready
     await waitForBattleState(page, "waitingForPlayerAction");
-    const statButton = page.getByRole("button", { name: /power|speed|technique|kumikata|newaza/i }).first();
+    const statButton = page
+      .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
+      .first();
     await expect(statButton).toBeEnabled({ timeout: 10_000 });
 
     // Click any stat to trigger selection flow
@@ -69,7 +71,7 @@ test.describe("Cooldown countdown display", () => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
-    
+
     await page.goto("/src/pages/battleClassic.html");
 
     // Wait for modal and select difficulty
@@ -78,7 +80,9 @@ test.describe("Cooldown countdown display", () => {
 
     // Wait for stat buttons to be ready
     await waitForBattleState(page, "waitingForPlayerAction");
-    const statButton = page.getByRole("button", { name: /power|speed|technique|kumikata|newaza/i }).first();
+    const statButton = page
+      .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
+      .first();
     await expect(statButton).toBeEnabled({ timeout: 10_000 });
 
     // Click stat to trigger opponent selection phase
@@ -100,7 +104,7 @@ test.describe("Cooldown countdown display", () => {
 
     // But the timer display should still work
     const timer = page.getByTestId("next-round-timer");
-    
+
     // Wait for cooldown state
     await waitForBattleState(page, "cooldown");
 
