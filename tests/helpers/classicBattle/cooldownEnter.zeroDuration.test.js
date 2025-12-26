@@ -46,7 +46,7 @@ describe("cooldownEnter zero duration", () => {
     ];
     const machine = await createStateManager(
       { waitingForPlayerAction: waitingForPlayerActionEnter },
-      { store: {} },
+      { store: { roundReadyForInput: true } },
       undefined,
       states
     );
