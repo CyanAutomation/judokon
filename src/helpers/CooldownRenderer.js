@@ -9,25 +9,21 @@ import {
 import { t } from "./i18n.js";
 import { clampToPositiveTimestamp, toPositiveNumber } from "./utils/positiveNumbers.js";
 
-// Timing constants
-const DEFAULT_PROMPT_POLL_INTERVAL_MS = 16;
-const MINIMUM_TIMESTAMP_EPSILON = Number.EPSILON;
-const MIN_COUNTDOWN_VALUE = 0;
-const INVALID_COUNTDOWN_SENTINEL = -1;
+const DEFAULT_PROMPT_POLL_INTERVAL = 16;
 
 /**
- * Get a global function with proper bindings and fallback.
+ * Get a timer function (setTimeout/clearTimeout) with proper bindings.
  *
  * @pseudocode
  * 1. Check if the function exists on window object.
  * 2. If available, bind it to window to preserve context.
- * 3. Otherwise, fall back to the provided function.
+ * 3. Otherwise, fall back to the global function.
  *
  * @param {string} name - Function name to retrieve.
  * @param {Function} fallback - Fallback function if not found on window.
  * @returns {Function} Bound function or fallback.
  */
-function safeGlobalFunction(name, fallback) {
+function getTimerFunction(name, fallback) {
   try {
     if (typeof window !== "undefined" && typeof window[name] === "function") {
       return window[name].bind(window);
@@ -36,8 +32,8 @@ function safeGlobalFunction(name, fallback) {
   return fallback;
 }
 
-const defaultSetTimeout = safeGlobalFunction("setTimeout", setTimeout);
-const defaultClearTimeout = safeGlobalFunction("clearTimeout", clearTimeout);
+const defaultSetTimeout = getTimerFunction("setTimeout", setTimeout);
+const defaultClearTimeout = getTimerFunction("clearTimeout", clearTimeout);
 
 const defaultNow = () => {
   try {
@@ -54,7 +50,7 @@ const defaultNow = () => {
   } catch {
     // Date.now() can fail if the global Date object is unavailable or polyfilled incorrectly
   }
-  return MINIMUM_TIMESTAMP_EPSILON;
+  return Number.EPSILON;
 };
 
 /**
@@ -113,9 +109,9 @@ const derivePromptPollRetries = (maxPromptWait, promptPollInterval) => {
 const normalizePromptDelayOptions = (options = {}) => {
   const promptPollInterval = toPositiveNumber(
     options?.promptPollIntervalMs,
-    DEFAULT_PROMPT_POLL_INTERVAL_MS
+    DEFAULT_PROMPT_POLL_INTERVAL
   );
-  const maxPromptWait = toPositiveNumber(options?.maxPromptWaitMs, MIN_COUNTDOWN_VALUE);
+  const maxPromptWait = toPositiveNumber(options?.maxPromptWaitMs, 0);
   return {
     waitForPromptOption: options?.waitForOpponentPrompt === true,
     promptPollInterval,
@@ -141,11 +137,11 @@ const normalizePromptDelayOptions = (options = {}) => {
  */
 function hasActivePrompt() {
   try {
-    if (isOpponentPromptReady()) {
+    if (typeof isOpponentPromptReady === "function" && isOpponentPromptReady() === true) {
       return true;
     }
     const timestamp = Number(getOpponentPromptTimestamp());
-    return Number.isFinite(timestamp) && timestamp > MIN_COUNTDOWN_VALUE;
+    return Number.isFinite(timestamp) && timestamp > 0;
   } catch {}
   return false;
 }
@@ -164,20 +160,20 @@ function hasActivePrompt() {
 function computeRemainingPromptDelayMs(nowFn) {
   try {
     const minDuration = Number(getOpponentPromptMinDuration());
-    if (!Number.isFinite(minDuration) || minDuration <= MIN_COUNTDOWN_VALUE) {
-      return MIN_COUNTDOWN_VALUE;
+    if (!Number.isFinite(minDuration) || minDuration <= 0) {
+      return 0;
     }
     const lastPrompt = Number(getOpponentPromptTimestamp());
-    if (!Number.isFinite(lastPrompt) || lastPrompt <= MIN_COUNTDOWN_VALUE) {
-      return MIN_COUNTDOWN_VALUE;
+    if (!Number.isFinite(lastPrompt) || lastPrompt <= 0) {
+      return 0;
     }
     const elapsed = nowFn() - lastPrompt;
     if (!Number.isFinite(elapsed)) {
-      return MIN_COUNTDOWN_VALUE;
+      return 0;
     }
-    return Math.max(MIN_COUNTDOWN_VALUE, minDuration - elapsed);
+    return Math.max(0, minDuration - elapsed);
   } catch {}
-  return MIN_COUNTDOWN_VALUE;
+  return 0;
 }
 
 const SUPPRESSED_BATTLE_STATES = new Set(["waitingForPlayerAction", "roundDecision"]);
@@ -185,7 +181,7 @@ const SUPPRESSED_BATTLE_STATES = new Set(["waitingForPlayerAction", "roundDecisi
 function isSelectionOrDecisionPhase() {
   try {
     const battleState = document?.body?.dataset?.battleState;
-    if (typeof battleState !== "string") {
+    if (typeof battleState !== 'string') {
       return false;
     }
     return SUPPRESSED_BATTLE_STATES.has(battleState);
@@ -195,15 +191,15 @@ function isSelectionOrDecisionPhase() {
 
 function isOpponentPromptWindowActive(nowFn = defaultNow) {
   try {
-    if (!isOpponentPromptReady()) {
+    if (typeof isOpponentPromptReady === "function" && isOpponentPromptReady() !== true) {
       return false;
     }
     const promptTimestamp = Number(getOpponentPromptTimestamp());
-    if (!Number.isFinite(promptTimestamp) || promptTimestamp <= MIN_COUNTDOWN_VALUE) {
+    if (!Number.isFinite(promptTimestamp) || promptTimestamp <= 0) {
       return false;
     }
     const minDuration = Number(getOpponentPromptMinDuration());
-    if (!Number.isFinite(minDuration) || minDuration <= MIN_COUNTDOWN_VALUE) {
+    if (!Number.isFinite(minDuration) || minDuration <= 0) {
       return false;
     }
     const elapsed = nowFn() - promptTimestamp;
@@ -389,12 +385,11 @@ function schedulePromptPoll(state) {
  * @returns {boolean} True if deadline reached or time limit disabled.
  */
 function isPromptWaitDeadlineReached(state) {
-  const canWaitForPrompt = state.config.maxPromptWait > MIN_COUNTDOWN_VALUE;
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
   if (!canWaitForPrompt) {
     return true;
   }
-  const hasDeadlineInitialized = state.promptWaitDeadline > MIN_COUNTDOWN_VALUE;
-  return hasDeadlineInitialized && state.config.now() >= state.promptWaitDeadline;
+  return state.promptWaitDeadline > 0 && state.config.now() >= state.promptWaitDeadline;
 }
 
 /**
@@ -408,11 +403,11 @@ function isPromptWaitDeadlineReached(state) {
  * @returns {boolean} True if poll limit has been reached.
  */
 function isPromptPollLimitReached(state) {
-  const canWaitForPrompt = state.config.maxPromptWait > MIN_COUNTDOWN_VALUE;
-  if (!canWaitForPrompt || state.config.maxPromptPollRetries <= MIN_COUNTDOWN_VALUE) {
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
+  if (!canWaitForPrompt || state.config.maxPromptPollRetries <= 0) {
     return false;
   }
-  return state.promptWaitPollsRemaining <= MIN_COUNTDOWN_VALUE;
+  return state.promptWaitPollsRemaining <= 0;
 }
 
 /**
@@ -428,9 +423,8 @@ function isPromptPollLimitReached(state) {
  * @returns {boolean} True if waiting should begin.
  */
 function canBeginWaitingForPrompt(state) {
-  const canWaitForPrompt = state.config.maxPromptWait > MIN_COUNTDOWN_VALUE;
-  const hasDeadlineInitialized = state.promptWaitDeadline !== MIN_COUNTDOWN_VALUE;
-  if (!canWaitForPrompt || hasDeadlineInitialized) {
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
+  if (!canWaitForPrompt || state.promptWaitDeadline !== 0) {
     return false;
   }
   state.promptWaitDeadline = state.config.now() + state.config.maxPromptWait;
@@ -440,8 +434,7 @@ function canBeginWaitingForPrompt(state) {
 
 function handlePromptWaiting(state) {
   if (!state.config.waitForPromptOption) {
-    const hasDeadlineInitialized = state.promptWaitDeadline !== MIN_COUNTDOWN_VALUE;
-    if (hasDeadlineInitialized && hasActivePrompt()) {
+    if (state.promptWaitDeadline !== 0 && hasActivePrompt()) {
       resetPromptWaitState(state);
     }
     return false;
@@ -459,13 +452,13 @@ function handlePromptWaiting(state) {
     return false;
   }
 
-  const canWaitForPrompt = state.config.maxPromptWait > MIN_COUNTDOWN_VALUE;
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
   if (!canWaitForPrompt) {
     return false;
   }
 
   const scheduled = schedulePromptPoll(state);
-  if (scheduled && state.config.maxPromptPollRetries > MIN_COUNTDOWN_VALUE) {
+  if (scheduled && state.config.maxPromptPollRetries > 0) {
     state.promptWaitPollsRemaining -= 1;
   }
   return scheduled;
@@ -507,7 +500,7 @@ function clearState(state) {
  */
 function computeBaseRemaining(state) {
   const computed = Number(computeRemainingPromptDelayMs(state.config.now));
-  return Number.isFinite(computed) ? Math.max(MIN_COUNTDOWN_VALUE, computed) : MIN_COUNTDOWN_VALUE;
+  return Number.isFinite(computed) ? Math.max(0, computed) : 0;
 }
 
 /**
@@ -521,8 +514,8 @@ function computeBaseRemaining(state) {
  * @returns {number} Remaining time until deadline, or 0.
  */
 function computePromptWaitRemaining(state) {
-  if (state.promptWaitDeadline <= MIN_COUNTDOWN_VALUE) return MIN_COUNTDOWN_VALUE;
-  return Math.max(MIN_COUNTDOWN_VALUE, state.promptWaitDeadline - state.config.now());
+  if (state.promptWaitDeadline <= 0) return 0;
+  return Math.max(0, state.promptWaitDeadline - state.config.now());
 }
 
 /**
@@ -539,11 +532,10 @@ function computePromptWaitRemaining(state) {
  */
 function getRemainingPromptDelayMsState(state) {
   const baseRemaining = computeBaseRemaining(state);
-  if (baseRemaining > MIN_COUNTDOWN_VALUE) return baseRemaining;
+  if (baseRemaining > 0) return baseRemaining;
 
-  const canWaitForPrompt = state.config.maxPromptWait > MIN_COUNTDOWN_VALUE;
-  if (!state.config.waitForPromptOption || !canWaitForPrompt || hasActivePrompt()) {
-    return MIN_COUNTDOWN_VALUE;
+  if (!state.config.waitForPromptOption || state.config.maxPromptWait <= 0 || hasActivePrompt()) {
+    return 0;
   }
 
   return computePromptWaitRemaining(state);
@@ -649,9 +641,9 @@ function createRendererState(options = {}) {
     maxPromptWaitMs: options?.maxPromptWaitMs
   });
 
-  const initialCountdown = __TEST_ONLY_tryGetInitialRenderedCountdown();
+  const initialCountdown = tryGetInitialRenderedCountdown();
   const started = false;
-  const lastRendered = initialCountdown !== null ? initialCountdown : INVALID_COUNTDOWN_SENTINEL;
+  const lastRendered = initialCountdown !== null ? initialCountdown : -1;
   const rendered = initialCountdown !== null;
 
   return {
@@ -687,25 +679,27 @@ function createRendererState(options = {}) {
 function createTickProcessors(rendererState) {
   const normalizeRemaining = (value) => {
     const numeric = Number(value);
-    if (!Number.isFinite(numeric)) return MIN_COUNTDOWN_VALUE;
-    return Math.max(MIN_COUNTDOWN_VALUE, numeric);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.max(0, numeric);
   };
 
   const render = (remaining) => {
     const clamped = normalizeRemaining(remaining);
     const text = t("ui.nextRoundIn", { seconds: clamped });
-    const shouldSuppressSnackbar = isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
-    const isNewValue = clamped !== rendererState.lastRendered;
+    const shouldSuppressSnackbar =
+      isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
 
     if (!shouldSuppressSnackbar) {
       if (!rendererState.rendered) {
         snackbar.showSnackbar(text);
         rendererState.rendered = true;
-      } else if (isNewValue) {
+      } else if (clamped !== rendererState.lastRendered) {
         snackbar.updateSnackbar(text);
       }
+      rendererState.lastRendered = clamped;
     }
 
+    // Always update lastRendered to maintain correct state tracking
     rendererState.lastRendered = clamped;
     try {
       if (typeof scoreboard.updateTimer === "function") {
@@ -752,50 +746,44 @@ function createTickProcessors(rendererState) {
         }
       }
     } catch {}
-    return MIN_COUNTDOWN_VALUE;
+    return 0;
   };
 
   const processTickWithPromptDelay = (value, queueOptions = {}, { respectDelay = false } = {}) => {
     const normalized = normalizeRemaining(value);
     const suppressEvents = queueOptions?.suppressEvents === true;
     const normalizedOptions = { suppressEvents };
-
-    // Guard: First render with prompt wait enabled
-    const isFirstRender = !rendererState.rendered;
+    const remainingRaw = Number(getRemainingPromptDelayMs());
+    const remainingDelay = Number.isFinite(remainingRaw) ? Math.max(0, remainingRaw) : 0;
     const canWaitForPrompt =
       !rendererState.started &&
       rendererState.waitForPromptOption &&
       Number.isFinite(rendererState.maxPromptWaitMs) &&
-      rendererState.maxPromptWaitMs > MIN_COUNTDOWN_VALUE;
+      rendererState.maxPromptWaitMs > 0;
     const waitingForPrompt = canWaitForPrompt && !hasActivePrompt();
 
-    if (isFirstRender && waitingForPrompt) {
-      rendererState.promptController.queueTick(normalized, normalizedOptions, deliverTick);
-      return;
-    }
+    // IMPORTANT: For the first render, bypass prompt delay to ensure the countdown
+    // message displays immediately instead of persisting the previous message.
+    // Only defer subsequent ticks if waiting for opponent prompt.
+    const isFirstRender = !rendererState.rendered;
 
-    // Guard: First render without wait - process immediately
+    // If this is the first render, always process immediately regardless of respectDelay
     if (isFirstRender) {
       rendererState.promptController.clear();
       processTick(normalized, normalizedOptions);
       return;
     }
 
-    // Subsequent renders follow prompt delay logic
-    const remainingRaw = Number(getRemainingPromptDelayMs());
-    const remainingDelay = Number.isFinite(remainingRaw)
-      ? Math.max(MIN_COUNTDOWN_VALUE, remainingRaw)
-      : MIN_COUNTDOWN_VALUE;
-    const shouldQueue =
-      !rendererState.started && (waitingForPrompt || remainingDelay > MIN_COUNTDOWN_VALUE);
+    // For subsequent renders, apply normal prompt delay logic
+    const shouldDelay = !rendererState.started && (waitingForPrompt || remainingDelay > 0);
 
-    if (!shouldQueue && !respectDelay) {
+    if (!shouldDelay && !respectDelay) {
       rendererState.promptController.clear();
       processTick(normalized, normalizedOptions);
       return;
     }
 
-    if (!waitingForPrompt && remainingDelay <= MIN_COUNTDOWN_VALUE) {
+    if (!waitingForPrompt && remainingDelay <= 0) {
       rendererState.promptController.clear();
       processTick(normalized, normalizedOptions);
       return;
@@ -867,10 +855,7 @@ function setupTickHandlers(timer, initialRemaining, rendererState) {
 }
 
 /**
- * @internal
- * @vitest-only
- * Extract pre-rendered countdown from DOM for test state restoration.
- * This function MUST only be called in Vitest test environments.
+ * Try to extract initially rendered countdown from Vitest snackbar (test-only).
  *
  * @pseudocode
  * 1. Only in Vitest environment with document available.
@@ -880,7 +865,7 @@ function setupTickHandlers(timer, initialRemaining, rendererState) {
  *
  * @returns {number|null} Initial countdown value if found, null otherwise.
  */
-function __TEST_ONLY_tryGetInitialRenderedCountdown() {
+function tryGetInitialRenderedCountdown() {
   if (!isVitestEnvironment() || typeof document === "undefined") {
     return null;
   }
