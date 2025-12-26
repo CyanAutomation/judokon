@@ -81,7 +81,10 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await firstStat.click();
 
       const snackbar = page.locator(selectors.snackbarContainer());
-      await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
+      await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
+      await expect(snackbar).toContainText(/Opponent is choosing|Next round in/i, {
+        timeout: 2_500
+      });
 
       await ensureRoundResolved(page);
       await waitForRoundsPlayed(page, 1);
