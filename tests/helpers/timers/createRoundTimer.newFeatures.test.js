@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoundTimer } from "../../../src/helpers/timers/createRoundTimer.js";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 describe("createRoundTimer - new features", () => {
   let timer;
@@ -120,13 +121,17 @@ describe("createRoundTimer - new features", () => {
   });
 
   describe("once()", () => {
+    let timers;
+
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
       timer = createRoundTimer();
     });
 
     afterEach(() => {
-      vi.restoreAllMocks();
+      if (timers) {
+        timers.cleanup();
+      }
     });
 
     it("calls handler only once", async () => {
@@ -170,13 +175,17 @@ describe("createRoundTimer - new features", () => {
   });
 
   describe("state introspection", () => {
+    let timers;
+
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
       timer = createRoundTimer();
     });
 
     afterEach(() => {
-      vi.restoreAllMocks();
+      if (timers) {
+        timers.cleanup();
+      }
     });
 
     it("getState returns complete state", async () => {
@@ -229,13 +238,17 @@ describe("createRoundTimer - new features", () => {
   });
 
   describe("waitForExpiration", () => {
+    let timers;
+
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
       timer = createRoundTimer();
     });
 
     afterEach(() => {
-      vi.restoreAllMocks();
+      if (timers) {
+        timers.cleanup();
+      }
     });
 
     it("resolves when timer expires", async () => {
@@ -257,13 +270,17 @@ describe("createRoundTimer - new features", () => {
   });
 
   describe("waitForNextTick", () => {
+    let timers;
+
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
       timer = createRoundTimer();
     });
 
     afterEach(() => {
-      vi.restoreAllMocks();
+      if (timers) {
+        timers.cleanup();
+      }
     });
 
     it("resolves on next tick with remaining time", async () => {
@@ -276,13 +293,17 @@ describe("createRoundTimer - new features", () => {
   });
 
   describe("dispose", () => {
+    let timers;
+
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
       timer = createRoundTimer();
     });
 
     afterEach(() => {
-      vi.restoreAllMocks();
+      if (timers) {
+        timers.cleanup();
+      }
     });
 
     it("stops the timer", async () => {
@@ -334,7 +355,7 @@ describe("createRoundTimer - new features", () => {
     });
 
     it("respects custom fallbackTickInterval", async () => {
-      vi.useFakeTimers();
+      const timers = useCanonicalTimers();
       timer = createRoundTimer({ fallbackTickInterval: 500 });
       const tickSpy = vi.fn();
       timer.on("tick", tickSpy);
@@ -343,7 +364,7 @@ describe("createRoundTimer - new features", () => {
       await vi.advanceTimersByTimeAsync(500);
 
       expect(tickSpy).toHaveBeenCalled();
-      vi.restoreAllMocks();
+      timers.cleanup();
     });
   });
 });
