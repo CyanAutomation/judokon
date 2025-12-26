@@ -115,6 +115,7 @@ async function getLazyUpdateDebugPanel() {
 export function createBattleStore() {
   return {
     selectionMade: false,
+    roundReadyForInput: false,
     stallTimeoutMs: 35000,
     autoSelectId: null,
     playerChoice: null,
