@@ -49,14 +49,26 @@ describe("Cooldown suppression during opponent prompt", () => {
     // Step 1: Mark opponent prompt timestamp (simulates statSelected event)
     markOpponentPromptNow({ notify: true });
 
-    // Step 2: Create and start a cooldown timer
-    const timer = createRoundTimer();
+    // Step 2: Create and start a cooldown timer with a mock starter that emits ticks
+    const timer = createRoundTimer({
+      starter: (onTick, onExpired, duration) => {
+        // Emit ticks manually during the test
+        timer._testTick = onTick;
+        timer._testExpired = onExpired;
+      }
+    });
+    
     const cooldownSeconds = 5;
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
       maxPromptWaitMs: DEFAULT_MIN_PROMPT_DURATION_MS
     });
     timer.start(cooldownSeconds);
+
+    // Manually emit first tick (this should be suppressed)
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds);
+    }
 
     // Step 3: Verify cooldown snackbar is NOT shown immediately (suppressed)
     expect(showSnackbarSpy).not.toHaveBeenCalledWith(
@@ -68,6 +80,11 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 4: Advance time but still within prompt window (e.g., 300ms < 600ms)
     await vi.advanceTimersByTimeAsync(300);
+    
+    // Emit another tick (still suppressed)
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds - 1);
+    }
 
     // Verify still suppressed
     expect(showSnackbarSpy).not.toHaveBeenCalledWith(
@@ -79,6 +96,11 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 5: Advance time past the prompt window (total 700ms > 600ms)
     await vi.advanceTimersByTimeAsync(400);
+
+    // Emit a tick now (should NOT be suppressed)
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds - 1);
+    }
 
     // Step 6: Verify cooldown snackbar is now visible
     const cooldownCalls = [
@@ -109,13 +131,23 @@ describe("Cooldown suppression during opponent prompt", () => {
     recordOpponentPromptTimestamp(timestamp, { notify: false });
 
     // Step 2: Create and start a cooldown timer
-    const timer = createRoundTimer();
+    const timer = createRoundTimer({
+      starter: (onTick, onExpired, duration) => {
+        timer._testTick = onTick;
+        timer._testExpired = onExpired;
+      }
+    });
     const cooldownSeconds = 5;
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
       maxPromptWaitMs: 600
     });
     timer.start(cooldownSeconds);
+
+    // Emit first tick
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds);
+    }
 
     // Step 3: Advance some time
     await vi.advanceTimersByTimeAsync(200);
@@ -133,6 +165,11 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 6: Advance more time to get past the window
     await vi.advanceTimersByTimeAsync(500);
+
+    // Emit a tick after window expired
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds - 1);
+    }
 
     // Step 7: Verify cooldown now shows (prompt window expired)
     const cooldownCalls = [
