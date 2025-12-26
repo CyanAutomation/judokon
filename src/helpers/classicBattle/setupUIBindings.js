@@ -59,14 +59,6 @@ export async function setupUIBindings(view) {
   const statButtonControls = initStatButtons(store);
 
   onBattleEvent("statButtons:enable", () => {
-    const battleState =
-      typeof document !== "undefined" ? document.body?.dataset?.battleState : null;
-    const statesWhereButtonsAreDisabled = ["roundDecision", "roundOver", "cooldown", "roundStart"];
-
-    if (battleState && statesWhereButtonsAreDisabled.includes(battleState)) {
-      return;
-    }
-
     // Check if a selection is in progress; if so, don't re-enable buttons
     const container =
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;

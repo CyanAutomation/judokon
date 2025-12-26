@@ -87,6 +87,12 @@ export async function waitingForPlayerActionEnter(machine) {
 
   const container =
     typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+
+  // Ensure selectionInProgress is cleared when entering this state
+  if (container && typeof container.dataset !== "undefined") {
+    container.dataset.selectionInProgress = "false";
+  }
+
   const selectionInProgress = container?.dataset?.selectionInProgress;
   if (selectionInProgress !== "true") {
     emitBattleEvent("statButtons:enable");
