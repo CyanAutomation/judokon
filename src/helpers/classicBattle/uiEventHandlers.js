@@ -1,7 +1,7 @@
 import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { showSnackbar } from "../showSnackbar.js";
+import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
@@ -71,6 +71,7 @@ function waitForNextFrame() {
  * @param {Function} [deps.isEnabled] - Function to check feature flags
  * @param {Function} [deps.getOpponentDelay] - Function to get opponent delay
  * @param {object} [deps.scoreboard] - Scoreboard utilities
+ * @param {Function} [deps.updateSnackbar] - Function to update snackbar messages
  * @param {Function} [deps.getOpponentCardData] - Function to get opponent card data
  * @param {Function} [deps.renderOpponentCard] - Function to render opponent card
  * @param {Function} [deps.showRoundOutcome] - Function to show round outcome
@@ -96,6 +97,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     isEnabled: isEnabledFn = isEnabled,
     getOpponentDelay: getOpponentDelayFn = getOpponentDelay,
     scoreboard: scoreboardObj = scoreboard,
+    updateSnackbar: updateSnackbarFn = updateSnackbar,
     getOpponentCardData: getOpponentCardDataFn = getOpponentCardData,
     renderOpponentCard: renderOpponentCardFn = renderOpponentCard,
     showRoundOutcome: showRoundOutcomeFn = showRoundOutcome,
@@ -178,26 +180,18 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   }
 
   // Create local helper that uses injected dependencies
-  function displayOpponentChoosingPrompt({ markTimestamp = true, notifyReady = true } = {}) {
-    // DIAGNOSTIC: Log that function was called
-    console.log("[displayOpponentChoosingPrompt] Called", {
-      markTimestamp,
-      notifyReady,
-      showSnackbarFnExists: typeof showSnackbarFn === "function"
-    });
-
+  function showOpponentPromptMessage(message) {
     try {
-      const message = tFn("ui.opponentChoosing");
-      console.log("[displayOpponentChoosingPrompt] Calling showSnackbar with:", message);
-      showSnackbarFn(message);
-      console.log("[displayOpponentChoosingPrompt] showSnackbar completed successfully");
+      if (typeof updateSnackbarFn === "function") {
+        updateSnackbarFn(message);
+      } else {
+        showSnackbarFn(message);
+      }
     } catch (err) {
-      console.error("[displayOpponentChoosingPrompt] Primary showSnackbar failed:", err);
+      console.error("[displayOpponentChoosingPrompt] Primary snackbar update failed:", err);
       // Fallback: try with hardcoded message if translation fails
       try {
-        console.log("[displayOpponentChoosingPrompt] Trying fallback message");
         showSnackbarFn("Opponent is choosing…");
-        console.log("[displayOpponentChoosingPrompt] Fallback showSnackbar completed");
       } catch (fallbackErr) {
         console.error("[displayOpponentChoosingPrompt] Fallback also failed:", fallbackErr);
         // Final fallback: log to console in development
@@ -207,6 +201,27 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           } catch {}
         }
       }
+    }
+  }
+
+  function displayOpponentChoosingPrompt({
+    markTimestamp = true,
+    notifyReady = true,
+    showMessage = true,
+    message
+  } = {}) {
+    // DIAGNOSTIC: Log that function was called
+    console.log("[displayOpponentChoosingPrompt] Called", {
+      markTimestamp,
+      notifyReady,
+      showMessage,
+      showSnackbarFnExists: typeof showSnackbarFn === "function"
+    });
+
+    const resolvedMessage = message ?? tFn("ui.opponentChoosing");
+    if (showMessage) {
+      console.log("[displayOpponentChoosingPrompt] Updating snackbar with:", resolvedMessage);
+      showOpponentPromptMessage(resolvedMessage);
     }
     let recordedTimestamp;
     if (markTimestamp) {
@@ -252,6 +267,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       // Timer clearing is non-critical
     }
     try {
+      const opponentPromptMessage = tFn("ui.opponentChoosing");
+      showOpponentPromptMessage(opponentPromptMessage);
+
       const detail = (e && e.detail) || {};
       const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
       const opts = hasOpts ? detail.opts || {} : {};
@@ -265,7 +283,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         console.log(
           "[statSelected Handler] No delay - calling displayOpponentChoosingPrompt immediately"
         );
-        displayOpponentChoosingPrompt();
+        displayOpponentChoosingPrompt({ message: opponentPromptMessage, showMessage: false });
         return;
       }
 
@@ -278,7 +296,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         console.log(
           "[statSelected Handler] Resolved delay <= 0 - calling displayOpponentChoosingPrompt immediately"
         );
-        displayOpponentChoosingPrompt();
+        displayOpponentChoosingPrompt({ message: opponentPromptMessage, showMessage: false });
         return;
       }
 
@@ -290,7 +308,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
       const promptTimestamp = displayOpponentChoosingPrompt({
         markTimestamp: true,
-        notifyReady: false
+        notifyReady: false,
+        message: opponentPromptMessage,
+        showMessage: false
       });
 
       opponentSnackbarId = setTimeout(() => {
