@@ -188,16 +188,16 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         showSnackbarFn(message);
       }
     } catch (err) {
-      console.error("[displayOpponentChoosingPrompt] Primary snackbar update failed:", err);
+      console.error("[showOpponentPromptMessage] Primary snackbar update failed:", err);
       // Fallback: try with hardcoded message if translation fails
       try {
         showSnackbarFn("Opponent is choosing…");
       } catch (fallbackErr) {
-        console.error("[displayOpponentChoosingPrompt] Fallback also failed:", fallbackErr);
+        console.error("[showOpponentPromptMessage] Fallback also failed:", fallbackErr);
         // Final fallback: log to console in development
         if (typeof console !== "undefined" && typeof console.warn === "function") {
           try {
-            console.warn("[displayOpponentChoosingPrompt] Failed to show snackbar:", err);
+            console.warn("[showOpponentPromptMessage] Failed to show snackbar:", err);
           } catch {}
         }
       }
@@ -268,8 +268,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     }
     try {
       const opponentPromptMessage = tFn("ui.opponentChoosing");
-      showOpponentPromptMessage(opponentPromptMessage);
-
       const detail = (e && e.detail) || {};
       const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
       const opts = hasOpts ? detail.opts || {} : {};
@@ -283,6 +281,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         console.log(
           "[statSelected Handler] No delay - calling displayOpponentChoosingPrompt immediately"
         );
+        showOpponentPromptMessage(opponentPromptMessage);
         displayOpponentChoosingPrompt({ message: opponentPromptMessage, showMessage: false });
         return;
       }
@@ -296,6 +295,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         console.log(
           "[statSelected Handler] Resolved delay <= 0 - calling displayOpponentChoosingPrompt immediately"
         );
+        showOpponentPromptMessage(opponentPromptMessage);
         displayOpponentChoosingPrompt({ message: opponentPromptMessage, showMessage: false });
         return;
       }
@@ -306,15 +306,14 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       const minDuration = Number(getOpponentPromptMinDurationFn());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
-      const promptTimestamp = displayOpponentChoosingPrompt({
-        markTimestamp: true,
-        notifyReady: false,
-        message: opponentPromptMessage,
-        showMessage: false
-      });
-
       opponentSnackbarId = setTimeout(() => {
         try {
+          const promptTimestamp = displayOpponentChoosingPrompt({
+            markTimestamp: true,
+            notifyReady: false,
+            message: opponentPromptMessage,
+            showMessage: true
+          });
           if (Number.isFinite(promptTimestamp)) {
             recordOpponentPromptTimestampFn(promptTimestamp);
           } else {
