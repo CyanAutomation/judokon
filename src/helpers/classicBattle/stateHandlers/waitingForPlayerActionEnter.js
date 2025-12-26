@@ -84,7 +84,7 @@ export async function waitingForPlayerActionEnter(machine) {
   if (store && typeof store === "object" && store.roundReadyForInput !== true) {
     store.roundReadyForInput = true;
   }
-  
+
   const container =
     typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
   const selectionInProgress = container?.dataset?.selectionInProgress;
