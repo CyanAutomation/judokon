@@ -330,11 +330,12 @@ test.describe("Classic Battle Opponent Messages", () => {
       await expect
         .poll(
           async () => {
-            const snackText =
-              (await page.locator(selectors.snackbarContainer()).textContent()) ?? "";
-            const timerText =
-              (await page.locator('[data-testid="next-round-timer"]').textContent()) ?? "";
-            return `${snackText} ${timerText}`.trim();
+            return await page.evaluate(() => {
+              const snackText = document.querySelector('#snackbar-container')?.textContent ?? "";
+              const timerText = document.querySelector('[data-testid="next-round-timer"]')?.textContent ?? "";
+              return `${snackText} ${timerText}`.trim();
+            });
+          },
           },
           {
             timeout: 4_000,
