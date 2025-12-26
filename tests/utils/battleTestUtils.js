@@ -9,7 +9,7 @@
  *   3. Return true if both conditions met, false otherwise
  */
 export function isValidTestApi(testApi) {
-  return (
+  return Boolean(
     testApi && typeof testApi === "object" && testApi.timers && typeof testApi.timers === "object"
   );
 }

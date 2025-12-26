@@ -113,75 +113,6 @@ describe("Cooldown suppression during opponent prompt", () => {
     expect(hasCooldownMessage).toBe(true);
   });
 
-  it("suppresses cooldown when opponent prompt ready event not yet fired", async () => {
-    // Import modules after harness setup
-    const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
-    const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
-    const { recordOpponentPromptTimestamp } = await import(
-      "../../src/helpers/classicBattle/opponentPromptTracker.js"
-    );
-    const snackbar = await import("../../src/helpers/showSnackbar.js");
-
-    // Spy on snackbar functions
-    const showSnackbarSpy = vi.spyOn(snackbar, "showSnackbar");
-    const updateSnackbarSpy = vi.spyOn(snackbar, "updateSnackbar");
-
-    // Step 1: Record timestamp but DON'T notify (simulates delayed notification)
-    const timestamp = Date.now();
-    recordOpponentPromptTimestamp(timestamp, { notify: false });
-
-    // Step 2: Create and start a cooldown timer
-    const timer = createRoundTimer({
-      starter: (onTick, onExpired, duration) => {
-        timer._testTick = onTick;
-        timer._testExpired = onExpired;
-      }
-    });
-    const cooldownSeconds = 5;
-    attachCooldownRenderer(timer, cooldownSeconds, {
-      waitForOpponentPrompt: true,
-      maxPromptWaitMs: 600
-    });
-    timer.start(cooldownSeconds);
-
-    // Emit first tick
-    if (timer._testTick) {
-      timer._testTick(cooldownSeconds);
-    }
-
-    // Step 3: Advance some time
-    await vi.advanceTimersByTimeAsync(200);
-
-    // Step 4: Verify cooldown is suppressed (prompt not ready yet)
-    expect(showSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
-    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
-
-    // Step 5: Now notify prompt is ready
-    recordOpponentPromptTimestamp(timestamp, { notify: true });
-
-    // Step 6: Advance more time to get past the window
-    await vi.advanceTimersByTimeAsync(500);
-
-    // Emit a tick after window expired
-    if (timer._testTick) {
-      timer._testTick(cooldownSeconds - 1);
-    }
-
-    // Step 7: Verify cooldown now shows (prompt window expired)
-    const cooldownCalls = [
-      ...showSnackbarSpy.mock.calls,
-      ...updateSnackbarSpy.mock.calls
-    ];
-    const hasCooldownMessage = cooldownCalls.some((call) =>
-      call[0]?.includes("Next round in")
-    );
-    expect(hasCooldownMessage).toBe(true);
-  });
-
   it("shows cooldown immediately if opponent prompt window already expired", async () => {
     // Import modules after harness setup
     const { markOpponentPromptNow } = await import(
@@ -201,7 +132,12 @@ describe("Cooldown suppression during opponent prompt", () => {
     await vi.advanceTimersByTimeAsync(700);
 
     // Step 3: NOW create and start cooldown (after window expired)
-    const timer = createRoundTimer();
+    const timer = createRoundTimer({
+      starter: (onTick, onExpired, duration) => {
+        timer._testTick = onTick;
+        timer._testExpired = onExpired;
+      }
+    });
     const cooldownSeconds = 5;
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
@@ -209,10 +145,129 @@ describe("Cooldown suppression during opponent prompt", () => {
     });
     timer.start(cooldownSeconds);
 
+    // Emit first tick
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds);
+    }
+
     // Step 4: Verify cooldown shows immediately (no suppression)
     await vi.advanceTimersByTimeAsync(100);
 
     const cooldownCalls = showSnackbarSpy.mock.calls;
+    const hasCooldownMessage = cooldownCalls.some((call) =>
+      call[0]?.includes("Next round in")
+    );
+    expect(hasCooldownMessage).toBe(true);
+  });
+
+  it("suppresses cooldown during selection phase (waitingForPlayerAction)", async () => {
+    // Import modules after harness setup
+    const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
+    const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
+    const snackbar = await import("../../src/helpers/showSnackbar.js");
+
+    // Spy on snackbar functions
+    const showSnackbarSpy = vi.spyOn(snackbar, "showSnackbar");
+    const updateSnackbarSpy = vi.spyOn(snackbar, "updateSnackbar");
+
+    // Step 1: Set battle state to waitingForPlayerAction (selection phase)
+    document.body.dataset.battleState = "waitingForPlayerAction";
+
+    // Step 2: Create and start cooldown timer
+    const timer = createRoundTimer({
+      starter: (onTick, onExpired, duration) => {
+        timer._testTick = onTick;
+        timer._testExpired = onExpired;
+      }
+    });
+    const cooldownSeconds = 5;
+    attachCooldownRenderer(timer, cooldownSeconds);
+    timer.start(cooldownSeconds);
+
+    // Emit first tick
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds);
+    }
+
+    // Step 3: Verify no snackbar shown (suppressed due to battle state)
+    expect(showSnackbarSpy).not.toHaveBeenCalledWith(
+      expect.stringMatching(/Next round in/)
+    );
+    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(
+      expect.stringMatching(/Next round in/)
+    );
+
+    // Step 4: Change to cooldown phase
+    document.body.dataset.battleState = "cooldown";
+
+    // Step 5: Emit another tick
+    await vi.advanceTimersByTimeAsync(100);
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds - 1);
+    }
+
+    // Step 6: Verify snackbar now shows (no longer suppressed)
+    const cooldownCalls = [
+      ...showSnackbarSpy.mock.calls,
+      ...updateSnackbarSpy.mock.calls
+    ];
+    const hasCooldownMessage = cooldownCalls.some((call) =>
+      call[0]?.includes("Next round in")
+    );
+    expect(hasCooldownMessage).toBe(true);
+  });
+
+  it("suppresses cooldown during decision phase (roundDecision)", async () => {
+    // Import modules after harness setup
+    const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
+    const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
+    const snackbar = await import("../../src/helpers/showSnackbar.js");
+
+    // Spy on snackbar functions
+    const showSnackbarSpy = vi.spyOn(snackbar, "showSnackbar");
+    const updateSnackbarSpy = vi.spyOn(snackbar, "updateSnackbar");
+
+    // Step 1: Set battle state to roundDecision (decision phase)
+    document.body.dataset.battleState = "roundDecision";
+
+    // Step 2: Create and start cooldown timer
+    const timer = createRoundTimer({
+      starter: (onTick, onExpired, duration) => {
+        timer._testTick = onTick;
+        timer._testExpired = onExpired;
+      }
+    });
+    const cooldownSeconds = 5;
+    attachCooldownRenderer(timer, cooldownSeconds);
+    timer.start(cooldownSeconds);
+
+    // Emit first tick
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds);
+    }
+
+    // Step 3: Verify no snackbar shown (suppressed due to battle state)
+    expect(showSnackbarSpy).not.toHaveBeenCalledWith(
+      expect.stringMatching(/Next round in/)
+    );
+    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(
+      expect.stringMatching(/Next round in/)
+    );
+
+    // Step 4: Change to cooldown phase
+    document.body.dataset.battleState = "cooldown";
+
+    // Step 5: Emit another tick
+    await vi.advanceTimersByTimeAsync(100);
+    if (timer._testTick) {
+      timer._testTick(cooldownSeconds - 1);
+    }
+
+    // Step 6: Verify snackbar now shows (no longer suppressed)
+    const cooldownCalls = [
+      ...showSnackbarSpy.mock.calls,
+      ...updateSnackbarSpy.mock.calls
+    ];
     const hasCooldownMessage = cooldownCalls.some((call) =>
       call[0]?.includes("Next round in")
     );
