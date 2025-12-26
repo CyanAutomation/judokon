@@ -176,6 +176,41 @@ function computeRemainingPromptDelayMs(nowFn) {
   return 0;
 }
 
+const SUPPRESSED_BATTLE_STATES = new Set(["waitingForPlayerAction", "roundDecision"]);
+
+function isSelectionOrDecisionPhase() {
+  try {
+    const battleState = document?.body?.dataset?.battleState;
+    if (typeof battleState !== 'string') {
+      return false;
+    }
+    return SUPPRESSED_BATTLE_STATES.has(battleState);
+  } catch {}
+  return false;
+}
+
+function isOpponentPromptWindowActive(nowFn = defaultNow) {
+  try {
+    if (typeof isOpponentPromptReady === "function" && isOpponentPromptReady() !== true) {
+      return false;
+    }
+    const promptTimestamp = Number(getOpponentPromptTimestamp());
+    if (!Number.isFinite(promptTimestamp) || promptTimestamp <= 0) {
+      return false;
+    }
+    const minDuration = Number(getOpponentPromptMinDuration());
+    if (!Number.isFinite(minDuration) || minDuration <= 0) {
+      return false;
+    }
+    const elapsed = nowFn() - promptTimestamp;
+    if (!Number.isFinite(elapsed)) {
+      return false;
+    }
+    return elapsed < minDuration;
+  } catch {}
+  return false;
+}
+
 /**
  * Create initial state for prompt delay controller.
  *
@@ -651,13 +686,22 @@ function createTickProcessors(rendererState) {
   const render = (remaining) => {
     const clamped = normalizeRemaining(remaining);
     const text = t("ui.nextRoundIn", { seconds: clamped });
-    if (!rendererState.rendered) {
-      snackbar.showSnackbar(text);
-      rendererState.rendered = true;
-    } else if (clamped !== rendererState.lastRendered) {
-      snackbar.updateSnackbar(text);
+    const shouldSuppressSnackbar =
+      isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
+
+    if (!shouldSuppressSnackbar) {
+      if (!rendererState.rendered) {
+        snackbar.showSnackbar(text);
+        rendererState.rendered = true;
+      } else if (clamped !== rendererState.lastRendered) {
+        snackbar.updateSnackbar(text);
+      }
+      rendererState.lastRendered = clamped;
     }
+    
+    // Always update lastRendered to maintain correct state tracking
     rendererState.lastRendered = clamped;
+    }
     try {
       if (typeof scoreboard.updateTimer === "function") {
         scoreboard.updateTimer(clamped);
