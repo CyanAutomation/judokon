@@ -9,14 +9,15 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 // Mock showSnackbar - Vitest will create a fresh mock for each import
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn()
+  showSnackbar: vi.fn(),
+  updateSnackbar: vi.fn()
 }));
 vi.mock("../../src/helpers/featureFlags.js", () => ({
   isEnabled: (flag) => flag === "opponentDelayMessage"
 }));
 
 // Import the mocked showSnackbar AFTER vi.mock so we get the mocked version
-import { showSnackbar } from "../../src/helpers/showSnackbar.js";
+import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
 
 vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
   markOpponentPromptNow: vi.fn(),
@@ -83,6 +84,7 @@ describe("UI handlers: opponent message events", () => {
     timers = useCanonicalTimers();
     setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
     showSnackbar.mockReset();
+    updateSnackbar.mockReset();
     markOpponentPromptNow.mockReset();
     markOpponentPromptNow.mockImplementation(() => 123.45);
     recordOpponentPromptTimestamp.mockReset();
@@ -117,6 +119,7 @@ describe("UI handlers: opponent message events", () => {
     // Create dependencies object with mocked functions
     const deps = {
       showSnackbar,
+      updateSnackbar,
       t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key),
       markOpponentPromptNow,
       recordOpponentPromptTimestamp,
@@ -155,6 +158,7 @@ describe("UI handlers: opponent message events", () => {
     // Create dependencies object with mocked functions
     const deps = {
       showSnackbar,
+      updateSnackbar,
       t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key),
       markOpponentPromptNow,
       recordOpponentPromptTimestamp,
