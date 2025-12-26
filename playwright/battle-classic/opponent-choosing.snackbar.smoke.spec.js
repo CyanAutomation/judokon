@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState, waitForStatButtonsReady } from "../helpers/battleStateHelper.js";
+import { waitForBattleState } from "../helpers/battleStateHelper.js";
 
 const SPEC_PATH = "design/productRequirementsDocuments/prdBattleClassic.md";
 
@@ -19,13 +19,11 @@ test.describe("Cooldown countdown display", () => {
 
     // Wait for stat buttons to be ready
     await waitForBattleState(page, "waitingForPlayerAction");
-    await waitForStatButtonsReady(page);
+    const statButton = page.getByRole("button", { name: /power|speed|technique|kumikata|newaza/i }).first();
+    await expect(statButton).toBeEnabled({ timeout: 10_000 });
 
     // Click any stat to trigger selection flow
-    await page
-      .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
-      .first()
-      .click();
+    await statButton.click();
 
     // Wait for cooldown state after selection
     await waitForBattleState(page, "cooldown");
@@ -80,13 +78,11 @@ test.describe("Cooldown countdown display", () => {
 
     // Wait for stat buttons to be ready
     await waitForBattleState(page, "waitingForPlayerAction");
-    await waitForStatButtonsReady(page);
+    const statButton = page.getByRole("button", { name: /power|speed|technique|kumikata|newaza/i }).first();
+    await expect(statButton).toBeEnabled({ timeout: 10_000 });
 
     // Click stat to trigger opponent selection phase
-    await page
-      .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
-      .first()
-      .click();
+    await statButton.click();
 
     // Wait briefly for roundDecision state
     await waitForBattleState(page, "roundDecision");
