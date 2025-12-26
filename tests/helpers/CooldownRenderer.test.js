@@ -503,16 +503,15 @@ describe("attachCooldownRenderer", () => {
       document.body.dataset.battleState = "cooldown";
       
       // Set up expired opponent prompt (past min duration window)
+      const currentTime = Date.now();
       mockIsOpponentPromptReady.mockReturnValue(true);
-      mockGetOpponentPromptTimestamp.mockReturnValue(1000);
-      mockGetOpponentPromptMinDuration.mockReturnValue(1000);
-      
-      // Mock current time to be past the prompt window
-      const mockNow = vi.fn(() => 3000); // 2000ms after prompt start, past 1000ms window
+      mockGetOpponentPromptTimestamp.mockReturnValue(currentTime - 2500); // 2500ms ago
+      mockGetOpponentPromptMinDuration.mockReturnValue(1000); // 1 second window
       
       const detach = attachCooldownRenderer(timer, 5);
 
-      // Snackbar SHOULD be shown after prompt window expires
+      // Snackbar SHOULD be shown because prompt window has expired
+      // (2500ms elapsed > 1000ms duration)
       expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 5s");
       
       // Scoreboard should also update
