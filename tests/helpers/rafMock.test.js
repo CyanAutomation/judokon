@@ -54,4 +54,3 @@ describe("RafMock", () => {
     expect(() => flushAll()).not.toThrow();
   });
 });
-});
