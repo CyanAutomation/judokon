@@ -180,20 +180,23 @@ describe("UI handlers: opponent message events", () => {
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(updateSnackbar).toHaveBeenCalledTimes(1);
+    // When delay > 0, snackbar should NOT be called immediately
+    expect(updateSnackbar).not.toHaveBeenCalled();
     expect(showSnackbar).not.toHaveBeenCalled();
-    expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: false });
+    expect(markOpponentPromptNow).not.toHaveBeenCalled();
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(1);
     expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
     expect(setTimeoutSpy.mock.calls[0][1]).toBe(600);
 
+    // After timer fires, snackbar should be shown
     vi.runOnlyPendingTimers();
 
-    expect(updateSnackbar).toHaveBeenCalledTimes(2);
+    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(updateSnackbar).toHaveBeenCalledTimes(1);
     expect(recordOpponentPromptTimestamp).toHaveBeenCalledTimes(1);
     expect(recordOpponentPromptTimestamp).toHaveBeenCalledWith(123.45);
     expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
+    expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: false });
   });
 });
