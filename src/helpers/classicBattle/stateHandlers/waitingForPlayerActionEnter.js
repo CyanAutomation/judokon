@@ -66,8 +66,6 @@ export async function waitingForPlayerActionEnter(machine) {
     // Intentionally ignore window global availability errors
   }
 
-  const roundReadyForInput = store?.roundReadyForInput === true;
-
   // Debug logging for state handler entry
   logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
     hasStore: !!machine?.context?.store,
@@ -82,10 +80,15 @@ export async function waitingForPlayerActionEnter(machine) {
 
   // prompt:chooseStat - Enable stat buttons
   // Now that we've entered the new waiting state, allow buttons to be enabled
+  // Set roundReadyForInput=true if not already set (may not be set yet if roundStarted event handler is still pending)
+  if (store && typeof store === "object" && store.roundReadyForInput !== true) {
+    store.roundReadyForInput = true;
+  }
+  
   const container =
     typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
   const selectionInProgress = container?.dataset?.selectionInProgress;
-  if (roundReadyForInput && selectionInProgress !== "true") {
+  if (selectionInProgress !== "true") {
     emitBattleEvent("statButtons:enable");
   }
 

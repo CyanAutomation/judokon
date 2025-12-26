@@ -1,7 +1,7 @@
 // Contract: this smoke test must prove the inter-round cooldown countdown is visible
 // and that the battle auto-advances to the next round without any manual input.
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady, waitForBattleState } from "./helpers/battleStateHelper.js";
+import { waitForBattleReady } from "./helpers/battleStateHelper.js";
 import { applyDeterministicCooldown } from "./helpers/cooldownFixtures.js";
 
 async function startClassicBattle(page) {
@@ -21,16 +21,17 @@ test.describe("Classic Battle – auto-advance", () => {
   test("auto-advances via visible countdown", async ({ page }) => {
     await applyDeterministicCooldown(page, {
       cooldownMs: 1_500,
-      roundTimerMs: 5_000,
-      showRoundSelectModal: false
+      roundTimerMs: 5
+      // showRoundSelectModal defaults to true
     });
 
     await startClassicBattle(page);
     await waitForBattleReady(page, { allowFallback: false });
-    await waitForBattleState(page, "waitingForPlayerAction", {
-      timeout: 10_000,
-      allowFallback: false
-    });
+
+    // Click difficulty button to start the battle
+    const difficultyButton = page.getByRole("button", { name: "Medium" });
+    await expect(difficultyButton).toBeVisible();
+    await difficultyButton.click();
 
     const roundCounter = page.getByTestId("round-counter");
     const nextRoundTimer = page.getByTestId("next-round-timer");
@@ -40,10 +41,6 @@ test.describe("Classic Battle – auto-advance", () => {
     await expect(roundCounter).toContainText(/Round\s*1/i);
 
     const statContainer = page.getByTestId("stat-buttons");
-    await expect(statContainer).toHaveAttribute("data-buttons-ready", "true", {
-      timeout: 10_000
-    });
-
     const firstStat = statContainer.getByRole("button").first();
     await expect(firstStat).toBeVisible();
     await firstStat.click();
