@@ -334,14 +334,16 @@ test.describe("Classic Battle Opponent Messages", () => {
     async ({ page }) => {
       const opponentCard = page.locator("#opponent-card");
       const mysteryPlaceholder = opponentCard.locator("#mystery-card-placeholder");
-      await expect(opponentCard).toHaveAttribute("aria-label", "Mystery opponent card");
+      await expect(mysteryPlaceholder).toHaveAttribute("aria-label", "Mystery opponent card");
       await expect(mysteryPlaceholder).toHaveCount(1);
+      await expect(opponentCard).toHaveClass(/is-obscured/);
 
       const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
-      await expect(opponentCard).toHaveAttribute("aria-label", "Mystery opponent card");
+      await expect(mysteryPlaceholder).toHaveAttribute("aria-label", "Mystery opponent card");
       await expect(mysteryPlaceholder).toHaveCount(1);
+      await expect(opponentCard).toHaveClass(/is-obscured/);
 
       await ensureRoundResolved(page);
 
@@ -349,6 +351,7 @@ test.describe("Classic Battle Opponent Messages", () => {
         .poll(async () => await opponentCard.getAttribute("aria-label"), { timeout: 4_000 })
         .toBe("Opponent card");
       await expect(mysteryPlaceholder).toHaveCount(0);
+      await expect(opponentCard).not.toHaveClass(/is-obscured/);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
     },
     { resolveDelay: 50, nextRoundCooldown: 2_000 }
