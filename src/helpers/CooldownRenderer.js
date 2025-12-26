@@ -769,7 +769,7 @@ function createTickProcessors(rendererState) {
 
     // If this is the first render, skip immediate processing when waiting for prompt.
     if (isFirstRender) {
-      if (waitingForPrompt) {
+      if (waitingForPrompt && canWaitForPrompt) {
         rendererState.promptController.queueTick(normalized, normalizedOptions, deliverTick);
         return;
       }
