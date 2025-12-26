@@ -66,22 +66,7 @@ export async function waitingForPlayerActionEnter(machine) {
     // Intentionally ignore window global availability errors
   }
 
-  // DEBUG: Clear the selectionInProgress flag when entering this state
-  // This ensures buttons can be re-enabled for the new round
-  try {
-    const container =
-      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
-    if (container && typeof container.dataset !== "undefined") {
-      container.dataset.selectionInProgress = "false";
-      if (typeof window !== "undefined" && window.console && window.console.debug) {
-        window.console.debug(
-          "[waitingForPlayerActionEnter] Cleared selectionInProgress flag to false"
-        );
-      }
-    }
-  } catch {
-    // Intentionally ignore errors
-  }
+  const roundReadyForInput = store?.roundReadyForInput === true;
 
   // Debug logging for state handler entry
   logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
@@ -89,6 +74,7 @@ export async function waitingForPlayerActionEnter(machine) {
     storeState: machine?.context?.store
       ? {
           selectionMade: machine.context.store.selectionMade,
+          roundReadyForInput: machine.context.store.roundReadyForInput,
           roundsPlayed: machine.context.store.roundsPlayed
         }
       : null
@@ -99,7 +85,7 @@ export async function waitingForPlayerActionEnter(machine) {
   const container =
     typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
   const selectionInProgress = container?.dataset?.selectionInProgress;
-  if (selectionInProgress !== "true") {
+  if (roundReadyForInput && selectionInProgress !== "true") {
     emitBattleEvent("statButtons:enable");
   }
 
