@@ -181,7 +181,7 @@ const SUPPRESSED_BATTLE_STATES = new Set(["waitingForPlayerAction", "roundDecisi
 function isSelectionOrDecisionPhase() {
   try {
     const battleState = document?.body?.dataset?.battleState;
-    if (typeof battleState !== 'string') {
+    if (typeof battleState !== "string") {
       return false;
     }
     return SUPPRESSED_BATTLE_STATES.has(battleState);
@@ -686,8 +686,7 @@ function createTickProcessors(rendererState) {
   const render = (remaining) => {
     const clamped = normalizeRemaining(remaining);
     const text = t("ui.nextRoundIn", { seconds: clamped });
-    const shouldSuppressSnackbar =
-      isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
+    const shouldSuppressSnackbar = isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
 
     if (!shouldSuppressSnackbar) {
       if (!rendererState.rendered) {
