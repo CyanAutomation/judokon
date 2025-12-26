@@ -3377,6 +3377,13 @@ export function exposeTestAPI() {
       window.__TEST_API.statButtons = createStatButtonTestApi();
     }
 
+    // Initialize stat buttons ready promise if not already set
+    if (!window.statButtonsReadyPromise) {
+      window.statButtonsReadyPromise = new Promise((resolve) => {
+        window.__resolveStatButtonsReady = resolve;
+      });
+    }
+
     // Also expose individual APIs for convenience
     window.__BATTLE_STATE_API = stateApi;
     window.__TIMER_API = timerApi;
