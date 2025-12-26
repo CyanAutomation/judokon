@@ -33,11 +33,13 @@
 ### Key Features
 
 ✅ **Snackbar suppressed during:**
+
 - `waitingForPlayerAction` state
 - `roundDecision` state
 - Active opponent prompt window
 
 ✅ **Functionality preserved:**
+
 - Scoreboard timer updates continuously
 - Countdown shows normally in `cooldown`/`roundOver` states
 - Graceful error handling
@@ -49,6 +51,7 @@
 ### Unit Tests: 19/19 PASSING ✅
 
 **New Tests Added** (8 total):
+
 1. ✅ Suppresses during `waitingForPlayerAction`
 2. ✅ Suppresses during `roundDecision`
 3. ✅ Shows during `cooldown`
@@ -61,10 +64,12 @@
 ###Before Fix vs After Fix
 
 **Timeline Before:**
+
 - T+368ms: "Opponent is choosing..." ✅
 - T+1072ms: "Next round in: 1s" ❌ REPLACED correct message
 
 **Timeline After:**
+
 - T+368ms: "Opponent is choosing..." ✅
 - T+1072ms: Countdown snackbar **SUPPRESSED** ✅
 
@@ -72,14 +77,14 @@
 
 ## 📊 Behavior Matrix
 
-| Battle State              | Snackbar      | Timer Updates |
-|---------------------------|---------------|---------------|
-| `waitingForPlayerAction`  | ❌ Suppressed | ✅ Yes        |
-| `roundDecision`           | ❌ Suppressed | ✅ Yes        |
-| `roundOver`               | ✅ Shows      | ✅ Yes        |
-| `cooldown`                | ✅ Shows      | ✅ Yes        |
-| Opponent prompt active    | ❌ Suppressed | ✅ Yes        |
-| Opponent prompt expired   | ✅ Shows      | ✅ Yes        |
+| Battle State             | Snackbar      | Timer Updates |
+| ------------------------ | ------------- | ------------- |
+| `waitingForPlayerAction` | ❌ Suppressed | ✅ Yes        |
+| `roundDecision`          | ❌ Suppressed | ✅ Yes        |
+| `roundOver`              | ✅ Shows      | ✅ Yes        |
+| `cooldown`               | ✅ Shows      | ✅ Yes        |
+| Opponent prompt active   | ❌ Suppressed | ✅ Yes        |
+| Opponent prompt expired  | ✅ Shows      | ✅ Yes        |
 
 ---
 
@@ -117,11 +122,11 @@ function isSelectionOrDecisionPhase() {
 ```javascript
 const render = (remaining) => {
   const shouldSuppressSnackbar = isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
-  
+
   if (!shouldSuppressSnackbar) {
     // Show/update snackbar
   }
-  
+
   // Always update scoreboard timer (independent of snackbar)
   scoreboard.updateTimer(clamped);
 };

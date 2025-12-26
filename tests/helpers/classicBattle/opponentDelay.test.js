@@ -66,6 +66,21 @@ beforeEach(() => {
     handleReplay: vi.fn().mockResolvedValue(undefined),
     isOrchestrated: vi.fn(() => false)
   }));
+
+  vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
+    attachCooldownRenderer: vi.fn(() => vi.fn()),
+    createPromptDelayController: vi.fn(() => ({
+      queueTick: vi.fn(),
+      clear: vi.fn(),
+      shouldDefer: vi.fn(() => false),
+      getRemainingPromptDelayMs: vi.fn(() => 0)
+    }))
+  }));
+  
+  vi.mock("../../../src/helpers/featureFlags.js", () => ({
+    isEnabled: vi.fn((flag) => flag === "opponentDelayMessage"),
+    getFeatureFlags: vi.fn(() => ({ opponentDelayMessage: true }))
+  }));
   vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
     startTimer: vi.fn()
   }));
