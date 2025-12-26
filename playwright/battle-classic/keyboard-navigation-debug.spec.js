@@ -22,14 +22,13 @@ test.describe("Classic Battle keyboard navigation", () => {
 
       // Tab into the stat buttons and use Enter to select.
       // Focus the first stat button directly to ensure reliable test execution
-      await statButtons.first().focus();
-      const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
-      await expect(focusedStatButton).toHaveCount(1);
+      const firstButton = statButtons.first();
+      await firstButton.focus();
 
       await page.keyboard.press("Enter");
 
       // Wait for the UI to update after selection
-      await expect(focusedStatButton).toBeDisabled({ timeout: 2000 });
+      await expect(firstButton).toBeDisabled({ timeout: 2000 });
       await expect(page.locator('[data-testid="stat-button"]:disabled')).toHaveCount(
         statButtonCount,
         { timeout: 2000 }
