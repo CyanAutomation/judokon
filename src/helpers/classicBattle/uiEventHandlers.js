@@ -180,6 +180,23 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   }
 
   // Create local helper that uses injected dependencies
+  /**
+   * Display opponent prompt message in snackbar.
+   *
+   * Prefers updateSnackbar() over showSnackbar() to provide smooth message transitions
+   * (e.g., "Choose your stat" → "Opponent is choosing…"). updateSnackbar() updates the
+   * existing snackbar element while showSnackbar() creates a new element, which can
+   * cause visual flicker during rapid message changes.
+   *
+   * @param {string} message - The message to display
+   * @returns {void}
+   *
+   * @pseudocode
+   * 1. Try updateSnackbar first (preferred for smooth transitions)
+   * 2. Fall back to showSnackbar if updateSnackbar unavailable
+   * 3. On error, attempt hardcoded fallback message
+   * 4. Log diagnostic warnings for debugging
+   */
   function showOpponentPromptMessage(message) {
     try {
       if (typeof updateSnackbarFn === "function") {

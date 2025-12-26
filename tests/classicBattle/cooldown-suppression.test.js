@@ -13,6 +13,7 @@ import { createSimpleHarness } from "../helpers/integrationHarness.js";
  * 3. Snackbar is suppressed while within the minimum duration window
  * 4. After window expires, cooldown snackbar becomes visible
  */
+/* eslint-disable no-unused-vars */
 describe("Cooldown suppression during opponent prompt", () => {
   let harness;
 
@@ -32,9 +33,6 @@ describe("Cooldown suppression during opponent prompt", () => {
 
   it("suppresses cooldown snackbar during opponent prompt minimum duration window", async () => {
     // Import modules after harness setup
-    const { emitBattleEvent } = await import(
-      "../../src/helpers/classicBattle/battleEvents.js"
-    );
     const { markOpponentPromptNow, DEFAULT_MIN_PROMPT_DURATION_MS } = await import(
       "../../src/helpers/classicBattle/opponentPromptTracker.js"
     );
@@ -51,13 +49,13 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 2: Create and start a cooldown timer with a mock starter that emits ticks
     const timer = createRoundTimer({
-      starter: (onTick, onExpired, duration) => {
+      starter: (onTick, onExpired, _duration) => {
         // Emit ticks manually during the test
         timer._testTick = onTick;
         timer._testExpired = onExpired;
       }
     });
-    
+
     const cooldownSeconds = 5;
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
@@ -71,28 +69,20 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 3: Verify cooldown snackbar is NOT shown immediately (suppressed)
-    expect(showSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
-    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
+    expect(showSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
+    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
 
     // Step 4: Advance time but still within prompt window (e.g., 300ms < 600ms)
     await vi.advanceTimersByTimeAsync(300);
-    
+
     // Emit another tick (still suppressed)
     if (timer._testTick) {
       timer._testTick(cooldownSeconds - 1);
     }
 
     // Verify still suppressed
-    expect(showSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
-    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
+    expect(showSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
+    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
 
     // Step 5: Advance time past the prompt window (total 700ms > 600ms)
     await vi.advanceTimersByTimeAsync(400);
@@ -103,13 +93,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 6: Verify cooldown snackbar is now visible
-    const cooldownCalls = [
-      ...showSnackbarSpy.mock.calls,
-      ...updateSnackbarSpy.mock.calls
-    ];
-    const hasCooldownMessage = cooldownCalls.some((call) =>
-      call[0]?.includes("Next round in")
-    );
+    const cooldownCalls = [...showSnackbarSpy.mock.calls, ...updateSnackbarSpy.mock.calls];
+    const hasCooldownMessage = cooldownCalls.some((call) => call[0]?.includes("Next round in"));
     expect(hasCooldownMessage).toBe(true);
   });
 
@@ -133,7 +118,7 @@ describe("Cooldown suppression during opponent prompt", () => {
 
     // Step 3: NOW create and start cooldown (after window expired)
     const timer = createRoundTimer({
-      starter: (onTick, onExpired, duration) => {
+      starter: (onTick, onExpired, _duration) => {
         timer._testTick = onTick;
         timer._testExpired = onExpired;
       }
@@ -154,9 +139,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     await vi.advanceTimersByTimeAsync(100);
 
     const cooldownCalls = showSnackbarSpy.mock.calls;
-    const hasCooldownMessage = cooldownCalls.some((call) =>
-      call[0]?.includes("Next round in")
-    );
+    const hasCooldownMessage = cooldownCalls.some((call) => call[0]?.includes("Next round in"));
     expect(hasCooldownMessage).toBe(true);
   });
 
@@ -190,12 +173,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 3: Verify no snackbar shown (suppressed due to battle state)
-    expect(showSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
-    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
+    expect(showSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
+    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
 
     // Step 4: Change to cooldown phase
     document.body.dataset.battleState = "cooldown";
@@ -207,13 +186,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 6: Verify snackbar now shows (no longer suppressed)
-    const cooldownCalls = [
-      ...showSnackbarSpy.mock.calls,
-      ...updateSnackbarSpy.mock.calls
-    ];
-    const hasCooldownMessage = cooldownCalls.some((call) =>
-      call[0]?.includes("Next round in")
-    );
+    const cooldownCalls = [...showSnackbarSpy.mock.calls, ...updateSnackbarSpy.mock.calls];
+    const hasCooldownMessage = cooldownCalls.some((call) => call[0]?.includes("Next round in"));
     expect(hasCooldownMessage).toBe(true);
   });
 
@@ -247,12 +221,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 3: Verify no snackbar shown (suppressed due to battle state)
-    expect(showSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
-    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(
-      expect.stringMatching(/Next round in/)
-    );
+    expect(showSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
+    expect(updateSnackbarSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Next round in/));
 
     // Step 4: Change to cooldown phase
     document.body.dataset.battleState = "cooldown";
@@ -264,13 +234,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     }
 
     // Step 6: Verify snackbar now shows (no longer suppressed)
-    const cooldownCalls = [
-      ...showSnackbarSpy.mock.calls,
-      ...updateSnackbarSpy.mock.calls
-    ];
-    const hasCooldownMessage = cooldownCalls.some((call) =>
-      call[0]?.includes("Next round in")
-    );
+    const cooldownCalls = [...showSnackbarSpy.mock.calls, ...updateSnackbarSpy.mock.calls];
+    const hasCooldownMessage = cooldownCalls.some((call) => call[0]?.includes("Next round in"));
     expect(hasCooldownMessage).toBe(true);
   });
 });
