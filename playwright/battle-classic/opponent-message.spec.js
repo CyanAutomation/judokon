@@ -1,4 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
+import { waitForBattleState } from "../helpers/battleStateHelper.js";
 import selectors from "../helpers/selectors.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import {
@@ -325,8 +326,23 @@ test.describe("Classic Battle Opponent Messages", () => {
         console.log("[TEST] WARNING: No statSelected events were emitted!");
       }
 
-      const snack = page.locator(selectors.snackbarContainer());
-      await expect(snack).toContainText(/Opponent is choosing|Next round in/i);
+      await waitForBattleState(page, "cooldown");
+      await expect
+        .poll(
+          async () => {
+            return await page.evaluate(() => {
+              const snackText = document.querySelector('#snackbar-container')?.textContent ?? "";
+              const timerText = document.querySelector('[data-testid="next-round-timer"]')?.textContent ?? "";
+              return `${snackText} ${timerText}`.trim();
+            });
+          },
+          },
+          {
+            timeout: 4_000,
+            message: "Expected opponent message after entering cooldown state"
+          }
+        )
+        .toMatch(/Opponent is choosing|Next round in/i);
     },
     {
       nextRoundCooldown: 2_000,
