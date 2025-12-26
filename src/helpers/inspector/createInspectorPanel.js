@@ -59,8 +59,8 @@ export function createInspectorPanel(container, judoka) {
     queueMicrotask(() => {
       if (panel.open === wasOpen) {
         panel.open = !wasOpen;
+        updateDataset();
       }
-      updateDataset();
     });
   });
   updateDataset();
