@@ -62,7 +62,7 @@ describe("addScrollMarkers", () => {
     expect(markersRoot).not.toBeNull();
 
     const markers = Array.from(markersRoot.querySelectorAll(".scroll-marker"));
-    
+
     expect(markers[0].classList.contains("active")).toBe(true);
     expect(markers[1].classList.contains("active")).toBe(false);
 

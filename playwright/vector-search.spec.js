@@ -111,9 +111,7 @@ test.describe("Vector search page", () => {
     await expect(message).toBeVisible();
     await expect(message).toHaveAttribute("aria-live", /polite/i);
     await expect(message).toHaveClass(/search-result-empty/);
-    await expect(message).toHaveText(
-      "No close matches found — refine your query."
-    );
+    await expect(message).toHaveText("No close matches found — refine your query.");
 
     const searchInput = page.getByRole("searchbox");
     const tagFilter = page.getByRole("combobox", { name: "Tag filter" });

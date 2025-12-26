@@ -95,6 +95,5 @@ describe("check-jsdoc", () => {
       const valid = validateJsDoc(lines, symbol.line - 1);
       expect(valid).toBe(false);
     });
-
   });
 });

@@ -60,8 +60,12 @@ describe("Test API integration", () => {
           return {
             ok: false,
             status: 404,
-            json: async () => { throw new Error(`File not found: ${match[0]}`); },
-            text: async () => { throw new Error(`File not found: ${match[0]}`); }
+            json: async () => {
+              throw new Error(`File not found: ${match[0]}`);
+            },
+            text: async () => {
+              throw new Error(`File not found: ${match[0]}`);
+            }
           };
         }
       }

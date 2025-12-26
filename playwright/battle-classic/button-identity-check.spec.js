@@ -25,20 +25,26 @@ test.describe("Classic Battle - Stat selection behavior", () => {
     await expect(statContainer).toHaveAttribute("data-buttons-ready", "true");
     await expect(statButtons.first()).toBeEnabled();
 
-    await page.waitForFunction(() => {
-      const state = document.body?.dataset?.battleState;
-      return state === "waitingForPlayerAction";
-    }, { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        const state = document.body?.dataset?.battleState;
+        return state === "waitingForPlayerAction";
+      },
+      { timeout: 10000 }
+    );
 
     await statButtons.first().click();
 
     await expect(statButtons.first()).toBeDisabled();
 
-    await page.waitForFunction(() => {
-      const state = document.body?.dataset?.battleState;
-      return ["roundDecision", "cooldown", "roundOver", "matchDecision", "matchOver"].includes(
-        state
-      );
-    }, { timeout: 15000 });
+    await page.waitForFunction(
+      () => {
+        const state = document.body?.dataset?.battleState;
+        return ["roundDecision", "cooldown", "roundOver", "matchDecision", "matchOver"].includes(
+          state
+        );
+      },
+      { timeout: 15000 }
+    );
   });
 });
