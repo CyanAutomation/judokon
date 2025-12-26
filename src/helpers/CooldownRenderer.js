@@ -767,8 +767,12 @@ function createTickProcessors(rendererState) {
     // Only defer subsequent ticks if waiting for opponent prompt.
     const isFirstRender = !rendererState.rendered;
 
-    // If this is the first render, always process immediately regardless of respectDelay
+    // If this is the first render, skip immediate processing when waiting for prompt.
     if (isFirstRender) {
+      if (waitingForPrompt) {
+        rendererState.promptController.queueTick(normalized, normalizedOptions, deliverTick);
+        return;
+      }
       rendererState.promptController.clear();
       processTick(normalized, normalizedOptions);
       return;
