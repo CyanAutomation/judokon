@@ -24,7 +24,8 @@ const buildMessageConfig = (overrides = {}) => ({
     ...(overrides.timerOverrides ?? {})
   },
   nextRoundCooldown: overrides.nextRoundCooldown ?? DEFAULT_MESSAGE_CONFIG.nextRoundCooldown,
-  resolveDelay: overrides.resolveDelay ?? DEFAULT_MESSAGE_CONFIG.resolveDelay
+  resolveDelay: overrides.resolveDelay ?? DEFAULT_MESSAGE_CONFIG.resolveDelay,
+  featureFlags: overrides.featureFlags ?? undefined
 });
 
 const runMessageTest = (title, testFn, overrides = {}) => {
@@ -39,7 +40,8 @@ const runMessageTest = (title, testFn, overrides = {}) => {
         matchSelector: config.matchSelector,
         timerOverrides: config.timerOverrides,
         nextRoundCooldown: config.nextRoundCooldown,
-        resolveDelay: config.resolveDelay
+        resolveDelay: config.resolveDelay,
+        featureFlags: config.featureFlags
       });
 
       await testFn({ page, config });
@@ -326,7 +328,15 @@ test.describe("Classic Battle Opponent Messages", () => {
       const snack = page.locator(selectors.snackbarContainer());
       await expect(snack).toContainText(/Opponent is choosing|Next round in/i);
     },
-    { nextRoundCooldown: 2_000, resolveDelay: 500 }
+    {
+      nextRoundCooldown: 2_000,
+      resolveDelay: 500,
+      featureFlags: {
+        showRoundSelectModal: true,
+        opponentDelayMessage: true,
+        enableTestMode: false
+      }
+    }
   );
 
   runMessageTest(
