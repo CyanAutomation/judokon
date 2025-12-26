@@ -695,6 +695,10 @@ function createTickProcessors(rendererState) {
       }
       rendererState.lastRendered = clamped;
     }
+    
+    // Always update lastRendered to maintain correct state tracking
+    rendererState.lastRendered = clamped;
+    }
     try {
       if (typeof scoreboard.updateTimer === "function") {
         scoreboard.updateTimer(clamped);
