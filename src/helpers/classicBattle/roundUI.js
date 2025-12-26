@@ -392,7 +392,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   // But don't re-enable if a selection is in progress
   try {
     const selectionInProgress = container?.dataset?.selectionInProgress;
-    if (selectionInProgress !== "true") {
+    if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
       // Only emit the event - the handler in setupUIBindings will call enable()
       emitBattleEvent("statButtons:enable");
     }
