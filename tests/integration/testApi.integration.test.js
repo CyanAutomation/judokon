@@ -56,7 +56,7 @@ describe("Test API integration", () => {
             json: async () => JSON.parse(content),
             text: async () => content
           };
-        } catch (error) {
+        } catch {
           return {
             ok: false,
             status: 404,

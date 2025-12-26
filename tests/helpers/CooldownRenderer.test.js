@@ -399,4 +399,168 @@ describe("attachCooldownRenderer", () => {
 
     detach();
   });
+
+  describe("battle state-aware snackbar suppression", () => {
+    beforeEach(() => {
+      // Set up a minimal DOM with document.body
+      if (typeof document === "undefined") {
+        global.document = {
+          body: {
+            dataset: {}
+          }
+        };
+      } else if (!document.body) {
+        document.body = { dataset: {} };
+      } else if (!document.body.dataset) {
+        document.body.dataset = {};
+      }
+      
+      // Ensure prompt tracker returns values indicating no active prompt
+      mockIsOpponentPromptReady.mockReturnValue(false);
+      mockGetOpponentPromptTimestamp.mockReturnValue(0);
+      mockGetOpponentPromptMinDuration.mockReturnValue(1000);
+    });
+
+    it("suppresses snackbar during waitingForPlayerAction state", () => {
+      document.body.dataset.battleState = "waitingForPlayerAction";
+      
+      const detach = attachCooldownRenderer(timer, 5);
+
+      // Snackbar should NOT be called during player action state
+      expect(snackbar.showSnackbar).not.toHaveBeenCalled();
+      
+      // But scoreboard timer should still update
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      detach();
+    });
+
+    it("suppresses snackbar during roundDecision state", () => {
+      document.body.dataset.battleState = "roundDecision";
+      
+      const detach = attachCooldownRenderer(timer, 5);
+
+      // Snackbar should NOT be called during round decision
+      expect(snackbar.showSnackbar).not.toHaveBeenCalled();
+      
+      // But scoreboard timer should still update
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      detach();
+    });
+
+    it("shows snackbar during cooldown state", () => {
+      document.body.dataset.battleState = "cooldown";
+      
+      const detach = attachCooldownRenderer(timer, 5);
+
+      // Snackbar SHOULD be shown during cooldown
+      expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 5s");
+      
+      // Scoreboard timer should also update
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      detach();
+    });
+
+    it("shows snackbar during roundOver state", () => {
+      document.body.dataset.battleState = "roundOver";
+      
+      const detach = attachCooldownRenderer(timer, 5);
+
+      // Snackbar SHOULD be shown during round over
+      expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 5s");
+      
+      // Scoreboard timer should also update
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      detach();
+    });
+
+    it("suppresses snackbar when opponent prompt is active", () => {
+      document.body.dataset.battleState = "cooldown";
+      
+      // Set up active opponent prompt (within min duration window)
+      mockIsOpponentPromptReady.mockReturnValue(true);
+      mockGetOpponentPromptTimestamp.mockReturnValue(1000);
+      mockGetOpponentPromptMinDuration.mockReturnValue(2000);
+      
+      // Mock current time to be within the prompt window
+      const mockNow = vi.fn(() => 1500); // 500ms after prompt start, still within 2000ms window
+      
+      const detach = attachCooldownRenderer(timer, 5);
+
+      // Snackbar should be suppressed even during cooldown if prompt is active
+      expect(snackbar.showSnackbar).not.toHaveBeenCalled();
+      
+      // But scoreboard should still update
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      detach();
+    });
+
+    it("shows snackbar after opponent prompt window expires", () => {
+      document.body.dataset.battleState = "cooldown";
+      
+      // Set up expired opponent prompt (past min duration window)
+      mockIsOpponentPromptReady.mockReturnValue(true);
+      mockGetOpponentPromptTimestamp.mockReturnValue(1000);
+      mockGetOpponentPromptMinDuration.mockReturnValue(1000);
+      
+      // Mock current time to be past the prompt window
+      const mockNow = vi.fn(() => 3000); // 2000ms after prompt start, past 1000ms window
+      
+      const detach = attachCooldownRenderer(timer, 5);
+
+      // Snackbar SHOULD be shown after prompt window expires
+      expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 5s");
+      
+      // Scoreboard should also update
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      detach();
+    });
+
+    it("continues to update scoreboard timer even when snackbar is suppressed", () => {
+      document.body.dataset.battleState = "roundDecision";
+      
+      attachCooldownRenderer(timer);
+
+      // Initial render with suppressed snackbar
+      mockGetOpponentPromptTimestamp.mockReturnValue(100);
+      timer.emit("tick", 5);
+      expect(snackbar.showSnackbar).not.toHaveBeenCalled();
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      // Continue ticking
+      timer.emit("tick", 4);
+      expect(snackbar.updateSnackbar).not.toHaveBeenCalled();
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(4);
+
+      timer.emit("tick", 3);
+      expect(snackbar.updateSnackbar).not.toHaveBeenCalled();
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(3);
+    });
+
+    it("shows snackbar when battle state transitions from suppressed to allowed", () => {
+      // Start in suppressed state
+      document.body.dataset.battleState = "roundDecision";
+      
+      attachCooldownRenderer(timer);
+      mockGetOpponentPromptTimestamp.mockReturnValue(100);
+      
+      timer.emit("tick", 5);
+      expect(snackbar.showSnackbar).not.toHaveBeenCalled();
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+
+      // Transition to allowed state
+      document.body.dataset.battleState = "cooldown";
+      
+      timer.emit("tick", 4);
+      
+      // Now snackbar should be shown
+      expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 4s");
+      expect(scoreboard.updateTimer).toHaveBeenCalledWith(4);
+    });
+  });
 });

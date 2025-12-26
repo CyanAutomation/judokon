@@ -11,6 +11,7 @@ import {
 import { bindUIHelperEventHandlersDynamic } from "../../src/helpers/classicBattle/uiEventHandlers.js";
 import { getRoundResolvedPromise } from "../../src/helpers/classicBattle/promises.js";
 import { createRealHtmlTestEnvironment } from "../utils/realHtmlTestUtils.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 /**
  * @fileoverview Integration tests validating the Battle Classic opponent placeholder lifecycle.
@@ -58,7 +59,7 @@ describe("Battle Classic opponent placeholder integration", () => {
   });
 
   it("replaces the placeholder with the revealed opponent card after the first stat resolution", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     await init();
 
     const opponentCard = document.getElementById("opponent-card");

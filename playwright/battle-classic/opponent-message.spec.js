@@ -331,11 +331,11 @@ test.describe("Classic Battle Opponent Messages", () => {
         .poll(
           async () => {
             return await page.evaluate(() => {
-              const snackText = document.querySelector('#snackbar-container')?.textContent ?? "";
-              const timerText = document.querySelector('[data-testid="next-round-timer"]')?.textContent ?? "";
+              const snackText = document.querySelector("#snackbar-container")?.textContent ?? "";
+              const timerText =
+                document.querySelector('[data-testid="next-round-timer"]')?.textContent ?? "";
               return `${snackText} ${timerText}`.trim();
             });
-          },
           },
           {
             timeout: 4_000,
