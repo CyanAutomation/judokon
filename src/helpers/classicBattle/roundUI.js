@@ -391,9 +391,9 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   // Ensure buttons end up enabled at the tail of round UI setup
   // But don't re-enable if a selection is in progress
   try {
-    const container =
-      typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
     const selectionInProgress = container?.dataset?.selectionInProgress;
+
+    if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
 
     if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
       // Only emit the event - the handler in setupUIBindings will call enable()
