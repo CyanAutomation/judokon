@@ -25,7 +25,7 @@ const buildMessageConfig = (overrides = {}) => ({
   },
   nextRoundCooldown: overrides.nextRoundCooldown ?? DEFAULT_MESSAGE_CONFIG.nextRoundCooldown,
   resolveDelay: overrides.resolveDelay ?? DEFAULT_MESSAGE_CONFIG.resolveDelay,
-  featureFlags: overrides.featureFlags ?? undefined
+  featureFlags: overrides.featureFlags ?? {}
 });
 
 const runMessageTest = (title, testFn, overrides = {}) => {
