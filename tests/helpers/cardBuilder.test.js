@@ -124,8 +124,10 @@ describe("generateJudokaCardHTML", () => {
     expect(summary).toBeTruthy();
     expect(container.dataset.inspector).toBeUndefined();
     naturalClick(summary);
+    await Promise.resolve();
     expect(container.dataset.inspector).toBe("true");
     naturalClick(summary);
+    await Promise.resolve();
     expect(container.dataset.inspector).toBeUndefined();
   });
 });
