@@ -146,7 +146,8 @@ describe("UI handlers: opponent message events", () => {
 
     // When delay is 0 or less, snackbar should show immediately without setTimeout
     // Only markOpponentPromptNow should have been called, not recordOpponentPromptTimestamp
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(showSnackbar).not.toHaveBeenCalled();
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     // No timers should be queued when delay is 0
@@ -179,7 +180,9 @@ describe("UI handlers: opponent message events", () => {
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(updateSnackbar).toHaveBeenCalledTimes(1);
+    expect(showSnackbar).not.toHaveBeenCalled();
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: false });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(1);
@@ -188,6 +191,7 @@ describe("UI handlers: opponent message events", () => {
 
     vi.runOnlyPendingTimers();
 
+    expect(updateSnackbar).toHaveBeenCalledTimes(2);
     expect(recordOpponentPromptTimestamp).toHaveBeenCalledTimes(1);
     expect(recordOpponentPromptTimestamp).toHaveBeenCalledWith(123.45);
     expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
