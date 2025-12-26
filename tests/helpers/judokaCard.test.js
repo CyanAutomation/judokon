@@ -46,6 +46,7 @@ describe("JudokaCard", () => {
     expect(panel).toBeTruthy();
     expect(summary).toBeTruthy();
     naturalClick(summary);
+    await Promise.resolve();
     expect(card.dataset.inspector).toBe("true");
     expect(card.getAttribute("data-feature-card-inspector")).toBe("enabled");
     expect(card.querySelector(".judoka-card")?.getAttribute("data-feature-card-inspector")).toBe(
