@@ -481,16 +481,16 @@ describe("attachCooldownRenderer", () => {
       document.body.dataset.battleState = "cooldown";
       
       // Set up active opponent prompt (within min duration window)
+      // Use Date.now() as the baseline to work with real timing
+      const currentTime = Date.now();
       mockIsOpponentPromptReady.mockReturnValue(true);
-      mockGetOpponentPromptTimestamp.mockReturnValue(1000);
-      mockGetOpponentPromptMinDuration.mockReturnValue(2000);
-      
-      // Mock current time to be within the prompt window
-      const mockNow = vi.fn(() => 1500); // 500ms after prompt start, still within 2000ms window
+      mockGetOpponentPromptTimestamp.mockReturnValue(currentTime - 500); // 500ms ago
+      mockGetOpponentPromptMinDuration.mockReturnValue(2000); // 2 second window
       
       const detach = attachCooldownRenderer(timer, 5);
 
-      // Snackbar should be suppressed even during cooldown if prompt is active
+      // Snackbar should be suppressed because we're within the prompt window
+      // (500ms elapsed < 2000ms duration)
       expect(snackbar.showSnackbar).not.toHaveBeenCalled();
       
       // But scoreboard should still update
