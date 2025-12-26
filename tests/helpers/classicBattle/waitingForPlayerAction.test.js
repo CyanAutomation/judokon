@@ -13,7 +13,7 @@ describe("waitingForPlayerActionEnter", () => {
 
   it("does not mark Next as ready during stat selection", async () => {
     const mod = await import("../../../src/helpers/classicBattle/orchestratorHandlers.js");
-    const store = {};
+    const store = { roundReadyForInput: true };
     const machine = { context: { store } };
     await mod.waitingForPlayerActionEnter(machine);
     const btn = document.querySelector('[data-role="next-round"]');
@@ -28,7 +28,8 @@ describe("waitingForPlayerActionEnter", () => {
     const store = {
       selectionMade: true,
       __lastSelectionMade: true,
-      playerChoice: "speed"
+      playerChoice: "speed",
+      roundReadyForInput: true
     };
     const machine = { context: { store }, currentState: "cooldown" };
 

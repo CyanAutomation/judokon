@@ -188,7 +188,7 @@ describe("classicBattle battle control state", () => {
         waitingForPlayerAction: waitingForPlayerActionEnter,
         roundDecision: waitingForPlayerActionExit
       },
-      {},
+      { store: { roundReadyForInput: true } },
       undefined,
       states
     );

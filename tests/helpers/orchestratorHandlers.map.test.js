@@ -27,7 +27,9 @@ function createStateTable() {
   ];
 }
 
-async function initMachine({ store = { selectionMade: false, roundsPlayed: 0 } } = {}) {
+async function initMachine({
+  store = { selectionMade: false, roundsPlayed: 0, roundReadyForInput: true }
+} = {}) {
   const stateTable = createStateTable();
   const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(ORCHESTRATOR_PATH);
   await initClassicBattleOrchestrator({ store, stateTable });
