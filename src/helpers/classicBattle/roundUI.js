@@ -378,14 +378,24 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
     store.stallTimeoutMs
   );
   updateDebugPanel();
-  // Ensure buttons end up enabled at the tail of round UI setup
-  // But don't re-enable if a selection is in progress
+  if (store && typeof store === "object") {
+    store.roundReadyForInput = true;
+  }
   try {
     const container =
       typeof document !== "undefined" ? document.getElementById("stat-buttons") : null;
+    if (container && typeof container.dataset !== "undefined") {
+      container.dataset.selectionInProgress = "false";
+    }
+  } catch {}
+  // Ensure buttons end up enabled at the tail of round UI setup
+  // But don't re-enable if a selection is in progress
+  try {
     const selectionInProgress = container?.dataset?.selectionInProgress;
 
-    if (selectionInProgress !== "true") {
+    if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
+
+    if (store?.roundReadyForInput === true && selectionInProgress !== "true") {
       // Only emit the event - the handler in setupUIBindings will call enable()
       emitBattleEvent("statButtons:enable");
     }
@@ -507,6 +517,9 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
         })();
   const { store, result } = event?.detail || {};
   if (!result) return;
+  if (store && typeof store === "object") {
+    store.roundReadyForInput = false;
+  }
   try {
     if (!IS_VITEST) console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`);
   } catch {}
