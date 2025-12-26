@@ -82,7 +82,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
       const snackbar = page.locator(selectors.snackbarContainer());
       await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
-      await expect(snackbar).toContainText(/Opponent is choosing|Next round in/i, {
+      await expect(snackbar).toContainText(/^(Opponent is choosing|Next round in)/i, {
         timeout: 2_500
       });
 
