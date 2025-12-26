@@ -481,8 +481,8 @@ describe("attachCooldownRenderer", () => {
       document.body.dataset.battleState = "cooldown";
       
       // Set up active opponent prompt (within min duration window)
-      // Use Date.now() as the baseline to work with real timing
-      const currentTime = Date.now();
+      // Use performance.now() timing to match implementation
+      const currentTime = performance.now();
       mockIsOpponentPromptReady.mockReturnValue(true);
       mockGetOpponentPromptTimestamp.mockReturnValue(currentTime - 500); // 500ms ago
       mockGetOpponentPromptMinDuration.mockReturnValue(2000); // 2 second window
@@ -503,7 +503,7 @@ describe("attachCooldownRenderer", () => {
       document.body.dataset.battleState = "cooldown";
       
       // Set up expired opponent prompt (past min duration window)
-      const currentTime = Date.now();
+      const currentTime = performance.now();
       mockIsOpponentPromptReady.mockReturnValue(true);
       mockGetOpponentPromptTimestamp.mockReturnValue(currentTime - 2500); // 2500ms ago
       mockGetOpponentPromptMinDuration.mockReturnValue(1000); // 1 second window

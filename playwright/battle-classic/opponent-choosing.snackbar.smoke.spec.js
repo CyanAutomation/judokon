@@ -55,4 +55,43 @@ test.describe("Cooldown countdown display", () => {
       /** @type {number} */ (cooldownValue)
     );
   });
+
+  test(`[Spec: ${SPEC_PATH}] does not show cooldown countdown snackbar during opponent selection`, async ({
+    page
+  }) => {
+    await page.goto("/src/pages/battleClassic.html");
+
+    // Wait for stat buttons to be ready
+    await waitForBattleState(page, "waitingForPlayerAction");
+
+    // Click stat to trigger opponent selection phase
+    await page
+      .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
+      .first()
+      .click();
+
+    // Wait briefly for roundDecision state
+    await waitForBattleState(page, "roundDecision");
+
+    // Get snackbar element
+    const snackbar = page.locator("#snackbar-container .snackbar");
+
+    // Verify snackbar exists (should show "Opponent is choosing..." or similar)
+    await expect(snackbar).toBeVisible({ timeout: 2_000 });
+
+    // Verify the snackbar does NOT contain countdown text during opponent selection
+    const snackbarText = await snackbar.textContent();
+    expect(snackbarText).not.toMatch(/Next round in:/i);
+    expect(snackbarText).not.toMatch(/Time Left:/i);
+
+    // But the timer display should still work
+    const timer = page.getByTestId("next-round-timer");
+    
+    // Wait for cooldown state
+    await waitForBattleState(page, "cooldown");
+
+    // Now verify timer display is working (independently of snackbar)
+    await expect(timer).toBeVisible();
+    await expect(timer).toContainText(/Time Left:\s*\d+s/, { timeout: 2_000 });
+  });
 });
