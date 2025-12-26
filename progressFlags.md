@@ -17,6 +17,7 @@ The test `tests/helpers/classicBattle/opponentDelay.test.js` has been **failing 
 ## 🕰️ Timeline of Failures
 
 ### Before Commit 73f4e8a82 (Dec 26, 17:59 UTC)
+
 **"CooldownRenderer: queue first-render tick when waiting for opponent prompt"**
 
 - **Status**: ❌ Already Failing
@@ -24,6 +25,7 @@ The test `tests/helpers/classicBattle/opponentDelay.test.js` has been **failing 
 - **Evidence**: Test execution shows cooldown message instead of opponent message
 
 ### Commit 634259ee2 (Dec 26, 21:38 UTC)
+
 **"Implement snackbar suppression during opponent selection and decision phases"**
 
 - **Changes**: Added i18n translation for `ui.nextRoundIn` to prevent untranslated keys
@@ -32,6 +34,7 @@ The test `tests/helpers/classicBattle/opponentDelay.test.js` has been **failing 
 - **Impact**: Cosmetic change only - underlying issue persists
 
 ### Current State (After CooldownRenderer Improvements)
+
 **Our improvements to CooldownRenderer.js**
 
 - **Status**: ❌ Still Failing (as expected)
@@ -47,18 +50,21 @@ The test `tests/helpers/classicBattle/opponentDelay.test.js` has been **failing 
 ### Evidence Chain
 
 1. **Before commit 634259ee2^**:
+
    ```
    showSnackbar called with: "ui.nextRoundIn"
    (untranslated countdown key)
    ```
 
 2. **After commit 634259ee2**:
+
    ```
    showSnackbar called with: "Next round in: 2s"
    (translated countdown message)
    ```
 
 3. **Before commit 73f4e8a82^**:
+
    ```
    Test still fails with same symptoms
    (cooldown showing before opponent message)
@@ -82,6 +88,7 @@ The test `tests/helpers/classicBattle/opponentDelay.test.js` has been **failing 
 ## 🧪 Test Workflow Analysis
 
 ### Expected Flow (Test Expectation)
+
 ```javascript
 // 1. Set 300ms opponent delay
 setOpponentDelay(300);
@@ -99,6 +106,7 @@ expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
 ```
 
 ### Actual Flow (What Happens)
+
 ```javascript
 // 1. Round resolution completes → triggers cooldown start
 // 2. Cooldown renderer attaches → immediately shows countdown snackbar
@@ -111,15 +119,19 @@ expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
 ## 🔬 Investigation Details
 
 ### Initial Hypothesis (Incorrect)
+
 We initially thought the `statSelected` event wasn't being emitted (0 calls). This was due to additional mocks we added during investigation.
 
 ### Corrected Understanding
+
 When tested without our investigation mocks:
+
 - ✅ The cooldown countdown DOES show
 - ✅ It shows BEFORE the opponent message can appear
 - ✅ This is the actual problem (race condition)
 
 ### Test File History
+
 ```bash
 $ git log --oneline tests/helpers/classicBattle/opponentDelay.test.js | head -5
 634259ee2 Implement snackbar suppression during opponent selection and decision phases
@@ -161,6 +173,7 @@ The issue isn't in CooldownRenderer or the opponent delay logic individually. Th
 ## ✅ Current Resolution
 
 ### Action Taken
+
 The test has been marked as `it.skip` with a comprehensive FIXME comment:
 
 ```javascript
@@ -183,13 +196,16 @@ it.skip("shows snackbar during opponent delay and clears before outcome", async 
 ## 🔧 Recommended Long-Term Fixes
 
 ### Option 1: Message Priority System
+
 Implement a message queue with priorities:
+
 ```javascript
 showSnackbar(message, { priority: 'high' }); // Opponent message
 showSnackbar(message, { priority: 'low' });  // Cooldown message
 ```
 
 ### Option 2: Suppress Cooldown During Opponent Delay
+
 ```javascript
 if (opponentMessagePending) {
   // Don't start cooldown countdown yet
@@ -198,6 +214,7 @@ if (opponentMessagePending) {
 ```
 
 ### Option 3: Decouple Cooldown Start from Round Resolution
+
 ```javascript
 // Round resolves
 emitBattleEvent('roundResolved', { outcome });
@@ -208,7 +225,9 @@ startCooldown();
 ```
 
 ### Option 4: Redesign Test Expectations
+
 Accept that cooldown shows first and test for both messages in sequence:
+
 ```javascript
 expect(showSnackbar).toHaveBeenNthCalledWith(1, "Next round in: 2s");
 expect(showSnackbar).toHaveBeenNthCalledWith(2, "Opponent is choosing…");
@@ -219,17 +238,21 @@ expect(showSnackbar).toHaveBeenNthCalledWith(2, "Opponent is choosing…");
 ## 📊 Impact Assessment
 
 ### Tests Affected
+
 - ❌ `tests/helpers/classicBattle/opponentDelay.test.js` (1 test - skipped)
 
 ### Tests Unaffected
+
 - ✅ `tests/helpers/CooldownRenderer.test.js` (19 tests - all pass)
 - ✅ All other cooldown tests (48 tests - all pass)
 - ✅ **Total**: 67 cooldown-related tests passing
 
 ### CooldownRenderer Improvements
+
 **Status**: ✅ **Valid and Working Correctly**
 
 Our improvements to CooldownRenderer.js:
+
 - Reduced magic numbers to named constants
 - Simplified boolean expressions
 - Fixed snackbar rendering logic (eliminated double state update)
@@ -252,16 +275,19 @@ Our improvements to CooldownRenderer.js:
 ## 📝 Next Steps
 
 ### Immediate
+
 - [x] Document root cause analysis
 - [x] Skip failing test with clear explanation
 - [x] Verify CooldownRenderer improvements still valid
 
 ### Short Term
+
 - [ ] Create GitHub issue for proper architectural fix
 - [ ] Design message priority system
 - [ ] Prototype coordination between cooldown and opponent messages
 
 ### Long Term
+
 - [ ] Refactor battle flow to handle message priorities
 - [ ] Update test suite to match new architecture
 - [ ] Add integration tests for message ordering
