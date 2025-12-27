@@ -409,7 +409,6 @@ describe("BattleEngine integration with real TimerController", () => {
     vi.resetModules();
     // Import real TimerController without mocking
     const timerModule = await import("../../src/helpers/TimerController.js");
-    RealTimerController = timerModule.TimerController;
 
     // Create engine with real TimerController
     const { BattleEngine: RealBattleEngine } = await import("../../src/helpers/BattleEngine.js");
