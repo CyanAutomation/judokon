@@ -176,6 +176,32 @@ export class BattleEngine {
   }
 
   /**
+   * Increment player score by one.
+   *
+   * @pseudocode
+   * 1. Add 1 to `playerScore`.
+   *
+   * @private
+   * @returns {void}
+   */
+  #incrementPlayerScore() {
+    this.playerScore += 1;
+  }
+
+  /**
+   * Increment opponent score by one.
+   *
+   * @pseudocode
+   * 1. Add 1 to `opponentScore`.
+   *
+   * @private
+   * @returns {void}
+   */
+  #incrementOpponentScore() {
+    this.opponentScore += 1;
+  }
+
+  /**
    * Set the points required to win the match.
    *
    * @pseudocode
