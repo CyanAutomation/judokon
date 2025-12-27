@@ -753,7 +753,13 @@ export async function resetMatch() {
     await resetGame(store);
     // Restore pointsToWin after engine reset
     if (Number.isFinite(pointsToWinToRestore)) {
-      engineFacade.setPointsToWin?.(pointsToWinToRestore);
+      try {
+        engineFacade.setPointsToWin(pointsToWinToRestore);
+      } catch (error) {
+        console.warn("Failed to restore pointsToWin after engine reset:", error, {
+          pointsToWinToRestore
+        });
+      }
     }
   })();
   // Initialize orchestrator after sync work without blocking callers

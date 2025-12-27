@@ -4,7 +4,8 @@ import {
   compareStats,
   determineOutcome,
   applyOutcome,
-  BattleEngine
+  BattleEngine,
+  TIMER_CATEGORY
 } from "../../src/helpers/index.js";
 import {
   CLASSIC_BATTLE_POINTS_TO_WIN,
@@ -92,7 +93,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
         this.paused = false;
         this.onTickCb = onTick;
         this.onExpiredCb = onExpired;
-        this.activeCategory = "roundTimer";
+        this.activeCategory = TIMER_CATEGORY.ROUND;
         this.pauseOnHiddenSetting = true;
       });
     startCoolDownMock = vi
@@ -103,7 +104,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
         this.paused = false;
         this.onTickCb = onTick;
         this.onExpiredCb = onExpired;
-        this.activeCategory = "coolDownTimer";
+        this.activeCategory = TIMER_CATEGORY.COOLDOWN;
         this.pauseOnHiddenSetting = true;
       });
   });
@@ -116,7 +117,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
 
     await startRoundTimer(engine, tickSpy, expiredSpy, 10, (r) => engine.handleTimerDrift(r));
     expect(startRoundMock).toHaveBeenCalledTimes(1);
-    expect(engine.timer.getActiveCategory()).toBe("roundTimer");
+    expect(engine.timer.getActiveCategory()).toBe(TIMER_CATEGORY.ROUND);
 
     const firstTickHandler = engine.timer.onTickCb;
     const firstExpiredHandler = engine.timer.onExpiredCb;
@@ -146,7 +147,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
 
     await startCoolDownTimer(engine, tickSpy, expiredSpy, 5, (r) => engine.handleTimerDrift(r));
     expect(startCoolDownMock).toHaveBeenCalledTimes(1);
-    expect(engine.timer.getActiveCategory()).toBe("coolDownTimer");
+    expect(engine.timer.getActiveCategory()).toBe(TIMER_CATEGORY.COOLDOWN);
 
     const firstTickHandler = engine.timer.onTickCb;
     const firstExpiredHandler = engine.timer.onExpiredCb;
