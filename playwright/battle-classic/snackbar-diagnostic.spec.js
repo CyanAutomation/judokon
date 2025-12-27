@@ -100,7 +100,7 @@ test.describe("Snackbar diagnostic tests", () => {
       await buttons.first().click();
 
       const snackbarLocator = page.locator("#snackbar-container, .snackbar");
-      await expect(snackbarLocator).toContainText(/Opponent is choosing|Next round in|Opponent/);
+      await expect(snackbarLocator).toContainText(/Opponent is choosing|Next round in/);
 
       // AFTER clicking, check state again
       const afterState = await page.evaluate(() => {
