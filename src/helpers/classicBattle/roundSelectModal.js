@@ -322,48 +322,69 @@ function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart,
   return { buttons, defaultButton };
 }
 
+/**
+ * Handle number key press (1, 2, 3) for direct round selection.
+ *
+ * @param {KeyboardEvent} event - The keyboard event.
+ * @param {HTMLElement[]} buttons - Array of round selection buttons.
+ * @param {number} index - Button index to click.
+ */
+function handleNumberKey(event, buttons, index) {
+  event.preventDefault();
+  buttons[index]?.click();
+}
+
+/**
+ * Handle arrow key navigation (up/down) through buttons.
+ *
+ * @param {KeyboardEvent} event - The keyboard event.
+ * @param {HTMLElement[]} buttons - Array of round selection buttons.
+ * @param {number} direction - Direction to move (-1 for up, 1 for down).
+ */
+function handleArrowNavigation(event, buttons, direction) {
+  event.preventDefault();
+  const currentIndex = buttons.indexOf(document.activeElement);
+  let nextIndex;
+
+  if (direction === -1) {
+    // ArrowUp: Move to previous button, wrap to last
+    nextIndex = currentIndex > 0 ? currentIndex - 1 : buttons.length - 1;
+  } else {
+    // ArrowDown: Move to next button, wrap to first
+    nextIndex = currentIndex >= 0 && currentIndex < buttons.length - 1 ? currentIndex + 1 : 0;
+  }
+
+  buttons[nextIndex]?.focus();
+}
+
+/**
+ * Handle Enter key activation of focused button.
+ *
+ * @param {KeyboardEvent} event - The keyboard event.
+ * @param {HTMLElement[]} buttons - Array of round selection buttons.
+ */
+function handleEnterKey(event, buttons) {
+  event.preventDefault();
+  const currentFocus = document.activeElement;
+  if (currentFocus && buttons.includes(currentFocus)) {
+    currentFocus.click();
+  }
+}
+
 function setupKeyboardNavigation(modalElement, buttons) {
   const handleKeyDown = (event) => {
-    const currentFocus = document.activeElement;
-    const currentIndex = buttons.indexOf(currentFocus);
+    const keyHandlers = {
+      1: () => handleNumberKey(event, buttons, 0),
+      2: () => handleNumberKey(event, buttons, 1),
+      3: () => handleNumberKey(event, buttons, 2),
+      ArrowUp: () => handleArrowNavigation(event, buttons, -1),
+      ArrowDown: () => handleArrowNavigation(event, buttons, 1),
+      Enter: () => handleEnterKey(event, buttons)
+    };
 
-    switch (event.key) {
-      case "1":
-        event.preventDefault();
-        buttons[0]?.click();
-        break;
-      case "2":
-        event.preventDefault();
-        buttons[1]?.click();
-        break;
-      case "3":
-        event.preventDefault();
-        buttons[2]?.click();
-        break;
-      case "ArrowUp":
-        event.preventDefault();
-        if (currentIndex > 0) {
-          buttons[currentIndex - 1].focus();
-        } else {
-          buttons[buttons.length - 1]?.focus();
-        }
-        break;
-      case "ArrowDown":
-        event.preventDefault();
-        if (currentIndex >= 0 && currentIndex < buttons.length - 1) {
-          buttons[currentIndex + 1].focus();
-        } else {
-          buttons[0]?.focus();
-        }
-        break;
-      case "Enter":
-        event.preventDefault();
-        if (currentFocus && buttons.includes(currentFocus)) {
-          currentFocus.click();
-        }
-        break;
-      default:
-        break;
+    const handler = keyHandlers[event.key];
+    if (handler) {
+      handler();
     }
   };
 
@@ -526,7 +547,9 @@ class RoundSelectPositioner {
 
     return {
       header: (isCliMode ? cliHeader : classicHeader) || null,
-      skinClass: isCliMode ? ROUND_SELECT_UI.CSS_CLASSES.CLI_MODAL : ROUND_SELECT_UI.CSS_CLASSES.CLASSIC_MODAL
+      skinClass: isCliMode
+        ? ROUND_SELECT_UI.CSS_CLASSES.CLI_MODAL
+        : ROUND_SELECT_UI.CSS_CLASSES.CLASSIC_MODAL
     };
   }
 
