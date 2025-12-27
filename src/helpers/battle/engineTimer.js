@@ -420,9 +420,8 @@ export async function restartTimerAfterDrift(engine, remainingTime, driftHandler
   const onExpired = engine.timer.onExpiredCb;
 
   // Determine which timer to restart based on category
-  const { TIMER_CATEGORY } = await import("../BattleEngine.js");
-  const restartFn =
-    category !== TIMER_CATEGORY.COOLDOWN ? startRoundTimer : startCoolDownTimer;
+  // "coolDownTimer" is the cooldown category, all others are round
+  const restartFn = category === "coolDownTimer" ? startCoolDownTimer : startRoundTimer;
 
   await restartFn(engine, onTick, onExpired, remainingTime, driftHandler);
 }

@@ -17,8 +17,7 @@ import {
   resumeTimer as engineResumeTimer,
   stopTimer as engineStopTimer,
   handleTabInactive as engineHandleTabInactive,
-  handleTabActive as engineHandleTabActive,
-  restartTimerAfterDrift
+  handleTabActive as engineHandleTabActive
 } from "./battle/engineTimer.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
@@ -635,18 +634,24 @@ export class BattleEngine {
     engineHandleTabActive(this);
   }
 
+  #getTimerRestarter(category) {
+    return category === TIMER_CATEGORY.COOLDOWN
+      ? this.timer.startCoolDown.bind(this.timer)
+      : this.timer.startRound.bind(this.timer);
+  }
+
   /**
    * Respond to timer drift by resetting the timer and logging the event.
    *
    * @pseudocode
    * 1. Determine whether a timer is active; if not, record drift and exit.
-   * 2. Stop the timer and restart it with remaining time.
+   * 2. Stop the timer and optionally restart it.
    * 3. Log the drift amount for diagnostics.
    * 4. Optionally notify UI or test harness.
    *
    * @param {number} remainingTime - Amount of drift detected in seconds.
    */
-  async handleTimerDrift(remainingTime) {
+  handleTimerDrift(remainingTime) {
     const category =
       typeof this.timer.getActiveCategory === "function" ? this.timer.getActiveCategory() : null;
     const hasActiveTimer =
@@ -663,7 +668,8 @@ export class BattleEngine {
     this.stopTimer();
     this.lastTimerDrift = remainingTime;
 
-    await restartTimerAfterDrift(this, remainingTime, (r) => this.handleTimerDrift(r));
+    const restart = this.#getTimerRestarter(category);
+    restart(onTick, onExpired, remainingTime, (r) => this.handleTimerDrift(r));
   }
 
   /**

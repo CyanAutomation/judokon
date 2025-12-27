@@ -694,7 +694,6 @@ let resetPromise = Promise.resolve();
  * @returns {Promise<void>} A promise that resolves when the reset is complete.
  */
 export async function resetMatch() {
-  console.warn("[DEBUG] resetMatch() called");
   stopSelectionCountdown();
   handleCountdownFinished();
   state.roundResolving = false;
@@ -706,32 +705,8 @@ export async function resetMatch() {
       document.getElementById("play-again-button")?.remove();
     } catch {}
   }
-  // Capture current pointsToWin before reset from multiple sources
-  let pointsToWinToRestore = engineFacade.getPointsToWin?.();
-  if (!Number.isFinite(pointsToWinToRestore)) {
-    // Fallback: read from localStorage
-    try {
-      const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
-      const saved = Number(storage.get());
-      if (Number.isFinite(saved)) {
-        pointsToWinToRestore = saved;
-      }
-    } catch {}
-  }
-  if (!Number.isFinite(pointsToWinToRestore)) {
-    // Fallback: read from dropdown
-    try {
-      const select = byId("points-select");
-      if (select) {
-        const dropdownValue = Number(select.value);
-        if (Number.isFinite(dropdownValue)) {
-          pointsToWinToRestore = dropdownValue;
-        }
-      }
-    } catch {}
-  }
   // Perform synchronous UI reset to prevent glitches
-  updateRoundHeader(0, pointsToWinToRestore || engineFacade.getPointsToWin?.());
+  updateRoundHeader(0, engineFacade.getPointsToWin?.());
   updateScoreLine();
   setRoundMessage("");
   try {
@@ -752,20 +727,15 @@ export async function resetMatch() {
   const next = (async () => {
     disposeClassicBattleOrchestrator();
     await resetGame(store);
-    // Restore pointsToWin after engine reset
-    if (Number.isFinite(pointsToWinToRestore)) {
-      try {
-        console.warn("[DEBUG] Restoring pointsToWin to:", pointsToWinToRestore);
-        engineFacade.setPointsToWin(pointsToWinToRestore);
-        const verifyValue = engineFacade.getPointsToWin();
-        console.warn("[DEBUG] Verified pointsToWin after restoration:", verifyValue);
-      } catch (error) {
-        console.warn("Failed to restore pointsToWin after engine reset:", error, {
-          pointsToWinToRestore
-        });
+    // Restore pointsToWin from localStorage after engine reset
+    try {
+      const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
+      const saved = Number(storage.get());
+      if (Number.isFinite(saved)) {
+        engineFacade.setPointsToWin(saved);
       }
-    } else {
-      console.warn("[DEBUG] pointsToWinToRestore is not finite:", pointsToWinToRestore);
+    } catch (error) {
+      console.warn("Failed to restore pointsToWin after engine reset:", error);
     }
   })();
   // Initialize orchestrator after sync work without blocking callers
