@@ -11,6 +11,7 @@ import { createSpinner } from "../components/Spinner.js";
 import { buildQueryVector } from "./vectorSearchPage/buildQueryVector.js";
 import { selectTopMatches } from "./vectorSearchPage/selectTopMatches.js";
 import { applyResultsState } from "./vectorSearchPage/resultsState.js";
+import { attachColumnSort } from "./vectorSearchPage/tableSorting.js";
 
 let spinner;
 let resolveResultsPromise;
@@ -155,6 +156,7 @@ export async function handleSearch(event) {
  * 1. Partition matches with `selectTopMatches`.
  * 2. When no strong matches exist, show a warning message.
  * 3. Render the selected matches and attach context loaders.
+ * 4. Attach column sorting to the Score header.
  *
  * @param {HTMLElement} tbody - Table body element.
  * @param {HTMLElement} messageEl - Message display element.
@@ -169,6 +171,10 @@ function renderSearchResults(tbody, messageEl, matches, terms) {
     messageEl.classList.add("search-result-empty");
   }
   renderResults(tbody, toRender, terms, loadResultContext);
+  const scoreHeader = document.querySelector("#vector-results-table thead th:nth-child(4)");
+  if (scoreHeader && tbody) {
+    attachColumnSort(scoreHeader, tbody, 3);
+  }
   queueMicrotask(() => resolveResultsPromise?.());
 }
 
