@@ -37,6 +37,12 @@ export function shouldAutostart() {
 /**
  * Persist round selection and log the event.
  *
+ * @pseudocode
+ * 1. Try to persist the value to storage using wrap(BATTLE_POINTS_TO_WIN).set().
+ * 2. Catch and ignore storage errors.
+ * 3. Try to log 'battle.start' event with pointsToWin and source='modal'.
+ * 4. Catch and ignore logging errors.
+ *
  * @param {number} value - Points needed to win the round.
  */
 function persistRoundAndLog(value) {
@@ -48,8 +54,25 @@ function persistRoundAndLog(value) {
   } catch {}
 }
 
+/**
+ * Start a battle round with the specified win target.
+ *
+ * @pseudocode
+ * 1. Set win target in battle engine via setPointsToWin().
+ * 2. Update DOM dataset.target with the value.
+ * 3. Sync settings dropdown to reflect new target.
+ * 4. Show snackbar confirmation message.
+ * 5. Call onStart callback if provided.
+ * 6. Emit battleStateChange DOM event if emitEvents=true.
+ * 7. Always dispatch startClicked to state machine.
+ * 8. Log error if dispatch fails.
+ *
+ * @param {number} value - Points needed to win.
+ * @param {Function} onStart - Callback invoked after setup.
+ * @param {boolean} emitEvents - Whether to emit DOM events.
+ * @returns {Promise<void>}
+ */
 async function startRound(value, onStart, emitEvents) {
-  console.log("[roundSelectModal] startRound called with value:", value);
   setPointsToWin(value);
   try {
     document.body.dataset.target = String(value);
@@ -63,27 +86,42 @@ async function startRound(value, onStart, emitEvents) {
   } catch {}
   try {
     if (typeof onStart === "function") {
-      console.log("[roundSelectModal] calling onStart callback");
       await onStart();
-      console.log("[roundSelectModal] onStart callback returned");
     }
     if (emitEvents) {
-      console.log("[roundSelectModal] emitting battleStateChange DOM event");
       emitBattleEvent("startClicked");
     }
     // Always dispatch to state machine, regardless of emitEvents flag
     // emitEvents controls DOM event emission but not state machine transitions
-    console.log("[roundSelectModal] dispatching startClicked to state machine");
     const dispatched = await dispatchBattleEvent("startClicked");
-    console.log("[roundSelectModal] dispatchBattleEvent returned:", dispatched);
     if (!dispatched) {
-      console.warn("Modal: dispatchBattleEvent failed for startClicked");
+      logEvent("battle.error", {
+        type: "dispatchFailed",
+        event: "startClicked",
+        context: "roundSelectModal"
+      });
     }
   } catch (err) {
-    console.error("Failed to start battle:", err);
+    logEvent("battle.error", {
+      type: "startFailed",
+      error: err.message,
+      stack: err.stack,
+      context: "roundSelectModal"
+    });
   }
 }
 
+/**
+ * Detect test/automation environment and feature flags.
+ *
+ * @pseudocode
+ * 1. Check if running in Vitest (process.env.VITEST === 'true').
+ * 2. Check if running in Playwright (navigator.userAgent contains 'Headless' or webdriver=true).
+ * 3. Check for feature flag override window.__FF_OVERRIDES?.showRoundSelectModal.
+ * 4. Return environment flags: isVitest, isPlaywright, showModalInTest, emitEvents.
+ *
+ * @returns {{isVitest: boolean, isPlaywright: boolean, showModalInTest: boolean, emitEvents: boolean}}
+ */
 function resolveEnvironmentFlags() {
   const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
   const isPlaywright =
@@ -105,6 +143,20 @@ function resolveEnvironmentFlags() {
   };
 }
 
+/**
+ * Handle automatic start for URLs with ?autostart=1 or test mode bypass.
+ *
+ * @pseudocode
+ * 1. Check if URL contains autostart=1 parameter.
+ * 2. Check if test mode is enabled (isTestModeEnabled or isPlaywright).
+ * 3. If autostart requested OR (test mode AND not showModalInTest), start immediately.
+ * 4. Resolve win target from fallback chain and call startRound().
+ * 5. Return true if started, false otherwise.
+ *
+ * @param {Function} onStart - Callback to invoke after start.
+ * @param {{emitEvents: boolean, isPlaywright: boolean, showModalInTest: boolean}} env - Environment flags.
+ * @returns {Promise<boolean>} True if auto-started, false if modal should be shown.
+ */
 async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, showModalInTest }) {
   const autoStartRequested = shouldAutostart();
   const bypassForTests = !showModalInTest && (isTestModeEnabled() || isPlaywright);
@@ -144,6 +196,17 @@ function resolveWinTarget() {
   return DEFAULT_POINTS_TO_WIN;
 }
 
+/**
+ * Load persisted round selection from storage.
+ *
+ * @pseudocode
+ * 1. Try to load saved value from storage using wrap(BATTLE_POINTS_TO_WIN).get().
+ * 2. Convert to number and validate it's in POINTS_TO_WIN_OPTIONS.
+ * 3. Return the numeric value if valid.
+ * 4. Return null if storage fails or value is invalid.
+ *
+ * @returns {number|null} The persisted value or null if not found/invalid.
+ */
 function loadPersistedSelection() {
   try {
     const storage = wrap(BATTLE_POINTS_TO_WIN);
@@ -157,6 +220,19 @@ function loadPersistedSelection() {
   return null;
 }
 
+/**
+ * Create the round selection modal DOM structure.
+ *
+ * @pseudocode
+ * 1. Create h2 title element with i18n text from t('modal.roundSelect.title').
+ * 2. Create div container for buttons with class 'round-select-buttons'.
+ * 3. Create p element with keyboard instructions.
+ * 4. Append all to DocumentFragment.
+ * 5. Create modal using createModal() with fragment and labelledBy title.
+ * 6. Return modal instance and buttonContainer reference.
+ *
+ * @returns {{modal: object, buttonContainer: HTMLElement}} Modal instance and button container.
+ */
 function createRoundSelectModal() {
   const title = document.createElement("h2");
   title.id = "round-select-title";
@@ -177,6 +253,17 @@ function createRoundSelectModal() {
   return { modal, buttonContainer: btnWrap };
 }
 
+/**
+ * Create cleanup registry for managing lifecycle teardown.
+ *
+ * @pseudocode
+ * 1. Create object with tooltips and keyboard properties.
+ * 2. Initialize both as no-op functions.
+ * 3. Actual cleanup functions will be assigned during setup.
+ * 4. Return registry object.
+ *
+ * @returns {{tooltips: Function, keyboard: Function}} Cleanup function registry.
+ */
 function createCleanupRegistry() {
   return {
     tooltips: () => {},
@@ -184,6 +271,20 @@ function createCleanupRegistry() {
   };
 }
 
+/**
+ * Create and wire round selection buttons with click handlers.
+ *
+ * @pseudocode
+ * 1. Iterate through rounds array from battleRounds.js.
+ * 2. For each round, create button with label and tooltip.
+ * 3. Add click handler that sets aria-pressed, clears others, calls handleRoundSelect.
+ * 4. Append button to container and add to buttons array.
+ * 5. Track defaultButton if round.value matches defaultValue.
+ * 6. Return buttons array and defaultButton reference.
+ *
+ * @param {{modal: object, container: HTMLElement, cleanupRegistry: object, onStart: Function, defaultValue: number}} params
+ * @returns {{buttons: HTMLElement[], defaultButton: HTMLElement|null}} Buttons array and default selection.
+ */
 function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart, defaultValue }) {
   const buttons = [];
   let defaultButton = null;
@@ -272,6 +373,19 @@ function setupKeyboardNavigation(modalElement, buttons) {
   };
 }
 
+/**
+ * Initialize tooltip lifecycle for modal elements.
+ *
+ * @pseudocode
+ * 1. Create cleanup function placeholder.
+ * 2. Call initTooltips(modalElement) which returns a Promise.
+ * 3. When resolved, capture cleanup function from promise result.
+ * 4. Log error if tooltip initialization fails.
+ * 5. Return cleanup function wrapper and ready promise.
+ *
+ * @param {HTMLElement} modalElement - Modal element to initialize tooltips for.
+ * @returns {{cleanup: Function, ready: Promise}} Cleanup function and ready promise.
+ */
 function setupTooltipLifecycle(modalElement) {
   let cleanupFn = () => {};
 
@@ -282,7 +396,11 @@ function setupTooltipLifecycle(modalElement) {
       }
     })
     .catch((err) => {
-      console.error("Failed to initialize tooltips:", err);
+      logEvent("tooltip.error", {
+        type: "initializationFailed",
+        error: err.message,
+        context: "roundSelectModal"
+      });
     });
 
   return {
@@ -295,6 +413,20 @@ function setupTooltipLifecycle(modalElement) {
   };
 }
 
+/**
+ * Handle round selection and start the battle.
+ *
+ * @pseudocode
+ * 1. Persist the selected value to storage and log event.
+ * 2. Close the modal.
+ * 3. Call tooltip cleanup function from registry.
+ * 4. Call keyboard cleanup function from registry.
+ * 5. Destroy modal instance.
+ * 6. Call startRound with value, onStart callback, and emitEvents flag.
+ *
+ * @param {{value: number, modal: object, cleanupRegistry: object, onStart: Function, emitEvents: boolean}} params
+ * @returns {Promise<void>}
+ */
 async function handleRoundSelect({ value, modal, cleanupRegistry, onStart, emitEvents }) {
   persistRoundAndLog(value);
   modal.close();

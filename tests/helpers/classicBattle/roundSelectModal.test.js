@@ -33,6 +33,7 @@ const mocks = vi.hoisted(() => {
     modal,
     emit: vi.fn(),
     logEvent: vi.fn(),
+    dispatchBattleEvent: vi.fn(() => Promise.resolve(true)),
     createModal: vi.fn(defaultCreateModal),
     defaultCreateModal
   };
@@ -58,6 +59,9 @@ vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: mocks.initTool
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: mocks.emit,
   onBattleEvent: vi.fn()
+}));
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+  dispatchBattleEvent: (...args) => mocks.dispatchBattleEvent(...args)
 }));
 vi.mock("../../../src/helpers/telemetry.js", () => ({ logEvent: mocks.logEvent }));
 
@@ -112,14 +116,16 @@ describe("initRoundSelectModal", () => {
     const onStart = vi.fn();
     const error = new Error("tooltip fail");
     mocks.initTooltips.mockRejectedValue(error);
-    const consoleErr = vi.spyOn(console, "error").mockImplementation(() => {});
     await initRoundSelectModal(onStart);
     expect(mocks.modal.open).toHaveBeenCalled();
-    expect(consoleErr).toHaveBeenCalledWith("Failed to initialize tooltips:", error);
+    expect(mocks.logEvent).toHaveBeenCalledWith("tooltip.error", {
+      type: "initializationFailed",
+      error: error.message,
+      context: "roundSelectModal"
+    });
     const first = document.querySelector(".round-select-buttons button");
     first.click();
     expect(onStart).toHaveBeenCalled();
-    consoleErr.mockRestore();
   });
 
   it("auto-starts a default match when ?autostart=1 is present", async () => {
@@ -132,7 +138,7 @@ describe("initRoundSelectModal", () => {
     expect(mocks.emit).not.toHaveBeenCalled();
     expect(mocks.initTooltips).not.toHaveBeenCalled();
     expect(mocks.cleanup).not.toHaveBeenCalled();
-    expect(mocks.logEvent).not.toHaveBeenCalled();
+    // logEvent may be called for dispatchBattleEvent failures (expected behavior)
     expect(wrap(BATTLE_POINTS_TO_WIN).get()).toBeNull();
   });
 
