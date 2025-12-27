@@ -1131,7 +1131,6 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
  * @returns {void}
  */
 export function _resetForTest(store, preserveConfig = {}) {
-  console.log("[roundManager _resetForTest] Called with preserveConfig:", preserveConfig);
   resetSkipState();
   resetSelection();
   resetMatchDeckState(store);
@@ -1139,7 +1138,6 @@ export function _resetForTest(store, preserveConfig = {}) {
   // Only create new engine if none exists
   const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST;
   if (isVitest) {
-    console.log("[roundManager _resetForTest] In Vitest mode - will try to preserve existing engine");
     safeRound(
       "_resetForTest.ensureEngine",
       () => {
@@ -1150,7 +1148,6 @@ export function _resetForTest(store, preserveConfig = {}) {
           safeRound(
             "_resetForTest.createEngineForVitest",
             () => {
-              console.log("[roundManager _resetForTest] Creating new engine in Vitest with config:", preserveConfig);
               createBattleEngine(preserveConfig);
             },
             { suppressInProduction: true }
@@ -1160,7 +1157,6 @@ export function _resetForTest(store, preserveConfig = {}) {
     );
   } else {
     // In production, always create a fresh engine with preserved config
-    console.log("[roundManager _resetForTest] In production mode - creating fresh engine with config:", preserveConfig);
     safeRound("_resetForTest.createEngine", () => createBattleEngine(preserveConfig), {
       suppressInProduction: true,
       rethrow: true

@@ -168,24 +168,9 @@ test.describe("Vector search page", () => {
     });
 
     await page.unroute("**/transformers.min.js");
-    let resolveTransformerRoute;
-    const transformerRoutePromise = new Promise((resolve) => {
-      resolveTransformerRoute = resolve;
-    });
     await page.route("**/transformers.min.js", (route) =>
-      route
-        .fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
-        .finally(() => resolveTransformerRoute())
+      route.fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
     );
-
-    await page.route("**/transformers.min.js", (route) =>
-      route
-        .fulfill({ contentType: "application/javascript", body: TRANSFORMER_STUB })
-        .finally(() => resolveTransformerRoute?.())
-    );
-
-    await page.evaluate(() => fetch(""));
-    await transformerRoutePromise;
 
     await runSearch(page);
 
