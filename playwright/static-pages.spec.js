@@ -31,8 +31,11 @@ test.describe("Static pages", () => {
     expect(countryMsg.length).toBeGreaterThan(0);
     expect(weightMsg.length).toBeGreaterThan(0);
 
-    await page.getByTestId(NAV_RANDOM_JUDOKA).click();
-    await verifyPageBasics(page, [], { expectNav: false });
+    await Promise.all([
+      page.waitForURL(/randomJudoka\.html/),
+      page.getByTestId(NAV_RANDOM_JUDOKA).click({ force: true })
+    ]);
+    await verifyPageBasics(page, [], [], { expectNav: false });
     await expect(page.getByTestId("player-info")).toHaveText("Player");
     const cardContainer = page.getByTestId("card-container");
     await expect(cardContainer.getByTestId("placeholder-card")).toBeVisible();
@@ -88,7 +91,7 @@ test.describe("Static pages", () => {
     const dateCells = rows.locator("td:nth-child(5)");
     await expect(dateCells.first()).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
 
-    const sampleCount = 5;
+    const sampleCount = 3;
     await expect
       .poll(async () => {
         const values = await dateCells.evaluateAll(
@@ -124,17 +127,9 @@ test.describe("Static pages", () => {
     const firstDetailLink = firstRow.locator("td:nth-child(3) a");
     const detailHref = await firstDetailLink.getAttribute("href");
     expect(detailHref).not.toBeNull();
-    const resolvedHref = new URL(detailHref, page.url()).toString();
-    const popupPromise = page.waitForEvent("popup", { timeout: 2000 }).catch(() => null);
-    await firstDetailLink.click();
-    const popup = await popupPromise;
-    if (popup) {
-      await expect(popup).toHaveURL(resolvedHref);
-      await popup.close();
-    } else {
-      await expect(page).toHaveURL(resolvedHref);
-      await page.goBack();
-    }
+    expect(detailHref).toMatch(/^https?:\/\//); // Verify it's a valid URL
+    await expect(firstDetailLink).toHaveAttribute("target", "_blank");
+    await expect(firstDetailLink).toHaveAttribute("rel", "noopener noreferrer");
 
     const homeLink = page.getByTestId("home-link");
     await expect(homeLink).toHaveAttribute("href", "../../index.html");

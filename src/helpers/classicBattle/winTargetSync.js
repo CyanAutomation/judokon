@@ -15,6 +15,20 @@ function byId(id) {
 }
 
 /**
+ * Sanitize a points-to-win value into a positive integer.
+ *
+ * @param {unknown} value - Candidate value from data or engine.
+ * @returns {number | null} The normalized target or null when invalid.
+ */
+function sanitizeTarget(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  const normalized = Math.trunc(numeric);
+  if (!Number.isFinite(normalized) || normalized <= 0) return null;
+  return normalized;
+}
+
+/**
  * Read the current round number from the CLI root element.
  *
  * @returns {number} The round stored on the CLI dataset, or 0 when unavailable.
@@ -37,21 +51,17 @@ function getCurrentRoundNumber() {
  * @returns {void}
  */
 function updateRoundHeader(round, target) {
-  try {
-    const roundCounter = byId("round-counter");
-    if (roundCounter) {
-      roundCounter.textContent = `Round ${round} Target: ${target}`;
-      roundCounter.dataset.target = String(target);
-    }
-  } catch {}
+  const roundCounter = byId("round-counter");
+  if (roundCounter) {
+    roundCounter.textContent = `Round ${round} Target: ${target}`;
+    roundCounter.dataset.target = String(target);
+  }
 
-  try {
-    const root = byId("cli-root");
-    if (root) {
-      root.dataset.round = String(round);
-      root.dataset.target = String(target);
-    }
-  } catch {}
+  const root = byId("cli-root");
+  if (root) {
+    root.dataset.round = String(round);
+    root.dataset.target = String(target);
+  }
 }
 
 /**
@@ -60,12 +70,15 @@ function updateRoundHeader(round, target) {
  * @returns {number | null} The configured target or null when unavailable.
  */
 function readPointsToWin() {
+  let value = null;
   try {
-    const value = Number(getPointsToWin());
-    return Number.isFinite(value) ? value : null;
+    value = sanitizeTarget(getPointsToWin());
   } catch {
-    return null;
+    value = null;
   }
+  if (value !== null) return value;
+  if (typeof document === "undefined") return null;
+  return sanitizeTarget(document.body?.dataset?.target);
 }
 
 /**
@@ -84,26 +97,8 @@ export function syncWinTargetDropdown() {
     const select = byId("points-select");
     if (!select) return;
 
-    let currentTarget = readPointsToWin();
-    if (typeof currentTarget !== "number" || !Number.isFinite(currentTarget)) {
-      try {
-        const fallback =
-          typeof document !== "undefined" && document?.body
-            ? Number(document.body.dataset?.target)
-            : NaN;
-        if (Number.isFinite(fallback)) {
-          currentTarget = fallback;
-        }
-      } catch {}
-    }
-    if (typeof currentTarget !== "number" || !Number.isFinite(currentTarget)) return;
-
-    // Normalize to an integer so dropdown values stay in sync when the engine
-    // emits floats or other non-integer numerics (e.g. Infinity).
-    const normalizedTarget = Math.trunc(currentTarget);
-    if (!Number.isFinite(normalizedTarget) || normalizedTarget <= 0) {
-      return;
-    }
+    const normalizedTarget = readPointsToWin();
+    if (normalizedTarget === null) return;
 
     try {
       const hasOption = Array.from(select.options || []).some(
