@@ -149,7 +149,10 @@ test.describe("Snackbar diagnostic tests", () => {
         window.addEventListener("DOMContentLoaded", () => {
           const wrapSnackbar = (name) => {
             const original = window[name];
-            if (!original) return;
+            if (!original) {
+              console.warn(`Warning: ${name} function not found for wrapping`);
+              return;
+            }
             window[name] = function (...args) {
               window.__diagnosticLog.push({
                 type: name,
