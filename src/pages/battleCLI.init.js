@@ -122,8 +122,8 @@ function initSeedValidation() {
   const errorEl = byId("seed-error");
   if (!input || !errorEl) return;
   input.addEventListener("input", () => {
-    const val = Number(input.value);
-    if (input.value.trim() === "" || Number.isNaN(val)) {
+    const trimmed = input.value.trim();
+    if (trimmed === "" || Number.isNaN(Number(trimmed))) {
       errorEl.textContent = "Invalid seed. Using default.";
       return;
     }
