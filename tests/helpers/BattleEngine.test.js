@@ -7,6 +7,7 @@ import {
   BattleEngine,
   TIMER_CATEGORY
 } from "../../src/helpers/index.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import {
   CLASSIC_BATTLE_POINTS_TO_WIN,
   CLASSIC_BATTLE_MAX_ROUNDS
@@ -403,7 +404,6 @@ describe("SimpleEmitter", () => {
 
 describe("BattleEngine integration with real TimerController", () => {
   let engine;
-  let RealTimerController;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -417,7 +417,7 @@ describe("BattleEngine integration with real TimerController", () => {
   });
 
   it("starts round timer with real TimerController and receives tick events", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
     const timerTickEventSpy = vi.fn();
@@ -443,12 +443,10 @@ describe("BattleEngine integration with real TimerController", () => {
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(expiredSpy).toHaveBeenCalledTimes(1);
-
-    vi.useRealTimers();
   });
 
   it("pauses and resumes timer correctly", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
 
@@ -474,12 +472,10 @@ describe("BattleEngine integration with real TimerController", () => {
     // Advance time after resume
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalledWith(4);
-
-    vi.useRealTimers();
   });
 
   it("handles tab inactive/active correctly", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
 
@@ -503,12 +499,10 @@ describe("BattleEngine integration with real TimerController", () => {
     // Advance time after reactivation
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalled();
-
-    vi.useRealTimers();
   });
 
   it("stops timer correctly", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
 
@@ -524,12 +518,10 @@ describe("BattleEngine integration with real TimerController", () => {
     await vi.advanceTimersByTimeAsync(2000);
     expect(tickSpy).not.toHaveBeenCalled();
     expect(expiredSpy).not.toHaveBeenCalled();
-
-    vi.useRealTimers();
   });
 
   it("starts cooldown timer with real TimerController", async () => {
-    vi.useFakeTimers();
+    useCanonicalTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
     const timerTickEventSpy = vi.fn();
@@ -549,7 +541,5 @@ describe("BattleEngine integration with real TimerController", () => {
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(expiredSpy).toHaveBeenCalledTimes(1);
-
-    vi.useRealTimers();
   });
 });
