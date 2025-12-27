@@ -25,6 +25,7 @@ test.describe("Snackbar diagnostic tests", () => {
       await statButton.click();
 
       const snackbarLocator = page.locator("#snackbar-container, .snackbar");
+      await expect(snackbarLocator).toBeVisible();
       await expect(snackbarLocator).toContainText(/Opponent is choosing|Next round in/);
 
       await waitForNextButtonReady(page);
