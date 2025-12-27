@@ -106,7 +106,8 @@ describe("classicBattle opponent delay", () => {
       "../../../src/helpers/classicBattle/uiEventHandlers.js"
     );
 
-    setOpponentDelay(300);
+    const opponentDelayMs = 300;
+    setOpponentDelay(opponentDelayMs);
     vi.spyOn(mod, "simulateOpponentStat").mockReturnValue("power");
     vi.spyOn(mod, "evaluateRound").mockReturnValue({ matchEnded: false });
     const store = mod.createBattleStore();
@@ -114,6 +115,9 @@ describe("classicBattle opponent delay", () => {
     // Reset mocks before binding handlers
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
+
+    globalThis.window = globalThis.window ?? {};
+    globalThis.window.__FF_OVERRIDES = { autoSelect: false };
 
     // Bind the UI event handlers with dependency injection
     bindUIHelperEventHandlersDynamic({
@@ -135,7 +139,7 @@ describe("classicBattle opponent delay", () => {
     expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     expect(showSnackbar).not.toHaveBeenCalled();
 
-    await vi.runAllTimersAsync();
+    await timers.advanceTimersByTimeAsync(opponentDelayMs);
     await promise;
     timers.cleanup();
     randomSpy.mockRestore();
