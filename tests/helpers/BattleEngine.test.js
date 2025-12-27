@@ -126,7 +126,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
     timerTickSpy.mockClear();
 
     const stopSpy = vi.spyOn(engine.timer.currentTimer, "stop");
-    engine.handleTimerDrift(8);
+    await engine.handleTimerDrift(8);
     expect(stopSpy).toHaveBeenCalled();
     expect(engine.lastTimerDrift).toBe(8);
     expect(startRoundMock).toHaveBeenCalledTimes(2);
@@ -156,7 +156,7 @@ describe("BattleEngine handleTimerDrift restart paths", () => {
     timerTickSpy.mockClear();
 
     const stopSpy = vi.spyOn(engine.timer.currentTimer, "stop");
-    engine.handleTimerDrift(3);
+    await engine.handleTimerDrift(3);
     expect(stopSpy).toHaveBeenCalled();
     expect(engine.lastTimerDrift).toBe(3);
     expect(startCoolDownMock).toHaveBeenCalledTimes(2);

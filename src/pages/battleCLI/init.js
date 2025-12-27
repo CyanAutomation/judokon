@@ -694,6 +694,7 @@ let resetPromise = Promise.resolve();
  * @returns {Promise<void>} A promise that resolves when the reset is complete.
  */
 export async function resetMatch() {
+  console.warn("[DEBUG] resetMatch() called");
   stopSelectionCountdown();
   handleCountdownFinished();
   state.roundResolving = false;

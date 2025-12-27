@@ -646,7 +646,7 @@ export class BattleEngine {
    *
    * @param {number} remainingTime - Amount of drift detected in seconds.
    */
-  handleTimerDrift(remainingTime) {
+  async handleTimerDrift(remainingTime) {
     const category =
       typeof this.timer.getActiveCategory === "function" ? this.timer.getActiveCategory() : null;
     const hasActiveTimer =
@@ -663,7 +663,7 @@ export class BattleEngine {
     this.stopTimer();
     this.lastTimerDrift = remainingTime;
 
-    restartTimerAfterDrift(this, remainingTime, (r) => this.handleTimerDrift(r));
+    await restartTimerAfterDrift(this, remainingTime, (r) => this.handleTimerDrift(r));
   }
 
   /**
