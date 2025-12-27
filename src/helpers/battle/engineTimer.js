@@ -375,3 +375,54 @@ export function handleTimerDrift(engine, driftAmount) {
   stopTimer(engine);
   engine.lastTimerDrift = driftAmount;
 }
+
+/**
+ * Restart the timer after drift with remaining time.
+ *
+ * @pseudocode
+ * 1. Validate engine exists.
+ * 2. Get the active timer category to determine which timer type to restart.
+ * 3. Check if there's an active timer; if not, exit early.
+ * 4. Save current tick and expired callbacks.
+ * 5. Determine the appropriate restart function based on category.
+ * 6. Restart the timer with remaining time and drift handler.
+ *
+ * @param {object} engine - Battle engine instance (required).
+ * @param {number} remainingTime - Time remaining when drift was detected (required).
+ * @param {function} driftHandler - Callback for handling subsequent drifts (required).
+ * @returns {Promise<void>}
+ * @throws {Error} If engine parameter is missing or remainingTime is invalid.
+ */
+export async function restartTimerAfterDrift(engine, remainingTime, driftHandler) {
+  if (!engine) {
+    throw new Error("engineTimer: restartTimerAfterDrift requires engine parameter");
+  }
+  if (typeof remainingTime !== "number" || remainingTime < 0) {
+    const msg = `engineTimer: restartTimerAfterDrift requires remainingTime >= 0, got ${remainingTime}`;
+    throw new Error(msg);
+  }
+  if (typeof driftHandler !== "function") {
+    throw new Error("engineTimer: restartTimerAfterDrift requires driftHandler function");
+  }
+
+  const category =
+    typeof engine.timer.getActiveCategory === "function" ? engine.timer.getActiveCategory() : null;
+  const hasActiveTimer =
+    typeof engine.timer.hasActiveTimer === "function"
+      ? engine.timer.hasActiveTimer()
+      : Boolean(category);
+
+  if (!hasActiveTimer) {
+    return;
+  }
+
+  const onTick = engine.timer.onTickCb;
+  const onExpired = engine.timer.onExpiredCb;
+
+  // Determine which timer to restart based on category
+  const { TIMER_CATEGORY } = await import("../BattleEngine.js");
+  const restartFn =
+    category !== TIMER_CATEGORY.COOLDOWN ? startRoundTimer : startCoolDownTimer;
+
+  await restartFn(engine, onTick, onExpired, remainingTime, driftHandler);
+}

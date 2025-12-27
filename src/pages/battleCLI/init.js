@@ -754,12 +754,17 @@ export async function resetMatch() {
     // Restore pointsToWin after engine reset
     if (Number.isFinite(pointsToWinToRestore)) {
       try {
+        console.warn("[DEBUG] Restoring pointsToWin to:", pointsToWinToRestore);
         engineFacade.setPointsToWin(pointsToWinToRestore);
+        const verifyValue = engineFacade.getPointsToWin();
+        console.warn("[DEBUG] Verified pointsToWin after restoration:", verifyValue);
       } catch (error) {
         console.warn("Failed to restore pointsToWin after engine reset:", error, {
           pointsToWinToRestore
         });
       }
+    } else {
+      console.warn("[DEBUG] pointsToWinToRestore is not finite:", pointsToWinToRestore);
     }
   })();
   // Initialize orchestrator after sync work without blocking callers
