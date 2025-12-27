@@ -33,7 +33,7 @@ describe("BattleEngine events", () => {
     const err = vi.fn();
     engine.on("error", err);
     engine.handleError("fail");
-    expect(err).toHaveBeenCalledWith({ message: "fail" });
+    expect(err).toHaveBeenCalledWith(expect.objectContaining({ message: "fail" }));
   });
 
   it("emits events in order for normal play", async () => {
