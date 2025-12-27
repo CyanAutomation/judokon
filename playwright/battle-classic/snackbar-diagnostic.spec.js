@@ -133,7 +133,7 @@ test.describe("Snackbar diagnostic tests", () => {
       // THE BUG: This assertion will fail if snackbar doesn't appear
       expect(afterState.snackbarExists).toBe(true);
       if (afterState.snackbarExists) {
-        expect(afterState.snackbarContent).toMatch(/Opponent is choosing|Next round in|Opponent/);
+        expect(afterState.snackbarContent).toMatch(/Opponent is choosing|Next round in/);
       }
     }, ["log", "info", "warn", "error", "debug"]);
   });
