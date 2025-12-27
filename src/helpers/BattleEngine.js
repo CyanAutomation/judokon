@@ -3,6 +3,8 @@
  *
  * @fileoverview Implements core game logic for scoring, round timing, match state, and stat selection timer with pause/resume and auto-selection. UI modules should access this logic through the facade in `helpers/api/battleUI.js` to keep DOM concerns separate.
  * @note This module does NOT handle card rendering, stat concealment, or animation. Stat obscuring and card transitions are managed in the UI layer (see JudokaCard, battleJudokaPage.js, and helpers/api/battleUI.js).
+ * @see {@link ../../design/productRequirementsDocuments/prdBattleEngine.md#state-diagram|State Machine Diagram} for the complete state flow diagram (init → prestart → selection → evaluation → cooldown → end)
+ * @see {@link ../../design/productRequirementsDocuments/prdStateHandler.md|State Handler PRD} for canonical state definitions, transitions, timeouts, and test hooks
  */
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
@@ -26,6 +28,12 @@ export const TIMER_CATEGORY = {
   ROUND: "roundTimer",
   COOLDOWN: "coolDownTimer"
 };
+
+/**
+ * Battle Engine event payload version.
+ * Increment when event payload structures change to maintain compatibility.
+ */
+export const ENGINE_VERSION = "1.0.0";
 
 export const OUTCOME = {
   WIN_PLAYER: "winPlayer",
@@ -92,8 +100,8 @@ export function determineOutcome(playerVal, opponentVal) {
  * Apply a round outcome to the engine scores.
  *
  * @pseudocode
- * 1. If `outcome.outcome` is `OUTCOME.WIN_PLAYER`, increment `playerScore`.
- * 2. Else if `outcome.outcome` is `OUTCOME.WIN_OPPONENT`, increment `opponentScore`.
+ * 1. If `outcome.outcome` is `OUTCOME.WIN_PLAYER`, increment `playerScore` via method.
+ * 2. Else if `outcome.outcome` is `OUTCOME.WIN_OPPONENT`, increment `opponentScore` via method.
  * 3. Otherwise, leave scores unchanged.
  *
  * @param {BattleEngine} engine - Battle engine instance.
@@ -102,9 +110,9 @@ export function determineOutcome(playerVal, opponentVal) {
  */
 export function applyOutcome(engine, outcome) {
   if (outcome.outcome === OUTCOME.WIN_PLAYER) {
-    engine.playerScore += 1;
+    engine.incrementPlayerScore();
   } else if (outcome.outcome === OUTCOME.WIN_OPPONENT) {
-    engine.opponentScore += 1;
+    engine.incrementOpponentScore();
   }
 }
 
@@ -181,10 +189,9 @@ export class BattleEngine {
    * @pseudocode
    * 1. Add 1 to `playerScore`.
    *
-   * @private
    * @returns {void}
    */
-  #incrementPlayerScore() {
+  incrementPlayerScore() {
     this.playerScore += 1;
   }
 
@@ -194,10 +201,9 @@ export class BattleEngine {
    * @pseudocode
    * 1. Add 1 to `opponentScore`.
    *
-   * @private
    * @returns {void}
    */
-  #incrementOpponentScore() {
+  incrementOpponentScore() {
     this.opponentScore += 1;
   }
 
@@ -344,7 +350,8 @@ export class BattleEngine {
     this.#refreshCurrentStats(stats);
     // Notify listeners that stats-related values used for UI may need refresh.
     this.#safeEmit("statsUpdated", {
-      stats: undefined // UI may query snapshots; payload optional by design
+      stats: undefined, // UI may query snapshots; payload optional by design
+      _version: ENGINE_VERSION
     });
     this.#safeLog("BattleEngine.applyOutcome.scores", {
       playerScore: this.playerScore,
@@ -374,7 +381,8 @@ export class BattleEngine {
       outcome: matchOutcome || outcome.outcome,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
-      opponentScore: this.opponentScore
+      opponentScore: this.opponentScore,
+      _version: ENGINE_VERSION
     };
     this.#safeLog("BattleEngine.finalizeRound.out", result);
     this.#safeEmit("roundEnded", result);
@@ -399,7 +407,8 @@ export class BattleEngine {
       outcome: OUTCOME.QUIT,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
-      opponentScore: this.opponentScore
+      opponentScore: this.opponentScore,
+      _version: ENGINE_VERSION
     };
     this.#safeEmit("matchEnded", result);
     return result;
@@ -447,7 +456,8 @@ export class BattleEngine {
       outcome: OUTCOME.INTERRUPT_MATCH,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
-      opponentScore: this.opponentScore
+      opponentScore: this.opponentScore,
+      _version: ENGINE_VERSION
     };
     this.#safeEmit("matchEnded", result);
     return result;
@@ -494,7 +504,7 @@ export class BattleEngine {
       opponentScore: this.opponentScore
     };
     this.#refreshCurrentStats(modification?.stats);
-    this.#safeEmit("statsUpdated", { stats: undefined });
+    this.#safeEmit("statsUpdated", { stats: undefined, _version: ENGINE_VERSION });
     return result;
   }
 
