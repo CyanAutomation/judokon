@@ -1127,9 +1127,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
  *    generic `game:reset-ui` with `store: null`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {object} [preserveConfig] - Configuration to preserve when creating engine (e.g., { pointsToWin: 10 })
  * @returns {void}
  */
-export function _resetForTest(store) {
+export function _resetForTest(store, preserveConfig = {}) {
   resetSkipState();
   resetSelection();
   resetMatchDeckState(store);
@@ -1147,7 +1148,7 @@ export function _resetForTest(store) {
           safeRound(
             "_resetForTest.createEngineForVitest",
             () => {
-              createBattleEngine();
+              createBattleEngine(preserveConfig);
             },
             { suppressInProduction: true }
           ),
@@ -1155,8 +1156,8 @@ export function _resetForTest(store) {
       }
     );
   } else {
-    // In production, always create a fresh engine
-    safeRound("_resetForTest.createEngine", () => createBattleEngine(), {
+    // In production, always create a fresh engine with preserved config
+    safeRound("_resetForTest.createEngine", () => createBattleEngine(preserveConfig), {
       suppressInProduction: true,
       rethrow: true
     });

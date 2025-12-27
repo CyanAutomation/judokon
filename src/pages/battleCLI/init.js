@@ -725,18 +725,21 @@ export async function resetMatch() {
   initSeed();
   // Perform asynchronous reset work
   const next = (async () => {
-    disposeClassicBattleOrchestrator();
-    await resetGame(store);
-    // Restore pointsToWin from localStorage after engine reset
+    // Read pointsToWin from localStorage BEFORE creating new engine
+    let preserveConfig = {};
     try {
       const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
       const saved = Number(storage.get());
       if (Number.isFinite(saved)) {
-        engineFacade.setPointsToWin(saved);
+        preserveConfig.pointsToWin = saved;
+        console.log("[CLI Init] Restoring pointsToWin from localStorage:", saved);
       }
     } catch (error) {
-      console.warn("Failed to restore pointsToWin after engine reset:", error);
+      console.warn("Failed to read pointsToWin from localStorage:", error);
     }
+    
+    disposeClassicBattleOrchestrator();
+    await resetGame(store, preserveConfig);
   })();
   // Initialize orchestrator after sync work without blocking callers
   resetPromise = next.then(async () => {
