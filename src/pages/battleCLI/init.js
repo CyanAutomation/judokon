@@ -3154,7 +3154,7 @@ export async function setupFlags() {
   const shortcutsClose = byId("cli-shortcuts-close");
   if (shortcutsClose) {
     shortcutsClose.addEventListener("click", (event) => {
-      event?.preventDefault?.();
+      event?.preventDefault();
       if (!state.shortcutsReturnFocus) {
         const details = byId("cli-shortcuts");
         const summary = details?.querySelector("summary");
