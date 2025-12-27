@@ -109,43 +109,50 @@ async function loadResultContext(el) {
  */
 export async function handleSearch(event) {
   event.preventDefault();
+  let promiseResolver;
   syncVectorSearchPromise(
     new Promise((resolve) => {
+      promiseResolver = resolve;
       resolveResultsPromise = resolve;
     })
   );
-  const { query, tbody, messageEl } = prepareSearchUi();
-  if (!query) {
-    applyResultsState(spinner, messageEl, "results");
-    resolveResultsPromise?.();
-    return;
-  }
-  const selected = getSelectedTags();
-  applyResultsState(spinner, messageEl, "loading");
   try {
-    const { terms, vector } = await buildQueryVector(query);
-    const matches = await vectorSearch.findMatches(vector, 5, selected, query);
-    if (matches === null) {
-      applyResultsState(
-        spinner,
-        messageEl,
-        "error",
-        "Embeddings could not be loaded – please check console."
-      );
-      resolveResultsPromise?.();
+    const { query, tbody, messageEl } = prepareSearchUi();
+    if (!query) {
+      applyResultsState(spinner, messageEl, "results");
+      promiseResolver?.();
       return;
     }
-    if (matches.length === 0) {
-      applyResultsState(spinner, messageEl, "empty");
-      resolveResultsPromise?.();
-      return;
+    const selected = getSelectedTags();
+    applyResultsState(spinner, messageEl, "loading");
+    try {
+      const { terms, vector } = await buildQueryVector(query);
+      const matches = await vectorSearch.findMatches(vector, 5, selected, query);
+      if (matches === null) {
+        applyResultsState(
+          spinner,
+          messageEl,
+          "error",
+          "Embeddings could not be loaded – please check console."
+        );
+        promiseResolver?.();
+        return;
+      }
+      if (matches.length === 0) {
+        applyResultsState(spinner, messageEl, "empty");
+        promiseResolver?.();
+        return;
+      }
+      applyResultsState(spinner, messageEl, "results");
+      renderSearchResults(tbody, messageEl, matches, terms);
+    } catch (err) {
+      console.error("Search failed", err);
+      applyResultsState(spinner, messageEl, "error");
+      promiseResolver?.();
     }
-    applyResultsState(spinner, messageEl, "results");
-    renderSearchResults(tbody, messageEl, matches, terms);
   } catch (err) {
-    console.error("Search failed", err);
-    applyResultsState(spinner, messageEl, "error");
-    resolveResultsPromise?.();
+    console.error("Unexpected error in handleSearch", err);
+    promiseResolver?.();
   }
 }
 
@@ -157,6 +164,7 @@ export async function handleSearch(event) {
  * 2. When no strong matches exist, show a warning message.
  * 3. Render the selected matches and attach context loaders.
  * 4. Attach column sorting to the Score header.
+ * 5. Resolve the results promise.
  *
  * @param {HTMLElement} tbody - Table body element.
  * @param {HTMLElement} messageEl - Message display element.
@@ -164,18 +172,21 @@ export async function handleSearch(event) {
  * @param {string[]} terms - Tokenized query terms for highlighting.
  */
 function renderSearchResults(tbody, messageEl, matches, terms) {
-  const { strongMatches, toRender } = selectTopMatches(matches);
-  if (strongMatches.length === 0 && messageEl) {
-    messageEl.textContent =
-      "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
-    messageEl.classList.add("search-result-empty");
+  try {
+    const { strongMatches, toRender } = selectTopMatches(matches);
+    if (strongMatches.length === 0 && messageEl) {
+      messageEl.textContent =
+        "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
+      messageEl.classList.add("search-result-empty");
+    }
+    renderResults(tbody, toRender, terms, loadResultContext);
+    const scoreHeader = document.querySelector("#vector-results-table thead th:nth-child(4)");
+    if (scoreHeader && tbody) {
+      attachColumnSort(scoreHeader, tbody, 3);
+    }
+  } finally {
+    queueMicrotask(() => resolveResultsPromise?.());
   }
-  renderResults(tbody, toRender, terms, loadResultContext);
-  const scoreHeader = document.querySelector("#vector-results-table thead th:nth-child(4)");
-  if (scoreHeader && tbody) {
-    attachColumnSort(scoreHeader, tbody, 3);
-  }
-  queueMicrotask(() => resolveResultsPromise?.());
 }
 
 /**
