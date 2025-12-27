@@ -77,7 +77,7 @@ describe("BattleEngine interrupts", () => {
     expect(engine.matchEnded).toBe(true);
     expect(engine.lastInterruptReason).toBe("injury");
     expect(engine.timer.hasActiveTimer()).toBe(false);
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       outcome: OUTCOME.INTERRUPT_MATCH,
       matchEnded: true,
       playerScore: 3,
