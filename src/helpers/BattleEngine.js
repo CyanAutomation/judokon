@@ -22,6 +22,11 @@ import {
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
+export const TIMER_CATEGORY = {
+  ROUND: "roundTimer",
+  COOLDOWN: "coolDownTimer"
+};
+
 export const OUTCOME = {
   WIN_PLAYER: "winPlayer",
   WIN_OPPONENT: "winOpponent",
@@ -630,7 +635,7 @@ export class BattleEngine {
   }
 
   #getTimerRestarter(category) {
-    return category !== "coolDownTimer"
+    return category !== TIMER_CATEGORY.COOLDOWN
       ? this.timer.startRound.bind(this.timer)
       : this.timer.startCoolDown.bind(this.timer);
   }

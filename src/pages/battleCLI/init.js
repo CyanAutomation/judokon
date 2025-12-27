@@ -705,8 +705,32 @@ export async function resetMatch() {
       document.getElementById("play-again-button")?.remove();
     } catch {}
   }
+  // Capture current pointsToWin before reset from multiple sources
+  let pointsToWinToRestore = engineFacade.getPointsToWin?.();
+  if (!Number.isFinite(pointsToWinToRestore)) {
+    // Fallback: read from localStorage
+    try {
+      const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
+      const saved = Number(storage.get());
+      if (Number.isFinite(saved)) {
+        pointsToWinToRestore = saved;
+      }
+    } catch {}
+  }
+  if (!Number.isFinite(pointsToWinToRestore)) {
+    // Fallback: read from dropdown
+    try {
+      const select = byId("points-select");
+      if (select) {
+        const dropdownValue = Number(select.value);
+        if (Number.isFinite(dropdownValue)) {
+          pointsToWinToRestore = dropdownValue;
+        }
+      }
+    } catch {}
+  }
   // Perform synchronous UI reset to prevent glitches
-  updateRoundHeader(0, engineFacade.getPointsToWin?.());
+  updateRoundHeader(0, pointsToWinToRestore || engineFacade.getPointsToWin?.());
   updateScoreLine();
   setRoundMessage("");
   try {
@@ -727,6 +751,10 @@ export async function resetMatch() {
   const next = (async () => {
     disposeClassicBattleOrchestrator();
     await resetGame(store);
+    // Restore pointsToWin after engine reset
+    if (Number.isFinite(pointsToWinToRestore)) {
+      engineFacade.setPointsToWin?.(pointsToWinToRestore);
+    }
   })();
   // Initialize orchestrator after sync work without blocking callers
   resetPromise = next.then(async () => {
