@@ -116,8 +116,7 @@ describe("classicBattle opponent delay", () => {
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
 
-    globalThis.window = globalThis.window ?? {};
-    globalThis.window.__FF_OVERRIDES = { autoSelect: false };
+    vi.stubGlobal("window", { __FF_OVERRIDES: { autoSelect: false } });
 
     // Bind the UI event handlers with dependency injection
     bindUIHelperEventHandlersDynamic({
