@@ -145,19 +145,23 @@ test.describe("Snackbar diagnostic tests", () => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
         window.__diagnosticLog = [];
 
-        // Intercept showSnackbar calls
+        // Intercept showSnackbar/updateSnackbar calls
         window.addEventListener("DOMContentLoaded", () => {
-          const originalShowSnackbar = window.showSnackbar;
-          if (originalShowSnackbar) {
-            window.showSnackbar = function (...args) {
+          const wrapSnackbar = (name) => {
+            const original = window[name];
+            if (!original) return;
+            window[name] = function (...args) {
               window.__diagnosticLog.push({
-                type: "showSnackbar",
+                type: name,
                 timestamp: Date.now(),
                 args: args
               });
-              return originalShowSnackbar.apply(this, args);
+              return original.apply(this, args);
             };
-          }
+          };
+
+          wrapSnackbar("showSnackbar");
+          wrapSnackbar("updateSnackbar");
         });
       });
 
@@ -181,9 +185,10 @@ test.describe("Snackbar diagnostic tests", () => {
       const diagnostics = await page.evaluate(() => window.__diagnosticLog);
       console.log("Diagnostic log:", JSON.stringify(diagnostics, null, 2));
 
-      // Verify showSnackbar was called
+      // Verify showSnackbar or updateSnackbar was called
       const snackbarCalls = diagnostics.filter((log) => log.type === "showSnackbar");
-      expect(snackbarCalls.length).toBeGreaterThan(0);
+      const snackbarUpdates = diagnostics.filter((log) => log.type === "updateSnackbar");
+      expect(snackbarCalls.length + snackbarUpdates.length).toBeGreaterThan(0);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
