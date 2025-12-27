@@ -738,7 +738,7 @@ export async function resetMatch() {
     } catch (error) {
       console.warn("Failed to read pointsToWin from localStorage:", error);
     }
-    
+
     disposeClassicBattleOrchestrator();
     await resetGame(store, preserveConfig);
   })();
