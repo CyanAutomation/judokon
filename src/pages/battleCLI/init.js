@@ -92,6 +92,10 @@ function handleShortcutsToggle(event) {
     return;
   }
   const isOpen = target.open === true;
+  const closeButton = byId("cli-shortcuts-close");
+  if (closeButton) {
+    closeButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  }
   try {
     localStorage.setItem("battleCLI.shortcutsCollapsed", isOpen ? "0" : "1");
   } catch {}
@@ -3146,6 +3150,20 @@ export async function setupFlags() {
   const shortcutsDetails = byId("cli-shortcuts");
   if (shortcutsDetails) {
     shortcutsDetails.addEventListener("toggle", handleShortcutsToggle);
+  }
+  const shortcutsClose = byId("cli-shortcuts-close");
+  if (shortcutsClose) {
+    shortcutsClose.addEventListener("click", (event) => {
+      event?.preventDefault();
+      if (!state.shortcutsReturnFocus) {
+        const details = byId("cli-shortcuts");
+        const summary = details?.querySelector("summary");
+        if (summary instanceof HTMLElement) {
+          state.shortcutsReturnFocus = summary;
+        }
+      }
+      hideCliShortcuts();
+    });
   }
   updateCliShortcutsVisibility();
   updateControlsHint();
