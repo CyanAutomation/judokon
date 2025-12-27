@@ -251,6 +251,15 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     return recordedTimestamp;
   }
 
+  function showPromptAndCaptureTimestamp(message, options = {}) {
+    showOpponentPromptMessage(message);
+    return displayOpponentChoosingPrompt({
+      message,
+      ...options,
+      showMessage: false
+    });
+  }
+
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
@@ -298,8 +307,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         console.log(
           "[statSelected Handler] No delay - calling displayOpponentChoosingPrompt immediately"
         );
-        showOpponentPromptMessage(opponentPromptMessage);
-        displayOpponentChoosingPrompt({ message: opponentPromptMessage, showMessage: false });
+        showPromptAndCaptureTimestamp(opponentPromptMessage);
         return;
       }
 
@@ -312,8 +320,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         console.log(
           "[statSelected Handler] Resolved delay <= 0 - calling displayOpponentChoosingPrompt immediately"
         );
-        showOpponentPromptMessage(opponentPromptMessage);
-        displayOpponentChoosingPrompt({ message: opponentPromptMessage, showMessage: false });
+        showPromptAndCaptureTimestamp(opponentPromptMessage);
         return;
       }
 
@@ -321,13 +328,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         `[statSelected Handler] Showing message immediately, scheduling prompt ready with delay: ${resolvedDelay}ms`
       );
 
-      showOpponentPromptMessage(opponentPromptMessage);
-
-      const promptTimestamp = displayOpponentChoosingPrompt({
+      const promptTimestamp = showPromptAndCaptureTimestamp(opponentPromptMessage, {
         markTimestamp: true,
-        notifyReady: false,
-        message: opponentPromptMessage,
-        showMessage: false
+        notifyReady: false
       });
 
       const minDuration = Number(getOpponentPromptMinDurationFn());
