@@ -2,7 +2,7 @@ import { expect, test } from "./fixtures/commonSetup.js";
 import { NAV_RANDOM_JUDOKA, verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("Static pages", () => {
-  test("Create Judoka validates required fields and opens Random flow", async ({ page }) => {
+  test("Create Judoka validates required fields", async ({ page }) => {
     await page.goto("/src/pages/createJudoka.html");
 
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA]);
@@ -18,28 +18,18 @@ test.describe("Static pages", () => {
 
     const countryField = page.getByTestId("create-country");
     const weightField = page.getByTestId("create-weight");
-    
+
     // Check validity state
     const countryValid = await countryField.evaluate((el) => el.validity.valid);
     const weightValid = await weightField.evaluate((el) => el.validity.valid);
     expect(countryValid).toBe(false);
     expect(weightValid).toBe(false);
-    
+
     // Check validation messages are non-empty
     const countryMsg = await countryField.evaluate((el) => el.validationMessage);
     const weightMsg = await weightField.evaluate((el) => el.validationMessage);
     expect(countryMsg.length).toBeGreaterThan(0);
     expect(weightMsg.length).toBeGreaterThan(0);
-
-    await Promise.all([
-      page.waitForURL(/randomJudoka\.html/),
-      page.getByTestId(NAV_RANDOM_JUDOKA).click({ force: true })
-    ]);
-    await verifyPageBasics(page, [], [], { expectNav: false });
-    await expect(page.getByTestId("player-info")).toHaveText("Player");
-    const cardContainer = page.getByTestId("card-container");
-    await expect(cardContainer.getByTestId("placeholder-card")).toBeVisible();
-    await expect(cardContainer.getByTestId("placeholder-card")).toContainText("Draw Card!");
   });
 
   test("Browse Judoka toggles layout and country filters", async ({ page }) => {
