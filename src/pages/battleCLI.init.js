@@ -117,6 +117,20 @@ function initSettingsCollapse() {
   });
 }
 
+function initSeedValidation() {
+  const input = byId("seed-input");
+  const errorEl = byId("seed-error");
+  if (!input || !errorEl) return;
+  input.addEventListener("input", () => {
+    const trimmed = input.value.trim();
+    if (trimmed === "" || Number.isNaN(Number(trimmed))) {
+      errorEl.textContent = "Invalid seed. Using default.";
+      return;
+    }
+    errorEl.textContent = "";
+  });
+}
+
 function loadBattleCLIModule() {
   if (typeof window === "undefined") return null;
 
@@ -141,6 +155,7 @@ function loadBattleCLIModule() {
 function init() {
   renderSkeletonStats(5);
   initSettingsCollapse();
+  initSeedValidation();
   // helpers are also exposed at module top-level; keep here to ensure latest refs
   try {
     Object.assign(window.__battleCLIinit, {
