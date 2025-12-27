@@ -99,8 +99,8 @@ test.describe("Snackbar diagnostic tests", () => {
       const buttons = page.getByTestId("stat-button");
       await buttons.first().click();
 
-      // Give time for any async operations
-      await page.waitForTimeout(500);
+      const snackbarLocator = page.locator("#snackbar-container, .snackbar");
+      await expect(snackbarLocator).toContainText(/Opponent is choosing|Next round in/);
 
       // AFTER clicking, check state again
       const afterState = await page.evaluate(() => {
@@ -133,7 +133,7 @@ test.describe("Snackbar diagnostic tests", () => {
       // THE BUG: This assertion will fail if snackbar doesn't appear
       expect(afterState.snackbarExists).toBe(true);
       if (afterState.snackbarExists) {
-        expect(afterState.snackbarContent).toContain("Opponent");
+        expect(afterState.snackbarContent).toMatch(/Opponent is choosing|Next round in/);
       }
     }, ["log", "info", "warn", "error", "debug"]);
   });
