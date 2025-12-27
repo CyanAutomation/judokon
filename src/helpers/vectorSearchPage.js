@@ -34,6 +34,7 @@ function syncVectorSearchPromise(promise) {
   }
 }
 
+// Initialize with a resolved promise so tests don't hang if they check before first search
 syncVectorSearchPromise(currentResultsPromise);
 
 /**
