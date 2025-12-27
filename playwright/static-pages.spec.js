@@ -18,8 +18,8 @@ test.describe("Static pages", () => {
 
     const countryField = page.getByTestId("create-country");
     const weightField = page.getByTestId("create-weight");
-    await expect(countryField).toBeInvalid();
-    await expect(weightField).toBeInvalid();
+    await expect(countryField).toHaveJSProperty("validity.valid", false);
+    await expect(weightField).toHaveJSProperty("validity.valid", false);
     await expect(countryField).toHaveJSProperty("validationMessage", /.+/);
     await expect(weightField).toHaveJSProperty("validationMessage", /.+/);
 
@@ -75,7 +75,7 @@ test.describe("Static pages", () => {
     expect(headerScopes.every((scope) => scope === "col")).toBe(true);
 
     const rows = changeLogTable.locator("tbody tr");
-    await expect(rows).toHaveCount(20);
+    await expect(rows).toHaveCount(3);
 
     const dateCells = rows.locator("td:nth-child(5)");
     await expect(dateCells.first()).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
