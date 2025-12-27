@@ -321,12 +321,13 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         `[statSelected Handler] Showing message immediately, scheduling prompt ready with delay: ${resolvedDelay}ms`
       );
 
-      // Show the snackbar message and mark timestamp immediately, but delay the notification
+      showOpponentPromptMessage(opponentPromptMessage);
+
       const promptTimestamp = displayOpponentChoosingPrompt({
         markTimestamp: true,
         notifyReady: false,
         message: opponentPromptMessage,
-        showMessage: true
+        showMessage: false
       });
 
       const minDuration = Number(getOpponentPromptMinDurationFn());
