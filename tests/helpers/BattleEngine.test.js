@@ -410,7 +410,7 @@ describe("BattleEngine integration with real TimerController", () => {
     // Import real TimerController without mocking
     const timerModule = await import("../../src/helpers/TimerController.js");
     RealTimerController = timerModule.TimerController;
-    
+
     // Create engine with real TimerController
     const { BattleEngine: RealBattleEngine } = await import("../../src/helpers/BattleEngine.js");
     engine = new RealBattleEngine();
@@ -421,29 +421,29 @@ describe("BattleEngine integration with real TimerController", () => {
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
     const timerTickEventSpy = vi.fn();
-    
+
     engine.on("timerTick", timerTickEventSpy);
-    
+
     await startRoundTimer(engine, tickSpy, expiredSpy, 3, null);
-    
+
     // Verify timer is active
     expect(engine.timer.hasActiveTimer()).toBe(true);
     expect(engine.timer.getActiveCategory()).toBe(TIMER_CATEGORY.ROUND);
-    
+
     // Advance time and verify tick callback (first tick is with full duration)
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalledWith(3);
     expect(timerTickEventSpy).toHaveBeenCalledWith({ remaining: 3, phase: "round" });
-    
+
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalledWith(2);
-    
+
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalledWith(1);
-    
+
     await vi.advanceTimersByTimeAsync(1000);
     expect(expiredSpy).toHaveBeenCalledTimes(1);
-    
+
     vi.useRealTimers();
   });
 
@@ -451,30 +451,30 @@ describe("BattleEngine integration with real TimerController", () => {
     vi.useFakeTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
-    
+
     await startRoundTimer(engine, tickSpy, expiredSpy, 5, null);
-    
+
     // Advance 1 second (first tick is with full duration)
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalledWith(5);
-    
+
     // Pause timer
     engine.pauseTimer();
     expect(engine.timer.getState().paused).toBe(true);
-    
+
     // Advance time while paused (should not trigger tick)
     tickSpy.mockClear();
     await vi.advanceTimersByTimeAsync(2000);
     expect(tickSpy).not.toHaveBeenCalled();
-    
+
     // Resume timer
     engine.resumeTimer();
     expect(engine.timer.getState().paused).toBe(false);
-    
+
     // Advance time after resume
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalledWith(4);
-    
+
     vi.useRealTimers();
   });
 
@@ -482,28 +482,28 @@ describe("BattleEngine integration with real TimerController", () => {
     vi.useFakeTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
-    
+
     await startRoundTimer(engine, tickSpy, expiredSpy, 5, null);
-    
+
     // Simulate tab becoming inactive
     engine.handleTabInactive();
     expect(engine.tabInactive).toBe(true);
     expect(engine.timer.getState().paused).toBe(true);
-    
+
     // Advance time while inactive (should not trigger tick)
     tickSpy.mockClear();
     await vi.advanceTimersByTimeAsync(2000);
     expect(tickSpy).not.toHaveBeenCalled();
-    
+
     // Simulate tab becoming active
     engine.handleTabActive();
     expect(engine.tabInactive).toBe(false);
     expect(engine.timer.getState().paused).toBe(false);
-    
+
     // Advance time after reactivation
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalled();
-    
+
     vi.useRealTimers();
   });
 
@@ -511,20 +511,20 @@ describe("BattleEngine integration with real TimerController", () => {
     vi.useFakeTimers();
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
-    
+
     await startRoundTimer(engine, tickSpy, expiredSpy, 5, null);
     expect(engine.timer.hasActiveTimer()).toBe(true);
-    
+
     // Stop timer
     engine.stopTimer();
     expect(engine.timer.hasActiveTimer()).toBe(false);
-    
+
     // Advance time after stop (should not trigger callbacks)
     tickSpy.mockClear();
     await vi.advanceTimersByTimeAsync(2000);
     expect(tickSpy).not.toHaveBeenCalled();
     expect(expiredSpy).not.toHaveBeenCalled();
-    
+
     vi.useRealTimers();
   });
 
@@ -533,23 +533,23 @@ describe("BattleEngine integration with real TimerController", () => {
     const tickSpy = vi.fn();
     const expiredSpy = vi.fn();
     const timerTickEventSpy = vi.fn();
-    
+
     engine.on("timerTick", timerTickEventSpy);
-    
+
     await startCoolDownTimer(engine, tickSpy, expiredSpy, 2, null);
-    
+
     // Verify timer is active with cooldown category
     expect(engine.timer.hasActiveTimer()).toBe(true);
     expect(engine.timer.getActiveCategory()).toBe(TIMER_CATEGORY.COOLDOWN);
-    
+
     // Advance time and verify tick callback (first tick is with full duration)
     await vi.advanceTimersByTimeAsync(1000);
     expect(tickSpy).toHaveBeenCalledWith(2);
     expect(timerTickEventSpy).toHaveBeenCalledWith({ remaining: 2, phase: "cooldown" });
-    
+
     await vi.advanceTimersByTimeAsync(1000);
     expect(expiredSpy).toHaveBeenCalledTimes(1);
-    
+
     vi.useRealTimers();
   });
 });

@@ -527,7 +527,7 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    this.#safeEmit("error", { message: errorMsg });
+    this.#safeEmit("error", { message: errorMsg, _version: ENGINE_VERSION });
     return result;
   }
 
