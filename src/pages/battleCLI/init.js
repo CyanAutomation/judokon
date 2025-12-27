@@ -2773,7 +2773,7 @@ function handleRoundResolved(e) {
  *
  * @pseudocode
  * 1. Locate `#cli-main`; abort if missing or already rendered.
- * 2. Build a "Play again" button that resets the match and restarts on click.
+ * 2. Build a "Play Again" button that resets the match and restarts on click.
  * 3. If a home link exists, append a "Return to lobby" anchor using its href.
  * 4. Append the controls section to the main container.
  */
@@ -2783,7 +2783,7 @@ function handleMatchOver() {
   if (!main || byId("play-again-button")) return;
   const section = document.createElement("section");
   section.className = "cli-block";
-  const btn = createButton("Play again", {
+  const btn = createButton("Play Again", {
     id: "play-again-button",
     className: "primary-button"
   });
