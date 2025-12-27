@@ -125,6 +125,9 @@ function initSeedValidation() {
     const trimmed = input.value.trim();
     if (trimmed === "" || Number.isNaN(Number(trimmed))) {
       errorEl.textContent = "Invalid seed. Using default.";
+      try {
+        localStorage.removeItem("battleCLI.seed");
+      } catch {}
       return;
     }
     errorEl.textContent = "";
