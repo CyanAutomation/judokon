@@ -8,6 +8,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { wrap } from "../storage.js";
 import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
+import { ROUND_SELECT_UI, POSITIONER_PROPS } from "../../config/roundSelectConstants.js";
 import { rafDebounce } from "../../utils/rafUtils.js";
 import { logEvent } from "../telemetry.js";
 import { t } from "../i18n.js";
@@ -82,7 +83,7 @@ async function startRound(value, onStart, emitEvents) {
     syncWinTargetDropdown();
   } catch {}
   try {
-    showSnackbar(`First to ${value} points wins.`);
+    showSnackbar(ROUND_SELECT_UI.MESSAGES.winTarget(value));
   } catch {}
   try {
     if (typeof onStart === "function") {
@@ -236,14 +237,14 @@ function loadPersistedSelection() {
 function createRoundSelectModal() {
   const title = document.createElement("h2");
   title.id = "round-select-title";
-  title.textContent = t("modal.roundSelect.title");
+  title.textContent = t(ROUND_SELECT_UI.TITLE_I18N_KEY);
 
   const btnWrap = document.createElement("div");
-  btnWrap.className = "round-select-buttons";
+  btnWrap.className = ROUND_SELECT_UI.CSS_CLASSES.BUTTON_CONTAINER;
 
   const instructions = document.createElement("p");
-  instructions.className = "round-select-instructions";
-  instructions.textContent = "Use number keys (1-3) or arrow keys to select";
+  instructions.className = ROUND_SELECT_UI.CSS_CLASSES.INSTRUCTIONS;
+  instructions.textContent = ROUND_SELECT_UI.INSTRUCTIONS_TEXT;
 
   const frag = document.createDocumentFragment();
   frag.append(title, instructions, btnWrap);
@@ -291,7 +292,7 @@ function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart,
 
   rounds.forEach((round) => {
     const button = createButton(round.label, { id: `round-select-${round.id}` });
-    button.dataset.tooltipId = `ui.round${round.label}`;
+    button.dataset.tooltipId = `${ROUND_SELECT_UI.TOOLTIP_PREFIX}${round.label}`;
     button.addEventListener("click", () => {
       for (const other of buttons) {
         if (other === button) {
@@ -446,9 +447,9 @@ class RoundSelectPositioner {
   constructor(modal) {
     this.modal = modal;
     this.backdrop = modal?.element ?? null;
-    this.datasetKey = "roundSelectModalActive";
-    this.activeProp = "__roundSelectPositioningActive";
-    this.closedProp = "__roundSelectPositioningClosed";
+    this.datasetKey = ROUND_SELECT_UI.DATASET_KEY;
+    this.activeProp = POSITIONER_PROPS.ACTIVE;
+    this.closedProp = POSITIONER_PROPS.CLOSED;
     this.isActive = false;
     this.headerRef = null;
     this.originalClose = null;
@@ -525,7 +526,7 @@ class RoundSelectPositioner {
 
     return {
       header: (isCliMode ? cliHeader : classicHeader) || null,
-      skinClass: isCliMode ? "cli-modal" : "classic-modal"
+      skinClass: isCliMode ? ROUND_SELECT_UI.CSS_CLASSES.CLI_MODAL : ROUND_SELECT_UI.CSS_CLASSES.CLASSIC_MODAL
     };
   }
 
@@ -570,7 +571,7 @@ class RoundSelectPositioner {
       const height = this.headerRef?.offsetHeight;
       if (Number.isFinite(height) && height >= 0) {
         this.backdrop.style.setProperty("--modal-inset-top", `${height}px`);
-        this.backdrop.classList.add("header-aware");
+        this.backdrop.classList.add(ROUND_SELECT_UI.CSS_CLASSES.HEADER_AWARE);
       }
     } catch {}
   }
