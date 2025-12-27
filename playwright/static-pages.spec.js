@@ -18,10 +18,18 @@ test.describe("Static pages", () => {
 
     const countryField = page.getByTestId("create-country");
     const weightField = page.getByTestId("create-weight");
-    await expect(countryField).toHaveJSProperty("validity.valid", false);
-    await expect(weightField).toHaveJSProperty("validity.valid", false);
-    await expect(countryField).toHaveJSProperty("validationMessage", /.+/);
-    await expect(weightField).toHaveJSProperty("validationMessage", /.+/);
+    
+    // Check validity state
+    const countryValid = await countryField.evaluate((el) => el.validity.valid);
+    const weightValid = await weightField.evaluate((el) => el.validity.valid);
+    expect(countryValid).toBe(false);
+    expect(weightValid).toBe(false);
+    
+    // Check validation messages are non-empty
+    const countryMsg = await countryField.evaluate((el) => el.validationMessage);
+    const weightMsg = await weightField.evaluate((el) => el.validationMessage);
+    expect(countryMsg.length).toBeGreaterThan(0);
+    expect(weightMsg.length).toBeGreaterThan(0);
 
     await page.getByTestId(NAV_RANDOM_JUDOKA).click();
     await verifyPageBasics(page, [], { expectNav: false });
