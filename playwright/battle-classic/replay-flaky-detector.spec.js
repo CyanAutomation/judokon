@@ -52,6 +52,7 @@ test.describe("Classic Battle — Replay flaky detector", () => {
     await expect(opponentScoreValue).toHaveText("0");
 
     const roundCounter = page.getByTestId("round-counter");
+    await expect(roundCounter).toBeVisible();
     await expect(roundCounter).toHaveText(/Round\s*1/);
   });
 });
