@@ -89,6 +89,12 @@ const resolveVarTokens = (value, variables) =>
 
 const parseHexColor = (value) => {
   const trimmed = value.replace("#", "").trim();
+  
+  // Validate hex characters
+  if (!/^[0-9a-fA-F]+$/.test(trimmed)) {
+    return null;
+  }
+  
   if (trimmed.length === 3) {
     const [r, g, b] = trimmed.split("").map((char) => char + char);
     return {
