@@ -34,6 +34,9 @@ const VALID_JUDOKA = {
 const GOKYO_LOOKUP = { 1: { id: 1, name: "Ouchi-gari" } };
 
 const parseHtmlFragment = (html) => {
+  if (html == null) {
+    throw new Error("HTML content is required");
+  }
   const wrapper = document.createElement("div");
   wrapper.innerHTML = html;
   return wrapper;
