@@ -125,10 +125,18 @@ const parseRgbColor = (value) => {
   const parts = match[1].split(",").map((part) => part.trim());
   const [r, g, b] = parts.slice(0, 3).map((part) => Number(part));
   const a = parts[3] === undefined ? 1 : Number(parts[3]);
+  
+  // Validate RGB values
+  if (isNaN(r) || isNaN(g) || isNaN(b) || isNaN(a) ||
+      r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 ||
+      a < 0 || a > 1) {
+    return null;
+  }
+  
   return {
-    r,
-    g,
-    b,
+    r: Math.round(r),
+    g: Math.round(g),
+    b: Math.round(b),
     a
   };
 };
