@@ -21,14 +21,8 @@ test.describe("Classic Battle — stability probe", () => {
     await btn.first().click();
 
     await expect(roundMessage).toBeVisible();
-    await page.waitForFunction(
-      (selector, previousText) => {
-        const current = document.querySelector(selector)?.textContent?.trim();
-        return Boolean(current && current !== previousText);
-      },
-      selectors.roundMessage(),
-      initialRoundText?.trim() ?? "",
-      { timeout: 10000 }
-    );
+    await expect(roundMessage).not.toHaveText(initialRoundText, { timeout: 10000 });
+    await expect(roundMessage).toContainText("You picked:", { timeout: 10000 });
+    await expect(roundMessage).toContainText("Opponent picked:", { timeout: 10000 });
   });
 });
