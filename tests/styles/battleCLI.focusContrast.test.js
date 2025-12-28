@@ -13,14 +13,18 @@ const CLI_CSS_PATH = resolve("src/pages/battleCLI.css");
 const escapeRegex = (value) => value.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
 
 const getRuleBlock = (css, selector, startIndex = 0) => {
-  const pattern = new RegExp(`${escapeRegex(selector)}[^\\{]*\\{`, "g");
-  pattern.lastIndex = startIndex;
-  const match = pattern.exec(css);
-  if (!match) {
+  // Use a more robust approach to find CSS rules
+  const selectorIndex = css.indexOf(selector, startIndex);
+  if (selectorIndex === -1) {
+    return null;
+  }
+  
+  const openBrace = css.indexOf("{", selectorIndex);
+  if (openBrace === -1) {
     return null;
   }
 
-  const blockStart = css.indexOf("{", match.index) + 1;
+  const blockStart = openBrace + 1;
   let depth = 1;
   for (let index = blockStart; index < css.length; index += 1) {
     const char = css[index];
