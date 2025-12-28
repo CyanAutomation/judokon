@@ -211,8 +211,14 @@ const resolveColor = (value, variables) => {
 };
 
 const buildContrastCases = () => {
-  const baseCss = getCssText(BASE_CSS_PATH);
-  const battleCss = getCssText(BATTLE_CSS_PATH);
+  let baseCss, battleCss;
+  try {
+    baseCss = getCssText(BASE_CSS_PATH);
+    battleCss = getCssText(BATTLE_CSS_PATH);
+  } catch (error) {
+    throw new Error(`Failed to read CSS files: ${error.message}. Ensure ${BASE_CSS_PATH} and ${BATTLE_CSS_PATH} exist.`);
+  }
+  
   const variables = parseVariables(baseCss);
   const requireDeclaration = (value, label) => {
     if (!value) {
