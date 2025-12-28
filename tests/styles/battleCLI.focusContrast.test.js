@@ -187,6 +187,9 @@ const cliRootText = resolveColorValue(
 const focusOutline = getLastDeclaration(css, "button:focus", "outline");
 const focusBoxShadow = getLastDeclaration(css, "button:focus", "box-shadow");
 const focusRingSource = focusOutline ?? focusBoxShadow;
+if (!focusRingSource) {
+  throw new Error("No focus ring styles found in battleCLI.css for button:focus");
+}
 const focusRingColor = resolveColorValue(focusRingSource, variables, {
   const backgroundRgb = parseHexColor(cliRootBackground);
   if (!backgroundRgb) {
