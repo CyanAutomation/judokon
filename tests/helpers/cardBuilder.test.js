@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import * as cardRender from "../../src/helpers/cardRender.js";
 import { createScrollButton } from "../../src/helpers/carousel/scroll.js";
 import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
-import { generateCardPortrait, generateCardStats } from "../../src/helpers/cardRender.js";
+// Remove this line - functions already available via cardRender import
 import { withMutedConsole } from "../utils/console.js";
 import { naturalClick } from "../utils/componentTestUtils.js";
 
