@@ -27,16 +27,19 @@ describe("battleCLI verbose mode visibility", () => {
 
     expect(checkbox.checked).toBe(false);
     expect(section.getAttribute("aria-expanded")).toBe("false");
+    expect(section.getAttribute("aria-hidden")).toBe("true");
     expect(isVerboseVisible()).toBe(false);
     expect(indicator.style.display).toBe("");
-    expect(indicator.getAttribute("aria-hidden")).toBeNull();
+    expect(indicator.getAttribute("aria-hidden")).toBe("true");
 
     checkbox.click();
 
     expect(checkbox.checked).toBe(true);
     expect(section.getAttribute("aria-expanded")).toBe("true");
+    expect(section.getAttribute("aria-hidden")).toBe("false");
     expect(document.activeElement).toBe(log);
     expect(isVerboseVisible()).toBe(true);
+    expect(indicator.getAttribute("aria-hidden")).toBe("false");
   });
 
   it("responds to feature flag change events", async () => {

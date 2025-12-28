@@ -1,7 +1,7 @@
 export const CLI_DOM_TEMPLATE = `
   <div class="terminal-title-bar">bash - JU-DO-KON</div>
   <a href="#cli-main" class="skip-link">Skip to main content</a>
-  <div id="cli-root" class="cli-root" data-round="0" data-target="0" data-test="cli-root">
+  <div id="cli-root" class="cli-root" data-round="0" data-target="0" data-test="cli-root" data-verbose="false">
     <header id="cli-header" class="cli-header" role="banner">
       <div class="cli-title">
         <a href="../../index.html" data-testid="home-link" aria-label="Return to home">Home</a>

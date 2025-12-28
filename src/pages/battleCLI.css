@@ -137,14 +137,30 @@ body.scanlines::before {
   border-radius: 3px;
   margin-left: 8px;
 }
-#cli-root:not(:has(#verbose-toggle:checked)) #cli-verbose-section {
-  display: none;
+@supports selector(:has(*)) {
+  #cli-root:not(:has(#verbose-toggle:checked)) #cli-verbose-section {
+    display: none;
+  }
+  #cli-root:not(:has(#verbose-toggle:checked)) #verbose-indicator {
+    display: none;
+  }
+  #cli-root:has(#verbose-toggle:checked) #verbose-indicator {
+    display: inline;
+  }
 }
-#cli-root:not(:has(#verbose-toggle:checked)) #verbose-indicator {
-  display: none;
-}
-#cli-root:has(#verbose-toggle:checked) #verbose-indicator {
-  display: inline;
+@supports not selector(:has(*)) {
+  #cli-root[data-verbose="false"] #cli-verbose-section {
+    display: none;
+  }
+  #cli-root[data-verbose="false"] #verbose-indicator {
+    display: none;
+  }
+  #cli-root[data-verbose="true"] #cli-verbose-section {
+    display: block;
+  }
+  #cli-root[data-verbose="true"] #verbose-indicator {
+    display: inline;
+  }
 }
 /* Enhanced countdown styling with terminal aesthetics */
 #cli-countdown {
