@@ -39,6 +39,7 @@ test.describe("Classic Battle — Replay flaky detector", () => {
 
     await expect(matchEndModal).toBeVisible();
 
+    await page.waitForSelector("#match-replay-button");
     await page.locator("#match-replay-button").click();
 
     // Wait for the UI to fully re-stabilize after replay.
