@@ -17,6 +17,7 @@ test.describe("Classic Battle — Replay flaky detector", () => {
     await waitForBattleReady(page, { allowFallback: false });
 
     // Start first match
+    await page.waitForSelector("#round-select-1");
     await page.click("#round-select-1");
 
     const matchEndModal = page.locator("#match-end-modal");
