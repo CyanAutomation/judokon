@@ -56,9 +56,6 @@ describe("touch target sizes", () => {
     style.textContent = `:root { --touch-target-size: 48px; }\n${navbarCss}\n${layoutCss}`;
     document.head.appendChild(style);
 
-    const touchTargetSize = "48px";
-    document.documentElement.style.setProperty("--touch-target-size", touchTargetSize);
-
     const filterButton = document.querySelector(".filter-bar button");
     const logoLink = document.querySelector(".logo-container a");
     expect(filterButton).toBeTruthy();
