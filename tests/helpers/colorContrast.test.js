@@ -70,7 +70,10 @@ function parseComponentStyles(vars) {
 
     const selectors = rule.selectors ?? [rule.selector];
     for (const target of targets) {
-      if (!selectors.includes(target.selector)) continue;
+      const hasMatchingSelector = selectors.some(selector => 
+        selector.trim() === target.selector
+      );
+      if (!hasMatchingSelector) continue;
       rule.walkDecls(target.prop, (decl) => {
         colors[target.label] = decl.value.trim();
       });
