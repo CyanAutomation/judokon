@@ -6,7 +6,7 @@ export const CLI_DOM_TEMPLATE = `
       <div class="cli-title">
         <a href="../../index.html" data-testid="home-link" aria-label="Return to home">Home</a>
         &nbsp;|&nbsp; Classic Battle (CLI)
-        <span id="verbose-indicator" class="verbose-indicator" style="display: none">Verbose ON</span>
+        <span id="verbose-indicator" class="verbose-indicator">Verbose ON</span>
         <span id="battle-state-badge" data-flag="battleStateBadge" class="state-badge" style="display: none">State: -</span>
       </div>
       <div class="cli-status" aria-live="polite" aria-atomic="true">
@@ -127,7 +127,7 @@ export const CLI_DOM_TEMPLATE = `
         </div>
       </details>
       <div class="ascii-sep">------------------------</div>
-      <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" data-flag="cliVerbose" hidden>
+      <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" data-flag="cliVerbose">
         <pre
           id="cli-verbose-log"
           aria-atomic="false"

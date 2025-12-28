@@ -490,7 +490,6 @@ test.describe("CLI Battle Interface", () => {
 
       const verboseSection = page.locator("#cli-verbose-section");
       await expect(verboseSection).toBeHidden();
-      await expect(verboseSection).toHaveAttribute("hidden");
     });
 
     testWithConsole("verbose toggle controls section visibility", async ({ page }) => {

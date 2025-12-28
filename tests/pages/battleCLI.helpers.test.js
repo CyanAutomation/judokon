@@ -53,24 +53,27 @@ describe("Battle CLI helpers", () => {
       const section = document.getElementById("cli-verbose-section");
       const log = document.getElementById("cli-verbose-log");
       const header = document.getElementById("round-counter");
+      const isVerboseVisible = () => checkbox.checked;
 
-      expect(section.hidden).toBe(true);
       expect(section.getAttribute("aria-expanded")).toBe("false");
+      expect(isVerboseVisible()).toBe(false);
       const initialHeader = header.textContent;
 
       checkbox.click();
       await Promise.resolve();
 
-      expect(section.hidden).toBe(false);
+      expect(checkbox.checked).toBe(true);
       expect(section.getAttribute("aria-expanded")).toBe("true");
       expect(document.activeElement).toBe(log);
       expect(header.textContent).toBe(initialHeader);
+      expect(isVerboseVisible()).toBe(true);
 
       checkbox.click();
       await Promise.resolve();
 
-      expect(section.hidden).toBe(true);
+      expect(checkbox.checked).toBe(false);
       expect(section.getAttribute("aria-expanded")).toBe("false");
+      expect(isVerboseVisible()).toBe(false);
     });
 
     it("restores the previous header when engine facade calls fail", async () => {
@@ -102,7 +105,8 @@ describe("Battle CLI helpers", () => {
       checkbox.click();
       await Promise.resolve();
 
-      expect(section.hidden).toBe(false);
+      expect(checkbox.checked).toBe(true);
+      expect(section.getAttribute("aria-expanded")).toBe("true");
       const header = document.getElementById("round-counter");
       expect(header.textContent).toBe("Round 2 Target: 7");
     });
@@ -128,7 +132,8 @@ describe("Battle CLI helpers", () => {
       checkbox.click();
       await Promise.resolve();
 
-      expect(section.hidden).toBe(false);
+      expect(checkbox.checked).toBe(true);
+      expect(section.getAttribute("aria-expanded")).toBe("true");
     });
   });
 

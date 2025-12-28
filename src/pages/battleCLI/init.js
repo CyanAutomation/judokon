@@ -3039,14 +3039,7 @@ export async function setupFlags() {
   const updateVerbose = () => {
     if (checkbox) checkbox.checked = !!verboseEnabled;
     if (section) {
-      section.hidden = !verboseEnabled;
-      // Update aria-expanded for accessibility
       section.setAttribute("aria-expanded", verboseEnabled ? "true" : "false");
-    }
-    const indicator = byId("verbose-indicator");
-    if (indicator) {
-      indicator.style.display = verboseEnabled ? "inline" : "none";
-      indicator.setAttribute("aria-hidden", verboseEnabled ? "false" : "true");
     }
     if (verboseEnabled) {
       try {

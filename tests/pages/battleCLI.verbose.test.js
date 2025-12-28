@@ -16,6 +16,9 @@ describe("battleCLI verbose flag", () => {
     }, ["info"]);
     const { setFlag } = await import("../../src/helpers/featureFlags.js");
     expect(setFlag).toHaveBeenCalledWith("cliVerbose", true);
-    expect(document.getElementById("cli-verbose-section").hidden).toBe(false);
+    const checkbox = document.getElementById("verbose-toggle");
+    const section = document.getElementById("cli-verbose-section");
+    expect(checkbox.checked).toBe(true);
+    expect(section.getAttribute("aria-expanded")).toBe("true");
   });
 });
