@@ -312,7 +312,7 @@ function populateImportRegistryOptions() {
   modes.forEach((mode) => {
     const option = document.createElement("option");
     option.value = mode;
-    option.textContent = mode;
+  const modes = layoutRegistry ? Object.keys(layoutRegistry).sort() : [];
     registrySelect.appendChild(option);
   });
 }
