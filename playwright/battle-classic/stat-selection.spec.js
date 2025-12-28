@@ -37,7 +37,13 @@ test.describe("Classic Battle stat selection", () => {
       await expect(score.locator('[data-side="player"]')).toHaveText(/You:\s*0/);
       await expect(score.locator('[data-side="opponent"]')).toHaveText(/Opponent:\s*0/);
       await buttons.first().click();
-      await expect(buttons.first()).toBeDisabled();
+      await page.waitForFunction(
+        () => {
+          const firstButton = document.querySelector('[data-testid="stat-button"]');
+          return firstButton && firstButton.disabled;
+        },
+        { timeout: 5000 }
+      );
 
       // Timer should be cleared or show 0s after stat selection
       await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: 0s)$/);
