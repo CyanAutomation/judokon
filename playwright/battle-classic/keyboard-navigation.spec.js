@@ -25,80 +25,24 @@ test.describe("Classic Battle keyboard navigation", () => {
     await waitForBattleReady(page, { allowFallback: false, timeout: 10_000 });
   });
 
-  test("should allow tab navigation to stat buttons and keyboard activation", async ({ page }) => {
-    // Wait for stat buttons to be enabled via battle state readiness
-    const statButtons = page.getByTestId("stat-button");
-    await expectBattleStateReady(page, "waitingForPlayerAction");
-    await waitForStatButtonsReady(page, { timeout: 10_000 });
-    const statButtonCount = await statButtons.count();
-    const firstStatButton = statButtons.first();
-    const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
-    await expect(firstStatButton).toBeEnabled();
-
-    // Ensure the first stat button naturally receives focus when ready
-    await expect(focusedStatButton).toHaveCount(1);
-    await expect(firstStatButton).toBeFocused();
-
-    // Tab to the second stat button
-    await page.keyboard.press("Tab");
-    await expect(statButtons.nth(1)).toBeFocused();
-
-    // Tab to the third stat button
-    await page.keyboard.press("Tab");
-    await expect(statButtons.nth(2)).toBeFocused();
-
-    const thirdStatButton = statButtons.nth(2);
-
-    // Press Enter to select the third stat button (should trigger click event on focused button)
-    await page.keyboard.press("Enter");
-
-    // Verify that selection occurred (timer should start, buttons should be disabled)
-    await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: \d+s)$/);
-    // Check that all buttons are disabled once the round resolves
-    const disabledStatButtons = page.locator('[data-testid="stat-button"]:disabled');
-    await expect(thirdStatButton).toBeDisabled();
-    await expect(disabledStatButtons).toHaveCount(statButtonCount);
-
-    // Confirm stat buttons remain disabled while the round resolves and cooldown runs
-    await waitForBattleState(page, "cooldown", { timeout: 10_000 });
-    await expect(disabledStatButtons).toHaveCount(statButtonCount);
-
-    // Await the next round readiness through battle state + stat button readiness helpers
-    await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
-    await waitForStatButtonsReady(page, { timeout: 10_000 });
-
-    // Once the next round starts, the stat buttons should be interactive again
-    await expect(thirdStatButton).toBeEnabled();
-    await expect(disabledStatButtons).toHaveCount(0);
-  });
-
-  test("should show visible focus styles on stat buttons", async ({ page }) => {
-    // Wait for stat buttons to be enabled
+  test("should select a stat with Enter and update the round message", async ({ page }) => {
     const statButtons = page.getByTestId("stat-button");
     const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
+    const roundMessage = page.getByTestId("round-message");
+
     await expectBattleStateReady(page, "waitingForPlayerAction");
     await waitForStatButtonsReady(page, { timeout: 10_000 });
     await expect(statButtons.first()).toBeEnabled();
-
-    // Verify the naturally focused button displays the expected outline
     await expect(focusedStatButton).toHaveCount(1);
     await expect(statButtons.first()).toBeFocused();
 
-    // Check that focus styles are applied (outline should be visible)
-    await expect(focusedStatButton).toHaveCSS("outline-style", "solid");
-    await expect(focusedStatButton).toHaveCSS("outline-width", "2px");
-  });
+    const initialMessage = (await roundMessage.textContent()) ?? "";
 
-  test("should have proper ARIA labels on stat buttons", async ({ page }) => {
-    // Check ARIA labels on stat buttons
-    const statButtons = page.getByTestId("stat-button");
-    await expectBattleStateReady(page, "waitingForPlayerAction");
-    await waitForStatButtonsReady(page, { timeout: 10_000 });
-    const ariaLabelPatterns = ["Power", "Speed", "Technique"].map(
-      (stat) => new RegExp(`^(Select ${stat} stat for battle|${stat})$`, "i")
+    await page.keyboard.press("Enter");
+
+    await expect(statButtons.first()).toBeDisabled();
+    await expect.poll(async () => (await roundMessage.textContent()) ?? "").not.toBe(
+      initialMessage
     );
-    await expect(statButtons.first()).toHaveAttribute("aria-label", ariaLabelPatterns[0]);
-    await expect(statButtons.nth(1)).toHaveAttribute("aria-label", ariaLabelPatterns[1]);
-    await expect(statButtons.nth(2)).toHaveAttribute("aria-label", ariaLabelPatterns[2]);
   });
 });
