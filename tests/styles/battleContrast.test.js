@@ -133,7 +133,7 @@ const parseMixStop = (stop) => {
   const trimmed = stop.trim();
   const match = /(.*)\s+([\d.]+%)$/.exec(trimmed);
   if (!match) {
-    return { color: trimmed, weight: 50 };
+    return { color: trimmed, weight: null };
   }
   return {
     color: match[1].trim(),
