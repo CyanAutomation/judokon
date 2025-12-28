@@ -228,7 +228,8 @@ const buildContrastCases = () => {
   };
   const textColorDeclaration =
     getLastDeclaration(battleCss, "#battle-area .player-slot", "color") ??
-    variables["--color-text"];
+    variables["--color-text"] ??
+    "#ffffff"; // Default fallback color
   const textColor = resolveColor(textColorDeclaration, variables);
 
   const playerBackgroundDeclaration = requireDeclaration(
