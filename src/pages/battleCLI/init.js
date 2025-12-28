@@ -3037,9 +3037,18 @@ export async function setupFlags() {
   };
 
   const updateVerbose = () => {
+    const root = byId("cli-root");
+    const indicator = byId("verbose-indicator");
     if (checkbox) checkbox.checked = !!verboseEnabled;
+    if (root) {
+      root.dataset.verbose = verboseEnabled ? "true" : "false";
+    }
     if (section) {
       section.setAttribute("aria-expanded", verboseEnabled ? "true" : "false");
+      section.setAttribute("aria-hidden", verboseEnabled ? "false" : "true");
+    }
+    if (indicator) {
+      indicator.setAttribute("aria-hidden", verboseEnabled ? "false" : "true");
     }
     if (verboseEnabled) {
       try {

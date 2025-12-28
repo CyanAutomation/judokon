@@ -30,7 +30,7 @@ describe("battleCLI verbose flag", () => {
     const isIndicatorVisible = () => checkbox.checked;
     expect(indicator).toBeTruthy();
     expect(indicator.style.display).toBe("");
-    expect(indicator.getAttribute("aria-hidden")).toBeNull();
+    expect(indicator.getAttribute("aria-hidden")).toBe("true");
     expect(isIndicatorVisible()).toBe(false);
 
     checkbox.checked = true;
@@ -39,5 +39,6 @@ describe("battleCLI verbose flag", () => {
     await Promise.resolve();
 
     expect(isIndicatorVisible()).toBe(true);
+    expect(indicator.getAttribute("aria-hidden")).toBe("false");
   });
 });
