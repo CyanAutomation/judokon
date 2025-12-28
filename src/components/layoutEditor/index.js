@@ -304,13 +304,7 @@ function showAsciiModal(ascii) {
   }
 }
 
-function showImportModal() {
-  const modal = document.getElementById("importModal");
-  if (!modal.open) {
-    modal.showModal();
-  }
-
-  // Setup event listeners for import modal
+function populateImportRegistryOptions() {
   const registrySelect = document.getElementById("registrySelect");
   registrySelect.innerHTML = '<option value="">-- Select from Registry --</option>';
 
@@ -321,6 +315,13 @@ function showImportModal() {
     option.textContent = mode;
     registrySelect.appendChild(option);
   });
+}
+
+function setupImportModalHandlers(modal) {
+  if (modal.dataset.handlersBound) return;
+  modal.dataset.handlersBound = "true";
+
+  const registrySelect = document.getElementById("registrySelect");
 
   document.getElementById("importFromTextBtn").onclick = async () => {
     const json = document.getElementById("importTextarea").value;
@@ -357,7 +358,7 @@ function showImportModal() {
     }
   };
 
-  document.getElementById("importFromRegistryBtn").onclick = async () => {
+  document.getElementById("importFromRegistryBtn").onclick = () => {
     const mode = registrySelect.value;
     if (!mode) {
       consolePanel.error("Select a layout mode.");
@@ -367,6 +368,16 @@ function showImportModal() {
     handleModeChange({ target: { value: mode } });
     modal.close();
   };
+}
+
+function showImportModal() {
+  const modal = document.getElementById("importModal");
+  populateImportRegistryOptions();
+  setupImportModalHandlers(modal);
+
+  if (!modal.open) {
+    modal.showModal();
+  }
 }
 
 // Initialize on DOM ready
