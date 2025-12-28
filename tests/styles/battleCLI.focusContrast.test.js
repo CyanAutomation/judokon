@@ -188,10 +188,11 @@ const focusOutline = getLastDeclaration(css, "button:focus", "outline");
 const focusBoxShadow = getLastDeclaration(css, "button:focus", "box-shadow");
 const focusRingSource = focusOutline ?? focusBoxShadow;
 const focusRingColor = resolveColorValue(focusRingSource, variables, {
-  r: parseInt(cliRootBackground.slice(1, 3), 16),
-  g: parseInt(cliRootBackground.slice(3, 5), 16),
-  b: parseInt(cliRootBackground.slice(5, 7), 16),
-  a: 1
+  const backgroundRgb = parseHexColor(cliRootBackground);
+  if (!backgroundRgb) {
+    throw new Error(`Invalid background color format: ${cliRootBackground}`);
+  }
+  const focusRingColor = resolveColorValue(focusRingSource, variables, backgroundRgb);
 });
 
 const statFocusBackground = resolveColorValue(
