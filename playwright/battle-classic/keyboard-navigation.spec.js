@@ -41,8 +41,6 @@ test.describe("Classic Battle keyboard navigation", () => {
     await page.keyboard.press("Enter");
 
     await expect(statButtons.first()).toBeDisabled();
-    await expect.poll(async () => (await roundMessage.textContent()) ?? "").not.toBe(
-      initialMessage
-    );
+    await expect(roundMessage).not.toHaveText(initialMessage, { timeout: 5000 });
   });
 });
