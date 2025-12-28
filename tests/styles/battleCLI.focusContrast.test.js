@@ -175,14 +175,19 @@ const resolveInheritedColor = (value, fallback) => {
 
 const css = readFileSync(CLI_CSS_PATH, "utf8");
 const variables = parseVariables(css);
-const cliRootBackground = resolveColorValue(
-  getLastDeclaration(css, "#cli-root", "background"),
-  variables
-);
-const cliRootText = resolveColorValue(
-  getLastDeclaration(css, "#cli-root", "color"),
-  variables
-);
+
+// Parse all required declarations once
+const declarations = {
+  cliRootBackground: getLastDeclaration(css, "#cli-root", "background"),
+  cliRootColor: getLastDeclaration(css, "#cli-root", "color"),
+  focusOutline: getLastDeclaration(css, "button:focus", "outline"),
+  focusBoxShadow: getLastDeclaration(css, "button:focus", "box-shadow"),
+  statFocusBackground: getLastDeclaration(css, ".cli-stat:focus", "background"),
+  statColor: getLastDeclaration(css, ".cli-stat", "color")
+};
+
+const cliRootBackground = resolveColorValue(declarations.cliRootBackground, variables);
+const cliRootText = resolveColorValue(declarations.cliRootColor, variables);
 
 const focusOutline = getLastDeclaration(css, "button:focus", "outline");
 const focusBoxShadow = getLastDeclaration(css, "button:focus", "box-shadow");
