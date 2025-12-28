@@ -152,7 +152,7 @@ body {
   font-size: 0.85rem;
 }
 
-.validation-message.hidden {
+.validation-message:empty {
   display: none;
 }
 

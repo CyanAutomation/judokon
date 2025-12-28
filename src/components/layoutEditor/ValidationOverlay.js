@@ -23,11 +23,9 @@ export class ValidationOverlay {
 
     const message = errors.join("; ");
     this.messageElement.textContent = `Validation errors: ${message}`;
-    this.messageElement.classList.remove("hidden");
   }
 
   clear() {
     this.messageElement.textContent = "";
-    this.messageElement.classList.add("hidden");
   }
 }
