@@ -21,7 +21,7 @@ test.describe("Classic Battle — stability probe", () => {
     await btn.first().click();
 
     await expect(roundMessage).toBeVisible();
-    await expect(roundMessage).not.toHaveText(initialRoundText, { timeout: 10000 });
+    await expect(roundMessage).not.toHaveText(initialRoundText.trim(), { timeout: 10000 });
     await expect(roundMessage).toContainText("You picked:", { timeout: 10000 });
     await expect(roundMessage).toContainText("Opponent picked:", { timeout: 10000 });
   });
