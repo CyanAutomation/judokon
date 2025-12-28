@@ -137,6 +137,15 @@ body.scanlines::before {
   border-radius: 3px;
   margin-left: 8px;
 }
+#cli-root:not(:has(#verbose-toggle:checked)) #cli-verbose-section {
+  display: none;
+}
+#cli-root:not(:has(#verbose-toggle:checked)) #verbose-indicator {
+  display: none;
+}
+#cli-root:has(#verbose-toggle:checked) #verbose-indicator {
+  display: inline;
+}
 /* Enhanced countdown styling with terminal aesthetics */
 #cli-countdown {
   min-height: 1.2em !important; /* Force em units for PRD compliance */

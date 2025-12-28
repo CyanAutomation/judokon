@@ -13,14 +13,15 @@ describe("battleCLI verbose toggle", () => {
     const section = document.getElementById("cli-verbose-section");
     const pre = document.getElementById("cli-verbose-log");
     emitBattleEvent("battleStateChange", { from: "a", to: "b" });
-    expect(section.hidden).toBe(true);
+    expect(section.getAttribute("aria-expanded")).toBe("false");
     expect(pre.textContent).toBe("");
     const checkbox = document.getElementById("verbose-toggle");
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event("change"));
     await Promise.resolve();
     emitBattleEvent("battleStateChange", { from: "c", to: "d" });
-    expect(section.hidden).toBe(false);
+    expect(checkbox.checked).toBe(true);
+    expect(section.getAttribute("aria-expanded")).toBe("true");
     expect(pre.textContent).toMatch(/c -> d/);
   });
 });

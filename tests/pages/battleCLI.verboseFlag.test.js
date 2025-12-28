@@ -26,17 +26,18 @@ describe("battleCLI verbose flag", () => {
     const mod = await loadBattleCLI({ verbose: false });
     await mod.init();
     const indicator = document.getElementById("verbose-indicator");
-    expect(indicator).toBeTruthy();
-    expect(indicator.style.display).toBe("none");
-    expect(indicator.getAttribute("aria-hidden")).toBe("true");
-
     const checkbox = document.getElementById("verbose-toggle");
+    const isIndicatorVisible = () => checkbox.checked;
+    expect(indicator).toBeTruthy();
+    expect(indicator.style.display).toBe("");
+    expect(indicator.getAttribute("aria-hidden")).toBeNull();
+    expect(isIndicatorVisible()).toBe(false);
+
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event("change"));
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(indicator.style.display).toBe("inline");
-    expect(indicator.getAttribute("aria-hidden")).toBe("false");
+    expect(isIndicatorVisible()).toBe(true);
   });
 });

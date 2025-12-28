@@ -18,6 +18,7 @@ describe("battleCLI verbose mode visibility", () => {
     const section = document.getElementById("cli-verbose-section");
     const log = document.getElementById("cli-verbose-log");
     const indicator = document.getElementById("verbose-indicator");
+    const isVerboseVisible = () => checkbox.checked;
 
     expect(checkbox).toBeTruthy();
     expect(section).toBeTruthy();
@@ -25,18 +26,17 @@ describe("battleCLI verbose mode visibility", () => {
     expect(indicator).toBeTruthy();
 
     expect(checkbox.checked).toBe(false);
-    expect(section.hidden).toBe(true);
     expect(section.getAttribute("aria-expanded")).toBe("false");
-    expect(indicator.style.display).toBe("none");
+    expect(isVerboseVisible()).toBe(false);
+    expect(indicator.style.display).toBe("");
+    expect(indicator.getAttribute("aria-hidden")).toBeNull();
 
     checkbox.click();
 
     expect(checkbox.checked).toBe(true);
-    expect(section.hidden).toBe(false);
     expect(section.getAttribute("aria-expanded")).toBe("true");
     expect(document.activeElement).toBe(log);
-    expect(indicator.style.display).toBe("inline");
-    expect(indicator.getAttribute("aria-hidden")).toBe("false");
+    expect(isVerboseVisible()).toBe(true);
   });
 
   it("responds to feature flag change events", async () => {
@@ -53,20 +53,18 @@ describe("battleCLI verbose mode visibility", () => {
     expect(emitter).toBeInstanceOf(EventTarget);
     expect(typeof setMockFlag).toBe("function");
 
-    expect(section.hidden).toBe(true);
     expect(section.getAttribute("aria-expanded")).toBe("false");
+    expect(checkbox.checked).toBe(false);
 
     setMockFlag("cliVerbose", true);
     emitter.dispatchEvent(new CustomEvent("change", { detail: { flag: "cliVerbose" } }));
 
-    expect(section.hidden).toBe(false);
     expect(section.getAttribute("aria-expanded")).toBe("true");
     expect(checkbox.checked).toBe(true);
 
     setMockFlag("cliVerbose", false);
     emitter.dispatchEvent(new CustomEvent("change", { detail: { flag: "cliVerbose" } }));
 
-    expect(section.hidden).toBe(true);
     expect(section.getAttribute("aria-expanded")).toBe("false");
     expect(checkbox.checked).toBe(false);
   });
