@@ -17,7 +17,7 @@ function findTouchTargetRules(css) {
     const minWidth = rule.nodes.find((d) => d.prop === "min-width")?.value;
     const hasTouchTargetHeight = minHeight?.startsWith("var(--touch-target-size");
     const hasTouchTargetWidth = minWidth?.startsWith("var(--touch-target-size");
-    if (hasTouchTargetHeight && hasTouchTargetWidth) {
+    if (hasTouchTargetHeight || hasTouchTargetWidth) {
       matches.push(rule);
     }
   });
