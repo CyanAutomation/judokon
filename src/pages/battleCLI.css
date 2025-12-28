@@ -155,6 +155,9 @@ body.scanlines::before {
   #cli-root[data-verbose="false"] #verbose-indicator {
     display: none;
   }
+  #cli-root[data-verbose="true"] #cli-verbose-section {
+    display: block;
+  }
   #cli-root[data-verbose="true"] #verbose-indicator {
     display: inline;
   }
