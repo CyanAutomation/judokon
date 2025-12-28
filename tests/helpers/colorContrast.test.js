@@ -62,6 +62,9 @@ function parseComponentStyles(vars) {
   ];
 
   root.walkRules((rule) => {
+  const targetMap = new Map(targets.map(t => [t.selector, t]));
+  
+  root.walkRules((rule) => {
     rule.walkDecls((decl) => {
       if (decl.prop.startsWith("--")) {
         componentVars[decl.prop] = decl.value.trim();
@@ -69,14 +72,13 @@ function parseComponentStyles(vars) {
     });
 
     const selectors = rule.selectors ?? [rule.selector];
-    for (const target of targets) {
-      const hasMatchingSelector = selectors.some(selector => 
-        selector.trim() === target.selector
-      );
-      if (!hasMatchingSelector) continue;
-      rule.walkDecls(target.prop, (decl) => {
-        colors[target.label] = decl.value.trim();
-      });
+    for (const selector of selectors) {
+      const target = targetMap.get(selector.trim());
+      if (target) {
+        rule.walkDecls(target.prop, (decl) => {
+          colors[target.label] = decl.value.trim();
+        });
+      }
     }
   });
 
