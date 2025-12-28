@@ -331,26 +331,21 @@ body {
 
 /* Modals */
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
+  border: none;
+  padding: 0;
+  background: transparent;
+  width: min(90vw, 640px);
 }
 
-.modal.hidden {
-  display: none;
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
   background: white;
   border-radius: 4px;
   padding: 2rem;
+  width: 100%;
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
@@ -396,6 +391,17 @@ body {
 .modal-actions {
   display: flex;
   gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.modal-actions form,
+.modal-close {
+  margin: 0;
+}
+
+.modal-close {
+  display: flex;
   justify-content: flex-end;
   margin-top: 1.5rem;
 }
