@@ -64,7 +64,7 @@ describe("touch target sizes", () => {
     const filterStyles = window.getComputedStyle(filterButton);
     const logoStyles = window.getComputedStyle(logoLink);
     const isTouchTargetValue = (value) =>
-      value === touchTargetSize || value.startsWith("var(--touch-target-size");
+      value === touchTargetSize || value.startsWith("var(--touch-target-size)");
     expect(isTouchTargetValue(filterStyles.minHeight)).toBe(true);
     expect(isTouchTargetValue(filterStyles.minWidth)).toBe(true);
     expect(isTouchTargetValue(logoStyles.minHeight)).toBe(true);
