@@ -206,9 +206,21 @@ describe("css color contrast", () => {
       expect(rendered.querySelector(".judoka-card")).toBeTruthy();
       expect(rendered.querySelector(".judoka-card.common")).toBeTruthy();
     } finally {
-      globalThis.window = previousWindow;
-      globalThis.document = previousDocument;
-      globalThis.Node = previousNode;
+      if (previousWindow !== undefined) {
+        globalThis.window = previousWindow;
+      } else {
+        delete globalThis.window;
+      }
+      if (previousDocument !== undefined) {
+        globalThis.document = previousDocument;
+      } else {
+        delete globalThis.document;
+      }
+      if (previousNode !== undefined) {
+        globalThis.Node = previousNode;
+      } else {
+        delete globalThis.Node;
+      }
     }
   });
 });
