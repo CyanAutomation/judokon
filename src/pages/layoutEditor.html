@@ -96,7 +96,7 @@
     </div>
 
     <!-- Import Modal -->
-    <div id="importModal" class="modal hidden">
+    <dialog id="importModal" class="modal">
       <div class="modal-content">
         <h2>Import Layout</h2>
         <div class="import-options">
@@ -119,22 +119,26 @@
             <button id="importFromRegistryBtn">Load</button>
           </div>
         </div>
-        <button id="closeImportBtn" class="btn-secondary">Cancel</button>
+        <form method="dialog" class="modal-close">
+          <button id="closeImportBtn" class="btn-secondary" type="submit">Cancel</button>
+        </form>
       </div>
-    </div>
+    </dialog>
 
     <!-- ASCII Export Modal -->
-    <div id="asciiModal" class="modal hidden">
+    <dialog id="asciiModal" class="modal">
       <div class="modal-content">
         <h2>ASCII Preview</h2>
         <pre id="asciiOutput"></pre>
         <div class="modal-actions">
           <button id="copyAsciiBtn">Copy to Clipboard</button>
           <button id="downloadAsciiBtn">Download</button>
-          <button id="closeAsciiBtn" class="btn-secondary">Close</button>
+          <form method="dialog">
+            <button id="closeAsciiBtn" class="btn-secondary" type="submit">Close</button>
+          </form>
         </div>
       </div>
-    </div>
+    </dialog>
 
     <script type="module" src="../components/layoutEditor/index.js"></script>
   </body>

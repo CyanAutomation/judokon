@@ -259,7 +259,7 @@ Visual Feedback (highlight errors, update DOM)
     </div>
 
     <!-- Import Modal -->
-    <div id="importModal" class="modal hidden">
+    <dialog id="importModal" class="modal">
       <div class="modal-content">
         <h2>Import Layout</h2>
         <div class="import-options">
@@ -282,22 +282,26 @@ Visual Feedback (highlight errors, update DOM)
             <button id="importFromRegistryBtn">Load</button>
           </div>
         </div>
-        <button id="closeImportBtn" class="btn-secondary">Cancel</button>
+        <form method="dialog" class="modal-close">
+          <button id="closeImportBtn" class="btn-secondary" type="submit">Cancel</button>
+        </form>
       </div>
-    </div>
+    </dialog>
 
     <!-- ASCII Export Modal -->
-    <div id="asciiModal" class="modal hidden">
+    <dialog id="asciiModal" class="modal">
       <div class="modal-content">
         <h2>ASCII Preview</h2>
         <pre id="asciiOutput"></pre>
         <div class="modal-actions">
           <button id="copyAsciiBtn">Copy to Clipboard</button>
           <button id="downloadAsciiBtn">Download</button>
-          <button id="closeAsciiBtn" class="btn-secondary">Close</button>
+          <form method="dialog">
+            <button id="closeAsciiBtn" class="btn-secondary" type="submit">Close</button>
+          </form>
         </div>
       </div>
-    </div>
+    </dialog>
 
     <script type="module" src="../components/layoutEditor/index.js"></script>
   </body>
@@ -628,26 +632,21 @@ body {
 
 /* Modals */
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
+  border: none;
+  padding: 0;
+  background: transparent;
+  width: min(90vw, 640px);
 }
 
-.modal.hidden {
-  display: none;
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
   background: white;
   border-radius: 4px;
   padding: 2rem;
+  width: 100%;
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
@@ -693,6 +692,17 @@ body {
 .modal-actions {
   display: flex;
   gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.modal-actions form,
+.modal-close {
+  margin: 0;
+}
+
+.modal-close {
+  display: flex;
   justify-content: flex-end;
   margin-top: 1.5rem;
 }
@@ -1028,17 +1038,16 @@ function showAsciiModal(ascii) {
   document.getElementById("downloadAsciiBtn").onclick = () => {
     downloadFile(ascii, `layout.${Date.now()}.ascii.txt`, "text/plain");
   };
-
-  document.getElementById("closeAsciiBtn").onclick = () => {
-    modal.classList.add("hidden");
-  };
-
-  modal.classList.remove("hidden");
+  if (!modal.open) {
+    modal.showModal();
+  }
 }
 
 function showImportModal() {
-  // Placeholder; will be implemented in Phase 2
-  console.log("Import modal - to be implemented");
+  const modal = document.getElementById("importModal");
+  if (!modal.open) {
+    modal.showModal();
+  }
 }
 
 // Initialize on DOM ready

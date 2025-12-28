@@ -299,17 +299,16 @@ function showAsciiModal(ascii) {
   document.getElementById("downloadAsciiBtn").onclick = () => {
     downloadFile(ascii, `layout.${Date.now()}.ascii.txt`, "text/plain");
   };
-
-  document.getElementById("closeAsciiBtn").onclick = () => {
-    modal.classList.add("hidden");
-  };
-
-  modal.classList.remove("hidden");
+  if (!modal.open) {
+    modal.showModal();
+  }
 }
 
 function showImportModal() {
   const modal = document.getElementById("importModal");
-  modal.classList.remove("hidden");
+  if (!modal.open) {
+    modal.showModal();
+  }
 
   // Setup event listeners for import modal
   const registrySelect = document.getElementById("registrySelect");
@@ -333,7 +332,7 @@ function showImportModal() {
     try {
       const layout = JSON.parse(json);
       applyLayoutToEditor(layout, "imported");
-      modal.classList.add("hidden");
+      modal.close();
       consolePanel.info("Layout imported from JSON.");
     } catch (err) {
       consolePanel.error(`Invalid JSON: ${err.message}`);
@@ -351,7 +350,7 @@ function showImportModal() {
       const text = await file.text();
       const layout = JSON.parse(text);
       applyLayoutToEditor(layout, file.name);
-      modal.classList.add("hidden");
+      modal.close();
       consolePanel.info(`Layout imported from file: ${file.name}`);
     } catch (err) {
       consolePanel.error(`Failed to import file: ${err.message}`);
@@ -366,11 +365,7 @@ function showImportModal() {
     }
 
     handleModeChange({ target: { value: mode } });
-    modal.classList.add("hidden");
-  };
-
-  document.getElementById("closeImportBtn").onclick = () => {
-    modal.classList.add("hidden");
+    modal.close();
   };
 }
 
