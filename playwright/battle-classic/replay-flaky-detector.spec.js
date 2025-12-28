@@ -7,6 +7,7 @@ import selectors from "../helpers/selectors.js";
 // Keep runtime modest (N small) to avoid slowing CI while still surfacing races locally.
 
 test.describe("Classic Battle — Replay flaky detector", () => {
+  // PRD: design/productRequirementsDocuments/prdBattleScoreboard.md (replay resets score/round UI)
   test("replay loop maintains zeroed scoreboard", async ({ page }) => {
     // Align with existing classic battle setup used in replay.spec
     await page.addInitScript(() => {
@@ -15,72 +16,43 @@ test.describe("Classic Battle — Replay flaky detector", () => {
     await page.goto("/src/pages/battleClassic.html");
     await waitForBattleReady(page, { allowFallback: false });
 
-    const configured = await page.evaluate(() => {
-      const engineApi = window.__TEST_API?.engine;
-      if (!engineApi) {
-        return { applied: false, error: "ENGINE_API_UNAVAILABLE" };
-      }
-
-      const success = engineApi.setPointsToWin(1);
-      const current = engineApi.getPointsToWin();
-      return { applied: success && current === 1, error: success ? null : "SET_FAILED" };
-    });
-
-    if (!configured.applied) {
-      throw new Error(`Failed to configure replay detector: ${configured.error}`);
-    }
     // Start first match
-    await page.click("#round-select-2");
+    await page.waitForSelector("#round-select-1");
+    await page.click("#round-select-1");
 
-    // Helper to run a replay click via either end modal or scaffold button.
-    const clickReplay = async () => {
-      // Prefer data-testid on scaffold if present.
-      const scaffoldBtn = page.getByTestId("replay-button");
-      if (await scaffoldBtn.isVisible().catch(() => false)) {
-        await scaffoldBtn.click();
-        return;
-      }
-      // Fallback to end-of-match modal id
-      const modalBtn = page.locator("#match-replay-button");
-      await modalBtn.click();
-    };
-
-    await waitForRoundStats(page);
-
-    // End the current round quickly using the first available stat button.
+    const matchEndModal = page.locator("#match-end-modal");
+    const nextButton = page.locator("#next-button");
     const anyPlayerStat = page.locator(selectors.statButton()).first();
-    await anyPlayerStat.click();
 
-    // Wait for replay control to be visible before interacting.
-    await page.waitForSelector("#match-replay-button, [data-testid='replay-button']");
-    await clickReplay();
+    for (let round = 0; round < 5; round += 1) {
+      await waitForRoundStats(page);
+      await anyPlayerStat.click();
+
+      await page.waitForSelector("#match-end-modal, #next-button[data-next-ready='true']");
+      if (await matchEndModal.isVisible().catch(() => false)) {
+        break;
+      }
+
+      await expect(nextButton).toHaveAttribute("data-next-ready", "true");
+      await nextButton.click();
+    }
+
+    await expect(matchEndModal).toBeVisible();
+
+    await page.waitForSelector("#match-replay-button");
+    await page.locator("#match-replay-button").click();
 
     // Wait for the UI to fully re-stabilize after replay.
     await waitForRoundStats(page);
 
     // Immediately after replay, scoreboard should be zero.
-    const playerScore = page.locator(
-      "#player-score, [data-testid='player-score'], header #score-display"
-    );
-    const opponentScore = page.locator(
-      "#opponent-score, [data-testid='opponent-score'], header #score-display"
-    );
+    const playerScoreValue = page.getByTestId("player-score-value");
+    const opponentScoreValue = page.getByTestId("opponent-score-value");
+    await expect(playerScoreValue).toHaveText("0");
+    await expect(opponentScoreValue).toHaveText("0");
 
-    // If a unified score display is used, just ensure it contains You: 0 and Opponent: 0.
-    const text =
-      (await page
-        .locator("header #score-display")
-        .textContent()
-        .catch(() => "")) || "";
-    if (text) {
-      expect(text).toMatch(/You:\s*0/);
-      expect(text).toMatch(/Opponent:\s*0/);
-    } else {
-      await expect(playerScore).toHaveText(/^(0|00)$/);
-      await expect(opponentScore).toHaveText(/^(0|00)$/);
-    }
-
-    // Also assert round message is present (round started) to ensure UI didn't hang.
-    await expect(page.locator("#round-message")).toBeVisible();
+    const roundCounter = page.getByTestId("round-counter");
+    await expect(roundCounter).toBeVisible();
+    await expect(roundCounter).toHaveText(/Round\s*1/);
   });
 });
