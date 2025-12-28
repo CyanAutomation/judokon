@@ -173,12 +173,29 @@ const resolveColor = (value, variables) => {
       .filter(Boolean);
     const firstStop = parseMixStop(parts[0]);
     const secondStop = parseMixStop(parts[1]);
+    
+    // Handle weight calculation according to CSS color-mix specification
+    let firstWeight, secondWeight;
+    if (firstStop.weight !== null && secondStop.weight !== null) {
+      firstWeight = firstStop.weight;
+      secondWeight = secondStop.weight;
+    } else if (firstStop.weight !== null) {
+      firstWeight = firstStop.weight;
+      secondWeight = 100 - firstWeight;
+    } else if (secondStop.weight !== null) {
+      secondWeight = secondStop.weight;
+      firstWeight = 100 - secondWeight;
+    } else {
+      firstWeight = 50;
+      secondWeight = 50;
+    }
+    
     const firstColor = parseColor(firstStop.color, variables);
     const secondColor = parseColor(secondStop.color, variables);
     if (!firstColor || !secondColor) {
       throw new Error(`Unable to parse color-mix: ${value}`);
     }
-    const mixed = mixColors(firstColor, secondColor, firstStop.weight);
+    const mixed = mixColors(firstColor, secondColor, firstWeight);
     return `#${[mixed.r, mixed.g, mixed.b]
       .map((channel) => channel.toString(16).padStart(2, "0"))
       .join("")}`;
