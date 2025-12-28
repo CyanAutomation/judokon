@@ -43,6 +43,7 @@ function getRuleForSelector(root, selector, options = {}) {
     const selectors = rule.selector.split(",").map((part) => part.trim());
     if (selectors.includes(selector)) {
       target = rule;
+      return false; // Stop walking after first match
     }
   });
   return target;
