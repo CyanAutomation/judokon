@@ -22,7 +22,8 @@ function resolveColorValue(value, vars, stack = new Set()) {
 
   const [, token, fallback] = varMatch;
   if (stack.has(token)) {
-    return fallback ? resolveColorValue(fallback, vars, stack) : undefined;
+    console.warn(`Circular reference detected for CSS variable: ${token}`);
+    return fallback ? resolveColorValue(fallback, vars, new Set()) : undefined;
   }
 
   const resolved = vars[token];
