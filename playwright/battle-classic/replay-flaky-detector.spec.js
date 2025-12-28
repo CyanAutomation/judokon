@@ -19,8 +19,8 @@ test.describe("Classic Battle — Replay flaky detector", () => {
     const startMatchIfNeeded = async () => {
       const roundSelectButton = page.locator("#round-select-1");
       if (await roundSelectButton.isVisible().catch(() => false)) {
-        await expect(roundSelectButton).toBeVisible();
         await roundSelectButton.click();
+      }
       }
 
       await waitForRoundStats(page);
