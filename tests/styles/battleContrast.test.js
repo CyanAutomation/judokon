@@ -71,7 +71,8 @@ const parseVariables = (css) => {
   const pattern = /--[\w-]+\s*:\s*[^;]+;/g;
   const matches = rootBlock.block.match(pattern) ?? [];
   for (const entry of matches) {
-    const [name, rawValue] = entry.split(":");
+    const [name, ...valueParts] = entry.split(":");
+    variables[name.trim()] = valueParts.join(":").replace(/;$/, "").trim();
     variables[name.trim()] = rawValue.replace(/;$/, "").trim();
   }
 
