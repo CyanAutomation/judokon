@@ -6,8 +6,6 @@ import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
 import { withMutedConsole } from "../utils/console.js";
 import { naturalClick } from "../utils/componentTestUtils.js";
 
-const { generateCardPortrait, generateCardStats } = cardRender;
-
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
     Promise.resolve([
@@ -219,7 +217,7 @@ describe("generateCardStats", () => {
       stats: { power: 9, speed: 6, technique: 7, kumikata: 7, newaza: 8 }
     };
 
-    const result = await generateCardStats(card);
+    const result = await cardRender.generateCardStats(card);
     const wrapper = parseHtmlFragment(result);
     const statsContainer = wrapper.querySelector(".card-stats");
     expect(statsContainer).toBeTruthy();
@@ -237,7 +235,7 @@ describe("generateCardStats", () => {
 
   it("generateCardStats handles missing stats gracefully", async () => {
     const card = { stats: {} };
-    const result = await generateCardStats(card);
+    const result = await cardRender.generateCardStats(card);
     const wrapper = parseHtmlFragment(result);
     expect(wrapper.querySelector(".card-stats")).toBeTruthy();
   });
@@ -247,19 +245,19 @@ describe("generateCardStats", () => {
     ["stats is null", { stats: null }],
     ["stats is undefined", { stats: undefined }]
   ])("generateCardStats throws when %s", async (_, card) => {
-    await expect(generateCardStats(card)).rejects.toThrowError("Stats object is required");
+    await expect(cardRender.generateCardStats(card)).rejects.toThrowError("Stats object is required");
   });
 
   it.each([
     ["card is null", null],
     ["card is undefined", undefined]
   ])("generateCardStats throws when %s", async (_, card) => {
-    await expect(generateCardStats(card)).rejects.toThrowError("Card object is required");
+    await expect(cardRender.generateCardStats(card)).rejects.toThrowError("Card object is required");
   });
 
   it("generateCardStats handles stats with missing keys gracefully", async () => {
     const card = { stats: { power: 5 } };
-    const result = await generateCardStats(card);
+    const result = await cardRender.generateCardStats(card);
     const wrapper = parseHtmlFragment(result);
     const statLabels = wrapper.querySelectorAll(".stat strong");
     expect(statLabels.length).toBeGreaterThan(0);
@@ -269,7 +267,7 @@ describe("generateCardStats", () => {
 
   it("generateCardStats escapes HTML in stat values", async () => {
     const card = { stats: { power: "<b>9</b>", speed: 6, technique: 7, kumikata: 7, newaza: 8 } };
-    const result = await generateCardStats(card);
+    const result = await cardRender.generateCardStats(card);
     const wrapper = parseHtmlFragment(result);
     const firstValue = wrapper.querySelector(".stat span");
     expect(firstValue?.innerHTML).toBe("&lt;b&gt;9&lt;/b&gt;");
@@ -281,12 +279,12 @@ describe("generateCardPortrait", () => {
     ["card is null", null],
     ["card is undefined", undefined]
   ])("generateCardPortrait throws when %s", (_, card) => {
-    expect(() => generateCardPortrait(card)).toThrowError("Card object is required");
+    expect(() => cardRender.generateCardPortrait(card)).toThrowError("Card object is required");
   });
 
   it("generateCardPortrait includes loading attribute on the portrait image", () => {
     const card = { id: 1, firstname: "John", surname: "Doe" };
-    const result = generateCardPortrait(card);
+    const result = cardRender.generateCardPortrait(card);
     const wrapper = parseHtmlFragment(result);
     const image = wrapper.querySelector("img");
     expect(image?.getAttribute("loading")).toBe("lazy");
@@ -294,7 +292,7 @@ describe("generateCardPortrait", () => {
 
   it("generateCardPortrait escapes HTML in firstname and surname", () => {
     const card = { id: 1, firstname: "<John>", surname: '"Doe"' };
-    const result = generateCardPortrait(card);
+    const result = cardRender.generateCardPortrait(card);
     const wrapper = parseHtmlFragment(result);
     const name = wrapper.querySelector(".card-name");
     expect(name?.innerHTML).toContain("&lt;John&gt;");
@@ -303,7 +301,7 @@ describe("generateCardPortrait", () => {
 
   it("generateCardPortrait includes alt attribute with full name", () => {
     const card = { id: 1, firstname: "Jane", surname: "Smith" };
-    const result = generateCardPortrait(card);
+    const result = cardRender.generateCardPortrait(card);
     const wrapper = parseHtmlFragment(result);
     const image = wrapper.querySelector("img");
     expect(image?.getAttribute("alt")).toBe("Jane Smith");
@@ -311,7 +309,7 @@ describe("generateCardPortrait", () => {
 
   it("generateCardPortrait uses placeholder src and stores real portrait in data attribute", () => {
     const card = { id: 5, firstname: "Joe", surname: "Bloggs" };
-    const result = generateCardPortrait(card);
+    const result = cardRender.generateCardPortrait(card);
     const wrapper = parseHtmlFragment(result);
     const image = wrapper.querySelector("img");
     expect(image?.getAttribute("src")).toBe("../assets/judokaPortraits/judokaPortrait-1.png");
