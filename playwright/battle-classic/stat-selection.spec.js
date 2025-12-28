@@ -20,6 +20,14 @@ test.describe("Classic Battle stat selection", () => {
       await expect(buttons.first()).toBeVisible();
       await expect(buttons.first()).toBeEnabled();
 
+      await page.waitForFunction(
+        () => {
+          const state = document.body?.dataset?.battleState;
+          return state === "waitingForPlayerAction";
+        },
+        { timeout: 10000 }
+      );
+
       // Next button should be disabled initially
       const next = page.getByTestId("next-button");
       await expect(next).toBeDisabled();
@@ -29,6 +37,7 @@ test.describe("Classic Battle stat selection", () => {
       await expect(score.locator('[data-side="player"]')).toHaveText(/You:\s*0/);
       await expect(score.locator('[data-side="opponent"]')).toHaveText(/Opponent:\s*0/);
       await buttons.first().click();
+      await expect(buttons.first()).toBeDisabled();
 
       // Timer should be cleared or show 0s after stat selection
       await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: 0s)$/);
@@ -40,6 +49,16 @@ test.describe("Classic Battle stat selection", () => {
       // Cooldown begins and Next becomes ready
       await expect(next).toBeEnabled();
       await expect(next).toHaveAttribute("data-next-ready", "true");
+
+      await page.waitForFunction(
+        () => {
+          const state = document.body?.dataset?.battleState;
+          return ["roundDecision", "cooldown", "roundOver", "matchDecision", "matchOver"].includes(
+            state
+          );
+        },
+        { timeout: 15000 }
+      );
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
