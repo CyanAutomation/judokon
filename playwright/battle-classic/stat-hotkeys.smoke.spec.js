@@ -16,7 +16,7 @@ test.describe("Stat hotkeys", () => {
     const roundMessage = page.locator("header #round-message");
     const nextButton = page.getByTestId("next-button");
 
-    await expect(roundMessage).toContainText(/You picked: /, { timeout: 5000 });
+    await expect(roundMessage).toContainText(/You picked: \w+/, { timeout: 5000 });
     await expect(nextButton).toBeEnabled();
     await expect(nextButton).toHaveAttribute("data-next-ready", "true");
   });
