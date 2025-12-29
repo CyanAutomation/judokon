@@ -162,9 +162,13 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
  * @returns {Promise<HTMLElement|null>} The generated card element or null on failure.
  */
 export async function generateJudokaCard(judoka, gokyoLookup, container, options = {}) {
+  const judokaName =
+    judoka?.firstname && judoka?.surname
+      ? `${judoka.firstname} ${judoka.surname}`
+      : "unknown judoka";
   const card = await safeGenerate(
     () => generateJudokaCardHTML(judoka, gokyoLookup, options),
-    `Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`,
+    `Error generating card for judoka: ${judokaName}`,
     null
   );
   if (card) {

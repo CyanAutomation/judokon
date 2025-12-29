@@ -322,3 +322,72 @@ describe("generateCardPortrait", () => {
     );
   });
 });
+
+describe("generateJudokaCard", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns card element when generation succeeds", async () => {
+    const card = await generateJudokaCard(VALID_JUDOKA, GOKYO_LOOKUP);
+    expect(card).toBeTruthy();
+    expect(card?.classList.contains("card-container")).toBe(true);
+  });
+
+  it("returns null when judoka is invalid", async () => {
+    await withMutedConsole(async () => {
+      const invalidJudoka = { firstname: "Jane" }; // Missing required fields
+      const card = await generateJudokaCard(invalidJudoka, GOKYO_LOOKUP);
+      expect(card).toBeNull();
+    });
+  });
+
+  it("returns fallback when gokyoLookup is null", async () => {
+    const card = await generateJudokaCard(VALID_JUDOKA, null);
+    expect(card).toBeTruthy(); // Should return fallback div with "No data available"
+    expect(card?.textContent).toBe("No data available");
+  });
+
+  it("contains signature move element when judoka has signature move", async () => {
+    const card = await generateJudokaCard(VALID_JUDOKA, GOKYO_LOOKUP);
+    expect(card).toBeTruthy();
+    const signatureMove = card?.querySelector(".signature-move-container");
+    expect(signatureMove).toBeTruthy();
+  });
+
+  it("ignores container parameter (backward compatibility)", async () => {
+    const container = document.createElement("div");
+    const card = await generateJudokaCard(VALID_JUDOKA, GOKYO_LOOKUP, container);
+    expect(card).toBeTruthy();
+    // Container should not have card appended (parameter is unused)
+    expect(container.children.length).toBe(0);
+  });
+
+  it("passes options to generateJudokaCardHTML", async () => {
+    const card = await generateJudokaCard(VALID_JUDOKA, GOKYO_LOOKUP, null, {
+      enableInspector: true
+    });
+    expect(card).toBeTruthy();
+    // Inspector creates a panel with class inspector-panel
+    const inspectorPanel = card?.querySelector("[data-feature-card-inspector]");
+    expect(inspectorPanel).toBeTruthy();
+  });
+
+  it("handles null judoka gracefully", async () => {
+    await withMutedConsole(async () => {
+      const card = await generateJudokaCard(null, GOKYO_LOOKUP);
+      // generateJudokaCardHTML returns fallback div with "No data available"
+      expect(card).toBeTruthy();
+      expect(card?.textContent).toBe("No data available");
+    });
+  });
+
+  it("handles error during card generation", async () => {
+    await withMutedConsole(async () => {
+      // Pass incomplete judoka that fails validation
+      const incompleteJudoka = { id: 1 }; // Missing many required fields
+      const card = await generateJudokaCard(incompleteJudoka, GOKYO_LOOKUP);
+      expect(card).toBeNull();
+    });
+  });
+});
