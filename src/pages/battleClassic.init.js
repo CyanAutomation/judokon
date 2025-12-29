@@ -1753,12 +1753,14 @@ export async function init() {
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
 
+    await initializePhase3_Engine(store);
+    await initializePhase4_EventHandlers(store);
+    await initializeMatchStart(store);
+
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
       window.__battleInitError = undefined;
     }
-
-    await initializeMatchStart(store);
   } catch (err) {
     console.error("battleClassic: bootstrap failed", err);
     if (typeof window !== "undefined") {
