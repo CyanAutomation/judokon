@@ -143,11 +143,15 @@ export const test = base.extend({
         localStorage.clear();
       } else {
         // Pre-configured flags exist; preserve them
-        // Just delete the snackbar disabler if present
+        // Also preserve battle configuration keys (e.g., pointsToWin)
         try {
           const parsed = existingSettings;
+          const battlePointsToWin = localStorage.getItem("battle.pointsToWin");
           localStorage.clear();
           localStorage.setItem("settings", JSON.stringify(parsed));
+          if (battlePointsToWin !== null) {
+            localStorage.setItem("battle.pointsToWin", battlePointsToWin);
+          }
         } catch (e) {
           console.warn("[commonSetup] Failed to preserve settings:", e);
         }
