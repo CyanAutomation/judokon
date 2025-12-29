@@ -73,6 +73,15 @@ function parseRoundNumber(value) {
   return null;
 }
 
+/**
+ * Detect if the application is running in CLI mode.
+ *
+ * @returns {boolean} - True if CLI mode is active.
+ */
+function isCliMode() {
+  return !!document.getElementById("cli-countdown");
+}
+
 function handleRoundStart(event) {
   try {
     clearMessage();
@@ -83,12 +92,15 @@ function handleRoundStart(event) {
   const normalizedRoundNumber = roundNumber ?? roundIndex;
   if (typeof normalizedRoundNumber === "number") {
     roundStore.setRoundNumber(normalizedRoundNumber, { emitLegacyEvent: false });
-    try {
-      updateRoundCounter(normalizedRoundNumber);
-    } catch (error) {
-      // Log scoreboard update failures for debugging while preventing crashes
-      if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
-        console.warn("[scoreboardAdapter] Failed to update round counter", error);
+    // Skip round counter update in CLI mode (CLI handles its own format with target)
+    if (!isCliMode()) {
+      try {
+        updateRoundCounter(normalizedRoundNumber);
+      } catch (error) {
+        // Log scoreboard update failures for debugging while preventing crashes
+        if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+          console.warn("[scoreboardAdapter] Failed to update round counter", error);
+        }
       }
     }
   } else {
@@ -96,19 +108,6 @@ function handleRoundStart(event) {
       clearRoundCounter();
     } catch {}
   }
-}
-
-function handleRoundMessage(event) {
-  const { text, lock } = event?.detail || {};
-  if (typeof text === "undefined" || text === null) return;
-  const messageText = typeof text === "string" ? text : String(text);
-  try {
-    if (messageText.length > 0) {
-      showMessage(messageText, { outcome: Boolean(lock) });
-    } else {
-      clearMessage();
-    }
-  } catch {}
 }
 
 function handleRoundOutcome(event) {
@@ -228,8 +227,15 @@ export function initScoreboardAdapter() {
 
   wireScoreboardListeners();
 
+  // Wrap updateRoundCounter to skip updates in CLI mode
+  const wrappedUpdateRoundCounter = (roundNumber) => {
+    if (!isCliMode()) {
+      updateRoundCounter(roundNumber);
+    }
+  };
+
   scoreboardReadyPromise = roundStore.wireIntoScoreboardAdapter({
-    updateRoundCounter,
+    updateRoundCounter: wrappedUpdateRoundCounter,
     clearRoundCounter
   });
 
