@@ -1,6 +1,6 @@
 [
   {
-    "query": "PRD development standards validation commands testing rules",
+    "query": "PRD development standards Validation Command Matrix operational playbooks testing rules",
     "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md"
   },
   {
@@ -52,7 +52,7 @@
     "expected_source": "src/helpers/battleEngineFacade.js"
   },
   {
-    "query": "PRD battle CLI interface",
+    "query": "PRD battle CLI terminal-style text-first interface monospace prompt",
     "expected_source": "design/productRequirementsDocuments/prdBattleCLI.md"
   },
   {
