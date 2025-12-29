@@ -18,7 +18,7 @@ const getRuleBlock = (css, selector, startIndex = 0) => {
   if (selectorIndex === -1) {
     return null;
   }
-  
+
   const openBrace = css.indexOf("{", selectorIndex);
   if (openBrace === -1) {
     return null;
@@ -89,12 +89,12 @@ const resolveVarTokens = (value, variables) =>
 
 const parseHexColor = (value) => {
   const trimmed = value.replace("#", "").trim();
-  
+
   // Validate hex characters
   if (!/^[0-9a-fA-F]+$/.test(trimmed)) {
     return null;
   }
-  
+
   if (trimmed.length === 3) {
     const [r, g, b] = trimmed.split("").map((char) => char + char);
     return {
@@ -125,14 +125,25 @@ const parseRgbColor = (value) => {
   const parts = match[1].split(",").map((part) => part.trim());
   const [r, g, b] = parts.slice(0, 3).map((part) => Number(part));
   const a = parts[3] === undefined ? 1 : Number(parts[3]);
-  
+
   // Validate RGB values
-  if (isNaN(r) || isNaN(g) || isNaN(b) || isNaN(a) ||
-      r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 ||
-      a < 0 || a > 1) {
+  if (
+    isNaN(r) ||
+    isNaN(g) ||
+    isNaN(b) ||
+    isNaN(a) ||
+    r < 0 ||
+    r > 255 ||
+    g < 0 ||
+    g > 255 ||
+    b < 0 ||
+    b > 255 ||
+    a < 0 ||
+    a > 1
+  ) {
     return null;
   }
-  
+
   return {
     r: Math.round(r),
     g: Math.round(g),
@@ -213,13 +224,12 @@ const focusRingSource = focusOutline ?? focusBoxShadow;
 if (!focusRingSource) {
   throw new Error("No focus ring styles found in battleCLI.css for button:focus");
 }
-const focusRingColor = resolveColorValue(focusRingSource, variables, {
-  const backgroundRgb = parseHexColor(cliRootBackground);
-  if (!backgroundRgb) {
-    throw new Error(`Invalid background color format: ${cliRootBackground}`);
-  }
-  const focusRingColor = resolveColorValue(focusRingSource, variables, backgroundRgb);
-});
+
+const backgroundRgb = parseHexColor(cliRootBackground);
+if (!backgroundRgb) {
+  throw new Error(`Invalid background color format: ${cliRootBackground}`);
+}
+const focusRingColor = resolveColorValue(focusRingSource, variables, backgroundRgb);
 
 const statFocusBackground = resolveColorValue(
   getLastDeclaration(css, ".cli-stat:focus", "background"),

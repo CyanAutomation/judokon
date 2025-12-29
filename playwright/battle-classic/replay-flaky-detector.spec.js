@@ -21,8 +21,6 @@ test.describe("Classic Battle — Replay flaky detector", () => {
       if (await roundSelectButton.isVisible().catch(() => false)) {
         await roundSelectButton.click();
       }
-      }
-
       await waitForRoundStats(page);
     };
 

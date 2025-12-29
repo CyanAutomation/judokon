@@ -60,10 +60,8 @@ function parseComponentStyles(vars) {
     { label: "legendary card", selector: ".judoka-card.legendary", prop: "--card-bg-color" },
     { label: "top navbar", selector: ".top-navbar", prop: "background-color" }
   ];
+  const targetMap = new Map(targets.map((t) => [t.selector, t]));
 
-  root.walkRules((rule) => {
-  const targetMap = new Map(targets.map(t => [t.selector, t]));
-  
   root.walkRules((rule) => {
     rule.walkDecls((decl) => {
       if (decl.prop.startsWith("--")) {
