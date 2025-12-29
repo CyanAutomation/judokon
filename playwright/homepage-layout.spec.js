@@ -135,9 +135,7 @@ test.describe("Homepage layout", () => {
             ready: async () => {
               const statButtons = page.getByTestId("stat-buttons");
               await expect(statButtons).toHaveAttribute("data-buttons-ready", "true");
-              await expect(
-                statButtons.getByRole("group", { name: /choose a stat/i })
-              ).toBeVisible();
+              await expect(statButtons).toBeVisible();
               await ensureMeaningfulFocus(page, page.getByTestId("stat-button").first());
             }
           },

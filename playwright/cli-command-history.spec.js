@@ -143,6 +143,9 @@ test.describe("CLI Command History", () => {
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForLoadState("domcontentloaded");
 
+    // Clear any previous history
+    await page.evaluate(() => localStorage.removeItem("cliStatHistory"));
+
     await waitForTestApi(page);
 
     // Setup battle
@@ -193,6 +196,7 @@ test.describe("CLI Command History", () => {
 
     // Round 1: Select stat '1' and complete
     await page.keyboard.press("1");
+    await page.evaluate(() => Promise.resolve()); // Wait for microtask to execute selectStat
     const res1 = await completeRoundViaApi(page);
     expect(res1.ok, res1.reason).toBe(true);
 
@@ -207,6 +211,7 @@ test.describe("CLI Command History", () => {
 
     // Round 2: Select stat '2' via keyboard and complete the round to persist history naturally
     await page.keyboard.press("2");
+    await page.evaluate(() => Promise.resolve()); // Wait for microtask to execute selectStat
     const res2 = await completeRoundViaApi(page);
     expect(res2.ok, res2.reason).toBe(true);
 
@@ -218,6 +223,26 @@ test.describe("CLI Command History", () => {
       allowFallback: false
     });
 
+    // Debug: Check if history was populated
+    const historyDebug = await page.evaluate(() => {
+      const battleHandlers = window.__TEST_API?.battleHandlers;
+      return {
+        localStorage: localStorage.getItem("cliStatHistory"),
+        hasTestAPI: !!window.__TEST_API,
+        canCallHandleHistory: typeof battleHandlers?.handleCommandHistory === "function"
+      };
+    });
+    console.log("History debug:", historyDebug);
+
+    // Try calling handleCommandHistory directly to debug
+    const historyHandlerResult = await page.evaluate(() => {
+      const battleHandlers = window.__TEST_API?.battleHandlers;
+      if (typeof battleHandlers?.handleCommandHistory === "function") {
+        return battleHandlers.handleCommandHistory("ArrowUp");
+      }
+      return "handler not available";
+    });
+    console.log("Direct handler call result:", historyHandlerResult);
     const snackbar = page.locator("#snackbar-container .snackbar");
     const statList = page.locator("#cli-stats");
     const statRows = page.locator("#cli-stats .cli-stat");

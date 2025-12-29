@@ -143,6 +143,19 @@ export function onKeyDown(e) {
     }
   }
   if (handleArrowNav(e)) return;
+  
+  // Handle command history with plain arrow keys when stat list doesn't have focus
+  if (isEnabled("cliShortcuts") && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+    console.log("[DEBUG] Attempting to handle command history with key:", e.key);
+    const handled = handleCommandHistory(e.key);
+    console.log("[DEBUG] handleCommandHistory returned:", handled);
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+  }
+  
   const lower = e.key.toLowerCase();
   if (!shouldProcessKey(lower)) {
     if (lower === "escape" || lower === "esc") {
