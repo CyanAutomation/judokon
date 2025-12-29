@@ -132,6 +132,9 @@ export const test = base.extend({
         console.warn("[commonSetup] Failed to parse existing settings:", e);
       }
 
+      // Preserve battle configuration keys (e.g., pointsToWin) across localStorage clear
+      const battlePointsToWin = localStorage.getItem("battle.pointsToWin");
+
       // Only clear localStorage if there are no significant feature flags already set
       // (Preserve route-based overrides that may have been pre-configured by tests)
       const hasExistingFlags =
@@ -141,12 +144,15 @@ export const test = base.extend({
       if (!hasExistingFlags) {
         // No pre-configured feature flags; safe to clear
         localStorage.clear();
+        // Restore battle configuration if it existed
+        if (battlePointsToWin !== null) {
+          localStorage.setItem("battle.pointsToWin", battlePointsToWin);
+        }
       } else {
         // Pre-configured flags exist; preserve them
-        // Also preserve battle configuration keys (e.g., pointsToWin)
+        // Also preserve battle configuration keys
         try {
           const parsed = existingSettings;
-          const battlePointsToWin = localStorage.getItem("battle.pointsToWin");
           localStorage.clear();
           localStorage.setItem("settings", JSON.stringify(parsed));
           if (battlePointsToWin !== null) {

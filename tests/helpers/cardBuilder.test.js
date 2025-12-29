@@ -283,7 +283,9 @@ describe("generateCardPortrait", () => {
     ["card is null", null],
     ["card is undefined", undefined]
   ])("generateCardPortrait throws when %s", (_, card) => {
-    expect(() => cardRender.generateCardPortrait(card)).toThrowError("Card object is required and must be a valid object");
+    expect(() => cardRender.generateCardPortrait(card)).toThrowError(
+      "Card object is required and must be a valid object"
+    );
   });
 
   it("generateCardPortrait includes loading attribute on the portrait image", () => {

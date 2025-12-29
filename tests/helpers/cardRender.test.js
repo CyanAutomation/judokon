@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import * as cardRender from "../../src/helpers/cardRender.js";
 
 // Helper to parse HTML strings for testing
