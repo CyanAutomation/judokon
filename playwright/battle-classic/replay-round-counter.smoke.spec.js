@@ -42,8 +42,8 @@ test.describe("Classic Battle replay - round counter", () => {
     const opponentScoreValue = page.getByTestId("opponent-score-value");
     const roundCounter = page.getByTestId("round-counter");
 
-    await expect(playerScoreValue).toHaveText("0");
-    await expect(opponentScoreValue).toHaveText("0");
+    await expect(playerScoreValue).toHaveText("0", { timeout: 5000 });
+    await expect(opponentScoreValue).toHaveText("0", { timeout: 5000 });
     await expect(roundCounter).toContainText(/Round\s*1/i);
   });
 });
