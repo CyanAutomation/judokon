@@ -246,7 +246,7 @@ describe("generateCardStats", () => {
     ["stats is undefined", { stats: undefined }]
   ])("generateCardStats throws when %s", async (_, card) => {
     await expect(cardRender.generateCardStats(card)).rejects.toThrowError(
-      "Stats object is required"
+      "Card.stats is required and must be a valid object"
     );
   });
 
@@ -255,7 +255,7 @@ describe("generateCardStats", () => {
     ["card is undefined", undefined]
   ])("generateCardStats throws when %s", async (_, card) => {
     await expect(cardRender.generateCardStats(card)).rejects.toThrowError(
-      "Card object is required"
+      "Card object is required and must be a valid object"
     );
   });
 
@@ -283,7 +283,7 @@ describe("generateCardPortrait", () => {
     ["card is null", null],
     ["card is undefined", undefined]
   ])("generateCardPortrait throws when %s", (_, card) => {
-    expect(() => cardRender.generateCardPortrait(card)).toThrowError("Card object is required");
+    expect(() => cardRender.generateCardPortrait(card)).toThrowError("Card object is required and must be a valid object");
   });
 
   it("generateCardPortrait includes loading attribute on the portrait image", () => {

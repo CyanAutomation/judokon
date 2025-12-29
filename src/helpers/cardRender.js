@@ -1,5 +1,15 @@
-// Constants
+/**
+ * Placeholder ID for the silhouette portrait used when a judoka's portrait fails to load.
+ * This is the final fallback image displayed in the onerror handler.
+ * @const {number}
+ */
 const PLACEHOLDER_ID = 0;
+
+/**
+ * Generic placeholder ID for the initial portrait shown before lazy loading.
+ * This provides a consistent loading experience while the actual portrait is fetched.
+ * @const {number}
+ */
 const GENERIC_PLACEHOLDER_ID = 1;
 
 import { escapeHTML, decodeHTML } from "./utils.js";
@@ -36,7 +46,7 @@ import { debugLog } from "./debug.js";
  */
 export function generateCardPortrait(card) {
   if (!card || typeof card !== "object") {
-    throw new Error("Card object is required");
+    throw new Error("Card object is required and must be a valid object");
   }
 
   const requiredFields = ["id", "firstname", "surname"];
@@ -80,15 +90,15 @@ export function generateCardPortrait(card) {
  */
 export async function generateCardStats(card, cardType = "common") {
   if (!card || typeof card !== "object") {
-    throw new Error("Card object is required");
+    throw new Error("Card object is required and must be a valid object");
   }
 
   if (!card.stats || typeof card.stats !== "object") {
-    throw new Error("Stats object is required");
+    throw new Error("Card.stats is required and must be a valid object");
   }
 
-  // Defer loading StatsPanel to avoid pulling it into callers that only use
-  // signature/portrait helpers (improves test startup time). Not a hot path.
+  // Dynamic import prevents bundling StatsPanel in modules that only render
+  // portraits or signature moves (e.g., card comparison views). Not in hot path.
   const { createStatsPanel } = await import("../components/StatsPanel.js");
   const panel = await createStatsPanel(card.stats, { type: cardType });
   return panel.outerHTML;
@@ -175,26 +185,6 @@ function formatTechniqueName(technique) {
   return escapeHTML(decoded);
 }
 
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 /**
  * Generate the signature move HTML band for a judoka card.
  *
