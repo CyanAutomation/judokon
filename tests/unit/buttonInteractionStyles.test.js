@@ -99,19 +99,19 @@ describe("button interaction styles", () => {
   it("respects reduced motion preferences", () => {
     const mediaOptions = {
       atRuleName: "media",
-      atRuleParams: "(prefers-reduced-motion: reduce)",
+      atRuleParams: "(prefers-reduced-motion: reduce)"
     };
 
-    expect(
-      getDeclarations(buttonsRoot, "button:not(.judoka-card)", mediaOptions)?.transition
-    ).toBe("none");
+    expect(getDeclarations(buttonsRoot, "button:not(.judoka-card)", mediaOptions)?.transition).toBe(
+      "none"
+    );
     expect(getDeclarations(buttonsRoot, ".primary-button", mediaOptions)?.transition).toBe("none");
     expect(
       getDeclarations(buttonsRoot, "button:not(.judoka-card)::after", mediaOptions)?.transition
     ).toBe("none");
-    expect(
-      getDeclarations(buttonsRoot, ".primary-button::after", mediaOptions)?.transition
-    ).toBe("none");
+    expect(getDeclarations(buttonsRoot, ".primary-button::after", mediaOptions)?.transition).toBe(
+      "none"
+    );
     expect(
       getDeclarations(buttonsRoot, "button:not(.judoka-card):active", mediaOptions)?.transform
     ).toBe("none");
@@ -119,16 +119,16 @@ describe("button interaction styles", () => {
       "none"
     );
 
-    expect(getDeclarations(buttonsRoot, ".reduce-motion button:not(.judoka-card)")?.transition).toBe(
-      "none"
-    );
+    expect(
+      getDeclarations(buttonsRoot, ".reduce-motion button:not(.judoka-card)")?.transition
+    ).toBe("none");
     expect(getDeclarations(buttonsRoot, ".reduce-motion .primary-button")?.transition).toBe("none");
     expect(
       getDeclarations(buttonsRoot, ".reduce-motion button:not(.judoka-card)::after")?.transition
     ).toBe("none");
-    expect(
-      getDeclarations(buttonsRoot, ".reduce-motion .primary-button::after")?.transition
-    ).toBe("none");
+    expect(getDeclarations(buttonsRoot, ".reduce-motion .primary-button::after")?.transition).toBe(
+      "none"
+    );
     expect(
       getDeclarations(buttonsRoot, ".reduce-motion button:not(.judoka-card):active")?.transform
     ).toBe("none");
@@ -142,16 +142,18 @@ describe("navbar ripple overrides", () => {
   it("mirrors reduced motion safeguards", () => {
     const mediaOptions = {
       atRuleName: "media",
-      atRuleParams: "(prefers-reduced-motion: reduce)",
+      atRuleParams: "(prefers-reduced-motion: reduce)"
     };
 
     expect(getDeclarations(navbarRoot, ".top-navbar button", mediaOptions)?.transition).toBe(
       "none"
     );
-    expect(getDeclarations(navbarRoot, ".top-navbar .primary-button", mediaOptions)?.transition).toBe(
+    expect(
+      getDeclarations(navbarRoot, ".top-navbar .primary-button", mediaOptions)?.transition
+    ).toBe("none");
+    expect(getDeclarations(navbarRoot, ".filter-bar button", mediaOptions)?.transition).toBe(
       "none"
     );
-    expect(getDeclarations(navbarRoot, ".filter-bar button", mediaOptions)?.transition).toBe("none");
     expect(getDeclarations(navbarRoot, ".top-navbar button::after", mediaOptions)?.transition).toBe(
       "none"
     );

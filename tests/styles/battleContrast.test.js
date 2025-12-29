@@ -173,7 +173,7 @@ const resolveColor = (value, variables) => {
       .filter(Boolean);
     const firstStop = parseMixStop(parts[0]);
     const secondStop = parseMixStop(parts[1]);
-    
+
     // Handle weight calculation according to CSS color-mix specification
     let firstWeight, secondWeight;
     if (firstStop.weight !== null && secondStop.weight !== null) {
@@ -189,7 +189,7 @@ const resolveColor = (value, variables) => {
       firstWeight = 50;
       secondWeight = 50;
     }
-    
+
     const firstColor = parseColor(firstStop.color, variables);
     const secondColor = parseColor(secondStop.color, variables);
     if (!firstColor || !secondColor) {
@@ -216,9 +216,11 @@ const buildContrastCases = () => {
     baseCss = getCssText(BASE_CSS_PATH);
     battleCss = getCssText(BATTLE_CSS_PATH);
   } catch (error) {
-    throw new Error(`Failed to read CSS files: ${error.message}. Ensure ${BASE_CSS_PATH} and ${BATTLE_CSS_PATH} exist.`);
+    throw new Error(
+      `Failed to read CSS files: ${error.message}. Ensure ${BASE_CSS_PATH} and ${BATTLE_CSS_PATH} exist.`
+    );
   }
-  
+
   const variables = parseVariables(baseCss);
   const requireDeclaration = (value, label) => {
     if (!value) {
@@ -233,19 +235,11 @@ const buildContrastCases = () => {
   const textColor = resolveColor(textColorDeclaration, variables);
 
   const playerBackgroundDeclaration = requireDeclaration(
-    getLastDeclaration(
-      battleCss,
-      "#battle-area .player-slot .slot-surface",
-      "background-color"
-    ),
+    getLastDeclaration(battleCss, "#battle-area .player-slot .slot-surface", "background-color"),
     "player slot background-color"
   );
   const opponentBackgroundDeclaration = requireDeclaration(
-    getLastDeclaration(
-      battleCss,
-      "#battle-area .opponent-slot .slot-surface",
-      "background-color"
-    ),
+    getLastDeclaration(battleCss, "#battle-area .opponent-slot .slot-surface", "background-color"),
     "opponent slot background-color"
   );
 

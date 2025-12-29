@@ -245,14 +245,18 @@ describe("generateCardStats", () => {
     ["stats is null", { stats: null }],
     ["stats is undefined", { stats: undefined }]
   ])("generateCardStats throws when %s", async (_, card) => {
-    await expect(cardRender.generateCardStats(card)).rejects.toThrowError("Stats object is required");
+    await expect(cardRender.generateCardStats(card)).rejects.toThrowError(
+      "Stats object is required"
+    );
   });
 
   it.each([
     ["card is null", null],
     ["card is undefined", undefined]
   ])("generateCardStats throws when %s", async (_, card) => {
-    await expect(cardRender.generateCardStats(card)).rejects.toThrowError("Card object is required");
+    await expect(cardRender.generateCardStats(card)).rejects.toThrowError(
+      "Card object is required"
+    );
   });
 
   it("generateCardStats handles stats with missing keys gracefully", async () => {
