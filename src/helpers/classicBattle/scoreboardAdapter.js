@@ -119,6 +119,15 @@ function handleRoundOutcome(event) {
   } catch {}
 }
 
+function handleRoundMessage(event) {
+  const text = event?.detail?.text;
+  if (typeof text === "undefined" || text === null) return;
+  const messageText = typeof text === "string" ? text : String(text);
+  try {
+    showMessage(messageText.length > 0 ? messageText : "");
+  } catch {}
+}
+
 function handleMessageClear() {
   try {
     clearMessage();
