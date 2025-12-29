@@ -1457,6 +1457,7 @@ export function selectStat(stat) {
   }
   try {
     const history = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
+    console.log("[DEBUG selectStat] Before update - history:", history, "stat:", stat);
     if (history[history.length - 1] !== stat) {
       history.push(stat);
       if (history.length > 20) {
@@ -1464,6 +1465,7 @@ export function selectStat(stat) {
       }
       localStorage.setItem("cliStatHistory", JSON.stringify(history));
       commandHistory = history;
+      console.log("[DEBUG selectStat] Updated commandHistory:", commandHistory);
     }
     historyIndex = commandHistory.length;
   } catch {}
@@ -2515,6 +2517,7 @@ export function handleCooldownKey(key) {
  * return false
  */
 export function handleCommandHistory(key) {
+  console.log("[DEBUG handleCommandHistory] key:", key, "commandHistory.length:", commandHistory.length, "historyIndex:", historyIndex);
   if (!commandHistory.length) return false;
   if (historyIndex < 0) historyIndex = commandHistory.length;
   if (key === "ArrowUp") {

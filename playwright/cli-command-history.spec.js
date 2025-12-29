@@ -223,26 +223,10 @@ test.describe("CLI Command History", () => {
       allowFallback: false
     });
 
-    // Debug: Check if history was populated
-    const historyDebug = await page.evaluate(() => {
-      const battleHandlers = window.__TEST_API?.battleHandlers;
-      return {
-        localStorage: localStorage.getItem("cliStatHistory"),
-        hasTestAPI: !!window.__TEST_API,
-        canCallHandleHistory: typeof battleHandlers?.handleCommandHistory === "function"
-      };
-    });
-    console.log("History debug:", historyDebug);
+    // Move focus away from stat list to enable history navigation
+    // (In real usage, user would tab away or click elsewhere first)
+    await page.evaluate(() => document.body.focus());
 
-    // Try calling handleCommandHistory directly to debug
-    const historyHandlerResult = await page.evaluate(() => {
-      const battleHandlers = window.__TEST_API?.battleHandlers;
-      if (typeof battleHandlers?.handleCommandHistory === "function") {
-        return battleHandlers.handleCommandHistory("ArrowUp");
-      }
-      return "handler not available";
-    });
-    console.log("Direct handler call result:", historyHandlerResult);
     const snackbar = page.locator("#snackbar-container .snackbar");
     const statList = page.locator("#cli-stats");
     const statRows = page.locator("#cli-stats .cli-stat");

@@ -146,10 +146,7 @@ export function onKeyDown(e) {
   
   // Handle command history with plain arrow keys when stat list doesn't have focus
   if (isEnabled("cliShortcuts") && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
-    console.log("[DEBUG] Attempting to handle command history with key:", e.key);
-    const handled = handleCommandHistory(e.key);
-    console.log("[DEBUG] handleCommandHistory returned:", handled);
-    if (handled) {
+    if (handleCommandHistory(e.key)) {
       e.preventDefault();
       e.stopPropagation();
       return;
