@@ -1,23 +1,49 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleReady } from "../helpers/battleStateHelper.js";
+import {
+  setPointsToWin,
+  waitForBattleReady,
+  waitForMatchCompletion
+} from "../helpers/battleStateHelper.js";
+import { completeRoundViaApi } from "../helpers/battleApiHelper.js";
+
+const SPEC_REFERENCE = "Spec: CLASSIC-REPLAY-ROUND-COUNTER-01";
 
 test.describe("Classic Battle replay - round counter", () => {
-  test("Replay resets round counter to 1", async ({ page }) => {
+  test(`[${SPEC_REFERENCE}] replay resets round counter to 1`, async ({ page }) => {
+    // Spec reference: CLASSIC-REPLAY-ROUND-COUNTER-01
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = {
+        ...(window.__FF_OVERRIDES || {}),
+        showRoundSelectModal: true
+      };
+    });
     await page.goto("/src/pages/battleClassic.html");
 
-    // Start a quick match to reach match end fast if necessary
-    // Assumes default settings or quick mode is reachable; minimal interaction
+    await page.locator('button:has-text("Quick")').click();
     await waitForBattleReady(page, { allowFallback: true });
+    await setPointsToWin(page, 1, { timeout: 10_000 });
 
-    // If round header exists, simulate end-of-match quickly via UI where possible
+    await page.getByTestId("stat-button").first().click();
+    const roundResolution = await completeRoundViaApi(page, {
+      options: { opponentResolveDelayMs: 0, expireSelection: false }
+    });
+    if (!roundResolution.ok) {
+      throw new Error(`Failed to complete round via API: ${roundResolution.error || 'Unknown error'}`);
+    }
+
+    await waitForMatchCompletion(page, { timeout: 10_000, allowFallback: true });
+
     const replayBtn = page.getByTestId("replay-button");
     await expect(replayBtn).toBeVisible();
 
-    // Click replay and verify round counter shows 1
     await replayBtn.click();
 
-    // Prefer deterministic round counter element
+    const playerScoreValue = page.getByTestId("player-score-value");
+    const opponentScoreValue = page.getByTestId("opponent-score-value");
     const roundCounter = page.getByTestId("round-counter");
+
+    await expect(playerScoreValue).toHaveText("0", { timeout: 5000 });
+    await expect(opponentScoreValue).toHaveText("0", { timeout: 5000 });
     await expect(roundCounter).toContainText(/Round\s*1/i);
   });
 });
