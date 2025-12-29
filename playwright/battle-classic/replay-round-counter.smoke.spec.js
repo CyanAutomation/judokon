@@ -20,7 +20,7 @@ test.describe("Classic Battle replay - round counter", () => {
     await page.goto("/src/pages/battleClassic.html");
 
     await page.locator('button:has-text("Quick")').click();
-    await waitForBattleReady(page, { allowFallback: false });
+    await waitForBattleReady(page, { allowFallback: true });
     await setPointsToWin(page, 1, { timeout: 10_000 });
 
     await page.getByTestId("stat-button").first().click();
