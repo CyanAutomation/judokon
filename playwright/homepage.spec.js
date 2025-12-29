@@ -27,7 +27,9 @@ test.describe("Homepage", () => {
     // Wait only for DOM content, not all network activity
     await page.waitForLoadState("domcontentloaded");
     // Wait for the specific signal that homepage is ready
-    await expect(page.locator("body")).toHaveAttribute("data-home-ready", "true", { timeout: 3000 });
+    await expect(page.locator("body")).toHaveAttribute("data-home-ready", "true", {
+      timeout: 3000
+    });
   });
 
   test("hero CTA is actionable when home is ready", async ({ page }) => {
@@ -59,10 +61,10 @@ test.describe("Homepage", () => {
     // Check attributes
     await expect(mainLandmark).toHaveAttribute("aria-label", "Game mode selection");
     await expect(primaryCta).toHaveAttribute("href", "./src/pages/battleClassic.html");
-    
+
     // The h1 is sr-only (screen reader only) by design, so check it exists in the accessibility tree
     await expect(heroHeading).toBeAttached();
-    
+
     // Status region exists in DOM and is accessible, but may be empty/hidden initially
     await expect(statusRegion).toBeAttached();
     await expect(statusRegion).toHaveAttribute("aria-live", "polite");
@@ -95,7 +97,9 @@ test.describe("Homepage", () => {
       test(`hero maintains accessible heading and CTA on ${viewport.label}`, async ({ page }) => {
         await page.setViewportSize(viewport.size);
         await page.reload({ waitUntil: "domcontentloaded" });
-        await expect(page.locator("body")).toHaveAttribute("data-home-ready", "true", { timeout: 3000 });
+        await expect(page.locator("body")).toHaveAttribute("data-home-ready", "true", {
+          timeout: 3000
+        });
 
         const mainLandmark = page.getByRole("main", { name: "Game mode selection" });
         const heroHeading = page.getByRole("heading", { level: 1, name: "JU-DO-KON!" });

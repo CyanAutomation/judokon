@@ -143,7 +143,7 @@ export function onKeyDown(e) {
     }
   }
   if (handleArrowNav(e)) return;
-  
+
   // Handle command history with plain arrow keys when stat list doesn't have focus
   if (isEnabled("cliShortcuts") && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
     if (handleCommandHistory(e.key)) {
@@ -152,7 +152,7 @@ export function onKeyDown(e) {
       return;
     }
   }
-  
+
   const lower = e.key.toLowerCase();
   if (!shouldProcessKey(lower)) {
     if (lower === "escape" || lower === "esc") {

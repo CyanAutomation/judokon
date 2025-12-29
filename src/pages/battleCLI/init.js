@@ -2517,7 +2517,14 @@ export function handleCooldownKey(key) {
  * return false
  */
 export function handleCommandHistory(key) {
-  console.log("[DEBUG handleCommandHistory] key:", key, "commandHistory.length:", commandHistory.length, "historyIndex:", historyIndex);
+  console.log(
+    "[DEBUG handleCommandHistory] key:",
+    key,
+    "commandHistory.length:",
+    commandHistory.length,
+    "historyIndex:",
+    historyIndex
+  );
   if (!commandHistory.length) return false;
   if (historyIndex < 0) historyIndex = commandHistory.length;
   if (key === "ArrowUp") {
