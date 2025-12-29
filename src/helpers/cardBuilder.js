@@ -1,3 +1,29 @@
+/**
+ * @fileoverview Factory module for building judoka card DOM elements.
+ *
+ * This module provides a functional approach to card generation, creating DOM elements
+ * directly rather than using HTML string templates. It delegates section rendering to
+ * the card section registry system for flexibility and modularity.
+ *
+ * **Architecture Note:**
+ * This module coexists with `src/components/JudokaCard.js` for historical reasons:
+ * - `cardBuilder.js` - Used by carousel and browse judoka pages (functional factory approach)
+ * - `JudokaCard.js` - Used by battle modes and random card display (OOP component approach)
+ *
+ * **When to use:**
+ * - Use `generateJudokaCardHTML()` for bulk carousel rendering where performance matters
+ * - Use `JudokaCard` component for single card displays with complex state management
+ *
+ * **Security:**
+ * XSS protection is delegated to card section builders in `cardSectionRegistry`.
+ * All sections must properly escape user input via `escapeHTML()` before rendering.
+ * This module does not perform additional sanitization of section output.
+ *
+ * @see {JudokaCard} for the component-based alternative
+ * @see {appendCards} in carousel/cards.js for primary usage example
+ * @see {cardSectionRegistry} in cardSections.js for section builder implementations
+ */
+
 import { getFlagUrl } from "./country/codes.js";
 import { safeGenerate } from "./errorUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
@@ -56,32 +82,6 @@ async function resolveFlagUrl(judoka) {
     FALLBACK_FLAG_URL
   );
 }
-
-/**
- * Generates the "last updated" HTML for a judoka card.
- *
- * @pseudocode
- * 1. Check if the `date` parameter is provided:
- *    - If `date` is undefined or falsy, return an empty string.
- *
- * 2. Format the date:
- *    - If `date` is a `Date` object, convert it to "YYYY-MM-DD" format.
- *    - If `date` is a string, use it as-is.
- *
- * 3. Sanitize the date string to prevent XSS attacks:
- *    - Use the `escapeHTML` function to sanitize the date string.
- *
- * 4. Generate the HTML for the "last updated" section:
- *    - Wrap the sanitized date in a `<div>` with the class `card-updated`.
- *
- * @param {string|Date|undefined} date - The last updated date as a string or Date.
- * @returns {string} The HTML string for the "last updated" section.
- */
-// function generateCardLastUpdated(date) {
-//   if (!date) return ""; // If date is undefined, don't render anything
-//   const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
-//   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
-// }
 
 /**
  * Build and return a DOM container for a judoka card.
@@ -147,26 +147,6 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
  * @param {HTMLElement} container - The container to append the card to.
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Generate and return a judoka card element for display.
  *
  * @summary Build a judoka card DOM element from `judoka` and append to an optional container.
@@ -177,7 +157,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
  *
  * @param {Object} judoka - Judoka data object.
  * @param {Object} gokyoLookup - Lookup data for gokyo techniques.
- * @param {HTMLElement} [container] - Optional container to append the card to.
+ * @param {HTMLElement} [container] - **UNUSED** - Legacy parameter maintained for backward compatibility. Does not affect card generation or appending behavior.
  * @param {Object} [options] - Optional generation options (e.g., enableInspector).
  * @returns {Promise<HTMLElement|null>} The generated card element or null on failure.
  */

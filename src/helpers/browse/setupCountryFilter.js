@@ -112,7 +112,7 @@ export function createCountryFilterAdapter(
  *    a. Ensure the "all" radio input is checked.
  *    b. Render the full judoka list.
  *    c. Update the aria-live region for "all countries".
- *    d. Remove any stale "no results" message and close the panel.
+ *    d. Remove any stale "no results" message.
  * 2. When applying a country filter:
  *    a. Derive the currently checked radio value.
  *    b. Filter the judoka list by the selected value.
@@ -143,7 +143,6 @@ export function createCountryFilterController(judokaList, render, adapter) {
       adapter.resetCarouselPosition?.();
       adapter.updateLiveRegion?.(judokaList.length, toLabel("all"));
       adapter.removeNoResultsMessage?.();
-      adapter.closePanel?.();
       return judokaList;
     },
     async select(button) {

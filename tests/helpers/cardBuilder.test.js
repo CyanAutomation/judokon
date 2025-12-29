@@ -1,8 +1,8 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 
 import * as cardRender from "../../src/helpers/cardRender.js";
 import { createScrollButton } from "../../src/helpers/carousel/scroll.js";
-import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
+import { generateJudokaCardHTML, generateJudokaCard } from "../../src/helpers/cardBuilder.js";
 import { withMutedConsole } from "../utils/console.js";
 import { naturalClick } from "../utils/componentTestUtils.js";
 
