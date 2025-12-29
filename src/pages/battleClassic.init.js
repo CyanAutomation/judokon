@@ -1738,6 +1738,9 @@ async function initializePhase4_EventHandlers(store) {
  */
 export async function init() {
   console.log("battleClassic: init()");
+  if (typeof window !== "undefined") {
+    window.__battleInitError = undefined;
+  }
   try {
     await initializePhase1_Utilities();
     await initializePhase2_UI();
@@ -1749,13 +1752,23 @@ export async function init() {
 
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
-    await initializeMatchStart(store);
 
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
+      window.__battleInitError = undefined;
     }
+
+    await initializeMatchStart(store);
   } catch (err) {
     console.error("battleClassic: bootstrap failed", err);
+    if (typeof window !== "undefined") {
+      window.__battleInitComplete = false;
+      if (err instanceof Error) {
+        window.__battleInitError = { name: err.name, message: err.message, stack: err.stack };
+      } else {
+        window.__battleInitError = err;
+      }
+    }
     showFatalInitError(err);
   }
 }
