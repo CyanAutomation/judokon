@@ -13,6 +13,11 @@ test.describe("Stat hotkeys", () => {
 
     await page.locator("body").press("1");
 
-    await expect(page.locator("body")).toHaveAttribute("data-stat-selected", "true");
+    const roundMessage = page.locator("header #round-message");
+    const nextButton = page.getByTestId("next-button");
+
+    await expect(roundMessage).toContainText(/You picked: /, { timeout: 5000 });
+    await expect(nextButton).toBeEnabled();
+    await expect(nextButton).toHaveAttribute("data-next-ready", "true");
   });
 });
