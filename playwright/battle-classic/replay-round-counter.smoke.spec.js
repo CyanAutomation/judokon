@@ -27,7 +27,9 @@ test.describe("Classic Battle replay - round counter", () => {
     const roundResolution = await completeRoundViaApi(page, {
       options: { opponentResolveDelayMs: 0, expireSelection: false }
     });
-    expect(roundResolution.ok).toBe(true);
+    if (!roundResolution.ok) {
+      throw new Error(`Failed to complete round via API: ${roundResolution.error || 'Unknown error'}`);
+    }
 
     await waitForMatchCompletion(page, { timeout: 10_000, allowFallback: true });
 
