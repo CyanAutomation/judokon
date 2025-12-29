@@ -341,7 +341,8 @@ test.describe("Hover Zoom Functionality", () => {
 
       await expect(page.locator("body")).toBeVisible({ timeout: 2000 });
 
-      const recoveredCard = await addBrowseCard(page, {
+      await addBrowseCard(page, {
+        id: 9999,
         firstname: "Recovered",
         surname: "Card",
         country: "Recoveria",
@@ -354,8 +355,8 @@ test.describe("Hover Zoom Functionality", () => {
 
       const recoveredCardLocator = page.locator(".judoka-card").first();
       await expect(recoveredCardLocator).toBeVisible();
-      await expect(recoveredCardLocator).toHaveAttribute("data-enlarge-listener-attached", "true");
 
+      // Verify hover zoom works via CSS (no JS listeners needed)
       await recoveredCardLocator.hover();
       await expectToBeEnlarged(recoveredCardLocator);
       await movePointerAwayFromCards(page);
@@ -363,7 +364,6 @@ test.describe("Hover Zoom Functionality", () => {
 
       expect(pageErrors).toHaveLength(0);
       expect(consoleErrors).toHaveLength(0);
-      expect(recoveredCard).toBeDefined();
     });
 
     test("handles page navigation during hover", async ({ page }) => {
@@ -387,17 +387,15 @@ test.describe("Hover Zoom Functionality", () => {
       await expect(page.locator('.judoka-card[style*="transform"]')).toHaveCount(0);
       await expect(page.locator("body")).toBeFocused();
 
-      // Return to browse page and ensure hover timers/listeners are reset
+      // Return to browse page and ensure hover state is clean
       await page.goBack();
       await waitForBrowseReady(page);
       await ensureBrowseCarouselReady(page);
       await expect(page.locator(".judoka-card.hovering")).toHaveCount(0);
-      const listenerCount = await page
-        .locator(".judoka-card[data-enlarge-listener-attached='true']")
-        .count();
-      expect(listenerCount).toBeGreaterThan(0);
 
+      // Verify hover zoom works after navigation (CSS-based, no JS listeners needed)
       const restoredFirstCard = page.locator(".judoka-card").first();
+      await expect(restoredFirstCard).toBeVisible();
       await restoredFirstCard.hover();
       await expectToBeEnlarged(restoredFirstCard);
       await movePointerAwayFromCards(page);

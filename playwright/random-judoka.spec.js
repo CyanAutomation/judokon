@@ -85,6 +85,31 @@ test.describe("View Judoka screen", () => {
       })
     );
 
+    // Mock portrait images for fixture judoka
+    await page.route("**/assets/judokaPortraits/judokaPortrait-101.png", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          "base64"
+        )
+      })
+    );
+    await page.route("**/assets/judokaPortraits/judokaPortrait-202.png", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          "base64"
+        )
+      })
+    );
+
+    await page.reload();
+    await page.locator('body[data-random-judoka-ready="true"]').waitFor();
+
     await page.evaluate(async () => {
       const { setTestMode } = await import("/src/helpers/testModeUtils.js");
       setTestMode({ enabled: true, seed: 2 });
@@ -102,6 +127,7 @@ test.describe("View Judoka screen", () => {
     await expect(historyItems).toHaveText([firstCardName]);
 
     await drawButton.click();
+    await expect(cardName).not.toHaveAttribute("aria-label", firstCardName);
     const secondCardName = await cardName.getAttribute("aria-label");
     if (!secondCardName) {
       throw new Error("Second card name not found - aria-label attribute is missing or empty");
