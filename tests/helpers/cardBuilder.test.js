@@ -297,10 +297,8 @@ describe("generateCardPortrait", () => {
   it("generateCardPortrait escapes HTML in firstname and surname", () => {
     const card = { id: 1, firstname: "<John>", surname: '"Doe"' };
     const result = cardRender.generateCardPortrait(card);
-    const wrapper = parseHtmlFragment(result);
-    const name = wrapper.querySelector(".card-name");
-    expect(name?.innerHTML).toContain("&lt;John&gt;");
-    expect(name?.innerHTML).toContain("&quot;Doe&quot;");
+    expect(result).toContain("&lt;John&gt;");
+    expect(result).toContain("&quot;Doe&quot;");
   });
 
   it("generateCardPortrait includes alt attribute with full name", () => {

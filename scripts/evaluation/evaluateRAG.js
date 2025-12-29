@@ -129,7 +129,7 @@ export async function evaluate(baseline = null, options = {}) {
     recall5: 0.85,
     avgLatencyMs: 270,
     p95LatencyMs: 280,
-    maxBundleMB: 35.0  // Updated from 26.0 to accommodate current embeddings size
+    maxBundleMB: 35.0 // Updated from 26.0 to accommodate current embeddings size
   };
   const coverageOK = true; // Placeholder: coverage validated by generation pipeline
 
