@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures/battleCliFixture.js";
 import { waitForBattleReady } from "./helpers/battleStateHelper.js";
 
 // Spec coverage: CLI layout regression guard (match launch, settings accordion, focus order, no overflow)
-// Tracks CLI layout regressions called out in progressBattleLayout.md
+
 
 const viewports = [
   { name: "desktop", viewport: { width: 1280, height: 900 } },
