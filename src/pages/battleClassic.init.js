@@ -253,13 +253,7 @@ function bindHomeButton(store) {
     if (!homeBtn.__boundQuit) {
       homeBtn.addEventListener("click", () => {
         try {
-          const activeStore =
-            store && typeof store === "object"
-              ? store
-              : typeof window !== "undefined" && window.battleStore
-                ? window.battleStore
-                : {};
-          quitMatch(activeStore, homeBtn);
+          quitMatch(resolveControlStore(store), homeBtn);
         } catch {}
       });
       homeBtn.__boundQuit = true;
@@ -1408,8 +1402,6 @@ function setupInitialUI() {
   updateRoundCounter(0);
   const rc = getRoundCounter();
   if (rc && !rc.textContent) rc.textContent = "Round 0";
-
-  wireControlButtons();
 }
 
 // =============================================================================
@@ -1452,17 +1444,21 @@ function wireGlobalBattleEvents(store) {
   });
 }
 
-function wireControlButtons(store) {
-  const resolveStore = () => {
-    if (store && typeof store === "object") {
-      return store;
-    }
-    if (typeof window !== "undefined" && window.battleStore) {
-      return window.battleStore;
-    }
-    return {};
-  };
+function resolveControlStore(store) {
+  if (store && typeof store === "object") {
+    return store;
+  }
+  if (typeof window !== "undefined" && window.battleStore) {
+    return window.battleStore;
+  }
+  const fallbackStore = createBattleStore();
+  if (typeof window !== "undefined") {
+    window.battleStore = fallbackStore;
+  }
+  return fallbackStore;
+}
 
+function wireControlButtons(store) {
   const nextBtn = getNextButton();
   if (nextBtn && !nextBtn.__controlBound) {
     nextBtn.addEventListener("click", onNextButtonClick);
@@ -1472,7 +1468,7 @@ function wireControlButtons(store) {
   const replayBtn = getReplayButton();
   if (replayBtn && !replayBtn.__controlBound) {
     replayBtn.addEventListener("click", async () => {
-      const activeStore = resolveStore();
+      const activeStore = resolveControlStore(store);
       stopActiveSelectionTimer();
       STATE.isStartingRoundCycle = false;
       resetOpponentPromptTimestamp();
@@ -1498,11 +1494,11 @@ function wireControlButtons(store) {
 
   const quitBtn = getQuitButton();
   if (quitBtn && !quitBtn.__controlBound) {
-    quitBtn.addEventListener("click", () => quitMatch(resolveStore(), quitBtn));
+    quitBtn.addEventListener("click", () => quitMatch(resolveControlStore(store), quitBtn));
     quitBtn.__controlBound = true;
   }
 
-  bindHomeButton(store);
+  bindHomeButton(resolveControlStore(store));
 }
 
 async function handleRoundStartEvent(store, evt) {
@@ -1777,7 +1773,6 @@ export async function init() {
 
     wireControlButtons(store);
 
-    await initializeMatchStart(store);
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
     await initializeMatchStart(store);
