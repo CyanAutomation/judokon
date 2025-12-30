@@ -176,6 +176,54 @@ Each stored entry also includes a sparse term-frequency vector. Search requests 
 
 ---
 
+## Vector Search UI
+
+The Vector Search demo is implemented in [`src/pages/vectorSearch.html`](../../src/pages/vectorSearch.html) with behavior wired up in
+[`src/helpers/vectorSearchPage.js`](../../src/helpers/vectorSearchPage.js). The Score column sorting helper lives in
+[`src/helpers/vectorSearchPage/tableSorting.js`](../../src/helpers/vectorSearchPage/tableSorting.js).
+
+### Page Location and Core Controls
+
+- **Page URL:** `/src/pages/vectorSearch.html` (served as the “Vector Search” page in the app shell).
+- **Controls:**
+  - Search input (`#vector-search-input`) with required query text.
+  - Tag filter dropdown (`#tag-filter`) populated from embedding tags, with an `All` option as the default.
+  - Search button (`#vector-search-btn`) submits the form and runs the query.
+
+### Results Table and Row Behavior
+
+- Results render into the table `#vector-results-table`, with columns in this order: **Match**, **Source**, **Tags**, **Score**.
+- Each row is focusable and supports click, **Enter**, or **Space** to load additional context into the `.result-context` element within the row.
+- When a row is activated, `.result-context` is updated with:
+  - **Loading state:** `Loading context...`
+  - **Fallbacks:** `No additional context found.` when the context fetch returns empty, or
+    `Context could not be loaded.` on errors.
+
+### Score Column Sorting
+
+- The **Score** column header is clickable and toggles between ascending and descending sort.
+- Sorting updates the header’s `aria-sort` attribute to `ascending`/`descending` to reflect the current direction.
+
+### UI Messages and Error States
+
+- Embeddings load failure returns: `Embeddings could not be loaded – please check console.`
+- Embedding load exception returns: `Failed to load search data. Please try again later.`
+- When only weak matches exist, the UI displays:
+  `⚠️ No strong matches found, but here are the closest matches based on similarity.`
+  and applies `.search-result-empty` styling.
+
+### Embedding Version Warnings
+
+- If embedding entry versions or metadata versions are out of date, the page displays:
+  `⚠️ Embedding data is out of date. Run npm run generate:embeddings.`
+
+### Embedding Count Display
+
+- The header count is sourced from `client_embeddings.meta.json` (`count` field) and shown as
+  `{count} embeddings loaded`.
+
+---
+
 ## Operations & Tooling
 
 ### Quick Start
