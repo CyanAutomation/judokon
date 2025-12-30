@@ -79,6 +79,19 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 - Tooltips are compatible with statically hosted environments (e.g. GitHub Pages).
 - Tooltips support screen readers and meet accessibility standards (ARIA labels, semantic roles).
 
+### Feature Flag: `tooltipOverlayDebug`
+
+The `tooltipOverlayDebug` feature flag exposes a visual debug overlay so QA/devs can verify tooltip target boundaries and placement without altering production behavior. The flag is **off by default** and is toggled in the Settings UI under Advanced Settings.
+
+- **Purpose**: Provide a safe, opt-in overlay for debugging tooltip target alignment and spacing.
+- **Default state**: `false` (`featureFlags.tooltipOverlayDebug.enabled` in [`src/data/settings.json`](../../src/data/settings.json)).
+- **UX behavior** (implemented in [`src/helpers/tooltipOverlayDebug.js`](../../src/helpers/tooltipOverlayDebug.js)):
+  - **Enabled**: adds `body.tooltip-overlay-debug` and sets `data-feature-tooltip-overlay-debug="enabled"` on `<body>`.
+  - **Disabled**: removes the `tooltip-overlay-debug` class and clears the enabled marker by setting `data-feature-tooltip-overlay-debug="disabled"`.
+  - **Rate limiting**: DOM mutations are throttled to a 120ms interval and scheduled on an idle frame (`requestIdleCallback`/`requestAnimationFrame` fallback) to avoid rapid reflow spikes.
+- **Settings metadata**: Declared in `featureFlags.tooltipOverlayDebug` within [`src/data/settings.json`](../../src/data/settings.json), with tooltip text coming from `tooltips.json` via `tooltipId: "settings.tooltipOverlayDebug"`.
+- **Settings UI wiring**: The Settings page applies the flag on load and after resets in [`src/helpers/settingsPage.js`](../../src/helpers/settingsPage.js) via `toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"))`.
+
 ### Tooltip Content Guidelines
 
 To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone, the following content standards must be followed when writing or reviewing tooltips:
