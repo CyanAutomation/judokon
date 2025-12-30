@@ -212,6 +212,114 @@ const result2 = await mcp.call("judokon.getById", {
 }
 ```
 
+#### 4. `judokon.random` — Select Random Judoka
+
+Selects a random judoka (or multiple) with optional filtering by country, rarity, or weight class.
+
+**Input Schema**:
+
+```json
+{
+  "count": "integer (1-50, default 1)", // Number of random judoka to select
+  "filters": {
+    "country": "string (optional)", // Filter by country
+    "rarity": "enum (Common|Epic|Legendary)",
+    "weightClass": "string (optional)" // e.g., '+100', '-60'
+  }
+}
+```
+
+**Examples**:
+
+```javascript
+// Select a single random judoka
+const result1 = await mcp.call("judokon.random", {});
+
+// Select 3 random legendary judoka from Japan
+const result2 = await mcp.call("judokon.random", {
+  count: 3,
+  filters: {
+    country: "Japan",
+    rarity: "Legendary"
+  }
+});
+```
+
+**Response Format**: (Same as `judokon.search` for each judoka in an array)
+
+```json
+{
+  "results": [
+    {
+      "id": 0,
+      "name": "Tatsuuma Ushiyama",
+      "country": "Vanuatu",
+      "countryCode": "vu",
+      "rarity": "Legendary",
+      "weightClass": "+100",
+      "stats": {
+        "power": 9,
+        "speed": 9,
+        "technique": 9,
+        "kumikata": 9,
+        "newaza": 9
+      },
+      "bio": "...",
+      "score": 0.95 // Score is not relevant for random, but kept for consistency
+    }
+  ],
+  "count": 1 // Number of random judoka returned
+}
+```
+
+#### 5. `judokon.compare` — Compare Judoka Stats
+
+Compares the stats between two specified judoka by their IDs.
+
+**Input Schema**:
+
+```json
+{
+  "judoka1_id": "string | number (required)", // ID of the first judoka
+  "judoka2_id": "string | number (required)"  // ID of the second judoka
+}
+```
+
+**Examples**:
+
+```javascript
+// Compare judoka with ID 0 and ID 1
+const result = await mcp.call("judokon.compare", {
+  judoka1_id: 0,
+  judoka2_id: 1
+});
+```
+
+**Response Format**: (Detailed comparison of stats)
+
+```json
+{
+  "judoka1": {
+    "id": 0,
+    "name": "Tatsuuma Ushiyama",
+    "stats": { "power": 9, "speed": 9, "technique": 9, "kumikata": 9, "newaza": 9 }
+  },
+  "judoka2": {
+    "id": 1,
+    "name": "Rina Kobayashi",
+    "stats": { "power": 7, "speed": 8, "technique": 6, "kumikata": 7, "newaza": 8 }
+  },
+  "comparison": {
+    "power_diff": 2,    // judoka1.power - judoka2.power
+    "speed_diff": 1,
+    "technique_diff": 3,
+    "kumikata_diff": 2,
+    "newaza_diff": 1,
+    "summary": "Tatsuuma Ushiyama has higher Power, Technique, Kumikata, and Newaza. Rina Kobayashi has higher Speed."
+  }
+}
+```
+
 ### Setup Instructions
 
 #### 1. Claude Desktop Integration
@@ -381,9 +489,7 @@ console.log(test); // Should return first judoka record
 
 Potential future tools that could be added:
 
-- **`judokon.random`** — Select random judoka with optional filters
 - **`judokon.resolveCode`** — Map card codes to judoka records
-- **`judokon.compare`** — Compare stats between two judoka
 - **`judokon.listCountries`** — Get list of countries in database
 - **`judokon.statsByRarity`** — Analyze stat distributions by rarity level
 
