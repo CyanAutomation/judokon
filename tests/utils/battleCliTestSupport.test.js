@@ -131,15 +131,15 @@ describe("normalizeRoundDetailForTest", () => {
       expect(result.result.opponentScore).toBe(0);
     });
 
-    it("should handle Infinity scores", () => {
+    it("should pass through Infinity scores (not finite but valid numbers)", () => {
       const eventLike = {
         result: { playerScore: Infinity, opponentScore: -Infinity }
       };
 
       const result = normalizeRoundDetailForTest(eventLike);
 
-      expect(result.result.playerScore).toBe(0);
-      expect(result.result.opponentScore).toBe(0);
+      expect(result.result.playerScore).toBe(Infinity);
+      expect(result.result.opponentScore).toBe(-Infinity);
     });
   });
 
@@ -436,10 +436,13 @@ describe("resolveRoundForTest", () => {
     it("should continue execution when emitOpponentReveal throws error", async () => {
       mockEmitOpponentReveal.mockRejectedValue(new Error("Reveal error"));
 
-      const result = await resolveRoundForTest({}, {
-        emitOpponentReveal: mockEmitOpponentReveal,
-        dispatch: mockDispatch
-      });
+      const result = await resolveRoundForTest(
+        {},
+        {
+          emitOpponentReveal: mockEmitOpponentReveal,
+          dispatch: mockDispatch
+        }
+      );
 
       expect(mockEmitOpponentReveal).toHaveBeenCalledOnce();
       expect(result.dispatched).toBe(true);
@@ -465,13 +468,14 @@ describe("resolveRoundForTest", () => {
       const result = await resolveRoundForTest({}, { store: mockStore, dispatch: mockDispatch });
 
       expect(result.detail.store).toBe(mockStore);
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ store: mockStore })
-      );
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ store: mockStore }));
     });
 
     it("should use getStore when store not provided", async () => {
-      const result = await resolveRoundForTest({}, { getStore: mockGetStore, dispatch: mockDispatch });
+      const result = await resolveRoundForTest(
+        {},
+        { getStore: mockGetStore, dispatch: mockDispatch }
+      );
 
       expect(mockGetStore).toHaveBeenCalled();
       expect(result.detail.store).toBeDefined();
@@ -486,11 +490,14 @@ describe("resolveRoundForTest", () => {
       });
       mockEmitOpponentReveal.mockRejectedValue(new Error("Reveal error"));
 
-      const result = await resolveRoundForTest({}, {
-        dispatch: mockDispatch,
-        emit: mockEmit,
-        emitOpponentReveal: mockEmitOpponentReveal
-      });
+      const result = await resolveRoundForTest(
+        {},
+        {
+          dispatch: mockDispatch,
+          emit: mockEmit,
+          emitOpponentReveal: mockEmitOpponentReveal
+        }
+      );
 
       expect(result.detail).toBeDefined();
       expect(result.dispatched).toBe(false);
@@ -520,11 +527,14 @@ describe("resolveRoundForTest", () => {
         callOrder.push("emit");
       });
 
-      await resolveRoundForTest({}, {
-        emitOpponentReveal: mockEmitOpponentReveal,
-        dispatch: mockDispatch,
-        emit: mockEmit
-      });
+      await resolveRoundForTest(
+        {},
+        {
+          emitOpponentReveal: mockEmitOpponentReveal,
+          dispatch: mockDispatch,
+          emit: mockEmit
+        }
+      );
 
       expect(callOrder).toEqual(["reveal", "dispatch", "emit"]);
     });
