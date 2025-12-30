@@ -9,23 +9,29 @@ import {
  * @summary Start the animation scheduler for the battle view.
  *
  * @pseudocode
- * 1. If `process.env.VITEST` is "true", exit early.
+ * 1. If running under tests or `requestAnimationFrame` is unavailable, exit early.
  * 2. Otherwise start the scheduler and stop it on `pagehide`.
  * 3. Add visibilitychange listener to pause/resume.
  * @returns {void}
  */
 export function setupScheduler() {
-  if (!(typeof process !== "undefined" && process.env.VITEST === "true")) {
-    startScheduler();
-    window.addEventListener("pagehide", stopScheduler, { once: true });
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        pause();
-      } else {
-        resume();
-      }
-    });
+  if (globalThis.__TEST__ || typeof requestAnimationFrame !== "function") {
+    return;
   }
+
+  if (typeof process !== "undefined" && process.env.VITEST === "true") {
+    return;
+  }
+
+  startScheduler();
+  window.addEventListener("pagehide", stopScheduler, { once: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      pause();
+    } else {
+      resume();
+    }
+  });
 }
 
 export default setupScheduler;
