@@ -112,6 +112,27 @@ Acceptance Criteria:
 - Latency: Vector search responses should be < 250ms in local development (where applicable).
 - Observability: Key actions should emit events for tracing and testing.
 
+## Telemetry / Monitoring
+
+Sentry is injected as a script include in entry pages (for example `index.html` and the HTML files under `src/pages/*.html`). The script tag is intentionally early in the document head so `window.Sentry` is available to runtime helpers before classic battle modules load. Reference pages include `index.html`, `src/pages/battleClassic.html`, `src/pages/battleCLI.html`, `src/pages/settings.html`, and other `src/pages/*.html` files that share the Sentry CDN include.
+
+Classic battle telemetry uses guarded reporting so game logic continues even if Sentry is absent or fails to initialize:
+
+- `src/helpers/classicBattle/stateHandlers/sentryReporter.js` lazily loads `@sentry/browser` and only calls `captureException` when a global Sentry client is present (or the dynamic import succeeds). It checks for `window.Sentry` and safely bails if unavailable.
+- `src/helpers/classicBattle/judokaTelemetry.js` reports repeated judoka load failures. After a threshold within a time window, it samples and sends `Sentry.startSpan` + `Sentry.logger.warn` for the `classicBattle.judokaLoad.retryLoop` retry loop, including attributes like failure count, elapsed time, and sample rate.
+- `src/helpers/battle/engineTimer.js` wraps timer lifecycle events (`roundStarted`, `timerPaused`, `timerResumed`, `timerStopped`, `tabInactive`, `tabActive`, `timerDriftDetected`, `timerDriftRecorded`) with `Sentry.startSpan` when available. It also emits drift telemetry when the threshold is exceeded, attaching window/threshold metadata and warning logs for production monitoring.
+
+Events/errors reported and span usage:
+
+- Exceptions: `reportSentryError` captures explicit errors with optional context when Sentry is configured.
+- Spans: `Sentry.startSpan` is used for performance/health telemetry on timer state transitions and judoka retry loops, with attributes to aid debugging (event name, drift amounts, retry counts, thresholds).
+- Warnings: `Sentry.logger.warn` is used for structured warnings around retry-loop and timer drift thresholds.
+
+Safety/availability checks:
+
+- All telemetry calls are wrapped in `typeof Sentry !== "undefined"` and `typeof Sentry.startSpan === "function"` checks before invoking Sentry APIs.
+- The lazy loader in `sentryReporter.js` guards initialization (checks for a configured DSN and existing client) and safely no-ops on failures, ensuring no hard dependency on Sentry.
+
 ## Dependencies and Open Questions
 
 - Depends on `prdBattleEngine.md` for engine internals.
