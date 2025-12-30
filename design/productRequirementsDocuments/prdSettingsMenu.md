@@ -324,6 +324,9 @@ On load, the Settings page must pre-populate each control with values from
 - The snackbar confirms the change and hides itself after a short delay.
 - Debug-focused flags remain tucked away so younger players do not accidentally enable them.
 - Setting persists across page refreshes and sessions.
+- Runtime overrides may be provided via `window.__FF_OVERRIDES`, which `isEnabled()` reads as an escape hatch before falling back to persisted or default values (see `src/helpers/featureFlags.js`).
+- Flag updates synchronize across tabs by listening for `storage` events (`window.addEventListener("storage", ...)`) in `src/helpers/featureFlags.js`; changes from another tab should update the in-memory flag cache.
+- Flag initialization merges persisted settings with defaults by overlaying `DEFAULT_SETTINGS.featureFlags` before applying any overrides, so new flags inherit defaults while honoring existing user settings (see `src/config/settingsDefaults.js` and `src/helpers/featureFlags.js`).
 
 ### Advanced Settings Search
 
