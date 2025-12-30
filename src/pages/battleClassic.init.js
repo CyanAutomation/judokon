@@ -253,7 +253,13 @@ function bindHomeButton(store) {
     if (!homeBtn.__boundQuit) {
       homeBtn.addEventListener("click", () => {
         try {
-          quitMatch(store, homeBtn);
+          const activeStore =
+            store && typeof store === "object"
+              ? store
+              : typeof window !== "undefined" && window.battleStore
+                ? window.battleStore
+                : {};
+          quitMatch(activeStore, homeBtn);
         } catch {}
       });
       homeBtn.__boundQuit = true;
@@ -1402,6 +1408,8 @@ function setupInitialUI() {
   updateRoundCounter(0);
   const rc = getRoundCounter();
   if (rc && !rc.textContent) rc.textContent = "Round 0";
+
+  wireControlButtons();
 }
 
 // =============================================================================
@@ -1445,36 +1453,54 @@ function wireGlobalBattleEvents(store) {
 }
 
 function wireControlButtons(store) {
+  const resolveStore = () => {
+    if (store && typeof store === "object") {
+      return store;
+    }
+    if (typeof window !== "undefined" && window.battleStore) {
+      return window.battleStore;
+    }
+    return {};
+  };
+
   const nextBtn = getNextButton();
-  if (nextBtn) nextBtn.addEventListener("click", onNextButtonClick);
+  if (nextBtn && !nextBtn.__controlBound) {
+    nextBtn.addEventListener("click", onNextButtonClick);
+    nextBtn.__controlBound = true;
+  }
 
   const replayBtn = getReplayButton();
-  if (replayBtn) {
+  if (replayBtn && !replayBtn.__controlBound) {
     replayBtn.addEventListener("click", async () => {
+      const activeStore = resolveStore();
       stopActiveSelectionTimer();
       STATE.isStartingRoundCycle = false;
       resetOpponentPromptTimestamp();
       resetRoundCounterTracking();
 
-      if (store.statTimeoutId) {
-        clearTimeout(store.statTimeoutId);
-        store.statTimeoutId = null;
+      if (activeStore.statTimeoutId) {
+        clearTimeout(activeStore.statTimeoutId);
+        activeStore.statTimeoutId = null;
       }
-      if (store.autoSelectId) {
-        clearTimeout(store.autoSelectId);
-        store.autoSelectId = null;
+      if (activeStore.autoSelectId) {
+        clearTimeout(activeStore.autoSelectId);
+        activeStore.autoSelectId = null;
       }
 
-      await handleReplay(store);
+      await handleReplay(activeStore);
       await waitForStatButtonsReady();
       updateScore(0, 0);
       updateRoundCounter(1);
       resetFallbackScores();
     });
+    replayBtn.__controlBound = true;
   }
 
   const quitBtn = getQuitButton();
-  if (quitBtn) quitBtn.addEventListener("click", () => quitMatch(store, quitBtn));
+  if (quitBtn && !quitBtn.__controlBound) {
+    quitBtn.addEventListener("click", () => quitMatch(resolveStore(), quitBtn));
+    quitBtn.__controlBound = true;
+  }
 
   bindHomeButton(store);
 }
@@ -1714,7 +1740,6 @@ async function initializePhase4_EventHandlers(store) {
   initDebugPanel();
   initBattleStateBadge({ force: false });
 
-  wireControlButtons(store);
   wireRoundCycleEvents(store);
 }
 
@@ -1749,6 +1774,8 @@ export async function init() {
     if (typeof window !== "undefined") {
       window.battleStore = store;
     }
+
+    wireControlButtons(store);
 
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
