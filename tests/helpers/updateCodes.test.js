@@ -70,7 +70,7 @@ vi.mock("fs", () => ({
 describe("updateCodes script", () => {
   it("assigns card codes and falls back for invalid entries", async () => {
     await withMutedConsole(
-      () => import("../../updateCodes.mjs"),
+      () => import("../../scripts/updateCodes.mjs"),
       ["log", "debug", "error", "warn"]
     );
     const updated = JSON.parse(writtenData);

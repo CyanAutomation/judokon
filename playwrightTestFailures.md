@@ -1,20 +1,22 @@
-1) playwright/battle-classic/keyboard-navigation.spec.js:28:3 › Classic Battle keyboard navigation › should select a stat with Enter and update the round message 
+1.  playwright/battle-classic/keyboard-navigation.spec.js:28:3 › Classic Battle keyboard navigation › should select a stat with Enter and update the round message
 
     Test timeout of 30000ms exceeded.
 
     Error: locator.textContent: Test timeout of 30000ms exceeded.
     Call log:
-      - waiting for getByTestId('round-message')
+    - waiting for getByTestId('round-message')
 
+    37 | await expect(statButtons.first()).toBeFocused();
+    38 |
 
-      37 |     await expect(statButtons.first()).toBeFocused();
-      38 |
-    > 39 |     const initialMessage = (await roundMessage.textContent()) ?? "";
-         |                                                ^
-      40 |
-      41 |     await page.keyboard.press("Enter");
-      42 |
-        at /workspaces/judokon/playwright/battle-classic/keyboard-navigation.spec.js:39:48
+    > 39 | const initialMessage = (await roundMessage.textContent()) ?? "";
+
+          |                                                ^
+
+    40 |
+    41 | await page.keyboard.press("Enter");
+    42 |
+    at /workspaces/judokon/playwright/battle-classic/keyboard-navigation.spec.js:39:48
 
     attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
     test-results/battle-classic-keyboard-na-b5e49-nd-update-the-round-message/test-failed-1.png
@@ -26,7 +28,8 @@
 
     Error Context: test-results/battle-classic-keyboard-na-b5e49-nd-update-the-round-message/error-context.md
 
-  2) playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › shows opponent feedback snackbar immediately after stat selection 
+2.  playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › shows opponent feedback snackbar immediately after stat selection
+
 
     TimeoutError: page.waitForFunction: Timeout 5000ms exceeded.
 
@@ -54,7 +57,8 @@
 
     Error Context: test-results/battle-classic-opponent-me-79b16-iately-after-stat-selection/error-context.md
 
-  3) playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › CLI resolveRound reveals the opponent card 
+3. playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › CLI resolveRound reveals the opponent card
+
 
     Error: expect(locator).toHaveAttribute(expected) failed
 
@@ -96,7 +100,8 @@
 
     Error Context: test-results/battle-classic-opponent-me-9bd1c-d-reveals-the-opponent-card/error-context.md
 
-  4) playwright/battle-classic/opponent-reveal.spec.js:80:3 › Classic Battle Opponent Reveal › resets stat selection after advancing to the next round 
+4. playwright/battle-classic/opponent-reveal.spec.js:80:3 › Classic Battle Opponent Reveal › resets stat selection after advancing to the next round
+
 
     Error: expect(received).toBe(expected) // Object.is equality
 
@@ -126,7 +131,8 @@
 
     Error Context: test-results/battle-classic-opponent-re-81658-advancing-to-the-next-round/error-context.md
 
-  5) playwright/battle-classic/replay-flaky-detector.spec.js:11:3 › Classic Battle — Replay flaky detector › replay loop maintains zeroed scoreboard 
+5. playwright/battle-classic/replay-flaky-detector.spec.js:11:3 › Classic Battle — Replay flaky detector › replay loop maintains zeroed scoreboard
+
 
     Test timeout of 30000ms exceeded.
 
@@ -169,7 +175,8 @@
 
     Error Context: test-results/battle-classic-replay-flak-76347-maintains-zeroed-scoreboard/error-context.md
 
-  6) playwright/battle-classic/replay-round-counter.smoke.spec.js:12:3 › Classic Battle replay - round counter › [Spec: CLASSIC-REPLAY-ROUND-COUNTER-01] replay resets round counter to 1 
+6. playwright/battle-classic/replay-round-counter.smoke.spec.js:12:3 › Classic Battle replay - round counter › [Spec: CLASSIC-REPLAY-ROUND-COUNTER-01] replay resets round counter to 1
+
 
     Test timeout of 30000ms exceeded.
 
@@ -224,7 +231,8 @@
 
     Error Context: test-results/battle-classic-replay-roun-b8be6-y-resets-round-counter-to-1/error-context.md
 
-  7) playwright/battle-classic/round-flow.spec.js:72:3 › Classic Battle Opponent Round Flow › resolves the round and updates score after opponent reveal 
+7. playwright/battle-classic/round-flow.spec.js:72:3 › Classic Battle Opponent Round Flow › resolves the round and updates score after opponent reveal
+
 
     TimeoutError: page.waitForFunction: Timeout 2000ms exceeded.
 
@@ -251,7 +259,8 @@
 
     Error Context: test-results/battle-classic-round-flow--ea082-score-after-opponent-reveal/error-context.md
 
-  8) playwright/battle-classic/round-flow.spec.js:98:3 › Classic Battle Opponent Round Flow › advances to the next round after opponent reveal 
+8. playwright/battle-classic/round-flow.spec.js:98:3 › Classic Battle Opponent Round Flow › advances to the next round after opponent reveal
+
 
     Error: Expected stat selection to reset for the next round
 
@@ -283,7 +292,8 @@
 
     Error Context: test-results/battle-classic-round-flow--782c9-round-after-opponent-reveal/error-context.md
 
-  9) playwright/battle-classic/round-flow.spec.js:199:3 › Classic Battle Opponent Round Flow › opponent reveal state is properly managed between rounds 
+9. playwright/battle-classic/round-flow.spec.js:199:3 › Classic Battle Opponent Round Flow › opponent reveal state is properly managed between rounds
+
 
     Error: expect(locator).toContainText(expected) failed
 
@@ -319,7 +329,8 @@
 
     Error Context: test-results/battle-classic-round-flow--cd784-erly-managed-between-rounds/error-context.md
 
-  10) playwright/battle-classic/round-flow.spec.js:233:3 › Classic Battle Opponent Round Flow › opponent reveal cleans up properly on match end 
+10. playwright/battle-classic/round-flow.spec.js:233:3 › Classic Battle Opponent Round Flow › opponent reveal cleans up properly on match end
+
 
     Error: expect(locator).toContainText(expected) failed
 
@@ -357,7 +368,8 @@
 
     Error Context: test-results/battle-classic-round-flow--dd9de-ns-up-properly-on-match-end/error-context.md
 
-  11) playwright/battle-classic/round-flow.spec.js:253:3 › Classic Battle Opponent Round Flow › opponent reveal works with different stat selections 
+11. playwright/battle-classic/round-flow.spec.js:253:3 › Classic Battle Opponent Round Flow › opponent reveal works with different stat selections
+
 
     Error: expect(locator).toContainText(expected) failed
 
@@ -395,7 +407,8 @@
 
     Error Context: test-results/battle-classic-round-flow--6c5bc-h-different-stat-selections/error-context.md
 
-  12) playwright/battle-classic/round-flow.spec.js:343:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › displays opponent prompt immediately when no delay configured 
+12. playwright/battle-classic/round-flow.spec.js:343:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › displays opponent prompt immediately when no delay configured
+
 
     Error: expect(locator).toContainText(expected) failed
 
@@ -431,7 +444,8 @@
 
     Error Context: test-results/battle-classic-round-flow--6c2e1-ly-when-no-delay-configured/error-context.md
 
-  13) playwright/battle-classic/round-flow.spec.js:358:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › displays opponent prompt after configured delay with fallback timer 
+13. playwright/battle-classic/round-flow.spec.js:358:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › displays opponent prompt after configured delay with fallback timer
+
 
     Error: expect(locator).toContainText(expected) failed
 
@@ -467,7 +481,8 @@
 
     Error Context: test-results/battle-classic-round-flow--a382c-d-delay-with-fallback-timer/error-context.md
 
-  14) playwright/battle-classic/round-flow.spec.js:375:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › clears fallback timer when next round starts 
+14. playwright/battle-classic/round-flow.spec.js:375:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › clears fallback timer when next round starts
+
 
     Error: expect(locator).toContainText(expected) failed
 
@@ -503,7 +518,8 @@
 
     Error Context: test-results/battle-classic-round-flow--20d10-imer-when-next-round-starts/error-context.md
 
-  15) playwright/battle-classic/snackbar-console-diagnostic.spec.js:6:3 › Classic Battle snackbar selection feedback › shows snackbar after stat selection 
+15. playwright/battle-classic/snackbar-console-diagnostic.spec.js:6:3 › Classic Battle snackbar selection feedback › shows snackbar after stat selection
+
 
     Error: expect(locator).toHaveAttribute(expected) failed
 
@@ -538,7 +554,8 @@
 
     Error Context: test-results/battle-classic-snackbar-co-e348b-ackbar-after-stat-selection/error-context.md
 
-  16) playwright/battle-classic/snackbar-diagnostic.spec.js:6:3 › Snackbar diagnostic tests › selecting a stat shows snackbar and enables Next 
+16. playwright/battle-classic/snackbar-diagnostic.spec.js:6:3 › Snackbar diagnostic tests › selecting a stat shows snackbar and enables Next
+
 
     Error: expect(locator).toBeVisible() failed
 
@@ -574,7 +591,8 @@
 
     Error Context: test-results/battle-classic-snackbar-di-d1ee7-s-snackbar-and-enables-Next/error-context.md
 
-  17) playwright/battle-classic/stat-selection.spec.js:5:3 › Classic Battle stat selection › buttons enabled after start; clicking resolves and starts cooldown 
+17. playwright/battle-classic/stat-selection.spec.js:5:3 › Classic Battle stat selection › buttons enabled after start; clicking resolves and starts cooldown
+
 
     Test timeout of 30000ms exceeded.
 

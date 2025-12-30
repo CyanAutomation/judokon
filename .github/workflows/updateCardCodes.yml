@@ -23,7 +23,7 @@
 #
 # Files Validated:
 #   - src/helpers/cardCode.js (card generation logic)
-#   - updateCodes.mjs (update script)
+#   - scripts/updateCodes.mjs (update script)
 #
 # Performance:
 #   - Node.js 22 LTS (aligned with other workflows)
@@ -75,7 +75,7 @@ jobs:
           echo "✓ Checking required files..."
           [ -f "src/data/judoka.json" ] || { echo "❌ judoka.json missing"; exit 1; }
           [ -f "src/helpers/cardCode.js" ] || { echo "❌ cardCode.js missing"; exit 1; }
-          [ -f "updateCodes.mjs" ] || { echo "❌ updateCodes.mjs missing"; exit 1; }
+          [ -f "scripts/updateCodes.mjs" ] || { echo "❌ updateCodes.mjs missing"; exit 1; }
           echo "✓ All required files present"
 
           echo "✓ Validating judoka.json syntax..."

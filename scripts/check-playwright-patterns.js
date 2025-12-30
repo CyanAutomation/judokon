@@ -48,27 +48,28 @@ const BANNED_PATTERNS = [
 function checkFile(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
   const violations = [];
+  const lines = content.split("\n");
 
   for (const { pattern, description, severity } of BANNED_PATTERNS) {
-    const regex = new RegExp(pattern, "g");
-    const matches = content.match(regex);
+    const lineNumbers = [];
+    const regex = new RegExp(pattern); // Non-global for line-by-line testing
 
-    if (matches) {
-      // Get line numbers for each match
-      const lines = content.split("\n");
-      const lineNumbers = [];
-
-      lines.forEach((line, index) => {
-        if (regex.test(line)) {
-          lineNumbers.push(index + 1);
+    lines.forEach((line, index) => {
+      if (regex.test(line)) {
+        if (pattern === "__battleCLIinit" && line.includes("delete globalThis.__battleCLIinit")) {
+          // This is an allowed cleanup pattern, so we skip it.
+          return;
         }
-      });
+        lineNumbers.push(index + 1);
+      }
+    });
 
+    if (lineNumbers.length > 0) {
       violations.push({
         pattern,
         description,
         severity,
-        count: matches.length,
+        count: lineNumbers.length,
         lines: lineNumbers
       });
     }

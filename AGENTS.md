@@ -281,7 +281,7 @@ Compares the stats between two specified judoka by their IDs.
 ```json
 {
   "judoka1_id": "string | number (required)", // ID of the first judoka
-  "judoka2_id": "string | number (required)"  // ID of the second judoka
+  "judoka2_id": "string | number (required)" // ID of the second judoka
 }
 ```
 
@@ -310,7 +310,7 @@ const result = await mcp.call("judokon.compare", {
     "stats": { "power": 7, "speed": 8, "technique": 6, "kumikata": 7, "newaza": 8 }
   },
   "comparison": {
-    "power_diff": 2,    // judoka1.power - judoka2.power
+    "power_diff": 2, // judoka1.power - judoka2.power
     "speed_diff": 1,
     "technique_diff": 3,
     "kumikata_diff": 2,

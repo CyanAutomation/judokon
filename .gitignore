@@ -28,6 +28,11 @@ build/
 # Test results
 test-results/
 
+# Temporary test/debug files
+test_*.mjs
+test-*.mjs
+test-*.js
+
 # Environment variables
 .env
 .env.local
