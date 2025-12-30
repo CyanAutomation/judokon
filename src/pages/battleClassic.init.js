@@ -1544,7 +1544,12 @@ function wireControlButtons(store) {
 
   const quitBtn = getQuitButton();
   if (quitBtn && !quitBtn.__controlBound) {
-    quitBtn.addEventListener("click", () => quitMatch(resolveControlStore(store), quitBtn));
+    quitBtn.addEventListener("click", () => {
+      const quitPromise = quitMatch(resolveControlStore(store), quitBtn);
+      if (typeof window !== "undefined") {
+        window.quitConfirmButtonPromise = quitPromise;
+      }
+    });
     quitBtn.__controlBound = true;
   }
 
