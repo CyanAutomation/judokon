@@ -44,7 +44,17 @@ export default defineConfig({
     reporters: ["dot"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html"]
+      reporter: ["text", "json", "html"],
+      include: ["src/**/*.{js,mjs,cjs}"],
+exclude: [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/coverage/**",
+  "**/*.config.*",
+  "**/src/vendor/**",
+  "**/*.generated.*"
+]
+      thresholds: { lines: 70, branches: 65, functions: 65, statements: 70 }
     }
   }
 });
