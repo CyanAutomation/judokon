@@ -123,7 +123,7 @@ On load, the Settings page must pre-populate each control with values from
 ## Settings Features
 
 - **Sound (binary):** ON/OFF (default: ON) – Enable or mute game audio.
-- **Full navigation map (binary):** ON/OFF (default: ON) – Display an overlay map linking to every page.
+- **Full navigation map (binary):** ON/OFF (default: OFF) – Display an overlay map linking to every page.
 - **Test mode feature flag (binary):** ON/OFF (default: OFF) – Run deterministic matches for testing.
 - **Battle debug panel feature flag (binary):** ON/OFF (default: OFF) – Show a panel above the cards with live match data and a copy button for debugging.
 - **Battle state badge feature flag (binary):** ON/OFF (default: OFF) – Display the current battle state in a header badge.
@@ -142,7 +142,7 @@ On load, the Settings page must pre-populate each control with values from
 - **Scanlines effect feature flag (binary):** ON/OFF (default: OFF) – Add a retro scanline overlay to the CLI battle mode for a more authentic feel.
 - **Round store feature flag (experimental/hidden):** ON/OFF (default: ON) – Use centralized round state management for improved performance and debugging; hidden in the UI via `hidden: true` but retained in the settings schema.
 - **Motion effects (binary):** ON/OFF (default: ON) – Disable animations for a calmer interface.
-- **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
+- **Typewriter effect (binary):** ON/OFF (default: OFF, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.
 - **Display mode (two options):** Light, Dark (default: Light; legacy `retro`
   values should downgrade to Dark when encountered)
@@ -414,7 +414,7 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 [ ON | OFF ] (default: ON)
 
 [ TOGGLE: FULL NAV MAP ]  
-[ ON | OFF ] (default: ON)
+[ ON | OFF ] (default: OFF)
 
 [ TOGGLE: MOTION EFFECTS ]  
 [ ON | OFF ] (default: ON)
