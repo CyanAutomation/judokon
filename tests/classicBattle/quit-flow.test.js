@@ -52,16 +52,28 @@ describe("Classic Battle quit flow", () => {
       throw new Error("Quit button not found in HTML before init()");
     }
 
-    // Import and manually wire to debug
-    const uiElementsModule = await import("../../src/helpers/classicBattle/UIElements.js");
-    const quitFromGetter = uiElementsModule.getQuitButton();
-    if (!quitFromGetter) {
-      throw new Error("getQuitButton() returned null before init()");
-    }
+    // Patch the button to track when it's disconnected
+    const originalButton = quitBeforeInit;
+    let buttonDisconnected = false;
+    const observer = new MutationObserver((mutations) => {
+      if (!originalButton.isConnected) {
+        buttonDisconnected = true;
+        observer.disconnect();
+        // Try to capture stack trace
+        console.error("BUTTON DISCONNECTED at:", new Error().stack);
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
     
     const mod = await import("../../src/pages/battleClassic.init.js");
     if (typeof mod.init === "function") {
       await mod.init();
+    }
+    
+    observer.disconnect();
+    
+    if (buttonDisconnected) {
+      throw new Error("Quit button was disconnected/replaced during init()");
     }
     
     // Verify init completed

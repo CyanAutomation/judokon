@@ -1812,6 +1812,8 @@ async function initializePhase4_EventHandlers(store) {
   initBattleStateBadge({ force: false });
 
   wireRoundCycleEvents(store);
+  wireControlButtons(store);
+  wireExistingStatButtons(store);
 }
 
 const isTestEnvironment =
@@ -1850,9 +1852,6 @@ export async function init() {
 
     await initializePhase1_Utilities();
     await initializePhase2_UI();
-
-    wireControlButtons(store);
-    wireExistingStatButtons(store);
 
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
