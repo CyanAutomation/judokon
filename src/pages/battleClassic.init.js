@@ -1069,12 +1069,12 @@ export function renderStatButtons(store) {
 
 /**
  * Wire click handlers for existing stat buttons in the DOM.
- * 
+ *
  * This function serves as a fallback to ensure stat buttons that exist in the DOM
  * (e.g., created by tests or pre-rendered markup) are properly wired into the
  * normal selection flow. It only operates when buttons are not already marked
  * as ready and have no existing bindings.
- * 
+ *
  * @param {object} store - The battle store instance
  * @returns {void}
  */
@@ -1106,7 +1106,7 @@ function wireExistingStatButtons(store) {
   buttons.forEach((button) => {
     const stat = button.dataset?.stat;
     if (!stat) {
-      console.warn('wireExistingStatButtons: button missing data-stat attribute', button);
+      console.warn("wireExistingStatButtons: button missing data-stat attribute", button);
       return;
     }
     button.addEventListener("click", () => {

@@ -48,6 +48,10 @@ test.describe("Battle CLI - Start", () => {
       await enableRoundSelectModal(page);
       await page.goto("/src/pages/battleCLI.html");
 
+      // Verify the modal is visible (battle should not auto-start)
+      const roundModal = page.getByRole("dialog", { name: "Select Match Length" });
+      await expect(roundModal).toBeVisible();
+
       const seedInput = page.locator("#seed-input");
       await expect(seedInput).toBeVisible();
       await seedInput.type("1");
@@ -57,11 +61,14 @@ test.describe("Battle CLI - Start", () => {
       const seedError = page.locator("#seed-error");
       await expect(seedError).toHaveText("Invalid seed. Using default.");
 
+      // Modal should still be visible
+      await expect(roundModal).toBeVisible();
+
       const statsContainer = page.getByRole("listbox", {
         name: "Select a stat with number keys 1-5"
       });
       await expect(statsContainer).toHaveAttribute("aria-busy", "true");
-      await expect(page.getByTestId("round-counter")).toHaveText(/^Round 1(?: Target: 5)?$/);
+      await expect(page.getByTestId("round-counter")).toHaveText(/^Round 0/);
       await expect(page.locator("#round-message")).toHaveText("");
     }, ["log", "info", "warn", "error", "debug"]);
   });
