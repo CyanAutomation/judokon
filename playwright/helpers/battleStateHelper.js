@@ -28,7 +28,7 @@ async function withTimeout(promise, timeoutMs, message, wait) {
     throw new Error("withTimeout requires a Playwright page or wait function");
   }
 
-  const timeoutPromise = waitForFunction(() => false, { timeout: timeoutMs }).then(() => {
+  const timeoutPromise = waitForFunction(() => false, { timeout: timeoutMs }).catch(() => {
     throw new Error(message);
   });
 
