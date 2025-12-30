@@ -4,7 +4,16 @@
  * Check for banned patterns in Playwright test files.
  * This script prevents regressions of common anti-patterns in Playwright tests.
  *
- * Usage: node scripts/check-playwright-patterns.js
+ * Usage: node scripts/check-playwright-patterns.js [options]
+ * Options:
+ *   --json         Output results as JSON
+ *   --verbose      Show verbose output
+ *
+ * Environment Variables:
+ *   PLAYWRIGHT_PATTERNS_FAIL_ON_WARNING  Exit with error on warnings (default: false)
+ *   PLAYWRIGHT_PATTERNS_VERBOSE          Enable verbose output (default: false)
+ *   PLAYWRIGHT_PATTERNS_MAX_FILES        Maximum files to check (default: unlimited)
+ *
  * Exit code: 0 if no banned patterns found, 1 if patterns found
  */
 
@@ -16,31 +25,55 @@ const BANNED_PATTERNS = [
   {
     pattern: "waitForTimeout",
     description: "Raw waitForTimeout calls (use semantic waits instead)",
+    fixSuggestion: "Use page.waitForSelector() or expect().toBeVisible() instead",
+    severity: "error"
+  },
+  {
+    pattern: "setTimeout",
+    description: "Raw setTimeout (use semantic waits instead)",
+    fixSuggestion: "Use page.waitForSelector() or page.waitForLoadState() instead",
     severity: "error"
   },
   {
     pattern: "expect\\(true\\)\\.toBe\\(true\\)",
     description: "Placeholder assertions (use meaningful assertions)",
+    fixSuggestion: "Replace with specific assertions like expect(element).toBeVisible()",
     severity: "error"
   },
   {
     pattern: "window\\.__test[^A-Za-z_]",
     description: "Private test hooks (use fixtures instead)",
+    fixSuggestion: "Use Playwright fixtures or page.evaluate() with proper setup",
     severity: "error"
   },
   {
     pattern: "__battleCLIinit",
     description: "Removed internal CLI helpers (use public APIs)",
+    fixSuggestion: "Use page fixtures and public test APIs",
     severity: "error"
   },
   {
     pattern: "dispatchEvent.*createEvent",
     description: "Synthetic event dispatching (use natural interactions)",
+    fixSuggestion: "Use page.click(), page.fill(), or page.press() for user interactions",
     severity: "warning"
   },
   {
     pattern: "page\\.evaluate.*DOM",
     description: "Direct DOM manipulation in page.evaluate (use component APIs)",
+    fixSuggestion: "Use page.locator() and built-in Playwright actions instead",
+    severity: "warning"
+  },
+  {
+    pattern: "innerHTML",
+    description: "Direct innerHTML manipulation",
+    fixSuggestion: "Use page.fill() or page.click() for user interactions",
+    severity: "warning"
+  },
+  {
+    pattern: "appendChild",
+    description: "Direct appendChild manipulation",
+    fixSuggestion: "Use Playwright's locator API and natural interactions",
     severity: "warning"
   }
 ];
@@ -50,17 +83,25 @@ function checkFile(filePath) {
   const violations = [];
   const lines = content.split("\n");
 
-  for (const { pattern, description, severity } of BANNED_PATTERNS) {
+  for (const { pattern, description, severity, fixSuggestion } of BANNED_PATTERNS) {
     const lineNumbers = [];
+    const codeSnippets = [];
     const regex = new RegExp(pattern); // Non-global for line-by-line testing
 
     lines.forEach((line, index) => {
-      if (regex.test(line)) {
+      // Check for exemption comment on the line or previous line
+      const prevLine = index > 0 ? lines[index - 1] : "";
+      const hasExemption =
+        line.includes("playwright-patterns: ignore") ||
+        prevLine.includes("playwright-patterns: ignore-next-line");
+
+      if (regex.test(line) && !hasExemption) {
+        // Special case: __battleCLIinit cleanup is allowed
         if (pattern === "__battleCLIinit" && line.includes("delete globalThis.__battleCLIinit")) {
-          // This is an allowed cleanup pattern, so we skip it.
           return;
         }
         lineNumbers.push(index + 1);
+        codeSnippets.push(line.trim());
       }
     });
 
@@ -69,8 +110,10 @@ function checkFile(filePath) {
         pattern,
         description,
         severity,
+        fixSuggestion,
         count: lineNumbers.length,
-        lines: lineNumbers
+        lines: lineNumbers,
+        codeSnippets
       });
     }
   }
@@ -80,9 +123,12 @@ function checkFile(filePath) {
 
 function findPlaywrightFiles() {
   try {
+    const maxFiles = process.env.PLAYWRIGHT_PATTERNS_MAX_FILES;
+    const limitCmd = maxFiles ? ` | head -${maxFiles}` : "";
+
     // Use git ls-files to find Playwright files, excluding node_modules and other irrelevant dirs
     const result = execSync(
-      'git ls-files | grep "^playwright/" | grep -E "\\.(js|mjs|ts)$" | head -50',
+      `git ls-files | grep "^playwright/" | grep -E "\\.(js|mjs|ts)$"${limitCmd}`,
       { encoding: "utf8" }
     );
 
@@ -94,59 +140,124 @@ function findPlaywrightFiles() {
 }
 
 function main() {
-  console.log("🔍 Checking Playwright files for banned patterns...\n");
+  const args = process.argv.slice(2);
+  const jsonOutput = args.includes("--json");
+  const verbose = args.includes("--verbose") || process.env.PLAYWRIGHT_PATTERNS_VERBOSE === "true";
+  const failOnWarning = process.env.PLAYWRIGHT_PATTERNS_FAIL_ON_WARNING === "true";
+
+  if (!jsonOutput) {
+    console.log("🔍 Checking Playwright files for banned patterns...\n");
+  }
 
   const playwrightFiles = findPlaywrightFiles();
 
   if (playwrightFiles.length === 0) {
-    console.log("No Playwright files found.");
+    if (!jsonOutput) {
+      console.log("No Playwright files found.");
+    }
     process.exit(0);
   }
 
   let totalViolations = 0;
   let errorCount = 0;
   let warningCount = 0;
+  const fileResults = [];
 
   for (const file of playwrightFiles) {
     const violations = checkFile(file);
 
     if (violations.length > 0) {
-      console.log(`❌ ${file}:`);
+      fileResults.push({ file, violations });
 
-      for (const violation of violations) {
-        const icon = violation.severity === "error" ? "🚫" : "⚠️";
-        console.log(`  ${icon} ${violation.pattern}: ${violation.description}`);
-        console.log(
-          `    Found ${violation.count} occurrence(s) on lines: ${violation.lines.join(", ")}`
-        );
+      if (!jsonOutput) {
+        console.log(`❌ ${file}:`);
 
-        totalViolations += violation.count;
-        if (violation.severity === "error") {
-          errorCount += violation.count;
-        } else {
-          warningCount += violation.count;
+        for (const violation of violations) {
+          const icon = violation.severity === "error" ? "🚫" : "⚠️";
+          console.log(`  ${icon} ${violation.pattern}: ${violation.description}`);
+          console.log(
+            `    Found ${violation.count} occurrence(s) on lines: ${violation.lines.join(", ")}`
+          );
+
+          if (verbose && violation.codeSnippets) {
+            console.log(`    Code samples:`);
+            violation.codeSnippets.slice(0, 3).forEach((snippet) => {
+              console.log(`      ${snippet}`);
+            });
+          }
+
+          if (violation.fixSuggestion) {
+            console.log(`    💡 Fix: ${violation.fixSuggestion}`);
+          }
+
+          totalViolations += violation.count;
+          if (violation.severity === "error") {
+            errorCount += violation.count;
+          } else {
+            warningCount += violation.count;
+          }
+        }
+
+        console.log("");
+      } else {
+        // Count violations for JSON output
+        for (const violation of violations) {
+          totalViolations += violation.count;
+          if (violation.severity === "error") {
+            errorCount += violation.count;
+          } else {
+            warningCount += violation.count;
+          }
         }
       }
-
-      console.log("");
     }
   }
 
-  console.log(`📊 Summary:`);
-  console.log(`  Files checked: ${playwrightFiles.length}`);
-  console.log(`  Total violations: ${totalViolations}`);
-  console.log(`  Errors: ${errorCount}`);
-  console.log(`  Warnings: ${warningCount}`);
+  const summary = {
+    filesChecked: playwrightFiles.length,
+    totalViolations,
+    errors: errorCount,
+    warnings: warningCount
+  };
+
+  if (jsonOutput) {
+    console.log(
+      JSON.stringify(
+        {
+          summary,
+          violations: fileResults
+        },
+        null,
+        2
+      )
+    );
+  } else {
+    console.log(`📊 Summary:`);
+    console.log(`  Files checked: ${summary.filesChecked}`);
+    console.log(`  Total violations: ${summary.totalViolations}`);
+    console.log(`  Errors: ${summary.errors}`);
+    console.log(`  Warnings: ${summary.warnings}`);
+  }
 
   if (errorCount > 0) {
-    console.log("\n🚫 Errors found! Please fix the banned patterns before committing.");
-    console.log("💡 Tip: Use semantic waits, meaningful assertions, and public test APIs.");
+    if (!jsonOutput) {
+      console.log("\n🚫 Errors found! Please fix the banned patterns before committing.");
+      console.log("💡 Tip: Use semantic waits, meaningful assertions, and public test APIs.");
+      console.log("💡 To ignore a specific line, add: // playwright-patterns: ignore-next-line");
+    }
     process.exit(1);
   } else if (warningCount > 0) {
-    console.log("\n⚠️ Warnings found. Consider refactoring to use better patterns.");
-    process.exit(0);
+    if (!jsonOutput) {
+      console.log("\n⚠️ Warnings found. Consider refactoring to use better patterns.");
+      if (failOnWarning) {
+        console.log("🚫 Exiting with error due to PLAYWRIGHT_PATTERNS_FAIL_ON_WARNING=true");
+      }
+    }
+    process.exit(failOnWarning ? 1 : 0);
   } else {
-    console.log("\n✅ No banned patterns found! 🎉");
+    if (!jsonOutput) {
+      console.log("\n✅ No banned patterns found! 🎉");
+    }
     process.exit(0);
   }
 }
