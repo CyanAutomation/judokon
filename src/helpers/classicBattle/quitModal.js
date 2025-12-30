@@ -100,7 +100,8 @@ function createQuitConfirmation(store, onConfirm) {
  */
 export let quitConfirmButtonPromise = Promise.resolve();
 if (typeof window !== "undefined") {
-  window.quitConfirmButtonPromise = quitConfirmButtonPromise;
+  // Initialize with null to clearly indicate no quit action is in progress
+  window.quitConfirmButtonPromise = null;
 }
 /**
  * Trigger the Classic Battle quit confirmation modal and return the confirm button.
