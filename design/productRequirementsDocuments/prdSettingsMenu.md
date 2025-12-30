@@ -157,6 +157,15 @@ On load, the Settings page must pre-populate each control with values from
 
 ---
 
+### Advanced Settings Search
+
+- The Advanced Settings section includes a search input with `id="advanced-settings-search"` plus an empty-state element with `id="advanced-settings-no-results"` in `src/pages/settings.html`.
+- The live region with `id="advanced-settings-search-status"` announces result counts for assistive technologies.
+- Filtering uses the behavior in `src/helpers/settings/filterAdvancedSettings.js`: case-insensitive matches across the flag label, description, and flag key.
+- Results update live as the user types, and pressing Escape clears the current filter.
+
+---
+
 ## Technical Considerations
 
 - All data reads/writes should use asynchronous, promise-based functions with error handling.
@@ -314,6 +323,13 @@ On load, the Settings page must pre-populate each control with values from
 - The snackbar confirms the change and hides itself after a short delay.
 - Debug-focused flags remain tucked away so younger players do not accidentally enable them.
 - Setting persists across page refreshes and sessions.
+
+### Advanced Settings Search
+
+- Typing in `#advanced-settings-search` filters Advanced Settings immediately without requiring a submit action.
+- Match counts are announced through `#advanced-settings-search-status` whenever the filter changes.
+- The `#advanced-settings-no-results` empty-state appears only when no Advanced Settings match the current filter and hides when results return.
+- Pressing Escape clears the filter and restores the full Advanced Settings list.
 
 ### Data Persistence & Refresh
 
