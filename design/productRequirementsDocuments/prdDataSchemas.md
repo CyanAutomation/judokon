@@ -120,6 +120,27 @@ Acceptance Criteria (validator):
 - The `CountryCode` and `WeightClass` enums in `src/schemas/commonDefinitions.schema.json` are the canonical sources for ISO country codes and IJF weight classes. Update those arrays (either manually or via generation scripts) and re-run `npm run validate:data` to confirm downstream data still conforms.
 - Maintain consistent casing for JSON keys (default to camelCase) so schema expectations align with helper utilities and tests.
 
+## `statNames.json` (CLI stat labels)
+
+`src/pages/statNames.json` defines the CLI-facing stat labels and descriptions used by the battle CLI. Each entry represents a single stat definition with human-readable labels and explanatory text for the CLI UI.
+
+**Schema fields (per entry):**
+
+- `id` (number): Unique identifier for the stat record.
+- `statIndex` (number): Index used to map the stat to gameplay ordering (e.g., 1 = Power).
+- `name` (string): English display name for the stat label.
+- `category` (string): Domain grouping for the stat (currently `"Judo"`).
+- `japanese` (string): Japanese label (katakana/kanji) for the stat.
+- `description` (string): CLI tooltip/description text for the stat label.
+
+**Loading behavior:**
+
+- `src/pages/battleCLI/init.js` attempts to load the data by calling `fetchJson("statNames.json")` and falls back to the local in-bundle `statNamesData` import when the fetch fails or returns empty data.
+
+**Intended use:**
+
+- Provides CLI stat labels and descriptions for the battle CLI interface (stat selection prompts, label rendering, and short descriptions in the CLI flow).
+
 ### Implementation references
 
 - **Gokyo technique categories**: Use the canonical taxonomy when modeling `gokyo` data. Valid `category` values are `Nage-waza` or `Katame-waza`. Valid `subCategory` values are:
