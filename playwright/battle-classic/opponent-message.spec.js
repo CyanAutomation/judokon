@@ -183,12 +183,7 @@ test.describe("Classic Battle Opponent Messages", () => {
         )
         .toBe(true);
 
-      await expect
-        .poll(async () => (await opponentCard.innerHTML()).trim().length > 0, {
-          timeout: 4_000,
-          message: "Expected opponent card content after reveal"
-        })
-        .toBe(true);
+      await expect(opponentCard).toContainText(/\S+/, { timeout: 4_000 });
     },
     { resolveDelay: 50 }
   );
