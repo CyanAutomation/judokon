@@ -94,15 +94,15 @@ describe("setupScheduler", () => {
     const add = vi.spyOn(window, "addEventListener");
     const originalTest = globalThis.__TEST__;
     const originalVitest = process.env.VITEST;
-    
+
     delete globalThis.__TEST__;
     delete process.env.VITEST;
-    
+
     setupScheduler();
-    
+
     globalThis.__TEST__ = originalTest;
     process.env.VITEST = originalVitest;
-    
+
     expect(scheduler.start).toHaveBeenCalled();
     expect(add).toHaveBeenCalledWith("pagehide", scheduler.stop, { once: true });
     add.mockRestore();
@@ -123,9 +123,7 @@ describe("setupScheduler", () => {
     process.env.VITEST = originalVitest;
 
     // Verify visibilitychange listener was registered
-    const visibilityCall = addDocListener.mock.calls.find(
-      (call) => call[0] === "visibilitychange"
-    );
+    const visibilityCall = addDocListener.mock.calls.find((call) => call[0] === "visibilitychange");
     expect(visibilityCall).toBeDefined();
 
     const visibilityHandler = visibilityCall[1];
