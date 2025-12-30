@@ -1093,8 +1093,9 @@ function wireExistingStatButtons(store) {
   }
 
   buttons.forEach((button) => {
-    const stat = button.dataset?.stat || button.textContent?.trim();
+    const stat = button.dataset?.stat;
     if (!stat) {
+      console.warn('wireExistingStatButtons: button missing data-stat attribute', button);
       return;
     }
     button.addEventListener("click", () => {
