@@ -1739,6 +1739,11 @@ async function initializePhase4_EventHandlers(store) {
   wireRoundCycleEvents(store);
 }
 
+const isTestEnvironment =
+  typeof process !== "undefined" &&
+  process.env &&
+  (process.env.VITEST === "true" || process.env.NODE_ENV === "test");
+
 /**
  * Initialize the Classic Battle page.
  *
@@ -1791,6 +1796,9 @@ export async function init() {
         window.__battleInitError = err;
       }
     }
+    if (isTestEnvironment) {
+      throw err;
+    }
     showFatalInitError(err);
   }
 }
@@ -1798,10 +1806,6 @@ export async function init() {
 // =============================================================================
 // Auto-initialization in Browser Context
 // =============================================================================
-
-const isTestEnvironment =
-  typeof process !== "undefined" &&
-  (process.env?.VITEST === "true" || process.env?.NODE_ENV === "test");
 
 if (!isTestEnvironment && typeof document !== "undefined" && document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
