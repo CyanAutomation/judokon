@@ -1740,7 +1740,7 @@ async function initializePhase3_Engine(store) {
         safeExecute(
           () => console.debug("battleClassic: orchestrator init deferred failed", err),
           "initializePhase3_Engine",
-          ERROR_LEVELS.SILENT
+          ERROR_LEVELS.DEBUG
         );
         throw err; // Re-throw to maintain error state in promise
       });
