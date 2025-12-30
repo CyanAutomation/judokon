@@ -20,13 +20,19 @@ function createDeferred() {
   };
 }
 
-async function withTimeout(promise, timeoutMs, message) {
-  return await Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(message)), timeoutMs);
-    })
-  ]);
+async function withTimeout(promise, timeoutMs, message, wait) {
+  const waitForFunction =
+    typeof wait === "function" ? wait : wait?.waitForFunction?.bind(wait);
+
+  if (!waitForFunction) {
+    throw new Error("withTimeout requires a Playwright page or wait function");
+  }
+
+  const timeoutPromise = waitForFunction(() => false, { timeout: timeoutMs }).then(() => {
+    throw new Error(message);
+  });
+
+  return await Promise.race([promise, timeoutPromise]);
 }
 
 function isValidMatchCompletionPayload(payload) {
@@ -131,7 +137,8 @@ export async function ensureBattleCliResetChannel(page) {
     const result = await withTimeout(
       currentDeferred.promise,
       timeout,
-      `Timed out waiting for Battle CLI reset after ${timeout}ms`
+      `Timed out waiting for Battle CLI reset after ${timeout}ms`,
+      page
     );
     const nextDeferred = createDeferred();
     deferred = nextDeferred;
