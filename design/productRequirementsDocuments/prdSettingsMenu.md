@@ -141,7 +141,7 @@ On load, the Settings page must pre-populate each control with values from
 
 ---
 
-## Advanced Settings Search
+### Advanced Settings Search
 
 - The Advanced Settings section includes a search input with `id="advanced-settings-search"` plus an empty-state element with `id="advanced-settings-no-results"` in `src/pages/settings.html`.
 - The live region with `id="advanced-settings-search-status"` announces result counts for assistive technologies.
