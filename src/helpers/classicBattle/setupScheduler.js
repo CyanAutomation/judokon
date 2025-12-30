@@ -15,11 +15,11 @@ import {
  * @returns {void}
  */
 export function setupScheduler() {
-  if (globalThis.__TEST__ || typeof requestAnimationFrame !== "function") {
-    return;
-  }
-
-  if (typeof process !== "undefined" && process.env.VITEST === "true") {
+  if (
+    globalThis.__TEST__ || 
+    typeof requestAnimationFrame !== "function" ||
+    (typeof process !== "undefined" && process.env.VITEST === "true")
+  ) {
     return;
   }
 
