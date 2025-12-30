@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
-import { afterEach, beforeAll, beforeEach } from "vitest";
+import { afterEach, beforeAll, beforeEach, vi } from "vitest";
 import { setTestMode } from "../../src/helpers/testModeUtils.js";
 
 // Defer reading HTML file until beforeAll runs (after environment is fully setup)
