@@ -236,10 +236,9 @@ On load, the Settings page must pre-populate each control with values from
 
 ### Auto-Select Feature Flag
 
-- When enabled, the stat selection timer automatically chooses a random stat when time runs out.
-- The auto-selected stat uses the same available stat list as manual selection.
+- When enabled, the stat selection timer automatically chooses a random stat when time runs out after [X] seconds.
+- The auto-selected stat uses uniform random selection from the same available stat list as manual selection.
 - When disabled, the timer timeout follows the existing manual selection fallback without auto-picking.
-- Setting persists across page refreshes and sessions.
 
 ### Stat Hotkeys Feature Flag
 
