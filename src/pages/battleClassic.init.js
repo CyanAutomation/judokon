@@ -1791,13 +1791,13 @@ export async function init() {
     window.__battleInitError = undefined;
   }
   try {
-    await initializePhase1_Utilities();
-    await initializePhase2_UI();
-
     const store = createBattleStore();
     if (typeof window !== "undefined") {
       window.battleStore = store;
     }
+
+    await initializePhase1_Utilities();
+    await initializePhase2_UI();
 
     wireControlButtons(store);
 
