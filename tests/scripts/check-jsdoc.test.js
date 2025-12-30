@@ -78,7 +78,7 @@ describe("check-jsdoc", () => {
       const lines = content.split("\n");
       const symbol = { name: "myFunction", line: 2, type: "function" };
       const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(false);
+      expect(valid).toBe("No JSDoc block found preceding the symbol.");
     });
 
     it("should return false if @pseudocode is missing (JSDOC_GUIDE.md)", () => {
@@ -93,7 +93,9 @@ describe("check-jsdoc", () => {
       const lines = content.split("\n");
       const symbol = { name: "myFunction", line: 7, type: "function" };
       const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(false);
+      expect(valid).toBe(
+        "Missing @pseudocode tag. All functions require a @pseudocode section."
+      );
     });
   });
 });
