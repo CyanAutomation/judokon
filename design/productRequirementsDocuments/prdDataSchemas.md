@@ -122,7 +122,7 @@ Acceptance Criteria (validator):
 
 ## `statNames.json` (CLI stat labels)
 
-`src/pages/statNames.json` defines the CLI-facing stat labels and descriptions used by the battle CLI. Each entry represents a single stat definition with human-readable labels and explanatory text for the CLI UI.
+The `statNames.json` file defines the CLI-facing stat labels and descriptions used by the battle CLI. Each entry represents a single stat definition with human-readable labels and explanatory text for the CLI UI.
 
 **Schema fields (per entry):**
 
