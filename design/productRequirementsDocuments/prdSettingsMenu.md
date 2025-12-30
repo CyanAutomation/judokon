@@ -242,8 +242,9 @@ On load, the Settings page must pre-populate each control with values from
 
 ### Stat Hotkeys Feature Flag
 
-- When enabled, number keys 1–5 select the corresponding stat option in the battle UI.
+- When enabled, number keys 1–5 select the corresponding stat option in the battle UI (1=first stat, 2=second stat, etc.).
 - Hotkeys are disabled when input focus is inside a text field or search box.
+- When fewer than 5 stats are available, only the corresponding number keys (1-N) are active.
 - When disabled, number keys do not trigger stat selection.
 - Setting persists across page refreshes and sessions.
 
