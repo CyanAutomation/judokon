@@ -544,6 +544,57 @@ describe("Timer + RAF Test", () => {
 - Skip screenshots locally with `SKIP_SCREENSHOTS=true npx playwright test`.
 - Update snapshots intentionally with `npx playwright test --update-snapshots`.
 
+### Test API Surface (P1) {#test-api-surface}
+
+**Purpose:** Document the public, stable test API exposed for deterministic Playwright and browser tests.
+This section mirrors the guidance in `tests/README.md` (“Public Test API” and “Private Test Fixtures”) so
+PRDs align with the actual test guidance.
+
+#### Exposure & Gating Requirements
+
+- The public test API is mounted on `window.__TEST_API` by `exposeTestAPI()` when **test mode is active**.
+- `exposeTestAPI()` is invoked during page boot in:
+  - `src/pages/battleClassic.init.js`
+  - `src/pages/battleCLI.init.js`
+  - `src/pages/battleCLI/init.js` (CLI HTML runtime bundle)
+- Test mode is determined by `src/helpers/testApi.js`:
+  - Node test flags (`NODE_ENV=test`, `VITEST`)
+  - Browser flags (`window.__TEST__`, `window.__PLAYWRIGHT_TEST__`)
+  - Localhost URL heuristics or automation navigator hints
+  - Feature flag fallback (`enableTestMode`)
+- When mounted, `window.__TEST_API` is accompanied by convenience aliases:
+  - `window.__BATTLE_STATE_API`, `window.__TIMER_API`, `window.__INIT_API`,
+    `window.__INSPECT_API`, `window.__VIEWPORT_API`, `window.__ENGINE_API`
+- Page-specific helpers extend the shared surface:
+  - Browse carousel helpers register under `window.__TEST_API.browse`.
+  - Random Judoka helpers register under `window.__TEST_API.randomJudoka`.
+
+> **Cross-reference:** See `tests/README.md` sections:
+> - “Public Test API” for stable usage expectations.
+> - “Private Test Fixtures” for `window.testFixtures` helpers that are intentionally unstable.
+
+#### Public Namespaces & Typical Usage
+
+| Namespace | Representative APIs | Purpose |
+| --- | --- | --- |
+| `init` | `waitForBattleReady`, `configureClassicBattle`, `resetBattleCliModuleState`, `getInitPromises`, `waitForBrowseReady` | Orchestrate deterministic setup and readiness. |
+| `state` | `getBattleState`, `dispatchBattleEvent`, `waitForBattleState`, `waitForRoundsPlayed`, `waitForStatButtonsReady`, `waitForMatchCompletion` | Read/drive state transitions with event-based synchronization. |
+| `timers` | `setCountdown`, `getCountdown`, `waitForCountdown`, `expireSelectionTimer`, `skipCooldown`, `setOpponentResolveDelay`, `getOpponentResolveDelay`, `clearAllTimers` | Control timers and opponent delay for deterministic timing. |
+| `inspect` | `getBattleStore`, `getBattleSnapshot`, `getFeatureFlags`, `getStatButtonSnapshot`, `getRoundStatComparison`, `getStatButtonListenerSnapshot`, `pickAdvantagedStatKey`, `resetCache` | Snapshot inspection for assertions without DOM mutation. |
+| `cli` | `resolveRound`, `completeRound`, `readVerboseLog` | Deterministic CLI battle resolution and diagnostics. |
+| `engine` | `require`, `setPointsToWin`, `getPointsToWin`, `waitForPointsToWin`, `getScores`, `getRoundsPlayed`, `waitForRoundsPlayed` | Battle engine control for target scores and diagnostics. |
+| `viewport` | `setZoom`, `resetZoom` | Simulate zoom behavior in browser tests. |
+| `autoSelect` | `triggerAutoSelect`, `setAutoContinue`, `getAutoContinue` | Control auto-select and round continuation behavior. |
+| `statButtons` | `getSnapshot`, `waitForReady` (from `statButtonTestSignals`) | Read stat button readiness and IDs when needed for assertions. |
+| `browse` | `disableHoverAnimations`, `enableHoverAnimations`, `addCard`, `clearCarouselCards`, `whenCarouselReady`, `getSnapshot` | Browse page hooks used by Playwright fixtures. |
+| `randomJudoka` | `setDrawButtonLabel`, `resolveDrawPipeline`, `getPreferences` | Random Judoka page-specific testing hooks. |
+
+#### Private Test Fixtures (Playwright-only)
+
+`window.testFixtures` is intentionally unstable and reserved for fixture-driven behaviors
+(`playwright/fixtures/`). Keep these helpers documented in `tests/README.md` and avoid
+promoting them as public PRD-stable APIs.
+
 ### Specialized Testing Surfaces (P2)
 
 - **CSS Tooling:** Color contrast tests parse CSS custom properties via PostCSS; use shared tooling rather than bespoke parsers.
