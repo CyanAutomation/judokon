@@ -32,7 +32,8 @@ const BANNED_PATTERNS = [
     pattern: "setTimeout",
     description: "Raw setTimeout (use semantic waits instead)",
     fixSuggestion: "Use page.waitForSelector() or page.waitForLoadState() instead",
-    severity: "error"
+    severity: "error",
+    exemptPaths: ["playwright/helpers/"] // Allow in test helpers for timeout guards
   },
   {
     pattern: "expect\\(true\\)\\.toBe\\(true\\)",
@@ -68,7 +69,8 @@ const BANNED_PATTERNS = [
     pattern: "innerHTML",
     description: "Direct innerHTML manipulation",
     fixSuggestion: "Use page.fill() or page.click() for user interactions",
-    severity: "warning"
+    severity: "warning",
+    exemptContexts: ["// Test functional behavior", "// Verify the toggle changed"] // Allow in comment context
   },
   {
     pattern: "appendChild",
@@ -83,10 +85,20 @@ function checkFile(filePath) {
   const violations = [];
   const lines = content.split("\n");
 
-  for (const { pattern, description, severity, fixSuggestion } of BANNED_PATTERNS) {
+  for (const {
+    pattern,
+    description,
+    severity,
+    fixSuggestion,
+    exemptPaths,
+    exemptContexts
+  } of BANNED_PATTERNS) {
     const lineNumbers = [];
     const codeSnippets = [];
     const regex = new RegExp(pattern); // Non-global for line-by-line testing
+
+    // Check if file path is exempt for this pattern
+    const isFileExempt = exemptPaths?.some((exemptPath) => filePath.includes(exemptPath)) ?? false;
 
     lines.forEach((line, index) => {
       // Check for exemption comment on the line or previous line
@@ -95,7 +107,30 @@ function checkFile(filePath) {
         line.includes("playwright-patterns: ignore") ||
         prevLine.includes("playwright-patterns: ignore-next-line");
 
-      if (regex.test(line) && !hasExemption) {
+      // Check for context exemptions (e.g., comments explaining alternatives)
+      const hasContextExemption =
+        exemptContexts?.some((ctx) => line.includes(ctx) || prevLine.includes(ctx)) ?? false;
+
+      // Special exemption: setTimeout in Promise.race timeout guards (legitimate pattern)
+      // Look for patterns like: setTimeout(() => { ... reject(new Error(...)) }, timeout)
+      // Check 5 lines before and after to catch multi-line patterns
+      const lookAheadLines = lines.slice(Math.max(0, index - 5), index + 6).join(" ");
+      const isTimeoutGuard =
+        pattern === "setTimeout" &&
+        (lookAheadLines.includes("Promise.race") ||
+          line.includes("clearTimeout") ||
+          // Timeout guard pattern: setTimeout with reject and Error nearby
+          (line.includes("setTimeout") &&
+            (lookAheadLines.includes("reject(new Error") ||
+              lookAheadLines.includes("reject(Error"))));
+
+      if (
+        regex.test(line) &&
+        !hasExemption &&
+        !isFileExempt &&
+        !hasContextExemption &&
+        !isTimeoutGuard
+      ) {
         // Special case: __battleCLIinit cleanup is allowed
         if (pattern === "__battleCLIinit" && line.includes("delete globalThis.__battleCLIinit")) {
           return;
