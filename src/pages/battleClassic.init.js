@@ -1545,10 +1545,7 @@ function wireControlButtons(store) {
   const quitBtn = getQuitButton();
   if (quitBtn && !quitBtn.__controlBound) {
     quitBtn.addEventListener("click", () => {
-      const quitPromise = quitMatch(resolveControlStore(store), quitBtn);
-      if (typeof window !== "undefined") {
-        window.quitConfirmButtonPromise = quitPromise;
-      }
+      quitMatch(resolveControlStore(store), quitBtn);
     });
     quitBtn.__controlBound = true;
   }
