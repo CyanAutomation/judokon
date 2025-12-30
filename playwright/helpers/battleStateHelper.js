@@ -31,7 +31,13 @@ async function withTimeout(promise, timeoutMs, message, wait) {
     typeof wait === "function" ? wait : wait?.waitForFunction?.bind(wait);
 
   if (!waitForFunction) {
-    throw new Error("withTimeout requires a Playwright page or wait function");
+    // Fallback to original setTimeout behavior for backward compatibility
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(message)), timeoutMs);
+      })
+    ]);
   }
 
   const timeoutPromise = waitForFunction(() => false, { timeout: timeoutMs }).catch(() => {
@@ -39,6 +45,7 @@ async function withTimeout(promise, timeoutMs, message, wait) {
   });
 
   return await Promise.race([promise, timeoutPromise]);
+}
 }
 
 function isValidMatchCompletionPayload(payload) {
