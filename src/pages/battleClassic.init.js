@@ -1812,8 +1812,7 @@ async function initializePhase4_EventHandlers(store) {
   initBattleStateBadge({ force: false });
 
   wireRoundCycleEvents(store);
-  wireControlButtons(store);
-  wireExistingStatButtons(store);
+  // Note: wireControlButtons moved to end of init() to avoid button replacement issues
 }
 
 const isTestEnvironment =
@@ -1856,6 +1855,10 @@ export async function init() {
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
     await initializeMatchStart(store);
+
+    // Wire control buttons AFTER all initialization to ensure DOM is stable
+    wireControlButtons(store);
+    wireExistingStatButtons(store);
 
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;

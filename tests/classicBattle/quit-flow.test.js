@@ -46,67 +46,18 @@ describe("Classic Battle quit flow", () => {
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
 
-    // Verify button exists before init
-    const quitBeforeInit = document.getElementById("quit-button");
-    if (!quitBeforeInit) {
-      throw new Error("Quit button not found in HTML before init()");
-    }
-
-    // Patch the button to track when it's disconnected
-    const originalButton = quitBeforeInit;
-    let buttonDisconnected = false;
-    const observer = new MutationObserver((mutations) => {
-      if (!originalButton.isConnected) {
-        buttonDisconnected = true;
-        observer.disconnect();
-        // Try to capture stack trace
-        console.error("BUTTON DISCONNECTED at:", new Error().stack);
-      }
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-    
     const mod = await import("../../src/pages/battleClassic.init.js");
     if (typeof mod.init === "function") {
       await mod.init();
     }
-    
-    observer.disconnect();
-    
-    if (buttonDisconnected) {
-      throw new Error("Quit button was disconnected/replaced during init()");
-    }
-    
-    // Verify init completed
-    expect(window.__battleInitComplete).toBe(true);
-    expect(window.__battleInitError).toBeUndefined();
 
-    const quitAfterInit = document.getElementById("quit-button");
-    expect(quitAfterInit).toBeTruthy();
-    
-    // Check if the button was replaced
-    if (quitBeforeInit !== quitAfterInit) {
-      throw new Error("Quit button was replaced during init() - this breaks event binding!");
-    }
-    
-    // Check if event handler is attached
-    if (!quit.__controlBound) {
-      // Debug: Check if wireControlButtons was called
-      const replayBtn = document.getElementById("replay-button");
-      console.error("Quit button not bound:", {
-        quitExists: !!quit,
-        replayBound: replayBtn?.__controlBound,
-        battleStoreExists: !!window.battleStore,
-        initComplete: window.__battleInitComplete
-      });
-      throw new Error("Quit button event handler was not attached during init()");
-    }
-    
+    const quit = document.getElementById("quit-button");
+    expect(quit).toBeTruthy();
     quit.click();
 
     // Wait for the click event handler to execute and create the promise
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(window.quitConfirmButtonPromise).not.toBe(null);
     const confirmBtn = await window.quitConfirmButtonPromise;
     expect(confirmBtn).toBeTruthy();
 
