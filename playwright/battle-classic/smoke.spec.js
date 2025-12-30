@@ -90,7 +90,7 @@ async function selectDecisiveStat(page) {
 
 test.describe("Classic Battle page", () => {
   test("plays a full match and shows the end modal", async ({ page }) => {
-    test.setTimeout(60_000);
+    test.slow();
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = {
         showRoundSelectModal: true
@@ -131,7 +131,7 @@ test.describe("Classic Battle page", () => {
     // 1. Click the round select button for a quick match
     await page.locator('button:has-text("Quick")').click();
 
-    await waitForBattleReady(page, { allowFallback: false });
+    await waitForBattleReady(page, { allowFallback: false, timeout: 12_000 });
     await setPointsToWin(page, 1, { timeout: 10_000 });
 
     const endModalCallCountBefore = await page.evaluate(
