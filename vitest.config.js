@@ -43,6 +43,7 @@ export default defineConfig({
     // Use compact dot reporter to reduce captured stdout noise
     reporters: ["dot"],
     coverage: {
+      provider: "v8",
       reporter: ["text", "json", "html"]
     }
   }
