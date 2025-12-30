@@ -52,8 +52,8 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P3       | Battle State Progress Feature Flag  | Shows the match state sequence below the battle area for testing.                                                                     |
 | P3       | Auto-Select Feature Flag            | Automatically pick a random stat when time runs out.                                                                                 |
 | P3       | Stat Hotkeys Feature Flag           | Enable number keys 1–5 for fast stat selection.                                                                                      |
-| P3       | CLI Verbose Logging Feature Flag    | Show state transition logs in the battle CLI.                                                                                        |
-| P3       | CLI Shortcuts Feature Flag          | Enable single-key shortcuts in the battle CLI.                                                                                       |
+| P2       | CLI Verbose Logging Feature Flag    | Show state transition logs in the battle CLI.                                                                                        |
+| P2       | CLI Shortcuts Feature Flag          | Enable single-key shortcuts in the battle CLI.                                                                                       |
 | P3       | Opponent Delay Message Feature Flag | Show the "Opponent is choosing..." message to create realistic opponent thinking time.                                               |
 | P3       | Scanlines Effect Feature Flag       | Add a retro scanline overlay to the CLI battle mode.                                                                                 |
 | P3       | Round Store Feature Flag (Hidden)   | Experimental centralized round state management; hidden in the UI (`hidden: true`) but retained in settings schema.                  |
@@ -134,7 +134,7 @@ On load, the Settings page must pre-populate each control with values from
 - **Layout debug outlines feature flag (binary):** ON/OFF (default: OFF) – Show element outlines to inspect page layout.
 - **Navigation cache reset feature flag (binary):** ON/OFF (default: OFF) – Add a button to clear cached navigation data.
 - **Skip round cooldown feature flag (binary):** ON/OFF (default: OFF) – Begin the next round immediately without waiting for the cooldown timer.
-- **Auto-select feature flag (binary):** ON/OFF (default: ON) – Automatically pick a random stat when time runs out.
+- **Auto-select feature flag (binary):** ON/OFF (default: ON) – Automatically pick a random stat when time runs out. Note: highlight this behavior in the setting description and consider a default of OFF if accessibility feedback indicates it is disruptive.
 - **Stat hotkeys feature flag (binary):** ON/OFF (default: ON) – Use number keys 1–5 to select stats quickly.
 - **CLI verbose logging feature flag (binary):** ON/OFF (default: OFF) – Show state transition logs in the battle CLI.
 - **CLI shortcuts feature flag (binary):** ON/OFF (default: ON) – Enable single-key shortcuts in the battle CLI.
@@ -245,9 +245,10 @@ On load, the Settings page must pre-populate each control with values from
 
 ### Auto-Select Feature Flag
 
-- When enabled, the stat selection timer automatically chooses a random stat when time runs out after [X] seconds.
-- The auto-selected stat uses uniform random selection from the same available stat list as manual selection.
-- When disabled, the timer timeout follows the existing manual selection fallback without auto-picking.
+- When enabled, the stat selection timer automatically chooses a random stat when time runs out after 30 seconds (default round timer duration).
+- The auto-selected stat uses seeded uniform random selection from the `STATS` list so test runs stay deterministic.
+- When disabled, the timer timeout follows the existing interrupt/timeout flow without random auto-picking.
+- The setting description calls out accessibility considerations so players who need more time can disable auto-selection.
 
 ### Stat Hotkeys Feature Flag
 
