@@ -1746,7 +1746,6 @@ async function initializePhase3_Engine(store) {
       });
     return;
   }
-  }
 
   store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
 }

@@ -16,7 +16,7 @@ import {
  */
 export function setupScheduler() {
   if (
-    globalThis.__TEST__ || 
+    globalThis.__TEST__ ||
     typeof requestAnimationFrame !== "function" ||
     (typeof process !== "undefined" && process.env.VITEST === "true")
   ) {
