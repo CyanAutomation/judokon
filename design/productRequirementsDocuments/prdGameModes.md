@@ -296,7 +296,7 @@ Choose to create or edit a judoka.
 
 **Japanese**: 柔道家を作成  
 **URL**: `createJudoka.html`  
-Create a new judoka with custom stats and appearance.
+Create a new judoka with custom stats and appearance. [Read full PRD](prdCreateJudoka.md)
 
 #### Goals
 
