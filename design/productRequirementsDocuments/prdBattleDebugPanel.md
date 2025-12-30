@@ -55,6 +55,63 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 - Panel content must be readable and not overlap critical UI elements
 - Panel must be accessible to screen readers
 
+## Debug Flag Performance HUD
+
+### Purpose
+
+The Debug Flag Performance HUD is a fixed-position developer overlay that summarizes execution
+times for debug flag toggles. It is designed to surface slow toggles during debugging without
+impacting production UX.
+
+### Activation Conditions
+
+Profiling (metric recording + HUD visibility) is enabled only when one of the following is truthy:
+
+- `window.__PROFILE_DEBUG_FLAGS__ === true`
+- `window.__DEBUG_PERF__ === true`
+- `window.__profileDebugFlags()` returns a truthy value
+- `window.__debugPerf()` returns a truthy value
+- `process.env.DEBUG_FLAG_PERF`
+- `process.env.DEBUG_PERF`
+
+Logging to the console is separate from profiling and occurs only when:
+
+- `window.__DEBUG_PERF__ === true`
+- `window.__LOG_DEBUG_FLAG_PERF__ === true`
+- `process.env.DEBUG_PERF`
+- `process.env.DEBUG_PERF_LOGS`
+
+**Recorded vs. logged:** when profiling is enabled, metrics are recorded into the debug flag
+buffer (and mirrored on `window.__DEBUG_FLAG_METRICS__` when a browser is present). Logging is
+only emitted under the log flags above and prints each metric as it is recorded.
+
+### UI Summary and Actions
+
+- Fixed-position HUD in the lower-right corner with a high z-index and translucent background.
+- Live list of the most recent flagged durations (summary rows show avg/last/max + count).
+- Alert history section (collapsible) that stores recent alert snapshots.
+- Action buttons:
+  - **Copy Alerts**: copies alert history JSON to the clipboard (falls back to a file download).
+  - **Clear**: clears recorded metrics and refreshes the HUD.
+- Close control in the header to remove the HUD.
+
+### Initialization Locations
+
+The HUD is initialized when profiling is enabled in:
+
+- Settings page (`src/helpers/settingsPage.js`)
+- Classic Battle (`src/pages/battleClassic.init.js`)
+- CLI Battle (`src/pages/battleCLI/init.js`)
+
+### Alert Thresholds and Semantics
+
+- Default alert threshold: **16ms** (configurable via `window.__DEBUG_FLAG_ALERT_THRESHOLD__` or
+  `process.env.DEBUG_FLAG_ALERT_THRESHOLD`).
+- A flag is considered "alerting" if **any** of `avg`, `max`, or `last` duration is greater than
+  or equal to the threshold.
+- Alert history retains up to **100** entries and the HUD renders the **5 most recent** alerts.
+- Alert events are dispatched via `debug-flag-hud:alert` whenever the alerting set changes.
+
 ## Dependencies and Open Questions
 
 - Depends on battle state APIs (getScores, getTimerState, isMatchEnded, getCurrentSeed)
