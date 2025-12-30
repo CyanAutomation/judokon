@@ -101,7 +101,7 @@ Quick Battle addresses this by offering a **single-round resolution**, cutting f
 
 - `autoSelect` (default **true**) — auto-pick stat on timeout.
 - `enableTestMode` (default **false**) — enable debug panel, seed control.
-- `statHotkeys` (default **false**) — allow keyboard 1–5 for stat buttons.
+- `statHotkeys` (default **true**) — allow keyboard 1–5 for stat buttons.
 
 ---
 

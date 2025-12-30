@@ -158,7 +158,7 @@ User behavior linkage: when a player intentionally clicks a Next/Skip control du
 - `autoSelect` (default **true**) — auto-pick stat on timeout. (Player-facing default)
 - `battleStateProgress` (default **false**) — show state progress list. (Developer/testing only)
 - `enableTestMode` (default **false**) — enable debug panel, seed control. (Developer/testing only)
-- `statHotkeys` (default **false**) — allow keyboard 1–5 for stat buttons. (Optional player-facing)
+- `statHotkeys` (default **true**) — allow keyboard 1–5 for stat buttons. (Optional player-facing)
 - `skipRoundCooldown` (default **false**) — bypass inter-round cooldown. (Developer/testing only)
 
 ---
