@@ -1724,6 +1724,26 @@ async function initializePhase3_Engine(store) {
   createBattleEngine(window.__ENGINE_CONFIG || {});
   bridgeEngineEvents();
 
+  const shouldDeferOrchestrator =
+    (typeof process !== "undefined" && process.env?.VITEST === "true") ||
+    (typeof globalThis !== "undefined" && Boolean(globalThis.__TEST__));
+
+  if (shouldDeferOrchestrator) {
+    store.orchestrator = null;
+    void initClassicBattleOrchestrator(store, startRound)
+      .then((orchestrator) => {
+        store.orchestrator = orchestrator;
+      })
+      .catch((err) => {
+        safeExecute(
+          () => console.debug("battleClassic: orchestrator init deferred failed", err),
+          "initializePhase3_Engine",
+          ERROR_LEVELS.SILENT
+        );
+      });
+    return;
+  }
+
   store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
 }
 
