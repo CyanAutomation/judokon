@@ -63,18 +63,20 @@ export function findExportedSymbols(content) {
 export function validateJsDoc(lines, index, symbolType = "function") {
   let j = index - 1;
   while (j >= 0 && (/^\s*$/.test(lines[j]) || /^\s*\/\//.test(lines[j]))) j--;
-  if (j < 0) return false;
-  if (!/\*\//.test(lines[j])) return false;
+  if (j < 0) return "No JSDoc block found preceding the symbol.";
+  if (!/\*\//.test(lines[j])) return "No closing JSDoc block (*/) found before the symbol.";
 
   let start = j;
   while (start >= 0 && !/\/\*\*/.test(lines[start])) start--;
-  if (start < 0) return false;
+  if (start < 0) return "No JSDoc block found.";
 
-  if (!/\/\*\*/.test(lines[start])) return false;
+  if (!/\/\*\*/.test(lines[start])) return "No opening JSDoc block (/**) found for the symbol.";
 
   const block = lines.slice(start, j + 1).join("\n");
   // The @pseudocode tag is only required for functions
-  if (symbolType === "function" && !/@pseudocode\b/.test(block)) return false;
+  if (symbolType === "function" && !/@pseudocode\b/.test(block)) {
+    return "Missing @pseudocode tag. All functions require a @pseudocode section.";
+  }
 
   // Extract function signature to check for params and return
   const signature = lines[index];
@@ -89,8 +91,18 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   const hasParamTag = /@param\b/.test(block);
   const hasReturnTag = /@returns\b/.test(block);
 
-  if (hasParams && !hasParamTag) return false;
-  if (returnsValue && !hasReturnTag) return false;
+  if (hasParams && !hasParamTag) {
+    return "Missing @param tag(s). Function has parameters but no @param tags were found.";
+  }
+
+  // All functions must have an @returns tag.
+  if (symbolType === "function" && !hasReturnTag) {
+    if (returnsValue) {
+      return "Missing @returns tag. Function returns a value but no @returns tag was found.";
+    } else {
+      return "Missing @returns tag. All functions require an @returns tag. Consider adding `@returns {void}` if the function does not return a meaningful value.";
+    }
+  }
 
   const cleanedLines = block
     .split(/\n/)
@@ -102,23 +114,15 @@ export function validateJsDoc(lines, index, symbolType = "function") {
     )
     .filter(Boolean);
 
-  if (cleanedLines.length === 0) return false;
+  if (cleanedLines.length === 0) return "JSDoc block is empty or contains only JSDoc markers.";
 
   const summaryLine = cleanedLines[0];
   const isSummaryTag = summaryLine.startsWith("@summary");
 
-  // If the first meaningful line is a tag (not a summary), there's no actual summary
-  if (summaryLine.startsWith("@") && !isSummaryTag) return false;
-
-  // If @summary tag is present but has no text after it, reject
-  if (isSummaryTag) {
-    const summaryText = summaryLine.slice("@summary".length).trim();
-    if (!summaryText) return false;
+  // If the first meaningful line is a tag (not a summary), or if there's no actual summary content
+  if ((summaryLine.startsWith("@") && !isSummaryTag) || !hasNonWhitespaceContent) {
+    return "Missing or invalid summary line in JSDoc block. A concise description is required at the beginning of the JSDoc.";
   }
-
-  const summaryWithoutMarkers = summaryLine.trim();
-  const hasNonWhitespaceContent = /\S/.test(summaryWithoutMarkers.replace(/\*/g, ""));
-  if (!hasNonWhitespaceContent) return false;
 
   return true;
 }
@@ -133,9 +137,31 @@ export async function checkFiles(files) {
     const lines = src.split(/\n/);
     for (const sym of symbols) {
       const idx = sym.line - 1;
-      const ok = validateJsDoc(lines, idx, sym.type);
-      if (!ok) problems.push({ file: rel, name: sym.name, line: sym.line });
+      const validationResult = validateJsDoc(lines, idx, sym.type);
+      if (validationResult !== true) {
+        problems.push({ file: rel, name: sym.name, line: sym.line, message: validationResult });
+      }
     }
   }
   return problems;
 }
+
+async function main() {
+  const files = await walk(path.join(process.cwd(), "src"), ".js");
+  const problems = await checkFiles(files);
+
+  if (problems.length > 0) {
+    console.error("JSDoc validation errors found:");
+    for (const p of problems) {
+      console.error(` - ${p.file}:${p.line} -> ${p.name}: ${p.message}`);
+    }
+    process.exit(1);
+  } else {
+    console.log("All exported symbols in src have valid JSDoc blocks.");
+  }
+}
+
+main().catch((err) => {
+  console.error("Error during JSDoc check:", err);
+  process.exit(1);
+});
