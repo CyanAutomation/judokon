@@ -1730,9 +1730,11 @@ async function initializePhase3_Engine(store) {
 
   if (shouldDeferOrchestrator) {
     store.orchestrator = null;
-    void initClassicBattleOrchestrator(store, startRound)
+    // Store the promise to allow tests to await orchestrator initialization if needed
+    store.orchestratorPromise = initClassicBattleOrchestrator(store, startRound)
       .then((orchestrator) => {
         store.orchestrator = orchestrator;
+        return orchestrator;
       })
       .catch((err) => {
         safeExecute(
@@ -1740,8 +1742,10 @@ async function initializePhase3_Engine(store) {
           "initializePhase3_Engine",
           ERROR_LEVELS.SILENT
         );
+        throw err; // Re-throw to maintain error state in promise
       });
     return;
+  }
   }
 
   store.orchestrator = await initClassicBattleOrchestrator(store, startRound);
