@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
-import { beforeAll } from "vitest";
+import { afterEach, beforeAll, beforeEach } from "vitest";
+import { setTestMode } from "../../src/helpers/testModeUtils.js";
 
 // Defer reading HTML file until beforeAll runs (after environment is fully setup)
 let htmlContent;
@@ -24,6 +25,27 @@ function getHtmlContent() {
 }
 
 describe("Classic Battle round select modal", () => {
+  let previousOverrides;
+
+  beforeEach(() => {
+    setTestMode(false);
+    localStorage.removeItem("settings");
+    previousOverrides = window.__FF_OVERRIDES;
+    window.__FF_OVERRIDES = {
+      ...(window.__FF_OVERRIDES || {}),
+      enableTestMode: false,
+      showRoundSelectModal: true
+    };
+  });
+
+  afterEach(() => {
+    if (previousOverrides === undefined) {
+      delete window.__FF_OVERRIDES;
+    } else {
+      window.__FF_OVERRIDES = previousOverrides;
+    }
+  });
+
   test("selecting Long (10) sets pointsToWin and marks target", async () => {
     process.env.VITEST = "true"; // ensure modal avoids extra event dispatch
     document.documentElement.innerHTML = getHtmlContent();
