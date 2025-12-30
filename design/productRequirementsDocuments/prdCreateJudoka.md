@@ -41,7 +41,7 @@ The page presents a single-column form with required inputs. Validation is drive
 ## Submit Button & Help Text
 
 - **Submit label:** `Create Judoka` (primary button).
-- **Help text (header):** "Enter a judoka\'s basics to preview their card before saving." Provides guidance for the form purpose.
+- **Help text (header):** "Enter a judoka's basics to preview their card before saving." Provides guidance for the form purpose.
 - **Help text (hint):** "Fields are required for card previews and creation." Reinforces required validation expectations.
 
 ---
