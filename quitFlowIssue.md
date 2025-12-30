@@ -58,7 +58,7 @@ The issue was that:
 
 **File**: `src/pages/battleClassic.init.js`
 
-**Change**: Moved `wireControlButtons(store)` and `wireExistingStatButtons(store)` from after Phase 2 to the **end of the `init()` function**, after Phase 5 (`initializeMatchStart`).
+**Change**: Moved `wireControlButtons(store)` (but NOT `wireExistingStatButtons`) from after Phase 2 to **after Phase 5** (`initializeMatchStart`). Stat buttons must be wired **before** match start because gameplay requires them, but control buttons (Quit, Replay, Next, Home) must be wired **after** match start to avoid DOM replacement issues.
 
 **Before**:
 ```javascript
@@ -80,16 +80,20 @@ async function init() {
 **After**:
 ```javascript
 async function init() {
-  // Phase 1-5: Complete all initialization
+  // Phase 1-4: Complete utilities, UI, engine, and event handler setup
   await initializePhase1_Utilities(store);
   await initializePhase2_UI(store);
   await initializePhase3_BattleEngine(store);
   await initializePhase4_EventHandlers(store);
+  
+  // Wire stat buttons BEFORE match start (required for gameplay)
+  wireExistingStatButtons(store);
+  
+  // Phase 5: Start the match
   await initializeMatchStart(store);
   
-  // Wire control buttons AFTER all DOM manipulation is complete
+  // Wire control buttons AFTER match start (safe from DOM replacement)
   wireControlButtons(store);  // ✅ Safe - no more DOM replacement
-  wireExistingStatButtons(store);
 }
 ```
 
