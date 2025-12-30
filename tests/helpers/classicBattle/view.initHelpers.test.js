@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import "./commonMocks.js";
 import createClassicBattleDebugAPI from "../../../src/helpers/classicBattle/setupTestHelpers.js";
 import setupScheduler from "../../../src/helpers/classicBattle/setupScheduler.js";
@@ -86,15 +86,111 @@ describe("createClassicBattleDebugAPI", () => {
 });
 
 describe("setupScheduler", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("starts and registers stop handler", () => {
     const add = vi.spyOn(window, "addEventListener");
-    const original = process.env.VITEST;
+    const originalTest = globalThis.__TEST__;
+    const originalVitest = process.env.VITEST;
+    
+    delete globalThis.__TEST__;
     delete process.env.VITEST;
+    
     setupScheduler();
-    process.env.VITEST = original;
+    
+    globalThis.__TEST__ = originalTest;
+    process.env.VITEST = originalVitest;
+    
     expect(scheduler.start).toHaveBeenCalled();
     expect(add).toHaveBeenCalledWith("pagehide", scheduler.stop, { once: true });
     add.mockRestore();
+  });
+
+  it("registers visibilitychange listener for pause/resume", () => {
+    const addWindowListener = vi.spyOn(window, "addEventListener");
+    const addDocListener = vi.spyOn(document, "addEventListener");
+    const originalTest = globalThis.__TEST__;
+    const originalVitest = process.env.VITEST;
+
+    delete globalThis.__TEST__;
+    delete process.env.VITEST;
+
+    setupScheduler();
+
+    globalThis.__TEST__ = originalTest;
+    process.env.VITEST = originalVitest;
+
+    // Verify visibilitychange listener was registered
+    const visibilityCall = addDocListener.mock.calls.find(
+      (call) => call[0] === "visibilitychange"
+    );
+    expect(visibilityCall).toBeDefined();
+
+    const visibilityHandler = visibilityCall[1];
+
+    // Test pause when document becomes hidden
+    Object.defineProperty(document, "hidden", {
+      value: true,
+      writable: true,
+      configurable: true
+    });
+    visibilityHandler();
+    expect(scheduler.pause).toHaveBeenCalled();
+
+    // Test resume when document becomes visible
+    vi.clearAllMocks();
+    Object.defineProperty(document, "hidden", {
+      value: false,
+      writable: true,
+      configurable: true
+    });
+    visibilityHandler();
+    expect(scheduler.resume).toHaveBeenCalled();
+
+    addWindowListener.mockRestore();
+    addDocListener.mockRestore();
+  });
+
+  it("skips setup when globalThis.__TEST__ is set", () => {
+    const originalTest = globalThis.__TEST__;
+    globalThis.__TEST__ = true;
+
+    setupScheduler();
+
+    expect(scheduler.start).not.toHaveBeenCalled();
+
+    globalThis.__TEST__ = originalTest;
+  });
+
+  it("skips setup when requestAnimationFrame is unavailable", () => {
+    const originalRAF = globalThis.requestAnimationFrame;
+    // @ts-ignore - Intentionally delete for test
+    delete globalThis.requestAnimationFrame;
+
+    setupScheduler();
+
+    expect(scheduler.start).not.toHaveBeenCalled();
+
+    globalThis.requestAnimationFrame = originalRAF;
+  });
+
+  it("skips setup when process.env.VITEST is true", () => {
+    // Note: This test would normally be caught by beforeEach mock setup
+    // but we verify the condition explicitly
+    const original = process.env.VITEST;
+    process.env.VITEST = "true";
+
+    setupScheduler();
+
+    expect(scheduler.start).not.toHaveBeenCalled();
+
+    if (original !== undefined) {
+      process.env.VITEST = original;
+    } else {
+      delete process.env.VITEST;
+    }
   });
 });
 

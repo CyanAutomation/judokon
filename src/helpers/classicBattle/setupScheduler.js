@@ -1,3 +1,30 @@
+/**
+ * @fileoverview Initialize animation scheduler for Classic Battle mode.
+ *
+ * **Purpose:**
+ * Manages the global requestAnimationFrame-based scheduler for continuous
+ * animations in Classic Battle. The scheduler provides frame-based timing
+ * for UI transitions, timer displays, scoreboard animations, and header
+ * orientation updates.
+ *
+ * **Lifecycle Management:**
+ * - Starts scheduler during battle initialization
+ * - Registers `pagehide` cleanup handler (one-time)
+ * - Implements visibility handling to pause/resume on tab switching
+ *
+ * **Test Environment Detection:**
+ * Prevents scheduler activation during unit tests via multiple guards:
+ * - `globalThis.__TEST__` flag
+ * - `process.env.VITEST` environment variable
+ * - `requestAnimationFrame` availability check
+ *
+ * **Integration:**
+ * Called by battle initialization in `initClassicBattle()` and related
+ * setup functions. Not in hot paths—only invoked once per battle session.
+ *
+ * @module helpers/classicBattle/setupScheduler
+ */
+
 import {
   start as startScheduler,
   stop as stopScheduler,

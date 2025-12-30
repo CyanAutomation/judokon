@@ -32,7 +32,9 @@ vi.mock("../../../src/utils/scheduler.js", () => ({
     } catch {}
   }),
   start: vi.fn(),
-  stop: vi.fn()
+  stop: vi.fn(),
+  pause: vi.fn(),
+  resume: vi.fn()
 }));
 
 vi.mock("node:url", () => ({
