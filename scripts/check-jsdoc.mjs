@@ -118,6 +118,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
 
   const summaryLine = cleanedLines[0];
   const isSummaryTag = summaryLine.startsWith("@summary");
+  const hasNonWhitespaceContent = summaryLine.trim().length > 0;
 
   // If the first meaningful line is a tag (not a summary), or if there's no actual summary content
   if ((summaryLine.startsWith("@") && !isSummaryTag) || !hasNonWhitespaceContent) {
