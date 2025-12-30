@@ -53,8 +53,16 @@ describe("Classic Battle quit flow", () => {
 
     const quit = document.getElementById("quit-button");
     expect(quit).toBeTruthy();
+    
+    // Check if event handler is attached
+    expect(quit.__controlBound).toBe(true);
+    
     quit.click();
 
+    // Wait for the click event handler to execute and create the promise
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(window.quitConfirmButtonPromise).not.toBe(null);
     const confirmBtn = await window.quitConfirmButtonPromise;
     expect(confirmBtn).toBeTruthy();
 
