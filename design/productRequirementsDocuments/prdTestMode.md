@@ -54,6 +54,40 @@ Test Mode is an internal mode for developers and QA engineers to safely test fea
 - Expose and maintain window-scoped promises that signal readiness for Classic Battle (`battleReadyPromise`), stat button reactivation (`statButtonsReadyPromise`), and settings UI availability (`settingsReadyPromise`).
 - Playwright fixtures rely on corresponding helpers (`waitForBattleReady`, `waitForSettingsReady`, `waitForBattleState`) to synchronize deterministic flows; the PRD treats these as part of the Test Mode contract.
 - Timer management helpers (`timerUtils`, `autoSelectHandlers`, `pauseTimers`, `resumeTimers`) must continue to function when Test Mode is active so that pause/resume flows stay consistent across UI, CLI, and automated harnesses.
+- Additional readiness promises in the runtime are standardized to give tests stable synchronization points. Each promise resolves when the UI or data pipeline has completed a meaningful bootstrapping phase, and many also emit DOM-facing signals (data attributes or events).
+
+**Implemented readiness promises and intent**
+
+- `browseJudokaReadyPromise`: Signals the Browse Judoka carousel has rendered (or a fallback state has been established) and the page is safe to query for card layout.
+- `randomJudokaReadyPromise`: Signals Random Judoka page setup has finished (feature flags, data preload, draw button wiring) and the DOM is ready for test interactions.
+- `homepageReadyPromise`: Signals the home grid has mounted and navigation tiles are available.
+- `battleStateProgressReadyPromise`: Signals the battle-state progress list has been rendered (or skipped) so state tracking UI is stable for tests.
+- `signatureMoveReadyPromise`: Signals the signature-move UI has completed initial rendering and can be interacted with.
+- `roundOptionsReadyPromise`: Signals the Classic Battle UI has surfaced the selectable stat buttons for the current round.
+- `nextRoundTimerReadyPromise`: Signals the Classic Battle round timer surface has been primed (including the scoreboard/CLI timer display).
+- `quoteReadyPromise`: Signals the meditation quote markup has been rendered and the loader has been dismissed.
+- `whenScoreboardReady()` (scoreboard readiness promise): Signals the Classic Battle scoreboard adapter has wired into `RoundStore`, so scoreboard updates are safe to await.
+
+**Readiness signals and test harness usage**
+
+| Helper/module | Promise or hook | Where it resolves | How tests should await | DOM side effects (data/event) |
+| --- | --- | --- | --- | --- |
+| `src/helpers/browseJudokaPage.js` | `browseJudokaReadyPromise` | `BrowsePageRuntime.markReady()` after carousel render, error fallback, or missing container short-circuit. | `await window.browseJudokaReadyPromise` (or import the promise in unit tests). | `data-browse-judoka-ready="true"` on `<body>`, `document` dispatches `browse-judoka-ready`. |
+| `src/helpers/randomJudokaPage.js` | `randomJudokaReadyPromise` | After `onDomReady()` → `initRandomJudokaPage()` completes. Uses `signalRandomJudokaReady()`. | `await window.randomJudokaReadyPromise` (or module export); Playwright can `page.waitForFunction(() => document.body.dataset.randomJudokaReady === "true")`. | `data-random-judoka-ready="true"` on `<body>`, `document` dispatches `random-judoka-ready`. |
+| `src/helpers/homePage.js` | `homepageReadyPromise` | `resolveHomepageReady()` once `.game-mode-grid` exists (immediate or via `MutationObserver`). | `await window.homepageReadyPromise`; Playwright can wait on `[data-home-ready="true"]`. | `data-home-ready="true"` on `<body>`, `document` dispatches `home-ready`. |
+| `src/helpers/battleStateProgress.js` | `battleStateProgressReadyPromise` | `initBattleStateProgress()` after rendering, skipping, or feature flag exit; also resolved when DOM is unavailable. | `await window.battleStateProgressReadyPromise` before reading `#battle-state-progress` content. | `#battle-state-progress` gets `data-feature-battle-state-ready`, `data-feature-battle-state-count`, `data-feature-battle-state-progress` + `ready` class. |
+| `src/helpers/signatureMove.js` | `signatureMoveReadyPromise` | `markSignatureMoveReady()` after signature move UI boot completes. | `await signatureMoveReadyPromise` (module export). | `data-signature-move-ready="true"` on `<body>`, `document` dispatches `signature-move-ready`. |
+| `src/helpers/classicBattle/promises.js` (+ `classicBattle/testHooks.js`) | `roundOptionsReadyPromise`, `nextRoundTimerReadyPromise` | `setupPromise()` resolves when the `roundOptionsReady` or `nextRoundTimerReady` battle events fire. Test hooks provide the same window-scoped promises on the global event target. | `await window.roundOptionsReadyPromise` / `await window.nextRoundTimerReadyPromise` (or use the getter helpers in the promises module when available). | No data attributes; uses battle events `roundOptionsReady` / `nextRoundTimerReady`. |
+| `src/helpers/quotes/quoteRenderer.js` | `quoteReadyPromise` | `notifyQuoteReady()` after `displayFable()` renders content, hides the loader, and exposes the quote block. | `await window.quoteReadyPromise` (test API surfaces this promise). | `window` dispatches `quote:ready`; quote loader is hidden and quote block is revealed. |
+| `src/helpers/classicBattle/scoreboardAdapter.js` | `whenScoreboardReady()` | `initScoreboardAdapter()` assigns the ready promise to `roundStore.wireIntoScoreboardAdapter()` (currently resolves immediately after wiring). | `await whenScoreboardReady()` before asserting scoreboard round counters or score updates. | No data attributes; readiness is about adapter wiring rather than DOM mutations. |
+
+**Related feature PRDs to cross-link when documenting readiness signals**
+
+- `design/productRequirementsDocuments/prdBrowseJudoka.md`
+- `design/productRequirementsDocuments/prdRandomJudoka.md`
+- `design/productRequirementsDocuments/prdHomePageNavigation.md`
+- `design/productRequirementsDocuments/prdBattleScoreboard.md`
+- `design/productRequirementsDocuments/prdMeditationScreen.md`
 
 #### Feature Flag Notes
 
