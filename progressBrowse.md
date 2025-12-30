@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-**Status**: Investigation Complete. A consistent fix is ready for implementation.
+**Status**: Investigation Complete. Implementation of the consistent fix is **In Progress**.
 
 **Bug**: Multiple test files in the `tests/classicBattle/` suite fail because they attempt to synchronously read an HTML file at the module level (`fs.readFileSync`). This fails because the `jsdom` test environment, configured globally in `vitest.config.js`, externalizes the Node.js `fs` module for browser compatibility, making `readFileSync` unavailable during module import.
 
@@ -75,3 +75,28 @@ npm run test
 ```
 
 This approach ensures consistency, resolves the `readFileSync` error reliably, and aligns with best practices for managing test fixtures in a `jsdom` environment.
+
+---
+
+## Implementation Log
+
+This log tracks the progress of applying the standardized deferred HTML loading pattern to the affected files.
+
+| File                                        | Status                     | Notes                                                                                                                                                                                                            |
+| :------------------------------------------ | :------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests/classicBattle/round-select.test.js`  | ⚠️ Partially Migrated      | `beforeAll` hook is present, but `document.documentElement.innerHTML = getHtmlContent();` is called inside `test` blocks instead of `document.body.innerHTML = htmlContent;` in `beforeEach`. Still uses `getHtmlContent()` helper. |
+| `tests/classicBattle/bootstrap.test.js`     | ❌ Not Yet Migrated        | Still uses module-level lazy-loading getter (`getBattleClassicHtml()`) and `readFileSync`. Does not use `beforeAll`.                                                                                                 |
+| `tests/classicBattle/end-modal.test.js`     | ❌ Not Yet Migrated        | Still uses module-level lazy-loading getter (`getHtmlContent()`) and `readFileSync`. Does not use `beforeAll`.                                                                                                 |
+| `tests/classicBattle/quit-flow.test.js`     | ❌ Not Yet Migrated        | Still uses module-level lazy-loading getter (`getHtmlContent()`) and `readFileSync`. Does not use `beforeAll`.                                                                                                 |
+| `tests/classicBattle/round-selectFallback.test.js` | ❌ Not Yet Migrated        | Still uses module-level lazy-loading getter (`getBattleClassicHtml()`) and `readFileSync`. Does not use `beforeAll`.                                                                                                 |
+| `tests/classicBattle/init-complete.test.js` | ✅ Environment is Node.js | This file uses `@vitest-environment node`, not `jsdom`, and sets up JSDOM manually within `beforeEach`. The `progressBrowse.md` fix is targeted at `jsdom` environments externalizing `fs`. While it uses `readFileSync`, it's not directly subject to the `jsdom` externalization issue this fix addresses. |
+
+---
+
+## Opportunities for Improvement
+
+1.  **Complete Migration**: Systematically apply the proposed `beforeAll` pattern to all files currently marked as "❌ Not Yet Migrated" or "⚠️ Partially Migrated".
+2.  **Standardize `beforeEach` HTML Injection**: Ensure that `document.body.innerHTML = htmlContent;` is consistently used within a `beforeEach` hook across all migrated files, as described in the "Standard Code to Apply".
+3.  **Remove Redundant Helpers**: Once `beforeAll` and `beforeEach` are correctly implemented, remove any leftover `getHtmlContent()` or `getBattleClassicHtml()` helper functions that use `readFileSync` at the module level.
+4.  **Consider `init-complete.test.js`**: While not directly affected by the `jsdom` externalization, consider if `init-complete.test.js` could also benefit from a more standardized HTML loading mechanism for consistency, perhaps adapting the `beforeAll` pattern to its manual JSDOM setup.
+5.  **Refine Verification Steps**: Once all files are migrated, execute `npm run test:battles:classic` and `npm run test` to confirm full resolution and lack of regressions.

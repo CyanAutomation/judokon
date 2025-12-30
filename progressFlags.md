@@ -54,14 +54,35 @@ This sequence means the cooldown snackbar should not "win" over the opponent pro
 
 ## Opportunities for Improvement
 
-1. **Align the test with the real UI path**
-   - Update `tests/helpers/classicBattle/opponentDelay.test.js` to assert `updateSnackbar` (or mock `updateSnackbar` to call `showSnackbar`).
-2. **Make opponent delay observable in tests**
-   - Do not mock `getOpponentDelay()` to `0` unless the test explicitly targets the "no-delay" branch.
-3. **Add a targeted integration test**
-   - Verify the sequence: opponent prompt shows → cooldown countdown suppressed for `DEFAULT_MIN_PROMPT_DURATION_MS` → countdown starts.
-4. **Document the prompt window contract**
-   - Add short notes in `CooldownRenderer.js` or the test explaining how prompt timestamps suppress the cooldown snackbar.
+
+
+1.  **Align the test with the real UI path**
+
+    -   Update `tests/helpers/classicBattle/opponentDelay.test.js` to assert `updateSnackbar` (or mock `updateSnackbar` to call `showSnackbar`).
+
+2.  **Make opponent delay observable in tests**
+
+    -   Do not mock `getOpponentDelay()` to `0` unless the test explicitly targets the "no-delay" branch.
+
+3.  **Add a targeted integration test**
+
+    -   Verify the sequence: opponent prompt shows → cooldown countdown suppressed for `DEFAULT_MIN_PROMPT_DURATION_MS` → countdown starts.
+
+4.  **Document the prompt window contract**
+
+    -   Add short notes in `CooldownRenderer.js` or the test explaining how prompt timestamps suppress the cooldown snackbar.
+
+
+
+---
+
+
+
+## Current Status (2025-12-30)
+
+
+
+The "Opportunities for Improvement" listed above are currently outstanding actions. The identified gaps and potential test misalignments should be addressed to fully validate the opponent delay behavior.
 
 ---
 
