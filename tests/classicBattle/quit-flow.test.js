@@ -46,16 +46,48 @@ describe("Classic Battle quit flow", () => {
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
 
+    // Verify button exists before init
+    const quitBeforeInit = document.getElementById("quit-button");
+    if (!quitBeforeInit) {
+      throw new Error("Quit button not found in HTML before init()");
+    }
+
+    // Import and manually wire to debug
+    const uiElementsModule = await import("../../src/helpers/classicBattle/UIElements.js");
+    const quitFromGetter = uiElementsModule.getQuitButton();
+    if (!quitFromGetter) {
+      throw new Error("getQuitButton() returned null before init()");
+    }
+    
     const mod = await import("../../src/pages/battleClassic.init.js");
     if (typeof mod.init === "function") {
       await mod.init();
     }
+    
+    // Verify init completed
+    expect(window.__battleInitComplete).toBe(true);
+    expect(window.__battleInitError).toBeUndefined();
 
-    const quit = document.getElementById("quit-button");
-    expect(quit).toBeTruthy();
+    const quitAfterInit = document.getElementById("quit-button");
+    expect(quitAfterInit).toBeTruthy();
+    
+    // Check if the button was replaced
+    if (quitBeforeInit !== quitAfterInit) {
+      throw new Error("Quit button was replaced during init() - this breaks event binding!");
+    }
     
     // Check if event handler is attached
-    expect(quit.__controlBound).toBe(true);
+    if (!quit.__controlBound) {
+      // Debug: Check if wireControlButtons was called
+      const replayBtn = document.getElementById("replay-button");
+      console.error("Quit button not bound:", {
+        quitExists: !!quit,
+        replayBound: replayBtn?.__controlBound,
+        battleStoreExists: !!window.battleStore,
+        initComplete: window.__battleInitComplete
+      });
+      throw new Error("Quit button event handler was not attached during init()");
+    }
     
     quit.click();
 
