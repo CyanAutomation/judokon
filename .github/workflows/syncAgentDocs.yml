@@ -63,7 +63,9 @@ jobs:
           set -euo pipefail
           npm run sync:agents > /tmp/sync_output.txt 2>&1
           cat /tmp/sync_output.txt
-          echo "output=$(cat /tmp/sync_output.txt)" >> $GITHUB_OUTPUT
+          echo "output<<EOF" >> $GITHUB_OUTPUT
+          cat /tmp/sync_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Verify sync success
         run: |
