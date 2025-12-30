@@ -27,8 +27,7 @@ function createDeferred() {
  * @param {import('@playwright/test').Page | Function} wait - Playwright page object or custom wait function
  */
 async function withTimeout(promise, timeoutMs, message, wait) {
-  const waitForFunction =
-    typeof wait === "function" ? wait : wait?.waitForFunction?.bind(wait);
+  const waitForFunction = typeof wait === "function" ? wait : wait?.waitForFunction?.bind(wait);
 
   if (!waitForFunction) {
     // Fallback to original setTimeout behavior for backward compatibility
@@ -45,7 +44,6 @@ async function withTimeout(promise, timeoutMs, message, wait) {
   });
 
   return await Promise.race([promise, timeoutPromise]);
-}
 }
 
 function isValidMatchCompletionPayload(payload) {

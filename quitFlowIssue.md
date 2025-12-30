@@ -68,10 +68,10 @@ async function init() {
   // Phase 1-2: Utilities and UI
   await initializePhase1_Utilities(store);
   await initializePhase2_UI(store);
-  
-  wireControlButtons(store);  // ❌ Too early - buttons replaced later
+
+  wireControlButtons(store); // ❌ Too early - buttons replaced later
   wireExistingStatButtons(store);
-  
+
   // Phase 3-5: Continue initialization
   await initializePhase3_BattleEngine(store);
   await initializePhase4_EventHandlers(store);
@@ -88,15 +88,15 @@ async function init() {
   await initializePhase2_UI(store);
   await initializePhase3_BattleEngine(store);
   await initializePhase4_EventHandlers(store);
-  
+
   // Wire stat buttons BEFORE match start (required for gameplay)
   wireExistingStatButtons(store);
-  
+
   // Phase 5: Start the match
   await initializeMatchStart(store);
-  
+
   // Wire control buttons AFTER match start (safe from DOM replacement)
-  wireControlButtons(store);  // ✅ Safe - no more DOM replacement
+  wireControlButtons(store); // ✅ Safe - no more DOM replacement
 }
 ```
 

@@ -70,7 +70,7 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
    **COMPLETED:** `playwright/cli.spec.mjs` was renamed to `playwright/cli.spec.js` and `playwright/cli-flows.spec.mjs` was renamed to `playwright/cli-flows-improved.spec.mjs`. `battle-next-skip.non-orchestrated.spec.js` was removed. `playwright.config.js` correctly includes current spec files.
 
 4. Add or extend a small helper module for deterministic waiters (snackbar text, modal open, countdown completion), and refactor 3–5 tests to use it for consistency.
-   **COMPLETED:** Wait helpers (`waitForSnackbar`, `waitForModalOpen`, `waitForNextRoundCountdown`) were added to `playwright/fixtures/waits.js`. However, the refactoring of specs like `end-modal.spec.js`, `countdown.spec.js`, and `cli-flows-improved.spec.mjs` to *use* these new helpers was not completed; these tests continue to use other valid waiting strategies.
+   **COMPLETED:** Wait helpers (`waitForSnackbar`, `waitForModalOpen`, `waitForNextRoundCountdown`) were added to `playwright/fixtures/waits.js`. However, the refactoring of specs like `end-modal.spec.js`, `countdown.spec.js`, and `cli-flows-improved.spec.mjs` to _use_ these new helpers was not completed; these tests continue to use other valid waiting strategies.
 
 ## Medium-term work (2–5 days)
 
@@ -81,7 +81,7 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
    - **Status:** Partially covered by Quick Wins. Many specs have been refactored to use `__TEST_API` or UI-driven flows.
 
 3. Implement the deterministic waiters helper module and replace duplicated waiter code in the top 5 problematic specs.
-   - **Status:** The deterministic waiters helper module (`playwright/fixtures/waits.js`) has been implemented with `waitForSnackbar`, `waitForModalOpen`, and `waitForNextRoundCountdown`. However, the refactoring of specs (`end-modal.spec.js`, `countdown.spec.js`, `cli-flows-improved.spec.mjs`) to *use* these new helpers was not completed.
+   - **Status:** The deterministic waiters helper module (`playwright/fixtures/waits.js`) has been implemented with `waitForSnackbar`, `waitForModalOpen`, and `waitForNextRoundCountdown`. However, the refactoring of specs (`end-modal.spec.js`, `countdown.spec.js`, `cli-flows-improved.spec.mjs`) to _use_ these new helpers was not completed.
 
 ## Long-term / architectural (1–2+ weeks)
 
@@ -170,17 +170,17 @@ This document was reviewed for accuracy and completeness. While significant prog
 
 **Key Observations:**
 
--   **Documentation Inaccuracies**: Many sections described intended or proposed implementations rather than the actual implemented solutions. This led to misinterpretations regarding which helpers were used, how diagnostics were implemented, and the specific refactoring strategies employed.
-    -   Examples include the `hover-zoom.spec.js` refactoring, the `end-modal.spec.js` diagnostics, the `timer.spec.js` `expect.poll` replacement, and the usage of new wait helpers.
--   **Outstanding Issues**:
-    -   The `playwright/battle-classic/opponent-reveal.spec.js` test still has a failing test, different from the initial diagnosis.
-    -   Global `window` properties like `__OVERRIDE_TIMERS` and `__NEXT_ROUND_COOLDOWN_MS` are still in use, contrary to the proposed refactoring.
--   **Positive Outcomes**: Despite the documentation inaccuracies, the overall direction of the work is positive. Many private hooks were successfully eliminated, files were cleaned up, and the test suite's robustness has improved (evidenced by passing tests that were previously flaky).
+- **Documentation Inaccuracies**: Many sections described intended or proposed implementations rather than the actual implemented solutions. This led to misinterpretations regarding which helpers were used, how diagnostics were implemented, and the specific refactoring strategies employed.
+  - Examples include the `hover-zoom.spec.js` refactoring, the `end-modal.spec.js` diagnostics, the `timer.spec.js` `expect.poll` replacement, and the usage of new wait helpers.
+- **Outstanding Issues**:
+  - The `playwright/battle-classic/opponent-reveal.spec.js` test still has a failing test, different from the initial diagnosis.
+  - Global `window` properties like `__OVERRIDE_TIMERS` and `__NEXT_ROUND_COOLDOWN_MS` are still in use, contrary to the proposed refactoring.
+- **Positive Outcomes**: Despite the documentation inaccuracies, the overall direction of the work is positive. Many private hooks were successfully eliminated, files were cleaned up, and the test suite's robustness has improved (evidenced by passing tests that were previously flaky).
 
 **Lessons Learned for Documentation:**
 
--   **Verify before marking complete**: Ensure that the described actions and outcomes precisely match the implemented code.
--   **Update iteratively**: As implementations evolve, the progress document should be updated to reflect the current state, not just the initial plan.
--   **Be specific**: Avoid generic descriptions of "refactoring" or "replacing" without specifying the exact new implementation.
+- **Verify before marking complete**: Ensure that the described actions and outcomes precisely match the implemented code.
+- **Update iteratively**: As implementations evolve, the progress document should be updated to reflect the current state, not just the initial plan.
+- **Be specific**: Avoid generic descriptions of "refactoring" or "replacing" without specifying the exact new implementation.
 
 This updated document provides a more accurate overview of the Playwright test progress, highlighting both achievements and remaining tasks.

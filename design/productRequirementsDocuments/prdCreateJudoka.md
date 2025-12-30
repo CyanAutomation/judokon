@@ -29,12 +29,12 @@ Provide a lightweight form for creating a new judoka with just the basics (name,
 
 The page presents a single-column form with required inputs. Validation is driven by the browser-required constraints and the field types.
 
-| Field | Control | Validation Rules | Notes |
-| --- | --- | --- | --- |
-| First name | Text input (`#judoka-first-name`) | Required | `autocomplete="given-name"` and `name="firstname"`. |
-| Last name | Text input (`#judoka-last-name`) | Required | `autocomplete="family-name"` and `name="lastname"`. |
-| Country | Select (`#judoka-country`) | Required | Options: Japan (`JPN`), France (`FRA`), United States (`USA`). Includes a blank "Select a country" placeholder option. |
-| Weight class | Text input (`#judoka-weight`) | Required | `inputmode="numeric"` with placeholder `-73kg`. `name="weight"`. |
+| Field        | Control                           | Validation Rules | Notes                                                                                                                  |
+| ------------ | --------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| First name   | Text input (`#judoka-first-name`) | Required         | `autocomplete="given-name"` and `name="firstname"`.                                                                    |
+| Last name    | Text input (`#judoka-last-name`)  | Required         | `autocomplete="family-name"` and `name="lastname"`.                                                                    |
+| Country      | Select (`#judoka-country`)        | Required         | Options: Japan (`JPN`), France (`FRA`), United States (`USA`). Includes a blank "Select a country" placeholder option. |
+| Weight class | Text input (`#judoka-weight`)     | Required         | `inputmode="numeric"` with placeholder `-73kg`. `name="weight"`.                                                       |
 
 ---
 
