@@ -1741,7 +1741,8 @@ async function initializePhase4_EventHandlers(store) {
 
 const isTestEnvironment =
   typeof process !== "undefined" &&
-  (process.env?.VITEST === "true" || process.env?.NODE_ENV === "test");
+  process.env &&
+  (process.env.VITEST === "true" || process.env.NODE_ENV === "test");
 
 /**
  * Initialize the Classic Battle page.
