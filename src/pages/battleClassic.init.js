@@ -1040,6 +1040,7 @@ export function renderStatButtons(store) {
     btn.addEventListener("click", () => {
       void handleStatButtonClick(store, stat, btn);
     });
+    btn.__statButtonBound = true;
     recordStatButtonListenerAttachment(btn, stat);
     container.appendChild(btn);
     if (desc) {
@@ -1064,6 +1065,55 @@ export function renderStatButtons(store) {
       STATE.detachStatHotkeys = wireStatHotkeys(Array.from(buttons));
     } catch {}
   } catch {}
+}
+
+/**
+ * Wire click handlers for existing stat buttons in the DOM.
+ * 
+ * This function serves as a fallback to ensure stat buttons that exist in the DOM
+ * (e.g., created by tests or pre-rendered markup) are properly wired into the
+ * normal selection flow. It only operates when buttons are not already marked
+ * as ready and have no existing bindings.
+ * 
+ * @param {object} store - The battle store instance
+ * @returns {void}
+ */
+function wireExistingStatButtons(store) {
+  const doc = getDocumentRef();
+  if (!doc) {
+    return;
+  }
+
+  const container = doc.getElementById("stat-buttons");
+  if (!container) {
+    return;
+  }
+
+  const buttons = Array.from(container.querySelectorAll("button[data-stat]"));
+  if (buttons.length === 0) {
+    return;
+  }
+
+  if (container.dataset.buttonsReady === "true") {
+    return;
+  }
+
+  const hasExistingBindings = buttons.some((button) => button.__statButtonBound);
+  if (hasExistingBindings) {
+    return;
+  }
+
+  buttons.forEach((button) => {
+    const stat = button.dataset?.stat;
+    if (!stat) {
+      console.warn('wireExistingStatButtons: button missing data-stat attribute', button);
+      return;
+    }
+    button.addEventListener("click", () => {
+      void handleStatButtonClick(store, stat, button);
+    });
+    button.__statButtonBound = true;
+  });
 }
 
 // =============================================================================
@@ -1800,6 +1850,7 @@ export async function init() {
     await initializePhase2_UI();
 
     wireControlButtons(store);
+    wireExistingStatButtons(store);
 
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
