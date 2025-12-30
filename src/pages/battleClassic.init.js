@@ -1777,9 +1777,7 @@ export async function init() {
 
     wireControlButtons(store);
 
-    await initializePhase3_Engine(store);
-    await initializePhase4_EventHandlers(store);
-
+    await initializeMatchStart(store);
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
     await initializeMatchStart(store);
