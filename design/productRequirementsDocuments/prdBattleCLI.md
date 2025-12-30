@@ -112,6 +112,8 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 - `battleStateBadge` — header badge reflecting state.
 - `autoSelect` — auto-pick on timeout.
 - `skipRoundCooldown` — bypass inter-round countdown.
+- `statHotkeys` — enable numeric stat selection with keys `1–5` in the CLI (default: **on**).
+- `scanlines` — apply a retro scanline overlay via `body.scanlines` on the CLI page (default: **off**).
 
 ---
 
@@ -154,6 +156,7 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 - **Mobile Optimization**: Smaller text sizes while preserving 44px tap targets.
 - **Background Hierarchy**: Subtle background variations for visual organization.
 - **Focus States**: Enhanced visibility while maintaining terminal aesthetics.
+- **Scanlines Overlay (Feature Flagged)**: Optional retro scanline layer that sits over the CLI surface when `scanlines` is enabled; defaults off to preserve crisp readability and only activates on opt-in.
 
 **Layout Structure**: Single column design optimized for both desktop and mobile with responsive adjustments that maintain terminal authenticity across all screen sizes.
 
@@ -191,12 +194,13 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 ## Acceptance Criteria (BDD-style)
 
 - Engine parity: The CLI reuses the Classic Battle engine/state machine without forking. Automated parity tests pass (unit/integration).
-- Keyboard controls: Numeric keys `1–5` select stats; `Enter`/`Space` advances rounds; `H` opens help within 1s; `Q` quits with confirmation; `Esc` closes help. Tests verify each mapping.
+- Keyboard controls: Numeric keys `1–5` select stats when `statHotkeys` is enabled (ignored when disabled); `Enter`/`Space` advances rounds; `H` opens help within 1s; `Q` quits with confirmation; `Esc` closes help. Tests verify each mapping (see `src/pages/battleCLI/init.js`).
 - Pointer/touch parity: Stat rows are clickable/tappable with targets ≥44px; taps register the same selection flow as keyboard.
 - Timer behavior: Countdown updates at 1 Hz; expiry triggers auto-select if `autoSelect` is enabled and mirrors engine behavior.
 - Outcome & score: Win/Loss/Draw states render correctly and scores update immediately after round resolution.
 - Accessibility: Screen reader announcements exist for prompts/timers/outcomes using `aria-live` regions; logical focus order is preserved; WCAG 2.1 AA checks pass in CI.
 - Test hooks: Stable selectors exist (`#cli-root`, `#cli-countdown`, `#score-display`, `#snackbar-container`, `data-round`, `data-remaining-time`) and are used by Playwright tests.
+- Scanlines overlay: Enabling `scanlines` toggles the `body.scanlines` overlay for the CLI view; disabling removes it. Default is off. Visual treatment matches `src/pages/battleCLI.css`, with flag wiring in `src/pages/battleCLI/init.js`.
 - Determinism: `?seed=` param produces repeatable runs; invalid seeds fall back to a deterministic default and are logged.
 - Settings persistence: Win target persists under `localStorage` key `battleCLI.pointsToWin` and restores on startup.
 - Observability: Verbose log mode shows timestamped transitions and can be toggled via `cliVerbose` feature flag; logs are silenced in CI.

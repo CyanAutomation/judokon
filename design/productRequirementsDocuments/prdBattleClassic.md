@@ -120,6 +120,8 @@ When headless mode is active, rounds resolve back-to-back, dramatically increasi
 - Stat selection timer halts immediately once the player picks a stat.
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
+- When `opponentDelayMessage` is enabled, the "Opponent is choosing..." prompt is delayed to pace the reveal and avoid immediately showing the opponent phase. This delay is applied after stat selection and before the opponent stat is surfaced (see `src/helpers/classicBattle/uiEventHandlers.js`).
+- The selection flow propagates the delay flag through the stat selection handlers so `opponentDelayMessage` timing is consistent across manual picks and auto-selection (see `src/helpers/classicBattle/uiHelpers.js` and `src/helpers/classicBattle/uiEventHandlers.js`).
 - During this delay, the Scoreboard displays "Opponent is choosing..." in `#round-message` to reinforce turn flow.
 - The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
 - The debug panel is available when the `enableTestMode` feature flag is enabled, appears above the player and opponent cards, and includes a copy button for exporting its text.
@@ -186,6 +188,7 @@ User behavior linkage: when a player intentionally clicks a Next/Skip control du
 - Player can start and finish a match with default settings in ≤ 3 min.
 - Stat selection timer behaves correctly: counts down, pauses/resumes, auto-selects if expired.
 - Opponent’s stat selection shows after delay with message “Opponent is choosing…”.
+- When `opponentDelayMessage` is enabled, the "Opponent is choosing..." prompt appears only after the configured delay; when the delay is `0` or `opponentDelayMessage` is disabled, the prompt appears immediately with no pause.
 - Round outcomes update Scoreboard immediately (Win/Loss/Draw, compared values, updated score).
 - Quit flow always confirms before exiting.
 - End modal always appears at win target or after 25 rounds, displaying correct results.
