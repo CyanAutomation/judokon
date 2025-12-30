@@ -107,19 +107,19 @@ npm run test:style            # Style-related tests (separate config)
 
 Quick reference for common file modifications:
 
-| File Changed | Test Group | Command |
-|-------------|------------|---------|
-| `src/components/Scoreboard.js` | Components: Scoreboard | `npm run test:components:scoreboard` |
-| `src/helpers/cardRender.js` | Components: Cards | `npm run test:components:cards` |
-| `src/pages/settings.html` | Pages: Settings | `npm run test:pages:settings` |
-| `src/helpers/TimerController.js` | Helpers: Timers | `npm run test:helpers:timers` |
-| `src/helpers/queryRag.js` | RAG System | `npm run test:rag` |
-| `src/pages/battleClassic.html` | Battles: Classic | `npm run test:battles:classic` |
-| `src/pages/battleCLI.html` | Battles: CLI | `npm run test:battles:cli` |
-| `src/helpers/BattleEngine.js` | Battles: All | `npm run test:battles` |
-| `src/data/judoka.json` | Data Validation | `npm run test:data` |
-| `src/helpers/settingsStorage.js` | Pages: Settings | `npm run test:pages:settings` |
-| `tests/utils/console.js` | Test Utils | `npm run test:utils` |
+| File Changed                     | Test Group             | Command                              |
+| -------------------------------- | ---------------------- | ------------------------------------ |
+| `src/components/Scoreboard.js`   | Components: Scoreboard | `npm run test:components:scoreboard` |
+| `src/helpers/cardRender.js`      | Components: Cards      | `npm run test:components:cards`      |
+| `src/pages/settings.html`        | Pages: Settings        | `npm run test:pages:settings`        |
+| `src/helpers/TimerController.js` | Helpers: Timers        | `npm run test:helpers:timers`        |
+| `src/helpers/queryRag.js`        | RAG System             | `npm run test:rag`                   |
+| `src/pages/battleClassic.html`   | Battles: Classic       | `npm run test:battles:classic`       |
+| `src/pages/battleCLI.html`       | Battles: CLI           | `npm run test:battles:cli`           |
+| `src/helpers/BattleEngine.js`    | Battles: All           | `npm run test:battles`               |
+| `src/data/judoka.json`           | Data Validation        | `npm run test:data`                  |
+| `src/helpers/settingsStorage.js` | Pages: Settings        | `npm run test:pages:settings`        |
+| `tests/utils/console.js`         | Test Utils             | `npm run test:utils`                 |
 
 ---
 
@@ -127,15 +127,15 @@ Quick reference for common file modifications:
 
 **Running targeted test groups vs full suite:**
 
-| Scope | Tests | Time | Use Case |
-|-------|-------|------|----------|
-| **Full Suite** | 403+ | ~40s | Before PR submission, major refactoring |
-| **test:battles** | ~60 | ~8s | Battle system changes |
-| **test:battles:classic** | ~29 | ~4s | Classic battle changes only |
-| **test:components** | ~30 | ~3s | Component modifications |
-| **test:components:cards** | ~15 | ~1.5s | Card-specific changes |
-| **test:helpers:timers** | ~10 | ~1s | Timer utility changes |
-| **test:data** | ~6 | <1s | Data validation changes |
+| Scope                     | Tests | Time  | Use Case                                |
+| ------------------------- | ----- | ----- | --------------------------------------- |
+| **Full Suite**            | 403+  | ~40s  | Before PR submission, major refactoring |
+| **test:battles**          | ~60   | ~8s   | Battle system changes                   |
+| **test:battles:classic**  | ~29   | ~4s   | Classic battle changes only             |
+| **test:components**       | ~30   | ~3s   | Component modifications                 |
+| **test:components:cards** | ~15   | ~1.5s | Card-specific changes                   |
+| **test:helpers:timers**   | ~10   | ~1s   | Timer utility changes                   |
+| **test:data**             | ~6    | <1s   | Data validation changes                 |
 
 **Speed improvement: 10-40x faster feedback for targeted changes**
 
@@ -235,6 +235,7 @@ If you're unsure which test group covers a file:
    - `src/pages/*.html` → likely in `test:pages`
 
 2. **Look for test files with similar names:**
+
    ```bash
    # Example: Find tests for BattleEngine.js
    find tests -name "*BattleEngine*"
