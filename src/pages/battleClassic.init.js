@@ -1040,6 +1040,7 @@ export function renderStatButtons(store) {
     btn.addEventListener("click", () => {
       void handleStatButtonClick(store, stat, btn);
     });
+    btn.__statButtonBound = true;
     recordStatButtonListenerAttachment(btn, stat);
     container.appendChild(btn);
     if (desc) {
@@ -1064,6 +1065,43 @@ export function renderStatButtons(store) {
       STATE.detachStatHotkeys = wireStatHotkeys(Array.from(buttons));
     } catch {}
   } catch {}
+}
+
+function wireExistingStatButtons(store) {
+  const doc = getDocumentRef();
+  if (!doc) {
+    return;
+  }
+
+  const container = doc.getElementById("stat-buttons");
+  if (!container) {
+    return;
+  }
+
+  const buttons = Array.from(container.querySelectorAll("button[data-stat]"));
+  if (buttons.length === 0) {
+    return;
+  }
+
+  if (container.dataset.buttonsReady === "true") {
+    return;
+  }
+
+  const hasExistingBindings = buttons.some((button) => button.__statButtonBound);
+  if (hasExistingBindings) {
+    return;
+  }
+
+  buttons.forEach((button) => {
+    const stat = button.dataset?.stat || button.textContent?.trim();
+    if (!stat) {
+      return;
+    }
+    button.addEventListener("click", () => {
+      void handleStatButtonClick(store, stat, button);
+    });
+    button.__statButtonBound = true;
+  });
 }
 
 // =============================================================================
@@ -1801,6 +1839,7 @@ export async function init() {
     }
 
     wireControlButtons(store);
+    wireExistingStatButtons(store);
 
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
