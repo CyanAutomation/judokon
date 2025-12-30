@@ -1067,6 +1067,17 @@ export function renderStatButtons(store) {
   } catch {}
 }
 
+/**
+ * Wire click handlers for existing stat buttons in the DOM.
+ * 
+ * This function serves as a fallback to ensure stat buttons that exist in the DOM
+ * (e.g., created by tests or pre-rendered markup) are properly wired into the
+ * normal selection flow. It only operates when buttons are not already marked
+ * as ready and have no existing bindings.
+ * 
+ * @param {object} store - The battle store instance
+ * @returns {void}
+ */
 function wireExistingStatButtons(store) {
   const doc = getDocumentRef();
   if (!doc) {
