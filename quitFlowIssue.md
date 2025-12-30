@@ -99,11 +99,18 @@ async function init() {
 
 ### Why This Works
 
-By moving the button wiring to the end:
-- All DOM manipulation and element replacement is completed first
+By strategically timing the button wiring:
+
+**Stat Buttons (`wireExistingStatButtons`):**
+- Called **before** `initializeMatchStart` because gameplay requires these buttons
+- The stat selection system needs handlers attached before the first round starts
+- These buttons are not replaced during match initialization
+
+**Control Buttons (`wireControlButtons` - Quit, Replay, Next, Home):**
+- Called **after** `initializeMatchStart` because DOM manipulation in Phase 5 can replace these elements
 - Handlers are attached to the **final** button elements that will remain in the DOM
 - The `__controlBound` pattern works correctly because elements are no longer replaced afterward
-- All buttons (Quit, Replay, Next, Home) benefit from the timing fix
+- All control buttons benefit from this timing fix
 
 ## 4. Test Results
 

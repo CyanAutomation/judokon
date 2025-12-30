@@ -1854,10 +1854,10 @@ export async function init() {
 
     await initializePhase3_Engine(store);
     await initializePhase4_EventHandlers(store);
-    
+
     // Wire stat buttons BEFORE match start (needed for gameplay)
     wireExistingStatButtons(store);
-    
+
     await initializeMatchStart(store);
 
     // Wire control buttons AFTER match start (prevents DOM replacement issues)
