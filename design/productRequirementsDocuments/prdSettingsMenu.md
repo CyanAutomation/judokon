@@ -49,6 +49,14 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                                                          |
 | P3       | Layout Debug Outlines Feature Flag  | Show element outlines to inspect page layout.                                                                                        |
 | P3       | Navigation Cache Reset Feature Flag | Add a button to clear cached navigation data.                                                                                        |
+| P3       | Battle State Progress Feature Flag  | Shows the match state sequence below the battle area for testing.                                                                     |
+| P3       | Auto-Select Feature Flag            | Automatically pick a random stat when time runs out.                                                                                 |
+| P3       | Stat Hotkeys Feature Flag           | Enable number keys 1–5 for fast stat selection.                                                                                      |
+| P3       | CLI Verbose Logging Feature Flag    | Show state transition logs in the battle CLI.                                                                                        |
+| P3       | CLI Shortcuts Feature Flag          | Enable single-key shortcuts in the battle CLI.                                                                                       |
+| P3       | Opponent Delay Message Feature Flag | Show the "Opponent is choosing..." message to create realistic opponent thinking time.                                               |
+| P3       | Scanlines Effect Feature Flag       | Add a retro scanline overlay to the CLI battle mode.                                                                                 |
+| P3       | Round Store Feature Flag (Hidden)   | Experimental centralized round state management; hidden in the UI (`hidden: true`) but retained in settings schema.                  |
 | P1       | Motion Effects Toggle               | Binary toggle updating `settings.json` live on change.                                                                               |
 | P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                                               |
 | P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                                              |
@@ -119,12 +127,20 @@ On load, the Settings page must pre-populate each control with values from
 - **Test mode feature flag (binary):** ON/OFF (default: OFF) – Run deterministic matches for testing.
 - **Battle debug panel feature flag (binary):** ON/OFF (default: OFF) – Show a panel above the cards with live match data and a copy button for debugging.
 - **Battle state badge feature flag (binary):** ON/OFF (default: OFF) – Display the current battle state in a header badge.
+- **Battle state progress feature flag (binary):** ON/OFF (default: OFF) – Show match state sequence below the battle area for testing.
 - **Card inspector feature flag (binary):** ON/OFF (default: OFF) – Reveal raw card JSON in a collapsible panel.
 - **Viewport simulation feature flag (binary):** ON/OFF (default: OFF) – Choose preset sizes to simulate different devices.
 - **Tooltip overlay debug feature flag (binary):** ON/OFF (default: OFF) – Outline tooltip targets to debug placement.
 - **Layout debug outlines feature flag (binary):** ON/OFF (default: OFF) – Show element outlines to inspect page layout.
 - **Navigation cache reset feature flag (binary):** ON/OFF (default: OFF) – Add a button to clear cached navigation data.
 - **Skip round cooldown feature flag (binary):** ON/OFF (default: OFF) – Begin the next round immediately without waiting for the cooldown timer.
+- **Auto-select feature flag (binary):** ON/OFF (default: ON) – Automatically pick a random stat when time runs out.
+- **Stat hotkeys feature flag (binary):** ON/OFF (default: ON) – Use number keys 1–5 to select stats quickly.
+- **CLI verbose logging feature flag (binary):** ON/OFF (default: OFF) – Show state transition logs in the battle CLI.
+- **CLI shortcuts feature flag (binary):** ON/OFF (default: ON) – Enable single-key shortcuts in the battle CLI.
+- **Opponent delay message feature flag (binary):** ON/OFF (default: ON) – Show "Opponent is choosing..." message to create realistic opponent thinking time.
+- **Scanlines effect feature flag (binary):** ON/OFF (default: OFF) – Add a retro scanline overlay to the CLI battle mode for a more authentic feel.
+- **Round store feature flag (experimental/hidden):** ON/OFF (default: ON) – Use centralized round state management for improved performance and debugging; hidden in the UI via `hidden: true` but retained in the settings schema.
 - **Motion effects (binary):** ON/OFF (default: ON) – Disable animations for a calmer interface.
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.
@@ -205,11 +221,62 @@ On load, the Settings page must pre-populate each control with values from
 - The badge updates as the state machine transitions.
 - Setting persists across page refreshes and sessions.
 
+### Battle State Progress Feature Flag
+
+- Enabling the flag shows the match state sequence beneath the battle area for testing.
+- The sequence updates as the state machine transitions.
+- Setting persists across page refreshes and sessions.
+
 ### Card Inspector Feature Flag
 
 - Enabling the flag adds a collapsible panel on each card with its raw JSON.
 - Opening the panel sets `data-inspector="true"` on the card.
 - The inspector panel can be toggled via keyboard and is hidden initially.
+- Setting persists across page refreshes and sessions.
+
+### Auto-Select Feature Flag
+
+- When enabled, the stat selection timer automatically chooses a random stat when time runs out.
+- The auto-selected stat uses the same available stat list as manual selection.
+- When disabled, the timer timeout follows the existing manual selection fallback without auto-picking.
+- Setting persists across page refreshes and sessions.
+
+### Stat Hotkeys Feature Flag
+
+- When enabled, number keys 1–5 select the corresponding stat option in the battle UI.
+- Hotkeys are disabled when input focus is inside a text field or search box.
+- When disabled, number keys do not trigger stat selection.
+- Setting persists across page refreshes and sessions.
+
+### CLI Verbose Logging Feature Flag
+
+- When enabled, the battle CLI prints state transition logs during CLI matches.
+- When disabled, state transition logs are suppressed.
+- Setting persists across page refreshes and sessions.
+
+### CLI Shortcuts Feature Flag
+
+- When enabled, single-key CLI shortcuts are accepted alongside the full commands.
+- When disabled, only full CLI commands are accepted; single-key shortcuts are ignored.
+- Setting persists across page refreshes and sessions.
+
+### Opponent Delay Message Feature Flag
+
+- When enabled, the battle UI shows the "Opponent is choosing..." message while waiting for opponent selection.
+- When disabled, the waiting state does not display the delay message.
+- Setting persists across page refreshes and sessions.
+
+### Scanlines Effect Feature Flag
+
+- When enabled, the CLI battle mode applies the scanline overlay effect.
+- When disabled, the CLI battle mode renders without scanlines.
+- Setting persists across page refreshes and sessions.
+
+### Round Store Feature Flag (Experimental/Hidden)
+
+- The round store flag remains in the settings schema with `hidden: true` and is not displayed in the Settings UI.
+- When enabled, centralized round state management is used for supported modes.
+- When disabled, legacy round state handling is used.
 - Setting persists across page refreshes and sessions.
 
 ### Motion Effects Toggle
