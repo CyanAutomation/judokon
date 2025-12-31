@@ -170,7 +170,7 @@ export async function cooldownEnter(machine, payload) {
   // to ensure tests with fast transitions (cooldownMs: 0) can observe the finalized state
   // Use the lightweight version that doesn't update round diagnostics
   const isOrchestratedCooldown = !!readBattleStateDataset();
-  const isTestMode = typeof isTestModeEnabled === "function" && isTestModeEnabled();
+  const isTestMode = isTestModeEnabled();
   if (!isOrchestratedCooldown && !isTestMode) {
     guard(() => {
       applyNextButtonFinalizedState();
