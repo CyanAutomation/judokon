@@ -69,6 +69,7 @@ export async function waitingForPlayerActionEnter(machine) {
       window.__waitingForPlayerActionEnterCalled =
         (window.__waitingForPlayerActionEnterCalled || 0) + 1;
       window.__lastSelectionResetAt = Date.now();
+      window.__resetFinalizedTraceStack = new Error().stack?.split('\n').slice(0, 5).join(' | ') || 'no-stack';
     }
   } catch {
     // Intentionally ignore window global availability errors

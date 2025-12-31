@@ -966,7 +966,28 @@ function finalizeReadyControls(controls, dispatched, options = {}) {
   );
   if (dispatched || forceResolve) {
     controls.readyDispatched = true;
-    setNextButtonFinalizedState();
+    
+    // Only set finalized state if we're in cooldown or roundStart
+    // Don't set it if we've already advanced to waitingForPlayerAction or beyond
+    // This prevents a race condition where the cooldown timer completes after
+    // the state has already transitioned
+    let shouldSetFinalized = false;
+    try {
+      const machine = controls.getClassicBattleMachine?.();
+      if (machine && typeof machine.getState === 'function') {
+        const currentState = machine.getState();
+        shouldSetFinalized = 
+          currentState === 'cooldown' || 
+          currentState === 'roundStart';
+      }
+      // If we can't get the machine or state, don't set finalized (default false)
+    } catch {
+      // If error, don't set finalized
+    }
+    
+    if (shouldSetFinalized) {
+      setNextButtonFinalizedState();
+    }
   }
   if (shouldResolveReady) {
     controls.__finalizingReady = true;

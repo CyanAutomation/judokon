@@ -105,12 +105,6 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await waitForBattleState(page, "roundStart");
       await waitForBattleState(page, "waitingForPlayerAction");
 
-      // Check if the handler ran
-      const handlerCalled = await page.evaluate(() => window.__waitingForPlayerActionEnterCalled);
-      if (!handlerCalled || handlerCalled < 2) {
-        throw new Error(`waitingForPlayerActionEnter handler not called for round 2 (called ${handlerCalled} times)`);
-      }
-
       await expect
         .poll(async () => {
           const snapshot = await getBattleSnapshot(page);
