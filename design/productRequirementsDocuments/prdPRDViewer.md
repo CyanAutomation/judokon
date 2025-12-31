@@ -117,6 +117,9 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   back/forward buttons step through the same document order as the sidebar.
 - The viewer binds `popstate` events through `bindHistory`, ensuring sidebar selection and the main content stay in sync
   when users navigate via the browser chrome or external history controls.
+- After initial render, remaining PRDs are preloaded in the background to reduce navigation latency. Preloading is
+  skipped when the `enableTestMode` feature flag is enabled (per `src/helpers/prdReaderPage.js`) to keep automated runs
+  deterministic and prevent test flakiness.
 
 ---
 
