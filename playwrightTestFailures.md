@@ -129,6 +129,12 @@
 
 4.  playwright/battle-classic/opponent-reveal.spec.js:80:3 › Classic Battle Opponent Reveal › resets stat selection after advancing to the next round
 
+    **STATUS**: 🔍 INVESTIGATING - Potential application bug
+    
+    **ROOT CAUSE**: Test expects `selectionMade` to be reset to `false` when advancing to next round, but it remains `true`. The `waitingForPlayerActionEnter` handler should reset this flag (line 44 in stateHandlers/waitingForPlayerActionEnter.js), but it appears not to be called or the timing is off.
+    
+    **NEXT STEPS**: Need to verify if state handler is being invoked correctly, or if there's a race condition in the state transition. May be an actual bug in round advancement logic.
+
     Error: expect(received).toBe(expected) // Object.is equality
 
     Expected: true

@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState } from "../helpers/battleStateHelper.js";
+
 import selectors from "../helpers/selectors.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import {
