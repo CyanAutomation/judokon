@@ -3,11 +3,12 @@
 #
 # This workflow:
 #   - Runs Vitest unit test suite (deterministic CI mode)
-#   - Generates test coverage reports
 #   - Runs accessibility/contrast audit (pa11y)
 #   - Provides detailed test reports in GitHub Actions UI
 #   - Uploads test results as artifacts on failure
 #   - Fails if tests or accessibility checks fail
+#
+# Note: Comprehensive coverage reports run nightly via nightlyCoverage workflow
 #
 # Trigger Events:
 #   1. Push to main branch
@@ -22,6 +23,7 @@
 #   - npm cache for fast dependency installation
 #   - Vitest cache for faster subsequent runs
 #   - Concurrent test execution disabled in CI for determinism
+#   - Expected duration: ~15 minutes (50% faster without coverage)
 
 name: Run Unit Tests (Vitest)
 
@@ -87,28 +89,6 @@ jobs:
         run: npm run test:ci
         timeout-minutes: 15
 
-      - name: Generate test coverage
-        id: coverage
-        run: npm run test:cov
-        timeout-minutes: 15
-        continue-on-error: true
-
-      - name: Append coverage priorities summary
-        if: steps.coverage.outcome == 'success'
-        run: |
-          {
-            echo "### Coverage Priorities"
-            echo ""
-            if summary_output="$(node scripts/coveragePriorities.mjs --summary 2>/dev/null)"; then
-              printf '%s\n' "$summary_output"
-            elif [ -f docs/testing/coverage-priorities.md ]; then
-              cat docs/testing/coverage-priorities.md
-            else
-              echo "_Coverage priorities summary unavailable._"
-            fi
-            echo ""
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Run accessibility audit
         id: contrast
         run: npm run check:contrast
@@ -144,11 +124,7 @@ jobs:
               echo "⚠️ **JSDoc**: Some issues found (non-blocking)"
             fi
             echo ""
-            if [ "${{ steps.coverage.outcome }}" == "success" ]; then
-              echo "✅ **Coverage**: Report generated"
-            else
-              echo "ℹ️ **Coverage**: Report generation skipped or failed"
-            fi
+            echo "ℹ️ **Coverage**: Comprehensive coverage reports run nightly (see nightlyCoverage workflow)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload test results on failure
@@ -156,19 +132,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ github.run_id }}
-          path: |
-            coverage/
-            test-results/
+          path: test-results/
           retention-days: 7
-          if-no-files-found: ignore
-
-      - name: Upload coverage reports (on success)
-        if: steps.coverage.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report-${{ github.run_id }}
-          path: coverage/
-          retention-days: 14
           if-no-files-found: ignore
 
       - name: Print test environment info on failure

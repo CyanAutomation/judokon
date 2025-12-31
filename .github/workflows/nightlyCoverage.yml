@@ -1,0 +1,167 @@
+# Workflow Name: Nightly Coverage & Accessibility Report
+# Purpose: Generate comprehensive test coverage and accessibility reports nightly
+#
+# This workflow:
+#   - Runs Vitest unit tests with full coverage reporting
+#   - Generates coverage priorities analysis
+#   - Runs accessibility/contrast audit (pa11y)
+#   - Uploads coverage reports for trend analysis
+#   - Creates GitHub issue on threshold failures (optional)
+#
+# Trigger Events:
+#   1. Scheduled: Daily at 05:00 UTC (after other nightly workflows)
+#   2. Manual: workflow_dispatch for on-demand coverage runs
+#
+# Success Criteria:
+#   - All Vitest tests pass
+#   - Coverage meets thresholds (lines: 70%, branches: 65%, functions: 65%, statements: 70%)
+#   - All accessibility/contrast checks pass
+#
+# Performance:
+#   - Expected duration: 15-20 minutes
+#   - Coverage report generation adds ~5 minutes vs regular test run
+#   - Runs independently of PR/push workflows
+
+name: Nightly Coverage & Accessibility Report
+
+permissions:
+  contents: read
+  checks: write
+
+on:
+  schedule:
+    # Run daily at 05:00 UTC (after rag_validation and playwrightBaseline)
+    - cron: "0 5 * * *"
+  workflow_dispatch: # Allow manual triggering
+
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage-and-accessibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history needed for churn analysis in coveragePriorities.mjs
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Vitest cache and dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vitest
+            node_modules/.cache
+          key: ${{ runner.os }}-vitest-coverage-${{ hashFiles('**/package-lock.json', '**/vitest.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-vitest-coverage-
+            ${{ runner.os }}-vitest-
+            ${{ runner.os }}-
+
+      - name: Run tests with coverage
+        id: coverage
+        run: npm run test:cov
+        timeout-minutes: 20
+
+      - name: Generate coverage priorities analysis
+        id: priorities
+        run: |
+          {
+            echo "### Coverage Priorities Analysis"
+            echo ""
+            if summary_output="$(node scripts/coveragePriorities.mjs --summary 2>/dev/null)"; then
+              printf '%s\n' "$summary_output"
+            elif [ -f docs/testing/coverage-priorities.md ]; then
+              cat docs/testing/coverage-priorities.md
+            else
+              echo "_Coverage priorities summary unavailable._"
+            fi
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+        continue-on-error: true
+
+      - name: Run accessibility audit
+        id: contrast
+        run: npm run check:contrast
+        timeout-minutes: 10
+
+      - name: Generate report summary
+        if: always()
+        run: |
+          {
+            echo "### Nightly Coverage & Accessibility Report"
+            echo ""
+            echo "**Run Date**: $(date -u +"%Y-%m-%d %H:%M UTC")"
+            echo ""
+            if [ "${{ steps.coverage.outcome }}" == "success" ]; then
+              echo "✅ **Coverage**: All tests passed and thresholds met"
+            else
+              echo "❌ **Coverage**: Tests failed or thresholds not met"
+            fi
+            echo ""
+            if [ "${{ steps.contrast.outcome }}" == "success" ]; then
+              echo "✅ **Accessibility**: All checks passed"
+            else
+              echo "❌ **Accessibility**: Issues detected"
+            fi
+            echo ""
+            if [ "${{ steps.priorities.outcome }}" == "success" ]; then
+              echo "✅ **Priorities**: Analysis completed"
+            else
+              echo "⚠️ **Priorities**: Analysis unavailable"
+            fi
+            echo ""
+            echo "**Artifacts**: Coverage reports available for 30 days"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-nightly-${{ github.run_id }}
+          path: |
+            coverage/
+            docs/testing/coverage-priorities.md
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload accessibility reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report-nightly-${{ github.run_id }}
+          path: |
+            pa11y-results.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Print diagnostic info on failure
+        if: failure()
+        run: |
+          echo "=== Coverage Diagnostic Info ==="
+          echo "Node version:"
+          node --version
+          echo ""
+          echo "NPM version:"
+          npm --version
+          echo ""
+          echo "Coverage files:"
+          ls -lh coverage/ 2>/dev/null || echo "Coverage directory not found"
+          echo ""
+          echo "Coverage thresholds from vitest.config.js:"
+          grep -A 10 "thresholds:" vitest.config.js || echo "Thresholds not found"
+          echo ""
+          echo "Recent git history (for churn analysis):"
+          git log --oneline --since="90 days ago" | head -20 || echo "Git history unavailable"
