@@ -331,6 +331,7 @@ Ripple and focus feedback are handled through CSS-only `::after` pseudo-elements
 - **Judoka Portraits**: Cut-out style with clean edges, expressive poses
 - **Backgrounds**: Geometric patterns, linear gradients, avoid visual clutter
 - **Overlays**: Character layering over background panels with depth
+- **SVG Fallbacks**: Monitor SVG logo load errors and swap to the PNG fallback (`judokonLogoSmall.png`) when an SVG fails to render. Apply the `svg-fallback` class when the PNG is active and remove it once the SVG loads successfully. Implementation anchors: `src/helpers/svgFallback.js` and `src/helpers/setupSvgFallback.js` wire listeners on `DOMContentLoaded` and default to `judokonLogoSmall.png` as the fallback path.
 
 **Brand Assets:**
 
