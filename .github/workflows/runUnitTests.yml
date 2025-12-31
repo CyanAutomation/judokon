@@ -99,8 +99,8 @@ jobs:
           {
             echo "### Coverage Priorities"
             echo ""
-            if node scripts/coveragePriorities.mjs --summary 2>/dev/null; then
-              :
+            if summary_output="$(node scripts/coveragePriorities.mjs --summary 2>/dev/null)"; then
+              printf '%s\n' "$summary_output"
             elif [ -f docs/testing/coverage-priorities.md ]; then
               cat docs/testing/coverage-priorities.md
             else
