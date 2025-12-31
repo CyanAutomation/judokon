@@ -212,6 +212,114 @@ const result2 = await mcp.call("judokon.getById", {
 }
 ```
 
+#### 4. `judokon.random` — Select Random Judoka
+
+Selects a random judoka (or multiple) with optional filtering by country, rarity, or weight class.
+
+**Input Schema**:
+
+```json
+{
+  "count": "integer (1-50, default 1)", // Number of random judoka to select
+  "filters": {
+    "country": "string (optional)", // Filter by country
+    "rarity": "enum (Common|Epic|Legendary)",
+    "weightClass": "string (optional)" // e.g., '+100', '-60'
+  }
+}
+```
+
+**Examples**:
+
+```javascript
+// Select a single random judoka
+const result1 = await mcp.call("judokon.random", {});
+
+// Select 3 random legendary judoka from Japan
+const result2 = await mcp.call("judokon.random", {
+  count: 3,
+  filters: {
+    country: "Japan",
+    rarity: "Legendary"
+  }
+});
+```
+
+**Response Format**: (Same as `judokon.search` for each judoka in an array)
+
+```json
+{
+  "results": [
+    {
+      "id": 0,
+      "name": "Tatsuuma Ushiyama",
+      "country": "Vanuatu",
+      "countryCode": "vu",
+      "rarity": "Legendary",
+      "weightClass": "+100",
+      "stats": {
+        "power": 9,
+        "speed": 9,
+        "technique": 9,
+        "kumikata": 9,
+        "newaza": 9
+      },
+      "bio": "...",
+      "score": 0.95 // Score is not relevant for random, but kept for consistency
+    }
+  ],
+  "count": 1 // Number of random judoka returned
+}
+```
+
+#### 5. `judokon.compare` — Compare Judoka Stats
+
+Compares the stats between two specified judoka by their IDs.
+
+**Input Schema**:
+
+```json
+{
+  "judoka1_id": "string | number (required)", // ID of the first judoka
+  "judoka2_id": "string | number (required)" // ID of the second judoka
+}
+```
+
+**Examples**:
+
+```javascript
+// Compare judoka with ID 0 and ID 1
+const result = await mcp.call("judokon.compare", {
+  judoka1_id: 0,
+  judoka2_id: 1
+});
+```
+
+**Response Format**: (Detailed comparison of stats)
+
+```json
+{
+  "judoka1": {
+    "id": 0,
+    "name": "Tatsuuma Ushiyama",
+    "stats": { "power": 9, "speed": 9, "technique": 9, "kumikata": 9, "newaza": 9 }
+  },
+  "judoka2": {
+    "id": 1,
+    "name": "Rina Kobayashi",
+    "stats": { "power": 7, "speed": 8, "technique": 6, "kumikata": 7, "newaza": 8 }
+  },
+  "comparison": {
+    "power_diff": 2, // judoka1.power - judoka2.power
+    "speed_diff": 1,
+    "technique_diff": 3,
+    "kumikata_diff": 2,
+    "newaza_diff": 1,
+    "summary": "Tatsuuma Ushiyama has higher Power, Technique, Kumikata, and Newaza. Rina Kobayashi has higher Speed."
+  }
+}
+```
+
 ### Setup Instructions
 
 #### 1. Claude Desktop Integration
@@ -381,9 +489,7 @@ console.log(test); // Should return first judoka record
 
 Potential future tools that could be added:
 
-- **`judokon.random`** — Select random judoka with optional filters
 - **`judokon.resolveCode`** — Map card codes to judoka records
-- **`judokon.compare`** — Compare stats between two judoka
 - **`judokon.listCountries`** — Get list of countries in database
 - **`judokon.statsByRarity`** — Analyze stat distributions by rarity level
 
@@ -941,6 +1047,249 @@ grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found r
 
 ---
 
+## 🧬 Modern Test Harness Architecture (Vitest 3.2.4+)
+
+### Key Concepts
+
+The JU-DO-KON! project uses a modern test harness pattern that aligns with Vitest's module lifecycle. This pattern separates mock registration (top-level `vi.mock()`) from environment setup (`createSimpleHarness()`), enabling both unit and integration test patterns.
+
+Key Principle: Vitest requires `vi.mock()` calls at the top level of test files during static analysis. Late-stage mock registration (in hooks) no longer works reliably in Vitest 3.x.
+
+### Unit Test Pattern: Mock All Dependencies
+
+For isolated testing of functions, components, or utilities.
+
+```javascript
+// Step 1: Create shared mock references
+const { mockFetch } = vi.hoisted(() => ({
+  mockFetch: vi.fn()
+}));
+
+// Step 2: Register mocks at top level (MUST be top level)
+vi.mock("../../src/services/api.js", () => ({
+  fetchData: mockFetch
+}));
+
+// Step 3: Setup harness
+let harness;
+beforeEach(async () => {
+  mockFetch.mockReset().mockResolvedValue({ id: 1 });
+  harness = createSimpleHarness(); // No mocks parameter
+  await harness.setup();
+});
+
+// Step 4: Import modules AFTER setup()
+it("test", async () => {
+  const { processData } = await import("../../src/helpers/processData.js");
+  // Uses mocked dependencies
+});
+```
+
+**When to use**: Testing isolated utilities, error handling, specific branches.
+
+### Integration Test Pattern: Mock Only Externals
+
+For testing workflows with multiple internal modules interacting.
+
+```javascript
+// Only mock EXTERNAL dependencies (network, storage, browser APIs)
+vi.mock("../../src/services/battleApi.js", () => ({
+  fetchOpponent: vi.fn().mockResolvedValue({ id: 1 })
+}));
+
+// Internal modules are NOT mocked - they use real implementations
+
+let harness;
+beforeEach(async () => {
+  harness = createSimpleHarness({
+    fixtures: {
+      localStorage: createMockLocalStorage(),
+      fetch: createMockFetch()
+    },
+    useFakeTimers: true
+  });
+  await harness.setup();
+});
+
+it("test", async () => {
+  // Imports real battleFlow, battleEngine, helpers
+  // But external API calls and storage are mocked
+  const { initBattle } = await import("../../src/helpers/battleFlow.js");
+  const battle = await initBattle();
+  expect(battle).toBeDefined();
+});
+```
+
+**When to use**: Testing workflows, features, user interactions, state management.
+
+### `createSimpleHarness()` API
+
+```javascript
+const harness = createSimpleHarness({
+  useFakeTimers: true, // Enable fake timers (default: true)
+  useRafMock: true, // Mock requestAnimationFrame (default: true)
+  fixtures: {
+    // Inject test fixtures
+    localStorage: mockStorage,
+    fetch: mockFetch,
+    matchMedia: mockMediaQuery
+  },
+  setup: async () => {
+    // Custom setup function (optional)
+    // Additional setup
+  },
+  teardown: () => {
+    // Custom teardown function (optional)
+    // Additional cleanup
+  }
+});
+
+await harness.setup(); // Apply all configuration
+const module = await harness.importModule("path"); // Import with mocks applied
+harness.cleanup(); // Cleanup after test
+```
+
+### Fixture Factories
+
+**Available Fixtures** (in `tests/utils/testUtils.js`):
+
+- `createMockLocalStorage()` - In-memory storage with standard API
+- `createMockFetch(defaultResponses)` - Network request mocking with URL patterns
+- `createMockMatchMedia(initialMatches)` - CSS media query mocking
+
+**Example Usage**:
+
+```javascript
+const mockStorage = createMockLocalStorage();
+const mockFetch = createMockFetch({
+  "/api/opponent": { status: 200, data: { id: 1 } }
+});
+
+harness = createSimpleHarness({
+  fixtures: { localStorage: mockStorage, fetch: mockFetch }
+});
+```
+
+### Deprecated Pattern (DO NOT USE)
+
+❌ **Old (Deprecated - No Longer Works in Vitest 3.x)**:
+
+```javascript
+beforeEach(() => {
+  vi.doMock("../../src/helpers/myHelper", () => ({
+    helperFn: vi.fn()
+  }));
+  harness = createSettingsHarness({ mocks: { /* ... */ } });
+  await harness.setup();
+});
+```
+
+This pattern no longer works because:
+
+- `vi.doMock()` in hooks is too late in Vitest's module lifecycle
+- Modules are already loaded and cached
+- Mocks never get applied
+
+✅ **New (Current - Vitest 3.x Compatible)**:
+
+```javascript
+const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
+vi.mock("../../src/helpers/myHelper", () => ({ helperFn: mockFn }));
+
+beforeEach(async () => {
+  mockFn.mockReset();
+  harness = createSimpleHarness(); // No mocks parameter
+  await harness.setup();
+});
+```
+
+### Common Patterns
+
+**Per-Test Mock Configuration**:
+
+```javascript
+it("handles success", async () => {
+  mockFetch.mockResolvedValue({ status: 200 });
+  // test code
+});
+
+it("handles error", async () => {
+  mockFetch.mockRejectedValue(new Error("Network error"));
+  // test code
+});
+```
+
+**Module Caching**:
+
+```javascript
+// Module imported once in beforeEach (for integration tests)
+const module = await harness.importModule("../../src/helpers/myHelper.js");
+
+// Or import per-test (for unit tests with different mocks)
+it("test", async () => {
+  const { fn } = await import("../../src/helpers/fn.js");
+  // uses fresh mock state for this test
+});
+```
+
+### Timer Control
+
+```javascript
+it("test timer behavior", async () => {
+  harness = createSimpleHarness({ useFakeTimers: true });
+  await harness.setup();
+
+  // harness.timerControl provides access to timers
+  await harness.timerControl.advanceTimersByTime(5000);
+
+  // Verify behavior after time advancement
+});
+```
+
+### Reference Documentation
+
+- **Implementation**: `tests/helpers/integrationHarness.js`
+- **Test Examples**: `tests/examples/unit.test.js` (all mocks), `tests/examples/integration.test.js` (externals only)
+- **Guide**: `tests/examples/README.md`
+- **Fixtures Reference**: `tests/fixtures.reference.js`
+- **Real-World Examples**:
+  - `tests/helpers/settingsPage.test.js` (16 tests, 100% passing)
+  - `tests/helpers/integrationHarness.test.js` (28 tests, 100% passing)
+
+### Troubleshooting
+
+**Issue**: "Cannot find module" or mock not applying
+
+**Solution**:
+
+1. Ensure `vi.mock()` is at TOP LEVEL (not in functions/loops)
+2. Ensure module imports happen AFTER `harness.setup()`
+3. Use `vi.hoisted()` for shared mock references
+
+**Issue**: Different tests need different mock behaviors
+
+**Solution**: Use `vi.hoisted()` to create shared reference, configure per-test:
+
+```javascript
+const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
+
+it("test 1", async () => {
+  mockFn.mockReturnValue(valueA);
+  // test
+});
+
+it("test 2", async () => {
+  mockFn.mockReturnValue(valueB);
+  // test
+});
+```
+
+**Issue**: Fixtures not injected into code
+
+**Solution**: Import modules AFTER `harness.setup()`, or use `harness.importModule()`
+
+---
+
 ## 🎭 Playwright Test Quality Standards
 
 ### Core Anti-Patterns to Eliminate
@@ -1069,6 +1418,82 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 # Hint: check preload usage for optional modules
 rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional modules during idle"
 ```
+
+---
+
+## 🎯 Classic Battle Initialization
+
+### Phase Order (Critical for Agents)
+
+When modifying Classic Battle initialization (`src/pages/battleClassic.init.js`):
+
+**DO NOT** change the order of phase execution  
+**DO NOT** move `wireControlButtons` before `initializeMatchStart`  
+**DO NOT** move `wireExistingStatButtons` after `initializeMatchStart`
+
+### Why This Matters
+
+**Problem**: DOM elements replaced during initialization lose event handlers.
+
+**Solution**: Wire handlers AFTER all DOM manipulation is complete.
+
+**Historical Bug**: Quit button handler was lost because it was wired before Phase 5 (match start), then the button was replaced via `resetQuitButton()` during Phase 5, losing the handler.
+
+**Fix**: Move `wireControlButtons()` to run AFTER `initializeMatchStart()`.
+
+### Critical Timing Requirements
+
+```javascript
+// Phase 1-4: Utilities, UI, Engine, Event Handlers
+await initializePhase1_Utilities();
+await initializePhase2_UI();
+await initializePhase3_BattleEngine(store);
+await initializePhase4_EventHandlers(store);
+
+// ✅ Wire stat buttons BEFORE match start (needed for gameplay)
+wireExistingStatButtons(store);
+
+// Phase 5: Match Start (buttons get replaced here!)
+await initializeMatchStart(store);
+
+// ✅ Wire control buttons AFTER match start (prevents handler loss)
+wireControlButtons(store);
+```
+
+### Validation Command
+
+```bash
+# Verify initialization order is correct
+grep -A 20 "async function init()" src/pages/battleClassic.init.js | \
+  grep -E "wireControlButtons|wireExistingStatButtons|initializeMatchStart"
+
+# Expected output (in this order):
+# wireExistingStatButtons(store);  ← BEFORE match start
+# await initializeMatchStart(store);
+# wireControlButtons(store);       ← AFTER match start
+```
+
+### Button Replacement Behavior
+
+| Button | Replaced During Init? | Wire Timing |
+|--------|----------------------|-------------|
+| Quit | ✅ Yes (resetQuitButton) | After Phase 5 |
+| Next | ✅ Yes (resetNextButton) | After Phase 5 |
+| Replay | ❌ No | After Phase 5 |
+| Stat buttons | ❌ Not during init | Before Phase 5 (needed for gameplay) |
+
+### Testing
+
+```bash
+# Run timing assertion tests after init changes
+npx vitest run tests/classicBattle/quit-flow.test.js tests/classicBattle/element-identity.test.js
+```
+
+### Reference
+
+See [docs/initialization-sequence.md](docs/initialization-sequence.md) for detailed phase-by-phase breakdown and architectural diagrams.
+
+See [quitFlowIssue.md](quitFlowIssue.md) for the complete bug investigation and lessons learned.
 
 ---
 
