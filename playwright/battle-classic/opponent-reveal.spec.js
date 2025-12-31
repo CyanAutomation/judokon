@@ -105,15 +105,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await waitForBattleState(page, "roundStart");
       await waitForBattleState(page, "waitingForPlayerAction");
 
-      // Diagnostic: check if handler was called
-      const diagnostic = await page.evaluate(() => ({
-        handlerCallCount: window.__waitingForPlayerActionEnterCalled,
-        lastResetAt: window.__lastSelectionResetAt,
-        selectionFinalized: window.__classicBattleSelectionFinalized,
-        finalizeContext: window.__classicBattleLastFinalizeContext,
-        storeSelectionMade: window.battleStore?.selectionMade
-      }));
-      console.log('Diagnostic after waitingForPlayerAction:', JSON.stringify(diagnostic, null, 2));
+      // Check if the handler ran
+      const handlerCalled = await page.evaluate(() => window.__waitingForPlayerActionEnterCalled);
+      if (!handlerCalled || handlerCalled < 2) {
+        throw new Error(`waitingForPlayerActionEnter handler not called for round 2 (called ${handlerCalled} times)`);
+      }
 
       await expect
         .poll(async () => {

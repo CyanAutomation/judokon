@@ -2577,18 +2577,26 @@ const inspectionApi = {
 
       const selectionFromStore = extract("selectionMade", normalizeBoolean);
       const selectionFinalized = readSelectionFinalized();
-      console.error(`[DIAGNOSTIC getBattleSnapshot] selectionFromStore=${selectionFromStore}, selectionFinalized=${selectionFinalized}, store.__storeId=${store?.__storeId || 'no-id'}`);
+      
+      // Store diagnostic info for test debugging
+      try {
+        if (typeof window !== "undefined") {
+          window.__getBattleSnapshotLastCall = {
+            selectionFromStore,
+            selectionFinalized,
+            timestamp: Date.now()
+          };
+        }
+      } catch {}
+      
+      // Resolution logic: if BOTH are explicitly false, return false
+      // Otherwise, if EITHER is true, return true
       const resolvedSelection =
-        selectionFromStore === true || selectionFinalized
-          ? true
-          : selectionFromStore === false
-            ? selectionFinalized
-              ? true
-              : false
-            : selectionFinalized
-              ? true
-              : null;
-      console.error(`[DIAGNOSTIC getBattleSnapshot] resolvedSelection=${resolvedSelection}`);
+        selectionFromStore === false && selectionFinalized === false
+          ? false
+          : selectionFromStore === true || selectionFinalized
+            ? true
+            : null;
 
       // Read scores from the engine using the facade, not from the store
       let playerScore = null;

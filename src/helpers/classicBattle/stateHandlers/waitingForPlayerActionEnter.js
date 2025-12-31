@@ -46,7 +46,7 @@ export async function waitingForPlayerActionEnter(machine) {
       store.__lastSelectionMade = false;
       store.playerChoice = null;
       console.error(`[DIAGNOSTIC] AFTER reset: selectionMade = ${store.selectionMade}`);
-      console.error(`[DIAGNOSTIC] Store object ID: ${store.__storeId || 'no-id'}`);
+      console.error(`[DIAGNOSTIC] Store object ID: ${store.__storeId || "no-id"}`);
       logSelectionMutation("waitingForPlayerActionEnter.reset", store);
     } catch (err) {
       stateLogger.warn("Failed to reset selection flags on entry", {
@@ -66,7 +66,8 @@ export async function waitingForPlayerActionEnter(machine) {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = false;
       window.__classicBattleLastFinalizeContext = null;
-      window.__waitingForPlayerActionEnterCalled = (window.__waitingForPlayerActionEnterCalled || 0) + 1;
+      window.__waitingForPlayerActionEnterCalled =
+        (window.__waitingForPlayerActionEnterCalled || 0) + 1;
       window.__lastSelectionResetAt = Date.now();
     }
   } catch {
