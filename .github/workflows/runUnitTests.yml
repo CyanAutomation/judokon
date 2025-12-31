@@ -93,6 +93,22 @@ jobs:
         timeout-minutes: 15
         continue-on-error: true
 
+      - name: Append coverage priorities summary
+        if: steps.coverage.outcome == 'success'
+        run: |
+          {
+            echo "### Coverage Priorities"
+            echo ""
+            if node scripts/coveragePriorities.mjs --summary; then
+              true
+            elif [ -f docs/testing/coverage-priorities.md ]; then
+              cat docs/testing/coverage-priorities.md
+            else
+              echo "_Coverage priorities summary unavailable._"
+            fi
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Run accessibility audit
         id: contrast
         run: npm run check:contrast
