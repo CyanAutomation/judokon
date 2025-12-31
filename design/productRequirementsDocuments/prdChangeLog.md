@@ -47,6 +47,7 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 - The log displays exactly 20 entries from `judoka.json`, sorted by `lastUpdated` (descending), then `name` (ascending) if dates match
 - Each row includes: Judoka ID, Portrait (with alt text), Judoka Name, Card Code, Last Modified Date
+- Each Judoka name links to `judoka.profileUrl` (fallback: `updateJudoka.html`) and opens in a new tab with `rel="noopener noreferrer"`
 - Portraits use a fallback image if missing, with appropriate alt text
 - The log is accessible from the Settings menu and supports proper back navigation
 - Global header and footer are present and match the main game theme
@@ -80,7 +81,6 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ### Open Questions
 
-- Should the log include a link to full card details?
 - Should the log show more than 20 entries if requested?
 - Should we allow filtering or searching within the log?
 
@@ -115,6 +115,8 @@ Players and developers currently lack a simple, in-game method to see which Judo
   match. Slice the results to the most recent 20.
 - Build rows using DOM methods to avoid innerHTML injection. Each row includes
   Judoka ID, portrait (48×48 px), full name, card code, and formatted date.
+- Judoka names link to `judoka.profileUrl` (fallback: `updateJudoka.html`) and
+  open in a new tab with `rel="noopener noreferrer"`.
 - Portrait images use a fallback source (`judokaPortrait-0.png`) when loading
   fails, with alt text like "Portrait of Judoka Kano".
 - The page follows existing layout conventions: header, `.home-screen` wrapper
