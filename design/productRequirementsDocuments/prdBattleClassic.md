@@ -149,6 +149,8 @@ When headless mode is active, rounds resolve back-to-back, dramatically increasi
 | **P2**   | Next Button            | Skips cooldown/timer when pressed; otherwise auto-progress after timer ends.                     |
 | **P3**   | Debug/Testing Mode     | With `enableTestMode`, expose debug panel, seed injection, and state progress list.              |
 
+**Quit confirmation flow behavior:** The header logo/home link (`data-testid="home-link"`) is intercepted during Classic Battle to open the quit confirmation modal instead of navigating away immediately. Implementation anchors: `src/helpers/classicBattle/quitModal.js` (modal flow) and `src/helpers/setupClassicBattleHomeLink.js` (home navigation handling).
+
 User behavior linkage: when a player intentionally clicks a Next/Skip control during the cooldown countdown, the UI must stop the countdown snackbar and unlock stat buttons immediately to respect their choice to move on without waiting.
 
 ---
@@ -265,7 +267,7 @@ User behavior linkage: when a player intentionally clicks a Next/Skip control du
 - [ ] 5.0 Match End
   - [ ] 5.1 End game when player reaches target points or 25 rounds.
   - [ ] 5.2 Show modal with winner, score, “Play Again” / “Quit” options.
-  - [ ] 5.3 Implement quit confirmation flow (quit button + header logo).
+  - [x] 5.3 Implement quit confirmation flow (quit button + header logo/home link).
 
 - [ ] 6.0 Accessibility & UX
   - [ ] 6.1 Ensure color contrast ≥ 4.5:1.
