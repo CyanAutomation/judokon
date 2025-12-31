@@ -1,11 +1,26 @@
 # Playwright Test Failure Investigation Summary
 
-**Date of Report**: December 31, 2025
-**Application Version/Commit**: [e.g., v1.2.3 / abcdef1 - Add specific commit hash if known]
-**Playwright Version**: [e.g., 1.39.0 - Add specific version if known]
-**Tests Analyzed**: 17 failing tests in `playwright/battle-classic/`
-**Tests Fixed**: 3
-**Status**: In Progress
+**Date of Report**: December 31, 2025  
+**Investigation Status**: ⚠️ **INCOMPLETE** - Investigation appears abandoned or not finalized  
+**Application Version/Commit**: Not specified (requires update)  
+**Playwright Version**: @playwright/test v1.56.1 (verified from package.json)  
+**Tests Analyzed**: 17 failing tests in `playwright/battle-classic/`  
+**Tests Fixed**: 3 (documented)  
+**Tests Remaining**: 14 (status unknown)
+
+## ⚠️ Document Status Warning
+
+**Issues with this document:**
+1. **Incomplete Investigation**: Only 3 of 17 tests documented as fixed, status of remaining 14 tests unknown
+2. **Placeholder Content**: Multiple `[YYYY-MM-DD]` dates and `[Link to file on GitHub]` placeholders not filled in
+3. **Missing Context**: No commit hashes, no specific version numbers, no completion date
+4. **Unknown Current State**: Are the remaining tests still failing? Fixed? Deprioritized?
+
+**Recommendations:**
+- Update with actual dates and commit hashes
+- Complete investigation for remaining 14 tests OR mark as "investigation incomplete"
+- Add current test suite status (run `npx playwright test` to get current pass/fail rates)
+- Consider archiving if investigation is no longer active
 
 ## Tests Successfully Fixed
 
@@ -111,34 +126,51 @@
 
 ## Recommendations
 
-### Immediate Actions
-1. **Run full test suite** to identify if these are new regressions.
-2. **Check recent commits** affecting state machine or event handlers.
-3. **Verify event handler binding** - many failures suggest handlers not executing.
+### Immediate Actions (Required to Complete Investigation)
+1. **Document Current Status**: Run `npx playwright test playwright/battle-classic/` and record current pass/fail counts
+2. **Fill in Placeholders**: Replace all `[YYYY-MM-DD]` with actual dates, add commit hashes
+3. **Update Remaining Tests**: Document status of the 14 unresolved tests (fixed, still failing, or deprioritized)
+4. **Add Completion Date**: Mark investigation as "Completed on YYYY-MM-DD" or "Abandoned - see reason"
 
-### Investigation Needed
-1. **State Machine Audit**: Review transition logic between states, especially:
-   - `waitingForPlayerAction` entry/exit.
-   - `cooldown` handling.
-   - Round advancement flow.
-2. **Event Handler Verification**: Confirm these are firing:
-   - `statSelected` event → snackbar update.
-   - `roundStart` event → button enable.
-   - `roundResolved` event → state transitions.
-3. **Replay/Reset Logic**: Review:
-   - Button state reset after replay.
-   - Selection flag reset.
-   - Modal handling during replay.
+### Investigation Needed (If Continuing)
+1. **State Machine Audit**: Review transition logic between states:
+   - File: `src/pages/battleClassic.init.js` and state handlers
+   - Focus: `waitingForPlayerAction` entry/exit, `cooldown` handling, round advancement
+   - Tool: Add console logging to trace state transitions
 
-### Test Maintenance
-1. **Pattern**: Several tests had incorrect expectations based on outdated implementation.
-   - Check for `data-selected` vs `selected` class usage.
-   - Verify `aria-label` expectations match implementation.
-   - Update state transition expectations to match actual flow.
-2. **Timing**: Consider making tests more resilient:
-   - Accept multiple valid states where appropriate.
-   - Use longer timeouts for inherently slow operations.
-   - Add retry logic for flaky state checks.
+2. **Event Handler Verification**: Confirm event firing and handlers:
+   - Events: `statSelected`, `roundStart`, `roundResolved`
+   - Files: `src/helpers/classicBattle.js` and related event emitters
+   - Test: Add event listeners in browser console during test runs
+
+3. **Replay/Reset Logic**: Review reset mechanisms:
+   - File: `src/helpers/classicBattle.js` (replay functionality)
+   - Check: Button state reset, selection flag reset, modal handling
+   - Pattern: Compare working vs failing replay scenarios
+
+### Test Maintenance (Best Practices)
+1. **Update Test Expectations**:
+   - ✅ Fixed: `data-selected` attribute (doesn't exist) → use `selected` class
+   - ✅ Fixed: `aria-label` expectations now match implementation
+   - ⚠️ TODO: Verify all state transition expectations match current flow
+
+2. **Improve Test Resilience**:
+   ```javascript
+   // ❌ Brittle: Expects exact state
+   await waitForBattleState('cooldown');
+   
+   // ✅ Resilient: Accepts multiple valid states
+   await waitForBattleState(['cooldown', 'roundOver', 'waitingForPlayerAction']);
+   ```
+
+3. **Add Retry Logic for Known Flaky Patterns**:
+   ```javascript
+   // For state checks that may transition quickly
+   await expect(async () => {
+     const state = await getBattleState();
+     expect(['validState1', 'validState2']).toContain(state);
+   }).toPass({ intervals: [100, 200, 500], timeout: 3000 });
+   ```
 
 ## Files Modified
 
@@ -150,12 +182,26 @@
 
 ## Next Steps
 
-1.  Continue investigating remaining 14 failures.
-2.  Focus on Pattern 1 & 2 (state transitions and selection reset) as they affect multiple tests.
-3.  Consider if recent code changes introduced regressions.
-4.  May need to update test expectations to match current behavior.
-5.  Some tests may reveal real application bugs that need fixing.
+### To Complete This Investigation:
+1. **Run Current Test Suite**: `npx playwright test playwright/battle-classic/ --reporter=list` and record results
+2. **Document Each Remaining Test**: Add entries for all 14 unresolved tests with current status
+3. **Add Specific Dates**: Fill in all `[YYYY-MM-DD]` placeholders with actual investigation dates
+4. **Link to Commits/PRs**: Add git references for all fixes mentioned
+5. **Mark as Complete**: Add final status ("Investigation completed YYYY-MM-DD" or "Deprioritized - reason")
+
+### If Continuing Investigation:
+1. **Priority 1**: State transitions and selection reset (affects multiple tests - Pattern 1 & 2)
+2. **Priority 2**: Event handler issues (snackbar updates, button state changes)
+3. **Priority 3**: Replay/reset functionality (modal intercepts, button states)
+
+### Quick Wins:
+1. Run `git log --since="2025-12-01" --until="2025-12-31" -- src/helpers/classicBattle.js src/pages/battleClassic.init.js` to check for recent changes
+2. Add debug logging to state machine to trace transitions during test runs
+3. Compare test expectations against current implementation (some tests may have outdated assertions)
 
 ---
 
-**Note**: This investigation identified both test issues (wrong expectations) and potential application bugs (state machine, event handlers). Both categories need attention.
+**Note**: This investigation identified:
+- ✅ **3 Test Issues Fixed**: Wrong expectations (data attributes, state transitions)
+- ⚠️ **14 Tests Unresolved**: Status unknown - may be application bugs, test issues, or already fixed
+- 🔧 **Action Required**: Complete documentation or archive this investigation
