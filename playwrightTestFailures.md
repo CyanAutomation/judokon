@@ -1,14 +1,17 @@
 ## SUMMARY OF PROGRESS (Updated)
 
 **Tests Fixed (3/17):**
+
 1. ✅ keyboard-navigation.spec.js - Added missing data-testid attribute + fixed test logic
 2. ✅ opponent-message.spec.js "shows opponent feedback" - Fixed state waiting to accept multiple valid states
 3. ✅ opponent-message.spec.js "CLI resolveRound reveals" - Fixed aria-label expectations to match implementation
 
 **Tests Still Failing (14/17):**
+
 - Tests 4-17 have various issues related to state transitions, selection reset, and UI updates
 
 **Common Patterns Identified:**
+
 1. **State transition issues** - Tests expecting specific battle states that are being skipped or delayed
 2. **Selection reset issues** - `selectionMade` flag not being reset between rounds (Test #4)
 3. **Stat button enable/disable** - Buttons staying disabled when expected to be enabled (Tests #5, #6, #17)  
@@ -17,11 +20,13 @@
 6. **Opponent message display** - Multiple tests expecting "Opponent is choosing" message not appearing (Tests #10-14)
 
 **Key Findings:**
+
 - Some test expectations don't match actual implementation (aria-labels, data attributes)
 - Possible core issues with battle state machine transitions after recent changes
 - Several tests may need significant refactoring to match current application behavior
 
 **Recommendation:** Many failing tests suggest potential regressions in core battle logic. Should investigate:
+
 1. State machine transition reliability
 2. Event handler binding and execution  
 3. Round reset and replay functionality
@@ -33,16 +38,16 @@
 
 **Tests Fixed (3):**
 
-1.  playwright/battle-classic/keyboard-navigation.spec.js:28:3 › Classic Battle keyboard navigation › should select a stat with Enter and update the round message
+1. playwright/battle-classic/keyboard-navigation.spec.js:28:3 › Classic Battle keyboard navigation › should select a stat with Enter and update the round message
 
     **STATUS**: ✅ FIXED
-    
-    **ROOT CAUSE**: 
+
+    **ROOT CAUSE**:
     1. Test was trying to call `roundMessage.textContent()` but element wasn't being found
     2. The `#round-message` element was missing the `data-testid="round-message"` attribute
     3. The element starts empty by design (showSelectionPrompt() clears it)
-    
-    **SOLUTION**: 
+
+    **SOLUTION**:
     1. Added `data-testid="round-message"` to the element in battleClassic.html
     2. Changed test to verify element is attached, then verify it becomes non-empty after selection
     3. Test now passes (6.9s)
@@ -75,12 +80,12 @@
 
     Error Context: test-results/battle-classic-keyboard-na-b5e49-nd-update-the-round-message/error-context.md
 
-2.  playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › shows opponent feedback snackbar immediately after stat selection
+2. playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › shows opponent feedback snackbar immediately after stat selection
 
     **STATUS**: ✅ FIXED
-    
+
     **ROOT CAUSE**: Test was waiting specifically for "cooldown" state, but battle was transitioning directly to "roundOver" state, skipping cooldown. This happened when round resolution completed faster than expected.
-    
+
     **SOLUTION**: Changed waitForBattleState to wait for any of the valid post-selection states (cooldown, roundOver, or waitingForPlayerAction) instead of strictly requiring cooldown. Test now passes (8.7s).
 
     TimeoutError: page.waitForFunction: Timeout 5000ms exceeded.
@@ -112,12 +117,12 @@
 
     Error Context: test-results/battle-classic-opponent-me-79b16-iately-after-stat-selection/error-context.md
 
-3.  playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › CLI resolveRound reveals the opponent card
+3. playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › CLI resolveRound reveals the opponent card
 
     **STATUS**: ✅ FIXED
-    
+
     **ROOT CAUSE**: Test incorrectly expected `#opponent-card` container to have aria-label="Mystery opponent card". According to code (opponentPlaceholder.js:114), the container always keeps aria-label="Opponent card" for semantic consistency. The "Mystery opponent card" label is on the inner `#mystery-card-placeholder` element.
-    
+
     **SOLUTION**: Changed test to check for placeholder visibility and is-obscured class instead of checking aria-label. Test now passes (4.0s).
 
     Error: expect(locator).toHaveAttribute(expected) failed
@@ -162,12 +167,12 @@
 
     Error Context: test-results/battle-classic-opponent-me-9bd1c-d-reveals-the-opponent-card/error-context.md
 
-4.  playwright/battle-classic/opponent-reveal.spec.js:80:3 › Classic Battle Opponent Reveal › resets stat selection after advancing to the next round
+4. playwright/battle-classic/opponent-reveal.spec.js:80:3 › Classic Battle Opponent Reveal › resets stat selection after advancing to the next round
 
     **STATUS**: 🔍 INVESTIGATING - Potential application bug
-    
+
     **ROOT CAUSE**: Test expects `selectionMade` to be reset to `false` when advancing to next round, but it remains `true`. The `waitingForPlayerActionEnter` handler should reset this flag (line 44 in stateHandlers/waitingForPlayerActionEnter.js), but it appears not to be called or the timing is off.
-    
+
     **NEXT STEPS**: Need to verify if state handler is being invoked correctly, or if there's a race condition in the state transition. May be an actual bug in round advancement logic.
 
     Error: expect(received).toBe(expected) // Object.is equality
@@ -201,7 +206,7 @@
 
     Error Context: test-results/battle-classic-opponent-re-81658-advancing-to-the-next-round/error-context.md
 
-5.  playwright/battle-classic/replay-flaky-detector.spec.js:11:3 › Classic Battle — Replay flaky detector › replay loop maintains zeroed scoreboard
+5. playwright/battle-classic/replay-flaky-detector.spec.js:11:3 › Classic Battle — Replay flaky detector › replay loop maintains zeroed scoreboard
 
     Test timeout of 30000ms exceeded.
 
@@ -246,7 +251,7 @@
 
     Error Context: test-results/battle-classic-replay-flak-76347-maintains-zeroed-scoreboard/error-context.md
 
-6.  playwright/battle-classic/replay-round-counter.smoke.spec.js:12:3 › Classic Battle replay - round counter › [Spec: CLASSIC-REPLAY-ROUND-COUNTER-01] replay resets round counter to 1
+6. playwright/battle-classic/replay-round-counter.smoke.spec.js:12:3 › Classic Battle replay - round counter › [Spec: CLASSIC-REPLAY-ROUND-COUNTER-01] replay resets round counter to 1
 
     Test timeout of 30000ms exceeded.
 
@@ -303,7 +308,7 @@
 
     Error Context: test-results/battle-classic-replay-roun-b8be6-y-resets-round-counter-to-1/error-context.md
 
-7.  playwright/battle-classic/round-flow.spec.js:72:3 › Classic Battle Opponent Round Flow › resolves the round and updates score after opponent reveal
+7. playwright/battle-classic/round-flow.spec.js:72:3 › Classic Battle Opponent Round Flow › resolves the round and updates score after opponent reveal
 
     TimeoutError: page.waitForFunction: Timeout 2000ms exceeded.
 
@@ -333,7 +338,7 @@
 
     Error Context: test-results/battle-classic-round-flow--ea082-score-after-opponent-reveal/error-context.md
 
-8.  playwright/battle-classic/round-flow.spec.js:98:3 › Classic Battle Opponent Round Flow › advances to the next round after opponent reveal
+8. playwright/battle-classic/round-flow.spec.js:98:3 › Classic Battle Opponent Round Flow › advances to the next round after opponent reveal
 
     Error: Expected stat selection to reset for the next round
 
@@ -368,7 +373,7 @@
 
     Error Context: test-results/battle-classic-round-flow--782c9-round-after-opponent-reveal/error-context.md
 
-9.  playwright/battle-classic/round-flow.spec.js:199:3 › Classic Battle Opponent Round Flow › opponent reveal state is properly managed between rounds
+9. playwright/battle-classic/round-flow.spec.js:199:3 › Classic Battle Opponent Round Flow › opponent reveal state is properly managed between rounds
 
     Error: expect(locator).toContainText(expected) failed
 
@@ -603,12 +608,12 @@
 15. playwright/battle-classic/snackbar-console-diagnostic.spec.js:6:3 › Classic Battle snackbar selection feedback › shows snackbar after stat selection
 
     **STATUS**: 🔍 INVESTIGATING - Likely application bug
-    
-    **ROOT CAUSE**: 
+
+    **ROOT CAUSE**:
     1. Test originally expected non-existent `data-selected="true"` attribute (fixed to check `selected` class)
     2. Snackbar never updates after stat selection - stays stuck on "First to 3 points wins."
     3. Expected "You Picked:" message never appears, suggesting statSelected event not triggering snackbar update
-    
+
     **NEXT STEPS**: Investigate why stat selection doesn't trigger snackbar update. May be related to event handler binding or timing.
 
     Error: expect(locator).toHaveAttribute(expected) failed
