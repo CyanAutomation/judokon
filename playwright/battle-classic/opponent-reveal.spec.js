@@ -105,6 +105,16 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await waitForBattleState(page, "roundStart");
       await waitForBattleState(page, "waitingForPlayerAction");
 
+      // Diagnostic: check if handler was called
+      const diagnostic = await page.evaluate(() => ({
+        handlerCallCount: window.__waitingForPlayerActionEnterCalled,
+        lastResetAt: window.__lastSelectionResetAt,
+        selectionFinalized: window.__classicBattleSelectionFinalized,
+        finalizeContext: window.__classicBattleLastFinalizeContext,
+        storeSelectionMade: window.battleStore?.selectionMade
+      }));
+      console.log('Diagnostic after waitingForPlayerAction:', JSON.stringify(diagnostic, null, 2));
+
       await expect
         .poll(async () => {
           const snapshot = await getBattleSnapshot(page);

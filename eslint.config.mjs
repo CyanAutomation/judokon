@@ -64,12 +64,6 @@ export default defineConfig([
       "no-empty": ["error", { allowEmptyCatch: false }]
     }
   },
-  {
-    files: [".github/workflows/nightlyCoverage.yml"],
-    rules: {
-      "yml/no-empty-mapping-value": "off"
-    }
-  },
   // YAML support (GitHub Actions, config files)
   // Use plugin-provided flat configs for sensible defaults
   ymlPlugin.configs["flat/standard"],

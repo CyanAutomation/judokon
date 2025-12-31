@@ -66,6 +66,8 @@ export async function waitingForPlayerActionEnter(machine) {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = false;
       window.__classicBattleLastFinalizeContext = null;
+      window.__waitingForPlayerActionEnterCalled = (window.__waitingForPlayerActionEnterCalled || 0) + 1;
+      window.__lastSelectionResetAt = Date.now();
     }
   } catch {
     // Intentionally ignore window global availability errors
