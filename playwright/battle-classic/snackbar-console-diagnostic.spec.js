@@ -9,7 +9,7 @@ test.describe("Classic Battle snackbar selection feedback", () => {
     const statButtons = page.locator(selectors.statButton());
     await expect(statButtons.first()).toBeVisible();
     await statButtons.first().click();
-    await expect(statButtons.first()).toHaveAttribute("data-selected", "true");
+    await expect(statButtons.first()).toHaveClass(/selected/);
 
     const snackbar = page.locator(selectors.snackbarContainer());
     await expect(snackbar).toBeVisible();

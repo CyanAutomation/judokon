@@ -1,3 +1,33 @@
+## SUMMARY OF PROGRESS
+
+**Tests Fixed (3/17):**
+1. ✅ keyboard-navigation.spec.js - Added missing data-testid attribute
+2. ✅ opponent-message.spec.js "shows opponent feedback" - Fixed state waiting logic  
+3. ✅ opponent-message.spec.js "CLI resolveRound reveals" - Fixed aria-label expectations
+
+**Tests Under Investigation (14/17):**
+- Multiple tests failing with stat buttons remaining disabled
+- Multiple tests expecting state transitions that aren't occurring
+- Replay tests timing out
+
+**Common Patterns Identified:**
+1. **State transition issues** - Tests expecting specific battle states that are being skipped or delayed
+2. **Selection reset issues** - `selectionMade` flag not being reset between rounds
+3. **Stat button enable/disable** - Buttons staying disabled when they should be enabled
+4. **Timing/race conditions** - Tests timing out waiting for UI updates
+
+**Recommended Next Steps:**
+1. Investigate core state machine transition logic
+2. Check if there's a systematic issue with stat button enable/disable logic
+3. Verify round reset and replay functionality
+4. May need to review test expectations vs actual application behavior
+
+---
+
+## DETAILED TEST FAILURES
+
+**Tests Fixed (3):**
+
 1.  playwright/battle-classic/keyboard-navigation.spec.js:28:3 › Classic Battle keyboard navigation › should select a stat with Enter and update the round message
 
     **STATUS**: ✅ FIXED
