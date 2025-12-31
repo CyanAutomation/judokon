@@ -44,7 +44,12 @@ const loadCoverage = () => {
     process.exit(1);
   }
 
-  return JSON.parse(fs.readFileSync(COVERAGE_PATH, "utf8"));
+  try {
+    return JSON.parse(fs.readFileSync(COVERAGE_PATH, "utf8"));
+  } catch (error) {
+    console.error(`Failed to parse coverage file: ${error.message}`);
+    process.exit(1);
+  }
 };
 
 const getCoverageEntries = (coverageData) =>
