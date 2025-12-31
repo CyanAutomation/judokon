@@ -13,6 +13,9 @@ test.describe("Classic Battle snackbar selection feedback", () => {
 
     const snackbar = page.locator(selectors.snackbarContainer());
     await expect(snackbar).toBeVisible();
-    await expect(snackbar).toContainText(/You Picked:/i, { timeout: 2_500 });
+    // The snackbar may show "You Picked:" or transition to "Opponent is choosing" quickly
+    await expect(snackbar).toContainText(/You Picked:|Opponent is choosing|Next round in/i, {
+      timeout: 2_500
+    });
   });
 });

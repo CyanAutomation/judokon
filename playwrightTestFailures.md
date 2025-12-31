@@ -1,26 +1,31 @@
-## SUMMARY OF PROGRESS
+## SUMMARY OF PROGRESS (Updated)
 
 **Tests Fixed (3/17):**
-1. ✅ keyboard-navigation.spec.js - Added missing data-testid attribute
-2. ✅ opponent-message.spec.js "shows opponent feedback" - Fixed state waiting logic  
-3. ✅ opponent-message.spec.js "CLI resolveRound reveals" - Fixed aria-label expectations
+1. ✅ keyboard-navigation.spec.js - Added missing data-testid attribute + fixed test logic
+2. ✅ opponent-message.spec.js "shows opponent feedback" - Fixed state waiting to accept multiple valid states
+3. ✅ opponent-message.spec.js "CLI resolveRound reveals" - Fixed aria-label expectations to match implementation
 
-**Tests Under Investigation (14/17):**
-- Multiple tests failing with stat buttons remaining disabled
-- Multiple tests expecting state transitions that aren't occurring
-- Replay tests timing out
+**Tests Still Failing (14/17):**
+- Tests 4-17 have various issues related to state transitions, selection reset, and UI updates
 
 **Common Patterns Identified:**
 1. **State transition issues** - Tests expecting specific battle states that are being skipped or delayed
-2. **Selection reset issues** - `selectionMade` flag not being reset between rounds
-3. **Stat button enable/disable** - Buttons staying disabled when they should be enabled
-4. **Timing/race conditions** - Tests timing out waiting for UI updates
+2. **Selection reset issues** - `selectionMade` flag not being reset between rounds (Test #4)
+3. **Stat button enable/disable** - Buttons staying disabled when expected to be enabled (Tests #5, #6, #17)  
+4. **Snackbar update failures** - Snackbar not updating after stat selection (Test #15)
+5. **Timing/race conditions** - Multiple tests timing out waiting for UI updates
+6. **Opponent message display** - Multiple tests expecting "Opponent is choosing" message not appearing (Tests #10-14)
 
-**Recommended Next Steps:**
-1. Investigate core state machine transition logic
-2. Check if there's a systematic issue with stat button enable/disable logic
-3. Verify round reset and replay functionality
-4. May need to review test expectations vs actual application behavior
+**Key Findings:**
+- Some test expectations don't match actual implementation (aria-labels, data attributes)
+- Possible core issues with battle state machine transitions after recent changes
+- Several tests may need significant refactoring to match current application behavior
+
+**Recommendation:** Many failing tests suggest potential regressions in core battle logic. Should investigate:
+1. State machine transition reliability
+2. Event handler binding and execution  
+3. Round reset and replay functionality
+4. Snackbar message timing and transitions
 
 ---
 
@@ -596,6 +601,15 @@
     Error Context: test-results/battle-classic-round-flow--20d10-imer-when-next-round-starts/error-context.md
 
 15. playwright/battle-classic/snackbar-console-diagnostic.spec.js:6:3 › Classic Battle snackbar selection feedback › shows snackbar after stat selection
+
+    **STATUS**: 🔍 INVESTIGATING - Likely application bug
+    
+    **ROOT CAUSE**: 
+    1. Test originally expected non-existent `data-selected="true"` attribute (fixed to check `selected` class)
+    2. Snackbar never updates after stat selection - stays stuck on "First to 3 points wins."
+    3. Expected "You Picked:" message never appears, suggesting statSelected event not triggering snackbar update
+    
+    **NEXT STEPS**: Investigate why stat selection doesn't trigger snackbar update. May be related to event handler binding or timing.
 
     Error: expect(locator).toHaveAttribute(expected) failed
 
