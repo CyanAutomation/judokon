@@ -79,6 +79,12 @@
 
 3.  playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › CLI resolveRound reveals the opponent card
 
+    **STATUS**: ✅ FIXED
+    
+    **ROOT CAUSE**: Test incorrectly expected `#opponent-card` container to have aria-label="Mystery opponent card". According to code (opponentPlaceholder.js:114), the container always keeps aria-label="Opponent card" for semantic consistency. The "Mystery opponent card" label is on the inner `#mystery-card-placeholder` element.
+    
+    **SOLUTION**: Changed test to check for placeholder visibility and is-obscured class instead of checking aria-label. Test now passes (4.0s).
+
     Error: expect(locator).toHaveAttribute(expected) failed
 
     Locator: locator('#opponent-card')
