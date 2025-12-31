@@ -117,6 +117,17 @@ Feature flags are handled by `src/helpers/featureFlags.js`:
 - Changing the display mode in the settings menu must update the dataset value
   instantly and persist via the settings cache.
 
+#### Display Settings Bootstrap
+
+Pages include `src/helpers/setupDisplaySettings.js` to apply `displayMode`,
+`motionEffects`, and feature-flagged debug overlays once the DOM is ready.
+The helper triggers the core effects (`applyDisplayMode`,
+`applyMotionPreference`, `toggleLayoutDebugPanel`,
+`toggleTooltipOverlayDebug`) so the UI matches stored settings immediately on
+load. Representative pages that load this script include
+`src/pages/battleClassic.html`, `src/pages/randomJudoka.html`, and
+`src/pages/vectorSearch.html`.
+
 On load, the Settings page must pre-populate each control with values from
 `settings.json` so players immediately see their saved preferences.
 
