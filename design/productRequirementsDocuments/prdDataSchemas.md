@@ -155,6 +155,35 @@ Below is the canonical JSON Schema for the judoka list. The root is an array of 
 
 Place this file at `src/schemas/judoka.schema.json` (canonical source). Design discussions can stage drafts under `design/dataSchemas/`, but the build and validation tooling loads schemas exclusively from `src/schemas/`.
 
+## Canonical `settings` schema
+
+The runtime settings payload is a single object with a strict set of required fields and optional configuration maps. Unknown keys are rejected (`additionalProperties: false`).
+
+**Required fields**
+
+- `sound` (boolean): Enable or disable game sound effects.
+- `motionEffects` (boolean): Enable animated motion effects.
+- `typewriterEffect` (boolean): Animate meditation quotes with a typewriter effect.
+- `tooltips` (boolean): Globally enable or disable UI tooltips.
+- `showCardOfTheDay` (boolean): Display the Card of the Day on the landing screen.
+- `displayMode` (string): Visual display mode. Valid values are `light` and `dark`, plus legacy values that normalize to `dark` at runtime:
+  - `retro` (deprecated legacy value)
+  - `high-contrast` (deprecated legacy value)
+- `fullNavigationMap` (boolean): Enable the full navigation map overlay.
+
+**Optional sections (implemented in the schema)**
+
+- `aiDifficulty` (string enum): `easy`, `medium`, or `hard`.
+- `tooltipIds` (object map): Keys map to tooltip IDs (string values).
+- `gameModes` (object map): Keys map to boolean enable/disable flags.
+- `featureFlags` (object map): Keys map to feature flag objects with this shape:
+  - `enabled` (boolean, required)
+  - `tooltipId` (string, optional)
+  - `hidden` (boolean, optional)
+  - `additionalProperties: false` on each flag entry
+
+**Schema source**: `src/schemas/settings.schema.json`
+
 P1 - Validation Utilities: Provide validator utilities or schema references for runtime validation in dev/test.
 
 Acceptance Criteria:
