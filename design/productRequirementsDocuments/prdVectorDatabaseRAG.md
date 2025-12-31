@@ -241,6 +241,31 @@ const matches = await queryRag("How does the battle engine work?");
 client embedding store and returns scored results that agents can feed directly into prompts, code comments, or task contracts.
 See [High-Success Query Patterns](#high-success-query-patterns) for prompt patterns and tag combinations.
 
+### Query Behavior Options (queryRag.js)
+
+The `src/helpers/queryRag.js` helper includes opt-in behaviors to make agent usage more reliable and transparent.
+
+**Multi-intent query splitting**
+
+- Simple conjunctions in a query are split into sub-queries (for example, `"navigation bar button transition duration styling"` may expand into multiple intents).
+- Each sub-query is embedded, searched, and then merged; the combined list is re-ranked using the main query vector to keep overall intent aligned.
+- Expected output stays the same shape (scored match list), but coverage improves for compound questions. The helper annotates diagnostics when this behavior is applied.
+
+**Diagnostics (withDiagnostics)**
+
+- Pass `{ withDiagnostics: true }` to receive an additional `diagnostics` payload alongside results.
+- Diagnostics include:
+  - `expandedQuery`: the final query string after expansion/splitting.
+  - `multiIntentApplied`: boolean indicating whether sub-query splitting ran.
+  - `timingMs`: total helper execution time in milliseconds.
+- Use this when tuning prompt patterns or confirming why a query returned unexpected results.
+
+**Lexical fallback (allowLexicalFallback / RAG_ALLOW_LEXICAL_FALLBACK=1)**
+
+- Set `allowLexicalFallback: true` or environment variable `RAG_ALLOW_LEXICAL_FALLBACK=1` to enable sparse-term scoring when the embedding model fails to load.
+- The fallback ranks results using lexical term overlap, with bonuses for exact matches and tagged metadata to reduce relevance drop-offs.
+- Behavior change: the helper returns the same result shape, but scores are lexical rather than embedding-based, and diagnostics will show the fallback path when enabled.
+
 ### Command Line Interface
 
 - **Query from the terminal**
