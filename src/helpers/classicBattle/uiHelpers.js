@@ -452,6 +452,23 @@ function applyButtonFinalizedState(btn) {
 }
 
 /**
+ * Apply finalized state to Next button without updating round diagnostics.
+ * Used for early finalization in cooldown state.
+ * @returns {void}
+ */
+export function applyNextButtonFinalizedState() {
+  if (typeof document === "undefined") return;
+
+  const primary = document.getElementById("next-button");
+  const fallback = document.querySelector('[data-role="next-round"]');
+  
+  applyButtonFinalizedState(primary || fallback);
+  if (fallback && fallback !== primary) {
+    applyButtonFinalizedState(fallback);
+  }
+}
+
+/**
  * Mark the Next button as finalized and keep readiness diagnostics in sync.
  *
  * @returns {void}

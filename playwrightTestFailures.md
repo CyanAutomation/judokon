@@ -9,76 +9,13 @@ This document logs significant Playwright test failures, their root causes, and 
 
 ---
 
-## ⚠️ DOCUMENT STATUS: CONTENT DEPRECATED
+## ⚠️ Current Status
 
-**Critical Issue**: The original content in this file described **Python-based Playwright tests** (with references to `.py` files, `playwright_controller.py`, `WebSurfer`, pytest patterns, Python async/await) which are **NOT applicable** to this JavaScript/Node.js project.
-
-**Actual Project Context:**
-- **Language**: JavaScript/Node.js (NOT Python)
-- **Test Framework**: @playwright/test v1.56.1 (NOT pytest-playwright)
-- **Test Location**: `playwright/` directory (`.spec.js` files, NOT `.py` files)
-- **Unit Test Framework**: Vitest v3.2.4
-- **Key Test Suites**: 
-  - `playwright/battle-classic/` - Classic battle mode E2E tests (30+ test files)
-  - `playwright/battle-cli-*.spec.js` - CLI battle mode tests
-  - Various feature-specific tests: `homepage.spec.js`, `settings.spec.js`, `tooltip.spec.js`, etc.
-
-**For Current Test Issues**, refer to:
-- [TEST_INVESTIGATION_SUMMARY.md](./TEST_INVESTIGATION_SUMMARY.md) - Recent battle-classic test investigation
-- GitHub Actions workflows - Live E2E test reports (`.github/workflows/`)
-- [playwright/README.md](./playwright/README.md) - Playwright test suite documentation
-- Individual test files for specific failure contexts and inline comments
-
----
-
-## Legacy Content Removed
-
-The original Python-based entries (covering CLI commands, WebSurfer, playwright_controller.py, etc.) have been removed as they reference a completely different technology stack.
-
-If you need to reference the old content, it's available in git history:
-```bash
-git log --all --full-history -- playwrightTestFailures.md
-```
-
----
-
-## Template for Future JavaScript Test Failures
-
-When documenting new Playwright test failures in this JavaScript project, use this template:
-
-### Failure: [Test Name] - [Brief Description]
-
-**Test File**: `playwright/path/to/test.spec.js`  
-**Date Identified**: YYYY-MM-DD  
-**Date Resolved**: YYYY-MM-DD (or "Ongoing")  
-**Status**: 🔴 Unresolved | 🟡 In Progress | 🟢 Resolved
-
-**Problem:**
-Clear description of the test failure, including:
-- Error messages and stack traces
-- Symptoms observed during test execution
-- Frequency (intermittent vs consistent)
-- Affected test scenarios
-
-**Root Cause:**
-Identified root cause with specific code references:
-- File: `src/path/to/file.js` (line numbers)
-- Component/function involved
-- Why the failure occurs
-
-**Resolution/Workaround:**
-Steps taken to resolve:
-```javascript
-// Example code fix
-await page.locator('#element').waitFor({ state: 'visible' });
-await page.locator('#element').click();
-```
-
-**Relevant Files/PRs:**
-- Source file: `src/file.js`
-- Test file: `playwright/test.spec.js`
-- PR: #123 (if applicable)
-- Commit: abc123def
+**Active Issues:**
+- cooldown.spec.js (2 tests) - Next button finalization timing with autoContinue
+  
+**Recently Resolved:**
+- opponent-reveal.spec.js - Selection flag race condition (December 31, 2025)
 
 ---
 
@@ -109,22 +46,19 @@ Execution timeline:
 4. Result: Flag was `true` when it should have been `false`
 
 **Resolution:**
-Added state machine guard in `finalizeReadyControls` (line 967-986) to only set finalization flag when appropriate:
+Added state machine guard in `finalizeReadyControls` (line 969-997) to only set finalization flag when appropriate:
 
 ```javascript
-let shouldSetFinalized = false;
+let shouldSetFinalized = true;
 try {
   const machine = controls.getClassicBattleMachine?.();
   if (machine && typeof machine.getState === 'function') {
     const currentState = machine.getState();
-    // Only set finalized when in cooldown or roundStart
-    shouldSetFinalized = 
-      currentState === 'cooldown' || 
-      currentState === 'roundStart';
+    // Only skip if we're already in waitingForPlayerAction (selection phase)
+    shouldSetFinalized = currentState !== 'waitingForPlayerAction';
   }
-  // Default false if machine unavailable (defensive)
 } catch {
-  // Default false on error (defensive)
+  // If error, still set finalized (defensive - prefer setting it)
 }
 
 if (shouldSetFinalized) {
@@ -132,10 +66,11 @@ if (shouldSetFinalized) {
 }
 ```
 
-Also improved `getBattleSnapshot` resolution logic in `src/helpers/testApi.js` (lines 2594-2599) to properly handle when BOTH selection flags are `false`.
+Also added `getClassicBattleMachine` to controls object in `cooldownOrchestrator.js` (line 876-880) so the guard can access the machine state.
 
 **Relevant Files/PRs:**
 - Source file: `src/helpers/classicBattle/roundManager.js` (finalizeReadyControls function)
+- Source file: `src/helpers/classicBattle/cooldownOrchestrator.js` (instantiateCooldownTimer)
 - Source file: `src/helpers/testApi.js` (getBattleSnapshot resolution logic)
 - Test file: `playwright/battle-classic/opponent-reveal.spec.js`
 - Commit: December 31, 2025 fix
@@ -145,6 +80,55 @@ Also improved `getBattleSnapshot` resolution logic in `src/helpers/testApi.js` (
 - Race conditions can occur when state transitions complete before async operations finish
 - Defensive programming: default to NOT modifying global state when uncertain
 - Stack trace analysis with timestamps is invaluable for debugging race conditions
+
+---
+
+## Active Failures
+
+### Failure: cooldown.spec.js - Test expectations with deterministic cooldown
+
+**Test File**: `playwright/battle-classic/cooldown.spec.js`  
+**Tests**: 2 tests failing (different assertions than initial button finalization issue)  
+**Date Identified**: December 31, 2025  
+**Status**: 🟡 Partially Resolved
+
+**Problem:**
+Tests "Next becomes ready after resolution and advances on click" and "recovers round counter state after external DOM interference" originally failed waiting for Next button to have `data-next-finalized="true"`.
+
+**Resolution:**
+Added early button finalization in `cooldownEnter` handler (line 164-171 in `stateHandlers/cooldownEnter.js`) using new `applyNextButtonFinalizedState()` function that sets button attributes without updating round diagnostics.
+
+```javascript
+guard(() => {
+  applyNextButtonFinalizedState();
+  debugLog("cooldownEnter: finalized Next button state (early)");
+});
+```
+
+Also created `applyNextButtonFinalizedState()` in `uiHelpers.js` (line 455-468) that sets button attributes without side effects.
+
+**Current Status:**
+- ✅ Next button finalization issue RESOLVED - tests now pass the `waitForNextButtonReady` step
+- ❌ Test #1 fails on `lastContext` assertion (expects "advance" in array, gets null)
+- ❌ Test #2 fails on `highestGlobal` assertion (expects >= 2, gets 0)
+
+**Analysis:**
+These remaining failures appear to be test-specific expectations about diagnostic state that may be incompatible with the combination of:
+- `cooldownMs: 0` (instant cooldown)
+- `autoContinue: true` (default, auto-progresses rounds)
+- Early button finalization (needed for race condition fix)
+
+The tests may need modification to:
+1. Disable autoContinue, OR
+2. Use longer cooldown duration, OR  
+3. Adjust diagnostic expectations for fast-transition scenarios
+
+**Relevant Files:**
+- Source: `src/helpers/classicBattle/stateHandlers/cooldownEnter.js` (early finalization)
+- Source: `src/helpers/classicBattle/uiHelpers.js` (new applyNextButtonFinalizedState function)
+- Test: `playwright/battle-classic/cooldown.spec.js`
+
+**Note**: The opponent-reveal race condition fix remains intact and that test continues to pass.
 
 ---
 

@@ -875,7 +875,7 @@ export function instantiateCooldownTimer(
   renderer(timer, cooldownSeconds, rendererOptions);
   controls.timer = timer;
   // Add getClassicBattleMachine to controls so finalizeReadyControls can access it
-  if (typeof expirationOptions.getClassicBattleMachine === 'function') {
+  if (typeof expirationOptions.getClassicBattleMachine === "function") {
     controls.getClassicBattleMachine = expirationOptions.getClassicBattleMachine;
   }
   const runtime = {

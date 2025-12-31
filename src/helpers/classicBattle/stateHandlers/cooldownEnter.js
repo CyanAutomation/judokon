@@ -5,6 +5,7 @@ import { debugLog } from "../debugLog.js";
 import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
+import { applyNextButtonFinalizedState } from "../uiHelpers.js";
 
 /**
  * State name constant for cooldown phase.
@@ -161,6 +162,15 @@ export async function cooldownEnter(machine, payload) {
     await initStartCooldown(machine);
     return;
   }
+
+  // Finalize Next button state early in cooldown phase
+  // This must happen before any async operations that might cause state transitions
+  // to ensure tests with fast transitions (cooldownMs: 0) can observe the finalized state
+  // Use the lightweight version that doesn't update round diagnostics
+  guard(() => {
+    applyNextButtonFinalizedState();
+    debugLog("cooldownEnter: finalized Next button state (early)");
+  });
 
   const { store, scheduler } = machine.context || {};
 
