@@ -301,7 +301,7 @@ The Aesop's Fables metadata payload is an array of fable metadata objects keyed 
 - `tags` (string array): Tag list for filtering and labeling.
 - `readingTime` (string): Human-readable reading duration.
 - `moral` (string): Moral summary of the fable.
-- `haiku` (string): Optional haiku-style summary.
+- `haiku` (string, optional): Haiku-style summary.
 
 **Implementation references:**
 
