@@ -167,6 +167,47 @@ The original report mentioned `clearRoundCounter` being missing from a mock. Thi
 
 ## 7. Future Improvements
 
+### Implementation Status (Updated: December 31, 2025)
+
+#### ✅ Improvement #2: Add Timing Assertions - **COMPLETED**
+
+**Status**: Fully implemented
+
+**Completed Tasks**:
+1. ✅ Enhanced `tests/classicBattle/quit-flow.test.js` with element identity assertions
+   - Verifies quit button IS replaced during initialization (expected behavior)
+   - Confirms handler is attached to final instance AFTER replacement
+   - Test passes with timing assertions validating the fix
+
+2. ✅ Created comprehensive `tests/classicBattle/element-identity.test.js` test suite
+   - Tests control button replacement behavior (quit, next, replay)
+   - Verifies handlers are attached to final button instances
+   - Documents stat button event delegation pattern
+   - Tests score display container identity preservation
+   - Validates handler functionality (not just marker presence)
+   - All 4 tests passing ✅
+
+**Value Delivered**:
+- Regression prevention: Tests will catch if initialization order changes
+- Documentation: Tests serve as living documentation of timing requirements
+- Confidence: Validates the fix continues working correctly
+
+#### ⏳ Improvement #3: Improve Documentation - **NEXT**
+- Create `docs/initialization-sequence.md`
+- Update `AGENTS.md` with initialization guidance
+
+#### ⏳ Improvement #1: Refactor Initialization - **DEFERRED (Optional)**
+- Low priority given current fix works
+- May add DOM replacement markers if team sees value
+
+#### ❌ Improvement #4: Event Delegation - **DEFERRED (Not Recommended)**
+- High effort, marginal benefit
+- Current direct attachment pattern works well
+
+---
+
+### Original Future Improvements List
+
 Consider the following enhancements to prevent similar issues:
 
 1. **Refactor Initialization**: Make DOM replacement more explicit and controlled
