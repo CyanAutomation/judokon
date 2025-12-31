@@ -36,9 +36,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Prepare local RAG model
-        run: npm run rag:prepare:models
-
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:

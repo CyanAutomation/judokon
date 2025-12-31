@@ -966,22 +966,34 @@ function finalizeReadyControls(controls, dispatched, options = {}) {
   if (dispatched || forceResolve) {
     controls.readyDispatched = true;
     
-    // Only set finalized state if we're in cooldown or roundStart
-    // Don't set it if we've already advanced to waitingForPlayerAction or beyond
-    // This prevents a race condition where the cooldown timer completes after
-    // the state has already transitioned
-    let shouldSetFinalized = false;
+    // Only skip setting finalized state if we're already in waitingForPlayerAction
+    // In all other states (including cooldown, roundStart, roundOver), we should set it
+    // This handles the case where cooldown expires and we need to finalize the Next button
+    let shouldSetFinalized = true;  // Default to setting it
+    let debugInfo = { hasMachine: false, state: 'unknown' };
     try {
       const machine = controls.getClassicBattleMachine?.();
+      debugInfo.hasMachine = !!machine;
       if (machine && typeof machine.getState === 'function') {
         const currentState = machine.getState();
-        shouldSetFinalized = 
-          currentState === 'cooldown' || 
-          currentState === 'roundStart';
+        debugInfo.state = currentState;
+        // Only skip if we're already in waitingForPlayerAction (selection phase)
+        shouldSetFinalized = currentState !== 'waitingForPlayerAction';
       }
-      // If we can't get the machine or state, don't set finalized (default false)
-    } catch {
-      // If error, don't set finalized
+      // If we can't get the machine or state, set finalized (default true)
+    } catch (err) {
+      debugInfo.error = err.message;
+      // If error, still set finalized (defensive - prefer setting it)
+    }
+    
+    // Debug logging
+    if (typeof console !== 'undefined' && typeof process !== 'undefined' && process.env?.VITEST) {
+      console.log('[finalizeReadyControls]', { 
+        shouldSetFinalized, 
+        dispatched, 
+        forceResolve: options.forceResolve,
+        ...debugInfo 
+      });
     }
     
     if (shouldSetFinalized) {
