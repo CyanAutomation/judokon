@@ -2577,6 +2577,7 @@ const inspectionApi = {
 
       const selectionFromStore = extract("selectionMade", normalizeBoolean);
       const selectionFinalized = readSelectionFinalized();
+      console.error(`[DIAGNOSTIC getBattleSnapshot] selectionFromStore=${selectionFromStore}, selectionFinalized=${selectionFinalized}, store.__storeId=${store?.__storeId || 'no-id'}`);
       const resolvedSelection =
         selectionFromStore === true || selectionFinalized
           ? true
@@ -2587,6 +2588,7 @@ const inspectionApi = {
             : selectionFinalized
               ? true
               : null;
+      console.error(`[DIAGNOSTIC getBattleSnapshot] resolvedSelection=${resolvedSelection}`);
 
       // Read scores from the engine using the facade, not from the store
       let playerScore = null;

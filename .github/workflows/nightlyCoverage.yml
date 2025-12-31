@@ -65,10 +65,10 @@ jobs:
             node_modules/.vitest
             node_modules/.cache
           key: ${{ runner.os }}-vitest-coverage-${{ hashFiles('**/package-lock.json', '**/vitest.config.js') }}
-          restore-keys: |
-            ${{ runner.os }}-vitest-coverage-
-            ${{ runner.os }}-vitest-
-            ${{ runner.os }}-
+          restore-keys:
+            - ${{ runner.os }}-vitest-coverage-
+            - ${{ runner.os }}-vitest-
+            - ${{ runner.os }}-
 
       - name: Run tests with coverage
         id: coverage
