@@ -39,29 +39,117 @@ Acceptance Criteria:
 
 ## Canonical `judoka` schema (example)
 
-Below is a minimal JSON Schema for the `judoka` object. This is a canonical example that must be reviewed and extended by the data owner.
+Below is the canonical JSON Schema for the judoka list. The root is an array of judoka objects (not a single object), and `id` is an integer.
 
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.local/schemas/judoka.schema.json",
-  "title": "Judoka",
-  "type": "object",
-  "required": ["id", "name", "stats"],
-  "properties": {
-    "id": { "type": "string", "description": "Stable unique id for the judoka" },
-    "name": { "type": "string" },
-    "country": { "type": "string" },
-    "avatarUrl": { "type": "string", "format": "uri" },
-    "stats": {
-      "type": "object",
-      "description": "Map of stat keys to numeric values",
-      "additionalProperties": { "type": "number" }
+  "$id": "https://judokon.dev/schemas/judoka.schema.json",
+  "title": "Judoka List",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for the judoka."
+      },
+      "firstname": {
+        "type": "string",
+        "description": "First name of the judoka."
+      },
+      "surname": {
+        "type": "string",
+        "description": "Surname of the judoka."
+      },
+      "country": {
+        "type": "string",
+        "description": "Country of the judoka."
+      },
+      "countryCode": {
+        "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
+        "description": "ISO 3166-1 alpha-2 country code."
+      },
+      "weightClass": {
+        "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/WeightClass",
+        "description": "Weight class of the judoka."
+      },
+      "stats": {
+        "allOf": [
+          { "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats" }
+        ],
+        "description": "Performance stats of the judoka."
+      },
+      "signatureMoveId": {
+        "type": "integer",
+        "description": "ID of the judoka's signature move."
+      },
+      "lastUpdated": {
+        "type": "string",
+        "format": "date-time",
+        "description": "Timestamp of the last update."
+      },
+      "profileUrl": {
+        "type": "string",
+        "format": "uri",
+        "description": "URL to the judoka's profile."
+      },
+      "bio": {
+        "type": "string",
+        "description": "Biography of the judoka."
+      },
+      "gender": {
+        "type": "string",
+        "enum": ["male", "female"],
+        "description": "Gender of the judoka."
+      },
+      "isHidden": {
+        "type": "boolean",
+        "description": "Visibility status of the judoka."
+      },
+      "rarity": {
+        "type": "string",
+        "enum": ["Common", "Epic", "Legendary"],
+        "description": "Rarity level of the judoka."
+      },
+      "cardCode": {
+        "type": "string",
+        "description": "Unique card code for the judoka."
+      },
+      "matchesWon": {
+        "type": "integer",
+        "description": "Number of matches won by the judoka."
+      },
+      "matchesLost": {
+        "type": "integer",
+        "description": "Number of matches lost by the judoka."
+      },
+      "matchesDrawn": {
+        "type": "integer",
+        "description": "Number of matches drawn by the judoka."
+      }
     },
-    "tags": { "type": "array", "items": { "type": "string" } },
-    "releaseVersion": { "type": "string" }
-  },
-  "additionalProperties": false
+    "required": [
+      "id",
+      "firstname",
+      "surname",
+      "country",
+      "countryCode",
+      "weightClass",
+      "stats",
+      "signatureMoveId",
+      "lastUpdated",
+      "profileUrl",
+      "bio",
+      "gender",
+      "isHidden",
+      "rarity",
+      "cardCode",
+      "matchesWon",
+      "matchesLost",
+      "matchesDrawn"
+    ]
+  }
 }
 ```
 
@@ -84,15 +172,15 @@ import judokaSchema from "../../src/schemas/judoka.schema.json";
 const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(judokaSchema);
 
-function validateJudoka(payload) {
+function validateJudokaList(payload) {
   const ok = validate(payload);
-  if (!ok) throw new Error("Invalid judoka payload: " + ajv.errorsText(validate.errors));
+  if (!ok) throw new Error("Invalid judoka list payload: " + ajv.errorsText(validate.errors));
 }
 ```
 
 Acceptance Criteria (validator):
 
-- A repository example exists showing how to validate a `judoka` payload using AJV or equivalent.
+- A repository example exists showing how to validate a `judoka` list payload using AJV or equivalent.
 - CI job (or local script) can run a schema validation step against sample data and fail when validation errors exist.
 
 ## Schema Validation Workflow
