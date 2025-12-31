@@ -1421,6 +1421,82 @@ rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional mod
 
 ---
 
+## 🎯 Classic Battle Initialization
+
+### Phase Order (Critical for Agents)
+
+When modifying Classic Battle initialization (`src/pages/battleClassic.init.js`):
+
+**DO NOT** change the order of phase execution  
+**DO NOT** move `wireControlButtons` before `initializeMatchStart`  
+**DO NOT** move `wireExistingStatButtons` after `initializeMatchStart`
+
+### Why This Matters
+
+**Problem**: DOM elements replaced during initialization lose event handlers.
+
+**Solution**: Wire handlers AFTER all DOM manipulation is complete.
+
+**Historical Bug**: Quit button handler was lost because it was wired before Phase 5 (match start), then the button was replaced via `resetQuitButton()` during Phase 5, losing the handler.
+
+**Fix**: Move `wireControlButtons()` to run AFTER `initializeMatchStart()`.
+
+### Critical Timing Requirements
+
+```javascript
+// Phase 1-4: Utilities, UI, Engine, Event Handlers
+await initializePhase1_Utilities();
+await initializePhase2_UI();
+await initializePhase3_BattleEngine(store);
+await initializePhase4_EventHandlers(store);
+
+// ✅ Wire stat buttons BEFORE match start (needed for gameplay)
+wireExistingStatButtons(store);
+
+// Phase 5: Match Start (buttons get replaced here!)
+await initializeMatchStart(store);
+
+// ✅ Wire control buttons AFTER match start (prevents handler loss)
+wireControlButtons(store);
+```
+
+### Validation Command
+
+```bash
+# Verify initialization order is correct
+grep -A 20 "async function init()" src/pages/battleClassic.init.js | \
+  grep -E "wireControlButtons|wireExistingStatButtons|initializeMatchStart"
+
+# Expected output (in this order):
+# wireExistingStatButtons(store);  ← BEFORE match start
+# await initializeMatchStart(store);
+# wireControlButtons(store);       ← AFTER match start
+```
+
+### Button Replacement Behavior
+
+| Button | Replaced During Init? | Wire Timing |
+|--------|----------------------|-------------|
+| Quit | ✅ Yes (resetQuitButton) | After Phase 5 |
+| Next | ✅ Yes (resetNextButton) | After Phase 5 |
+| Replay | ❌ No | After Phase 5 |
+| Stat buttons | ❌ Not during init | Before Phase 5 (needed for gameplay) |
+
+### Testing
+
+```bash
+# Run timing assertion tests after init changes
+npx vitest run tests/classicBattle/quit-flow.test.js tests/classicBattle/element-identity.test.js
+```
+
+### Reference
+
+See [docs/initialization-sequence.md](docs/initialization-sequence.md) for detailed phase-by-phase breakdown and architectural diagrams.
+
+See [quitFlowIssue.md](quitFlowIssue.md) for the complete bug investigation and lessons learned.
+
+---
+
 ## 🚨 Sentry Error Tracking
 
 ### When to Use Sentry Instrumentation

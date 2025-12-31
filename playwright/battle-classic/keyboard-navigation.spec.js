@@ -36,11 +36,11 @@ test.describe("Classic Battle keyboard navigation", () => {
     await expect(focusedStatButton).toHaveCount(1);
     await expect(statButtons.first()).toBeFocused();
 
-    const initialMessage = (await roundMessage.textContent()) ?? "";
+    await expect(roundMessage).toBeAttached();
 
     await page.keyboard.press("Enter");
 
     await expect(statButtons.first()).toBeDisabled();
-    await expect(roundMessage).not.toHaveText(initialMessage, { timeout: 5000 });
+    await expect(roundMessage).not.toBeEmpty({ timeout: 5000 });
   });
 });
