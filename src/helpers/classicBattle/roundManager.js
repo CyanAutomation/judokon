@@ -114,7 +114,6 @@ async function getLazyUpdateDebugPanel() {
  */
 export function createBattleStore() {
   return {
-    __storeId: `store-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     selectionMade: false,
     roundReadyForInput: false,
     stallTimeoutMs: 35000,

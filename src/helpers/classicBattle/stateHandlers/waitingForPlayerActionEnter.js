@@ -41,20 +41,15 @@ export async function waitingForPlayerActionEnter(machine) {
 
   if (store) {
     try {
-      console.error(`[DIAGNOSTIC] BEFORE reset: selectionMade = ${store.selectionMade}`);
       store.selectionMade = false;
       store.__lastSelectionMade = false;
       store.playerChoice = null;
-      console.error(`[DIAGNOSTIC] AFTER reset: selectionMade = ${store.selectionMade}`);
-      console.error(`[DIAGNOSTIC] Store object ID: ${store.__storeId || "no-id"}`);
       logSelectionMutation("waitingForPlayerActionEnter.reset", store);
     } catch (err) {
       stateLogger.warn("Failed to reset selection flags on entry", {
         error: err?.message
       });
     }
-  } else {
-    console.error("[DIAGNOSTIC] No store available to reset selection flags");
   }
 
   logSelectionMutation("waitingForPlayerActionEnter.enter", store, {
@@ -66,10 +61,6 @@ export async function waitingForPlayerActionEnter(machine) {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = false;
       window.__classicBattleLastFinalizeContext = null;
-      window.__waitingForPlayerActionEnterCalled =
-        (window.__waitingForPlayerActionEnterCalled || 0) + 1;
-      window.__lastSelectionResetAt = Date.now();
-      window.__resetFinalizedTraceStack = new Error().stack?.split('\n').slice(0, 5).join(' | ') || 'no-stack';
     }
   } catch {
     // Intentionally ignore window global availability errors

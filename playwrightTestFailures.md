@@ -82,6 +82,72 @@ await page.locator('#element').click();
 
 ---
 
+## Resolved Failures
+
+### Failure: opponent-reveal.spec.js - Selection flag race condition
+
+**Test File**: `playwright/battle-classic/opponent-reveal.spec.js:80`  
+**Date Identified**: December 31, 2025  
+**Date Resolved**: December 31, 2025  
+**Status**: 🟢 Resolved
+
+**Problem:**
+Test "resets stat selection after advancing to the next round" was consistently failing with timeout. The test expected `selectionMade` to be `false` after advancing to round 2, but it remained `true` even though the state handler correctly reset the flag.
+
+Error: `expect(received).toBe(expected) // Object.is equality`
+- Expected: `true`
+- Received: `false`
+- Timeout: 5000ms exceeded while waiting for `selectionMade === false`
+
+**Root Cause:**
+Race condition in `src/helpers/classicBattle/roundManager.js`. The async cooldown expiration handler (`handleNextRoundExpiration`) was calling `finalizeReadyControls` → `setNextButtonFinalizedState()` AFTER the state machine had already transitioned from `cooldown` → `roundStart` → `waitingForPlayerAction`. 
+
+Execution timeline:
+1. `waitingForPlayerActionEnter` correctly reset `window.__classicBattleSelectionFinalized = false`
+2. Async `handleNextRoundExpiration` (still running) called `finalizeReadyControls`
+3. `setNextButtonFinalizedState()` set the flag back to `true` without checking current state
+4. Result: Flag was `true` when it should have been `false`
+
+**Resolution:**
+Added state machine guard in `finalizeReadyControls` (line 967-986) to only set finalization flag when appropriate:
+
+```javascript
+let shouldSetFinalized = false;
+try {
+  const machine = controls.getClassicBattleMachine?.();
+  if (machine && typeof machine.getState === 'function') {
+    const currentState = machine.getState();
+    // Only set finalized when in cooldown or roundStart
+    shouldSetFinalized = 
+      currentState === 'cooldown' || 
+      currentState === 'roundStart';
+  }
+  // Default false if machine unavailable (defensive)
+} catch {
+  // Default false on error (defensive)
+}
+
+if (shouldSetFinalized) {
+  setNextButtonFinalizedState();
+}
+```
+
+Also improved `getBattleSnapshot` resolution logic in `src/helpers/testApi.js` (lines 2594-2599) to properly handle when BOTH selection flags are `false`.
+
+**Relevant Files/PRs:**
+- Source file: `src/helpers/classicBattle/roundManager.js` (finalizeReadyControls function)
+- Source file: `src/helpers/testApi.js` (getBattleSnapshot resolution logic)
+- Test file: `playwright/battle-classic/opponent-reveal.spec.js`
+- Commit: December 31, 2025 fix
+
+**Lessons Learned:**
+- Async handlers that interact with state machines need state guards
+- Race conditions can occur when state transitions complete before async operations finish
+- Defensive programming: default to NOT modifying global state when uncertain
+- Stack trace analysis with timestamps is invaluable for debugging race conditions
+
+---
+
 ## Known Patterns & Best Practices
 
 ### Pattern: State Machine Timing Issues

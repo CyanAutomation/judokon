@@ -473,7 +473,6 @@ export function setNextButtonFinalizedState() {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = true;
       window.__classicBattleLastFinalizeContext = "advance";
-      window.__setFinalizedTraceStack = new Error().stack?.split('\n').slice(0, 5).join(' | ') || 'no-stack';
       updateHighestDisplayedRoundDiagnostic(visibleRound);
     }
   } catch {}

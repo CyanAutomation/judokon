@@ -2578,17 +2578,6 @@ const inspectionApi = {
       const selectionFromStore = extract("selectionMade", normalizeBoolean);
       const selectionFinalized = readSelectionFinalized();
 
-      // Store diagnostic info for test debugging
-      try {
-        if (typeof window !== "undefined") {
-          window.__getBattleSnapshotLastCall = {
-            selectionFromStore,
-            selectionFinalized,
-            timestamp: Date.now()
-          };
-        }
-      } catch {}
-
       // Resolution logic: if BOTH are explicitly false, return false
       // Otherwise, if EITHER is true, return true
       const resolvedSelection =
