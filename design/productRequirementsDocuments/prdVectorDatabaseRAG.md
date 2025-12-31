@@ -163,6 +163,7 @@ Each stored entry also includes a sparse term-frequency vector. Search requests 
 - Paths in the Source column break onto new lines at each `/` so long file names remain legible.
 - Long match snippets are truncated after roughly 200 characters with a
   native `<details>/<summary>` disclosure that reveals the full text within the table row. (**Note:** The disclosure is styled to match the table and should remain fully keyboard accessible.)
+- Search terms are highlighted in result snippets using `<mark>` styling to make query matches stand out.
 - Embeddings load automatically when the page initializes so the first search runs immediately.
 - Matches scoring at least `0.6` are considered strong. When the top match is
   more than `0.4` higher than the next best score, only that top result is
@@ -193,11 +194,13 @@ The Vector Search demo is implemented in [`src/pages/vectorSearch.html`](../../s
 ### Results Table and Row Behavior
 
 - Results render into the table `#vector-results-table`, with columns in this order: **Match**, **Source**, **Tags**, **Score**.
-- Each row is focusable and supports click, **Enter**, or **Space** to load additional context into the `.result-context` element within the row.
+- Each row uses the `.search-result-item` class and is focusable, supporting click, **Enter**, or **Space** to load additional context into the `.result-context` element within the row.
+- The top match row is additionally labeled with `.top-match` for emphasis.
 - When a row is activated, `.result-context` is updated with:
   - **Loading state:** `Loading context...`
   - **Fallbacks:** `No additional context found.` when the context fetch returns empty, or
     `Context could not be loaded.` on errors.
+  - **Score tiers:** `.score-high` for scores ≥ `0.8`, `.score-mid` for scores ≥ `0.6`, otherwise `.score-low` for styling hooks.
 
 ### Score Column Sorting
 
