@@ -93,9 +93,7 @@ describe("check-jsdoc", () => {
       const lines = content.split("\n");
       const symbol = { name: "myFunction", line: 7, type: "function" };
       const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(
-        "Missing @pseudocode tag. All functions require a @pseudocode section."
-      );
+      expect(valid).toBe("Missing @pseudocode tag. All functions require a @pseudocode section.");
     });
   });
 });
