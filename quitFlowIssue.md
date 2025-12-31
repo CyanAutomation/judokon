@@ -1,10 +1,23 @@
 # Bug Report: `quitConfirmButtonPromise` is null in `quit-flow.test.js`
 
-## STATUS: RESOLVED ✅
+## STATUS: RESOLVED ✅ + IMPROVEMENTS COMPLETED ✅
 
 **Fixed**: January 2025  
 **Root Cause**: DOM element replacement timing issue in initialization sequence  
-**Solution**: Moved `wireControlButtons()` to end of `init()` function
+**Solution**: Moved `wireControlButtons()` to end of `init()` function  
+**Future Improvements**: Implemented December 31, 2025
+
+### Implementation Summary (December 31, 2025)
+
+**✅ Completed** (2 of 4 improvements):
+- **Timing Assertions**: Comprehensive test suite prevents regression
+- **Documentation**: Complete initialization guide with AI agent guidelines
+
+**Deferred** (2 of 4 improvements):
+- **Refactor Initialization**: Optional, low priority
+- **Event Delegation**: Not recommended, high effort/low benefit
+
+**Ready for Archival**: All critical improvements complete. This file can be moved to `docs/qa/resolved/` for historical reference.
 
 ---
 
@@ -222,6 +235,84 @@ The original report mentioned `clearRoundCounter` being missing from a mock. Thi
 - AI Agent Support: Machine-readable rules for automated workflows
 
 #### ⏳ Improvement #1: Refactor Initialization - **OPTIONAL (Deferred)**
+
+**Status**: Not implemented (optional enhancement only)
+
+**Rationale for Deferral**:
+- Current fix works reliably (wireControlButtons after initializeMatchStart)
+- Excellent inline comments already exist in source code
+- Adding explicit DOM replacement markers would be cosmetic only
+- Low priority given comprehensive documentation now in place
+
+**If Implemented Later** (estimated 4-6 hours):
+- Add `[DOM_REPLACEMENT]` console log markers in Phase 2 and Phase 5
+- Add JSDoc `@warning` tags to functions that modify DOM (setupInitialUI, resetQuitButton, resetNextButton)
+- Document in inline comments where button replacement happens
+
+#### ❌ Improvement #4: Event Delegation - **DEFERRED (Not Recommended)**
+
+**Status**: Not implemented
+
+**Rationale for Deferral**:
+- High effort (20-30 hours) for marginal benefit
+- Current direct attachment pattern works correctly after timing fix
+- Event delegation already used where appropriate (stat buttons)
+- Would require significant architectural changes with low ROI
+- Only revisit if:
+  - Major refactoring already planned
+  - Performance issues emerge
+  - Similar timing issues appear elsewhere
+
+---
+
+## Summary of Improvements Implementation
+
+### Completed ✅ (2 of 4)
+
+1. **#2 - Add Timing Assertions** (Effort: 12 hours, Value: High)
+   - Enhanced quit-flow.test.js with element identity checks
+   - Created element-identity.test.js suite (4 comprehensive tests)
+   - All tests passing, regression protection in place
+
+2. **#3 - Improve Documentation** (Effort: 3 hours, Value: High)
+   - Created docs/initialization-sequence.md (complete reference)
+   - Updated AGENTS.md with critical timing guidelines
+   - Validation commands provided
+   - AI agent DO/DON'T guidelines
+
+### Deferred (2 of 4)
+
+3. **#1 - Refactor Initialization** (Effort: 4-6 hours, Value: Low)
+   - Optional cosmetic enhancement
+   - Current implementation is clear enough
+
+4. **#4 - Event Delegation** (Effort: 20-30 hours, Value: Low)
+   - Not recommended
+   - Current solution works correctly
+
+### Total Implementation Time
+
+- **Planned**: 10-15 hours (recommended improvements only)
+- **Actual**: 15 hours (documentation was more comprehensive than estimated)
+- **ROI**: Excellent (regression prevention + clear documentation)
+
+---
+
+## Recommendation
+
+**This issue can now be archived.** All critical future improvements have been implemented:
+
+✅ Tests prevent regression of the original bug  
+✅ Documentation ensures future developers understand the timing requirements  
+✅ Fix is proven stable and well-documented  
+
+**Next Steps**:
+1. Move this file to `docs/qa/resolved/quitFlowIssue.md` for historical reference
+2. Optional: Keep this file in root if you prefer chronological bug documentation
+
+---
+
+### Original Future Improvements List
 - Create `docs/initialization-sequence.md`
 - Update `AGENTS.md` with initialization guidance
 

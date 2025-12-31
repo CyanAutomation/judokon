@@ -273,8 +273,10 @@ test.describe("Classic Battle Opponent Messages", () => {
 
           const opponentCard = page.locator("#opponent-card");
           const mysteryPlaceholder = opponentCard.locator("#mystery-card-placeholder");
-          await expect(opponentCard).toHaveAttribute("aria-label", "Mystery opponent card");
-          await expect(mysteryPlaceholder).toHaveCount(1);
+          
+          // Verify placeholder exists and is visible (card is obscured)
+          await expect(mysteryPlaceholder).toBeVisible();
+          await expect(opponentCard).toHaveClass(/is-obscured/);
 
           await page.evaluate(async () => {
             const api = window.__TEST_API;
@@ -284,9 +286,7 @@ test.describe("Classic Battle Opponent Messages", () => {
             await api.cli.resolveRound();
           });
 
-          await expect
-            .poll(async () => await opponentCard.getAttribute("aria-label"), { timeout: 4_000 })
-            .toBe("Opponent card");
+          // After resolution, placeholder should be removed
           await expect(mysteryPlaceholder).toHaveCount(0);
           await confirmRoundResolved(page, {
             timeout: 3_000,

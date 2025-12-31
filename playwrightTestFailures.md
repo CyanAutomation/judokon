@@ -42,6 +42,12 @@
 
 2.  playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › shows opponent feedback snackbar immediately after stat selection
 
+    **STATUS**: ✅ FIXED
+    
+    **ROOT CAUSE**: Test was waiting specifically for "cooldown" state, but battle was transitioning directly to "roundOver" state, skipping cooldown. This happened when round resolution completed faster than expected.
+    
+    **SOLUTION**: Changed waitForBattleState to wait for any of the valid post-selection states (cooldown, roundOver, or waitingForPlayerAction) instead of strictly requiring cooldown. Test now passes (8.7s).
+
     TimeoutError: page.waitForFunction: Timeout 5000ms exceeded.
 
     at helpers/battleStateHelper.js:394
