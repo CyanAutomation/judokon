@@ -58,6 +58,15 @@ const getCoverageEntries = (coverageData) =>
         return null;
       }
 
+      if (
+        !data.s || typeof data.s !== "object" ||
+        !data.f || typeof data.f !== "object" ||
+        !data.b || typeof data.b !== "object"
+      ) {
+        console.warn(`Missing coverage buckets for ${filePath}, skipping`);
+        return null;
+      }
+
       const relativePath = toRelativePath(filePath);
       const statements = getCoverageTotals(data.s);
       const functions = getCoverageTotals(data.f);
