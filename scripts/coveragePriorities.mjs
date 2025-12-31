@@ -61,9 +61,9 @@ const getCoverageEntries = (coverageData) =>
       }
 
       if (
-        typeof data.s !== "object" ||
-        typeof data.f !== "object" ||
-        typeof data.b !== "object"
+        !data.s || typeof data.s !== "object" ||
+        !data.f || typeof data.f !== "object" ||
+        !data.b || typeof data.b !== "object"
       ) {
         console.warn(`Missing coverage buckets for ${filePath}, skipping`);
         return null;
