@@ -455,6 +455,11 @@ function applyButtonFinalizedState(btn) {
  * Apply finalized state to Next button without updating round diagnostics.
  * Used for early finalization in cooldown state.
  * @returns {void}
+ * @pseudocode
+ * 1. Exit early when running outside the browser.
+ * 2. Find the primary and fallback Next button elements.
+ * 3. Apply the finalized button state to the primary element.
+ * 4. Apply the finalized button state to the fallback element when it differs.
  */
 export function applyNextButtonFinalizedState() {
   if (typeof document === "undefined") return;
