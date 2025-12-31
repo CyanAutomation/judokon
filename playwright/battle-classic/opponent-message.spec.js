@@ -273,7 +273,7 @@ test.describe("Classic Battle Opponent Messages", () => {
 
           const opponentCard = page.locator("#opponent-card");
           const mysteryPlaceholder = opponentCard.locator("#mystery-card-placeholder");
-          
+
           // Verify placeholder exists and is visible (card is obscured)
           await expect(mysteryPlaceholder).toBeVisible();
           await expect(opponentCard).toHaveClass(/is-obscured/);
