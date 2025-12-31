@@ -55,6 +55,11 @@ const loadCoverage = () => {
 const getCoverageEntries = (coverageData) =>
   Object.entries(coverageData)
     .map(([filePath, data]) => {
+      if (!data || typeof data !== 'object') {
+        console.warn(`Invalid coverage data for ${filePath}, skipping`);
+        return null;
+      }
+      
       const relativePath = toRelativePath(filePath);
       const statements = getCoverageTotals(data.s);
       const functions = getCoverageTotals(data.f);
@@ -66,7 +71,7 @@ const getCoverageEntries = (coverageData) =>
         branches,
       };
     })
-    .filter((entry) => entry.filePath.startsWith("src/"));
+    .filter((entry) => entry && entry.filePath.startsWith("src/"));
 
 const buildChurnMap = () => {
   let output = "";
