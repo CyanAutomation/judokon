@@ -95,6 +95,46 @@ Test Mode is an internal mode for developers and QA engineers to safely test fea
 - Additional feature flags (e.g., `statHotkeys`) that enhance testing ergonomics should reference this PRD and document dependencies on Test Mode being active.
 - Any new testing-focused UI surface must include gating guidance in this section before rollout.
 
+### Debug Flag Profiling System & HUD
+
+The debug flag profiling system surfaces performance metrics for feature-flag evaluation and renders a lightweight HUD for reviewing recent alerts. This capability is strictly developer-facing and should remain behind explicit debug activation flags.
+
+#### Activation Flags
+
+Enable profiling through any of the following switches:
+
+- `window.__PROFILE_DEBUG_FLAGS__`
+- `window.__DEBUG_PERF__`
+- Environment variables: `DEBUG_FLAG_PERF`, `DEBUG_PERF`
+
+#### Metrics + Retention Requirements
+
+- Metrics buffer size: `50`
+- Alert threshold: `16ms`
+- History retention: `100` entries
+
+#### HUD UI Controls
+
+The HUD must provide:
+
+- Close button (dismiss the HUD)
+- Clear button (reset history + alerts)
+- Copy alerts button (copy alert history to clipboard)
+
+#### Accessibility Requirements
+
+The alert log must be exposed as a live region:
+
+- `role="log"`
+- `aria-live="polite"`
+
+#### Implementation Anchors
+
+Reference implementations:
+
+- `src/helpers/debugFlagPerformance.js`
+- `src/helpers/debugFlagHud.js`
+
 ### Acceptance Criteria
 
 - Test Mode can be enabled/disabled via the Settings page toggle (feature flag only).
