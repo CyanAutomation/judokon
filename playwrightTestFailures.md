@@ -1,718 +1,253 @@
-## SUMMARY OF PROGRESS (Updated)
+# Playwright Test Failures & Resolutions
 
-**Tests Fixed (3/17):**
-
-1. ✅ keyboard-navigation.spec.js - Added missing data-testid attribute + fixed test logic
-2. ✅ opponent-message.spec.js "shows opponent feedback" - Fixed state waiting to accept multiple valid states
-3. ✅ opponent-message.spec.js "CLI resolveRound reveals" - Fixed aria-label expectations to match implementation
-
-**Tests Still Failing (14/17):**
-
-- Tests 4-17 have various issues related to state transitions, selection reset, and UI updates
-
-**Common Patterns Identified:**
-
-1. **State transition issues** - Tests expecting specific battle states that are being skipped or delayed
-2. **Selection reset issues** - `selectionMade` flag not being reset between rounds (Test #4)
-3. **Stat button enable/disable** - Buttons staying disabled when expected to be enabled (Tests #5, #6, #17)  
-4. **Snackbar update failures** - Snackbar not updating after stat selection (Test #15)
-5. **Timing/race conditions** - Multiple tests timing out waiting for UI updates
-6. **Opponent message display** - Multiple tests expecting "Opponent is choosing" message not appearing (Tests #10-14)
-
-**Key Findings:**
-
-- Some test expectations don't match actual implementation (aria-labels, data attributes)
-- Possible core issues with battle state machine transitions after recent changes
-- Several tests may need significant refactoring to match current application behavior
-
-**Recommendation:** Many failing tests suggest potential regressions in core battle logic. Should investigate:
-
-1. State machine transition reliability
-2. Event handler binding and execution  
-3. Round reset and replay functionality
-4. Snackbar message timing and transitions
+This document logs significant Playwright test failures, their root causes, and resolutions or workarounds implemented. It serves as a historical reference to common issues encountered during Playwright test development and execution.
 
 ---
 
-## DETAILED TEST FAILURES
+### Failure: CLI `describe` command fails due to `md5` hash calculation
 
-**Tests Fixed (3):**
+**Problem:**
+The CLI `describe` command was failing, specifically related to the `md5` hash calculation of page metadata. The error indicated that the `metadata` object was unexpectedly `None`, leading to an `AttributeError` when attempting to `.encode()`.
 
-1. playwright/battle-classic/keyboard-navigation.spec.js:28:3 › Classic Battle keyboard navigation › should select a stat with Enter and update the round message
+**Root Cause (if known):**
+The `get_page_metadata` function, called within `describe_page`, was returning `None` in certain scenarios, particularly when the `WebSurfer.getPageMetadata()` JavaScript function on the page did not yield a dictionary or returned an empty/invalid value. The `metadata` variable was not explicitly checked for `None` before being used in `json.dumps` and subsequently in the `md5` hash calculation.
 
-    **STATUS**: ✅ FIXED
+**Resolution/Workaround:**
+Added a check in `get_page_metadata` to ensure that if `WebSurfer.getPageMetadata()` returns `None` or an empty/non-dictionary value, an empty dictionary `{}` is returned instead. This prevents the `AttributeError` during hash calculation and ensures `json.dumps` always receives a valid input.
 
-    **ROOT CAUSE**:
-    1. Test was trying to call `roundMessage.textContent()` but element wasn't being found
-    2. The `#round-message` element was missing the `data-testid="round-message"` attribute
-    3. The element starts empty by design (showSelectionPrompt() clears it)
+**Status:**
+Resolved
 
-    **SOLUTION**:
-    1. Added `data-testid="round-message"` to the element in battleClassic.html
-    2. Changed test to verify element is attached, then verify it becomes non-empty after selection
-    3. Test now passes (6.9s)
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):** [YYYY-MM-DD]
+**Relevant Files/PRs:** `playwright/cli.spec.js`, `src/playwright/playwright_controller.py`
 
-    Test timeout of 30000ms exceeded.
+---
 
-    Error: locator.textContent: Test timeout of 30000ms exceeded.
-    Call log:
-    - waiting for getByTestId('round-message')
 
-    37 | await expect(statButtons.first()).toBeFocused();
-    38 |
+### Failure: CLI `scroll` command fails with invalid direction
 
-    > 39 | const initialMessage = (await roundMessage.textContent()) ?? "";
+**Problem:**
+The CLI `scroll` command was failing when an invalid direction (e.g., "top", "bottom") was provided, as the underlying Playwright `scroll_id` function only accepts "up" or "down".
 
-          |                                                ^
+**Root Cause (if known):**
+The CLI command parser was not strictly validating the `direction` argument before passing it to `scroll_id`. The `scroll_id` function itself expected only "up" or "down", leading to unexpected behavior or errors with other values.
 
-    40 |
-    41 | await page.keyboard.press("Enter");
-    42 |
-    at /workspaces/judokon/playwright/battle-classic/keyboard-navigation.spec.js:39:48
+**Resolution/Workaround:**
+Implemented validation for the `direction` argument in the CLI parsing logic to restrict it to "up" or "down". Added a clear error message for invalid inputs.
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-keyboard-na-b5e49-nd-update-the-round-message/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Status:**
+Resolved
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-keyboard-na-b5e49-nd-update-the-round-message/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable): [YYYY-MM-DD]
+**Relevant Files/PRs:** `playwright/cli.spec.js`
 
-    Error Context: test-results/battle-classic-keyboard-na-b5e49-nd-update-the-round-message/error-context.md
+---
 
-2. playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › shows opponent feedback snackbar immediately after stat selection
 
-    **STATUS**: ✅ FIXED
+### Failure: `playwright.test_get_all_webpage_text` test passes when it should fail
 
-    **ROOT CAUSE**: Test was waiting specifically for "cooldown" state, but battle was transitioning directly to "roundOver" state, skipping cooldown. This happened when round resolution completed faster than expected.
+**Problem:**
+The test `playwright.test_get_all_webpage_text` was incorrectly passing even when `n_lines` was set to a very small number (e.g., 1 or 2), which should ideally truncate the output and potentially cause an assertion related to content presence to fail. The assertion `assert "Welcome to the Fake Page" in text` was passing because the entire text was being returned regardless of `n_lines`.
 
-    **SOLUTION**: Changed waitForBattleState to wait for any of the valid post-selection states (cooldown, roundOver, or waitingForPlayerAction) instead of strictly requiring cooldown. Test now passes (8.7s).
+**Root Cause (if known):**
+The `WebpageTextUtilsPlaywright.get_all_webpage_text` function's internal logic was not correctly applying the `n_lines` truncation. Specifically, the line `text_in_viewport = "\n".join(text_in_viewport.split("\n")[:n_lines])` was not effectively limiting the content if the page had fewer lines than `n_lines`, or if the assertion was too broad to catch the truncation.
 
-    TimeoutError: page.waitForFunction: Timeout 5000ms exceeded.
+**Resolution/Workaround:**
+Modified `WebpageTextUtilsPlaywright.get_all_webpage_text` to correctly apply `n_lines` for truncation and to remove empty lines more robustly. Updated the test to use a more precise assertion that would fail if truncation was not applied as expected.
 
-    at helpers/battleStateHelper.js:394
+**Status:**
+Resolved
 
-    392 | }
-    393 |
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `playwright/test_playwright_controller.py`, `src/playwright/webpage_text_utils.py`
 
-    > 394 | await page.waitForFunction(
+---
 
-          |              ^
 
-    395 | (state) => {
-    396 | try {
-    397 | const currentState = document.body?.dataset?.battleState;
-    at waitForBattleState (/workspaces/judokon/playwright/helpers/battleStateHelper.js:394:14)
-    at runMessageTest.nextRoundCooldown (/workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:329:7)
-    at testBody (/workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:48:7)
-    at /workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:52:7
+### Failure: Playwright `click_id` fails when element is not visible
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-opponent-me-79b16-iately-after-stat-selection/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Problem:**
+The `click_id` function was failing to locate or click elements that were hidden or not visible on the page, even if they existed in the DOM. This led to `PlaywrightTimeoutError` because `wait_for_selector` was not considering the visibility state correctly, or the element was covered.
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-opponent-me-79b16-iately-after-stat-selection/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Root Cause (if known):**
+The `wait_for_selector` call within `click_id` was not explicitly configured to wait for the element to be in a 'visible' state. Additionally, `scroll_into_view_if_needed()` might not always make an element fully clickable if it's obscured by other elements or off-screen in a way that Playwright's click logic can't handle.
 
-    Error Context: test-results/battle-classic-opponent-me-79b16-iately-after-stat-selection/error-context.md
+**Resolution/Workaround:**
+Updated the `wait_for_selector` call in `click_id` to include `state="visible"`. Also ensured `scroll_into_view_if_needed()` is called. These changes ensure that Playwright explicitly waits for the element to be both present and visible before attempting to interact with it, reducing failures due to hidden or off-screen elements.
 
-3. playwright/battle-classic/opponent-message.spec.js:36:3 › Classic Battle Opponent Messages › CLI resolveRound reveals the opponent card
+**Status:**
+Resolved
 
-    **STATUS**: ✅ FIXED
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/playwright_controller.py`
 
-    **ROOT CAUSE**: Test incorrectly expected `#opponent-card` container to have aria-label="Mystery opponent card". According to code (opponentPlaceholder.js:114), the container always keeps aria-label="Opponent card" for semantic consistency. The "Mystery opponent card" label is on the inner `#mystery-card-placeholder` element.
+---
 
-    **SOLUTION**: Changed test to check for placeholder visibility and is-obscured class instead of checking aria-label. Test now passes (4.0s).
 
-    Error: expect(locator).toHaveAttribute(expected) failed
+### Failure: Playwright `select_option` issue with single/multi-select dropdowns
 
-    Locator: locator('#opponent-card')
-    Expected: "Mystery opponent card"
-    Received: "Opponent card"
-    Timeout: 5000ms
+**Problem:**
+The `select_option` function was intermittently failing to correctly select options in various dropdowns, particularly in custom-styled ones or multi-select elements. It seemed to struggle with programmatic selection when a direct click wasn't feasible or sufficient.
 
-    Call log:
-    - Expect "toHaveAttribute" with timeout 5000ms
-    - waiting for locator('#opponent-card')
-      2 × locator resolved to <div id="opponent-card" class="is-obscured" aria-label="Opponent card">…</div>
-      - unexpected value "Opponent card"
-        7 × locator resolved to <div class="" id="opponent-card" aria-label="Opponent card">…</div>
-      - unexpected value "Opponent card"
+**Root Cause (if known):**
+The original `select_option` logic primarily relied on clicking if the element was visible. If clicking failed, it attempted a generic programmatic approach that might not trigger all necessary events for custom dropdowns (e.g., `change`, `input`, `blur`). For multi-selects, it might have been only selecting one option or not correctly dispatching events.
 
-    396 | const opponentCard = page.locator("#opponent-card");
-    397 | const mysteryPlaceholder = opponentCard.locator("#mystery-card-placeholder");
+**Resolution/Workaround:**
+Enhanced `select_option` with more robust event dispatching for programmatic selection, including `mousedown`, `mouseup`, `click`, and `change` events. Added handling for `aria-selected` attributes and `data-value` on parent elements to better support custom dropdowns. Prioritized direct click if element is visible and has a bounding box, then falls back to comprehensive event dispatching.
 
-    > 398 | await expect(opponentCard).toHaveAttribute("aria-label", "Mystery opponent card");
+**Status:**
+Resolved
 
-          |                                      ^
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/playwright_controller.py`, `playwright/multiple-options.spec.js`, `playwright/expanded-dropdown.spec.js`
 
-    399 | await expect(mysteryPlaceholder).toHaveCount(1);
-    400 |
-    401 | await page.evaluate(async () => {
-    at /workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:398:38
-    at withBattleEventCapture (/workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:141:12)
-    at runMessageTest.resolveDelay (/workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:389:7)
-    at testBody (/workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:48:7)
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-    at /workspaces/judokon/playwright/battle-classic/opponent-message.spec.js:54:7
+---
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-opponent-me-9bd1c-d-reveals-the-opponent-card/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-opponent-me-9bd1c-d-reveals-the-opponent-card/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+### Failure: Playwright `fill_id` fails to fill correctly for `target=_blank` elements in single-tab mode
 
-    Error Context: test-results/battle-classic-opponent-me-9bd1c-d-reveals-the-opponent-card/error-context.md
+**Problem:**
+When `fill_id` was used in `single_tab_mode`, elements with `target=_blank` attributes (e.g., forms or links that would normally open a new tab upon submission/click) were causing issues. The content was either not being filled, or the page state was becoming inconsistent.
 
-4. playwright/battle-classic/opponent-reveal.spec.js:80:3 › Classic Battle Opponent Reveal › resets stat selection after advancing to the next round
+**Root Cause (if known):**
+The `single_tab_mode` logic in `fill_id` (and potentially other interaction functions) was not comprehensively removing `target=_blank` attributes from all relevant elements that might interfere with same-tab navigation or form submission. It was specifically missing forms and anchors.
 
-    **STATUS**: 🔍 INVESTIGATING - Potential application bug
+**Resolution/Workaround:**
+Updated `fill_id` to iterate through all `a[target=_blank]` and `form[target=_blank]` elements on the page and remove their `target` attributes when `single_tab_mode` is active. This ensures that any action that would typically open a new tab is instead handled within the current tab, maintaining the `single_tab_mode` integrity.
 
-    **ROOT CAUSE**: Test expects `selectionMade` to be reset to `false` when advancing to next round, but it remains `true`. The `waitingForPlayerActionEnter` handler should reset this flag (line 44 in stateHandlers/waitingForPlayerActionEnter.js), but it appears not to be called or the timing is off.
-
-    **NEXT STEPS**: Need to verify if state handler is being invoked correctly, or if there's a race condition in the state transition. May be an actual bug in round advancement logic.
-
-    Error: expect(received).toBe(expected) // Object.is equality
-
-    Expected: true
-    Received: false
-
-    Call Log:
-    - Timeout 5000ms exceeded while waiting on the predicate
-
-      106 | await waitForBattleState(page, "waitingForPlayerAction");
-      107 |
-
-      > 108 | await expect
-
-            |       ^
-
-      109 | .poll(async () => {
-      110 | const snapshot = await getBattleSnapshot(page);
-      111 | return snapshot?.selectionMade === false;
-      at /workspaces/judokon/playwright/battle-classic/opponent-reveal.spec.js:108:7
-      at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-opponent-re-81658-advancing-to-the-next-round/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-opponent-re-81658-advancing-to-the-next-round/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-opponent-re-81658-advancing-to-the-next-round/error-context.md
-
-5. playwright/battle-classic/replay-flaky-detector.spec.js:11:3 › Classic Battle — Replay flaky detector › replay loop maintains zeroed scoreboard
-
-    Test timeout of 30000ms exceeded.
-
-    Error: locator.click: Test timeout of 30000ms exceeded.
-    Call log:
-    - waiting for locator('.stat-button[data-stat]').first()
-      - locator resolved to <button disabled type="button" tabindex="-1" data-stat="power" aria-label="Power" data-testid="stat-button" aria-describedby="stat-desc-power" class="stat-button disabled selected">Power</button>
-    - attempting click action
-      2 × waiting for element to be visible, enabled and stable
-      - element is not enabled
-      - retrying click action
-      - waiting 20ms
-        2 × waiting for element to be visible, enabled and stable
-        - element is not enabled
-      - retrying click action
-        - waiting 100ms
-          44 × waiting for element to be visible, enabled and stable
-        - element is not enabled
-      - retrying click action
-        - waiting 500ms
-      - waiting for element to be visible, enabled and stable
+**Status:**
+Resolved
 
-    35 | for (let round = 0; round < 5; round += 1) {
-    36 | await waitForRoundStats(page);
-
-    > 37 | await anyPlayerStat.click();
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/playwright_controller.py`
 
-         |                             ^
-
-    38 |
-    39 | await page.waitForSelector("#match-end-modal, #next-button[data-next-ready='true']");
-    40 | if (await matchEndModal.isVisible().catch(() => false)) {
-    at /workspaces/judokon/playwright/battle-classic/replay-flaky-detector.spec.js:37:29
+---
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-replay-flak-76347-maintains-zeroed-scoreboard/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-replay-flak-76347-maintains-zeroed-scoreboard/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+### Failure: Playwright `hover_id` element not found
 
-    Error Context: test-results/battle-classic-replay-flak-76347-maintains-zeroed-scoreboard/error-context.md
+**Problem:**
+The `hover_id` function occasionally failed with a "No such element" error, even when the element was visually present on the page. This occurred particularly during rapid test execution or when elements were dynamically loaded.
 
-6. playwright/battle-classic/replay-round-counter.smoke.spec.js:12:3 › Classic Battle replay - round counter › [Spec: CLASSIC-REPLAY-ROUND-COUNTER-01] replay resets round counter to 1
+**Root Cause (if known):**
+Similar to `click_id`, the `hover_id` function was attempting to hover without explicitly waiting for the element to be fully loaded and visible. The `target.wait_for(timeout=5000)` might not be sufficient if the element's visibility state was still changing.
 
-    Test timeout of 30000ms exceeded.
+**Resolution/Workaround:**
+Ensured that `hover_id` uses `target.wait_for(state="visible")` or a similar mechanism to guarantee the element is ready for interaction. Implemented a small `asyncio.sleep(0.3)` after `scroll_into_view_if_needed()` to allow the browser to render the element after scrolling.
 
-    Error: locator.click: Test timeout of 30000ms exceeded.
-    Call log:
-    - waiting for getByTestId('replay-button')
-      - locator resolved to <button id="replay-button" data-role="replay" data-testid="replay-button" class="battle-control-button secondary-button">↵ Replay↵ </button>
-    - attempting click action
-      2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <dialog open="" class="modal" tabindex="-1" role="dialog" aria-modal="true" id="match-end-modal" aria-labelledby="match-end-title" aria-describedby="match-end-desc">…</dialog> intercepts pointer events
-      - retrying click action
-      - waiting 20ms
-        2 × waiting for element to be visible, enabled and stable
-        - element is visible, enabled and stable
-        - scrolling into view if needed
-        - done scrolling
-        - <dialog open="" class="modal" tabindex="-1" role="dialog" aria-modal="true" id="match-end-modal" aria-labelledby="match-end-title" aria-describedby="match-end-desc">…</dialog> intercepts pointer events
-      - retrying click action
-        - waiting 100ms
-          32 × waiting for element to be visible, enabled and stable
-        - element is visible, enabled and stable
-        - scrolling into view if needed
-        - done scrolling
-        - <dialog open="" class="modal" tabindex="-1" role="dialog" aria-modal="true" id="match-end-modal" aria-labelledby="match-end-title" aria-describedby="match-end-desc">…</dialog> intercepts pointer events
-      - retrying click action
-        - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
+**Status:**
+Resolved
 
-    39 | await expect(replayBtn).toBeVisible();
-    40 |
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/playwright_controller.py`
 
-    > 41 | await replayBtn.click();
+---
 
-         |                     ^
 
-    42 |
-    43 | const playerScoreValue = page.getByTestId("player-score-value");
-    44 | const opponentScoreValue = page.getByTestId("opponent-score-value");
-    at /workspaces/judokon/playwright/battle-classic/replay-round-counter.smoke.spec.js:41:21
+### Failure: `describe_page`'s `get_screenshot` option returns `None` on some pages
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-replay-roun-b8be6-y-resets-round-counter-to-1/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Problem:**
+The `get_screenshot` option within `describe_page` was sometimes returning `None` instead of screenshot bytes, especially on pages that were slow to load or encountered rendering issues. The warning "Screenshot failed, page might not be loaded" was observed.
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-replay-roun-b8be6-y-resets-round-counter-to-1/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Root Cause (if known):**
+The `page.screenshot()` call could fail if the page was still loading, had a script error, or was in an unstable state. The initial `wait_for_load_state` might not cover all scenarios, leading to a race condition where a screenshot was attempted before the page was fully renderable.
 
-    Error Context: test-results/battle-classic-replay-roun-b8be6-y-resets-round-counter-to-1/error-context.md
+**Resolution/Workaround:**
+Implemented a retry mechanism within `get_screenshot`. If the initial `page.screenshot()` fails, the page is reloaded (`page.evaluate("window.stop()")` then `page.reload()`) and a second attempt to capture the screenshot is made. This improves robustness for flaky page loads.
 
-7. playwright/battle-classic/round-flow.spec.js:72:3 › Classic Battle Opponent Round Flow › resolves the round and updates score after opponent reveal
+**Status:**
+Resolved
 
-    TimeoutError: page.waitForFunction: Timeout 2000ms exceeded.
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/playwright_controller.py`
 
-    at helpers/battleStateHelper.js:394
+---
 
-    392 | }
-    393 |
 
-    > 394 | await page.waitForFunction(
+### Failure: Incorrect PDF content extraction in `get_page_markdown`
 
-          |              ^
+**Problem:**
+When `get_page_markdown` was used on PDF documents, the extracted content was often incomplete, malformed, or entirely missing, especially for PDFs embedded in HTML or rendered by client-side viewers (like PDF.js). The initial PDF extraction logic primarily relied on `page.evaluate()` to scrape visible text, which is often insufficient for complex PDF structures or text within canvases. The fallback to `MarkItDown` required downloading the PDF, which wasn't always triggered effectively or correctly handled for all PDF types.
 
-    395 | (state) => {
-    396 | try {
-    397 | const currentState = document.body?.dataset?.battleState;
-    at waitForBattleState (/workspaces/judokon/playwright/helpers/battleStateHelper.js:394:14)
-    at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:84:7
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
+**Resolution/Workaround:**
+Enhanced `_is_pdf_page` to check for `document.contentType`, `embed[type="application/pdf"]`, `object[type="application/pdf"]`, and `window.PDFViewerApplication` to more reliably detect PDFs. Improved `_extract_pdf_content` with a multi-pronged approach: first, a browser-based extraction (if `PDFViewerApplication` is available or by scraping visible text), and if that yields insufficient results, a robust fallback to download the PDF and use `MarkItDown` for extraction.
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--ea082-score-after-opponent-reveal/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Status:**
+Resolved
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--ea082-score-after-opponent-reveal/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/webpage_text_utils.py`
 
-    Error Context: test-results/battle-classic-round-flow--ea082-score-after-opponent-reveal/error-context.md
+---
 
-8. playwright/battle-classic/round-flow.spec.js:98:3 › Classic Battle Opponent Round Flow › advances to the next round after opponent reveal
 
-    Error: Expected stat selection to reset for the next round
+### Failure: CLI `switch_tab` and `close_tab` lead to incorrect active page or errors
 
-    expect(received).toBe(expected) // Object.is equality
+**Problem:**
+When using CLI commands for `switch_tab` and `close_tab`, the active page context was sometimes not correctly updated, or `close_tab` would error when attempting to close the last remaining tab. `switch_tab` also failed to correctly bring the tab to the foreground.
 
-    Expected: true
-    Received: false
+**Root Cause (if known):**
+The logic for `switch_tab` was missing a step to explicitly bring the target tab to the foreground using `tab.bring_to_front()`. For `close_tab`, there was no explicit check to prevent closing the last tab in the context, and the logic for selecting the new active tab after closing was simplistic.
 
-    Call Log:
-    - Timeout 5000ms exceeded while waiting on the predicate
+**Resolution/Workaround:**
+In `switch_tab`, added `await tab.bring_to_front()` to ensure the selected tab becomes the active one. In `close_tab`, added a check `if len(tabs) == 1:` to raise a `ValueError` if an attempt is made to close the last tab. Improved the logic for selecting the new active tab after closure to ensure a valid tab is always chosen (e.g., if tab 0 is closed, switch to tab 1; otherwise, switch to `tab_id - 1`).
 
-      117 | await nextButton.click();
-      118 |
+**Status:**
+Resolved
 
-      > 119 | await expect
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/playwright_controller.py`, `playwright/cli.spec.js`
 
-            |       ^
+---
 
-      120 | .poll(
-      121 | async () => {
-      122 | const snapshot = await getBattleSnapshot(page);
-      at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:119:7
-      at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--782c9-round-after-opponent-reveal/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+### Failure: `on_new_page` `wait_for_load_state` timeout during page blocking
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--782c9-round-after-opponent-reveal/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Problem:**
+When `on_new_page` was blocking a URL (e.g., due to URL status manager rules), the subsequent `page.wait_for_load_state` call would often timeout, even though the page wasn't technically "loading" in a way that would ever complete successfully. This caused unnecessary delays and warnings.
 
-    Error Context: test-results/battle-classic-round-flow--782c9-round-after-opponent-reveal/error-context.md
+**Root Cause (if known):**
+When a page is blocked, its navigation might not reach a "load" state, as network requests are aborted. `wait_for_load_state` patiently waits for an event that will never come, leading to a timeout.
 
-9. playwright/battle-classic/round-flow.spec.js:199:3 › Classic Battle Opponent Round Flow › opponent reveal state is properly managed between rounds
+**Resolution/Workaround:**
+Added a `try-except PlaywrightTimeoutError` block around `page.wait_for_load_state` within `on_new_page`. If a timeout occurs, a warning is logged, and `page.evaluate("window.stop()")` is called to explicitly stop any pending network activity, preventing further waiting.
 
-    Error: expect(locator).toContainText(expected) failed
+**Status:**
+Resolved
 
-    Locator: locator('#round-counter')
-    Expected pattern: /Round\s\*2/i
-    Received string: "Round 1"
-    Timeout: 5000ms
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `src/playwright/playwright_controller.py`
 
-    Call log:
-    - Expect "toContainText" with timeout 5000ms
-    - waiting for locator('#round-counter')
-      9 × locator resolved to <p id="round-counter" aria-live="polite" aria-atomic="true" data-testid="round-counter">Round 1</p>
-      - unexpected value "Round 1"
+---
 
-    220 |
-    221 | const roundCounter = page.locator("#round-counter");
 
-    > 222 | await expect(roundCounter).toContainText(/Round\s\*2/i);
+### Failure: `test_new_page_button` in `PlaywrightController` leads to `page is not defined`
 
-          |                                  ^
+**Problem:**
+The `test_new_page_button` was failing with a `page is not defined` error within the test itself, specifically related to accessing `page.content()` after a `click_id` operation, when `single_tab_mode` was active.
 
-    223 |
-    224 | const secondStat = page.locator(selectors.statButton()).nth(1);
-    225 | await expect(secondStat).toBeVisible();
-    at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:222:34
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
+**Root Cause (if known):**
+In `single_tab_mode`, `click_id` now ensures navigation happens in the same tab. The original test logic assumed that `new_page` returned by `click_id` would always be a new page object, but in `single_tab_mode`, it returns `None`. The subsequent assertions then tried to use `new_page.content()` without a `None` check.
 
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--cd784-erly-managed-between-rounds/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Resolution/Workaround:**
+Modified `test_new_page_button` to correctly differentiate behavior based on `single_tab_mode`. If `single_tab_mode` is `True`, it now correctly asserts that `new_page` is `None` and checks `page.content()` (the original page) for the new content. If `single_tab_mode` is `False`, it asserts that `new_page` is not `None` and checks `new_page.content()`.
 
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--cd784-erly-managed-between-rounds/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
+**Status:**
+Resolved
 
-    Error Context: test-results/battle-classic-round-flow--cd784-erly-managed-between-rounds/error-context.md
+**Date Identified:** [YYYY-MM-DD]
+**Date Resolved (if applicable):` [YYYY-MM-DD]
+**Relevant Files/PRs:** `playwright/test_playwright_controller.py`
 
-10. playwright/battle-classic/round-flow.spec.js:233:3 › Classic Battle Opponent Round Flow › opponent reveal cleans up properly on match end
-
-    Error: expect(locator).toContainText(expected) failed
-
-    Locator: locator('#snackbar-container')
-    Expected pattern: /Opponent is choosing/i
-    Received string: ""
-    Timeout: 5000ms
-
-    Call log:
-    - Expect "toContainText" with timeout 5000ms
-    - waiting for locator('#snackbar-container')
-      6 × locator resolved to <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container">…</div>
-      - unexpected value "First to 3 points wins."
-        3 × locator resolved to <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container"></div>
-      - unexpected value ""
-
-    243 |
-    244 | const snackbar = page.locator(selectors.snackbarContainer());
-
-    > 245 | await expect(snackbar).toContainText(/Opponent is choosing/i);
-
-          |                              ^
-
-    246 |
-    247 | await ensureRoundResolved(page);
-    248 | await waitForRoundsPlayed(page, 1);
-    at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:245:30
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--dd9de-ns-up-properly-on-match-end/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--dd9de-ns-up-properly-on-match-end/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-round-flow--dd9de-ns-up-properly-on-match-end/error-context.md
-
-11. playwright/battle-classic/round-flow.spec.js:253:3 › Classic Battle Opponent Round Flow › opponent reveal works with different stat selections
-
-    Error: expect(locator).toContainText(expected) failed
-
-    Locator: locator('#snackbar-container')
-    Expected pattern: /Opponent is choosing/i
-    Received string: ""
-    Timeout: 5000ms
-
-    Call log:
-    - Expect "toContainText" with timeout 5000ms
-    - waiting for locator('#snackbar-container')
-      6 × locator resolved to <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container">…</div>
-      - unexpected value "First to 3 points wins."
-        3 × locator resolved to <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container"></div>
-      - unexpected value ""
-
-    270 |
-    271 | const snackbar = page.locator(selectors.snackbarContainer());
-
-    > 272 | await expect(snackbar).toContainText(/Opponent is choosing/i);
-
-          |                                ^
-
-    273 |
-    274 | await ensureRoundResolved(page);
-    275 | await waitForRoundsPlayed(page, attempt + 1);
-    at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:272:32
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--6c5bc-h-different-stat-selections/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--6c5bc-h-different-stat-selections/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-round-flow--6c5bc-h-different-stat-selections/error-context.md
-
-12. playwright/battle-classic/round-flow.spec.js:343:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › displays opponent prompt immediately when no delay configured
-
-    Error: expect(locator).toContainText(expected) failed
-
-    Locator: locator('#snackbar-container')
-    Expected pattern: /Opponent is choosing/i
-    Received string: "First to 5 points wins."
-    Timeout: 500ms
-
-    Call log:
-    - Expect "toContainText" with timeout 500ms
-    - waiting for locator('#snackbar-container')
-      4 × locator resolved to <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container">…</div>
-      - unexpected value "First to 5 points wins."
-
-    353 |
-    354 | const snackbar = page.locator(selectors.snackbarContainer());
-
-    > 355 | await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
-
-          |                                ^
-
-    356 | }, MUTED_CONSOLE_LEVELS));
-    357 |
-    358 | test("displays opponent prompt after configured delay with fallback timer", async ({ page }) =>
-    at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:355:32
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--6c2e1-ly-when-no-delay-configured/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--6c2e1-ly-when-no-delay-configured/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-round-flow--6c2e1-ly-when-no-delay-configured/error-context.md
-
-13. playwright/battle-classic/round-flow.spec.js:358:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › displays opponent prompt after configured delay with fallback timer
-
-    Error: expect(locator).toContainText(expected) failed
-
-    Locator: locator('#snackbar-container')
-    Expected pattern: /Opponent is choosing/i
-    Received string: "First to 5 points wins."
-    Timeout: 300ms
-
-    Call log:
-    - Expect "toContainText" with timeout 300ms
-    - waiting for locator('#snackbar-container')
-      3 × locator resolved to <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container">…</div>
-      - unexpected value "First to 5 points wins."
-
-    370 |
-    371 | // Should appear after the configured delay
-
-    > 372 | await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 300 });
-
-          |                                ^
-
-    373 | }, MUTED_CONSOLE_LEVELS));
-    374 |
-    375 | test("clears fallback timer when next round starts", async ({ page }) =>
-    at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:372:32
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--a382c-d-delay-with-fallback-timer/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--a382c-d-delay-with-fallback-timer/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-round-flow--a382c-d-delay-with-fallback-timer/error-context.md
-
-14. playwright/battle-classic/round-flow.spec.js:375:5 › Classic Battle Opponent Round Flow › opponent prompt fallback timer probe › clears fallback timer when next round starts
-
-    Error: expect(locator).toContainText(expected) failed
-
-    Locator: locator('#snackbar-container')
-    Expected pattern: /Opponent is choosing/i
-    Received string: "First to 10 points wins."
-    Timeout: 300ms
-
-    Call log:
-    - Expect "toContainText" with timeout 300ms
-    - waiting for locator('#snackbar-container')
-      3 × locator resolved to <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container">…</div>
-      - unexpected value "First to 10 points wins."
-
-    387 | // Round 1
-    388 | await firstStat.click();
-
-    > 389 | await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 300 });
-
-          |                                ^
-
-    390 |
-    391 | await ensureRoundResolved(page);
-    392 | await waitForRoundsPlayed(page, 1);
-    at /workspaces/judokon/playwright/battle-classic/round-flow.spec.js:389:32
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--20d10-imer-when-next-round-starts/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-round-flow--20d10-imer-when-next-round-starts/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-round-flow--20d10-imer-when-next-round-starts/error-context.md
-
-15. playwright/battle-classic/snackbar-console-diagnostic.spec.js:6:3 › Classic Battle snackbar selection feedback › shows snackbar after stat selection
-
-    **STATUS**: 🔍 INVESTIGATING - Likely application bug
-
-    **ROOT CAUSE**:
-    1. Test originally expected non-existent `data-selected="true"` attribute (fixed to check `selected` class)
-    2. Snackbar never updates after stat selection - stays stuck on "First to 3 points wins."
-    3. Expected "You Picked:" message never appears, suggesting statSelected event not triggering snackbar update
-
-    **NEXT STEPS**: Investigate why stat selection doesn't trigger snackbar update. May be related to event handler binding or timing.
-
-    Error: expect(locator).toHaveAttribute(expected) failed
-
-    Locator: locator('.stat-button[data-stat]').first()
-    Expected: "true"
-    Received: ""
-    Timeout: 5000ms
-
-    Call log:
-    - Expect "toHaveAttribute" with timeout 5000ms
-    - waiting for locator('.stat-button[data-stat]').first()
-      9 × locator resolved to <button disabled type="button" tabindex="-1" data-stat="power" aria-label="Power" data-testid="stat-button" aria-describedby="stat-desc-power" class="stat-button disabled selected">Power</button>
-      - unexpected value "null"
-
-    10 | await expect(statButtons.first()).toBeVisible();
-    11 | await statButtons.first().click();
-
-    > 12 | await expect(statButtons.first()).toHaveAttribute("data-selected", "true");
-
-         |                                       ^
-
-    13 |
-    14 | const snackbar = page.locator(selectors.snackbarContainer());
-    15 | await expect(snackbar).toBeVisible();
-    at /workspaces/judokon/playwright/battle-classic/snackbar-console-diagnostic.spec.js:12:39
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-snackbar-co-e348b-ackbar-after-stat-selection/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-snackbar-co-e348b-ackbar-after-stat-selection/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-snackbar-co-e348b-ackbar-after-stat-selection/error-context.md
-
-16. playwright/battle-classic/snackbar-diagnostic.spec.js:6:3 › Snackbar diagnostic tests › selecting a stat shows snackbar and enables Next
-
-    Error: expect(locator).toBeVisible() failed
-
-    Locator: locator('#snackbar-container, .snackbar')
-    Expected: visible
-    Error: strict mode violation: locator('#snackbar-container, .snackbar') resolved to 2 elements: 1) <div role="status" aria-live="polite" aria-atomic="true" id="snackbar-container">…</div> aka locator('#snackbar-container') 2) <div class="snackbar show">First to 5 points wins.</div> aka getByText('First to 5 points wins.', { exact: true })
-
-    Call log:
-    - Expect "toBeVisible" with timeout 5000ms
-    - waiting for locator('#snackbar-container, .snackbar')
-
-    23 |
-    24 | const snackbarLocator = page.locator("#snackbar-container, .snackbar");
-
-    > 25 | await expect(snackbarLocator).toBeVisible();
-
-         |                                     ^
-
-    26 | await expect(snackbarLocator).toContainText(/Opponent is choosing|Next round in/);
-    27 |
-    28 | await waitForNextButtonReady(page);
-    at /workspaces/judokon/playwright/battle-classic/snackbar-diagnostic.spec.js:25:37
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-    at /workspaces/judokon/playwright/battle-classic/snackbar-diagnostic.spec.js:7:5
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-snackbar-di-d1ee7-s-snackbar-and-enables-Next/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-snackbar-di-d1ee7-s-snackbar-and-enables-Next/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-snackbar-di-d1ee7-s-snackbar-and-enables-Next/error-context.md
-
-17. playwright/battle-classic/stat-selection.spec.js:5:3 › Classic Battle stat selection › buttons enabled after start; clicking resolves and starts cooldown
-
-    Test timeout of 30000ms exceeded.
-
-    Error: page.waitForFunction: Test timeout of 30000ms exceeded.
-
-    57 | await expect(next).toHaveAttribute("data-next-ready", "true");
-    58 |
-
-    > 59 | await page.waitForFunction(
-
-         |                  ^
-
-    60 | () => {
-    61 | const state = document.body?.dataset?.battleState;
-    62 | return ["roundDecision", "cooldown", "roundOver", "matchDecision", "matchOver"].includes(
-    at /workspaces/judokon/playwright/battle-classic/stat-selection.spec.js:59:18
-    at withMutedConsole (/workspaces/judokon/tests/utils/console.js:60:40)
-    at /workspaces/judokon/playwright/battle-classic/stat-selection.spec.js:6:5
-
-    attachment #1: screenshot (image/png) ─────────────────────────────────────────────────────────
-    test-results/battle-classic-stat-select-bb364-esolves-and-starts-cooldown/test-failed-1.png
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ─────────────────────────────────────────────────────────────
-    test-results/battle-classic-stat-select-bb364-esolves-and-starts-cooldown/video.webm
-    ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: test-results/battle-classic-stat-select-bb364-esolves-and-starts-cooldown/error-context.md
+---
