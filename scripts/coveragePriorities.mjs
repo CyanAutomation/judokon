@@ -11,7 +11,7 @@ const BRANCH_DEFAULT_LIMIT = 5;
 const CHURN_DEFAULT_LIMIT = 5;
 
 const fileExists = (targetPath) => fs.existsSync(targetPath);
-const shouldEmitSummary = new Set(process.argv.slice(2)).has("--summary");
+const shouldEmitSummary = process.argv.includes("--summary");
 
 const formatPercent = (value) => `${value.toFixed(1)}%`;
 
