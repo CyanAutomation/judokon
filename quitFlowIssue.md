@@ -192,7 +192,36 @@ The original report mentioned `clearRoundCounter` being missing from a mock. Thi
 - Documentation: Tests serve as living documentation of timing requirements
 - Confidence: Validates the fix continues working correctly
 
-#### ⏳ Improvement #3: Improve Documentation - **NEXT**
+#### ✅ Improvement #3: Improve Documentation - **COMPLETED**
+
+**Status**: Fully implemented
+
+**Completed Tasks**:
+1. ✅ Created `docs/initialization-sequence.md` - Comprehensive initialization guide
+   - Phase-by-phase breakdown with visual diagram
+   - Critical timing dependencies documented
+   - Button replacement behavior explained
+   - Event delegation patterns documented
+   - AI agent guidelines (DO/DON'T)
+   - Validation commands
+   - Test suite reference
+   - Implementation reference with file/line numbers
+
+2. ✅ Updated `AGENTS.md` with Classic Battle initialization section
+   - Critical timing requirements (wireControlButtons/wireExistingStatButtons)
+   - Phase order constraints
+   - Validation command for checking init order
+   - Button replacement behavior table
+   - Test commands for verification
+   - References to detailed documentation
+
+**Value Delivered**:
+- Onboarding: New developers can quickly understand initialization requirements
+- Prevention: Clear DO/DON'T guidelines prevent regression
+- Maintenance: Documented architecture makes future changes safer
+- AI Agent Support: Machine-readable rules for automated workflows
+
+#### ⏳ Improvement #1: Refactor Initialization - **OPTIONAL (Deferred)**
 - Create `docs/initialization-sequence.md`
 - Update `AGENTS.md` with initialization guidance
 

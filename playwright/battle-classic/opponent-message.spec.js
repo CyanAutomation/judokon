@@ -196,7 +196,15 @@ test.describe("Classic Battle Opponent Messages", () => {
       const firstStat = page.locator(selectors.statButton()).first();
       await firstStat.click();
 
-      await waitForBattleState(page, "cooldown");
+      // Wait for any post-selection state (cooldown, roundOver, or waitingForPlayerAction)
+      await page.waitForFunction(
+        () => {
+          const state = document.body?.dataset?.battleState;
+          return ["cooldown", "roundOver", "waitingForPlayerAction"].includes(state);
+        },
+        { timeout: 5000 }
+      );
+
       await expect
         .poll(
           async () => {

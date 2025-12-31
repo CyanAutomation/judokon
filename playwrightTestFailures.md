@@ -1,10 +1,16 @@
 1.  playwright/battle-classic/keyboard-navigation.spec.js:28:3 › Classic Battle keyboard navigation › should select a stat with Enter and update the round message
 
-    **STATUS**: 🔍 INVESTIGATING
+    **STATUS**: ✅ FIXED
     
-    **ROOT CAUSE**: Test times out at line 39 waiting for `roundMessage.textContent()`. Investigation shows `#round-message` element starts empty by design (showSelectionPrompt() in snackbar.js:50 explicitly clears it). Element only gets populated AFTER stat selection completes, not before. Test assumes initial content exists.
+    **ROOT CAUSE**: 
+    1. Test was trying to call `roundMessage.textContent()` but element wasn't being found
+    2. The `#round-message` element was missing the `data-testid="round-message"` attribute
+    3. The element starts empty by design (showSelectionPrompt() clears it)
     
-    **SOLUTION**: Modify test to not read initialMessage textContent or use a different approach to verify round message updates.
+    **SOLUTION**: 
+    1. Added `data-testid="round-message"` to the element in battleClassic.html
+    2. Changed test to verify element is attached, then verify it becomes non-empty after selection
+    3. Test now passes (6.9s)
 
     Test timeout of 30000ms exceeded.
 
