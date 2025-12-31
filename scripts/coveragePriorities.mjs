@@ -55,11 +55,20 @@ const loadCoverage = () => {
 const getCoverageEntries = (coverageData) =>
   Object.entries(coverageData)
     .map(([filePath, data]) => {
-      if (!data || typeof data !== 'object') {
+      if (!data || typeof data !== "object") {
         console.warn(`Invalid coverage data for ${filePath}, skipping`);
         return null;
       }
-      
+
+      if (
+        typeof data.s !== "object" ||
+        typeof data.f !== "object" ||
+        typeof data.b !== "object"
+      ) {
+        console.warn(`Missing coverage buckets for ${filePath}, skipping`);
+        return null;
+      }
+
       const relativePath = toRelativePath(filePath);
       const statements = getCoverageTotals(data.s);
       const functions = getCoverageTotals(data.f);
