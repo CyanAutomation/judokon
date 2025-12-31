@@ -271,6 +271,42 @@ The `statNames.json` file defines the CLI-facing stat labels and descriptions us
   - `Kansetsu-waza`
 - **Country code utilities**: `src/utils/countryCodes.js` provides `getCountryByCode`, `getCodeByCountry`, and `listCountries` helpers backed by `src/data/countryCodeMapping.json`. Reference these utilities when implementing data workflows so schema changes stay aligned with runtime lookups.
 
+## Canonical `aesopsFables` schema
+
+The Aesop's Fables story payload is an array of fable objects. Each entry must include a numeric `id` and the `story` text. The schema includes an optional `title` for display, but the current implementation depends on `id` and `story` being present.
+
+**Schema source**: `src/schemas/aesopsFables.schema.json`
+
+**Implemented fields (per entry):**
+
+- `id` (integer): Unique identifier for the fable.
+- `story` (string): The full story text.
+
+**Implementation references:**
+
+- `src/helpers/quotes/quoteService.js` fetches `aesopsFables.json` and merges fables by `id` when building the meditation quote data.
+- `src/pages/meditation.html` preloads `aesopsFables.json` so the meditation page can render quote content without delayed fetches.
+
+## Canonical `aesopsMeta` schema
+
+The Aesop's Fables metadata payload is an array of fable metadata objects keyed by `id`. Each entry provides presentation and filtering data for the meditation quote experience.
+
+**Schema source**: `src/schemas/aesopsMeta.schema.json`
+
+**Implemented fields (per entry):**
+
+- `id` (integer): Unique identifier for the fable.
+- `title` (string): Display title for the fable.
+- `tags` (string array): Tag list for filtering and labeling.
+- `readingTime` (string): Human-readable reading duration.
+- `moral` (string): Moral summary of the fable.
+- `haiku` (string): Optional haiku-style summary.
+
+**Implementation references:**
+
+- `src/helpers/quotes/quoteService.js` merges `aesopsMeta.json` by `id` to enrich each fable with metadata before rendering.
+- `src/pages/meditation.html` preloads `aesopsMeta.json` alongside the story data for the meditation experience.
+
 P2 - Versioning & Deprecation Policy: Define minor/major change rules and how to announce/rollout changes.
 
 Acceptance Criteria:
