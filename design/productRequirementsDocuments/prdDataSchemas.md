@@ -281,6 +281,7 @@ The Aesop's Fables story payload is an array of fable objects. Each entry must i
 
 - `id` (integer): Unique identifier for the fable.
 - `story` (string): The full story text.
+- `title` (string, optional): Display title for the fable.
 
 **Implementation references:**
 
