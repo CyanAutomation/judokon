@@ -461,7 +461,7 @@ export function applyNextButtonFinalizedState() {
 
   const primary = document.getElementById("next-button");
   const fallback = document.querySelector('[data-role="next-round"]');
-  
+
   applyButtonFinalizedState(primary || fallback);
   if (fallback && fallback !== primary) {
     applyButtonFinalizedState(fallback);
