@@ -46,13 +46,26 @@ describe("Classic Battle quit flow", () => {
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
 
+    // TIMING ASSERTION: Capture quit button BEFORE init
+    // Note: Button element WILL be replaced during init (via resetBattleUI/game:reset-ui event)
+    const quitButtonBefore = document.getElementById("quit-button");
+    expect(quitButtonBefore).toBeTruthy();
+
     const mod = await import("../../src/pages/battleClassic.init.js");
     if (typeof mod.init === "function") {
       await mod.init();
     }
 
-    const quit = document.getElementById("quit-button");
-    expect(quit).toBeTruthy();
+    // TIMING ASSERTION: Verify quit button was replaced during init (expected behavior)
+    const quitButtonAfter = document.getElementById("quit-button");
+    expect(quitButtonAfter).toBeTruthy();
+    expect(quitButtonAfter).not.toBe(quitButtonBefore); // Button IS replaced (via resetBattleUI)
+
+    // TIMING ASSERTION: Verify handler was attached to the FINAL instance (after replacement)
+    // This is the critical fix - wireControlButtons() runs AFTER initializeMatchStart()
+    expect(quitButtonAfter.__controlBound).toBe(true);
+
+    const quit = quitButtonAfter; // Use the final button instance
     quit.click();
 
     // Wait for the click event handler to execute and create the promise

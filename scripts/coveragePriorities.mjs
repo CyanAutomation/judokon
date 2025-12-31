@@ -38,9 +38,7 @@ const getBranchTotals = (branches = {}) => {
 
 const loadCoverage = () => {
   if (!fileExists(COVERAGE_PATH)) {
-    console.error(
-      `Coverage file not found at ${COVERAGE_PATH}. Run npm run test:cov first.`,
-    );
+    console.error(`Coverage file not found at ${COVERAGE_PATH}. Run npm run test:cov first.`);
     process.exit(1);
   }
 
@@ -55,11 +53,11 @@ const loadCoverage = () => {
 const getCoverageEntries = (coverageData) =>
   Object.entries(coverageData)
     .map(([filePath, data]) => {
-      if (!data || typeof data !== 'object') {
+      if (!data || typeof data !== "object") {
         console.warn(`Invalid coverage data for ${filePath}, skipping`);
         return null;
       }
-      
+
       const relativePath = toRelativePath(filePath);
       const statements = getCoverageTotals(data.s);
       const functions = getCoverageTotals(data.f);
@@ -68,7 +66,7 @@ const getCoverageEntries = (coverageData) =>
         filePath: relativePath,
         statements,
         functions,
-        branches,
+        branches
       };
     })
     .filter((entry) => entry && entry.filePath.startsWith("src/"));
@@ -76,10 +74,9 @@ const getCoverageEntries = (coverageData) =>
 const buildChurnMap = () => {
   let output = "";
   try {
-    output = execSync(
-      "git log --name-only --since=90.days --pretty=format: -- src",
-      { encoding: "utf8" },
-    );
+    output = execSync("git log --name-only --since=90.days --pretty=format: -- src", {
+      encoding: "utf8"
+    });
   } catch (error) {
     console.error("Unable to read git log for churn:", error.message);
     return new Map();
@@ -113,16 +110,12 @@ const formatEntry = (entry, { includeChurn = false } = {}) => {
   const statementSummary = `${entry.statements.covered}/${entry.statements.total}`;
   const functionSummary = `${entry.functions.covered}/${entry.functions.total}`;
   const branchSummary = `${entry.branches.covered}/${entry.branches.total}`;
-  const churnInfo = includeChurn
-    ? `, churn=${entry.churnCount ?? 0}`
-    : "";
+  const churnInfo = includeChurn ? `, churn=${entry.churnCount ?? 0}` : "";
   return `- \`${entry.filePath}\` — statements ${statementSummary} (${formatPercent(
-    entry.statements.pct,
+    entry.statements.pct
   )}), functions ${functionSummary} (${formatPercent(
-    entry.functions.pct,
-  )}), branches ${branchSummary} (${formatPercent(
-    entry.branches.pct,
-  )})${churnInfo}`;
+    entry.functions.pct
+  )}), branches ${branchSummary} (${formatPercent(entry.branches.pct)})${churnInfo}`;
 };
 
 const ensureDirectory = (targetPath) => {
@@ -140,7 +133,7 @@ coverageEntries
   .filter(
     (entry) =>
       (entry.statements.total > 0 && entry.statements.covered === 0) ||
-      (entry.functions.total > 0 && entry.functions.covered === 0),
+      (entry.functions.total > 0 && entry.functions.covered === 0)
   )
   .sort((a, b) => a.statements.pct - b.statements.pct)
   .forEach((entry) => addUnique(entryWiringZero, used, entry));
@@ -165,7 +158,7 @@ const coreChurnCandidates = coverageEntries
   .filter((entry) => CORE_DIRS.some((dir) => entry.filePath.startsWith(dir)))
   .map((entry) => ({
     ...entry,
-    churnCount: churnMap.get(entry.filePath) ?? 0,
+    churnCount: churnMap.get(entry.filePath) ?? 0
   }))
   .sort((a, b) => b.churnCount - a.churnCount);
 
@@ -182,9 +175,7 @@ const totalEntries =
 if (totalEntries < MIN_TOTAL_ENTRIES) {
   lowBranchCandidates.forEach((entry) => {
     if (
-      entryWiringZero.length +
-        lowBranchCoverage.length +
-        highChurnLowCoverage.length >=
+      entryWiringZero.length + lowBranchCoverage.length + highChurnLowCoverage.length >=
       MIN_TOTAL_ENTRIES
     ) {
       return;
@@ -199,9 +190,7 @@ if (
 ) {
   coreChurnCandidates.forEach((entry) => {
     if (
-      entryWiringZero.length +
-        lowBranchCoverage.length +
-        highChurnLowCoverage.length >=
+      entryWiringZero.length + lowBranchCoverage.length + highChurnLowCoverage.length >=
       MIN_TOTAL_ENTRIES
     ) {
       return;
@@ -230,9 +219,7 @@ const lines = [
   "## Core modules touched often (high churn)",
   "",
   highChurnLowCoverage.length
-    ? highChurnLowCoverage
-        .map((entry) => formatEntry(entry, { includeChurn: true }))
-        .join("\n")
+    ? highChurnLowCoverage.map((entry) => formatEntry(entry, { includeChurn: true })).join("\n")
     : "- _None found_",
   "",
   "## Notes",
@@ -240,7 +227,7 @@ const lines = [
   "- Group 1 flags files with zero executed statements or functions.",
   "- Group 2 highlights decision-heavy files with weak branch coverage.",
   "- Group 3 prioritizes frequently touched helpers/components/pages with lower coverage.",
-  "",
+  ""
 ];
 
 ensureDirectory(OUTPUT_PATH);
