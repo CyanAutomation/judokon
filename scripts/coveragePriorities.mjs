@@ -11,6 +11,7 @@ const BRANCH_DEFAULT_LIMIT = 5;
 const CHURN_DEFAULT_LIMIT = 5;
 
 const fileExists = (targetPath) => fs.existsSync(targetPath);
+const shouldEmitSummary = process.argv.includes("--summary");
 
 const formatPercent = (value) => `${value.toFixed(1)}%`;
 
@@ -245,4 +246,8 @@ const lines = [
 ensureDirectory(OUTPUT_PATH);
 fs.writeFileSync(OUTPUT_PATH, lines.join("\n"));
 
-console.log(`Coverage priorities written to ${OUTPUT_PATH}`);
+if (shouldEmitSummary) {
+  console.log(lines.join("\n"));
+} else {
+  console.log(`Coverage priorities written to ${OUTPUT_PATH}`);
+}
