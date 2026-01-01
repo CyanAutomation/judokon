@@ -196,6 +196,14 @@ On load, the Settings page must pre-populate each control with values from
 
 ---
 
+### Save Feedback
+
+- The settings page includes a live status region with `id="settings-save-status"` (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`) that stays hidden by default and is revealed to announce successful saves. The notifier in `createSaveStatusNotifier` clears the message and re-hides the region after ~2 seconds.
+- Each setting row (`.settings-item`) gets a `saved` class on successful updates via `onUpdate`, providing visual confirmation. The class is removed after the same save timeout (~2 seconds) so the highlight fades automatically.
+- Save failures surface an error popup using `#settings-error-popup` (`role="alert"`, `aria-live="assertive"`). `makeErrorPopupHandler` displays the message when a save fails and auto-hides it after ~3 seconds.
+
+---
+
 ## Technical Considerations
 
 - All data reads/writes should use asynchronous, promise-based functions with error handling.
