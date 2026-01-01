@@ -16,7 +16,7 @@ describe("onDomReady (Enhanced Natural Document Lifecycle)", () => {
   it("initializes a real helper once the DOM is ready", async () => {
     // Ensure document is in loading state before importing module
     interactions.naturalDocumentReady("loading", false);
-    
+
     const legacyMarker = document.createElement("div");
     legacyMarker.dataset.enlargeListenerAttached = "true";
     legacyMarker.dataset.enlarged = "true";

@@ -256,9 +256,7 @@ test.describe("CLI Command History", () => {
     await page.keyboard.press("ArrowUp");
     await expect(snackbar).toContainText(`History: ${secondStat}`);
     await expect(statList).toHaveAttribute("data-history-preview", secondStat);
-    await expect(
-      statList.locator(`.history-preview[data-stat="${secondStat}"]`)
-    ).toBeVisible();
+    await expect(statList.locator(`.history-preview[data-stat="${secondStat}"]`)).toBeVisible();
 
     await page.keyboard.press("ArrowUp");
     await expect(snackbar).toContainText(`History: ${firstStat}`);

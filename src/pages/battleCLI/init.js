@@ -3180,13 +3180,14 @@ export async function setupFlags() {
     if (typeof window !== "undefined") {
       const shouldAutoEnableShortcuts =
         window.__PLAYWRIGHT_TEST__ ||
-        (window.__TEST__ && (() => {
-          try {
-            return isEnabled("cliShortcuts") !== false;
-          } catch {
-            return true; // Default to enabling if flag check fails
-          }
-        })());
+        (window.__TEST__ &&
+          (() => {
+            try {
+              return isEnabled("cliShortcuts") !== false;
+            } catch {
+              return true; // Default to enabling if flag check fails
+            }
+          })());
       if (shouldAutoEnableShortcuts) {
         await setFlag("cliShortcuts", true);
         await setFlag("statHotkeys", true);

@@ -101,7 +101,7 @@ function ensureAnimationHandler(element, animationName, onEnd) {
 
   animationHandlers.set(element, handler);
   element.addEventListener("animationend", handler);
-  
+
   // Add cleanup when element is removed from DOM
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
@@ -114,7 +114,7 @@ function ensureAnimationHandler(element, animationName, onEnd) {
       });
     });
   });
-  
+
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
