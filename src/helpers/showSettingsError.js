@@ -2,15 +2,12 @@
  * Display a temporary error popup for settings failures.
  *
  * @pseudocode
- * 1. Remove any existing `.settings-error-popup` element.
- * 2. Create a new div with that class containing an error message.
- * 3. Append the div to `document.body`.
- * 4. Schedule removal:
- *    - After `SETTINGS_FADE_MS`, remove the "show" class to start fading.
- *    - After `SETTINGS_REMOVE_MS`, remove the popup element.
+ * 1. Find or create a `.settings-error-popup` dialog element.
+ * 2. Set the error message and toggle the `open` attribute.
+ * 3. Clear the dialog after the CSS animation completes.
  */
-import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "./constants.js";
-import { onFrame as scheduleFrame, cancel as cancelFrame } from "../utils/scheduler.js";
+const errorPopupAnimationName = "settings-error-popup-fade";
+const animationHandlers = new WeakMap();
 
 /**
  * Show a transient settings error popup to the user.
@@ -20,40 +17,50 @@ import { onFrame as scheduleFrame, cancel as cancelFrame } from "../utils/schedu
  * visibly appears then disappears after the configured durations.
  *
  * @pseudocode
- * 1. Remove any existing element with class `.settings-error-popup` to avoid duplicates.
- * 2. Create a `div` with that class and set accessibility attributes
- *    (`role="alert"`, `aria-live="assertive"`) and message text.
- * 3. Append the element to `document.body`.
- * 4. Use a one-shot frame scheduler to add the `show` class so CSS animations run.
- * 5. Schedule a timeout after `SETTINGS_FADE_MS` to remove the `show` class (start fade).
- * 6. Schedule a final timeout after `SETTINGS_REMOVE_MS` to remove the element from DOM.
- * 7. Ensure frame tokens are canceled/cleaned up if re-run.
+ * 1. Find an existing `.settings-error-popup` dialog or create one if missing.
+ * 2. Set accessibility attributes and message text.
+ * 3. Toggle the `open` attribute to trigger the CSS animation.
+ * 4. On animation end, clear the text and close the dialog.
  *
  * Contract:
  * - Input: none.
- * - Output: DOM side-effects and scheduled timers.
+ * - Output: DOM side-effects.
  * - Errors: run silently in non-DOM environments (no-ops).
  *
+ * @param {string} [message="Failed to update settings."] - Error message to display.
  * @returns {void}
  */
-export function showSettingsError() {
-  const existing = document.querySelector(".settings-error-popup");
-  existing?.remove();
-  const popup = document.createElement("div");
-  popup.className = "settings-error-popup";
-  popup.setAttribute("role", "alert");
-  popup.setAttribute("aria-live", "assertive");
-  popup.textContent = "Failed to update settings.";
-  document.body.appendChild(popup);
-  // One-shot next-frame style application using shared scheduler, then cancel
-  let token;
-  const run = () => {
-    popup.classList.add("show");
-    if (token !== null && token !== undefined) cancelFrame(token);
-  };
-  token = scheduleFrame(run);
-  setTimeout(() => {
-    popup.classList.remove("show");
-  }, SETTINGS_FADE_MS);
-  setTimeout(() => popup.remove(), SETTINGS_REMOVE_MS);
+export function showSettingsError(message = "Failed to update settings.") {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  let popup = document.querySelector(".settings-error-popup");
+  if (!popup) {
+    popup = document.createElement("dialog");
+    popup.className = "settings-error-popup";
+    popup.id = "settings-error-popup";
+    popup.setAttribute("role", "alertdialog");
+    popup.setAttribute("aria-live", "assertive");
+    document.body.appendChild(popup);
+  }
+
+  if (!animationHandlers.has(popup)) {
+    const handler = (event) => {
+      if (event.animationName !== errorPopupAnimationName) {
+        return;
+      }
+      popup.removeAttribute("open");
+      popup.textContent = "";
+    };
+    animationHandlers.set(popup, handler);
+    popup.addEventListener("animationend", handler);
+  }
+
+  popup.textContent = message;
+  popup.removeAttribute("open");
+  if (popup.isConnected) {
+    void popup.offsetWidth;
+  }
+  popup.setAttribute("open", "");
 }

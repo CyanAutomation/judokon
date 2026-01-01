@@ -203,14 +203,13 @@
             </div>
           </div>
         </section>
-        <p
+        <output
           id="settings-save-status"
           class="settings-save-status"
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          hidden
-        ></p>
+        ></output>
         <form id="settings-form" class="settings-form">
           <div class="modern-card">
             <details class="settings-section" data-section-id="general" open>
@@ -497,13 +496,12 @@
           </div>
           <button type="submit" class="visually-hidden">Apply Settings</button>
         </form>
-        <div
+        <dialog
           id="settings-error-popup"
           class="settings-error-popup"
-          role="alert"
+          role="alertdialog"
           aria-live="assertive"
-          style="display: none"
-        ></div>
+        ></dialog>
       </main>
 
       <script type="module" src="../helpers/setupDisplaySettings.js"></script>

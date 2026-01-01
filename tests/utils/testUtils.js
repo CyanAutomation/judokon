@@ -402,9 +402,8 @@ function createHeroStub() {
 }
 
 function createSaveStatus() {
-  const saveStatus = document.createElement("p");
+  const saveStatus = document.createElement("output");
   saveStatus.id = "settings-save-status";
-  saveStatus.hidden = true;
   saveStatus.setAttribute("role", "status");
   saveStatus.setAttribute("aria-live", "polite");
   saveStatus.setAttribute("aria-atomic", "true");
@@ -667,12 +666,11 @@ function createLinksCard() {
 }
 
 function createErrorPopup() {
-  const popup = document.createElement("div");
+  const popup = document.createElement("dialog");
   popup.id = "settings-error-popup";
   popup.className = "settings-error-popup";
-  popup.setAttribute("role", "alert");
+  popup.setAttribute("role", "alertdialog");
   popup.setAttribute("aria-live", "assertive");
-  popup.style.display = "none";
   return popup;
 }
 

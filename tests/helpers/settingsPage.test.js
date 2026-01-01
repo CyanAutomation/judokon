@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { createSettingsDom, resetDom } from "../utils/testUtils.js";
 import { createSimpleHarness } from "./integrationHarness.js";
 import { flushUnhandledRejections } from "../utils/flushUnhandledRejections.js";
@@ -402,30 +401,29 @@ describe("renderSettingsControls", () => {
   });
 
   it("shows transient save status feedback when settings persist", async () => {
-    const timers = useCanonicalTimers();
     const updateSettingImpl = vi.fn().mockResolvedValue(baseSettings);
     mockUpdateSetting.mockImplementation(updateSettingImpl);
 
-    try {
-      const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
-      renderSettingsControls(baseSettings, [], tooltipMap);
-      const status = document.getElementById("settings-save-status");
-      const soundToggle = document.getElementById("sound-toggle");
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    renderSettingsControls(baseSettings, [], tooltipMap);
+    const status = document.getElementById("settings-save-status");
+    const soundToggle = document.getElementById("sound-toggle");
 
-      soundToggle.checked = false;
-      soundToggle.dispatchEvent(new Event("change", { bubbles: true }));
+    soundToggle.checked = false;
+    soundToggle.dispatchEvent(new Event("change", { bubbles: true }));
 
-      await Promise.resolve();
-      expect(status.hidden).toBe(false);
-      expect(status.dataset.visible).toBe("true");
-      expect(status.textContent).toBe("Saved!");
+    await Promise.resolve();
+    expect(status.dataset.visible).toBe("true");
+    expect(status.textContent).toBe("Saved!");
 
-      await vi.advanceTimersByTimeAsync(2000);
-      expect(status.hidden).toBe(true);
-      expect(status.textContent).toBe("");
-    } finally {
-      timers.cleanup();
-    }
+    const animationEvent = new Event("animationend");
+    Object.defineProperty(animationEvent, "animationName", {
+      value: "settings-save-status-fade"
+    });
+    status.dispatchEvent(animationEvent);
+
+    expect(status.hasAttribute("data-visible")).toBe(false);
+    expect(status.textContent).toBe("");
   });
 
   it("restores defaults when confirmed", async () => {
