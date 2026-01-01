@@ -164,13 +164,17 @@ export async function cooldownEnter(machine, payload) {
   }
 
   // Finalize Next button state early in cooldown phase
-  // This must happen before any async operations that might cause state transitions
-  // to ensure tests with fast transitions (cooldownMs: 0) can observe the finalized state
-  // Use the lightweight version that doesn't update round diagnostics
-  guard(() => {
-    applyNextButtonFinalizedState();
-    debugLog("cooldownEnter: finalized Next button state (early)");
-  });
+  // Skip this when orchestrated to prevent premature finalization
+  // The orchestrator's setupOrchestratedReady will handle button finalization after cooldown
+  const isOrchestrated = !!machine.context;
+  if (!isOrchestrated) {
+    guard(() => {
+      applyNextButtonFinalizedState();
+      debugLog("cooldownEnter: finalized Next button state (early, non-orchestrated)");
+    });
+  } else {
+    debugLog("cooldownEnter: skipped early finalization (orchestrated mode)");
+  }
 
   const { store, scheduler } = machine.context || {};
 

@@ -1251,6 +1251,10 @@ export function _resetForTest(store, preserveConfig = {}) {
       nextBtn.disabled = true;
       delete nextBtn.dataset.nextReady;
     }
+    // Reset battle state dataset to prevent orchestrator state pollution
+    if (document.body) {
+      delete document.body.dataset.battleState;
+    }
   }
   if (typeof window !== "undefined") {
     const api = readDebugState("classicBattleDebugAPI");

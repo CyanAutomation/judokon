@@ -1,11 +1,10 @@
 # Classic Battle Cooldown Test Investigation
 
-## Status: 6/7 Tests Passing ✅ (1 Remaining Failure)
+## Status: 7/7 Tests Passing ✅✅✅ RESOLVED
 
-**Last Verified:** 2026-01-01 22:03:48 UTC
+**Last Verified:** 2026-01-01 22:17:57 UTC
 **Test File:** `tests/helpers/classicBattle/scheduleNextRound.test.js`
-**Source File:** `src/helpers/classicBattle/roundManager.js`
-**Related File:** `src/helpers/classicBattle/cooldownOrchestrator.js`
+**Resolution:** Conditional early finalization in orchestrated mode
 
 ---
 
@@ -59,67 +58,67 @@ if (typeof document !== "undefined") {
 
 ---
 
-## Remaining Issue 🔍 REQUIRES INVESTIGATION
+## Remaining Issue 🔍 ROOT CAUSE IDENTIFIED ✅
 
 **Test:** "schedules a 1s minimum cooldown in test mode"
-**Location:** `tests/helpers/classicBattle/scheduleNextRound.test.js:573`
+**Location:** `tests/helpers/classicBattle/scheduleNextRound.test.js:585`
 **Symptom:** `expect(currentNextRound.readyDispatched).toBe(false)` fails (actual: `true`)
 
-### Failure Analysis
+### Root Cause Confirmed ✅
 
-The test expects `readyDispatched` to be `false` immediately after cooldown starts, but it's being set to `true` prematurely.
+**File:** `src/helpers/classicBattle/stateHandlers/cooldownEnter.js:170`
+**Problem:** `applyNextButtonFinalizedState()` is called early in cooldownEnter phase
 
 **Call Chain:**
 ```
-startCooldown() 
-  → setupOrchestratedReady() 
-  → checkImmediate() 
-  → finalize() 
-  → controls.readyDispatched = true
+cooldownEnter() (line 150)
+  → applyNextButtonFinalizedState() (line 170) ❌ Sets btn.dataset.nextReady = "true"
+  → startCooldown() (line 177)
+    → setupOrchestratedReady()
+      → checkImmediate()
+        → isNextButtonReady() → returns TRUE (because nextReady was just set)
+        → finalize() ❌ Premature finalization
+        → controls.readyDispatched = true
 ```
 
-**checkImmediate() Logic** (cooldownOrchestrator.js:573-601):
+**Root Issue:** The button is being marked as "ready" BEFORE the cooldown timer even starts, which causes the orchestrator's immediate readiness check to trigger finalization.
+
+### Solution Strategy
+
+**Option 1: Conditional Early Finalization** ✅ IMPLEMENTED
+- Skip `applyNextButtonFinalizedState()` when in orchestrated mode
+- Let the orchestrator handle button finalization after cooldown expires
+- Preserves existing behavior for non-orchestrated flows
+
+**Implementation:** Modified `src/helpers/classicBattle/stateHandlers/cooldownEnter.js:158-173`
 ```javascript
-const checkImmediate = () => {
-  if (resolved) return;
-  const stateReady = isOrchestratorReadyState(readBattleStateDataset());
-  const outOfCooldown = machineOutOfCooldown();
-  const buttonReady = isNextButtonReady();
-  
-  if (stateReady) { finalize(); return; }
-  if (outOfCooldown) { finalize(); return; }
-  if (buttonReady) finalize();
-};
+const isOrchestrated = !!machine.context;
+if (!isOrchestrated) {
+  guard(() => {
+    applyNextButtonFinalizedState();
+    debugLog("cooldownEnter: finalized Next button state (early, non-orchestrated)");
+  });
+} else {
+  debugLog("cooldownEnter: skipped early finalization (orchestrated mode)");
+}
 ```
 
-**isNextButtonReady() Checks** (cooldownOrchestrator.js:700-720):
-```javascript
-const btn = document.getElementById("next-button");
-return btn.dataset?.nextReady === "true" || btn.disabled === false;
+### Test Results ✅ ALL PASSING
+
+```
+Test Files  1 passed (1)
+Tests       7 passed (7)
+Duration    2.66s
 ```
 
-### Hypotheses (Ordered by Likelihood)
-
-1. **State Machine Pollution** 🎯 HIGH PRIORITY
-   - `readBattleStateDataset()` may return "roundStart" or "waitingForPlayerAction" from previous test
-   - Check: `document.body.dataset.battleState` not being reset
-   - **Action:** Add `delete document.body.dataset.battleState;` to `_resetForTest()`
-
-2. **Machine State Transition Race Condition**
-   - Test dispatches `machine.dispatch("continue")` which transitions to "cooldown"
-   - `checkImmediate()` runs synchronously before cooldown timer starts
-   - `machineOutOfCooldown()` may return true if machine is already past cooldown state
-   - **Action:** Investigate `machineOutOfCooldown()` implementation and machine transition timing
-
-3. **Button State Timing Issue**
-   - Despite reset, button may have `disabled=false` at moment of check
-   - Less likely due to explicit reset in `_resetForTest()`
-   - **Action:** Add explicit button state verification in test setup
-
-4. **Event Bus State Pollution**
-   - Event listeners from previous tests may persist
-   - `setupOrchestratedReady()` creates new listeners but may not clean up old ones
-   - **Action:** Verify event bus cleanup in orchestrator reset
+**Tests Passing:**
+1. ✅ auto-dispatches ready after 1s cooldown
+2. ✅ transitions roundOver → cooldown → roundStart
+3. ✅ respects skipRoundCooldown when enabled
+4. ✅ respects skipRoundCooldown when disabled
+5. ✅ emits countdownFinished before round.start when countdown expires
+6. ✅ schedules a 1s minimum cooldown in test mode (FIXED)
+7. ✅ emits ready and starts the round cycle when machine dispatch declines
 
 ---
 

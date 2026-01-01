@@ -570,6 +570,18 @@ describe("classicBattle startCooldown", () => {
     const currentNextRound = debugRead("currentNextRound");
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
+
+    // Priority 2 Diagnostic: Capture state before assertion
+    const nextBtn = document.getElementById("next-button");
+    console.error("[TEST DEBUG] Before readyDispatched assertion:", {
+      readyDispatched: currentNextRound.readyDispatched,
+      machineState: machine.getState(),
+      datasetState: document.body?.dataset?.battleState,
+      buttonDisabled: nextBtn?.disabled,
+      buttonNextReady: nextBtn?.dataset?.nextReady,
+      buttonExists: !!nextBtn
+    });
+
     expect(currentNextRound.readyDispatched).toBe(false);
 
     const readyResolutionSpy = vi.fn();
