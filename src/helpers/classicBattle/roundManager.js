@@ -960,6 +960,9 @@ function createReadyDispatchConfiguration({
 
 function finalizeReadyControls(controls, dispatched, options = {}) {
   if (!controls) return;
+  if (typeof process !== "undefined" && process.env?.VITEST) {
+    throw new Error(`[DEBUG] finalizeReadyControls called with dispatched=${dispatched}`);
+  }
   const forceResolve = options.forceResolve === true;
   controls.readyInFlight = false;
   const resolver = typeof controls.resolveReady === "function" ? controls.resolveReady : null;

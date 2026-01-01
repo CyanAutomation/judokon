@@ -332,6 +332,9 @@ export function createCooldownControls({ emit } = {}) {
   const notify = typeof emit === "function" ? emit : emitBattleEvent;
   controls.ready = new Promise((resolve) => {
     controls.resolveReady = () => {
+      if (typeof process !== "undefined" && process.env?.VITEST) {
+        throw new Error("[DEBUG] resolveReady called!");
+      }
       appendReadyTrace("resolveReadyInvoked", {
         readyDispatched: controls.readyDispatched,
         readyInFlight: controls.readyInFlight
@@ -544,6 +547,9 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
   }
   const machineOutOfCooldown = () => {
     const state = getMachineState(machine);
+    if (typeof process !== "undefined" && process.env?.VITEST) {
+      console.error("[DEBUG machineOutOfCooldown] state =", state, "returning", typeof state === "string" && state !== "cooldown");
+    }
     return typeof state === "string" && state !== "cooldown";
   };
   addListener("battleStateChange", (event) => {
