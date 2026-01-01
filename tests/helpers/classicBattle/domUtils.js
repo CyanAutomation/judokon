@@ -75,9 +75,14 @@ export function createRoundMessage(id = "round-message") {
  *   Nodes for controlling the next round timer.
  */
 export function createTimerNodes() {
+  const existingNextButton = document.getElementById("next-button");
+  if (existingNextButton) {
+    existingNextButton.remove();
+  }
   const nextButton = document.createElement("button");
   nextButton.id = "next-button";
   nextButton.setAttribute("data-role", "next-round");
+  nextButton.removeAttribute("data-next-ready");
   const nextRoundTimer = document.createElement("p");
   nextRoundTimer.id = "next-round-timer";
   nextRoundTimer.setAttribute("data-testid", "next-round-timer");
