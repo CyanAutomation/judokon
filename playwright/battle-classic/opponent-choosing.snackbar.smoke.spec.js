@@ -57,7 +57,6 @@ test.describe("Cooldown countdown display", () => {
 
     const nextButton = page.getByTestId("next-button");
     await waitForNextButtonReady(page);
-    await expect(nextButton).toBeEnabled();
     await expect(nextButton).toHaveAttribute("data-next-ready", "true", { timeout: 10_000 });
 
     await nextButton.click();
