@@ -323,6 +323,9 @@ export function createCooldownControls({ emit } = {}) {
     readyDispatched: false,
     readyInFlight: false
   };
+  if (typeof console !== "undefined" && console.error) {
+    console.error("[DEBUG createCooldownControls] Created controls with readyDispatched = false");
+  }
   appendReadyTrace("controlsCreated", {
     hasEmitter: typeof emit === "function"
   });

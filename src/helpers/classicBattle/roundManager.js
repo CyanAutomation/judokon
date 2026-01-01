@@ -576,6 +576,9 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     metadata: { cooldownSeconds }
   });
   const sessionControls = session.controls;
+  if (typeof process !== "undefined" && typeof console !== "undefined" && console.error) {
+    console.error("[DEBUG startCooldown] About to set currentNextRound, controls.readyDispatched =", sessionControls?.readyDispatched);
+  }
   currentNextRound = sessionControls;
   safeRound(
     "startCooldown.exposeCurrentNextRound",
@@ -1241,6 +1244,9 @@ export function _resetForTest(store, preserveConfig = {}) {
     { suppressInProduction: true }
   );
   stopScheduler();
+  // Reset module-level cooldown state to prevent test pollution
+  currentNextRound = null;
+  activeCooldownControls = null;
   if (typeof window !== "undefined") {
     const api = readDebugState("classicBattleDebugAPI");
     if (api) delete api.startRoundOverride;
