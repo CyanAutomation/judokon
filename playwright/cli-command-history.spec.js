@@ -256,17 +256,19 @@ test.describe("CLI Command History", () => {
     await page.keyboard.press("ArrowUp");
     await expect(snackbar).toContainText(`History: ${secondStat}`);
     await expect(statList).toHaveAttribute("data-history-preview", secondStat);
-    await page.waitForTimeout(100);
+    await expect(
+      statList.locator(`.history-preview[data-stat="${secondStat}"]`)
+    ).toBeVisible();
 
     await page.keyboard.press("ArrowUp");
     await expect(snackbar).toContainText(`History: ${firstStat}`);
+    await expect(statList).toHaveAttribute("data-history-preview", firstStat);
     await expect(statList.locator(`.history-preview[data-stat="${firstStat}"]`)).toBeVisible();
-    await page.waitForTimeout(100);
 
     // Navigating forward should clear the preview and return focus to the current prompt
     await page.keyboard.press("ArrowDown");
     await expect(snackbar).toContainText(`History: ${secondStat}`);
-    await page.waitForTimeout(100);
+    await expect(statList).toHaveAttribute("data-history-preview", secondStat);
     await page.keyboard.press("ArrowDown");
     await expect(snackbar).toHaveText("");
     await expect(statList).not.toHaveAttribute("data-history-preview");
