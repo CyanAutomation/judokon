@@ -89,6 +89,7 @@ function activateSnackbar(target) {
     resetState();
   };
   target.addEventListener("animationend", animationListener);
+  target.dataset.snackbarToken = token;
   target.classList.remove(ACTIVE_CLASS);
   // Force a reflow so the animation can restart cleanly on updates.
 
