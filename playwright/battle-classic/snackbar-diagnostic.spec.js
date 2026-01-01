@@ -22,7 +22,9 @@ test.describe("Snackbar diagnostic tests", () => {
       await statButton.click();
 
       const snackbarLocator = page.locator("#snackbar-container, .snackbar");
-      await expect(snackbarLocator).toContainText(/You Picked|Opponent is choosing/i);
+      await expect(snackbarLocator).toContainText(/You Picked|Opponent is choosing/i, {
+        timeout: 2500
+      });
 
       await waitForNextButtonReady(page);
       await expect(page.getByTestId("next-button")).toBeEnabled();
