@@ -198,7 +198,7 @@ describe("classicBattle stat selection", () => {
     emitBattleEvent("statSelected", { stat: "power", store });
     await timers.runAllTimersAsync();
     expect(store.statButtonEls.power.classList.contains("selected")).toBe(true);
-    expect(buttons.every((button) => !button.disabled)).toBe(true);
+    expect(buttons.every((button) => button.disabled)).toBe(true);
 
     emitBattleEvent("roundResolved", {
       store,
