@@ -1427,8 +1427,12 @@ export function selectStat(stat) {
   } catch {}
 
   if (!stat) return;
-  // Ignore re-entrant calls while a selection is being applied
-  if (selectionApplying || state.roundResolving) return;
+  // Ignore re-entrant calls while a selection is being applied.
+  const battleState =
+    getStateSnapshot?.().state ?? document.body?.dataset?.battleState ?? null;
+  if (selectionApplying || (state.roundResolving && battleState !== "waitingForPlayerAction")) {
+    return;
+  }
   clearHistoryPreview({ restoreAnchor: false });
   selectionApplying = true;
   stopSelectionCountdown();
