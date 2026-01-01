@@ -18,6 +18,7 @@ This investigation successfully resolved the cooldown.spec.js test failures by f
 4. Test expectations were too strict for fast transition scenarios (cooldownMs: 0)
 
 **Key Fixes (January 1, 2026)**:
+
 - Removed conditional logic that prevented early finalization in `cooldownEnter.js`
 - Enhanced `applyNextButtonFinalizedState()` to set diagnostic globals (`__classicBattleSelectionFinalized`, `__classicBattleLastFinalizeContext`)
 - Calculate next round number (current + 1) for `__highestDisplayedRound` diagnostic
@@ -25,6 +26,7 @@ This investigation successfully resolved the cooldown.spec.js test failures by f
 - Added import for `roundStore` in `uiHelpers.js`
 
 **Previous Fixes (December 2025 - December 31, 2025)**:
+
 - Fixed race condition in opponent-reveal.spec.js (December 31, 2025)
 - Fixed test expectations in opponent-message.spec.js (December 2025)
 - Added missing data-testid attributes (December 2025)
@@ -125,12 +127,14 @@ When early finalization happens at step 2, the DOM hasn't been updated yet (step
 ### Test Results
 
 **Before fix:**
+
 ```
 ✘ Test #1: Next button did not report ready within 5000ms
 ✘ Test #2: Next button did not report ready within 5000ms
 ```
 
 **After fix:**
+
 ```
 ✓ Test #1: Next becomes ready after resolution and advances on click (4.3s)
 ✓ Test #2: recovers round counter state after external DOM interference (4.3s)
@@ -291,7 +295,7 @@ All documented test failures have been resolved. The investigation identified:
 
 - **Issue**: Early button finalization was being skipped, causing Next button to not be ready in time for fast transitions (cooldownMs: 0).
 - **Root Cause**: The `cooldownEnter` handler was checking for orchestrated mode and test mode, and skipping early finalization when either was active. Since normal battle flow IS orchestrated, finalization was always skipped.
-- **Solution**: 
+- **Solution**:
   1. Removed orchestration and test mode checks - always apply early finalization
   2. Enhanced `applyNextButtonFinalizedState()` to set diagnostic globals
   3. Calculate next round number (current + 1) for highest round diagnostic
@@ -505,6 +509,7 @@ All documented test failures have been resolved. The investigation identified:
    ```
 
 3. **Add Retry Logic for Known Flaky Patterns**:
+
    ```javascript
    // For state checks that may transition quickly
    await expect(async () => {
@@ -515,15 +520,15 @@ All documented test failures have been resolved. The investigation identified:
 
 ## Files Modified
 
-1.  `src/pages/battleClassic.html`: Added `data-testid="round-message"` to the relevant element.
-2.  `playwright/battle-classic/keyboard-navigation.spec.js`: Updated test logic to correctly verify the round message element.
-3.  `playwright/battle-classic/opponent-message.spec.js`: Modified `waitForBattleState` to accept multiple valid post-selection states for improved robustness.
-4.  `playwright/battle-classic/snackbar-console-diagnostic.spec.js`: Corrected attribute check from `data-selected` to `selected` class (partial fix as snackbar still doesn't update).
-5.  `playwrightTestFailures.md`: Documented all investigations and fixes in a structured format.
+1. `src/pages/battleClassic.html`: Added `data-testid="round-message"` to the relevant element.
+2. `playwright/battle-classic/keyboard-navigation.spec.js`: Updated test logic to correctly verify the round message element.
+3. `playwright/battle-classic/opponent-message.spec.js`: Modified `waitForBattleState` to accept multiple valid post-selection states for improved robustness.
+4. `playwright/battle-classic/snackbar-console-diagnostic.spec.js`: Corrected attribute check from `data-selected` to `selected` class (partial fix as snackbar still doesn't update).
+5. `playwrightTestFailures.md`: Documented all investigations and fixes in a structured format.
 
 ## Next Steps
 
-### To Complete This Investigation:
+### To Complete This Investigation
 
 1. **Run Current Test Suite**: `npx playwright test playwright/battle-classic/ --reporter=list` and record results
 2. **Document Each Remaining Test**: Add entries for all 14 unresolved tests with current status
@@ -531,13 +536,13 @@ All documented test failures have been resolved. The investigation identified:
 4. **Link to Commits/PRs**: Add git references for all fixes mentioned
 5. **Mark as Complete**: Add final status ("Investigation completed YYYY-MM-DD" or "Deprioritized - reason")
 
-### If Continuing Investigation:
+### If Continuing Investigation
 
 1. **Priority 1**: State transitions and selection reset (affects multiple tests - Pattern 1 & 2)
 2. **Priority 2**: Event handler issues (snackbar updates, button state changes)
 3. **Priority 3**: Replay/reset functionality (modal intercepts, button states)
 
-### Quick Wins:
+### Quick Wins
 
 1. Run `git log --since="2025-12-01" --until="2025-12-31" -- src/helpers/classicBattle.js src/pages/battleClassic.init.js` to check for recent changes
 2. Add debug logging to state machine to trace transitions during test runs

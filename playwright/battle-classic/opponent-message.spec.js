@@ -205,22 +205,10 @@ test.describe("Classic Battle Opponent Messages", () => {
         { timeout: 5000 }
       );
 
-      await expect
-        .poll(
-          async () => {
-            return await page.evaluate(() => {
-              const snackText = document.querySelector("#snackbar-container")?.textContent ?? "";
-              const timerText =
-                document.querySelector('[data-testid="next-round-timer"]')?.textContent ?? "";
-              return `${snackText} ${timerText}`.trim();
-            });
-          },
-          {
-            timeout: 4_000,
-            message: "Expected opponent message after entering cooldown state"
-          }
-        )
-        .toMatch(/Opponent is choosing|Next round in/i);
+      const snackbar = page.locator("#snackbar-container .snackbar");
+      await expect(snackbar).toContainText(/Opponent is choosing|Next round in/i, {
+        timeout: 4_000
+      });
     },
     {
       nextRoundCooldown: 2_000,

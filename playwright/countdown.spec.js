@@ -31,7 +31,7 @@ test.describe("Battle CLI countdown timing", () => {
       await expect(statButton).toBeEnabled({ timeout: 5_000 });
       await statButton.click();
 
-      await expect(page.locator("#snackbar-container .snackbar")).toHaveText(/You Picked:/, {
+      await expect(page.locator("#snackbar-container .snackbar")).toContainText(/You Picked:/, {
         timeout: 2_000
       });
 

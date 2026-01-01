@@ -98,9 +98,8 @@ test.describe("Cooldown countdown display", () => {
     await expect(snackbar).toBeVisible({ timeout: 2_000 });
 
     // Verify the snackbar does NOT contain countdown text during opponent selection
-    const snackbarText = await snackbar.textContent();
-    expect(snackbarText).not.toMatch(/Next round in:/i);
-    expect(snackbarText).not.toMatch(/Time Left:/i);
+    await expect(snackbar).not.toContainText(/Next round in:/i);
+    await expect(snackbar).not.toContainText(/Time Left:/i);
 
     // But the timer display should still work
     const timer = page.getByTestId("next-round-timer");
