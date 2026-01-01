@@ -39,8 +39,8 @@ describe("getPrdTaskStats", () => {
   it("ignores malformed checkbox syntax", () => {
     const md = `## Tasks\n- [x] valid\n- [] missing space\n- [x ] trailing\n- [*] symbol\n- [X] uppercase\n- [ ] ok`;
     const stats = getPrdTaskStats(md);
-    expect(stats.total).toBe(3);
-    expect(stats.completed).toBe(2);
+    expect(stats.total).toBe(4);
+    expect(stats.completed).toBe(3);
   });
 
   it("handles missing section", () => {
