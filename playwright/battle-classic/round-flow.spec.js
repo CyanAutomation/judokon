@@ -95,6 +95,35 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       expect(snapshot?.selectionMade).toBe(true);
     }, MUTED_CONSOLE_LEVELS));
 
+  test("advances a resolved round and updates the counter/score", async ({ page }) =>
+    withMutedConsole(async () => {
+      await initializeBattle(page, {
+        matchSelector: "#round-select-2",
+        timerOverrides: { roundTimer: 5 },
+        nextRoundCooldown: 250,
+        resolveDelay: 1
+      });
+
+      const roundCounter = page.locator("#round-counter");
+      const initialRoundLabel = (await roundCounter.textContent()) ?? "";
+      const initialRound = Number(initialRoundLabel.match(/(\d+)/)?.[1]) || 1;
+      const expectedRound = initialRound + 1;
+
+      const firstStat = page.locator(selectors.statButton()).first();
+      await firstStat.click();
+
+      await ensureRoundResolved(page);
+      await waitForRoundsPlayed(page, 1);
+
+      await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+
+      const nextButton = page.locator("#next-button");
+      await expect(nextButton).toHaveAttribute("data-next-ready", "true");
+      await nextButton.click();
+
+      await expect(roundCounter).toContainText(new RegExp(`Round\\s*${expectedRound}`, "i"));
+    }, MUTED_CONSOLE_LEVELS));
+
   test("advances to the next round after opponent reveal", async ({ page }) =>
     withMutedConsole(async () => {
       await initializeBattle(page, {
