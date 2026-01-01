@@ -571,12 +571,16 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
     }
   });
   const checkImmediate = () => {
+    console.log("[AGENT] checkImmediate called, resolved=", resolved);
     if (resolved) return;
     const stateReady = isOrchestratorReadyState(readBattleStateDataset());
     const outOfCooldown = machineOutOfCooldown();
     const buttonReady = isNextButtonReady();
     if (stateReady || outOfCooldown || buttonReady) {
-      throw new Error(`[DEBUG] checkImmediate will finalize: stateReady=${stateReady} outOfCooldown=${outOfCooldown} buttonReady=${buttonReady}`);
+      // Log to stderr to ensure it appears
+      if (typeof process !== "undefined" && process.env?.VITEST && typeof console?.error === 'function') {
+        console.error(`[AGENT DEBUG] checkImmediate: stateReady=${stateReady} outOfCooldown=${outOfCooldown} buttonReady=${buttonReady}`);
+      }
     }
     if (stateReady) {
       finalize();
