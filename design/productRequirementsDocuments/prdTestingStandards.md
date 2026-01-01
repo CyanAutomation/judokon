@@ -570,24 +570,25 @@ PRDs align with the actual test guidance.
   - Random Judoka helpers register under `window.__TEST_API.randomJudoka`.
 
 > **Cross-reference:** See `tests/README.md` sections:
+>
 > - “Public Test API” for stable usage expectations.
 > - “Private Test Fixtures” for `window.testFixtures` helpers that are intentionally unstable.
 
 #### Public Namespaces & Typical Usage
 
-| Namespace | Representative APIs | Purpose |
-| --- | --- | --- |
-| `init` | `waitForBattleReady`, `configureClassicBattle`, `resetBattleCliModuleState`, `getInitPromises`, `waitForBrowseReady` | Orchestrate deterministic setup and readiness. |
-| `state` | `getBattleState`, `dispatchBattleEvent`, `waitForBattleState`, `waitForRoundsPlayed`, `waitForStatButtonsReady`, `waitForMatchCompletion` | Read/drive state transitions with event-based synchronization. |
-| `timers` | `setCountdown`, `getCountdown`, `waitForCountdown`, `expireSelectionTimer`, `skipCooldown`, `setOpponentResolveDelay`, `getOpponentResolveDelay`, `clearAllTimers` | Control timers and opponent delay for deterministic timing. |
-| `inspect` | `getBattleStore`, `getBattleSnapshot`, `getFeatureFlags`, `getStatButtonSnapshot`, `getRoundStatComparison`, `getStatButtonListenerSnapshot`, `pickAdvantagedStatKey`, `resetCache` | Snapshot inspection for assertions without DOM mutation. |
-| `cli` | `resolveRound`, `completeRound`, `readVerboseLog` | Deterministic CLI battle resolution and diagnostics. |
-| `engine` | `require`, `setPointsToWin`, `getPointsToWin`, `waitForPointsToWin`, `getScores`, `getRoundsPlayed`, `waitForRoundsPlayed` | Battle engine control for target scores and diagnostics. |
-| `viewport` | `setZoom`, `resetZoom` | Simulate zoom behavior in browser tests. |
-| `autoSelect` | `triggerAutoSelect`, `setAutoContinue`, `getAutoContinue` | Control auto-select and round continuation behavior. |
-| `statButtons` | `getSnapshot`, `waitForReady` (from `statButtonTestSignals`) | Read stat button readiness and IDs when needed for assertions. |
-| `browse` | `disableHoverAnimations`, `enableHoverAnimations`, `addCard`, `clearCarouselCards`, `whenCarouselReady`, `getSnapshot` | Browse page hooks used by Playwright fixtures. |
-| `randomJudoka` | `setDrawButtonLabel`, `resolveDrawPipeline`, `getPreferences` | Random Judoka page-specific testing hooks. |
+| Namespace      | Representative APIs                                                                                                                                                                 | Purpose                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `init`         | `waitForBattleReady`, `configureClassicBattle`, `resetBattleCliModuleState`, `getInitPromises`, `waitForBrowseReady`                                                                | Orchestrate deterministic setup and readiness.                 |
+| `state`        | `getBattleState`, `dispatchBattleEvent`, `waitForBattleState`, `waitForRoundsPlayed`, `waitForStatButtonsReady`, `waitForMatchCompletion`                                           | Read/drive state transitions with event-based synchronization. |
+| `timers`       | `setCountdown`, `getCountdown`, `waitForCountdown`, `expireSelectionTimer`, `skipCooldown`, `setOpponentResolveDelay`, `getOpponentResolveDelay`, `clearAllTimers`                  | Control timers and opponent delay for deterministic timing.    |
+| `inspect`      | `getBattleStore`, `getBattleSnapshot`, `getFeatureFlags`, `getStatButtonSnapshot`, `getRoundStatComparison`, `getStatButtonListenerSnapshot`, `pickAdvantagedStatKey`, `resetCache` | Snapshot inspection for assertions without DOM mutation.       |
+| `cli`          | `resolveRound`, `completeRound`, `readVerboseLog`                                                                                                                                   | Deterministic CLI battle resolution and diagnostics.           |
+| `engine`       | `require`, `setPointsToWin`, `getPointsToWin`, `waitForPointsToWin`, `getScores`, `getRoundsPlayed`, `waitForRoundsPlayed`                                                          | Battle engine control for target scores and diagnostics.       |
+| `viewport`     | `setZoom`, `resetZoom`                                                                                                                                                              | Simulate zoom behavior in browser tests.                       |
+| `autoSelect`   | `triggerAutoSelect`, `setAutoContinue`, `getAutoContinue`                                                                                                                           | Control auto-select and round continuation behavior.           |
+| `statButtons`  | `getSnapshot`, `waitForReady` (from `statButtonTestSignals`)                                                                                                                        | Read stat button readiness and IDs when needed for assertions. |
+| `browse`       | `disableHoverAnimations`, `enableHoverAnimations`, `addCard`, `clearCarouselCards`, `whenCarouselReady`, `getSnapshot`                                                              | Browse page hooks used by Playwright fixtures.                 |
+| `randomJudoka` | `setDrawButtonLabel`, `resolveDrawPipeline`, `getPreferences`                                                                                                                       | Random Judoka page-specific testing hooks.                     |
 
 #### Private Test Fixtures (Playwright-only)
 

@@ -17,6 +17,7 @@ This investigation successfully identified and resolved a critical race conditio
 ## Tests Successfully Fixed
 
 ### 1. keyboard-navigation.spec.js - "should select a stat with Enter and update the round message"
+
 - **Issue**: Missing `data-testid="round-message"` attribute on element.
 - **Root Cause**: HTML element had `id="round-message"` but no `data-testid` for Playwright.
 - **Solution**: Added `data-testid` attribute to `src/pages/battleClassic.html`.
@@ -24,31 +25,34 @@ This investigation successfully identified and resolved a critical race conditio
 - **Result**: ✅ PASS (6.9s)
 - **Date Fixed**: December 2025
 - **Relevant Files/PRs**:
-    - `src/pages/battleClassic.html`
-    - `playwright/battle-classic/keyboard-navigation.spec.js`
+  - `src/pages/battleClassic.html`
+  - `playwright/battle-classic/keyboard-navigation.spec.js`
 
 ### 2. opponent-message.spec.js - "shows opponent feedback snackbar immediately after stat selection"
+
 - **Issue**: Test timing out waiting for "cooldown" state specifically.
 - **Root Cause**: Battle sometimes transitions directly to "roundOver", skipping "cooldown" due to fast resolution.
 - **Solution**: Changed `waitForBattleState` to accept multiple valid post-selection states (cooldown, roundOver, waitingForPlayerAction).
 - **Result**: ✅ PASS (8.7s)
 - **Date Fixed**: December 2025
 - **Relevant Files/PRs**:
-    - `playwright/battle-classic/opponent-message.spec.js`
+  - `playwright/battle-classic/opponent-message.spec.js`
 
 ### 3. opponent-message.spec.js - "CLI resolveRound reveals the opponent card"
+
 - **Issue**: Test expected `#opponent-card` to have `aria-label="Mystery opponent card"`.
 - **Root Cause**: By design (`opponentPlaceholder.js:114`), container keeps `aria-label="Opponent card"`. The mystery label is on the inner placeholder element.
 - **Solution**: Changed test to check for placeholder visibility and `is-obscured` class instead.
 - **Result**: ✅ PASS (4.0s)
 - **Date Fixed**: December 2025
 - **Relevant Files/PRs**:
-    - `playwright/battle-classic/opponent-message.spec.js`
+  - `playwright/battle-classic/opponent-message.spec.js`
 
 ### 4. opponent-reveal.spec.js - "resets stat selection after advancing to the next round" ⭐ NEW
+
 - **Issue**: `selectionMade` flag remained `true` after advancing to next round, even though the state handler reset it.
 - **Root Cause**: Race condition - `finalizeReadyControls` was calling `setNextButtonFinalizedState()` AFTER `waitingForPlayerActionEnter` had already reset `window.__classicBattleSelectionFinalized = false`. The cooldown timer expiration handler (`handleNextRoundExpiration`) executed asynchronously and set the flag back to `true` after the state had progressed past `cooldown`.
-- **Investigation**: 
+- **Investigation**:
   - Confirmed `waitingForPlayerActionEnter` handler was being called
   - Confirmed `store.selectionMade` was correctly reset to `false`
   - Identified that `window.__classicBattleSelectionFinalized` remained `true`
@@ -56,30 +60,30 @@ This investigation successfully identified and resolved a critical race conditio
   - Found `finalizeReadyControls` had no state guard
 - **Solution**: Added state machine guard in `finalizeReadyControls` (roundManager.js line 967-986) to only set finalization flag when state is `cooldown` or `roundStart`. If state machine is unavailable or state is beyond these phases, the flag is not set.
 - **Code Changes**:
+
   ```javascript
   // In src/helpers/classicBattle/roundManager.js
   let shouldSetFinalized = false;
   try {
     const machine = controls.getClassicBattleMachine?.();
-    if (machine && typeof machine.getState === 'function') {
+    if (machine && typeof machine.getState === "function") {
       const currentState = machine.getState();
-      shouldSetFinalized = 
-        currentState === 'cooldown' || 
-        currentState === 'roundStart';
+      shouldSetFinalized = currentState === "cooldown" || currentState === "roundStart";
     }
   } catch {}
-  
+
   if (shouldSetFinalized) {
     setNextButtonFinalizedState();
   }
   ```
+
 - **Also Fixed**: Improved `getBattleSnapshot` resolution logic in testApi.js to properly handle when BOTH flags are `false` (lines 2594-2599)
 - **Result**: ✅ PASS (4.0s)
 - **Date Fixed**: December 31, 2025
 - **Relevant Files**:
-    - `src/helpers/classicBattle/roundManager.js` (finalizeReadyControls function)
-    - `src/helpers/testApi.js` (getBattleSnapshot resolution logic)
-    - `playwright/battle-classic/opponent-reveal.spec.js` (test file)
+  - `src/helpers/classicBattle/roundManager.js` (finalizeReadyControls function)
+  - `src/helpers/testApi.js` (getBattleSnapshot resolution logic)
+  - `playwright/battle-classic/opponent-reveal.spec.js` (test file)
 
 ## Technical Details: Race Condition Analysis
 
@@ -93,7 +97,7 @@ This investigation successfully identified and resolved a critical race conditio
 6. State dispatches `ready` → transitions: `cooldown` → `roundStart`
 7. `roundStartEnter` dispatches `cardsRevealed` → transitions: `roundStart` → `waitingForPlayerAction`
 8. **`waitingForPlayerActionEnter` resets flags**: `store.selectionMade = false`, `window.__classicBattleSelectionFinalized = false`
-9. ⚠️ **`handleNextRoundExpiration` (still executing) calls `finalizeReadyControls`** 
+9. ⚠️ **`handleNextRoundExpiration` (still executing) calls `finalizeReadyControls`**
 10. ⚠️ **Sets `window.__classicBattleSelectionFinalized = true`** (AFTER it was reset!)
 11. Test checks `selectionMade` → sees `true` → FAILS
 
@@ -104,6 +108,7 @@ The cooldown expiration handler is async and continues executing even after the 
 ### Solution
 
 Add a state machine guard to ensure `setNextButtonFinalizedState()` is only called when appropriate:
+
 - ✅ Call it when state is `cooldown` or `roundStart`
 - ❌ Don't call it when state is `waitingForPlayerAction` or beyond
 - ❌ Don't call it when state machine is unavailable (defensive programming)
@@ -124,6 +129,7 @@ Add a state machine guard to ensure `setNextButtonFinalizedState()` is only call
 ### Investigation Complete ✅
 
 All documented test failures have been resolved. The investigation identified:
+
 - 3 test expectation issues (fixed by updating tests)
 - 1 critical race condition bug (fixed in application code)
 
@@ -142,12 +148,14 @@ All documented test failures have been resolved. The investigation identified:
 ## ⚠️ Document Status Warning
 
 **Issues with this document:**
+
 1. **Incomplete Investigation**: Only 3 of 17 tests documented as fixed, status of remaining 14 tests unknown
 2. **Placeholder Content**: Multiple `[YYYY-MM-DD]` dates and `[Link to file on GitHub]` placeholders not filled in
 3. **Missing Context**: No commit hashes, no specific version numbers, no completion date
 4. **Unknown Current State**: Are the remaining tests still failing? Fixed? Deprioritized?
 
 **Recommendations:**
+
 - Update with actual dates and commit hashes
 - Complete investigation for remaining 14 tests OR mark as "investigation incomplete"
 - Add current test suite status (run `npx playwright test` to get current pass/fail rates)
@@ -156,6 +164,7 @@ All documented test failures have been resolved. The investigation identified:
 ## Tests Successfully Fixed
 
 ### 1. keyboard-navigation.spec.js - "should select a stat with Enter and update the round message"
+
 - **Issue**: Missing `data-testid="round-message"` attribute on element.
 - **Root Cause**: HTML element had `id="round-message"` but no `data-testid` for Playwright.
 - **Solution**: Added `data-testid` attribute to `src/pages/battleClassic.html`.
@@ -163,93 +172,107 @@ All documented test failures have been resolved. The investigation identified:
 - **Result**: ✅ PASS (6.9s)
 - **Date Fixed**: [YYYY-MM-DD]
 - **Relevant Files/PRs**:
-    - `src/pages/battleClassic.html` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/src/pages/battleClassic.html))
-    - `playwright/battle-classic/keyboard-navigation.spec.js` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/playwright/battle-classic/keyboard-navigation.spec.js))
-    - [Link to relevant PR (if applicable)](https://github.com/user/repo/pull/XYZ)
+  - `src/pages/battleClassic.html` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/src/pages/battleClassic.html))
+  - `playwright/battle-classic/keyboard-navigation.spec.js` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/playwright/battle-classic/keyboard-navigation.spec.js))
+  - [Link to relevant PR (if applicable)](https://github.com/user/repo/pull/XYZ)
 
 ### 2. opponent-message.spec.js - "shows opponent feedback snackbar immediately after stat selection"
+
 - **Issue**: Test timing out waiting for "cooldown" state specifically.
 - **Root Cause**: Battle sometimes transitions directly to "roundOver", skipping "cooldown" due to fast resolution.
 - **Solution**: Changed `waitForBattleState` to accept multiple valid post-selection states (cooldown, roundOver, waitingForPlayerAction).
 - **Result**: ✅ PASS (8.7s)
 - **Date Fixed**: [YYYY-MM-DD]
 - **Relevant Files/PRs**:
-    - `playwright/battle-classic/opponent-message.spec.js` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/playwright/battle-classic/opponent-message.spec.js))
-    - [Link to relevant PR (if applicable)](https://github.com/user/repo/pull/XYZ)
+  - `playwright/battle-classic/opponent-message.spec.js` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/playwright/battle-classic/opponent-message.spec.js))
+  - [Link to relevant PR (if applicable)](https://github.com/user/repo/pull/XYZ)
 
 ### 3. opponent-message.spec.js - "CLI resolveRound reveals the opponent card"
+
 - **Issue**: Test expected `#opponent-card` to have `aria-label="Mystery opponent card"`.
 - **Root Cause**: By design (`opponentPlaceholder.js:114`), container keeps `aria-label="Opponent card"`. The mystery label is on the inner placeholder element.
 - **Solution**: Changed test to check for placeholder visibility and `is-obscured` class instead.
 - **Result**: ✅ PASS (4.0s)
 - **Date Fixed**: [YYYY-MM-DD]
 - **Relevant Files/PRs**:
-    - `playwright/battle-classic/opponent-message.spec.js` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/playwright/battle-classic/opponent-message.spec.js))
-    - [Link to relevant PR (if applicable)](https://github.com/user/repo/pull/XYZ)
+  - `playwright/battle-classic/opponent-message.spec.js` (e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/playwright/battle-classic/opponent-message.spec.js))
+  - [Link to relevant PR (if applicable)](https://github.com/user/repo/pull/XYZ)
 
 ## Common Failure Patterns Identified
 
 ### Pattern 1: State Transition Issues (Tests 2, 4, 7, 8, 9)
+
 **Symptoms**:
+
 - Tests wait for specific battle states that are skipped.
 - Timeouts in `waitForBattleState()`.
 - Battle advancing too quickly through intermediate states.
-**Examples**:
+  **Examples**:
 - Test expects "cooldown" but gets "roundOver" immediately.
 - Test expects "waitingForPlayerAction" but state is already past it.
-**Possible Causes**:
+  **Possible Causes**:
 - Recent changes to state machine timing.
 - Race conditions in state transitions.
 - Auto-advance features triggering faster than expected.
 
 ### Pattern 2: Selection Reset Not Working (Test 4, 8)
+
 **Symptoms**:
+
 - `selectionMade` flag stays `true` when it should reset to `false`.
 - Selection state persists across rounds.
-**Code Reference**:
+  **Code Reference**:
 - `waitingForPlayerActionEnter` handler SHOULD reset this (line 44 of `stateHandlers/waitingForPlayerActionEnter.js` - e.g., [Link to file on GitHub](https://github.com/user/repo/blob/main/path/to/stateHandlers/waitingForPlayerActionEnter.js#L44)).
 - Handler may not be invoked correctly after round advancement.
-**Impact**: Prevents proper round-to-round state reset.
+  **Impact**: Prevents proper round-to-round state reset.
 
 ### Pattern 3: Stat Buttons Stay Disabled (Tests 5, 6, 17)
+
 **Symptoms**:
+
 - Tests timeout clicking stat buttons that remain disabled.
 - Buttons show `disabled` attribute and `disabled` class.
 - Often happens after replay or round advancement.
-**Possible Causes**:
+  **Possible Causes**:
 - Button enable/disable logic not triggered.
 - State machine not reaching "waitingForPlayerAction" properly.
 - Event handlers not re-enabling buttons.
 
 ### Pattern 4: Snackbar Messages Not Updating (Tests 10-15)
+
 **Symptoms**:
+
 - Snackbar shows initial message ("First to X points wins") and never updates.
 - Expected messages like "Opponent is choosing", "You Picked:", "Next round in" never appear.
 - Suggests event handlers not firing.
-**Test 15 Specific**:
+  **Test 15 Specific**:
 - Also had wrong expectation (`data-selected` attribute doesn't exist, should check `selected` class).
 - Even after fixing attribute check, snackbar still doesn't update.
 
 ## Tests Needing Further Investigation
 
 ### Priority 1 - Likely Application Bugs
+
 - **Test #4**: `opponent-reveal.spec.js` "resets stat selection after advancing"
   - `selectionMade` not resetting - core functionality issue.
 - **Test #15**: `snackbar-console-diagnostic.spec.js`
   - Snackbar never updates - event handler issue.
 
 ### Priority 2 - Timing/State Machine Issues
+
 - **Tests #7, #8, #9**: `round-flow.spec.js` (multiple)
   - State transition expectations vs reality.
 - **Tests #10, #11**: `round-flow.spec.js`
   - "Opponent is choosing" message not appearing.
 
 ### Priority 3 - Replay/Reset Functionality
+
 - **Tests #5, #6**: `replay-flaky-detector.spec.js`, `replay-round-counter.smoke.spec.js`
   - Buttons staying disabled after replay.
   - Modal intercepts clicks.
 
 ### Priority 4 - Other Edge Cases
+
 - **Test #16**: `snackbar-diagnostic.spec.js`
   - Strict mode violation with multiple snackbar elements.
 - **Test #17**: `stat-selection.spec.js`
@@ -258,12 +281,14 @@ All documented test failures have been resolved. The investigation identified:
 ## Recommendations
 
 ### Immediate Actions (Required to Complete Investigation)
+
 1. **Document Current Status**: Run `npx playwright test playwright/battle-classic/` and record current pass/fail counts
 2. **Fill in Placeholders**: Replace all `[YYYY-MM-DD]` with actual dates, add commit hashes
 3. **Update Remaining Tests**: Document status of the 14 unresolved tests (fixed, still failing, or deprioritized)
 4. **Add Completion Date**: Mark investigation as "Completed on YYYY-MM-DD" or "Abandoned - see reason"
 
 ### Investigation Needed (If Continuing)
+
 1. **State Machine Audit**: Review transition logic between states:
    - File: `src/pages/battleClassic.init.js` and state handlers
    - Focus: `waitingForPlayerAction` entry/exit, `cooldown` handling, round advancement
@@ -280,18 +305,20 @@ All documented test failures have been resolved. The investigation identified:
    - Pattern: Compare working vs failing replay scenarios
 
 ### Test Maintenance (Best Practices)
+
 1. **Update Test Expectations**:
    - ✅ Fixed: `data-selected` attribute (doesn't exist) → use `selected` class
    - ✅ Fixed: `aria-label` expectations now match implementation
    - ⚠️ TODO: Verify all state transition expectations match current flow
 
 2. **Improve Test Resilience**:
+
    ```javascript
    // ❌ Brittle: Expects exact state
-   await waitForBattleState('cooldown');
-   
+   await waitForBattleState("cooldown");
+
    // ✅ Resilient: Accepts multiple valid states
-   await waitForBattleState(['cooldown', 'roundOver', 'waitingForPlayerAction']);
+   await waitForBattleState(["cooldown", "roundOver", "waitingForPlayerAction"]);
    ```
 
 3. **Add Retry Logic for Known Flaky Patterns**:
@@ -299,7 +326,7 @@ All documented test failures have been resolved. The investigation identified:
    // For state checks that may transition quickly
    await expect(async () => {
      const state = await getBattleState();
-     expect(['validState1', 'validState2']).toContain(state);
+     expect(["validState1", "validState2"]).toContain(state);
    }).toPass({ intervals: [100, 200, 500], timeout: 3000 });
    ```
 
@@ -314,6 +341,7 @@ All documented test failures have been resolved. The investigation identified:
 ## Next Steps
 
 ### To Complete This Investigation:
+
 1. **Run Current Test Suite**: `npx playwright test playwright/battle-classic/ --reporter=list` and record results
 2. **Document Each Remaining Test**: Add entries for all 14 unresolved tests with current status
 3. **Add Specific Dates**: Fill in all `[YYYY-MM-DD]` placeholders with actual investigation dates
@@ -321,11 +349,13 @@ All documented test failures have been resolved. The investigation identified:
 5. **Mark as Complete**: Add final status ("Investigation completed YYYY-MM-DD" or "Deprioritized - reason")
 
 ### If Continuing Investigation:
+
 1. **Priority 1**: State transitions and selection reset (affects multiple tests - Pattern 1 & 2)
 2. **Priority 2**: Event handler issues (snackbar updates, button state changes)
 3. **Priority 3**: Replay/reset functionality (modal intercepts, button states)
 
 ### Quick Wins:
+
 1. Run `git log --since="2025-12-01" --until="2025-12-31" -- src/helpers/classicBattle.js src/pages/battleClassic.init.js` to check for recent changes
 2. Add debug logging to state machine to trace transitions during test runs
 3. Compare test expectations against current implementation (some tests may have outdated assertions)
@@ -333,6 +363,7 @@ All documented test failures have been resolved. The investigation identified:
 ---
 
 **Note**: This investigation identified:
+
 - ✅ **3 Test Issues Fixed**: Wrong expectations (data attributes, state transitions)
 - ⚠️ **14 Tests Unresolved**: Status unknown - may be application bugs, test issues, or already fixed
 - 🔧 **Action Required**: Complete documentation or archive this investigation
