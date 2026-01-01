@@ -1,39 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
-
-const files = vi.hoisted(() => ({
-  "test-results/a.png": "",
-  "test-results/b.png": "",
-  "playwright/a.spec.js": "test('a', () => {})",
-  "playwright/b.spec.ts": "it('b', () => {})",
-  "tests/c.test.js": "test('c1', () => {}); it('c2', () => {})"
-}));
-
-vi.mock("glob", () => ({
-  glob: vi.fn(async (pattern) => {
-    const patterns = Array.isArray(pattern) ? pattern : [pattern];
-    const results = [];
-    for (const pat of patterns) {
-      if (pat === "test-results/**/*.png") {
-        results.push("test-results/a.png", "test-results/b.png");
-      } else if (pat === "playwright/**/*.spec.@(js|ts)") {
-        results.push("playwright/a.spec.js", "playwright/b.spec.ts");
-      } else if (pat === "tests/**/*.{test,spec}.@(js|ts)") {
-        results.push("tests/c.test.js");
-      } else if (pat === "tests/**/*.@(js|ts)") {
-        results.push("tests/c.test.js");
-      } else if (pat === "playwright/**/*.@(js|ts)") {
-        results.push("playwright/a.spec.js", "playwright/b.spec.ts");
-      }
-    }
-    return results;
-  })
-}));
-
-vi.mock("node:fs/promises", () => {
-  const readFile = vi.fn(async (file) => files[file]);
-  const appendFile = vi.fn();
-  return { readFile, appendFile, default: { readFile, appendFile } };
-});
+import { describe, it, expect } from "vitest";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { collectTestStats, rollDice } from "../../scripts/collectTestStats.mjs";
 
@@ -56,16 +23,31 @@ describe("rollDice", () => {
       expect(result).toContain(`*${throwName}*`);
     });
   });
+
+  it("falls back to the first roll for malformed random values", () => {
+    expect(rollDice(() => Number.NaN)).toBe(
+      "🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy."
+    );
+  });
 });
 
 describe("collectTestStats", () => {
   it("counts files, cases and updated snapshots", async () => {
-    const stats = await collectTestStats("", () => "test-results/a.png\ntest-results/b.png\n");
+    const root = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "fixtures",
+      "collectTestStats"
+    );
+    const stats = await collectTestStats(
+      root,
+      () => "test-results/a.png\nnotes.md\n"
+    );
     expect(stats).toEqual({
       snapshots: 2,
       testfiles: 3,
       testcases: 4,
-      updated: 2
+      updated: 1
     });
   });
 });
