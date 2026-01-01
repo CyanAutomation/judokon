@@ -3177,9 +3177,14 @@ export async function setupFlags() {
     await initFeatureFlags();
   } catch {}
   try {
-    if (typeof window !== "undefined" && (window.__TEST__ || window.__PLAYWRIGHT_TEST__)) {
-      await setFlag("cliShortcuts", true);
-      await setFlag("statHotkeys", true);
+    if (typeof window !== "undefined") {
+      const shouldAutoEnableShortcuts =
+        window.__PLAYWRIGHT_TEST__ ||
+        (window.__TEST__ && isEnabled("cliShortcuts") !== false);
+      if (shouldAutoEnableShortcuts) {
+        await setFlag("cliShortcuts", true);
+        await setFlag("statHotkeys", true);
+      }
     }
   } catch {}
   initDebugFlagHud();
