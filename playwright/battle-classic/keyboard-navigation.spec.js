@@ -1,20 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import {
-  waitForBattleState,
-  waitForStatButtonsReady,
-  waitForBattleReady
-} from "../helpers/battleStateHelper.js";
-
-async function expectBattleStateReady(page, stateName, options) {
-  try {
-    await waitForBattleState(page, stateName, options);
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error ?? "unknown error");
-    throw new Error(
-      `waitForBattleState should resolve state "${stateName}" via Test API (${reason})`
-    );
-  }
-}
+import { waitForStatButtonsReady, waitForBattleReady } from "../helpers/battleStateHelper.js";
 
 test.describe("Classic Battle keyboard navigation", () => {
   test.beforeEach(async ({ page }) => {
@@ -30,7 +15,6 @@ test.describe("Classic Battle keyboard navigation", () => {
     const focusedStatButton = page.locator('[data-testid="stat-button"]:focus');
     const roundMessage = page.getByTestId("round-message");
 
-    await expectBattleStateReady(page, "waitingForPlayerAction");
     await waitForStatButtonsReady(page, { timeout: 10_000 });
     await expect(statButtons.first()).toBeEnabled();
     await expect(focusedStatButton).toHaveCount(1);
@@ -41,6 +25,11 @@ test.describe("Classic Battle keyboard navigation", () => {
     await page.keyboard.press("Enter");
 
     await expect(statButtons.first()).toBeDisabled();
+    await expect(page.locator('[data-testid="stat-button"]:disabled')).toHaveCount(
+      await statButtons.count()
+    );
     await expect(roundMessage).not.toBeEmpty({ timeout: 5000 });
+    await expect(roundMessage).toContainText("You picked:");
+    await expect(roundMessage).toContainText("Opponent picked:");
   });
 });
