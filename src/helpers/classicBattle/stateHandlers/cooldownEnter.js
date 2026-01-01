@@ -163,11 +163,16 @@ export async function cooldownEnter(machine, payload) {
     return;
   }
 
-  // Finalize Next button state early in cooldown phase
-  // Skip this when orchestrated to prevent premature finalization
-  // The orchestrator's setupOrchestratedReady will handle button finalization after cooldown
-  const isOrchestrated = !!machine.context;
-  if (!isOrchestrated) {
+  const { store, scheduler } = machine.context || {};
+
+  // Finalize Next button state early in cooldown phase ONLY when NOT using orchestrator
+  // When orchestrator is active (with setupOrchestratedReady), early finalization causes
+  // premature ready dispatch before cooldown timer expires
+  // Check: If we're about to pass isOrchestrated/getClassicBattleMachine overrides to startCooldown,
+  // that means the orchestrator is managing the cooldown, so skip early finalization
+  const willUseOrchestrator = !!machine.context;
+  
+  if (!willUseOrchestrator) {
     guard(() => {
       applyNextButtonFinalizedState();
       debugLog("cooldownEnter: finalized Next button state (early, non-orchestrated)");
@@ -175,8 +180,6 @@ export async function cooldownEnter(machine, payload) {
   } else {
     debugLog("cooldownEnter: skipped early finalization (orchestrated mode)");
   }
-
-  const { store, scheduler } = machine.context || {};
 
   debugLog("cooldownEnter: about to call startCooldown");
   await startCooldown(store, scheduler, {
