@@ -13,6 +13,7 @@ import { onNextButtonClick } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
+import { roundStore } from "./roundStore.js";
 
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
@@ -452,30 +453,39 @@ function applyButtonFinalizedState(btn) {
 }
 
 /**
- * Apply finalized state to Next button without updating round diagnostics.
+ * Apply finalized state to Next button and set diagnostic globals.
  * Used for early finalization in cooldown state.
  * @returns {void}
  * @pseudocode
  * 1. Exit early when running outside the browser.
- * 2. Find the primary and fallback Next button elements.
- * 3. Apply the finalized button state to the primary element.
- * 4. Apply the finalized button state to the fallback element when it differs.
+ * 2. Set diagnostic globals for test compatibility.
+ * 3. Update highest round diagnostic using NEXT round number (current + 1).
+ * 4. Find the primary and fallback Next button elements.
+ * 5. Apply the finalized button state to each button.
  */
 export function applyNextButtonFinalizedState() {
   if (typeof document === "undefined") return;
-
-  const primary = document.getElementById("next-button");
-  const fallback = document.querySelector('[data-role="next-round"]');
-  const visibleRound = readVisibleRoundNumber();
 
   // Set diagnostic globals for test compatibility
   try {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = true;
       window.__classicBattleLastFinalizeContext = "advance";
-      updateHighestDisplayedRoundDiagnostic(visibleRound);
+
+      // Update highest round using NEXT round number (current + 1)
+      // This is called during cooldown BEFORE the round number is updated in the store
+      try {
+        const currentRound = roundStore.getCurrentRound();
+        if (currentRound && typeof currentRound.number === "number" && currentRound.number >= 1) {
+          const nextRoundNumber = currentRound.number + 1;
+          updateHighestDisplayedRoundDiagnostic(nextRoundNumber);
+        }
+      } catch {}
     }
   } catch {}
+
+  const primary = document.getElementById("next-button");
+  const fallback = document.querySelector('[data-role="next-round"]');
 
   applyButtonFinalizedState(primary || fallback);
   if (fallback && fallback !== primary) {
