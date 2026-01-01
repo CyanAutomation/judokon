@@ -57,7 +57,7 @@ body[data-test-disable-animations] .snackbar.show {
 
 @keyframes snackbar-static {
   0%,
-  85% {
+  90% {
     opacity: 1;
     transform: translateY(0);
   }

@@ -2,15 +2,16 @@
  * Display a temporary snackbar message near the bottom of the screen.
  *
  * @pseudocode
- * 1. Clear existing timers for any visible snackbar.
+ * 1. Clear any active animation listeners for a visible snackbar.
  * 2. Create a new div with class `.snackbar` containing the message.
- * 3. Replace `#snackbar-container` children with this element and trigger the show animation.
- * 4. Verify the container still exists and schedule fade and removal timers.
+ * 3. Replace `#snackbar-container` children with this element and trigger the animation.
+ * 4. Remove the snackbar on `animationend` and reset internal state.
  *
  * @param {string} message - Text content to display in the snackbar.
  */
 let bar;
 let animationListener;
+let animationTarget;
 let animationToken = 0;
 
 const ACTIVE_CLASS = "snackbar--active";
@@ -42,11 +43,12 @@ function ensureDomOrReset() {
 }
 
 function resetState() {
-  if (bar && animationListener) {
-    bar.removeEventListener("animationend", animationListener);
+  if (animationTarget && animationListener) {
+    animationTarget.removeEventListener("animationend", animationListener);
   }
   bar = null;
   animationListener = null;
+  animationTarget = null;
 }
 
 function ensureSnackbarContainer(doc) {
@@ -69,14 +71,15 @@ function clearAnimationListener(target) {
   if (!target || !animationListener) return;
   target.removeEventListener("animationend", animationListener);
   animationListener = null;
+  animationTarget = null;
 }
 
 function activateSnackbar(target) {
   if (!target) return;
   animationToken += 1;
   const token = String(animationToken);
+  animationTarget = target;
   clearAnimationListener(target);
-  target.dataset.snackbarToken = token;
   animationListener = (event) => {
     if (event.target !== target) return;
     if (event.animationName && !VALID_ANIMATIONS.has(event.animationName)) return;
@@ -99,9 +102,9 @@ function activateSnackbar(target) {
  * @pseudocode
  * 1. Respect `window.__disableSnackbars` if present and return early.
  * 2. Ensure a `#snackbar-container` exists (create a test no-op container when needed).
- * 3. Clear existing timers and create a `.snackbar` element with `message` text.
- * 4. Insert it into the container, requestAnimationFrame to add `show` class, and
- *    schedule fade and removal timers.
+ * 3. Clear existing animation listeners and create a `.snackbar` element with `message` text.
+ * 4. Insert it into the container, then attach an `animationend` listener and add
+ *    the active class to kick off the animation cycle.
  *
  * @param {string} message - Text content to display in the snackbar.
  * @returns {void}
@@ -123,7 +126,7 @@ export function showSnackbar(message) {
     resetState();
     return;
   }
-  clearAnimationListener(bar);
+  clearAnimationListener(animationTarget);
   bar = doc.createElement("div");
   bar.className = "snackbar";
   bar.textContent = message;
@@ -138,7 +141,7 @@ export function showSnackbar(message) {
  * 1. If snackbars are globally disabled, return.
  * 2. Ensure `#snackbar-container` exists (create during tests).
  * 3. If there's no active snackbar, call `showSnackbar(message)` to create one.
- * 4. Otherwise replace the `.snackbar` text, ensure `show` class, and reset timers.
+ * 4. Otherwise replace the `.snackbar` text, restart the animation, and await `animationend`.
  *
  * @param {string} message - New text for the snackbar.
  * @returns {void}
