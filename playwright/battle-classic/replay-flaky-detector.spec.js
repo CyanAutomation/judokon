@@ -28,7 +28,7 @@ test.describe("Classic Battle — Replay flaky detector", () => {
       const success = engineApi.setPointsToWin(1);
       const current = engineApi.getPointsToWin();
 
-      return { applied: success && current === 1, error: success ? null : "SET_FAILED" };
+      return { applied: success && current === 1, error: success ? (current === 1 ? null : "VALIDATION_FAILED") : "SET_FAILED" };
     });
 
     if (!setQuickMatch.applied) {
