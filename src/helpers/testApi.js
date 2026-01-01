@@ -819,7 +819,7 @@ const stateApi = {
   async waitForBattleState(stateNames, timeout = 5000) {
     // Normalize to array for consistent handling
     const targetStates = Array.isArray(stateNames) ? stateNames : [stateNames];
-    
+
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       let finished = false,
@@ -844,7 +844,7 @@ const stateApi = {
           const stateList = targetStates.join('", "');
           const error = new Error(
             `Timed out after ${timeout}ms waiting for battle state(s): "${stateList}"\n` +
-            `Current state: ${current}`
+              `Current state: ${current}`
           );
           error.name = "BattleStateTimeoutError";
           error.code = "BATTLE_STATE_TIMEOUT";

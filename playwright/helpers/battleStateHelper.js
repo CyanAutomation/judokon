@@ -296,14 +296,17 @@ export async function configureClassicBattle(page, battleConfig = {}, options = 
 /**
  * Wait for battle state using Test API instead of DOM polling.
  * @param {import('@playwright/test').Page} page - Playwright page object
- * @param {string} expectedState - The state to wait for
+ * @param {string|string[]} expectedStates - The state(s) to wait for
  * @param {object} options - Options object
  * @param {number} options.timeout - Timeout in ms (default: 5_000)
  * @param {boolean} options.allowFallback - Allow DOM fallback if Test API unavailable (default: true)
- * @returns {Promise<void>}
+ * @returns {Promise<string>} The actual state that was reached
  */
-export async function waitForBattleState(page, expectedState, options = {}) {
+export async function waitForBattleState(page, expectedStates, options = {}) {
   const { timeout = 5_000, allowFallback = true } = options;
+
+  // Normalize to array for consistent handling
+  const stateArray = Array.isArray(expectedStates) ? expectedStates : [expectedStates];
 
   let testApiAvailable = true;
   let waitForApiError = null;
@@ -312,8 +315,9 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   } catch (error) {
     if (!allowFallback) {
       const message = error instanceof Error ? error.message : String(error ?? "unknown error");
+      const stateList = stateArray.join('", "');
       throw new Error(
-        `Test API unavailable before waiting for battle state "${expectedState}" (${message})`
+        `Test API unavailable before waiting for battle state(s) "${stateList}" (${message})`
       );
     }
     testApiAvailable = false;
@@ -325,7 +329,7 @@ export async function waitForBattleState(page, expectedState, options = {}) {
 
   if (testApiAvailable) {
     const apiResult = await page.evaluate(
-      async ({ state, waitTimeout }) => {
+      async ({ states, waitTimeout }) => {
         try {
           const stateApi = window.__TEST_API?.state;
           if (!stateApi) {
@@ -335,14 +339,16 @@ export async function waitForBattleState(page, expectedState, options = {}) {
             return { result: null, error: "waitForBattleState not a function" };
           }
           // IMPORTANT: Must await the async waitForBattleState function
-          const result = await stateApi.waitForBattleState.call(stateApi, state, waitTimeout);
-          return { result, error: null };
+          const result = await stateApi.waitForBattleState.call(stateApi, states, waitTimeout);
+          // Get the actual state that was reached
+          const actualState = stateApi.getBattleState?.() ?? null;
+          return { result, actualState, error: null };
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : String(error);
-          return { result: null, error: errorMsg };
+          return { result: null, actualState: null, error: errorMsg };
         }
       },
-      { state: expectedState, waitTimeout: timeout }
+      { states: stateArray, waitTimeout: timeout }
     );
 
     if (apiResult?.error) {
@@ -352,16 +358,18 @@ export async function waitForBattleState(page, expectedState, options = {}) {
     actualApiResult = apiResult?.result ?? null;
 
     if (actualApiResult === true) {
-      return;
+      return apiResult?.actualState ?? stateArray[0];
     }
 
     if (actualApiResult === false) {
       if (!allowFallback) {
-        throw new Error(`Timed out waiting for battle state "${expectedState}" via Test API`);
+        const stateList = stateArray.join('", "');
+        throw new Error(`Timed out waiting for battle state(s) "${stateList}" via Test API`);
       }
     } else if (actualApiResult === null && !allowFallback) {
       const errorInfo = apiCallError ? ` (${apiCallError})` : "";
-      const msg = `Test API waitForBattleState unavailable for "${expectedState}"${errorInfo}`;
+      const stateList = stateArray.join('", "');
+      const msg = `Test API waitForBattleState unavailable for state(s) "${stateList}"${errorInfo}`;
       throw new Error(msg);
     }
   } else if (!allowFallback) {
@@ -369,11 +377,12 @@ export async function waitForBattleState(page, expectedState, options = {}) {
       waitForApiError instanceof Error
         ? waitForApiError.message
         : String(waitForApiError ?? "unknown error");
-    throw new Error(`Test API unavailable for battle state "${expectedState}" (${waitMessage})`);
+    const stateList = stateArray.join('", "');
+    throw new Error(`Test API unavailable for battle state(s) "${stateList}" (${waitMessage})`);
   }
 
   if (!allowFallback) {
-    return;
+    return stateArray[0];
   }
 
   // DOM fallback: check document.body.dataset.battleState
@@ -392,8 +401,9 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   });
 
   if (diagnostics.error) {
+    const stateList = stateArray.join('", "');
     throw new Error(
-      `Failed to get diagnostics for state "${expectedState}". API error: ${diagnostics.error}`
+      `Failed to get diagnostics for state(s) "${stateList}". API error: ${diagnostics.error}`
     );
   }
 
@@ -404,23 +414,29 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   }
 
   // Additional diagnostic: show what state we're actually in
-  if (diagnostics.currentState && diagnostics.currentState !== expectedState) {
-    const msg = `waitForBattleState("${expectedState}") but actual state is "${diagnostics.currentState}"`;
+  if (diagnostics.currentState && !stateArray.includes(diagnostics.currentState)) {
+    const stateList = stateArray.join('", "');
+    const msg = `waitForBattleState(["${stateList}"]) but actual state is "${diagnostics.currentState}"`;
     console.warn(msg);
   }
 
+  // Wait for any of the target states in DOM
   await page.waitForFunction(
-    (state) => {
+    (states) => {
       try {
         const currentState = document.body?.dataset?.battleState;
-        return currentState === state;
+        return states.includes(currentState);
       } catch {
         return false;
       }
     },
-    expectedState,
+    stateArray,
     { timeout }
   );
+
+  // Return the actual state that was reached
+  const actualState = await page.evaluate(() => document.body?.dataset?.battleState);
+  return actualState ?? stateArray[0];
 }
 
 /**
