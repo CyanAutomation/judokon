@@ -199,6 +199,17 @@ The Vector Search demo is implemented in [`src/pages/vectorSearch.html`](../../s
 - When a row is activated, `.result-context` is updated with:
   - **Loading state:** `Loading context...`
 
+### Results Table and Row Behavior
+
+- Results render into the table `#vector-results-table`, with columns in this order: **Match**, **Source**, **Tags**, **Score**.
+- Each row uses the `.search-result-item` class and is focusable, supporting click, **Enter**, or **Space** to load additional context into the `.result-context` element within the row.
+- The top match row is additionally labeled with `.top-match` for emphasis.
+- When a row is activated, `.result-context` is updated with:
+  - **Loading state:** `Loading context...`
+  - **Fallbacks:** `No additional context found.` when the context fetch returns empty, or
+    `Context could not be loaded.` on errors.
+  - **Score tiers:** `.score-high` for scores ≥ `0.8`, `.score-mid` for scores ≥ `0.6`, otherwise `.score-low` for styling hooks.
+
 ### Testing Hooks
 
 - `window.vectorSearchResultsPromise` mirrors the active search promise so tests can await the current query lifecycle (initialized to a resolved promise before the first search).
