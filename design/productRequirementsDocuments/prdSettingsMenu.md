@@ -49,7 +49,7 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                                                          |
 | P3       | Layout Debug Outlines Feature Flag  | Show element outlines to inspect page layout.                                                                                        |
 | P3       | Navigation Cache Reset Feature Flag | Add a button to clear cached navigation data.                                                                                        |
-| P3       | Battle State Progress Feature Flag  | Shows the match state sequence below the battle area for testing.                                                                     |
+| P3       | Battle State Progress Feature Flag  | Shows the match state sequence below the battle area for testing.                                                                    |
 | P3       | Auto-Select Feature Flag            | Automatically pick a random stat when time runs out.                                                                                 |
 | P3       | Stat Hotkeys Feature Flag           | Enable number keys 1–5 for fast stat selection.                                                                                      |
 | P2       | CLI Verbose Logging Feature Flag    | Show state transition logs in the battle CLI.                                                                                        |

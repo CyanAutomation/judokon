@@ -7,6 +7,7 @@ The Classic Battle page (`src/pages/battleClassic.html`) follows a **5-phase ini
 ## Critical Bug Context
 
 **Historical Issue**: The quit button event handler was being lost during initialization because:
+
 1. Handler was attached to the button element in Phase 2
 2. Button element was **replaced** during Phase 5 (via `resetQuitButton()`)
 3. Handler attached to the old element was lost with the old element
@@ -81,11 +82,13 @@ The Classic Battle page (`src/pages/battleClassic.html`) follows a **5-phase ini
 ## Critical Timing Dependencies
 
 ### ✅ Wire BEFORE Match Start
+
 - **Stat buttons** (`wireExistingStatButtons`)
 - **Reason**: Required for gameplay - first round needs stat selection handlers
 - **Safe because**: Stat buttons are not replaced during `initializeMatchStart()`
 
 ### ✅ Wire AFTER Match Start
+
 - **Control buttons** (`wireControlButtons` - Quit, Replay, Next, Home)
 - **Reason**: Prevents DOM replacement issues
 - **Safe because**: Control buttons ARE replaced during `initializeMatchStart()`
@@ -95,18 +98,18 @@ The Classic Battle page (`src/pages/battleClassic.html`) follows a **5-phase ini
 
 ### Buttons That Get Replaced
 
-| Button | Replaced By | When | Why |
-|--------|-------------|------|-----|
-| Quit | `resetQuitButton()` | Phase 5 | Clear event listeners |
-| Next | `resetNextButton()` | Phase 5 | Clear event listeners, set disabled |
-| Stat buttons | `createStatButtonsUI()` | During rounds | Regenerate for each round |
+| Button       | Replaced By             | When          | Why                                 |
+| ------------ | ----------------------- | ------------- | ----------------------------------- |
+| Quit         | `resetQuitButton()`     | Phase 5       | Clear event listeners               |
+| Next         | `resetNextButton()`     | Phase 5       | Clear event listeners, set disabled |
+| Stat buttons | `createStatButtonsUI()` | During rounds | Regenerate for each round           |
 
 ### Buttons That Don't Get Replaced
 
-| Button | Behavior |
-|--------|----------|
+| Button | Behavior                                                   |
+| ------ | ---------------------------------------------------------- |
 | Replay | Not replaced during init (may be replaced during gameplay) |
-| Home | Not replaced (anchor link, not button) |
+| Home   | Not replaced (anchor link, not button)                     |
 
 ### Score Display
 
@@ -117,12 +120,14 @@ The Classic Battle page (`src/pages/battleClassic.html`) follows a **5-phase ini
 ## Event Delegation Pattern
 
 **Stat Buttons**: Use event delegation to avoid handler loss
+
 - Handler attached to **container** (`#stat-buttons`)
 - Individual button clicks bubble to container handler
 - Pattern: `registerStatButtonClickHandler(container, store)`
 - Marker: `container.__classicBattleStatHandler = true`
 
 **Control Buttons**: Use direct attachment after replacement
+
 - Handlers attached directly to each button
 - Timing ensures buttons are final instances
 - Markers: `button.__controlBound = true`
@@ -134,6 +139,7 @@ The Classic Battle page (`src/pages/battleClassic.html`) follows a **5-phase ini
 **File**: `tests/classicBattle/element-identity.test.js`
 
 Tests verify:
+
 - ✅ Control buttons ARE replaced during initialization
 - ✅ Handlers ARE attached to final instances (after replacement)
 - ✅ Stat buttons use event delegation pattern
@@ -143,6 +149,7 @@ Tests verify:
 **File**: `tests/classicBattle/quit-flow.test.js`
 
 Tests verify:
+
 - ✅ Quit button element identity changes during init
 - ✅ Handler is attached to final quit button instance
 - ✅ Quit confirmation modal appears correctly
@@ -195,30 +202,50 @@ grep -A 20 "async function init()" src/pages/battleClassic.init.js | \
 
 ### Source Files
 
-| File | Description |
-|------|-------------|
-| `src/pages/battleClassic.init.js` | Main initialization orchestrator (lines 1430-1770) |
+| File                                     | Description                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/pages/battleClassic.init.js`        | Main initialization orchestrator (lines 1430-1770)                                     |
 | `src/helpers/classicBattle/uiHelpers.js` | Button reset functions: `resetQuitButton()` (line 991), `resetNextButton()` (line 957) |
-| `src/helpers/classicBattle/uiHelpers.js` | Event delegation: `registerStatButtonClickHandler()` (line 888) |
+| `src/helpers/classicBattle/uiHelpers.js` | Event delegation: `registerStatButtonClickHandler()` (line 888)                        |
 
 ### Key Functions
 
 ```javascript
 // Phase orchestration
-export async function init() { /* ... */ }
-async function initializePhase1_Utilities() { /* ... */ }
-async function initializePhase2_UI() { /* ... */ }
-async function initializePhase3_BattleEngine(store) { /* ... */ }
-async function initializePhase4_EventHandlers(store) { /* ... */ }
-async function initializeMatchStart(store) { /* ... */ }
+export async function init() {
+  /* ... */
+}
+async function initializePhase1_Utilities() {
+  /* ... */
+}
+async function initializePhase2_UI() {
+  /* ... */
+}
+async function initializePhase3_BattleEngine(store) {
+  /* ... */
+}
+async function initializePhase4_EventHandlers(store) {
+  /* ... */
+}
+async function initializeMatchStart(store) {
+  /* ... */
+}
 
 // Button wiring
-function wireControlButtons(store) { /* ... */ }
-function wireExistingStatButtons(store) { /* ... */ }
+function wireControlButtons(store) {
+  /* ... */
+}
+function wireExistingStatButtons(store) {
+  /* ... */
+}
 
 // Button replacement (called via game:reset-ui event during Phase 5)
-export function resetQuitButton() { /* ... */ }
-export function resetNextButton() { /* ... */ }
+export function resetQuitButton() {
+  /* ... */
+}
+export function resetNextButton() {
+  /* ... */
+}
 ```
 
 ## Related Documentation
@@ -237,6 +264,7 @@ export function resetNextButton() { /* ... */ }
 ---
 
 **Maintainer Note**: This document should be updated when:
+
 - Initialization sequence changes (add/remove/reorder phases)
 - New buttons are added that get replaced
 - Event delegation patterns change

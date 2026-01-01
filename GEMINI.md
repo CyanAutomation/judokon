@@ -1475,12 +1475,12 @@ grep -A 20 "async function init()" src/pages/battleClassic.init.js | \
 
 ### Button Replacement Behavior
 
-| Button | Replaced During Init? | Wire Timing |
-|--------|----------------------|-------------|
-| Quit | ✅ Yes (resetQuitButton) | After Phase 5 |
-| Next | ✅ Yes (resetNextButton) | After Phase 5 |
-| Replay | ❌ No | After Phase 5 |
-| Stat buttons | ❌ Not during init | Before Phase 5 (needed for gameplay) |
+| Button       | Replaced During Init?    | Wire Timing                          |
+| ------------ | ------------------------ | ------------------------------------ |
+| Quit         | ✅ Yes (resetQuitButton) | After Phase 5                        |
+| Next         | ✅ Yes (resetNextButton) | After Phase 5                        |
+| Replay       | ❌ No                    | After Phase 5                        |
+| Stat buttons | ❌ Not during init       | Before Phase 5 (needed for gameplay) |
 
 ### Testing
 
