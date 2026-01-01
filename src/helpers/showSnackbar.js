@@ -68,7 +68,7 @@ function isSnackbarsDisabled() {
 }
 
 function clearAnimationListener(target) {
-  if (!target || !animationListener || target !== animationTarget) return;
+  if (!target || !animationListener) return;
   target.removeEventListener("animationend", animationListener);
   animationListener = null;
   animationTarget = null;
