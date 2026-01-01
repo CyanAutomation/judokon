@@ -34,9 +34,7 @@ describe("rollDice", () => {
     expect(rollDice(() => -1)).toBe(
       "🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy."
     );
-    expect(rollDice(() => 1.0)).toBe(
-      "🎲 Roll: 6 — *Kouchi Gari* trip! 🎯 Small but deadly."
-    );
+    expect(rollDice(() => 1.0)).toBe("🎲 Roll: 6 — *Kouchi Gari* trip! 🎯 Small but deadly.");
   });
 });
 
@@ -48,10 +46,7 @@ describe("collectTestStats", () => {
       "fixtures",
       "collectTestStats"
     );
-    const stats = await collectTestStats(
-      root,
-      () => "test-results/a.png\nnotes.md\n"
-    );
+    const stats = await collectTestStats(root, () => "test-results/a.png\nnotes.md\n");
     expect(stats).toEqual({
       snapshots: 2,
       testfiles: 3,

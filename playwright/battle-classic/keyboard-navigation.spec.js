@@ -26,9 +26,7 @@ test.describe("Classic Battle keyboard navigation", () => {
 
     await expect(statButtons.first()).toBeDisabled();
     const buttonCount = await statButtons.count();
-    await expect(page.locator('[data-testid="stat-button"]:disabled')).toHaveCount(
-      buttonCount
-    );
+    await expect(page.locator('[data-testid="stat-button"]:disabled')).toHaveCount(buttonCount);
     await expect(roundMessage).not.toBeEmpty({ timeout: 5000 });
     await expect(roundMessage).toContainText("You picked:");
     await expect(roundMessage).toContainText("Opponent picked:");
