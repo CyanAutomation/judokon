@@ -4,10 +4,13 @@
   bottom: 16px;
   transform: translateX(-50%);
   z-index: 1000;
+  --snackbar-duration: 3000ms;
 }
 
 .snackbar {
   visibility: hidden;
+  opacity: 0;
+  transform: translateY(8px);
   max-width: 480px;
   width: 90vw;
   background-color: var(--color-tertiary);
@@ -20,36 +23,46 @@
   display: block;
 }
 
+.snackbar--active,
 .snackbar.show {
   visibility: visible;
-  animation:
-    snackbar-fadein 250ms,
-    snackbar-fadeout 250ms var(--snackbar-delay, 2.5s);
+  animation: snackbar-cycle var(--snackbar-duration, 3000ms) ease-in-out forwards;
 }
 
+body.reduce-motion .snackbar--active,
 body.reduce-motion .snackbar.show,
+body[data-test-disable-animations] .snackbar--active,
 body[data-test-disable-animations] .snackbar.show {
-  animation: none;
+  animation: snackbar-static var(--snackbar-duration, 3000ms) linear forwards;
 }
 
-@keyframes snackbar-fadein {
-  from {
+@keyframes snackbar-cycle {
+  0% {
     opacity: 0;
     transform: translateY(8px);
   }
-  to {
+  10% {
     opacity: 1;
     transform: translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 
-@keyframes snackbar-fadeout {
-  from {
+@keyframes snackbar-static {
+  0%,
+  85% {
     opacity: 1;
     transform: translateY(0);
   }
-  to {
+  100% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(0);
   }
 }

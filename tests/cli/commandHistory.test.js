@@ -100,6 +100,7 @@ describe("Battle CLI command history preview", () => {
     expect(list.dataset.historyPreview).toBe("speed");
     expect(list.querySelector(".history-preview")?.dataset.stat).toBe("speed");
     expect(snackbar?.textContent).toBe("History: speed");
+    expect(snackbar).toBeTruthy();
 
     expect(handleCommandHistory("ArrowUp")).toBe(true);
     expect(list.dataset.historyPreview).toBe("power");
@@ -111,6 +112,7 @@ describe("Battle CLI command history preview", () => {
     expect(handleCommandHistory("ArrowDown")).toBe(true);
     expect(list.dataset.historyPreview).toBeUndefined();
     expect(list.querySelector(".history-preview")).toBeNull();
+    expect(snackbar?.textContent).toBe("");
 
     const activeId = list.getAttribute("aria-activedescendant");
     expect(document.getElementById(activeId || "")?.dataset.stat).toBe("speed");
