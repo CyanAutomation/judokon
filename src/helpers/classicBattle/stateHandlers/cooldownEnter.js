@@ -6,8 +6,6 @@ import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
 import { applyNextButtonFinalizedState } from "../uiHelpers.js";
-import { isTestModeEnabled } from "../../testModeUtils.js";
-import { readBattleStateDataset } from "../cooldownOrchestrator.js";
 
 /**
  * State name constant for cooldown phase.
@@ -169,19 +167,10 @@ export async function cooldownEnter(machine, payload) {
   // This must happen before any async operations that might cause state transitions
   // to ensure tests with fast transitions (cooldownMs: 0) can observe the finalized state
   // Use the lightweight version that doesn't update round diagnostics
-  const isOrchestratedCooldown = !!readBattleStateDataset();
-  const isTestMode = isTestModeEnabled();
-  if (!isOrchestratedCooldown && !isTestMode) {
-    guard(() => {
-      applyNextButtonFinalizedState();
-      debugLog("cooldownEnter: finalized Next button state (early)");
-    });
-  } else {
-    debugLog("cooldownEnter: skipping early Next button finalization", {
-      isOrchestratedCooldown,
-      isTestMode
-    });
-  }
+  guard(() => {
+    applyNextButtonFinalizedState();
+    debugLog("cooldownEnter: finalized Next button state (early)");
+  });
 
   const { store, scheduler } = machine.context || {};
 

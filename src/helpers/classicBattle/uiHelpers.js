@@ -466,6 +466,16 @@ export function applyNextButtonFinalizedState() {
 
   const primary = document.getElementById("next-button");
   const fallback = document.querySelector('[data-role="next-round"]');
+  const visibleRound = readVisibleRoundNumber();
+
+  // Set diagnostic globals for test compatibility
+  try {
+    if (typeof window !== "undefined") {
+      window.__classicBattleSelectionFinalized = true;
+      window.__classicBattleLastFinalizeContext = "advance";
+      updateHighestDisplayedRoundDiagnostic(visibleRound);
+    }
+  } catch {}
 
   applyButtonFinalizedState(primary || fallback);
   if (fallback && fallback !== primary) {
