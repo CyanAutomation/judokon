@@ -5,7 +5,7 @@ test.describe("Classic Battle quit flow", () => {
   test("Quit opens confirmation modal", async ({ page }) => {
     await withMutedConsole(async () => {
       await page.goto("/src/pages/battleClassic.html");
-      await page.click("#quit-button");
+      await page.locator("#quit-button").click();
       await expect(page.locator("#confirm-quit-button")).toBeVisible();
     }, ["log", "info", "warn", "error", "debug"]);
   });
@@ -13,7 +13,7 @@ test.describe("Classic Battle quit flow", () => {
   test("Main Menu button opens confirmation modal", async ({ page }) => {
     await withMutedConsole(async () => {
       await page.goto("/src/pages/battleClassic.html");
-      await page.click("#home-button");
+      await page.locator("#home-button").click();
       await expect(page.locator("#confirm-quit-button")).toBeVisible();
     }, ["log", "info", "warn", "error", "debug"]);
   });

@@ -20,15 +20,13 @@ test.describe("Classic Battle round counter", () => {
       const roundCounter = page.locator("#round-counter");
 
       // Start the match via modal (pick medium/10)
-      await page.waitForSelector("#round-select-2", { state: "visible" });
-      await page.click("#round-select-2");
+      await page.locator("#round-select-2").click();
 
       // Immediately after starting, the round counter should read Round 1
       await expect(roundCounter).toHaveText(/Round\s*1/);
 
       // Click a stat to resolve the round
-      await page.waitForSelector("#stat-buttons button[data-stat]");
-      await page.click("#stat-buttons button[data-stat]");
+      await page.locator("#stat-buttons button[data-stat]").first().click();
 
       // Wait for cooldown to start and Next to be ready
       const next = page.locator("#next-button");
@@ -59,14 +57,12 @@ test.describe("Classic Battle round counter", () => {
       );
       await page.goto("/src/pages/battleClassic.html");
 
-      await page.waitForSelector("#round-select-2", { state: "visible" });
-      await page.click("#round-select-2");
+      await page.locator("#round-select-2").click();
 
       const roundCounter = page.locator("#round-counter");
       await expect(roundCounter).toHaveText(/Round\s*1/);
 
-      await page.waitForSelector("#stat-buttons button[data-stat]");
-      await page.click("#stat-buttons button[data-stat]");
+      await page.locator("#stat-buttons button[data-stat]").first().click();
 
       const next = page.locator("#next-button");
       await expect(next).toBeEnabled();

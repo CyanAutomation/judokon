@@ -104,7 +104,7 @@ test.describe("Classic Battle replay", () => {
       }
 
       // Start match
-      await page.click("#round-select-2");
+      await page.locator("#round-select-2").click();
 
       // Ensure stats buttons are visible and battle is fully initialized
       // This must happen AFTER clicking the round button
