@@ -79,10 +79,13 @@ export function rollDice(rand = Math.random) {
   if (!Number.isFinite(raw)) {
     return moods[1];
   }
-  const value = Math.floor(raw * 6) + 1;
-  if (value < 1 || value > 6) {
+  if (raw === 1) {
     return moods[6];
   }
+  if (raw < 0 || raw > 1) {
+    return moods[1];
+  }
+  const value = Math.floor(raw * 6) + 1;
   return moods[value];
 }
 

@@ -27,6 +27,8 @@ build/
 
 # Test results
 test-results/
+!tests/fixtures/collectTestStats/test-results/
+!tests/fixtures/collectTestStats/test-results/*.png
 
 # Temporary test/debug files
 test_*.mjs
