@@ -28,7 +28,7 @@ test.describe("Cooldown countdown display", () => {
     await statButton.click();
 
     const snackbar = page.locator("#snackbar-container .snackbar");
-    await expect(snackbar).toBeVisible();
+    await expect(snackbar).toBeVisible({ timeout: 2_500 });
     await expect(snackbar).toContainText(/You Picked|Opponent is choosing/i, { timeout: 2_500 });
 
     // Wait for any valid post-selection state (handles skipRoundCooldown flag)
