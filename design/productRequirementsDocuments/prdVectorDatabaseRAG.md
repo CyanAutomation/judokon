@@ -198,6 +198,11 @@ The Vector Search demo is implemented in [`src/pages/vectorSearch.html`](../../s
 - The top match row is additionally labeled with `.top-match` for emphasis.
 - When a row is activated, `.result-context` is updated with:
   - **Loading state:** `Loading context...`
+
+### Testing Hooks
+
+- `window.vectorSearchResultsPromise` mirrors the active search promise so tests can await the current query lifecycle (initialized to a resolved promise before the first search).
+- `window.__setExtractor` exposes the extractor reset helper for tests, letting them clear cached extractor state before running vector search assertions.
   - **Fallbacks:** `No additional context found.` when the context fetch returns empty, or
     `Context could not be loaded.` on errors.
   - **Score tiers:** `.score-high` for scores ≥ `0.8`, `.score-mid` for scores ≥ `0.6`, otherwise `.score-low` for styling hooks.
