@@ -28,6 +28,15 @@ describe("rollDice", () => {
     expect(rollDice(() => Number.NaN)).toBe(
       "🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy."
     );
+    expect(rollDice(() => Infinity)).toBe(
+      "🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy."
+    );
+    expect(rollDice(() => -1)).toBe(
+      "🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy."
+    );
+    expect(rollDice(() => 1.0)).toBe(
+      "🎲 Roll: 6 — *Kouchi Gari* trip! 🎯 Small but deadly."
+    );
   });
 });
 
