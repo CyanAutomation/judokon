@@ -78,9 +78,8 @@ function activateSnackbar(target) {
   if (!target) return;
   animationToken += 1;
   const token = String(animationToken);
-  clearAnimationListener(target);
-  target.dataset.snackbarToken = token;
   animationTarget = target;
+  clearAnimationListener(target);
   animationListener = (event) => {
     if (event.target !== target) return;
     if (event.animationName && !VALID_ANIMATIONS.has(event.animationName)) return;
