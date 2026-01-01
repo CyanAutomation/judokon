@@ -578,8 +578,14 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
     const buttonReady = isNextButtonReady();
     if (stateReady || outOfCooldown || buttonReady) {
       // Log to stderr to ensure it appears
-      if (typeof process !== "undefined" && process.env?.VITEST && typeof console?.error === 'function') {
-        console.error(`[AGENT DEBUG] checkImmediate: stateReady=${stateReady} outOfCooldown=${outOfCooldown} buttonReady=${buttonReady}`);
+      if (
+        typeof process !== "undefined" &&
+        process.env?.VITEST &&
+        typeof console?.error === "function"
+      ) {
+        console.error(
+          `[AGENT DEBUG] checkImmediate: stateReady=${stateReady} outOfCooldown=${outOfCooldown} buttonReady=${buttonReady}`
+        );
       }
     }
     if (stateReady) {
@@ -700,7 +706,12 @@ export function isNextButtonReady() {
       if (!btn) return false;
       const result = btn.dataset?.nextReady === "true" || btn.disabled === false;
       if (typeof process !== "undefined" && process.env?.VITEST && result) {
-        console.error("[DEBUG isNextButtonReady] RETURNING TRUE: nextReady=", btn.dataset?.nextReady, "disabled=", btn.disabled);
+        console.error(
+          "[DEBUG isNextButtonReady] RETURNING TRUE: nextReady=",
+          btn.dataset?.nextReady,
+          "disabled=",
+          btn.disabled
+        );
       }
       if (btn.dataset?.nextReady === "true") return true;
       if (btn.disabled === false) return true;
