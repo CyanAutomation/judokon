@@ -6,6 +6,29 @@ export const STAT_WAIT_TIMEOUT_MS = 5_000;
 export const MATCH_COMPLETION_TIMEOUT_MS = 30_000;
 const BATTLE_CLI_RESET_BINDING = "__onBattleCliReset";
 
+/**
+ * Common battle state sequences for robust test expectations.
+ * Use these to handle fast transitions and feature flags like skipRoundCooldown.
+ */
+export const STATE_SEQUENCES = {
+  /** States after round resolution: cooldown → roundStart → waitingForPlayerAction */
+  POST_ROUND: ["cooldown", "roundStart", "waitingForPlayerAction"],
+  /** States after stat selection: roundDecision → roundOver → cooldown */
+  POST_SELECTION: ["roundDecision", "roundOver", "cooldown"],
+  /** States for round start cycle: roundStart → waitingForPlayerAction */
+  ROUND_CYCLE: ["roundStart", "waitingForPlayerAction"],
+  /** All valid battle states in flow order */
+  ALL_STATES: [
+    "matchStart",
+    "roundStart",
+    "waitingForPlayerAction",
+    "roundDecision",
+    "roundOver",
+    "cooldown",
+    "matchComplete"
+  ]
+};
+
 const battleCliResetChannelKey = Symbol("battleCliResetChannel");
 
 function createDeferred() {
@@ -437,6 +460,25 @@ export async function waitForBattleState(page, expectedStates, options = {}) {
   // Return the actual state that was reached
   const actualState = await page.evaluate(() => document.body?.dataset?.battleState);
   return actualState ?? stateArray[0];
+}
+
+/**
+ * Wait for the battle to reach any state in a valid progression sequence.
+ * This is more robust than waiting for specific states that may be skipped.
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {string[]} stateSequence - Array of valid states in order (use STATE_SEQUENCES constants)
+ * @param {object} options - Options object
+ * @param {number} [options.timeout=5_000] - Timeout in ms
+ * @param {boolean} [options.allowFallback=true] - Allow DOM fallback if Test API unavailable
+ * @returns {Promise<string>} The actual state reached
+ * @example
+ * // Wait for any valid post-round state
+ * const state = await waitForStateSequence(page, STATE_SEQUENCES.POST_ROUND);
+ * // state will be "cooldown", "roundStart", or "waitingForPlayerAction"
+ */
+export async function waitForStateSequence(page, stateSequence, options = {}) {
+  return await waitForBattleState(page, stateSequence, options);
 }
 
 /**
