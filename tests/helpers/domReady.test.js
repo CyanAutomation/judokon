@@ -6,23 +6,27 @@ describe("onDomReady (Enhanced Natural Document Lifecycle)", () => {
   let timers;
   beforeEach(() => {
     timers = useCanonicalTimers();
+    vi.resetModules();
   });
 
   afterEach(() => {
     timers.cleanup();
   });
-  it("runs callback immediately when document is ready", async () => {
-    // Set document ready state naturally
-    interactions.naturalDocumentReady("complete", false);
 
-    const { onDomReady } = await import("../../src/helpers/domReady.js");
-    const fn = vi.fn();
-    onDomReady(fn);
-    expect(fn).toHaveBeenCalledTimes(1);
+  it("initializes a real helper once the DOM is ready", async () => {
+    const legacyMarker = document.createElement("div");
+    legacyMarker.dataset.enlargeListenerAttached = "true";
+    legacyMarker.dataset.enlarged = "true";
+    document.body.appendChild(legacyMarker);
+
+    await import("../../src/helpers/setupHoverZoom.js");
+
+    expect(legacyMarker.hasAttribute("data-enlarge-listener-attached")).toBe(false);
+    expect(legacyMarker.hasAttribute("data-enlarged")).toBe(false);
+    legacyMarker.remove();
   });
 
   it("runs callback after DOMContentLoaded when loading using natural document state", async () => {
-    // Set document to loading state naturally
     interactions.naturalDocumentReady("loading", false);
 
     const addSpy = vi.spyOn(document, "addEventListener");
@@ -33,10 +37,7 @@ describe("onDomReady (Enhanced Natural Document Lifecycle)", () => {
     expect(fn).not.toHaveBeenCalled();
     expect(addSpy).toHaveBeenCalledWith("DOMContentLoaded", fn, { once: true });
 
-    // Trigger natural document ready
     interactions.naturalDocumentReady("complete", true);
-
-    // Process any pending timers synchronously instead of real delay
     await vi.runAllTimersAsync();
 
     expect(fn).toHaveBeenCalledTimes(1);
