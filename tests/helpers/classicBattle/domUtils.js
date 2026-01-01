@@ -82,7 +82,7 @@ export function createTimerNodes() {
   const nextButton = document.createElement("button");
   nextButton.id = "next-button";
   nextButton.setAttribute("data-role", "next-round");
-  nextButton.removeAttribute("data-next-ready");
+  // nextButton starts clean - no attributes to remove
   const nextRoundTimer = document.createElement("p");
   nextRoundTimer.id = "next-round-timer";
   nextRoundTimer.setAttribute("data-testid", "next-round-timer");
