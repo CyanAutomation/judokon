@@ -126,6 +126,12 @@ describe("timerService drift handling", () => {
     expect(showSnack).toHaveBeenCalledWith("Waiting…");
     const activeSnackbar = container?.querySelector(".snackbar");
     expect(activeSnackbar?.textContent).toBe("Waiting…");
+    if (activeSnackbar) {
+      const event = new Event("animationend");
+      Object.defineProperty(event, "animationName", { value: "snackbar-cycle" });
+      activeSnackbar.dispatchEvent(event);
+      expect(container?.querySelector(".snackbar")).toBeNull();
+    }
     cleanupRoundTimerMocks();
     // Factory restarts cooldown timer on each drift (initial + 2 drifts)
     // In Vitest, fallback timer is used instead of engine

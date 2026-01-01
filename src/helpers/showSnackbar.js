@@ -9,12 +9,12 @@
  *
  * @param {string} message - Text content to display in the snackbar.
  */
-import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "./constants.js";
-import { getScheduler, realScheduler } from "./scheduler.js";
-
 let bar;
-let fadeId;
-let removeId;
+let animationListener;
+let animationToken = 0;
+
+const ACTIVE_CLASS = "snackbar--active";
+const VALID_ANIMATIONS = new Set(["snackbar-cycle", "snackbar-static"]);
 
 /**
  * Get a safe document reference that works in both DOM and non-DOM environments.
@@ -41,51 +41,12 @@ function ensureDomOrReset() {
   return doc;
 }
 
-/**
- * Get a safe requestAnimationFrame function with fallback support.
- *
- * @pseudocode
- * 1. If scheduler has requestAnimationFrame, return bound scheduler method.
- * 2. If globalThis has requestAnimationFrame, return bound global method.
- * 3. Otherwise, return setTimeout-based fallback with 0ms delay.
- *
- * @param {object} scheduler - The scheduler object to check for RAF support.
- * @returns {function} A function that behaves like requestAnimationFrame.
- */
-function createSetTimeoutFallback(timerFn) {
-  return (callback) => {
-    return timerFn(callback, 0);
-  };
-}
-
-function getGlobalRequestAnimationFrame() {
-  if (typeof globalThis === "undefined") return null;
-
-  const raf = globalThis.requestAnimationFrame;
-  if (typeof raf === "function") return raf.bind(globalThis);
-
-  const timeout = globalThis.setTimeout;
-  if (typeof timeout === "function") {
-    return createSetTimeoutFallback(timeout.bind(globalThis));
-  }
-  return null;
-}
-
-function getSafeRequestAnimationFrame(scheduler) {
-  if (scheduler && typeof scheduler.requestAnimationFrame === "function") {
-    return scheduler.requestAnimationFrame.bind(scheduler);
-  }
-  const globalFallback = getGlobalRequestAnimationFrame();
-  if (globalFallback) {
-    return globalFallback;
-  }
-  return createSetTimeoutFallback(setTimeout);
-}
-
 function resetState() {
+  if (bar && animationListener) {
+    bar.removeEventListener("animationend", animationListener);
+  }
   bar = null;
-  fadeId = undefined;
-  removeId = undefined;
+  animationListener = null;
 }
 
 function ensureSnackbarContainer(doc) {
@@ -104,47 +65,32 @@ function isSnackbarsDisabled() {
   }
 }
 
-function safeClearTimeout(scheduler, handle) {
-  if (!scheduler) {
-    realScheduler.clearTimeout(handle);
-    return;
-  }
-  if (typeof scheduler.clearTimeout === "function") {
-    scheduler.clearTimeout(handle);
-    return;
-  }
-  realScheduler.clearTimeout(handle);
+function clearAnimationListener(target) {
+  if (!target || !animationListener) return;
+  target.removeEventListener("animationend", animationListener);
+  animationListener = null;
 }
 
-function resetTimers() {
-  const scheduler = getScheduler();
-  safeClearTimeout(scheduler, fadeId);
-  safeClearTimeout(scheduler, removeId);
-  const doc = ensureDomOrReset();
-  if (!doc) {
-    return;
-  }
-  const docRef = doc;
-  const container = doc.getElementById("snackbar-container");
-  if (!container) {
+function activateSnackbar(target) {
+  if (!target) return;
+  animationToken += 1;
+  const token = String(animationToken);
+  clearAnimationListener(target);
+  target.dataset.snackbarToken = token;
+  animationListener = (event) => {
+    if (event.target !== target) return;
+    if (event.animationName && !VALID_ANIMATIONS.has(event.animationName)) return;
+    if (target.dataset.snackbarToken !== token) return;
+    target.classList.remove(ACTIVE_CLASS);
+    target.remove();
     resetState();
-    return;
-  }
-  fadeId = scheduler.setTimeout(() => {
-    if (!docRef?.getElementById("snackbar-container")) {
-      resetState();
-      return;
-    }
-    bar?.classList.remove("show");
-  }, SNACKBAR_FADE_MS);
-  removeId = scheduler.setTimeout(() => {
-    if (!docRef?.getElementById("snackbar-container")) {
-      resetState();
-      return;
-    }
-    bar?.remove();
-    resetState();
-  }, SNACKBAR_REMOVE_MS);
+  };
+  target.addEventListener("animationend", animationListener);
+  target.classList.remove(ACTIVE_CLASS);
+  // Force a reflow so the animation can restart cleanly on updates.
+  // eslint-disable-next-line no-unused-expressions
+  target.offsetWidth;
+  target.classList.add(ACTIVE_CLASS);
 }
 
 /**
@@ -161,12 +107,6 @@ function resetTimers() {
  * @returns {void}
  */
 export function showSnackbar(message) {
-  // DIAGNOSTIC: Log all showSnackbar calls with stack trace
-  console.log(`[showSnackbar] Called with message: "${message}"`, {
-    timestamp: Date.now(),
-    stack: new Error().stack?.split("\n").slice(2, 5).join("\n") || "no stack"
-  });
-
   if (isSnackbarsDisabled()) return;
   const doc = ensureDomOrReset();
   if (!doc) {
@@ -178,23 +118,17 @@ export function showSnackbar(message) {
   try {
     ensureSnackbarContainer(doc);
   } catch {}
-  const scheduler = getScheduler();
-  const requestFrame = getSafeRequestAnimationFrame(scheduler);
-  safeClearTimeout(scheduler, fadeId);
-  safeClearTimeout(scheduler, removeId);
   const container = doc.getElementById("snackbar-container");
   if (!container) {
     resetState();
     return;
   }
+  clearAnimationListener(bar);
   bar = doc.createElement("div");
   bar.className = "snackbar";
   bar.textContent = message;
   container.replaceChildren(bar);
-  // Use a one-shot animation frame to toggle the class without
-  // registering a persistent scheduler callback.
-  requestFrame(() => bar?.classList.add("show"));
-  resetTimers();
+  activateSnackbar(bar);
 }
 
 /**
@@ -219,21 +153,17 @@ export function updateSnackbar(message) {
   try {
     ensureSnackbarContainer(doc);
   } catch {}
-  const scheduler = getScheduler();
   const container = doc.getElementById("snackbar-container");
   if (!container) {
-    safeClearTimeout(scheduler, fadeId);
-    safeClearTimeout(scheduler, removeId);
     resetState();
     return;
   }
-  if (!bar) {
+  if (!bar || !container.contains(bar)) {
     showSnackbar(message);
     return;
   }
   bar.textContent = message;
-  bar.classList.add("show");
-  resetTimers();
+  activateSnackbar(bar);
 }
 
 // Expose snackbar helpers globally for tests and early callers.
