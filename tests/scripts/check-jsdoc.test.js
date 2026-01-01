@@ -77,13 +77,17 @@ describe("check-jsdoc", () => {
     });
 
     it("should return true for valid fixture docs", async () => {
-      const content = await readFile(path.join(fixturesDir, "jsdoc-valid.js"), "utf8");
-      const lines = content.split("\n");
-      const symbols = findExportedSymbols(content);
-      const symbol = symbols.find((item) => item.name === "createScoreboardView");
-      expect(symbol).toBeTruthy();
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe(true);
+      try {
+        const content = await readFile(path.join(fixturesDir, "jsdoc-valid.js"), "utf8");
+        const lines = content.split("\n");
+        const symbols = findExportedSymbols(content);
+        const symbol = symbols.find((item) => item.name === "createScoreboardView");
+        expect(symbol).toBeTruthy();
+        const valid = validateJsDoc(lines, symbol.line - 1);
+        expect(valid).toBe(true);
+      } catch (error) {
+        throw new Error(`Failed to read fixture file: ${error.message}`);
+      }
     });
 
     it("should return false if JSDoc is missing (JSDOC_GUIDE.md)", () => {
