@@ -55,6 +55,21 @@ export function showSettingsError(message = "Failed to update settings.") {
     };
     animationHandlers.set(popup, handler);
     popup.addEventListener("animationend", handler);
+    
+    // Add cleanup when element is removed from DOM
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+          if (node === popup || (node.contains && node.contains(popup))) {
+            popup.removeEventListener("animationend", handler);
+            animationHandlers.delete(popup);
+            observer.disconnect();
+          }
+        });
+      });
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   popup.textContent = message;
