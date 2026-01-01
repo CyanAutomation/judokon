@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
-import { waitForBattleState } from "../helpers/battleStateHelper.js";
+import { waitForBattleState, waitForNextButtonReady } from "../helpers/battleStateHelper.js";
 
 const SPEC_PATH = "design/productRequirementsDocuments/prdBattleClassic.md";
 
@@ -27,6 +27,10 @@ test.describe("Cooldown countdown display", () => {
     // Click any stat to trigger selection flow
     await statButton.click();
 
+    const snackbar = page.locator("#snackbar-container .snackbar");
+    await expect(snackbar).toBeVisible();
+    await expect(snackbar).toContainText(/You Picked|Opponent is choosing/i, { timeout: 2_500 });
+
     // Wait for any valid post-selection state (handles skipRoundCooldown flag)
     await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
 
@@ -52,6 +56,8 @@ test.describe("Cooldown countdown display", () => {
     expect(cooldownValue).not.toBeNull();
 
     const nextButton = page.getByTestId("next-button");
+    await waitForNextButtonReady(page);
+    await expect(nextButton).toBeEnabled();
     await expect(nextButton).toHaveAttribute("data-next-ready", "true", { timeout: 10_000 });
 
     await nextButton.click();
