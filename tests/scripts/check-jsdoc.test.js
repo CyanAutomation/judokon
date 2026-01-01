@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { findExportedSymbols, validateJsDoc } from "../../scripts/check-jsdoc.mjs";
+
+const fixturesDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../fixtures");
 
 describe("check-jsdoc", () => {
   describe("findExportedSymbols", () => {
@@ -71,6 +76,16 @@ describe("check-jsdoc", () => {
       expect(valid).toBe(true);
     });
 
+    it("should return true for valid fixture docs", async () => {
+      const content = await readFile(path.join(fixturesDir, "jsdoc-valid.js"), "utf8");
+      const lines = content.split("\n");
+      const symbols = findExportedSymbols(content);
+      const symbol = symbols.find((item) => item.name === "createScoreboardView");
+      expect(symbol).toBeTruthy();
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe(true);
+    });
+
     it("should return false if JSDoc is missing (JSDOC_GUIDE.md)", () => {
       const content = `
         export function myFunction(name) {}
@@ -92,6 +107,16 @@ describe("check-jsdoc", () => {
       `;
       const lines = content.split("\n");
       const symbol = { name: "myFunction", line: 7, type: "function" };
+      const valid = validateJsDoc(lines, symbol.line - 1);
+      expect(valid).toBe("Missing @pseudocode tag. All functions require a @pseudocode section.");
+    });
+
+    it("should flag fixture missing @pseudocode", async () => {
+      const content = await readFile(path.join(fixturesDir, "jsdoc-invalid.js"), "utf8");
+      const lines = content.split("\n");
+      const symbols = findExportedSymbols(content);
+      const symbol = symbols.find((item) => item.name === "updateScoreboardLabel");
+      expect(symbol).toBeTruthy();
       const valid = validateJsDoc(lines, symbol.line - 1);
       expect(valid).toBe("Missing @pseudocode tag. All functions require a @pseudocode section.");
     });
