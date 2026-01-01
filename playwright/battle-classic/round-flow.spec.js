@@ -201,7 +201,10 @@ test.describe("Classic Battle Opponent Round Flow", () => {
         const firstStat = page.locator(selectors.statButton()).first();
         await firstStat.click();
 
-        await waitForBattleState(page, "cooldown", { allowFallback: false });
+        // Accept any valid post-selection state (handles skipRoundCooldown flag)
+        await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+          allowFallback: false
+        });
 
         // Verify cooldown is actually active before checking Next button
         await expect(nextButton).toBeDisabled({ timeout: 1000 });

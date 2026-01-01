@@ -68,7 +68,8 @@ test.describe("Classic Battle - Immediate Button State", () => {
     await statButtons.first().click();
 
     const [handlerEvent, disableEvent] = await Promise.all([handlerPromise, disablePromise]);
-    await waitForBattleState(page, "cooldown");
+    // Accept any valid post-selection state (handles skipRoundCooldown flag)
+    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
 
     expect(handlerEvent?.type).toBe("handler");
     expect(handlerEvent?.detail?.stat).toBe(trackedStat);

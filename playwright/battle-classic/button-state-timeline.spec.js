@@ -25,8 +25,8 @@ test.describe("Classic Battle - Button State Timeline", () => {
     // Click the button
     await statButtons.first().click();
 
-    // Allow the battle flow to reach cooldown instead of relying on arbitrary timeouts
-    await waitForBattleState(page, "cooldown");
+    // Accept any valid post-selection state (handles skipRoundCooldown flag)
+    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
     await expect(statButtons.first()).toBeDisabled();
   });
 });

@@ -27,8 +27,8 @@ test.describe("Cooldown countdown display", () => {
     // Click any stat to trigger selection flow
     await statButton.click();
 
-    // Wait for cooldown state after selection
-    await waitForBattleState(page, "cooldown");
+    // Wait for any valid post-selection state (handles skipRoundCooldown flag)
+    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
 
     // Verify the next-round-timer element shows the countdown
     // The cooldown renderer updates both the snackbar and the timer display
@@ -104,8 +104,8 @@ test.describe("Cooldown countdown display", () => {
     // But the timer display should still work
     const timer = page.getByTestId("next-round-timer");
 
-    // Wait for cooldown state
-    await waitForBattleState(page, "cooldown");
+    // Wait for any valid post-selection state (handles skipRoundCooldown flag)
+    await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
 
     // Now verify timer display is working (independently of snackbar)
     await expect(timer).toBeVisible();

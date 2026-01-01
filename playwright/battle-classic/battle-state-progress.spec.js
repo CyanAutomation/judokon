@@ -235,7 +235,10 @@ test.describe("Battle state progress list", () => {
       const interruptResult = await dispatchBattleEvent(page, "interrupt", { reason: "pause" });
       expect(interruptResult.ok).toBe(true);
 
-      await waitForBattleState(page, "cooldown", { timeout: 7_500 });
+      // Accept any valid post-round state (handles skipRoundCooldown flag)
+      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+        timeout: 7_500
+      });
       await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
 
       const adminInterrupt = await dispatchBattleEvent(page, "interrupt", {

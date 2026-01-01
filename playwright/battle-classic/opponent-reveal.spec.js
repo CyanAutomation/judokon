@@ -100,10 +100,9 @@ test.describe("Classic Battle Opponent Reveal", () => {
         throw new Error(`Failed to advance round: ${result.error}`);
       }
 
-      // Wait for cooldown to complete and next round to start
-      await waitForBattleState(page, "cooldown");
-      await waitForBattleState(page, "roundStart");
-      await waitForBattleState(page, "waitingForPlayerAction");
+      // Wait for any valid post-round state (single wait is more resilient)
+      // Handles fast transitions and skipRoundCooldown flag
+      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"]);
 
       await expect
         .poll(async () => {

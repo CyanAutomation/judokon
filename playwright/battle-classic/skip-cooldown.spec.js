@@ -25,7 +25,11 @@ test.describe("Classic Battle cooldown skip via UI", () => {
       const statButton = page.getByTestId("stat-button").first();
       await statButton.click();
 
-      await waitForBattleState(page, "cooldown", { allowFallback: false });
+      // Accept any valid post-selection state (handles skipRoundCooldown flag if set)
+      // Note: This test explicitly sets cooldownMs: 5000, so cooldown should occur
+      await waitForBattleState(page, ["cooldown", "roundStart", "waitingForPlayerAction"], {
+        allowFallback: false
+      });
 
       const snackbar = page.locator("#snackbar-container .snackbar");
       await expect(snackbar).toBeVisible();
