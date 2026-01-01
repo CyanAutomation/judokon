@@ -23,10 +23,11 @@ test.describe("Classic Battle - Immediate Button State After Click", () => {
 
     await statButtons.first().click();
 
-    const buttonCount = await statButtons.count();
-    for (let index = 0; index < buttonCount; index += 1) {
-      await expect(statButtons.nth(index)).toBeDisabled();
-    }
+const buttonCount = await statButtons.count();
+expect(buttonCount).toBeGreaterThan(0);
+for (let index = 0; index < buttonCount; index += 1) {
+  await expect(statButtons.nth(index)).toBeDisabled();
+}
 
     const roundMessage = page.locator("header #round-message");
     await expect(roundMessage).toBeVisible();
