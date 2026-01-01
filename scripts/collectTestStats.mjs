@@ -79,7 +79,7 @@ export function rollDice(rand = Math.random) {
   if (!Number.isFinite(raw)) {
     return moods[1];
   }
-  if (raw === 1) {
+  if (raw >= 1) {
     return moods[6];
   }
   if (raw < 0 || raw > 1) {
