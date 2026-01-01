@@ -347,6 +347,10 @@ try {
      * @returns {void}
      */
     __resetModuleState() {
+      // Clear any active timers so state resets don't leave async handlers running.
+      stopSelectionCountdown();
+      clearCooldownTimers();
+
       // Judoka and store state
       currentPlayerJudoka = null;
       store = null;
@@ -364,7 +368,7 @@ try {
       selectionFinishFn = null;
       selectionTickHandler = null;
       selectionExpiredHandler = null;
-      selectionCancelled = false;
+      selectionCancelled = true;
       selectionApplying = false;
 
       // Modal/UI state
@@ -1464,9 +1468,9 @@ export function selectStat(stat) {
         history.shift();
       }
       localStorage.setItem("cliStatHistory", JSON.stringify(history));
-      commandHistory = history;
-      console.log("[DEBUG selectStat] Updated commandHistory:", commandHistory);
+      console.log("[DEBUG selectStat] Updated commandHistory:", history);
     }
+    commandHistory = history;
     historyIndex = commandHistory.length;
   } catch {}
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
@@ -2525,6 +2529,15 @@ export function handleCommandHistory(key) {
     "historyIndex:",
     historyIndex
   );
+  if (!commandHistory.length) {
+    try {
+      const stored = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
+      if (Array.isArray(stored) && stored.length) {
+        commandHistory = stored;
+        historyIndex = commandHistory.length;
+      }
+    } catch {}
+  }
   if (!commandHistory.length) return false;
   if (historyIndex < 0) historyIndex = commandHistory.length;
   if (key === "ArrowUp") {
