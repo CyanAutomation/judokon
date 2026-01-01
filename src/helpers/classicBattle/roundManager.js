@@ -1250,6 +1250,14 @@ export function _resetForTest(store, preserveConfig = {}) {
   // Reset module-level cooldown state to prevent test pollution
   currentNextRound = null;
   activeCooldownControls = null;
+  // Reset Next button state to prevent test pollution
+  if (typeof document !== "undefined") {
+    const nextBtn = document.getElementById("next-button");
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      delete nextBtn.dataset.nextReady;
+    }
+  }
   if (typeof window !== "undefined") {
     const api = readDebugState("classicBattleDebugAPI");
     if (api) delete api.startRoundOverride;

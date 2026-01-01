@@ -332,9 +332,6 @@ export function createCooldownControls({ emit } = {}) {
   const notify = typeof emit === "function" ? emit : emitBattleEvent;
   controls.ready = new Promise((resolve) => {
     controls.resolveReady = () => {
-      if (typeof process !== "undefined" && process.env?.VITEST) {
-        throw new Error("[DEBUG] resolveReady called!");
-      }
       appendReadyTrace("resolveReadyInvoked", {
         readyDispatched: controls.readyDispatched,
         readyInFlight: controls.readyInFlight
@@ -580,6 +577,13 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
     }
   });
   const checkImmediate = () => {
+    if (typeof process !== "undefined" && process.env?.VITEST) {
+      const state = readBattleStateDataset();
+      const isReady = isOrchestratorReadyState(state);
+      const outOfCooldown = machineOutOfCooldown();
+      const buttonReady = isNextButtonReady();
+      console.error("[DEBUG checkImmediate] state=", state, "isReady=", isReady, "outOfCooldown=", outOfCooldown, "buttonReady=", buttonReady);
+    }
     if (resolved) return;
     if (isOrchestratorReadyState(readBattleStateDataset())) {
       finalize();
