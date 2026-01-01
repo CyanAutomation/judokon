@@ -81,7 +81,7 @@ export function rollDice(rand = Math.random) {
   }
   const value = Math.floor(raw * 6) + 1;
   if (value < 1 || value > 6) {
-    return moods[1];
+    return moods[6];
   }
   return moods[value];
 }
