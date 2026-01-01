@@ -131,6 +131,25 @@ load. Representative pages that load this script include
 On load, the Settings page must pre-populate each control with values from
 `settings.json` so players immediately see their saved preferences.
 
+#### Page Layout (Header + Hero)
+
+- The modern header uses a breadcrumb nav (`.modern-header__breadcrumb`) with a
+  semantic `<nav aria-label="Breadcrumb">` wrapping an ordered list. The final
+  breadcrumb is marked as the current page (`aria-current="page"`), and the
+  header remains inside the banner landmark (`<header role="banner">`). See
+  `src/pages/settings.html` for the exact DOM structure.
+- The header theme toggle group is a dedicated radio set
+  (`input[name="header-display-mode"]`) that mirrors the main display-mode radios.
+  The two groups are kept in sync via `syncHeaderRadios` and
+  `applyDisplayRadioSelection` in
+  `src/helpers/settings/listenerUtils.js`, ensuring a change in either place
+  updates the other.
+- The hero section (`.modern-hero`) introduces the page and embeds the
+  display-mode preview card plus the Light/Dark chips, which must match the
+  radio labels below. The preview and chips are part of the hero layout in
+  `src/pages/settings.html` and act as a visual echo of the display-mode
+  options controlled by the synced radio groups.
+
 ## Settings Features
 
 - **Sound (binary):** ON/OFF (default: ON) – Enable or mute game audio.
