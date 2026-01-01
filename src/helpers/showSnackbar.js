@@ -127,7 +127,7 @@ export function showSnackbar(message) {
     resetState();
     return;
   }
-  clearAnimationListener(animationTarget ?? bar);
+  clearAnimationListener(animationTarget);
   bar = doc.createElement("div");
   bar.className = "snackbar";
   bar.textContent = message;
