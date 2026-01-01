@@ -806,16 +806,20 @@ const stateApi = {
 
   /**
    * Wait for a specific battle state to be reached
-   * @param {string} stateName - Target state name
+   * @param {string|string[]} stateNames - Target state name or array of valid state names
    * @param {number} timeout - Timeout in milliseconds
    * @returns {Promise<boolean>} Resolves true when state reached, throws on timeout
    * @pseudocode
-   * 1. Resolve immediately when the requested state is already active.
-   * 2. Subscribe to `battleStateChange` to observe upcoming transitions.
-   * 3. Poll the state as a safety net while tracking the timeout window.
-   * 4. Resolve `true` on observation, otherwise reject when time expires.
+   * 1. Normalize input to array for consistent handling (single string or array).
+   * 2. Resolve immediately when any of the requested states is already active.
+   * 3. Subscribe to `battleStateChange` to observe upcoming transitions.
+   * 4. Poll the state as a safety net while tracking the timeout window.
+   * 5. Resolve `true` when any target state is observed, otherwise reject when time expires.
    */
-  async waitForBattleState(stateName, timeout = 5000) {
+  async waitForBattleState(stateNames, timeout = 5000) {
+    // Normalize to array for consistent handling
+    const targetStates = Array.isArray(stateNames) ? stateNames : [stateNames];
+    
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       let finished = false,
@@ -836,8 +840,11 @@ const stateApi = {
       };
       const rejectWithTimeout = () =>
         cleanup(() => {
+          const current = this.getBattleState();
+          const stateList = targetStates.join('", "');
           const error = new Error(
-            `Timed out after ${timeout}ms waiting for battle state "${stateName}"`
+            `Timed out after ${timeout}ms waiting for battle state(s): "${stateList}"\n` +
+            `Current state: ${current}`
           );
           error.name = "BattleStateTimeoutError";
           error.code = "BATTLE_STATE_TIMEOUT";
@@ -846,7 +853,8 @@ const stateApi = {
       const resolveMatch = () => cleanup(() => resolve(true));
       const currentMatches = () => {
         try {
-          return this.getBattleState() === stateName;
+          const current = this.getBattleState();
+          return targetStates.includes(current);
         } catch {
           return false;
         }
@@ -861,7 +869,7 @@ const stateApi = {
           typeof detail === "string"
             ? detail
             : (detail?.to ?? detail?.state ?? detail?.next ?? null);
-        if (nextState === stateName) resolveMatch();
+        if (targetStates.includes(nextState)) resolveMatch();
       };
       try {
         onBattleEvent("battleStateChange", listener);

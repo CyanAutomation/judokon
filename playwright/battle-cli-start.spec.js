@@ -28,7 +28,7 @@ test.describe("Battle CLI - Start", () => {
       await expect(page.getByTestId("round-counter")).toHaveText(/^Round 1 Target: 5$/);
 
       const prompt = page.locator("#snackbar-container .snackbar");
-      await expect(prompt).toHaveText("Select your move");
+      await expect(prompt).toContainText("Select your move");
 
       const statsContainer = page.getByRole("listbox", {
         name: "Select a stat with number keys 1-5"

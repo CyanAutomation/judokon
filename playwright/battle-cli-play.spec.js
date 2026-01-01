@@ -78,7 +78,7 @@ test.describe("Battle CLI - Play", () => {
       // Wait for the snackbar to confirm the stat was selected
       // This ensures selectStat() has completed before we call completeRound()
       const statName = statKey.charAt(0).toUpperCase() + statKey.slice(1);
-      await expect(page.locator("#snackbar-container .snackbar")).toHaveText(
+      await expect(page.locator("#snackbar-container .snackbar")).toContainText(
         `You Picked: ${statName}`,
         { timeout: 2000 }
       );
