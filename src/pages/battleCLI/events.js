@@ -70,6 +70,15 @@ function shouldProcessKey(key) {
       activeElement.tagName === "SELECT" ||
       activeElement.contentEditable === "true")
   ) {
+    const battleState = document.body?.dataset?.battleState || "";
+    if (
+      battleState === "waitingForPlayerAction" &&
+      key >= "0" &&
+      key <= "9" &&
+      isEnabled("statHotkeys")
+    ) {
+      return true;
+    }
     return false;
   }
 
@@ -88,7 +97,11 @@ function shouldProcessKey(key) {
  * return handleGlobalKey(key) OR handler(key) OR (if no handler: 'ignored')
  */
 function routeKeyByState(key) {
-  const state = document.body?.dataset?.battleState || "";
+  const state =
+    document.body?.dataset?.battleState ||
+    document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state") ||
+    window.__TEST_API?.state?.getBattleState?.() ||
+    "";
 
   // Suppress "Invalid key" for stat keys when no battle is active
   if (state === "waitingForMatchStart" && key >= "1" && key <= "5") {

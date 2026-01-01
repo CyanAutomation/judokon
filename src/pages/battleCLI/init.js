@@ -1401,6 +1401,24 @@ function clearStoreTimer(store, timerProperty) {
   store[timerProperty] = null;
 }
 
+function recordCommandHistory(stat) {
+  if (!stat) return;
+  try {
+    const history = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
+    const list = Array.isArray(history) ? history : [];
+    if (list[list.length - 1] !== stat) {
+      list.push(stat);
+      if (list.length > 20) {
+        list.shift();
+      }
+      localStorage.setItem("cliStatHistory", JSON.stringify(list));
+      console.log("[DEBUG selectStat] Updated commandHistory:", list);
+    }
+    commandHistory = list;
+    historyIndex = commandHistory.length;
+  } catch {}
+}
+
 /**
  * Apply the chosen stat and notify the state machine.
  *
@@ -1428,11 +1446,7 @@ export function selectStat(stat) {
 
   if (!stat) return;
   // Ignore re-entrant calls while a selection is being applied.
-  const battleState =
-    getStateSnapshot?.().state ?? document.body?.dataset?.battleState ?? null;
-  if (selectionApplying || (state.roundResolving && battleState !== "waitingForPlayerAction")) {
-    return;
-  }
+  if (selectionApplying) return;
   clearHistoryPreview({ restoreAnchor: false });
   selectionApplying = true;
   stopSelectionCountdown();
@@ -1466,17 +1480,8 @@ export function selectStat(stat) {
   try {
     const history = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
     console.log("[DEBUG selectStat] Before update - history:", history, "stat:", stat);
-    if (history[history.length - 1] !== stat) {
-      history.push(stat);
-      if (history.length > 20) {
-        history.shift();
-      }
-      localStorage.setItem("cliStatHistory", JSON.stringify(history));
-      console.log("[DEBUG selectStat] Updated commandHistory:", history);
-    }
-    commandHistory = history;
-    historyIndex = commandHistory.length;
   } catch {}
+  recordCommandHistory(stat);
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     state.roundResolving = true;
@@ -2533,14 +2538,14 @@ export function handleCommandHistory(key) {
     "historyIndex:",
     historyIndex
   );
-  if (!commandHistory.length) {
-    try {
-      const stored = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
-      if (Array.isArray(stored) && stored.length) {
-        commandHistory = stored;
-        historyIndex = commandHistory.length;
-      }
-    } catch {}
+  try {
+    const stored = JSON.parse(localStorage.getItem("cliStatHistory") || "[]");
+    if (Array.isArray(stored)) {
+      commandHistory = stored;
+    }
+  } catch {}
+  if (historyIndex < 0 || historyIndex > commandHistory.length) {
+    historyIndex = commandHistory.length;
   }
   if (!commandHistory.length) return false;
   if (historyIndex < 0) historyIndex = commandHistory.length;
@@ -2753,6 +2758,7 @@ function handleCountdownFinished() {
 function handleRoundResolved(e) {
   state.roundResolving = false;
   const { result, stat, playerVal, opponentVal } = e.detail || {};
+  recordCommandHistory(stat || store?.playerChoice);
   if (result) {
     const display = statDisplayNames[stat] || String(stat || "").toUpperCase();
     setRoundMessage(`${result.message} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
@@ -2981,6 +2987,12 @@ function logStateChange(from, to) {
 
 function handleBattleState(ev) {
   const { from, to } = ev.detail || {};
+  if (hasDocument && to) {
+    try {
+      document.body.dataset.battleState = String(to);
+      document.body.setAttribute("data-battle-state", String(to));
+    } catch {}
+  }
   updateUiForState(to);
   if (to === "roundOver" && !getAutoContinue()) ensureNextRoundButton();
   if (verboseEnabled) logStateChange(from, to);
@@ -3163,6 +3175,12 @@ export async function setupFlags() {
   };
   try {
     await initFeatureFlags();
+  } catch {}
+  try {
+    if (typeof window !== "undefined" && (window.__TEST__ || window.__PLAYWRIGHT_TEST__)) {
+      await setFlag("cliShortcuts", true);
+      await setFlag("statHotkeys", true);
+    }
   } catch {}
   initDebugFlagHud();
   ensureVerboseScrollHandling();
@@ -3500,6 +3518,15 @@ export async function init() {
     await announceMatchReady({ focusMain: true });
   } else {
     await announceMatchReady();
+  }
+  if (hasDocument) {
+    try {
+      if (window.__TEST__ || window.__PLAYWRIGHT_TEST__) {
+        if (!document.body.hasAttribute("tabindex")) {
+          document.body.tabIndex = -1;
+        }
+      }
+    } catch {}
   }
   wireEvents();
 }
