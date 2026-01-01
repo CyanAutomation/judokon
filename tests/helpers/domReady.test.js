@@ -24,6 +24,10 @@ describe("onDomReady (Enhanced Natural Document Lifecycle)", () => {
 
     await import("../../src/helpers/setupHoverZoom.js");
 
+    // Trigger DOM ready to execute the cleanup callback
+    interactions.naturalDocumentReady("complete", true);
+    await vi.runAllTimersAsync();
+
     expect(legacyMarker.hasAttribute("data-enlarge-listener-attached")).toBe(false);
     expect(legacyMarker.hasAttribute("data-enlarged")).toBe(false);
     legacyMarker.remove();
