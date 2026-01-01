@@ -20,7 +20,7 @@ export function getPrdTaskStats(text = "") {
     const result = line.match(/-\s*\[(\s*x\s*|\s+)\]/i);
     if (result) {
       total += 1;
-      if (result[1].toLowerCase() === "x") completed += 1;
+      if (result[1].trim().toLowerCase() === "x") completed += 1;
     }
   }
   return { total, completed };
