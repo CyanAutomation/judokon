@@ -4,6 +4,7 @@ import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 import { playRounds as playRoundsHelper } from "./playRounds.js";
+import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 
 let fetchJsonMock;
 let generateRandomCardMock;
@@ -173,6 +174,37 @@ describe("classicBattle stat selection", () => {
       });
     }
   );
+
+  it("stat selection disables buttons and updates round message", async () => {
+    document.getElementById("stat-buttons").innerHTML = `
+      <button data-stat="power">Power</button>
+      <button data-stat="speed">Speed</button>
+    `;
+    const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    store.statButtonEls = Object.fromEntries(buttons.map((button) => [button.dataset.stat, button]));
+    const { setupUIBindings } = await import("../../../src/helpers/classicBattle/setupUIBindings.js");
+    const view = {
+      controller: { battleStore: store, timerControls: {} },
+      applyBattleOrientation: () => {}
+    };
+    const controls = await setupUIBindings(view);
+    emitBattleEvent("statButtons:enable");
+    expect(buttons.every((button) => !button.disabled)).toBe(true);
+
+    emitBattleEvent("statSelected", { stat: "power", store });
+    await timers.runAllTimersAsync();
+    expect(store.statButtonEls.power.classList.contains("selected")).toBe(true);
+    expect(buttons.every((button) => button.disabled)).toBe(true);
+
+    emitBattleEvent("roundResolved", {
+      store,
+      result: { matchEnded: false, message: "You win the round!", playerScore: 1, opponentScore: 0 }
+    });
+    await timers.runAllTimersAsync();
+    expect(document.querySelector("header #round-message").textContent).toMatch(/win the round/i);
+
+    controls?.disable?.();
+  });
 
   it("advances machine to cooldown after stat selection", async () => {
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
