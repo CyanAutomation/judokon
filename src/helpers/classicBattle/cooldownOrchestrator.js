@@ -323,9 +323,6 @@ export function createCooldownControls({ emit } = {}) {
     readyDispatched: false,
     readyInFlight: false
   };
-  if (typeof console !== "undefined" && console.error) {
-    console.error("[DEBUG createCooldownControls] Created controls with readyDispatched = false");
-  }
   appendReadyTrace("controlsCreated", {
     hasEmitter: typeof emit === "function"
   });
@@ -544,9 +541,6 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
   }
   const machineOutOfCooldown = () => {
     const state = getMachineState(machine);
-    if (typeof process !== "undefined" && process.env?.VITEST) {
-      console.error("[DEBUG machineOutOfCooldown] state =", state, "returning", typeof state === "string" && state !== "cooldown");
-    }
     return typeof state === "string" && state !== "cooldown";
   };
   addListener("battleStateChange", (event) => {
@@ -577,23 +571,22 @@ export function setupOrchestratedReady(controls, machine, btn, options = {}) {
     }
   });
   const checkImmediate = () => {
-    if (typeof process !== "undefined" && process.env?.VITEST) {
-      const state = readBattleStateDataset();
-      const isReady = isOrchestratorReadyState(state);
-      const outOfCooldown = machineOutOfCooldown();
-      const buttonReady = isNextButtonReady();
-      console.error("[DEBUG checkImmediate] state=", state, "isReady=", isReady, "outOfCooldown=", outOfCooldown, "buttonReady=", buttonReady);
-    }
     if (resolved) return;
-    if (isOrchestratorReadyState(readBattleStateDataset())) {
+    const stateReady = isOrchestratorReadyState(readBattleStateDataset());
+    const outOfCooldown = machineOutOfCooldown();
+    const buttonReady = isNextButtonReady();
+    if (stateReady || outOfCooldown || buttonReady) {
+      throw new Error(`[DEBUG] checkImmediate will finalize: stateReady=${stateReady} outOfCooldown=${outOfCooldown} buttonReady=${buttonReady}`);
+    }
+    if (stateReady) {
       finalize();
       return;
     }
-    if (machineOutOfCooldown()) {
+    if (outOfCooldown) {
       finalize();
       return;
     }
-    if (isNextButtonReady()) finalize();
+    if (buttonReady) finalize();
   };
   checkImmediate();
   if (!resolved) {
@@ -701,6 +694,10 @@ export function isNextButtonReady() {
       if (typeof document === "undefined") return false;
       const btn = document.getElementById("next-button");
       if (!btn) return false;
+      const result = btn.dataset?.nextReady === "true" || btn.disabled === false;
+      if (typeof process !== "undefined" && process.env?.VITEST && result) {
+        console.error("[DEBUG isNextButtonReady] RETURNING TRUE: nextReady=", btn.dataset?.nextReady, "disabled=", btn.disabled);
+      }
       if (btn.dataset?.nextReady === "true") return true;
       if (btn.disabled === false) return true;
       return false;

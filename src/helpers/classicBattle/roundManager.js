@@ -576,9 +576,6 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     metadata: { cooldownSeconds }
   });
   const sessionControls = session.controls;
-  if (typeof process !== "undefined" && typeof console !== "undefined" && console.error) {
-    console.error("[DEBUG startCooldown] About to set currentNextRound, controls.readyDispatched =", sessionControls?.readyDispatched);
-  }
   currentNextRound = sessionControls;
   safeRound(
     "startCooldown.exposeCurrentNextRound",
@@ -960,9 +957,6 @@ function createReadyDispatchConfiguration({
 
 function finalizeReadyControls(controls, dispatched, options = {}) {
   if (!controls) return;
-  if (typeof process !== "undefined" && process.env?.VITEST) {
-    throw new Error(`[DEBUG] finalizeReadyControls called with dispatched=${dispatched}`);
-  }
   const forceResolve = options.forceResolve === true;
   controls.readyInFlight = false;
   const resolver = typeof controls.resolveReady === "function" ? controls.resolveReady : null;
