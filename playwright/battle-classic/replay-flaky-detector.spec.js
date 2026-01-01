@@ -11,11 +11,14 @@ test.describe("Classic Battle — Replay flaky detector", () => {
   // PRD: design/productRequirementsDocuments/prdBattleScoreboard.md (replay resets score/round UI)
   test("replay loop maintains zeroed scoreboard", async ({ page }) => {
     // Align with existing classic battle setup used in replay.spec
-    await page.addInitScript(({ roundTimerMs }) => {
-      window.__OVERRIDE_TIMERS = { roundTimer: roundTimerMs };
-      window.__NEXT_ROUND_COOLDOWN_MS = 0;
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-    }, { roundTimerMs: TEST_ROUND_TIMER_MS });
+    await page.addInitScript(
+      ({ roundTimerMs }) => {
+        window.__OVERRIDE_TIMERS = { roundTimer: roundTimerMs };
+        window.__NEXT_ROUND_COOLDOWN_MS = 0;
+        window.__FF_OVERRIDES = { showRoundSelectModal: true };
+      },
+      { roundTimerMs: TEST_ROUND_TIMER_MS }
+    );
     await page.goto("/src/pages/battleClassic.html");
     await waitForBattleReady(page, { allowFallback: false });
 
@@ -28,7 +31,10 @@ test.describe("Classic Battle — Replay flaky detector", () => {
       const success = engineApi.setPointsToWin(1);
       const current = engineApi.getPointsToWin();
 
-      return { applied: success && current === 1, error: success ? (current === 1 ? null : "VALIDATION_FAILED") : "SET_FAILED" };
+      return {
+        applied: success && current === 1,
+        error: success ? (current === 1 ? null : "VALIDATION_FAILED") : "SET_FAILED"
+      };
     });
 
     if (!setQuickMatch.applied) {

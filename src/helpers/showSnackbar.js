@@ -91,7 +91,7 @@ function activateSnackbar(target) {
   target.addEventListener("animationend", animationListener);
   target.classList.remove(ACTIVE_CLASS);
   // Force a reflow so the animation can restart cleanly on updates.
-  // eslint-disable-next-line no-unused-expressions
+
   target.offsetWidth;
   target.classList.add(ACTIVE_CLASS);
 }

@@ -17,10 +17,7 @@ describe("getPrdTaskStats", () => {
   it("parses nested task lists from PRD fixtures", () => {
     // Expected PRD task format: "## Tasks" heading with "- [ ]"/"- [x]" items.
     // See PRD authoring standards: design/productRequirementsDocuments/prdDevelopmentStandards.md#7-prd-authoring-standards-p2
-    const md = fs.readFileSync(
-      path.join(fixturesDir, "prdTooltipViewerExcerpt.md"),
-      "utf-8"
-    );
+    const md = fs.readFileSync(path.join(fixturesDir, "prdTooltipViewerExcerpt.md"), "utf-8");
     const stats = getPrdTaskStats(md);
     expect(stats.total).toBe(23);
     expect(stats.completed).toBe(23);

@@ -111,6 +111,7 @@ The `applyNextButtonFinalizedState()` function was intended to finalize the Next
 3. With cooldownMs: 0, the cooldown completed so fast that finalization never happened before tests checked for it
 
 **Resolution:**
+
 1. Removed the orchestration and test mode checks in `cooldownEnter.js` - always apply early finalization
 2. Enhanced `applyNextButtonFinalizedState()` to set diagnostic globals (`__classicBattleSelectionFinalized`, `__classicBattleLastFinalizeContext`)
 3. Updated `applyNextButtonFinalizedState()` to calculate the next round number (current + 1) and update `__highestDisplayedRound` since the round store hasn't been updated yet
@@ -136,7 +137,7 @@ export function applyNextButtonFinalizedState() {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = true;
       window.__classicBattleLastFinalizeContext = "advance";
-      
+
       // Calculate NEXT round number (current + 1) before store is updated
       try {
         const currentRound = roundStore.getCurrentRound();

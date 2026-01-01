@@ -55,7 +55,7 @@ export function showSettingsError(message = "Failed to update settings.") {
     };
     animationHandlers.set(popup, handler);
     popup.addEventListener("animationend", handler);
-    
+
     // Add cleanup when element is removed from DOM
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -68,7 +68,7 @@ export function showSettingsError(message = "Failed to update settings.") {
         });
       });
     });
-    
+
     observer.observe(document.body, { childList: true, subtree: true });
   }
 

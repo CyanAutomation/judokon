@@ -181,8 +181,12 @@ describe("classicBattle stat selection", () => {
       <button data-stat="speed">Speed</button>
     `;
     const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    store.statButtonEls = Object.fromEntries(buttons.map((button) => [button.dataset.stat, button]));
-    const { setupUIBindings } = await import("../../../src/helpers/classicBattle/setupUIBindings.js");
+    store.statButtonEls = Object.fromEntries(
+      buttons.map((button) => [button.dataset.stat, button])
+    );
+    const { setupUIBindings } = await import(
+      "../../../src/helpers/classicBattle/setupUIBindings.js"
+    );
     const view = {
       controller: { battleStore: store, timerControls: {} },
       applyBattleOrientation: () => {}

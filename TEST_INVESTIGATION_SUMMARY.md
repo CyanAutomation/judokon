@@ -77,7 +77,7 @@ export function applyNextButtonFinalizedState() {
     if (typeof window !== "undefined") {
       window.__classicBattleSelectionFinalized = true;
       window.__classicBattleLastFinalizeContext = "advance";
-      
+
       // Calculate NEXT round number (current + 1) before store is updated
       try {
         const currentRound = roundStore.getCurrentRound();
