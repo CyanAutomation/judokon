@@ -116,13 +116,17 @@ describe("check-jsdoc", () => {
     });
 
     it("should flag fixture missing @pseudocode", async () => {
-      const content = await readFile(path.join(fixturesDir, "jsdoc-invalid.js"), "utf8");
-      const lines = content.split("\n");
-      const symbols = findExportedSymbols(content);
-      const symbol = symbols.find((item) => item.name === "updateScoreboardLabel");
-      expect(symbol).toBeTruthy();
-      const valid = validateJsDoc(lines, symbol.line - 1);
-      expect(valid).toBe("Missing @pseudocode tag. All functions require a @pseudocode section.");
+      try {
+        const content = await readFile(path.join(fixturesDir, "jsdoc-invalid.js"), "utf8");
+        const lines = content.split("\n");
+        const symbols = findExportedSymbols(content);
+        const symbol = symbols.find((item) => item.name === "updateScoreboardLabel");
+        expect(symbol).toBeTruthy();
+        const valid = validateJsDoc(lines, symbol.line - 1);
+        expect(valid).toBe("Missing @pseudocode tag. All functions require a @pseudocode section.");
+      } catch (error) {
+        throw new Error(`Failed to read fixture file: ${error.message}`);
+      }
     });
   });
 });
