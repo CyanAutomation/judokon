@@ -2,21 +2,42 @@
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0.98);
   background: var(--color-primary);
   color: var(--color-text-inverted);
   padding: 0.5rem 1rem;
+  margin: 0;
+  border: none;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-base);
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition-fast);
+  animation: none;
 }
 
-.settings-error-popup.show {
-  opacity: 1;
+.settings-error-popup[open] {
   pointer-events: auto;
+  animation: settings-error-popup-fade 2.4s ease-out forwards;
+}
+
+@keyframes settings-error-popup-fade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.98);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.98);
+  }
 }
 
 :root {
@@ -245,8 +266,6 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  margin: var(--space-md) auto var(--space-lg);
-  padding: var(--space-xs) var(--space-md);
   max-width: min(320px, 100%);
   font-weight: 600;
   color: var(--color-text);
@@ -254,20 +273,42 @@
   border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-base);
+  overflow: hidden;
+  margin: 0 auto;
+  padding: 0;
+  max-height: 0;
   opacity: 0;
   transform: translateY(-6px);
-  transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .settings-save-status[data-visible="true"] {
-  opacity: 1;
-  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+  margin: var(--space-md) auto var(--space-lg);
+  padding: var(--space-xs) var(--space-md);
+  max-height: 200px;
+  animation: settings-save-status-fade 2s ease-out forwards;
 }
 
-.settings-save-status[hidden] {
-  display: none;
+@keyframes settings-save-status-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 /* Toggle switch styles */

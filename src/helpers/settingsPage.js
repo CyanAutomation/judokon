@@ -82,9 +82,41 @@ if (typeof window !== "undefined") {
   window.settingsReadyPromise = settingsReadyPromise;
 }
 
-let errorPopupTimeoutId;
-let saveStatusTimeoutId;
 let debugHudHandle;
+const saveStatusAnimationName = "settings-save-status-fade";
+const errorPopupAnimationName = "settings-error-popup-fade";
+const animationHandlers = new WeakMap();
+
+function ensureAnimationHandler(element, animationName, onEnd) {
+  if (animationHandlers.has(element)) {
+    return;
+  }
+
+  const handler = (event) => {
+    if (event.animationName !== animationName) {
+      return;
+    }
+    onEnd();
+  };
+
+  animationHandlers.set(element, handler);
+  element.addEventListener("animationend", handler);
+  
+  // Add cleanup when element is removed from DOM
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.removedNodes.forEach((node) => {
+        if (node === element || (node.contains && node.contains(element))) {
+          element.removeEventListener("animationend", handler);
+          animationHandlers.delete(element);
+          observer.disconnect();
+        }
+      });
+    });
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: true });
+}
 
 /**
  * Build a notifier that surfaces transient save feedback in the live region.
@@ -97,28 +129,20 @@ function createSaveStatusNotifier(statusElement) {
     return () => {};
   }
 
+  ensureAnimationHandler(statusElement, saveStatusAnimationName, () => {
+    statusElement.removeAttribute("data-visible");
+    statusElement.textContent = "";
+  });
+
   return function notify(message = "Saved!") {
     const text = typeof message === "string" && message.trim().length > 0 ? message : "Saved!";
 
-    if (saveStatusTimeoutId) {
-      clearTimeout(saveStatusTimeoutId);
-      saveStatusTimeoutId = undefined;
-    }
-
-    statusElement.hidden = false;
-    statusElement.dataset.visible = "true";
-    statusElement.textContent = "";
+    statusElement.textContent = text;
+    statusElement.removeAttribute("data-visible");
     if (statusElement.isConnected) {
       void statusElement.offsetWidth;
     }
-    statusElement.textContent = text;
-
-    saveStatusTimeoutId = setTimeout(() => {
-      statusElement.dataset.visible = "false";
-      statusElement.hidden = true;
-      statusElement.textContent = "";
-      saveStatusTimeoutId = undefined;
-    }, 2000);
+    statusElement.setAttribute("data-visible", "true");
   };
 }
 
@@ -213,16 +237,21 @@ function createControlsRefs() {
 function makeErrorPopupHandler(errorPopup) {
   return function showErrorAndRevert(revert) {
     if (typeof revert === "function") revert();
-    if (errorPopup) {
-      errorPopup.textContent = "Failed to update settings. Please try again.";
-      errorPopup.style.display = "block";
-      if (errorPopupTimeoutId) clearTimeout(errorPopupTimeoutId);
-      errorPopupTimeoutId = setTimeout(() => {
-        errorPopup.style.display = "none";
-        errorPopup.textContent = "";
-        errorPopupTimeoutId = undefined;
-      }, 3000);
+    if (!errorPopup) {
+      return;
     }
+
+    ensureAnimationHandler(errorPopup, errorPopupAnimationName, () => {
+      errorPopup.removeAttribute("open");
+      errorPopup.textContent = "";
+    });
+
+    errorPopup.textContent = "Failed to update settings. Please try again.";
+    errorPopup.removeAttribute("open");
+    if (errorPopup.isConnected) {
+      void errorPopup.offsetWidth;
+    }
+    errorPopup.setAttribute("open", "");
   };
 }
 
@@ -440,12 +469,7 @@ function applyInitialSettings(settings) {
 }
 
 function showLoadSettingsError() {
-  const errorPopup = document.getElementById("settings-error-popup");
-  if (errorPopup) {
-    errorPopup.textContent = "Failed to load settings. Please refresh the page.";
-    errorPopup.style.display = "block";
-  }
-  showSettingsError();
+  showSettingsError("Failed to load settings. Please refresh the page.");
 }
 
 onDomReady(initializeSettingsPage);
