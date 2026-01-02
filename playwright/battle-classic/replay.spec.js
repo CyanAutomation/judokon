@@ -281,7 +281,7 @@ test.describe("Classic Battle replay", () => {
 
       await expect(playerScoreValue).toHaveText("0");
       await expect(opponentScoreValue).toHaveText("0");
-      await expect(roundCounter).toHaveText(/Round\s*1/);
+      await expect(roundCounter).toHaveText(/Round\s*1/i);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
