@@ -8,6 +8,9 @@ import { guard, guardAsync, scheduleGuard } from "../guard.js";
 import { exposeDebugState, readDebugState } from "../debugHooks.js";
 import { getAutoContinue } from "../autoContinue.js";
 import isStateTransition from "../isStateTransition.js";
+import { createComponentLogger } from "../debugLogger.js";
+
+const resolverLogger = createComponentLogger("RoundDecisionHelpers");
 
 // Magic number constants for timing coordination
 const PLAYER_CHOICE_POLL_INTERVAL_MS = 50;
@@ -186,7 +189,7 @@ export function recordEntry() {
  */
 export async function resolveSelectionIfPresent(store) {
   if (!store.playerChoice) {
-    console.log("[DIAGNOSTIC] resolveSelectionIfPresent: no playerChoice, returning false");
+    resolverLogger.debug("No playerChoice, returning false");
     return false;
   }
   const stat = store.playerChoice;
@@ -206,14 +209,14 @@ export async function resolveSelectionIfPresent(store) {
     debugLog("DEBUG: resolveSelectionIfPresent debugLog error", { error: err.message });
   }
   const delayMs = resolveDelay();
-  console.log("[DIAGNOSTIC] resolveSelectionIfPresent: calling resolveRound with", {
+  resolverLogger.debug("Calling resolveRound", {
     stat,
     playerVal,
     opponentVal,
     delayMs
   });
   await resolveRound(store, stat, playerVal, opponentVal, { delayMs });
-  console.log("[DIAGNOSTIC] resolveSelectionIfPresent: resolveRound completed");
+  resolverLogger.debug("resolveRound completed");
   return true;
 }
 

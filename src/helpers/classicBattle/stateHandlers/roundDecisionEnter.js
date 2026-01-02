@@ -10,6 +10,9 @@ import { guard, guardAsync } from "../guard.js";
 import { handleRoundError } from "../handleRoundError.js";
 import { debugLog } from "../debugLog.js";
 import { reportSentryError } from "./sentryReporter.js";
+import { createComponentLogger } from "../debugLogger.js";
+
+const stateLogger = createComponentLogger("RoundDecision");
 
 /**
  * onEnter handler for the `roundDecision` state.
@@ -34,21 +37,20 @@ export async function roundDecisionEnter(machine) {
   try {
     if (!machine || typeof machine.dispatch !== "function") {
       debugLog("roundDecisionEnter: invalid machine context");
-      console.warn("[DIAGNOSTIC] roundDecisionEnter: invalid machine context");
+      stateLogger.warn("Invalid machine context");
       return;
     }
 
     const store = machine?.context?.store;
     if (!store) {
       debugLog("roundDecisionEnter: missing store context");
-      console.warn("[DIAGNOSTIC] roundDecisionEnter: missing store context");
+      stateLogger.warn("Missing store context");
       return;
     }
 
-    console.log(
-      "[DIAGNOSTIC] roundDecisionEnter: called with store.playerChoice =",
-      store?.playerChoice
-    );
+    stateLogger.debug("Handler invoked", {
+      playerChoice: store?.playerChoice
+    });
     recordEntry();
 
     emitBattleEvent("roundDecision", {

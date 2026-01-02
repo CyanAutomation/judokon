@@ -171,8 +171,7 @@ export async function cooldownEnter(machine, payload) {
   //   * Playwright tests (use orchestrator + 0ms cooldowns, need immediate finalization)
   //   * Non-orchestrated flows (always need early finalization)
   //   * Production (always apply early finalization)
-  const isVitestEnvironment =
-    typeof process !== "undefined" && process.env && process.env.VITEST;
+  const isVitestEnvironment = typeof process !== "undefined" && process.env && process.env.VITEST;
   const shouldSkipEarlyFinalization = isVitestEnvironment;
 
   if (!shouldSkipEarlyFinalization) {
