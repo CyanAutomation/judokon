@@ -75,6 +75,10 @@ dialog.modal.classic-modal h2 {
   margin: 0 0 var(--space-md, 16px) 0;
 }
 
+dialog.modal.cli-modal h2 {
+  margin: 0 0 var(--space-md, 16px) 0;
+}
+
 dialog.modal.classic-modal .round-select-buttons {
   display: grid;
   gap: var(--space-md, 16px);

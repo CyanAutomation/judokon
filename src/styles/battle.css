@@ -144,6 +144,11 @@
   color: var(--color-text-inverted);
 }
 
+/* Round select modal instructions spacing */
+.round-select-instructions {
+  margin: var(--space-sm) 0;
+}
+
 /* Round select modal button layout */
 .round-select-buttons {
   display: flex;
