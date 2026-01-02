@@ -77,11 +77,11 @@ test.describe("Battle CLI - Play", () => {
 
       // Wait for the snackbar to confirm the stat was selected
       // This ensures selectStat() has completed before we call completeRound()
+      // With snackbar stacking, use getByText to find the specific message
       const statName = statKey.charAt(0).toUpperCase() + statKey.slice(1);
-      await expect(page.locator("#snackbar-container .snackbar")).toContainText(
-        `You Picked: ${statName}`,
-        { timeout: 2000 }
-      );
+      await expect(page.getByText(`You Picked: ${statName}`)).toBeVisible({
+        timeout: 2000
+      });
 
       // Complete the round immediately (don't wait for intermediate state)
       // The state machine will auto-progress via watchdog timers, so we complete
