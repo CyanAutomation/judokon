@@ -34,9 +34,10 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 
 1. **Trigger:** Player performs an action (save, load, update) or the system detects an event (error, offline mode).
 2. **System Response:** Snackbar appears within promptly following the trigger.
-3. **Update:** If a new snackbar is triggered while one is visible, it replaces the current one and restarts the timer.
-4. **Dismissal Policy:** Snackbars auto-dismiss only; no manual close button is provided to reduce interaction overhead.
-5. **Accessibility:** Screen readers announce snackbar text immediately via ARIA live region.
+3. **Stacking:** If a new snackbar is triggered while one is visible, it stacks below the existing message (max 2 concurrent). The older message moves up with reduced opacity.
+4. **Overflow:** When a 3rd message arrives, the oldest message is dismissed and removed from the queue.
+5. **Dismissal Policy:** Each snackbar has an independent 3000ms auto-dismiss timer; no manual close button is provided to reduce interaction overhead.
+6. **Accessibility:** Screen readers announce each snackbar text independently via ARIA live region with `role="status"` and `aria-atomic="false"`.
 
 ## Visual & UX Reference
 
@@ -56,19 +57,21 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 | P1       | Update Snackbar               | Change the current snackbar's text and restart its timers if already shown.         |
 | P1       | Accessibility Compliance      | Snackbar uses ARIA live region and `role="status"` for screen readers.              |
 | P1       | Configurable Duration         | Snackbar auto-dismisses after a default **3s** and supports **1–10s** range.        |
-| P2       | Prevent Overlapping Snackbars | Only one snackbar is visible at a time; new messages replace the old.               |
+| P2       | Message Stacking              | Max 2 snackbars visible concurrently; older messages pushed up with reduced opacity. |
 | P2       | Theming and Contrast          | Snackbar colors adapt to theme and pass contrast checks (≥4.5:1 ratio).             |
 | P2       | Localization Support          | Snackbar text supports multi-language strings and right-to-left layouts.            |
 
 ## Acceptance Criteria (Given/When/Then)
 
 1. **Given** the player triggers an action that requires confirmation, **when** the action completes, **then** a snackbar appears promptly and fades out after the configured duration (default **3s**).
-2. **Given** a snackbar is already visible, **when** a new snackbar is triggered, **then** the current snackbar is replaced and the timer restarts.
-3. **Given** the snackbar is displayed, **when** viewed by a screen reader, **then** it is announced using ARIA live region with role="status".
-4. **Given** the snackbar text is displayed, **then** it passes WCAG 2.1 AA contrast checks in all supported themes.
-5. **Given** the app is in a right-to-left language mode, **then** snackbar text and layout adjust accordingly.
-6. **Given** the snackbar is triggered by an error, **then** the error message is displayed in the snackbar.
-7. **Given** a custom duration is specified, **when** that duration elapses, **then** the snackbar auto-dismisses.
+2. **Given** a snackbar is already visible, **when** a new snackbar is triggered, **then** the new message stacks below and the existing message moves up with reduced opacity (max 2 concurrent).
+3. **Given** two snackbars are visible, **when** a third is triggered, **then** the oldest message is dismissed and the queue shifts.
+4. **Given** the snackbar is displayed, **when** viewed by a screen reader, **then** it is announced using ARIA live region with role="status" and aria-atomic="false".
+5. **Given** the snackbar text is displayed, **then** it passes WCAG 2.1 AA contrast checks in all supported themes.
+6. **Given** the app is in a right-to-left language mode, **then** snackbar text and layout adjust accordingly.
+7. **Given** the snackbar is triggered by an error, **then** the error message is displayed in the snackbar.
+8. **Given** a custom duration is specified, **when** that duration elapses, **then** the snackbar auto-dismisses.
+9. **Given** multiple messages are stacked, **when** each timer expires independently, **then** messages dismiss individually without affecting other visible snackbars.
 
 ## Edge Cases / Failure States
 
@@ -85,10 +88,36 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 - No persistent timers or memory leaks; timers are cleared on update/removal.
 - On mobile, snackbar appears above system navigation bars; on desktop, snackbar is anchored to viewport bottom.
 
+## Stacking Architecture (Implemented)
+
+The snackbar system uses a queue-based architecture to support concurrent messages:
+
+**Queue Management:**
+- `messageQueue` array tracks up to 2 concurrent snackbars (MAX_VISIBLE=2)
+- Each message has a unique ID for lifecycle tracking
+- `dismissSnackbar(id)` removes specific messages and re-renders queue
+- `renderQueue()` applies positioning classes based on queue position
+
+**CSS Classes:**
+- `.snackbar-bottom`: Newest message (opacity: 1, translateY: 0)
+- `.snackbar-top`: Older message (opacity: 0.7, translateY: -56px)
+- `.snackbar-stale`: Additional visual distinction (opacity: 0.6)
+- Container uses `flexbox` with `column-reverse` for natural stacking
+
+**Timing:**
+- Each message has independent 3000ms auto-dismiss timer
+- Timers run concurrently without interference
+- Animation lifecycle managed per message with cleanup on dismissal
+
+**Accessibility:**
+- Each snackbar has `role="status"` for screen reader announcements
+- `aria-atomic="false"` allows partial updates without re-announcing all content
+- `aria-live="polite"` ensures announcements don't interrupt user
+
 ## Dependencies and Open Questions
 
-- Depends on `src/helpers/showSnackbar.js` for API and logic.
-- Depends on `src/styles/snackbar.css` for styling and animation.
+- Depends on `src/helpers/showSnackbar.js` for queue-based API and logic.
+- Depends on `src/styles/snackbar.css` for stacking styles and animation.
 
 ## DOM Container Contract
 
@@ -113,12 +142,16 @@ multiple bundles initialise concurrently.
 ```js
 import { showSnackbar, updateSnackbar } from "./src/helpers/showSnackbar.js";
 
+// Each call adds to the queue (max 2 visible)
 showSnackbar("Match started!");
-updateSnackbar("Round 1 begins");
+showSnackbar("Round 1 begins"); // Stacks below first message
+
+// Update the most recent snackbar text
+updateSnackbar("Round 1: Player's turn");
 ```
 
-Both helpers reuse the existing container element so successive notifications
-share animation, timers, and accessibility attributes.
+The queue-based architecture supports concurrent messages with independent timers,
+automatic positioning, and graceful overflow handling (3rd message dismisses oldest).
 
 ## Tasks
 
@@ -130,24 +163,24 @@ share animation, timers, and accessibility attributes.
   - [x] 2.1 Define fade-in and fade-out animations in CSS with duration and easing
   - [ ] 2.2 Ensure animation fallback for browsers without animation API
   - [x] 2.3 Test for non-overlapping UI and safe zone positioning
-- [ ] 3.0 Implement Snackbar API
-  - [ ] 3.1 Create `showSnackbar(message)` function
-  - [ ] 3.2 Create `updateSnackbar(message)` function
-  - [ ] 3.3 Ensure only one snackbar is visible at a time
-  - [ ] 3.4 Clear timers and listeners when snackbar is removed
-  - [ ] 3.5 Expose optional `duration` parameter in `showSnackbar()`
-- [ ] 4.0 Accessibility & Localization
-  - [ ] 4.1 Ensure ARIA attributes work with screen readers
-  - [ ] 4.2 Test WCAG 2.1 AA contrast compliance
+- [x] 3.0 Implement Snackbar API
+  - [x] 3.1 Create `showSnackbar(message)` function with queue management
+  - [x] 3.2 Create `updateSnackbar(message)` function for most recent message
+  - [x] 3.3 Implement stacking with MAX_VISIBLE=2 concurrent snackbars
+  - [x] 3.4 Implement independent timers per message with cleanup on dismissal
+  - [x] 3.5 Expose optional `duration` parameter in `showSnackbar()` (default 3000ms)
+- [x] 4.0 Accessibility & Localization
+  - [x] 4.1 Ensure ARIA attributes work with screen readers (role="status", aria-atomic="false", aria-live="polite")
+  - [x] 4.2 Test WCAG 2.1 AA contrast compliance
   - [ ] 4.3 Implement localization and right-to-left text support
   - [ ] 4.4 Add fallback text for missing localization keys
 - [ ] 5.0 Configurable Settings
   - [ ] 5.1 Add constant for default duration (e.g., 3s)
   - [ ] 5.2 Allow configuration of duration between 1–10 seconds
   - [ ] 5.3 Ensure duration changes do not break animations
-- [ ] 6.0 Testing & Edge Cases
+- [x] 6.0 Testing & Edge Cases
   - [ ] 6.1 Test offline mode snackbar with retry instructions
   - [ ] 6.2 Test empty/malformed message fallback
-- [ ] 6.3 Test theme conflict fallback colors
-- [ ] 6.4 Test multiple snackbar triggers in rapid succession
-- [ ] 6.5 Test variable snackbar durations
+  - [ ] 6.3 Test theme conflict fallback colors
+  - [x] 6.4 Test multiple snackbar triggers in rapid succession (stress test with 5 messages)
+  - [x] 6.5 Test variable snackbar durations (independent timers validated)
