@@ -128,11 +128,14 @@ export async function waitingForPlayerActionEnter(machine) {
       return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
     }, store);
 
-    // Verify state hasn't changed after async timer operation (race condition guard)
+    // Verify state hasn't regressed after async timer operation (race condition guard)
+    // Allow progression to roundDecision (normal flow after selection), but block if
+    // state has gone to unexpected states like matchOver or back to cooldown
     const currentState = machine.getState ? machine.getState() : null;
-    if (currentState !== "waitingForPlayerAction") {
-      stateLogger.debug("State changed during timer setup", {
-        expected: "waitingForPlayerAction",
+    const validStates = ["waitingForPlayerAction", "roundDecision", "interruptRound"];
+    if (currentState && !validStates.includes(currentState)) {
+      stateLogger.debug("State changed unexpectedly during timer setup", {
+        expected: validStates,
         actual: currentState
       });
       // Timer is already running, but we won't continue with post-timer logic

@@ -37,10 +37,12 @@ export async function roundOverEnter(machine) {
       onBattleEvent("outcomeConfirmed", handler);
     });
 
-    // Verify state hasn't changed after async outcome confirmation (race condition guard)
+    // Verify state hasn't regressed after async outcome confirmation (race condition guard)
+    // Allow progression to cooldown or matchDecision (normal flow), but block unexpected states
     const currentState = machine.getState ? machine.getState() : null;
-    if (currentState !== "roundOver") {
-      // State has moved on, exit gracefully
+    const validStates = ["roundOver", "cooldown", "matchDecision"];
+    if (currentState && !validStates.includes(currentState)) {
+      // State has moved to unexpected state, exit gracefully
       return;
     }
   }

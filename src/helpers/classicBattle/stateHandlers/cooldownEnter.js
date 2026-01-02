@@ -6,7 +6,6 @@ import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
 import { applyNextButtonFinalizedState } from "../uiHelpers.js";
-import { isTestModeEnabled } from "../../testModeUtils.js";
 
 /**
  * State name constant for cooldown phase.
@@ -192,11 +191,14 @@ export async function cooldownEnter(machine, payload) {
   });
   debugLog("cooldownEnter: startCooldown completed");
 
-  // Verify state hasn't changed after async operation (race condition guard)
+  // Verify state hasn't regressed after async operation (race condition guard)
+  // Allow progression to roundStart (normal fast transition), but block if state
+  // has gone back to waitingForPlayerAction or other unexpected states
   const currentState = machine.getState ? machine.getState() : null;
-  if (currentState !== STATE_COOLDOWN) {
-    debugLog("cooldownEnter: state changed during async operation", {
-      expected: STATE_COOLDOWN,
+  const validStates = ["cooldown", "roundStart"];
+  if (currentState && !validStates.includes(currentState)) {
+    debugLog("cooldownEnter: state changed unexpectedly during async operation", {
+      expected: validStates,
       actual: currentState
     });
     return;
