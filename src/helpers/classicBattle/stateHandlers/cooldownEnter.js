@@ -6,6 +6,7 @@ import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
 import { applyNextButtonFinalizedState } from "../uiHelpers.js";
+import { withStateGuard } from "../stateGuards.js";
 
 /**
  * State name constant for cooldown phase.
@@ -191,20 +192,24 @@ export async function cooldownEnter(machine, payload) {
   debugLog("cooldownEnter: startCooldown completed");
 
   // Verify state hasn't regressed after async operation (race condition guard)
-  // Allow progression to roundStart (normal fast transition), but block if state
-  // has gone back to waitingForPlayerAction or other unexpected states
-  const currentState = machine.getState ? machine.getState() : null;
-  const validStates = ["cooldown", "roundStart"];
-  if (currentState && !validStates.includes(currentState)) {
-    debugLog("cooldownEnter: state changed unexpectedly during async operation", {
-      expected: validStates,
-      actual: currentState
-    });
-    return;
-  }
-
-  // Update round state atomically; errors logged but non-blocking
-  guard(() => {
-    updateRoundStateAtomically(roundStore.getCurrentRound());
-  });
+  // Allow progression to roundStart (normal fast transition)
+  withStateGuard(
+    machine,
+    ["cooldown", "roundStart"],
+    () => {
+      // Update round state atomically; errors logged but non-blocking
+      guard(() => {
+        updateRoundStateAtomically(roundStore.getCurrentRound());
+      });
+    },
+    {
+      debugContext: "cooldownEnter.postStartCooldown",
+      onInvalidState: (currentState, validStates) => {
+        debugLog("cooldownEnter: state changed unexpectedly during async operation", {
+          expected: validStates,
+          actual: currentState
+        });
+      }
+    }
+  );
 }

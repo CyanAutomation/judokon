@@ -9,6 +9,7 @@ import {
   createComponentLogger
 } from "../debugLogger.js";
 import { resetSelectionFinalized } from "../selectionState.js";
+import { withStateGuard } from "../stateGuards.js";
 
 const stateLogger = createComponentLogger("WaitingForPlayerAction");
 
@@ -121,18 +122,24 @@ export async function waitingForPlayerActionEnter(machine) {
     }, store);
 
     // Verify state hasn't regressed after async timer operation (race condition guard)
-    // Allow progression to roundDecision (normal flow after selection), but block if
-    // state has gone to unexpected states like matchOver or back to cooldown
-    const currentState = machine.getState ? machine.getState() : null;
-    const validStates = ["waitingForPlayerAction", "roundDecision", "interruptRound"];
-    if (currentState && !validStates.includes(currentState)) {
-      stateLogger.debug("State changed unexpectedly during timer setup", {
-        expected: validStates,
-        actual: currentState
-      });
-      // Timer is already running, but we won't continue with post-timer logic
-      return;
-    }
+    // Allow progression to roundDecision (normal flow after selection) or interruptRound
+    withStateGuard(
+      machine,
+      ["waitingForPlayerAction", "roundDecision", "interruptRound"],
+      () => {
+        // Timer is running, state is valid
+        // Post-timer logic will proceed naturally
+      },
+      {
+        debugContext: "waitingForPlayerActionEnter.postTimerStart",
+        onInvalidState: (currentState, validStates) => {
+          stateLogger.debug("State changed unexpectedly during timer setup", {
+            expected: validStates,
+            actual: currentState
+          });
+        }
+      }
+    );
   }
 
   // a11y:exposeTimerStatus - Timer accessibility is handled by timerService

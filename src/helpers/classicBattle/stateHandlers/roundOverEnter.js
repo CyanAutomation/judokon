@@ -1,6 +1,7 @@
 import { onBattleEvent, offBattleEvent } from "../battleEvents.js";
 import { getAutoContinue } from "../autoContinue.js";
 import { enableNextRoundButton } from "../uiHelpers.js";
+import { withStateGuard } from "../stateGuards.js";
 
 /**
  * onEnter handler for `roundOver` state.
@@ -38,13 +39,18 @@ export async function roundOverEnter(machine) {
     });
 
     // Verify state hasn't regressed after async outcome confirmation (race condition guard)
-    // Allow progression to cooldown or matchDecision (normal flow), but block unexpected states
-    const currentState = machine.getState ? machine.getState() : null;
-    const validStates = ["roundOver", "cooldown", "matchDecision"];
-    if (currentState && !validStates.includes(currentState)) {
-      // State has moved to unexpected state, exit gracefully
-      return;
-    }
+    // Allow progression to cooldown or matchDecision (normal flow)
+    withStateGuard(
+      machine,
+      ["roundOver", "cooldown", "matchDecision"],
+      () => {
+        // State is valid, confirmation complete
+        // Handler will naturally exit after this check
+      },
+      {
+        debugContext: "roundOverEnter.postOutcomeConfirmation"
+      }
+    );
   }
 }
 

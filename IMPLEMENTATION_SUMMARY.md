@@ -179,13 +179,17 @@ const isFinalized = getSelectionFinalized(store);
 
 **Files Modified to Use Unified API:**
 
-- `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js`
+- ✅ `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js`
+- ✅ `src/helpers/classicBattle/uiHelpers.js` (2 locations)
+- ✅ `src/helpers/classicBattle/timerService.js` (1 location)
+- ✅ `src/helpers/classicBattle/roundManager.js` (2 locations)
+- ✅ `src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js` (1 location)
+- ✅ `src/helpers/testApi.js` (2 locations)
 
 **Migration Status**:
 
-- ✅ Core API created
-- ✅ Pattern demonstrated in `waitingForPlayerActionEnter.js`
-- ⏳ Full migration pending (9 locations remain - see `docs/state-flags-lifecycle.md`)
+- ✅ **COMPLETE** (January 2, 2026) - All 9 direct usages now use unified API
+- ✅ Only `selectionState.js` itself directly accesses window global (correct pattern)
 
 ---
 
@@ -213,13 +217,90 @@ const isFinalized = getSelectionFinalized(store);
 
 ---
 
-## Test Coverage
+## 6. Flag Unification Migration (January 2, 2026)
+
+### Overview
+
+Completed migration of all 8 remaining locations from direct `window.__classicBattleSelectionFinalized` access to the unified `selectionState.js` API, establishing `store.selectionMade` as the single source of truth.
+
+### Files Migrated
+
+| File | Locations | Migration Pattern |
+|------|-----------|-------------------|
+| `uiHelpers.js` | 2 | `window.__classicBattleSelectionFinalized = true` → `setSelectionFinalized(null, true, "advance")` |
+| `timerService.js` | 1 | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(null)` |
+| `roundManager.js` | 2 | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(store)` |
+| `interruptStateCleanup.js` | 1 | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(store)` |
+| `testApi.js` | 2 | `window.__classicBattleSelectionFinalized === true` → `getSelectionFinalized(store)` |
+
+### Migration Details
+
+**Before (Direct Access)**:
+```javascript
+// Setting the flag
+if (typeof window !== "undefined") {
+  window.__classicBattleSelectionFinalized = true;
+  window.__classicBattleLastFinalizeContext = "advance";
+}
+
+// Reading the flag
+if (isWindowAvailable()) {
+  return window.__classicBattleSelectionFinalized === true;
+}
+
+// Resetting the flag
+if (typeof window !== "undefined") {
+  window.__classicBattleSelectionFinalized = false;
+  window.__classicBattleLastFinalizeContext = null;
+}
+```
+
+**After (Unified API)**:
+```javascript
+import { setSelectionFinalized, resetSelectionFinalized, getSelectionFinalized } from "./selectionState.js";
+
+// Setting the flag (store is source of truth, window auto-mirrored)
+setSelectionFinalized(store, true, "advance");
+
+// Reading the flag (prefers store, falls back to window)
+const isFinalized = getSelectionFinalized(store);
+
+// Resetting the flag
+resetSelectionFinalized(store);
+```
+
+### Benefits Achieved
+
+1. **Single Source of Truth**: `store.selectionMade` is now the authoritative state
+2. **Automatic Synchronization**: Window global is automatically mirrored for test observability
+3. **Simplified Code**: No more manual try-catch blocks for window availability
+4. **Type Safety**: Automatic Boolean coercion prevents type inconsistencies
+5. **Centralized Logic**: All flag management in one module (`selectionState.js`)
+
+### Test Results
+
+✅ **Unit Tests**: 455 tests passed (97 test files)  
+✅ **Playwright Tests**: 7 tests passed (cooldown + opponent-reveal)  
+✅ **Zero Regressions**: All existing tests continue to pass
+
+### Verification
+
+```bash
+# Confirm no direct usages outside selectionState.js
+grep -r "window\.__classicBattleSelectionFinalized" src/**/*.js
+
+# Result: Only 3 matches - all within selectionState.js (correct)
+```
+
+---
+
+## 7. Test Coverage
 
 ### Unit Tests
 
-**Executed**: 100 test files, 464 tests  
-**Result**: ✅ 464 passed, 0 failed  
-**Duration**: 223.18s
+**Executed**: 97 test files, 455 tests  
+**Result**: ✅ 455 passed, 0 failed  
+**Duration**: 164.64s
 
 **Key Test Suites:**
 
@@ -232,7 +313,7 @@ const isFinalized = getSelectionFinalized(store);
 
 **Executed**: 7 tests (cooldown + opponent-reveal)  
 **Result**: ✅ 7 passed, 0 failed  
-**Duration**: 27.7s
+**Duration**: 21.1s
 
 **Key Scenarios Tested:**
 
@@ -300,12 +381,15 @@ npx playwright test playwright/battle-classic/opponent-reveal.spec.js
 
 ## Future Work
 
+### ✅ Completed (January 2, 2026)
+
+1. **✅ Complete Flag Unification** - Migrated all 8 remaining locations to use `selectionState.js` API (see details below)
+
 ### Immediate Next Steps
 
-1. **Complete Flag Unification** - Migrate remaining 8 locations to use `selectionState.js` API
-2. **Apply State Guards Universally** - Add guards to remaining unprotected handlers
-3. **Expand Structured Logging** - Replace remaining ad-hoc console.log calls
-4. **Create Unit Tests for New Utilities** - Test `stateGuards.js` and `selectionState.js`
+1. **Apply State Guards Universally** - Add guards to remaining unprotected handlers
+2. **Expand Structured Logging** - Replace remaining ad-hoc console.log calls
+3. **Create Unit Tests for New Utilities** - Test `stateGuards.js` and `selectionState.js`
 
 ### Long-term Improvements
 

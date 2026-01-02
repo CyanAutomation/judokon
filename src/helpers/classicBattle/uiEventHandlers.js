@@ -325,25 +325,19 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
 
       console.log(
-        `[statSelected Handler] Showing message immediately, scheduling prompt ready with delay: ${resolvedDelay}ms`
+        `[statSelected Handler] Scheduling message to appear after delay: ${resolvedDelay}ms`
       );
-
-      const promptTimestamp = showPromptAndCaptureTimestamp(opponentPromptMessage, {
-        markTimestamp: true,
-        notifyReady: false
-      });
 
       const minDuration = Number(getOpponentPromptMinDurationFn());
       const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
 
       opponentSnackbarId = setTimeout(() => {
         try {
-          // After delay, emit the opponentPromptReady event with the recorded timestamp
-          if (Number.isFinite(promptTimestamp)) {
-            recordOpponentPromptTimestampFn(promptTimestamp, { notify: true });
-          } else {
-            markOpponentPromptNowFn({ notify: true });
-          }
+          // After delay, show the message and emit the opponentPromptReady event
+          const promptTimestamp = showPromptAndCaptureTimestamp(opponentPromptMessage, {
+            markTimestamp: true,
+            notifyReady: true
+          });
         } catch {
           // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
         }
