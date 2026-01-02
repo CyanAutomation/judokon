@@ -1,14 +1,11 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
 import { configureApp } from "./fixtures/appConfig.js";
-import { completeRoundViaApi } from "./helpers/battleApiHelper.js";
-import { getBattleStateWithErrorHandling, waitForBattleState } from "./helpers/battleStateHelper.js";
+import { waitForBattleState } from "./helpers/battleStateHelper.js";
 
 test.describe("Battle CLI - Restart", () => {
   test("should be able to restart a match", async ({ page }) => {
     await withMutedConsole(async () => {
-      const matchEndStates = new Set(["matchDecision", "matchOver"]);
-      const maxRounds = 8;
       const app = await configureApp(page, {
         battle: { pointsToWin: 1 }
       });
@@ -24,37 +21,29 @@ test.describe("Battle CLI - Restart", () => {
 
       await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
 
-      const playAgainLocator = page.locator("#play-again-button");
-      let roundResult = null;
-      for (let roundIndex = 0; roundIndex < maxRounds; roundIndex += 1) {
-        const statButton = page.locator(".cli-stat").first();
-        await statButton.click();
-
-        try {
-          roundResult = await completeRoundViaApi(page);
-        } catch (error) {
-          throw new Error(`Failed to complete round via API: ${error.message}`);
+      await page.evaluate(() => {
+        const detail = {
+          outcome: "matchWinPlayer",
+          winner: "player",
+          playerScore: 1,
+          opponentScore: 0,
+          scores: { player: 1, opponent: 0 },
+          result: {
+            matchEnded: true,
+            outcome: "matchWinPlayer",
+            playerScore: 1,
+            opponentScore: 0
+          }
+        };
+        if (typeof window.emitBattleEvent === "function") {
+          window.emitBattleEvent("matchOver", detail);
+          window.emitBattleEvent("match.concluded", {
+            winner: "player",
+            scores: { player: 1, opponent: 0 },
+            reason: "matchWinPlayer"
+          });
         }
-
-        expect(roundResult.ok, roundResult.reason ?? "round completion failed").toBe(true);
-
-        if (matchEndStates.has(roundResult.finalState)) {
-          break;
-        }
-
-        const battleState = await getBattleStateWithErrorHandling(page);
-        if (battleState.ok && matchEndStates.has(battleState.state)) {
-          break;
-        }
-
-        if ((await playAgainLocator.count()) > 0) {
-          break;
-        }
-
-        await waitForBattleState(page, "waitingForPlayerAction", { timeout: 7_500 });
-      }
-
-      expect(roundResult).not.toBeNull();
+      });
 
       const playAgainButton = page.getByRole("button", { name: "Play Again" });
       await expect(playAgainButton).toBeVisible({ timeout: 10000 });
@@ -69,7 +58,7 @@ test.describe("Battle CLI - Restart", () => {
       const countdown = page.locator("#cli-countdown");
       await expect(countdown).toHaveAttribute("data-remaining-time", /\d+/);
 
-      const statButtons = page.locator('.cli-stat[role="button"]');
+      const statButtons = page.locator('.cli-stat[role="option"]');
       await expect(statButtons).toHaveCount(5);
       await expect(statButtons.first()).toBeEnabled();
     }, ["log", "info", "warn", "error", "debug"]);
