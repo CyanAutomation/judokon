@@ -21,6 +21,7 @@ import { isEnabled } from "./featureFlags.js";
 import { getCachedSettings } from "./settingsCache.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
 import { isDevelopmentEnvironment } from "./environment.js";
+import { getSelectionFinalized } from "./classicBattle/selectionState.js";
 import {
   getPointsToWin as facadeGetPointsToWin,
   getRoundsPlayed as facadeGetRoundsPlayed,
@@ -2576,9 +2577,8 @@ const inspectionApi = {
 
       const readSelectionFinalized = () => {
         try {
-          if (isWindowAvailable()) {
-            return window.__classicBattleSelectionFinalized === true;
-          }
+          // Use unified selection state API (prefers store.selectionMade, falls back to window global)
+          return getSelectionFinalized(normalizedStore);
         } catch {}
         return false;
       };
@@ -2837,7 +2837,8 @@ const inspectionApi = {
             : null;
       const statSelected = safeRead(() => document.body?.dataset?.statSelected === "true", false);
       const selectionFinalized = safeRead(
-        () => (isWindowAvailable() ? window.__classicBattleSelectionFinalized === true : false),
+        // Use unified selection state API (prefers store.selectionMade, falls back to window global)
+        () => getSelectionFinalized(store),
         false
       );
       const selectionFromStore =

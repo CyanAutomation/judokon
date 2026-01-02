@@ -1,5 +1,6 @@
 import { cleanupTimers, logSelectionMutation } from "../selectionHandler.js";
 import { debugLog } from "../debugLog.js";
+import { resetSelectionFinalized } from "../selectionState.js";
 
 /**
  * Shared cleanup utility for match and round interrupts.
@@ -54,10 +55,8 @@ export function cleanupInterruptState(store, { resetSelectionState = true } = {}
   // Window properties are test/debug-only and don't require store context, so cleanup
   // happens unconditionally. These track selection finalization state during browser tests.
   try {
-    if (typeof window !== "undefined") {
-      window.__classicBattleSelectionFinalized = false;
-      window.__classicBattleLastFinalizeContext = null;
-    }
+    // Use unified selection state API (store.selectionMade is source of truth)
+    resetSelectionFinalized(store);
   } catch (err) {
     debugLog("Window instrumentation cleanup failed during interrupt:", err);
   }

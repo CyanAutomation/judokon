@@ -9,6 +9,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
 import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 import { logTimerOperation, createComponentLogger } from "./debugLogger.js";
+import { resetSelectionFinalized } from "./selectionState.js";
 
 const timerLogger = createComponentLogger("TimerService");
 
@@ -699,9 +700,8 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
   } finally {
     nextClickInFlight = false;
     try {
-      if (typeof window !== "undefined") {
-        window.__classicBattleSelectionFinalized = false;
-      }
+      // Use unified selection state API (store.selectionMade is source of truth)
+      resetSelectionFinalized(null);
     } catch {}
   }
 }

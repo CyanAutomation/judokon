@@ -26,6 +26,7 @@ import { t } from "../i18n.js";
 
 // Guard & storage utilities
 import { enterStoreGuard, getHiddenStoreValue, setHiddenStoreValue } from "./storeGuard.js";
+import { resetSelectionFinalized } from "./selectionState.js";
 import {
   getOpponentCardContainer,
   hideOpponentCardIfRealVisible,
@@ -278,10 +279,8 @@ export async function startRound(store, onRoundStart) {
       currentRoundsPlayed: store.roundsPlayed
     });
     try {
-      if (typeof window !== "undefined") {
-        window.__classicBattleSelectionFinalized = false;
-        window.__classicBattleLastFinalizeContext = null;
-      }
+      // Use unified selection state API (store.selectionMade is source of truth)
+      resetSelectionFinalized(store);
     } catch {
       // Intentionally ignore window global availability errors when resetting selection metadata.
     }
@@ -1287,10 +1286,8 @@ export function _resetForTest(store, preserveConfig = {}) {
       void error;
     }
     try {
-      if (typeof window !== "undefined") {
-        window.__classicBattleSelectionFinalized = false;
-        window.__classicBattleLastFinalizeContext = null;
-      }
+      // Use unified selection state API (store.selectionMade is source of truth)
+      resetSelectionFinalized(store);
     } catch {
       // Intentionally ignore window global availability errors when resetting selection metadata.
     }

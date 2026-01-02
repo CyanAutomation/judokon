@@ -17,6 +17,7 @@ import { roundStore } from "./roundStore.js";
 
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
+import { setSelectionFinalized } from "./selectionState.js";
 // Removed unused import for 'battleEvents'
 import {
   enableStatButtons,
@@ -469,8 +470,8 @@ export function applyNextButtonFinalizedState() {
   // Set diagnostic globals for test compatibility
   try {
     if (typeof window !== "undefined") {
-      window.__classicBattleSelectionFinalized = true;
-      window.__classicBattleLastFinalizeContext = "advance";
+      // Use unified selection state API (store.selectionMade is source of truth)
+      setSelectionFinalized(null, true, "advance");
 
       // Update highest round using NEXT round number (current + 1)
       // This is called during cooldown BEFORE the round number is updated in the store
@@ -513,8 +514,8 @@ export function setNextButtonFinalizedState() {
 
   try {
     if (typeof window !== "undefined") {
-      window.__classicBattleSelectionFinalized = true;
-      window.__classicBattleLastFinalizeContext = "advance";
+      // Use unified selection state API (store.selectionMade is source of truth)
+      setSelectionFinalized(null, true, "advance");
       updateHighestDisplayedRoundDiagnostic(visibleRound);
     }
   } catch {}
