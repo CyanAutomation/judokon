@@ -316,7 +316,7 @@ export async function dispatchBattleEvent(eventName, payload) {
     resetDispatchKey(dispatchKey, timestamp);
     // ignore: dispatch failures only trigger debug updates
     try {
-      debugLog("Error dispatching battle event:", eventName, error);
+      console.error("Error dispatching battle event:", eventName, error);
       emitBattleEvent("debugPanelUpdate");
     } catch {
       // ignore: debug updates are best effort

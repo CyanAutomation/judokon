@@ -145,9 +145,9 @@ describe("UI handlers: opponent message events", () => {
     await timers.runAllTimersAsync();
 
     // When delay is 0 or less, snackbar should show immediately without setTimeout
-    // Only markOpponentPromptNow should have been called, not recordOpponentPromptTimestamp
-    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(showSnackbar).not.toHaveBeenCalled();
+    // Implementation uses showSnackbar (not updateSnackbar)
+    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(updateSnackbar).not.toHaveBeenCalled();
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     // No timers should be queued when delay is 0
@@ -155,7 +155,7 @@ describe("UI handlers: opponent message events", () => {
     expect(setTimeoutSpy).not.toHaveBeenCalled();
   });
 
-  it("reuses captured timestamp when notifying after enforced delay", () => {
+  it("defers opponent choosing snackbar until after delay when flag enabled (QA spec)", async () => {
     // Create dependencies object with mocked functions
     const deps = {
       showSnackbar,
@@ -180,25 +180,27 @@ describe("UI handlers: opponent message events", () => {
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    // When delay > 0, snackbar should be shown immediately for UX, but prompt ready event is delayed
-    // updateSnackbar is preferred over showSnackbar when available
-    expect(updateSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(updateSnackbar).toHaveBeenCalledTimes(1);
+    // Per QA spec: When delay > 0 and flag enabled, snackbar should NOT appear immediately
+    expect(updateSnackbar).not.toHaveBeenCalled();
     expect(showSnackbar).not.toHaveBeenCalled();
-    expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: false });
-    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
-    expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
+    expect(markOpponentPromptNow).not.toHaveBeenCalled();
+    
+    // Timer should be scheduled for the delay period
     expect(vi.getTimerCount()).toBe(1);
     expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+    // Delay is max of opponent delay (500) and min duration (600), so 600ms
     expect(setTimeoutSpy.mock.calls[0][1]).toBe(600);
 
-    // After timer fires, the prompt ready event should be emitted
-    vi.runOnlyPendingTimers();
+    // After timer fires, the snackbar should appear and prompt timestamp recorded
+    await timers.runAllTimersAsync();
 
-    expect(updateSnackbar).toHaveBeenCalledTimes(1); // Still just the initial call
-    expect(showSnackbar).not.toHaveBeenCalled();
-    expect(recordOpponentPromptTimestamp).toHaveBeenCalledTimes(1);
-    expect(recordOpponentPromptTimestamp).toHaveBeenCalledWith(123.45, { notify: true });
-    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1); // Still just the initial call
+    // Per QA spec: Snackbar appears AFTER delay
+    // Implementation uses showSnackbar (not updateSnackbar)
+    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(showSnackbar).toHaveBeenCalledTimes(1);
+    expect(updateSnackbar).not.toHaveBeenCalled();
+    // markOpponentPromptNow is called with notify: true after delay (timer callback)
+    expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
+    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
   });
 });
