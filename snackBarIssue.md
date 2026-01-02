@@ -177,17 +177,41 @@ Update PRD and verify QA spec accuracy.
 - Added implementation plan with code examples
 - Created progress tracking section
 
-### Task 2: Refactor showSnackbar.js to Snackbar Manager
-**Status:** NOT STARTED  
-**Validation:** Run `npx vitest run tests/helpers/showSnackbar.test.js`
+### Task 2: Refactor showSnackbar.js to Snackbar Manager ✅
+**Status:** COMPLETE  
+**Changes:**
+- Replaced single-bar state (`let bar`) with `messageQueue` array
+- Added `MAX_VISIBLE = 2` limit enforcement
+- Implemented `dismissSnackbar(id)` for cleanup
+- Added `renderQueue()` to apply positioning classes
+- Updated `showSnackbar()` to append (not replace) with independent timers
+- Added accessibility attributes: `role="status"`, `aria-atomic="false"`
+- Updated `activateSnackbar()` to accept message ID
+- Preserved animation lifecycle with per-message cleanup
+**Validation:** Running tests next...
 
-### Task 3: Add CSS stacking styles
-**Status:** NOT STARTED  
-**Validation:** Visual inspection + Playwright tests
+### Task 3: Add CSS stacking styles ✅
+**Status:** COMPLETE  
+**Changes:**
+- Added `flex` layout to `#snackbar-container` with `column-reverse` direction
+- Added `.snackbar-bottom` class (opacity: 1, no vertical transform)
+- Added `.snackbar-top` class (opacity: 0.7, translateY: -56px)
+- Added `.snackbar-stale` class (opacity: 0.6 for extra distinction)
+- Added smooth transitions (0.3s ease) for position/opacity changes
+- Container now supports multiple children with 8px gap
+**Validation:** Running tests next...
 
-### Task 4: Update showSnackbar.test.js
-**Status:** NOT STARTED  
-**Validation:** Run `npx vitest run tests/helpers/showSnackbar.test.js`
+### Task 4: Update showSnackbar.test.js ✅
+**Status:** COMPLETE  
+**Changes:**
+- Added `vi.useFakeTimers()` for deterministic timer testing
+- Updated "replaces" test to "stacks up to 2 snackbars concurrently" - verifies stacking behavior
+- Added test for "dismisses oldest when 3rd arrives" - verifies MAX_VISIBLE=2 enforcement
+- Added test for "independent auto-dismiss timers" - verifies each message has 3000ms timer
+- Updated "updateSnackbar" test to work with queue (updates most recent)
+- Added "rapid succession" stress test - verifies 5 messages → only 2 visible
+- All 6 tests passing ✅
+**Validation:** `npx vitest run tests/helpers/showSnackbar.test.js` → 6/6 PASS
 
 ### Task 5: Align opponent-message-handler tests with QA spec
 **Status:** NOT STARTED  

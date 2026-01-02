@@ -102,25 +102,25 @@ function dismissSnackbar(id) {
   if (index === -1) return;
 
   const msg = messageQueue[index];
-  
+
   // Clear timeout
   if (msg.timeoutId) {
     clearTimeout(msg.timeoutId);
   }
-  
+
   // Clear animation listener
   if (msg.element && msg.animationListener) {
     msg.element.removeEventListener("animationend", msg.animationListener);
   }
-  
+
   // Remove from DOM
   if (msg.element && msg.element.parentNode) {
     msg.element.remove();
   }
-  
+
   // Remove from queue
   messageQueue.splice(index, 1);
-  
+
   // Re-render remaining messages to update positioning
   renderQueue();
 }
@@ -139,7 +139,7 @@ function dismissSnackbar(id) {
 function renderQueue() {
   messageQueue.forEach((msg, index) => {
     if (!msg.element) return;
-    
+
     // Top message (older, pushed up with reduced opacity)
     if (index === 0 && messageQueue.length > 1) {
       msg.element.classList.add("snackbar-top", "snackbar-stale");
@@ -157,29 +157,29 @@ function activateSnackbar(target, id) {
   if (!target) return;
   animationToken += 1;
   const token = String(animationToken);
-  
+
   clearAnimationListener(target);
-  
+
   const animationListener = (event) => {
     if (event.target !== target) return;
     if (event.animationName && !VALID_ANIMATIONS.has(event.animationName)) return;
     if (target.dataset.snackbarToken !== token) return;
-    
+
     // Dismiss this snackbar when animation completes
     dismissSnackbar(id);
   };
-  
+
   // Store listener in queue for cleanup
   const msg = messageQueue.find((m) => m.id === id);
   if (msg) {
     msg.animationListener = animationListener;
     msg.token = token;
   }
-  
+
   target.addEventListener("animationend", animationListener);
   target.dataset.snackbarToken = token;
   target.classList.remove(ACTIVE_CLASS);
-  
+
   // Force a reflow so the animation can restart cleanly on updates.
   target.offsetWidth;
   target.classList.add(ACTIVE_CLASS);
@@ -207,44 +207,44 @@ export function showSnackbar(message) {
   if (!doc) {
     return;
   }
-  
+
   // Defensive: ensure a snackbar container exists
   try {
     ensureSnackbarContainer(doc);
   } catch {}
-  
+
   const container = doc.getElementById("snackbar-container");
   if (!container) {
     resetState();
     return;
   }
-  
+
   // Enforce MAX_VISIBLE limit: dismiss oldest if at capacity
   if (messageQueue.length >= MAX_VISIBLE) {
     const oldest = messageQueue[0];
     dismissSnackbar(oldest.id);
   }
-  
+
   // Create new snackbar element
   const id = nextId++;
   const element = doc.createElement("div");
   element.className = "snackbar";
   element.textContent = message;
-  
+
   // Accessibility: each snackbar is an independent status announcement
   element.setAttribute("role", "status");
   element.setAttribute("aria-atomic", "false");
   element.setAttribute("aria-live", "polite");
   element.dataset.snackbarId = String(id);
-  
+
   // Add to container (append, don't replace - supports stacking)
   container.appendChild(element);
-  
+
   // Set independent auto-dismiss timer (3000ms)
   const timeoutId = setTimeout(() => {
     dismissSnackbar(id);
   }, 3000);
-  
+
   // Add to queue
   messageQueue.push({
     id,
@@ -254,7 +254,7 @@ export function showSnackbar(message) {
     animationListener: null,
     token: null
   });
-  
+
   // Apply positioning classes and activate animation
   renderQueue();
   activateSnackbar(element, id);
@@ -279,31 +279,31 @@ export function updateSnackbar(message) {
   if (!doc) {
     return;
   }
-  
+
   // Defensive: expose updateSnackbar as safe even before DOM wiring.
   try {
     ensureSnackbarContainer(doc);
   } catch {}
-  
+
   const container = doc.getElementById("snackbar-container");
   if (!container) {
     resetState();
     return;
   }
-  
+
   // If no messages in queue, create a new one
   if (messageQueue.length === 0) {
     showSnackbar(message);
     return;
   }
-  
+
   // Update the most recent (last) snackbar
   const mostRecent = messageQueue[messageQueue.length - 1];
   if (!mostRecent.element || !container.contains(mostRecent.element)) {
     showSnackbar(message);
     return;
   }
-  
+
   mostRecent.element.textContent = message;
   mostRecent.text = message;
   activateSnackbar(mostRecent.element, mostRecent.id);
