@@ -494,6 +494,9 @@ describe("classicBattle startCooldown", () => {
       expect(events).toContain("round.start");
     } else {
       expect(attachCooldownRenderer).toHaveBeenCalled();
+      // Log what events were actually emitted
+      console.log("Events emitted:", events);
+      console.log("emitSpy call count:", emitSpy.mock.calls.length);
       expect(emitSpy).toHaveBeenCalledTimes(1);
     }
   });
@@ -570,6 +573,9 @@ describe("classicBattle startCooldown", () => {
     const currentNextRound = debugRead("currentNextRound");
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
+
+    const readyResolutionSpy = vi.fn();
+    currentNextRound.ready.then(readyResolutionSpy);
 
     await vi.advanceTimersByTimeAsync(999);
     expect(readyResolutionSpy).not.toHaveBeenCalled();

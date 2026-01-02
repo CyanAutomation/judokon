@@ -259,3 +259,182 @@ Acceptance Criteria (recovery):
 
 - Depends on `prdBattleEngine.md` for resolution logic.
 - Open question: Should the orchestrator be split into a separate library for reuse in CLI/Headless contexts? Note: avoid dynamic imports in hot paths per architecture guidance.
+---
+
+## Async Operations & Race Condition Prevention
+
+**Last Updated**: January 2, 2026
+
+### Overview
+
+State handlers often perform async operations (timers, promises, event resolution) that can outlive the state they were initiated in. Without proper guards, these operations can modify state after the machine has transitioned, causing race conditions and inconsistent behavior.
+
+### Mandatory State Guard Pattern
+
+**Rule**: All state handlers with async operations MUST verify the state machine hasn't transitioned before modifying state after an async operation completes.
+
+**Implementation**:
+
+```javascript
+export async function myStateEnter(machine) {
+  // ... synchronous setup ...
+
+  await someAsyncOperation();
+
+  // ✅ REQUIRED: Verify state before modifying
+  const currentState = machine.getState ? machine.getState() : null;
+  const validStates = ["myState", "allowedProgression"];
+  if (currentState && !validStates.includes(currentState)) {
+    debugLog("State changed unexpectedly during async operation", {
+      expected: validStates,
+      actual: currentState
+    });
+    return; // Exit gracefully
+  }
+
+  // Safe to modify state
+  updateState();
+}
+```
+
+### Handlers with State Guards (as of Jan 2, 2026)
+
+✅ **Protected**:
+- `roundStartEnter.js` - Checks state before dispatching `cardsRevealed`
+- `cooldownEnter.js` - Verifies state after `startCooldown` (allows cooldown → roundStart)
+- `waitingForPlayerActionEnter.js` - Verifies state after `startTimer` (allows progression to roundDecision)
+- `roundOverEnter.js` - Verifies state after outcome confirmation (allows progression to cooldown/matchDecision)
+- `roundDecisionEnter.js` - Comprehensive guards via `guardSelectionResolution`
+
+❌ **Unprotected** (acceptable for specific reasons):
+- `matchStartEnter.js` - Intentionally fire-and-forget to avoid deadlock
+- `matchDecisionEnter.js` - No async operations (showEndModal is sync)
+- `interruptRoundEnter.js` - Dispatches are awaited (no race condition risk)
+
+### Valid State Progression Patterns
+
+When defining valid states for guards, allow normal forward progression:
+
+```javascript
+// ✅ GOOD: Allow normal progression
+const validStates = ["cooldown", "roundStart"]; // cooldown → roundStart is expected
+
+// ❌ BAD: Too strict, blocks normal flow
+const validStates = ["cooldown"]; // Breaks fast transitions
+```
+
+### Helper Utilities
+
+Use `withStateGuard()` from `src/helpers/classicBattle/stateGuards.js`:
+
+```javascript
+import { withStateGuard } from "../stateGuards.js";
+
+await someAsyncOperation();
+
+const executed = withStateGuard(
+  machine,
+  ["expectedState", "allowedProgression"],
+  () => {
+    updateState();
+  },
+  {
+    debugContext: "myHandler",
+    onInvalidState: (currentState, validStates) => {
+      debugLog("State mismatch", { current: currentState, valid: validStates });
+    }
+  }
+);
+```
+
+### Promise.race Timeout Pattern
+
+For operations that must complete within a time limit:
+
+```javascript
+const result = await Promise.race([
+  eventPromise,          // Primary strategy
+  pollingPromise,        // Fallback strategy
+  timeoutPromise         // Safety timeout
+]);
+```
+
+Example from `roundDecisionHelpers.js` lines 268+.
+
+### Guard Cancellation Cleanup
+
+When scheduling guards with `scheduleGuard()`, store cancel functions for cleanup:
+
+```javascript
+const cancel = scheduleGuard(1200, () => {
+  // Guard logic
+});
+
+try {
+  await operation();
+  cancel(); // ✅ Always cancel on success
+} catch (error) {
+  cancel(); // ✅ Always cancel on error
+  throw error;
+}
+```
+
+### Flag Lifecycle Documentation
+
+See [docs/state-flags-lifecycle.md](../../docs/state-flags-lifecycle.md) for complete documentation of boolean flag lifecycles, ownership contracts, and common race condition patterns.
+
+### Testing Async Handlers
+
+When testing handlers with async operations:
+
+1. Use fake timers (`vi.useFakeTimers()`)
+2. Advance time deterministically (`vi.runAllTimersAsync()`)
+3. Verify state guards prevent late modifications
+4. Test both fast transitions (0ms) and normal timing
+
+Example from `tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js`.
+
+### Common Pitfalls
+
+⚠️ **Race Condition**: Setting flag after state transition
+```javascript
+// ❌ BAD
+await asyncOperation();
+window.__flag = true; // May set after state moved on
+```
+
+✅ **Solution**: Use state guard
+```javascript
+// ✅ GOOD
+await asyncOperation();
+if (machine.getState() === "expectedState") {
+  window.__flag = true;
+}
+```
+
+⚠️ **Blocking Fast Transitions**: Too-strict state check
+```javascript
+// ❌ BAD: Blocks cooldown → roundStart
+if (machine.getState() !== "cooldown") return;
+```
+
+✅ **Solution**: Allow progression
+```javascript
+// ✅ GOOD: Allows expected progression
+if (!["cooldown", "roundStart"].includes(machine.getState())) return;
+```
+
+### Acceptance Criteria
+
+✅ All async state handlers have state verification guards  
+✅ Guards allow normal forward state progression  
+✅ Tests verify guards prevent late state modifications  
+✅ Flag lifecycle documented with ownership contracts  
+✅ Helper utilities available for common patterns
+
+### References
+
+- [TEST_INVESTIGATION_SUMMARY.md](../../TEST_INVESTIGATION_SUMMARY.md) - Race condition fixes (Dec 2025 - Jan 2026)
+- [docs/state-flags-lifecycle.md](../../docs/state-flags-lifecycle.md) - Flag lifecycle documentation
+- [src/helpers/classicBattle/stateGuards.js](../../src/helpers/classicBattle/stateGuards.js) - Guard utilities
+- [src/helpers/classicBattle/selectionState.js](../../src/helpers/classicBattle/selectionState.js) - Unified selection state management

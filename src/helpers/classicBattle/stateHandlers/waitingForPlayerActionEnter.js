@@ -8,6 +8,7 @@ import {
   logStateHandlerExit,
   createComponentLogger
 } from "../debugLogger.js";
+import { resetSelectionFinalized } from "../selectionState.js";
 
 const stateLogger = createComponentLogger("WaitingForPlayerAction");
 
@@ -41,7 +42,8 @@ export async function waitingForPlayerActionEnter(machine) {
 
   if (store) {
     try {
-      store.selectionMade = false;
+      // Use unified API to reset selection state
+      resetSelectionFinalized(store);
       store.__lastSelectionMade = false;
       store.playerChoice = null;
       logSelectionMutation("waitingForPlayerActionEnter.reset", store);
@@ -55,16 +57,6 @@ export async function waitingForPlayerActionEnter(machine) {
   logSelectionMutation("waitingForPlayerActionEnter.enter", store, {
     machineState: machine?.currentState ?? null
   });
-
-  // Also reset the finalization flag
-  try {
-    if (typeof window !== "undefined") {
-      window.__classicBattleSelectionFinalized = false;
-      window.__classicBattleLastFinalizeContext = null;
-    }
-  } catch {
-    // Intentionally ignore window global availability errors
-  }
 
   // Debug logging for state handler entry
   logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
