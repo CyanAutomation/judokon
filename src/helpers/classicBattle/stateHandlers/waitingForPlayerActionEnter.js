@@ -127,6 +127,17 @@ export async function waitingForPlayerActionEnter(machine) {
       // Handle the stat selection via the normal selection handler
       return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
     }, store);
+
+    // Verify state hasn't changed after async timer operation (race condition guard)
+    const currentState = machine.getState ? machine.getState() : null;
+    if (currentState !== "waitingForPlayerAction") {
+      stateLogger.debug("State changed during timer setup", {
+        expected: "waitingForPlayerAction",
+        actual: currentState
+      });
+      // Timer is already running, but we won't continue with post-timer logic
+      return;
+    }
   }
 
   // a11y:exposeTimerStatus - Timer accessibility is handled by timerService

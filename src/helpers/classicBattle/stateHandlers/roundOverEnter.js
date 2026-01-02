@@ -36,6 +36,13 @@ export async function roundOverEnter(machine) {
       };
       onBattleEvent("outcomeConfirmed", handler);
     });
+
+    // Verify state hasn't changed after async outcome confirmation (race condition guard)
+    const currentState = machine.getState ? machine.getState() : null;
+    if (currentState !== "roundOver") {
+      // State has moved on, exit gracefully
+      return;
+    }
   }
 }
 

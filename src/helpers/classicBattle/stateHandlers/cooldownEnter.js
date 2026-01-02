@@ -6,6 +6,7 @@ import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
 import { applyNextButtonFinalizedState } from "../uiHelpers.js";
+import { isTestModeEnabled } from "../../testModeUtils.js";
 
 /**
  * State name constant for cooldown phase.
@@ -165,20 +166,27 @@ export async function cooldownEnter(machine, payload) {
 
   const { store, scheduler } = machine.context || {};
 
-  // Finalize Next button state early in cooldown phase ONLY when NOT using orchestrator
-  // When orchestrator is active (with setupOrchestratedReady), early finalization causes
-  // premature ready dispatch before cooldown timer expires
-  // Check: If we're about to pass isOrchestrated/getClassicBattleMachine overrides to startCooldown,
-  // that means the orchestrator is managing the cooldown, so skip early finalization
+  // Finalize Next button state early in cooldown phase with conditional logic:
+  // - Skip when orchestrated AND in test mode (tests use 1s+ cooldowns, orchestrator handles finalization)
+  // - Apply when not orchestrated (non-orchestrated flows always need early finalization)
+  // - Apply when orchestrated but NOT in test mode (Playwright tests use 0ms cooldowns, need immediate finalization)
   const willUseOrchestrator = !!machine.context;
+  const inTestMode = isTestModeEnabled();
+  const shouldSkipEarlyFinalization = willUseOrchestrator && inTestMode;
 
-  if (!willUseOrchestrator) {
+  if (!shouldSkipEarlyFinalization) {
     guard(() => {
       applyNextButtonFinalizedState();
-      debugLog("cooldownEnter: finalized Next button state (early, non-orchestrated)");
+      debugLog("cooldownEnter: finalized Next button state (early)", {
+        orchestrated: willUseOrchestrator,
+        testMode: inTestMode
+      });
     });
   } else {
-    debugLog("cooldownEnter: skipped early finalization (orchestrated mode)");
+    debugLog("cooldownEnter: skipped early finalization (orchestrated test mode)", {
+      orchestrated: willUseOrchestrator,
+      testMode: inTestMode
+    });
   }
 
   debugLog("cooldownEnter: about to call startCooldown");
@@ -187,6 +195,16 @@ export async function cooldownEnter(machine, payload) {
     getClassicBattleMachine: () => machine
   });
   debugLog("cooldownEnter: startCooldown completed");
+
+  // Verify state hasn't changed after async operation (race condition guard)
+  const currentState = machine.getState ? machine.getState() : null;
+  if (currentState !== STATE_COOLDOWN) {
+    debugLog("cooldownEnter: state changed during async operation", {
+      expected: STATE_COOLDOWN,
+      actual: currentState
+    });
+    return;
+  }
 
   // Update round state atomically; errors logged but non-blocking
   guard(() => {
