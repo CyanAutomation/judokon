@@ -38,6 +38,8 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
 
   await expect(countdown).toHaveText(/Time remaining:\s*\d+/, { timeout: 5_000 });
   const initialCountdown = await countdown.textContent();
+  // Verify initial countdown contains a number before polling for changes
+  expect(initialCountdown).toMatch(/Time remaining:\s*\d+/);
   await expect
     .poll(async () => countdown.textContent(), { timeout: 5_000 })
     .not.toBe(initialCountdown);
