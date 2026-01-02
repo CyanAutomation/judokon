@@ -37,7 +37,8 @@ export function setSelectionFinalized(store, value, context = null) {
     }
 
     return true;
-  } catch (error) {
+    // eslint-disable-next-line no-unused-vars
+  } catch (_error) {
     // Silently handle errors to prevent disruption
     return false;
   }

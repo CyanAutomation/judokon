@@ -494,9 +494,6 @@ describe("classicBattle startCooldown", () => {
       expect(events).toContain("round.start");
     } else {
       expect(attachCooldownRenderer).toHaveBeenCalled();
-      // Log what events were actually emitted
-      console.log("Events emitted:", events);
-      console.log("emitSpy call count:", emitSpy.mock.calls.length);
       expect(emitSpy).toHaveBeenCalledTimes(1);
     }
   });
