@@ -132,12 +132,14 @@ function createSaveStatusNotifier(statusElement) {
   ensureAnimationHandler(statusElement, saveStatusAnimationName, () => {
     statusElement.removeAttribute("data-visible");
     statusElement.textContent = "";
+    statusElement.hidden = true;
   });
 
   return function notify(message = "Saved!") {
     const text = typeof message === "string" && message.trim().length > 0 ? message : "Saved!";
 
     statusElement.textContent = text;
+    statusElement.hidden = false;
     statusElement.removeAttribute("data-visible");
     if (statusElement.isConnected) {
       void statusElement.offsetWidth;
