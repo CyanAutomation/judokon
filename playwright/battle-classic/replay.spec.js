@@ -275,7 +275,13 @@ test.describe("Classic Battle replay", () => {
       expect(engineStateAfterReplay?.roundsPlayed).toBe(0);
       expect(engineStateAfterReplay?.pointsToWin).toBe(pointsBeforeReplay);
 
-      await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
+      const playerScoreValue = page.getByTestId("player-score-value");
+      const opponentScoreValue = page.getByTestId("opponent-score-value");
+      const roundCounter = page.getByTestId("round-counter");
+
+      await expect(playerScoreValue).toHaveText("0");
+      await expect(opponentScoreValue).toHaveText("0");
+      await expect(roundCounter).toHaveText(/Round\s*1/i);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
