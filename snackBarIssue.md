@@ -52,6 +52,7 @@ container.replaceChildren(bar);  // Destroys ALL existing snackbars!
 ```
 
 **Why This Fails:**
+
 1. `replaceChildren()` removes all children from the container, including any existing snackbars
 2. Module state (`let bar`) can only track one snackbar at a time
 3. No queue or array to manage multiple concurrent messages
@@ -72,31 +73,37 @@ The CLI battle mode uses a different implementation (`showHint()` in `battleCLI.
 ## 4. Files Requiring Modification
 
 ### Core Implementation (High Priority)
+
 - [x] **`snackBarIssue.md`** - Update with comprehensive analysis and track implementation progress
 - [ ] **`src/helpers/showSnackbar.js`** - Refactor to queue-based Snackbar Manager
 - [ ] **`src/css/main.css`** - Add stacking CSS classes (`.snackbar-top`, `.snackbar-bottom`, `.snackbar-stale`)
 
 ### CLI Battle Migration (High Priority)
+
 - [ ] **`src/pages/battleCLI.html`** - Replace custom `showHint()` with shared `showSnackbar()`
 - [ ] **`playwright/battle-cli-*.spec.js`** - Verify CLI snackbar tests still pass
 
 ### Test Updates (High Priority)
+
 - [ ] **`tests/helpers/showSnackbar.test.js`** - Add stacking/queueing tests
 - [ ] **`tests/classicBattle/opponent-message-handler.improved.test.js`** - Align with QA spec (message after delay)
 - [ ] **New file:** `tests/helpers/showSnackbar.queue.test.js` - Comprehensive queue management tests
 - [ ] **`playwright/opponent-choosing.smoke.spec.js`** - Verify E2E behavior matches QA spec
 
 ### Documentation Updates (Medium Priority)
+
 - [ ] **`design/productRequirementsDocuments/prdSnackbar.md`** - Update P2 requirement to "max 2 stacked" instead of "one at a time"
 - [ ] **`docs/qa/opponent-delay-message.md`** - Verify still accurate after changes
 
 ### Optional Enhancements (Low Priority)
+
 - [ ] **`src/helpers/updateSnackbar.js`** - May need updates if manager API changes
 - [ ] **Accessibility audit** - Verify ARIA announcements with multiple concurrent messages
 
 ## 5. Implementation Plan
 
 ### Phase 1: Core Snackbar Manager Refactor
+
 **Goal:** Replace single-message state with queue-based architecture
 
 ```javascript
@@ -137,6 +144,7 @@ function renderQueue() {
 ```
 
 ### Phase 2: CSS Stacking Styles
+
 ```css
 .snackbar-top {
   opacity: 0.7;
@@ -156,21 +164,26 @@ function renderQueue() {
 ```
 
 ### Phase 3: CLI Battle Migration
+
 Replace custom `showHint()` function in `battleCLI.html` with shared `showSnackbar()` helper.
 
 ### Phase 4: Test Updates
+
 - Add queue management tests (2 concurrent, 3rd dismisses oldest, etc.)
 - Align opponent message handler tests with QA spec
 - Run targeted Playwright tests to verify no regressions
 
 ### Phase 5: Documentation Updates
+
 Update PRD and verify QA spec accuracy.
 
 ## 6. Implementation Progress Tracking
 
 ### Task 1: Update snackBarIssue.md with comprehensive analysis ✅
+
 **Status:** COMPLETE  
 **Changes:**
+
 - Added root cause analysis with code references
 - Created comparison tables for desired vs current behavior
 - Listed all files requiring modification
@@ -178,8 +191,10 @@ Update PRD and verify QA spec accuracy.
 - Created progress tracking section
 
 ### Task 2: Refactor showSnackbar.js to Snackbar Manager ✅
+
 **Status:** COMPLETE  
 **Changes:**
+
 - Replaced single-bar state (`let bar`) with `messageQueue` array
 - Added `MAX_VISIBLE = 2` limit enforcement
 - Implemented `dismissSnackbar(id)` for cleanup
@@ -191,8 +206,10 @@ Update PRD and verify QA spec accuracy.
 **Validation:** Running tests next...
 
 ### Task 3: Add CSS stacking styles ✅
+
 **Status:** COMPLETE  
 **Changes:**
+
 - Added `flex` layout to `#snackbar-container` with `column-reverse` direction
 - Added `.snackbar-bottom` class (opacity: 1, no vertical transform)
 - Added `.snackbar-top` class (opacity: 0.7, translateY: -56px)
@@ -202,8 +219,10 @@ Update PRD and verify QA spec accuracy.
 **Validation:** Running tests next...
 
 ### Task 4: Update showSnackbar.test.js ✅
+
 **Status:** COMPLETE  
 **Changes:**
+
 - Added `vi.useFakeTimers()` for deterministic timer testing
 - Updated "replaces" test to "stacks up to 2 snackbars concurrently" - verifies stacking behavior
 - Added test for "dismisses oldest when 3rd arrives" - verifies MAX_VISIBLE=2 enforcement
@@ -214,8 +233,10 @@ Update PRD and verify QA spec accuracy.
 **Validation:** `npx vitest run tests/helpers/showSnackbar.test.js` → 6/6 PASS
 
 ### Task 5: Align opponent-message-handler tests with QA spec ✅
+
 **Status:** COMPLETE  
 **Changes:**
+
 - Updated test name from "reuses captured timestamp" to "defers opponent choosing snackbar until after delay when flag enabled (QA spec)"
 - Aligned test expectations with QA spec: snackbar appears AFTER delay (not immediately)
 - Changed assertion from `updateSnackbar` to `showSnackbar` (implementation uses showSnackbar)
@@ -226,19 +247,22 @@ Update PRD and verify QA spec accuracy.
 **Validation:** `npx vitest run tests/classicBattle/opponent-message-handler.improved.test.js` → 2/2 PASS
 
 ### Task 6: Migrate CLI Battle to shared snackbar manager ⚠️
+
 **Status:** IN PROGRESS  
 **Changes:**
+
 - Replaced custom `showHint()` function implementation with wrapper that calls `showSnackbar()`
 - Function now delegates to shared snackbar manager: `showSnackbar(sanitizeHintText(text))`
 - Updated JSDoc to reflect new behavior (uses shared helper)
 - Kept function name `showHint()` as wrapper for backward compatibility
 **Issue Found:** Playwright test reveals multiple snackbar elements (old + new style mixing)
-- Old CLI snackbar (without stacking classes): "Select your move" 
+- Old CLI snackbar (without stacking classes): "Select your move"
 - New snackbars (with stacking classes): "Press Enter to start", "First to 5 points wins"
 - Need to find where legacy snackbar is created and migrate it too
 **Validation:** `npx playwright test battle-cli-start.spec.js` → 1/2 PASS (1 failure due to multiple snackbars)
 
 ### Task 7: Update PRD documentation
+
 **Status:** NOT STARTED  
 **Validation:** Manual review
 
@@ -269,18 +293,22 @@ Update PRD and verify QA spec accuracy.
 ## 9. Technical Design Decisions
 
 ### Timing Coordination
+
 **Decision:** Independent timers with 3000ms default  
 **Rationale:** Each snackbar auto-dismisses naturally without complex coordination logic
 
 ### CLI Battle Divergence
+
 **Decision:** Migrate CLI to use shared snackbar manager  
 **Rationale:** Single source of truth, consistent behavior, reduced maintenance burden
 
 ### Animation Choreography
+
 **Decision:** Simultaneous slide with opacity transition  
 **Rationale:** Smooth visual experience; older message slides up as new message appears
 
 ### Accessibility Impact
+
 **Decision:** Add `aria-atomic="false"` and unique `role="status"` per snackbar  
 **Rationale:** Prevents screen reader conflicts; newest message announced first
 

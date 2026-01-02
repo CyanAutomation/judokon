@@ -47,7 +47,7 @@ import {
 } from "../../helpers/classicBattle/orchestratorHandlers.js";
 import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
 import { domStateListener } from "../../helpers/classicBattle/stateTransitionListeners.js";
-import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";
+
 import { exposeTestAPI } from "../../helpers/testApi.js";
 // Phase 2: Shared Scoreboard imports for dual-write
 import { setupScoreboard } from "../../helpers/setupScoreboard.js";
