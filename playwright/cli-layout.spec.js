@@ -8,14 +8,18 @@ const viewports = [
   { name: "mobile", viewport: { width: 430, height: 900 } }
 ];
 
+const gotoBattleCli = async (page) => {
+  await page.goto("/src/pages/battleCLI.html?autostart=1");
+  await waitForBattleReady(page, { allowFallback: false });
+};
+
 test.describe("CLI layout", () => {
   for (const { name, viewport } of viewports) {
     test.describe(name, () => {
       test.use({ viewport });
 
       test("launches a match and enforces layout contracts", async ({ page }) => {
-        await page.goto("/src/pages/battleCLI.html?autostart=1");
-        await waitForBattleReady(page, { allowFallback: false });
+        await gotoBattleCli(page);
 
         await expect
           .poll(() => page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null))
@@ -90,6 +94,38 @@ test.describe("CLI layout", () => {
         expect(layout.pageScrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
         expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth);
       });
+
+  });
+
+  test("exposes live region status on CLI messaging", async ({ page }) => {
+    await gotoBattleCli(page);
+
+    const countdown = page.locator("#cli-countdown[role='status']");
+    const roundMessage = page.locator("#round-message[role='status']");
+
+    await expect(countdown).toBeVisible();
+    await expect(roundMessage).toBeVisible();
+    await expect(roundMessage).toHaveAttribute("aria-live", "polite");
+    await expect(roundMessage).toHaveAttribute("aria-atomic", "true");
+    await expect(countdown).toHaveAttribute("aria-live", "polite");
+    await expect(countdown).toHaveAttribute("data-remaining-time", /\d+/);
+  });
+
+  test("updates countdown live region values", async ({ page }) => {
+    await gotoBattleCli(page);
+
+    const countdown = page.locator("#cli-countdown[role='status']");
+
+    await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(3));
+    await expect
+      .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
+      .toBe("3");
+
+    await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(1));
+    await expect
+      .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
+      .toBe("1");
+  });
     });
   }
 });
