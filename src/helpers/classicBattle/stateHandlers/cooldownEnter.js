@@ -171,7 +171,7 @@ export async function cooldownEnter(machine, payload) {
   // Check: If we're about to pass isOrchestrated/getClassicBattleMachine overrides to startCooldown,
   // that means the orchestrator is managing the cooldown, so skip early finalization
   const willUseOrchestrator = !!machine.context;
-  
+
   if (!willUseOrchestrator) {
     guard(() => {
       applyNextButtonFinalizedState();

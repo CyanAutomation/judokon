@@ -70,6 +70,7 @@ if (typeof document !== "undefined") {
 **Problem:** `applyNextButtonFinalizedState()` is called early in cooldownEnter phase
 
 **Call Chain:**
+
 ```
 cooldownEnter() (line 150)
   → applyNextButtonFinalizedState() (line 170) ❌ Sets btn.dataset.nextReady = "true"
@@ -86,11 +87,13 @@ cooldownEnter() (line 150)
 ### Solution Strategy
 
 **Option 1: Conditional Early Finalization** ✅ IMPLEMENTED
+
 - Skip `applyNextButtonFinalizedState()` when in orchestrated mode
 - Let the orchestrator handle button finalization after cooldown expires
 - Preserves existing behavior for non-orchestrated flows
 
 **Implementation:** Modified `src/helpers/classicBattle/stateHandlers/cooldownEnter.js:158-173`
+
 ```javascript
 const isOrchestrated = !!machine.context;
 if (!isOrchestrated) {
@@ -112,6 +115,7 @@ Duration    2.66s
 ```
 
 **Tests Passing:**
+
 1. ✅ auto-dispatches ready after 1s cooldown
 2. ✅ transitions roundOver → cooldown → roundStart
 3. ✅ respects skipRoundCooldown when enabled
@@ -147,7 +151,7 @@ if (typeof document !== "undefined" && document.body) {
 
 ```javascript
 // Add before assertion to capture state
-console.error('[TEST DEBUG] Before assertion:', {
+console.error("[TEST DEBUG] Before assertion:", {
   readyDispatched: currentNextRound.readyDispatched,
   buttonReady: orchestrator.isNextButtonReady?.(),
   machineState: machine.getState(),
@@ -162,6 +166,7 @@ expect(currentNextRound.readyDispatched).toBe(false);
 
 **File:** `src/helpers/classicBattle/cooldownOrchestrator.js`
 **Functions to Review:**
+
 - `machineOutOfCooldown()` - Verify cooldown state detection
 - `isOrchestratorReadyState()` - Verify state matching logic
 - `setupOrchestratedReady()` - Verify cleanup of prior event listeners
