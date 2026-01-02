@@ -94,8 +94,8 @@ test.describe("CLI layout", () => {
         expect(layout.pageScrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
         expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth);
       });
-
-  });
+    });
+  }
 
   test("exposes live region status on CLI messaging", async ({ page }) => {
     await gotoBattleCli(page);
@@ -126,6 +126,4 @@ test.describe("CLI layout", () => {
       .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
       .toBe("1");
   });
-    });
-  }
 });
