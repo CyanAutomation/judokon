@@ -24,6 +24,7 @@ This implementation addresses four recommendations from the race condition inves
 Added state verification guards to 3 critical async state handlers to prevent race conditions when async operations complete after state transitions:
 
 **Files Modified:**
+
 - `src/helpers/classicBattle/stateHandlers/cooldownEnter.js`
 - `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js`
 - `src/helpers/classicBattle/stateHandlers/roundOverEnter.js`
@@ -89,6 +90,7 @@ Guards must **allow normal forward progression** (e.g., `cooldown → roundStart
 Replaced ad-hoc `console.log("[DIAGNOSTIC] ...")` calls with structured logging using `BattleDebugLogger`:
 
 **Files Modified:**
+
 - `src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js`
 - `src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js`
 
@@ -113,6 +115,7 @@ stateLogger.debug("Handler invoked", { playerChoice: store?.playerChoice });
 ### Logger Categories
 
 Available in `DEBUG_CATEGORIES`:
+
 - `STATE` - State machine transitions
 - `EVENT` - Event emissions and handlers
 - `TIMER` - Timer lifecycle and expiration
@@ -175,9 +178,11 @@ const isFinalized = getSelectionFinalized(store);
 ```
 
 **Files Modified to Use Unified API:**
+
 - `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js`
 
-**Migration Status**: 
+**Migration Status**:
+
 - ✅ Core API created
 - ✅ Pattern demonstrated in `waitingForPlayerActionEnter.js`
 - ⏳ Full migration pending (9 locations remain - see `docs/state-flags-lifecycle.md`)
@@ -195,6 +200,7 @@ const isFinalized = getSelectionFinalized(store);
 **"Async Operations & Race Condition Prevention"** (end of document)
 
 **Content:**
+
 - Mandatory state guard pattern with examples
 - List of protected vs unprotected handlers
 - Valid state progression patterns
@@ -216,6 +222,7 @@ const isFinalized = getSelectionFinalized(store);
 **Duration**: 223.18s
 
 **Key Test Suites:**
+
 - `tests/helpers/classicBattle/scheduleNextRound.test.js` - Cooldown timing
 - `tests/helpers/classicBattle/controlState.test.js` - Control state management
 - `tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js` - Fast transitions
@@ -228,6 +235,7 @@ const isFinalized = getSelectionFinalized(store);
 **Duration**: 27.7s
 
 **Key Scenarios Tested:**
+
 - ✅ Next button becomes ready after resolution (cooldown)
 - ✅ Round counter state recovery after DOM interference
 - ✅ Stat selection reset after advancing to next round

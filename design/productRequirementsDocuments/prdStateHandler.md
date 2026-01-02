@@ -259,6 +259,7 @@ Acceptance Criteria (recovery):
 
 - Depends on `prdBattleEngine.md` for resolution logic.
 - Open question: Should the orchestrator be split into a separate library for reuse in CLI/Headless contexts? Note: avoid dynamic imports in hot paths per architecture guidance.
+
 ---
 
 ## Async Operations & Race Condition Prevention
@@ -300,6 +301,7 @@ export async function myStateEnter(machine) {
 ### Handlers with State Guards (as of Jan 2, 2026)
 
 ✅ **Protected**:
+
 - `roundStartEnter.js` - Checks state before dispatching `cardsRevealed`
 - `cooldownEnter.js` - Verifies state after `startCooldown` (allows cooldown → roundStart)
 - `waitingForPlayerActionEnter.js` - Verifies state after `startTimer` (allows progression to roundDecision)
@@ -307,6 +309,7 @@ export async function myStateEnter(machine) {
 - `roundDecisionEnter.js` - Comprehensive guards via `guardSelectionResolution`
 
 ❌ **Unprotected** (acceptable for specific reasons):
+
 - `matchStartEnter.js` - Intentionally fire-and-forget to avoid deadlock
 - `matchDecisionEnter.js` - No async operations (showEndModal is sync)
 - `interruptRoundEnter.js` - Dispatches are awaited (no race condition risk)
@@ -397,6 +400,7 @@ Example from `tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js`.
 ### Common Pitfalls
 
 ⚠️ **Race Condition**: Setting flag after state transition
+
 ```javascript
 // ❌ BAD
 await asyncOperation();
@@ -404,6 +408,7 @@ window.__flag = true; // May set after state moved on
 ```
 
 ✅ **Solution**: Use state guard
+
 ```javascript
 // ✅ GOOD
 await asyncOperation();
@@ -413,12 +418,14 @@ if (machine.getState() === "expectedState") {
 ```
 
 ⚠️ **Blocking Fast Transitions**: Too-strict state check
+
 ```javascript
 // ❌ BAD: Blocks cooldown → roundStart
 if (machine.getState() !== "cooldown") return;
 ```
 
 ✅ **Solution**: Allow progression
+
 ```javascript
 // ✅ GOOD: Allows expected progression
 if (!["cooldown", "roundStart"].includes(machine.getState())) return;

@@ -21,20 +21,24 @@ The classic battle system uses multiple boolean flags to track selection state, 
 #### Lifecycle Phases
 
 **Initialization**:
+
 - Set to `false` in `startRound()` ([roundManager.js:946](../src/helpers/classicBattle/roundManager.js#L946))
 - Set to `false` in `waitingForPlayerActionEnter()` ([waitingForPlayerActionEnter.js:45](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L45))
 
 **Set to `true`**:
+
 - When player selects a stat ([selectionHandler.js:1475](../src/helpers/classicBattle/selectionHandler.js#L1475))
 - During normal stat selection flow
 
 **Set to `false` (Reset)**:
+
 - At round start ([roundManager.js:946](../src/helpers/classicBattle/roundManager.js#L946))
 - When entering `waitingForPlayerAction` state ([waitingForPlayerActionEnter.js:45](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L45))
 - During round interruption cleanup ([interruptStateCleanup.js:105](../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js#L105))
 - When interrupt cleanup runs ([interruptRoundEnter.js:41](../src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js#L41))
 
 **Read/Checked**:
+
 - Test diagnostics ([testApi.js:2586, 2844](../src/helpers/testApi.js))
 - Battle state checks ([roundManager.js:804](../src/helpers/classicBattle/roundManager.js#L804))
 - Store validation ([settingsPage.js:52](../src/helpers/settingsPage.js#L52))
@@ -68,21 +72,25 @@ The classic battle system uses multiple boolean flags to track selection state, 
 #### Lifecycle Phases
 
 **Initialization**:
+
 - Set to `false` in timer reset ([timerService.js:703](../src/helpers/classicBattle/timerService.js#L703))
 - Set to `false` in `startRound()` ([roundManager.js:958](../src/helpers/classicBattle/roundManager.js#L958))
 - Set to `false` in `waitingForPlayerActionEnter()` ([waitingForPlayerActionEnter.js:62](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L62))
 
 **Set to `true`**:
+
 - When Next button is finalized (advance context) ([uiHelpers.js:472, 516](../src/helpers/classicBattle/uiHelpers.js))
 - During early button finalization in cooldown ([cooldownEnter.js via applyNextButtonFinalizedState](../src/helpers/classicBattle/stateHandlers/cooldownEnter.js))
 
 **Set to `false` (Reset)**:
+
 - Timer reset ([timerService.js:703](../src/helpers/classicBattle/timerService.js#L703))
 - Round start ([roundManager.js:958](../src/helpers/classicBattle/roundManager.js#L958))
 - State entry to `waitingForPlayerAction` ([waitingForPlayerActionEnter.js:62](../src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js#L62))
 - Cleanup utility ([interruptStateCleanup.js:57](../src/helpers/classicBattle/stateHandlers/interruptStateCleanup.js#L57))
 
 **Read/Checked**:
+
 - Test diagnostics ([testApi.js:2580, 2840](../src/helpers/testApi.js))
 - Playwright helpers ([testApiHelpers.js:76](../playwright/helpers/testApiHelpers.js#L76))
 
@@ -148,6 +156,7 @@ guard(() => {
 ### Handlers with State Guards (as of Jan 2, 2026)
 
 ✅ **Protected Handlers**:
+
 - `roundStartEnter.js` - Checks state before dispatching `cardsRevealed`
 - `cooldownEnter.js` - Verifies state after `startCooldown` (allows cooldown → roundStart)
 - `waitingForPlayerActionEnter.js` - Verifies state after `startTimer` (allows progression to roundDecision)
@@ -155,6 +164,7 @@ guard(() => {
 - `roundDecisionEnter.js` - Comprehensive guards via `guardSelectionResolution`
 
 ❌ **Unprotected Handlers** (fire-and-forget or no async operations):
+
 - `matchStartEnter.js` - Intentionally fire-and-forget to avoid deadlock
 - `matchDecisionEnter.js` - No async operations (showEndModal is sync)
 - `interruptRoundEnter.js` - Dispatches are awaited (no race condition risk)
@@ -198,6 +208,7 @@ if (currentState && !validStates.includes(currentState)) {
 ### 3. Document Flag Ownership
 
 When adding new flags, document:
+
 - **Initialization point**: Where the flag is first set
 - **Transition conditions**: What events cause the flag to change
 - **Reset responsibility**: Which handler/utility owns cleanup
@@ -216,6 +227,7 @@ Use a single source of truth. If you need both store-based and window-based flag
 **Status**: In progress (Task 6)  
 **Goal**: Use `store.selectionMade` as single source of truth  
 **Strategy**:
+
 1. Replace all reads of `window.__classicBattleSelectionFinalized` with `store.selectionMade`
 2. Update test diagnostics to read from store
 3. Remove window global assignments
