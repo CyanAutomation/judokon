@@ -29,6 +29,7 @@ async function launchClassicBattle(page, featureFlags) {
   const statCount = await statButtons.count();
   expect(statCount).toBeGreaterThan(0);
   await expect(firstStat).toBeVisible();
+  // Classic battle smoke coverage (formerly battle-classic/stat-hotkeys.smoke.spec.js).
   await expect(page.getByTestId("stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
 
   return {
