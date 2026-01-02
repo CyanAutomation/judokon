@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createTestController } from "../../../src/utils/scheduler.js";
 import { withListenerSpy } from "../listenerUtils.js";
+import { withMutedConsole } from "../../utils/console.js";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { onBattleEvent, offBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 
@@ -188,27 +189,29 @@ describe("classicBattle stat selection failure recovery", () => {
   });
 
   it("logs cooldown failure and still re-enables Next when startCooldown throws", async () => {
-    startCooldownMock.mockImplementation(() => {
-      throw new Error("cooldown failure");
-    });
-    handleStatSelectionMock.mockImplementation(() => {
-      throw new Error("stat selection failed");
-    });
+    await withMutedConsole(async () => {
+      startCooldownMock.mockImplementation(() => {
+        throw new Error("cooldown failure");
+      });
+      handleStatSelectionMock.mockImplementation(() => {
+        throw new Error("stat selection failed");
+      });
 
-    document.body.innerHTML = `<div id="stat-buttons"></div>`;
+      document.body.innerHTML = `<div id="stat-buttons"></div>`;
 
-    const store = {};
-    renderStatButtons(store);
+      const store = {};
+      renderStatButtons(store);
 
-    const statButton = document.querySelector("[data-stat]");
-    await withListenerSpy(statButton, "click", async (calls) => {
-      statButton.click();
+      const statButton = document.querySelector("[data-stat]");
+      await withListenerSpy(statButton, "click", async (calls) => {
+        statButton.click();
 
-      expect(calls).toHaveLength(1);
-      expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
-      expect(startCooldownMock).toHaveBeenCalledTimes(1);
-      expect(store.__uiCooldownStarted).toBe(false);
-      expect(enableNextRoundButtonMock).toHaveBeenCalled();
+        expect(calls).toHaveLength(1);
+        expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+        expect(startCooldownMock).toHaveBeenCalledTimes(1);
+        expect(store.__uiCooldownStarted).toBe(false);
+        expect(enableNextRoundButtonMock).toHaveBeenCalled();
+      });
     });
   });
 

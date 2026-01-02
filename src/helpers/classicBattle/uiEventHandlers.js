@@ -311,6 +311,16 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         return;
       }
 
+      // When delay is enabled, clear any existing snackbar immediately
+      try {
+        const container = typeof document !== "undefined" ? document.getElementById("snackbar-container") : null;
+        if (container) {
+          container.replaceChildren();
+        }
+      } catch {
+        // Clearing is non-critical
+      }
+
       const delaySource = Object.prototype.hasOwnProperty.call(opts, "delayMs")
         ? Number(opts.delayMs)
         : Number(getOpponentDelayFn());
@@ -334,9 +344,11 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       opponentSnackbarId = setTimeout(() => {
         try {
           // After delay, show the message and emit the opponentPromptReady event
-          const promptTimestamp = showPromptAndCaptureTimestamp(opponentPromptMessage, {
+          displayOpponentChoosingPrompt({
+            message: opponentPromptMessage,
             markTimestamp: true,
-            notifyReady: true
+            notifyReady: true,
+            showMessage: true
           });
         } catch {
           // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
