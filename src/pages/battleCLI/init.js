@@ -1053,28 +1053,8 @@ function hideCliShortcuts() {
 }
 
 function showBottomLine(text) {
-  if (!hasDocument) return;
-  // Render as a single bottom line using the snackbar container
-  try {
-    // Lazily create a minimal snackbar child if missing
-    const container = byId("snackbar-container");
-    if (!container) return;
-    let bar = container.querySelector(".snackbar");
-    if (!bar) {
-      bar = document.createElement("div");
-      bar.className = "snackbar";
-      container.appendChild(bar);
-    }
-    bar.setAttribute("tabindex", "0");
-    bar.textContent = text || "";
-    // Move focus to the prompt when showing actionable guidance so
-    // screen-reader and keyboard users are directed appropriately.
-    if (text) {
-      try {
-        bar.focus();
-      } catch {}
-    }
-  } catch {}
+  // Use shared showSnackbar for consistent stacking behavior
+  showSnackbar(text || "");
 }
 
 /**
@@ -1093,46 +1073,16 @@ function sanitizeHintText(text) {
 
 /**
  * Display a short-lived snackbar hint without clearing the countdown.
+ * Now uses shared showSnackbar() helper for consistent stacking behavior.
  *
  * @pseudocode
- * container = document.getElementById("snackbar-container")
- * if container missing: return
- * create div.snackbar.show with sanitized message
- * append to container
- * timeoutId = setTimeout(remove bar, SNACKBAR_REMOVE_MS)
- * store timeoutId on bar
- * observe container for bar removal and clear timeout
+ * call showSnackbar(sanitized message)
+ * shared helper handles queueing, stacking, and auto-dismiss
  *
  * @param {string} text - Hint text to display.
  */
 function showHint(text) {
-  if (!hasDocument) return;
-  const container = byId("snackbar-container");
-  if (!container) return;
-  const bar = document.createElement("div");
-  bar.className = "snackbar show";
-  bar.textContent = sanitizeHintText(text);
-  container.appendChild(bar);
-  const timeoutId = setTimeout(() => {
-    if (bar && bar.parentNode) {
-      bar.remove();
-    }
-  }, SNACKBAR_REMOVE_MS);
-  // Store timeout on element to clean up if removed early
-  bar._removeTimeoutId = timeoutId;
-  // Use MutationObserver to detect removal of the snackbar bar
-  const observer = new MutationObserver((mutationsList) => {
-    for (const mutation of mutationsList) {
-      for (const removedNode of mutation.removedNodes) {
-        if (removedNode === bar) {
-          clearTimeout(bar._removeTimeoutId);
-          observer.disconnect();
-          return;
-        }
-      }
-    }
-  });
-  observer.observe(container, { childList: true });
+  showSnackbar(sanitizeHintText(text));
 }
 
 /**

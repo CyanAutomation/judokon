@@ -184,7 +184,7 @@ describe("UI handlers: opponent message events", () => {
     expect(updateSnackbar).not.toHaveBeenCalled();
     expect(showSnackbar).not.toHaveBeenCalled();
     expect(markOpponentPromptNow).not.toHaveBeenCalled();
-    
+
     // Timer should be scheduled for the delay period
     expect(vi.getTimerCount()).toBe(1);
     expect(setTimeoutSpy).toHaveBeenCalledTimes(1);

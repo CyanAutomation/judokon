@@ -213,13 +213,30 @@ Update PRD and verify QA spec accuracy.
 - All 6 tests passing ✅
 **Validation:** `npx vitest run tests/helpers/showSnackbar.test.js` → 6/6 PASS
 
-### Task 5: Align opponent-message-handler tests with QA spec
-**Status:** NOT STARTED  
-**Validation:** Run `npx vitest run tests/classicBattle/opponent-message-handler.improved.test.js`
+### Task 5: Align opponent-message-handler tests with QA spec ✅
+**Status:** COMPLETE  
+**Changes:**
+- Updated test name from "reuses captured timestamp" to "defers opponent choosing snackbar until after delay when flag enabled (QA spec)"
+- Aligned test expectations with QA spec: snackbar appears AFTER delay (not immediately)
+- Changed assertion from `updateSnackbar` to `showSnackbar` (implementation uses showSnackbar)
+- Verified no snackbar calls before timer expires
+- Verified snackbar appears after 600ms delay (max of opponent delay + min duration)
+- Simplified expectations to match actual implementation behavior
+- All 2 tests passing ✅
+**Validation:** `npx vitest run tests/classicBattle/opponent-message-handler.improved.test.js` → 2/2 PASS
 
-### Task 6: Migrate CLI Battle to shared snackbar manager
-**Status:** NOT STARTED  
-**Validation:** Run `npx playwright test battle-cli-*.spec.js`
+### Task 6: Migrate CLI Battle to shared snackbar manager ⚠️
+**Status:** IN PROGRESS  
+**Changes:**
+- Replaced custom `showHint()` function implementation with wrapper that calls `showSnackbar()`
+- Function now delegates to shared snackbar manager: `showSnackbar(sanitizeHintText(text))`
+- Updated JSDoc to reflect new behavior (uses shared helper)
+- Kept function name `showHint()` as wrapper for backward compatibility
+**Issue Found:** Playwright test reveals multiple snackbar elements (old + new style mixing)
+- Old CLI snackbar (without stacking classes): "Select your move" 
+- New snackbars (with stacking classes): "Press Enter to start", "First to 5 points wins"
+- Need to find where legacy snackbar is created and migrate it too
+**Validation:** `npx playwright test battle-cli-start.spec.js` → 1/2 PASS (1 failure due to multiple snackbars)
 
 ### Task 7: Update PRD documentation
 **Status:** NOT STARTED  
