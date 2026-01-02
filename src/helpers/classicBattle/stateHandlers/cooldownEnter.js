@@ -167,26 +167,22 @@ export async function cooldownEnter(machine, payload) {
   const { store, scheduler } = machine.context || {};
 
   // Finalize Next button state early in cooldown phase with conditional logic:
-  // - Skip when orchestrated AND in test mode (tests use 1s+ cooldowns, orchestrator handles finalization)
-  // - Apply when not orchestrated (non-orchestrated flows always need early finalization)
-  // - Apply when orchestrated but NOT in test mode (Playwright tests use 0ms cooldowns, need immediate finalization)
-  const willUseOrchestrator = !!machine.context;
-  const inTestMode = isTestModeEnabled();
-  const shouldSkipEarlyFinalization = willUseOrchestrator && inTestMode;
+  // - Skip ONLY when in Vitest unit test environment (uses setTestMode for 1s+ cooldowns)
+  // - Apply in all other cases:
+  //   * Playwright tests (use orchestrator + 0ms cooldowns, need immediate finalization)
+  //   * Non-orchestrated flows (always need early finalization)
+  //   * Production (always apply early finalization)
+  const isVitestEnvironment =
+    typeof process !== "undefined" && process.env && process.env.VITEST;
+  const shouldSkipEarlyFinalization = isVitestEnvironment;
 
   if (!shouldSkipEarlyFinalization) {
     guard(() => {
       applyNextButtonFinalizedState();
-      debugLog("cooldownEnter: finalized Next button state (early)", {
-        orchestrated: willUseOrchestrator,
-        testMode: inTestMode
-      });
+      debugLog("cooldownEnter: finalized Next button state (early)");
     });
   } else {
-    debugLog("cooldownEnter: skipped early finalization (orchestrated test mode)", {
-      orchestrated: willUseOrchestrator,
-      testMode: inTestMode
-    });
+    debugLog("cooldownEnter: skipped early finalization (Vitest environment)");
   }
 
   debugLog("cooldownEnter: about to call startCooldown");

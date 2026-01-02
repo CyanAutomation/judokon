@@ -1,10 +1,26 @@
 # Classic Battle Cooldown Test Investigation
 
-## Status: 7/7 Tests Passing ✅✅✅ RESOLVED
+## Current Status: 7/7 Unit Tests ✅ | 0/2 Playwright Tests ❌
 
-**Last Verified:** 2026-01-01 22:17:57 UTC
-**Test File:** `tests/helpers/classicBattle/scheduleNextRound.test.js`
-**Resolution:** Conditional early finalization in orchestrated mode
+**Last Verified:** 2026-01-02 09:54:53 UTC
+**Unit Tests:** All passing (scheduleNextRound.test.js: 7/7)
+**Playwright Tests:** Failing (battle-classic/cooldown.spec.js: 0/2)
+**Current Issue:** Next button not becoming ready in Playwright tests with 0ms cooldown
+
+### Implementation Status
+
+**✅ Completed:**
+1. Added state machine dataset reset to `_resetForTest()` (roundManager.js:1254)
+2. Refined cooldownEnter logic to conditionally apply early finalization
+
+**❌ Current Problem:**
+Playwright tests expect Next button to become ready after 0ms cooldown, but it's timing out (5000ms).
+
+**Logic:** Skip early finalization when `orchestrated AND testMode`, apply otherwise.
+- Unit tests: orchestrated=true, testMode=true → skip early finalization ✅
+- Playwright tests: orchestrated=true, testMode=? → early finalization should apply but button not ready ❌
+
+**Hypothesis:** Test mode might be enabled in Playwright tests, OR button finalization mechanism broken.
 
 ---
 
