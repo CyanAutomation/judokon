@@ -148,14 +148,9 @@ export function showSnackbar(message) {
  * @returns {void}
  */
 export function updateSnackbar(message) {
-  console.log("[updateSnackbar] Called with message:", message);
-  if (isSnackbarsDisabled()) {
-    console.log("[updateSnackbar] Snackbars disabled, returning");
-    return;
-  }
+  if (isSnackbarsDisabled()) return;
   const doc = ensureDomOrReset();
   if (!doc) {
-    console.log("[updateSnackbar] No document, returning");
     return;
   }
   // Defensive: expose updateSnackbar as safe even before DOM wiring.
@@ -164,16 +159,13 @@ export function updateSnackbar(message) {
   } catch {}
   const container = doc.getElementById("snackbar-container");
   if (!container) {
-    console.log("[updateSnackbar] No container, resetting state");
     resetState();
     return;
   }
   if (!bar || !container.contains(bar)) {
-    console.log("[updateSnackbar] No active bar or bar not in container, calling showSnackbar");
     showSnackbar(message);
     return;
   }
-  console.log("[updateSnackbar] Updating existing bar");
   bar.textContent = message;
   activateSnackbar(bar);
 }
