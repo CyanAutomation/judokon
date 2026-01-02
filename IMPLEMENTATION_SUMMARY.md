@@ -225,17 +225,18 @@ Completed migration of all 8 remaining locations from direct `window.__classicBa
 
 ### Files Migrated
 
-| File | Locations | Migration Pattern |
-|------|-----------|-------------------|
-| `uiHelpers.js` | 2 | `window.__classicBattleSelectionFinalized = true` → `setSelectionFinalized(null, true, "advance")` |
-| `timerService.js` | 1 | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(null)` |
-| `roundManager.js` | 2 | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(store)` |
-| `interruptStateCleanup.js` | 1 | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(store)` |
-| `testApi.js` | 2 | `window.__classicBattleSelectionFinalized === true` → `getSelectionFinalized(store)` |
+| File                       | Locations | Migration Pattern                                                                                  |
+| -------------------------- | --------- | -------------------------------------------------------------------------------------------------- |
+| `uiHelpers.js`             | 2         | `window.__classicBattleSelectionFinalized = true` → `setSelectionFinalized(null, true, "advance")` |
+| `timerService.js`          | 1         | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(null)`               |
+| `roundManager.js`          | 2         | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(store)`              |
+| `interruptStateCleanup.js` | 1         | `window.__classicBattleSelectionFinalized = false` → `resetSelectionFinalized(store)`              |
+| `testApi.js`               | 2         | `window.__classicBattleSelectionFinalized === true` → `getSelectionFinalized(store)`               |
 
 ### Migration Details
 
 **Before (Direct Access)**:
+
 ```javascript
 // Setting the flag
 if (typeof window !== "undefined") {
@@ -256,8 +257,13 @@ if (typeof window !== "undefined") {
 ```
 
 **After (Unified API)**:
+
 ```javascript
-import { setSelectionFinalized, resetSelectionFinalized, getSelectionFinalized } from "./selectionState.js";
+import {
+  setSelectionFinalized,
+  resetSelectionFinalized,
+  getSelectionFinalized
+} from "./selectionState.js";
 
 // Setting the flag (store is source of truth, window auto-mirrored)
 setSelectionFinalized(store, true, "advance");
@@ -302,15 +308,16 @@ Refactored 3 state handlers to use the `withStateGuard` utility from `stateGuard
 
 ### Files Refactored
 
-| File | Lines Refactored | Pattern |
-|------|------------------|---------|
-| `cooldownEnter.js` | 15 → 20 | Inline guard → `withStateGuard()` with debug callback |
-| `roundOverEnter.js` | 7 → 12 | Inline guard → `withStateGuard()` with minimal callback |
-| `waitingForPlayerActionEnter.js` | 9 → 15 | Inline guard → `withStateGuard()` with debug callback |
+| File                             | Lines Refactored | Pattern                                                 |
+| -------------------------------- | ---------------- | ------------------------------------------------------- |
+| `cooldownEnter.js`               | 15 → 20          | Inline guard → `withStateGuard()` with debug callback   |
+| `roundOverEnter.js`              | 7 → 12           | Inline guard → `withStateGuard()` with minimal callback |
+| `waitingForPlayerActionEnter.js` | 9 → 15           | Inline guard → `withStateGuard()` with debug callback   |
 
 ### Refactoring Details
 
 **Before (Inline Implementation)**:
+
 ```javascript
 // After async operation
 const currentState = machine.getState ? machine.getState() : null;
@@ -328,6 +335,7 @@ updateState();
 ```
 
 **After (withStateGuard Utility)**:
+
 ```javascript
 // After async operation
 withStateGuard(
@@ -372,7 +380,7 @@ import { withStateGuard } from "../stateGuards.js";
 
 export async function handlerEnter(machine) {
   await someAsyncOperation();
-  
+
   withStateGuard(
     machine,
     ["currentState", "allowedProgression"],
