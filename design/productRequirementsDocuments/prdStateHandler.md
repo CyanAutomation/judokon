@@ -356,9 +356,9 @@ For operations that must complete within a time limit:
 
 ```javascript
 const result = await Promise.race([
-  eventPromise,          // Primary strategy
-  pollingPromise,        // Fallback strategy
-  timeoutPromise         // Safety timeout
+  eventPromise, // Primary strategy
+  pollingPromise, // Fallback strategy
+  timeoutPromise // Safety timeout
 ]);
 ```
 

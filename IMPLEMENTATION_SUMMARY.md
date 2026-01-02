@@ -74,12 +74,12 @@ Guards must **allow normal forward progression** (e.g., `cooldown → roundStart
 
 ### Key Flags Documented
 
-| Flag | Type | Purpose | Primary Owner |
-|------|------|---------|---------------|
-| `store.selectionMade` | Store property | Player stat selection state | `waitingForPlayerActionEnter` |
-| `window.__classicBattleSelectionFinalized` | Window global | Button finalization diagnostic | Test observability (deprecated, being unified) |
-| `store.roundReadyForInput` | Store property | Stat button input control | Round manager |
-| `container.dataset.selectionInProgress` | DOM dataset | Concurrent selection guard | Selection handler |
+| Flag                                       | Type           | Purpose                        | Primary Owner                                  |
+| ------------------------------------------ | -------------- | ------------------------------ | ---------------------------------------------- |
+| `store.selectionMade`                      | Store property | Player stat selection state    | `waitingForPlayerActionEnter`                  |
+| `window.__classicBattleSelectionFinalized` | Window global  | Button finalization diagnostic | Test observability (deprecated, being unified) |
+| `store.roundReadyForInput`                 | Store property | Stat button input control      | Round manager                                  |
+| `container.dataset.selectionInProgress`    | DOM dataset    | Concurrent selection guard     | Selection handler                              |
 
 ---
 
@@ -142,16 +142,16 @@ import { withStateGuard, withStateGuardAsync } from "./stateGuards.js";
 const executed = withStateGuard(
   machine,
   ["expectedState", "allowedProgression"],
-  () => { updateState(); },
+  () => {
+    updateState();
+  },
   { debugContext: "myHandler" }
 );
 
 // Async guard
-const executed = await withStateGuardAsync(
-  machine,
-  "expectedState",
-  async () => { await asyncUpdate(); }
-);
+const executed = await withStateGuardAsync(machine, "expectedState", async () => {
+  await asyncUpdate();
+});
 
 // Window assignment guard
 guardWindowAssignment("__myFlag", true);
@@ -341,5 +341,5 @@ npx playwright test playwright/battle-classic/opponent-reveal.spec.js
 
 ---
 
-*Last Updated: January 2, 2026*  
-*Next Review: February 2026 (1 month)*
+_Last Updated: January 2, 2026_  
+_Next Review: February 2026 (1 month)_

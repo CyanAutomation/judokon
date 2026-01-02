@@ -21,8 +21,7 @@
 **Implementation:** Added Vitest environment detection in `cooldownEnter.js`:
 
 ```javascript
-const isVitestEnvironment =
-  typeof process !== "undefined" && process.env && process.env.VITEST;
+const isVitestEnvironment = typeof process !== "undefined" && process.env && process.env.VITEST;
 const shouldSkipEarlyFinalization = isVitestEnvironment;
 
 if (!shouldSkipEarlyFinalization) {
