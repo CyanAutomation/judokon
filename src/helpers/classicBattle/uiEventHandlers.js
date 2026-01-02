@@ -199,24 +199,16 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
    */
   function showOpponentPromptMessage(message) {
     try {
-      if (typeof updateSnackbarFn === "function") {
-        updateSnackbarFn(message);
-      } else {
-        showSnackbarFn(message);
-      }
+      // Always use showSnackbar to replace any existing message
+      // updateSnackbar can fail if the internal bar reference is stale
+      showSnackbarFn(message);
     } catch (err) {
-      console.error("[showOpponentPromptMessage] Primary snackbar update failed:", err);
-      // Fallback: try with hardcoded message if translation fails
-      try {
-        showSnackbarFn("Opponent is choosing…");
-      } catch (fallbackErr) {
-        console.error("[showOpponentPromptMessage] Fallback also failed:", fallbackErr);
-        // Final fallback: log to console in development
-        if (typeof console !== "undefined" && typeof console.warn === "function") {
-          try {
-            console.warn("[showOpponentPromptMessage] Failed to show snackbar:", err);
-          } catch {}
-        }
+      console.error("[showOpponentPromptMessage] Snackbar update failed:", err);
+      // Final fallback: log to console in development
+      if (typeof console !== "undefined" && typeof console.warn === "function") {
+        try {
+          console.warn("[showOpponentPromptMessage] Failed to show snackbar:", err);
+        } catch {}
       }
     }
   }
@@ -313,7 +305,8 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
       // When delay is enabled, clear any existing snackbar immediately
       try {
-        const container = typeof document !== "undefined" ? document.getElementById("snackbar-container") : null;
+        const container =
+          typeof document !== "undefined" ? document.getElementById("snackbar-container") : null;
         if (container) {
           container.replaceChildren();
         }

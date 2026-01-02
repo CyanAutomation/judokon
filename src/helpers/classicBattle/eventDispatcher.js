@@ -1,5 +1,6 @@
 import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
+import { debugLog } from "../debug.js";
 
 const DEDUPE_WINDOW_MS = 20;
 const recentDispatches = new Map();
@@ -26,7 +27,7 @@ function writeDedupeLog(message) {
     typeof process.stdout.write === "function"
   ) {
     try {
-      process.stdout.write(message);
+      debugLog(message);
     } catch {
       // Silently ignore write failures to keep diagnostics best-effort
     }
@@ -271,15 +272,15 @@ export async function dispatchBattleEvent(eventName, payload) {
     // (for example when the round selection modal runs before the
     // orchestrator initializes). Return `false` to signal the skipped
     // dispatch without emitting console noise in production.
-    console.log("[dispatchBattleEvent] No machine available for event:", eventName);
+    debugLog("[dispatchBattleEvent] No machine available for event:", eventName);
     safeExposeDebugState("dispatchBattleEventNoMachine", eventName);
     return false;
   }
 
-  console.log("[dispatchBattleEvent] Machine available, dispatching:", eventName);
+  debugLog("[dispatchBattleEvent] Machine available, dispatching:", eventName);
   const { shouldSkip, key: dispatchKey, timestamp } = registerDispatch(eventName, machine);
   if (shouldSkip) {
-    console.log("[dispatchBattleEvent] Dispatch skipped (dedupe):", eventName);
+    debugLog("[dispatchBattleEvent] Dispatch skipped (dedupe):", eventName);
     safeExposeDebugState("dispatchBattleEventSkipped", { event: eventName, key: dispatchKey });
     writeDedupeLog(`[dedupe] short-circuit ${eventName} ${dispatchKey}
 `);
@@ -301,9 +302,9 @@ export async function dispatchBattleEvent(eventName, payload) {
       }
     }
 
-    console.log("[dispatchBattleEvent] Calling machine.dispatch for:", eventName);
+    debugLog("[dispatchBattleEvent] Calling machine.dispatch for:", eventName);
     const result = await machine.dispatch(eventName, payload);
-    console.log("[dispatchBattleEvent] machine.dispatch returned:", result);
+    debugLog("[dispatchBattleEvent] machine.dispatch returned:", result);
     safeExposeDebugState("dispatchBattleEventResult", result);
     safeExposeDebugState("dispatchMachineStateAfter", getMachineState(machine));
 
@@ -315,7 +316,7 @@ export async function dispatchBattleEvent(eventName, payload) {
     resetDispatchKey(dispatchKey, timestamp);
     // ignore: dispatch failures only trigger debug updates
     try {
-      console.error("Error dispatching battle event:", eventName, error);
+      debugLog("Error dispatching battle event:", eventName, error);
       emitBattleEvent("debugPanelUpdate");
     } catch {
       // ignore: debug updates are best effort
