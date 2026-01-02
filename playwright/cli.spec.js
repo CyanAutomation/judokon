@@ -33,12 +33,12 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
   const countdown = page.locator("#cli-countdown");
   await expect(countdown).toBeVisible();
 
-  // Use the timer helper to drive the UI and assert countdown text rather than internal state
-  await page.evaluate(() => window.__TEST_API.timers.setCountdown(12));
-  await expect(countdown).toHaveText(/Timer: 12\b/);
-  await expect(countdown).toHaveAttribute("data-remaining-time", "12");
+  // Start the round via the user-visible keyboard flow and observe countdown updates
+  await page.keyboard.press("Enter");
 
-  // Ensure subsequent helper writes are reflected visually for players
-  await page.evaluate(() => window.__TEST_API.timers.setCountdown(10));
-  await expect(countdown).toHaveText(/Timer: 10\b/);
+  await expect(countdown).toHaveText(/Time remaining:\s*\d+/, { timeout: 5_000 });
+  const initialCountdown = await countdown.textContent();
+  await expect
+    .poll(async () => countdown.textContent(), { timeout: 5_000 })
+    .not.toBe(initialCountdown);
 });
