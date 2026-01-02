@@ -264,11 +264,13 @@ All documented test failures have been resolved. The investigation identified:
 Following the investigation, three enhancement tasks were completed:
 
 #### Task 1: Complete Flag Unification Migration ✅
+
 **Status**: Completed (January 2, 2026)
 **Objective**: Migrate all direct `window.__classicBattleSelectionFinalized` usages to use the unified `selectionState.js` API.
 **Implementation**: Migrated 8 locations across 5 files (uiHelpers, timerService, roundManager, interruptStateCleanup, testApi) to use `setSelectionFinalized()`, `getSelectionFinalized()`, and `resetSelectionFinalized()` functions.
 **Validation**: All 455 unit tests passing, 7/7 Playwright tests passing.
 **Files Modified**:
+
 - `src/helpers/classicBattle/uiHelpers.js` (2 locations)
 - `src/helpers/classicBattle/timerService.js` (1 location)
 - `src/helpers/classicBattle/roundManager.js` (2 locations)
@@ -276,23 +278,27 @@ Following the investigation, three enhancement tasks were completed:
 - `src/helpers/testApi.js` (2 locations)
 
 #### Task 2: Apply State Guards Universally ✅
+
 **Status**: Completed (January 2, 2026)
 **Objective**: Refactor inline state guards to use the `withStateGuard` utility pattern identified as best practice.
 **Implementation**: Refactored 3 state handlers (cooldownEnter, roundOverEnter, waitingForPlayerActionEnter) to use centralized guard utilities from `stateGuards.js`.
 **Validation**: 454/455 unit tests passing (1 unrelated failure in opponentDelay.test.js).
 **Files Modified**:
+
 - `src/helpers/classicBattle/stateHandlers/cooldownEnter.js` (15→20 lines)
 - `src/helpers/classicBattle/stateHandlers/roundOverEnter.js` (7→12 lines)
 - `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js` (9→15 lines)
 
 #### Task 3: Expose Diagnostics to Development Mode ✅
+
 **Status**: Completed (January 2, 2026)
 **Objective**: Expose the diagnostic snapshot pattern from `readRoundDiagnostics` to development mode for production debugging.
 **Implementation**: Created `diagnosticPanel.js` module with keyboard shortcut (`Ctrl+Shift+D`) to toggle diagnostic overlay panel. Panel displays real-time state information updated every 500ms when visible. Development mode only - zero overhead in production.
 **Validation**: ESLint passed, Prettier passed, JSDoc compliance passed (added 7 missing @pseudocode tags), 454/455 unit tests passing.
 **Files Created**:
+
 - `src/helpers/classicBattle/diagnosticPanel.js` (330 lines)
-**Files Modified**:
+  **Files Modified**:
 - `src/pages/battleClassic.init.js` (added diagnostic panel initialization)
 - `src/helpers/classicBattle/selectionState.js` (added 3 @pseudocode tags)
 - `src/helpers/classicBattle/stateGuards.js` (added 4 @pseudocode tags)

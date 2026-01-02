@@ -27,7 +27,9 @@
   border: 2px solid var(--color-primary);
   display: block;
   /* Smooth transitions for stacking position changes */
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 /* Bottom snackbar: newest message, full opacity */

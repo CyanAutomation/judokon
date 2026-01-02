@@ -51,15 +51,15 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                       | Description                                                                         |
-| -------- | ----------------------------- | ----------------------------------------------------------------------------------- |
-| P1       | Show Snackbar                 | Display a temporary message at the bottom of the screen with fade-in/out animation. |
-| P1       | Update Snackbar               | Change the current snackbar's text and restart its timers if already shown.         |
-| P1       | Accessibility Compliance      | Snackbar uses ARIA live region and `role="status"` for screen readers.              |
-| P1       | Configurable Duration         | Snackbar auto-dismisses after a default **3s** and supports **1–10s** range.        |
-| P2       | Message Stacking              | Max 2 snackbars visible concurrently; older messages pushed up with reduced opacity. |
-| P2       | Theming and Contrast          | Snackbar colors adapt to theme and pass contrast checks (≥4.5:1 ratio).             |
-| P2       | Localization Support          | Snackbar text supports multi-language strings and right-to-left layouts.            |
+| Priority | Feature                  | Description                                                                          |
+| -------- | ------------------------ | ------------------------------------------------------------------------------------ |
+| P1       | Show Snackbar            | Display a temporary message at the bottom of the screen with fade-in/out animation.  |
+| P1       | Update Snackbar          | Change the current snackbar's text and restart its timers if already shown.          |
+| P1       | Accessibility Compliance | Snackbar uses ARIA live region and `role="status"` for screen readers.               |
+| P1       | Configurable Duration    | Snackbar auto-dismisses after a default **3s** and supports **1–10s** range.         |
+| P2       | Message Stacking         | Max 2 snackbars visible concurrently; older messages pushed up with reduced opacity. |
+| P2       | Theming and Contrast     | Snackbar colors adapt to theme and pass contrast checks (≥4.5:1 ratio).              |
+| P2       | Localization Support     | Snackbar text supports multi-language strings and right-to-left layouts.             |
 
 ## Acceptance Criteria (Given/When/Then)
 
@@ -93,23 +93,27 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 The snackbar system uses a queue-based architecture to support concurrent messages:
 
 **Queue Management:**
+
 - `messageQueue` array tracks up to 2 concurrent snackbars (MAX_VISIBLE=2)
 - Each message has a unique ID for lifecycle tracking
 - `dismissSnackbar(id)` removes specific messages and re-renders queue
 - `renderQueue()` applies positioning classes based on queue position
 
 **CSS Classes:**
+
 - `.snackbar-bottom`: Newest message (opacity: 1, translateY: 0)
 - `.snackbar-top`: Older message (opacity: 0.7, translateY: -56px)
 - `.snackbar-stale`: Additional visual distinction (opacity: 0.6)
 - Container uses `flexbox` with `column-reverse` for natural stacking
 
 **Timing:**
+
 - Each message has independent 3000ms auto-dismiss timer
 - Timers run concurrently without interference
 - Animation lifecycle managed per message with cleanup on dismissal
 
 **Accessibility:**
+
 - Each snackbar has `role="status"` for screen reader announcements
 - `aria-atomic="false"` allows partial updates without re-announcing all content
 - `aria-live="polite"` ensures announcements don't interrupt user

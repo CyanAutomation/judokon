@@ -10,6 +10,7 @@ The snackbar notification system was exhibiting buggy behavior, primarily failin
 **Root Cause (Resolved):** The `showSnackbar.js` helper used `container.replaceChildren(bar)` (line 133), which destroyed ALL existing snackbars instead of stacking them. The module maintained only single-bar state (`let bar`), making it impossible to track multiple concurrent messages.
 
 **Solution Implemented:** Refactored to queue-based architecture with:
+
 - `messageQueue` array to track up to 2 concurrent messages
 - `appendChild()` instead of `replaceChildren()` for DOM manipulation
 - CSS stacking classes (`.snackbar-top`, `.snackbar-bottom`, `.snackbar-stale`)
@@ -17,6 +18,7 @@ The snackbar notification system was exhibiting buggy behavior, primarily failin
 - Accessibility attributes for screen reader support
 
 **Testing Results:**
+
 - Unit tests: 8/8 passing (showSnackbar.test.js, opponent-message-handler.improved.test.js)
 - Playwright tests: 5/5 passing (CLI battle integration validated)
 - All targeted functionality working as designed
@@ -29,26 +31,26 @@ This document outlines the desired behavior, analyzes the root cause, documents 
 
 The core design intention for the snackbar system is to handle multiple concurrent notifications gracefully by stacking them.
 
-| Aspect | Specification |
-|--------|--------------|
-| **Stacking** | New messages appear at bottom; older messages pushed upward |
-| **Visual Hierarchy** | Older (upper) message has reduced opacity (0.6-0.7) to show it's stale |
-| **Maximum Concurrent** | 2 snackbars on screen simultaneously |
-| **Overflow Handling** | 3rd message dismisses oldest, shifts remaining messages |
-| **Positioning** | Bottom message: full opacity, bottom position<br>Top message: reduced opacity, elevated position |
-| **Timing** | Independent 3000ms auto-dismiss timers per message |
-| **Animation** | Simultaneous slide + opacity transition when messages shift |
-| **Accessibility** | Each snackbar has `role="status"` and `aria-atomic="false"`<br>Newest message announced first |
+| Aspect                 | Specification                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| **Stacking**           | New messages appear at bottom; older messages pushed upward                                      |
+| **Visual Hierarchy**   | Older (upper) message has reduced opacity (0.6-0.7) to show it's stale                           |
+| **Maximum Concurrent** | 2 snackbars on screen simultaneously                                                             |
+| **Overflow Handling**  | 3rd message dismisses oldest, shifts remaining messages                                          |
+| **Positioning**        | Bottom message: full opacity, bottom position<br>Top message: reduced opacity, elevated position |
+| **Timing**             | Independent 3000ms auto-dismiss timers per message                                               |
+| **Animation**          | Simultaneous slide + opacity transition when messages shift                                      |
+| **Accessibility**      | Each snackbar has `role="status"` and `aria-atomic="false"`<br>Newest message announced first    |
 
 ### Current (Observed) Behavior
 
-| Issue | Description | Evidence |
-|-------|-------------|----------|
-| **Message Overwriting** | Only one snackbar visible; new calls to `showSnackbar` replace existing | `src/helpers/showSnackbar.js:133` uses `replaceChildren()` |
-| **No Stacking Logic** | Module-level state tracks only single bar (`let bar`) | Lines 37-40 in `showSnackbar.js` |
-| **CSS Classes Missing** | `.snackbar-top`, `.snackbar-bottom`, `.snackbar-stale` mentioned but not implemented | Not in `src/css/main.css` |
-| **Inconsistent Timing** | "Opponent is choosing..." message timing conflict | QA spec vs unit tests in `opponent-message-handler.improved.test.js` |
-| **Persistent Messages** | "First to X points wins" blocks subsequent messages in some scenarios | Playwright test failures |
+| Issue                   | Description                                                                          | Evidence                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| **Message Overwriting** | Only one snackbar visible; new calls to `showSnackbar` replace existing              | `src/helpers/showSnackbar.js:133` uses `replaceChildren()`           |
+| **No Stacking Logic**   | Module-level state tracks only single bar (`let bar`)                                | Lines 37-40 in `showSnackbar.js`                                     |
+| **CSS Classes Missing** | `.snackbar-top`, `.snackbar-bottom`, `.snackbar-stale` mentioned but not implemented | Not in `src/css/main.css`                                            |
+| **Inconsistent Timing** | "Opponent is choosing..." message timing conflict                                    | QA spec vs unit tests in `opponent-message-handler.improved.test.js` |
+| **Persistent Messages** | "First to X points wins" blocks subsequent messages in some scenarios                | Playwright test failures                                             |
 
 ## 3. Root Cause Analysis
 
@@ -57,13 +59,13 @@ The core design intention for the snackbar system is to handle multiple concurre
 ```javascript
 // src/helpers/showSnackbar.js (Current Implementation)
 // Line 37-40: Module-level state - only ONE snackbar tracked
-let bar;                    // Single snackbar reference
-let animationListener;      // Single animation listener
-let animationTarget;        // Single animation target
-let animationToken = 0;     // Token for animation cleanup
+let bar; // Single snackbar reference
+let animationListener; // Single animation listener
+let animationTarget; // Single animation target
+let animationToken = 0; // Token for animation cleanup
 
 // Line 133: THE CRITICAL BUG
-container.replaceChildren(bar);  // Destroys ALL existing snackbars!
+container.replaceChildren(bar); // Destroys ALL existing snackbars!
 ```
 
 **Why This Fails:**
@@ -75,11 +77,11 @@ container.replaceChildren(bar);  // Destroys ALL existing snackbars!
 
 ### Secondary Issue: Conflicting Specifications
 
-| Source | Specification | File |
-|--------|--------------|------|
-| **QA Spec** | Message appears AFTER delay when flag enabled | `docs/qa/opponent-delay-message.md` |
-| **Unit Test** | Message appears IMMEDIATELY when flag enabled | `tests/classicBattle/opponent-message-handler.improved.test.js` |
-| **PRD** | "Only one snackbar visible at a time" (conflicts with stacking requirement) | `design/productRequirementsDocuments/prdSnackbar.md` |
+| Source        | Specification                                                               | File                                                            |
+| ------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **QA Spec**   | Message appears AFTER delay when flag enabled                               | `docs/qa/opponent-delay-message.md`                             |
+| **Unit Test** | Message appears IMMEDIATELY when flag enabled                               | `tests/classicBattle/opponent-message-handler.improved.test.js` |
+| **PRD**       | "Only one snackbar visible at a time" (conflicts with stacking requirement) | `design/productRequirementsDocuments/prdSnackbar.md`            |
 
 ### Tertiary Issue: CLI Battle Divergence
 
@@ -123,23 +125,23 @@ The CLI battle mode uses a different implementation (`showHint()` in `battleCLI.
 
 ```javascript
 // New state structure in showSnackbar.js
-const messageQueue = [];  // Array of { id, text, element, timeoutId }
+const messageQueue = []; // Array of { id, text, element, timeoutId }
 const MAX_VISIBLE = 2;
 let nextId = 0;
 
 function showSnackbar(text) {
   const id = nextId++;
-  
+
   // Remove oldest if at capacity
   if (messageQueue.length >= MAX_VISIBLE) {
     const oldest = messageQueue.shift();
     dismissSnackbar(oldest.id);
   }
-  
+
   // Create new snackbar element
   const element = createSnackbarElement(text, id);
   const timeoutId = setTimeout(() => dismissSnackbar(id), 3000);
-  
+
   messageQueue.push({ id, text, element, timeoutId });
   renderQueue();
 }
@@ -148,11 +150,11 @@ function renderQueue() {
   messageQueue.forEach((msg, index) => {
     // Apply positioning classes
     if (index === 0 && messageQueue.length > 1) {
-      msg.element.classList.add('snackbar-top', 'snackbar-stale');
-      msg.element.classList.remove('snackbar-bottom');
+      msg.element.classList.add("snackbar-top", "snackbar-stale");
+      msg.element.classList.remove("snackbar-bottom");
     } else {
-      msg.element.classList.add('snackbar-bottom');
-      msg.element.classList.remove('snackbar-top', 'snackbar-stale');
+      msg.element.classList.add("snackbar-bottom");
+      msg.element.classList.remove("snackbar-top", "snackbar-stale");
     }
   });
 }
@@ -164,13 +166,17 @@ function renderQueue() {
 .snackbar-top {
   opacity: 0.7;
   transform: translateY(-56px);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .snackbar-bottom {
   opacity: 1;
   transform: translateY(0);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .snackbar-stale {
@@ -218,7 +224,7 @@ Update PRD and verify QA spec accuracy.
 - Added accessibility attributes: `role="status"`, `aria-atomic="false"`
 - Updated `activateSnackbar()` to accept message ID
 - Preserved animation lifecycle with per-message cleanup
-**Validation:** Running tests next...
+  **Validation:** Running tests next...
 
 ### Task 3: Add CSS stacking styles ✅
 
@@ -231,7 +237,7 @@ Update PRD and verify QA spec accuracy.
 - Added `.snackbar-stale` class (opacity: 0.6 for extra distinction)
 - Added smooth transitions (0.3s ease) for position/opacity changes
 - Container now supports multiple children with 8px gap
-**Validation:** Running tests next...
+  **Validation:** Running tests next...
 
 ### Task 4: Update showSnackbar.test.js ✅
 
@@ -245,7 +251,7 @@ Update PRD and verify QA spec accuracy.
 - Updated "updateSnackbar" test to work with queue (updates most recent)
 - Added "rapid succession" stress test - verifies 5 messages → only 2 visible
 - All 6 tests passing ✅
-**Validation:** `npx vitest run tests/helpers/showSnackbar.test.js` → 6/6 PASS
+  **Validation:** `npx vitest run tests/helpers/showSnackbar.test.js` → 6/6 PASS
 
 ### Task 5: Align opponent-message-handler tests with QA spec ✅
 
@@ -259,7 +265,7 @@ Update PRD and verify QA spec accuracy.
 - Verified snackbar appears after 600ms delay (max of opponent delay + min duration)
 - Simplified expectations to match actual implementation behavior
 - All 2 tests passing ✅
-**Validation:** `npx vitest run tests/classicBattle/opponent-message-handler.improved.test.js` → 2/2 PASS
+  **Validation:** `npx vitest run tests/classicBattle/opponent-message-handler.improved.test.js` → 2/2 PASS
 
 ### Task 6: Migrate CLI Battle to shared snackbar manager ✅
 
@@ -275,7 +281,7 @@ Update PRD and verify QA spec accuracy.
   - Updated `battle-cli-start.spec.js` to find specific "Select your move" message
   - Updated `battle-cli-play.spec.js` to find specific "You Picked: [Stat]" message
 - All CLI-specific snackbar logic now uses shared queue-based manager
-**Validation:** 
+  **Validation:**
 - `npx playwright test battle-cli-start` → 2/2 PASS ✅
 - `npx playwright test battle-cli-play` → 1/1 PASS ✅
 - `npx playwright test battle-cli-complete-round` → 2/2 PASS ✅
@@ -302,7 +308,7 @@ Update PRD and verify QA spec accuracy.
   - Task 4.0 (Accessibility) - ARIA attributes ✅
   - Task 6.4 (Rapid succession test) ✅
   - Task 6.5 (Variable durations) ✅
-**Validation:** Manual review of PRD updates
+    **Validation:** Manual review of PRD updates
 
 ## 7. Implementation Summary
 
@@ -321,10 +327,12 @@ The snackbar stacking feature has been fully implemented and documented:
 ### Testing Results
 
 **Unit Tests:** 8/8 PASS
+
 - `tests/helpers/showSnackbar.test.js`: 6/6 ✅
 - `tests/classicBattle/opponent-message-handler.improved.test.js`: 2/2 ✅
 
 **Playwright Tests:** 5/5 PASS (snackbar-related)
+
 - `battle-cli-start.spec.js`: 2/2 ✅
 - `battle-cli-play.spec.js`: 1/1 ✅
 - `battle-cli-complete-round.spec.js`: 2/2 ✅
@@ -332,17 +340,20 @@ The snackbar stacking feature has been fully implemented and documented:
 ### Files Modified
 
 **Core Implementation:**
+
 - `src/helpers/showSnackbar.js` - Queue-based manager
 - `src/styles/snackbar.css` - Stacking visual styles
 - `src/pages/battleCLI/init.js` - CLI migration
 
 **Tests:**
+
 - `tests/helpers/showSnackbar.test.js` - Updated for stacking
 - `tests/classicBattle/opponent-message-handler.improved.test.js` - QA spec alignment
 - `playwright/battle-cli-start.spec.js` - Fixed selectors
 - `playwright/battle-cli-play.spec.js` - Fixed selectors
 
 **Documentation:**
+
 - `snackBarIssue.md` - This document
 - `design/productRequirementsDocuments/prdSnackbar.md` - PRD updates
 
