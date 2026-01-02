@@ -78,7 +78,9 @@ async function selectFirstEnabledStat(page) {
   await statGroup.waitFor({ state: "visible" });
 
   const statButtons = statGroup.locator("[data-testid='stat-button']");
+  const statButtons = statGroup.locator("[data-testid='stat-button']");
   const firstEnabled = statButtons.locator(":not([disabled])").first();
+  await expect(firstEnabled).toBeVisible({ timeout: 5000 });
   await firstEnabled.click({ timeout: 1000 });
 }
 
