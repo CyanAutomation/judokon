@@ -95,35 +95,37 @@ test.describe("CLI layout", () => {
         expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth);
       });
 
-      test("exposes live region status on CLI messaging", async ({ page }) => {
-        await gotoBattleCli(page);
+  });
 
-        const countdown = page.locator("#cli-countdown[role='status']");
-        const roundMessage = page.locator("#round-message[role='status']");
+  test("exposes live region status on CLI messaging", async ({ page }) => {
+    await gotoBattleCli(page);
 
-        await expect(countdown).toBeVisible();
-        await expect(roundMessage).toBeVisible();
-        await expect(roundMessage).toHaveAttribute("aria-live", "polite");
-        await expect(roundMessage).toHaveAttribute("aria-atomic", "true");
-        await expect(countdown).toHaveAttribute("aria-live", "polite");
-        await expect(countdown).toHaveAttribute("data-remaining-time", /\d+/);
-      });
+    const countdown = page.locator("#cli-countdown[role='status']");
+    const roundMessage = page.locator("#round-message[role='status']");
 
-      test("updates countdown live region values", async ({ page }) => {
-        await gotoBattleCli(page);
+    await expect(countdown).toBeVisible();
+    await expect(roundMessage).toBeVisible();
+    await expect(roundMessage).toHaveAttribute("aria-live", "polite");
+    await expect(roundMessage).toHaveAttribute("aria-atomic", "true");
+    await expect(countdown).toHaveAttribute("aria-live", "polite");
+    await expect(countdown).toHaveAttribute("data-remaining-time", /\d+/);
+  });
 
-        const countdown = page.locator("#cli-countdown[role='status']");
+  test("updates countdown live region values", async ({ page }) => {
+    await gotoBattleCli(page);
 
-        await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(3));
-        await expect
-          .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
-          .toBe("3");
+    const countdown = page.locator("#cli-countdown[role='status']");
 
-        await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(1));
-        await expect
-          .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
-          .toBe("1");
-      });
+    await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(3));
+    await expect
+      .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
+      .toBe("3");
+
+    await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(1));
+    await expect
+      .poll(() => countdown.getAttribute("data-remaining-time"), { timeout: 2_000 })
+      .toBe("1");
+  });
     });
   }
 });
