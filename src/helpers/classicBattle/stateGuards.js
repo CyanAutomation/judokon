@@ -23,6 +23,14 @@
  * @param {string} options.debugContext - Optional context label for debugging
  * @returns {boolean} True if callback was executed, false otherwise
  *
+ * @pseudocode
+ * 1. Normalize expectedStates to array
+ * 2. Validate machine exists and has getState method
+ * 3. Get current state from machine
+ * 4. Check if current state is in valid states
+ * 5. If valid: execute callback and return true
+ * 6. If invalid: call onInvalidState handler if provided, return false
+ *
  * @example
  * // Single expected state
  * const executed = withStateGuard(machine, "cooldown", () => {
@@ -115,6 +123,14 @@ export function withStateGuard(machine, expectedStates, callback, options = {}) 
  * @param {object} options - Additional options
  * @returns {Promise<boolean>} True if callback was executed, false otherwise
  *
+ * @pseudocode
+ * 1. Normalize expectedStates to array
+ * 2. Validate machine exists and has getState method
+ * 3. Get current state from machine
+ * 4. Check if current state is in valid states
+ * 5. If valid: await callback and return true
+ * 6. If invalid: call onInvalidState handler if provided, return false
+ *
  * @example
  * const executed = await withStateGuardAsync(machine, "roundDecision", async () => {
  *   await resolveRound();
@@ -168,6 +184,13 @@ export async function withStateGuardAsync(machine, expectedStates, callback, opt
  * @param {boolean} options.requireWindow - If true, throw if window unavailable
  * @returns {boolean} True if assignment succeeded
  *
+ * @pseudocode
+ * 1. Check if window is available in current environment
+ * 2. If window unavailable and requireWindow is true: throw error
+ * 3. If window unavailable: return false
+ * 4. Assign value to window[key]
+ * 5. Return true on success, false on error
+ *
  * @example
  * const success = guardWindowAssignment("__classicBattleSelectionFinalized", true);
  */
@@ -200,6 +223,12 @@ export function guardWindowAssignment(key, value, options = {}) {
  * @param {*} value - Value to assign
  * @param {object} options - Options
  * @returns {boolean} True if assignment succeeded
+ *
+ * @pseudocode
+ * 1. Validate store exists and is an object
+ * 2. If invalid: log debug message if debugContext provided, return false
+ * 3. Assign value to store[key]
+ * 4. Return true on success, false on error
  *
  * @example
  * const success = guardStoreAssignment(store, "selectionMade", false);

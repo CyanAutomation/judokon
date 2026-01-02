@@ -13,6 +13,7 @@ import { t } from "../i18n.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
 import { roundStore } from "./roundStore.js";
 import { getScheduler } from "../scheduler.js";
+import { debugLog } from "../debug.js";
 
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
@@ -160,7 +161,7 @@ function getHiddenStoreValue(store, token) {
 function logSelectionDebug(message, data) {
   if (!IS_VITEST) return;
   try {
-    console.log(message, data);
+    debugLog(message, data);
   } catch {}
 }
 
@@ -180,7 +181,7 @@ function logSelectionDebug(message, data) {
 export function logSelectionMutation(source, store, extra = {}) {
   if (!IS_VITEST) return;
   try {
-    console.log(`[selectionFlag:${source}]`, {
+    debugLog(`[selectionFlag:${source}]`, {
       selectionMade: store?.selectionMade ?? null,
       lastSelectionMade: store?.__lastSelectionMade ?? null,
       playerChoice: store?.playerChoice ?? null,
@@ -471,7 +472,7 @@ export function validateSelectionState(store) {
     const resolvedState =
       validState ?? [current, datasetState, broadcastState].find((state) => state !== null) ?? null;
 
-    console.log(
+    debugLog(
       "[DIAGNOSTIC] validateSelectionState: current machine state =",
       resolvedState,
       "VALID_BATTLE_STATES =",
@@ -483,7 +484,7 @@ export function validateSelectionState(store) {
       trackDebugInfo(debugInfo);
       logSelectionDebug("[validateSelectionState] REJECTED: invalidState", resolvedState);
       if (!IS_VITEST) {
-        console.warn(INVALID_STATE_WARNING(resolvedState));
+        debugLog(INVALID_STATE_WARNING(resolvedState));
       }
       try {
         emitBattleEvent("input.ignored", { kind: "invalidState", state: resolvedState });
@@ -740,7 +741,7 @@ export async function validateAndApplySelection(store, stat, playerVal, opponent
 
   if (!validateSelectionState(store)) {
     const currentState = typeof getBattleState === "function" ? getBattleState() : null;
-    console.log("[DIAGNOSTIC] *** VALIDATION FAILED *** Machine state:", currentState);
+    debugLog("[DIAGNOSTIC] *** VALIDATION FAILED *** Machine state:", currentState);
     logSelectionDebug("[test] handleStatSelection: validateSelectionState returned FALSE");
     if (store.selectionMade) {
       try {

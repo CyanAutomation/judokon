@@ -18,6 +18,12 @@
  * @param {string} context - Context string for diagnostics ("advance", etc.)
  * @returns {boolean} True if successful
  *
+ * @pseudocode
+ * 1. Validate store parameter
+ * 2. Set store.selectionMade as source of truth
+ * 3. Mirror to window.__classicBattleSelectionFinalized for test observability
+ * 4. Update context tracking in window.__classicBattleLastFinalizeContext
+ *
  * @example
  * setSelectionFinalized(store, true, "advance");
  */
@@ -50,6 +56,11 @@ export function setSelectionFinalized(store, value, context = null) {
  * @param {object} store - Battle store (preferred source)
  * @returns {boolean} Whether selection is finalized
  *
+ * @pseudocode
+ * 1. If store available, return store.selectionMade (source of truth)
+ * 2. Otherwise fallback to window.__classicBattleSelectionFinalized
+ * 3. Return Boolean coercion to handle undefined/null
+ *
  * @example
  * const isFinalized = getSelectionFinalized(store);
  */
@@ -72,8 +83,10 @@ export function getSelectionFinalized(store) {
  *
  * @param {object} store - Battle store
  * @returns {boolean} True if successful
- *
- * @example
+ * * @pseudocode
+ * 1. Call setSelectionFinalized with false value
+ * 2. Pass null context to clear diagnostic tracking
+ * * @example
  * resetSelectionFinalized(store);
  */
 export function resetSelectionFinalized(store) {

@@ -1,16 +1,12 @@
 import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
+import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
-import {
-  markOpponentPromptNow,
-  recordOpponentPromptTimestamp,
-  getOpponentPromptMinDuration
-} from "./opponentPromptTracker.js";
+import { markOpponentPromptNow, getOpponentPromptMinDuration } from "./opponentPromptTracker.js";
 import { isEnabled } from "../featureFlags.js";
 import {
   applyOpponentCardPlaceholder,
@@ -92,12 +88,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     showSnackbar: showSnackbarFn = showSnackbar,
     t: tFn = t,
     markOpponentPromptNow: markOpponentPromptNowFn = markOpponentPromptNow,
-    recordOpponentPromptTimestamp: recordOpponentPromptTimestampFn = recordOpponentPromptTimestamp,
     getOpponentPromptMinDuration: getOpponentPromptMinDurationFn = getOpponentPromptMinDuration,
     isEnabled: isEnabledFn = isEnabled,
     getOpponentDelay: getOpponentDelayFn = getOpponentDelay,
     scoreboard: scoreboardObj = scoreboard,
-    updateSnackbar: updateSnackbarFn = updateSnackbar,
     getOpponentCardData: getOpponentCardDataFn = getOpponentCardData,
     renderOpponentCard: renderOpponentCardFn = renderOpponentCard,
     showRoundOutcome: showRoundOutcomeFn = showRoundOutcome,
