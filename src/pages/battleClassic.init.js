@@ -15,6 +15,7 @@ import {
 import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
+import { initDiagnosticPanel } from "../helpers/classicBattle/diagnosticPanel.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import { setupScoreboard } from "../helpers/setupScoreboard.js";
@@ -1862,6 +1863,9 @@ export async function init() {
 
     // Wire control buttons AFTER match start (prevents DOM replacement issues)
     wireControlButtons(store);
+
+    // Initialize diagnostic panel (development mode only, Ctrl+Shift+D to toggle)
+    initDiagnosticPanel();
 
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
