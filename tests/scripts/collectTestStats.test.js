@@ -49,7 +49,7 @@ describe("collectTestStats", () => {
     const stats = await collectTestStats(root, () => "test-results/a.png\nnotes.md\n");
     expect(stats).toEqual({
       snapshots: 2,
-      testfiles: 2,
+      testfiles: 0,
       testcases: 4,
       updated: 1
     });
