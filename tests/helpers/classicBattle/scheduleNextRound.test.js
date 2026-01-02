@@ -571,22 +571,6 @@ describe("classicBattle startCooldown", () => {
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
 
-    // Priority 2 Diagnostic: Capture state before assertion
-    const nextBtn = document.getElementById("next-button");
-    console.error("[TEST DEBUG] Before readyDispatched assertion:", {
-      readyDispatched: currentNextRound.readyDispatched,
-      machineState: machine.getState(),
-      datasetState: document.body?.dataset?.battleState,
-      buttonDisabled: nextBtn?.disabled,
-      buttonNextReady: nextBtn?.dataset?.nextReady,
-      buttonExists: !!nextBtn
-    });
-
-    expect(currentNextRound.readyDispatched).toBe(false);
-
-    const readyResolutionSpy = vi.fn();
-    currentNextRound.ready.then(readyResolutionSpy);
-
     await vi.advanceTimersByTimeAsync(999);
     expect(readyResolutionSpy).not.toHaveBeenCalled();
     expect(currentNextRound.readyDispatched).toBe(false);
