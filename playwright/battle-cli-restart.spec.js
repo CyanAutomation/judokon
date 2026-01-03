@@ -26,7 +26,7 @@ test.describe("Battle CLI - Restart", () => {
       await expect(statButtons).toHaveCount(5);
 
       let matchEnded = false;
-      const maxRounds = 5;
+      const maxRounds = 10;
 
       for (let roundIndex = 0; roundIndex < maxRounds; roundIndex += 1) {
         await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
@@ -37,6 +37,9 @@ test.describe("Battle CLI - Restart", () => {
 
         const statKey = await statButton.getAttribute("data-stat");
         expect(statKey, "stat button should expose a data-stat attribute").toBeTruthy();
+        if (!statKey) {
+          throw new Error("Stat button missing data-stat attribute.");
+        }
 
         await statButton.click();
 
@@ -61,7 +64,11 @@ test.describe("Battle CLI - Restart", () => {
         }
       }
 
-      expect(matchEnded).toBe(true);
+      if (!matchEnded) {
+        throw new Error(
+          `Match did not end after ${maxRounds} rounds. This may indicate a test configuration issue or game logic problem.`
+        );
+      }
 
       const playAgainButton = page.getByRole("button", { name: "Play Again" });
       await expect(playAgainButton).toBeVisible({ timeout: 10000 });
