@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/battleCliFixture.js";
-import { waitForTestApi } from "./helpers/battleStateHelper.js";
+import { waitForBattleReady, waitForTestApi } from "./helpers/battleStateHelper.js";
 
 const DEFAULT_CLI_URL = "http://127.0.0.1:5000/src/pages/battleCLI.html";
 
@@ -19,6 +19,7 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
   await page.goto(buildCliUrl());
 
   await waitForTestApi(page);
+  await waitForBattleReady(page);
 
   const stats = page.locator("#cli-stats");
   await expect(stats).toBeVisible();
