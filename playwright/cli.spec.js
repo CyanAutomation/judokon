@@ -34,6 +34,9 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
   await expect(countdown).toBeVisible();
 
   // Start the round via the user-visible keyboard flow and observe countdown updates
+  await expect
+    .poll(() => page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null))
+    .toBe("waitingForMatchStart");
   await page.keyboard.press("Enter");
 
   await expect(countdown).toHaveText(/Time remaining:\s*\d+/, { timeout: 5_000 });
