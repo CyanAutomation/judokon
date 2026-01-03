@@ -1,8 +1,12 @@
 # Timer Service Drift Test Failures Analysis
 
+## ✅ RESOLVED
+
+All tests are now passing after implementing the fixes described below.
+
 ## Summary
 
-Two tests in `tests/helpers/classicBattle/timerService.drift.test.js` are failing due to mismatches between test expectations and implementation behavior.
+Two tests in `tests/helpers/classicBattle/timerService.drift.test.js` were failing due to mismatches between test expectations and implementation behavior.
 
 ## Test 1: "startCooldown shows fallback on drift" (Line 122)
 
