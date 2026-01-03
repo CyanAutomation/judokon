@@ -9,7 +9,7 @@ function hasEllipsisRule(css) {
   root.walkAtRules("media", (at) => {
     if (/max-width:\s*320px/.test(at.params)) {
       at.walkRules((rule) => {
-        if (!rule.selector.includes(".battle-header")) {
+        if (!rule.selector.match(/\.battle-header(?:\s|$|[^\w-])/)) {
           return;
         }
         const overflow = rule.nodes.find((n) => n.prop === "text-overflow");
