@@ -16,7 +16,7 @@ describe("meditation quote color contrast", () => {
 
     const [, token, fallback] = varMatch;
     if (stack.has(token)) {
-      return fallback ? resolveColorValue(fallback, new Set()) : undefined;
+      return fallback ? resolveColorValue(fallback, stack) : undefined;
     }
 
     const resolved = vars[token];
