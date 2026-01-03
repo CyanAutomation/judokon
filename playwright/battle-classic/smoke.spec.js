@@ -1,12 +1,10 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import {
   waitForBattleReady,
-  waitForBattleState,
   configureClassicBattle,
   waitForMatchCompletion,
   waitForRoundStats,
   waitForStatButtonsReady,
-  waitForNextButtonReady,
   setPointsToWin
 } from "../helpers/battleStateHelper.js";
 
@@ -90,10 +88,6 @@ test.describe("Classic Battle page", () => {
     await startClassicBattle(page);
     await setPointsToWin(page, 1, { timeout: 10_000 });
 
-    const endModalCallCountBefore = await page.evaluate(
-      () => window.__classicBattleEndModalCount ?? 0
-    );
-
     await selectFirstEnabledStat(page);
 
     const matchResult = await waitForMatchCompletion(page, {
@@ -104,30 +98,18 @@ test.describe("Classic Battle page", () => {
     expect(matchResult).toBeTruthy();
     expect(matchResult.timedOut).toBe(false);
 
-    const endModalCallCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
-    expect(endModalCallCount).toBeGreaterThan(0);
-    expect(endModalCallCount).toBeGreaterThan(endModalCallCountBefore);
+    // Detailed end-modal + round-flow coverage is handled in dedicated specs.
+    const matchEndModal = page.locator("#match-end-modal").first();
+    await expect(matchEndModal).toBeVisible();
 
-    expect(matchResult.uiState).toBeTruthy();
-    expect(matchResult.uiState.statButtonsDisabled).toBe(true);
-    expect(matchResult.uiState.nextButtonDisabled).toBe(true);
-    expect(matchResult.uiState.modalExists).toBe(true);
-  });
+    const matchEndTitle = page.locator("#match-end-title").first();
+    await expect(matchEndTitle).toHaveText("Match Over");
 
-  test("Next advances round", async ({ page }) => {
-    await configureDeterministicBattle(page);
-    await logBrowserWarnings(page);
-    await startClassicBattle(page);
-    await setPointsToWin(page, 2, { timeout: 10_000 });
+    const scoreDisplay = page.locator("#score-display");
+    await expect(scoreDisplay).toContainText(/You:\s*\d+/i);
+    await expect(scoreDisplay).toContainText(/Opponent:\s*\d+/i);
 
-    await selectFirstEnabledStat(page);
-    await waitForBattleState(page, "roundOver", { timeout: 10_000, allowFallback: false });
-    await waitForNextButtonReady(page, { timeout: 10_000 });
-    await page.getByTestId("next-button").click();
-
-    await waitForBattleState(page, "waitingForPlayerAction", {
-      timeout: 10_000,
-      allowFallback: false
-    });
+    const nextButton = page.getByTestId("next-button");
+    await expect(nextButton).toBeDisabled();
   });
 });
