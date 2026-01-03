@@ -8,6 +8,10 @@
  * 3. Get changed snapshot files from git.
  * 4. Roll a six-sided die to select a judo throw message.
  * 5. Write all results to `$GITHUB_OUTPUT` for workflow consumption.
+ *
+ * CI/reporting usage: workflows read the `snapshots`, `testfiles`, `testcases`,
+ * and `updated` outputs from `$GITHUB_OUTPUT` to populate job summaries and
+ * reporting dashboards with test footprint metrics.
  */
 import { glob } from "glob";
 import { readFile, appendFile } from "node:fs/promises";
