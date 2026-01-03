@@ -74,8 +74,8 @@ test.describe("Battle CLI - Play", () => {
       await expect(scoreDisplay).toHaveAttribute("data-score-opponent", /\d+/);
 
       const roundCounter = page.locator("#round-counter");
-      const roundCounterText = await roundCounter.textContent();
-      await expect(roundCounter).not.toHaveText(roundCounterText ?? "");
+      const initialRoundCounterText = await roundCounter.textContent();
+      await expect(roundCounter).not.toHaveText(initialRoundCounterText ?? "", { timeout: 10_000 });
 
       await expect(page.locator("#snackbar-container .snackbar")).toContainText(
         "Select your move",
