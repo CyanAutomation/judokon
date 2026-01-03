@@ -2,6 +2,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
 import { configureApp } from "./fixtures/appConfig.js";
 import { waitForBattleState } from "./helpers/battleStateHelper.js";
+import { completeRoundViaApi } from "./helpers/battleApiHelper.js";
 
 test.describe("Battle CLI - Restart", () => {
   test("should be able to restart a match", async ({ page }) => {
@@ -21,29 +22,46 @@ test.describe("Battle CLI - Restart", () => {
 
       await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
 
-      await page.evaluate(() => {
-        const detail = {
-          outcome: "matchWinPlayer",
-          winner: "player",
-          playerScore: 1,
-          opponentScore: 0,
-          scores: { player: 1, opponent: 0 },
-          result: {
-            matchEnded: true,
-            outcome: "matchWinPlayer",
-            playerScore: 1,
-            opponentScore: 0
-          }
-        };
-        if (typeof window.emitBattleEvent === "function") {
-          window.emitBattleEvent("matchOver", detail);
-          window.emitBattleEvent("match.concluded", {
-            winner: "player",
-            scores: { player: 1, opponent: 0 },
-            reason: "matchWinPlayer"
+      const statButtons = page.locator(".cli-stat");
+      await expect(statButtons).toHaveCount(5);
+
+      let matchEnded = false;
+      const maxRounds = 5;
+
+      for (let roundIndex = 0; roundIndex < maxRounds; roundIndex += 1) {
+        await waitForBattleState(page, "waitingForPlayerAction", { timeout: 10_000 });
+
+        const statButton = statButtons.nth(roundIndex % 5);
+        await expect(statButton).toBeVisible();
+        await expect(statButton).toBeEnabled();
+
+        const statKey = await statButton.getAttribute("data-stat");
+        expect(statKey, "stat button should expose a data-stat attribute").toBeTruthy();
+
+        await statButton.click();
+
+        const statName = statKey.charAt(0).toUpperCase() + statKey.slice(1);
+        await expect(page.getByText(`You Picked: ${statName}`)).toBeVisible({ timeout: 2000 });
+
+        const completion = await completeRoundViaApi(page, {
+          options: { expireSelection: false, opponentResolveDelayMs: 0 }
+        });
+
+        expect(completion.ok).toBe(true);
+
+        if (["matchDecision", "matchOver"].includes(completion.finalState)) {
+          await expect(page.locator("#round-message")).toContainText("Match over", {
+            timeout: 10_000
           });
+          await expect(page.locator("#match-announcement")).toContainText("Match over", {
+            timeout: 10_000
+          });
+          matchEnded = true;
+          break;
         }
-      });
+      }
+
+      expect(matchEnded).toBe(true);
 
       const playAgainButton = page.getByRole("button", { name: "Play Again" });
       await expect(playAgainButton).toBeVisible({ timeout: 10000 });
@@ -58,9 +76,9 @@ test.describe("Battle CLI - Restart", () => {
       const countdown = page.locator("#cli-countdown");
       await expect(countdown).toHaveAttribute("data-remaining-time", /\d+/);
 
-      const statButtons = page.locator('.cli-stat[role="option"]');
-      await expect(statButtons).toHaveCount(5);
-      await expect(statButtons.first()).toBeEnabled();
+      const statOptions = page.locator('.cli-stat[role="option"]');
+      await expect(statOptions).toHaveCount(5);
+      await expect(statOptions.first()).toBeEnabled();
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
