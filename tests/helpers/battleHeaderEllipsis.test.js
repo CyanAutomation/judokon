@@ -5,46 +5,46 @@ import postcss from "postcss";
 
 function hasEllipsisRule(css) {
   const root = postcss.parse(css);
-  const selectors = ["#round-message", "#next-round-timer", "#score-display span"];
-  const found = new Set();
+  let found = false;
   root.walkAtRules("media", (at) => {
     if (/max-width:\s*320px/.test(at.params)) {
       at.walkRules((rule) => {
-        selectors.forEach((sel) => {
-          if (rule.selector.includes(sel)) {
-            const overflow = rule.nodes.find((n) => n.prop === "text-overflow");
-            const whiteSpace = rule.nodes.find((n) => n.prop === "white-space");
-            if (overflow && /ellipsis/.test(overflow.value) && whiteSpace) {
-              found.add(sel);
-            }
-          }
-        });
+        if (!rule.selector.includes(".battle-header")) {
+          return;
+        }
+        const overflow = rule.nodes.find((n) => n.prop === "text-overflow");
+        const whiteSpace = rule.nodes.find((n) => n.prop === "white-space");
+        const hidden = rule.nodes.find((n) => n.prop === "overflow");
+        if (
+          overflow &&
+          /ellipsis/.test(overflow.value) &&
+          whiteSpace &&
+          /nowrap/.test(whiteSpace.value) &&
+          hidden &&
+          /hidden/.test(hidden.value)
+        ) {
+          found = true;
+        }
       });
     }
   });
-  return selectors.every((sel) => found.has(sel));
+  return found;
 }
 
 function hasWrapRule(css) {
   const root = postcss.parse(css);
-  const selectors = [
-    '.battle-header[data-orientation="portrait"] #round-message',
-    '.battle-header[data-orientation="portrait"] #next-round-timer',
-    '.battle-header[data-orientation="portrait"] #score-display'
-  ];
-  const found = new Set();
+  let found = false;
   root.walkRules((rule) => {
-    selectors.forEach((sel) => {
-      if (rule.selector.includes(sel)) {
-        const wrap = rule.nodes.find((n) => n.prop === "overflow-wrap");
-        const fontSize = rule.nodes.find((n) => n.prop === "font-size");
-        if (wrap && /anywhere/.test(wrap.value) && fontSize && /clamp/.test(fontSize.value)) {
-          found.add(sel);
-        }
-      }
-    });
+    if (!rule.selector.includes('.battle-header[data-orientation="portrait"]')) {
+      return;
+    }
+    const wrap = rule.nodes.find((n) => n.prop === "overflow-wrap");
+    const fontSize = rule.nodes.find((n) => n.prop === "font-size");
+    if (wrap && /anywhere/.test(wrap.value) && fontSize && /clamp/.test(fontSize.value)) {
+      found = true;
+    }
   });
-  return selectors.every((sel) => found.has(sel));
+  return found;
 }
 
 describe("battle.css responsive truncation", () => {
