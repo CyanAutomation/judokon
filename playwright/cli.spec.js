@@ -34,10 +34,13 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
   await expect(countdown).toBeVisible();
 
   // Start the round via the user-visible keyboard flow and observe countdown updates
+  const startHint = page.locator("#snackbar-container");
+  await expect(startHint).toContainText("Press Enter to start the match.", { timeout: 5_000 });
   await page.keyboard.press("Enter");
 
   await expect(countdown).toHaveText(/Time remaining:\s*\d+/, { timeout: 5_000 });
   const initialCountdown = await countdown.textContent();
+  expect(initialCountdown).not.toBeNull();
   // Verify initial countdown contains a number before polling for changes
   expect(initialCountdown).toMatch(/Time remaining:\s*\d+/);
   await expect
