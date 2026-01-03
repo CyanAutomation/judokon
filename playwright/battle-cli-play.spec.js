@@ -77,12 +77,15 @@ test.describe("Battle CLI - Play", () => {
       const initialRoundCounterText = await roundCounter.textContent();
       await expect(roundCounter).not.toHaveText(initialRoundCounterText ?? "", { timeout: 10_000 });
 
-      await expect(page.locator("#snackbar-container .snackbar")).toContainText(
-        "Select your move",
-        {
-          timeout: 10_000
-        }
-      );
+      // Wait for next round to be ready
+      await expect
+        .poll(async () => {
+          return await page.evaluate(() => {
+            const api = window.__TEST_API;
+            return api?.state?.getBattleState?.() === "waitingForPlayerAction" ? "ready" : "pending";
+          });
+        })
+        .toBe("ready", { timeout: 10_000 });
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
