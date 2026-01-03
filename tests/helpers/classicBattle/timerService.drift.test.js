@@ -137,7 +137,8 @@ describe("timerService drift handling", () => {
     expect(container).toBeInstanceOf(HTMLElement);
     // The opponent message should be the most recent (bottom) snackbar
     // The countdown "Next round in: 3s" is shown first, then "Opponent is choosing…" is added
-    const snackbarBeforeFallback = container?.querySelector(".snackbar-bottom") || container?.querySelector(".snackbar");
+    const snackbarBeforeFallback =
+      container?.querySelector(".snackbar-bottom") || container?.querySelector(".snackbar");
     expect(snackbarBeforeFallback?.textContent).toBe("Opponent is choosing…");
     messageEl.textContent = "Round resolved";
     showSnack.mockClear();
@@ -153,7 +154,7 @@ describe("timerService drift handling", () => {
 
   it("uses injected scheduler when starting engine cooldown", async () => {
     vi.resetModules();
-    
+
     const scheduler = createMockScheduler();
     const { TimerController } = await import("../../../src/helpers/TimerController.js");
     const baseTimer = new TimerController();
