@@ -35,7 +35,7 @@ function hasWrapRule(css) {
   const root = postcss.parse(css);
   let found = false;
   root.walkRules((rule) => {
-    if (!rule.selector.includes('.battle-header[data-orientation="portrait"]')) {
+    if (!rule.selector.match(/\.battle-header\[data-orientation="portrait"\](?:\s|$|[^\w-])/)) {
       return;
     }
     const wrap = rule.nodes.find((n) => n.prop === "overflow-wrap");
