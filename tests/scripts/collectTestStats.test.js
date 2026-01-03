@@ -60,37 +60,39 @@ describe("collectTestStats", () => {
   it("maps snapshots, test files, and updates in a realistic fixture tree", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "collect-test-stats-"));
 
-    await mkdir(path.join(root, "tests", "unit"), { recursive: true });
-    await mkdir(path.join(root, "playwright", "e2e"), { recursive: true });
-    await mkdir(path.join(root, "playwright", "utils"), { recursive: true });
-    await mkdir(path.join(root, "test-results", "nested"), { recursive: true });
+    try {
+      await mkdir(path.join(root, "tests", "unit"), { recursive: true });
+      await mkdir(path.join(root, "playwright", "e2e"), { recursive: true });
+      await mkdir(path.join(root, "playwright", "utils"), { recursive: true });
+      await mkdir(path.join(root, "test-results", "nested"), { recursive: true });
 
-    await writeFile(
-      path.join(root, "tests", "unit", "widget.test.js"),
-      'test("counts", () => {});\nit("counts too", () => {});\n'
-    );
-    await writeFile(path.join(root, "tests", "unit", "helper.js"), "export const helper = true;\n");
-    await writeFile(
-      path.join(root, "playwright", "e2e", "flows.spec.ts"),
-      'test("flow", async () => {});\n'
-    );
-    await writeFile(path.join(root, "playwright", "utils", "selectors.ts"), "export const foo = 1;\n");
-    await writeFile(path.join(root, "test-results", "alpha.png"), "fake");
-    await writeFile(path.join(root, "test-results", "beta.png"), "fake");
-    await writeFile(path.join(root, "test-results", "nested", "gamma.png"), "fake");
+      await writeFile(
+        path.join(root, "tests", "unit", "widget.test.js"),
+        'test("counts", () => {});\nit("counts too", () => {});\n'
+      );
+      await writeFile(path.join(root, "tests", "unit", "helper.js"), "export const helper = true;\n");
+      await writeFile(
+        path.join(root, "playwright", "e2e", "flows.spec.ts"),
+        'test("flow", async () => {});\n'
+      );
+      await writeFile(path.join(root, "playwright", "utils", "selectors.ts"), "export const foo = 1;\n");
+      await writeFile(path.join(root, "test-results", "alpha.png"), "fake");
+      await writeFile(path.join(root, "test-results", "beta.png"), "fake");
+      await writeFile(path.join(root, "test-results", "nested", "gamma.png"), "fake");
 
-    const stats = await collectTestStats(
-      root,
-      () => "test-results/beta.png\ntest-results/nested/gamma.png\nREADME.md\n"
-    );
+      const stats = await collectTestStats(
+        root,
+        () => "test-results/beta.png\ntest-results/nested/gamma.png\nREADME.md\n"
+      );
 
-    expect(stats).toEqual({
-      snapshots: 3,
-      testfiles: 2,
-      testcases: 3,
-      updated: 2
-    });
-
-    await rm(root, { recursive: true, force: true });
+      expect(stats).toEqual({
+        snapshots: 3,
+        testfiles: 2,
+        testcases: 3,
+        updated: 2
+      });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });
