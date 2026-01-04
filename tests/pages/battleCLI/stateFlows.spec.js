@@ -63,8 +63,11 @@ describe("battleCLI state flows", () => {
     await setupBattleCLI({ autoSelect: false });
     const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
 
+    // Import the mocked showSnackbar to verify calls
+    const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
+
     emitBattleEvent("statSelectionStalled");
-    expect(getBottomLineText()).toBe("Stat selection stalled. Pick a stat.");
+    expect(showSnackbar).toHaveBeenCalledWith("Stat selection stalled. Pick a stat.");
   });
 
   it("updates state badge and bottom line on round transitions", async () => {
@@ -74,12 +77,16 @@ describe("battleCLI state flows", () => {
     const orchestratorHandlers = await import(
       "../../../src/helpers/classicBattle/orchestratorHandlers.js"
     );
+
+    // Import the mocked showSnackbar to verify calls
+    const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
+
     uiHelpers.updateBattleStateBadge.mockClear();
     orchestratorHandlers.setAutoContinue(false);
 
     emitBattleEvent("battleStateChange", { from: "waiting", to: "roundOver" });
     expect(uiHelpers.updateBattleStateBadge).toHaveBeenCalledWith("roundOver");
-    expect(getBottomLineText()).toBe("Press Enter to continue");
+    expect(showSnackbar).toHaveBeenCalledWith("Press Enter to continue");
 
     emitBattleEvent("battleStateChange", { from: "roundOver", to: "waitingForPlayerAction" });
   });
@@ -101,15 +108,20 @@ describe("battleCLI state flows", () => {
       const { emitBattleEvent } = eventsMod;
       const emitSpy = vi.spyOn(eventsMod, "emitBattleEvent");
 
+      // Import the mocked showSnackbar to verify calls
+      const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
+
       emitBattleEvent("countdownStart", { duration: 2 });
-      expect(getBottomLineText()).toBe("Next round in: 2");
+      expect(showSnackbar).toHaveBeenCalledWith("Next round in: 2");
 
+      showSnackbar.mockClear();
       await timers.advanceTimersByTimeAsync(1000);
-      expect(getBottomLineText()).toBe("Next round in: 1");
+      expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1");
 
+      showSnackbar.mockClear();
       await timers.advanceTimersByTimeAsync(1000);
       expect(emitSpy).toHaveBeenCalledWith("countdownFinished");
-      expect(getBottomLineText()).toBe("");
+      expect(showSnackbar).toHaveBeenCalledWith("");
 
       emitSpy.mockRestore();
     });
