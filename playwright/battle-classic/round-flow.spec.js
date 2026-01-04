@@ -12,6 +12,19 @@ import {
   waitForRoundsPlayed
 } from "./support/opponentRevealTestSupport.js";
 import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHelper.js";
+import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
+
+async function startClassicBattle(page) {
+  await page.goto("/index.html");
+
+  const startLink = page.getByRole("link", {
+    name: "Start classic battle mode",
+    exact: true
+  });
+  await expect(startLink).toBeVisible();
+
+  await Promise.all([page.waitForURL("**/battleClassic.html"), startLink.click()]);
+}
 
 async function resolveRoundViaCli(page) {
   return await page.evaluate(async () => {
@@ -167,6 +180,41 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
       const snackbar = page.locator(selectors.snackbarContainer());
       await expect(snackbar).toContainText(/Opponent is choosing/i);
+    }, MUTED_CONSOLE_LEVELS));
+
+  test("auto-advances via visible countdown", async ({ page }) =>
+    withMutedConsole(async () => {
+      await applyDeterministicCooldown(page, {
+        cooldownMs: 1_500,
+        roundTimerMs: 5
+      });
+
+      await startClassicBattle(page);
+      await waitForBattleReady(page, { allowFallback: false });
+
+      const difficultyButton = page.getByRole("button", { name: "Medium" });
+      await expect(difficultyButton).toBeVisible();
+      await difficultyButton.click();
+
+      const roundCounter = page.getByTestId("round-counter");
+      const nextRoundTimer = page.getByTestId("next-round-timer");
+      const timerValue = page.locator("#next-round-timer [data-part='value']");
+      const roundMessage = page.locator("#round-message");
+
+      await expect(roundCounter).toContainText(/Round\\s*1/i);
+
+      const statContainer = page.getByTestId("stat-buttons");
+      const firstStat = statContainer.getByRole("button").first();
+      await expect(firstStat).toBeVisible();
+      await firstStat.click();
+
+      await expect(roundMessage).toBeVisible();
+      await expect(roundMessage).toContainText(/picked/i);
+
+      await expect(nextRoundTimer).toBeVisible();
+      await expect(timerValue).toHaveText(/\\d+s/);
+
+      await expect(roundCounter).toContainText(/Round\\s*2/i, { timeout: 10_000 });
     }, MUTED_CONSOLE_LEVELS));
 
   test("enables Next during cooldown without orchestrator and advances", async ({ page }) =>
