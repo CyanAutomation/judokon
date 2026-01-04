@@ -37,9 +37,7 @@ test.describe("Battle CLI - Restart", () => {
 
         const statKey = await statButton.getAttribute("data-stat");
         expect(statKey, "stat button should expose a data-stat attribute").toBeTruthy();
-        if (!statKey) {
-          throw new Error("Stat button missing data-stat attribute.");
-        }
+        // The expect above already validates statKey is truthy
 
         await statButton.click();
 
