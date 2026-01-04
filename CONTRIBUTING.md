@@ -36,6 +36,12 @@ npm run check:contrast # verify accessibility compliance
 npm run rag:validate # RAG preflight + evaluator + JSON + hot‑path checks
 ```
 
+The MCP RAG server smoke test is separated from the user-facing UI suite. Run it only when needed:
+
+```bash
+RUN_MCP_SMOKE=live npm run test:playwright:integration
+```
+
 **Style tests (run on demand):**
 
 ```bash

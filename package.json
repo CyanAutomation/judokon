@@ -16,6 +16,7 @@
     "test:one": "vitest run --threads=false",
     "test:update": "vitest run -u",
     "test:screenshot": "playwright test",
+    "test:playwright:integration": "playwright test --config playwright.integration.config.js",
     "test:style": "vitest run --config vitest.style.config.js",
     "test:battles": "vitest run tests/classicBattle tests/pages/battleCLI*.test.js tests/helpers/battle*.test.js tests/integration/battleClassic*.test.js tests/styles/battle*.test.js",
     "test:battles:classic": "vitest run tests/classicBattle tests/integration/battleClassic*.test.js tests/helpers/battle*.test.js tests/styles/battleContrast.test.js",
