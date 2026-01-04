@@ -39,6 +39,16 @@ const FLAG_SPEC_PATH = "docs/qa/opponent-delay-message.md";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   async function launchClassicBattle(page, featureFlags) {
+    // Reset EventTarget/WeakSet BEFORE any page scripts load
+    // This must run before registerCommonRoutes and configureApp
+    await page.addInitScript(() => {
+      // Clear WeakSet that tracks bound targets
+      delete globalThis.__cbUIHelpersDynamicBoundTargets;
+      
+      // Clear EventTarget singleton
+      delete globalThis.__classicBattleEventTarget;
+    });
+
     await registerCommonRoutes(page);
 
     const app = await configureApp(page, {
@@ -46,15 +56,6 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
         autoSelect: false,
         ...featureFlags
       }
-    });
-
-    // Reset EventTarget and WeakSet before navigation to ensure clean state
-    await page.addInitScript(() => {
-      // Clear WeakSet that tracks bound targets
-      delete globalThis.__cbUIHelpersDynamicBoundTargets;
-
-      // Clear EventTarget singleton
-      delete globalThis.__classicBattleEventTarget;
     });
 
     await page.goto("/src/pages/battleClassic.html", {
