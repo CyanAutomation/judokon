@@ -52,7 +52,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await page.addInitScript(() => {
       // Clear WeakSet that tracks bound targets
       delete globalThis.__cbUIHelpersDynamicBoundTargets;
-      
+
       // Clear EventTarget singleton
       delete globalThis.__classicBattleEventTarget;
     });
@@ -72,7 +72,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     const diagnostics = await page.evaluate(() => {
       const target = globalThis.__classicBattleEventTarget;
       const weakSet = globalThis.__cbUIHelpersDynamicBoundTargets;
-      
+
       // Test if emitting an event works
       let eventFired = false;
       if (target) {
@@ -81,7 +81,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
         });
         target.dispatchEvent(new CustomEvent("testEvent", { detail: {} }));
       }
-      
+
       return {
         targetExists: !!target,
         targetDebugId: target?.__debugId || "NO_ID",
@@ -114,13 +114,19 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       const target = globalThis.__classicBattleEventTarget;
       if (target) {
         window.__statSelectedEventCount = 0;
+        window.__eventTargetAtRegistration = target.__debugId;
         target.addEventListener("statSelected", (e) => {
           window.__statSelectedEventCount++;
           console.log("[Test Listener] statSelected event fired!", {
             count: window.__statSelectedEventCount,
+            targetId: target.__debugId,
             detail: e.detail
           });
         });
+        
+        // Intercept emitBattleEvent to track which target is used for emission
+        const originalGetTarget = window.__classicBattleEventTarget;
+        window.__emitTargetIds = [];
       }
     });
 
