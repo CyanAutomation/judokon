@@ -48,6 +48,15 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       }
     });
 
+    // Reset EventTarget and WeakSet before navigation to ensure clean state
+    await page.addInitScript(() => {
+      // Clear WeakSet that tracks bound targets
+      delete globalThis.__cbUIHelpersDynamicBoundTargets;
+      
+      // Clear EventTarget singleton
+      delete globalThis.__classicBattleEventTarget;
+    });
+
     await page.goto("/src/pages/battleClassic.html", {
       waitUntil: "networkidle",
       timeout: 15000
@@ -58,6 +67,34 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await expect(firstStat).toBeVisible({ timeout: 5000 });
     await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
     await waitForFeatureFlagOverrides(page, featureFlags);
+
+    // Verify EventTarget and handler registration (diagnostic)
+    const diagnostics = await page.evaluate(() => {
+      const target = globalThis.__classicBattleEventTarget;
+      const weakSet = globalThis.__cbUIHelpersDynamicBoundTargets;
+      
+      return {
+        targetExists: !!target,
+        targetDebugId: target?.__debugId || "NO_ID",
+        targetCreatedAt: target?.__createdAt || "NO_TIMESTAMP",
+        weakSetExists: !!weakSet,
+        targetInWeakSet: weakSet && target ? weakSet.has(target) : false
+      };
+    });
+
+    // Log diagnostics for debugging test failures
+    console.log("[Test Diagnostics]", {
+      featureFlags,
+      ...diagnostics
+    });
+
+    // Verify critical state
+    if (!diagnostics.targetExists) {
+      throw new Error("EventTarget not created - initialization may have failed");
+    }
+    if (!diagnostics.targetInWeakSet) {
+      throw new Error("EventTarget not in WeakSet - handlers may not be registered");
+    }
 
     return {
       app,
