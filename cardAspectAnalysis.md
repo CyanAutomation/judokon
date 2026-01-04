@@ -21,6 +21,7 @@ Analysis of `src/styles/card.css` (verified 2026-01-04) confirms three CSS issue
    `height: auto` allows the card container to grow vertically beyond the calculated `--card-height: calc(var(--card-width) * 1.5)`
 
 2. **Flexible Grid Layout** (Lines 145-149):  
+
    ```css
    grid-template-rows:
      auto    /* Top bar - expands to content */
@@ -28,6 +29,7 @@ Analysis of `src/styles/card.css` (verified 2026-01-04) confirms three CSS issue
      auto    /* Stats - expands to content */
      auto;   /* Signature - expands to content */
    ```
+
    The `1fr` unit and `auto` values allow grid rows to expand beyond proportional constraints.
 
 3. **Fixed Portrait Aspect Ratio** (Line 336):  
@@ -36,6 +38,7 @@ Analysis of `src/styles/card.css` (verified 2026-01-04) confirms three CSS issue
 ### Proposed Solution
 
 Four-phase CSS fix targeting `src/styles/card.css`:
+
 - **Phase 1**: Lock card height to calculated value
 - **Phase 2**: Replace flexible grid with proportional layout  
 - **Phase 3**: Allow grid to control portrait height
@@ -77,8 +80,10 @@ Based on standard 280px wide card rendering:
 ### Identified CSS Issues (Verified)
 
 #### Issue 1: Unconstrained Height
+
 **File**: `src/styles/card.css`, Line 137  
 **Current Code**:
+
 ```css
 .judoka-card {
   --card-height: calc(var(--card-width) * 1.5);
@@ -94,8 +99,10 @@ Based on standard 280px wide card rendering:
 ---
 
 #### Issue 2: Flexible Grid Layout
+
 **File**: `src/styles/card.css`, Lines 145-149  
 **Current Code**:
+
 ```css
 grid-template-rows:
   auto    /* ❌ Top bar grows to content size */
@@ -104,7 +111,8 @@ grid-template-rows:
   auto;   /* ❌ Signature grows to content size */
 ```
 
-**Problem**: 
+**Problem**:
+
 - `auto` rows expand to fit content without proportion constraints
 - `1fr` on portrait row fills remaining space after auto rows, but since `height: auto`, there's no constraint
 - No maximum height limits prevent overflow
@@ -114,8 +122,10 @@ grid-template-rows:
 ---
 
 #### Issue 3: Fixed Portrait Aspect Ratio
+
 **File**: `src/styles/card.css`, Line 336  
 **Current Code**:
+
 ```css
 .card-portrait {
   aspect-ratio: 1 / 1.1;  /* ❌ Fixed ratio overrides grid */
@@ -123,6 +133,7 @@ grid-template-rows:
 ```
 
 **Problem**: The fixed `1 / 1.1` aspect ratio (width:height) means:
+
 - At 280px width, portrait height is forced to **308px** (280 × 1.1)
 - Expected height from 2:3 card ratio: **~180px** (43% of 420px)
 - This adds **128px of extra height**, which cascades to parent container
@@ -138,6 +149,7 @@ grid-template-rows:
 ```
 
 This formula is **mathematically correct** for 2:3 aspect ratio:
+
 - 2:3 ratio = width:height  
 - height = width × (3/2) = width × 1.5  
 - Example: 280px × 1.5 = 420px ✅
@@ -156,6 +168,7 @@ This formula is **mathematically correct** for 2:3 aspect ratio:
 **Lines**: ~136-137
 
 **Change**:
+
 ```css
 /* BEFORE */
 .judoka-card {
@@ -171,7 +184,8 @@ This formula is **mathematically correct** for 2:3 aspect ratio:
 }
 ```
 
-**Rationale**: 
+**Rationale**:
+
 - Sets explicit `height` to calculated value
 - Adds `max-height` constraint to prevent overflow
 - Maintains `min-height` for backward compatibility
@@ -186,6 +200,7 @@ This formula is **mathematically correct** for 2:3 aspect ratio:
 **Lines**: ~145-149
 
 **Change**:
+
 ```css
 /* BEFORE */
 grid-template-rows:
@@ -203,6 +218,7 @@ grid-template-rows:
 ```
 
 **Rationale**:
+
 - **Percentages** maintain proportions across different card sizes
 - **minmax()** ensures minimum accessibility requirements:
   - Touch targets ≥44px (WCAG 2.5.5 AAA)
@@ -210,6 +226,7 @@ grid-template-rows:
 - **Total**: 13.5% + 43% + 33% + 10.5% = 100% ✅
 
 **Calculation Example** (280px width → 420px height):
+
 | Section | Percentage | Min Height | Calculated | Actual |
 |:---|---:|---:|---:|---:|
 | Top Bar | 13.5% | 48px | 56.7px | 57px |
@@ -227,6 +244,7 @@ grid-template-rows:
 **Line**: ~336
 
 **Change**:
+
 ```css
 /* BEFORE */
 .card-portrait {
@@ -241,11 +259,13 @@ grid-template-rows:
 ```
 
 **Rationale**:
+
 - Let grid row height (43%) determine portrait container height
 - `object-fit: cover` on portrait image (already implemented at line 349) prevents distortion
 - Portrait will scale proportionally with card size
 
 **Existing Protection**:
+
 ```css
 .card-portrait img {
   width: 100%;
@@ -264,6 +284,7 @@ grid-template-rows:
 **Lines**: ~375-388
 
 **Change**:
+
 ```css
 .card-stats {
   background-color: var(--card-stats-bg, var(--color-secondary));
@@ -284,6 +305,7 @@ grid-template-rows:
 ```
 
 **Rationale**:
+
 - Stats section gets 33% of card height (~140px at standard size)
 - On narrow viewports (220px min width), content may overflow
 - `overflow-y: auto` enables scrolling if needed (rare edge case)
@@ -296,6 +318,7 @@ grid-template-rows:
 ### Enhancement 1: CSS Custom Properties for Grid Proportions
 
 **Current Proposal** (Phase 2):
+
 ```css
 grid-template-rows:
   minmax(48px, 13.5%)
@@ -305,6 +328,7 @@ grid-template-rows:
 ```
 
 **Enhanced Version** (Improved Maintainability):
+
 ```css
 .judoka-card {
   /* Define proportions as CSS variables */
@@ -329,6 +353,7 @@ grid-template-rows:
 ```
 
 **Benefits**:
+
 - ✅ Single source of truth for proportions
 - ✅ Easier to adjust layout in future
 - ✅ Self-documenting code
@@ -358,10 +383,12 @@ grid-template-rows:
 ### Enhancement 3: Accessibility Audit
 
 **Current Minimum Sizes**:
+
 - Touch targets: 44-48px ✅ (meets WCAG 2.5.5 Level AAA)
 - Text contrast: Needs verification with `npm run check:contrast`
 
 **Action Items**:
+
 - [ ] Run contrast checker after CSS changes
 - [ ] Verify touch target sizes on mobile viewports
 - [ ] Test keyboard navigation with new layout
@@ -373,20 +400,24 @@ grid-template-rows:
 ### Automated Testing
 
 #### Existing Test Suite
+
 **File**: `playwright/card-aspect-ratio.spec.js` ✅ (Verified 2026-01-04)
 
 **Coverage**:
+
 - ✅ Random Judoka page (`randomJudoka.html`)
 - ✅ Browse Judoka page (`browseJudoka.html`)
 - ✅ Card of the Day page (`cardOfTheDay.html`)
 - ✅ Multi-viewport testing (iPhone SE, iPad, Desktop)
 
 **Run Command**:
+
 ```bash
 npx playwright test playwright/card-aspect-ratio.spec.js
 ```
 
 **Expected Output After Fix**:
+
 ```
 Card dimensions: 280px × 420px
 Actual ratio: 0.6667
@@ -402,12 +433,14 @@ Difference: 0.0000
 Test on the following pages after implementing fix:
 
 #### Page-Specific Tests
+
 - [ ] **randomJudoka.html**: Click "Draw" button, verify card ratio
 - [ ] **browseJudoka.html**: Verify grid of cards maintains ratio
 - [ ] **cardOfTheDay.html**: Verify single card display
 - [ ] **battleClassic.html**: Verify cards in battle interface
 
 #### Visual Regression Checks
+
 - [ ] Card appears with 2:3 ratio (not stretched)
 - [ ] All text is readable without truncation
 - [ ] Portrait images are not distorted
@@ -416,7 +449,9 @@ Test on the following pages after implementing fix:
 - [ ] Touch targets are ≥44×44px
 
 #### Viewport Testing
+
 Test at these viewport sizes:
+
 - [ ] 375×667 (iPhone SE) - Minimum mobile
 - [ ] 768×1024 (iPad) - Tablet
 - [ ] 1920×1080 (Desktop) - Large screen
@@ -426,11 +461,13 @@ Test at these viewport sizes:
 ### Success Criteria
 
 #### Primary Metrics
+
 - ✅ **Aspect Ratio**: 0.67 ± 0.05 (acceptable range: 0.62-0.72)
 - ✅ **Height Reduction**: ~33% decrease from current state
 - ✅ **All Automated Tests Pass**: Playwright suite reports 100% pass rate
 
 #### Secondary Metrics  
+
 - ✅ **No Visual Regressions**: Manual inspection confirms no layout breaks
 - ✅ **Accessibility Maintained**: Contrast checker passes, touch targets meet WCAG AAA
 - ✅ **Performance**: No measurable impact on page load or render time
@@ -475,6 +512,7 @@ npm run test:ci
 ### Rollback Plan
 
 #### Option 1: Git Revert (Preferred)
+
 ```bash
 # If issues discovered post-merge
 git revert <commit-sha>
@@ -482,7 +520,9 @@ git push origin main
 ```
 
 #### Option 2: Emergency CSS Override
+
 Add temporary override to `card.css` if immediate rollback needed:
+
 ```css
 .judoka-card {
   /* EMERGENCY ROLLBACK - Remove after investigation */
@@ -493,7 +533,9 @@ Add temporary override to `card.css` if immediate rollback needed:
 ```
 
 #### Option 3: Feature Flag (Future Enhancement)
+
 Consider adding feature flag for gradual rollout:
+
 ```javascript
 // config/features.js
 export const useFixedCardAspectRatio = true;
@@ -504,12 +546,14 @@ export const useFixedCardAspectRatio = true;
 ### Browser Compatibility
 
 **CSS Features Used**:
+
 - `calc()`: ✅ 99.9% support
 - `minmax()`: ✅ 96.5% support  
 - `aspect-ratio`: ✅ 94.8% support (graceful degradation)
 - CSS Grid: ✅ 98.1% support
 
 **Target Browsers** (from project requirements):
+
 - Chrome 90+ ✅
 - Firefox 88+ ✅  
 - Safari 14+ ✅
@@ -519,29 +563,83 @@ export const useFixedCardAspectRatio = true;
 
 ## 7. Implementation Timeline
 
+### Implementation Progress
+
+#### ✅ Phase 1: Constrain Card Height - COMPLETED
+
+**Status**: ✅ Implemented (2026-01-04 23:09 UTC)
+**Changes Applied**:
+
+```css
+/* Lines 136-138 in src/styles/card.css */
+min-height: var(--card-height);
+max-height: var(--card-height);
+height: var(--card-height);
+```
+
+**Validation**: Prettier formatting check passed
+**Next**: Phase 2 - Implement proportional grid layout
+
+#### ✅ Phase 2: Proportional Grid Layout - COMPLETED
+
+**Status**: ✅ Implemented (2026-01-04 23:10 UTC)
+**Changes Applied**:
+
+```css
+/* Lines 146-150 in src/styles/card.css */
+grid-template-rows:
+  minmax(48px, 13.5%)    /* Top bar */
+  minmax(150px, 43%)     /* Portrait */
+  minmax(120px, 33%)     /* Stats */
+  minmax(44px, 10.5%);   /* Signature */
+```
+
+**Validation**: Prettier formatting check passed
+**Next**: Phase 3 - Adjust portrait aspect ratio
+
+#### ✅ Phase 3: Portrait Aspect Ratio - COMPLETED
+
+**Status**: ✅ Implemented (2026-01-04 23:10 UTC)
+**Changes Applied**:
+
+```css
+/* Line 337 in src/styles/card.css */
+aspect-ratio: auto;  /* Changed from 1 / 1.1 */
+```
+
+**Validation**: Prettier formatting check passed
+**Next**: Phase 4 - Handle stats overflow
+
+---
+
 ### Recommended Workflow
 
 #### Step 1: Implement Core Fix
+
 - Apply Phases 1-4 in single PR
 - Estimated time: 30 minutes
 - File: `src/styles/card.css`
 
 #### Step 2: Validate with Tests
+
 - Run Playwright tests
 - Manual verification on 4 pages
 - Estimated time: 20 minutes
 
 #### Step 3: Submit PR
+
 - Include before/after measurements
 - Reference this document
 - Estimated time: 10 minutes
 
 #### Step 4: Review and Merge
+
 - Code review by maintainer
 - CI/CD validation
 - Estimated time: 1-2 hours
 
 #### Step 5: Monitor Production (If Applicable)
+
 - Watch for user reports
 - Verify analytics (if available)
 - Estimated time: 48 hours
@@ -575,21 +673,25 @@ export const useFixedCardAspectRatio = true;
 ## 8. References
 
 ### Project Documentation
+
 - **PRDs**: `design/productRequirementsDocuments/prdDrawRandomCard.md` (card display requirements)
 - **Development Standards**: `AGENTS.md` (validation commands)
 - **Testing Guide**: `tests/battles-regressions/README.md`
 
 ### Files Modified
+
 - **CSS**: `src/styles/card.css` (Lines 137, 145-149, 336, 375-388)
 
 ### Files Referenced  
+
 - **Test Suite**: `playwright/card-aspect-ratio.spec.js`
 - **Component**: `src/components/createJudokaCard.js`
 
 ### External Resources
-- **WCAG 2.5.5 (Touch Target Size)**: https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced
-- **CSS Grid Guide**: https://css-tricks.com/snippets/css/complete-guide-grid/
-- **minmax() Function**: https://developer.mozilla.org/en-US/docs/Web/CSS/minmax
+
+- **WCAG 2.5.5 (Touch Target Size)**: <https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced>
+- **CSS Grid Guide**: <https://css-tricks.com/snippets/css/complete-guide-grid/>
+- **minmax() Function**: <https://developer.mozilla.org/en-US/docs/Web/CSS/minmax>
 
 ---
 
@@ -645,6 +747,7 @@ Random Judoka Page:
    - `src/styles/card.css` lines 137, 145-149, 336, 375-388
 
 3. **Validation sequence**:
+
    ```bash
    npx prettier src/styles/card.css --write
    npx playwright test playwright/card-aspect-ratio.spec.js

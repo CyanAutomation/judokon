@@ -134,7 +134,8 @@ svg {
   --touch-target-size: 48px;
   width: var(--card-width);
   min-height: var(--card-height);
-  height: auto;
+  max-height: var(--card-height);
+  height: var(--card-height);
   border: 10px solid var(--card-border-color);
   border-radius: var(--radius-lg);
   background-color: var(--card-bg-color);
@@ -143,10 +144,10 @@ svg {
   overflow-y: visible;
   display: grid;
   grid-template-rows:
-    auto
-    1fr
-    auto
-    auto; /* Keep signature band at least touch-target tall */
+    minmax(48px, 13.5%)
+    minmax(150px, 43%)
+    minmax(120px, 33%)
+    minmax(44px, 10.5%);
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out;
@@ -333,7 +334,7 @@ svg {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  aspect-ratio: 1 / 1.1;
+  aspect-ratio: auto;
   overflow: hidden;
   margin-bottom: 0;
   /* border: 2px solid red; */
@@ -342,7 +343,7 @@ svg {
     var(--card-portrait-gradient-start),
     var(--card-portrait-gradient-end)
   );
-  /* Portrait area ~42% of card height */
+  /* Portrait area ~43% of card height */
 }
 
 .card-portrait img {
@@ -383,6 +384,8 @@ svg {
   align-items: stretch;
   font-size: var(--font-medium);
   flex-direction: column;
+  overflow-y: auto;
+  max-height: 100%;
   /* Stats area optimized for readability */
   /* border: 2px solid red; */
 }

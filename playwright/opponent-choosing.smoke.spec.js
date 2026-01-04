@@ -73,12 +73,22 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       const target = globalThis.__classicBattleEventTarget;
       const weakSet = globalThis.__cbUIHelpersDynamicBoundTargets;
       
+      // Test if emitting an event works
+      let eventFired = false;
+      if (target) {
+        target.addEventListener("testEvent", () => {
+          eventFired = true;
+        });
+        target.dispatchEvent(new CustomEvent("testEvent", { detail: {} }));
+      }
+      
       return {
         targetExists: !!target,
         targetDebugId: target?.__debugId || "NO_ID",
         targetCreatedAt: target?.__createdAt || "NO_TIMESTAMP",
         weakSetExists: !!weakSet,
-        targetInWeakSet: weakSet && target ? weakSet.has(target) : false
+        targetInWeakSet: weakSet && target ? weakSet.has(target) : false,
+        eventSystemWorks: eventFired
       };
     });
 
@@ -95,6 +105,24 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     if (!diagnostics.targetInWeakSet) {
       throw new Error("EventTarget not in WeakSet - handlers may not be registered");
     }
+    if (!diagnostics.eventSystemWorks) {
+      throw new Error("EventTarget dispatching doesn't work - event system broken");
+    }
+
+    // Add a test listener to verify statSelected events are being emitted
+    await page.evaluate(() => {
+      const target = globalThis.__classicBattleEventTarget;
+      if (target) {
+        window.__statSelectedEventCount = 0;
+        target.addEventListener("statSelected", (e) => {
+          window.__statSelectedEventCount++;
+          console.log("[Test Listener] statSelected event fired!", {
+            count: window.__statSelectedEventCount,
+            detail: e.detail
+          });
+        });
+      }
+    });
 
     return {
       app,
