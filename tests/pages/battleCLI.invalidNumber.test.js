@@ -15,14 +15,16 @@ describe("battleCLI invalid number hint", () => {
       ],
       html: '<div id="player-card"></div>'
     });
+
+    // Import the mocked showSnackbar to verify calls
+    const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");
+
     const keys = ["0", "6"];
     for (const key of keys) {
-      document.getElementById("snackbar-container").innerHTML = "";
+      showSnackbar.mockClear();
       const handled = mod.handleWaitingForPlayerActionKey(key);
       expect(handled).toBe(true);
-      expect(document.querySelector("#snackbar-container .snackbar")?.textContent).toBe(
-        "Use 1-5, press H for help"
-      );
+      expect(showSnackbar).toHaveBeenCalledWith("Use 1-5, press H for help");
     }
   });
 });

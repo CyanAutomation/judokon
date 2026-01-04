@@ -427,6 +427,10 @@
   bottom: calc(var(--footer-height) + env(safe-area-inset-bottom));
   padding: var(--space-sm) var(--space-md);
   z-index: 1000;
+  transform: none; /* Override base centering transform */
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
 }
 
 /* Hide opponent card until reveal */
