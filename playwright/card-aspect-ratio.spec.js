@@ -12,14 +12,14 @@ test.describe("Card Aspect Ratio Verification", () => {
 
     // Click draw button to generate a card
     await page.getByRole("button", { name: /draw a random judoka card/i }).click();
-    
+
     // Wait for card to be visible
     const card = page.locator(".judoka-card").first();
     await expect(card).toBeVisible({ timeout: 10000 });
 
     // Get card dimensions
     const box = await card.boundingBox();
-    
+
     if (box) {
       const width = box.width;
       const height = box.height;
@@ -62,7 +62,9 @@ test.describe("Card Aspect Ratio Verification", () => {
         };
       });
       console.log("Section heights:", JSON.stringify(sections, null, 2));
-      console.log(`Total sections: ${(sections.topBar + sections.portrait + sections.stats + sections.signature).toFixed(2)}px`);
+      console.log(
+        `Total sections: ${(sections.topBar + sections.portrait + sections.stats + sections.signature).toFixed(2)}px`
+      );
 
       // Check if ratio is within tolerance
       expect(Math.abs(actualRatio - expectedRatio)).toBeLessThan(tolerance);
@@ -80,7 +82,7 @@ test.describe("Card Aspect Ratio Verification", () => {
     await expect(card).toBeVisible({ timeout: 10000 });
 
     const box = await card.boundingBox();
-    
+
     if (box) {
       const width = box.width;
       const height = box.height;
@@ -103,7 +105,7 @@ test.describe("Card Aspect Ratio Verification", () => {
     await expect(card).toBeVisible({ timeout: 10000 });
 
     const box = await card.boundingBox();
-    
+
     if (box) {
       const width = box.width;
       const height = box.height;
@@ -137,13 +139,15 @@ test.describe("Card Aspect Ratio Verification", () => {
       await expect(card).toBeVisible({ timeout: 10000 });
 
       const box = await card.boundingBox();
-      
+
       if (box) {
         const actualRatio = box.width / box.height;
         const expectedRatio = 2 / 3;
-        
-        console.log(`${viewport.name} (${viewport.width}×${viewport.height}): ${box.width.toFixed(0)}×${box.height.toFixed(0)}px, ratio: ${actualRatio.toFixed(4)}`);
-        
+
+        console.log(
+          `${viewport.name} (${viewport.width}×${viewport.height}): ${box.width.toFixed(0)}×${box.height.toFixed(0)}px, ratio: ${actualRatio.toFixed(4)}`
+        );
+
         const tolerance = 0.05;
         expect(Math.abs(actualRatio - expectedRatio)).toBeLessThan(tolerance);
       }
