@@ -48,6 +48,7 @@ AssertionError: expected "spy" to be called 1 times, but got 0 times
 **Solution Applied**:
 
 - Pass explicit override to bypass environment check:
+
   ```javascript
   roundMod.startCooldown({}, scheduler, {
     startEngineCooldown: engine.startCoolDown.bind(engine),

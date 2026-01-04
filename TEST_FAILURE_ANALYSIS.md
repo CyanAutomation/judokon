@@ -28,6 +28,7 @@ Specifically, the function `bindUIHelperEventHandlersDynamic()` which registers 
 ### Evidence
 
 #### 1. EventTarget Exists and Functions Correctly
+
 ```
 [Test Diagnostics] {
   featureFlags: { opponentDelayMessage: true },
@@ -43,11 +44,13 @@ Specifically, the function `bindUIHelperEventHandlersDynamic()` which registers 
 The EventTarget singleton is created successfully and the event system works (test events can be dispatched and received).
 
 #### 2. Events ARE Being Emitted
+
 ```
 [Test] statSelected event count: 1
 ```
 
 Test listeners successfully catch `statSelected` events, confirming that:
+
 - Events are being emitted via `emitBattleEvent("statSelected", ...)`
 - The EventTarget is receiving and dispatching events
 - Event listeners CAN receive events on this EventTarget
@@ -55,6 +58,7 @@ Test listeners successfully catch `statSelected` events, confirming that:
 #### 3. Handler Registration Logs Are Missing
 
 Expected logs from `uiEventHandlers.js` lines 107-120:
+
 ```javascript
 console.log(`[Handler Registration] Target: ${targetId}, In WeakSet: ${hasTarget}`);
 console.log(`[Handler Registration] EARLY RETURN - Target ${targetId} already has handlers`);
@@ -67,6 +71,7 @@ console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${tar
 #### 4. Handler Event Logs Are Missing
 
 Expected log from the actual handler (line 271):
+
 ```javascript
 console.log("[statSelected Handler] Event received", {
   detail: e?.detail,
@@ -116,11 +121,13 @@ async function initializePhase4_EventHandlers(store) {
 #### Test Environment vs Production
 
 **Production (Manual Browser)**:
+
 - Full 5-phase initialization runs
 - All event handlers register correctly
 - Snackbar message appears as expected
 
 **Playwright Test Environment**:
+
 - Page loads via `page.goto("/src/pages/battleClassic.html")`
 - Uses `configureApp()` and `registerCommonRoutes()` for mocking
 - Feature flags injected via route interception
@@ -139,6 +146,7 @@ async function initializePhase4_EventHandlers(store) {
 #### Short Term (Immediate)
 
 1. **Skip the failing tests temporarily** with a detailed comment explaining the investigation:
+
    ```javascript
    test.skip(`opponent choosing snackbar is deferred...`, async ({ page }) => {
      // SKIP: Handler registration fails in Playwright environment
@@ -152,6 +160,7 @@ async function initializePhase4_EventHandlers(store) {
 #### Medium Term (Investigation)
 
 1. **Add more initialization logging** to track if Phase 4 actually runs:
+
    ```javascript
    // In battleClassic.init.js, initializePhase4_EventHandlers()
    console.log("[INIT DEBUG] Phase 4 START");
