@@ -3,6 +3,7 @@
 ## ✅ Status: All Tests Passing
 
 Successfully fixed 2 failing tests in `tests/helpers/classicBattle/timerService.drift.test.js`:
+
 - ✅ "startCooldown shows fallback on drift"
 - ✅ "uses injected scheduler when starting engine cooldown"
 
@@ -11,16 +12,19 @@ Successfully fixed 2 failing tests in `tests/helpers/classicBattle/timerService.
 ### Test 1: "startCooldown shows fallback on drift" (Line 122 → 140)
 
 **Original Failure**:
+
 ```
 AssertionError: expected 'Next round in: 3s' to be 'Opponent is choosing…'
 ```
 
 **Root Causes Identified**:
+
 1. **Immediate tick firing**: Mock `createRoundTimer` fired `handler(3)` synchronously during `on("tick", handler)` registration
 2. **Missing opponent prompt mocks**: `isOpponentPromptReady()` was not mocked, defaulting to values that prevented `shouldWaitForPrompt = true`
 3. **Snackbar stacking**: Countdown snackbar appeared before opponent prompt snackbar, and test queried first snackbar instead of newest
 
 **Solutions Applied**:
+
 1. Mocked opponent prompt tracker functions:
    - `isOpponentPromptReady() → false` (triggers wait state)
    - `computeOpponentPromptWaitBudget() → { totalMs: 1000, bufferMs: 200 }`
@@ -31,15 +35,18 @@ AssertionError: expected 'Next round in: 3s' to be 'Opponent is choosing…'
 ### Test 2: "uses injected scheduler when starting engine cooldown" (Line 178 → 200)
 
 **Original Failure**:
+
 ```
 AssertionError: expected "spy" to be called 1 times, but got 0 times
 ```
 
 **Root Cause**:
+
 - In Vitest environment, `cooldownOrchestrator.js` line 778 sets `startCooldown = null`
 - Test tried `vi.stubEnv("VITEST", "")` but environment check still prevented engine use
 
 **Solution Applied**:
+
 - Pass explicit override to bypass environment check:
   ```javascript
   roundMod.startCooldown({}, scheduler, {
@@ -53,6 +60,7 @@ AssertionError: expected "spy" to be called 1 times, but got 0 times
 ### File: tests/helpers/classicBattle/timerService.drift.test.js
 
 **Change 1: Added opponent prompt mocks (lines ~57-63)**
+
 ```javascript
 const promptStartTime = Date.now();
 vi.doMock("../../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
@@ -64,6 +72,7 @@ vi.doMock("../../../src/helpers/classicBattle/opponentPromptTracker.js", () => (
 ```
 
 **Change 2: Modified timer mock to collect handlers (lines ~65-85)**
+
 ```javascript
 const driftHandlers = new Set();
 const tickHandlers = new Set();
@@ -84,19 +93,22 @@ vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
           tickHandlers.delete(handler);
         }
       };
-    }),
+    })
     // ...
   })
 }));
 ```
 
 **Change 3: Updated snackbar selector (line ~139)**
+
 ```javascript
-const snackbarBeforeFallback = container?.querySelector(".snackbar-bottom") || container?.querySelector(".snackbar");
+const snackbarBeforeFallback =
+  container?.querySelector(".snackbar-bottom") || container?.querySelector(".snackbar");
 expect(snackbarBeforeFallback?.textContent).toBe("Opponent is choosing…");
 ```
 
 **Change 4: Simplified second drift check (lines ~143-146)**
+
 ```javascript
 messageEl.textContent = "Round resolved";
 showSnack.mockClear();
@@ -107,6 +119,7 @@ cleanupRoundTimerMocks();
 ```
 
 **Change 5: Added explicit overrides to test 2 (lines ~192-199)**
+
 ```javascript
 roundMod.startCooldown({}, scheduler, {
   startEngineCooldown: engine.startCoolDown.bind(engine),
@@ -118,25 +131,33 @@ expect(engine.startCoolDown).toHaveBeenCalledTimes(1);
 ## Key Insights
 
 ### 1. Mock Timing Matters
+
 Synchronous event firing in mocks can interfere with the normal initialization sequence. The countdown snackbar appeared before the opponent prompt snackbar because the tick handler fired immediately during registration.
 
 ### 2. Snackbar Stacking Complexity
+
 The snackbar system supports up to 2 concurrent messages:
+
 - First (older) gets `.snackbar-top` + `.snackbar-stale`
 - Second (newer) gets `.snackbar-bottom`
-Tests must query the appropriate snackbar based on timing expectations.
+  Tests must query the appropriate snackbar based on timing expectations.
 
 ### 3. Environment Checks in Production Code
+
 The `cooldownOrchestrator.js` has logic to use fallback timers in Vitest:
+
 ```javascript
 if (typeof process !== "undefined" && !!process.env?.VITEST && !hasExplicitEngineStarter) {
   startCooldown = null;
 }
 ```
+
 Tests can bypass this by passing `startEngineCooldown` in overrides.
 
 ### 4. Opponent Prompt Logic Coordination
+
 To trigger the "Opponent is choosing…" message, multiple conditions must align:
+
 - `isOpponentPromptReady()` returns `false` or `null` → `shouldWaitForPrompt = true`
 - `computeOpponentPromptWaitBudget()` returns valid budget
 - Snackbar is shown in `roundManager.js` after `instantiateCooldownTimer()`
@@ -159,7 +180,7 @@ $ npx vitest run tests/helpers/classicBattle/timerService.drift.test.js
 ## Related Files
 
 - **Test File**: `tests/helpers/classicBattle/timerService.drift.test.js`
-- **Production Code**: 
+- **Production Code**:
   - `src/helpers/classicBattle/roundManager.js` (lines 518-550)
   - `src/helpers/classicBattle/cooldownOrchestrator.js` (lines 756-950)
   - `src/helpers/CooldownRenderer.js`
