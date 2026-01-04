@@ -96,5 +96,4 @@ test.describe("Card Aspect Ratio Verification", () => {
       expect(Math.abs(actualRatio - expectedRatio)).toBeLessThan(tolerance);
     }
   });
-
 });
