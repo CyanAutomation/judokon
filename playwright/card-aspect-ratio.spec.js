@@ -3,15 +3,15 @@
  * @description Tests to verify judoka cards maintain 2:3 aspect ratio as per PRD requirements
  */
 
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe("Card Aspect Ratio Verification", () => {
   test("should measure card dimensions on Random Judoka page", async ({ page }) => {
-    await page.goto("/randomJudoka.html");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/src/pages/randomJudoka.html");
+    await page.locator('body[data-random-judoka-ready="true"]').waitFor();
 
     // Click draw button to generate a card
-    await page.click('[data-testid="draw-button"]');
+    await page.getByRole("button", { name: /draw a random judoka card/i }).click();
     
     // Wait for card to be visible
     const card = page.locator(".judoka-card").first();
@@ -72,8 +72,8 @@ test.describe("Card Aspect Ratio Verification", () => {
   });
 
   test("should measure card dimensions on Browse Judoka page", async ({ page }) => {
-    await page.goto("/browseJudoka.html");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/src/pages/browseJudoka.html");
+    await page.locator('body[data-browse-ready="true"]').waitFor();
 
     // Wait for cards to be visible
     const card = page.locator(".judoka-card").first();
@@ -96,8 +96,8 @@ test.describe("Card Aspect Ratio Verification", () => {
   });
 
   test("should measure card dimensions on Card of the Day page", async ({ page }) => {
-    await page.goto("/cardOfTheDay.html");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/src/pages/cardOfTheDay.html");
+    await page.locator('body[data-card-ready="true"]').waitFor();
 
     const card = page.locator(".judoka-card").first();
     await expect(card).toBeVisible({ timeout: 10000 });
@@ -127,11 +127,11 @@ test.describe("Card Aspect Ratio Verification", () => {
 
     for (const viewport of viewports) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto("/randomJudoka.html");
-      await page.waitForLoadState("networkidle");
+      await page.goto("/src/pages/randomJudoka.html");
+      await page.locator('body[data-random-judoka-ready="true"]').waitFor();
 
       // Click draw button
-      await page.click('[data-testid="draw-button"]');
+      await page.getByRole("button", { name: /draw a random judoka card/i }).click();
 
       const card = page.locator(".judoka-card").first();
       await expect(card).toBeVisible({ timeout: 10000 });
