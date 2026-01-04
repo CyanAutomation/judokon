@@ -82,7 +82,9 @@ test.describe("Battle CLI - Play", () => {
         .poll(async () => {
           return await page.evaluate(() => {
             const api = window.__TEST_API;
-            return api?.state?.getBattleState?.() === "waitingForPlayerAction" ? "ready" : "pending";
+            return api?.state?.getBattleState?.() === "waitingForPlayerAction"
+              ? "ready"
+              : "pending";
           });
         })
         .toBe("ready", { timeout: 10_000 });

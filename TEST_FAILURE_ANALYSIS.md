@@ -11,9 +11,11 @@ Two tests in `tests/helpers/classicBattle/timerService.drift.test.js` were faili
 ## Test 1: "startCooldown shows fallback on drift" (Line 122)
 
 ### Issue
+
 The test expects to find "Opponent is choosing…" in the snackbar before drift is triggered, but instead finds "Next round in: 3s".
 
 ### Root Cause
+
 The test's mocked `createRoundTimer` (lines 59-84) immediately fires the `tick` event with value `3`:
 
 ```javascript
@@ -22,16 +24,18 @@ on: vi.fn((event, handler) => {
     driftHandlers.add(handler);
   }
   if (event === "tick") {
-    handler(3);  // ← Fires immediately during registration
+    handler(3); // ← Fires immediately during registration
   }
   // ...
-})
+});
 ```
 
 This causes the Scoreboard component to display "Next round in: 3s" before the "Opponent is choosing…" message can be shown.
 
 ### Expected Flow in roundManager.js
+
 When `startCooldown` is called (line 429), it should:
+
 1. Call `instantiateCooldownTimer` (line 518)
 2. Show "Opponent is choosing…" snackbar if `runtime?.promptWait?.shouldWait` is true (lines 526-535)
 3. Then start the timer which would trigger tick events
@@ -54,7 +58,7 @@ on: vi.fn((event, handler) => {
       driftHandlers.delete(handler);
     }
   };
-})
+});
 ```
 
 **Option B: Adjust test expectations**
@@ -63,9 +67,11 @@ Accept that the timer display appears immediately and test drift fallback behavi
 ## Test 2: "uses injected scheduler when starting engine cooldown" (Line 178)
 
 ### Issue
+
 The test expects `engine.startCoolDown` to be called once, but it's not being called at all (0 times).
 
 ### Root Cause
+
 The test stubs the VITEST environment variable to empty string (line 143):
 
 ```javascript
@@ -121,6 +127,7 @@ roundMod.startCooldown({}, scheduler, {
 ## Recommended Fixes
 
 ### Fix for Test 1
+
 ```diff
 vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
   createRoundTimer: () => ({
@@ -150,13 +157,14 @@ if (timer && timer.tickHandler) {
 ```
 
 ### Fix for Test 2
+
 The test setup looks correct. The issue might be that the mock timing is wrong. Try this refactor:
 
 ```diff
 it("uses injected scheduler when starting engine cooldown", async () => {
   vi.resetModules();
   vi.stubEnv("VITEST", "");
-  
+
 + const engine = {
 +   timer: new TimerController(),
 +   startCoolDown: vi.fn(function () {
@@ -171,7 +179,7 @@ it("uses injected scheduler when starting engine cooldown", async () => {
 +   const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
 +   return { ...actual, requireEngine: () => engine };
 + });
-  
+
   // ... rest of test
 ```
 

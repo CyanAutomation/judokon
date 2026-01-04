@@ -1,11 +1,13 @@
 # Opponent Delay Test Failure Analysis
 
 ## Test Failure
+
 **File**: `tests/helpers/classicBattle/opponentDelay.test.js`
 **Test**: "shows snackbar during opponent delay and clears before outcome"
 **Line**: 138 (now 172 after edits)
 
 ## Original Failure
+
 ```
 AssertionError: expected "spy" to be called with arguments: [ 'Opponent is choosing…' ]
 Number of calls: 0
@@ -16,6 +18,7 @@ The test expected `updateSnackbar` to be called with "Opponent is choosing…", 
 ## Root Causes Identified
 
 ### 1. Code Refactoring Changed Behavior
+
 - **Commit `eaf1e6795`** (Jan 2, 2026): Refactored snackbar handling to use `showSnackbar` instead of `updateSnackbar`
   - Comment: "Always use showSnackbar to replace any existing message - updateSnackbar can fail if the internal bar reference is stale"
   - The code no longer uses `updateSnackbar` at all
@@ -23,11 +26,14 @@ The test expected `updateSnackbar` to be called with "Opponent is choosing…", 
 - **Commit `a1518eaf3`** (Jan 2, 2026): Removed `updateSnackbar` import entirely from `uiEventHandlers.js`
 
 ### 2. Delayed vs. Immediate Display
+
 The current implementation in `uiEventHandlers.js` lines 314-343:
+
 - When `resolvedDelay > 0`, the opponent message is **scheduled to appear after a delay** (line 331-343)
 - It's NOT shown immediately as the old test expected
 
 The flow is:
+
 ```javascript
 if (resolvedDelay <= 0) {
   // Show immediately
@@ -47,9 +53,11 @@ opponentSnackbarId = setTimeout(() => {
 ```
 
 ### 3. Test Mock Issues
+
 The test mocks `handleStatSelection` in `battleEngineFacade.js` to return a simple object, but this mocked version doesn't dispatch the `statSelected` event that triggers the opponent delay handler.
 
 ### 4. Handler Registration
+
 The `bindUIHelperEventHandlersDynamic` function uses a WeakSet guard to prevent duplicate handler registration. If the EventTarget is already registered, it returns early without setting up handlers.
 
 ## What the Test Should Do
@@ -75,6 +83,7 @@ Based on the current code behavior:
 ## Remaining Issues
 
 The `statSelected` event might not be reaching the handler because:
+
 - The EventTarget might not be properly initialized
 - The handler might not be registering due to WeakSet guard
 - The event might be dispatched to a different EventTarget
@@ -83,6 +92,7 @@ The `statSelected` event might not be reaching the handler because:
 ## Recommended Solution
 
 The test needs to be rewritten to:
+
 1. Properly set up the EventTarget for battle events
 2. Ensure `bindUIHelperEventHandlersDynamic` actually registers the handlers
 3. Verify the `statSelected` event is dispatched and received
