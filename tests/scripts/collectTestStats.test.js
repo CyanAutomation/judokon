@@ -70,12 +70,18 @@ describe("collectTestStats", () => {
         path.join(root, "tests", "unit", "widget.test.js"),
         'test("counts", () => {});\nit("counts too", () => {});\n'
       );
-      await writeFile(path.join(root, "tests", "unit", "helper.js"), "export const helper = true;\n");
+      await writeFile(
+        path.join(root, "tests", "unit", "helper.js"),
+        "export const helper = true;\n"
+      );
       await writeFile(
         path.join(root, "playwright", "e2e", "flows.spec.ts"),
         'test("flow", async () => {});\n'
       );
-      await writeFile(path.join(root, "playwright", "utils", "selectors.ts"), "export const foo = 1;\n");
+      await writeFile(
+        path.join(root, "playwright", "utils", "selectors.ts"),
+        "export const foo = 1;\n"
+      );
       await writeFile(path.join(root, "test-results", "alpha.png"), "fake");
       await writeFile(path.join(root, "test-results", "beta.png"), "fake");
       await writeFile(path.join(root, "test-results", "nested", "gamma.png"), "fake");
