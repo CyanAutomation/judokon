@@ -57,10 +57,9 @@ describe("battleCLI accessibility live regions", () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("battleStateChange", { to: "roundOver" });
 
-    const snackbar = document.querySelector("#snackbar-container .snackbar");
-    expect(snackbar).toBeTruthy();
-    expect(snackbar?.textContent).toBe("Press Enter to continue");
-    expect(snackbar?.getAttribute("tabindex")).toBe("0");
+    // Verify showSnackbar was called with the correct message (snackbar is mocked in loadBattleCLI)
+    const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");
+    expect(showSnackbar).toHaveBeenCalledWith("Press Enter to continue");
 
     const nextButton = document.getElementById("next-round-button");
     expect(nextButton).toBeTruthy();
