@@ -7,9 +7,10 @@
 **Problem**: Judoka cards display with an incorrect **0.44:1 aspect ratio** (e.g., 280px × 631px), appearing vertically stretched. The required aspect ratio, as specified in the project's design documents, is **2:3 (0.67:1)**.
 
 **Root Cause**: The issue stems from three main problems in `src/styles/card.css`:
-1.  **Unconstrained Height**: The card's `height: auto` property allows it to grow beyond its calculated height.
-2.  **Flexible Grid Rows**: The `grid-template-rows` use `auto` and `1fr`, which permits grid sections to expand based on their content rather than adhering to a strict proportion.
-3.  **Oversized Portrait**: The `.card-portrait` has a fixed aspect ratio of `1 / 1.1`, making it taller than specified and disrupting the layout.
+
+1. **Unconstrained Height**: The card's `height: auto` property allows it to grow beyond its calculated height.
+2. **Flexible Grid Rows**: The `grid-template-rows` use `auto` and `1fr`, which permits grid sections to expand based on their content rather than adhering to a strict proportion.
+3. **Oversized Portrait**: The `.card-portrait` has a fixed aspect ratio of `1 / 1.1`, making it taller than specified and disrupting the layout.
 
 **Solution**: The proposed solution is to enforce the correct aspect ratio by applying a 4-phase CSS fix that involves locking the card's height, using a proportional grid layout, and adjusting the portrait's aspect ratio.
 
@@ -44,9 +45,9 @@ The extra height is distributed across the card's sections:
 
 The investigation of `src/styles/card.css` pinpointed these issues:
 
-1.  **Unconstrained Height (Line 137)**: `height: auto;` allows the card's container to grow vertically to fit its content, ignoring the height calculated by `--card-height`.
-2.  **Flexible Grid Layout (Line 145)**: `grid-template-rows: auto 1fr auto auto;` lets the browser determine the height of the rows. The `1fr` unit on the portrait's row is particularly problematic, as it expands to fill available space.
-3.  **Fixed Portrait Aspect Ratio (Line 336)**: `aspect-ratio: 1 / 1.1;` forces the portrait to be taller than it should be, which contributes significantly to the overall height issue.
+1. **Unconstrained Height (Line 137)**: `height: auto;` allows the card's container to grow vertically to fit its content, ignoring the height calculated by `--card-height`.
+2. **Flexible Grid Layout (Line 145)**: `grid-template-rows: auto 1fr auto auto;` lets the browser determine the height of the rows. The `1fr` unit on the portrait's row is particularly problematic, as it expands to fill available space.
+3. **Fixed Portrait Aspect Ratio (Line 336)**: `aspect-ratio: 1 / 1.1;` forces the portrait to be taller than it should be, which contributes significantly to the overall height issue.
 
 > **Note on Height Calculation**: The variable `--card-height: calc(var(--card-width) * 1.5);` is **correct** for a 2:3 aspect ratio (Height = Width × 1.5). The issue is not the formula itself, but the other CSS rules that prevent it from being enforced.
 
@@ -162,20 +163,22 @@ This change is optional but recommended for long-term code health.
 
 A dedicated Playwright test file has been created to verify the fix.
 
--   **File**: `playwright/card-aspect-ratio.spec.js`
--   **Run Command**: `npx playwright test playwright/card-aspect-ratio.spec.js`
+- **File**: `playwright/card-aspect-ratio.spec.js`
+- **Run Command**: `npx playwright test playwright/card-aspect-ratio.spec.js`
 
 The test will automatically measure the card's aspect ratio across multiple pages and viewports.
 
 ### Manual & Visual Regression Testing
 
 Manual verification should be performed on the following pages to check for visual regressions:
-1.  `randomJudoka.html`
-2.  `browseJudoka.html`
-3.  `cardOfTheDay.html`
-4.  `battleClassic.html`
+
+1. `randomJudoka.html`
+2. `browseJudoka.html`
+3. `cardOfTheDay.html`
+4. `battleClassic.html`
 
 **Checklist**:
+
 - [ ] Card appears with a 2:3 ratio.
 - [ ] All elements (name, portrait, stats, etc.) are visible and correctly aligned.
 - [ ] Text is readable and does not overflow.
@@ -203,6 +206,6 @@ Manual verification should be performed on the following pages to check for visu
 
 ## 7. References
 
--   **PRDs**: `prdJudokaCard.md`, `prdDevelopmentStandards.md`
--   **CSS File**: `src/styles/card.css`
--   **Test File**: `playwright/card-aspect-ratio.spec.js`
+- **PRDs**: `prdJudokaCard.md`, `prdDevelopmentStandards.md`
+- **CSS File**: `src/styles/card.css`
+- **Test File**: `playwright/card-aspect-ratio.spec.js`
