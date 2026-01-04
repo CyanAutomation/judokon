@@ -400,7 +400,7 @@ function setupKeyboardNavigation(modalElement, buttons) {
  *
  * @pseudocode
  * 1. Create cleanup function placeholder.
- * 2. Call initTooltips(modalElement) which returns a Promise.
+ * 2. Call initTooltips(modalElement, modalElement) which returns a Promise.
  * 3. When resolved, capture cleanup function from promise result.
  * 4. Log error if tooltip initialization fails.
  * 5. Return cleanup function wrapper and ready promise.
@@ -411,7 +411,7 @@ function setupKeyboardNavigation(modalElement, buttons) {
 function setupTooltipLifecycle(modalElement) {
   let cleanupFn = () => {};
 
-  const ready = initTooltips(modalElement)
+  const ready = initTooltips(modalElement, modalElement)
     .then((fn) => {
       if (typeof fn === "function") {
         cleanupFn = fn;
