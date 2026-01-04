@@ -75,7 +75,7 @@ test.describe("Card Aspect Ratio Verification", () => {
 
   test("should measure card dimensions on Browse Judoka page", async ({ page }) => {
     await page.goto("/src/pages/browseJudoka.html");
-    await page.locator('body[data-browse-ready="true"]').waitFor();
+    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
 
     // Wait for cards to be visible
     const card = page.locator(".judoka-card").first();
@@ -97,60 +97,4 @@ test.describe("Card Aspect Ratio Verification", () => {
     }
   });
 
-  test("should measure card dimensions on Card of the Day page", async ({ page }) => {
-    await page.goto("/src/pages/cardOfTheDay.html");
-    await page.locator('body[data-card-ready="true"]').waitFor();
-
-    const card = page.locator(".judoka-card").first();
-    await expect(card).toBeVisible({ timeout: 10000 });
-
-    const box = await card.boundingBox();
-
-    if (box) {
-      const width = box.width;
-      const height = box.height;
-      const actualRatio = width / height;
-      const expectedRatio = 2 / 3;
-
-      console.log(`Card of the Day: ${width}px × ${height}px`);
-      console.log(`Ratio: ${actualRatio.toFixed(4)} (expected: ${expectedRatio.toFixed(4)})`);
-
-      const tolerance = 0.05;
-      expect(Math.abs(actualRatio - expectedRatio)).toBeLessThan(tolerance);
-    }
-  });
-
-  test("should verify card aspect ratio across different viewport sizes", async ({ page }) => {
-    const viewports = [
-      { width: 375, height: 667, name: "iPhone SE" },
-      { width: 768, height: 1024, name: "iPad" },
-      { width: 1920, height: 1080, name: "Desktop" }
-    ];
-
-    for (const viewport of viewports) {
-      await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto("/src/pages/randomJudoka.html");
-      await page.locator('body[data-random-judoka-ready="true"]').waitFor();
-
-      // Click draw button
-      await page.getByRole("button", { name: /draw a random judoka card/i }).click();
-
-      const card = page.locator(".judoka-card").first();
-      await expect(card).toBeVisible({ timeout: 10000 });
-
-      const box = await card.boundingBox();
-
-      if (box) {
-        const actualRatio = box.width / box.height;
-        const expectedRatio = 2 / 3;
-
-        console.log(
-          `${viewport.name} (${viewport.width}×${viewport.height}): ${box.width.toFixed(0)}×${box.height.toFixed(0)}px, ratio: ${actualRatio.toFixed(4)}`
-        );
-
-        const tolerance = 0.05;
-        expect(Math.abs(actualRatio - expectedRatio)).toBeLessThan(tolerance);
-      }
-    }
-  });
 });

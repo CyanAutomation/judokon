@@ -1,201 +1,174 @@
-# Test Failure Analysis
-
-This file contains analysis of test failures and their root causes.
-
----
-
-## Opponent Choosing Snackbar Not Appearing in Playwright Tests
+# Test Failure Analysis: Opponent Choosing Snackbar
 
 **Date**: January 4, 2026  
 **Test File**: `playwright/opponent-choosing.smoke.spec.js`  
-**Status**: Root cause identified - Solution pending
+**Status**: **Root Cause Identified** — Solution Pending
 
-### Issue Description
+---
 
-During Playwright tests for the "Opponent is choosing" snackbar feature, the snackbar message fails to appear when a stat button is clicked:
+## 1. Issue Description
 
-1. **Test 1 (flag enabled)**: Snackbar element not found - expected "Opponent is choosing" message never appears
-2. **Test 2 (flag disabled)**: Snackbar shows "First to 5 points wins." instead of "Opponent is choosing"
+During Playwright tests, the "Opponent is choosing..." snackbar message fails to appear when a stat button is clicked.
 
-The snackbar should display "Opponent is choosing" (with optional delay) when a stat is selected, but instead shows the previous "First to 5 points wins." message from match initialization, indicating the handler never runs to replace it.
+- **With Feature Flag (`opponentDelayMessage: true`)**: The test fails because the snackbar element with the expected message is never found.
+- **Without Feature Flag**: The snackbar continues to show the initial "First to 5 points wins." message, indicating the correct handler never updated the content.
 
-### Root Cause
+The core issue is that the "Opponent is choosing" message, which should be displayed upon stat selection, is being preempted by a previous message from the match initialization.
 
-The `statSelected` event handler in `src/helpers/classicBattle/uiEventHandlers.js` (lines 269-345) **is not being registered during Playwright test initialization**.
+## 2. Root Cause
 
-Specifically, the function `bindUIHelperEventHandlersDynamic()` which registers the handler is **not being called** during the test's page initialization sequence.
+The `statSelected` event handler, located in `src/helpers/classicBattle/uiEventHandlers.js`, is **not being registered** during the Playwright test's initialization sequence.
 
-### Evidence
+The function responsible for this registration, `bindUIHelperEventHandlersDynamic()`, is never called within the test environment, even though it is present in the production initialization code.
 
-#### 1. EventTarget Exists and Functions Correctly
+---
 
-```
-[Test Diagnostics] {
-  featureFlags: { opponentDelayMessage: true },
-  targetExists: true,
-  targetDebugId: 'target_1767568139831_bjb0gha02',
-  targetCreatedAt: '2026-01-04T23:08:59.831Z',
-  weakSetExists: true,
-  targetInWeakSet: true,
-  eventSystemWorks: true
-}
-```
+## 3. Evidence
 
-The EventTarget singleton is created successfully and the event system works (test events can be dispatched and received).
+The investigation confirmed that the underlying event system is functional, but the specific handler for `statSelected` is not attached.
 
-#### 2. Events ARE Being Emitted
+#### Evidence 1: Event System is Functional
 
-```
-[Test] statSelected event count: 1
-```
+Test diagnostics confirm that the `EventTarget` singleton is created, accessible, and works correctly. Events can be dispatched and received by other listeners.
 
-Test listeners successfully catch `statSelected` events, confirming that:
+> ```json
+> [Test Diagnostics] {
+>   "featureFlags": { "opponentDelayMessage": true },
+>   "targetExists": true,
+>   "targetDebugId": "target_1767568139831_bjb0gha02",
+>   "targetInWeakSet": true,
+>   "eventSystemWorks": true
+> }
+> ```
 
-- Events are being emitted via `emitBattleEvent("statSelected", ...)`
-- The EventTarget is receiving and dispatching events
-- Event listeners CAN receive events on this EventTarget
+#### Evidence 2: `statSelected` Events Are Being Emitted
 
-#### 3. Handler Registration Logs Are Missing
+A test-specific listener successfully captured the event, proving it is being emitted correctly.
 
-Expected logs from `uiEventHandlers.js` lines 107-120:
+> ```
+> [Test] statSelected event count: 1
+> ```
 
-```javascript
-console.log(`[Handler Registration] Target: ${targetId}, In WeakSet: ${hasTarget}`);
-console.log(`[Handler Registration] EARLY RETURN - Target ${targetId} already has handlers`);
-// OR
-console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${targetId}`);
-```
+#### Evidence 3: Handler Registration Logs Are Missing
 
-**These logs NEVER appear in test output**, indicating `bindUIHelperEventHandlersDynamic()` is not being called.
+The diagnostic logs from the `bindUIHelperEventHandlersDynamic` function are absent in the test output. These logs should indicate whether the handlers are being registered or skipped.
 
-#### 4. Handler Event Logs Are Missing
+> ```javascript
+> // Expected logs from uiEventHandlers.js (lines 107-120) - NOT FOUND IN TEST OUTPUT
+> console.log(`[Handler Registration] Target: ${targetId}, In WeakSet: ${hasTarget}`);
+> console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${targetId}`);
+> ```
 
-Expected log from the actual handler (line 271):
+Their absence is the strongest evidence that the function is never called.
 
-```javascript
-console.log("[statSelected Handler] Event received", {
-  detail: e?.detail,
-  timestamp: Date.now()
-});
-```
+#### Evidence 4: The Handler Itself Never Fires
 
-**This log NEVER appears in test output**, confirming the handler is not registered and not firing.
+The log from within the `statSelected` handler is also missing, confirming it was never registered and therefore never executed.
 
-### Analysis
+> ```javascript
+> // Expected log from the handler itself (line 271) - NOT FOUND IN TEST OUTPUT
+> console.log("[statSelected Handler] Event received", { /* ... */ });
+> ```
 
-#### Investigation Steps Taken
+---
 
-1. **Verified EventTarget Identity** - Confirmed only one EventTarget instance exists and is used consistently
-2. **Tested Event System** - Confirmed events can be dispatched and received by test listeners
-3. **Checked WeakSet Guard** - Initially suspected this was blocking registration, but confirmed it's not the issue (target is in WeakSet, meaning handlers WERE registered at some point, or WeakSet check passed)
-4. **Attempted EventTarget Reset** - Tried clearing EventTarget/WeakSet before page load via `addInitScript()`, but this didn't solve the problem
-5. **Verified Module Imports** - Confirmed `bindUIHelperEventHandlersDynamic()` is imported and called in `initializePhase4_EventHandlers()`
+## 4. Analysis
 
-#### Why The Handler Isn't Registered
+The production initialization sequence in `src/pages/battleClassic.init.js` clearly shows that `bindUIHelperEventHandlersDynamic()` is called within `initializePhase4_EventHandlers()`.
 
-The initialization sequence in `src/pages/battleClassic.init.js` shows:
+The lack of diagnostic logs from Phase 4 suggests one of three possibilities in the Playwright environment:
+1.  **Initialization Halts**: The process stops before reaching Phase 4.
+2.  **Logs Are Suppressed**: The test environment is configured to hide these specific console logs.
+3.  **Alternate Code Path**: The test setup (e.g., `configureApp()`, `registerCommonRoutes()`) uses a different, partial initialization path that bypasses Phase 4.
 
-```javascript
-async function init() {
-  // ... Phase 1-3 ...
-  await initializePhase4_EventHandlers(store);  // Line 1857
-  // ...
-}
+Given that the rest of the page appears to function, the **third possibility is the most likely**. The test environment's setup appears to interfere with the natural, full initialization of the page.
 
-async function initializePhase4_EventHandlers(store) {
-  console.log("battleClassic: initializePhase4_EventHandlers");  // Line 1807
-  wireCardEventHandlers(store);
-  wireCooldownEvents(store);
-  bindUIHelperEventHandlersDynamic();  // Line 1810 - Should register handlers
-  wireGlobalBattleEvents(store);
-  // ...
-}
-```
+---
 
-**Missing Diagnostic**: The log `"battleClassic: initializePhase4_EventHandlers"` should appear if Phase 4 runs. Its absence from test output suggests either:
+## 5. Recommended Actions
 
-1. **Phase 4 is never reached** - Initialization fails or stops before Phase 4
-2. **Phase 4 runs but logs are suppressed** - Playwright test environment suppresses certain console outputs
-3. **Different initialization path** - Tests use a different code path that skips Phase 4
+### Short-Term: Isolate the Failure
 
-#### Test Environment vs Production
+1.  **Skip the Failing Tests**: Temporarily disable the tests in `opponent-choosing.smoke.spec.js` to prevent CI/CD pipeline blockages. Add a comment linking to this analysis.
+    ```javascript
+    test.skip('opponent choosing snackbar is deferred...', async ({ page }) => {
+      // SKIP: Handler registration fails in the Playwright environment.
+      // See: TEST_FAILURE_ANALYSIS.md - "Opponent Choosing Snackbar Not Appearing"
+      // TODO: Investigate why bindUIHelperEventHandlersDynamic() is not called during test setup.
+    });
+    ```
+2.  **Manual Verification**: Confirm the feature works as expected in a real browser to ensure the issue is isolated to the test environment.
 
-**Production (Manual Browser)**:
+### Medium-Term: Deeper Investigation
 
-- Full 5-phase initialization runs
-- All event handlers register correctly
-- Snackbar message appears as expected
+1.  **Trace Initialization**: Add prominent, non-suppressible logging (e.g., `console.error` or prefixed logs) at the start and end of each initialization phase in `battleClassic.init.js` to definitively track the execution flow in Playwright.
+2.  **Inspect Test Fixtures**: Review the test setup helpers (`configureApp()`, `registerCommonRoutes()`) to understand how they might alter or short-circuit the page's standard initialization script.
+3.  **Compare With Working Tests**: Analyze a working test like `stat-hotkeys.smoke.spec.js` to identify differences in setup or execution that allow its event handlers to register correctly.
 
-**Playwright Test Environment**:
+### Long-Term: Implement the Fix
 
-- Page loads via `page.goto("/src/pages/battleClassic.html")`
-- Uses `configureApp()` and `registerCommonRoutes()` for mocking
-- Feature flags injected via route interception
-- Handler registration mysteriously skipped
+1.  **Ensure Handler Registration**: If the test environment is the cause, either adjust the test setup to allow for full initialization or add an explicit call to `bindUIHelperEventHandlersDynamic()` within the test's `beforeEach` hook.
+2.  **Add Pre-Test Verification**: Strengthen the test suite by adding a setup step that verifies critical event handlers are registered *before* the test logic runs. This provides faster, clearer feedback on failures.
 
-### Actions Taken
+---
 
-1. ✅ **Added Diagnostic Logging** - Enhanced test to verify EventTarget state and event emission
-2. ✅ **Attempted EventTarget Reset** - Tried clearing state before page load (unsuccessful)
-3. ✅ **Verified Event System** - Confirmed events CAN be caught by listeners
-4. ✅ **Traced Code Path** - Mapped initialization sequence and handler registration
-5. ⏸️ **Reverted Test Changes** - Removed diagnostic code to restore original test
+## 6. Gemini's Opportunities for Improvement
 
-### Recommended Actions
+This analysis is excellent. To further enhance robustness and diagnostics, consider the following:
 
-#### Short Term (Immediate)
+#### **1. Create a Test-Specific Diagnostic Helper**
+Instead of relying on scraping `console.log` output, create a function exposed on the `window` object during tests. This function could report the status of event listeners.
 
-1. **Skip the failing tests temporarily** with a detailed comment explaining the investigation:
+*   **Example (`battleClassic.init.js`):**
+    ```javascript
+    if (window.location.hostname === 'localhost') {
+      window.getBattleEventState = () => ({
+        isStatSelectedHandlerRegistered: battleEventTarget.hasListener('statSelected'),
+        // Add other checks...
+      });
+    }
+    ```
+*   **Usage (Playwright Test):**
+    ```javascript
+    const eventState = await page.evaluate(() => window.getBattleEventState());
+    expect(eventState.isStatSelectedHandlerRegistered).toBe(true);
+    ```
+This provides a deterministic way to assert the application's state without fragile log parsing.
 
-   ```javascript
-   test.skip(`opponent choosing snackbar is deferred...`, async ({ page }) => {
-     // SKIP: Handler registration fails in Playwright environment
-     // See: TEST_FAILURE_ANALYSIS.md - "Opponent Choosing Snackbar Not Appearing"
-     // TODO: Investigate why bindUIHelperEventHandlersDynamic() isn't called
-   });
-   ```
+#### **2. Decouple Initialization for Testability**
+The current initialization is tightly coupled to the script execution order in `battleClassic.init.js`. A more robust, long-term solution is to refactor the initialization logic into an explicit, controllable module.
 
-2. **Manual verification** - Test the feature in a real browser to confirm it works in production
+*   **Proposal**: Create an `AppInitializer` module with distinct methods for each phase.
+    ```javascript
+    // src/helpers/appInitializer.js
+    export const AppInitializer = {
+      runPhase1() { /* ... */ },
+      runPhase2() { /* ... */ },
+      // ...
+      runFullInitialization() { /* Run all phases */ }
+    };
+    ```
+*   **Benefit**: Playwright tests could then call `AppInitializer.runFullInitialization()` explicitly, guaranteeing a consistent state and removing ambiguity about which parts of the application were initialized.
 
-#### Medium Term (Investigation)
+#### **3. Implement Guarded Assertions in Tests**
+Before running test interactions, add assertions to confirm the UI is ready. This makes tests less flaky and easier to debug.
 
-1. **Add more initialization logging** to track if Phase 4 actually runs:
+*   **Example (Playwright Test):**
+    ```javascript
+    test.beforeEach(async ({ page }) => {
+        await page.goto(...);
+        // New: Add a guard to ensure handlers are ready before proceeding
+        await expect(page.locator('#battle-container.initialized')).toBeVisible();
+    });
+    ```
+This approach ensures that tests only run when the application is in a known, ready state, preventing race conditions and confusing failures.
 
-   ```javascript
-   // In battleClassic.init.js, initializePhase4_EventHandlers()
-   console.log("[INIT DEBUG] Phase 4 START");
-   console.log("[INIT DEBUG] About to call bindUIHelperEventHandlersDynamic");
-   bindUIHelperEventHandlersDynamic();
-   console.log("[INIT DEBUG] bindUIHelperEventHandlersDynamic completed");
-   ```
-
-2. **Check for import/module errors** - Add try-catch around `bindUIHelperEventHandlersDynamic()` call to catch any silent failures
-
-3. **Verify test fixture interference** - Check if `configureApp()` or `registerCommonRoutes()` somehow prevents handler registration
-
-4. **Compare with working tests** - Review other Playwright tests that successfully interact with battle events (e.g., `stat-hotkeys.smoke.spec.js`)
-
-#### Long Term (Fix)
-
-Once root cause is confirmed, potential fixes include:
-
-1. **Ensure handler registration in tests** - Add explicit handler registration call in test setup if needed
-2. **Fix initialization order** - Ensure Phase 4 always runs before tests interact with the page
-3. **Add registration verification** - Include checks in test setup to ensure handlers are registered before proceeding
-4. **Improve error handling** - Make handler registration failures more visible
+---
 
 ### Related Files
 
-- **Test File**: `playwright/opponent-choosing.smoke.spec.js`
-- **Handler Registration**: `src/helpers/classicBattle/uiEventHandlers.js` (lines 85-130, 269-345)
-- **Event System**: `src/helpers/classicBattle/battleEvents.js`
-- **Initialization**: `src/pages/battleClassic.init.js` (lines 1805-1870)
-- **Specification**: `docs/qa/opponent-delay-message.md`
-
-### Notes
-
-- The feature works correctly in manual browser testing
-- This appears to be a Playwright test environment-specific issue
-- The event system itself is functional (events can be emitted and caught)
-- The issue is specifically with the handler registration during test initialization
-- No errors are thrown - the registration simply doesn't happen
+-   **Test File**: `playwright/opponent-choosing.smoke.spec.js`
+-   **Handler Registration**: `src/helpers/classicBattle/uiEventHandlers.js`
+-   **Event System**: `src/helpers/classicBattle/battleEvents.js`
+-   **Initialization Script**: `src/pages/battleClassic.init.js`
+-   **Product Specification**: `docs/qa/opponent-delay-message.md`
