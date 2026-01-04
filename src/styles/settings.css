@@ -10,7 +10,7 @@
   border: none;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-base);
-  z-index: 1000;
+  z-index: var(--z-index-toast);
   opacity: 0;
   pointer-events: none;
   animation: none;

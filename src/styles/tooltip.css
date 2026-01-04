@@ -11,7 +11,7 @@
   line-height: 1.3;
   white-space: normal;
   pointer-events: none;
-  z-index: 1000;
+  z-index: var(--z-index-tooltip);
 }
 
 .tooltip strong {

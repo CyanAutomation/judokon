@@ -12,6 +12,7 @@ let cachedData;
 const loggedMissing = new Set();
 const loggedUnbalanced = new Set();
 let tooltipEl;
+const containerTooltipMap = new WeakMap();
 
 /**
  * Delay in milliseconds before showing a tooltip.
@@ -261,6 +262,58 @@ export function positionTooltip(tip, target) {
 }
 
 /**
+ * Ensure a tooltip element exists for the given container.
+ *
+ * @pseudocode
+ * 1. If running in non-browser environment, return null.
+ * 2. Check if container already has a tooltip element cached.
+ * 3. If cached, return it; otherwise create new tooltip element.
+ * 4. Configure tooltip with proper attributes and styles.
+ * 5. Append to container and cache for future use.
+ * 6. Return the tooltip element.
+ *
+ * @param {HTMLElement} [container=document.body] - Container to append tooltip to.
+ * @returns {HTMLElement|null} Tooltip element or null.
+ */
+function ensureTooltipElement(container = globalThis.document?.body) {
+  if (typeof document === "undefined" || !container) return null;
+
+  // Check if we have a cached tooltip for this container
+  if (containerTooltipMap.has(container)) {
+    return containerTooltipMap.get(container);
+  }
+
+  // For body container, use global tooltipEl
+  if (container === document.body && tooltipEl) {
+    containerTooltipMap.set(container, tooltipEl);
+    return tooltipEl;
+  }
+
+  // Create new tooltip element
+  const tip = document.createElement("div");
+  tip.className = "tooltip";
+  tip.setAttribute("role", "tooltip");
+  tip.setAttribute("aria-hidden", "true");
+  
+  // Generate unique ID for non-body containers
+  if (container === document.body) {
+    tip.id = "tooltip";
+    tooltipEl = tip;
+  } else {
+    tip.id = `tooltip-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+  
+  tip.style.position = "absolute";
+  tip.style.display = "none";
+  container.appendChild(tip);
+  
+  // Cache the tooltip for this container
+  containerTooltipMap.set(container, tip);
+  
+  return tip;
+}
+
+/**
  * Initialize tooltips for elements with `[data-tooltip-id]`.
  *
  * @pseudocode
@@ -275,9 +328,10 @@ export function positionTooltip(tip, target) {
  * 7. Return a cleanup function that removes the hover and focus listeners.
  *
  * @param {ParentNode} [root=globalThis.document] - Scope to search for tooltip targets.
+ * @param {HTMLElement} [container] - Container element to append tooltips to (defaults to document.body).
  * @returns {Promise<() => void>} Resolves with a cleanup function.
  */
-export async function initTooltips(root = globalThis.document) {
+export async function initTooltips(root = globalThis.document, container) {
   const notifyReady = () => globalThis.dispatchEvent?.(new Event("tooltips:ready"));
   if (!root) {
     notifyReady();
@@ -313,7 +367,9 @@ export async function initTooltips(root = globalThis.document) {
   toggleTooltipOverlayDebug(overlay);
   const DOMPurify = await getSanitizer();
   const data = await loadTooltips();
-  const tip = ensureTooltipElement();
+  // Use provided container or default to document.body
+  const tooltipContainer = container || globalThis.document?.body;
+  const tip = ensureTooltipElement(tooltipContainer);
   if (!tip) {
     notifyReady();
     return () => {};

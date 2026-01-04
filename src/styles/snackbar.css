@@ -3,7 +3,7 @@
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: var(--z-index-snackbar);
   --snackbar-duration: 3000ms;
   /* Enable stacking by allowing multiple children */
   display: flex;

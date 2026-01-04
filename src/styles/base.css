@@ -85,6 +85,18 @@
   --font-medium: 1rem;
   --font-large: 1.2rem;
   --font-extra-large: 3rem;
+
+  /* Z-index management - centralized stacking order */
+  --z-index-base: 0;
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-snackbar: 1040;
+  --z-index-modal-backdrop: 1045;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+  --z-index-toast: 1080;
 }
 
 /* Dark mode variable overrides */
