@@ -191,7 +191,6 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await expect(dropdown).toHaveValue("10");
 
     // Wait for localStorage to persist before reload
-    await page.waitForTimeout(150);
     await waitForLocalStorageValue(page, "battle.pointsToWin", "10");
 
     await page.reload();
