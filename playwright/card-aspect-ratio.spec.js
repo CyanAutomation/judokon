@@ -10,6 +10,9 @@ test.describe("Card Aspect Ratio Verification", () => {
     await page.goto("/randomJudoka.html");
     await page.waitForLoadState("networkidle");
 
+    // Click draw button to generate a card
+    await page.click('[data-testid="draw-button"]');
+    
     // Wait for card to be visible
     const card = page.locator(".judoka-card").first();
     await expect(card).toBeVisible({ timeout: 10000 });
@@ -126,6 +129,9 @@ test.describe("Card Aspect Ratio Verification", () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto("/randomJudoka.html");
       await page.waitForLoadState("networkidle");
+
+      // Click draw button
+      await page.click('[data-testid="draw-button"]');
 
       const card = page.locator(".judoka-card").first();
       await expect(card).toBeVisible({ timeout: 10000 });

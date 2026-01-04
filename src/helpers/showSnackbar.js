@@ -2,6 +2,12 @@
  * Display a temporary snackbar message near the bottom of the screen.
  * Supports stacking up to 2 concurrent messages with visual hierarchy.
  *
+ * Z-Index Hierarchy (Centralized System):
+ * - Uses var(--z-index-snackbar) = 1040 from base.css
+ * - Positioned BELOW modals (1050) and tooltips (1070)
+ * - Ensures snackbars don't obscure critical interactive elements
+ * - Part of centralized z-index management system for consistent layering
+ *
  * @pseudocode
  * 1. Add new message to queue (max 2 messages).
  * 2. If queue exceeds limit, dismiss oldest message.
@@ -11,6 +17,8 @@
  * 6. Handle animation lifecycle with animationend event cleanup.
  *
  * @param {string} message - Text content to display in the snackbar.
+ * @see {@link ../../styles/snackbar.css} Snackbar styles and z-index configuration
+ * @see {@link ../../styles/base.css} Centralized z-index custom properties (--z-index-*)
  */
 
 // Queue-based state management (supports up to 2 concurrent messages)

@@ -1,3 +1,27 @@
+/**
+ * Snackbar Container - Centralized Z-Index Management
+ *
+ * Z-Index Hierarchy (Centralized in base.css):
+ * - Snackbars: var(--z-index-snackbar) = 1040
+ * - Modals:    var(--z-index-modal) = 1050
+ * - Tooltips:  var(--z-index-tooltip) = 1070
+ *
+ * Positioning Strategy:
+ * - Snackbars appear BELOW modals (1050) and tooltips (1070)
+ * - This ensures modals and tooltips remain on top for critical interactions
+ * - Snackbars are non-blocking notifications that should not obscure dialogs
+ *
+ * Stacking Architecture:
+ * - Container supports up to 2 concurrent snackbar messages
+ * - Uses flexbox column-reverse for natural bottom-up stacking
+ * - Newest message appears at bottom (full opacity)
+ * - Older message pushed up with reduced opacity (0.7)
+ *
+ * Cross-References:
+ * - Z-index values: src/styles/base.css (--z-index-* custom properties)
+ * - Snackbar logic: src/helpers/showSnackbar.js (queue management, timers)
+ * - Documentation: design/productRequirementsDocuments/prdSnackbar.md
+ */
 #snackbar-container {
   position: fixed;
   left: 50%;

@@ -88,6 +88,37 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 - No persistent timers or memory leaks; timers are cleared on update/removal.
 - On mobile, snackbar appears above system navigation bars; on desktop, snackbar is anchored to viewport bottom.
 
+## Z-Index Management
+
+**Centralized Hierarchy:**
+
+The snackbar system uses a centralized z-index management approach defined in `src/styles/base.css`:
+
+- **Snackbars:** `var(--z-index-snackbar) = 1040`
+- **Modals:** `var(--z-index-modal) = 1050`
+- **Tooltips:** `var(--z-index-tooltip) = 1070`
+
+**Positioning Strategy:**
+
+Snackbars are deliberately positioned BELOW modals and tooltips in the z-index hierarchy:
+
+- **Rationale:** Snackbars provide non-blocking, informational feedback that should not obscure critical interactive elements like modal dialogs or tooltips
+- **Behavior:** When a modal is open, snackbars remain visible but layered beneath, ensuring modal interactions take precedence
+- **Consistency:** All z-index values are managed through CSS custom properties for maintainability and predictable stacking behavior
+
+**Implementation Details:**
+
+- Z-index values defined in: `src/styles/base.css` (custom properties)
+- Snackbar container applies: `z-index: var(--z-index-snackbar)` in `src/styles/snackbar.css`
+- Queue management and logic: `src/helpers/showSnackbar.js`
+- Documentation cross-references maintained in CSS comments and JSDoc headers
+
+**Cross-References:**
+
+- CSS custom properties: `src/styles/base.css`
+- Snackbar styles: `src/styles/snackbar.css`
+- Snackbar implementation: `src/helpers/showSnackbar.js`
+
 ## Stacking Architecture (Implemented)
 
 The snackbar system uses a queue-based architecture to support concurrent messages:
