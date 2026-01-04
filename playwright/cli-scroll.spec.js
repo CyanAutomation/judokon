@@ -33,9 +33,9 @@ test("CLI verbose log scrolls vertically without horizontal overflow", async ({ 
   await expect(page.locator(CLI_CONTAINER_SELECTOR)).toBeVisible();
   await enableVerboseLogging(page);
 
-  const transcriptEntries = Array.from({ length: 12 }, (_, i) => ({
+  const transcriptEntries = Array.from({ length: 80 }, (_, i) => ({
     from: `state-${i}`,
-    to: `Log entry ${i + 1}: Testing verbose log scrolling.`
+    to: `Log entry ${i + 1}: Testing verbose log scrolling with deterministic overflow.`
   }));
   await appendVerboseEntries(page, transcriptEntries);
   await expect(page.locator(VERBOSE_LOG_SELECTOR)).toContainText("Log entry 1");
@@ -49,11 +49,7 @@ test("CLI verbose log scrolls vertically without horizontal overflow", async ({ 
   }));
 
   expect(scrollMetrics.clientWidth + 10).toBeGreaterThanOrEqual(scrollMetrics.scrollWidth);
-  if (scrollMetrics.scrollHeight > scrollMetrics.clientHeight) {
-    expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
-  } else {
-    console.warn("Insufficient content to test scrolling - test may be unreliable");
-  }
+  expect(scrollMetrics.scrollHeight).toBeGreaterThan(scrollMetrics.clientHeight);
 
   const getScrollTop = () => scroller.evaluate((el) => el.scrollTop ?? 0);
   const initialScrollTop = await getScrollTop();
