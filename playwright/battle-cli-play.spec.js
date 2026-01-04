@@ -53,6 +53,7 @@ test.describe("Battle CLI - Play", () => {
       expect(statKey, "stat button should expose a data-stat attribute").toBeTruthy();
 
       const roundCounter = page.locator("#round-counter");
+      await expect(roundCounter).toHaveText(/Round 1/);
       const initialRoundCounterText = await roundCounter.textContent();
 
       await statButton.click();
