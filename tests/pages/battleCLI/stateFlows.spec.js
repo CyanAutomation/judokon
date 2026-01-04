@@ -11,10 +11,6 @@ async function setupBattleCLI(options) {
   return cli;
 }
 
-function getBottomLineText() {
-  return document.querySelector("#snackbar-container .snackbar")?.textContent ?? "";
-}
-
 function getRoundMessageText() {
   return document.getElementById("round-message")?.textContent ?? "";
 }
