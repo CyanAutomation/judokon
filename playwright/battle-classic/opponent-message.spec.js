@@ -205,7 +205,7 @@ test.describe("Classic Battle Opponent Messages", () => {
         { timeout: 5000 }
       );
 
-      const snackbar = page.locator("#snackbar-container .snackbar");
+      const snackbar = page.locator("#snackbar-container .snackbar-bottom");
       await expect(snackbar).toContainText(/Opponent is choosing|Next round in/i, {
         timeout: 4_000
       });

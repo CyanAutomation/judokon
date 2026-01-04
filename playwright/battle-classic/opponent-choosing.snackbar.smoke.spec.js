@@ -27,7 +27,7 @@ test.describe("Cooldown countdown display", () => {
     // Click any stat to trigger selection flow
     await statButton.click();
 
-    const snackbar = page.locator("#snackbar-container .snackbar");
+    const snackbar = page.locator("#snackbar-container .snackbar-bottom");
     await expect(snackbar).toBeVisible({ timeout: 2_500 });
     await expect(snackbar).toContainText(/You Picked|Opponent is choosing/i, { timeout: 2_500 });
 
@@ -97,7 +97,7 @@ test.describe("Cooldown countdown display", () => {
     await waitForBattleState(page, "roundDecision");
 
     // Get snackbar element
-    const snackbar = page.locator("#snackbar-container .snackbar");
+    const snackbar = page.locator("#snackbar-container .snackbar-bottom");
 
     // Verify snackbar exists (should show "Opponent is choosing..." or similar)
     await expect(snackbar).toBeVisible({ timeout: 2_000 });

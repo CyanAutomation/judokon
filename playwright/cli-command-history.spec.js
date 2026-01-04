@@ -230,7 +230,7 @@ test.describe("CLI Command History", () => {
     // (In real usage, user would tab away or click elsewhere first)
     await page.evaluate(() => document.body.focus());
 
-    const snackbar = page.locator("#snackbar-container .snackbar");
+    const snackbar = page.locator("#snackbar-container .snackbar-bottom");
     const statList = page.locator("#cli-stats");
     const statRows = page.locator("#cli-stats .cli-stat");
     const statOptions = await statRows.evaluateAll((rows) =>

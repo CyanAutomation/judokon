@@ -31,7 +31,7 @@ test.describe("Classic Battle cooldown skip via UI", () => {
         allowFallback: false
       });
 
-      const snackbar = page.locator("#snackbar-container .snackbar");
+      const snackbar = page.locator("#snackbar-container .snackbar-bottom");
       await expect(snackbar).toBeVisible();
       const timerValue = page.locator("#next-round-timer [data-part='value']");
 
