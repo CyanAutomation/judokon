@@ -63,7 +63,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       app,
       firstStat,
       statButtons,
-      snackbar: page.locator("#snackbar-container .snackbar"),
+      snackbar: page.locator("#snackbar-container .snackbar-bottom"),
       nextButton: page.getByTestId("next-button")
     };
   }
