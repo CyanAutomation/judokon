@@ -1,178 +1,83 @@
-# Card Aspect Ratio Analysis
+# Judoka Card Aspect Ratio: Analysis and Implementation Plan
 
-## Problem Summary
-Cards currently have **0.44 ratio** (too narrow/tall) instead of the required **0.67 ratio** (2:3 aspect).
+**Status**: Analysis Complete, Ready for Implementation
 
-## Current Measurements (280px wide card)
-- **Actual height**: 631px (280/631 = 0.44 ratio)
-- **Expected height**: 420px (280/420 = 0.67 ratio)
-- **Difference**: 211px too tall
+## 1. Executive Summary
 
-## Section Breakdown
-| Section    | Current | Ideal for 2:3 | Notes                    |
-|------------|---------|---------------|--------------------------|
-| Top Bar    | 77px    | ~56px         | Name + flag              |
-| Portrait   | 286px   | ~180px        | 1:1.1 aspect currently   |
-| Stats      | 200px   | ~140px        | 5 stat rows              |
-| Signature  | 48px    | 44px          | Touch target compliant   |
-| **Total**  | 611px   | 420px         | -191px needed            |
+**Problem**: Judoka cards display with an incorrect **0.44:1 aspect ratio** (e.g., 280px × 631px), appearing vertically stretched. The required aspect ratio, as specified in the project's design documents, is **2:3 (0.67:1)**.
 
-## Root Causes
+**Root Cause**: The issue stems from three main problems in `src/styles/card.css`:
+1.  **Unconstrained Height**: The card's `height: auto` property allows it to grow beyond its calculated height.
+2.  **Flexible Grid Rows**: The `grid-template-rows` use `auto` and `1fr`, which permits grid sections to expand based on their content rather than adhering to a strict proportion.
+3.  **Oversized Portrait**: The `.card-portrait` has a fixed aspect ratio of `1 / 1.1`, making it taller than specified and disrupting the layout.
 
-### 1. Card Height Calculation (card.css:132)
-```css
---card-height: calc(var(--card-width) * 1.5);  /* 1.5 = 3/2 inverted! */
-```
-**Problem**: Uses 1.5 multiplier (3/2 ratio) instead of 1.5 for height!
-This gives 3:2 ratio (landscape) when we need 2:3 (portrait).
+**Solution**: The proposed solution is to enforce the correct aspect ratio by applying a 4-phase CSS fix that involves locking the card's height, using a proportional grid layout, and adjusting the portrait's aspect ratio.
 
-**Fix**: Should be `calc(var(--card-width) * 1.5)` for 2:3 ratio
-- 280px × 1.5 = 420px height ✓
-
-### 2. Portrait Aspect Ratio (card.css:336)
-```css
-.card-portrait {
-  aspect-ratio: 1 / 1.1;  /* Too tall */
-}
-```
-**Problem**: Portrait takes ~45% of card height instead of ~42% per PRD
-
-### 3. Grid Template Auto-sizing (card.css:145)
-```css
-grid-template-rows: auto 1fr auto auto;
-```
-**Problem**: `1fr` allows portrait to expand, `auto` rows add extra space
-
-## Solutions
-
-### Option A: Fix Formula + Constrain Sections (Recommended)
-1. Verify height formula is correct (it actually is!)
-2. Add max-height constraints to sections
-3. Adjust portrait aspect-ratio to fit properly
-4. Use fixed grid rows instead of `1fr`
-
-### Option B: Proportional Grid System
-Replace `auto` and `1fr` with fixed percentages:
-- Top bar: 13% (56px / 420px)
-- Portrait: 43% (180px / 420px)  
-- Stats: 33% (140px / 420px)
-- Signature: 11% (44px / 420px)
-
-### Option C: Flexbox with Flex-basis
-Convert from grid to flexbox with fixed flex-basis values
-
-## Recommended Approach
-
-**Phase 1: Fix Grid Template**
-```css
-grid-template-rows: 
-  minmax(48px, 56px)      /* top bar */
-  minmax(150px, 43%)      /* portrait */
-  minmax(120px, 33%)      /* stats */
-  minmax(44px, 48px);     /* signature */
-```
-
-**Phase 2: Adjust Portrait**
-```css
-.card-portrait {
-  aspect-ratio: 1 / 1;  /* Square, let grid control height */
-  max-height: 180px;    /* For 280px card */
-}
-```
-
-**Phase 3: Constrain Stats**
-```css
-.card-stats {
-  max-height: 33%;  /* Of parent card */
-  overflow-y: auto; /* If needed */
-}
-```
-
-## Testing Strategy
-1. Run Playwright tests on Random Judoka page
-2. Test across viewports (375px, 768px, 1920px)
-3. Verify all card elements still visible
-4. Check Browse Judoka carousel
-5. Validate Card of the Day
-
-## Success Criteria
-- Card ratio: 0.65-0.68 (within 5% tolerance)
-- All elements visible and readable
-- Text doesn't overflow
-- Touch targets ≥ 44px
-- Works across all viewport sizes
-
-
-# Card Aspect Ratio Implementation Plan
-
-## Executive Summary
-
-**Problem**: Judoka cards currently display with a 0.44:1 aspect ratio (280px × 631px) instead of the required 2:3 (0.67:1) aspect ratio specified in prdDevelopmentStandards.md and prdJudokaCard.md.
-
-**Root Cause**: The CSS grid template uses `auto` and `1fr` rows that allow sections to expand beyond intended proportions, plus the portrait section has an overly tall aspect-ratio (1:1.1).
-
-**Impact**: Cards appear stretched vertically, wasting screen space and deviating from design specifications.
-
-**Solution**: Implement proportional grid-based layout with explicit height constraints per section.
+**Impact**: This fix will resolve the visual discrepancy, ensure cards adhere to the 2:3 design standard, and improve screen space utilization.
 
 ---
 
-## Current State Analysis
+## 2. Problem Analysis
 
-### Measurements (280px wide card)
+### Current State Measurements
+
+Based on a standard 280px wide card, the dimensions are incorrect:
 
 | Metric | Current | Expected | Delta |
-|--------|---------|----------|-------|
+| :--- | :--- | :--- | :--- |
 | **Total Height** | 631px | 420px | +211px |
-| **Aspect Ratio** | 0.44:1 | 0.67:1 (2:3) | -0.23 |
+| **Aspect Ratio** | 0.44:1 | **0.67:1 (2:3)** | -0.23 |
 
 ### Section Breakdown
 
-| Section | Current Height | % of Total | Expected Height | Expected % | Delta |
-|---------|---------------|------------|-----------------|------------|-------|
-| Top Bar | 77px | 12% | 56px | 13% | -21px |
-| Portrait | 286px | 45% | 180px | 43% | -106px |
-| Stats | 200px | 32% | 140px | 33% | -60px |
-| Signature | 48px | 8% | 44px | 11% | -4px |
-| **Border** | 20px | 3% | 20px | N/A | 0px |
-| **Total** | 631px | 100% | 420px | 100% | -211px |
+The extra height is distributed across the card's sections:
 
-### CSS Issues Identified
+| Section | Current Height | Expected Height | Delta |
+| :--- | :--- | :--- | :--- |
+| Top Bar | 77px | ~56px | -21px |
+| Portrait | 286px | ~180px | -106px |
+| Stats | 200px | ~140px | -60px |
+| Signature | 48px | 44px | -4px |
+| **Total** | **611px** | **420px** | **-191px** |
 
-**File**: `src/styles/card.css`
+### Identified CSS Root Causes
 
-#### Issue #1: Grid Template (Line 145)
-```css
-grid-template-rows: auto 1fr auto auto;
-```
-**Problem**: `1fr` allows portrait to expand indefinitely; `auto` rows add extra space based on content.
+The investigation of `src/styles/card.css` pinpointed these issues:
 
-#### Issue #2: Portrait Aspect Ratio (Line 336)
-```css
-.card-portrait {
-  aspect-ratio: 1 / 1.1;  /* Too tall */
-}
-```
-**Problem**: Creates 1:1.1 ratio portrait (286px tall), consuming 45% of card instead of target 43%.
+1.  **Unconstrained Height (Line 137)**: `height: auto;` allows the card's container to grow vertically to fit its content, ignoring the height calculated by `--card-height`.
+2.  **Flexible Grid Layout (Line 145)**: `grid-template-rows: auto 1fr auto auto;` lets the browser determine the height of the rows. The `1fr` unit on the portrait's row is particularly problematic, as it expands to fill available space.
+3.  **Fixed Portrait Aspect Ratio (Line 336)**: `aspect-ratio: 1 / 1.1;` forces the portrait to be taller than it should be, which contributes significantly to the overall height issue.
 
-#### Issue #3: Missing Height Constraint (Line 122)
-```css
-.judoka-card {
-  min-height: var(--card-height);
-  height: auto;  /* Allows growth */
-}
-```
-**Problem**: `height: auto` allows card to exceed calculated `--card-height` (420px).
+> **Note on Height Calculation**: The variable `--card-height: calc(var(--card-width) * 1.5);` is **correct** for a 2:3 aspect ratio (Height = Width × 1.5). The issue is not the formula itself, but the other CSS rules that prevent it from being enforced.
 
 ---
 
-## Implementation Plan
+## 3. Implementation Plan
 
-### Phase 1: Fix Grid Template Rows
+The fix involves a series of targeted changes to `src/styles/card.css`.
 
-**Goal**: Replace flexible `auto` and `1fr` with proportional constraints.
+### Phase 1: Constrain Card Height
 
-**Changes to `src/styles/card.css` (Line 145)**:
+**Goal**: Force the card to respect the calculated `--card-height`.
+
+**Change**: In the `.judoka-card` rule (around line 136):
+
+```css
+/* OLD */
+min-height: var(--card-height);
+height: auto;
+
+/* NEW */
+min-height: var(--card-height);
+max-height: var(--card-height);
+height: var(--card-height);
+```
+
+### Phase 2: Implement Proportional Grid Rows
+
+**Goal**: Replace the flexible grid rows with a proportional system that maintains the correct section sizes.
+
+**Change**: In the `.judoka-card` rule (around line 145):
 
 ```css
 /* OLD */
@@ -190,398 +95,114 @@ grid-template-rows:
   minmax(44px, 10.5%);   /* Signature: ~44px at 420px height */
 ```
 
-**Rationale**:
-- **minmax()** ensures touch targets (≥44px) while respecting proportions
-- **Percentages** maintain 2:3 ratio across viewport sizes
-- **Minimums** prevent sections from becoming unusable on small screens
-
----
-
-### Phase 2: Constrain Card Height
-
-**Goal**: Prevent card from exceeding calculated `--card-height`.
-
-**Changes to `src/styles/card.css` (Line 136)**:
-
-```css
-/* OLD */
-min-height: var(--card-height);
-height: auto;
-
-/* NEW */
-min-height: var(--card-height);
-max-height: var(--card-height);
-height: var(--card-height);
-```
-
-**Rationale**:
-- Locks card to exact 2:3 ratio calculated height
-- Prevents content overflow from expanding card
-
----
-
 ### Phase 3: Adjust Portrait Aspect Ratio
 
-**Goal**: Let grid control portrait height instead of aspect-ratio property.
+**Goal**: Allow the grid to control the portrait's height.
 
-**Changes to `src/styles/card.css` (Line 336)**:
+**Change**: In the `.card-portrait` rule (around line 336):
 
 ```css
 /* OLD */
 aspect-ratio: 1 / 1.1;
 
 /* NEW */
-aspect-ratio: auto;  /* Let grid control height */
+aspect-ratio: auto;
 ```
 
-**Rationale**:
-- Grid row now controls portrait height (~43% of card)
-- Portrait width fills available space (100%)
-- Maintains `object-fit: cover` for image scaling
+### Phase 4: Handle Stats Section Overflow
 
----
+**Goal**: Prevent stats from overflowing their container on smaller cards.
 
-### Phase 4: Add Stats Section Overflow Handling
-
-**Goal**: Ensure stats remain readable if content exceeds allocated space.
-
-**Changes to `src/styles/card.css` (Line 376)**:
+**Change**: In the `.card-stats` rule (around line 376), add `overflow-y`.
 
 ```css
 .card-stats {
-  background-color: var(--card-stats-bg, var(--color-secondary));
-  color: var(--color-text-inverted);
-  padding: var(--space-sm);
-  margin: 0;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  align-items: stretch;
-  font-size: var(--font-medium);
-  flex-direction: column;
-  /* NEW */
+  /* ... existing styles ... */
   overflow-y: auto;
-  max-height: 100%;  /* Respect grid row height */
+  max-height: 100%;
 }
 ```
 
-**Rationale**:
-- Prevents stats from pushing other sections
-- Maintains readability with scrollable overflow
-- Respects 33% grid allocation
-
 ---
 
-## Responsive Behavior
+## 4. Opportunities for Improvement
 
-### Viewport Scaling
+While the above plan will fix the bug, we can further improve the code's maintainability.
 
-| Viewport | Card Width | Card Height | Ratio | Notes |
-|----------|-----------|-------------|-------|-------|
-| **375px** (iPhone SE) | 256px | 384px | 0.67 | Clamp minimum (220px) |
-| **768px** (iPad) | 280px | 420px | 0.67 | Typical size |
-| **1920px** (Desktop) | 280px | 420px | 0.67 | Clamp maximum (280px) |
+### Use CSS Custom Properties for Grid Proportions
 
-Card width is clamped via:
-```css
---card-width: clamp(220px, 65vw, 280px);
-```
+Instead of hardcoding percentages in the `grid-template-rows` definition, we can define them as variables. This makes the layout's intent clearer and easier to modify.
 
-This ensures:
-- **Minimum**: 220px × 330px on small screens
-- **Maximum**: 280px × 420px on large screens
-- **Ratio**: Always 2:3 (0.67:1)
+**Recommendation**:
 
----
-
-## Testing Strategy
-
-### 1. Automated Tests (Playwright)
-
-**File**: `playwright/card-aspect-ratio.spec.js` (already created)
-
-**Test Coverage**:
-- ✅ Random Judoka page (with draw button interaction)
-- ✅ Browse Judoka page (carousel rendering)
-- ✅ Card of the Day page
-- ✅ Multi-viewport testing (375px, 768px, 1920px)
-
-**Success Criteria**:
-- Aspect ratio between 0.65–0.68 (within 5% tolerance)
-- All tests pass
-
-**Run Command**:
-```bash
-npx playwright test playwright/card-aspect-ratio.spec.js
-```
-
-### 2. Visual Regression Testing
-
-**Pages to Test Manually**:
-1. `/src/pages/randomJudoka.html` (draw card workflow)
-2. `/src/pages/browseJudoka.html` (grid of cards)
-3. `/src/pages/cardOfTheDay.html` (single card display)
-4. `/src/pages/battleClassic.html` (in-battle card rendering)
-
-**Checklist Per Page**:
-- [ ] Card appears with 2:3 ratio
-- [ ] All elements visible (name, flag, portrait, stats, signature)
-- [ ] Text readable (no overflow or truncation)
-- [ ] Touch targets ≥44px (signature move button)
-- [ ] Portrait image not distorted
-- [ ] Stats list readable (5 rows visible)
-- [ ] Hover/focus states work correctly
-
-### 3. Cross-Browser Testing
-
-**Browsers**:
-- Chrome/Edge (Chromium)
-- Firefox
-- Safari (especially iOS Safari viewport handling)
-
-**Focus Areas**:
-- Grid layout support
-- `minmax()` function behavior
-- `aspect-ratio` property fallbacks
-- `clamp()` function in card width calculation
-
----
-
-## Rollback Plan
-
-If issues arise post-deployment:
-
-### Quick Revert
-```bash
-git revert <commit-hash>
-```
-
-### Temporary CSS Override
-Add to `src/styles/card.css`:
 ```css
 .judoka-card {
-  grid-template-rows: auto 1fr auto auto !important;  /* Restore original */
-  height: auto !important;
+  /* ... */
+  --top-bar-h: 13.5%;
+  --portrait-h: 43%;
+  --stats-h: 33%;
+  --signature-h: 10.5%;
+
+  grid-template-rows:
+    minmax(48px, var(--top-bar-h))
+    minmax(150px, var(--portrait-h))
+    minmax(120px, var(--stats-h))
+    minmax(44px, var(--signature-h));
+  /* ... */
 }
 ```
 
----
-
-## Task Contract
-
-```json
-{
-  "inputs": [
-    "src/styles/card.css",
-    "playwright/card-aspect-ratio.spec.js"
-  ],
-  "outputs": [
-    "src/styles/card.css (lines 136, 145, 336, 376)"
-  ],
-  "success": [
-    "prettier: PASS",
-    "eslint: PASS",
-    "playwright card-aspect-ratio.spec.js: PASS",
-    "no visual regressions on randomJudoka, browseJudoka, cardOfTheDay",
-    "aspect ratio 0.65-0.68 across all viewports"
-  ],
-  "errorMode": "test_and_verify_before_commit"
-}
-```
+This change is optional but recommended for long-term code health.
 
 ---
 
-## Verification Checklist
+## 5. Testing and Verification
 
-Before submitting PR:
+### Automated Testing
 
-- [ ] Run Playwright aspect ratio tests: `npx playwright test playwright/card-aspect-ratio.spec.js`
-- [ ] Run full test suite: `npm run test:ci`
-- [ ] Check CSS lint: `npx prettier --check src/styles/card.css`
-- [ ] Visual test Random Judoka page
-- [ ] Visual test Browse Judoka page
-- [ ] Visual test Card of the Day page
-- [ ] Test on mobile viewport (375px)
-- [ ] Test on tablet viewport (768px)
-- [ ] Test on desktop viewport (1920px)
-- [ ] Verify all card elements visible and readable
-- [ ] Verify touch targets ≥44px
-- [ ] Check contrast ratios (if text size changes): `npm run check:contrast`
+A dedicated Playwright test file has been created to verify the fix.
 
----
+-   **File**: `playwright/card-aspect-ratio.spec.js`
+-   **Run Command**: `npx playwright test playwright/card-aspect-ratio.spec.js`
 
-## Risk Assessment
+The test will automatically measure the card's aspect ratio across multiple pages and viewports.
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Stats overflow becomes unreadable | Medium | Medium | Added `overflow-y: auto` with scrolling |
-| Portrait images distorted | Low | High | Using `object-fit: cover` (already in place) |
-| Grid breaks on older browsers | Low | Medium | Test in Firefox, Safari; add fallback if needed |
-| Touch targets too small | Low | High | Used `minmax()` with 44px minimums |
-| Layout shifts during load | Low | Medium | Fixed height prevents CLS |
+### Manual & Visual Regression Testing
 
----
+Manual verification should be performed on the following pages to check for visual regressions:
+1.  `randomJudoka.html`
+2.  `browseJudoka.html`
+3.  `cardOfTheDay.html`
+4.  `battleClassic.html`
 
-## Success Metrics
-
-**Primary**: 
-- Card aspect ratio = 0.67 ± 0.05 (2:3 ratio within 5% tolerance)
-
-**Secondary**:
-- All Playwright tests pass
-- No visual regressions reported
-- No accessibility regressions (contrast, touch targets)
-- Zero layout shift (CLS = 0)
-
-**Post-Deployment**:
-- Monitor Sentry for layout-related errors
-- Check user feedback for readability issues
-- Validate on real devices (iOS Safari, Android Chrome)
-
----
-
-## Follow-Up Work
-
-1. **Responsive Font Scaling**: Review font sizes in stats section for very small cards
-2. **Portrait Fallbacks**: Ensure silhouette fallback respects new aspect ratio
-3. **Card Inspector**: Verify debug panel still works with fixed height
-4. **Mystery Cards**: Test obscured card layout with new constraints
-
----
-
-## References
-
-- **PRD**: `design/productRequirementsDocuments/prdJudokaCard.md` (Line 68, 93)
-- **PRD**: `design/productRequirementsDocuments/prdDevelopmentStandards.md` (Line 190)
-- **CSS File**: `src/styles/card.css`
-- **Test File**: `playwright/card-aspect-ratio.spec.js`
-- **Analysis**: `/tmp/card-aspect-analysis.md`
-
-# Card Aspect Ratio Investigation Summary
-
-## Problem Confirmed
-
-Through Playwright testing, I've verified that judoka cards currently display with an **incorrect 0.44:1 aspect ratio** instead of the required **2:3 (0.67:1) ratio** specified in the PRD.
-
-### Test Results
-
-```
-Card dimensions: 280px × 631px
-Actual ratio: 0.4437
-Expected ratio: 0.6667 (2:3)
-Difference: 0.2230 (way outside tolerance)
-```
-
-### Visual Evidence
-
-The Playwright test `playwright/card-aspect-ratio.spec.js` confirms:
-- Cards are **211px too tall** (631px vs 420px expected)
-- Portrait section consumes 45% of height vs 43% target
-- Stats section consumes 32% vs 33% target
-- Overall card appears stretched/elongated
-
-## Root Causes Identified
-
-### 1. Flexible Grid Layout
-**File**: `src/styles/card.css` (Line 145)
-```css
-grid-template-rows: auto 1fr auto auto;
-```
-The `1fr` and `auto` values allow sections to expand beyond intended proportions.
-
-### 2. Oversized Portrait
-**File**: `src/styles/card.css` (Line 336)
-```css
-aspect-ratio: 1 / 1.1;
-```
-Portrait has intrinsic 1:1.1 ratio, making it too tall (286px vs 180px target).
-
-### 3. Unconstrained Height
-**File**: `src/styles/card.css` (Line 136-137)
-```css
-min-height: var(--card-height);
-height: auto;
-```
-`height: auto` allows card to grow beyond calculated 2:3 height.
-
-## Solution Overview
-
-### 4-Phase CSS Fix
-
-**Phase 1**: Replace flexible grid with proportional constraints
-```css
-grid-template-rows:
-  minmax(48px, 13.5%)    /* Top bar */
-  minmax(150px, 43%)     /* Portrait */
-  minmax(120px, 33%)     /* Stats */
-  minmax(44px, 10.5%);   /* Signature */
-```
-
-**Phase 2**: Lock card to exact height
-```css
-height: var(--card-height);
-max-height: var(--card-height);
-```
-
-**Phase 3**: Let grid control portrait height
-```css
-aspect-ratio: auto;  /* Remove fixed 1:1.1 */
-```
-
-**Phase 4**: Handle stats overflow
-```css
-overflow-y: auto;
-max-height: 100%;
-```
-
-## Implementation Plan
-
-A comprehensive plan has been created in:
-- **`CARD_ASPECT_RATIO_IMPLEMENTATION_PLAN.md`** (detailed specification)
-- **`playwright/card-aspect-ratio.spec.js`** (automated verification tests)
-
-### Key Changes Required
-
-| File | Lines | Change |
-|------|-------|--------|
-| `src/styles/card.css` | 136-137 | Lock height to `var(--card-height)` |
-| `src/styles/card.css` | 145-149 | Replace grid template with `minmax()` proportions |
-| `src/styles/card.css` | 336 | Change portrait `aspect-ratio` to `auto` |
-| `src/styles/card.css` | 376 | Add overflow handling to stats section |
-
-### Testing Strategy
-
-1. **Automated**: Run `npx playwright test playwright/card-aspect-ratio.spec.js`
-2. **Visual**: Verify on Random Judoka, Browse Judoka, Card of the Day pages
-3. **Responsive**: Test on 375px, 768px, 1920px viewports
-4. **Cross-browser**: Chrome, Firefox, Safari
+**Checklist**:
+- [ ] Card appears with a 2:3 ratio.
+- [ ] All elements (name, portrait, stats, etc.) are visible and correctly aligned.
+- [ ] Text is readable and does not overflow.
+- [ ] Touch targets are at least 44x44px.
+- [ ] Images are not distorted.
 
 ### Success Criteria
 
-✅ Aspect ratio: 0.65-0.68 (within 5% of 0.67 target)  
-✅ All card elements visible and readable  
-✅ Touch targets ≥44px  
-✅ No layout shift (CLS = 0)  
-✅ Works across all viewports
-
-## Next Steps
-
-To implement this fix:
-
-1. Review `CARD_ASPECT_RATIO_IMPLEMENTATION_PLAN.md` for detailed changes
-2. Apply CSS modifications to `src/styles/card.css`
-3. Run Playwright tests to verify aspect ratio
-4. Perform visual regression testing on key pages
-5. Test across multiple viewports and browsers
-
-## Files Created
-
-- ✅ `playwright/card-aspect-ratio.spec.js` - Automated verification tests
-- ✅ `CARD_ASPECT_RATIO_IMPLEMENTATION_PLAN.md` - Detailed implementation guide
-- ✅ `CARD_ASPECT_RATIO_SUMMARY.md` - This summary document
+- **Primary**: The card's aspect ratio is **0.67 ± 0.05**.
+- **Secondary**: All automated tests pass, no visual regressions are found, and accessibility standards (contrast, touch targets) are maintained.
 
 ---
 
-**Investigation Date**: 2026-01-04  
-**Status**: Analysis Complete, Ready for Implementation  
-**PRD References**: prdJudokaCard.md (Line 68, 93), prdDevelopmentStandards.md (Line 190)
+## 6. Risk and Rollback
+
+| Risk | Likelihood | Impact | Mitigation |
+| :--- | :--- | :--- | :--- |
+| Stats overflow becomes unreadable | Medium | Medium | `overflow-y: auto` ensures content is scrollable. |
+| Portrait images get distorted | Low | High | `object-fit: cover` is already in use and prevents distortion. |
+| Grid breaks on older browsers | Low | Medium | The `minmax()` function is widely supported. Cross-browser testing is still advised. |
+
+**Rollback Plan**: In case of severe issues, the changes can be reverted via `git revert`. For a temporary fix, an emergency CSS override can be applied to restore the original `grid-template-rows` and `height`.
+
+---
+
+## 7. References
+
+-   **PRDs**: `prdJudokaCard.md`, `prdDevelopmentStandards.md`
+-   **CSS File**: `src/styles/card.css`
+-   **Test File**: `playwright/card-aspect-ratio.spec.js`
