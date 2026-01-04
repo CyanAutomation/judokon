@@ -1,29 +1,69 @@
 # Test Failure Analysis: Opponent Choosing Snackbar
 
-**Date**: January 4, 2026  
-**Test File**: `playwright/opponent-choosing.smoke.spec.js`  
-**Status**: **Root Cause Identified** — Solution Pending
+| **Property**       | **Value**                                              |
+|--------------------|--------------------------------------------------------|
+| **Date**           | January 4, 2026                                        |
+| **Test File**      | `playwright/opponent-choosing.smoke.spec.js`           |
+| **Status**         | 🔴 **Root Cause Identified** — Solution Pending       |
+| **Severity**       | Medium (test-only failure, production verified working)|
+| **Priority**       | P2 (blocking CI/CD, but isolated to test environment) |
+
+---
+
+## Executive Summary
+
+The "Opponent is choosing..." snackbar message fails to appear during Playwright tests when a stat button is clicked. Investigation reveals this is **not a production bug** but a **test environment initialization issue**.
+
+**Root Cause**: The `statSelected` event handler registration function (`bindUIHelperEventHandlersDynamic()`) is not being called during Playwright test initialization, despite being present in production code.
+
+**Impact**: Test suite failures in CI/CD; no user-facing impact confirmed.
+
+**Solution Path**: Ensure complete initialization in test environment OR add explicit handler registration in test setup.
 
 ---
 
 ## 1. Issue Description
 
-During Playwright tests, the "Opponent is choosing..." snackbar message fails to appear when a stat button is clicked.
+### Observed Behavior
 
-- **With Feature Flag (`opponentDelayMessage: true`)**: The test fails because the snackbar element with the expected message is never found.
-- **Without Feature Flag**: The snackbar continues to show the initial "First to 5 points wins." message, indicating the correct handler never updated the content.
+During Playwright automated tests, the "Opponent is choosing..." snackbar message fails to appear when a stat button is clicked, causing test assertions to fail.
 
-The core issue is that the "Opponent is choosing" message, which should be displayed upon stat selection, is being preempted by a previous message from the match initialization.
+### Failure Modes
 
-## 2. Root Cause
+| **Scenario**                                         | **Expected Behavior**                        | **Actual Behavior**                                    |
+|------------------------------------------------------|----------------------------------------------|--------------------------------------------------------|
+| **With Feature Flag** (`opponentDelayMessage: true`) | Snackbar displays "Opponent is choosing..."  | ❌ Snackbar element with expected message not found    |
+| **Without Feature Flag**                             | Snackbar updated to opponent selection state | ❌ Snackbar shows stale "First to 5 points wins." text |
 
-The `statSelected` event handler, located in `src/helpers/classicBattle/uiEventHandlers.js`, is **not being registered** during the Playwright test's initialization sequence.
+### Impact Assessment
 
-The function responsible for this registration, `bindUIHelperEventHandlersDynamic()`, is never called within the test environment, even though it is present in the production initialization code.
+- ✅ **Production**: Feature verified working in manual browser testing
+- ❌ **Test Suite**: Consistent failures blocking CI/CD pipeline
+- 🔍 **Scope**: Isolated to Playwright test environment initialization
 
 ---
 
-## 3. Evidence
+## 2. Root Cause Analysis
+
+### Primary Issue
+
+The `statSelected` event handler is **not being registered** during the Playwright test's initialization sequence.
+
+### Mechanism
+
+The function responsible for handler registration, `bindUIHelperEventHandlersDynamic()` (located in `src/helpers/classicBattle/uiEventHandlers.js`), is never invoked within the test environment, despite being correctly called in production initialization code (`src/pages/battleClassic.init.js`).
+
+### Why This Matters
+
+Without handler registration:
+1. The `statSelected` event is emitted correctly ✅
+2. The event system functions properly ✅
+3. But no handler responds to the event ❌
+4. Therefore, the snackbar is never updated ❌
+
+---
+
+## 3. Evidence & Diagnostic Data
 
 The investigation confirmed that the underlying event system is functional, but the specific handler for `statSelected` is not attached.
 
