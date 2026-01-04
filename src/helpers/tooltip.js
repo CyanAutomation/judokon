@@ -280,7 +280,7 @@ function ensureTooltipElement(container = globalThis.document?.body) {
   tip.className = "tooltip";
   tip.setAttribute("role", "tooltip");
   tip.setAttribute("aria-hidden", "true");
-  
+
   // Generate unique ID for non-body containers
   if (container === document.body) {
     tip.id = "tooltip";
@@ -288,14 +288,14 @@ function ensureTooltipElement(container = globalThis.document?.body) {
   } else {
     tip.id = `tooltip-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
-  
+
   tip.style.position = "absolute";
   tip.style.display = "none";
   container.appendChild(tip);
-  
+
   // Cache the tooltip for this container
   containerTooltipMap.set(container, tip);
-  
+
   return tip;
 }
 

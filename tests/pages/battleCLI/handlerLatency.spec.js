@@ -227,6 +227,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
     expect(statEl?.classList.contains("selected")).toBe(false);
     expect(cliState.roundResolving).toBe(false);
 
+    // Import the mocked showSnackbar to verify calls
+    const { showSnackbar } = await import("../../../src/helpers/showSnackbar.js");
+
     const { promiseSpy, scheduledTasks, setCaptureNext } = createMicrotaskCapture();
     try {
       setCaptureNext(true);
@@ -242,8 +245,9 @@ describe("battleCLI waitingForPlayerAction handler latency", () => {
 
       expect(statEl?.classList.contains("selected")).toBe(true);
       expect(emitSpy).toHaveBeenCalledWith("statSelected", { stat: "power" });
-      const snackbar = document.querySelector("#snackbar-container .snackbar");
-      expect(snackbar?.textContent).toBe("You Picked: Power");
+
+      // Verify showSnackbar was called with the correct message (snackbar is mocked in loadBattleCLI)
+      expect(showSnackbar).toHaveBeenCalledWith("You Picked: Power");
       expect(countdown?.dataset.status).toBeUndefined();
     } finally {
       promiseSpy.mockRestore();
