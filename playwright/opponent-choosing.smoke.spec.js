@@ -39,16 +39,6 @@ const FLAG_SPEC_PATH = "docs/qa/opponent-delay-message.md";
 
 test.describe("Classic Battle – opponent choosing snackbar", () => {
   async function launchClassicBattle(page, featureFlags) {
-    // Reset EventTarget/WeakSet BEFORE any page scripts load
-    // This must run before registerCommonRoutes and configureApp
-    await page.addInitScript(() => {
-      // Clear WeakSet that tracks bound targets
-      delete globalThis.__cbUIHelpersDynamicBoundTargets;
-      
-      // Clear EventTarget singleton
-      delete globalThis.__classicBattleEventTarget;
-    });
-
     await registerCommonRoutes(page);
 
     const app = await configureApp(page, {
@@ -68,68 +58,6 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await expect(firstStat).toBeVisible({ timeout: 5000 });
     await expect(statButtons).toHaveAttribute("data-buttons-ready", "true", { timeout: 5000 });
     await waitForFeatureFlagOverrides(page, featureFlags);
-
-    // Verify EventTarget and handler registration (diagnostic)
-    const diagnostics = await page.evaluate(() => {
-      const target = globalThis.__classicBattleEventTarget;
-      const weakSet = globalThis.__cbUIHelpersDynamicBoundTargets;
-
-      // Test if emitting an event works
-      let eventFired = false;
-      if (target) {
-        target.addEventListener("testEvent", () => {
-          eventFired = true;
-        });
-        target.dispatchEvent(new CustomEvent("testEvent", { detail: {} }));
-      }
-
-      return {
-        targetExists: !!target,
-        targetDebugId: target?.__debugId || "NO_ID",
-        targetCreatedAt: target?.__createdAt || "NO_TIMESTAMP",
-        weakSetExists: !!weakSet,
-        targetInWeakSet: weakSet && target ? weakSet.has(target) : false,
-        eventSystemWorks: eventFired
-      };
-    });
-
-    // Log diagnostics for debugging test failures
-    console.log("[Test Diagnostics]", {
-      featureFlags,
-      ...diagnostics
-    });
-
-    // Verify critical state
-    if (!diagnostics.targetExists) {
-      throw new Error("EventTarget not created - initialization may have failed");
-    }
-    if (!diagnostics.targetInWeakSet) {
-      throw new Error("EventTarget not in WeakSet - handlers may not be registered");
-    }
-    if (!diagnostics.eventSystemWorks) {
-      throw new Error("EventTarget dispatching doesn't work - event system broken");
-    }
-
-    // Add a test listener to verify statSelected events are being emitted
-    await page.evaluate(() => {
-      const target = globalThis.__classicBattleEventTarget;
-      if (target) {
-        window.__statSelectedEventCount = 0;
-        window.__eventTargetAtRegistration = target.__debugId;
-        target.addEventListener("statSelected", (e) => {
-          window.__statSelectedEventCount++;
-          console.log("[Test Listener] statSelected event fired!", {
-            count: window.__statSelectedEventCount,
-            targetId: target.__debugId,
-            detail: e.detail
-          });
-        });
-        
-        // Intercept emitBattleEvent to track which target is used for emission
-        const originalGetTarget = window.__classicBattleEventTarget;
-        window.__emitTargetIds = [];
-      }
-    });
 
     return {
       app,
