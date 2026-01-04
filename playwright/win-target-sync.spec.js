@@ -1,6 +1,11 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { configureApp } from "./fixtures/appConfig.js";
-import { getPlayerScore, getPointsToWin, waitForBattleReady } from "./helpers/battleStateHelper.js";
+import {
+  getPlayerScore,
+  getPointsToWin,
+  waitForBattleReady,
+  waitForLocalStorageValue
+} from "./helpers/battleStateHelper.js";
 import { parseScores } from "./helpers/scoreUtils.js";
 
 async function openSettingsPanel(page) {
@@ -184,6 +189,11 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     await expect(page.locator("#round-counter")).toHaveText(roundCounterPattern("10"));
     await expect(dropdown).toHaveValue("10");
+
+    // Wait for localStorage to persist before reload
+    await page.waitForTimeout(150);
+    await waitForLocalStorageValue(page, "battle.pointsToWin", "10");
+
     await page.reload();
 
     await expect(page.locator("dialog.modal")).toBeVisible();

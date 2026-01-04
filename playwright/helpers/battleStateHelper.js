@@ -1023,3 +1023,41 @@ export async function getRoundsPlayed(page) {
     return null;
   });
 }
+
+/**
+ * Wait for a localStorage value to be persisted before continuing.
+ * Useful before page reloads to ensure storage writes have completed.
+ *
+ * @pseudocode
+ * FUNCTION waitForLocalStorageValue(page, key, expectedValue, options):
+ *   SET timeout FROM options OR default 5000ms
+ *   POLL localStorage.getItem(key) until it equals expectedValue
+ *   IF timeout occurs BEFORE match:
+ *     THROW error with timeout message
+ *   RETURN true when value matches
+ *
+ * @param {import("@playwright/test").Page} page - Playwright page object
+ * @param {string} key - localStorage key to check
+ * @param {string} expectedValue - Expected value to wait for
+ * @param {Object} [options] - Optional configuration
+ * @param {number} [options.timeout=5000] - Maximum time to wait in milliseconds
+ * @returns {Promise<boolean>} True when value is persisted
+ */
+export async function waitForLocalStorageValue(page, key, expectedValue, options = {}) {
+  const { timeout = 5000 } = options;
+
+  await page.waitForFunction(
+    ({ storageKey, expected }) => {
+      try {
+        const value = localStorage.getItem(storageKey);
+        return value === expected;
+      } catch {
+        return false;
+      }
+    },
+    { storageKey: key, expected: expectedValue },
+    { timeout }
+  );
+
+  return true;
+}
