@@ -161,20 +161,6 @@ export function parseTooltipText(text) {
   return { html, warning };
 }
 
-function ensureTooltipElement() {
-  if (typeof document === "undefined") return null;
-  if (tooltipEl) return tooltipEl;
-  tooltipEl = document.createElement("div");
-  tooltipEl.className = "tooltip";
-  tooltipEl.setAttribute("role", "tooltip");
-  tooltipEl.id = "tooltip";
-  tooltipEl.setAttribute("aria-hidden", "true");
-  tooltipEl.style.position = "absolute";
-  tooltipEl.style.display = "none";
-  document.body.appendChild(tooltipEl);
-  return tooltipEl;
-}
-
 /**
  * Resolve tooltip text for an element ID.
  *
