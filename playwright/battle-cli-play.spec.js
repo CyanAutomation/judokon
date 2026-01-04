@@ -52,6 +52,9 @@ test.describe("Battle CLI - Play", () => {
       const statKey = await statButton.getAttribute("data-stat");
       expect(statKey, "stat button should expose a data-stat attribute").toBeTruthy();
 
+      const roundCounter = page.locator("#round-counter");
+      const initialRoundCounterText = await roundCounter.textContent();
+
       await statButton.click();
 
       // Wait for the snackbar to confirm the stat was selected
@@ -73,8 +76,6 @@ test.describe("Battle CLI - Play", () => {
       await expect(scoreDisplay).toHaveAttribute("data-score-player", /\d+/);
       await expect(scoreDisplay).toHaveAttribute("data-score-opponent", /\d+/);
 
-      const roundCounter = page.locator("#round-counter");
-      const initialRoundCounterText = await roundCounter.textContent();
       await expect(roundCounter).not.toHaveText(initialRoundCounterText ?? "", { timeout: 10_000 });
 
       // Wait for next round to be ready
