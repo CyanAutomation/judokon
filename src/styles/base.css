@@ -11,6 +11,7 @@
   --color-background: #ffffff; /* Light mode background */
   --color-text: #000000; /* Light mode text */
   --color-text-inverted: #ffffff;
+  --color-text-secondary: #666666; /* Secondary text color for muted content */
   --color-border: rgba(0, 0, 0, 0.1);
   --link-color: var(--color-secondary);
 
@@ -107,6 +108,7 @@
   --color-tertiary: #333333;
   --color-text-inverted: #ffffff;
   --color-primary: #ff4530;
+  --color-text-secondary: #999999;
   --link-color: #3399ff;
   --button-disabled-bg: #555555;
   --button-disabled-pattern: none;
@@ -125,6 +127,7 @@
   --color-text-inverted: #000000;
   --color-primary: #8cff6b;
   --color-secondary: #8cff6b;
+  --color-text-secondary: #6edb55;
   --link-color: #8cff6b;
   --button-bg: #8cff6b;
   --button-hover-bg: #6edb55;
