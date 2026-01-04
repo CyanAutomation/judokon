@@ -25,8 +25,11 @@ describe("battleCLI accessibility", () => {
       );
       setAutoContinue(false);
       emitBattleEvent("battleStateChange", { from: "waitingForPlayerAction", to: "roundOver" });
-      const bar = document.querySelector("#snackbar-container .snackbar");
-      expect(bar?.textContent).toBe("Press Enter to continue");
+
+      // Verify showSnackbar was called with the correct message (snackbar is mocked in loadBattleCLI)
+      const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");
+      expect(showSnackbar).toHaveBeenCalledWith("Press Enter to continue");
+
       const nextButton = document.getElementById("next-round-button");
       expect(document.activeElement).toBe(nextButton);
     });

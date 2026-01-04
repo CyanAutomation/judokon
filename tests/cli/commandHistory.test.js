@@ -94,11 +94,13 @@ describe("Battle CLI command history preview", () => {
     cliState.roundResolving = false;
 
     const list = document.getElementById("cli-stats");
-    const snackbar = document.querySelector("#snackbar-container .snackbar");
 
     expect(handleCommandHistory("ArrowUp")).toBe(true);
     expect(list.dataset.historyPreview).toBe("speed");
     expect(list.querySelector(".history-preview")?.dataset.stat).toBe("speed");
+
+    // Query snackbar after handleCommandHistory to get the most recent message
+    let snackbar = document.querySelector("#snackbar-container .snackbar:last-child");
     expect(snackbar?.textContent).toBe("History: speed");
     expect(snackbar).toBeTruthy();
 
@@ -112,6 +114,9 @@ describe("Battle CLI command history preview", () => {
     expect(handleCommandHistory("ArrowDown")).toBe(true);
     expect(list.dataset.historyPreview).toBeUndefined();
     expect(list.querySelector(".history-preview")).toBeNull();
+
+    // Query snackbar after final handleCommandHistory call
+    snackbar = document.querySelector("#snackbar-container .snackbar:last-child");
     expect(snackbar?.textContent).toBe("");
 
     const activeId = list.getAttribute("aria-activedescendant");
