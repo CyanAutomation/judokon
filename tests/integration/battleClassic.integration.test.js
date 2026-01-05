@@ -31,6 +31,9 @@ async function triggerStatSelection(store, statButton, statKey) {
     await Promise.resolve();
   });
 
+  // Wait for the click event to propagate and update the store
+  await new Promise(resolve => setTimeout(resolve, 0));
+
   const selectionTrace =
     window.__SELECTION_FLAG_TRACE?.[window.__SELECTION_FLAG_TRACE.length - 1] ?? null;
   if (store?.selectionMade || selectionTrace?.selectionMade) {
