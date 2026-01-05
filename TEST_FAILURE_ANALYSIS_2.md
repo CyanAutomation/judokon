@@ -30,6 +30,7 @@ The following tasks have been completed and represent foundational work for the 
 **Date**: January 5, 2026
 
 **Implementation Details**:
+
 - Created `src/helpers/SnackbarManager.js` with comprehensive lifecycle management
 - Features implemented:
   - Priority-based display (HIGH/NORMAL/LOW)
@@ -40,6 +41,7 @@ The following tasks have been completed and represent foundational work for the 
   - Backward compatibility with existing showSnackbar API
 
 **Key Methods**:
+
 - `show(config)`: Display snackbar with priority and duration control
 - `remove(id)`: Remove snackbar (respects minDuration)
 - `update(id, message)`: Update existing snackbar
@@ -56,6 +58,7 @@ The following tasks have been completed and represent foundational work for the 
 **Date**: January 5, 2026
 
 **Implementation Details**:
+
 - Modified `src/helpers/classicBattle/uiEventHandlers.js` to integrate SnackbarManager
 - Changed `statSelected` handler to be async and return a promise
 - Implemented coordinated delay timing:
@@ -68,6 +71,7 @@ The following tasks have been completed and represent foundational work for the 
   - `awaitStatSelectedHandler()`: Wait for handler completion
 
 **Key Changes**:
+
 - Handler now uses `await` for delay timing instead of setTimeout callback
 - Snackbar shown with `SnackbarManager.show()` with HIGH priority
 - Promise-based coordination ensures battle flow waits for snackbar display
@@ -83,6 +87,7 @@ The following tasks have been completed and represent foundational work for the 
 **Date**: January 5, 2026
 
 **Implementation Details**:
+
 - Modified `src/helpers/classicBattle/selectionHandler.js` to await statSelected handler
 - Added import for `awaitStatSelectedHandler` from uiEventHandlers
 - Updated `dispatchStatSelected` function to wait for handler completion:
@@ -92,6 +97,7 @@ The following tasks have been completed and represent foundational work for the 
   4. Then proceed with battle engine processing
 
 **Coordination Flow**:
+
 ```
 User clicks stat button
 → handleStatSelection called
@@ -116,9 +122,11 @@ User clicks stat button
 **Date**: January 5, 2026
 
 **Implementation Details**:
+
 - Enhanced `src/helpers/classicBattle/stateTable.js` with new state
 - Added **`waitingForOpponentDecision`** (state id 4.5) between player selection and round decision
 - State transition flow:
+
   ```
   waitingForPlayerAction
     → (statSelected event)
@@ -130,6 +138,7 @@ User clicks stat button
   ```
 
 **New State Properties**:
+
 - **Name**: `waitingForOpponentDecision`
 - **Description**: Player has selected a stat. Display "Opponent is choosing..." message with minimum duration before proceeding to round decision.
 - **Entry Actions**:
@@ -140,6 +149,7 @@ User clicks stat button
   - `interrupt` → transitions to `interruptRound`
 
 **Benefits**:
+
 - Explicit state for opponent message display
 - Clear entry/exit points for timing coordination
 - Prevents race conditions between UI and game logic
@@ -157,6 +167,7 @@ User clicks stat button
 
 **Implementation Details**:
 Created comprehensive test suite at `tests/helpers/SnackbarManager.test.js` with 23 tests covering:
+
 - Basic display and DOM element creation
 - Priority system (HIGH/NORMAL/LOW)
 - Queuing system with max concurrent limit
@@ -171,22 +182,23 @@ Created comprehensive test suite at `tests/helpers/SnackbarManager.test.js` with
 
 **Current Test Failures** (3 of 23):
 
-1.  **"should remove oldest when exceeding limit"**
-    *   **Issue**: The first message is not removed when a third message is added. Both messages have `NORMAL` priority, so the first created should be removed.
-    *   **Actual**: `activeSnackbars` shows `[First, Second]` instead of `[Second, Third]`.
-    *   **Root Cause**: The synchronous removal logic within the `show()` method may have a race condition or incorrect sorting.
-2.  **"should apply .snackbar-bottom to newest message"**
-    *   **Issue**: Positioning classes are applied incorrectly.
-    *   **Actual**: The first (older) snackbar has `.snackbar-bottom`, while the second (newer) has `.snackbar-top` and `.snackbar-stale`.
-    *   **Expected**: The first should have `.snackbar-top`, and the second should have `.snackbar-bottom`.
-    *   **Root Cause Investigation**: The `sort` logic in `updatePositioning()` appears correct (newer first), but `classList` operations seem to be applied in reverse.
-    *   **Hypothesis**: Both snackbars are likely created with the same timestamp (`Date.now()`) due to rapid execution in tests, causing sort ambiguity and an arbitrary order.
-3.  **"should provide comprehensive diagnostics"**
-    *   **Issue**: Expected 2 active snackbars (`HIGH` + `NORMAL`), but only 1 was reported.
-    *   **Likely Related**: This likely points to issues with capacity enforcement or priority system logic.
-    *   **Action**: Need to verify `canDisplay()` logic for mixed priorities.
+1. **"should remove oldest when exceeding limit"**
+    - **Issue**: The first message is not removed when a third message is added. Both messages have `NORMAL` priority, so the first created should be removed.
+    - **Actual**: `activeSnackbars` shows `[First, Second]` instead of `[Second, Third]`.
+    - **Root Cause**: The synchronous removal logic within the `show()` method may have a race condition or incorrect sorting.
+2. **"should apply .snackbar-bottom to newest message"**
+    - **Issue**: Positioning classes are applied incorrectly.
+    - **Actual**: The first (older) snackbar has `.snackbar-bottom`, while the second (newer) has `.snackbar-top` and `.snackbar-stale`.
+    - **Expected**: The first should have `.snackbar-top`, and the second should have `.snackbar-bottom`.
+    - **Root Cause Investigation**: The `sort` logic in `updatePositioning()` appears correct (newer first), but `classList` operations seem to be applied in reverse.
+    - **Hypothesis**: Both snackbars are likely created with the same timestamp (`Date.now()`) due to rapid execution in tests, causing sort ambiguity and an arbitrary order.
+3. **"should provide comprehensive diagnostics"**
+    - **Issue**: Expected 2 active snackbars (`HIGH` + `NORMAL`), but only 1 was reported.
+    - **Likely Related**: This likely points to issues with capacity enforcement or priority system logic.
+    - **Action**: Need to verify `canDisplay()` logic for mixed priorities.
 
 **Debug Findings**:
+
 - Both snackbars exist in DOM (confirmed with `.toHaveLength(2)`).
 - Only 1 snackbar has the `.snackbar-bottom` class (this is correct behavior for the _newest_ message).
 - First snackbar classes: `[snackbar, snackbar--active, snackbar-bottom]`
@@ -195,12 +207,13 @@ Created comprehensive test suite at `tests/helpers/SnackbarManager.test.js` with
 - Both snackbars are likely created at the same millisecond, causing sort ambiguity for `Date.now()`.
 
 **Next Steps**:
-1.  Introduce a small, controlled delay between snackbar creations in tests, or use an incremental timestamp counter within the test environment to ensure unique timestamps.
-2.  Alternatively, modify `SnackbarManager` to use an internal counter for deterministic sort order, independent of system time.
-3.  Address the `maxConcurrent` enforcement to properly remove the oldest snackbar when capacity is exceeded.
-4.  Verify the `canDisplay()` and priority logic to resolve the diagnostics test failure.
-5.  Remove debug `console.log` statements once all issues are resolved.
-6.  Run the full `SnackbarManager` test suite to ensure all 23 tests pass.
+
+1. Introduce a small, controlled delay between snackbar creations in tests, or use an incremental timestamp counter within the test environment to ensure unique timestamps.
+2. Alternatively, modify `SnackbarManager` to use an internal counter for deterministic sort order, independent of system time.
+3. Address the `maxConcurrent` enforcement to properly remove the oldest snackbar when capacity is exceeded.
+4. Verify the `canDisplay()` and priority logic to resolve the diagnostics test failure.
+5. Remove debug `console.log` statements once all issues are resolved.
+6. Run the full `SnackbarManager` test suite to ensure all 23 tests pass.
 
 **Outcome**: Pending - all tests must pass before proceeding to Task 6
 
@@ -212,12 +225,12 @@ Created comprehensive test suite at `tests/helpers/SnackbarManager.test.js` with
 
 When a player selects a stat in Classic Battle mode with `opponentDelayMessage: true`:
 
-1.  ✅ The `statSelected` event is emitted correctly.
-2.  ✅ The event handler receives the event and executes.
-3.  ✅ The handler schedules the message to appear after a 500ms delay.
-4.  ✅ After 500ms, `displayOpponentChoosingPrompt()` is called.
-5.  ✅ `displayOpponentChoosingPrompt()` calls `showSnackbar(message)`.
-6.  ❌ **The snackbar DOM element never appears or is not visible to the user.**
+1. ✅ The `statSelected` event is emitted correctly.
+2. ✅ The event handler receives the event and executes.
+3. ✅ The handler schedules the message to appear after a 500ms delay.
+4. ✅ After 500ms, `displayOpponentChoosingPrompt()` is called.
+5. ✅ `displayOpponentChoosingPrompt()` calls `showSnackbar(message)`.
+6. ❌ **The snackbar DOM element never appears or is not visible to the user.**
 
 ### Test Expectations vs. Reality
 
@@ -283,10 +296,10 @@ t=500ms:  showSnackbar("Opponent is choosing…") attempted
 
 **The Problem**: By `t=500ms`, when the snackbar should appear, the round has often already resolved (e.g., at `t=~700ms`). This leads to a situation where:
 
-1.  **State Conflict**: The battle state machine may have moved to `roundOver` or `cooldown`, preventing snackbars from being shown.
-2.  **DOM Cleanup**: Round resolution might trigger cleanup routines that inadvertently remove or hide snackbars.
-3.  **Message Collision**: A subsequent message (e.g., "Opponent wins!") from round outcome might overwrite the delayed message.
-4.  **Element Creation Failure**: `showSnackbar()` may silently fail or encounter issues when called after a significant state change.
+1. **State Conflict**: The battle state machine may have moved to `roundOver` or `cooldown`, preventing snackbars from being shown.
+2. **DOM Cleanup**: Round resolution might trigger cleanup routines that inadvertently remove or hide snackbars.
+3. **Message Collision**: A subsequent message (e.g., "Opponent wins!") from round outcome might overwrite the delayed message.
+4. **Element Creation Failure**: `showSnackbar()` may silently fail or encounter issues when called after a significant state change.
 
 ### Code Evidence
 
@@ -315,9 +328,9 @@ opponentSnackbarId = setTimeout(() => {
 
 Setting `window.__OPPONENT_RESOLVE_DELAY_MS = 1500` to delay the opponent's response did not resolve the issue. Possible reasons include:
 
-1.  **Test Environment Disregard**: The delay might not be respected in the specific test setup's battle flow.
-2.  **Late Application**: The delay might need to be configured before battle initialization, not just before navigation.
-3.  **Incorrect Layer**: The delay might affect a different aspect of the battle flow (e.g., opponent AI decision-making) rather than the critical round resolution timing.
+1. **Test Environment Disregard**: The delay might not be respected in the specific test setup's battle flow.
+2. **Late Application**: The delay might need to be configured before battle initialization, not just before navigation.
+3. **Incorrect Layer**: The delay might affect a different aspect of the battle flow (e.g., opponent AI decision-making) rather than the critical round resolution timing.
 
 ---
 
@@ -327,26 +340,26 @@ Setting `window.__OPPONENT_RESOLVE_DELAY_MS = 1500` to delay the opponent's resp
 
 The snackbar's delayed display (500ms) and the battle round resolution operate as **completely independent processes**:
 
--   **Snackbar layer**: Relies on `setTimeout()` to schedule message appearance.
--   **Battle layer**: Immediately processes stat selection and resolves the round.
--   **No synchronization**: There is no explicit mechanism for either layer to wait for or be aware of the other's timing.
+- **Snackbar layer**: Relies on `setTimeout()` to schedule message appearance.
+- **Battle layer**: Immediately processes stat selection and resolves the round.
+- **No synchronization**: There is no explicit mechanism for either layer to wait for or be aware of the other's timing.
 
 ### Issue 2: Absence of an Explicit "Waiting for Opponent" State
 
 The current battle flow seemingly lacks an explicit "waiting for opponent action" state. Such a state would be crucial to:
 
-1.  Ensure the delayed snackbar message is displayed.
-2.  Prevent round resolution until the message has been visible for a minimum duration.
-3.  Properly coordinate with the opponent's "reveal" timing.
+1. Ensure the delayed snackbar message is displayed.
+2. Prevent round resolution until the message has been visible for a minimum duration.
+3. Properly coordinate with the opponent's "reveal" timing.
 
 ### Issue 3: Unmanaged Snackbar Lifecycle
 
 The current snackbar implementation:
 
-1.  Immediately clears the snackbar container (`replaceChildren()`).
-2.  Schedules a new snackbar for future display (500ms later).
-3.  Lacks any robust mechanism to guarantee the scheduled snackbar actually appears.
-4.  Provides no post-display cleanup or validation once the timeout fires.
+1. Immediately clears the snackbar container (`replaceChildren()`).
+2. Schedules a new snackbar for future display (500ms later).
+3. Lacks any robust mechanism to guarantee the scheduled snackbar actually appears.
+4. Provides no post-display cleanup or validation once the timeout fires.
 
 ---
 
@@ -360,7 +373,8 @@ This section outlines potential solutions to the identified timing and architect
 
 **Implementation Steps** (largely aligned with "Implementation Progress" Tasks 1-4):
 
-1.  **Enhance Event Handler to Return a Promise**: The `statSelected` handler (now part of `uiEventHandlers.js`) should return a promise that resolves *after* the snackbar has been shown and its minimum display duration has elapsed.
+1. **Enhance Event Handler to Return a Promise**: The `statSelected` handler (now part of `uiEventHandlers.js`) should return a promise that resolves _after_ the snackbar has been shown and its minimum display duration has elapsed.
+
     ```javascript
     // In uiEventHandlers.js statSelected handler
     onBattleEvent("statSelected", async (e) => {
@@ -379,7 +393,8 @@ This section outlines potential solutions to the identified timing and architect
     });
     ```
 
-2.  **Modify Selection Handler to Await Event Handlers**: The `handleStatSelection` function in `selectionHandler.js` (or its orchestrator) must `await` the completion of the `statSelected` event handlers.
+2. **Modify Selection Handler to Await Event Handlers**: The `handleStatSelection` function in `selectionHandler.js` (or its orchestrator) must `await` the completion of the `statSelected` event handlers.
+
     ```javascript
     // In selectionHandler.js (or coordinating battle flow logic)
     export async function handleStatSelection(stat, store, opts = {}) {
@@ -397,20 +412,20 @@ This section outlines potential solutions to the identified timing and architect
     }
     ```
 
-3.  **Formalize State (Completed by Task 4)**: The introduction of the `waitingForOpponentDecision` state explicitly models this pause in the battle flow, ensuring clear transitions.
+3. **Formalize State (Completed by Task 4)**: The introduction of the `waitingForOpponentDecision` state explicitly models this pause in the battle flow, ensuring clear transitions.
 
 **Benefits**:
 
--   ✅ Directly implements the intended feature behavior from QA specifications.
--   ✅ Guarantees the "Opponent is choosing..." message is visible for the specified minimum duration.
--   ✅ Establishes clean, explicit coordination between the UI and game logic layers.
--   ✅ Delivers the best user experience by preventing race conditions.
+- ✅ Directly implements the intended feature behavior from QA specifications.
+- ✅ Guarantees the "Opponent is choosing..." message is visible for the specified minimum duration.
+- ✅ Establishes clean, explicit coordination between the UI and game logic layers.
+- ✅ Delivers the best user experience by preventing race conditions.
 
 **Risks**:
 
--   ⚠️ Modifies core battle flow timing, necessitating thorough testing for regressions.
--   ⚠️ May subtly affect other system components relying on immediate stat processing.
--   ⚠️ Introduces asynchronous complexity into what was previously a more synchronous event path.
+- ⚠️ Modifies core battle flow timing, necessitating thorough testing for regressions.
+- ⚠️ May subtly affect other system components relying on immediate stat processing.
+- ⚠️ Introduces asynchronous complexity into what was previously a more synchronous event path.
 
 ### Option B: Fix Snackbar Display Without Changing Battle Flow (Simpler)
 
@@ -418,7 +433,8 @@ This section outlines potential solutions to the identified timing and architect
 
 **Implementation Steps**:
 
-1.  **Avoid Immediate Snackbar Clearing**: In `uiEventHandlers.js`, do not call `replaceChildren()` immediately. Instead, `SnackbarManager` (Task 1) should handle the update or creation of snackbars.
+1. **Avoid Immediate Snackbar Clearing**: In `uiEventHandlers.js`, do not call `replaceChildren()` immediately. Instead, `SnackbarManager` (Task 1) should handle the update or creation of snackbars.
+
     ```javascript
     // In uiEventHandlers.js
     if (shouldDelay) {
@@ -430,19 +446,19 @@ This section outlines potential solutions to the identified timing and architect
     }
     ```
 
-2.  **Implement Snackbar Priority System**: `SnackbarManager` (Task 1) should correctly prioritize messages, preventing lower-priority messages (e.g., round outcome) from immediately overwriting critical high-priority messages (e.g., "Opponent is choosing...").
+2. **Implement Snackbar Priority System**: `SnackbarManager` (Task 1) should correctly prioritize messages, preventing lower-priority messages (e.g., round outcome) from immediately overwriting critical high-priority messages (e.g., "Opponent is choosing...").
 
-3.  **Protect Delayed Messages**: The `roundResolved` event handler should explicitly check if a high-priority delayed message is active and, if so, defer showing the round outcome message until the delayed message has completed its minimum display duration.
+3. **Protect Delayed Messages**: The `roundResolved` event handler should explicitly check if a high-priority delayed message is active and, if so, defer showing the round outcome message until the delayed message has completed its minimum display duration.
 
 **Benefits**:
 
--   ✅ Simpler, more isolated changes to the UI layer.
--   ✅ Less impact on core battle flow timing, potentially lower regression risk.
+- ✅ Simpler, more isolated changes to the UI layer.
+- ✅ Less impact on core battle flow timing, potentially lower regression risk.
 
 **Drawbacks**:
 
--   ⚠️ Does not address the underlying architectural issue of uncoordinated timings.
--   ⚠️ Still prone to subtle timing conflicts, where the delayed message might appear *after* the round has visibly resolved, leading to a confusing user experience.
+- ⚠️ Does not address the underlying architectural issue of uncoordinated timings.
+- ⚠️ Still prone to subtle timing conflicts, where the delayed message might appear _after_ the round has visibly resolved, leading to a confusing user experience.
 
 ### Option C: Skip Snackbar When Round Resolves Too Quickly (Pragmatic)
 
@@ -475,15 +491,15 @@ onBattleEvent("statSelected", async (e) => {
 
 **Benefits**:
 
--   ✅ Simplest implementation, minimizing immediate code complexity.
--   ✅ Avoids awkward timing issues where the message appears too late.
--   ✅ Provides a form of graceful degradation.
+- ✅ Simplest implementation, minimizing immediate code complexity.
+- ✅ Avoids awkward timing issues where the message appears too late.
+- ✅ Provides a form of graceful degradation.
 
 **Drawbacks**:
 
--   ❌ The feature does not work as designed in fast-paced scenarios.
--   ❌ The "Opponent is choosing..." message may frequently be absent, diminishing UX.
--   ❌ Requires rewriting tests to specifically account for this behavior.
+- ❌ The feature does not work as designed in fast-paced scenarios.
+- ❌ The "Opponent is choosing..." message may frequently be absent, diminishing UX.
+- ❌ Requires rewriting tests to specifically account for this behavior.
 
 ---
 
@@ -493,10 +509,11 @@ onBattleEvent("statSelected", async (e) => {
 
 **Rationale**:
 This option, largely addressed by the completed Implementation Progress Tasks 1-4, is superior because it:
-1.  **Fully Aligns with QA Spec**: Directly implements the intended feature design from `docs/qa/opponent-delay-message.md`, ensuring the user experience matches expectations.
-2.  **Guarantees Visibility**: Ensures the message is displayed for its specified minimum duration, preventing the "flicker" or non-appearance bug.
-3.  **Architectural Soundness**: Establishes proper, explicit coordination between the UI update layer and the core game logic, preventing future race conditions.
-4.  **Optimal User Experience**: Provides a clear and unambiguous signal to the player, enhancing game clarity and engagement.
+
+1. **Fully Aligns with QA Spec**: Directly implements the intended feature design from `docs/qa/opponent-delay-message.md`, ensuring the user experience matches expectations.
+2. **Guarantees Visibility**: Ensures the message is displayed for its specified minimum duration, preventing the "flicker" or non-appearance bug.
+3. **Architectural Soundness**: Establishes proper, explicit coordination between the UI update layer and the core game logic, preventing future race conditions.
+4. **Optimal User Experience**: Provides a clear and unambiguous signal to the player, enhancing game clarity and engagement.
 
 **Implementation Priority**:
 The work completed in Tasks 1-4 provides a strong foundation for Option A. The immediate next steps involve resolving the failing unit tests (Task 5) and integrating the new state and handlers into the main battle flow.
@@ -507,7 +524,8 @@ The work completed in Tasks 1-4 provides a strong foundation for Option A. The i
 
 ### Unit Tests Required
 
-1.  **Handler Timing Tests**:
+1. **Handler Timing Tests**:
+
     ```javascript
     test("statSelected handler delays message by configured amount", async () => {
       vi.useFakeTimers();
@@ -524,7 +542,9 @@ The work completed in Tasks 1-4 provides a strong foundation for Option A. The i
       expect(SnackbarManager.getMessage()).toContain("Opponent is choosing");
     });
     ```
-2.  **Battle Flow Coordination Tests**:
+
+2. **Battle Flow Coordination Tests**:
+
     ```javascript
     test("battle engine waits for delayed snackbar before resolving round", async () => {
       const startTime = Date.now();
@@ -538,7 +558,9 @@ The work completed in Tasks 1-4 provides a strong foundation for Option A. The i
       expect(elapsed).toBeGreaterThanOrEqual(500 + 750);
     });
     ```
-3.  **Minimum Display Duration Tests**:
+
+3. **Minimum Display Duration Tests**:
+
     ```javascript
     test("snackbar remains visible for minimum duration", async () => {
       // Directly using SnackbarManager for isolated testing
@@ -561,26 +583,26 @@ The work completed in Tasks 1-4 provides a strong foundation for Option A. The i
 
 ### Integration Tests Required
 
-1.  **End-to-End Round Flow**:
-    -   Verify the snackbar appears at the correct time and position.
-    -   Validate the minimum display duration is enforced.
-    -   Confirm the round resolves *after* the "Opponent is choosing..." message has completed its display.
-    -   Ensure the round outcome message appears correctly *after* the opponent message.
-2.  **State Machine Transitions**:
-    -   Test all state transitions, specifically focusing on the new `waitingForOpponentDecision` state with delayed messages.
-    -   Verify that snackbars persist across expected state changes and are cleaned up appropriately.
+1. **End-to-End Round Flow**:
+    - Verify the snackbar appears at the correct time and position.
+    - Validate the minimum display duration is enforced.
+    - Confirm the round resolves _after_ the "Opponent is choosing..." message has completed its display.
+    - Ensure the round outcome message appears correctly _after_ the opponent message.
+2. **State Machine Transitions**:
+    - Test all state transitions, specifically focusing on the new `waitingForOpponentDecision` state with delayed messages.
+    - Verify that snackbars persist across expected state changes and are cleaned up appropriately.
 
 ### Playwright Tests Updates
 
-1.  **Update `playwright/opponent-choosing.smoke.spec.js`**:
-    -   Remove any existing workarounds for the opponent resolve delay.
-    -   Adjust timing expectations to match the new, coordinated behavior.
-    -   Add explicit assertions for the snackbar appearing after the delay and its visibility duration.
-2.  **Add Edge Case Tests**:
-    -   Test very fast rounds (where the opponent responds significantly faster than the delay).
-    -   Test scenarios involving rapid player input (spam-clicking).
-    -   Test multiple, rapid stat selections.
-    -   Test browser/tab visibility changes during the snackbar delay.
+1. **Update `playwright/opponent-choosing.smoke.spec.js`**:
+    - Remove any existing workarounds for the opponent resolve delay.
+    - Adjust timing expectations to match the new, coordinated behavior.
+    - Add explicit assertions for the snackbar appearing after the delay and its visibility duration.
+2. **Add Edge Case Tests**:
+    - Test very fast rounds (where the opponent responds significantly faster than the delay).
+    - Test scenarios involving rapid player input (spam-clicking).
+    - Test multiple, rapid stat selections.
+    - Test browser/tab visibility changes during the snackbar delay.
 
 ---
 
@@ -600,11 +622,12 @@ Beyond the immediate bug fix, I have identified several architectural and design
 
 **Rationale**: Ad-hoc creation and destruction of UI messages (like snackbars) without a centralized manager leads to inconsistent display, race conditions, and difficulty in enforcing UX policies (e.g., minimum display times, priority). The `SnackbarManager` (Task 1) is a strong step in this direction.
 
-**Recommendation**: Fully leverage and expand the `SnackbarManager` (or similar component) to handle *all* temporary UI messages. This manager should be responsible for:
--   Queueing and prioritizing messages.
--   Enforcing minimum display durations.
--   Managing maximum concurrent messages.
--   Providing a consistent API for showing, updating, and dismissing messages from any part of the application.
+**Recommendation**: Fully leverage and expand the `SnackbarManager` (or similar component) to handle _all_ temporary UI messages. This manager should be responsible for:
+
+- Queueing and prioritizing messages.
+- Enforcing minimum display durations.
+- Managing maximum concurrent messages.
+- Providing a consistent API for showing, updating, and dismissing messages from any part of the application.
 
 ---
 
@@ -621,9 +644,10 @@ Beyond the immediate bug fix, I have identified several architectural and design
 **Rationale**: Hardcoding timing values and other magic numbers across the codebase hinders tuning, testing, and consistency.
 
 **Recommendation**: Consolidate all configurable values, especially timing parameters (delays, durations, timeouts), into a single, easily accessible configuration module (e.g., `src/config/battleTiming.js`). This would allow for:
--   Quick and consistent adjustments to game pacing and UI responsiveness.
--   Simplified A/B testing of different timings.
--   Enhanced testability by allowing easy overriding of default values in test environments.
+
+- Quick and consistent adjustments to game pacing and UI responsiveness.
+- Simplified A/B testing of different timings.
+- Enhanced testability by allowing easy overriding of default values in test environments.
 
 ---
 
@@ -661,34 +685,34 @@ Beyond the immediate bug fix, I have identified several architectural and design
 
 ### Pre-Implementation
 
--   [ ] Review and approve this analysis document.
--   [ ] Confirm agreement on **Option A** as the chosen fix strategy.
--   [ ] Create a feature flag for the new battle flow behavior (e.g., `coordinatedBattleFlow`).
--   [ ] Ensure timeline recording is active in `__battleDiagnostics` for enhanced debugging.
+- [ ] Review and approve this analysis document.
+- [ ] Confirm agreement on **Option A** as the chosen fix strategy.
+- [ ] Create a feature flag for the new battle flow behavior (e.g., `coordinatedBattleFlow`).
+- [ ] Ensure timeline recording is active in `__battleDiagnostics` for enhanced debugging.
 
 ### Implementation (Option A)
 
--   [ ] Finalize `SnackbarManager` (resolve Task 5 failing tests).
--   [ ] Integrate `SnackbarManager` into `uiEventHandlers.js`'s `statSelected` handler to return a promise that resolves after minimum duration.
--   [ ] Ensure `selectionHandler.js` (or battle flow orchestrator) correctly `awaits` the completion of `statSelected` event handlers.
--   [ ] Verify the `waitingForOpponentDecision` state (from Task 4) is correctly integrated and manages transitions.
+- [ ] Finalize `SnackbarManager` (resolve Task 5 failing tests).
+- [ ] Integrate `SnackbarManager` into `uiEventHandlers.js`'s `statSelected` handler to return a promise that resolves after minimum duration.
+- [ ] Ensure `selectionHandler.js` (or battle flow orchestrator) correctly `awaits` the completion of `statSelected` event handlers.
+- [ ] Verify the `waitingForOpponentDecision` state (from Task 4) is correctly integrated and manages transitions.
 
 ### Testing
 
--   [ ] Complete and pass all unit tests for `SnackbarManager` (Task 5).
--   [ ] Develop and execute unit tests for handler timing and battle flow coordination.
--   [ ] Implement unit tests to verify minimum snackbar display duration.
--   [ ] Conduct integration tests for the end-to-end round flow, including new state transitions.
--   [ ] Update and pass `playwright/opponent-choosing.smoke.spec.js`.
--   [ ] Add Playwright edge case tests (fast rounds, spam clicks, tab visibility changes).
+- [ ] Complete and pass all unit tests for `SnackbarManager` (Task 5).
+- [ ] Develop and execute unit tests for handler timing and battle flow coordination.
+- [ ] Implement unit tests to verify minimum snackbar display duration.
+- [ ] Conduct integration tests for the end-to-end round flow, including new state transitions.
+- [ ] Update and pass `playwright/opponent-choosing.smoke.spec.js`.
+- [ ] Add Playwright edge case tests (fast rounds, spam clicks, tab visibility changes).
 
 ### Validation
 
--   [ ] Perform comprehensive manual testing in a development environment.
--   [ ] Verify that the timing and flow feel natural and intuitive to a user.
--   [ ] Monitor for any performance regressions post-implementation.
--   [ ] Confirm no regressions have been introduced in other battle features.
--   [ ] Conduct cross-browser compatibility testing.
+- [ ] Perform comprehensive manual testing in a development environment.
+- [ ] Verify that the timing and flow feel natural and intuitive to a user.
+- [ ] Monitor for any performance regressions post-implementation.
+- [ ] Confirm no regressions have been introduced in other battle features.
+- [ ] Conduct cross-browser compatibility testing.
 
 ### Documentation
 
@@ -699,11 +723,11 @@ Beyond the immediate bug fix, I have identified several architectural and design
 
 ### Deployment
 
--   [ ] Deploy the changes initially behind the `coordinatedBattleFlow` feature flag.
--   [ ] Actively monitor for production issues and error reports.
--   [ ] Collect user feedback on the new interaction timing.
--   [ ] Gradually increase the rollout percentage.
--   [ ] Remove the feature flag once stability and positive impact are confirmed.
+- [ ] Deploy the changes initially behind the `coordinatedBattleFlow` feature flag.
+- [ ] Actively monitor for production issues and error reports.
+- [ ] Collect user feedback on the new interaction timing.
+- [ ] Gradually increase the rollout percentage.
+- [ ] Remove the feature flag once stability and positive impact are confirmed.
 
 ---
 
@@ -739,12 +763,12 @@ Beyond the immediate bug fix, I have identified several architectural and design
 
 ## 12. Questions for Reviewer
 
-1.  **Approach Preference**: Do you concur with the recommendation for **Option A** (Coordinate Battle Flow), or do you prefer an alternative (Option B or C)?
-2.  **Scope of SnackbarManager**: Should the full implementation of `SnackbarManager` (as detailed in Task 1 and Opportunity #2) be completed as part of this immediate fix, or should some aspects be deferred to a follow-up task?
-3.  **Testing Depth**: Are there specific edge cases or complex scenarios, beyond those listed in the Testing Strategy, that you would like to see explicitly covered by new tests?
-4.  **Timing Values**: Are the proposed timing values (e.g., 500ms initial delay, 750ms minimum display duration) acceptable, or should they be adjusted based on UX guidelines or other factors?
-5.  **Feature Flag Strategy**: Is deploying the new behavior behind a feature flag the preferred initial approach, or would a direct deployment be acceptable given the current state of the code and risk assessment?
-6.  **State Machine Formalization**: Regarding Opportunity #3 (Formalized Battle State Machine), should we prioritize full state machine formalization now, or is it acceptable to defer it to future architectural work?
+1. **Approach Preference**: Do you concur with the recommendation for **Option A** (Coordinate Battle Flow), or do you prefer an alternative (Option B or C)?
+2. **Scope of SnackbarManager**: Should the full implementation of `SnackbarManager` (as detailed in Task 1 and Opportunity #2) be completed as part of this immediate fix, or should some aspects be deferred to a follow-up task?
+3. **Testing Depth**: Are there specific edge cases or complex scenarios, beyond those listed in the Testing Strategy, that you would like to see explicitly covered by new tests?
+4. **Timing Values**: Are the proposed timing values (e.g., 500ms initial delay, 750ms minimum display duration) acceptable, or should they be adjusted based on UX guidelines or other factors?
+5. **Feature Flag Strategy**: Is deploying the new behavior behind a feature flag the preferred initial approach, or would a direct deployment be acceptable given the current state of the code and risk assessment?
+6. **State Machine Formalization**: Regarding Opportunity #3 (Formalized Battle State Machine), should we prioritize full state machine formalization now, or is it acceptable to defer it to future architectural work?
 
 ---
 
@@ -768,12 +792,12 @@ cat test-results/*/error-context.md | grep -A 50 "Page snapshot"
 
 ### Reproduction Steps
 
-1.  Start the development server: `npm run dev`
-2.  Navigate to `/battleClassic.html` with `opponentDelayMessage: true` (e.g., via URL parameter or feature flag).
-3.  Start a new battle.
-4.  Click any stat button to make a selection.
-5.  Observe: Console logs confirm the handler executes, but the "Opponent is choosing..." snackbar does not visually appear.
-6.  Check the DOM (using browser developer tools): Confirm that no `.snackbar-bottom` element is present in the `body` or within `#snackbar-container`.
+1. Start the development server: `npm run dev`
+2. Navigate to `/battleClassic.html` with `opponentDelayMessage: true` (e.g., via URL parameter or feature flag).
+3. Start a new battle.
+4. Click any stat button to make a selection.
+5. Observe: Console logs confirm the handler executes, but the "Opponent is choosing..." snackbar does not visually appear.
+6. Check the DOM (using browser developer tools): Confirm that no `.snackbar-bottom` element is present in the `body` or within `#snackbar-container`.
 
 ---
 
