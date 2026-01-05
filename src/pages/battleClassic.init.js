@@ -508,10 +508,13 @@ async function waitForStatButtonsReady() {
  * Prepares the UI before stat selection occurs and captures the timestamp of
  * the opponent choosing prompt for minimum duration enforcement.
  *
+ * NOTE: Snackbar display is now handled by the uiEventHandlers.js statSelected
+ * handler via SnackbarManager. This function only manages timers and state.
+ *
  * @pseudocode
  * 1. Stop any active stat selection timer utilities.
  * 2. Cancel the global `__battleClassicStopSelectionTimer` hook when available.
- * 3. Show the "opponent choosing" snackbar and record the prompt timestamp.
+ * 3. Set up delay configuration for opponent message timing.
  * 4. Return any window-provided delay override value.
  *
  * @returns {number} Delay override in milliseconds, or `0` when none provided.
@@ -541,9 +544,10 @@ export function prepareUiBeforeSelection() {
   if (flagEnabled) {
     setOpponentDelay(resolvedDelay);
     if (resolvedDelay > 0) {
+      // Set up fallback timer as safety net (records timestamp even if event doesn't fire)
       const timeoutId = scheduleDelayed(() => {
         try {
-          showSnackbar(t("ui.opponentChoosing"));
+          // Only record timestamp - snackbar is handled by uiEventHandlers.js
           recordOpponentPromptTimestamp(getCurrentTimestamp());
         } catch {}
         clearOpponentPromptFallbackTimer();
@@ -556,8 +560,9 @@ export function prepareUiBeforeSelection() {
     }
   }
 
+  // No delay case - just record timestamp immediately
+  // Snackbar display is handled by uiEventHandlers.js statSelected handler
   try {
-    showSnackbar(t("ui.opponentChoosing"));
     recordOpponentPromptTimestamp(getCurrentTimestamp());
   } catch {}
   return 0;
