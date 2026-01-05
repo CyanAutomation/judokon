@@ -1,4 +1,4 @@
-import { onBattleEvent, getBattleEventTarget, emitBattleEvent } from "./battleEvents.js";
+import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
@@ -297,8 +297,15 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
           // Fire opponentDecisionReady event to transition state machine to roundDecision
           try {
-            await dispatchBattleEvent("opponentDecisionReady");
-            console.log("[statSelected Handler] Dispatched opponentDecisionReady to state machine");
+            // Add small delay to allow statSelected state transition to complete first
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            // Don't await dispatch - fire asynchronously to avoid deadlock
+            dispatchBattleEvent("opponentDecisionReady").catch((err) => {
+              console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
+            });
+            console.log(
+              "[statSelected Handler] Dispatched opponentDecisionReady to state machine (async)"
+            );
           } catch (err) {
             console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
           }
@@ -346,10 +353,26 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
           // Fire opponentDecisionReady event to transition state machine to roundDecision
           try {
-            await dispatchBattleEvent("opponentDecisionReady");
-            console.log("[statSelected Handler] Dispatched opponentDecisionReady to state machine");
+            // Add small delay to allow statSelected state transition to complete first
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            // Don't await dispatch - fire asynchronously to avoid deadlock
+            dispatchBattleEvent("opponentDecisionReady").catch((err) => {
+              console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
+            });
+            console.log(
+              "[statSelected Handler] Dispatched opponentDecisionReady to state machine (async)"
+            );
           } catch (err) {
             console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
+          }
+          return;
+        }
+
+        console.log(
+          `[statSelected Handler] Scheduling opponent message to appear after ${resolvedDelay}ms delay`
+        );
+
+        const minDuration = Number(getOpponentPromptMinDurationFn()) || 750;
 
         // Wait for the configured delay before showing opponent message
         await new Promise((resolve) => {
@@ -393,8 +416,15 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
         // Fire opponentDecisionReady event to transition state machine to roundDecision
         try {
-          await dispatchBattleEvent("opponentDecisionReady");
-          console.log("[statSelected Handler] Dispatched opponentDecisionReady to state machine");
+          // Add small delay to allow statSelected state transition to complete first
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          // Don't await dispatch - fire asynchronously to avoid deadlock
+          dispatchBattleEvent("opponentDecisionReady").catch((err) => {
+            console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
+          });
+          console.log(
+            "[statSelected Handler] Dispatched opponentDecisionReady to state machine (async)"
+          );
         } catch (err) {
           console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
         }
