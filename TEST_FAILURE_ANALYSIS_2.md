@@ -147,6 +147,66 @@ User clicks stat button
 
 ---
 
+### Task 5: Create Comprehensive Unit Tests ⚠️ IN PROGRESS
+
+**Status**: Tests created (23 tests), 20 passing, 3 failing - actively debugging
+
+**Date Started**: January 11, 2026
+
+**Implementation Details**:
+Created comprehensive test suite at `tests/helpers/SnackbarManager.test.js` with 23 tests covering:
+- Basic display and DOM element creation
+- Priority system (HIGH/NORMAL/LOW)
+- Queuing system with max concurrent limit
+- Minimum display duration enforcement
+- Auto-dismiss functionality
+- Update existing/queued messages
+- Callbacks (onShow/onDismiss)
+- Positioning system (top/bottom classes)
+- Disabled state handling
+- Diagnostics API
+- Clear all functionality
+
+**Current Test Failures** (3 of 23):
+
+1. **"should remove oldest when exceeding limit"**
+   - Issue: First message not removed when third message added
+   - Both messages have NORMAL priority, first created should be removed
+   - Actual: activeSnackbars shows [First, Second] instead of [Second, Third]
+   - Root cause: Synchronous removal logic in show() method may have race condition or incorrect sorting
+
+2. **"should apply .snackbar-bottom to newest message"**
+   - Issue: Positioning classes applied backwards
+   - Actual: First (older) has `.snackbar-bottom`, Second (newer) has `.snackbar-top` and `.snackbar-stale`
+   - Expected: First should have `.snackbar-top`, Second should have `.snackbar-bottom`
+   - Root cause investigation: Sort logic in updatePositioning() appears correct (newer first), but classList operations are backwards
+   - **Hypothesis**: Both snackbars created with same timestamp (Date.now()) due to rapid execution in tests → sort doesn't differentiate by time, falls back to arbitrary order
+
+3. **"should provide comprehensive diagnostics"**
+   - Issue: Expected 2 active snackbars (HIGH + NORMAL), got 1
+   - Likely related to capacity enforcement or priority system logic
+   - Need to verify canDisplay() logic for mixed priorities
+
+**Debug Findings**:
+- Both snackbars exist in DOM (confirmed with `.toHaveLength(2)`)
+- Only 1 snackbar has `.snackbar-bottom` class (correct behavior)
+- First snackbar classes: `[snackbar, snackbar--active, snackbar-bottom]`
+- Second snackbar classes: `[snackbar, snackbar--active, snackbar-top, snackbar-stale]`
+- This is BACKWARDS from expected behavior
+- Both snackbars likely created at same millisecond, causing sort ambiguity
+
+**Next Steps**:
+1. Add small delay between snackbar creations in tests OR use incremental timestamp counter
+2. Alternative: Modify SnackbarManager to use internal counter for deterministic sort order
+3. Fix maxConcurrent enforcement to properly remove oldest snackbar
+4. Verify canDisplay() and priority logic for diagnostics test
+5. Remove debug console.log statements once fixed
+6. Run full SnackbarManager test suite to verify all 23 tests pass
+
+**Outcome**: Pending - all tests must pass before proceeding to Task 6
+
+---
+
 ## 1. Problem Statement
 
 ### Observable Behavior
