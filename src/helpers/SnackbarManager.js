@@ -320,8 +320,11 @@ class SnackbarManager {
    * @returns {{id: string, remove: Function, update: Function, waitForMinDuration: Function}|null}
    */
   show(messageOrConfig) {
-    console.log("[SnackbarManager] show() called with:", typeof messageOrConfig === "string" ? messageOrConfig.substring(0, 30) : messageOrConfig);
-    
+    console.log(
+      "[SnackbarManager] show() called with:",
+      typeof messageOrConfig === "string" ? messageOrConfig.substring(0, 30) : messageOrConfig
+    );
+
     if (this.isDisabled()) {
       console.log("[SnackbarManager] show() returning null - snackbars are disabled");
       return null;

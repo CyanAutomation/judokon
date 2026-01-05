@@ -882,7 +882,9 @@ export function selectStat(store, stat) {
     // No action needed here.
     guard(() => {
       if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
-        console.debug("[selectStat] Opponent delay enabled - message will be shown by statSelected handler");
+        console.debug(
+          "[selectStat] Opponent delay enabled - message will be shown by statSelected handler"
+        );
       }
     });
   } else {
