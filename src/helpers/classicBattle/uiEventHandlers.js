@@ -211,44 +211,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     }
   }
 
-  function displayOpponentChoosingPrompt({
-    markTimestamp = true,
-    notifyReady = true,
-    showMessage = true,
-    message
-  } = {}) {
-    // DIAGNOSTIC: Log that function was called
-    console.log("[displayOpponentChoosingPrompt] Called", {
-      markTimestamp,
-      notifyReady,
-      showMessage,
-      showSnackbarFnExists: typeof showSnackbarFn === "function"
-    });
 
-    const resolvedMessage = message ?? tFn("ui.opponentChoosing");
-    if (showMessage) {
-      console.log("[displayOpponentChoosingPrompt] Updating snackbar with:", resolvedMessage);
-      showOpponentPromptMessage(resolvedMessage);
-    }
-    let recordedTimestamp;
-    if (markTimestamp) {
-      try {
-        recordedTimestamp = markOpponentPromptNowFn({ notify: notifyReady });
-      } catch {
-        // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
-      }
-    }
-    return recordedTimestamp;
-  }
-
-  function showPromptAndCaptureTimestamp(message, options = {}) {
-    showOpponentPromptMessage(message);
-    return displayOpponentChoosingPrompt({
-      message,
-      ...options,
-      showMessage: false
-    });
-  }
 
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
@@ -271,6 +234,11 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   });
 
   onBattleEvent("statSelected", async (e) => {
+    // DIAGNOSTIC: Set data attribute to verify handler is called
+    try {
+      document.body.setAttribute("data-stat-selected-handler-called", "true");
+    } catch {}
+
     // DIAGNOSTIC: Log that handler was called
     console.log("[statSelected Handler] Event received", {
       detail: e?.detail,
@@ -317,6 +285,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         // When no delay or flag disabled, show opponent message immediately (no "You Picked" message)
         if (!shouldDelay || opts.delayOpponentMessage === false) {
           console.log("[statSelected Handler] No delay - showing opponent prompt immediately");
+
+          // DIAGNOSTIC: Set data attribute to verify this code runs
+          try {
+            document.body.setAttribute("data-opponent-immediate", "true");
+          } catch {}
+
           currentOpponentSnackbarController = snackbarManager.show({
             message: opponentPromptMessage,
             priority: SnackbarPriority.HIGH,

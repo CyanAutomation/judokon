@@ -9,7 +9,7 @@ import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
-import { showSnackbar, updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
+import { updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { disableStatButtons, resetStatButtons } from "./statButtons.js";
@@ -434,11 +434,11 @@ export function handleRoundStartedEvent(event, deps = {}) {
  * Note: Opponent messaging is handled separately in uiEventHandlers.js via HIGH priority snackbar.
  * @returns {void}
  */
-export function handleStatSelectedEvent(event, deps = {}) {
+export function handleStatSelectedEvent(event) {
   try {
     if (!IS_VITEST) console.debug(`classicBattle.trace event:statSelected t=${Date.now()}`);
   } catch {}
-  const { stat, store, opts } = event?.detail || {};
+  const { stat, store } = event?.detail || {};
   if (!stat || !store || !store.statButtonEls) return;
   const btn = store.statButtonEls[stat];
   if (btn) {
@@ -838,7 +838,7 @@ export function bindRoundUIEventHandlersDynamic() {
     return () => promise;
   };
   const loadScoreboard = createPreloader(() => import("../setupScoreboard.js"));
-  const loadShowSnackbar = createPreloader(() => import("../showSnackbar.js"));
+
   const loadComputeNextRoundCooldown = createPreloader(
     () => import("../timers/computeNextRoundCooldown.js")
   );

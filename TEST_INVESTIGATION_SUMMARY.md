@@ -45,7 +45,7 @@ The priority is to understand the cause of this major regression.
 
 ## 4. Historical Investigation Details (December 2025 - January 2026)
 
-*The following information is preserved for historical context.*
+_The following information is preserved for historical context._
 
 ### 4.1. Race Condition Fix (`opponent-reveal.spec.js` - Dec 31, 2025)
 
@@ -57,8 +57,8 @@ The priority is to understand the cause of this major regression.
 
 - **Issue**: The `Next` button was not becoming ready in time for tests with `cooldownMs: 0` because an "orchestration" check was incorrectly skipping the early finalization logic.
 - **Solution**:
-    1.  Removed the faulty orchestration check in `src/helpers/classicBattle/stateHandlers/cooldownEnter.js`.
-    2.  Enhanced `applyNextButtonFinalizedState()` in `src/helpers/classicBattle/uiHelpers.js` to set necessary diagnostic globals for tests.
+  1.  Removed the faulty orchestration check in `src/helpers/classicBattle/stateHandlers/cooldownEnter.js`.
+  2.  Enhanced `applyNextButtonFinalizedState()` in `src/helpers/classicBattle/uiHelpers.js` to set necessary diagnostic globals for tests.
 - **Status**: **REGRESSED**. This test is failing again.
 
 ### 4.3. Post-Fix Enhancements (Jan 2, 2026)

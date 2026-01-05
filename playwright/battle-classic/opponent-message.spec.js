@@ -141,9 +141,9 @@ async function withBattleEventCapture(page, eventNames, callback) {
     return await callback({
       getEvents: async () =>
         await page.evaluate(() => Array.from(window.__capturedBattleEvents ?? []))
-    });
-  } finally {
-    await page.evaluate(() => {
+            });
+          }
+          finally {    await page.evaluate(() => {
       window.__releaseBattleEventCapture?.();
       delete window.__capturedBattleEvents;
     });
@@ -329,8 +329,9 @@ test.describe("Classic Battle Opponent Messages", () => {
 
           const emittedEvents = await getEvents();
           expect(emittedEvents).toContain("roundResolved");
-        });
-      } finally {
+        }); // Closing brace for `async ({ getEvents }) => { ... }`
+      } // Missing closing brace for the `try` block
+      finally {
         await cleanupStalledCliFallback(page);
       }
     },

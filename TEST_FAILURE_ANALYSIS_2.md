@@ -223,10 +223,10 @@ When a player selects a stat in Classic Battle mode with `opponentDelayMessage: 
 
 ### Test Expectations vs. Reality
 
-| **Scenario**                | **Expected**                               | **Actual**                                                                   |
-| :-------------------------- | :----------------------------------------- | :--------------------------------------------------------------------------- |
-| **With delay flag enabled** | Snackbar appears after 500ms delay         | ❌ Element not found: `locator('#snackbar-container .snackbar-bottom')`      |
-| **With delay flag disabled**| Snackbar appears immediately               | ❌ Element found, but shows stale content (e.g., "First to 5 points wins."). |
+| **Scenario**                 | **Expected**                       | **Actual**                                                                   |
+| :--------------------------- | :--------------------------------- | :--------------------------------------------------------------------------- |
+| **With delay flag enabled**  | Snackbar appears after 500ms delay | ❌ Element not found: `locator('#snackbar-container .snackbar-bottom')`      |
+| **With delay flag disabled** | Snackbar appears immediately       | ❌ Element found, but shows stale content (e.g., "First to 5 points wins."). |
 
 ---
 
@@ -307,7 +307,9 @@ try {
 
 // Schedule message to appear after delay
 opponentSnackbarId = setTimeout(() => {
-  displayOpponentChoosingPrompt({ /* ... */ });
+  displayOpponentChoosingPrompt({
+    /* ... */
+  });
 }, scheduleDelay); // scheduleDelay = 500ms
 ```
 
@@ -364,42 +366,46 @@ This section outlines potential solutions to the identified timing and architect
 
 1. **Enhance Event Handler to Return a Promise**: The `statSelected` handler (now part of `uiEventHandlers.js`) should return a promise that resolves _after_ the snackbar has been shown and its minimum display duration has elapsed.
 
-    ```javascript
-    // In uiEventHandlers.js statSelected handler
-    onBattleEvent("statSelected", async (e) => {
-      // ... existing code ...
-      
-      if (shouldDelay) {
-        clearSnackbarContainer(); // Clears any existing snackbar
-        const snackbarPromise = SnackbarManager.show(
-          opponentPromptMessage,
-          { priority: 'HIGH', minDuration: 750 } // Enforce min duration from QA spec
-        );
-        await snackbarPromise.waitForMinDuration(); // Wait for snackbar to be fully displayed
-      } else {
-        showPromptAndCaptureTimestamp(opponentPromptMessage);
-      }
-    });
-    ```
+   ```javascript
+   // In uiEventHandlers.js statSelected handler
+   onBattleEvent("statSelected", async (e) => {
+     // ... existing code ...
+
+     if (shouldDelay) {
+       clearSnackbarContainer(); // Clears any existing snackbar
+       const snackbarPromise = SnackbarManager.show(
+         opponentPromptMessage,
+         { priority: "HIGH", minDuration: 750 } // Enforce min duration from QA spec
+       );
+       await snackbarPromise.waitForMinDuration(); // Wait for snackbar to be fully displayed
+     } else {
+       showPromptAndCaptureTimestamp(opponentPromptMessage);
+     }
+   });
+   ```
 
 2. **Modify Selection Handler to Await Event Handlers**: The `handleStatSelection` function in `selectionHandler.js` (or its orchestrator) must `await` the completion of the `statSelected` event handlers.
 
-    ```javascript
-    // In selectionHandler.js (or coordinating battle flow logic)
-    export async function handleStatSelection(stat, store, opts = {}) {
-      // Emit statSelected BEFORE processing selection
-      emitBattleEvent("statSelected", { 
-        store, stat, playerVal, opponentVal, opts: eventOpts 
-      });
-      
-      // Wait for statSelected handlers to complete (including the snackbar delay)
-      await awaitStatSelectedHandler(); // Provided by Task 2 & 3
-      
-      // NOW process the stat selection
-      const outcome = battleEngine.handleStatSelection(playerVal, opponentVal);
-      // ... rest of the flow
-    }
-    ```
+   ```javascript
+   // In selectionHandler.js (or coordinating battle flow logic)
+   export async function handleStatSelection(stat, store, opts = {}) {
+     // Emit statSelected BEFORE processing selection
+     emitBattleEvent("statSelected", {
+       store,
+       stat,
+       playerVal,
+       opponentVal,
+       opts: eventOpts
+     });
+
+     // Wait for statSelected handlers to complete (including the snackbar delay)
+     await awaitStatSelectedHandler(); // Provided by Task 2 & 3
+
+     // NOW process the stat selection
+     const outcome = battleEngine.handleStatSelection(playerVal, opponentVal);
+     // ... rest of the flow
+   }
+   ```
 
 3. **Formalize State (Completed by Task 4)**: The introduction of the `waitingForOpponentDecision` state explicitly models this pause in the battle flow, ensuring clear transitions.
 
@@ -424,16 +430,16 @@ This section outlines potential solutions to the identified timing and architect
 
 1. **Avoid Immediate Snackbar Clearing**: In `uiEventHandlers.js`, do not call `replaceChildren()` immediately. Instead, `SnackbarManager` (Task 1) should handle the update or creation of snackbars.
 
-    ```javascript
-    // In uiEventHandlers.js
-    if (shouldDelay) {
-      // SnackbarManager should manage existing snackbars or create new ones
-      opponentSnackbarHandle = SnackbarManager.show(opponentPromptMessage, { 
-        priority: 'high',  // Ensure it's not overridden
-        minDuration: 750   // Keep visible for minimum time
-      });
-    }
-    ```
+   ```javascript
+   // In uiEventHandlers.js
+   if (shouldDelay) {
+     // SnackbarManager should manage existing snackbars or create new ones
+     opponentSnackbarHandle = SnackbarManager.show(opponentPromptMessage, {
+       priority: "high", // Ensure it's not overridden
+       minDuration: 750 // Keep visible for minimum time
+     });
+   }
+   ```
 
 2. **Implement Snackbar Priority System**: `SnackbarManager` (Task 1) should correctly prioritize messages, preventing lower-priority messages (e.g., round outcome) from immediately overwriting critical high-priority messages (e.g., "Opponent is choosing...").
 
@@ -459,17 +465,18 @@ This section outlines potential solutions to the identified timing and architect
 onBattleEvent("statSelected", async (e) => {
   if (shouldDelay) {
     clearSnackbarContainer(); // Clears any existing snackbar
-    
+
     let cancelled = false;
-    
+
     // Listen for round resolution immediately
     const cancelToken = onBattleEvent("roundResolved", () => {
       cancelled = true; // Mark as cancelled if round resolves
       clearTimeout(opponentSnackbarId); // Prevent delayed message from showing
     });
-    
+
     opponentSnackbarId = setTimeout(() => {
-      if (!cancelled) { // Only display if not cancelled by round resolution
+      if (!cancelled) {
+        // Only display if not cancelled by round resolution
         displayOpponentChoosingPrompt();
       }
       cancelToken.remove(); // Clean up listener
@@ -515,83 +522,83 @@ The work completed in Tasks 1-4 provides a strong foundation for Option A. The i
 
 1. **Handler Timing Tests**:
 
-    ```javascript
-    test("statSelected handler delays message by configured amount", async () => {
-      vi.useFakeTimers();
-      emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
-      
-      // Message should not appear immediately
-      expect(SnackbarManager.isSnackbarActive()).toBe(false);
-      
-      // Advance time
-      await vi.advanceTimersByTimeAsync(500);
-      
-      // Message should now appear and be active
-      expect(SnackbarManager.isSnackbarActive()).toBe(true);
-      expect(SnackbarManager.getMessage()).toContain("Opponent is choosing");
-    });
-    ```
+   ```javascript
+   test("statSelected handler delays message by configured amount", async () => {
+     vi.useFakeTimers();
+     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+
+     // Message should not appear immediately
+     expect(SnackbarManager.isSnackbarActive()).toBe(false);
+
+     // Advance time
+     await vi.advanceTimersByTimeAsync(500);
+
+     // Message should now appear and be active
+     expect(SnackbarManager.isSnackbarActive()).toBe(true);
+     expect(SnackbarManager.getMessage()).toContain("Opponent is choosing");
+   });
+   ```
 
 2. **Battle Flow Coordination Tests**:
 
-    ```javascript
-    test("battle engine waits for delayed snackbar before resolving round", async () => {
-      const startTime = Date.now();
-      
-      // Assuming handleStatSelection now orchestrates the await
-      await handleStatSelection("power", store, { delayOpponentMessage: true });
-      
-      const elapsed = Date.now() - startTime;
-      
-      // Should have waited at least 500ms (snackbar delay) + 750ms (min duration)
-      expect(elapsed).toBeGreaterThanOrEqual(500 + 750);
-    });
-    ```
+   ```javascript
+   test("battle engine waits for delayed snackbar before resolving round", async () => {
+     const startTime = Date.now();
+
+     // Assuming handleStatSelection now orchestrates the await
+     await handleStatSelection("power", store, { delayOpponentMessage: true });
+
+     const elapsed = Date.now() - startTime;
+
+     // Should have waited at least 500ms (snackbar delay) + 750ms (min duration)
+     expect(elapsed).toBeGreaterThanOrEqual(500 + 750);
+   });
+   ```
 
 3. **Minimum Display Duration Tests**:
 
-    ```javascript
-    test("snackbar remains visible for minimum duration", async () => {
-      // Directly using SnackbarManager for isolated testing
-      const snackbarHandle = SnackbarManager.show("Test Message", { minDuration: 750 });
-      
-      // Snackbar should be visible immediately
-      expect(SnackbarManager.isSnackbarActive(snackbarHandle.id)).toBe(true);
-      
-      // Advance time less than minDuration
-      await vi.advanceTimersByTimeAsync(500);
-      expect(SnackbarManager.isSnackbarActive(snackbarHandle.id)).toBe(true);
-      
-      // Advance remaining time
-      await vi.advanceTimersByTimeAsync(250); // Total 750ms
-      
-      // Snackbar should still be visible after minDuration, until explicitly removed or auto-dismiss
-      expect(SnackbarManager.isSnackbarActive(snackbarHandle.id)).toBe(true);
-    });
-    ```
+   ```javascript
+   test("snackbar remains visible for minimum duration", async () => {
+     // Directly using SnackbarManager for isolated testing
+     const snackbarHandle = SnackbarManager.show("Test Message", { minDuration: 750 });
+
+     // Snackbar should be visible immediately
+     expect(SnackbarManager.isSnackbarActive(snackbarHandle.id)).toBe(true);
+
+     // Advance time less than minDuration
+     await vi.advanceTimersByTimeAsync(500);
+     expect(SnackbarManager.isSnackbarActive(snackbarHandle.id)).toBe(true);
+
+     // Advance remaining time
+     await vi.advanceTimersByTimeAsync(250); // Total 750ms
+
+     // Snackbar should still be visible after minDuration, until explicitly removed or auto-dismiss
+     expect(SnackbarManager.isSnackbarActive(snackbarHandle.id)).toBe(true);
+   });
+   ```
 
 ### Integration Tests Required
 
 1. **End-to-End Round Flow**:
-    - Verify the snackbar appears at the correct time and position.
-    - Validate the minimum display duration is enforced.
-    - Confirm the round resolves _after_ the "Opponent is choosing..." message has completed its display.
-    - Ensure the round outcome message appears correctly _after_ the opponent message.
+   - Verify the snackbar appears at the correct time and position.
+   - Validate the minimum display duration is enforced.
+   - Confirm the round resolves _after_ the "Opponent is choosing..." message has completed its display.
+   - Ensure the round outcome message appears correctly _after_ the opponent message.
 2. **State Machine Transitions**:
-    - Test all state transitions, specifically focusing on the new `waitingForOpponentDecision` state with delayed messages.
-    - Verify that snackbars persist across expected state changes and are cleaned up appropriately.
+   - Test all state transitions, specifically focusing on the new `waitingForOpponentDecision` state with delayed messages.
+   - Verify that snackbars persist across expected state changes and are cleaned up appropriately.
 
 ### Playwright Tests Updates
 
 1. **Update `playwright/opponent-choosing.smoke.spec.js`**:
-    - Remove any existing workarounds for the opponent resolve delay.
-    - Adjust timing expectations to match the new, coordinated behavior.
-    - Add explicit assertions for the snackbar appearing after the delay and its visibility duration.
+   - Remove any existing workarounds for the opponent resolve delay.
+   - Adjust timing expectations to match the new, coordinated behavior.
+   - Add explicit assertions for the snackbar appearing after the delay and its visibility duration.
 2. **Add Edge Case Tests**:
-    - Test very fast rounds (where the opponent responds significantly faster than the delay).
-    - Test scenarios involving rapid player input (spam-clicking).
-    - Test multiple, rapid stat selections.
-    - Test browser/tab visibility changes during the snackbar delay.
+   - Test very fast rounds (where the opponent responds significantly faster than the delay).
+   - Test scenarios involving rapid player input (spam-clicking).
+   - Test multiple, rapid stat selections.
+   - Test browser/tab visibility changes during the snackbar delay.
 
 ---
 
@@ -652,13 +659,13 @@ Beyond the immediate bug fix, I have identified several architectural and design
 
 ### Implementation Risks
 
-| **Risk**                                   | **Severity** | **Mitigation**                                                |
-| :----------------------------------------- | :----------- | :------------------------------------------------------------ |
+| **Risk**                                   | **Severity** | **Mitigation**                                                   |
+| :----------------------------------------- | :----------- | :--------------------------------------------------------------- |
 | Battle flow timing regression              | High         | Comprehensive integration tests; phase rollout via feature flag. |
-| Breaking existing battle features          | High         | Thorough test coverage for all battle modes; peer review.     |
-| Performance impact from async coordination | Medium       | Performance profiling (before/after); optimize critical paths. |
-| Increased code complexity                  | Medium       | Clear documentation, modular design, thorough code reviews.   |
-| Test flakiness from timing changes         | Low          | Strict use of fake timers in unit tests; deterministic delays. |
+| Breaking existing battle features          | High         | Thorough test coverage for all battle modes; peer review.        |
+| Performance impact from async coordination | Medium       | Performance profiling (before/after); optimize critical paths.   |
+| Increased code complexity                  | Medium       | Clear documentation, modular design, thorough code reviews.      |
+| Test flakiness from timing changes         | Low          | Strict use of fake timers in unit tests; deterministic delays.   |
 
 ### Production Impact Analysis
 
@@ -724,29 +731,29 @@ Beyond the immediate bug fix, I have identified several architectural and design
 
 ### Core Implementation Files
 
-| **File**                                       | **Purpose**                                            |
-| :--------------------------------------------- | :----------------------------------------------------- |
-| `src/helpers/classicBattle/uiEventHandlers.js` | `statSelected` handler, snackbar logic, event coordination |
-| `src/helpers/classicBattle/selectionHandler.js`| Stat selection processing, event awaiting              |
-| `src/helpers/SnackbarManager.js`               | Centralized snackbar lifecycle management              |
-| `src/helpers/classicBattle/stateTable.js`      | Battle state machine definitions                       |
-| `src/helpers/battleEngineFacade.js`            | Battle engine interface                                |
+| **File**                                        | **Purpose**                                                |
+| :---------------------------------------------- | :--------------------------------------------------------- |
+| `src/helpers/classicBattle/uiEventHandlers.js`  | `statSelected` handler, snackbar logic, event coordination |
+| `src/helpers/classicBattle/selectionHandler.js` | Stat selection processing, event awaiting                  |
+| `src/helpers/SnackbarManager.js`                | Centralized snackbar lifecycle management                  |
+| `src/helpers/classicBattle/stateTable.js`       | Battle state machine definitions                           |
+| `src/helpers/battleEngineFacade.js`             | Battle engine interface                                    |
 
 ### Test Files
 
-| **File**                                            | **Purpose**                          |
-| :-------------------------------------------------- | :----------------------------------- |
-| `playwright/opponent-choosing.smoke.spec.js`        | Currently failing E2E tests          |
-| `tests/helpers/SnackbarManager.test.js`             | Unit tests for `SnackbarManager`     |
+| **File**                                              | **Purpose**                           |
+| :---------------------------------------------------- | :------------------------------------ |
+| `playwright/opponent-choosing.smoke.spec.js`          | Currently failing E2E tests           |
+| `tests/helpers/SnackbarManager.test.js`               | Unit tests for `SnackbarManager`      |
 | `tests/classicBattle/opponent-delay-behavior.test.js` | Unit tests for delay feature behavior |
 
 ### Documentation
 
-| **File**                                   | **Content**                                     |
-| :----------------------------------------- | :---------------------------------------------- |
-| `docs/qa/opponent-delay-message.md`        | Feature specification for opponent delay message |
-| `TEST_FAILURE_ANALYSIS.md`                 | Initial investigation of initialization issues  |
-| `design/specs/battle-state-machine.md`     | (If exists) Detailed state machine specification |
+| **File**                               | **Content**                                      |
+| :------------------------------------- | :----------------------------------------------- |
+| `docs/qa/opponent-delay-message.md`    | Feature specification for opponent delay message |
+| `TEST_FAILURE_ANALYSIS.md`             | Initial investigation of initialization issues   |
+| `design/specs/battle-state-machine.md` | (If exists) Detailed state machine specification |
 
 ---
 

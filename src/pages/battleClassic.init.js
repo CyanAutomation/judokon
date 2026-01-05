@@ -78,7 +78,7 @@ import {
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
-import { t } from "../helpers/i18n.js";
+
 import {
   showSelectionPrompt,
   getOpponentDelay,

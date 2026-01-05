@@ -1,4 +1,3 @@
-import * as snackbar from "./showSnackbar.js";
 import snackbarManager, { SnackbarPriority } from "./SnackbarManager.js";
 import * as scoreboard from "./setupScoreboard.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
