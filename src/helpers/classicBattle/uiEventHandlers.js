@@ -397,7 +397,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   // Handle state transitions to dispatch opponentDecisionReady when appropriate
   onBattleEvent("battleStateChange", async (e) => {
-    const { from, to } = e?.detail || {};
+    const { to } = e?.detail || {};
 
     // When entering waitingForOpponentDecision state, the opponent snackbar is already showing
     // and its minDuration has elapsed. Now we can safely dispatch opponentDecisionReady.
