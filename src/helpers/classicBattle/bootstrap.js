@@ -77,6 +77,19 @@ export async function setupClassicBattlePage() {
       bindUIHelperEventHandlers();
       if (canAccessWindow()) {
         window.__initCalled = true;
+        window.__handlersRegistered = true;
+        
+        // Comprehensive battle diagnostics for test synchronization
+        window.__battleDiagnostics = {
+          initComplete: true,
+          bootstrapComplete: true,
+          handlersRegistered: true,
+          eventSystemReady: !!globalThis.__classicBattleEventTarget,
+          controllerReady: !!controller,
+          viewReady: !!view,
+          storeReady: !!controller?.battleStore,
+          timestamp: Date.now()
+        };
       }
 
       // Wire the scoreboard with timer controls so visibility/focus
