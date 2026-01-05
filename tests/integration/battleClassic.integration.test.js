@@ -32,7 +32,7 @@ async function triggerStatSelection(store, statButton, statKey) {
   });
 
   // Wait for the click event to propagate and update the store
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
 
   const selectionTrace =
     window.__SELECTION_FLAG_TRACE?.[window.__SELECTION_FLAG_TRACE.length - 1] ?? null;
@@ -453,7 +453,6 @@ describe("Battle Classic Page Integration", () => {
 
         expect(selectionMadeConfirmed).toBe(true);
         expect(playerChoiceConfirmed).toBe(selectedStat);
-
       } catch (error) {
         throw new Error(`Stat selection failed: ${error?.message}`);
       }
