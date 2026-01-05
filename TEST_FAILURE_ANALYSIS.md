@@ -1,12 +1,12 @@
 # Test Failure Analysis: Opponent Choosing Snackbar
 
-| **Property**       | **Value**                                              |
-|--------------------|--------------------------------------------------------|
-| **Date**           | January 4, 2026                                        |
-| **Test File**      | `playwright/opponent-choosing.smoke.spec.js`           |
-| **Status**         | 🔴 **Root Cause Identified** — Solution Pending       |
-| **Severity**       | Medium (test-only failure, production verified working)|
-| **Priority**       | P2 (blocking CI/CD, but isolated to test environment) |
+| **Property**  | **Value**                                               |
+| ------------- | ------------------------------------------------------- |
+| **Date**      | January 4, 2026                                         |
+| **Test File** | `playwright/opponent-choosing.smoke.spec.js`            |
+| **Status**    | 🔴 **Root Cause Identified** — Solution Pending         |
+| **Severity**  | Medium (test-only failure, production verified working) |
+| **Priority**  | P2 (blocking CI/CD, but isolated to test environment)   |
 
 ---
 
@@ -31,7 +31,7 @@ During Playwright automated tests, the "Opponent is choosing..." snackbar messag
 ### Failure Modes
 
 | **Scenario**                                         | **Expected Behavior**                        | **Actual Behavior**                                    |
-|------------------------------------------------------|----------------------------------------------|--------------------------------------------------------|
+| ---------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------ |
 | **With Feature Flag** (`opponentDelayMessage: true`) | Snackbar displays "Opponent is choosing..."  | ❌ Snackbar element with expected message not found    |
 | **Without Feature Flag**                             | Snackbar updated to opponent selection state | ❌ Snackbar shows stale "First to 5 points wins." text |
 
@@ -56,6 +56,7 @@ The function responsible for handler registration, `bindUIHelperEventHandlersDyn
 ### Why This Matters
 
 Without handler registration:
+
 1. The `statSelected` event is emitted correctly ✅
 2. The event system functions properly ✅
 3. But no handler responds to the event ❌
@@ -72,6 +73,7 @@ The investigation confirmed that the underlying event system is functional, but 
 Test diagnostics confirm that the `EventTarget` singleton is created, accessible, and works correctly. Events can be dispatched and received by other listeners.
 
 **Diagnostic Output:**
+
 ```json
 {
   "featureFlags": { "opponentDelayMessage": true },
@@ -91,6 +93,7 @@ Test diagnostics confirm that the `EventTarget` singleton is created, accessible
 A test-specific listener successfully captured the event, proving it is being emitted correctly.
 
 **Test Output:**
+
 ```text
 [Test] statSelected event count: 1
 ```
@@ -104,6 +107,7 @@ A test-specific listener successfully captured the event, proving it is being em
 The diagnostic logs from the `bindUIHelperEventHandlersDynamic()` function are **absent** in the test output. These logs should indicate whether the handlers are being registered or skipped.
 
 **Expected Logs** (from `uiEventHandlers.js`, lines 107-120):
+
 ```javascript
 console.log(`[Handler Registration] Target: ${targetId}, In WeakSet: ${hasTarget}`);
 console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${targetId}`);
@@ -120,8 +124,11 @@ console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${tar
 The log from within the `statSelected` handler is also missing, confirming it was never registered and therefore never executed.
 
 **Expected Log** (from `uiEventHandlers.js`, line 271):
+
 ```javascript
-console.log("[statSelected Handler] Event received", { /* ... */ });
+console.log("[statSelected Handler] Event received", {
+  /* ... */
+});
 ```
 
 **Status**: ❌ **NOT FOUND IN TEST OUTPUT**
@@ -149,11 +156,11 @@ async function initializePhase4_EventHandlers(store) {
 
 The lack of diagnostic logs from Phase 4 suggests one of three possibilities in the Playwright environment:
 
-| **Hypothesis**                  | **Description**                                                              | **Likelihood** |
-|---------------------------------|------------------------------------------------------------------------------|----------------|
-| **1. Initialization Halts**     | The initialization process stops before reaching Phase 4                    | Low ⚪         |
-| **2. Logs Are Suppressed**      | Test environment is configured to hide these specific console logs           | Low ⚪         |
-| **3. Alternate Code Path** ⭐   | Test setup uses a different initialization path that bypasses Phase 4       | **High 🔴**    |
+| **Hypothesis**                | **Description**                                                       | **Likelihood** |
+| ----------------------------- | --------------------------------------------------------------------- | -------------- |
+| **1. Initialization Halts**   | The initialization process stops before reaching Phase 4              | Low ⚪         |
+| **2. Logs Are Suppressed**    | Test environment is configured to hide these specific console logs    | Low ⚪         |
+| **3. Alternate Code Path** ⭐ | Test setup uses a different initialization path that bypasses Phase 4 | **High 🔴**    |
 
 ### Most Likely Root Cause ⭐
 
@@ -162,6 +169,7 @@ Given that the rest of the page appears to function normally, **Hypothesis 3 is 
 The test environment's setup (via `configureApp()`, `registerCommonRoutes()`, or similar fixtures) appears to use a **partial initialization path** that bypasses the complete Phase 4 event handler registration.
 
 This would explain:
+
 - ✅ Why basic page functionality works
 - ✅ Why the event system itself functions
 - ❌ Why specific event handlers are missing
@@ -180,7 +188,7 @@ This would explain:
 Temporarily disable the tests in `opponent-choosing.smoke.spec.js` with clear documentation:
 
 ```javascript
-test.skip('opponent choosing snackbar is deferred with flag enabled', async ({ page }) => {
+test.skip("opponent choosing snackbar is deferred with flag enabled", async ({ page }) => {
   // SKIP REASON: Handler registration fails in Playwright environment
   // ROOT CAUSE: bindUIHelperEventHandlersDynamic() not called during test setup
   // TRACKING: See TEST_FAILURE_ANALYSIS.md
@@ -194,6 +202,7 @@ test.skip('opponent choosing snackbar is deferred with flag enabled', async ({ p
 **Required**: Confirm the feature works as expected in a real browser environment to ensure this is purely a test environment issue.
 
 **Steps**:
+
 1. Open `http://localhost:5173/battleClassic.html` with `opponentDelayMessage: true`
 2. Click a stat button after round prompt
 3. Verify "Opponent is choosing..." snackbar appears
@@ -212,13 +221,13 @@ Add prominent logging to track initialization phases in Playwright:
 ```javascript
 // src/pages/battleClassic.init.js
 async function initializePhase4_EventHandlers(store) {
-  console.error('[INIT:PHASE4:START]'); // Using console.error for visibility
+  console.error("[INIT:PHASE4:START]"); // Using console.error for visibility
   // ... existing code ...
-  console.error('[INIT:PHASE4:BIND_UI_HANDLERS:BEFORE]');
+  console.error("[INIT:PHASE4:BIND_UI_HANDLERS:BEFORE]");
   await bindUIHelperEventHandlersDynamic(store);
-  console.error('[INIT:PHASE4:BIND_UI_HANDLERS:AFTER]');
+  console.error("[INIT:PHASE4:BIND_UI_HANDLERS:AFTER]");
   // ... existing code ...
-  console.error('[INIT:PHASE4:END]');
+  console.error("[INIT:PHASE4:END]");
 }
 ```
 
@@ -239,6 +248,7 @@ test.beforeEach(async ({ page }) => {
 ```
 
 **Questions to answer**:
+
 - Does `configureApp()` replace or short-circuit normal initialization?
 - Does `registerCommonRoutes()` affect the init script execution?
 - Are there any mocks or stubs that prevent Phase 4 from running?
@@ -246,6 +256,7 @@ test.beforeEach(async ({ page }) => {
 #### Action 2.3: Compare With Working Tests
 
 Analyze a **working** test (e.g., `stat-hotkeys.smoke.spec.js`) to identify:
+
 - Differences in setup procedures
 - Why its event handlers register correctly
 - What makes it immune to this initialization issue
@@ -265,18 +276,21 @@ Adjust test setup to allow full, natural page initialization:
 ```javascript
 // playwright/opponent-choosing.smoke.spec.js
 test.beforeEach(async ({ page }) => {
-  await page.goto('http://localhost:5173/battleClassic.html');
-  
+  await page.goto("http://localhost:5173/battleClassic.html");
+
   // Wait for full initialization including Phase 4
   await page.waitForFunction(() => {
     return window.__BATTLE_INIT_COMPLETE === true;
   });
-  
+
   // Then apply feature flags via settings
   await page.evaluate(() => {
-    window.localStorage.setItem('settings', JSON.stringify({
-      opponentDelayMessage: true
-    }));
+    window.localStorage.setItem(
+      "settings",
+      JSON.stringify({
+        opponentDelayMessage: true
+      })
+    );
   });
 });
 ```
@@ -291,7 +305,7 @@ If Option A isn't viable, explicitly call handler registration in test setup:
 // playwright/opponent-choosing.smoke.spec.js
 test.beforeEach(async ({ page }) => {
   await configureApp({ page, features: { opponentDelayMessage: true } });
-  
+
   // Force handler registration
   await page.evaluate(() => {
     window.bindUIHelperEventHandlersDynamic();
@@ -308,12 +322,12 @@ Strengthen test reliability with pre-test state verification:
 ```javascript
 test.beforeEach(async ({ page }) => {
   // ... setup ...
-  
+
   // GUARD: Verify handlers are registered before running tests
   const handlersReady = await page.evaluate(() => {
     return window.__UI_HANDLERS_REGISTERED === true;
   });
-  
+
   expect(handlersReady).toBe(true);
 });
 ```
@@ -334,13 +348,13 @@ Beyond fixing this specific issue, the following architectural improvements woul
 
 ```javascript
 // src/pages/battleClassic.init.js (at end of init)
-if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+if (import.meta.env.DEV || window.location.hostname === "localhost") {
   window.__battleDiagnostics = {
     initComplete: true,
     phase4Complete: true,
     handlersRegistered: {
-      statSelected: !!battleEventTarget.hasListener('statSelected'),
-      roundResolved: !!battleEventTarget.hasListener('roundResolved'),
+      statSelected: !!battleEventTarget.hasListener("statSelected"),
+      roundResolved: !!battleEventTarget.hasListener("roundResolved")
       // ... other handlers
     },
     eventSystemReady: !!window.__battleEventTarget
@@ -354,16 +368,17 @@ if (import.meta.env.DEV || window.location.hostname === 'localhost') {
 // playwright/opponent-choosing.smoke.spec.js
 test.beforeEach(async ({ page }) => {
   await page.goto(...);
-  
+
   // Deterministic state verification
   const diagnostics = await page.evaluate(() => window.__battleDiagnostics);
-  
+
   expect(diagnostics.initComplete).toBe(true);
   expect(diagnostics.handlersRegistered.statSelected).toBe(true);
 });
 ```
 
 **Benefits**:
+
 - ✅ Deterministic state checking
 - ✅ No fragile log parsing
 - ✅ Clear failure messages
@@ -383,12 +398,22 @@ test.beforeEach(async ({ page }) => {
 ```javascript
 // src/helpers/appInitializer.js
 export const AppInitializer = {
-  async runPhase1_Utilities() { /* ... */ },
-  async runPhase2_UI() { /* ... */ },
-  async runPhase3_BattleEngine(store) { /* ... */ },
-  async runPhase4_EventHandlers(store) { /* ... */ },
-  async runPhase5_MatchStart(store) { /* ... */ },
-  
+  async runPhase1_Utilities() {
+    /* ... */
+  },
+  async runPhase2_UI() {
+    /* ... */
+  },
+  async runPhase3_BattleEngine(store) {
+    /* ... */
+  },
+  async runPhase4_EventHandlers(store) {
+    /* ... */
+  },
+  async runPhase5_MatchStart(store) {
+    /* ... */
+  },
+
   async runFullInitialization() {
     const store = {};
     await this.runPhase1_Utilities();
@@ -416,6 +441,7 @@ await page.evaluate(() => {
 ```
 
 **Benefits**:
+
 - ✅ Explicit control over initialization
 - ✅ Tests can match production exactly
 - ✅ Each phase independently testable
@@ -434,24 +460,25 @@ await page.evaluate(() => {
 
 ```javascript
 // Add to HTML or init script
-document.getElementById('battle-container')?.classList.add('initialized');
+document.getElementById("battle-container")?.classList.add("initialized");
 ```
 
 ```javascript
 // playwright test
 test.beforeEach(async ({ page }) => {
   await page.goto(...);
-  
+
   // GUARD: Wait for application ready state
   await expect(page.locator('#battle-container.initialized')).toBeVisible({
     timeout: 5000
   });
-  
+
   // Now safe to run test interactions
 });
 ```
 
 **Benefits**:
+
 - ✅ Prevents race conditions
 - ✅ Clearer test failures
 - ✅ Self-documenting readiness requirements
@@ -469,20 +496,21 @@ test.beforeEach(async ({ page }) => {
 
 ```javascript
 // playwright/initialization.smoke.spec.js
-test('all initialization phases complete', async ({ page }) => {
-  await page.goto('http://localhost:5173/battleClassic.html');
-  
+test("all initialization phases complete", async ({ page }) => {
+  await page.goto("http://localhost:5173/battleClassic.html");
+
   const diagnostics = await page.evaluate(() => window.__battleDiagnostics);
-  
-  expect(diagnostics.phase1Complete, 'Phase 1: Utilities').toBe(true);
-  expect(diagnostics.phase2Complete, 'Phase 2: UI').toBe(true);
-  expect(diagnostics.phase3Complete, 'Phase 3: Battle Engine').toBe(true);
-  expect(diagnostics.phase4Complete, 'Phase 4: Event Handlers').toBe(true);
-  expect(diagnostics.phase5Complete, 'Phase 5: Match Start').toBe(true);
+
+  expect(diagnostics.phase1Complete, "Phase 1: Utilities").toBe(true);
+  expect(diagnostics.phase2Complete, "Phase 2: UI").toBe(true);
+  expect(diagnostics.phase3Complete, "Phase 3: Battle Engine").toBe(true);
+  expect(diagnostics.phase4Complete, "Phase 4: Event Handlers").toBe(true);
+  expect(diagnostics.phase5Complete, "Phase 5: Match Start").toBe(true);
 });
 ```
 
 **Benefits**:
+
 - ✅ Early detection of initialization regressions
 - ✅ Fast feedback (runs in <1s)
 - ✅ Prevents cascading failures
@@ -494,27 +522,27 @@ test('all initialization phases complete', async ({ page }) => {
 
 ### Core Files
 
-| **File**                                           | **Purpose**                           |
-|----------------------------------------------------|---------------------------------------|
-| `playwright/opponent-choosing.smoke.spec.js`       | Failing test file                     |
-| `src/helpers/classicBattle/uiEventHandlers.js`     | Handler registration logic            |
-| `src/helpers/classicBattle/battleEvents.js`        | Event system implementation           |
-| `src/pages/battleClassic.init.js`                  | Production initialization script      |
+| **File**                                       | **Purpose**                      |
+| ---------------------------------------------- | -------------------------------- |
+| `playwright/opponent-choosing.smoke.spec.js`   | Failing test file                |
+| `src/helpers/classicBattle/uiEventHandlers.js` | Handler registration logic       |
+| `src/helpers/classicBattle/battleEvents.js`    | Event system implementation      |
+| `src/pages/battleClassic.init.js`              | Production initialization script |
 
 ### Documentation
 
-| **File**                                | **Content**                              |
-|-----------------------------------------|------------------------------------------|
-| `docs/qa/opponent-delay-message.md`     | Feature specification & QA plan          |
-| `docs/initialization-sequence.md`       | Initialization phase documentation       |
-| `AGENTS.md`                             | Test quality standards & patterns        |
+| **File**                            | **Content**                        |
+| ----------------------------------- | ---------------------------------- |
+| `docs/qa/opponent-delay-message.md` | Feature specification & QA plan    |
+| `docs/initialization-sequence.md`   | Initialization phase documentation |
+| `AGENTS.md`                         | Test quality standards & patterns  |
 
 ### Related Investigations
 
-| **File**                        | **Content**                               |
-|---------------------------------|-------------------------------------------|
-| `OPPONENT_DELAY_TEST_ANALYSIS.md` | Related delay message investigation     |
-| `quitFlowIssue.md`              | Similar initialization timing issue       |
+| **File**                          | **Content**                         |
+| --------------------------------- | ----------------------------------- |
+| `OPPONENT_DELAY_TEST_ANALYSIS.md` | Related delay message investigation |
+| `quitFlowIssue.md`                | Similar initialization timing issue |
 
 ---
 
@@ -555,10 +583,10 @@ Use this checklist to verify the fix:
 
 ## 9. Revision History
 
-| **Date**       | **Author**        | **Changes**                                        |
-|----------------|-------------------|----------------------------------------------------|
-| 2026-01-04     | Gemini (Initial)  | Initial analysis and investigation                 |
-| 2026-01-04     | Gemini (Revision) | Enhanced formatting, added action plan, improvement opportunities |
+| **Date**   | **Author**        | **Changes**                                                       |
+| ---------- | ----------------- | ----------------------------------------------------------------- |
+| 2026-01-04 | Gemini (Initial)  | Initial analysis and investigation                                |
+| 2026-01-04 | Gemini (Revision) | Enhanced formatting, added action plan, improvement opportunities |
 
 ---
 
