@@ -858,6 +858,7 @@ The opponent-choosing snackbar was correctly displayed with HIGH priority and pr
 **Architectural Issue**: The `opponentDecisionReady` event was being dispatched from the `statSelected` event handler using `dispatchBattleEvent()`. However, at that point, the state machine was still in `waitingForPlayerAction` state and hadn't transitioned to `waitingForOpponentDecision` yet.
 
 **Sequence Problem**:
+
 1. `handleStatSelection` calls `emitBattleEvent("statSelected")` → triggers DOM event handler
 2. Handler shows snackbar and dispatches `opponentDecisionReady`
 3. State machine rejects: `currentState: waitingForPlayerAction, event: opponentDecisionReady` (invalid transition)
@@ -867,11 +868,13 @@ The opponent-choosing snackbar was correctly displayed with HIGH priority and pr
 ### Solution Implemented
 
 **Moved event dispatch to `battleStateChange` handler**:
+
 - Added new handler that listens for state transitions
 - When state transitions to `waitingForOpponentDecision`, dispatch `opponentDecisionReady`
 - This ensures the event is only dispatched AFTER the state is ready to handle it
 
 **Changes Made**:
+
 - `src/helpers/classicBattle/uiEventHandlers.js`:
   - Added `battleStateChange` event handler
   - Removed `dispatchBattleEvent("opponentDecisionReady")` from three locations in `statSelected` handler
@@ -881,6 +884,7 @@ The opponent-choosing snackbar was correctly displayed with HIGH priority and pr
 ### Verification
 
 Console logs confirm successful state transitions:
+
 ```
 [battleStateChange Handler] State transition: {from: waitingForPlayerAction, to: waitingForOpponentDecision, trigger: statSelected}
 [battleStateChange Handler] Entered waitingForOpponentDecision state
@@ -898,10 +902,12 @@ Console logs confirm successful state transitions:
 ### Key Lesson
 
 **Event System Dual Nature**:
+
 - `emitBattleEvent()` (battleEvents.js) → DOM CustomEvents for handlers to listen
 - `dispatchBattleEvent()` (eventDispatcher.js) → State machine transitions
 
 **Critical Timing**:
+
 - Handlers triggered by `emitBattleEvent()` run BEFORE `dispatchBattleEvent()` is called
 - Never dispatch state machine events from DOM event handlers
 - Use `battleStateChange` to react to state transitions

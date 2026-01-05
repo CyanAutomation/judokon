@@ -215,17 +215,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   });
 
   onBattleEvent("statSelected", async (e) => {
-    // DIAGNOSTIC: Set data attribute to verify handler is called
-    try {
-      document.body.setAttribute("data-stat-selected-handler-called", "true");
-    } catch {}
-
-    // DIAGNOSTIC: Log that handler was called
-    console.log("[statSelected Handler] Event received", {
-      detail: e?.detail,
-      timestamp: Date.now()
-    });
-
     // Create promise that resolves when handler completes
     const handlerPromise = (async () => {
       try {
@@ -265,22 +254,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
         // When no delay or flag disabled, show opponent message immediately (no "You Picked" message)
         if (!shouldDelay || opts.delayOpponentMessage === false) {
-          console.log("[statSelected Handler] No delay - showing opponent prompt immediately");
-
-          // DIAGNOSTIC: Set data attribute to verify this code runs
-          try {
-            document.body.setAttribute("data-opponent-immediate", "true");
-          } catch {}
-
           currentOpponentSnackbarController = snackbarManager.show({
             message: opponentPromptMessage,
             priority: SnackbarPriority.HIGH,
             minDuration: 750,
             autoDismiss: 0,
             onShow: () => {
-              console.log(
-                "[statSelected Handler] Opponent snackbar shown immediately, marking timestamp"
-              );
               try {
                 markOpponentPromptNowFn({ notify: true });
               } catch {
@@ -293,7 +272,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           if (currentOpponentSnackbarController) {
             await currentOpponentSnackbarController.waitForMinDuration();
           }
-          console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
           // opponentDecisionReady will be dispatched by battleStateChange handler
           return;
         }
@@ -305,13 +283,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
         if (resolvedDelay <= 0) {
           // Same as no delay case
-          console.log(
-            "[statSelected Handler] Resolved delay <= 0 - showing opponent prompt immediately"
-          );
-          console.log("[statSelected Handler] About to call snackbarManager.show() with:", {
-            message: opponentPromptMessage,
-            priority: SnackbarPriority.HIGH
-          });
           currentOpponentSnackbarController = snackbarManager.show({
             message: opponentPromptMessage,
             priority: SnackbarPriority.HIGH,
@@ -325,24 +296,14 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
               }
             }
           });
-          console.log(
-            "[statSelected Handler] snackbarManager.show() returned:",
-            currentOpponentSnackbarController
-          );
 
           // Wait for minimum display duration before allowing round to proceed
-          console.log(`[statSelected Handler] Waiting for minimum duration: 750ms`);
           if (currentOpponentSnackbarController) {
             await currentOpponentSnackbarController.waitForMinDuration();
           }
-          console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
           // opponentDecisionReady will be dispatched by battleStateChange handler
           return;
         }
-
-        console.log(
-          `[statSelected Handler] Scheduling opponent message to appear after ${resolvedDelay}ms delay`
-        );
 
         const minDuration = Number(getOpponentPromptMinDurationFn()) || 750;
 
@@ -354,18 +315,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         });
 
         // Show opponent choosing message with high priority
-        console.log("[statSelected Handler] Showing opponent snackbar with SnackbarManager");
-        console.log("[statSelected Handler] About to call snackbarManager.show() with:", {
-          message: opponentPromptMessage,
-          priority: SnackbarPriority.HIGH
-        });
         currentOpponentSnackbarController = snackbarManager.show({
           message: opponentPromptMessage,
           priority: SnackbarPriority.HIGH,
           minDuration: minDuration,
           autoDismiss: 0, // Don't auto-dismiss, will be controlled by battle flow
           onShow: () => {
-            console.log("[statSelected Handler] Opponent snackbar shown, marking timestamp");
             // Mark timestamp when snackbar actually appears
             try {
               markOpponentPromptNowFn({ notify: true });
@@ -374,17 +329,11 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
             }
           }
         });
-        console.log(
-          "[statSelected Handler] snackbarManager.show() returned:",
-          currentOpponentSnackbarController
-        );
 
         // Wait for minimum display duration before allowing round to proceed
-        console.log(`[statSelected Handler] Waiting for minimum duration: ${minDuration}ms`);
         if (currentOpponentSnackbarController) {
           await currentOpponentSnackbarController.waitForMinDuration();
         }
-        console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
         // opponentDecisionReady will be dispatched by battleStateChange handler
       } catch (error) {
         console.error("[statSelected Handler] Error:", error);
@@ -448,19 +397,16 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   // Handle state transitions to dispatch opponentDecisionReady when appropriate
   onBattleEvent("battleStateChange", async (e) => {
-    const { from, to, event: trigger } = e?.detail || {};
-    console.log("[battleStateChange Handler] State transition:", { from, to, trigger });
+    const { from, to } = e?.detail || {};
 
     // When entering waitingForOpponentDecision state, the opponent snackbar is already showing
     // and its minDuration has elapsed. Now we can safely dispatch opponentDecisionReady.
     if (to === "waitingForOpponentDecision") {
-      console.log("[battleStateChange Handler] Entered waitingForOpponentDecision state");
       // Add small delay to ensure state entry actions complete
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       try {
         await dispatchBattleEvent("opponentDecisionReady");
-        console.log("[battleStateChange Handler] Dispatched opponentDecisionReady successfully");
       } catch (err) {
         console.error("[battleStateChange Handler] Error dispatching opponentDecisionReady:", err);
       }

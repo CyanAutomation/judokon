@@ -260,11 +260,6 @@ class SnackbarManager {
     const active = Array.from(this.activeSnackbars.values());
     if (active.length === 0) return;
 
-    console.log(
-      "[SnackbarManager] updatePositioning - BEFORE sort:",
-      active.map((s) => ({ msg: s.message.substring(0, 20), pri: s.priority, seq: s.sequence }))
-    );
-
     // Sort by priority (high first), then by sequence (newest first)
     active.sort((a, b) => {
       const priorityCompare = this.comparePriority(b.priority, a.priority);
@@ -273,27 +268,15 @@ class SnackbarManager {
       return b.sequence - a.sequence;
     });
 
-    // DEBUG: Log sorted order
-    console.log(
-      "[SnackbarManager] updatePositioning - AFTER sort:",
-      active.map((s) => ({ msg: s.message.substring(0, 20), pri: s.priority, seq: s.sequence }))
-    );
-
     active.forEach((snackbar, index) => {
       if (!snackbar.element) return;
 
       if (index === 0) {
         // Most important/newest message at bottom
-        console.log(
-          `[SnackbarManager] Setting .snackbar-bottom on: "${snackbar.message.substring(0, 30)}"`
-        );
         snackbar.element.classList.add("snackbar-bottom");
         snackbar.element.classList.remove("snackbar-top", "snackbar-stale");
       } else {
         // Older/lower priority messages at top with reduced opacity
-        console.log(
-          `[SnackbarManager] Setting .snackbar-top on: "${snackbar.message.substring(0, 30)}"`
-        );
         snackbar.element.classList.add("snackbar-top", "snackbar-stale");
         snackbar.element.classList.remove("snackbar-bottom");
       }
@@ -320,19 +303,12 @@ class SnackbarManager {
    * @returns {{id: string, remove: Function, update: Function, waitForMinDuration: Function}|null}
    */
   show(messageOrConfig) {
-    console.log(
-      "[SnackbarManager] show() called with:",
-      typeof messageOrConfig === "string" ? messageOrConfig.substring(0, 30) : messageOrConfig
-    );
-
     if (this.isDisabled()) {
-      console.log("[SnackbarManager] show() returning null - snackbars are disabled");
       return null;
     }
 
     const doc = this.getDocument();
     if (!doc) {
-      console.log("[SnackbarManager] show() returning null - no document");
       return null;
     }
 
@@ -351,21 +327,11 @@ class SnackbarManager {
 
     // Check if we can display based on priority
     const canDisplayResult = this.canDisplay(priority);
-    console.log(`[SnackbarManager] canDisplay(${priority}):`, {
-      result: canDisplayResult,
-      activeCount: this.activeSnackbars.size,
-      queueLength: this.queue.length,
-      activePriorities: Array.from(this.activeSnackbars.values()).map((s) => ({
-        msg: s.message.substring(0, 20),
-        pri: s.priority
-      }))
-    });
 
     if (!canDisplayResult) {
       // Queue for later
       const id = this.generateId();
       this.queue.push({ id, config });
-      console.log(`[SnackbarManager] QUEUED: "${message.substring(0, 30)}..."`);
       return {
         id,
         remove: () => this.remove(id),
@@ -377,7 +343,6 @@ class SnackbarManager {
     // Ensure container exists
     const container = this.ensureContainer(doc);
     if (!container) {
-      console.log("[SnackbarManager] show() returning null - no container");
       return null;
     }
 
@@ -408,7 +373,6 @@ class SnackbarManager {
     const id = this.generateId();
     const element = this.createElement(id, message, priority);
     if (!element) {
-      console.log("[SnackbarManager] show() returning null - createElement failed");
       return null;
     }
 
@@ -431,9 +395,6 @@ class SnackbarManager {
       onShow,
       onDismiss
     };
-
-    // DEBUG: Log when snackbar is created
-    console.log(`[SnackbarManager] Created snackbar: "${message}" seq=${snackbar.sequence}`);
 
     // Set auto-dismiss if configured
     if (autoDismiss > 0) {

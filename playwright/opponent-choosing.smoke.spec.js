@@ -60,13 +60,6 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       timeout: 15000
     });
 
-    // Capture console logs from the page for debugging
-    page.on("console", (msg) => {
-      const text = msg.text();
-      // Capture ALL logs for debugging
-      console.log(`[Browser Console] ${text}`);
-    });
-
     // Wait for full initialization including handler registration
     await page.waitForFunction(
       () => {
