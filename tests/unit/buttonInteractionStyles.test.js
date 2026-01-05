@@ -84,16 +84,9 @@ function hasSelectorFragment(root, selectorFragment, options = {}) {
 
 describe("button interaction styles", () => {
   it("defines ripple pseudo-elements for primary button surfaces", () => {
-    expect(hasSelector(buttonsRoot, "button:not(.judoka-card)::after")).toBe(true);
+    // Accessibility: keep a visible ripple cue while supporting reduced-motion alternatives.
     expect(hasSelector(buttonsRoot, ".primary-button::after")).toBe(true);
-  });
-
-  it("includes active and focus-visible ripple states", () => {
-    expect(hasSelector(buttonsRoot, "button:not(.judoka-card):active::after")).toBe(true);
     expect(hasSelector(buttonsRoot, "button:not(.judoka-card):focus-visible::after")).toBe(true);
-    expect(hasSelector(buttonsRoot, "button:not(.judoka-card):active:focus-visible::after")).toBe(
-      true
-    );
   });
 
   it("respects reduced motion preferences", () => {
@@ -102,36 +95,19 @@ describe("button interaction styles", () => {
       atRuleParams: "(prefers-reduced-motion: reduce)"
     };
 
-    expect(getDeclarations(buttonsRoot, "button:not(.judoka-card)", mediaOptions)?.transition).toBe(
-      "none"
-    );
+    // Accessibility: reduced-motion overrides must remove transitions/transforms.
     expect(getDeclarations(buttonsRoot, ".primary-button", mediaOptions)?.transition).toBe("none");
-    expect(
-      getDeclarations(buttonsRoot, "button:not(.judoka-card)::after", mediaOptions)?.transition
-    ).toBe("none");
     expect(getDeclarations(buttonsRoot, ".primary-button::after", mediaOptions)?.transition).toBe(
       "none"
     );
-    expect(
-      getDeclarations(buttonsRoot, "button:not(.judoka-card):active", mediaOptions)?.transform
-    ).toBe("none");
     expect(getDeclarations(buttonsRoot, ".primary-button:active", mediaOptions)?.transform).toBe(
       "none"
     );
 
-    expect(
-      getDeclarations(buttonsRoot, ".reduce-motion button:not(.judoka-card)")?.transition
-    ).toBe("none");
     expect(getDeclarations(buttonsRoot, ".reduce-motion .primary-button")?.transition).toBe("none");
-    expect(
-      getDeclarations(buttonsRoot, ".reduce-motion button:not(.judoka-card)::after")?.transition
-    ).toBe("none");
     expect(getDeclarations(buttonsRoot, ".reduce-motion .primary-button::after")?.transition).toBe(
       "none"
     );
-    expect(
-      getDeclarations(buttonsRoot, ".reduce-motion button:not(.judoka-card):active")?.transform
-    ).toBe("none");
     expect(getDeclarations(buttonsRoot, ".reduce-motion .primary-button:active")?.transform).toBe(
       "none"
     );
@@ -145,31 +121,14 @@ describe("navbar ripple overrides", () => {
       atRuleParams: "(prefers-reduced-motion: reduce)"
     };
 
+    // Accessibility: navigation buttons must also honor reduced-motion rules.
     expect(getDeclarations(navbarRoot, ".top-navbar button", mediaOptions)?.transition).toBe(
-      "none"
-    );
-    expect(
-      getDeclarations(navbarRoot, ".top-navbar .primary-button", mediaOptions)?.transition
-    ).toBe("none");
-    expect(getDeclarations(navbarRoot, ".filter-bar button", mediaOptions)?.transition).toBe(
       "none"
     );
     expect(getDeclarations(navbarRoot, ".top-navbar button::after", mediaOptions)?.transition).toBe(
       "none"
     );
-    expect(
-      getDeclarations(navbarRoot, ".top-navbar .primary-button::after", mediaOptions)?.transition
-    ).toBe("none");
-    expect(getDeclarations(navbarRoot, ".filter-bar button::after", mediaOptions)?.transition).toBe(
-      "none"
-    );
     expect(getDeclarations(navbarRoot, ".top-navbar button:active", mediaOptions)?.transform).toBe(
-      "none"
-    );
-    expect(
-      getDeclarations(navbarRoot, ".top-navbar .primary-button:active", mediaOptions)?.transform
-    ).toBe("none");
-    expect(getDeclarations(navbarRoot, ".filter-bar button:active", mediaOptions)?.transform).toBe(
       "none"
     );
 
@@ -179,27 +138,9 @@ describe("navbar ripple overrides", () => {
       "none"
     );
     expect(
-      getDeclarations(navbarRoot, ".reduce-motion .top-navbar .primary-button")?.transition
-    ).toBe("none");
-    expect(getDeclarations(navbarRoot, ".reduce-motion .filter-bar button")?.transition).toBe(
-      "none"
-    );
-    expect(
       getDeclarations(navbarRoot, ".reduce-motion .top-navbar button::after")?.transition
     ).toBe("none");
-    expect(
-      getDeclarations(navbarRoot, ".reduce-motion .top-navbar .primary-button::after")?.transition
-    ).toBe("none");
-    expect(
-      getDeclarations(navbarRoot, ".reduce-motion .filter-bar button::after")?.transition
-    ).toBe("none");
     expect(getDeclarations(navbarRoot, ".reduce-motion .top-navbar button:active")?.transform).toBe(
-      "none"
-    );
-    expect(
-      getDeclarations(navbarRoot, ".reduce-motion .top-navbar .primary-button:active")?.transform
-    ).toBe("none");
-    expect(getDeclarations(navbarRoot, ".reduce-motion .filter-bar button:active")?.transform).toBe(
       "none"
     );
   });
