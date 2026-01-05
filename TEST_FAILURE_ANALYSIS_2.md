@@ -1,12 +1,12 @@
 # Test Failure Analysis: Snackbar DOM Element Not Appearing
 
-| **Property**  | **Value**                                                           |
-| ------------- | ------------------------------------------------------------------- |
-| **Date**      | January 5, 2026                                                     |
-| **Test File** | `playwright/opponent-choosing.smoke.spec.js`                        |
-| **Status**    | 🔴 **Root Cause Identified** — Fix Plan Ready for Review            |
-| **Severity**  | High (test failure confirmed, production behavior needs validation) |
-| **Priority**  | P1 (blocking test suite, potential production impact)               |
+| **Property**  | **Value**                                                                        |
+| ------------- | -------------------------------------------------------------------------------- |
+| **Date**      | January 5, 2026                                                                  |
+| **Test File** | `playwright/opponent-choosing.smoke.spec.js`                                     |
+| **Status**    | 🔴 **Integration Issue** — Snackbar system unified, investigating priority logic |
+| **Severity**  | High (test failure confirmed, production behavior needs validation)              |
+| **Priority**  | P1 (blocking test suite, potential production impact)                            |
 
 ---
 
@@ -205,6 +205,57 @@ The original 3 failing tests were resolved by implementing the following fixes:
 6. Changed debug logging to show sequence numbers instead of timestamps
 
 **Outcome**: All unit tests pass, snackbar system now has deterministic ordering and proper priority handling
+
+---
+
+### Task 6: Unify Snackbar Systems (showSnackbar.js → SnackbarManager) ✅ COMPLETE
+
+**Status**: Delegation implemented, investigating priority display issue
+**Date**: January 5, 2026
+
+**Problem Identified**:
+- Two competing snackbar systems were managing the same DOM container
+- Legacy `showSnackbar.js` (~331 lines) had independent queue/DOM management
+- New `SnackbarManager.js` used by `uiEventHandlers.js` for HIGH priority messages
+- Both systems competed for `#snackbar-container`, preventing proper priority-based display
+
+**Solution Implemented**:
+- Replaced entire `showSnackbar.js` implementation (~331 lines → ~90 lines)
+- Created delegation wrapper that routes to SnackbarManager singleton
+- Legacy API preserved: `showSnackbar(message)` and `updateSnackbar(message)`
+- All legacy calls now use NORMAL priority with 3000ms auto-dismiss
+- Maintains backward compatibility for 20+ files importing showSnackbar
+
+**Key Changes**:
+```javascript
+// Before: Independent queue-based implementation
+const messageQueue = [];
+export function showSnackbar(message) {
+  // ~200 lines of DOM/queue management
+}
+
+// After: Delegation to SnackbarManager
+import snackbarManager, { SnackbarPriority } from "./SnackbarManager.js";
+export function showSnackbar(message) {
+  lastSnackbarController = snackbarManager.show({
+    message,
+    priority: SnackbarPriority.NORMAL,
+    minDuration: 0,
+    autoDismiss: 3000
+  });
+}
+```
+
+**Current Status**:
+- ✅ Unification complete, single queue system
+- ✅ All 23 SnackbarManager unit tests still passing  
+- ❌ Playwright tests still showing LOW priority message in `.snackbar-bottom`
+- 🔍 Investigating: HIGH priority message should override LOW, needs debugging
+
+**Next Steps**:
+- Added diagnostic logging to SnackbarManager.show() and updatePositioning()
+- Created manual test page: `test-snackbar-priority.html`
+- Need to verify HIGH priority messages properly evict/reposition LOW priority
 
 ---
 

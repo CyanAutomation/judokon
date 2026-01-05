@@ -89,15 +89,3 @@ try {
     } catch {}
   }
 } catch {}
-
-// Expose snackbar helpers globally for tests and early callers.
-try {
-  if (typeof window !== "undefined") {
-    try {
-      window.showSnackbar = showSnackbar;
-    } catch {}
-    try {
-      window.updateSnackbar = updateSnackbar;
-    } catch {}
-  }
-} catch {}
