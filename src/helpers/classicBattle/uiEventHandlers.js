@@ -287,6 +287,20 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
               }
             }
           });
+          
+          // Wait for minimum display duration before allowing round to proceed
+          if (currentOpponentSnackbarController) {
+            await currentOpponentSnackbarController.waitForMinDuration();
+          }
+          console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
+          
+          // Fire opponentDecisionReady event to transition state machine to roundDecision
+          try {
+            emitBattleEvent("opponentDecisionReady");
+            console.log("[statSelected Handler] Fired opponentDecisionReady event");
+          } catch (err) {
+            console.error("[statSelected Handler] Error firing opponentDecisionReady:", err);
+          }
           return;
         }
 
@@ -318,6 +332,21 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
             }
           });
           console.log("[statSelected Handler] snackbarManager.show() returned:", currentOpponentSnackbarController);
+          
+          // Wait for minimum display duration before allowing round to proceed
+          console.log(`[statSelected Handler] Waiting for minimum duration: 750ms`);
+          if (currentOpponentSnackbarController) {
+            await currentOpponentSnackbarController.waitForMinDuration();
+          }
+          console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
+          
+          // Fire opponentDecisionReady event to transition state machine to roundDecision
+          try {
+            emitBattleEvent("opponentDecisionReady");
+            console.log("[statSelected Handler] Fired opponentDecisionReady event");
+          } catch (err) {
+            console.error("[statSelected Handler] Error firing opponentDecisionReady:", err);
+          }
           return;
         }
 
@@ -363,6 +392,14 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           await currentOpponentSnackbarController.waitForMinDuration();
         }
         console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
+        
+        // Fire opponentDecisionReady event to transition state machine to roundDecision
+        try {
+          emitBattleEvent("opponentDecisionReady");
+          console.log("[statSelected Handler] Fired opponentDecisionReady event");
+        } catch (err) {
+          console.error("[statSelected Handler] Error firing opponentDecisionReady:", err);
+        }
       } catch (error) {
         console.error("[statSelected Handler] Error:", error);
       }

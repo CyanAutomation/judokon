@@ -63,7 +63,13 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     // Capture console logs from the page for debugging
     page.on("console", (msg) => {
       const text = msg.text();
-      if (text.includes("[SnackbarManager]") || text.includes("[statSelected Handler]")) {
+      if (
+        text.includes("[SnackbarManager]") ||
+        text.includes("[statSelected Handler]") ||
+        text.includes("[computeRoundResult]") ||
+        text.includes("STATE_MACHINE") ||
+        text.includes("roundDecision")
+      ) {
         console.log(`[Browser Console] ${text}`);
       }
     });
