@@ -217,10 +217,7 @@ export const CLASSIC_BATTLE_STATES = [
     name: "waitingForOpponentDecision",
     description:
       "Player has selected a stat. Display 'Opponent is choosing...' message with minimum duration before proceeding to round decision.",
-    onEnter: [
-      "display:opponentThinkingMessage",
-      "wait:opponentMessageMinDuration"
-    ],
+    onEnter: ["display:opponentThinkingMessage", "wait:opponentMessageMinDuration"],
     triggers: [
       { on: "opponentDecisionReady", target: "roundDecision" },
       { on: "interrupt", target: "interruptRound" }

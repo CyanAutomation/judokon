@@ -302,9 +302,7 @@ describe("SnackbarManager", () => {
       expect(snackbars).toHaveLength(2);
 
       // Check that only one has .snackbar-bottom
-      const bottomSnackbars = snackbars.filter((s) =>
-        s.classList.contains("snackbar-bottom")
-      );
+      const bottomSnackbars = snackbars.filter((s) => s.classList.contains("snackbar-bottom"));
       expect(bottomSnackbars).toHaveLength(1);
 
       // Newest (Second) should be at bottom, oldest (First) at top
@@ -315,16 +313,18 @@ describe("SnackbarManager", () => {
 
       expect(firstSnackbar).toBeDefined();
       expect(secondSnackbar).toBeDefined();
-      
+
       // Get detailed class information for debugging
       const firstClasses = Array.from(firstSnackbar.classList);
       const secondClasses = Array.from(secondSnackbar.classList);
-      
+
       // If first doesn't have snackbar-top, fail with detailed info
       if (!firstSnackbar.classList.contains("snackbar-top")) {
-        throw new Error(`First snackbar classes: [${firstClasses.join(", ")}], Second snackbar classes: [${secondClasses.join(", ")}]`);
+        throw new Error(
+          `First snackbar classes: [${firstClasses.join(", ")}], Second snackbar classes: [${secondClasses.join(", ")}]`
+        );
       }
-      
+
       expect(firstSnackbar.classList.contains("snackbar-top")).toBe(true);
       expect(secondSnackbar.classList.contains("snackbar-bottom")).toBe(true);
     });

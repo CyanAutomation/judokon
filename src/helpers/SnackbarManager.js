@@ -297,9 +297,7 @@ class SnackbarManager {
 
     // Normalize config
     const config =
-      typeof messageOrConfig === "string"
-        ? { message: messageOrConfig }
-        : messageOrConfig;
+      typeof messageOrConfig === "string" ? { message: messageOrConfig } : messageOrConfig;
 
     const {
       message,

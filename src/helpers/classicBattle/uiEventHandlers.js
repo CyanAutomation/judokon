@@ -306,9 +306,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         }
 
         if (!shouldDelay) {
-          console.log(
-            "[statSelected Handler] No delay - showing opponent prompt immediately"
-          );
+          console.log("[statSelected Handler] No delay - showing opponent prompt immediately");
           showPromptAndCaptureTimestamp(opponentPromptMessage);
           return;
         }
