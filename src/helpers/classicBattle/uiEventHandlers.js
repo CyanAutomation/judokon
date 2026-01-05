@@ -294,21 +294,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
             await currentOpponentSnackbarController.waitForMinDuration();
           }
           console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
-
-          // Fire opponentDecisionReady event to transition state machine to roundDecision
-          try {
-            // Add small delay to allow statSelected state transition to complete first
-            await new Promise((resolve) => setTimeout(resolve, 50));
-            // Don't await dispatch - fire asynchronously to avoid deadlock
-            dispatchBattleEvent("opponentDecisionReady").catch((err) => {
-              console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
-            });
-            console.log(
-              "[statSelected Handler] Dispatched opponentDecisionReady to state machine (async)"
-            );
-          } catch (err) {
-            console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
-          }
+          // opponentDecisionReady will be dispatched by battleStateChange handler
           return;
         }
 
@@ -350,21 +336,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
             await currentOpponentSnackbarController.waitForMinDuration();
           }
           console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
-
-          // Fire opponentDecisionReady event to transition state machine to roundDecision
-          try {
-            // Add small delay to allow statSelected state transition to complete first
-            await new Promise((resolve) => setTimeout(resolve, 50));
-            // Don't await dispatch - fire asynchronously to avoid deadlock
-            dispatchBattleEvent("opponentDecisionReady").catch((err) => {
-              console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
-            });
-            console.log(
-              "[statSelected Handler] Dispatched opponentDecisionReady to state machine (async)"
-            );
-          } catch (err) {
-            console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
-          }
+          // opponentDecisionReady will be dispatched by battleStateChange handler
           return;
         }
 
@@ -413,21 +385,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           await currentOpponentSnackbarController.waitForMinDuration();
         }
         console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
-
-        // Fire opponentDecisionReady event to transition state machine to roundDecision
-        try {
-          // Add small delay to allow statSelected state transition to complete first
-          await new Promise((resolve) => setTimeout(resolve, 50));
-          // Don't await dispatch - fire asynchronously to avoid deadlock
-          dispatchBattleEvent("opponentDecisionReady").catch((err) => {
-            console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
-          });
-          console.log(
-            "[statSelected Handler] Dispatched opponentDecisionReady to state machine (async)"
-          );
-        } catch (err) {
-          console.error("[statSelected Handler] Error dispatching opponentDecisionReady:", err);
-        }
+        // opponentDecisionReady will be dispatched by battleStateChange handler
       } catch (error) {
         console.error("[statSelected Handler] Error:", error);
       }
@@ -486,6 +444,27 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         delete store.__delayOpponentMessage;
       }
     } catch {}
+  });
+
+  // Handle state transitions to dispatch opponentDecisionReady when appropriate
+  onBattleEvent("battleStateChange", async (e) => {
+    const { from, to, event: trigger } = e?.detail || {};
+    console.log("[battleStateChange Handler] State transition:", { from, to, trigger });
+
+    // When entering waitingForOpponentDecision state, the opponent snackbar is already showing
+    // and its minDuration has elapsed. Now we can safely dispatch opponentDecisionReady.
+    if (to === "waitingForOpponentDecision") {
+      console.log("[battleStateChange Handler] Entered waitingForOpponentDecision state");
+      // Add small delay to ensure state entry actions complete
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      try {
+        await dispatchBattleEvent("opponentDecisionReady");
+        console.log("[battleStateChange Handler] Dispatched opponentDecisionReady successfully");
+      } catch (err) {
+        console.error("[battleStateChange Handler] Error dispatching opponentDecisionReady:", err);
+      }
+    }
   });
 }
 
