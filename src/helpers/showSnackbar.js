@@ -90,7 +90,6 @@ try {
   }
 } catch {}
 
-
 // Expose snackbar helpers globally for tests and early callers.
 try {
   if (typeof window !== "undefined") {

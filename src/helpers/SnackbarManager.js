@@ -260,6 +260,11 @@ class SnackbarManager {
     const active = Array.from(this.activeSnackbars.values());
     if (active.length === 0) return;
 
+    console.log(
+      "[SnackbarManager] updatePositioning - BEFORE sort:",
+      active.map((s) => ({ msg: s.message.substring(0, 20), pri: s.priority, seq: s.sequence }))
+    );
+
     // Sort by priority (high first), then by sequence (newest first)
     active.sort((a, b) => {
       const priorityCompare = this.comparePriority(b.priority, a.priority);
@@ -269,22 +274,22 @@ class SnackbarManager {
     });
 
     // DEBUG: Log sorted order
-    if (active.length > 1) {
-      console.log(
-        "[SnackbarManager] updatePositioning sorted:",
-        active.map((s) => `${s.message} (pri=${s.priority}, seq=${s.sequence})`)
-      );
-    }
+    console.log(
+      "[SnackbarManager] updatePositioning - AFTER sort:",
+      active.map((s) => ({ msg: s.message.substring(0, 20), pri: s.priority, seq: s.sequence }))
+    );
 
     active.forEach((snackbar, index) => {
       if (!snackbar.element) return;
 
       if (index === 0) {
         // Most important/newest message at bottom
+        console.log(`[SnackbarManager] Setting .snackbar-bottom on: "${snackbar.message.substring(0, 30)}"`);
         snackbar.element.classList.add("snackbar-bottom");
         snackbar.element.classList.remove("snackbar-top", "snackbar-stale");
       } else {
         // Older/lower priority messages at top with reduced opacity
+        console.log(`[SnackbarManager] Setting .snackbar-top on: "${snackbar.message.substring(0, 30)}"`);
         snackbar.element.classList.add("snackbar-top", "snackbar-stale");
         snackbar.element.classList.remove("snackbar-bottom");
       }
@@ -330,10 +335,22 @@ class SnackbarManager {
     } = config;
 
     // Check if we can display based on priority
-    if (!this.canDisplay(priority)) {
+    const canDisplayResult = this.canDisplay(priority);
+    console.log(`[SnackbarManager] canDisplay(${priority}):`, {
+      result: canDisplayResult,
+      activeCount: this.activeSnackbars.size,
+      queueLength: this.queue.length,
+      activePriorities: Array.from(this.activeSnackbars.values()).map((s) => ({
+        msg: s.message.substring(0, 20),
+        pri: s.priority
+      }))
+    });
+
+    if (!canDisplayResult) {
       // Queue for later
       const id = this.generateId();
       this.queue.push({ id, config });
+      console.log(`[SnackbarManager] QUEUED: "${message.substring(0, 30)}..."`);
       return {
         id,
         remove: () => this.remove(id),

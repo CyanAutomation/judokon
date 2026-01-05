@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snackbar Priority Test</title>
+    <link rel="stylesheet" href="./src/styles/base.css">
+    <link rel="stylesheet" href="./src/styles/snackbar.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+        .console-output {
+            margin-top: 20px;
+            padding: 10px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .console-output div {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snackbar Priority Test</h1>
+    <p>This test replicates the battle flow scenario where a LOW priority message is shown first, then a HIGH priority message arrives.</p>
+    
+    <div class="controls">
+        <button id="testBtn">Test: LOW then HIGH (with delay)</button>
+        <button id="clearBtn">Clear All Snackbars</button>
+    </div>
+    
+    <div class="info">
+        <strong>Expected behavior:</strong>
+        <ul>
+            <li>LOW priority "First to 5 points wins." appears first</li>
+            <li>After 500ms, HIGH priority "Opponent is choosing..." appears</li>
+            <li>HIGH priority message should have .snackbar-bottom class</li>
+            <li>LOW priority message should move to .snackbar-top class</li>
+        </ul>
+    </div>
+    
+    <div class="console-output" id="consoleOutput"></div>
+    
+    <div id="snackbar-container"></div>
+    
+    <script type="module">
+        import snackbarManager, { SnackbarPriority } from './src/helpers/SnackbarManager.js';
+        
+        const consoleOutput = document.getElementById('consoleOutput');
+        
+        // Capture console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const div = document.createElement('div');
+            div.textContent = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            consoleOutput.innerHTML = '<div>===== TEST STARTED =====</div>';
+            
+            console.log('Step 1: Showing LOW priority message...');
+            const lowController = snackbarManager.show({
+                message: 'First to 5 points wins.',
+                priority: SnackbarPriority.LOW,
+                minDuration: 2000,
+                autoDismiss: 3000
+            });
+            
+            console.log('Step 2: Checking DOM after LOW message...');
+            setTimeout(() => {
+                const container = document.getElementById('snackbar-container');
+                const snackbars = container.querySelectorAll('.snackbar');
+                console.log(`Found ${snackbars.length} snackbar(s)`);
+                snackbars.forEach((sb, i) => {
+                    console.log(`  Snackbar ${i}: "${sb.textContent}" - priority=${sb.dataset.snackbarPriority} - classes=${sb.className}`);
+                });
+            }, 100);
+            
+            console.log('Step 3: Waiting 500ms...');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            console.log('Step 4: Showing HIGH priority message...');
+            const highController = snackbarManager.show({
+                message: 'Opponent is choosing...',
+                priority: SnackbarPriority.HIGH,
+                minDuration: 500,
+                autoDismiss: 0
+            });
+            
+            console.log('Step 5: Checking DOM after HIGH message...');
+            setTimeout(() => {
+                const container = document.getElementById('snackbar-container');
+                const snackbars = container.querySelectorAll('.snackbar');
+                console.log(`Found ${snackbars.length} snackbar(s)`);
+                snackbars.forEach((sb, i) => {
+                    console.log(`  Snackbar ${i}: "${sb.textContent}" - priority=${sb.dataset.snackbarPriority} - classes=${sb.className}`);
+                });
+                
+                const bottomSnackbar = container.querySelector('.snackbar-bottom');
+                if (bottomSnackbar) {
+                    console.log(`\n✅ .snackbar-bottom contains: "${bottomSnackbar.textContent}"`);
+                    console.log(`   Priority: ${bottomSnackbar.dataset.snackbarPriority}`);
+                    
+                    if (bottomSnackbar.dataset.snackbarPriority === 'high') {
+                        console.log('\n✅ TEST PASSED: HIGH priority message has .snackbar-bottom');
+                    } else {
+                        console.log('\n❌ TEST FAILED: LOW priority message has .snackbar-bottom instead of HIGH');
+                    }
+                } else {
+                    console.log('\n❌ TEST FAILED: No .snackbar-bottom element found');
+                }
+            }, 100);
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            const container = document.getElementById('snackbar-container');
+            container.innerHTML = '';
+            consoleOutput.innerHTML = '<div>Cleared</div>';
+        });
+    </script>
+</body>
+</html>
