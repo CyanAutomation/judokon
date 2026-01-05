@@ -214,7 +214,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await expect(nextRoundTimer).toBeVisible();
       await expect(timerValue).toHaveText(/\d+s/);
 
-      await expect(roundCounter).toContainText(/Round\\s*2/i, { timeout: 10_000 });
+      await expect(roundCounter).toContainText(/Round\s*2/i, { timeout: 10_000 });
     }, MUTED_CONSOLE_LEVELS));
 
   test("enables Next during cooldown without orchestrator and advances", async ({ page }) =>
