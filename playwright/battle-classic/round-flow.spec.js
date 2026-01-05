@@ -212,7 +212,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await expect(roundMessage).toContainText(/picked/i);
 
       await expect(nextRoundTimer).toBeVisible();
-      await expect(timerValue).toHaveText(/\\d+s/);
+      await expect(timerValue).toHaveText(/\d+s/);
 
       await expect(roundCounter).toContainText(/Round\\s*2/i, { timeout: 10_000 });
     }, MUTED_CONSOLE_LEVELS));
