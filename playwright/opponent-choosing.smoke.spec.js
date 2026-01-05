@@ -121,7 +121,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     return Date.now() - selectionStartedAt;
   }
 
-  test.skip(`[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar is deferred, shown, and cleared when flag is enabled`, async ({
+  test(`[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar is deferred, shown, and cleared when flag is enabled`, async ({
     page
   }) => {
     // SKIP REASON: Snackbar DOM element not appearing despite handler execution
@@ -155,7 +155,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await app.cleanup();
   });
 
-  test.skip(`[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar fires immediately when flag is disabled`, async ({
+  test(`[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar fires immediately when flag is disabled`, async ({
     page
   }) => {
     // SKIP REASON: Same snackbar display issue as above test
