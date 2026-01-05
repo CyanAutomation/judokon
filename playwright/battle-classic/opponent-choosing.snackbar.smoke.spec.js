@@ -105,7 +105,9 @@ test.describe("Cooldown countdown display", () => {
     // Verify the snackbar does NOT contain countdown text during opponent selection
     // Note: Countdown "Next round in" will replace "Opponent is choosing" during cooldown phase
     // This is expected behavior - the snackbar transitions from opponent message to countdown
-    await expect(snackbar).toContainText(/(Opponent is choosing|Next round in)/i, { timeout: 2_500 });
+    await expect(snackbar).toContainText(/(Opponent is choosing|Next round in)/i, {
+      timeout: 2_500
+    });
     await expect(snackbar).not.toContainText(/Time Left:/i);
 
     // But the timer display should still work

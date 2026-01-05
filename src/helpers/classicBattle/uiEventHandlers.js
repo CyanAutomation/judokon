@@ -323,7 +323,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
             minDuration: 750,
             autoDismiss: 0,
             onShow: () => {
-              console.log("[statSelected Handler] Opponent snackbar shown immediately, marking timestamp");
+              console.log(
+                "[statSelected Handler] Opponent snackbar shown immediately, marking timestamp"
+              );
               try {
                 markOpponentPromptNowFn({ notify: true });
               } catch {
@@ -341,7 +343,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
         if (resolvedDelay <= 0) {
           // Same as no delay case
-          console.log("[statSelected Handler] Resolved delay <= 0 - showing opponent prompt immediately");
+          console.log(
+            "[statSelected Handler] Resolved delay <= 0 - showing opponent prompt immediately"
+          );
           currentOpponentSnackbarController = snackbarManager.show({
             message: opponentPromptMessage,
             priority: SnackbarPriority.HIGH,
