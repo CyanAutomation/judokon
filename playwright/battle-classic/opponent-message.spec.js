@@ -330,7 +330,7 @@ test.describe("Classic Battle Opponent Messages", () => {
           const emittedEvents = await getEvents();
           expect(emittedEvents).toContain("roundResolved");
         }); // Closing brace for `async ({ getEvents }) => { ... }`
-      } // Missing closing brace for the `try` block
+
       finally {
         await cleanupStalledCliFallback(page);
       }
