@@ -78,7 +78,7 @@ export async function setupClassicBattlePage() {
       if (canAccessWindow()) {
         window.__initCalled = true;
         window.__handlersRegistered = true;
-        
+
         // Comprehensive battle diagnostics for test synchronization
         window.__battleDiagnostics = {
           initComplete: true,

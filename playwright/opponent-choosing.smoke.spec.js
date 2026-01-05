@@ -81,7 +81,10 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
         eventCount++;
         console.log(`[Test Listener] statSelected event #${eventCount}:`, e.detail);
       };
-      globalThis.__classicBattleEventTarget?.addEventListener('statSelected', window.__testStatSelectedListener);
+      globalThis.__classicBattleEventTarget?.addEventListener(
+        "statSelected",
+        window.__testStatSelectedListener
+      );
     });
 
     const statButtons = page.locator("#stat-buttons");
@@ -124,7 +127,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     // SKIP REASON: Snackbar DOM element not appearing despite handler execution
     // ROOT CAUSE INVESTIGATION: See TEST_FAILURE_ANALYSIS.md Task 3
     // - ✅ Handler registration confirmed working
-    // - ✅ Event emission confirmed working  
+    // - ✅ Event emission confirmed working
     // - ✅ Handler execution confirmed working
     // - ❌ Snackbar DOM element not created/visible (separate bug)
     // TRACKING: See TEST_FAILURE_ANALYSIS.md
