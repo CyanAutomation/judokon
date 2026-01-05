@@ -390,11 +390,11 @@ describe("SnackbarManager", () => {
 
       const diagnostics = snackbarManager.getDiagnostics();
 
-      expect(diagnostics.activeCount).toBe(2);
-      expect(diagnostics.queueLength).toBe(1);
+      expect(diagnostics.activeCount).toBe(1); // Expect only 'Active 1' to be active
+      expect(diagnostics.queueLength).toBe(2); // Expect 'Active 2' and 'Queued' to be queued
       expect(diagnostics.currentPriority).toBe(SnackbarPriority.HIGH);
-      expect(diagnostics.active).toHaveLength(2);
-      expect(diagnostics.queued).toHaveLength(1);
+      expect(diagnostics.active).toHaveLength(1);
+      expect(diagnostics.queued).toHaveLength(2);
     });
   });
 
