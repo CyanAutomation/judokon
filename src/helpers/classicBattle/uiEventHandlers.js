@@ -18,9 +18,12 @@ import {
   setOpponentPromptFallbackTimerId
 } from "./globalState.js";
 import { clearScheduled } from "./timerSchedule.js";
+import snackbarManager, { SnackbarPriority } from "../SnackbarManager.js";
 
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
+let currentOpponentSnackbarController = null;
+let statSelectedHandlerPromise = null;
 
 function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
@@ -273,79 +276,118 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       timestamp: Date.now()
     });
 
-    try {
-      scoreboardObj.clearTimer?.();
-    } catch {
-      // Timer clearing is non-critical
-    }
-    try {
-      const opponentPromptMessage = tFn("ui.opponentChoosing");
-      const detail = (e && e.detail) || {};
-      const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
-      const opts = hasOpts ? detail.opts || {} : {};
-      const flagEnabled = isEnabledFn("opponentDelayMessage");
-      const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
-
-      clearOpponentSnackbarTimeout();
-      clearFallbackPromptTimer();
-
-      if (!shouldDelay) {
-        console.log(
-          "[statSelected Handler] No delay - calling displayOpponentChoosingPrompt immediately"
-        );
-        showPromptAndCaptureTimestamp(opponentPromptMessage);
-        return;
-      }
-
-      // When delay is enabled, clear any existing snackbar immediately
+    // Create promise that resolves when handler completes
+    const handlerPromise = (async () => {
       try {
-        const container =
-          typeof document !== "undefined" ? document.getElementById("snackbar-container") : null;
-        if (container) {
-          container.replaceChildren();
-        }
+        scoreboardObj.clearTimer?.();
       } catch {
-        // Clearing is non-critical
+        // Timer clearing is non-critical
       }
 
-      const delaySource = Object.prototype.hasOwnProperty.call(opts, "delayMs")
-        ? Number(opts.delayMs)
-        : Number(getOpponentDelayFn());
-      const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
+      try {
+        const opponentPromptMessage = tFn("ui.opponentChoosing");
+        const detail = (e && e.detail) || {};
+        const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
+        const opts = hasOpts ? detail.opts || {} : {};
+        const flagEnabled = isEnabledFn("opponentDelayMessage");
+        const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
 
-      if (resolvedDelay <= 0) {
-        console.log(
-          "[statSelected Handler] Resolved delay <= 0 - calling displayOpponentChoosingPrompt immediately"
-        );
-        showPromptAndCaptureTimestamp(opponentPromptMessage);
-        return;
-      }
+        clearOpponentSnackbarTimeout();
+        clearFallbackPromptTimer();
 
-      console.log(
-        `[statSelected Handler] Scheduling message to appear after delay: ${resolvedDelay}ms`
-      );
-
-      const minDuration = Number(getOpponentPromptMinDurationFn());
-      const scheduleDelay = Math.max(resolvedDelay, Number.isFinite(minDuration) ? minDuration : 0);
-
-      opponentSnackbarId = setTimeout(() => {
-        try {
-          // After delay, show the message and emit the opponentPromptReady event
-          displayOpponentChoosingPrompt({
-            message: opponentPromptMessage,
-            markTimestamp: true,
-            notifyReady: true,
-            showMessage: true
-          });
-        } catch {
-          // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+        // Cancel any existing opponent snackbar
+        if (currentOpponentSnackbarController) {
+          try {
+            await currentOpponentSnackbarController.remove();
+          } catch {
+            // Non-critical
+          }
+          currentOpponentSnackbarController = null;
         }
-      }, scheduleDelay);
-    } catch {}
+
+        if (!shouldDelay) {
+          console.log(
+            "[statSelected Handler] No delay - showing opponent prompt immediately"
+          );
+          showPromptAndCaptureTimestamp(opponentPromptMessage);
+          return;
+        }
+
+        const delaySource = Object.prototype.hasOwnProperty.call(opts, "delayMs")
+          ? Number(opts.delayMs)
+          : Number(getOpponentDelayFn());
+        const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
+
+        if (resolvedDelay <= 0) {
+          console.log(
+            "[statSelected Handler] Resolved delay <= 0 - showing opponent prompt immediately"
+          );
+          showPromptAndCaptureTimestamp(opponentPromptMessage);
+          return;
+        }
+
+        console.log(
+          `[statSelected Handler] Scheduling message to appear after delay: ${resolvedDelay}ms`
+        );
+
+        const minDuration = Number(getOpponentPromptMinDurationFn()) || 750;
+
+        // Use promise-based delay coordination
+        await new Promise((resolve) => {
+          opponentSnackbarId = setTimeout(() => {
+            resolve();
+          }, resolvedDelay);
+        });
+
+        // Show snackbar with high priority and minimum duration
+        console.log("[statSelected Handler] Showing snackbar with SnackbarManager");
+        currentOpponentSnackbarController = snackbarManager.show({
+          message: opponentPromptMessage,
+          priority: SnackbarPriority.HIGH,
+          minDuration: minDuration,
+          autoDismiss: 0, // Don't auto-dismiss, will be controlled by battle flow
+          onShow: () => {
+            console.log("[statSelected Handler] Snackbar shown, marking timestamp");
+            // Mark timestamp when snackbar actually appears
+            try {
+              markOpponentPromptNowFn({ notify: true });
+            } catch {
+              // Non-critical
+            }
+          }
+        });
+
+        // Wait for minimum display duration before allowing round to proceed
+        console.log(`[statSelected Handler] Waiting for minimum duration: ${minDuration}ms`);
+        if (currentOpponentSnackbarController) {
+          await currentOpponentSnackbarController.waitForMinDuration();
+        }
+        console.log("[statSelected Handler] Minimum duration elapsed, round can proceed");
+      } catch (error) {
+        console.error("[statSelected Handler] Error:", error);
+      }
+    })();
+
+    // Store promise so battle flow can await it
+    statSelectedHandlerPromise = handlerPromise;
+
+    // Return promise for coordination
+    return handlerPromise;
   });
 
   onBattleEvent("roundResolved", async (e) => {
     clearOpponentSnackbarTimeout();
+
+    // Remove opponent choosing snackbar if still active
+    if (currentOpponentSnackbarController) {
+      try {
+        await currentOpponentSnackbarController.remove();
+      } catch {
+        // Non-critical
+      }
+      currentOpponentSnackbarController = null;
+    }
+
     await revealOpponentCardAfterResolution();
     const { store, stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;
@@ -372,4 +414,27 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
     } catch {}
   });
+}
+
+/**
+ * Get the promise for the current statSelected handler execution
+ * Used by battle flow to coordinate timing
+ *
+ * @returns {Promise|null} Handler promise or null if no handler active
+ */
+export function getStatSelectedHandlerPromise() {
+  return statSelectedHandlerPromise;
+}
+
+/**
+ * Wait for statSelected handler to complete
+ * Used by battle flow to ensure snackbar timing is respected
+ *
+ * @returns {Promise<void>}
+ */
+export async function awaitStatSelectedHandler() {
+  if (statSelectedHandlerPromise) {
+    await statSelectedHandlerPromise;
+    statSelectedHandlerPromise = null;
+  }
 }

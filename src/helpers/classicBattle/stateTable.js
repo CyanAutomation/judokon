@@ -196,10 +196,10 @@ export const CLASSIC_BATTLE_STATES = [
       CLASSIC_BATTLE_ACTIONS.A11Y_EXPOSE_TIMER_STATUS
     ],
     triggers: [
-      { on: "statSelected", target: "roundDecision" },
+      { on: "statSelected", target: "waitingForOpponentDecision" },
       {
         on: "timeout",
-        target: "roundDecision",
+        target: "waitingForOpponentDecision",
         guard: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
         note: "If FF_AUTO_SELECT is ON, engine auto-picks a stat on timeout."
       },
@@ -209,6 +209,20 @@ export const CLASSIC_BATTLE_STATES = [
         guard: GUARD_CONDITIONS.AUTO_SELECT_DISABLED,
         note: "If FF_AUTO_SELECT is OFF, treat timeout as an interrupt path."
       },
+      { on: "interrupt", target: "interruptRound" }
+    ]
+  },
+  {
+    id: 4.5,
+    name: "waitingForOpponentDecision",
+    description:
+      "Player has selected a stat. Display 'Opponent is choosing...' message with minimum duration before proceeding to round decision.",
+    onEnter: [
+      "display:opponentThinkingMessage",
+      "wait:opponentMessageMinDuration"
+    ],
+    triggers: [
+      { on: "opponentDecisionReady", target: "roundDecision" },
       { on: "interrupt", target: "interruptRound" }
     ]
   },

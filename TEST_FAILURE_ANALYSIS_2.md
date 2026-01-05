@@ -20,6 +20,133 @@ After resolving the initialization synchronization issue (documented in `TEST_FA
 
 ---
 
+## Implementation Progress
+
+### Task 1: Implement SnackbarManager with lifecycle management ✅
+
+**Status**: Complete
+**Date**: January 5, 2026
+
+**Implementation Details**:
+- Created `src/helpers/SnackbarManager.js` with comprehensive lifecycle management
+- Features implemented:
+  - Priority-based display (HIGH/NORMAL/LOW)
+  - Guaranteed minimum display duration enforcement
+  - Queuing system for overlapping messages
+  - Programmatic control (show, remove, update, waitForMinDuration)
+  - Diagnostic API for debugging
+  - Backward compatibility with existing showSnackbar API
+
+**Key Methods**:
+- `show(config)`: Display snackbar with priority and duration control
+- `remove(id)`: Remove snackbar (respects minDuration)
+- `update(id, message)`: Update existing snackbar
+- `waitForMinDuration(id)`: Promise-based duration enforcement
+- `getDiagnostics()`: Debug information
+
+**Testing**: Pending unit tests in next task
+
+---
+
+### Task 2: Add promise-based delay coordination to uiEventHandlers ✅
+
+**Status**: Complete
+**Date**: January 5, 2026
+
+**Implementation Details**:
+- Modified `src/helpers/classicBattle/uiEventHandlers.js` to integrate SnackbarManager
+- Changed `statSelected` handler to be async and return a promise
+- Implemented coordinated delay timing:
+  1. Wait for configured delay (500ms default)
+  2. Show snackbar with HIGH priority and minDuration (750ms)
+  3. Wait for minimum display duration before allowing battle flow to proceed
+- Added cleanup in `roundResolved` handler to remove opponent snackbar
+- Exported helper functions:
+  - `getStatSelectedHandlerPromise()`: Get current handler promise
+  - `awaitStatSelectedHandler()`: Wait for handler completion
+
+**Key Changes**:
+- Handler now uses `await` for delay timing instead of setTimeout callback
+- Snackbar shown with `SnackbarManager.show()` with HIGH priority
+- Promise-based coordination ensures battle flow waits for snackbar display
+- Minimum duration (750ms) enforced before round resolution
+
+**Testing**: Pending - Need to update battle flow to await handler
+
+---
+
+### Task 3: Implement event handler await mechanism ✅
+
+**Status**: Complete
+**Date**: January 5, 2026
+
+**Implementation Details**:
+- Modified `src/helpers/classicBattle/selectionHandler.js` to await statSelected handler
+- Added import for `awaitStatSelectedHandler` from uiEventHandlers
+- Updated `dispatchStatSelected` function to wait for handler completion:
+  1. Clean up timers
+  2. Emit selection event
+  3. **WAIT for statSelected handler to complete** (NEW)
+  4. Then proceed with battle engine processing
+
+**Coordination Flow**:
+```
+User clicks stat button
+→ handleStatSelection called
+→ dispatchStatSelected called
+→ emitSelectionEvent (fires statSelected event)
+→ statSelected handler starts:
+  - Wait 500ms delay
+  - Show snackbar with HIGH priority
+  - Wait 750ms minimum duration
+→ awaitStatSelectedHandler() waits for handler
+→ Handler completes (snackbar has been visible for full duration)
+→ Battle engine proceeds with round resolution
+```
+
+**Testing**: Pending - Need to test with actual battle flow
+
+---
+
+### Task 4: Formalize battle state machine ✅
+
+**Status**: Complete
+**Date**: January 5, 2026
+
+**Implementation Details**:
+- Enhanced `src/helpers/classicBattle/stateTable.js` with new state
+- Added **`waitingForOpponentDecision`** (state id 4.5) between player selection and round decision
+- State transition flow:
+  ```
+  waitingForPlayerAction
+    → (statSelected event)
+  waitingForOpponentDecision  (NEW STATE)
+    → (opponentDecisionReady event)
+  roundDecision
+    → (outcome event)
+  roundOver
+  ```
+
+**New State Properties**:
+- **Name**: `waitingForOpponentDecision`
+- **Description**: Player has selected a stat. Display "Opponent is choosing..." message with minimum duration before proceeding to round decision.
+- **Entry Actions**:
+  - `display:opponentThinkingMessage`
+  - `wait:opponentMessageMinDuration`
+- **Triggers**:
+  - `opponentDecisionReady` → transitions to `roundDecision`
+  - `interrupt` → transitions to `interruptRound`
+
+**Benefits**:
+- Explicit state for opponent message display
+- Clear entry/exit points for timing coordination
+- Prevents race conditions between UI and game logic
+- Aligns with QA specification requirements
+
+**Testing**: Pending - Need to wire up new state and test transitions
+
+---
+
 ## 1. Problem Statement
 
 ### Observable Behavior
