@@ -425,15 +425,16 @@ export function handleRoundStartedEvent(event, deps = {}) {
  * Handle a `statSelected` battle event.
  *
  * @param {CustomEvent} event
- * @param {{ showSnackbar?: (message: string) => void }} [deps]
+ * @param {{ snackbarManager?: any }} [deps]
  * @pseudocode
  * 1. Pull `stat`, `store`, and `opts` from the event detail and bail when missing.
- * 2. Add the `selected` class to the chosen button and show snackbar feedback when allowed.
- * 3. Emit `statButtons:disable` to lock the stat buttons after selection.
+ * 2. Add the `selected` class to the chosen button.
+ * 3. Show "You Picked:" message via SnackbarManager with NORMAL priority (never shown for delayed opponent messages).
+ * 4. Emit `statButtons:disable` to lock the stat buttons after selection.
+ * Note: Opponent messaging is handled separately in uiEventHandlers.js via HIGH priority snackbar.
  * @returns {void}
  */
 export function handleStatSelectedEvent(event, deps = {}) {
-  const { showSnackbar: showSnackbarFn = showSnackbar } = deps;
   try {
     if (!IS_VITEST) console.debug(`classicBattle.trace event:statSelected t=${Date.now()}`);
   } catch {}
@@ -446,13 +447,7 @@ export function handleStatSelectedEvent(event, deps = {}) {
         console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
     } catch {}
     btn.classList.add("selected");
-    if (!opts || !opts.delayOpponentMessage) {
-      try {
-        if (typeof showSnackbarFn === "function") {
-          showSnackbarFn(`You Picked: ${btn.textContent}`);
-        }
-      } catch {}
-    }
+    // Note: "You Picked:" message removed - opponent messaging in uiEventHandlers handles all snackbar coordination
   }
   try {
     disableStatButtons?.();
@@ -728,21 +723,7 @@ export function bindRoundStarted() {
   });
 }
 
-/**
- * Bind handler for `statSelected` events.
- *
- * @pseudocode
- * 1. Listen for `statSelected`.
- * 2. Highlight the chosen button and optionally show feedback.
- * 3. Disable further stat selections.
- *
- * @returns {void}
- */
-export function bindStatSelected() {
-  onBattleEvent("statSelected", (event) => {
-    handleStatSelectedEvent(event);
-  });
-}
+// bindStatSelected removed - consolidated into single dynamic handler to prevent duplication
 
 /**
  * Bind handler for `roundResolved` events.
@@ -765,14 +746,13 @@ export function bindRoundResolved() {
  *
  * @pseudocode
  * 1. Bind `roundStarted` handler.
- * 2. Bind `statSelected` handler.
- * 3. Bind `roundResolved` handler.
+ * 2. Bind `roundResolved` handler.
+ * Note: statSelected handler moved to dynamic bindings to prevent duplication.
  *
  * @returns {void}
  */
 export function bindRoundUIEventHandlers() {
   bindRoundStarted();
-  bindStatSelected();
   bindRoundResolved();
   // Instrument statButtons enable/disable events to observe unexpected toggles
   try {
@@ -871,12 +851,11 @@ export function bindRoundUIEventHandlersDynamic() {
   onBattleEvent("roundStarted", (event) => {
     handleRoundStartedEvent(event);
   });
-  onBattleEvent("statSelected", async (event) => {
-    const module = await loadShowSnackbar();
+  onBattleEvent("statSelected", (event) => {
     try {
       document.body?.setAttribute?.("data-stat-selected", "true");
     } catch {}
-    handleStatSelectedEvent(event, { showSnackbar: module?.showSnackbar });
+    handleStatSelectedEvent(event);
   });
   onBattleEvent("roundResolved", async (event) => {
     const [

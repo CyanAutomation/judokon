@@ -1,4 +1,5 @@
 import * as snackbar from "./showSnackbar.js";
+import snackbarManager, { SnackbarPriority } from "./SnackbarManager.js";
 import * as scoreboard from "./setupScoreboard.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 import {
@@ -652,7 +653,8 @@ function createRendererState(options = {}) {
     rendered,
     promptController,
     waitForPromptOption,
-    maxPromptWaitMs
+    maxPromptWaitMs,
+    countdownController: null // Will hold SnackbarManager controller for countdown message
   };
 }
 
@@ -695,11 +697,42 @@ function createTickProcessors(rendererState) {
     const shouldSuppressSnackbar = isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
 
     if (!shouldSuppressSnackbar) {
+      // Use SnackbarManager with HIGH priority to replace "Opponent is choosing" immediately
+      // The countdown message should take precedence once the round resolution phase begins
       if (!rendererState.rendered) {
-        snackbar.showSnackbar(text);
+        // Dismiss any existing opponent/picked messages before showing countdown
+        (async () => {
+          try {
+            const { dismissOpponentSnackbar } = await import("./classicBattle/uiEventHandlers.js");
+            if (typeof dismissOpponentSnackbar === "function") {
+              await dismissOpponentSnackbar();
+            }
+          } catch {
+            // Non-critical - countdown will still show
+          }
+        })();
+
+        // Initial render - show countdown with HIGH priority to replace opponent message
+        rendererState.countdownController = snackbarManager.show({
+          message: text,
+          priority: SnackbarPriority.HIGH, // HIGH priority ensures it replaces opponent message
+          minDuration: 0, // No minimum duration for countdown updates
+          autoDismiss: 0 // Manual control - will be dismissed when round starts
+        });
         rendererState.rendered = true;
-      } else if (clamped !== rendererState.lastRendered) {
-        snackbar.updateSnackbar(text);
+      } else if (clamped !== rendererState.lastRendered && rendererState.countdownController) {
+        // Update existing countdown message
+        try {
+          rendererState.countdownController.update(text);
+        } catch {
+          // If update fails, create a new one
+          rendererState.countdownController = snackbarManager.show({
+            message: text,
+            priority: SnackbarPriority.HIGH,
+            minDuration: 0,
+            autoDismiss: 0
+          });
+        }
       }
       rendererState.lastRendered = clamped;
     }

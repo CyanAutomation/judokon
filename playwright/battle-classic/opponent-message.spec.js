@@ -205,8 +205,8 @@ test.describe("Classic Battle Opponent Messages", () => {
         { timeout: 5000 }
       );
 
-      const snackbar = page.locator("#snackbar-container .snackbar-bottom");
-      await expect(snackbar).toContainText(/Opponent is choosing|Next round in/i, {
+      const snackbar = page.locator("#snackbar-container .snackbar-bottom");      // Should show either opponent message OR countdown (not both)
+      // Countdown replaces opponent message once round resolution begins      await expect(snackbar).toContainText(/Opponent is choosing|Next round in/i, {
         timeout: 4_000
       });
     },

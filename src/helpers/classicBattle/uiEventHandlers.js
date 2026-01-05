@@ -23,6 +23,7 @@ import snackbarManager, { SnackbarPriority } from "../SnackbarManager.js";
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
 let currentOpponentSnackbarController = null;
+let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
 
 function clearOpponentSnackbarTimeout() {
@@ -291,11 +292,21 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         const opts = hasOpts ? detail.opts || {} : {};
         const flagEnabled = isEnabledFn("opponentDelayMessage");
         const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
+        
+        // Get stat button text for "You Picked:" message
+        const { stat, store } = detail;
+        let pickedMessage = "You Picked!";
+        if (stat && store && store.statButtonEls) {
+          const btn = store.statButtonEls[stat];
+          if (btn && btn.textContent) {
+            pickedMessage = `You Picked: ${btn.textContent.trim()}`;
+          }
+        }
 
         clearOpponentSnackbarTimeout();
         clearFallbackPromptTimer();
 
-        // Cancel any existing opponent snackbar
+        // Cancel any existing snackbars
         if (currentOpponentSnackbarController) {
           try {
             await currentOpponentSnackbarController.remove();
@@ -304,10 +315,41 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           }
           currentOpponentSnackbarController = null;
         }
+        if (currentPickedSnackbarController) {
+          try {
+            await currentPickedSnackbarController.remove();
+          } catch {
+            // Non-critical
+          }
+          currentPickedSnackbarController = null;
+        }
 
-        if (!shouldDelay) {
-          console.log("[statSelected Handler] No delay - showing opponent prompt immediately");
-          showPromptAndCaptureTimestamp(opponentPromptMessage);
+        // Show "You Picked:" message first with NORMAL priority (brief display)
+        if (!shouldDelay || opts.delayOpponentMessage === false) {
+          // When no delay, show "You Picked:" then immediately transition to "Opponent is choosing"
+          currentPickedSnackbarController = snackbarManager.show({
+            message: pickedMessage,
+            priority: SnackbarPriority.NORMAL,
+            minDuration: 500, // Brief display
+            autoDismiss: 800,
+            onDismiss: () => {
+              // Immediately show opponent message after picked message
+              currentOpponentSnackbarController = snackbarManager.show({
+                message: opponentPromptMessage,
+                priority: SnackbarPriority.HIGH,
+                minDuration: 750,
+                autoDismiss: 0,
+                onShow: () => {
+                  console.log("[statSelected Handler] Opponent snackbar shown, marking timestamp");
+                  try {
+                    markOpponentPromptNowFn({ notify: true });
+                  } catch {
+                    // Non-critical
+                  }
+                }
+              });
+            }
+          });
           return;
         }
 
@@ -317,35 +359,61 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         const resolvedDelay = Number.isFinite(delaySource) && delaySource > 0 ? delaySource : 0;
 
         if (resolvedDelay <= 0) {
-          console.log(
-            "[statSelected Handler] Resolved delay <= 0 - showing opponent prompt immediately"
-          );
-          showPromptAndCaptureTimestamp(opponentPromptMessage);
+          // Same as no delay case
+          currentPickedSnackbarController = snackbarManager.show({
+            message: pickedMessage,
+            priority: SnackbarPriority.NORMAL,
+            minDuration: 500,
+            autoDismiss: 800,
+            onDismiss: () => {
+              currentOpponentSnackbarController = snackbarManager.show({
+                message: opponentPromptMessage,
+                priority: SnackbarPriority.HIGH,
+                minDuration: 750,
+                autoDismiss: 0,
+                onShow: () => {
+                  try {
+                    markOpponentPromptNowFn({ notify: true });
+                  } catch {
+                    // Non-critical
+                  }
+                }
+              });
+            }
+          });
           return;
         }
 
         console.log(
-          `[statSelected Handler] Scheduling message to appear after delay: ${resolvedDelay}ms`
+          `[statSelected Handler] Showing "You Picked" then opponent message after ${resolvedDelay}ms delay`
         );
 
         const minDuration = Number(getOpponentPromptMinDurationFn()) || 750;
 
-        // Use promise-based delay coordination
+        // Show "You Picked:" message first
+        currentPickedSnackbarController = snackbarManager.show({
+          message: pickedMessage,
+          priority: SnackbarPriority.NORMAL,
+          minDuration: 500,
+          autoDismiss: Math.min(resolvedDelay, 1000) // Auto-dismiss before opponent message
+        });
+
+        // Wait for the configured delay
         await new Promise((resolve) => {
           opponentSnackbarId = setTimeout(() => {
             resolve();
           }, resolvedDelay);
         });
 
-        // Show snackbar with high priority and minimum duration
-        console.log("[statSelected Handler] Showing snackbar with SnackbarManager");
+        // Show opponent choosing message with high priority
+        console.log("[statSelected Handler] Showing opponent snackbar with SnackbarManager");
         currentOpponentSnackbarController = snackbarManager.show({
           message: opponentPromptMessage,
           priority: SnackbarPriority.HIGH,
           minDuration: minDuration,
           autoDismiss: 0, // Don't auto-dismiss, will be controlled by battle flow
           onShow: () => {
-            console.log("[statSelected Handler] Snackbar shown, marking timestamp");
+            console.log("[statSelected Handler] Opponent snackbar shown, marking timestamp");
             // Mark timestamp when snackbar actually appears
             try {
               markOpponentPromptNowFn({ notify: true });
@@ -376,7 +444,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   onBattleEvent("roundResolved", async (e) => {
     clearOpponentSnackbarTimeout();
 
-    // Remove opponent choosing snackbar if still active
+    // Remove both opponent choosing and picked snackbars if still active
     if (currentOpponentSnackbarController) {
       try {
         await currentOpponentSnackbarController.remove();
@@ -384,6 +452,14 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         // Non-critical
       }
       currentOpponentSnackbarController = null;
+    }
+    if (currentPickedSnackbarController) {
+      try {
+        await currentPickedSnackbarController.remove();
+      } catch {
+        // Non-critical
+      }
+      currentPickedSnackbarController = null;
     }
 
     await revealOpponentCardAfterResolution();
@@ -434,5 +510,30 @@ export async function awaitStatSelectedHandler() {
   if (statSelectedHandlerPromise) {
     await statSelectedHandlerPromise;
     statSelectedHandlerPromise = null;
+  }
+}
+
+/**
+ * Get and dismiss the current opponent snackbar controller
+ * Used by countdown renderer to replace opponent message with countdown
+ *
+ * @returns {Promise<void>}
+ */
+export async function dismissOpponentSnackbar() {
+  if (currentOpponentSnackbarController) {
+    try {
+      await currentOpponentSnackbarController.remove();
+    } catch {
+      // Non-critical
+    }
+    currentOpponentSnackbarController = null;
+  }
+  if (currentPickedSnackbarController) {
+    try {
+      await currentPickedSnackbarController.remove();
+    } catch {
+      // Non-critical
+    }
+    currentPickedSnackbarController = null;
   }
 }

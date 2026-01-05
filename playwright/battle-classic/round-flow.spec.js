@@ -95,6 +95,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
 
       const snackbar = page.locator(selectors.snackbarContainer());
       await waitForBattleState(page, "roundDecision", { timeout: 2_000 });
+      // Expect "Opponent is choosing" first, which will be replaced by "Next round in" during cooldown
       await expect(snackbar).toContainText(/^(Opponent is choosing|Next round in)/i, {
         timeout: 2_500
       });
@@ -327,7 +328,8 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       await ensureRoundResolved(page);
       await waitForRoundsPlayed(page, 1);
       await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
-      await expect(snackbar).not.toContainText(/Next round in/i);
+      // Countdown "Next round in" replaces "Opponent is choosing" - should not see opponent message anymore
+      await expect(snackbar).toContainText(/Next round in/i, { timeout: 1000 });
     }, MUTED_CONSOLE_LEVELS));
 
   test("opponent reveal works with different stat selections", async ({ page }) =>
