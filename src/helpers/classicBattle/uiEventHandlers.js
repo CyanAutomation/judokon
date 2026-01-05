@@ -300,6 +300,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           console.log(
             "[statSelected Handler] Resolved delay <= 0 - showing opponent prompt immediately"
           );
+          console.log("[statSelected Handler] About to call snackbarManager.show() with:", {
+            message: opponentPromptMessage,
+            priority: SnackbarPriority.HIGH
+          });
           currentOpponentSnackbarController = snackbarManager.show({
             message: opponentPromptMessage,
             priority: SnackbarPriority.HIGH,
@@ -313,6 +317,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
               }
             }
           });
+          console.log("[statSelected Handler] snackbarManager.show() returned:", currentOpponentSnackbarController);
           return;
         }
 
@@ -331,6 +336,10 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
         // Show opponent choosing message with high priority
         console.log("[statSelected Handler] Showing opponent snackbar with SnackbarManager");
+        console.log("[statSelected Handler] About to call snackbarManager.show() with:", {
+          message: opponentPromptMessage,
+          priority: SnackbarPriority.HIGH
+        });
         currentOpponentSnackbarController = snackbarManager.show({
           message: opponentPromptMessage,
           priority: SnackbarPriority.HIGH,
@@ -346,6 +355,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
             }
           }
         });
+        console.log("[statSelected Handler] snackbarManager.show() returned:", currentOpponentSnackbarController);
 
         // Wait for minimum display duration before allowing round to proceed
         console.log(`[statSelected Handler] Waiting for minimum duration: ${minDuration}ms`);

@@ -42,6 +42,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await registerCommonRoutes(page);
 
     const app = await configureApp(page, {
+      testMode: "disable", // Disable test mode so snackbars work
       featureFlags: {
         autoSelect: false,
         ...featureFlags
@@ -57,6 +58,14 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     await page.goto("/src/pages/battleClassic.html", {
       waitUntil: "networkidle",
       timeout: 15000
+    });
+
+    // Capture console logs from the page for debugging
+    page.on("console", (msg) => {
+      const text = msg.text();
+      if (text.includes("[SnackbarManager]") || text.includes("[statSelected Handler]")) {
+        console.log(`[Browser Console] ${text}`);
+      }
     });
 
     // Wait for full initialization including handler registration

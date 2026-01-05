@@ -284,12 +284,16 @@ class SnackbarManager {
 
       if (index === 0) {
         // Most important/newest message at bottom
-        console.log(`[SnackbarManager] Setting .snackbar-bottom on: "${snackbar.message.substring(0, 30)}"`);
+        console.log(
+          `[SnackbarManager] Setting .snackbar-bottom on: "${snackbar.message.substring(0, 30)}"`
+        );
         snackbar.element.classList.add("snackbar-bottom");
         snackbar.element.classList.remove("snackbar-top", "snackbar-stale");
       } else {
         // Older/lower priority messages at top with reduced opacity
-        console.log(`[SnackbarManager] Setting .snackbar-top on: "${snackbar.message.substring(0, 30)}"`);
+        console.log(
+          `[SnackbarManager] Setting .snackbar-top on: "${snackbar.message.substring(0, 30)}"`
+        );
         snackbar.element.classList.add("snackbar-top", "snackbar-stale");
         snackbar.element.classList.remove("snackbar-bottom");
       }
@@ -316,10 +320,18 @@ class SnackbarManager {
    * @returns {{id: string, remove: Function, update: Function, waitForMinDuration: Function}|null}
    */
   show(messageOrConfig) {
-    if (this.isDisabled()) return null;
+    console.log("[SnackbarManager] show() called with:", typeof messageOrConfig === "string" ? messageOrConfig.substring(0, 30) : messageOrConfig);
+    
+    if (this.isDisabled()) {
+      console.log("[SnackbarManager] show() returning null - snackbars are disabled");
+      return null;
+    }
 
     const doc = this.getDocument();
-    if (!doc) return null;
+    if (!doc) {
+      console.log("[SnackbarManager] show() returning null - no document");
+      return null;
+    }
 
     // Normalize config
     const config =
@@ -361,7 +373,10 @@ class SnackbarManager {
 
     // Ensure container exists
     const container = this.ensureContainer(doc);
-    if (!container) return null;
+    if (!container) {
+      console.log("[SnackbarManager] show() returning null - no container");
+      return null;
+    }
 
     // Enforce max concurrent limit (remove synchronously to avoid race conditions)
     if (this.activeSnackbars.size >= this.maxConcurrent) {
@@ -389,7 +404,10 @@ class SnackbarManager {
     // Create snackbar
     const id = this.generateId();
     const element = this.createElement(id, message, priority);
-    if (!element) return null;
+    if (!element) {
+      console.log("[SnackbarManager] show() returning null - createElement failed");
+      return null;
+    }
 
     // Add to DOM
     container.appendChild(element);

@@ -876,23 +876,15 @@ export function selectStat(store, stat) {
       showSnackbar(`You Picked: ${label}`);
     } catch {}
   } else if (delayOpponentMessage) {
-    // When opponent delay is enabled, show the opponent choosing message
-    try {
-      const opponentMsg =
-        typeof t === "function" ? t("ui.opponentChoosing") : "Opponent is choosing…";
-      guard(() => {
-        if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
-          console.debug("[selectStat] Showing opponent choosing snackbar:", opponentMsg);
-        }
-      });
-      showSnackbar(opponentMsg);
-    } catch (err) {
-      guard(() => {
-        if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
-          console.debug("[selectStat] Error showing snackbar:", err);
-        }
-      });
-    }
+    // When opponent delay is enabled, the "Opponent is choosing..." message
+    // is handled by the statSelected event handler in uiEventHandlers.js
+    // which displays it with HIGH priority via SnackbarManager.
+    // No action needed here.
+    guard(() => {
+      if (typeof window !== "undefined" && (window.__TEST__ || window.__testMode)) {
+        console.debug("[selectStat] Opponent delay enabled - message will be shown by statSelected handler");
+      }
+    });
   } else {
     // Fallback: if nothing is displayed, show a message
     guard(() => {
