@@ -6,9 +6,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import snackbarManager, { SnackbarPriority } from "../../src/helpers/SnackbarManager.js";
 
 describe("SnackbarManager", () => {
+  let timers; // Declare at a higher scope to be accessible in afterEach
+
   beforeEach(() => {
     // Clear all snackbars before each test
     snackbarManager.clearAll();
@@ -22,13 +25,13 @@ describe("SnackbarManager", () => {
       window.__disableSnackbars = false;
     }
 
-    vi.useFakeTimers();
+    timers = useCanonicalTimers(); // Assign the returned object
   });
 
   afterEach(() => {
     snackbarManager.clearAll();
     vi.restoreAllMocks();
-    vi.useRealTimers();
+    timers.cleanup(); // Call the cleanup method provided by useCanonicalTimers
   });
 
   describe("Basic Display", () => {
@@ -55,7 +58,7 @@ describe("SnackbarManager", () => {
     });
 
     it("should display snackbar with HIGH priority", () => {
-      const controller = snackbarManager.show({
+      snackbarManager.show({
         message: "Important message",
         priority: SnackbarPriority.HIGH
       });
@@ -92,7 +95,7 @@ describe("SnackbarManager", () => {
         priority: SnackbarPriority.HIGH
       });
 
-      const controller = snackbarManager.show({
+      snackbarManager.show({
         message: "Low priority",
         priority: SnackbarPriority.LOW
       });
@@ -126,7 +129,6 @@ describe("SnackbarManager", () => {
 
   describe("Minimum Display Duration", () => {
     it("should enforce minimum display duration", async () => {
-      const startTime = Date.now();
       const controller = snackbarManager.show({
         message: "Test",
         minDuration: 750,
@@ -192,7 +194,7 @@ describe("SnackbarManager", () => {
     });
 
     it("should remove oldest when exceeding limit", () => {
-      const controller1 = snackbarManager.show("First message");
+      snackbarManager.show("First message");
       snackbarManager.show("Second message");
       snackbarManager.show("Third message");
 
