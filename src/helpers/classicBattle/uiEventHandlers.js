@@ -1,7 +1,6 @@
 import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
@@ -63,7 +62,6 @@ function waitForNextFrame() {
  * Bind dynamic UI helper event handlers on the shared battle EventTarget.
  *
  * @param {object} [deps] - Optional dependencies for testing (defaults to real implementations)
- * @param {Function} [deps.showSnackbar] - Function to display snackbar messages
  * @param {Function} [deps.t] - Translation function
  * @param {Function} [deps.markOpponentPromptNow] - Function to mark opponent prompt timestamp
  * @param {Function} [deps.recordOpponentPromptTimestamp] - Function to record timestamp
@@ -89,7 +87,6 @@ function waitForNextFrame() {
 export function bindUIHelperEventHandlersDynamic(deps = {}) {
   // Use provided dependencies or fall back to default imports
   const {
-    showSnackbar: showSnackbarFn = showSnackbar,
     t: tFn = t,
     markOpponentPromptNow: markOpponentPromptNowFn = markOpponentPromptNow,
     getOpponentPromptMinDuration: getOpponentPromptMinDurationFn = getOpponentPromptMinDuration,
@@ -195,23 +192,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
    * 3. On error, attempt hardcoded fallback message
    * 4. Log diagnostic warnings for debugging
    */
-  function showOpponentPromptMessage(message) {
-    try {
-      // Always use showSnackbar to replace any existing message
-      // updateSnackbar can fail if the internal bar reference is stale
-      showSnackbarFn(message);
-    } catch (err) {
-      console.error("[showOpponentPromptMessage] Snackbar update failed:", err);
-      // Final fallback: log to console in development
-      if (typeof console !== "undefined" && typeof console.warn === "function") {
-        try {
-          console.warn("[showOpponentPromptMessage] Failed to show snackbar:", err);
-        } catch {}
-      }
-    }
-  }
-
-
 
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
