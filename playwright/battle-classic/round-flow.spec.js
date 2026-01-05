@@ -201,7 +201,7 @@ test.describe("Classic Battle Opponent Round Flow", () => {
       const timerValue = page.locator("#next-round-timer [data-part='value']");
       const roundMessage = page.locator("#round-message");
 
-      await expect(roundCounter).toContainText(/Round\\s*1/i);
+      await expect(roundCounter).toContainText(/Round\s*1/i);
 
       const statContainer = page.getByTestId("stat-buttons");
       const firstStat = statContainer.getByRole("button").first();
