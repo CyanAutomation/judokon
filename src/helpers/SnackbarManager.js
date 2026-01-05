@@ -166,18 +166,26 @@ class SnackbarManager {
   }
 
   /**
-   * Check if message can be displayed based on priority
+   * Check if message can be displayed based on priority and capacity
    *
    * @pseudocode
-   * 1. If no active messages, allow
-   * 2. Compare priority with current
-   * 3. Allow if higher or equal priority
-   * 4. Deny if lower priority
+   * 1. If at max capacity and priority is lower than current, must queue
+   * 2. If no active messages, allow
+   * 3. Compare priority with current
+   * 4. Allow if higher or equal priority
+   * 5. Deny if lower priority
    *
    * @param {SnackbarPriority} priority - Message priority
    * @returns {boolean} True if can display
    */
   canDisplay(priority) {
+    // If at capacity and this is lower priority, must queue
+    if (this.activeSnackbars.size >= this.maxConcurrent) {
+      if (!this.currentPriority) return false;
+      return this.comparePriority(priority, this.currentPriority) > 0;
+    }
+
+    // Otherwise check priority
     if (this.activeSnackbars.size === 0) return true;
     if (!this.currentPriority) return true;
     return this.comparePriority(priority, this.currentPriority) >= 0;
@@ -238,6 +246,14 @@ class SnackbarManager {
       if (priorityCompare !== 0) return priorityCompare;
       return b.shownAt - a.shownAt;
     });
+
+    // DEBUG: Log sorted order
+    if (active.length > 1) {
+      console.log(
+        "[SnackbarManager] updatePositioning sorted:",
+        active.map((s) => `${s.message} (pri=${s.priority}, shown=${s.shownAt})`)
+      );
+    }
 
     active.forEach((snackbar, index) => {
       if (!snackbar.element) return;
@@ -311,7 +327,7 @@ class SnackbarManager {
     const container = this.ensureContainer(doc);
     if (!container) return null;
 
-    // Enforce max concurrent limit
+    // Enforce max concurrent limit (remove synchronously to avoid race conditions)
     if (this.activeSnackbars.size >= this.maxConcurrent) {
       // Remove oldest, lowest priority snackbar
       const active = Array.from(this.activeSnackbars.values());
@@ -321,7 +337,15 @@ class SnackbarManager {
         return a.shownAt - b.shownAt;
       });
       if (active[0]) {
-        this.remove(active[0].id);
+        // Synchronous removal (skip minDuration for capacity management)
+        const toRemove = active[0];
+        if (toRemove.autoDismissId) {
+          clearTimeout(toRemove.autoDismissId);
+        }
+        if (toRemove.element && toRemove.element.parentNode) {
+          toRemove.element.remove();
+        }
+        this.activeSnackbars.delete(toRemove.id);
       }
     }
 
@@ -348,6 +372,9 @@ class SnackbarManager {
       onShow,
       onDismiss
     };
+
+    // DEBUG: Log when snackbar is created
+    console.log(`[SnackbarManager] Created snackbar: "${message}" at ${snackbar.shownAt}`);
 
     // Set auto-dismiss if configured
     if (autoDismiss > 0) {
