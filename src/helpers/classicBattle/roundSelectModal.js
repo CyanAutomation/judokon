@@ -13,7 +13,7 @@ import { logEvent } from "../telemetry.js";
 import { t } from "../i18n.js";
 import rounds from "../../data/battleRounds.js";
 import { syncWinTargetDropdown } from "./winTargetSync.js";
-import { showSnackbar } from "../showSnackbar.js";
+import snackbarManager, { SnackbarPriority } from "../SnackbarManager.js";
 import { RoundSelectPositioner } from "./modalPositioning.js";
 
 /**
@@ -83,7 +83,13 @@ async function startRound(value, onStart, emitEvents) {
     syncWinTargetDropdown();
   } catch {}
   try {
-    showSnackbar(ROUND_SELECT_UI.MESSAGES.winTarget(value));
+    // Use LOW priority so this doesn't override opponent/countdown messages
+    snackbarManager.show({
+      message: ROUND_SELECT_UI.MESSAGES.winTarget(value),
+      priority: SnackbarPriority.LOW,
+      minDuration: 2000,
+      autoDismiss: 3000
+    });
   } catch {}
   try {
     if (typeof onStart === "function") {

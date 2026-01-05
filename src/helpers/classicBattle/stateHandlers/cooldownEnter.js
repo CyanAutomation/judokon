@@ -149,6 +149,7 @@ function updateRoundStateAtomically(round) {
  * @returns {Promise<void>}
  */
 export async function cooldownEnter(machine, payload) {
+  console.log('AGENT_TRACE: cooldownEnter called');
   if (!machine) {
     debugLog("cooldownEnter: invalid machine context");
     return;

@@ -465,6 +465,7 @@ function applyButtonFinalizedState(btn) {
  * 5. Apply the finalized button state to each button.
  */
 export function applyNextButtonFinalizedState() {
+  console.log('AGENT_TRACE: applyNextButtonFinalizedState called');
   if (typeof document === "undefined") return;
 
   // Set diagnostic globals for test compatibility
