@@ -553,13 +553,13 @@ describe("Battle Classic Page Integration", () => {
     // The selection happened if we reach here without errors
 
     await withMutedConsole(async () => {
-      await testApi.state.waitForBattleState("roundDecision", 5000);
+      await testApi.state.waitForBattleState("roundOver", 5000);
     });
 
-    const postDecisionStore = getBattleStore();
-    // After roundDecision, playerChoice is cleared and selectionMade may be reset
+    const postRoundOverStore = getBattleStore();
+    // After roundOver, playerChoice is cleared (it's only cleared in roundOverEnter, not roundDecision)
     // Verify the round actually completed by checking rounds played instead
-    expect(postDecisionStore.playerChoice).toBeNull();
+    expect(postRoundOverStore.playerChoice).toBeNull();
 
     const debugAfter = testApi.inspect.getDebugInfo();
     const roundsAfter = debugAfter?.store?.roundsPlayed ?? 0;

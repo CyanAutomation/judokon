@@ -1,4 +1,4 @@
-import { STATS, stopTimer, getScores } from "../battleEngineFacade.js";
+import { STATS, stopTimer, getScores, getRoundsPlayed } from "../battleEngineFacade.js";
 import { chooseOpponentStat } from "../api/battleUI.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
@@ -283,11 +283,11 @@ export function isOrchestratorActive(store, currentState = undefined) {
   }
 }
 
-function syncRoundsPlayedFromRoundStore(store) {
+function syncRoundsPlayedFromEngine(store) {
   try {
-    const currentRound = roundStore?.getCurrentRound?.();
-    if (currentRound && Number.isFinite(Number(currentRound.number))) {
-      store.roundsPlayed = Number(currentRound.number);
+    const engineRounds = getRoundsPlayed();
+    if (Number.isFinite(engineRounds)) {
+      store.roundsPlayed = engineRounds;
     }
   } catch {}
 }
@@ -1141,7 +1141,7 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
 
       if (handled) {
         logSelectionDebug("[handleStatSelection] resolveWithFallback returned true (handled)");
-        syncRoundsPlayedFromRoundStore(store);
+        syncRoundsPlayedFromEngine(store);
         logSelectionMutation("handleStatSelection.handled", store, {
           stat,
           playerVal,
@@ -1152,7 +1152,7 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
       }
 
       const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
-      syncRoundsPlayedFromRoundStore(store);
+      syncRoundsPlayedFromEngine(store);
 
       logSelectionDebug("[handleStatSelection] After syncResultDisplay:", {
         storeSelectionMade: store.selectionMade,
