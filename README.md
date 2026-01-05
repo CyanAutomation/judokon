@@ -248,6 +248,12 @@ npx playwright test
 
 CLI-specific tests live in `playwright/battle-cli.spec.js` and verify the state badge, verbose log behavior, and keyboard selection flow.
 
+The MCP RAG server smoke test is kept out of the default UI run. To run it explicitly:
+
+```bash
+RUN_MCP_SMOKE=live npm run test:playwright:integration
+```
+
 ### Stable readiness waits in Playwright
 
 - Prefer `await page.evaluate(() => window.battleReadyPromise)` to detect that the Classic Battle page is fully initialized. This resolves when both the “home” and “state” parts finish booting (see `src/helpers/battleInit.js`).

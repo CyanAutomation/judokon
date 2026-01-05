@@ -2,13 +2,10 @@
 import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./playwright",
-  // Explicitly ignore Vitest unit tests that still use the Playwright-style `.spec` suffix.
-  // This prevents `npx playwright test` from attempting to run helpers under `tests/`.
-  testIgnore: ["../tests/scripts/**", "integration/**"],
+  testDir: "./playwright/integration",
   reporter: "dot",
   use: {
-    baseURL: "http://localhost:5000",
+    baseURL: "",
     viewport: { width: 1920, height: 1080 },
     // Capture rich artifacts to aid debugging flaky UI timing in CI/local
     screenshot: "only-on-failure",

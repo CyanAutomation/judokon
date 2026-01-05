@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/commonSetup.js";
+import { test, expect } from "../fixtures/commonSetup.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -79,7 +79,7 @@ const runMcpSmoke = process.env.RUN_MCP_SMOKE === "live";
 test.describe.serial("MCP RAG server smoke", () => {
   test.skip(!runMcpSmoke, "Set RUN_MCP_SMOKE=live to start the live MCP server smoke");
 
-  const cwd = path.join(__dirname, "..");
+  const cwd = path.join(__dirname, "..", "..");
 
   test("lists tools and executes live judokon.search", async () => {
     const { client, transport } = createMcpToolClient(cwd);
