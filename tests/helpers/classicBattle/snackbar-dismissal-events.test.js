@@ -34,15 +34,9 @@ describe("Snackbar Dismissal on round.start Event", () => {
     const { bindRoundUIEventHandlersDynamic } = await import(
       "../../../src/helpers/classicBattle/roundUI.js"
     );
-    const { getBattleEventTarget, onBattleEvent } = await import(
+    const { getBattleEventTarget } = await import(
       "../../../src/helpers/classicBattle/battleEvents.js"
     );
-
-    // Set up a listener to detect when round.start is handled
-    let roundStartFired = false;
-    onBattleEvent("round.start", () => {
-      roundStartFired = true;
-    });
 
     // Register the handlers
     bindRoundUIEventHandlersDynamic();

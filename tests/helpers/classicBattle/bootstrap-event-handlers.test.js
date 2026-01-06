@@ -38,9 +38,6 @@ describe("bindRoundUIEventHandlersDynamic - Snackbar Dismissal", () => {
     // Get the event target
     const eventTarget = getBattleEventTarget();
 
-    // Track if handler was called
-    let roundStartHandlerCalled = false;
-
     // Spy on addEventListener to detect handler registration
     const addEventListenerSpy = vi.spyOn(eventTarget, "addEventListener");
 

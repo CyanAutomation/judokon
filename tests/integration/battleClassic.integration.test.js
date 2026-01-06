@@ -23,10 +23,7 @@ import rounds from "../../src/data/battleRounds.js";
 import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 import { selectStat } from "../../src/helpers/classicBattle/uiHelpers.js";
-import {
-  onBattleEvent,
-  offBattleEvent
-} from "../../src/helpers/classicBattle/battleEvents.js";
+import { onBattleEvent, offBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
 // Spec: design/productRequirementsDocuments/prdBattleClassic.md
 
 async function triggerStatSelection(store, statButton, statKey) {
