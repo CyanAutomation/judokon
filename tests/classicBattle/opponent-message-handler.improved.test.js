@@ -188,7 +188,8 @@ describe("UI handlers: opponent message events", () => {
 
     // When delay is 0 or less, snackbar should show immediately without setTimeout
     // Implementation uses snackbarManager.show() with HIGH priority
-    expect(mockShow).toHaveBeenCalledWith(
+    expect(mockShow).toHaveBeenCalledTimes(1);
+    expect(mockShow.mock.calls[0][0]).toEqual(
       expect.objectContaining({
         message: "Opponent is choosing…",
         priority: 3, // SnackbarPriority.HIGH
@@ -196,7 +197,6 @@ describe("UI handlers: opponent message events", () => {
         autoDismiss: 0
       })
     );
-    expect(mockShow).toHaveBeenCalledTimes(1);
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     // No timers should be queued when delay is 0
