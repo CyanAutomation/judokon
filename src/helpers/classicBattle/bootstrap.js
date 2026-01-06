@@ -19,6 +19,7 @@ import { setupScoreboard } from "../setupScoreboard.js";
 // Test API exposure for Playwright and unit tests
 import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestApi.js";
 import { setBattleStateBadgeEnabled, bindUIHelperEventHandlers } from "./uiHelpers.js";
+import { bindRoundUIEventHandlersDynamic } from "./roundUI.js";
 
 /**
  * @returns {boolean} True if window is globally available and accessible
@@ -75,6 +76,7 @@ export async function setupClassicBattlePage() {
       await controller.init();
       await view.init();
       bindUIHelperEventHandlers();
+      bindRoundUIEventHandlersDynamic();
       if (canAccessWindow()) {
         window.__initCalled = true;
         window.__handlersRegistered = true;
