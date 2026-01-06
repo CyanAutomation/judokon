@@ -326,6 +326,14 @@ export async function startRound(store, onRoundStart) {
             });
             return;
           }
+          // Only reset if guard is still clear and no selection is in progress
+          if (!store.selectionMade) {
+            store.selectionMade = false;
+            store.__lastSelectionMade = false;
+            logSelectionMutation("startRound.microtaskReset", store, {
+              currentRoundsPlayed: store.roundsPlayed
+            });
+          }
           store.selectionMade = false;
           store.__lastSelectionMade = false;
           logSelectionMutation("startRound.microtaskReset", store, {
