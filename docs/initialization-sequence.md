@@ -46,6 +46,11 @@ The Classic Battle page (`src/pages/battleClassic.html`) follows a **5-phase ini
 │ Phase 4: Event Handlers                                     │
 │ - Wire global event handlers                               │
 │ - Wire card-related events                                 │
+│ - Register round UI event handlers (roundStarted,          │
+│   round.start) for snackbar dismissal                      │
+│ ⚠️ CRITICAL: bindRoundUIEventHandlersDynamic() must be    │
+│   called here to prevent snackbars persisting across       │
+│   rounds (bootstrap.js line 79)                            │
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -257,6 +262,7 @@ export function resetNextButton() {
 
 ## Changelog
 
+- **January 6, 2026**: Added documentation for snackbar dismissal fix (bindRoundUIEventHandlersDynamic)
 - **December 31, 2025**: Initial documentation created
 - **January 2025**: Bug fix implemented (moved wireControlButtons to after Phase 5)
 - **December 31, 2025**: Timing assertions added to tests

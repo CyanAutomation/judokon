@@ -76,6 +76,10 @@ export async function setupClassicBattlePage() {
       await controller.init();
       await view.init();
       bindUIHelperEventHandlers();
+      // Critical: Register round UI event handlers including round.start listener
+      // that dismisses countdown/opponent snackbars when Next is clicked.
+      // Bug: If this call is missing, snackbars persist across rounds.
+      // See: tests/helpers/classicBattle/bootstrap-event-handlers.test.js
       bindRoundUIEventHandlersDynamic();
       if (canAccessWindow()) {
         window.__initCalled = true;
