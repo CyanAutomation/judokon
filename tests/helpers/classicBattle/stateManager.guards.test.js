@@ -47,6 +47,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
 
       // Transition through roundDecision to roundOver
       await machine.dispatch("outcome=winPlayer");
@@ -74,6 +75,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winOpponent");
 
       expect(machine.getState()).toBe("roundOver");
@@ -99,6 +101,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -125,6 +128,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=draw");
 
       expect(machine.getState()).toBe("roundOver");
@@ -150,6 +154,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -175,6 +180,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -195,6 +201,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -221,6 +228,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -246,6 +254,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -271,6 +280,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -410,6 +420,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -443,6 +454,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -481,6 +493,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=winPlayer");
 
       expect(machine.getState()).toBe("roundOver");
@@ -512,6 +525,7 @@ describe("stateManager guard evaluation", () => {
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
       await machine.dispatch("statSelected");
+      await machine.dispatch("opponentDecisionReady");
       await machine.dispatch("outcome=draw");
 
       expect(machine.getState()).toBe("roundOver");
