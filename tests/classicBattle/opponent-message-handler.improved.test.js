@@ -115,6 +115,12 @@ describe("UI handlers: opponent message events", () => {
         remove: mockRemove,
         waitForMinDuration: mockWaitForMinDuration
       };
+    });
+    mockRemove.mockReset().mockResolvedValue();
+    mockWaitForMinDuration.mockReset().mockResolvedValue();
+    
+    showSnackbar.mockReset();
+    updateSnackbar.mockReset();
     markOpponentPromptNow.mockReset();
     markOpponentPromptNow.mockImplementation(() => 123.45);
     recordOpponentPromptTimestamp.mockReset();
@@ -225,8 +231,8 @@ describe("UI handlers: opponent message events", () => {
     // Timer should be scheduled for the delay period
     expect(vi.getTimerCount()).toBe(1);
     expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
-    // Delay is max of opponent delay (500) and min duration (600), so 600ms
-    expect(setTimeoutSpy.mock.calls[0][1]).toBe(600);
+    // Delay uses the configured opponent delay (500ms)
+    expect(setTimeoutSpy.mock.calls[0][1]).toBe(500);
 
     // After timer fires, the snackbar should appear and prompt timestamp recorded
     await timers.runAllTimersAsync();
