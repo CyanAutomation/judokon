@@ -206,6 +206,7 @@ describe("UI handlers: opponent message events", () => {
 
   it("defers opponent choosing snackbar until after delay when flag enabled (QA spec)", async () => {
     // Create dependencies object with mocked functions
+    const configuredDelay = 500;
     const deps = {
       showSnackbar,
       updateSnackbar,
@@ -214,7 +215,7 @@ describe("UI handlers: opponent message events", () => {
       recordOpponentPromptTimestamp,
       getOpponentPromptMinDuration,
       isEnabled: (flag) => flag === "opponentDelayMessage",
-      getOpponentDelay: () => 500,
+      getOpponentDelay: () => configuredDelay,
       scoreboard: { clearTimer: scoreboardClearTimer },
       getOpponentCardData,
       renderOpponentCard,
@@ -238,8 +239,8 @@ describe("UI handlers: opponent message events", () => {
     // Timer should be scheduled for the delay period
     expect(vi.getTimerCount()).toBe(1);
     expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
-    // Delay uses the configured opponent delay (500ms)
-    expect(setTimeoutSpy.mock.calls[0][1]).toBe(500);
+    // Delay uses the configured opponent delay
+    expect(setTimeoutSpy.mock.calls[0][1]).toBe(configuredDelay);
 
     // After timer fires, the snackbar should appear and prompt timestamp recorded
     await timers.runAllTimersAsync();
