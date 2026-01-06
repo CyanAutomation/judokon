@@ -193,7 +193,7 @@ describe("timerService drift handling", () => {
     try {
       // Pass explicit engine starter to bypass VITEST environment check
       roundMod.startCooldown({}, scheduler, {
-        startEngineCooldown: engine.startCoolDown.bind(engine),
+        startEngineCooldown: engine.startCoolDown,
         requireEngine: () => engine
       });
       expect(engine.startCoolDown).toHaveBeenCalledTimes(1);
