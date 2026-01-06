@@ -11,6 +11,31 @@ import { clampToPositiveTimestamp, toPositiveNumber } from "./utils/positiveNumb
 
 const DEFAULT_PROMPT_POLL_INTERVAL = 16;
 
+// Module-level countdown snackbar controller reference
+// This allows the countdown snackbar to be dismissed from outside the renderer (e.g., when round starts)
+let currentCountdownSnackbarController = null;
+
+/**
+ * Dismiss the active countdown snackbar if one exists.
+ *
+ * @pseudocode
+ * 1. Check if countdown snackbar controller exists
+ * 2. Remove it via controller API
+ * 3. Clear the reference
+ *
+ * @returns {Promise<void>}
+ */
+export async function dismissCountdownSnackbar() {
+  if (currentCountdownSnackbarController) {
+    try {
+      await currentCountdownSnackbarController.remove();
+    } catch {
+      // Non-critical
+    }
+    currentCountdownSnackbarController = null;
+  }
+}
+
 /**
  * Get a timer function (setTimeout/clearTimeout) with proper bindings.
  *
@@ -712,12 +737,13 @@ function createTickProcessors(rendererState) {
         })();
 
         // Initial render - show countdown with HIGH priority to replace opponent message
-        rendererState.countdownController = snackbarManager.show({
+        currentCountdownSnackbarController = snackbarManager.show({
           message: text,
           priority: SnackbarPriority.HIGH, // HIGH priority ensures it replaces opponent message
           minDuration: 0, // No minimum duration for countdown updates
           autoDismiss: 0 // Manual control - will be dismissed when round starts
         });
+        rendererState.countdownController = currentCountdownSnackbarController;
         rendererState.rendered = true;
       } else if (clamped !== rendererState.lastRendered && rendererState.countdownController) {
         // Update existing countdown message
@@ -725,12 +751,13 @@ function createTickProcessors(rendererState) {
           rendererState.countdownController.update(text);
         } catch {
           // If update fails, create a new one
-          rendererState.countdownController = snackbarManager.show({
+          currentCountdownSnackbarController = snackbarManager.show({
             message: text,
             priority: SnackbarPriority.HIGH,
             minDuration: 0,
             autoDismiss: 0
           });
+          rendererState.countdownController = currentCountdownSnackbarController;
         }
       }
       rendererState.lastRendered = clamped;
@@ -956,6 +983,11 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
         // Non-critical - snackbar will eventually be replaced
       }
       rendererState.countdownController = null;
+    }
+    
+    // Clear global reference
+    if (currentCountdownSnackbarController === rendererState.countdownController) {
+      currentCountdownSnackbarController = null;
     }
   };
 }
