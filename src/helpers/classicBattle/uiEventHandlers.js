@@ -415,20 +415,24 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 }
 
 /**
- * Get the promise for the current statSelected handler execution
- * Used by battle flow to coordinate timing
+ * Get the promise for the current statSelected handler execution.
+ * This promise resolves when the `statSelected` event handler, which manages
+ * the display of opponent-related snackbars and delays, has completed its
+ * asynchronous operations. It is used by the battle flow to coordinate timing.
  *
- * @returns {Promise|null} Handler promise or null if no handler active
+ * @returns {Promise<void>|null} A Promise that resolves when the statSelected handler finishes, or null if no handler is currently active.
  */
 export function getStatSelectedHandlerPromise() {
   return statSelectedHandlerPromise;
 }
 
 /**
- * Wait for statSelected handler to complete
- * Used by battle flow to ensure snackbar timing is respected
+ * Waits for the `statSelected` event handler to complete its asynchronous operations.
+ * This ensures that any snackbars related to opponent's stat selection have been
+ * processed and their minimum display durations respected before the battle flow proceeds.
+ * After resolution, the internal `statSelectedHandlerPromise` is cleared.
  *
- * @returns {Promise<void>}
+ * @returns {Promise<void>} A Promise that resolves when the statSelected handler has finished.
  */
 export async function awaitStatSelectedHandler() {
   if (statSelectedHandlerPromise) {
@@ -438,10 +442,12 @@ export async function awaitStatSelectedHandler() {
 }
 
 /**
- * Get and dismiss the current opponent snackbar controller
- * Used by countdown renderer to replace opponent message with countdown
+ * Dismisses the currently active opponent-related snackbar controllers (both opponent choosing and picked snackbars).
+ * This function is typically used by the countdown renderer or other components that need
+ * to preemptively remove opponent messages, for example, to display a countdown timer.
+ * Errors during snackbar removal are caught and ignored as they are non-critical.
  *
- * @returns {Promise<void>}
+ * @returns {Promise<void>} A Promise that resolves once any active snackbars have been dismissed.
  */
 export async function dismissOpponentSnackbar() {
   if (currentOpponentSnackbarController) {

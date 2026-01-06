@@ -948,6 +948,14 @@ export async function initializeBattle(page, config = {}) {
 
   await page.addInitScript(
     ({ timers, cooldown, delay, flags }) => {
+      // Clear handler registration guard to ensure fresh state for each test
+      // This prevents the WeakSet from blocking handler re-registration across test runs
+      delete globalThis.__cbUIHelpersDynamicBoundTargets;
+      
+      // Also reset the EventTarget instance to ensure a completely clean state
+      // Without this, the same EventTarget persists and the WeakSet sees it as "already registered"
+      delete globalThis.__classicBattleEventTarget;
+      
       window.__OVERRIDE_TIMERS = timers;
       if (typeof cooldown === "number") {
         window.__NEXT_ROUND_COOLDOWN_MS = cooldown;
