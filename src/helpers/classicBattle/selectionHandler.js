@@ -403,8 +403,8 @@ function getStatContainer(selector) {
  * @returns {Promise<ReturnType<typeof resolveRound>>}
  */
 export async function resolveRoundDirect(store, stat, playerVal, opponentVal, opts = {}) {
-  const deterministicOpts = IS_VITEST ? { ...opts, delayMs: 0 } : opts;
-  const result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
+  // Test environments can pass opts.delayMs explicitly
+  const result = await resolveRound(store, stat, playerVal, opponentVal, opts);
   store.playerChoice = null;
   return result;
 }
@@ -482,9 +482,7 @@ export function validateSelectionState(store) {
       debugInfo.allowed = false;
       trackDebugInfo(debugInfo);
       logSelectionDebug("[validateSelectionState] REJECTED: invalidState", resolvedState);
-      if (!IS_VITEST) {
-        debugLog(INVALID_STATE_WARNING(resolvedState));
-      }
+      debugLog(INVALID_STATE_WARNING(resolvedState));
       try {
         emitBattleEvent("input.ignored", { kind: "invalidState", state: resolvedState });
       } catch {}
