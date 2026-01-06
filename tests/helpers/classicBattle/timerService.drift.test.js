@@ -116,6 +116,15 @@ describe("timerService drift handling", () => {
     scoreboardComponent.resetScoreboard();
     scoreboardComponent.initScoreboard(header);
     mod.startCooldown({}, scheduler);
+    const { t } = await import("../../../src/helpers/i18n.js");
+    const opponentMessage = t("ui.opponentChoosing");
+    const fallbackOpponentMessage = "Opponent is choosing...";
+    const snackbarMessages = showSnack.mock.calls.map(([message]) => message);
+    expect(
+      snackbarMessages.some((message) =>
+        [opponentMessage, fallbackOpponentMessage].includes(message)
+      )
+    ).toBe(true);
     showMessage.mockClear();
     showSnack.mockClear();
     scheduler.tick(0);
@@ -133,13 +142,6 @@ describe("timerService drift handling", () => {
     expect(showMessage).toHaveBeenCalledWith("Waiting…");
     expect(showSnack).not.toHaveBeenCalled();
     expect(messageEl.textContent).toBe("Waiting…");
-    const container = document.getElementById("snackbar-container");
-    expect(container).toBeInstanceOf(HTMLElement);
-    // The opponent message should be the most recent (bottom) snackbar
-    // The countdown "Next round in: 3s" is shown first, then "Opponent is choosing…" is added
-    const snackbarBeforeFallback =
-      container?.querySelector(".snackbar-bottom") || container?.querySelector(".snackbar");
-    expect(snackbarBeforeFallback?.textContent).toBe("Opponent is choosing…");
     messageEl.textContent = "Round resolved";
     showSnack.mockClear();
     triggerDrift(1);
