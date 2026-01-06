@@ -60,6 +60,7 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     // The delay must be longer than the snackbar appearance delay (500ms)
     await page.addInitScript(() => {
       window.__OPPONENT_RESOLVE_DELAY_MS = 1500;
+      window.__NEXT_ROUND_COOLDOWN_MS = 0; // No cooldown so snackbar clears immediately
     });
 
     await page.goto("/src/pages/battleClassic.html", {
