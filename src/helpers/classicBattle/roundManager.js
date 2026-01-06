@@ -273,14 +273,25 @@ export async function startRound(store, onRoundStart) {
   }
 
   try {
-    const selectionInFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
-    if (!selectionInFlight) {
+    const resetSelectionFlags = (source) => {
+      if (!store || typeof store !== "object") {
+        return false;
+      }
+      const hadSelection = !!store.selectionMade || !!store.__lastSelectionMade;
+      if (!hadSelection) {
+        return false;
+      }
       store.selectionMade = false;
       store.__lastSelectionMade = false;
-      store.playerChoice = null;
-      logSelectionMutation("startRound.reset", store, {
+      logSelectionMutation(source, store, {
         currentRoundsPlayed: store.roundsPlayed
       });
+      return true;
+    };
+    const selectionInFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
+    if (!selectionInFlight) {
+      store.playerChoice = null;
+      resetSelectionFlags("startRound.reset");
       try {
         // Use unified selection state API (store.selectionMade is source of truth)
         resetSelectionFinalized(store);
@@ -318,27 +329,14 @@ export async function startRound(store, onRoundStart) {
     try {
       queueMicrotask(() => {
         try {
-          const inFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
-          if (inFlight) {
+          if (store?.[SELECTION_IN_FLIGHT_GUARD]) {
             logSelectionMutation("startRound.microtaskResetSkipped", store, {
               currentRoundsPlayed: store.roundsPlayed,
               selectionInFlight: true
             });
             return;
           }
-          // Only reset if guard is still clear and no selection is in progress
-          if (!store.selectionMade) {
-            store.selectionMade = false;
-            store.__lastSelectionMade = false;
-            logSelectionMutation("startRound.microtaskReset", store, {
-              currentRoundsPlayed: store.roundsPlayed
-            });
-          }
-          store.selectionMade = false;
-          store.__lastSelectionMade = false;
-          logSelectionMutation("startRound.microtaskReset", store, {
-            currentRoundsPlayed: store.roundsPlayed
-          });
+          resetSelectionFlags("startRound.microtaskReset");
         } catch {
           // Safely ignore any errors resetting selection state
         }
