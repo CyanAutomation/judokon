@@ -16,8 +16,6 @@ import { getScheduler } from "../scheduler.js";
 import { debugLog } from "../debug.js";
 import { awaitStatSelectedHandler } from "./uiEventHandlers.js";
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
-
 function createDeferred() {
   let resolve;
   let reject;
@@ -677,8 +675,7 @@ export function cleanupTimers(store) {
  */
 async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   // Delay opponent message when not using direct resolution to let orchestrator handle countdown
-  const forceDirectResolution =
-    IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
+  const forceDirectResolution = opts.forceDirectResolution || store.forceDirectResolution;
   const eventOpts = {
     ...opts,
     delayOpponentMessage: opts?.delayOpponentMessage ?? !forceDirectResolution
@@ -687,13 +684,10 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
     document.body?.setAttribute?.("data-stat-selected", "true");
   } catch {}
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts });
-  // PRD taxonomy: mirror selection lock event (suppress in Vitest to keep
-  // existing unit tests' call counts stable)
-  if (!IS_VITEST) {
-    try {
-      emitBattleEvent("round.selection.locked", { statKey: stat, source: "player" });
-    } catch {}
-  }
+  // PRD taxonomy: mirror selection lock event
+  try {
+    emitBattleEvent("round.selection.locked", { statKey: stat, source: "player" });
+  } catch {}
 
   // Emit a roundReset signal immediately after selection to allow UI to clear
   // previous-round artifacts deterministically before resolution proceeds.
@@ -993,7 +987,7 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
   try {
     try {
       const shouldForceSnackbar = opts?.forceOpponentPrompt === true;
-      if ((IS_VITEST || shouldForceSnackbar) && !opts?.delayOpponentMessage) {
+      if (shouldForceSnackbar && !opts?.delayOpponentMessage) {
         showSnackbar(t("ui.opponentChoosing"));
       }
     } catch {}
