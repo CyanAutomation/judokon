@@ -131,13 +131,7 @@ export class ScoreboardView {
   updateScore() {
     if (!this.scoreEl) return;
     const { player, opponent } = this.model.getState().score;
-    try {
-      const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
-      if (IS_VITEST) {
-        this.scoreEl.innerHTML = createScoreMarkup(player, opponent);
-        return;
-      }
-    } catch {}
+    
     // Reduced motion → immediate update
     let reduce = false;
     try {

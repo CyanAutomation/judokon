@@ -25,7 +25,7 @@ export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
   } catch {
     cooldownSeconds = Math.max(1, Math.round(overrideMs / 1000));
   }
-  if (!IS_VITEST) {
+    // {
     if (isTestModeEnabled()) {
       try {
         console.warn(`[test] startCooldown: testMode=true cooldown=${cooldownSeconds}`);

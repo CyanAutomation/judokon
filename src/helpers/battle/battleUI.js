@@ -12,8 +12,6 @@
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 import { isEnabled } from "../featureFlags.js";
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
-
 function detectFakeTimers() {
   try {
     if (typeof globalThis?.vi?.isFakeTimers === "function") {
@@ -114,7 +112,7 @@ function snapshotButtons() {
 }
 function trace(tag, extra) {
   try {
-    if (IS_VITEST) return;
+    // Debug logging disabled
     const t = Date.now();
 
     const debug = globalThis?.console?.debug;

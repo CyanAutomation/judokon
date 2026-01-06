@@ -191,13 +191,11 @@ export async function startRoundCooldown(resolved, config = {}) {
   // Add lifecycle tracing + guarded recovery: if cooldown completes without
   // a subsequent round start, emit a safe reset event to re-enter the flow.
   try {
-    if (!IS_VITEST)
-      console.debug(`classicBattle.trace cooldown:start t=${Date.now()} secs=${seconds}`);
+    // console.debug(`classicBattle.trace cooldown:start t=${Date.now()} secs=${seconds}`);
   } catch {}
   await startTimerSafely(timer, seconds);
   try {
-    if (!IS_VITEST)
-      console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`);
+    // console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`);
   } catch {}
   try {
     const target = getBattleEventTarget?.();
@@ -207,8 +205,7 @@ export async function startRoundCooldown(resolved, config = {}) {
         started = true;
         target.removeEventListener("roundStarted", onStart);
         try {
-          if (!IS_VITEST)
-            console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`);
+    // console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`);
         } catch {}
       };
       target.addEventListener("roundStarted", onStart);
@@ -218,8 +215,7 @@ export async function startRoundCooldown(resolved, config = {}) {
           try {
             if (!started) {
               try {
-                if (!IS_VITEST)
-                  console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`);
+    // console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`);
               } catch {}
               emitBattleEvent("game:reset-ui", {});
             }
@@ -318,12 +314,11 @@ async function startTimerSafely(timer, seconds) {
  */
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   try {
-    if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
+    // console.log("INFO: applyRoundUI called for round", roundNumber);
   } catch {}
   resetStatButtons();
   try {
-    if (!IS_VITEST)
-      console.log(
+    // console.log(
         "INFO: applyRoundUI -> requested resetStatButtons (will re-enable on next frame)"
       );
   } catch {}
@@ -435,8 +430,7 @@ export async function handleRoundStartedEvent(event, deps = {}) {
   const { applyRoundUI: applyRoundUiFn = applyRoundUI } = deps;
   const { store, roundNumber } = event?.detail || {};
   try {
-    if (!IS_VITEST)
-      console.debug(`classicBattle.trace event:roundStarted t=${Date.now()} round=${roundNumber}`);
+    // console.debug(`classicBattle.trace event:roundStarted t=${Date.now()} round=${roundNumber}`);
   } catch {}
   if (store && typeof roundNumber === "number") {
     applyRoundUiFn(store, roundNumber);
@@ -458,15 +452,14 @@ export async function handleRoundStartedEvent(event, deps = {}) {
  */
 export function handleStatSelectedEvent(event) {
   try {
-    if (!IS_VITEST) console.debug(`classicBattle.trace event:statSelected t=${Date.now()}`);
+    // console.debug(`classicBattle.trace event:statSelected t=${Date.now()}`);
   } catch {}
   const { stat, store } = event?.detail || {};
   if (!stat || !store || !store.statButtonEls) return;
   const btn = store.statButtonEls[stat];
   if (btn) {
     try {
-      if (!IS_VITEST)
-        console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
+    // console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
     } catch {}
     btn.classList.add("selected");
     // Note: "You Picked:" message removed - opponent messaging in uiEventHandlers handles all snackbar coordination
@@ -535,7 +528,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     store.roundReadyForInput = false;
   }
   try {
-    if (!IS_VITEST) console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`);
+    // console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`);
   } catch {}
   try {
     document.body?.removeAttribute?.("data-stat-selected");
@@ -782,12 +775,12 @@ export function bindRoundUIEventHandlers() {
     if (target && typeof target.addEventListener === "function") {
       target.addEventListener("statButtons:disable", () => {
         try {
-          if (!IS_VITEST) console.log("INFO: event statButtons:disable observed");
+    // console.log("INFO: event statButtons:disable observed");
         } catch {}
       });
       target.addEventListener("statButtons:enable", () => {
         try {
-          if (!IS_VITEST) console.log("INFO: event statButtons:enable observed");
+    // console.log("INFO: event statButtons:enable observed");
         } catch {}
       });
     }

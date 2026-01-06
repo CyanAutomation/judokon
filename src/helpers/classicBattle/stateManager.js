@@ -324,7 +324,7 @@ async function runOnEnter(stateName, machine, payload, onEnterMap) {
       debugLog(`stateManager: onEnter handler completed for '${stateName}'`);
     } catch (err) {
       const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
-      if (!IS_VITEST) {
+    // {
         logError(errorMsg, err);
       } else if (!shouldSuppressDebugOutput()) {
         logDebug(errorMsg, err);
