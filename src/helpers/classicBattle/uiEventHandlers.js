@@ -25,6 +25,8 @@ let pendingOpponentCardData = null;
 let currentOpponentSnackbarController = null;
 let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
+const DEFAULT_MIN_OBSCURE_DURATION_MS = 16;
+let lastOpponentRevealTimestamp = 0;
 
 function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
@@ -57,6 +59,43 @@ function waitForNextFrame() {
     } catch {}
     setTimeout(resolve, 0);
   });
+}
+
+function now() {
+  try {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") {
+      return performance.now();
+    }
+  } catch {}
+  try {
+    return Date.now();
+  } catch {}
+  return 0;
+}
+
+function getMinOpponentObscureDuration() {
+  if (typeof window !== "undefined") {
+    const override = window.__MIN_OPPONENT_OBSCURE_DURATION_MS;
+    if (Number.isFinite(override) && override >= 0) {
+      return Number(override);
+    }
+  }
+  return DEFAULT_MIN_OBSCURE_DURATION_MS;
+}
+
+async function waitForMinimumOpponentObscureDuration() {
+  if (!lastOpponentRevealTimestamp) {
+    return;
+  }
+  const minDuration = getMinOpponentObscureDuration();
+  if (!Number.isFinite(minDuration) || minDuration <= 0) {
+    return;
+  }
+  const elapsed = now() - lastOpponentRevealTimestamp;
+  const remaining = minDuration - elapsed;
+  if (remaining > 0) {
+    await new Promise((resolve) => setTimeout(resolve, remaining));
+  }
 }
 
 /**
@@ -159,6 +198,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         pendingOpponentCardData = null;
         return;
       }
+      await waitForMinimumOpponentObscureDuration();
       await waitForNextFrame();
       try {
         const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
@@ -173,6 +213,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       } catch {}
     }
     pendingOpponentCardData = null;
+    lastOpponentRevealTimestamp = 0;
   }
 
   // Create local helper that uses injected dependencies
@@ -208,6 +249,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     } catch {}
     try {
       if (container) {
+        lastOpponentRevealTimestamp = now();
         container.classList.add("is-obscured");
         container.classList.remove("opponent-hidden");
       }
