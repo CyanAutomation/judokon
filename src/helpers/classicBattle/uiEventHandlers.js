@@ -70,7 +70,8 @@ function now() {
   try {
     return Date.now();
   } catch {}
-  return 0;
+  // Return current timestamp to avoid negative elapsed calculations
+  return Date.now() || 0;
 }
 
 function getMinOpponentObscureDuration() {
