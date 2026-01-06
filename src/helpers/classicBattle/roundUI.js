@@ -405,26 +405,6 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
  * @returns {void}
  */
 export async function handleRoundStartedEvent(event, deps = {}) {
-  // Dismiss countdown snackbar when new round starts
-  try {
-    const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
-    if (typeof dismissCountdownSnackbar === "function") {
-      await dismissCountdownSnackbar();
-    }
-  } catch {
-    // Non-critical
-  }
-
-  // Dismiss opponent snackbar when new round starts
-  try {
-    const { dismissOpponentSnackbar } = await import("./uiEventHandlers.js");
-    if (typeof dismissOpponentSnackbar === "function") {
-      await dismissOpponentSnackbar();
-    }
-  } catch {
-    // Non-critical
-  }
-
   const { applyRoundUI: applyRoundUiFn = applyRoundUI } = deps;
   const { store, roundNumber } = event?.detail || {};
   try {
@@ -432,6 +412,28 @@ export async function handleRoundStartedEvent(event, deps = {}) {
   } catch {}
   if (store && typeof roundNumber === "number") {
     applyRoundUiFn(store, roundNumber);
+  }
+
+  // Dismiss countdown snackbar when new round starts (fire-and-forget)
+  try {
+    void import("../CooldownRenderer.js").then(({ dismissCountdownSnackbar }) => {
+      if (typeof dismissCountdownSnackbar === "function") {
+        void dismissCountdownSnackbar();
+      }
+    });
+  } catch {
+    // Non-critical
+  }
+
+  // Dismiss opponent snackbar when new round starts (fire-and-forget)
+  try {
+    void import("./uiEventHandlers.js").then(({ dismissOpponentSnackbar }) => {
+      if (typeof dismissOpponentSnackbar === "function") {
+        void dismissOpponentSnackbar();
+      }
+    });
+  } catch {
+    // Non-critical
   }
 }
 
