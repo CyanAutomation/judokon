@@ -420,6 +420,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
  * the display of opponent-related snackbars and delays, has completed its
  * asynchronous operations. It is used by the battle flow to coordinate timing.
  *
+ * @pseudocode
+ * 1. Return the stored `statSelectedHandlerPromise`.
+ *
  * @returns {Promise<void>|null} A Promise that resolves when the statSelected handler finishes, or null if no handler is currently active.
  */
 export function getStatSelectedHandlerPromise() {
@@ -431,6 +434,10 @@ export function getStatSelectedHandlerPromise() {
  * This ensures that any snackbars related to opponent's stat selection have been
  * processed and their minimum display durations respected before the battle flow proceeds.
  * After resolution, the internal `statSelectedHandlerPromise` is cleared.
+ *
+ * @pseudocode
+ * 1. If `statSelectedHandlerPromise` exists, await its resolution.
+ * 2. Clear `statSelectedHandlerPromise` after it resolves.
  *
  * @returns {Promise<void>} A Promise that resolves when the statSelected handler has finished.
  */
@@ -446,6 +453,11 @@ export async function awaitStatSelectedHandler() {
  * This function is typically used by the countdown renderer or other components that need
  * to preemptively remove opponent messages, for example, to display a countdown timer.
  * Errors during snackbar removal are caught and ignored as they are non-critical.
+ *
+ * @pseudocode
+ * 1. If `currentOpponentSnackbarController` exists, attempt to remove it and set to null.
+ * 2. If `currentPickedSnackbarController` exists, attempt to remove it and set to null.
+ * 3. Handle non-critical errors during removal attempts.
  *
  * @returns {Promise<void>} A Promise that resolves once any active snackbars have been dismissed.
  */
