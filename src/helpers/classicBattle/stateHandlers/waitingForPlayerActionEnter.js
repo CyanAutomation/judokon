@@ -12,6 +12,7 @@ import { resetSelectionFinalized } from "../selectionState.js";
 import { withStateGuard } from "../stateGuards.js";
 
 const stateLogger = createComponentLogger("WaitingForPlayerAction");
+const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 
 function queryCardByRole(role) {
   if (typeof document === "undefined") return null;
@@ -43,11 +44,18 @@ export async function waitingForPlayerActionEnter(machine) {
 
   if (store) {
     try {
-      // Use unified API to reset selection state
-      resetSelectionFinalized(store);
-      store.__lastSelectionMade = false;
-      store.playerChoice = null;
-      logSelectionMutation("waitingForPlayerActionEnter.reset", store);
+      const selectionInFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
+      if (!selectionInFlight) {
+        // Use unified API to reset selection state
+        resetSelectionFinalized(store);
+        store.__lastSelectionMade = false;
+        store.playerChoice = null;
+        logSelectionMutation("waitingForPlayerActionEnter.reset", store);
+      } else {
+        logSelectionMutation("waitingForPlayerActionEnter.resetSkipped", store, {
+          selectionInFlight: true
+        });
+      }
     } catch (err) {
       stateLogger.warn("Failed to reset selection flags on entry", {
         error: err?.message
