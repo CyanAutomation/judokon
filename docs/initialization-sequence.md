@@ -137,6 +137,38 @@ The Classic Battle page (`src/pages/battleClassic.html`) follows a **5-phase ini
 - Timing ensures buttons are final instances
 - Markers: `button.__controlBound = true`
 
+## Snackbar Dismissal on Round Events
+
+**Critical Bug Fix**: Snackbars must be dismissed when advancing to the next round to prevent visual clutter and user confusion.
+
+### Problem
+
+Without proper event handler registration, snackbars (countdown timers, "Opponent is choosing...", "You picked: X") would persist across rounds, stacking up and confusing users about the current game state.
+
+### Solution
+
+The `bindRoundUIEventHandlersDynamic()` function (from `src/helpers/classicBattle/roundUI.js`) registers event handlers that automatically dismiss snackbars when the `round.start` event is emitted.
+
+**Registration Location**: 
+- **Classic Battle**: `src/helpers/classicBattle/bootstrap.js` line 79 (in `startCallback`)
+- **CLI Battle**: `src/pages/battleCLI/init.js` line 3308 (in `wireEvents`)
+
+**Event Handlers Registered**:
+- `round.start` → Dismisses countdown snackbar + opponent snackbar
+- `roundStarted` → Updates UI for new round
+
+**Protected Against Duplicates**: Uses WeakSet guard to prevent duplicate registration if called multiple times.
+
+**Test Coverage**:
+- `tests/helpers/classicBattle/bootstrap-event-handlers.test.js` - Verifies handler registration
+- `tests/helpers/classicBattle/snackbar-dismissal-events.test.js` - Tests event flow
+
+**Validation**:
+```bash
+# Verify handler registration is present
+grep -n "bindRoundUIEventHandlersDynamic" src/helpers/classicBattle/bootstrap.js src/pages/battleCLI/init.js
+```
+
 ## Testing
 
 ### Regression Tests
