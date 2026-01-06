@@ -947,5 +947,15 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
     timer.off("tick", handlers.onTick);
     timer.off("expired", handlers.onExpired);
     handlers.promptController.clear();
+
+    // Dismiss countdown snackbar when cooldown finishes
+    if (rendererState.countdownController) {
+      try {
+        rendererState.countdownController.remove();
+      } catch {
+        // Non-critical - snackbar will eventually be replaced
+      }
+      rendererState.countdownController = null;
+    }
   };
 }
