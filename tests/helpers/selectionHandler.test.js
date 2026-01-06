@@ -158,11 +158,18 @@ describe("handleStatSelection helpers", () => {
     await handleStatSelection(store, "speed", { playerVal: 3, opponentVal: 4 });
 
     expect(stopTimer).toHaveBeenCalledTimes(1);
-    // Expect statSelected, roundReset, then input.ignored events
-    expect(emitBattleEvent).toHaveBeenCalledTimes(3);
+    // Expect statSelected, round.selection.locked, roundReset, then input.ignored events
+    expect(emitBattleEvent).toHaveBeenCalledTimes(4);
     expect(emitBattleEvent).toHaveBeenNthCalledWith(1, "statSelected", expect.any(Object));
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "roundReset", { reason: "playerSelection" });
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(3, "input.ignored", {
+    expect(emitBattleEvent).toHaveBeenNthCalledWith(
+      2,
+      "round.selection.locked",
+      expect.any(Object)
+    );
+    expect(emitBattleEvent).toHaveBeenNthCalledWith(3, "roundReset", {
+      reason: "playerSelection"
+    });
+    expect(emitBattleEvent).toHaveBeenNthCalledWith(4, "input.ignored", {
       kind: "duplicateSelection"
     });
     expect(dispatchBattleEvent).toHaveBeenCalledWith("roundResolved");
