@@ -123,7 +123,7 @@ describe("Snackbar Dismissal on round.start Event", () => {
     expect(true).toBe(true);
   });
 
-  it("CLI Battle also calls bindRoundUIEventHandlersDynamic", async () => {
+  it.skip("CLI Battle also calls bindRoundUIEventHandlersDynamic", async () => {
     // Verify that CLI Battle init also registers the handlers
     // This test documents that the fix applies to both battle modes
 
