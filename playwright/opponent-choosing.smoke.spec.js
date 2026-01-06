@@ -93,6 +93,15 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
         "statSelected",
         window.__testStatSelectedListener
       );
+
+      // Also test for round.start event
+      window.__testRoundStartListener = (e) => {
+        console.log(`[Test Listener] round.start event received:`, e.detail);
+      };
+      globalThis.__classicBattleEventTarget?.addEventListener(
+        "round.start",
+        window.__testRoundStartListener
+      );
     });
 
     const statButtons = page.locator("#stat-buttons");
