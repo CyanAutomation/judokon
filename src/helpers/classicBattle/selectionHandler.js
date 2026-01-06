@@ -1150,13 +1150,6 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
       throw error;
     } finally {
       guard.release();
-      if (store?.[SELECTION_IN_FLIGHT_GUARD]) {
-        try {
-          delete store[SELECTION_IN_FLIGHT_GUARD];
-        } catch {
-          // Best-effort cleanup if guard release could not delete the token.
-        }
-      }
       logSelectionMutation("handleStatSelection.guardReleased", store, {
         selectionInFlight: !!store?.[SELECTION_IN_FLIGHT_GUARD]
       });
