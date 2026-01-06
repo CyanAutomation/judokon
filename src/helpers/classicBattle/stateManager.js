@@ -3,7 +3,6 @@ import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 import { isEnabled } from "../featureFlags.js";
 
-
 // Constants
 const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
 const VALIDATION_WARN_ENABLED = true;

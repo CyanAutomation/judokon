@@ -7,7 +7,6 @@
  * @module classicBattleLogger
  */
 
-
 /**
  * Create a logger instance with optional silencing.
  *

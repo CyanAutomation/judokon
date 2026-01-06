@@ -1,6 +1,5 @@
 import { isTestModeEnabled } from "../testModeUtils.js";
 
-
 /**
  * Determine the cooldown duration before the next round.
  *

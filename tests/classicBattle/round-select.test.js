@@ -46,7 +46,8 @@ describe("Classic Battle round select modal", () => {
     }
   });
 
-  test("selecting Long (10) sets pointsToWin and marks target", async () => { // ensure modal avoids extra event dispatch
+  test("selecting Long (10) sets pointsToWin and marks target", async () => {
+    // ensure modal avoids extra event dispatch
     document.documentElement.innerHTML = getHtmlContent();
 
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");

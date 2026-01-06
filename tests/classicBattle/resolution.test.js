@@ -5,8 +5,6 @@ import { beforeEach, expect, test, vi } from "vitest";
 import { createClassicBattleHarness } from "../helpers/integrationHarness.js";
 import { createTestController } from "../../src/utils/scheduler.js";
 
-
-
 // Enable test controller access
 globalThis.__TEST__ = true;
 
