@@ -139,7 +139,7 @@ describe("UI handlers: opponent message events", () => {
     bindUIHelperEventHandlersDynamic(deps);
 
     // Emit event that triggers opponent message display
-    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: false } });
 
     // Give any async callbacks a chance to run
     await timers.runAllTimersAsync();
