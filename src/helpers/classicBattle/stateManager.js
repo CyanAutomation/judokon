@@ -324,9 +324,8 @@ async function runOnEnter(stateName, machine, payload, onEnterMap) {
       debugLog(`stateManager: onEnter handler completed for '${stateName}'`);
     } catch (err) {
       const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
-    // {
-        logError(errorMsg, err);
-      } else if (!shouldSuppressDebugOutput()) {
+      // console.error("[stateManager] Invalid transition", { from, to, event });
+      if (!shouldSuppressDebugOutput()) {
         logDebug(errorMsg, err);
       }
       // Don't re-throw to prevent state machine deadlock

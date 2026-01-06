@@ -23,7 +23,8 @@ vi.mock("../../../src/helpers/classicBattle/roundUI.js", () => ({
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
   bindUIHelperEventHandlers: mockBindUIHelperEventHandlers,
   skipRoundCooldownIfEnabled: vi.fn(),
-  updateBattleStateBadge: vi.fn()
+  updateBattleStateBadge: vi.fn(),
+  setBattleStateBadgeEnabled: vi.fn()
 }));
 
 // Mock other dependencies
