@@ -7,11 +7,14 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
-// Mock SnackbarManager - the actual implementation uses this, not showSnackbar
-const mockShow = vi.fn();
-const mockRemove = vi.fn();
-const mockWaitForMinDuration = vi.fn();
+// Hoist mock variables so they're available during module initialization
+const { mockShow, mockRemove, mockWaitForMinDuration } = vi.hoisted(() => ({
+  mockShow: vi.fn(),
+  mockRemove: vi.fn(),
+  mockWaitForMinDuration: vi.fn()
+}));
 
+// Mock SnackbarManager - the actual implementation uses this, not showSnackbar
 vi.mock("../../src/helpers/SnackbarManager.js", () => ({
   default: {
     show: mockShow,
@@ -103,15 +106,15 @@ describe("UI handlers: opponent message events", () => {
 
     // Reset SnackbarManager mocks
     mockShow.mockReset();
-    mockShow.mockReturnValue({
-      remove: mockRemove,
-      waitForMinDuration: mockWaitForMinDuration.mockResolvedValue()
-    });
-    mockRemove.mockReset().mockResolvedValue();
-    mockWaitForMinDuration.mockReset().mockResolvedValue();
-
-    showSnackbar.mockReset();
-    updateSnackbar.mockReset();
+    mockShow.mockImplementation((config) => {
+      // Call onShow callback if provided
+      if (config && typeof config.onShow === "function") {
+        config.onShow();
+      }
+      return {
+        remove: mockRemove,
+        waitForMinDuration: mockWaitForMinDuration
+      };
     markOpponentPromptNow.mockReset();
     markOpponentPromptNow.mockImplementation(() => 123.45);
     recordOpponentPromptTimestamp.mockReset();
@@ -172,9 +175,16 @@ describe("UI handlers: opponent message events", () => {
     await timers.runAllTimersAsync();
 
     // When delay is 0 or less, snackbar should show immediately without setTimeout
-    // Implementation uses showSnackbar (not updateSnackbar)
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(updateSnackbar).not.toHaveBeenCalled();
+    // Implementation uses snackbarManager.show() with HIGH priority
+    expect(mockShow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Opponent is choosing…",
+        priority: 3, // SnackbarPriority.HIGH
+        minDuration: 750,
+        autoDismiss: 0
+      })
+    );
+    expect(mockShow).toHaveBeenCalledTimes(1);
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
     expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
     // No timers should be queued when delay is 0
