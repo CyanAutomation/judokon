@@ -87,6 +87,7 @@ const ROUND_START_GUARD = Symbol.for("classicBattle.startRoundGuard");
 const ACTIVE_ROUND_PAYLOAD = Symbol.for("classicBattle.activeRoundPayload");
 const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
 const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
+const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
@@ -272,17 +273,25 @@ export async function startRound(store, onRoundStart) {
   }
 
   try {
-    store.selectionMade = false;
-    store.__lastSelectionMade = false;
-    store.playerChoice = null;
-    logSelectionMutation("startRound.reset", store, {
-      currentRoundsPlayed: store.roundsPlayed
-    });
-    try {
-      // Use unified selection state API (store.selectionMade is source of truth)
-      resetSelectionFinalized(store);
-    } catch {
-      // Intentionally ignore window global availability errors when resetting selection metadata.
+    const selectionInFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
+    if (!selectionInFlight) {
+      store.selectionMade = false;
+      store.__lastSelectionMade = false;
+      store.playerChoice = null;
+      logSelectionMutation("startRound.reset", store, {
+        currentRoundsPlayed: store.roundsPlayed
+      });
+      try {
+        // Use unified selection state API (store.selectionMade is source of truth)
+        resetSelectionFinalized(store);
+      } catch {
+        // Intentionally ignore window global availability errors when resetting selection metadata.
+      }
+    } else {
+      logSelectionMutation("startRound.resetSkipped", store, {
+        currentRoundsPlayed: store.roundsPlayed,
+        selectionInFlight: true
+      });
     }
     // Hide opponent card at start of round to prevent premature reveal when a real card is present
     const opponentContainer = hideOpponentCardIfRealVisible(getOpponentCardContainer());
@@ -309,6 +318,22 @@ export async function startRound(store, onRoundStart) {
     try {
       queueMicrotask(() => {
         try {
+          const inFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
+          if (inFlight) {
+            logSelectionMutation("startRound.microtaskResetSkipped", store, {
+              currentRoundsPlayed: store.roundsPlayed,
+              selectionInFlight: true
+            });
+            return;
+          }
+          // Only reset if guard is still clear and no selection is in progress
+          if (!store.selectionMade) {
+            store.selectionMade = false;
+            store.__lastSelectionMade = false;
+            logSelectionMutation("startRound.microtaskReset", store, {
+              currentRoundsPlayed: store.roundsPlayed
+            });
+          }
           store.selectionMade = false;
           store.__lastSelectionMade = false;
           logSelectionMutation("startRound.microtaskReset", store, {
