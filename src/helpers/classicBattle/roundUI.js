@@ -844,15 +844,23 @@ export function bindRoundUIEventHandlersOnce() {
  * @returns {void}
  */
 export function bindRoundUIEventHandlersDynamic() {
+  console.log("[bindRoundUIEventHandlersDynamic] Called!");
   scheduleUiServicePreload();
   // Guard against rebinding on the same EventTarget instance
   try {
     const KEY = "__cbRoundUIDynamicBoundTargets";
     const target = getBattleEventTarget();
+    console.log("[bindRoundUIEventHandlersDynamic] Target:", target);
     const set = (globalThis[KEY] ||= new WeakSet());
-    if (set.has(target)) return;
+    if (set.has(target)) {
+      console.log("[bindRoundUIEventHandlersDynamic] Target already bound, skipping");
+      return;
+    }
+    console.log("[bindRoundUIEventHandlersDynamic] Target not bound, proceeding to register");
     set.add(target);
-  } catch {}
+  } catch (err) {
+    console.log("[bindRoundUIEventHandlersDynamic] Error in guard:", err);
+  }
   const createPreloader = (loader) => {
     const promise = Promise.resolve()
       .then(loader)

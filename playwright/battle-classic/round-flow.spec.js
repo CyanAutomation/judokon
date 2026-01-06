@@ -315,7 +315,8 @@ test.describe("Classic Battle Opponent Round Flow", () => {
     withMutedConsole(async () => {
       await initializeBattle(page, {
         timerOverrides: { roundTimer: 5 },
-        resolveDelay: 50
+        resolveDelay: 50,
+        featureFlags: { opponentDelayMessage: true } // Enable the opponent choosing snackbar
       });
 
       const firstStat = page.locator(selectors.statButton()).first();
