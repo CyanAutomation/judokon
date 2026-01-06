@@ -7,7 +7,24 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
-// Mock showSnackbar - Vitest will create a fresh mock for each import
+// Mock SnackbarManager - the actual implementation uses this, not showSnackbar
+const mockShow = vi.fn();
+const mockRemove = vi.fn();
+const mockWaitForMinDuration = vi.fn();
+
+vi.mock("../../src/helpers/SnackbarManager.js", () => ({
+  default: {
+    show: mockShow,
+    remove: mockRemove
+  },
+  SnackbarPriority: {
+    HIGH: 3,
+    NORMAL: 2,
+    LOW: 1
+  }
+}));
+
+// Mock showSnackbar - kept for backward compatibility but not used by handler
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: vi.fn(),
   updateSnackbar: vi.fn()
@@ -83,6 +100,16 @@ describe("UI handlers: opponent message events", () => {
   beforeEach(() => {
     timers = useCanonicalTimers();
     setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+
+    // Reset SnackbarManager mocks
+    mockShow.mockReset();
+    mockShow.mockReturnValue({
+      remove: mockRemove,
+      waitForMinDuration: mockWaitForMinDuration.mockResolvedValue()
+    });
+    mockRemove.mockReset().mockResolvedValue();
+    mockWaitForMinDuration.mockReset().mockResolvedValue();
+
     showSnackbar.mockReset();
     updateSnackbar.mockReset();
     markOpponentPromptNow.mockReset();

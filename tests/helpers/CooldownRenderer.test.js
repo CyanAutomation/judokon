@@ -432,7 +432,12 @@ describe("attachCooldownRenderer", () => {
       maxPromptWaitMs: 0
     });
 
-    expect(mockSnackbarShow).toHaveBeenCalledWith({ message: "Next round in: 4s", priority: "HIGH", minDuration: 0, autoDismiss: 0 });
+    expect(mockSnackbarShow).toHaveBeenCalledWith({
+      message: "Next round in: 4s",
+      priority: "HIGH",
+      minDuration: 0,
+      autoDismiss: 0
+    });
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(4);
     expect(emitBattleEvent).not.toHaveBeenCalled();
 
@@ -494,7 +499,12 @@ describe("attachCooldownRenderer", () => {
       const detach = attachCooldownRenderer(timer, 5);
 
       // Snackbar SHOULD be shown during cooldown
-      expect(mockSnackbarShow).toHaveBeenCalledWith({ message: "Next round in: 5s", priority: "HIGH", minDuration: 0, autoDismiss: 0 });
+      expect(mockSnackbarShow).toHaveBeenCalledWith({
+        message: "Next round in: 5s",
+        priority: "HIGH",
+        minDuration: 0,
+        autoDismiss: 0
+      });
 
       // Scoreboard timer should also update
       expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
@@ -508,7 +518,12 @@ describe("attachCooldownRenderer", () => {
       const detach = attachCooldownRenderer(timer, 5);
 
       // Snackbar SHOULD be shown during round over
-      expect(mockSnackbarShow).toHaveBeenCalledWith({ message: "Next round in: 5s", priority: "HIGH", minDuration: 0, autoDismiss: 0 });
+      expect(mockSnackbarShow).toHaveBeenCalledWith({
+        message: "Next round in: 5s",
+        priority: "HIGH",
+        minDuration: 0,
+        autoDismiss: 0
+      });
 
       // Scoreboard timer should also update
       expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
@@ -551,7 +566,12 @@ describe("attachCooldownRenderer", () => {
 
       // Snackbar SHOULD be shown because prompt window has expired
       // (2500ms elapsed > 1000ms duration)
-      expect(mockSnackbarShow).toHaveBeenCalledWith({ message: "Next round in: 5s", priority: "HIGH", minDuration: 0, autoDismiss: 0 });
+      expect(mockSnackbarShow).toHaveBeenCalledWith({
+        message: "Next round in: 5s",
+        priority: "HIGH",
+        minDuration: 0,
+        autoDismiss: 0
+      });
 
       // Scoreboard should also update
       expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
@@ -597,7 +617,12 @@ describe("attachCooldownRenderer", () => {
       timer.emit("tick", 4);
 
       // Now snackbar should be shown
-      expect(mockSnackbarShow).toHaveBeenCalledWith({ message: "Next round in: 4s", priority: "HIGH", minDuration: 0, autoDismiss: 0 });
+      expect(mockSnackbarShow).toHaveBeenCalledWith({
+        message: "Next round in: 4s",
+        priority: "HIGH",
+        minDuration: 0,
+        autoDismiss: 0
+      });
       expect(scoreboard.updateTimer).toHaveBeenCalledWith(4);
     });
   });
