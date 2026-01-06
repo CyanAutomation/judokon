@@ -146,6 +146,10 @@ describe("UI handlers: opponent message events", () => {
     timers.cleanup();
     vi.unstubAllGlobals();
     setTimeoutSpy?.mockRestore();
+    
+    // Explicitly clean up battle event state
+    delete globalThis.__cbUIHelpersDynamicBoundTargets;
+    delete globalThis.__classicBattleEventTarget;
   });
 
   it("shows opponent choosing snackbar immediately when delay is not positive", async () => {

@@ -41,6 +41,13 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
   async function launchClassicBattle(page, featureFlags) {
     await registerCommonRoutes(page);
 
+    // Capture console logs from the page
+    page.on("console", (msg) => {
+      if (msg.type() === "log" || msg.type() === "debug") {
+        console.log(`[Browser Console] ${msg.text()}`);
+      }
+    });
+
     const app = await configureApp(page, {
       testMode: "disable", // Disable test mode so snackbars work
       featureFlags: {
