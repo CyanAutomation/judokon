@@ -93,9 +93,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
 
-const {
-  show: mockSnackbarShow
-} = snackbarMocks;
+const { show: mockSnackbarShow } = snackbarMocks;
 
 import {
   createPromptDelayController,
