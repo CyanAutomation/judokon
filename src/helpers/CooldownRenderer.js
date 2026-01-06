@@ -982,12 +982,13 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
       } catch {
         // Non-critical - snackbar will eventually be replaced
       }
+      
+      // Clear global reference before nullifying local reference
+      if (currentCountdownSnackbarController === rendererState.countdownController) {
+        currentCountdownSnackbarController = null;
+      }
+      
       rendererState.countdownController = null;
-    }
-
-    // Clear global reference
-    if (currentCountdownSnackbarController === rendererState.countdownController) {
-      currentCountdownSnackbarController = null;
     }
   };
 }

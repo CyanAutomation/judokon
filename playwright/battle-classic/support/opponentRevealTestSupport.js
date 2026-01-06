@@ -978,29 +978,6 @@ export async function initializeBattle(page, config = {}) {
 
   await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
 
-  // CRITICAL FIX: Force rebind handlers after page loads
-  // The issue is that the WeakSet guard persists across test runs, blocking re-registration
-  // We need to wait for initial handler registration, then force a clean rebind
-  await page.waitForFunction(
-    () => window.__battleDiagnostics?.handlersRegistered === true,
-    { timeout: 5000 }
-  );
-
-  await page.evaluate(() => {
-    // Clear the WeakSet and EventTarget after initial registration
-    delete globalThis.__cbUIHelpersDynamicBoundTargets;
-    delete globalThis.__classicBattleEventTarget;
-  });
-
-  // Trigger a page reload to force fresh handler registration with clean globals
-  await page.reload({ waitUntil: "networkidle" });
-
-  // Wait for handlers to be registered again after reload
-  await page.waitForFunction(
-    () => window.__battleDiagnostics?.handlersRegistered === true,
-    { timeout: 5000 }
-  );
-
   if (awaitStats) {
     await startMatchAndAwaitStats(page, matchSelector);
   } else {
