@@ -738,7 +738,20 @@ export function bindRoundStarted() {
   });
 }
 
-// bindStatSelected removed - consolidated into single dynamic handler to prevent duplication
+/**
+ * Bind handler for `statSelected` events.
+ *
+ * @pseudocode
+ * 1. Listen for `statSelected`.
+ * 2. Delegate to `handleStatSelectedEvent`.
+ *
+ * @returns {void}
+ */
+export function bindStatSelected() {
+  onBattleEvent("statSelected", (event) => {
+    handleStatSelectedEvent(event);
+  });
+}
 
 /**
  * Bind handler for `roundResolved` events.
