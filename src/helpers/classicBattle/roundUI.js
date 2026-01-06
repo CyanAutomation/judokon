@@ -405,11 +405,22 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
  * @param {CustomEvent} event
  * @param {{ applyRoundUI?: typeof applyRoundUI }} [deps]
  * @pseudocode
- * 1. Read `store` and `roundNumber` from the event detail.
- * 2. When both are valid, call the injected `applyRoundUI` implementation.
+ * 1. Dismiss any countdown snackbar from previous cooldown.
+ * 2. Read `store` and `roundNumber` from the event detail.
+ * 3. When both are valid, call the injected `applyRoundUI` implementation.
  * @returns {void}
  */
-export function handleRoundStartedEvent(event, deps = {}) {
+export async function handleRoundStartedEvent(event, deps = {}) {
+  // Dismiss countdown snackbar when new round starts
+  try {
+    const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
+    if (typeof dismissCountdownSnackbar === "function") {
+      await dismissCountdownSnackbar();
+    }
+  } catch {
+    // Non-critical
+  }
+
   const { applyRoundUI: applyRoundUiFn = applyRoundUI } = deps;
   const { store, roundNumber } = event?.detail || {};
   try {
@@ -718,8 +729,8 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
  * @returns {void}
  */
 export function bindRoundStarted() {
-  onBattleEvent("roundStarted", (event) => {
-    handleRoundStartedEvent(event);
+  onBattleEvent("roundStarted", async (event) => {
+    await handleRoundStartedEvent(event);
   });
 }
 
@@ -848,8 +859,19 @@ export function bindRoundUIEventHandlersDynamic() {
   const loadCooldownRenderer = createPreloader(() => import("../CooldownRenderer.js"));
   const loadCreateRoundTimer = createPreloader(() => import("../timers/createRoundTimer.js"));
   const loadUiHelpers = createPreloader(() => import("/src/helpers/classicBattle/uiHelpers.js"));
-  onBattleEvent("roundStarted", (event) => {
-    handleRoundStartedEvent(event);
+  onBattleEvent("roundStarted", async (event) => {
+    await handleRoundStartedEvent(event);
+  });
+  onBattleEvent("round.start", async () => {
+    // Dismiss countdown snackbar immediately when Next is clicked
+    try {
+      const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
+      if (typeof dismissCountdownSnackbar === "function") {
+        await dismissCountdownSnackbar();
+      }
+    } catch {
+      // Non-critical
+    }
   });
   onBattleEvent("statSelected", (event) => {
     try {

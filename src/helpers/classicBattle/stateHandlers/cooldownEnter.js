@@ -5,7 +5,6 @@ import { debugLog } from "../debugLog.js";
 import { roundStore } from "../roundStore.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
-import { applyNextButtonFinalizedState } from "../uiHelpers.js";
 import { withStateGuard } from "../stateGuards.js";
 
 /**
@@ -149,7 +148,6 @@ function updateRoundStateAtomically(round) {
  * @returns {Promise<void>}
  */
 export async function cooldownEnter(machine, payload) {
-  console.log("AGENT_TRACE: cooldownEnter called");
   if (!machine) {
     debugLog("cooldownEnter: invalid machine context");
     return;
@@ -167,23 +165,8 @@ export async function cooldownEnter(machine, payload) {
 
   const { store, scheduler } = machine.context || {};
 
-  // Finalize Next button state early in cooldown phase with conditional logic:
-  // - Skip ONLY when in Vitest unit test environment (uses setTestMode for 1s+ cooldowns)
-  // - Apply in all other cases:
-  //   * Playwright tests (use orchestrator + 0ms cooldowns, need immediate finalization)
-  //   * Non-orchestrated flows (always need early finalization)
-  //   * Production (always apply early finalization)
-  const isVitestEnvironment = typeof process !== "undefined" && process.env && process.env.VITEST;
-  const shouldSkipEarlyFinalization = isVitestEnvironment;
-
-  if (!shouldSkipEarlyFinalization) {
-    guard(() => {
-      applyNextButtonFinalizedState();
-      debugLog("cooldownEnter: finalized Next button state (early)");
-    });
-  } else {
-    debugLog("cooldownEnter: skipped early finalization (Vitest environment)");
-  }
+  // Early finalization removed - rely solely on orchestrator for button state management
+  // This ensures consistent timing and prevents premature button enabling
 
   debugLog("cooldownEnter: about to call startCooldown");
   await startCooldown(store, scheduler, {

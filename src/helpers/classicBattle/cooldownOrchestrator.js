@@ -897,11 +897,7 @@ export function instantiateCooldownTimer(
       promptBudget = null;
     }
   }
-  const detachRenderer = renderer(timer, cooldownSeconds, rendererOptions);
-  // Register renderer cleanup so countdown snackbar is dismissed when cooldown finishes
-  if (typeof detachRenderer === "function") {
-    cleanupFns.push(detachRenderer);
-  }
+  renderer(timer, cooldownSeconds, rendererOptions);
   controls.timer = timer;
   // Add getClassicBattleMachine to controls so finalizeReadyControls can access it
   if (typeof expirationOptions.getClassicBattleMachine === "function") {

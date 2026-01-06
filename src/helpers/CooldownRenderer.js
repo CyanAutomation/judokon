@@ -984,7 +984,7 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
       }
       rendererState.countdownController = null;
     }
-    
+
     // Clear global reference
     if (currentCountdownSnackbarController === rendererState.countdownController) {
       currentCountdownSnackbarController = null;
