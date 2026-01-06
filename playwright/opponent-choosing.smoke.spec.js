@@ -41,13 +41,6 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
   async function launchClassicBattle(page, featureFlags) {
     await registerCommonRoutes(page);
 
-    // Capture console logs from the page
-    page.on("console", (msg) => {
-      if (msg.type() === "log" || msg.type() === "debug") {
-        console.log(`[Browser Console] ${msg.text()}`);
-      }
-    });
-
     const app = await configureApp(page, {
       testMode: "disable", // Disable test mode so snackbars work
       featureFlags: {
@@ -93,15 +86,6 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       globalThis.__classicBattleEventTarget?.addEventListener(
         "statSelected",
         window.__testStatSelectedListener
-      );
-
-      // Also test for round.start event
-      window.__testRoundStartListener = (e) => {
-        console.log(`[Test Listener] round.start event received:`, e.detail);
-      };
-      globalThis.__classicBattleEventTarget?.addEventListener(
-        "round.start",
-        window.__testRoundStartListener
       );
     });
 

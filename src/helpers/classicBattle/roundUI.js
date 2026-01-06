@@ -844,23 +844,15 @@ export function bindRoundUIEventHandlersOnce() {
  * @returns {void}
  */
 export function bindRoundUIEventHandlersDynamic() {
-  console.log("[bindRoundUIEventHandlersDynamic] Called!");
   scheduleUiServicePreload();
   // Guard against rebinding on the same EventTarget instance
   try {
     const KEY = "__cbRoundUIDynamicBoundTargets";
     const target = getBattleEventTarget();
-    console.log("[bindRoundUIEventHandlersDynamic] Target:", target);
     const set = (globalThis[KEY] ||= new WeakSet());
-    if (set.has(target)) {
-      console.log("[bindRoundUIEventHandlersDynamic] Target already bound, skipping");
-      return;
-    }
-    console.log("[bindRoundUIEventHandlersDynamic] Target not bound, proceeding to register");
+    if (set.has(target)) return;
     set.add(target);
-  } catch (err) {
-    console.log("[bindRoundUIEventHandlersDynamic] Error in guard:", err);
-  }
+  } catch {}
   const createPreloader = (loader) => {
     const promise = Promise.resolve()
       .then(loader)
@@ -881,19 +873,14 @@ export function bindRoundUIEventHandlersDynamic() {
   onBattleEvent("roundStarted", async (event) => {
     await handleRoundStartedEvent(event);
   });
-  console.log("[roundUI] Registering round.start event handler");
   onBattleEvent("round.start", async () => {
-    console.log("[roundUI] round.start event fired");
     // Dismiss countdown snackbar immediately when Next is clicked
     try {
       const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
       if (typeof dismissCountdownSnackbar === "function") {
-        console.log("[roundUI] Calling dismissCountdownSnackbar()");
         await dismissCountdownSnackbar();
-        console.log("[roundUI] dismissCountdownSnackbar() completed");
       }
-    } catch (err) {
-      console.log("[roundUI] Error dismissing countdown:", err);
+    } catch {
       // Non-critical
     }
 
@@ -901,16 +888,12 @@ export function bindRoundUIEventHandlersDynamic() {
     try {
       const { dismissOpponentSnackbar } = await import("./uiEventHandlers.js");
       if (typeof dismissOpponentSnackbar === "function") {
-        console.log("[roundUI] Calling dismissOpponentSnackbar()");
         await dismissOpponentSnackbar();
-        console.log("[roundUI] dismissOpponentSnackbar() completed");
       }
-    } catch (err) {
-      console.log("[roundUI] Error dismissing opponent:", err);
+    } catch {
       // Non-critical
     }
   });
-  console.log("[roundUI] round.start event handler registered");
   onBattleEvent("statSelected", (event) => {
     try {
       document.body?.setAttribute?.("data-stat-selected", "true");
