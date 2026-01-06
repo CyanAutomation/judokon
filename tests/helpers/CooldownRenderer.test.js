@@ -93,7 +93,11 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
 
-const { show: mockSnackbarShow, remove: mockSnackbarRemove, update: mockSnackbarUpdate } = snackbarMocks;
+const {
+  show: mockSnackbarShow,
+  remove: mockSnackbarRemove,
+  update: mockSnackbarUpdate
+} = snackbarMocks;
 
 import {
   createPromptDelayController,
@@ -349,14 +353,14 @@ describe("attachCooldownRenderer", () => {
     vi.clearAllMocks();
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
-    
+
     // Create a mock snackbar controller
     mockController = {
       remove: vi.fn().mockResolvedValue(undefined),
       update: vi.fn()
     };
     mockSnackbarShow.mockReturnValue(mockController);
-    
+
     timer = {
       handlers: { tick: [], expired: [] },
       on(event, fn) {
@@ -568,11 +572,11 @@ describe("attachCooldownRenderer", () => {
 
       // Continue ticking
       timer.emit("tick", 4);
-      expect(snackbar.updateSnackbar).not.toHaveBeenCalled();
+      expect(mockController.update).not.toHaveBeenCalled();
       expect(scoreboard.updateTimer).toHaveBeenCalledWith(4);
 
       timer.emit("tick", 3);
-      expect(snackbar.updateSnackbar).not.toHaveBeenCalled();
+      expect(mockController.update).not.toHaveBeenCalled();
       expect(scoreboard.updateTimer).toHaveBeenCalledWith(3);
     });
 
