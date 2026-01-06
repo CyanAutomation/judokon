@@ -281,10 +281,14 @@ export async function startRound(store, onRoundStart) {
       if (!hadSelection) {
         return false;
       }
+      const prevSelectionMade = store.selectionMade;
+      const prevLastSelectionMade = store.__lastSelectionMade;
       store.selectionMade = false;
       store.__lastSelectionMade = false;
       logSelectionMutation(source, store, {
-        currentRoundsPlayed: store.roundsPlayed
+        currentRoundsPlayed: store.roundsPlayed,
+        prevSelectionMade,
+        prevLastSelectionMade
       });
       return true;
     };
