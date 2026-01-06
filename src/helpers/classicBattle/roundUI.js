@@ -318,9 +318,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   } catch {}
   resetStatButtons();
   try {
-    // console.log(
-        "INFO: applyRoundUI -> requested resetStatButtons (will re-enable on next frame)"
-      );
+    // console.log("INFO: applyRoundUI -> requested resetStatButtons (will re-enable on next frame)");
   } catch {}
   // Do not force-disable the Next button here; it should remain
   // ready after cooldown so tests and users can advance immediately.

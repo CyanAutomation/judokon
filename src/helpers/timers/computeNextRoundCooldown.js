@@ -25,16 +25,14 @@ export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
   } catch {
     cooldownSeconds = Math.max(1, Math.round(overrideMs / 1000));
   }
-    // {
-    if (isTestModeEnabled()) {
-      try {
-        console.warn(`[test] startCooldown: testMode=true cooldown=${cooldownSeconds}`);
-      } catch {}
-    } else {
-      try {
-        console.warn(`[test] startCooldown: testMode=false cooldown=${cooldownSeconds}`);
-      } catch {}
-    }
+  if (isTestModeEnabled()) {
+    try {
+      console.warn(`[test] startCooldown: testMode=true cooldown=${cooldownSeconds}`);
+    } catch {}
+  } else {
+    try {
+      console.warn(`[test] startCooldown: testMode=false cooldown=${cooldownSeconds}`);
+    } catch {}
   }
   return cooldownSeconds;
 }

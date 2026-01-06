@@ -131,7 +131,7 @@ export class ScoreboardView {
   updateScore() {
     if (!this.scoreEl) return;
     const { player, opponent } = this.model.getState().score;
-    
+
     // Reduced motion → immediate update
     let reduce = false;
     try {
