@@ -873,6 +873,7 @@ export function bindRoundUIEventHandlersDynamic() {
   onBattleEvent("roundStarted", async (event) => {
     await handleRoundStartedEvent(event);
   });
+  console.log("[roundUI] Registering round.start event handler");
   onBattleEvent("round.start", async () => {
     console.log("[roundUI] round.start event fired");
     // Dismiss countdown snackbar immediately when Next is clicked
@@ -901,6 +902,7 @@ export function bindRoundUIEventHandlersDynamic() {
       // Non-critical
     }
   });
+  console.log("[roundUI] round.start event handler registered");
   onBattleEvent("statSelected", (event) => {
     try {
       document.body?.setAttribute?.("data-stat-selected", "true");
