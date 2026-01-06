@@ -158,7 +158,7 @@ function getHiddenStoreValue(store, token) {
  * @param {any} data - Optional data to log.
  */
 function logSelectionDebug(message, data) {
-  if (!IS_VITEST) return;
+  // Debug logging is controlled by debugLog utility
   try {
     debugLog(message, data);
   } catch {}
@@ -178,7 +178,7 @@ function logSelectionDebug(message, data) {
  * @returns {void}
  */
 export function logSelectionMutation(source, store, extra = {}) {
-  if (!IS_VITEST) return;
+  // Debug logging is controlled by debugLog utility
   try {
     debugLog(`[selectionFlag:${source}]`, {
       selectionMade: store?.selectionMade ?? null,

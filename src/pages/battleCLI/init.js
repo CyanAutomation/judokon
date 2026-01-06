@@ -3302,6 +3302,10 @@ function handleBattleStateChange({ from, to }) {
  */
 export function wireEvents() {
   installEventBindings();
+  // Critical: Register round UI event handlers including round.start listener
+  // that dismisses countdown/opponent snackbars when Next is clicked or round advances.
+  // Bug: If this call is missing, snackbars (like "You Picked: X") persist across rounds.
+  bindRoundUIEventHandlersDynamic();
   onBattleEvent("battleStateChange", handleBattleStateChange);
   if (typeof window !== "undefined") {
     window.addEventListener("keydown", onKeyDown);
