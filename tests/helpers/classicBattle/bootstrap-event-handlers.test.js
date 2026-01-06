@@ -37,10 +37,10 @@ describe("bindRoundUIEventHandlersDynamic - Snackbar Dismissal", () => {
 
     // Get the event target
     const eventTarget = getBattleEventTarget();
-    
+
     // Track if handler was called
     let roundStartHandlerCalled = false;
-    
+
     // Spy on addEventListener to detect handler registration
     const addEventListenerSpy = vi.spyOn(eventTarget, "addEventListener");
 
@@ -48,10 +48,8 @@ describe("bindRoundUIEventHandlersDynamic - Snackbar Dismissal", () => {
     bindRoundUIEventHandlersDynamic();
 
     // Verify that addEventListener was called with "round.start" event
-    const roundStartCall = addEventListenerSpy.mock.calls.find(
-      (call) => call[0] === "round.start"
-    );
-    
+    const roundStartCall = addEventListenerSpy.mock.calls.find((call) => call[0] === "round.start");
+
     expect(roundStartCall).toBeDefined();
     expect(roundStartCall[0]).toBe("round.start");
     expect(typeof roundStartCall[1]).toBe("function");
@@ -83,9 +81,7 @@ describe("bindRoundUIEventHandlersDynamic - Snackbar Dismissal", () => {
     const { bindRoundUIEventHandlersDynamic } = await import(
       "../../../src/helpers/classicBattle/roundUI.js"
     );
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
 
     // Mock the dismissal functions
     const mockDismissCountdown = vi.fn();

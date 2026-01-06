@@ -205,7 +205,7 @@ export async function startRoundCooldown(resolved, config = {}) {
         started = true;
         target.removeEventListener("roundStarted", onStart);
         try {
-    // console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`);
+          // console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`);
         } catch {}
       };
       target.addEventListener("roundStarted", onStart);
@@ -215,7 +215,7 @@ export async function startRoundCooldown(resolved, config = {}) {
           try {
             if (!started) {
               try {
-    // console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`);
+                // console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`);
               } catch {}
               emitBattleEvent("game:reset-ui", {});
             }
@@ -457,7 +457,7 @@ export function handleStatSelectedEvent(event) {
   const btn = store.statButtonEls[stat];
   if (btn) {
     try {
-    // console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
+      // console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
     } catch {}
     btn.classList.add("selected");
     // Note: "You Picked:" message removed - opponent messaging in uiEventHandlers handles all snackbar coordination
@@ -773,12 +773,12 @@ export function bindRoundUIEventHandlers() {
     if (target && typeof target.addEventListener === "function") {
       target.addEventListener("statButtons:disable", () => {
         try {
-    // console.log("INFO: event statButtons:disable observed");
+          // console.log("INFO: event statButtons:disable observed");
         } catch {}
       });
       target.addEventListener("statButtons:enable", () => {
         try {
-    // console.log("INFO: event statButtons:enable observed");
+          // console.log("INFO: event statButtons:enable observed");
         } catch {}
       });
     }

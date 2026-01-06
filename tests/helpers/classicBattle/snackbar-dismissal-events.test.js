@@ -63,9 +63,7 @@ describe("Snackbar Dismissal on round.start Event", () => {
     const { bindRoundUIEventHandlersDynamic } = await import(
       "../../../src/helpers/classicBattle/roundUI.js"
     );
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
 
     // Register handlers
     bindRoundUIEventHandlersDynamic();
@@ -74,7 +72,7 @@ describe("Snackbar Dismissal on round.start Event", () => {
     emitBattleEvent("round.start");
     // Give async handlers time to execute
     await new Promise((resolve) => setTimeout(resolve, 100));
-    
+
     // If we got here without throwing, test passes
     expect(true).toBe(true);
   });
@@ -105,9 +103,7 @@ describe("Snackbar Dismissal on round.start Event", () => {
     const { bindRoundUIEventHandlersDynamic } = await import(
       "../../../src/helpers/classicBattle/roundUI.js"
     );
-    const { emitBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
 
     bindRoundUIEventHandlersDynamic();
 
@@ -118,7 +114,7 @@ describe("Snackbar Dismissal on round.start Event", () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
     emitBattleEvent("round.start");
     await new Promise((resolve) => setTimeout(resolve, 50));
-    
+
     // If we got here, test passes
     expect(true).toBe(true);
   });
@@ -130,7 +126,7 @@ describe("Snackbar Dismissal on round.start Event", () => {
     // We can't fully test CLI Battle init without a full page setup,
     // but we can verify the function is exported and callable
     const cliInitModule = await import("../../../src/pages/battleCLI/init.js");
-    
+
     // The module should have wireEvents function that calls bindRoundUIEventHandlersDynamic
     expect(cliInitModule.wireEvents).toBeDefined();
     expect(typeof cliInitModule.wireEvents).toBe("function");

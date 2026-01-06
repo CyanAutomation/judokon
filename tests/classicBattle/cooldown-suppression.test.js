@@ -24,9 +24,7 @@ describe("Cooldown suppression during opponent prompt", () => {
       useFakeTimers: true,
       useRafMock: true
     });
-    performanceNowSpy = vi
-      .spyOn(performance, "now")
-      .mockImplementation(() => Date.now());
+    performanceNowSpy = vi.spyOn(performance, "now").mockImplementation(() => Date.now());
     await harness.setup();
   });
 
