@@ -15,7 +15,6 @@
  * **Test Environment Detection:**
  * Prevents scheduler activation during unit tests via multiple guards:
  * - `globalThis.__TEST__` flag
- * - `process.env.VITEST` environment variable
  * - `requestAnimationFrame` availability check
  *
  * **Integration:**
@@ -44,8 +43,7 @@ import {
 export function setupScheduler() {
   if (
     globalThis.__TEST__ ||
-    typeof requestAnimationFrame !== "function" ||
-    (typeof process !== "undefined" && process.env.VITEST === "true")
+    typeof requestAnimationFrame !== "function"
   ) {
     return;
   }
