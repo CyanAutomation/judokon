@@ -17,18 +17,26 @@ import snackbarManager from "../../src/helpers/SnackbarManager.js";
 /* eslint-disable no-unused-vars */
 describe("Cooldown suppression during opponent prompt", () => {
   let harness;
+  let performanceNowSpy;
 
   beforeEach(async () => {
     harness = createSimpleHarness({
       useFakeTimers: true,
       useRafMock: true
     });
+    performanceNowSpy = vi
+      .spyOn(performance, "now")
+      .mockImplementation(() => Date.now());
     await harness.setup();
   });
 
   afterEach(() => {
     if (harness) {
       harness.cleanup();
+    }
+    if (performanceNowSpy) {
+      performanceNowSpy.mockRestore();
+      performanceNowSpy = null;
     }
   });
 
@@ -105,7 +113,7 @@ describe("Cooldown suppression during opponent prompt", () => {
 
   it("shows cooldown immediately if opponent prompt window already expired", async () => {
     // Import modules after harness setup
-    const { markOpponentPromptNow } = await import(
+    const { markOpponentPromptNow, DEFAULT_MIN_PROMPT_DURATION_MS } = await import(
       "../../src/helpers/classicBattle/opponentPromptTracker.js"
     );
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
@@ -117,8 +125,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     // Step 1: Mark opponent prompt timestamp
     markOpponentPromptNow({ notify: true });
 
-    // Step 2: Advance time past the minimum duration (> 600ms)
-    await vi.advanceTimersByTimeAsync(700);
+    // Step 2: Advance time past the minimum duration
+    await vi.advanceTimersByTimeAsync(DEFAULT_MIN_PROMPT_DURATION_MS + 100);
 
     // Step 3: NOW create and start cooldown (after window expired)
     const timer = createRoundTimer({
