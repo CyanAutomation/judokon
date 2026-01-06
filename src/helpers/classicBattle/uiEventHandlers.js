@@ -27,6 +27,7 @@ let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
 const DEFAULT_MIN_OBSCURE_DURATION_MS = 16;
 let lastOpponentRevealTimestamp = 0;
+let lastNowValue = 0;
 
 function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
@@ -64,18 +65,31 @@ function waitForNextFrame() {
 function now() {
   try {
     if (typeof performance !== "undefined" && typeof performance.now === "function") {
-      return performance.now();
+      const value = performance.now();
+      if (Number.isFinite(value)) {
+        lastNowValue = value;
+        return value;
+      }
     }
   } catch {}
   try {
-    return Date.now();
+    if (typeof Date !== "undefined" && typeof Date.now === "function") {
+      const value = Date.now();
+      if (Number.isFinite(value)) {
+        lastNowValue = value;
+        return value;
+      }
+    }
   } catch {}
-  // Return current timestamp to avoid negative elapsed calculations
-  return Date.now() || 0;
+  return lastNowValue;
 }
 
 function getMinOpponentObscureDuration() {
   if (typeof window !== "undefined") {
+    const configOverride = window.__JUDOKON_TEST_CONFIG__?.minOpponentObscureDurationMs;
+    if (Number.isFinite(configOverride) && configOverride >= 0) {
+      return Number(configOverride);
+    }
     const override = window.__MIN_OPPONENT_OBSCURE_DURATION_MS;
     if (Number.isFinite(override) && override >= 0) {
       return Number(override);
