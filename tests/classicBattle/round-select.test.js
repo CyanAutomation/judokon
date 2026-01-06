@@ -46,8 +46,7 @@ describe("Classic Battle round select modal", () => {
     }
   });
 
-  test("selecting Long (10) sets pointsToWin and marks target", async () => {
-    process.env.VITEST = "true"; // ensure modal avoids extra event dispatch
+  test("selecting Long (10) sets pointsToWin and marks target", async () => { // ensure modal avoids extra event dispatch
     document.documentElement.innerHTML = getHtmlContent();
 
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
@@ -85,7 +84,6 @@ describe("Classic Battle round select modal", () => {
   });
 
   test("header navigation unlocks when startRoundCycle hits data load failure", async () => {
-    process.env.VITEST = "true";
     document.documentElement.innerHTML = getHtmlContent();
     const readyDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
     Object.defineProperty(document, "readyState", {

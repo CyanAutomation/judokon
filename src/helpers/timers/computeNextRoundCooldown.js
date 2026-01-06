@@ -1,6 +1,5 @@
 import { isTestModeEnabled } from "../testModeUtils.js";
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Determine the cooldown duration before the next round.

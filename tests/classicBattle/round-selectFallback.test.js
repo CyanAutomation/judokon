@@ -17,7 +17,6 @@ const flushMicrotasks = async () => {
 
 describe("Classic Battle round select fallback", () => {
   beforeEach(async () => {
-    process.env.VITEST = "true";
     document.documentElement.innerHTML = getBattleClassicHtml();
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });

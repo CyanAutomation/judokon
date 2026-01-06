@@ -21,9 +21,7 @@ describe("BattleDebugLogger", () => {
     vi.restoreAllMocks();
     process.env.NODE_ENV = originalEnv;
     if (originalVitest !== undefined) {
-      process.env.VITEST = originalVitest;
     } else {
-      delete process.env.VITEST;
     }
   });
 
@@ -49,11 +47,8 @@ describe("BattleDebugLogger", () => {
     });
 
     it("should determine output mode based on environment", () => {
-      process.env.VITEST = "true";
       const testLogger = new BattleDebugLogger();
       expect(testLogger.outputMode).toBe("memory");
-
-      delete process.env.VITEST;
       process.env.NODE_ENV = "production";
       const prodLogger = new BattleDebugLogger();
       expect(prodLogger.outputMode).toBe("memory");
@@ -238,7 +233,6 @@ describe("BattleDebugLogger", () => {
   describe("Console Output Control", () => {
     it("should default to memory output in vitest environment", () => {
       const vitestFlag = process.env.VITEST;
-      process.env.VITEST = "true";
 
       const testEnvLogger = new BattleDebugLogger();
 
@@ -247,7 +241,6 @@ describe("BattleDebugLogger", () => {
       if (vitestFlag !== undefined) {
         process.env.VITEST = vitestFlag;
       } else {
-        delete process.env.VITEST;
       }
     });
 
@@ -263,13 +256,11 @@ describe("BattleDebugLogger", () => {
       if (vitestFlag !== undefined) {
         process.env.VITEST = vitestFlag;
       } else {
-        delete process.env.VITEST;
       }
     });
 
     it("should suppress console output when running under vitest", async () => {
       const vitestFlag = process.env.VITEST;
-      process.env.VITEST = "true";
 
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -288,7 +279,6 @@ describe("BattleDebugLogger", () => {
       if (vitestFlag !== undefined) {
         process.env.VITEST = vitestFlag;
       } else {
-        delete process.env.VITEST;
       }
     });
   });

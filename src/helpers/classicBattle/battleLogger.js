@@ -7,17 +7,16 @@
  * @module classicBattleLogger
  */
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Create a logger instance with optional silencing.
  *
  * @pseudocode
- * 1. Accept enabled flag (defaults to !IS_VITEST).
+ * 1. Accept enabled flag (defaults to false for production).
  * 2. Return object with trace, info, warn methods.
  * 3. Each method silently returns when disabled.
  *
- * @param {boolean} [enabled] - Enable logging (defaults to !IS_VITEST)
+ * @param {boolean} [enabled] - Enable logging (defaults to false)
  * @returns {{
  *   trace: (msg: string) => void,
  *   info: (msg: string) => void,
@@ -25,7 +24,7 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  *   debug: (msg: string) => void
  * }}
  */
-export function createBattleLogger(enabled = !IS_VITEST) {
+export function createBattleLogger(enabled = false) {
   return {
     trace: (msg) => {
       if (!enabled) return;

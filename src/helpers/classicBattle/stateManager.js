@@ -3,7 +3,6 @@ import { debugLog, shouldSuppressDebugOutput } from "./debugLog.js";
 import { error as logError, warn as logWarn, debug as logDebug } from "../logger.js";
 import { isEnabled } from "../featureFlags.js";
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 // Constants
 const DEFAULT_INITIAL_STATE = "waitingForMatchStart";

@@ -5,13 +5,12 @@ import { beforeEach, expect, test, vi } from "vitest";
 import { createClassicBattleHarness } from "../helpers/integrationHarness.js";
 import { createTestController } from "../../src/utils/scheduler.js";
 
-console.log("VITEST env at test top", process.env.VITEST);
+
 
 // Enable test controller access
 globalThis.__TEST__ = true;
 
 if (!process.env.VITEST) {
-  process.env.VITEST = "true";
 }
 
 const STAT_KEYS = ["power", "speed", "technique", "kumikata", "newaza"];

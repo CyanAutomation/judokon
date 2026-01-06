@@ -964,7 +964,6 @@ export async function initializeBattle(page, config = {}) {
         window.__OPPONENT_RESOLVE_DELAY_MS = delay;
       }
       window.__FF_OVERRIDES = { showRoundSelectModal: true, ...flags };
-      window.process = { env: { VITEST: "1" } };
       // Disable autoContinue for deterministic roundOver state observation
       window.__AUTO_CONTINUE = false;
     },

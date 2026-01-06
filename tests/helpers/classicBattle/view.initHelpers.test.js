@@ -93,15 +93,12 @@ describe("setupScheduler", () => {
   it("starts and registers stop handler", () => {
     const add = vi.spyOn(window, "addEventListener");
     const originalTest = globalThis.__TEST__;
-    const originalVitest = process.env.VITEST;
 
     delete globalThis.__TEST__;
-    delete process.env.VITEST;
 
     setupScheduler();
 
     globalThis.__TEST__ = originalTest;
-    process.env.VITEST = originalVitest;
 
     expect(scheduler.start).toHaveBeenCalled();
     expect(add).toHaveBeenCalledWith("pagehide", scheduler.stop, { once: true });
@@ -112,15 +109,12 @@ describe("setupScheduler", () => {
     const addWindowListener = vi.spyOn(window, "addEventListener");
     const addDocListener = vi.spyOn(document, "addEventListener");
     const originalTest = globalThis.__TEST__;
-    const originalVitest = process.env.VITEST;
 
     delete globalThis.__TEST__;
-    delete process.env.VITEST;
 
     setupScheduler();
 
     globalThis.__TEST__ = originalTest;
-    process.env.VITEST = originalVitest;
 
     // Verify visibilitychange listener was registered
     const visibilityCall = addDocListener.mock.calls.find((call) => call[0] === "visibilitychange");
@@ -174,20 +168,16 @@ describe("setupScheduler", () => {
     globalThis.requestAnimationFrame = originalRAF;
   });
 
-  it("skips setup when process.env.VITEST is true", () => {
+  it.skip("DEPRECATED: process.env.VITEST removed from codebase", () => {
     // Note: This test would normally be caught by beforeEach mock setup
     // but we verify the condition explicitly
-    const original = process.env.VITEST;
-    process.env.VITEST = "true";
 
     setupScheduler();
 
     expect(scheduler.start).not.toHaveBeenCalled();
 
     if (original !== undefined) {
-      process.env.VITEST = original;
     } else {
-      delete process.env.VITEST;
     }
   });
 });

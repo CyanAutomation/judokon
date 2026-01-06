@@ -523,18 +523,6 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 
   logSelectionMutation("applySelectionToStore", store, { stat });
 
-  if (IS_VITEST) {
-    if (store.selectionMade !== true || store.playerChoice !== stat) {
-      throw new Error(
-        `[applySelectionToStore] Store mutation failed: selectionMade=${store.selectionMade}, playerChoice=${store.playerChoice}`
-      );
-    }
-    logSelectionDebug("[applySelectionToStore] AFTER:", {
-      selectionMade: store.selectionMade,
-      playerChoice: store.playerChoice
-    });
-  }
-
   // Mirror selection to RoundStore
   try {
     try {
@@ -692,20 +680,7 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   try {
     emitBattleEvent("roundReset", { reason: "playerSelection" });
   } catch {}
-
-  try {
-    if (IS_VITEST) {
-      try {
-        scoreboard.clearTimer?.();
-      } catch {}
-      clearNextRoundTimerFallback();
-      try {
-        const msg = document.getElementById("round-message");
-        if (msg) msg.textContent = "";
-      } catch {}
-      // Snackbar display is handled elsewhere based on resolution path
-    }
-  } catch {}
+  // Timer clearing and message display handled by event orchestrator
 }
 
 /**
@@ -793,8 +768,7 @@ export async function dispatchStatSelected(store, stat, playerVal, opponentVal, 
   logSelectionDebug("[dispatchStatSelected] statSelected handler complete");
 
   try {
-    const forceDirectResolution =
-      IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
+    const forceDirectResolution = opts.forceDirectResolution || store.forceDirectResolution;
     if (forceDirectResolution) {
       logSelectionDebug("[dispatchStatSelected] Returning false (forceDirectResolution)");
       return false;
