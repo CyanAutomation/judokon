@@ -26,22 +26,13 @@ let currentCountdownSnackbarController = null;
  * @returns {Promise<void>}
  */
 export async function dismissCountdownSnackbar() {
-  console.log(
-    "[DEBUG] dismissCountdownSnackbar called, controller:",
-    currentCountdownSnackbarController
-  );
   if (currentCountdownSnackbarController) {
     try {
-      console.log("[DEBUG] Attempting to remove countdown snackbar");
       await currentCountdownSnackbarController.remove();
-      console.log("[DEBUG] Successfully removed countdown snackbar");
-    } catch (err) {
-      console.log("[DEBUG] Error removing countdown snackbar:", err);
+    } catch {
       // Non-critical
     }
     currentCountdownSnackbarController = null;
-  } else {
-    console.log("[DEBUG] No countdown snackbar controller to dismiss");
   }
 }
 
