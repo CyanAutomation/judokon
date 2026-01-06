@@ -874,13 +874,17 @@ export function bindRoundUIEventHandlersDynamic() {
     await handleRoundStartedEvent(event);
   });
   onBattleEvent("round.start", async () => {
+    console.log("[roundUI] round.start event fired");
     // Dismiss countdown snackbar immediately when Next is clicked
     try {
       const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
       if (typeof dismissCountdownSnackbar === "function") {
+        console.log("[roundUI] Calling dismissCountdownSnackbar()");
         await dismissCountdownSnackbar();
+        console.log("[roundUI] dismissCountdownSnackbar() completed");
       }
-    } catch {
+    } catch (err) {
+      console.log("[roundUI] Error dismissing countdown:", err);
       // Non-critical
     }
 
@@ -888,9 +892,12 @@ export function bindRoundUIEventHandlersDynamic() {
     try {
       const { dismissOpponentSnackbar } = await import("./uiEventHandlers.js");
       if (typeof dismissOpponentSnackbar === "function") {
+        console.log("[roundUI] Calling dismissOpponentSnackbar()");
         await dismissOpponentSnackbar();
+        console.log("[roundUI] dismissOpponentSnackbar() completed");
       }
-    } catch {
+    } catch (err) {
+      console.log("[roundUI] Error dismissing opponent:", err);
       // Non-critical
     }
   });

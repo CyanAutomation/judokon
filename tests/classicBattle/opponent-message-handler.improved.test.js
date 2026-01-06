@@ -224,8 +224,7 @@ describe("UI handlers: opponent message events", () => {
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
     // Per QA spec: When delay > 0 and flag enabled, snackbar should NOT appear immediately
-    expect(updateSnackbar).not.toHaveBeenCalled();
-    expect(showSnackbar).not.toHaveBeenCalled();
+    expect(mockShow).not.toHaveBeenCalled();
     expect(markOpponentPromptNow).not.toHaveBeenCalled();
 
     // Timer should be scheduled for the delay period
@@ -238,11 +237,17 @@ describe("UI handlers: opponent message events", () => {
     await timers.runAllTimersAsync();
 
     // Per QA spec: Snackbar appears AFTER delay
-    // Implementation uses showSnackbar (not updateSnackbar)
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(showSnackbar).toHaveBeenCalledTimes(1);
-    expect(updateSnackbar).not.toHaveBeenCalled();
-    // markOpponentPromptNow is called with notify: true after delay (timer callback)
+    // Implementation uses snackbarManager.show() with HIGH priority and minDuration
+    expect(mockShow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Opponent is choosing…",
+        priority: 3, // SnackbarPriority.HIGH
+        minDuration: 600, // Uses getOpponentPromptMinDuration()
+        autoDismiss: 0
+      })
+    );
+    expect(mockShow).toHaveBeenCalledTimes(1);
+    // markOpponentPromptNow is called with notify: true after delay (timer callback, via onShow)
     expect(markOpponentPromptNow).toHaveBeenCalledWith({ notify: true });
     expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
   });
