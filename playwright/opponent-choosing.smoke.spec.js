@@ -128,13 +128,6 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     // SKIP REASON: Snackbar DOM element not appearing despite handler execution
     // ROOT CAUSE INVESTIGATION: See TEST_FAILURE_ANALYSIS.md Task 3
     // - ✅ Handler registration confirmed working
-    
-    // Capture console messages for debugging
-    page.on('console', msg => {
-      if (msg.text().includes('[DEBUG]')) {
-        console.log('Browser console:', msg.text());
-      }
-    });
     // - ✅ Event emission confirmed working
     // - ✅ Handler execution confirmed working
     // - ❌ Snackbar DOM element not created/visible (separate bug)

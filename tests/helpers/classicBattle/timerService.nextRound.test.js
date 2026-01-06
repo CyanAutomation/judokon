@@ -238,7 +238,9 @@ describe("timerService next round handling", () => {
     timer.start(3);
 
     expect(snackbarMod.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
-    expect(snackbarMod.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
+    // Snackbar shows static message (no updates after initial render)
+    expect(snackbarMod.updateSnackbar).not.toHaveBeenCalled();
+    // Scoreboard still updates each tick
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(3);
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(2);
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(0);

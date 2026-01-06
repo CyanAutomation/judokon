@@ -696,7 +696,7 @@ function createRendererState(options = {}) {
  *
  * @pseudocode
  * 1. Create normalizer for countdown values (clamp to positive).
- * 2. Create render function for snackbar and scoreboard updates.
+ * 2. Create render function for static snackbar message (no per-second updates).
  * 3. Create tick processor for state machine and event emission.
  * 4. Create prompt remaining getter from controller.
  * 5. Create tick queuing handler with prompt delay logic.
@@ -745,31 +745,18 @@ function createTickProcessors(rendererState) {
           }
         })();
 
-        // Initial render - show countdown with HIGH priority to replace opponent message
+        // Show static countdown message (no per-second updates)
         currentCountdownSnackbarController = snackbarManager.show({
           message: text,
           priority: SnackbarPriority.HIGH, // HIGH priority ensures it replaces opponent message
-          minDuration: 0, // No minimum duration for countdown updates
+          minDuration: 0, // No minimum duration
           autoDismiss: 0 // Manual control - will be dismissed when round starts
         });
         rendererState.countdownController = currentCountdownSnackbarController;
         rendererState.rendered = true;
-      } else if (clamped !== rendererState.lastRendered && rendererState.countdownController) {
-        // Update existing countdown message
-        try {
-          rendererState.countdownController.update(text);
-        } catch {
-          // If update fails, create a new one
-          currentCountdownSnackbarController = snackbarManager.show({
-            message: text,
-            priority: SnackbarPriority.HIGH,
-            minDuration: 0,
-            autoDismiss: 0
-          });
-          rendererState.countdownController = currentCountdownSnackbarController;
-        }
+        rendererState.lastRendered = clamped;
       }
-      rendererState.lastRendered = clamped;
+      // No updates after initial render - keep static message throughout cooldown
     }
 
     // Always update lastRendered to maintain correct state tracking

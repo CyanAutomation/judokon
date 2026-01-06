@@ -63,9 +63,23 @@ const {
   isOpponentPromptReady: mockIsOpponentPromptReady
 } = promptTrackerMocks;
 
-vi.mock("../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn(),
-  updateSnackbar: vi.fn()
+const snackbarMocks = vi.hoisted(() => ({
+  show: vi.fn(),
+  remove: vi.fn(),
+  update: vi.fn()
+}));
+
+vi.mock("../../src/helpers/SnackbarManager.js", () => ({
+  default: {
+    show: snackbarMocks.show,
+    remove: snackbarMocks.remove,
+    update: snackbarMocks.update
+  },
+  SnackbarPriority: {
+    HIGH: "HIGH",
+    NORMAL: "NORMAL",
+    LOW: "LOW"
+  }
 }));
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
@@ -79,12 +93,13 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
 
+const { show: mockSnackbarShow, remove: mockSnackbarRemove, update: mockSnackbarUpdate } = snackbarMocks;
+
 import {
   createPromptDelayController,
   attachCooldownRenderer
 } from "../../src/helpers/CooldownRenderer.js";
 import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
-import * as snackbar from "../../src/helpers/showSnackbar.js";
 import * as scoreboard from "../../src/helpers/setupScoreboard.js";
 
 describe("createPromptDelayController", () => {
@@ -369,7 +384,7 @@ describe("attachCooldownRenderer", () => {
     detach();
   });
 
-  it("updates snackbar and scoreboard on tick changes and expiration", () => {
+  it("shows static snackbar message and updates scoreboard on ticks", () => {
     attachCooldownRenderer(timer);
 
     mockGetOpponentPromptTimestamp.mockReturnValue(100);
@@ -378,12 +393,13 @@ describe("attachCooldownRenderer", () => {
     expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(3);
 
+    // Snackbar shows static message (no updates), but scoreboard still updates
     timer.emit("tick", 1);
-    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 1s");
+    expect(snackbar.updateSnackbar).not.toHaveBeenCalled(); // No snackbar updates
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(1);
 
     timer.emit("expired");
-    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 0s");
+    expect(snackbar.updateSnackbar).not.toHaveBeenCalled(); // No snackbar updates
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
   });
 
