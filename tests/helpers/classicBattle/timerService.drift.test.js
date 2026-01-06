@@ -119,6 +119,7 @@ describe("timerService drift handling", () => {
     const { t } = await import("../../../src/helpers/i18n.js");
     const opponentMessage = t("ui.opponentChoosing");
     const fallbackOpponentMessage = "Opponent is choosing...";
+    scheduler.tick(0);
     const snackbarMessages = showSnack.mock.calls.map(([message]) => message);
     expect(
       snackbarMessages.some((message) =>
