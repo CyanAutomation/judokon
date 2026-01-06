@@ -26,13 +26,22 @@ let currentCountdownSnackbarController = null;
  * @returns {Promise<void>}
  */
 export async function dismissCountdownSnackbar() {
+  console.log(
+    "[DEBUG] dismissCountdownSnackbar called, controller:",
+    currentCountdownSnackbarController
+  );
   if (currentCountdownSnackbarController) {
     try {
+      console.log("[DEBUG] Attempting to remove countdown snackbar");
       await currentCountdownSnackbarController.remove();
-    } catch {
+      console.log("[DEBUG] Successfully removed countdown snackbar");
+    } catch (err) {
+      console.log("[DEBUG] Error removing countdown snackbar:", err);
       // Non-critical
     }
     currentCountdownSnackbarController = null;
+  } else {
+    console.log("[DEBUG] No countdown snackbar controller to dismiss");
   }
 }
 
@@ -982,12 +991,12 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
       } catch {
         // Non-critical - snackbar will eventually be replaced
       }
-      
+
       // Clear global reference before nullifying local reference
       if (currentCountdownSnackbarController === rendererState.countdownController) {
         currentCountdownSnackbarController = null;
       }
-      
+
       rendererState.countdownController = null;
     }
   };
