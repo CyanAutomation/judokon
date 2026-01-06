@@ -118,7 +118,7 @@ describe("UI handlers: opponent message events", () => {
     });
     mockRemove.mockReset().mockResolvedValue();
     mockWaitForMinDuration.mockReset().mockResolvedValue();
-    
+
     showSnackbar.mockReset();
     updateSnackbar.mockReset();
     markOpponentPromptNow.mockReset();
@@ -133,7 +133,7 @@ describe("UI handlers: opponent message events", () => {
     updateDebugPanel.mockReset();
     getOpponentCardData.mockReset();
     vi.stubGlobal("document", { getElementById: vi.fn(() => null) });
-    
+
     // IMPORTANT: Reset event target BEFORE deleting WeakSet
     // This ensures we get a fresh EventTarget for each test
     resetBattleEventTarget?.();
@@ -148,7 +148,7 @@ describe("UI handlers: opponent message events", () => {
     timers.cleanup();
     vi.unstubAllGlobals();
     setTimeoutSpy?.mockRestore();
-    
+
     // Explicitly clean up battle event state
     delete globalThis.__cbUIHelpersDynamicBoundTargets;
     delete globalThis.__classicBattleEventTarget;

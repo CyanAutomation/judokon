@@ -94,9 +94,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
 }));
 
 const {
-  show: mockSnackbarShow,
-  remove: mockSnackbarRemove,
-  update: mockSnackbarUpdate
+  show: mockSnackbarShow
 } = snackbarMocks;
 
 import {
