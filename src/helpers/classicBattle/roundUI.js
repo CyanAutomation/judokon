@@ -406,8 +406,9 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
  * @param {{ applyRoundUI?: typeof applyRoundUI }} [deps]
  * @pseudocode
  * 1. Dismiss any countdown snackbar from previous cooldown.
- * 2. Read `store` and `roundNumber` from the event detail.
- * 3. When both are valid, call the injected `applyRoundUI` implementation.
+ * 2. Dismiss any opponent snackbar from stat selection.
+ * 3. Read `store` and `roundNumber` from the event detail.
+ * 4. When both are valid, call the injected `applyRoundUI` implementation.
  * @returns {void}
  */
 export async function handleRoundStartedEvent(event, deps = {}) {
@@ -416,6 +417,16 @@ export async function handleRoundStartedEvent(event, deps = {}) {
     const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
     if (typeof dismissCountdownSnackbar === "function") {
       await dismissCountdownSnackbar();
+    }
+  } catch {
+    // Non-critical
+  }
+
+  // Dismiss opponent snackbar when new round starts
+  try {
+    const { dismissOpponentSnackbar } = await import("./uiEventHandlers.js");
+    if (typeof dismissOpponentSnackbar === "function") {
+      await dismissOpponentSnackbar();
     }
   } catch {
     // Non-critical
@@ -868,6 +879,16 @@ export function bindRoundUIEventHandlersDynamic() {
       const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
       if (typeof dismissCountdownSnackbar === "function") {
         await dismissCountdownSnackbar();
+      }
+    } catch {
+      // Non-critical
+    }
+
+    // Dismiss opponent snackbar immediately when Next is clicked
+    try {
+      const { dismissOpponentSnackbar } = await import("./uiEventHandlers.js");
+      if (typeof dismissOpponentSnackbar === "function") {
+        await dismissOpponentSnackbar();
       }
     } catch {
       // Non-critical
