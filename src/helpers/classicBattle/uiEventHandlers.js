@@ -27,7 +27,7 @@ let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
 const DEFAULT_MIN_OBSCURE_DURATION_MS = 16;
 let lastOpponentRevealTimestamp = 0;
-let lastNowValue = 0;
+let lastNowValue = Date.now() || 0;
 
 function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
