@@ -81,7 +81,7 @@ function now() {
       }
     }
   } catch {}
-  return lastNowValue;
+  return lastNowValue || 0;
 }
 
 function getMinOpponentObscureDuration() {
