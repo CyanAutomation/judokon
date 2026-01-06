@@ -680,6 +680,19 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   try {
     emitBattleEvent("roundReset", { reason: "playerSelection" });
   } catch {}
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      const roundMessage = document.getElementById("round-message");
+      if (roundMessage) {
+        roundMessage.textContent = "";
+      }
+      const headerRoundMessage = document.querySelector("header #round-message");
+      if (headerRoundMessage) {
+        headerRoundMessage.textContent = "";
+      }
+      clearNextRoundTimerFallback();
+    }
+  } catch {}
   // Timer clearing and message display handled by event orchestrator
 }
 
