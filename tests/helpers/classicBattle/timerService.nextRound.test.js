@@ -20,10 +20,24 @@ describe("timerService next round handling", () => {
       updateRoundCounter: vi.fn(),
       clearRoundCounter: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
+    vi.doMock("../../../src/helpers/SnackbarManager.js", () => {
+      const mockController = {
+        remove: vi.fn().mockResolvedValue(undefined),
+        update: vi.fn()
+      };
+      return {
+        default: {
+          show: vi.fn().mockReturnValue(mockController),
+          remove: vi.fn(),
+          update: vi.fn()
+        },
+        SnackbarPriority: {
+          HIGH: "HIGH",
+          NORMAL: "NORMAL",
+          LOW: "LOW"
+        }
+      };
+    });
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       enableNextRoundButton: vi.fn(),
       disableNextRoundButton: vi.fn(),
@@ -220,10 +234,10 @@ describe("timerService next round handling", () => {
     vi.restoreAllMocks();
   });
 
-  it("CooldownRenderer shows and updates", async () => {
+  it("CooldownRenderer shows static message", async () => {
     const timerMod = await import("../../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
-    const snackbarMod = await import("../../../src/helpers/showSnackbar.js");
+    const snackbarManager = (await import("../../../src/helpers/SnackbarManager.js")).default;
     const scoreboardMod = await import("../../../src/helpers/setupScoreboard.js");
 
     const timer = timerMod.createRoundTimer({
@@ -237,9 +251,13 @@ describe("timerService next round handling", () => {
     attachCooldownRenderer(timer);
     timer.start(3);
 
-    expect(snackbarMod.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
+    expect(snackbarManager.show).toHaveBeenCalledWith({
+      message: "Next round in: 3s",
+      priority: "HIGH",
+      minDuration: 0,
+      autoDismiss: 0
+    });
     // Snackbar shows static message (no updates after initial render)
-    expect(snackbarMod.updateSnackbar).not.toHaveBeenCalled();
     // Scoreboard still updates each tick
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(3);
     expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(2);
