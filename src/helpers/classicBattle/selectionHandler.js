@@ -1150,6 +1150,9 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
       throw error;
     } finally {
       guard.release();
+      logSelectionMutation("handleStatSelection.guardReleased", store, {
+        selectionInFlight: !!store?.[SELECTION_IN_FLIGHT_GUARD]
+      });
     }
   })();
 

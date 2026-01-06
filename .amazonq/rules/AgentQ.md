@@ -1460,6 +1460,31 @@ await initializeMatchStart(store);
 wireControlButtons(store);
 ```
 
+### Event Handler Registration (Critical for Snackbar Dismissal)
+
+The Classic Battle bootstrap MUST call `bindRoundUIEventHandlersDynamic()` during initialization. This function registers the `round.start` event handler that dismisses countdown and opponent snackbars when advancing to the next round.
+
+**Bug History**: When this call was missing, snackbars ("Opponent is choosing...", "You picked: X", countdown timers) would persist across rounds instead of being dismissed, creating visual clutter and confusing users.
+
+**Location**: `src/helpers/classicBattle/bootstrap.js` line 79
+
+**CLI Battle**: The same fix applies to CLI Battle mode via `src/pages/battleCLI/init.js` line 3308 in the `wireEvents()` function.
+
+**Test Coverage**:
+- `tests/helpers/classicBattle/bootstrap-event-handlers.test.js` - Verifies handler registration
+- `tests/helpers/classicBattle/snackbar-dismissal-events.test.js` - Tests event flow
+
+**Validation Command**:
+```bash
+# Verify the critical call is present in both battle modes
+grep -n "bindRoundUIEventHandlersDynamic" src/helpers/classicBattle/bootstrap.js src/pages/battleCLI/init.js
+
+# Expected output:
+# src/helpers/classicBattle/bootstrap.js:79:      bindRoundUIEventHandlersDynamic();
+# src/pages/battleCLI/init.js:50:import { bindRoundUIEventHandlersDynamic } from...
+# src/pages/battleCLI/init.js:3308:  bindRoundUIEventHandlersDynamic();
+```
+
 ### Validation Command
 
 ```bash
