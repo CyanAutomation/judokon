@@ -149,21 +149,25 @@ Without proper event handler registration, snackbars (countdown timers, "Opponen
 
 The `bindRoundUIEventHandlersDynamic()` function (from `src/helpers/classicBattle/roundUI.js`) registers event handlers that automatically dismiss snackbars when the `round.start` event is emitted.
 
-**Registration Location**: 
+**Registration Location**:
+
 - **Classic Battle**: `src/helpers/classicBattle/bootstrap.js` line 79 (in `startCallback`)
 - **CLI Battle**: `src/pages/battleCLI/init.js` line 3308 (in `wireEvents`)
 
 **Event Handlers Registered**:
+
 - `round.start` → Dismisses countdown snackbar + opponent snackbar
 - `roundStarted` → Updates UI for new round
 
 **Protected Against Duplicates**: Uses WeakSet guard to prevent duplicate registration if called multiple times.
 
 **Test Coverage**:
+
 - `tests/helpers/classicBattle/bootstrap-event-handlers.test.js` - Verifies handler registration
 - `tests/helpers/classicBattle/snackbar-dismissal-events.test.js` - Tests event flow
 
 **Validation**:
+
 ```bash
 # Verify handler registration is present
 grep -n "bindRoundUIEventHandlersDynamic" src/helpers/classicBattle/bootstrap.js src/pages/battleCLI/init.js
