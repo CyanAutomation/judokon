@@ -113,7 +113,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
 
-    await machine.dispatch("matchStart");
+    await machine.dispatch("startClicked");
     await machine.dispatch("ready");
     await machine.dispatch("ready");
     await machine.dispatch("cardsRevealed");
@@ -122,7 +122,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     vi.clearAllMocks();
     readyDispatchTracker.events.length = 0;
 
-    await machine.dispatch("interruptRound");
+    await machine.dispatch("interrupt");
 
     // Wait for cooldown state to be entered
     await vi.waitFor(
