@@ -316,6 +316,9 @@ describe("stateManager guard evaluation", () => {
 
       const result = await machine.dispatch("timeout");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("waitingForOpponentDecision");
+
+      await machine.dispatch("opponentDecisionReady");
       expect(machine.getState()).toBe("roundDecision");
     });
 
@@ -368,6 +371,9 @@ describe("stateManager guard evaluation", () => {
 
       const result = await machine.dispatch("timeout");
       expect(result).toBe(true);
+      expect(machine.getState()).toBe("waitingForOpponentDecision");
+
+      await machine.dispatch("opponentDecisionReady");
       expect(machine.getState()).toBe("roundDecision");
     });
   });
