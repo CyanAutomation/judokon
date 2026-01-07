@@ -157,7 +157,7 @@ describe("simulateOpponentStat difficulty", () => {
         chosenStat,
         expectedPlayer,
         expectedOpponent,
-        expect.objectContaining({ delayMs: 0 })
+        expect.objectContaining({ delayMs: 0, forceDirectResolution: true })
       );
       expect(result.delta).toBe(expectedPlayer - expectedOpponent);
     } finally {
