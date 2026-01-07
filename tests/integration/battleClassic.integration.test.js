@@ -57,7 +57,7 @@ async function triggerStatSelection(store, statButton, statKey) {
  * 2. Selects a round from the modal
  * 3. Waits for player action state
  * 4. Selects a stat and verifies store is updated immediately
- * 5. Waits for round to fully resolve (roundDecision state)
+ * 5. Waits for round to fully resolve (roundOver/cooldown state)
  * 6. Verifies roundsPlayed was incremented
  *
  * @param {object} testApi - Test API from window.__TEST_API
@@ -267,7 +267,9 @@ describe("Battle Classic Page Integration", () => {
     await triggerStatSelection(store, statButtons[0], statButtons[0].dataset.stat);
 
     await withMutedConsole(async () => {
-      await testApi.state.waitForBattleState("roundDecision", 5000);
+      await testApi.state.waitForBattleState(["roundDecision", "roundOver", "cooldown"], 5000);
+      const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
+      expect(roundCompleted).toBe(true);
     });
 
     // Verify validation was called
@@ -441,7 +443,9 @@ describe("Battle Classic Page Integration", () => {
         });
 
         await withMutedConsole(async () => {
-          await testApi.state.waitForBattleState("roundDecision", 5000);
+          await testApi.state.waitForBattleState(["roundDecision", "roundOver", "cooldown"], 5000);
+          const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
+          expect(roundCompleted).toBe(true);
         });
         const appliedValues = Boolean(storeAfterSelection.selectionMade);
 
@@ -628,13 +632,12 @@ describe("Battle Classic Page Integration", () => {
       expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
       expect(opponentCard?.querySelector("#mystery-card-placeholder")).not.toBeNull();
 
-      // Wait for roundDecision resolution to complete
+      // Wait for round resolution to complete
       await withMutedConsole(async () => {
-        await testApi.state.waitForBattleState("roundDecision", 5000);
+        await testApi.state.waitForBattleState(["roundDecision", "roundOver", "cooldown"], 5000);
+        const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
+        expect(roundCompleted).toBe(true);
       });
-
-      const roundCompleted = await testApi.state.waitForRoundsPlayed(1);
-      expect(roundCompleted).toBe(true);
 
       await new Promise((resolve) => {
         if (typeof window.requestAnimationFrame === "function") {
