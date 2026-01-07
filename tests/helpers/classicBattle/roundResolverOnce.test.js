@@ -83,7 +83,11 @@ describe.sequential("classicBattle round resolver once", () => {
     _resetForTest(store);
     const playerVal = getCardStatValue(document.getElementById("player-card"), "power");
     const opponentVal = getCardStatValue(document.getElementById("opponent-card"), "power");
-    handleStatSelection(store, "power", { playerVal, opponentVal });
+    await handleStatSelection(store, "power", {
+      playerVal,
+      opponentVal,
+      delayOpponentMessage: false
+    });
     expect(store.playerChoice).toBe("power");
     await vi.advanceTimersByTimeAsync(601);
     expect(store.playerChoice).toBeNull();
