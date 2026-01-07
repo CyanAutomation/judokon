@@ -41,10 +41,7 @@ import {
  * @returns {void}
  */
 export function setupScheduler() {
-  if (
-    globalThis.__TEST__ ||
-    typeof requestAnimationFrame !== "function"
-  ) {
+  if (globalThis.__TEST__ || typeof requestAnimationFrame !== "function") {
     return;
   }
 

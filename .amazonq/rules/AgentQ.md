@@ -1471,10 +1471,12 @@ The Classic Battle bootstrap MUST call `bindRoundUIEventHandlersDynamic()` durin
 **CLI Battle**: The same fix applies to CLI Battle mode via `src/pages/battleCLI/init.js` line 3308 in the `wireEvents()` function.
 
 **Test Coverage**:
+
 - `tests/helpers/classicBattle/bootstrap-event-handlers.test.js` - Verifies handler registration
 - `tests/helpers/classicBattle/snackbar-dismissal-events.test.js` - Tests event flow
 
 **Validation Command**:
+
 ```bash
 # Verify the critical call is present in both battle modes
 grep -n "bindRoundUIEventHandlersDynamic" src/helpers/classicBattle/bootstrap.js src/pages/battleCLI/init.js
