@@ -278,7 +278,7 @@ export function resetBindings() {
  * 1. Resolve helpers that compute stat values and perform selection.
  * 2. Stop any running engine timer to avoid overlapping expirations.
  * 3. Emit `roundTimeout` to inform listeners and start auto-selection.
- * 4. Dispatch the `timeout` state transition and permit DOM updates to settle.
+ * 4. Dispatch the `timeout` state transition to enter `waitingForOpponentDecision`.
  * 5. Give the browser a chance to render between state transitions via setTimeout(0).
  * 6. Run auto-select and (optionally) await completion.
  *
@@ -320,8 +320,8 @@ export async function triggerRoundTimeoutNow(store, options = {}) {
     emitBattleEvent("roundTimeout");
   } catch {}
 
-  // CRITICAL FIX: Perform auto-select BEFORE transitioning to roundDecision.
-  // This ensures store.playerChoice is set when roundDecisionEnter checks for it,
+  // CRITICAL FIX: Perform auto-select BEFORE transitioning to waitingForOpponentDecision.
+  // This ensures store.playerChoice is set when the UI dispatches opponentDecisionReady,
   // avoiding the race condition where the guard timeout fires before selection completes.
   try {
     const autoSelectPromise = autoSelectStat(onExpiredSelect, 0);
@@ -338,9 +338,9 @@ export async function triggerRoundTimeoutNow(store, options = {}) {
     }
   } catch {}
 
-  // Now dispatch the timeout to transition state (waitingForPlayerAction -> roundDecision).
+  // Now dispatch the timeout to transition state (waitingForPlayerAction -> waitingForOpponentDecision).
   // At this point, store.playerChoice should already be set by autoSelectStat,
-  // so roundDecisionEnter will find the selection and resolve immediately.
+  // so the UI handler can dispatch opponentDecisionReady and advance to roundDecision.
   await dispatchBattleEvent("timeout");
 }
 
