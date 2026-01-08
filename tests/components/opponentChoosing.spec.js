@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn()
-}));
-import { showSnackbar } from "../../src/helpers/showSnackbar.js";
+vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", async () => {
+  const actual = await vi.importActual(
+    "../../src/helpers/classicBattle/opponentPromptTracker.js"
+  );
+  return {
+    ...actual,
+    recordOpponentPromptTimestamp: vi.fn()
+  };
+});
+
+import { recordOpponentPromptTimestamp } from "../../src/helpers/classicBattle/opponentPromptTracker.js";
+import { getOpponentPromptFallbackTimerId } from "../../src/helpers/classicBattle/globalState.js";
 
 describe("Opponent choosing intermediate state", () => {
   let originalOverrides;
@@ -24,11 +32,12 @@ describe("Opponent choosing intermediate state", () => {
         window.__FF_OVERRIDES = originalOverrides;
       }
       delete window.__OPPONENT_RESOLVE_DELAY_MS;
+      delete window.__battleClassicState;
     }
   });
 
-  it("shows 'Opponent is choosing…' via snackbar when flag disabled", async () => {
-    showSnackbar.mockClear();
+  it("records timestamp immediately when opponent delay flag disabled", async () => {
+    recordOpponentPromptTimestamp.mockClear();
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES.opponentDelayMessage = false;
     }
@@ -36,13 +45,11 @@ describe("Opponent choosing intermediate state", () => {
     // Trigger
     const delay = prepareUiBeforeSelection();
     expect(delay).toBe(0);
-    // Assert snackbar invoked with i18n key text (proxy via string contains)
-    const calls = showSnackbar.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((m) => /Opponent is choosing|choosing/i.test(m))).toBe(true);
+    expect(recordOpponentPromptTimestamp).toHaveBeenCalledTimes(1);
   });
 
-  it("defers snackbar when opponent delay flag enabled", async () => {
-    showSnackbar.mockClear();
+  it("defers timestamp when opponent delay flag enabled", async () => {
+    recordOpponentPromptTimestamp.mockClear();
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES.opponentDelayMessage = true;
       window.__OPPONENT_RESOLVE_DELAY_MS = 1200;
@@ -50,6 +57,7 @@ describe("Opponent choosing intermediate state", () => {
     const { prepareUiBeforeSelection } = await import("../../src/pages/battleClassic.init.js");
     const delay = prepareUiBeforeSelection();
     expect(delay).toBe(1200);
-    expect(showSnackbar).not.toHaveBeenCalled();
+    expect(recordOpponentPromptTimestamp).not.toHaveBeenCalled();
+    expect(getOpponentPromptFallbackTimerId()).toBeGreaterThan(0);
   });
 });
