@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", async () => {
-  const actual = await vi.importActual(
-    "../../src/helpers/classicBattle/opponentPromptTracker.js"
-  );
+  const actual = await vi.importActual("../../src/helpers/classicBattle/opponentPromptTracker.js");
   return {
     ...actual,
     recordOpponentPromptTimestamp: vi.fn()
