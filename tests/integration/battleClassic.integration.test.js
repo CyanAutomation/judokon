@@ -188,6 +188,8 @@ describe("Battle Classic Page Integration", () => {
       removeItem: vi.fn(),
       clear: vi.fn()
     };
+    window.__AUTO_CONTINUE = false;
+    globalThis.__AUTO_CONTINUE = false;
 
     // Mock fetch to load JSON data files from disk
     global.fetch = vi.fn(async (url) => {
