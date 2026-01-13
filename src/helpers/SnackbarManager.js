@@ -47,6 +47,7 @@ export const SnackbarPriority = {
  * @property {number} sequence - Monotonic sequence number for deterministic ordering
  * @property {HTMLElement} element - DOM element
  * @property {number} [autoDismissId] - Timeout ID for auto-dismiss
+ * @property {(event: AnimationEvent) => void} [animationEndHandler] - Animation end handler
  * @property {Function} [onShow] - Show callback
  * @property {Function} [onDismiss] - Dismiss callback
  */
@@ -362,6 +363,9 @@ class SnackbarManager {
         if (toRemove.autoDismissId) {
           clearTimeout(toRemove.autoDismissId);
         }
+        if (toRemove.animationEndHandler && toRemove.element) {
+          toRemove.element.removeEventListener("animationend", toRemove.animationEndHandler);
+        }
         if (toRemove.element && toRemove.element.parentNode) {
           toRemove.element.remove();
         }
@@ -375,6 +379,13 @@ class SnackbarManager {
     if (!element) {
       return null;
     }
+    const handleAnimationEnd = (event) => {
+      if (event.animationName !== "snackbar-cycle") {
+        return;
+      }
+      this.remove(id);
+    };
+    element.addEventListener("animationend", handleAnimationEnd);
 
     // Add to DOM
     container.appendChild(element);
@@ -392,6 +403,7 @@ class SnackbarManager {
       shownAt: Date.now(),
       sequence: ++this.sequenceCounter,
       element,
+      animationEndHandler: handleAnimationEnd,
       onShow,
       onDismiss
     };
@@ -489,6 +501,9 @@ class SnackbarManager {
     // Clear auto-dismiss timeout
     if (snackbar.autoDismissId) {
       clearTimeout(snackbar.autoDismissId);
+    }
+    if (snackbar.animationEndHandler && snackbar.element) {
+      snackbar.element.removeEventListener("animationend", snackbar.animationEndHandler);
     }
 
     // Remove element from DOM
@@ -637,6 +652,9 @@ class SnackbarManager {
     this.activeSnackbars.forEach((snackbar) => {
       if (snackbar.autoDismissId) {
         clearTimeout(snackbar.autoDismissId);
+      }
+      if (snackbar.animationEndHandler && snackbar.element) {
+        snackbar.element.removeEventListener("animationend", snackbar.animationEndHandler);
       }
       if (snackbar.element && snackbar.element.parentNode) {
         snackbar.element.remove();
