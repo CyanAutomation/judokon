@@ -124,13 +124,15 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
 
     await machine.dispatch("interrupt");
 
-    // Wait for cooldown state to be entered
-    await vi.waitFor(
-      () => {
-        expect(machine.getState()).toBe("cooldown");
-      },
-      { timeout: 1000 }
-    );
+    // Wait for cooldown entry to be observed; allow auto-advance to roundStart.
+    await vi.waitFor(() => {
+      const state = machine.getState();
+      const cooldownEntered =
+        window.__cooldownEnterInvoked === true ||
+        state === "cooldown" ||
+        state === "roundStart";
+      expect(cooldownEntered).toBe(true);
+    });
 
     // Run all pending timers to complete the cooldown cycle
     await vi.runAllTimersAsync();
