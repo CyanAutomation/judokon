@@ -132,7 +132,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
         state === "cooldown" ||
         state === "roundStart";
       expect(cooldownEntered).toBe(true);
-    });
+    }, { timeout: 1000 });
 
     // Run all pending timers to complete the cooldown cycle
     await vi.runAllTimersAsync();
