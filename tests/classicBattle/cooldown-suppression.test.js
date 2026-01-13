@@ -17,25 +17,23 @@ import snackbarManager from "../../src/helpers/SnackbarManager.js";
 /* eslint-disable no-unused-vars */
 describe("Cooldown suppression during opponent prompt", () => {
   let harness;
-  let performanceNowSpy;
 
   beforeEach(async () => {
     harness = createSimpleHarness({
       useFakeTimers: true,
       useRafMock: true
     });
-    performanceNowSpy = vi.spyOn(performance, "now").mockImplementation(() => Date.now());
     await harness.setup();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     if (harness) {
       harness.cleanup();
     }
-    if (performanceNowSpy) {
-      performanceNowSpy.mockRestore();
-      performanceNowSpy = null;
-    }
+    const { resetOpponentPromptTimestamp } = await import(
+      "../../src/helpers/classicBattle/opponentPromptTracker.js"
+    );
+    resetOpponentPromptTimestamp();
   });
 
   it("suppresses cooldown snackbar during opponent prompt minimum duration window", async () => {
@@ -65,7 +63,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     const cooldownSeconds = 5;
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
-      maxPromptWaitMs: DEFAULT_MIN_PROMPT_DURATION_MS
+      maxPromptWaitMs: DEFAULT_MIN_PROMPT_DURATION_MS,
+      now: () => Date.now()
     });
     timer.start(cooldownSeconds);
 
@@ -136,7 +135,8 @@ describe("Cooldown suppression during opponent prompt", () => {
     const cooldownSeconds = 5;
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
-      maxPromptWaitMs: 600
+      maxPromptWaitMs: 600,
+      now: () => Date.now()
     });
     timer.start(cooldownSeconds);
 

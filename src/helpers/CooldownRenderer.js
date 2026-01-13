@@ -646,7 +646,8 @@ const createControllerInterface = (state) => ({
  *   waitForOpponentPrompt?: boolean,
  *   maxPromptWaitMs?: number,
  *   promptPollIntervalMs?: number,
- *   opponentPromptBufferMs?: number
+ *   opponentPromptBufferMs?: number,
+ *   now?: () => number
  * }} [options] - Countdown delay configuration.
  * @returns {{
  *   started: boolean,
@@ -654,16 +655,19 @@ const createControllerInterface = (state) => ({
  *   rendered: boolean,
  *   promptController: object,
  *   waitForPromptOption: boolean,
- *   maxPromptWaitMs: number
+ *   maxPromptWaitMs: number,
+ *   now: () => number
  * }} Renderer state object.
  */
 function createRendererState(options = {}) {
   const waitForPromptOption = options?.waitForOpponentPrompt === true;
   const maxPromptWaitMs = Number(options?.maxPromptWaitMs);
+  const now = typeof options?.now === "function" ? options.now : defaultNow;
   const promptController = createPromptDelayController({
     waitForOpponentPrompt: waitForPromptOption,
     promptPollIntervalMs: options?.promptPollIntervalMs,
-    maxPromptWaitMs: options?.maxPromptWaitMs
+    maxPromptWaitMs: options?.maxPromptWaitMs,
+    now
   });
 
   const initialCountdown = tryGetInitialRenderedCountdown();
@@ -678,6 +682,7 @@ function createRendererState(options = {}) {
     promptController,
     waitForPromptOption,
     maxPromptWaitMs,
+    now,
     countdownController: null // Will hold SnackbarManager controller for countdown message
   };
 }
@@ -718,7 +723,8 @@ function createTickProcessors(rendererState) {
     // 2. During round decision phase (roundDecision) - round outcome is being displayed
     // 3. During opponent prompt window (first 600ms) - opponent message has priority
     // This ensures users see contextually appropriate messages without UI flicker.
-    const shouldSuppressSnackbar = isSelectionOrDecisionPhase() || isOpponentPromptWindowActive();
+    const shouldSuppressSnackbar =
+      isSelectionOrDecisionPhase() || isOpponentPromptWindowActive(rendererState.now);
 
     if (!shouldSuppressSnackbar) {
       // Use SnackbarManager with HIGH priority to replace "Opponent is choosing" immediately
@@ -949,7 +955,8 @@ function tryGetInitialRenderedCountdown() {
  *   waitForOpponentPrompt?: boolean,
  *   maxPromptWaitMs?: number,
  *   promptPollIntervalMs?: number,
- *   opponentPromptBufferMs?: number
+ *   opponentPromptBufferMs?: number,
+ *   now?: () => number
  * }} [options] - Optional countdown delay configuration.
  * @returns {() => void} Detach function to clean up listeners and state.
  */
