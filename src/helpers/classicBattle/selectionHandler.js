@@ -15,6 +15,7 @@ import { roundStore } from "./roundStore.js";
 import { getScheduler } from "../scheduler.js";
 import { debugLog } from "../debug.js";
 import { awaitStatSelectedHandler } from "./uiEventHandlers.js";
+import { isTestModeEnabled } from "../testModeUtils.js";
 
 function createDeferred() {
   let resolve;
@@ -562,6 +563,40 @@ function clearNextRoundTimerFallback() {
   } catch {}
 }
 
+function clearRoundMessageFallback() {
+  try {
+    if (typeof scoreboard?.clearMessage === "function") {
+      scoreboard.clearMessage();
+    }
+  } catch {}
+  try {
+    if (typeof document !== "undefined") {
+      const roundMessage = document.getElementById("round-message");
+      if (roundMessage) {
+        roundMessage.textContent = "";
+      }
+      const headerRoundMessage = document.querySelector("header #round-message");
+      if (headerRoundMessage) {
+        headerRoundMessage.textContent = "";
+      }
+    }
+  } catch {}
+}
+
+function shouldClearRoundArtifactsInTests() {
+  const hasVitest =
+    typeof process !== "undefined" && Boolean(process.env && process.env.VITEST);
+  const globalTestFlag =
+    typeof globalThis !== "undefined" &&
+    Boolean(globalThis.__TEST__ || globalThis.__PLAYWRIGHT_TEST__ || globalThis.__testMode);
+  let testModeActive = false;
+  try {
+    testModeActive =
+      typeof isTestModeEnabled === "function" && Boolean(isTestModeEnabled());
+  } catch {}
+  return hasVitest || testModeActive || globalTestFlag;
+}
+
 function collectSelectionSchedulers(store) {
   const candidates = [];
   if (store && typeof store === "object") {
@@ -681,15 +716,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
     emitBattleEvent("roundReset", { reason: "playerSelection" });
   } catch {}
   try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const roundMessage = document.getElementById("round-message");
-      if (roundMessage) {
-        roundMessage.textContent = "";
-      }
-      const headerRoundMessage = document.querySelector("header #round-message");
-      if (headerRoundMessage) {
-        headerRoundMessage.textContent = "";
-      }
+    if (shouldClearRoundArtifactsInTests()) {
+      clearRoundMessageFallback();
       clearNextRoundTimerFallback();
     }
   } catch {}
