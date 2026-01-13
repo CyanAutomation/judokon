@@ -178,6 +178,7 @@ describe("UI handlers: opponent message events", () => {
     };
 
     // Bind handlers with mocked dependencies
+    delete globalThis.__cbUIHelpersDynamicBoundTargets;
     bindUIHelperEventHandlersDynamic(deps);
 
     // Emit event that triggers opponent message display

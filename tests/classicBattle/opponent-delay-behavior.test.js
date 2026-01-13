@@ -22,9 +22,11 @@ describe("Classic Battle opponent delay behavior", () => {
   let placeholderId;
   let placeholderAriaLabel;
   let opponentCardAriaLabel;
+  let setTimeoutSpy;
 
   beforeEach(async () => {
     timers = useCanonicalTimers();
+    setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
     harness = createSimpleHarness({ useFakeTimers: true, useRafMock: true });
     await harness.setup();
 
@@ -95,12 +97,14 @@ describe("Classic Battle opponent delay behavior", () => {
     const { bindUIHelperEventHandlersDynamic } = await harness.importModule(
       "../../src/helpers/classicBattle/uiEventHandlers.js"
     );
+    delete globalThis.__cbUIHelpersDynamicBoundTargets;
     bindUIHelperEventHandlersDynamic(deps);
   });
 
   afterEach(async () => {
     delete window.__MIN_OPPONENT_MESSAGE_DURATION_MS;
     document.body.innerHTML = "";
+    setTimeoutSpy?.mockRestore();
     timers?.cleanup();
     await harness?.cleanup();
   });
@@ -114,6 +118,7 @@ describe("Classic Battle opponent delay behavior", () => {
     emitBattleEvent("opponentReveal");
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true, delayMs: 300 } });
     await Promise.resolve();
+    expect(setTimeoutSpy.mock.calls.some(([, delay]) => delay === 300)).toBe(true);
 
     // Immediately after statSelected event, snackbar should NOT be visible yet (delayed by 300ms)
     let snackbarNode = document.querySelector("#snackbar-container .snackbar");
