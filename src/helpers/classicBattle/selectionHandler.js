@@ -590,7 +590,7 @@ function shouldClearRoundArtifactsInTests() {
     typeof globalThis !== "undefined" &&
     Boolean(globalThis.__TEST__ || globalThis.__PLAYWRIGHT_TEST__ || globalThis.__testMode);
   const testModeActive =
-    typeof isTestModeEnabled === "function" && isTestModeEnabled();
+    typeof isTestModeEnabled === "function" && Boolean(isTestModeEnabled());
   return hasVitest || testModeActive || globalTestFlag;
 }
 
