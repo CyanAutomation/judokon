@@ -64,7 +64,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
       maxPromptWaitMs: DEFAULT_MIN_PROMPT_DURATION_MS,
-      now: () => Date.now()
+      now: () => performance.now()
     });
     timer.start(cooldownSeconds);
 
@@ -136,7 +136,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
       maxPromptWaitMs: 600,
-      now: () => Date.now()
+      now: () => performance.now()
     });
     timer.start(cooldownSeconds);
 
