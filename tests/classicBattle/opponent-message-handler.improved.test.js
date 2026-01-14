@@ -228,8 +228,10 @@ describe("UI handlers: opponent message events", () => {
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    // Wait for async statSelected handler to complete before checking timer state
-    await timers.runAllTimersAsync();
+    // Wait for async statSelected handler to schedule setTimeout (but not fire it)
+    // Multiple microtask drains ensure handler reaches setTimeout registration
+    await Promise.resolve();
+    await Promise.resolve();
 
     // Per QA spec: When delay > 0 and flag enabled, snackbar should NOT appear immediately
     expect(mockShow).not.toHaveBeenCalled();

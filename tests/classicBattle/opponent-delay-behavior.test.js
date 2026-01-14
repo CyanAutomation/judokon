@@ -117,8 +117,10 @@ describe("Classic Battle opponent delay behavior", () => {
 
     emitBattleEvent("opponentReveal");
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true, delayMs: 300 } });
-    // Wait for async statSelected handler to complete before checking timer state
-    await timers.runAllTimersAsync();
+    // Wait for async statSelected handler to schedule setTimeout (but not fire it)
+    // Multiple microtask drains ensure handler reaches setTimeout registration
+    await Promise.resolve();
+    await Promise.resolve();
     expect(setTimeoutSpy.mock.calls.some(([, delay]) => delay === 300)).toBe(true);
 
     // Immediately after statSelected event, snackbar should NOT be visible yet (delayed by 300ms)
@@ -143,6 +145,7 @@ describe("Classic Battle opponent delay behavior", () => {
     expect(snackbarNode).toBeNull();
 
     vi.advanceTimersByTime(2);
+    await timers.runAllTimersAsync();
     expect(promptEvents).toHaveLength(1);
 
     // Now snackbar should be visible after the delay
