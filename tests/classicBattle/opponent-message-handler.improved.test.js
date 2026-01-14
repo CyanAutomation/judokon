@@ -228,6 +228,9 @@ describe("UI handlers: opponent message events", () => {
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
+    // Wait for async statSelected handler to complete before checking timer state
+    await timers.runAllTimersAsync();
+
     // Per QA spec: When delay > 0 and flag enabled, snackbar should NOT appear immediately
     expect(mockShow).not.toHaveBeenCalled();
     expect(markOpponentPromptNow).not.toHaveBeenCalled();

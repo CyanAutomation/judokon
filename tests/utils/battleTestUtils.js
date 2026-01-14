@@ -140,3 +140,50 @@ export function createOpponentDelayController(testApi) {
     }
   };
 }
+
+/**
+ * Emits a battle event and waits for async event handlers to complete.
+ * Prevents timing bugs where tests check state before async handlers finish executing.
+ *
+ * @param {Function} emitBattleEvent - The emitBattleEvent function to call
+ * @param {string} type - Event type to emit
+ * @param {Object} [detail] - Event detail payload
+ * @param {Object} timers - Timer control object with runAllTimersAsync method
+ * @returns {Promise<void>} Resolves after event handlers complete
+ * @throws {TypeError} If required parameters are invalid
+ *
+ * @pseudocode
+ * emitBattleEventAndAwait(emitBattleEvent, type, detail, timers):
+ *   1. Validate emitBattleEvent is a function
+ *   2. Validate timers has runAllTimersAsync method
+ *   3. Emit the battle event synchronously
+ *   4. Wait for async handlers to complete via runAllTimersAsync
+ *   5. Return resolved promise
+ *
+ * @example
+ * import { emitBattleEvent } from "../../src/helpers/battleEventBus.js";
+ * import { emitBattleEventAndAwait } from "../utils/battleTestUtils.js";
+ *
+ * // Instead of this (timing bug):
+ * emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
+ * expect(vi.getTimerCount()).toBe(1); // ❌ Fails - handler not done yet
+ *
+ * // Use this (correct):
+ * await emitBattleEventAndAwait(emitBattleEvent, "statSelected",
+ *   { opts: { delayOpponentMessage: true } }, timers);
+ * expect(vi.getTimerCount()).toBe(1); // ✅ Passes - handler completed
+ */
+export async function emitBattleEventAndAwait(emitBattleEvent, type, detail, timers) {
+  if (typeof emitBattleEvent !== "function") {
+    throw new TypeError("emitBattleEvent must be a function");
+  }
+  if (!timers || typeof timers.runAllTimersAsync !== "function") {
+    throw new TypeError("timers must have a runAllTimersAsync method");
+  }
+
+  // Emit event synchronously
+  emitBattleEvent(type, detail);
+
+  // Wait for async handlers to complete
+  await timers.runAllTimersAsync();
+}

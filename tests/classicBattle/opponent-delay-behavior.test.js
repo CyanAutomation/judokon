@@ -117,7 +117,8 @@ describe("Classic Battle opponent delay behavior", () => {
 
     emitBattleEvent("opponentReveal");
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true, delayMs: 300 } });
-    await Promise.resolve();
+    // Wait for async statSelected handler to complete before checking timer state
+    await timers.runAllTimersAsync();
     expect(setTimeoutSpy.mock.calls.some(([, delay]) => delay === 300)).toBe(true);
 
     // Immediately after statSelected event, snackbar should NOT be visible yet (delayed by 300ms)
