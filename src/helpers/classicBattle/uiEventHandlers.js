@@ -140,7 +140,6 @@ async function waitForMinimumOpponentObscureDuration() {
  * @returns {void}
  */
 export function bindUIHelperEventHandlersDynamic(deps = {}) {
-  console.log("[DEBUG] bindUIHelperEventHandlersDynamic called");
   // Use provided dependencies or fall back to default imports
   const {
     t: tFn = t,
@@ -240,9 +239,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     } catch {}
   });
 
-  console.log("[DEBUG] About to register statSelected handler");
   onBattleEvent("statSelected", async (e) => {
-    console.log("[DEBUG] statSelected handler FIRED!");
     // Create promise that resolves when handler completes
     const handlerPromise = (async () => {
       try {
