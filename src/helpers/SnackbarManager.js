@@ -510,11 +510,17 @@ class SnackbarManager {
     await this.waitForMinDuration(id);
 
     // Clear auto-dismiss timeout
+    // Clear auto-dismiss timeout and event listeners
     if (snackbar.autoDismissId) {
       clearTimeout(snackbar.autoDismissId);
     }
     if (snackbar.animationEndHandler && snackbar.element) {
       snackbar.element.removeEventListener("animationend", snackbar.animationEndHandler);
+    }
+
+    // Remove element from DOM
+    if (snackbar.element && snackbar.element.parentNode) {
+      snackbar.element.remove();
     }
 
     // Remove element from DOM
