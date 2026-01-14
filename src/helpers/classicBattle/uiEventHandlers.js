@@ -159,16 +159,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   // Get the event target - each __resetBattleEventTarget() call creates a fresh EventTarget with no handlers
   // Contract: Always call __resetBattleEventTarget() before binding handlers to ensure clean state
-  let target;
-  try {
-    target = getBattleEventTarget();
-  } catch (err) {
-    // Cannot proceed without target
-    if (typeof console !== "undefined" && typeof console.warn === "function") {
-      console.warn("[bindUIHelperEventHandlersDynamic] Failed to get event target:", err);
-    }
-    return;
-  }
 
   // Create local helper that uses injected dependencies
   async function revealOpponentCardAfterResolution() {
