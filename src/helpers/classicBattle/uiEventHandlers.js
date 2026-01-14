@@ -1,4 +1,4 @@
-import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+import { onBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
