@@ -367,6 +367,10 @@ class SnackbarManager {
           toRemove.element.removeEventListener("animationend", toRemove.animationEndHandler);
         }
         if (toRemove.element && toRemove.element.parentNode) {
+          // Clean up event listener before removing element
+          if (toRemove.animationEndHandler) {
+            toRemove.element.removeEventListener("animationend", toRemove.animationEndHandler);
+          }
           toRemove.element.remove();
         }
         this.activeSnackbars.delete(toRemove.id);
