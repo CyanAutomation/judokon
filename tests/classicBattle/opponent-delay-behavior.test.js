@@ -97,7 +97,7 @@ describe("Classic Battle opponent delay behavior", () => {
     const { bindUIHelperEventHandlersDynamic } = await harness.importModule(
       "../../src/helpers/classicBattle/uiEventHandlers.js"
     );
-    delete globalThis.__cbUIHelpersDynamicBoundTargets;
+
     bindUIHelperEventHandlersDynamic(deps);
   });
 

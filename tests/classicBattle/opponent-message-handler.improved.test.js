@@ -134,10 +134,9 @@ describe("UI handlers: opponent message events", () => {
     getOpponentCardData.mockReset();
     vi.stubGlobal("document", { getElementById: vi.fn(() => null) });
 
-    // IMPORTANT: Reset event target BEFORE deleting WeakSet
-    // This ensures we get a fresh EventTarget for each test
+    // IMPORTANT: Reset event target to get fresh EventTarget for each test
+    // This provides handler isolation without needing WeakSet guards
     resetBattleEventTarget?.();
-    delete globalThis.__cbUIHelpersDynamicBoundTargets;
 
     // Reset opponent delay to default
     setOpponentDelay(500);
@@ -150,7 +149,6 @@ describe("UI handlers: opponent message events", () => {
     setTimeoutSpy?.mockRestore();
 
     // Explicitly clean up battle event state
-    delete globalThis.__cbUIHelpersDynamicBoundTargets;
     delete globalThis.__classicBattleEventTarget;
   });
 
@@ -178,7 +176,6 @@ describe("UI handlers: opponent message events", () => {
     };
 
     // Bind handlers with mocked dependencies
-    delete globalThis.__cbUIHelpersDynamicBoundTargets;
     bindUIHelperEventHandlersDynamic(deps);
 
     // Emit event that triggers opponent message display
@@ -227,8 +224,6 @@ describe("UI handlers: opponent message events", () => {
     };
 
     // Use the default delay of 500ms
-    // IMPORTANT: Delete WeakSet guard RIGHT before binding to ensure fresh registration
-    delete globalThis.__cbUIHelpersDynamicBoundTargets;
     bindUIHelperEventHandlersDynamic(deps);
 
     emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });

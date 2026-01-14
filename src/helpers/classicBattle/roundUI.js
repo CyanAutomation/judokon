@@ -851,14 +851,8 @@ export function bindRoundUIEventHandlersOnce() {
  */
 export function bindRoundUIEventHandlersDynamic() {
   scheduleUiServicePreload();
-  // Guard against rebinding on the same EventTarget instance
-  try {
-    const KEY = "__cbRoundUIDynamicBoundTargets";
-    const target = getBattleEventTarget();
-    const set = (globalThis[KEY] ||= new WeakSet());
-    if (set.has(target)) return;
-    set.add(target);
-  } catch {}
+  // Contract: Always call __resetBattleEventTarget() before binding handlers to ensure clean state
+  // Each EventTarget reset creates a fresh instance with no handlers attached
   const createPreloader = (loader) => {
     const promise = Promise.resolve()
       .then(loader)

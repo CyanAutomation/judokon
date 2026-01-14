@@ -140,6 +140,7 @@ async function waitForMinimumOpponentObscureDuration() {
  * @returns {void}
  */
 export function bindUIHelperEventHandlersDynamic(deps = {}) {
+  console.log("[DEBUG] bindUIHelperEventHandlersDynamic called");
   // Use provided dependencies or fall back to default imports
   const {
     t: tFn = t,
@@ -155,40 +156,18 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     updateDebugPanel: updateDebugPanelFn = updateDebugPanel,
     applyOpponentCardPlaceholder: applyOpponentCardPlaceholderFn = applyOpponentCardPlaceholder
   } = deps;
-  // Ensure we only bind once per EventTarget instance
+
+  // Get the event target - each __resetBattleEventTarget() call creates a fresh EventTarget with no handlers
+  // Contract: Always call __resetBattleEventTarget() before binding handlers to ensure clean state
   let target;
   try {
-    const KEY = "__cbUIHelpersDynamicBoundTargets";
     target = getBattleEventTarget();
-    const set = (globalThis[KEY] ||= new WeakSet());
-
-    // DIAGNOSTIC: Log WeakSet guard decision
-    const targetId = target?.__debugId || "NO_ID";
-    const hasTarget = set.has(target);
-
-    console.log(`[Handler Registration] Target: ${targetId}, In WeakSet: ${hasTarget}`);
-
-    if (hasTarget) {
-      console.log(`[Handler Registration] EARLY RETURN - Target ${targetId} already has handlers`);
-      return;
-    }
-
-    console.log(`[Handler Registration] PROCEEDING - Will register handlers on ${targetId}`);
-    set.add(target);
   } catch (err) {
-    // Log binding failure but continue to register handlers
+    // Cannot proceed without target
     if (typeof console !== "undefined" && typeof console.warn === "function") {
-      console.warn("[bindUIHelperEventHandlersDynamic] WeakSet tracking failed:", err);
+      console.warn("[bindUIHelperEventHandlersDynamic] Failed to get event target:", err);
     }
-    // Still try to get target if not already set
-    if (!target) {
-      try {
-        target = getBattleEventTarget();
-      } catch {
-        // Cannot proceed without target
-        return;
-      }
-    }
+    return;
   }
 
   // Create local helper that uses injected dependencies
@@ -271,7 +250,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     } catch {}
   });
 
+  console.log("[DEBUG] About to register statSelected handler");
   onBattleEvent("statSelected", async (e) => {
+    console.log("[DEBUG] statSelected handler FIRED!");
     // Create promise that resolves when handler completes
     const handlerPromise = (async () => {
       try {
