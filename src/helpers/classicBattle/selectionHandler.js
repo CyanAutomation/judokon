@@ -584,15 +584,13 @@ function clearRoundMessageFallback() {
 }
 
 function shouldClearRoundArtifactsInTests() {
-  const hasVitest =
-    typeof process !== "undefined" && Boolean(process.env && process.env.VITEST);
+  const hasVitest = typeof process !== "undefined" && Boolean(process.env && process.env.VITEST);
   const globalTestFlag =
     typeof globalThis !== "undefined" &&
     Boolean(globalThis.__TEST__ || globalThis.__PLAYWRIGHT_TEST__ || globalThis.__testMode);
   let testModeActive = false;
   try {
-    testModeActive =
-      typeof isTestModeEnabled === "function" && Boolean(isTestModeEnabled());
+    testModeActive = typeof isTestModeEnabled === "function" && Boolean(isTestModeEnabled());
   } catch {}
   return hasVitest || testModeActive || globalTestFlag;
 }
