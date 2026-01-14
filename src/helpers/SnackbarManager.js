@@ -383,7 +383,14 @@ class SnackbarManager {
       if (event.animationName !== "snackbar-cycle") {
         return;
       }
-      this.remove(id);
+      // Only auto-remove if minimum duration has been met
+      const snackbar = this.activeSnackbars.get(id);
+      if (snackbar) {
+        const elapsed = Date.now() - snackbar.shownAt;
+        if (elapsed >= snackbar.minDuration) {
+          this.remove(id);
+        }
+      }
     };
     element.addEventListener("animationend", handleAnimationEnd);
 
