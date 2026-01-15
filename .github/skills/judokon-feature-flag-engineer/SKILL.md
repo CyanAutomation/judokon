@@ -30,7 +30,7 @@ This skill ensures controlled experimentation.
 1. **New features default to OFF**
 2. **Flags must be declared centrally**
 3. **UI and engine must respect flags**
-4. **Expose state via data-* attributes**
+4. **Expose state via data-\* attributes**
 
 ## File anchors
 
