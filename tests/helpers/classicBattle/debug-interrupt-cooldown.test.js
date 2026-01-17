@@ -55,18 +55,32 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
-  const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
-  mockCreateRoundTimer({
-    scheduled: true, // Use scheduled mode with fake timers
-    intervalMs: 1000,
-    tickCount: 1,
-    ticks: [1, 0],
-    expire: true,
-    moduleId: "../../../src/helpers/timers/createRoundTimer.js"
-  });
-  return await import("../../../src/helpers/timers/createRoundTimer.js");
-});
+// Mock createRoundTimer to use immediate expiration for deterministic test behavior
+vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
+  createRoundTimer: vi.fn(() => {
+    const handlers = { tick: new Set(), expired: new Set() };
+    return {
+      on: vi.fn((evt, fn) => handlers[evt]?.add(fn)),
+      off: vi.fn((evt, fn) => handlers[evt]?.delete(fn)),
+      start: vi.fn((dur) => {
+        // Emit ticks synchronously, then expire on next microtask
+        const ticks = dur > 0 ? [dur, dur - 1, 0] : [0];
+        ticks.forEach((val) => handlers.tick.forEach((fn) => fn(val)));
+        // Schedule expiration on next microtask to allow event handlers to register
+        queueMicrotask(() => {
+          handlers.expired.forEach((fn) => fn());
+        });
+      }),
+      stop: vi.fn(() => {
+        queueMicrotask(() => {
+          handlers.expired.forEach((fn) => fn());
+        });
+      }),
+      pause: vi.fn(),
+      resume: vi.fn()
+    };
+  })
+}));
 
 // Track ready events across test runs
 let readyDispatchTracker = { events: [] };
@@ -104,7 +118,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
-    const { dispatchBattleEvent } = await import(
+    const { dispatchBattleEvent, resetDispatchHistory } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
 
@@ -118,27 +132,33 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     await machine.dispatch("ready");
     await machine.dispatch("cardsRevealed");
 
-    // Clear previous event calls before the interrupt flow
+    // Clear previous event calls AND deduplication history before the interrupt flow
     vi.clearAllMocks();
     readyDispatchTracker.events.length = 0;
+    resetDispatchHistory("ready"); // Clear deduplication state for ready events
 
     await machine.dispatch("interrupt");
 
-    // Wait for cooldown entry to be observed; allow auto-advance to roundStart.
+    // Wait for cooldown entry to be observed
     await vi.waitFor(
       () => {
         const state = machine.getState();
-        const cooldownEntered =
-          window.__cooldownEnterInvoked === true || state === "cooldown" || state === "roundStart";
+        const cooldownEntered = window.__cooldownEnterInvoked === true || state === "cooldown";
         expect(cooldownEntered).toBe(true);
       },
-      { timeout: 1000 }
+      { timeout: 1000, interval: 50 }
     );
 
-    // Run all pending timers to complete the cooldown cycle
-    await vi.runAllTimersAsync();
+    // Clear mocks before checking for ready dispatch after cooldown
+    vi.clearAllMocks();
 
-    // Verify that ready event was dispatched
+    // Advance timers to trigger cooldown expiration (cooldown is ~3 seconds + buffer)
+    vi.advanceTimersByTime(4000);
+    // Allow any microtasks to complete
+    await Promise.resolve();
+    await Promise.resolve();
+
+    // Verify that ready event was dispatched after interrupt
     const readyEvents = dispatchBattleEvent.mock.calls.filter(
       ([eventName]) => eventName === "ready"
     );
@@ -146,5 +166,5 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     // If no ready events, the cooldown timer didn't trigger or cooldownEnter wasn't called
     // This indicates a bug in the state machine onEnter handler execution
     expect(readyEvents.length).toBeGreaterThan(0);
-  }, 5000);
+  }, 3000); // Reasonable timeout
 });

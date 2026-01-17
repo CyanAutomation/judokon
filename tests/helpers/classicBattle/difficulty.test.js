@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import "./commonMocks.js";
-import { roundResolverMock } from "./mocks/simulateOpponentStat.js";
+import { roundResolverMock } from "./mocks/roundResolverMocks.js";
 import { createStatButtonsHarness } from "../../utils/componentTestUtils.js";
 
 describe("simulateOpponentStat difficulty", () => {
