@@ -83,14 +83,18 @@ describe.sequential("classicBattle round resolver once", () => {
     _resetForTest(store);
     const playerVal = getCardStatValue(document.getElementById("player-card"), "power");
     const opponentVal = getCardStatValue(document.getElementById("opponent-card"), "power");
-    await handleStatSelection(store, "power", {
+    const selectionPromise = handleStatSelection(store, "power", {
       playerVal,
       opponentVal,
       delayOpponentMessage: false
     });
+    // Wait for selection to be applied to store
+    await selectionPromise.selectionAppliedPromise;
     expect(store.playerChoice).toBe("power");
-    await vi.advanceTimersByTimeAsync(601);
+    // Advance timers to trigger fallback resolution
+    await vi.advanceTimersByTimeAsync(800);
     expect(store.playerChoice).toBeNull();
+    await selectionPromise;
   });
 
   it("dispatches win path and updates scoreboard", async () => {
