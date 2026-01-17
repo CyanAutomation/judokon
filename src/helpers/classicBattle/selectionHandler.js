@@ -295,16 +295,38 @@ function syncRoundsPlayedFromEngine(store) {
 /**
  * Determine the opponent's stat choice based on difficulty.
  *
- * @pseudocode
- * 1. Map the provided stats object into `{stat, value}` pairs.
- * 2. Pass the array to `chooseOpponentStat` with the provided difficulty.
- * 3. Return the chosen stat key.
+ * This function simulates an AI opponent's stat selection strategy:
+ * - **Easy**: Random selection from all available stats (unpredictable)
+ * - **Medium**: Weighted selection favoring above-average stats (strategic)
+ * - **Hard**: Always selects the highest stat value (optimal play)
  *
- * @param {Record<string, number>} stats - Opponent stat values.
- * @param {"easy"|"medium"|"hard"} [difficulty="easy"] Difficulty setting.
- * @returns {string} One of the values from `STATS`.
+ * @pseudocode
+ * 1. Validate inputs: ensure stats is an object and difficulty is valid
+ * 2. Map the provided stats object into `{stat, value}` pairs
+ * 3. Pass the array to `chooseOpponentStat` with the provided difficulty
+ * 4. Return the chosen stat key
+ *
+ * @example
+ * // Opponent with mixed stats
+ * const stats = { power: 5, speed: 7, technique: 3, kumikata: 6, newaza: 8 };
+ * simulateOpponentStat(stats, "easy");   // Random: any stat
+ * simulateOpponentStat(stats, "medium"); // Likely: speed, kumikata, or newaza
+ * simulateOpponentStat(stats, "hard");   // Always: newaza (highest at 8)
+ *
+ * @param {Record<string, number>} stats - Opponent stat values. Must be a valid object.
+ * @param {"easy"|"medium"|"hard"} [difficulty="easy"] Difficulty setting. Defaults to "easy".
+ * @returns {string} One of the stat keys from `STATS` array.
+ * @throws {TypeError} If stats is not a valid object.
  */
 export function simulateOpponentStat(stats, difficulty = "easy") {
+  // Input validation: ensure stats is a valid object
+  if (!stats || typeof stats !== "object" || Array.isArray(stats)) {
+    throw new TypeError(
+      `simulateOpponentStat: stats must be a valid object, received ${typeof stats}`
+    );
+  }
+
+  // Map stats to array format expected by chooseOpponentStat
   const values = STATS.map((stat) => ({ stat, value: Number(stats?.[stat]) || 0 }));
   return chooseOpponentStat(values, difficulty);
 }
