@@ -57,16 +57,27 @@ export function chooseOpponentStat(values, difficulty = "easy") {
 
   // Hard difficulty: select stat(s) with maximum value
   if (difficulty === "hard") {
-    // Filter out invalid numeric values and find max
-    const validValues = values.filter((v) => typeof v.value === "number" && !isNaN(v.value));
-    if (validValues.length === 0) {
+    // Single-pass to find max value and collect best stats
+    let max = -Infinity;
+    const best = [];
+    
+    for (const v of values) {
+      if (typeof v.value === "number" && !isNaN(v.value)) {
+        if (v.value > max) {
+          max = v.value;
+          best.length = 0; // Clear array
+          best.push(v);
+        } else if (v.value === max) {
+          best.push(v);
+        }
+      }
+    }
+    
+    if (best.length === 0) {
       // Fallback to random if all values are invalid
       return STATS[Math.floor(seededRandom() * STATS.length)];
     }
-    // Single-pass to find max value
-    const max = Math.max(...validValues.map((v) => v.value));
-    // Collect all stats with max value (handles ties)
-    const best = validValues.filter((v) => v.value === max);
+    
     // Random selection among best stats
     return best[Math.floor(seededRandom() * best.length)].stat;
   }
