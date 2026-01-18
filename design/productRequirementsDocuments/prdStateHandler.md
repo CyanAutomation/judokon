@@ -184,7 +184,7 @@ This pattern keeps event emissions optional during migration while guaranteeing 
 
 ## Compliance Audit (2025-09-10)
 
-This section replaces the legacy compliance report so implementation status stays aligned with the product requirements.
+This section replaces the legacy compliance report so implementation status stays aligned with the product requirements. Reference this section for the compliance audit going forward.
 
 - **States in contract**: 12
 - **Total required onEnter actions**: 29
