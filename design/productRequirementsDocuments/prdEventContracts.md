@@ -162,7 +162,7 @@ Acceptance Criteria (tests):
 
 ### Appendix A: Battle Event Emitters Inventory
 
-The retired `design/eventAudit/eventEmissions.txt` inventory has been normalized here. Each row lists the logical event emitted through `emitBattleEvent` and the modules responsible for emission. Data was cross-checked against the primary event inventory above to ensure no loss of canonical event names.
+This appendix is the canonical emitter inventory. Each row lists the logical event emitted through `emitBattleEvent` and the modules responsible for emission. The appendix has been cross-checked against the primary event inventory above to ensure no loss of canonical event names.
 
 | Event                         | Emitter modules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -209,7 +209,7 @@ The retired `design/eventAudit/eventEmissions.txt` inventory has been normalized
 
 ### Appendix B: Listener Inventory (DOM & Event Bus)
 
-This appendix consolidates listener findings from `design/eventAudit/eventListeners.txt`, grouped by DOM or custom event name. Many listeners mirror event bus emissions above; others handle DOM lifecycle concerns such as orientation changes.
+This appendix consolidates listener findings grouped by DOM or custom event name. Many listeners mirror event bus emissions above; others handle DOM lifecycle concerns such as orientation changes. Treat this as the authoritative listener inventory for documentation and audits.
 
 | Event                | Listener modules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -234,7 +234,7 @@ This appendix consolidates listener findings from `design/eventAudit/eventListen
 
 ### Appendix C: Test Event Utilities and Dispatch Patterns
 
-Audit traces from `design/eventAudit/testEventUsage.txt` now live here for test authors. These utilities observe or synthesize events and should remain stable to keep CI deterministic.
+This appendix records how tests observe or synthesize events. These utilities and patterns should remain stable to keep CI deterministic and to serve as the single source of truth for test-facing event contracts.
 
 | Pattern                                                   | Test modules                                                    |
 | --------------------------------------------------------- | --------------------------------------------------------------- |
