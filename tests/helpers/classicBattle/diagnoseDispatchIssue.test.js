@@ -1,64 +1,40 @@
-/**
- * Diagnostic test to identify why dispatchBattleEvent("statSelected") returns false.
- * This test isolates the dispatch mechanism to understand the root cause.
- */
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { withMutedConsole } from "../../utils/console.js";
 
-import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import { JSDOM } from "jsdom";
-import { useCanonicalTimers } from "../../../setup/fakeTimers.js";
+import * as battleEvents from "../../../src/helpers/classicBattle/battleEvents.js";
+import { dispatchBattleEvent } from "../../../src/helpers/classicBattle/eventDispatcher.js";
 
-describe("diagnoseDispatchIssue", () => {
-  let dom;
-  let window;
-  let document;
+describe("dispatchBattleEvent diagnostics", () => {
+  let machine;
 
-  beforeEach(async () => {
-    // Setup JSDOM
-    dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
-      url: "http://localhost/test",
-      pretendToBeVisual: true,
-      resources: "usable"
-    });
-    window = dom.window;
-    document = window.document;
-    global.window = window;
-    global.document = document;
+  beforeEach(() => {
+    machine = {
+      dispatch: vi.fn(async () => "dispatched"),
+      getState: vi.fn(() => "matchStart")
+    };
 
-    // Mock timers for deterministic test execution
-    useCanonicalTimers();
+    globalThis.__classicBattleDebugRead = (token) => {
+      if (token === "getClassicBattleMachine") {
+        return () => machine;
+      }
+      return undefined;
+    };
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
-    vi.runAllTimers();
-    vi.useRealTimers();
+    delete globalThis.__classicBattleDebugRead;
   });
 
-  it("should identify machine availability and state when dispatch is called", async () => {
-    // Import and initialize battle system using established pattern
-    const { initClassicBattleTest } = await import("./initClassicBattle.js");
-    const battleMod = await initClassicBattleTest({ afterMock: true });
+  it("emits interrupt.requested for interrupts (PRD: prdEventContracts.md#interrupt-requested)", async () => {
+    const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
 
-    // Verify battle module is initialized with required APIs
-    expect(battleMod).toBeTruthy();
-    expect(typeof battleMod.createBattleStore).toBe("function");
-    expect(typeof battleMod.startRound).toBe("function");
-    expect(typeof battleMod.handleStatSelection).toBe("function");
+    await withMutedConsole(async () => {
+      await dispatchBattleEvent("interrupt", { reason: "userAbort" });
+    });
 
-    // Create and reset store
-    const store = battleMod.createBattleStore();
-    expect(store).toBeTruthy();
-    battleMod._resetForTest(store);
-
-    // Verify store has the selection tracking capability
-    expect(store.hasOwnProperty("selectionMade")).toBeTruthy();
-
-    // Log that the basic infrastructure is in place
-    console.log("[DIAGNOSE] Battle module initialized with core dispatch APIs");
-    console.log("[DIAGNOSE] Store created and ready for state management");
-    console.log("[DIAGNOSE] Orchestrator API available for state inspection");
-
-    // Basic sanity check - battle module should be fully initialized
-    expect(battleMod).toBeTruthy();
+    expect(emitSpy).toHaveBeenCalledWith("interrupt.requested", {
+      scope: "match",
+      reason: "userAbort"
+    });
   });
 });
