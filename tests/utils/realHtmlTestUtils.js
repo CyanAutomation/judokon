@@ -22,16 +22,26 @@ export function createRealHtmlTestEnvironment() {
 
   const window = dom.window;
   const document = window.document;
+  const previousGlobalTestFlag = globalThis.__TEST__;
 
   // Set up globals
   global.window = window;
   global.document = document;
+  globalThis.__TEST__ = true;
+  window.__TEST__ = true;
 
   return {
     dom,
     window,
     document,
-    cleanup: () => dom.window.close()
+    cleanup: () => {
+      if (previousGlobalTestFlag === undefined) {
+        delete globalThis.__TEST__;
+      } else {
+        globalThis.__TEST__ = previousGlobalTestFlag;
+      }
+      dom.window.close();
+    }
   };
 }
 
