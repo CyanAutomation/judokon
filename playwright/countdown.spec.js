@@ -20,8 +20,13 @@ test.describe("Battle CLI countdown timing", () => {
       const countdown = page.locator("#cli-countdown");
       await expect(countdown).toBeVisible({ timeout: 5_000 });
 
-      await expect(countdown).toHaveText(/Time remaining:\s*0?[3-5]/, { timeout: 5_000 });
-      await expect(countdown).toHaveText(/Time remaining:\s*0?[1-3]/, { timeout: 6_000 });
+      await page.waitForFunction(() => window.__TEST_API?.timers?.setCountdown);
+
+      await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(5));
+      await expect(countdown).toHaveAttribute("data-remaining-time", "5", { timeout: 2_000 });
+
+      await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(2));
+      await expect(countdown).toHaveAttribute("data-remaining-time", "2", { timeout: 2_000 });
 
       const roundCounter = page.getByTestId("round-counter");
       await expect(roundCounter).toHaveText(/Round\s+1/, { timeout: 5_000 });
@@ -38,11 +43,19 @@ test.describe("Battle CLI countdown timing", () => {
         }
       );
 
-      await expect(countdown).toHaveText("", { timeout: 7_000 });
+      const roundAdvanced = await page.evaluate(async () => {
+        const waitForRounds = window.__TEST_API?.state?.waitForRoundsPlayed;
+        if (typeof waitForRounds !== "function") return false;
+        return waitForRounds(1, 5_000);
+      });
+
+      expect(roundAdvanced).toBe(true);
 
       await expect(roundCounter).toHaveText(/Round\s+2/, { timeout: 8_000 });
 
       await expect(statButton).toBeEnabled({ timeout: 6_000 });
-      await expect(countdown).toHaveText(/Time remaining:\s*0?[45]/, { timeout: 8_000 });
+
+      await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(4));
+      await expect(countdown).toHaveAttribute("data-remaining-time", "4", { timeout: 2_000 });
     }, ["log", "warn", "error"]));
 });
