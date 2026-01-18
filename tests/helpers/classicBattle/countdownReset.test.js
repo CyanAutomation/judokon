@@ -163,7 +163,23 @@ describe("countdown resets after stat selection", () => {
     await vi.runOnlyPendingTimersAsync();
 
     const countdownStarted = battleMod.getCountdownStartedPromise();
-    const { randomSpy } = await selectPower(battleMod, store, { forceDirectResolution: false });
+    const previousMinDuration =
+      typeof window !== "undefined" ? window.__MIN_OPPONENT_MESSAGE_DURATION_MS : undefined;
+    if (typeof window !== "undefined") {
+      window.__MIN_OPPONENT_MESSAGE_DURATION_MS = 0;
+    }
+    let randomSpy;
+    try {
+      ({ randomSpy } = await selectPower(battleMod, store, { forceDirectResolution: false }));
+    } finally {
+      if (typeof window !== "undefined") {
+        if (previousMinDuration === undefined) {
+          delete window.__MIN_OPPONENT_MESSAGE_DURATION_MS;
+        } else {
+          window.__MIN_OPPONENT_MESSAGE_DURATION_MS = previousMinDuration;
+        }
+      }
+    }
     await vi.runOnlyPendingTimersAsync();
     await countdownStarted;
     await vi.runOnlyPendingTimersAsync();
