@@ -23,6 +23,7 @@ describe("dispatchBattleEvent diagnostics", () => {
 
   afterEach(() => {
     delete globalThis.__classicBattleDebugRead;
+    vi.restoreAllMocks();
   });
 
   it("emits interrupt.requested for interrupts (PRD: prdEventContracts.md#interrupt-requested)", async () => {
