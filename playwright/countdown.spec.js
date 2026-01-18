@@ -61,7 +61,10 @@ window.__TEST_API.timers.setCountdown(2);
 
       await expect(statButton).toBeEnabled({ timeout: 6_000 });
 
-      await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(4));
+if (!window.__TEST_API?.timers?.setCountdown) {
+  throw new Error('Test API setCountdown method not available');
+}
+window.__TEST_API.timers.setCountdown(4);
       await expect(countdown).toHaveAttribute("data-remaining-time", "4", { timeout: 2_000 });
     }, ["log", "warn", "error"]));
 });
