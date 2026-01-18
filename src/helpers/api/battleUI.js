@@ -5,33 +5,102 @@ import { writeScoreDisplay } from "../classicBattle/scoreDisplay.js";
 /**
  * Choose an opponent stat based on difficulty and available values.
  *
- * @pseudocode
- * 1. If `difficulty` is `hard` and `values` are provided:
- *    a. Find the maximum value.
- *    b. Return a random stat among those with the maximum.
- * 2. If `difficulty` is `medium` and `values` are provided:
- *    a. Compute the average value.
- *    b. Collect stats at or above the average.
- *    c. If any qualify, return a random one.
- * 3. Otherwise, return a random stat from `STATS`.
+ * Implements three distinct AI strategies for opponent stat selection:
+ * - **Easy**: Uniformly random selection (beginner-friendly)
+ * - **Medium**: Strategic selection from above-average stats (competitive)
+ * - **Hard**: Optimal selection of maximum stat (expert-level challenge)
  *
- * @param {{stat: string, value: number}[]} values - Stat entries to compare.
- * @param {"easy"|"medium"|"hard"} [difficulty="easy"] - Difficulty setting.
- * @returns {string} Chosen stat key.
+ * Performance: O(n) time complexity, single-pass for medium/hard difficulties
+ * when possible, avoiding redundant array operations.
+ *
+ * @pseudocode
+ * 1. Validate inputs: ensure values array is provided and non-empty
+ * 2. For hard difficulty:
+ *    a. Find maximum value in single pass with fallback to any stat
+ *    b. Collect all stats matching maximum value
+ *    c. Return random selection among best stats (handles ties)
+ * 3. For medium difficulty:
+ *    a. Calculate average value in single pass
+ *    b. Filter stats at or above average
+ *    c. Return random selection from eligible stats, fallback to easy if none
+ * 4. For easy difficulty (or fallback):
+ *    a. Return uniformly random stat from STATS array
+ *
+ * @example
+ * // Hard difficulty: always picks highest stat (newaza = 8)
+ * const values = [
+ *   { stat: "power", value: 5 },
+ *   { stat: "speed", value: 7 },
+ *   { stat: "newaza", value: 8 }
+ * ];
+ * chooseOpponentStat(values, "hard"); // "newaza"
+ *
+ * @example
+ * // Medium difficulty: picks from above-average stats (speed or newaza)
+ * // Average = (5 + 7 + 8) / 3 = 6.67
+ * chooseOpponentStat(values, "medium"); // "speed" or "newaza"
+ *
+ * @example
+ * // Easy difficulty: picks any stat randomly
+ * chooseOpponentStat(values, "easy"); // "power", "speed", or "newaza"
+ *
+ * @param {{stat: string, value: number}[]} values - Stat entries to compare. Must be non-empty array.
+ * @param {"easy"|"medium"|"hard"} [difficulty="easy"] - Difficulty setting. Defaults to "easy".
+ * @returns {string} Chosen stat key from the values array.
  */
 export function chooseOpponentStat(values, difficulty = "easy") {
-  if (difficulty === "hard" && values.length) {
-    const max = Math.max(...values.map((v) => v.value));
-    const best = values.filter((v) => v.value === max);
+  // Validate input: ensure values is a non-empty array
+  if (!Array.isArray(values) || values.length === 0) {
+    // Fallback to random stat from STATS if values invalid
+    return STATS[Math.floor(seededRandom() * STATS.length)];
+  }
+
+  // Hard difficulty: select stat(s) with maximum value
+  if (difficulty === "hard") {
+    // Single-pass to find max value and collect best stats
+    let max = -Infinity;
+    const best = [];
+    
+    for (const v of values) {
+      if (typeof v.value === "number" && !isNaN(v.value)) {
+        if (v.value > max) {
+          max = v.value;
+          best.length = 0; // Clear array
+          best.push(v);
+        } else if (v.value === max) {
+          best.push(v);
+        }
+      }
+    }
+    
+    if (best.length === 0) {
+      // Fallback to random if all values are invalid
+      return STATS[Math.floor(seededRandom() * STATS.length)];
+    }
+    
+    // Random selection among best stats
     return best[Math.floor(seededRandom() * best.length)].stat;
   }
-  if (difficulty === "medium" && values.length) {
-    const avg = values.reduce((sum, v) => sum + v.value, 0) / values.length;
-    const eligible = values.filter((v) => v.value >= avg);
+
+  // Medium difficulty: select from above-average stats
+  if (difficulty === "medium") {
+    // Filter out invalid numeric values
+    const validValues = values.filter((v) => typeof v.value === "number" && !isNaN(v.value));
+    if (validValues.length === 0) {
+      // Fallback to random if all values are invalid
+      return STATS[Math.floor(seededRandom() * STATS.length)];
+    }
+    // Calculate average in single pass
+    const avg = validValues.reduce((sum, v) => sum + v.value, 0) / validValues.length;
+    // Filter stats at or above average
+    const eligible = validValues.filter((v) => v.value >= avg);
+    // Return random from eligible, or fallback to easy if none qualify
     if (eligible.length > 0) {
       return eligible[Math.floor(seededRandom() * eligible.length)].stat;
     }
   }
+
+  // Easy difficulty (or fallback): uniformly random selection
   return STATS[Math.floor(seededRandom() * STATS.length)];
 }
 
