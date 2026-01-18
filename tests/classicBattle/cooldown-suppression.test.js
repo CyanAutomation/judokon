@@ -18,11 +18,16 @@ describe("Cooldown suppression during opponent prompt", () => {
   let harness;
 
   beforeEach(async () => {
+    vi.resetModules();
     harness = createSimpleHarness({
       useFakeTimers: true,
       useRafMock: true
     });
     await harness.setup();
+    const { resetOpponentPromptTimestamp } = await import(
+      "../../src/helpers/classicBattle/opponentPromptTracker.js"
+    );
+    resetOpponentPromptTimestamp();
     vi.setSystemTime(0);
   });
 
@@ -30,10 +35,6 @@ describe("Cooldown suppression during opponent prompt", () => {
     if (harness) {
       harness.cleanup();
     }
-    const { resetOpponentPromptTimestamp } = await import(
-      "../../src/helpers/classicBattle/opponentPromptTracker.js"
-    );
-    resetOpponentPromptTimestamp();
   });
 
   it("suppresses cooldown snackbar during opponent prompt minimum duration window", async () => {
