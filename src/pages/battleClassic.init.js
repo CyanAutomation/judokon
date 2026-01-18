@@ -553,8 +553,7 @@ export function prepareUiBeforeSelection() {
         clearOpponentPromptFallbackTimer();
       }, resolvedDelay);
 
-      const normalizedTimeoutId =
-        typeof timeoutId === "object" && timeoutId !== null ? Number(timeoutId) : timeoutId;
+      const normalizedTimeoutId = Number(timeoutId);
 
       if (Number.isFinite(normalizedTimeoutId) && typeof window !== "undefined") {
         setOpponentPromptFallbackTimerId(normalizedTimeoutId);
