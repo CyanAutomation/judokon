@@ -181,7 +181,7 @@ describe("simulateOpponentStat edge cases", () => {
         { stat: "power", value: "not a number" },
         { stat: "speed", value: 5 }
       ];
-      // Math.max will convert "not a number" to NaN
+      // The filtering logic removes non-numeric values before processing
       const result = chooseOpponentStat(values, "hard");
       expect(result).toBe("speed"); // Should pick the valid number
     });
