@@ -74,8 +74,7 @@ export function scheduleDelayed(fn, delayMs) {
  * 3. On failure or invalid input, return false.
  */
 export function clearScheduled(timeoutId) {
-  const normalizedId =
-    typeof timeoutId === "object" && timeoutId !== null ? Number(timeoutId) : timeoutId;
+  const normalizedId = Number(timeoutId);
 
   if (!Number.isFinite(normalizedId) || normalizedId === 0 || normalizedId === null) {
     return false;
