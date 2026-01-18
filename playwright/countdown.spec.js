@@ -22,7 +22,10 @@ test.describe("Battle CLI countdown timing", () => {
 
       await page.waitForFunction(() => window.__TEST_API?.timers?.setCountdown);
 
-      await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(5));
+if (!window.__TEST_API?.timers?.setCountdown) {
+  throw new Error('Test API setCountdown method not available');
+}
+window.__TEST_API.timers.setCountdown(5);
       await expect(countdown).toHaveAttribute("data-remaining-time", "5", { timeout: 2_000 });
 
       await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(2));
