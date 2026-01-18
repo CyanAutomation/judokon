@@ -28,7 +28,10 @@ if (!window.__TEST_API?.timers?.setCountdown) {
 window.__TEST_API.timers.setCountdown(5);
       await expect(countdown).toHaveAttribute("data-remaining-time", "5", { timeout: 2_000 });
 
-      await page.evaluate(() => window.__TEST_API?.timers?.setCountdown?.(2));
+if (!window.__TEST_API?.timers?.setCountdown) {
+  throw new Error('Test API setCountdown method not available');
+}
+window.__TEST_API.timers.setCountdown(2);
       await expect(countdown).toHaveAttribute("data-remaining-time", "2", { timeout: 2_000 });
 
       const roundCounter = page.getByTestId("round-counter");
