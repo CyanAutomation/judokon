@@ -20,7 +20,18 @@ import { vi } from "vitest";
  */
 export function useCanonicalTimers(options = {}) {
   const { exposeGlobally = false } = options;
-  vi.useFakeTimers();
+  vi.useFakeTimers({
+    toFake: [
+      "Date",
+      "setTimeout",
+      "clearTimeout",
+      "setInterval",
+      "clearInterval",
+      "setImmediate",
+      "clearImmediate",
+      "performance"
+    ]
+  });
 
   const timers = {
     cleanup: () => {

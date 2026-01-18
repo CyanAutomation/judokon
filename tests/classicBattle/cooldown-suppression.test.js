@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSimpleHarness } from "../helpers/integrationHarness.js";
-import snackbarManager from "../../src/helpers/SnackbarManager.js";
 
 /**
  * Integration tests for cooldown snackbar suppression during opponent prompt window.
@@ -24,6 +23,7 @@ describe("Cooldown suppression during opponent prompt", () => {
       useRafMock: true
     });
     await harness.setup();
+    vi.setSystemTime(0);
   });
 
   afterEach(async () => {
@@ -43,13 +43,14 @@ describe("Cooldown suppression during opponent prompt", () => {
     );
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
+    const { default: snackbarManager } = await import("../../src/helpers/SnackbarManager.js");
 
     // Spy on snackbar functions
     const showSnackbarSpy = vi.spyOn(snackbarManager, "show");
     const updateSnackbarSpy = vi.spyOn(snackbarManager, "update");
 
     // Step 1: Mark opponent prompt timestamp (simulates statSelected event)
-    markOpponentPromptNow({ notify: true });
+    markOpponentPromptNow({ notify: true, now: () => Date.now() });
 
     // Step 2: Create and start a cooldown timer with a mock starter that emits ticks
     const timer = createRoundTimer({
@@ -64,7 +65,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
       maxPromptWaitMs: DEFAULT_MIN_PROMPT_DURATION_MS,
-      now: () => performance.now()
+      now: () => Date.now()
     });
     timer.start(cooldownSeconds);
 
@@ -115,12 +116,13 @@ describe("Cooldown suppression during opponent prompt", () => {
     );
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
+    const { default: snackbarManager } = await import("../../src/helpers/SnackbarManager.js");
 
     // Spy on snackbar functions
     const showSnackbarSpy = vi.spyOn(snackbarManager, "show");
 
     // Step 1: Mark opponent prompt timestamp
-    markOpponentPromptNow({ notify: true });
+    markOpponentPromptNow({ notify: true, now: () => Date.now() });
 
     // Step 2: Advance time past the minimum duration
     await vi.advanceTimersByTimeAsync(DEFAULT_MIN_PROMPT_DURATION_MS + 100);
@@ -136,7 +138,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     attachCooldownRenderer(timer, cooldownSeconds, {
       waitForOpponentPrompt: true,
       maxPromptWaitMs: 600,
-      now: () => performance.now()
+      now: () => Date.now()
     });
     timer.start(cooldownSeconds);
 
@@ -158,6 +160,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     // Import modules after harness setup
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
+    const { default: snackbarManager } = await import("../../src/helpers/SnackbarManager.js");
 
     // Spy on snackbar functions
     const showSnackbarSpy = vi.spyOn(snackbarManager, "show");
@@ -208,6 +211,7 @@ describe("Cooldown suppression during opponent prompt", () => {
     // Import modules after harness setup
     const { createRoundTimer } = await import("../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../src/helpers/CooldownRenderer.js");
+    const { default: snackbarManager } = await import("../../src/helpers/SnackbarManager.js");
 
     // Spy on snackbar functions
     const showSnackbarSpy = vi.spyOn(snackbarManager, "show");

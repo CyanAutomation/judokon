@@ -104,7 +104,7 @@ export function resetOpponentPromptTimestamp() {
 
 /**
  * @summary A convenience helper to record the current time as the opponent prompt timestamp.
- * @param {{ notify?: boolean }} [options] - Pass-through options for notification behavior.
+ * @param {{ notify?: boolean, now?: () => number }} [options] - Pass-through options for notification behavior.
  * @returns {number | null} The recorded timestamp when valid.
  * @pseudocode
  * 1. Get the current time using the internal `now()` helper.
@@ -112,7 +112,8 @@ export function resetOpponentPromptTimestamp() {
  * 3. Return the recorded timestamp for callers that need to reuse the value.
  */
 export function markOpponentPromptNow(options = {}) {
-  return recordOpponentPromptTimestamp(now(), options);
+  const customNow = typeof options?.now === "function" ? options.now : null;
+  return recordOpponentPromptTimestamp(customNow ? customNow() : now(), options);
 }
 
 function readMinOverride() {
