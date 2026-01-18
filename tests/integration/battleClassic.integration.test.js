@@ -131,7 +131,8 @@ async function performStatSelectionFlow(testApi) {
     }
   }
 
-  expect(store.selectionMade).toBe(true);
+  // selectionMade is ephemeral and may reset once the round resolves in test mode.
+  expect(store.__lastSelectionMade).toBe(true);
   expect(store.playerChoice).toBe(selectedStat);
 
   // Step 5: Wait for state machine to reach roundOver to ensure full resolution
