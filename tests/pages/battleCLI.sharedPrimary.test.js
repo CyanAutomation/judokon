@@ -142,10 +142,12 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     const { updateScoreLine } = await import("../../src/pages/battleCLI/dom.js");
     await ensureCliDom();
     global.sharedScoreboardHelpers = mockSharedScoreboard;
+    mockGetScores.mockReturnValue({ playerScore: 9, opponentScore: 1 });
 
     updateScoreLine({ playerScore: 6, opponentScore: 4 });
 
     expect(mockSharedScoreboard.updateScore).toHaveBeenCalledWith(6, 4);
+    expect(mockGetScores).not.toHaveBeenCalled();
     const scoreDisplay = document.getElementById("score-display");
     expect(scoreDisplay.dataset.scorePlayer).toBe("6");
     expect(scoreDisplay.dataset.scoreOpponent).toBe("4");
