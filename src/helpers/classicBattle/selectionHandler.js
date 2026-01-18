@@ -16,6 +16,7 @@ import { getScheduler } from "../scheduler.js";
 import { debugLog } from "../debug.js";
 import { awaitStatSelectedHandler } from "./uiEventHandlers.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
+import { enterGuard, setHiddenStoreValue, getHiddenStoreValue } from "../guardUtils.js";
 
 function createDeferred() {
   let resolve;
@@ -27,7 +28,6 @@ function createDeferred() {
   return { promise, resolve, reject };
 }
 
-const hasOwn = Object.prototype.hasOwnProperty;
 const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
 const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
 const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
@@ -57,36 +57,6 @@ function getCurrentBattleState() {
 }
 
 /**
- * Manage hidden properties on store objects with consolidated logic.
- *
- * @param {object|null|undefined} store - Target object.
- * @param {symbol} token - Property token.
- * @param {"get"|"set"} action - Action to perform.
- * @param {any} [value] - Value for set action.
- * @returns {any}
- */
-function manageHiddenProperty(store, token, action, value) {
-  if (!store || typeof store !== "object") {
-    return undefined;
-  }
-  if (action === "get") {
-    return store[token];
-  }
-  if (action === "set") {
-    if (hasOwn.call(store, token)) {
-      store[token] = value;
-    } else {
-      Object.defineProperty(store, token, {
-        configurable: true,
-        enumerable: false,
-        writable: true,
-        value
-      });
-    }
-  }
-}
-
-/**
  * Update dataset battle state with optional previous state tracking.
  *
  * @param {string} newState - New battle state.
@@ -101,55 +71,6 @@ function setBattleStateDataset(newState, prevState) {
       }
     }
   } catch {}
-}
-
-/**
- * Guard management system for preventing concurrent operations.
- *
- * Uses Symbol-based hidden properties to track state without polluting the object's
- * enumerable namespace. This approach avoids WeakMap storage overhead while ensuring
- * non-enumerable, configurable properties that can be safely deleted.
- *
- * @pseudocode
- * 1. Check if store is a valid object; bail gracefully if not.
- * 2. Attempt to acquire guard token via hidden property.
- * 3. If token already exists, return { entered: false } (already held).
- * 4. Define non-enumerable property with guard token and return { entered: true }.
- * 5. Provide release() function that safely deletes the token property.
- *
- * @param {object|null|undefined} store - Target object to guard.
- * @param {symbol} token - Unique guard identifier (Symbol).
- * @returns {{ entered: boolean, release(): void }}
- */
-function enterGuard(store, token) {
-  if (!store || typeof store !== "object") {
-    return { entered: true, release() {} };
-  }
-  if (hasOwn.call(store, token)) {
-    return { entered: false, release() {} };
-  }
-  Object.defineProperty(store, token, {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: true
-  });
-  return {
-    entered: true,
-    release() {
-      try {
-        delete store[token];
-      } catch {}
-    }
-  };
-}
-
-function setHiddenStoreValue(store, token, value) {
-  manageHiddenProperty(store, token, "set", value);
-}
-
-function getHiddenStoreValue(store, token) {
-  return manageHiddenProperty(store, token, "get");
 }
 
 /**
