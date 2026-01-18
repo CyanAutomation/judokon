@@ -153,12 +153,14 @@ describe("countdown resets after stat selection", () => {
   it("starts a visible countdown after stat selection", async () => {
     populateCards();
     const timers = useCanonicalTimers();
+    const { initClassicBattleOrchestrator } = await import(
+      "../../../src/helpers/classicBattle/orchestrator.js"
+    );
+    await initClassicBattleOrchestrator(store, undefined, {});
     const countdownStarted = battleMod.getCountdownStartedPromise();
     const { randomSpy } = await selectPower(battleMod, store);
     await vi.runOnlyPendingTimersAsync();
     await countdownStarted;
-    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("countdownStart", { duration: 3 });
     await vi.runOnlyPendingTimersAsync();
 
     const timerEl = document.querySelector("#next-round-timer");
