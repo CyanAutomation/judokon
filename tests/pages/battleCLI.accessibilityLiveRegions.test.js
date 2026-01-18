@@ -44,12 +44,12 @@ describe("battleCLI accessibility live regions", () => {
 
     expect(roundMessage?.textContent).toBe("You win! (Speed – You: 42 Opponent: 17)");
     // battleCLI.html defines #score-display data attributes + value spans; dom.js updateScoreLine
-    // must keep those in sync with engine scores, while roundResolved provides canonical data attrs.
+    // must keep those in sync with resolved scores from roundResolved.
     expect(scoreLine?.dataset.scorePlayer).toBe("1");
     expect(scoreLine?.dataset.scoreOpponent).toBe("0");
     const playerValue = scoreLine?.querySelector('[data-side="player"] [data-part="value"]');
     const opponentValue = scoreLine?.querySelector('[data-side="opponent"] [data-part="value"]');
-    expect(playerValue?.textContent).toBe("0");
+    expect(playerValue?.textContent).toBe("1");
     expect(opponentValue?.textContent).toBe("0");
   });
 
