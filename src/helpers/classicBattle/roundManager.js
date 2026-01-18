@@ -526,6 +526,14 @@ export function startCooldown(_store, scheduler, overrides = {}) {
       }),
     { suppressInProduction: true }
   );
+  safeRound(
+    "startCooldown.emitNextRoundCountdownStarted",
+    () =>
+      bus.emit("nextRoundCountdownStarted", {
+        durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000
+      }),
+    { suppressInProduction: true }
+  );
   const timerOverrides = {
     eventBus: bus,
     markReady: overrides.markReady,

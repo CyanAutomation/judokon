@@ -49,6 +49,7 @@ export async function initStartCooldown(machine) {
   onBattleEvent("countdownFinished", finish);
   guard(() => emitBattleEvent("countdownStart", { duration }));
   guard(() => emitBattleEvent("control.countdown.started", { durationMs: duration * 1000 }));
+  guard(() => emitBattleEvent("nextRoundCountdownStarted", { durationMs: duration * 1000 }));
   if (isTestModeEnabled && isTestModeEnabled()) {
     if (typeof queueMicrotask === "function") queueMicrotask(finish);
     else setTimeout(finish, 0);
@@ -365,6 +366,7 @@ export async function initInterRoundCooldown(machine, options = {}) {
       durationMs: duration * 1000
     })
   );
+  guard(() => emitBattleEvent("nextRoundCountdownStarted", { durationMs: duration * 1000 }));
 
   const button = prepareNextButtonForCooldown(machine, options.scheduler);
 
