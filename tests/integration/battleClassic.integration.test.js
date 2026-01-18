@@ -629,6 +629,7 @@ describe("Battle Classic Page Integration", () => {
 
       await triggerStatSelection(store, statButtons[0], statButtons[0].dataset.stat);
       await opponentRevealPromise;
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
       // At this point, opponent card should be obscured with placeholder
       expect(opponentCard?.classList.contains("is-obscured")).toBe(true);
