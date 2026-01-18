@@ -217,7 +217,9 @@ describe("countdown resets after stat selection", () => {
         ? positiveTimerSeries
         : fallbackReadings.length >= 3
           ? fallbackReadings
-          : timerSeries;
+          : positiveTimerSeries.length > 0
+            ? positiveTimerSeries
+            : fallbackReadings;
     expect(samples.length).toBeGreaterThanOrEqual(3);
     const hasDecrease = samples.some((value, index) => index > 0 && value < samples[index - 1]);
     expect(hasDecrease).toBe(true);
