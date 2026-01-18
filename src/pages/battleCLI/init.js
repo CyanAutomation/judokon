@@ -2713,31 +2713,20 @@ function handleRoundResolved(e) {
   if (result) {
     const display = statDisplayNames[stat] || String(stat || "").toUpperCase();
     setRoundMessage(`${result.message} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
-    updateScoreLine();
-    // Ensure the shared score display reflects the resolved scores
-    const scoreDisplay = hasDocument ? document.getElementById("score-display") : null;
-    if (scoreDisplay) {
-      // Prefer explicit values from the result when available, otherwise
-      // fall back to the canonical engine scores to avoid writing "undefined".
-      let playerScore = result.playerScore;
-      let opponentScore = result.opponentScore;
-      try {
-        if (playerScore === undefined || opponentScore === undefined) {
-          const gs = engineFacade.getScores?.();
-          if (gs) {
-            if (playerScore === undefined) playerScore = gs.playerScore;
-            if (opponentScore === undefined) opponentScore = gs.opponentScore;
-          }
+    let playerScore = result.playerScore;
+    let opponentScore = result.opponentScore;
+    try {
+      if (playerScore === undefined || opponentScore === undefined) {
+        const gs = engineFacade.getScores?.();
+        if (gs) {
+          if (playerScore === undefined) playerScore = gs.playerScore;
+          if (opponentScore === undefined) opponentScore = gs.opponentScore;
         }
-      } catch {}
-      playerScore = playerScore === undefined || playerScore === null ? 0 : playerScore;
-      opponentScore = opponentScore === undefined || opponentScore === null ? 0 : opponentScore;
-      if (!scoreDisplay.querySelector('[data-side="player"]')) {
-        scoreDisplay.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
       }
-      scoreDisplay.dataset.scorePlayer = String(playerScore);
-      scoreDisplay.dataset.scoreOpponent = String(opponentScore);
-    }
+    } catch {}
+    playerScore = playerScore === undefined || playerScore === null ? 0 : playerScore;
+    opponentScore = opponentScore === undefined || opponentScore === null ? 0 : opponentScore;
+    updateScoreLine({ playerScore, opponentScore });
     // Add detailed info to verbose log if enabled
     if (isEnabled("cliVerbose")) {
       const verboseLog = byId("cli-verbose-log");

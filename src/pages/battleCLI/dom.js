@@ -161,18 +161,23 @@ export function setRoundMessage(text) {
  * Update the scoreboard line.
  *
  * @summary Refresh scores for player and opponent.
+ * @param {object} [scoreOverride] - Optional score values to render.
+ * @param {number} [scoreOverride.playerScore] - Player score to display.
+ * @param {number} [scoreOverride.opponentScore] - Opponent score to display.
  * @returns {void}
  * @pseudocode
  * Phase 3: Primary: shared Scoreboard updateScore
  * Fallback: CLI element for visual consistency
  */
-export function updateScoreLine() {
+export function updateScoreLine(scoreOverride) {
   let getScores;
   try {
     ({ getScores } = engineFacade);
   } catch {}
-  const { playerScore, opponentScore } =
-    typeof getScores === "function" ? getScores() : { playerScore: 0, opponentScore: 0 };
+  const resolvedScores =
+    scoreOverride ??
+    (typeof getScores === "function" ? getScores() : { playerScore: 0, opponentScore: 0 });
+  const { playerScore, opponentScore } = resolvedScores;
 
   // Phase 3: Primary update via shared Scoreboard component
   let sharedUpdated = false;
