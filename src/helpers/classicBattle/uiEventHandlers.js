@@ -99,7 +99,7 @@ function getMinOpponentObscureDuration() {
 }
 
 async function waitForMinimumOpponentObscureDuration() {
-  if (!lastOpponentRevealTimestamp) {
+  if (!Number.isFinite(lastOpponentRevealTimestamp)) {
     return;
   }
   const minDuration = getMinOpponentObscureDuration();
