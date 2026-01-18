@@ -322,7 +322,7 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
   // Input validation: ensure stats is a valid object
   if (!stats || typeof stats !== "object" || Array.isArray(stats)) {
     throw new TypeError(
-      `simulateOpponentStat: stats must be a valid object, received ${typeof stats}`
+      `simulateOpponentStat: stats must be a valid object, received ${stats === null ? 'null' : typeof stats}`
     );
   }
 
