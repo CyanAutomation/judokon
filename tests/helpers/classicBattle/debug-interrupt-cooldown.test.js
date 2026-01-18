@@ -127,8 +127,6 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
 
-    const dispatchSpy = vi.spyOn(machine, "dispatch");
-
     await machine.dispatch("startClicked");
     await machine.dispatch("ready");
     await machine.dispatch("ready");
@@ -137,8 +135,9 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     // Clear previous event calls AND deduplication history before the interrupt flow
     vi.clearAllMocks();
     readyDispatchTracker.events.length = 0;
+    // Create spy after clearAllMocks to ensure proper mock state
+    const dispatchSpy = vi.spyOn(machine, "dispatch");
     await machine.dispatch("interrupt");
-    dispatchSpy.mockClear();
 
     // Wait for cooldown entry to be observed
     await vi.waitFor(
@@ -150,8 +149,9 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
       { timeout: 1000, interval: 50 }
     );
 
-    // Clear mocks before checking for ready dispatch after cooldown
-    vi.clearAllMocks();
+    // Clear tracked calls before checking for ready dispatch after cooldown
+    dispatchSpy.mockClear();
+    dispatchBattleEvent.mockClear();
 
     // Advance timers to trigger cooldown expiration (cooldown is ~3 seconds + buffer)
     vi.advanceTimersByTime(4000);
