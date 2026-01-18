@@ -42,6 +42,8 @@ describe.sequential("classicBattle round resolver once", () => {
   let _resetForTest;
   let getCardStatValue;
   let computeRoundResult;
+  let previousOpponentDelay;
+  let previousMinPromptDuration;
 
   beforeEach(async () => {
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -51,6 +53,11 @@ describe.sequential("classicBattle round resolver once", () => {
       <div id="opponent-card"><ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul></div>
       <div id="stat-buttons"><button data-stat="power"></button></div>
     `;
+    previousMinPromptDuration = window.__MIN_OPPONENT_MESSAGE_DURATION_MS;
+    window.__MIN_OPPONENT_MESSAGE_DURATION_MS = 0;
+    const snackbar = await import("../../../src/helpers/classicBattle/snackbar.js");
+    previousOpponentDelay = snackbar.getOpponentDelay();
+    snackbar.setOpponentDelay(0);
     const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
       "../../../src/helpers/classicBattle/battleEvents.js"
     );
@@ -70,11 +77,20 @@ describe.sequential("classicBattle round resolver once", () => {
     } = await initClassicBattleTest({ afterMock: true }));
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     timers.cleanup();
     warnSpy.mockRestore();
     document.body.innerHTML = "";
     delete document.body.dataset.battleState;
+    if (typeof previousMinPromptDuration === "undefined") {
+      delete window.__MIN_OPPONENT_MESSAGE_DURATION_MS;
+    } else {
+      window.__MIN_OPPONENT_MESSAGE_DURATION_MS = previousMinPromptDuration;
+    }
+    if (typeof previousOpponentDelay === "number") {
+      const snackbar = await import("../../../src/helpers/classicBattle/snackbar.js");
+      snackbar.setOpponentDelay(previousOpponentDelay);
+    }
     vi.clearAllMocks();
   });
 
