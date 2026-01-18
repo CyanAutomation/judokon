@@ -138,16 +138,16 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     mockGetScores.mockReturnValue({ playerScore: 3, opponentScore: 2 });
   });
 
-  it("should prefer standard scoreboard elements in tests", async () => {
+  it("should invoke shared Scoreboard helpers on score updates", async () => {
+    const { updateScoreLine } = await import("../../src/pages/battleCLI/dom.js");
     await ensureCliDom();
     global.sharedScoreboardHelpers = mockSharedScoreboard;
-    // Phase 3: Tests should now check standard elements as primary
-    expect(document.getElementById("score-display")).toBeTruthy();
-    expect(document.getElementById("round-counter")).toBeTruthy();
-    expect(document.getElementById("next-round-timer")).toBeTruthy();
-    expect(document.getElementById("round-message")).toBeTruthy();
 
-    // CLI countdown remains for compatibility
-    expect(document.getElementById("cli-countdown")).toBeTruthy();
+    updateScoreLine({ playerScore: 6, opponentScore: 4 });
+
+    expect(mockSharedScoreboard.updateScore).toHaveBeenCalledWith(6, 4);
+    const scoreDisplay = document.getElementById("score-display");
+    expect(scoreDisplay.dataset.scorePlayer).toBe("6");
+    expect(scoreDisplay.dataset.scoreOpponent).toBe("4");
   });
 });
