@@ -24,6 +24,10 @@ import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 import { selectStat } from "../../src/helpers/classicBattle/uiHelpers.js";
 import { onBattleEvent, offBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
+import {
+  OPPONENT_CARD_CONTAINER_ARIA_LABEL,
+  OPPONENT_PLACEHOLDER_ARIA_LABEL
+} from "../../src/helpers/classicBattle/opponentPlaceholder.js";
 // Spec: design/productRequirementsDocuments/prdBattleClassic.md
 
 async function triggerStatSelection(store, statButton, statKey) {
@@ -580,11 +584,12 @@ describe("Battle Classic Page Integration", () => {
 
     const opponentCard = document.getElementById("opponent-card");
     expect(opponentCard).not.toBeNull();
+    expect(opponentCard?.classList.contains("opponent-hidden")).toBe(false);
 
     const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
     expect(placeholder.classList.contains("card")).toBe(true);
-    expect(placeholder.getAttribute("aria-label")).toBe("Mystery opponent card");
+    expect(placeholder.getAttribute("aria-label")).toBe(OPPONENT_PLACEHOLDER_ARIA_LABEL);
   });
 
   it("upgrades the placeholder card during opponent reveal", async () => {
@@ -595,6 +600,7 @@ describe("Battle Classic Page Integration", () => {
 
     const placeholder = opponentCard.querySelector("#mystery-card-placeholder");
     expect(placeholder).not.toBeNull();
+    expect(placeholder.getAttribute("aria-label")).toBe(OPPONENT_PLACEHOLDER_ARIA_LABEL);
 
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
@@ -658,6 +664,7 @@ describe("Battle Classic Page Integration", () => {
       const revealedCard = revealedContainer?.querySelector(".judoka-card");
       expect(revealedCard).not.toBeNull();
       expect(revealedCard?.getAttribute("aria-label") ?? "").not.toContain("Mystery");
+      expect(opponentCard?.getAttribute("aria-label")).toBe(OPPONENT_CARD_CONTAINER_ARIA_LABEL);
     } finally {
       resetOpponentDelay();
     }
