@@ -288,8 +288,7 @@ export function setLastManualRoundStartTimestamp(timestamp) {
  */
 export function getOpponentPromptFallbackTimerId() {
   const id = getBattleState("opponentPromptFallbackTimerId", 0);
-  const normalizedId =
-    typeof id === "object" && id !== null ? Number(id) : Number(id);
+  const normalizedId = Number(id);
 
   return Number.isFinite(normalizedId) && normalizedId !== 0 ? normalizedId : 0;
 }
