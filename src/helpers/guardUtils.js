@@ -40,7 +40,9 @@ export function manageHiddenProperty(store, token, action, value) {
         value
       });
     }
+    return;
   }
+  throw new Error(`Invalid action: ${action}. Expected "get" or "set".`);
 }
 
 /**
