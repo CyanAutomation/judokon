@@ -1111,7 +1111,17 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
         return;
       }
 
-      const result = await syncResultDisplay(store, stat, playerVal, opponentVal, opts);
+      const forceDirectResolution =
+        opts.forceDirectResolution || store?.forceDirectResolution;
+      const shouldForceOpponentPrompt =
+        handledByOrchestrator === false || forceDirectResolution;
+      const result = await syncResultDisplay(
+        store,
+        stat,
+        playerVal,
+        opponentVal,
+        shouldForceOpponentPrompt ? { ...opts, forceOpponentPrompt: true } : opts
+      );
       syncRoundsPlayedFromEngine(store);
 
       logSelectionDebug("[handleStatSelection] After syncResultDisplay:", {
