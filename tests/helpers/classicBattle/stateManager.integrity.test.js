@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import "./commonMocks.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
+import { withMutedConsole } from "../../utils/console.js";
 
 /**
  * Test suite for state manager integrity.
@@ -46,6 +47,57 @@ describe("state manager integrity", () => {
     // Verify the machine is initialized with the correct initial state
     expect(definedStateNames.length).toBeGreaterThan(0);
     expect(definedStateNames).toContain(machine.getState());
+  });
+
+  it("should validate each state handler or confirm transition markers", async () => {
+    const { CLASSIC_BATTLE_STATES } = await import(
+      "../../../src/helpers/classicBattle/stateTable.js"
+    );
+    const { getOnEnterHandler } = await import(
+      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    const { createStateManager } = await import(
+      "../../../src/helpers/classicBattle/stateManager.js"
+    );
+
+    const expectedTransitionMarkers = {
+      waitingForOpponentDecision: { event: "statSelected" }
+    };
+    const transitions = [];
+    const onEnterMap = {};
+    const statesWithoutHandlers = [];
+
+    CLASSIC_BATTLE_STATES.forEach((state) => {
+      const handler = getOnEnterHandler(state.name);
+      if (handler) {
+        expect(typeof handler).toBe("function");
+        onEnterMap[state.name] = vi.fn();
+        return;
+      }
+      statesWithoutHandlers.push(state.name);
+      expect(expectedTransitionMarkers[state.name]).toBeDefined();
+    });
+
+    expect(statesWithoutHandlers).toEqual(["waitingForOpponentDecision"]);
+
+    const machine = await withMutedConsole(() =>
+      createStateManager({}, onEnterMap, ({ from, to, event }) => {
+        transitions.push({ from, to, event });
+      })
+    );
+
+    await machine.dispatch("startClicked");
+    await machine.dispatch("ready");
+    await machine.dispatch("ready");
+    await machine.dispatch("cardsRevealed");
+    await machine.dispatch("statSelected");
+
+    expect(machine.getState()).toBe("waitingForOpponentDecision");
+    expect(transitions).toContainEqual({
+      from: "waitingForPlayerAction",
+      to: "waitingForOpponentDecision",
+      event: "statSelected"
+    });
   });
 
   it("should successfully transition through a normal battle flow", async () => {
