@@ -22,16 +22,22 @@ test.describe("Battle CLI countdown timing", () => {
 
       await page.waitForFunction(() => window.__TEST_API?.timers?.setCountdown);
 
-if (!window.__TEST_API?.timers?.setCountdown) {
-  throw new Error('Test API setCountdown method not available');
-}
-window.__TEST_API.timers.setCountdown(5);
+      await page.evaluate((seconds) => {
+        const setCountdown = window.__TEST_API?.timers?.setCountdown;
+        if (typeof setCountdown !== "function") {
+          throw new Error("Test API setCountdown method not available");
+        }
+        setCountdown(seconds);
+      }, 5);
       await expect(countdown).toHaveAttribute("data-remaining-time", "5", { timeout: 2_000 });
 
-if (!window.__TEST_API?.timers?.setCountdown) {
-  throw new Error('Test API setCountdown method not available');
-}
-window.__TEST_API.timers.setCountdown(2);
+      await page.evaluate((seconds) => {
+        const setCountdown = window.__TEST_API?.timers?.setCountdown;
+        if (typeof setCountdown !== "function") {
+          throw new Error("Test API setCountdown method not available");
+        }
+        setCountdown(seconds);
+      }, 2);
       await expect(countdown).toHaveAttribute("data-remaining-time", "2", { timeout: 2_000 });
 
       const roundCounter = page.getByTestId("round-counter");
@@ -61,10 +67,13 @@ window.__TEST_API.timers.setCountdown(2);
 
       await expect(statButton).toBeEnabled({ timeout: 6_000 });
 
-if (!window.__TEST_API?.timers?.setCountdown) {
-  throw new Error('Test API setCountdown method not available');
-}
-window.__TEST_API.timers.setCountdown(4);
+      await page.evaluate((seconds) => {
+        const setCountdown = window.__TEST_API?.timers?.setCountdown;
+        if (typeof setCountdown !== "function") {
+          throw new Error("Test API setCountdown method not available");
+        }
+        setCountdown(seconds);
+      }, 4);
       await expect(countdown).toHaveAttribute("data-remaining-time", "4", { timeout: 2_000 });
     }, ["log", "warn", "error"]));
 });
