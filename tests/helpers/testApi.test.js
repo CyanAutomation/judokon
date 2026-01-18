@@ -266,3 +266,76 @@ describe("initApi readiness gating", () => {
     expect(third).toEqual({ ok: true, count: 1, reason: null });
   });
 });
+
+describe("cli.completeRound", () => {
+  let cliApi;
+  let timerApi;
+  let stateApi;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("VITEST", "1");
+
+    window.__TEST__ = true;
+    delete window.__initCalled;
+    delete window.battleStore;
+
+    const mod = await import("../../src/helpers/testApi.js");
+    const testApi = mod.getTestAPI();
+    cliApi = testApi.cli;
+    timerApi = testApi.timers;
+    stateApi = testApi.state;
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+
+    restoreWindowProperty("__TEST__", originalTestFlag);
+    restoreWindowProperty("__TEST_API", originalTestApi);
+    restoreWindowProperty("__BATTLE_STATE_API", originalBattleStateApi);
+    restoreWindowProperty("__TIMER_API", originalTimerApi);
+    restoreWindowProperty("__INIT_API", originalInitApi);
+    restoreWindowProperty("__INSPECT_API", originalInspectApi);
+    restoreWindowProperty("__VIEWPORT_API", originalViewportApi);
+    restoreWindowProperty("__battleCLIinit", originalBattleCliInit);
+
+    delete window.__initCalled;
+    delete window.battleStore;
+
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  it("expires selection and dispatches the derived outcome event", async () => {
+    const expireSpy = vi.fn();
+    const delaySpy = vi.fn();
+    const dispatchSpy = vi.fn().mockResolvedValue(true);
+    const resolveSpy = vi.fn().mockResolvedValue({
+      detail: { result: { outcomeEvent: "roundWin" } },
+      dispatched: true,
+      emitted: true
+    });
+
+    timerApi.expireSelectionTimer = expireSpy;
+    timerApi.setOpponentResolveDelay = delaySpy;
+    stateApi.dispatchBattleEvent = dispatchSpy;
+    stateApi.getBattleState = vi.fn(() => "cooldown");
+    cliApi.resolveRound = resolveSpy;
+
+    const result = await cliApi.completeRound(
+      { choice: "power" },
+      { expireSelection: true, opponentResolveDelayMs: 0 }
+    );
+
+    expect(expireSpy).toHaveBeenCalledTimes(1);
+    expect(delaySpy).toHaveBeenCalledWith(0);
+    expect(resolveSpy).toHaveBeenCalledWith({ choice: "power" });
+    expect(dispatchSpy).toHaveBeenCalledWith("roundWin", {
+      result: { outcomeEvent: "roundWin" }
+    });
+    expect(result.outcomeEvent).toBe("roundWin");
+    expect(result.finalState).toBe("cooldown");
+    expect(result.outcomeDispatched).toBe(true);
+  });
+});
