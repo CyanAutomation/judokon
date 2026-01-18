@@ -14,7 +14,9 @@
  *
  * **Test Environment Detection:**
  * Prevents scheduler activation during unit tests via multiple guards:
- * - `globalThis.__TEST__` flag
+ * - `globalThis.__TEST__`, `__VITEST__`, `__PLAYWRIGHT__`, `__PLAYWRIGHT_TEST__` flags
+ * - `process.env.VITEST` indicator
+ * - `isTestModeEnabled()` flag from test mode utilities
  * - `requestAnimationFrame` availability check
  *
  * **Integration:**
@@ -30,6 +32,7 @@ import {
   pause,
   resume
 } from "../../utils/scheduler.js";
+import { isTestModeEnabled } from "../testModeUtils.js";
 
 /**
  * @summary Start the animation scheduler for the battle view.
@@ -41,7 +44,17 @@ import {
  * @returns {void}
  */
 export function setupScheduler() {
-  if (globalThis.__TEST__ || typeof requestAnimationFrame !== "function") {
+  const hasGlobalTestFlag = Boolean(
+    typeof globalThis !== "undefined" &&
+      (globalThis.__TEST__ ||
+        globalThis.__VITEST__ ||
+        globalThis.__PLAYWRIGHT__ ||
+        globalThis.__PLAYWRIGHT_TEST__)
+  );
+  const hasVitestEnv = Boolean(typeof process !== "undefined" && process.env?.VITEST);
+  const hasTestMode = typeof isTestModeEnabled === "function" && isTestModeEnabled();
+
+  if (hasGlobalTestFlag || hasVitestEnv || hasTestMode || typeof requestAnimationFrame !== "function") {
     return;
   }
 
