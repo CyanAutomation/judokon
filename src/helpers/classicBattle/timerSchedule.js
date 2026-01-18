@@ -43,13 +43,19 @@ export function getCurrentTimestamp() {
 export function scheduleDelayed(fn, delayMs) {
   try {
     if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
-      return window.setTimeout(fn, delayMs);
+      const timeoutId = window.setTimeout(fn, delayMs);
+      const normalizedId = Number(timeoutId);
+
+      return Number.isFinite(normalizedId) ? normalizedId : null;
     }
   } catch {}
 
   try {
     if (typeof setTimeout === "function") {
-      return setTimeout(fn, delayMs);
+      const timeoutId = setTimeout(fn, delayMs);
+      const normalizedId = Number(timeoutId);
+
+      return Number.isFinite(normalizedId) ? normalizedId : null;
     }
   } catch {}
 
@@ -68,12 +74,14 @@ export function scheduleDelayed(fn, delayMs) {
  * 3. On failure or invalid input, return false.
  */
 export function clearScheduled(timeoutId) {
-  if (!Number.isFinite(timeoutId) || timeoutId === 0 || timeoutId === null) {
+  const normalizedId = Number(timeoutId);
+
+  if (!Number.isFinite(normalizedId) || normalizedId === 0 || normalizedId === null) {
     return false;
   }
 
   try {
-    clearTimeout(timeoutId);
+    clearTimeout(normalizedId);
     return true;
   } catch {
     return false;

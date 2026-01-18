@@ -287,7 +287,10 @@ export function setLastManualRoundStartTimestamp(timestamp) {
  * 2. Provide 0 when the timer has not been scheduled.
  */
 export function getOpponentPromptFallbackTimerId() {
-  return getBattleState("opponentPromptFallbackTimerId", 0);
+  const id = getBattleState("opponentPromptFallbackTimerId", 0);
+  const normalizedId = Number(id);
+
+  return Number.isFinite(normalizedId) && normalizedId !== 0 ? normalizedId : 0;
 }
 
 /**
