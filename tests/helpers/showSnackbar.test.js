@@ -93,6 +93,7 @@ describe("showSnackbar", () => {
     // First message timer should fire
     await vi.advanceTimersByTimeAsync(2000);
     dispatchAnimationEnd(firstEl);
+    await Promise.resolve();
 
     // First should be dismissed, second should remain
     expect(container.contains(firstEl)).toBe(false);
@@ -107,6 +108,7 @@ describe("showSnackbar", () => {
     // Advance 1 more second (total 3s for second message)
     await vi.advanceTimersByTimeAsync(1000);
     dispatchAnimationEnd(secondEl);
+    await Promise.resolve();
 
     // Both should now be gone
     expect(container.children).toHaveLength(0);
@@ -125,11 +127,12 @@ describe("showSnackbar", () => {
     expect(container.getAttribute("aria-live")).toBe("polite");
   });
 
-  it("removes the snackbar when the animation finishes", () => {
+  it("removes the snackbar when the animation finishes", async () => {
     const container = document.getElementById("snackbar-container");
     showSnackbar("Goodbye");
     const bar = container.firstElementChild;
     dispatchAnimationEnd(bar);
+    await Promise.resolve();
     expect(container.children).toHaveLength(0);
   });
 
