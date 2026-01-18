@@ -44,8 +44,7 @@ export function scheduleDelayed(fn, delayMs) {
   try {
     if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
       const timeoutId = window.setTimeout(fn, delayMs);
-      const normalizedId =
-        typeof timeoutId === "object" && timeoutId !== null ? Number(timeoutId) : timeoutId;
+      const normalizedId = Number(timeoutId);
 
       return Number.isFinite(normalizedId) ? normalizedId : null;
     }
