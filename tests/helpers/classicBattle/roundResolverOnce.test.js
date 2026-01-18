@@ -87,7 +87,7 @@ describe.sequential("classicBattle round resolver once", () => {
     } else {
       window.__MIN_OPPONENT_MESSAGE_DURATION_MS = previousMinPromptDuration;
     }
-    if (typeof previousOpponentDelay === "number") {
+    if (typeof previousOpponentDelay !== "undefined") {
       const snackbar = await import("../../../src/helpers/classicBattle/snackbar.js");
       snackbar.setOpponentDelay(previousOpponentDelay);
     }
