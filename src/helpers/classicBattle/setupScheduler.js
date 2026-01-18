@@ -52,7 +52,12 @@ export function setupScheduler() {
         globalThis.__PLAYWRIGHT_TEST__)
   );
   const hasVitestEnv = Boolean(typeof process !== "undefined" && process.env?.VITEST);
-  const hasTestMode = typeof isTestModeEnabled === "function" && isTestModeEnabled();
+  let hasTestMode = false;
+  try {
+    hasTestMode = typeof isTestModeEnabled === "function" && isTestModeEnabled();
+  } catch {
+    // isTestModeEnabled not available or failed, continue with false
+  }
 
   if (hasGlobalTestFlag || hasVitestEnv || hasTestMode || typeof requestAnimationFrame !== "function") {
     return;
