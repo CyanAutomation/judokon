@@ -109,12 +109,12 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
           };
           target.addEventListener(name, handler);
           if (Number.isFinite(timeout) && timeout > 0) {
-            setTimeout(() => {
-              if (settled) return;
-              settled = true;
-              target.removeEventListener(name, handler);
-              reject(new Error(`Timed out waiting for battle event: ${name}`));
-            }, timeout);
+          setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            target.removeEventListener(name, handler);
+            reject(new Error(`Timed out waiting for battle event: ${name}`));
+          }, timeout);
           }
         });
       },
