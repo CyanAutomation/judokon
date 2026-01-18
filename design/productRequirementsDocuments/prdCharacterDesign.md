@@ -185,7 +185,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 **Contextual Adaptations:**
 
 - **Giving Advice**: Pointing gesture with dojo background
-- **Victory Celebration**: Trophy holding with cheering crowd
+- **Trophy Celebration**: Trophy holding with cheering crowd
 - **Casual Interaction**: Relaxed pose with informal background
 - **Tutorial Context**: Clear, uncluttered backgrounds for focus
 - **Achievement Moments**: Spotlight emphasis with celebration elements
@@ -217,7 +217,7 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 | Challenge Intro                | Arms crossed, confident grin. Background: neutral gradient with subtle speed lines.                                                           |
 | Countdown Moment               | Hands on hips, focused expression, small stopwatch icon nearby. Background: minimal spotlight vignette.                                       |
 | Dynamic Jump                   | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                                                  |
-| Victory Celebration            | Fists in the air, wide smile with teeth visible. Background: stage with spotlights and cheering crowd, blurred.                                |
+| Trophy Celebration             | Holding a trophy with a proud grin. Background: stage with spotlights and cheering crowd, blurred.                                             |
 | Thinking Pose                  | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                                                   |
 | Holding a Sign                 | Holding a large signboard ("Welcome to Ju-Do-Kon!") and a pointer stick. Background: dojo interior with mats.                                  |
 | Casual Clothes                 | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky.                 |
@@ -236,8 +236,8 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
   **Prompt:** Use the base prompt. Add: "KG demonstrates a basic judo stance, one open palm forward, calm confident smile. Background is a clean dojo mat with minimal UI callouts and soft shadow."
 - **Match Flow — Countdown Moment**  
   **Prompt:** Use the base prompt. Add: "KG faces forward with hands on hips and focused eyes, a small stopwatch icon near his shoulder. Background is a subtle spotlight vignette with no clutter."
-- **Match Flow — Victory Celebration**  
-  **Prompt:** Use the base prompt. Add: "KG raises both fists in the air, joyful grin, standing on a stage with soft spotlights and a blurred cheering crowd behind him."
+- **Match Flow — Trophy Celebration**  
+  **Prompt:** Use the base prompt. Add: "KG holds a trophy in one hand with a joyful grin, standing on a stage with soft spotlights and a blurred cheering crowd behind him."
 - **Out-of-Match — Community Event**  
   **Prompt:** Use the base prompt. Add: "KG waves with open hand, friendly eyes, confetti drifting in the air. Background is a festive banner with soft crowd silhouettes."
 - **Support & Safety — Parent Guidance**  
