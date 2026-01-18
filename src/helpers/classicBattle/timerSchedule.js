@@ -53,8 +53,7 @@ export function scheduleDelayed(fn, delayMs) {
   try {
     if (typeof setTimeout === "function") {
       const timeoutId = setTimeout(fn, delayMs);
-      const normalizedId =
-        typeof timeoutId === "object" && timeoutId !== null ? Number(timeoutId) : timeoutId;
+      const normalizedId = Number(timeoutId);
 
       return Number.isFinite(normalizedId) ? normalizedId : null;
     }
