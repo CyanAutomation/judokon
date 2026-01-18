@@ -338,4 +338,54 @@ describe("cli.completeRound", () => {
     expect(result.finalState).toBe("cooldown");
     expect(result.outcomeDispatched).toBe(true);
   });
+
+  it("surfaces errors when resolveRound rejects", async () => {
+    const resolveSpy = vi.fn().mockRejectedValue(new Error("resolve failed"));
+
+    cliApi.resolveRound = resolveSpy;
+
+    await expect(cliApi.completeRound({ choice: "power" })).rejects.toThrow("resolve failed");
+    expect(resolveSpy).toHaveBeenCalledWith({ choice: "power" });
+  });
+
+  it("marks outcome dispatch false when dispatchBattleEvent fails", async () => {
+    const dispatchSpy = vi.fn().mockRejectedValue(new Error("dispatch failed"));
+    const resolveSpy = vi.fn().mockResolvedValue({
+      detail: { result: { outcomeEvent: "roundWin" } },
+      dispatched: true,
+      emitted: true
+    });
+
+    stateApi.dispatchBattleEvent = dispatchSpy;
+    stateApi.getBattleState = vi.fn(() => "roundOver");
+    cliApi.resolveRound = resolveSpy;
+
+    const result = await cliApi.completeRound({ choice: "technique" }, { autoWaitTimeoutMs: 0 });
+
+    expect(dispatchSpy).toHaveBeenCalledWith("roundWin", {
+      result: { outcomeEvent: "roundWin" }
+    });
+    expect(result.outcomeDispatched).toBe(false);
+    expect(result.finalState).toBe("roundOver");
+  });
+
+  it("handles missing timer/dispatch APIs without throwing", async () => {
+    const resolveSpy = vi.fn().mockResolvedValue({
+      detail: { result: { outcomeEvent: "roundWin" } },
+      dispatched: true,
+      emitted: true
+    });
+
+    timerApi.expireSelectionTimer = undefined;
+    timerApi.setOpponentResolveDelay = undefined;
+    stateApi.dispatchBattleEvent = undefined;
+    stateApi.getBattleState = vi.fn(() => "cooldown");
+    cliApi.resolveRound = resolveSpy;
+
+    const result = await cliApi.completeRound({ choice: "speed" }, { autoWaitTimeoutMs: 0 });
+
+    expect(result.outcomeEvent).toBe("roundWin");
+    expect(result.outcomeDispatched).toBe(false);
+    expect(result.finalState).toBe("cooldown");
+  });
 });
