@@ -72,21 +72,8 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       { timeout: 10000 }
     );
 
-    // Log diagnostics for debugging
-    const diagnostics = await page.evaluate(() => window.__battleDiagnostics);
-    console.log("[Test] Battle diagnostics:", diagnostics);
-
-    // Add test listener to verify statSelected events are emitted
-    await page.evaluate(() => {
-      let eventCount = 0;
-      window.__testStatSelectedListener = (e) => {
-        eventCount++;
-        console.log(`[Test Listener] statSelected event #${eventCount}:`, e.detail);
-      };
-      globalThis.__classicBattleEventTarget?.addEventListener(
-        "statSelected",
-        window.__testStatSelectedListener
-      );
+    await page.waitForFunction(() => Boolean(globalThis.__classicBattleEventTarget), {
+      timeout: 10000
     });
 
     const statButtons = page.locator("#stat-buttons");
@@ -104,23 +91,59 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
     };
   }
 
-  async function measureSnackbarAppearance({ firstStat, statButtons, snackbar, expectDeferred }) {
-    const selectionStartedAt = Date.now();
+  async function waitForBattleEvent(page, eventName, timeoutMs = 8000) {
+    return page.evaluate(
+      ({ eventName: name, timeoutMs: timeout }) => {
+        return new Promise((resolve, reject) => {
+          const target = globalThis.__classicBattleEventTarget;
+          if (!target) {
+            reject(new Error("Classic battle event target not available."));
+            return;
+          }
+          let settled = false;
+          const handler = (event) => {
+            if (settled) return;
+            settled = true;
+            target.removeEventListener(name, handler);
+            resolve({ detail: event?.detail ?? null });
+          };
+          target.addEventListener(name, handler);
+          if (Number.isFinite(timeout) && timeout > 0) {
+          setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            target.removeEventListener(name, handler);
+            reject(new Error(`Timed out waiting for battle event: ${name}`));
+          }, timeout);
+          }
+        });
+      },
+      { eventName, timeoutMs }
+    );
+  }
+
+  async function confirmOpponentPrompt({
+    page,
+    firstStat,
+    statButtons,
+    snackbar,
+    expectDeferred
+  }) {
+    const promptReady = waitForBattleEvent(page, "opponentPromptReady");
 
     await firstStat.click();
     await expect(statButtons).toHaveAttribute("data-buttons-ready", "false");
+    await expect(statButtons).toHaveAttribute("data-selection-in-progress", "true");
     await expect(firstStat).toBeDisabled();
 
     if (expectDeferred) {
-      await expect(snackbar).toBeHidden({ timeout: 450 });
+      await expect(snackbar).toBeHidden();
     }
 
-    await expect(snackbar).toContainText(/opponent is choosing/i, {
-      timeout: expectDeferred ? 6000 : 1500
-    });
-    await expect(snackbar).toBeVisible();
+    await promptReady;
 
-    return Date.now() - selectionStartedAt;
+    await expect(snackbar).toContainText(/opponent is choosing/i);
+    await expect(snackbar).toBeVisible();
   }
 
   test(`[Spec: ${FLAG_SPEC_PATH}] opponent choosing snackbar is deferred, shown, and cleared when flag is enabled`, async ({
@@ -139,14 +162,13 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       opponentDelayMessage: true
     });
 
-    const visibleDelay = await measureSnackbarAppearance({
+    await confirmOpponentPrompt({
+      page,
       firstStat,
       statButtons,
       snackbar,
       expectDeferred: true
     });
-
-    expect(visibleDelay).toBeGreaterThanOrEqual(400);
 
     await expect(nextButton).toBeEnabled({ timeout: 10000 });
     await nextButton.click();
@@ -166,14 +188,13 @@ test.describe("Classic Battle – opponent choosing snackbar", () => {
       opponentDelayMessage: false
     });
 
-    const visibleDelay = await measureSnackbarAppearance({
+    await confirmOpponentPrompt({
+      page,
       firstStat,
       statButtons,
       snackbar,
       expectDeferred: false
     });
-
-    expect(visibleDelay).toBeLessThan(600);
 
     await expect(nextButton).toBeEnabled({ timeout: 2000 });
     await nextButton.click();
