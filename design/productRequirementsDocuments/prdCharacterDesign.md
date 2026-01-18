@@ -210,23 +210,38 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 
 **Scene-Specific Prompt Table:**
 
-| Scene              | Prompt Additions                                                                                                               |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| Giving Advice      | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred.         |
-| Dynamic Jump       | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                                  |
-| Thinking Pose      | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                                   |
-| Holding a Sign     | Holding a large signboard ("Welcome to Ju-Do-Kon!") and a pointer stick. Background: dojo interior with mats.                  |
-| Casual Clothes     | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky. |
-| Trophy Celebration | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred.              |
+| Scene                          | Prompt Additions                                                                                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Giving Advice                  | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred.                         |
+| Teaching Technique             | Demonstrating a throw stance with open palm gesture. Background: clean dojo mat with minimal UI callouts.                                      |
+| Challenge Intro                | Arms crossed, confident grin. Background: neutral gradient with subtle speed lines.                                                           |
+| Countdown Moment               | Hands on hips, focused expression, small stopwatch icon nearby. Background: minimal spotlight vignette.                                       |
+| Dynamic Jump                   | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                                                  |
+| Victory Celebration            | Fists in the air, wide smile with teeth visible. Background: stage with spotlights and cheering crowd, blurred.                                |
+| Thinking Pose                  | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                                                   |
+| Holding a Sign                 | Holding a large signboard ("Welcome to Ju-Do-Kon!") and a pointer stick. Background: dojo interior with mats.                                  |
+| Casual Clothes                 | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky.                 |
+| Community Event                | Waving with open hand, friendly eyes. Background: banner with confetti and small crowd silhouettes.                                            |
+| Seasonal Winter                | Wearing a light scarf over the gi, cheeks slightly rosy. Background: soft snowflakes and cool blue gradient.                                   |
+| Seasonal Summer                | Rolled sleeves, sweat drop, cheerful wave. Background: bright sky with sun flare and training field.                                           |
+| Safety Reminder                | Calm, reassuring smile, open palms. Background: simple gradient with subtle safety icon (shield/heart).                                        |
+| Accessibility Encouragement    | Gentle thumbs-up, warm expression. Background: neutral pastel gradient with high contrast, minimal decorative elements.                         |
+| Parent Guidance                | Slightly serious but kind expression, pointing to a tip card. Background: clean interface-friendly panel with ample whitespace.                 |
 
-**Example Prompt Applications:**
+**Detailed Example Prompts:**
 
-- **Default Pose — Giving Advice**: Use the base prompt to render KG pointing upward with one hand and smiling brightly in a slightly blurred dojo scene.
-- **Dynamic Action Pose — Jumping**: Apply the base prompt while KG jumps mid-air with fists raised triumphantly against a cheering stadium backdrop.
-- **Calm Pose — Thinking**: Follow the base prompt to depict KG resting a hand on his chin with a curious expression on a clean white background with a soft shadow.
-- **Holding a Sign — Tutorial Scene**: Use the base prompt and place KG holding a wooden pointer stick and a large "Welcome to Ju-Do-Kon!" signboard inside a dojo interior.
-- **Casual Clothes Variation**: Retain the base prompt style while KG wears a red t-shirt and blue shorts, waves with a water bottle in hand, and stands in a grassy outdoor training area under a blue sky.
-- **Achievement Scene — Trophy**: Keep the base prompt details and show KG lifting a gold trophy above his head on a spotlighted stage with a cheering crowd.
+- **Onboarding — Giving Advice**  
+  **Prompt:** Use the base prompt. Add: "KG stands in a dojo, pointing upward with one hand, smiling brightly with visible teeth. Background shows tatami mats and wooden walls, slightly blurred, with warm ambient lighting."
+- **Tutorial — Teaching Technique**  
+  **Prompt:** Use the base prompt. Add: "KG demonstrates a basic judo stance, one open palm forward, calm confident smile. Background is a clean dojo mat with minimal UI callouts and soft shadow."
+- **Match Flow — Countdown Moment**  
+  **Prompt:** Use the base prompt. Add: "KG faces forward with hands on hips and focused eyes, a small stopwatch icon near his shoulder. Background is a subtle spotlight vignette with no clutter."
+- **Match Flow — Victory Celebration**  
+  **Prompt:** Use the base prompt. Add: "KG raises both fists in the air, joyful grin, standing on a stage with soft spotlights and a blurred cheering crowd behind him."
+- **Out-of-Match — Community Event**  
+  **Prompt:** Use the base prompt. Add: "KG waves with open hand, friendly eyes, confetti drifting in the air. Background is a festive banner with soft crowd silhouettes."
+- **Support & Safety — Parent Guidance**  
+  **Prompt:** Use the base prompt. Add: "KG holds a tip card and gestures toward it with a gentle, reassuring expression. Background is a clean UI panel with ample whitespace and muted tones."
 
 ### 8. Implementation Guidelines (P1)
 
@@ -254,6 +269,11 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 - Reuse the canonical color palette swatches; document any temporary deviations with rationale and HEX values.
 - Stage supporting props so they reinforce KG’s role as coach (clipboards, tablets, trophies) rather than steal focus.
 - Provide layered source files (separate outlines, fills, highlights) to support downstream animation or recoloring.
+- Keep head shape rounded and large, with eyes and brows proportioned for immediate readability.
+- Maintain consistent beard and eyebrow thickness to preserve KG’s identity across expressions.
+- Preserve the Japan flag patch placement on the left chest in all gi-based renders.
+- Use clear silhouette spacing between arms and torso so gestures remain readable at small sizes.
+- Ensure belt knot direction and end lengths remain symmetrical for visual consistency.
 
 **Don't:**
 
@@ -263,6 +283,10 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 - Add aggressive weaponry, intimidating facial expressions, or other elements that contradict KG’s mentor tone.
 - Place busy background props directly behind KG’s face or hands where they compete with key gestures.
 - Export final art without transparent backgrounds or crop margins, which complicates UI placement.
+- Change the gi collar shape or sleeve length in ways that break judo uniform authenticity.
+- Overcrowd the scene with props that compete with KG’s outline or primary gesture.
+- Use harsh shadows or neon highlights that overwhelm the warm, friendly lighting style.
+- Depict KG in poses that feel unbalanced or off-center relative to the frame.
 
 ---
 
@@ -384,4 +408,4 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 
 ## Source Files Consolidated
 
-This PRD now consolidates the full KG character design and prompt guidance that previously lived in separate Character Design Document and Character Prompt Sheet files. Those standalone documents (`design/characterDesign/kgCharacterDesignDocument.md` and `design/characterDesign/kgCharacterPromptSheet.md`) have been formally retired and removed from the repository; reference this PRD for the canonical, end-to-end specifications. Updated October 2024 to capture the consolidation release.
+This PRD now consolidates the full KG character design and prompt guidance that previously lived in separate Character Design Document and Character Prompt Sheet references. Those standalone documents have been formally retired and removed from the repository; reference this PRD for the canonical, end-to-end specifications. Updated October 2024 to capture the consolidation release.
