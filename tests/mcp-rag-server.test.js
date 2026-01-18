@@ -169,7 +169,12 @@ describe("MCP RAG Server - judokon.search tool", () => {
 
   describe("Embedding Data Integrity", () => {
     it("should have correct embedding dimensions", () => {
-      const expectedDimension = embeddingsArray[0]?.embedding?.length;
+      // Ensure embeddings array is not empty and first embedding is valid
+      expect(embeddingsArray.length).toBeGreaterThan(0);
+      expect(embeddingsArray[0]).toHaveProperty("embedding");
+      expect(Array.isArray(embeddingsArray[0].embedding)).toBe(true);
+      
+      const expectedDimension = embeddingsArray[0].embedding.length;
       expect(
         expectedDimension,
         "Expected MiniLM embeddings to be 384 dimensions."
