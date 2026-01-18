@@ -404,10 +404,8 @@ function getStatContainer(selector) {
  * @returns {Promise<ReturnType<typeof resolveRound>>}
  */
 export async function resolveRoundDirect(store, stat, playerVal, opponentVal, opts = {}) {
-  // Test environments can pass opts.delayMs explicitly
   // When forceDirectResolution is true, ensure delayMs is 0 for immediate resolution
-  const resolveOpts =
-    opts.forceDirectResolution && !("delayMs" in opts) ? { ...opts, delayMs: 0 } : opts;
+  const resolveOpts = opts.forceDirectResolution ? { ...opts, delayMs: 0 } : opts;
   const result = await resolveRound(store, stat, playerVal, opponentVal, resolveOpts);
   store.playerChoice = null;
   return result;
