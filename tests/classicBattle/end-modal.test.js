@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { vi } from "vitest";
+import { useCanonicalTimers, runAllTimersAsync } from "../setup/fakeTimers.js";
 
 // Defer reading HTML file until after jsdom is setup
 let htmlContent;
@@ -31,10 +32,17 @@ vi.mock("../../src/helpers/classicBattle/quitModal.js", async () => {
 });
 
 describe("Classic Battle end-of-match modal", () => {
+  let timers;
+
   beforeEach(() => {
     document.documentElement.innerHTML = getHtmlContent();
     handleReplayMock.mockClear();
     quitMatchMock.mockClear();
+    timers = useCanonicalTimers();
+  });
+
+  afterEach(() => {
+    timers.cleanup();
   });
 
   test("renders with Replay and Quit when invoked", async () => {
@@ -67,7 +75,6 @@ describe("Classic Battle end-of-match modal", () => {
   });
 
   test("applies aria attributes and focuses replay control", async () => {
-    vi.useFakeTimers();
     const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
     const { createBattleStore } = await import("../../src/helpers/classicBattle/roundManager.js");
     const store = createBattleStore();
@@ -78,9 +85,8 @@ describe("Classic Battle end-of-match modal", () => {
     expect(modal?.getAttribute("aria-modal")).toBe("true");
     expect(modal?.getAttribute("aria-labelledby")).toBe("match-end-title");
     expect(modal?.getAttribute("aria-describedby")).toBe("match-end-desc");
-    vi.runAllTimers();
+    await runAllTimersAsync();
     expect(document.activeElement).toBe(replayButton);
-    vi.useRealTimers();
   });
 
   test("replay control calls handleReplay", async () => {
