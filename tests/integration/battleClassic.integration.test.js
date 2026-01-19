@@ -138,7 +138,8 @@ async function performStatSelectionFlow(testApi) {
   // selectionMade and __lastSelectionMade are ephemeral and may reset once the round resolves in test mode.
   // Verify selection happened by checking playerChoice is set OR buttons are disabled.
   // In fast-running tests, the round may complete before we can check __lastSelectionMade.
-  const selectionOccurred = store.playerChoice === selectedStat || statButtons.some((button) => button.disabled);
+  const selectionOccurred =
+    store.playerChoice === selectedStat || statButtons.some((button) => button.disabled);
   expect(selectionOccurred).toBe(true);
   if (store.playerChoice) {
     expect(store.playerChoice).toBe(selectedStat);
@@ -638,7 +639,8 @@ describe("Battle Classic Page Integration", () => {
         const handler = () => {
           offBattleEvent("opponentReveal", handler);
           // Check state immediately when event fires (synchronously)
-          placeholderWasPresentDuringReveal = opponentCard?.querySelector("#mystery-card-placeholder") !== null;
+          placeholderWasPresentDuringReveal =
+            opponentCard?.querySelector("#mystery-card-placeholder") !== null;
           wasObscuredDuringReveal = opponentCard?.classList.contains("is-obscured") ?? false;
           resolve();
         };

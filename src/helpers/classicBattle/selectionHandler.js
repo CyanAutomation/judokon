@@ -243,7 +243,7 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
   // Input validation: ensure stats is a valid object
   if (!stats || typeof stats !== "object" || Array.isArray(stats)) {
     throw new TypeError(
-      `simulateOpponentStat: stats must be a valid object, received ${stats === null ? 'null' : typeof stats}`
+      `simulateOpponentStat: stats must be a valid object, received ${stats === null ? "null" : typeof stats}`
     );
   }
 
@@ -348,7 +348,8 @@ function getStatContainer(selector) {
  */
 export async function resolveRoundDirect(store, stat, playerVal, opponentVal, opts = {}) {
   // When forceDirectResolution is true, ensure delayMs is 0 for immediate resolution
-  const resolveOpts = opts.forceDirectResolution && !("delayMs" in opts) ? { ...opts, delayMs: 0 } : opts;
+  const resolveOpts =
+    opts.forceDirectResolution && !("delayMs" in opts) ? { ...opts, delayMs: 0 } : opts;
   const result = await resolveRound(store, stat, playerVal, opponentVal, resolveOpts);
   store.playerChoice = null;
   return result;
@@ -1111,10 +1112,8 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
         return;
       }
 
-      const forceDirectResolution =
-        opts.forceDirectResolution || store?.forceDirectResolution;
-      const shouldForceOpponentPrompt =
-        handledByOrchestrator === false || forceDirectResolution;
+      const forceDirectResolution = opts.forceDirectResolution || store?.forceDirectResolution;
+      const shouldForceOpponentPrompt = handledByOrchestrator === false || forceDirectResolution;
       const result = await syncResultDisplay(
         store,
         stat,

@@ -113,8 +113,12 @@ describe("setupScheduler", () => {
     }
 
     expect(startSpy).toHaveBeenCalled();
-    expect(add).toHaveBeenCalledWith("pagehide", stopSpy.mock.calls.length > 0 ? expect.any(Function) : scheduler.stop, { once: true });
-    
+    expect(add).toHaveBeenCalledWith(
+      "pagehide",
+      stopSpy.mock.calls.length > 0 ? expect.any(Function) : scheduler.stop,
+      { once: true }
+    );
+
     add.mockRestore();
     startSpy.mockRestore();
     stopSpy.mockRestore();
@@ -191,7 +195,7 @@ describe("setupScheduler", () => {
     const startSpy = vi.spyOn(scheduler, "start");
     const originalRAF = globalThis.requestAnimationFrame;
     const originalProcessEnv = process.env.VITEST;
-    
+
     // @ts-ignore - Intentionally delete for test
     delete globalThis.requestAnimationFrame;
     // Also need to remove test env flags so only RAF check matters

@@ -60,7 +60,7 @@ export function chooseOpponentStat(values, difficulty = "easy") {
     // Single-pass to find max value and collect best stats
     let max = -Infinity;
     const best = [];
-    
+
     for (const v of values) {
       if (typeof v.value === "number" && !isNaN(v.value)) {
         if (v.value > max) {
@@ -72,12 +72,12 @@ export function chooseOpponentStat(values, difficulty = "easy") {
         }
       }
     }
-    
+
     if (best.length === 0) {
       // Fallback to random if all values are invalid
       return STATS[Math.floor(seededRandom() * STATS.length)];
     }
-    
+
     // Random selection among best stats
     return best[Math.floor(seededRandom() * best.length)].stat;
   }

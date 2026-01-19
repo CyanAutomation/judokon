@@ -239,12 +239,13 @@ describe("countdown resets after stat selection", () => {
           : positiveTimerSeries.length > 0
             ? positiveTimerSeries
             : fallbackReadings;
-    
+
     const hasDecrease = samples.some((value, index) => index > 0 && value < samples[index - 1]);
-    
+
     expect(samples.length).toBeGreaterThanOrEqual(3);
     // Timer should be decreasing, OR all samples should be the same positive value (timer frozen but visible)
-    const hasConsistentPositiveValue = samples.length >= 3 && samples.every((v) => v > 0 && v === samples[0]);
+    const hasConsistentPositiveValue =
+      samples.length >= 3 && samples.every((v) => v > 0 && v === samples[0]);
     expect(hasDecrease || hasConsistentPositiveValue).toBe(true);
 
     const hasCountdownSnackbar = /Next round in:/.test(snackbarText);

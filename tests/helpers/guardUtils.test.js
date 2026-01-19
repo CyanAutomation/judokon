@@ -46,7 +46,9 @@ describe("guardUtils", () => {
       expect(store[token]).toBe("value2");
     });
     it("throws error for invalid action", () => {
-      expect(() => manageHiddenProperty(store, token, "invalid")).toThrow("Invalid action: invalid. Expected \"get\" or \"set\".");
+      expect(() => manageHiddenProperty(store, token, "invalid")).toThrow(
+        'Invalid action: invalid. Expected "get" or "set".'
+      );
     });
   });
 

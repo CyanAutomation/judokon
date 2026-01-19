@@ -160,9 +160,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     await Promise.resolve();
 
     // Verify that ready event was dispatched after interrupt
-    const readyDispatches = dispatchSpy.mock.calls.filter(
-      ([eventName]) => eventName === "ready"
-    );
+    const readyDispatches = dispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
     expect(readyDispatches.length).toBeGreaterThan(0);
 
     const readyEvents = dispatchBattleEvent.mock.calls.filter(

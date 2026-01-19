@@ -173,12 +173,9 @@ describe("MCP RAG Server - judokon.search tool", () => {
       expect(embeddingsArray.length).toBeGreaterThan(0);
       expect(embeddingsArray[0]).toHaveProperty("embedding");
       expect(Array.isArray(embeddingsArray[0].embedding)).toBe(true);
-      
+
       const expectedDimension = embeddingsArray[0].embedding.length;
-      expect(
-        expectedDimension,
-        "Expected MiniLM embeddings to be 384 dimensions."
-      ).toBe(384);
+      expect(expectedDimension, "Expected MiniLM embeddings to be 384 dimensions.").toBe(384);
       for (const item of embeddingsArray.slice(0, 5)) {
         // All embeddings should have the same dimension (384 for MiniLM-L6-v2)
         expect(Array.isArray(item.embedding)).toBe(true);

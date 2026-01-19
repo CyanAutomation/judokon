@@ -59,7 +59,12 @@ export function setupScheduler() {
     // isTestModeEnabled not available or failed, continue with false
   }
 
-  if (hasGlobalTestFlag || hasVitestEnv || hasTestMode || typeof requestAnimationFrame !== "function") {
+  if (
+    hasGlobalTestFlag ||
+    hasVitestEnv ||
+    hasTestMode ||
+    typeof requestAnimationFrame !== "function"
+  ) {
     return;
   }
 
