@@ -92,29 +92,56 @@ describe("setupScheduler", () => {
 
   it("starts and registers stop handler", () => {
     const add = vi.spyOn(window, "addEventListener");
+    const startSpy = vi.spyOn(scheduler, "start");
+    const stopSpy = vi.spyOn(scheduler, "stop");
     const originalTest = globalThis.__TEST__;
+    const originalVitest = globalThis.__VITEST__;
+    const originalProcessEnv = process.env.VITEST;
 
+    // Remove all test environment flags
     delete globalThis.__TEST__;
+    delete globalThis.__VITEST__;
+    delete process.env.VITEST;
 
     setupScheduler();
 
+    // Restore test environment
     globalThis.__TEST__ = originalTest;
+    globalThis.__VITEST__ = originalVitest;
+    if (originalProcessEnv !== undefined) {
+      process.env.VITEST = originalProcessEnv;
+    }
 
-    expect(scheduler.start).toHaveBeenCalled();
-    expect(add).toHaveBeenCalledWith("pagehide", scheduler.stop, { once: true });
+    expect(startSpy).toHaveBeenCalled();
+    expect(add).toHaveBeenCalledWith("pagehide", stopSpy.mock.calls.length > 0 ? expect.any(Function) : scheduler.stop, { once: true });
+    
     add.mockRestore();
+    startSpy.mockRestore();
+    stopSpy.mockRestore();
   });
 
   it("registers visibilitychange listener for pause/resume", () => {
     const addWindowListener = vi.spyOn(window, "addEventListener");
     const addDocListener = vi.spyOn(document, "addEventListener");
+    const pauseSpy = vi.spyOn(scheduler, "pause");
+    const resumeSpy = vi.spyOn(scheduler, "resume");
     const originalTest = globalThis.__TEST__;
+    const originalVitest = globalThis.__VITEST__;
+    const originalProcessEnv = process.env.VITEST;
 
+    // Remove all test environment flags
     delete globalThis.__TEST__;
+    delete globalThis.__VITEST__;
+    delete process.env.VITEST;
 
     setupScheduler();
 
+    // Restore test environment
     globalThis.__TEST__ = originalTest;
+    globalThis.__VITEST__ = originalVitest;
+    if (originalProcessEnv !== undefined) {
+      process.env.VITEST = originalProcessEnv;
+    }
 
     // Verify visibilitychange listener was registered
     const visibilityCall = addDocListener.mock.calls.find((call) => call[0] === "visibilitychange");
@@ -129,7 +156,7 @@ describe("setupScheduler", () => {
       configurable: true
     });
     visibilityHandler();
-    expect(scheduler.pause).toHaveBeenCalled();
+    expect(pauseSpy).toHaveBeenCalled();
 
     // Test resume when document becomes visible
     vi.clearAllMocks();
@@ -139,33 +166,46 @@ describe("setupScheduler", () => {
       configurable: true
     });
     visibilityHandler();
-    expect(scheduler.resume).toHaveBeenCalled();
+    expect(resumeSpy).toHaveBeenCalled();
 
     addWindowListener.mockRestore();
     addDocListener.mockRestore();
+    pauseSpy.mockRestore();
+    resumeSpy.mockRestore();
   });
 
   it("skips setup when globalThis.__TEST__ is set", () => {
+    const startSpy = vi.spyOn(scheduler, "start");
     const originalTest = globalThis.__TEST__;
     globalThis.__TEST__ = true;
 
     setupScheduler();
 
-    expect(scheduler.start).not.toHaveBeenCalled();
+    expect(startSpy).not.toHaveBeenCalled();
 
     globalThis.__TEST__ = originalTest;
+    startSpy.mockRestore();
   });
 
   it("skips setup when requestAnimationFrame is unavailable", () => {
+    const startSpy = vi.spyOn(scheduler, "start");
     const originalRAF = globalThis.requestAnimationFrame;
+    const originalProcessEnv = process.env.VITEST;
+    
     // @ts-ignore - Intentionally delete for test
     delete globalThis.requestAnimationFrame;
+    // Also need to remove test env flags so only RAF check matters
+    delete process.env.VITEST;
 
     setupScheduler();
 
-    expect(scheduler.start).not.toHaveBeenCalled();
+    expect(startSpy).not.toHaveBeenCalled();
 
     globalThis.requestAnimationFrame = originalRAF;
+    if (originalProcessEnv !== undefined) {
+      process.env.VITEST = originalProcessEnv;
+    }
+    startSpy.mockRestore();
   });
 
   it.skip("DEPRECATED: process.env.VITEST removed from codebase", () => {
