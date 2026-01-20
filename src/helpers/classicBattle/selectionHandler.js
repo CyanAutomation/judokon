@@ -236,8 +236,8 @@ export function shouldClearSelectionForNextRound(store) {
     return roundsPlayed > lastSelectionRound;
   }
 
-  return true;
-}
+  // Only allow clearing if no selection round has been recorded yet
+  return !Number.isFinite(lastSelectionRound);
 
 /**
  * Determine the opponent's stat choice based on difficulty.
