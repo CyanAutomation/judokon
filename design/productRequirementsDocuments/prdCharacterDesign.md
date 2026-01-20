@@ -210,23 +210,23 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 
 **Scene-Specific Prompt Table:**
 
-| Scene                          | Prompt Additions                                                                                                                               |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Giving Advice                  | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred.                         |
-| Teaching Technique             | Demonstrating a throw stance with open palm gesture. Background: clean dojo mat with minimal UI callouts.                                      |
-| Challenge Intro                | Arms crossed, confident grin. Background: neutral gradient with subtle speed lines.                                                           |
-| Countdown Moment               | Hands on hips, focused expression, small stopwatch icon nearby. Background: minimal spotlight vignette.                                       |
-| Dynamic Jump                   | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                                                  |
-| Trophy Celebration             | Holding a trophy with a proud grin. Background: stage with spotlights and cheering crowd, blurred.                                             |
-| Thinking Pose                  | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                                                   |
-| Holding a Sign                 | Holding a large signboard ("Welcome to Ju-Do-Kon!") and a pointer stick. Background: dojo interior with mats.                                  |
-| Casual Clothes                 | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky.                 |
-| Community Event                | Waving with open hand, friendly eyes. Background: banner with confetti and small crowd silhouettes.                                            |
-| Seasonal Winter                | Wearing a light scarf over the gi, cheeks slightly rosy. Background: soft snowflakes and cool blue gradient.                                   |
-| Seasonal Summer                | Rolled sleeves, sweat drop, cheerful wave. Background: bright sky with sun flare and training field.                                           |
-| Safety Reminder                | Calm, reassuring smile, open palms. Background: simple gradient with subtle safety icon (shield/heart).                                        |
-| Accessibility Encouragement    | Gentle thumbs-up, warm expression. Background: neutral pastel gradient with high contrast, minimal decorative elements.                         |
-| Parent Guidance                | Slightly serious but kind expression, pointing to a tip card. Background: clean interface-friendly panel with ample whitespace.                 |
+| Scene                       | Prompt Additions                                                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Giving Advice               | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred.          |
+| Teaching Technique          | Demonstrating a throw stance with open palm gesture. Background: clean dojo mat with minimal UI callouts.                       |
+| Challenge Intro             | Arms crossed, confident grin. Background: neutral gradient with subtle speed lines.                                             |
+| Countdown Moment            | Hands on hips, focused expression, small stopwatch icon nearby. Background: minimal spotlight vignette.                         |
+| Dynamic Jump                | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                                   |
+| Trophy Celebration          | Holding a trophy with a proud grin. Background: stage with spotlights and cheering crowd, blurred.                              |
+| Thinking Pose               | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                                    |
+| Holding a Sign              | Holding a large signboard ("Welcome to Ju-Do-Kon!") and a pointer stick. Background: dojo interior with mats.                   |
+| Casual Clothes              | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky.  |
+| Community Event             | Waving with open hand, friendly eyes. Background: banner with confetti and small crowd silhouettes.                             |
+| Seasonal Winter             | Wearing a light scarf over the gi, cheeks slightly rosy. Background: soft snowflakes and cool blue gradient.                    |
+| Seasonal Summer             | Rolled sleeves, sweat drop, cheerful wave. Background: bright sky with sun flare and training field.                            |
+| Safety Reminder             | Calm, reassuring smile, open palms. Background: simple gradient with subtle safety icon (shield/heart).                         |
+| Accessibility Encouragement | Gentle thumbs-up, warm expression. Background: neutral pastel gradient with high contrast, minimal decorative elements.         |
+| Parent Guidance             | Slightly serious but kind expression, pointing to a tip card. Background: clean interface-friendly panel with ample whitespace. |
 
 **Detailed Example Prompts:**
 
