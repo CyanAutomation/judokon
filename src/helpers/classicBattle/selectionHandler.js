@@ -214,6 +214,32 @@ function syncRoundsPlayedFromEngine(store) {
 }
 
 /**
+ * Determine if selection flags can be cleared for the next round.
+ *
+ * @pseudocode
+ * 1. If store is invalid, return false.
+ * 2. Compare `roundsPlayed` to the last selection's round marker.
+ * 3. Return true when the round counter has advanced.
+ * 4. Default to true when no round markers exist yet.
+ *
+ * @param {ReturnType<typeof createBattleStore>|Record<string, any>|null|undefined} store
+ * @returns {boolean}
+ */
+export function shouldClearSelectionForNextRound(store) {
+  if (!store || typeof store !== "object") {
+    return false;
+  }
+  const roundsPlayed = Number(store.roundsPlayed);
+  const lastSelectionRound = Number(store.__lastSelectionRound);
+
+  if (Number.isFinite(roundsPlayed) && Number.isFinite(lastSelectionRound)) {
+    return roundsPlayed > lastSelectionRound;
+  }
+
+  // Only allow clearing if no selection round has been recorded yet
+  return !Number.isFinite(lastSelectionRound);
+
+/**
  * Determine the opponent's stat choice based on difficulty.
  *
  * This function simulates an AI opponent's stat selection strategy:
@@ -465,6 +491,9 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 
   store.selectionMade = true;
   store.__lastSelectionMade = true;
+  store.__lastSelectionRound = Number.isFinite(Number(store.roundsPlayed))
+    ? Number(store.roundsPlayed)
+    : 0;
   store.playerChoice = stat;
 
   logSelectionMutation("applySelectionToStore", store, { stat });
@@ -1102,6 +1131,15 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
 
       if (handled) {
         logSelectionDebug("[handleStatSelection] resolveWithFallback returned true (handled)");
+        try {
+          const roundResolvedPromise = getRoundResolvedPromise?.();
+          if (roundResolvedPromise && typeof roundResolvedPromise.then === "function") {
+            await Promise.race([
+              roundResolvedPromise,
+              new Promise(resolve => setTimeout(resolve, 5000)) // 5s timeout
+            ]);
+          }
+        } catch {}
         syncRoundsPlayedFromEngine(store);
         logSelectionMutation("handleStatSelection.handled", store, {
           stat,

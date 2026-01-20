@@ -3,7 +3,7 @@ import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { bridgeEngineEvents } from "./engineBridge.js";
-import { logSelectionMutation } from "./selectionHandler.js";
+import { logSelectionMutation, shouldClearSelectionForNextRound } from "./selectionHandler.js";
 
 // Utilities
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
@@ -275,6 +275,13 @@ export async function startRound(store, onRoundStart) {
   try {
     const resetSelectionFlags = (source) => {
       if (!store || typeof store !== "object") {
+        return false;
+      }
+      if (!shouldClearSelectionForNextRound(store)) {
+        logSelectionMutation(`${source}.deferred`, store, {
+          currentRoundsPlayed: store.roundsPlayed,
+          lastSelectionRound: store.__lastSelectionRound
+        });
         return false;
       }
       const hadSelection = !!store.selectionMade || !!store.__lastSelectionMade;

@@ -1,6 +1,10 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import { startTimer } from "../timerService.js";
-import { handleStatSelection, logSelectionMutation } from "../selectionHandler.js";
+import {
+  handleStatSelection,
+  logSelectionMutation,
+  shouldClearSelectionForNextRound
+} from "../selectionHandler.js";
 import { getCardStatValue } from "../cardStatUtils.js";
 import { getOpponentJudoka } from "../cardSelection.js";
 import {
@@ -46,11 +50,20 @@ export async function waitingForPlayerActionEnter(machine) {
     try {
       const selectionInFlight = !!store?.[SELECTION_IN_FLIGHT_GUARD];
       if (!selectionInFlight) {
-        // Use unified API to reset selection state
-        resetSelectionFinalized(store);
-        store.__lastSelectionMade = false;
-        store.playerChoice = null;
-        logSelectionMutation("waitingForPlayerActionEnter.reset", store);
+        const shouldClear = shouldClearSelectionForNextRound(store);
+        if (shouldClear) {
+          // Use unified API to reset selection state
+          resetSelectionFinalized(store);
+          store.selectionMade = false;
+          store.__lastSelectionMade = false;
+          store.playerChoice = null;
+          logSelectionMutation("waitingForPlayerActionEnter.reset", store);
+        } else {
+          logSelectionMutation("waitingForPlayerActionEnter.resetDeferred", store, {
+            roundsPlayed: store.roundsPlayed,
+            lastSelectionRound: store.__lastSelectionRound
+          });
+        }
       } else {
         logSelectionMutation("waitingForPlayerActionEnter.resetSkipped", store, {
           selectionInFlight: true

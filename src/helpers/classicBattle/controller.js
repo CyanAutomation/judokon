@@ -1,4 +1,5 @@
 import { createBattleStore, startRound } from "./roundManager.js";
+import { shouldClearSelectionForNextRound } from "./selectionHandler.js";
 import { initClassicBattleOrchestrator } from "./orchestrator.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "../featureFlags.js";
 import { setTestMode } from "../testModeUtils.js";
@@ -102,8 +103,10 @@ export class ClassicBattleController extends EventTarget {
       await startRoundRef(store);
       if (store && typeof store === "object") {
         try {
-          store.selectionMade = false;
-          store.__lastSelectionMade = false;
+          if (shouldClearSelectionForNextRound(store)) {
+            store.selectionMade = false;
+            store.__lastSelectionMade = false;
+          }
         } catch {}
       }
     } else {
