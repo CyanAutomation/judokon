@@ -493,7 +493,7 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.__lastSelectionMade = true;
   store.__lastSelectionRound = Number.isFinite(Number(store.roundsPlayed))
     ? Number(store.roundsPlayed)
-    : store.__lastSelectionRound;
+    : 0;
   store.playerChoice = stat;
 
   logSelectionMutation("applySelectionToStore", store, { stat });
