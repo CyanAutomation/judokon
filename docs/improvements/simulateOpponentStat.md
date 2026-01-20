@@ -56,6 +56,7 @@ Added robust validation to prevent crashes from invalid inputs:
 ```
 
 **Error Message Example:**
+
 ```
 TypeError: simulateOpponentStat: stats must be a valid object, received null
 ```
@@ -95,6 +96,7 @@ if (validValues.length === 0) {
 Added 25 new edge case tests covering:
 
 #### Input Validation Tests (11 tests)
+
 - Null/undefined inputs
 - Array inputs (should reject)
 - Primitive type inputs
@@ -107,6 +109,7 @@ Added 25 new edge case tests covering:
 - Floating point values
 
 #### chooseOpponentStat Edge Cases (10 tests)
+
 - Empty/null/undefined values arrays
 - Single stat value
 - All equal values (tie scenarios)
@@ -116,27 +119,32 @@ Added 25 new edge case tests covering:
 - Non-numeric value properties
 
 #### Boundary Conditions (2 tests)
+
 - Very close floating point comparisons
 - Exact average boundary values
 
 #### Stress Tests (2 tests)
+
 - 1000 repeated calls (memory leak detection)
 - 100 rapid difficulty changes
 
 ## Test Results
 
 ### Before Improvements
+
 - 16 tests in statSelection.test.js
 - 7 tests in difficulty.test.js
 - **Total: 23 tests**
 
 ### After Improvements
+
 - 16 tests in statSelection.test.js (all passing ✅)
 - 7 tests in difficulty.test.js (all passing ✅)
 - 25 NEW tests in simulateOpponentStat.edge-cases.test.js (all passing ✅)
 - **Total: 48 tests**
 
 ### Quality Checks
+
 - ✅ Prettier formatting: PASS
 - ✅ ESLint validation: PASS
 - ✅ JSDoc validation: PASS
