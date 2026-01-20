@@ -1134,7 +1134,10 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
         try {
           const roundResolvedPromise = getRoundResolvedPromise?.();
           if (roundResolvedPromise && typeof roundResolvedPromise.then === "function") {
-            await roundResolvedPromise;
+            await Promise.race([
+              roundResolvedPromise,
+              new Promise(resolve => setTimeout(resolve, 5000)) // 5s timeout
+            ]);
           }
         } catch {}
         syncRoundsPlayedFromEngine(store);
