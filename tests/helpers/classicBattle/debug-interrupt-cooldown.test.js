@@ -63,18 +63,18 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
       on: vi.fn((evt, fn) => handlers[evt]?.add(fn)),
       off: vi.fn((evt, fn) => handlers[evt]?.delete(fn)),
       start: vi.fn((dur) => {
-        // Emit ticks synchronously, then expire on next microtask
+        // Emit ticks synchronously, then expire on the next timer tick
         const ticks = dur > 0 ? [dur, dur - 1, 0] : [0];
         ticks.forEach((val) => handlers.tick.forEach((fn) => fn(val)));
-        // Schedule expiration on next microtask to allow event handlers to register
-        queueMicrotask(() => {
+        // Schedule expiration on a timer to align with fake timer control
+        setTimeout(() => {
           handlers.expired.forEach((fn) => fn());
-        });
+        }, 0);
       }),
       stop: vi.fn(() => {
-        queueMicrotask(() => {
+        setTimeout(() => {
           handlers.expired.forEach((fn) => fn());
-        });
+        }, 0);
       }),
       pause: vi.fn(),
       resume: vi.fn()

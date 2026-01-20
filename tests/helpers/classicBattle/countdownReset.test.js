@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { setTestMode } from "../../../src/helpers/testModeUtils.js";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleCardContainers, createBattleHeader } from "../../utils/testUtils.js";
@@ -116,6 +117,7 @@ describe("countdown resets after stat selection", () => {
   });
   beforeEach(async () => {
     document.body.innerHTML = "";
+    setTestMode(false);
     // Ensure previous tests don't leave snackbars disabled
     try {
       if (typeof window !== "undefined" && window.__disableSnackbars) {
