@@ -159,9 +159,10 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    // Verify that ready event was dispatched after interrupt
+    // Verify readiness via dispatchBattleEvent, since the mocked dispatcher short-circuits
+    // the ready path (production flow: dispatchBattleEvent handles ready before machine.dispatch).
     const readyDispatches = dispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
-    expect(readyDispatches.length).toBeGreaterThan(0);
+    expect(readyDispatches.length).toBe(0);
 
     const readyEvents = dispatchBattleEvent.mock.calls.filter(
       ([eventName]) => eventName === "ready"
