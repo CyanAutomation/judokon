@@ -238,6 +238,7 @@ export function shouldClearSelectionForNextRound(store) {
 
   // Only allow clearing if no selection round has been recorded yet
   return !Number.isFinite(lastSelectionRound);
+}
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -1136,7 +1137,7 @@ export function handleStatSelection(store, stat, { playerVal, opponentVal, ...op
           if (roundResolvedPromise && typeof roundResolvedPromise.then === "function") {
             await Promise.race([
               roundResolvedPromise,
-              new Promise(resolve => setTimeout(resolve, 5000)) // 5s timeout
+              new Promise((resolve) => setTimeout(resolve, 5000)) // 5s timeout
             ]);
           }
         } catch {}
