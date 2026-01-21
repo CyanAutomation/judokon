@@ -136,7 +136,7 @@ describe("setupScheduler", () => {
 
     // Remove Vitest environment flags
     delete globalThis.__VITEST__;
-    process.env.VITEST = "";
+    delete process.env.VITEST;
 
     setupScheduler();
 
