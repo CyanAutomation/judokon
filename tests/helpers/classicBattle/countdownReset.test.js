@@ -208,7 +208,7 @@ describe("countdown resets after stat selection", () => {
 
     // Timer may be intermittently visible due to UI state changes
     // Accept if we have at least 1 positive timer value, indicating countdown started
-    expect(samples.length).toBeGreaterThanOrEqual(1);
+    expect(samples.length).toBeGreaterThanOrEqual(2);
 
     // If we have multiple samples, check if any show countdown behavior
     const hasDecrease = samples.some((value, index) => index > 0 && value < samples[index - 1]);
