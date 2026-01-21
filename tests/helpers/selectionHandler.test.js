@@ -39,7 +39,7 @@ vi.mock("../../src/helpers/classicBattle/timerUtils.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
-  getRoundResolvedPromise: vi.fn(() => new Promise(() => {}))
+  getRoundResolvedPromise: vi.fn(() => Promise.resolve())
 }));
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -105,7 +105,7 @@ describe("handleStatSelection helpers", () => {
     }));
 
     vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
-      getRoundResolvedPromise: vi.fn(() => new Promise(() => {}))
+      getRoundResolvedPromise: vi.fn(() => Promise.resolve())
     }));
 
     vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -305,11 +305,31 @@ describe("handleStatSelection helpers", () => {
     getBattleState.mockReturnValue("roundDecision");
     dispatchBattleEvent.mockResolvedValue(false);
 
+    // Create a deferred promise that resolves when roundResolved is emitted
+    let resolveRoundResolved;
+    const roundResolvedPromise = new Promise((resolve) => {
+      resolveRoundResolved = resolve;
+    });
+
+    // Mock getRoundResolvedPromise to return our controlled promise
+    const promises = await import("../../src/helpers/classicBattle/promises.js");
+    promises.getRoundResolvedPromise.mockReturnValue(roundResolvedPromise);
+
+    // Make emitBattleEvent resolve the promise when roundResolved is emitted
+    const originalEmit = emitBattleEvent.getMockImplementation();
+    emitBattleEvent.mockImplementation((eventName, ...args) => {
+      if (eventName === "roundResolved") {
+        resolveRoundResolved();
+      }
+      return originalEmit ? originalEmit(eventName, ...args) : undefined;
+    });
+
     const timerUtils = await import("../../src/helpers/classicBattle/timerUtils.js");
     const resolver = await import("../../src/helpers/classicBattle/roundResolver.js");
 
-    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+    const handlePromise = handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
     await vi.runAllTimersAsync();
+    await handlePromise;
 
     expect(resolver.resolveRound).toHaveBeenCalledWith(
       store,
