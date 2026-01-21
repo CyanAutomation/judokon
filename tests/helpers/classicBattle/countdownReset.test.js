@@ -198,32 +198,34 @@ describe("countdown resets after stat selection", () => {
     const timerSeries = readings.filter((value) => Number.isFinite(value));
     const positiveTimerSeries = timerSeries.filter((value) => value > 0);
     const samples =
-      positiveTimerSeries.length >= 3
+      positiveTimerSeries.length >= 2
         ? positiveTimerSeries
-        : fallbackReadings.length >= 3
+        : fallbackReadings.length >= 2
           ? fallbackReadings
           : positiveTimerSeries.length > 0
             ? positiveTimerSeries
             : fallbackReadings;
 
-    // Timer may be intermittently visible due to UI state changes
-    // Accept if we have at least 1 positive timer value, indicating countdown started
+    // Timer may be intermittently visible due to UI state changes, but we still need at least
+    // two positive samples to validate countdown progress.
     expect(samples.length).toBeGreaterThanOrEqual(2);
 
-    // If we have multiple samples, check if any show countdown behavior
-    const hasDecrease = samples.some((value, index) => index > 0 && value < samples[index - 1]);
-    const hasConsistentPositiveValue =
-      samples.length >= 2 && samples.every((v) => v > 0 && v === samples[0]);
-    const hasAnyPositiveValue = samples.some((v) => v > 0);
+    const hasDecrease = (values) =>
+      values.some((value, index) => index > 0 && value < values[index - 1]);
+    const hasDistinctValues = (values) =>
+      values.length >= 2 && Math.min(...values) !== Math.max(...values);
+    const hasCountdownProgress =
+      hasDecrease(positiveTimerSeries) ||
+      hasDecrease(fallbackReadings) ||
+      hasDistinctValues(positiveTimerSeries) ||
+      hasDistinctValues(fallbackReadings);
 
-    // Accept if: countdown is decreasing, OR timer is frozen but visible, OR we have any positive countdown value
-    // This accounts for UI state changes that may temporarily hide the timer
-    expect(hasDecrease || hasConsistentPositiveValue).toBe(true);
+    expect(hasCountdownProgress).toBe(true);
 
     const hasCountdownSnackbar = /Next round in:/.test(snackbarText);
     expect(hasTimerPattern || hasCountdownSnackbar).toBe(true);
-    // SnackbarManager properly manages snackbars; verify at least one exists
-    expect(document.querySelectorAll(".snackbar").length).toBeGreaterThanOrEqual(1);
+    // SnackbarManager should keep a single active snackbar visible.
+    expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
     timers.cleanup();
     randomSpy.mockRestore();
