@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import "./commonMocks.js";
 import createClassicBattleDebugAPI from "../../../src/helpers/classicBattle/setupTestHelpers.js";
-import setupScheduler from "../../../src/helpers/classicBattle/setupScheduler.js";
+import setupScheduler, {
+  shouldStartScheduler
+} from "../../../src/helpers/classicBattle/setupScheduler.js";
 import setupUIBindings from "../../../src/helpers/classicBattle/setupUIBindings.js";
 import setupDebugHooks from "../../../src/helpers/classicBattle/setupDebugHooks.js";
 
@@ -48,6 +50,9 @@ vi.mock("../../../src/helpers/battleStateProgress.js", () => ({
 vi.mock("../../../src/helpers/tooltip.js", () => ({
   initTooltips: vi.fn().mockResolvedValue()
 }));
+vi.mock("../../../src/helpers/testModeUtils.js", () => ({
+  isTestModeEnabled: vi.fn()
+}));
 
 const scheduler = await import("../../../src/utils/scheduler.js");
 const skipHandler = await import("../../../src/helpers/classicBattle/skipHandler.js");
@@ -55,6 +60,7 @@ const battle = await import("../../../src/helpers/classicBattle/statButtons.js")
 const uiHelpers = await import("../../../src/helpers/classicBattle/uiHelpers.js");
 const debugPanel = await import("../../../src/helpers/classicBattle/debugPanel.js");
 const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
+const testModeUtils = await import("../../../src/helpers/testModeUtils.js");
 
 function makeView() {
   return {
@@ -86,227 +92,117 @@ describe("createClassicBattleDebugAPI", () => {
 });
 
 describe("setupScheduler", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  it("returns true when no test flags are set and RAF exists", () => {
+    expect(
+      shouldStartScheduler({
+        env: {},
+        globals: {},
+        testModeEnabled: false,
+        hasRAF: true
+      })
+    ).toBe(true);
   });
 
-  it("starts and registers stop handler", async () => {
-    const originalVitestFlag = globalThis.__VITEST__;
-    const originalEnv = process.env.VITEST;
-    const originalTestMode = typeof window !== "undefined" ? window.__testMode : undefined;
+  it("returns false when a global test flag is set", () => {
+    expect(
+      shouldStartScheduler({
+        env: {},
+        globals: { __TEST__: true },
+        testModeEnabled: false,
+        hasRAF: true
+      })
+    ).toBe(false);
+  });
+
+  it("returns false when Vitest env flag is set", () => {
+    expect(
+      shouldStartScheduler({
+        env: { VITEST: "1" },
+        globals: {},
+        testModeEnabled: false,
+        hasRAF: true
+      })
+    ).toBe(false);
+  });
+
+  it("returns false when test mode is enabled", () => {
+    expect(
+      shouldStartScheduler({
+        env: {},
+        globals: {},
+        testModeEnabled: true,
+        hasRAF: true
+      })
+    ).toBe(false);
+  });
+
+  it("returns false when requestAnimationFrame is unavailable", () => {
+    expect(
+      shouldStartScheduler({
+        env: {},
+        globals: {},
+        testModeEnabled: false,
+        hasRAF: false
+      })
+    ).toBe(false);
+  });
+
+  it("wires scheduler start and listeners when guards allow", () => {
+    const startSpy = vi.spyOn(scheduler, "start");
+    const stopSpy = vi.spyOn(scheduler, "stop");
+    const pauseSpy = vi.spyOn(scheduler, "pause");
+    const resumeSpy = vi.spyOn(scheduler, "resume");
+    const addWindowListener = vi.spyOn(window, "addEventListener");
+    const addDocListener = vi.spyOn(document, "addEventListener");
     const originalRAF = globalThis.requestAnimationFrame;
+    const originalVitestFlag = globalThis.__VITEST__;
 
-    // Remove Vitest environment flags and disable test mode
+    testModeUtils.isTestModeEnabled.mockReturnValue(false);
+    globalThis.requestAnimationFrame = vi.fn();
     delete globalThis.__VITEST__;
-    delete process.env.VITEST;
-    
-    // Ensure requestAnimationFrame is available
-    if (typeof globalThis.requestAnimationFrame !== "function") {
-      globalThis.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
-    }
-    
-    // Import setTestMode and disable it
-    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
-    setTestMode(false);
-    
-    // Re-import modules after environment changes
-    vi.resetModules();
-    const freshScheduler = await import("../../../src/utils/scheduler.js");
-    const freshSetupScheduler = (await import("../../../src/helpers/classicBattle/setupScheduler.js")).default;
-    
-    const add = vi.spyOn(window, "addEventListener");
-    const startSpy = vi.spyOn(freshScheduler, "start");
-    const stopSpy = vi.spyOn(freshScheduler, "stop");
 
-    freshSetupScheduler();
+    setupScheduler();
 
     expect(startSpy).toHaveBeenCalled();
-    expect(add).toHaveBeenCalledWith(
+    expect(addWindowListener).toHaveBeenCalledWith(
       "pagehide",
       expect.any(Function),
       { once: true }
     );
-
-    // Restore test mode and environment
-    if (originalRAF === undefined) {
-      delete globalThis.requestAnimationFrame;
-    } else {
-      globalThis.requestAnimationFrame = originalRAF;
-    }
-    
-    if (originalTestMode === undefined) {
-      setTestMode(false);
-      if (typeof window !== "undefined") {
-        delete window.__testMode;
-      }
-    } else {
-      setTestMode(originalTestMode);
-    }
-
-    if (originalVitestFlag === undefined) {
-      delete globalThis.__VITEST__;
-    } else {
-      globalThis.__VITEST__ = originalVitestFlag;
-    }
-    if (originalEnv === undefined) {
-      delete process.env.VITEST;
-    } else {
-      process.env.VITEST = originalEnv;
-    }
-
-    add.mockRestore();
-    startSpy.mockRestore();
-    stopSpy.mockRestore();
-    
-    // Reset modules again to restore original state
-    vi.resetModules();
-  });
-
-  it("registers visibilitychange listener for pause/resume", async () => {
-    const originalVitestFlag = globalThis.__VITEST__;
-    const originalEnv = process.env.VITEST;
-    const originalTestMode = typeof window !== "undefined" ? window.__testMode : undefined;
-    const originalRAF = globalThis.requestAnimationFrame;
-
-    // Remove Vitest environment flags and disable test mode
-    delete globalThis.__VITEST__;
-    delete process.env.VITEST;
-    
-    // Ensure requestAnimationFrame is available
-    if (typeof globalThis.requestAnimationFrame !== "function") {
-      globalThis.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
-    }
-    
-    // Import setTestMode and disable it
-    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
-    setTestMode(false);
-    
-    // Re-import modules after environment changes
-    vi.resetModules();
-    const freshScheduler = await import("../../../src/utils/scheduler.js");
-    const freshSetupScheduler = (await import("../../../src/helpers/classicBattle/setupScheduler.js")).default;
-    
-    const addWindowListener = vi.spyOn(window, "addEventListener");
-    const addDocListener = vi.spyOn(document, "addEventListener");
-    const pauseSpy = vi.spyOn(freshScheduler, "pause");
-    const resumeSpy = vi.spyOn(freshScheduler, "resume");
-
-    freshSetupScheduler();
-
-    // Verify visibilitychange listener was registered
+    const pagehideCall = addWindowListener.mock.calls.find((call) => call[0] === "pagehide");
+    expect(pagehideCall).toBeDefined();
+    pagehideCall[1]();
+    expect(stopSpy).toHaveBeenCalled();
     const visibilityCall = addDocListener.mock.calls.find((call) => call[0] === "visibilitychange");
     expect(visibilityCall).toBeDefined();
 
     const visibilityHandler = visibilityCall[1];
-
-    // Test pause when document becomes hidden
-    const originalHidden = Object.getOwnPropertyDescriptor(document, "hidden");
-    Object.defineProperty(document, "hidden", {
-      value: true,
-      writable: true,
-      configurable: true
-    });
+    const hiddenGetter = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
     visibilityHandler();
     expect(pauseSpy).toHaveBeenCalled();
 
-    // Test resume when document becomes visible
-    vi.clearAllMocks();
-    Object.defineProperty(document, "hidden", {
-      value: false,
-      writable: true,
-      configurable: true
-    });
+    hiddenGetter.mockReturnValue(false);
     visibilityHandler();
     expect(resumeSpy).toHaveBeenCalled();
 
-    // Cleanup - restore original hidden property
-    if (originalHidden) {
-      Object.defineProperty(document, "hidden", originalHidden);
-    } else {
-      delete document.hidden;
-    }
-    
-    // Restore test mode and environment
+    hiddenGetter.mockRestore();
     if (originalRAF === undefined) {
       delete globalThis.requestAnimationFrame;
     } else {
       globalThis.requestAnimationFrame = originalRAF;
     }
-    
-    if (originalTestMode === undefined) {
-      setTestMode(false);
-      if (typeof window !== "undefined") {
-        delete window.__testMode;
-      }
-    } else {
-      setTestMode(originalTestMode);
-    }
-
     if (originalVitestFlag === undefined) {
       delete globalThis.__VITEST__;
     } else {
       globalThis.__VITEST__ = originalVitestFlag;
     }
-    if (originalEnv === undefined) {
-      delete process.env.VITEST;
-    } else {
-      process.env.VITEST = originalEnv;
-    }
 
     addWindowListener.mockRestore();
     addDocListener.mockRestore();
+    startSpy.mockRestore();
+    stopSpy.mockRestore();
     pauseSpy.mockRestore();
     resumeSpy.mockRestore();
-    
-    // Reset modules again to restore original state
-    vi.resetModules();
-  });
-
-  it("skips setup when globalThis.__TEST__ is set", () => {
-    const startSpy = vi.spyOn(scheduler, "start");
-    const originalTest = globalThis.__TEST__;
-    globalThis.__TEST__ = true;
-
-    setupScheduler();
-
-    expect(startSpy).not.toHaveBeenCalled();
-
-    globalThis.__TEST__ = originalTest;
-    startSpy.mockRestore();
-  });
-
-  it("skips setup when requestAnimationFrame is unavailable", () => {
-    const startSpy = vi.spyOn(scheduler, "start");
-    const originalRAF = globalThis.requestAnimationFrame;
-    const originalProcessEnv = process.env.VITEST;
-
-    // @ts-ignore - Intentionally delete for test
-    delete globalThis.requestAnimationFrame;
-    // Also need to remove test env flags so only RAF check matters
-    delete process.env.VITEST;
-
-    setupScheduler();
-
-    expect(startSpy).not.toHaveBeenCalled();
-
-    globalThis.requestAnimationFrame = originalRAF;
-    if (originalProcessEnv !== undefined) {
-      process.env.VITEST = originalProcessEnv;
-    }
-    startSpy.mockRestore();
-  });
-
-  it.skip("DEPRECATED: process.env.VITEST removed from codebase", () => {
-    // Note: This test would normally be caught by beforeEach mock setup
-    // but we verify the condition explicitly
-
-    setupScheduler();
-
-    expect(scheduler.start).not.toHaveBeenCalled();
-
-    if (original !== undefined) {
-    } else {
-    }
   });
 });
 

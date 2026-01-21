@@ -35,6 +35,34 @@ import {
 import { isTestModeEnabled } from "../testModeUtils.js";
 
 /**
+ * @summary Decide whether the animation scheduler should start.
+ *
+ * @pseudocode
+ * 1. Read the global test flags from `globals`.
+ * 2. Read the Vitest environment indicator from `env`.
+ * 3. Return false if any test flag is set, test mode is enabled, or RAF is missing.
+ * 4. Otherwise return true.
+ * @param {object} params
+ * @param {object} [params.env] - Environment variables (e.g. process.env).
+ * @param {object} [params.globals] - Global flags (e.g. globalThis).
+ * @param {boolean} params.testModeEnabled - Whether test mode is enabled.
+ * @param {boolean} params.hasRAF - Whether requestAnimationFrame is available.
+ * @returns {boolean}
+ */
+export function shouldStartScheduler({ env, globals, testModeEnabled, hasRAF }) {
+  const hasGlobalTestFlag = Boolean(
+    globals &&
+      (globals.__TEST__ ||
+        globals.__VITEST__ ||
+        globals.__PLAYWRIGHT__ ||
+        globals.__PLAYWRIGHT_TEST__)
+  );
+  const hasVitestEnv = Boolean(env?.VITEST);
+
+  return !(hasGlobalTestFlag || hasVitestEnv || testModeEnabled || !hasRAF);
+}
+
+/**
  * @summary Start the animation scheduler for the battle view.
  *
  * @pseudocode
@@ -44,27 +72,17 @@ import { isTestModeEnabled } from "../testModeUtils.js";
  * @returns {void}
  */
 export function setupScheduler() {
-  const hasGlobalTestFlag = Boolean(
-    typeof globalThis !== "undefined" &&
-      (globalThis.__TEST__ ||
-        globalThis.__VITEST__ ||
-        globalThis.__PLAYWRIGHT__ ||
-        globalThis.__PLAYWRIGHT_TEST__)
-  );
-  const hasVitestEnv = Boolean(typeof process !== "undefined" && process.env?.VITEST);
+  const globals = typeof globalThis !== "undefined" ? globalThis : undefined;
+  const env = typeof process !== "undefined" ? process.env : undefined;
   let hasTestMode = false;
   try {
     hasTestMode = typeof isTestModeEnabled === "function" && isTestModeEnabled();
   } catch {
     // isTestModeEnabled not available or failed, continue with false
   }
+  const hasRAF = typeof requestAnimationFrame === "function";
 
-  if (
-    hasGlobalTestFlag ||
-    hasVitestEnv ||
-    hasTestMode ||
-    typeof requestAnimationFrame !== "function"
-  ) {
+  if (!shouldStartScheduler({ env, globals, testModeEnabled: hasTestMode, hasRAF })) {
     return;
   }
 
