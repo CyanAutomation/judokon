@@ -211,7 +211,7 @@ describe("countdown resets after stat selection", () => {
     expect(samples.length).toBeGreaterThanOrEqual(2);
 
     const hasDecrease = (values) =>
-      values.some((value, index) => values.slice(index + 1).some((later) => later < value));
+      values.some((value, index) => index > 0 && value < values[index - 1]);
     const hasDistinctValues = (values) =>
       values.length >= 2 && Math.min(...values) !== Math.max(...values);
     const hasCountdownProgress =
