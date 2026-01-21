@@ -94,23 +94,14 @@ describe("setupScheduler", () => {
     const add = vi.spyOn(window, "addEventListener");
     const startSpy = vi.spyOn(scheduler, "start");
     const stopSpy = vi.spyOn(scheduler, "stop");
-    const originalTest = globalThis.__TEST__;
-    const originalVitest = globalThis.__VITEST__;
-    const originalProcessEnv = process.env.VITEST;
+    const originalVitestFlag = globalThis.__VITEST__;
+    const originalEnv = process.env.VITEST;
 
-    // Remove all test environment flags
-    delete globalThis.__TEST__;
+    // Remove Vitest environment flags
     delete globalThis.__VITEST__;
     delete process.env.VITEST;
 
     setupScheduler();
-
-    // Restore test environment
-    globalThis.__TEST__ = originalTest;
-    globalThis.__VITEST__ = originalVitest;
-    if (originalProcessEnv !== undefined) {
-      process.env.VITEST = originalProcessEnv;
-    }
 
     expect(startSpy).toHaveBeenCalled();
     expect(add).toHaveBeenCalledWith(
@@ -118,6 +109,17 @@ describe("setupScheduler", () => {
       stopSpy.mock.calls.length > 0 ? expect.any(Function) : scheduler.stop,
       { once: true }
     );
+
+    if (originalVitestFlag === undefined) {
+      delete globalThis.__VITEST__;
+    } else {
+      globalThis.__VITEST__ = originalVitestFlag;
+    }
+    if (originalEnv === undefined) {
+      delete process.env.VITEST;
+    } else {
+      process.env.VITEST = originalEnv;
+    }
 
     add.mockRestore();
     startSpy.mockRestore();
@@ -129,23 +131,14 @@ describe("setupScheduler", () => {
     const addDocListener = vi.spyOn(document, "addEventListener");
     const pauseSpy = vi.spyOn(scheduler, "pause");
     const resumeSpy = vi.spyOn(scheduler, "resume");
-    const originalTest = globalThis.__TEST__;
-    const originalVitest = globalThis.__VITEST__;
-    const originalProcessEnv = process.env.VITEST;
+    const originalVitestFlag = globalThis.__VITEST__;
+    const originalEnv = process.env.VITEST;
 
-    // Remove all test environment flags
-    delete globalThis.__TEST__;
+    // Remove Vitest environment flags
     delete globalThis.__VITEST__;
     delete process.env.VITEST;
 
     setupScheduler();
-
-    // Restore test environment
-    globalThis.__TEST__ = originalTest;
-    globalThis.__VITEST__ = originalVitest;
-    if (originalProcessEnv !== undefined) {
-      process.env.VITEST = originalProcessEnv;
-    }
 
     // Verify visibilitychange listener was registered
     const visibilityCall = addDocListener.mock.calls.find((call) => call[0] === "visibilitychange");
@@ -171,6 +164,17 @@ describe("setupScheduler", () => {
     });
     visibilityHandler();
     expect(resumeSpy).toHaveBeenCalled();
+
+    if (originalVitestFlag === undefined) {
+      delete globalThis.__VITEST__;
+    } else {
+      globalThis.__VITEST__ = originalVitestFlag;
+    }
+    if (originalEnv === undefined) {
+      delete process.env.VITEST;
+    } else {
+      process.env.VITEST = originalEnv;
+    }
 
     addWindowListener.mockRestore();
     addDocListener.mockRestore();
