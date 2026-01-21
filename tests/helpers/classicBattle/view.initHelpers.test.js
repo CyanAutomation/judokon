@@ -90,25 +90,58 @@ describe("setupScheduler", () => {
     vi.clearAllMocks();
   });
 
-  it("starts and registers stop handler", () => {
-    const add = vi.spyOn(window, "addEventListener");
-    const startSpy = vi.spyOn(scheduler, "start");
-    const stopSpy = vi.spyOn(scheduler, "stop");
+  it("starts and registers stop handler", async () => {
     const originalVitestFlag = globalThis.__VITEST__;
     const originalEnv = process.env.VITEST;
+    const originalTestMode = typeof window !== "undefined" ? window.__testMode : undefined;
+    const originalRAF = globalThis.requestAnimationFrame;
 
-    // Remove Vitest environment flags
+    // Remove Vitest environment flags and disable test mode
     delete globalThis.__VITEST__;
     delete process.env.VITEST;
+    
+    // Ensure requestAnimationFrame is available
+    if (typeof globalThis.requestAnimationFrame !== "function") {
+      globalThis.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
+    }
+    
+    // Import setTestMode and disable it
+    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+    setTestMode(false);
+    
+    // Re-import modules after environment changes
+    vi.resetModules();
+    const freshScheduler = await import("../../../src/utils/scheduler.js");
+    const freshSetupScheduler = (await import("../../../src/helpers/classicBattle/setupScheduler.js")).default;
+    
+    const add = vi.spyOn(window, "addEventListener");
+    const startSpy = vi.spyOn(freshScheduler, "start");
+    const stopSpy = vi.spyOn(freshScheduler, "stop");
 
-    setupScheduler();
+    freshSetupScheduler();
 
     expect(startSpy).toHaveBeenCalled();
     expect(add).toHaveBeenCalledWith(
       "pagehide",
-      stopSpy.mock.calls.length > 0 ? expect.any(Function) : scheduler.stop,
+      expect.any(Function),
       { once: true }
     );
+
+    // Restore test mode and environment
+    if (originalRAF === undefined) {
+      delete globalThis.requestAnimationFrame;
+    } else {
+      globalThis.requestAnimationFrame = originalRAF;
+    }
+    
+    if (originalTestMode === undefined) {
+      setTestMode(false);
+      if (typeof window !== "undefined") {
+        delete window.__testMode;
+      }
+    } else {
+      setTestMode(originalTestMode);
+    }
 
     if (originalVitestFlag === undefined) {
       delete globalThis.__VITEST__;
@@ -124,21 +157,41 @@ describe("setupScheduler", () => {
     add.mockRestore();
     startSpy.mockRestore();
     stopSpy.mockRestore();
+    
+    // Reset modules again to restore original state
+    vi.resetModules();
   });
 
-  it("registers visibilitychange listener for pause/resume", () => {
-    const addWindowListener = vi.spyOn(window, "addEventListener");
-    const addDocListener = vi.spyOn(document, "addEventListener");
-    const pauseSpy = vi.spyOn(scheduler, "pause");
-    const resumeSpy = vi.spyOn(scheduler, "resume");
+  it("registers visibilitychange listener for pause/resume", async () => {
     const originalVitestFlag = globalThis.__VITEST__;
     const originalEnv = process.env.VITEST;
+    const originalTestMode = typeof window !== "undefined" ? window.__testMode : undefined;
+    const originalRAF = globalThis.requestAnimationFrame;
 
-    // Remove Vitest environment flags
+    // Remove Vitest environment flags and disable test mode
     delete globalThis.__VITEST__;
     delete process.env.VITEST;
+    
+    // Ensure requestAnimationFrame is available
+    if (typeof globalThis.requestAnimationFrame !== "function") {
+      globalThis.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
+    }
+    
+    // Import setTestMode and disable it
+    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+    setTestMode(false);
+    
+    // Re-import modules after environment changes
+    vi.resetModules();
+    const freshScheduler = await import("../../../src/utils/scheduler.js");
+    const freshSetupScheduler = (await import("../../../src/helpers/classicBattle/setupScheduler.js")).default;
+    
+    const addWindowListener = vi.spyOn(window, "addEventListener");
+    const addDocListener = vi.spyOn(document, "addEventListener");
+    const pauseSpy = vi.spyOn(freshScheduler, "pause");
+    const resumeSpy = vi.spyOn(freshScheduler, "resume");
 
-    setupScheduler();
+    freshSetupScheduler();
 
     // Verify visibilitychange listener was registered
     const visibilityCall = addDocListener.mock.calls.find((call) => call[0] === "visibilitychange");
@@ -147,6 +200,7 @@ describe("setupScheduler", () => {
     const visibilityHandler = visibilityCall[1];
 
     // Test pause when document becomes hidden
+    const originalHidden = Object.getOwnPropertyDescriptor(document, "hidden");
     Object.defineProperty(document, "hidden", {
       value: true,
       writable: true,
@@ -165,6 +219,29 @@ describe("setupScheduler", () => {
     visibilityHandler();
     expect(resumeSpy).toHaveBeenCalled();
 
+    // Cleanup - restore original hidden property
+    if (originalHidden) {
+      Object.defineProperty(document, "hidden", originalHidden);
+    } else {
+      delete document.hidden;
+    }
+    
+    // Restore test mode and environment
+    if (originalRAF === undefined) {
+      delete globalThis.requestAnimationFrame;
+    } else {
+      globalThis.requestAnimationFrame = originalRAF;
+    }
+    
+    if (originalTestMode === undefined) {
+      setTestMode(false);
+      if (typeof window !== "undefined") {
+        delete window.__testMode;
+      }
+    } else {
+      setTestMode(originalTestMode);
+    }
+
     if (originalVitestFlag === undefined) {
       delete globalThis.__VITEST__;
     } else {
@@ -180,6 +257,9 @@ describe("setupScheduler", () => {
     addDocListener.mockRestore();
     pauseSpy.mockRestore();
     resumeSpy.mockRestore();
+    
+    // Reset modules again to restore original state
+    vi.resetModules();
   });
 
   it("skips setup when globalThis.__TEST__ is set", () => {
