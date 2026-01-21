@@ -102,7 +102,7 @@ async function waitForMinimumOpponentObscureDuration() {
   if (!Number.isFinite(lastOpponentRevealTimestamp)) {
     return;
   }
-  const minDuration = getMinOpponentObscureDuration();
+  const minDuration = Math.max(getMinOpponentObscureDuration(), DEFAULT_MIN_OBSCURE_DURATION_MS);
   if (!Number.isFinite(minDuration) || minDuration <= 0) {
     return;
   }
@@ -221,11 +221,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
-      pendingOpponentCardData = await getOpponentCardDataFn();
-    } catch {
-      pendingOpponentCardData = null;
-    }
-    try {
       if (container && !container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`)) {
         applyOpponentCardPlaceholderFn(container);
       }
@@ -237,6 +232,11 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         container.classList.remove("opponent-hidden");
       }
     } catch {}
+    try {
+      pendingOpponentCardData = await getOpponentCardDataFn();
+    } catch {
+      pendingOpponentCardData = null;
+    }
   });
 
   onBattleEvent("statSelected", async (e) => {
