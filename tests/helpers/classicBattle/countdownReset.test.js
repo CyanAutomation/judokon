@@ -218,7 +218,7 @@ describe("countdown resets after stat selection", () => {
 
     // Accept if: countdown is decreasing, OR timer is frozen but visible, OR we have any positive countdown value
     // This accounts for UI state changes that may temporarily hide the timer
-    expect(hasDecrease || hasConsistentPositiveValue || hasAnyPositiveValue).toBe(true);
+    expect(hasDecrease || hasConsistentPositiveValue).toBe(true);
 
     const hasCountdownSnackbar = /Next round in:/.test(snackbarText);
     expect(hasTimerPattern || hasCountdownSnackbar).toBe(true);
