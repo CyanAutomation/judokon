@@ -547,11 +547,9 @@ export async function dispatchReadyDirectly(params) {
   let dedupeTracked = false;
   const shouldInvokeMachineAfterShared = (currentDispatch) => {
     try {
-      const current =
-        typeof currentDispatch === "function" ? currentDispatch : getGlobalDispatch();
-      if (typeof current !== "function") return false;
+      if (typeof currentDispatch !== "function") return false;
       const original = getOriginalGlobalDispatchBattleEvent();
-      if (hasMockIndicators(current)) return true;
+      if (hasMockIndicators(currentDispatch)) return true;
       let isTestEnv = false;
       try {
         isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
@@ -559,7 +557,7 @@ export async function dispatchReadyDirectly(params) {
         isTestEnv = false;
       }
       if (!isTestEnv) return false;
-      return Boolean(original && current !== original);
+      return Boolean(original && currentDispatch !== original);
     } catch {
       return false;
     }
