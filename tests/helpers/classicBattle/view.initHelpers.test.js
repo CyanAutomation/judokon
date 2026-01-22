@@ -180,7 +180,16 @@ describe("setupScheduler", () => {
     testModeUtils.isTestModeEnabled.mockReturnValue(false);
     vi.stubGlobal("requestAnimationFrame", vi.fn());
 
-    setupScheduler();
+    const originalVitestEnv = process.env.VITEST;
+    delete process.env.VITEST;
+
+    try {
+      setupScheduler();
+    } finally {
+      if (originalVitestEnv !== undefined) {
+        process.env.VITEST = originalVitestEnv;
+      }
+    }
 
     expect(startSpy).toHaveBeenCalled();
     expect(addWindowListener).toHaveBeenCalledWith(
