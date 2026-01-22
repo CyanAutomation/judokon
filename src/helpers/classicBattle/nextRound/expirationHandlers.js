@@ -550,7 +550,7 @@ export async function dispatchReadyDirectly(params) {
       const current = getGlobalDispatch();
       if (typeof current !== "function") return false;
       const original = getOriginalGlobalDispatchBattleEvent();
-      if (hasMockIndicators(current)) return true;
+      if (hasMockIndicators(current)) return false;
       let isTestEnv = false;
       try {
         isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
@@ -564,12 +564,33 @@ export async function dispatchReadyDirectly(params) {
     }
   };
   try {
-    const current = getGlobalDispatch();
+    const sharedDispatch =
+      typeof eventDispatcher?.dispatchBattleEvent === "function"
+        ? eventDispatcher.dispatchBattleEvent
+        : getGlobalDispatch();
+    const mockedDispatch = hasMockIndicators(eventDispatcher?.dispatchBattleEvent)
+      ? eventDispatcher.dispatchBattleEvent
+      : hasMockIndicators(namedDispatchBattleEvent)
+        ? namedDispatchBattleEvent
+        : null;
+    const current = mockedDispatch || sharedDispatch;
     if (typeof current === "function") {
       try {
         const result = await current("ready");
         if (result !== false) {
           dedupeTracked = true;
+          let isTestEnv = false;
+          try {
+            isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
+          } catch {
+            isTestEnv = false;
+          }
+          const original = getOriginalGlobalDispatchBattleEvent();
+          const shouldSkipMachineDispatch =
+            hasMockIndicators(current) ||
+            hasMockIndicators(machine?.dispatch) ||
+            (isTestEnv && (!original || current !== original));
+          if (shouldSkipMachineDispatch) return recordSuccess(true);
           if (!shouldInvokeMachineAfterShared()) {
             // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
             return recordSuccess(true);

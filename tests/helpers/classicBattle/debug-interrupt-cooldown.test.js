@@ -4,23 +4,26 @@ import "./commonMocks.js";
 import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
-// Define mock behaviors at module level to be re-applied per test
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    dispatchBattleEvent: vi.fn(async (...args) => {
-      const [eventName] = args;
-      console.log("[MOCK] dispatchBattleEvent called with:", eventName);
-      if (eventName === "ready") {
-        console.log("[MOCK] Returning true for ready");
-        return true;
-      }
-      const result = await actual.dispatchBattleEvent(...args);
-      return result;
-    })
-  };
-});
+const applyEventDispatcherMock = () => {
+  vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+      ...actual,
+      dispatchBattleEvent: vi.fn(async (...args) => {
+        const [eventName] = args;
+        console.log("[MOCK] dispatchBattleEvent called with:", eventName);
+        if (eventName === "ready") {
+          console.log("[MOCK] Returning true for ready");
+          return true;
+        }
+        const result = await actual.dispatchBattleEvent(...args);
+        return result;
+      })
+    };
+  });
+};
+
+applyEventDispatcherMock();
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   initRoundSelectModal: vi.fn(async (cb) => {
@@ -92,6 +95,7 @@ describe("DEBUG: interrupt cooldown ready dispatch", () => {
   beforeEach(async () => {
     // 1. Reset module cache to get fresh imports with mocks applied
     vi.resetModules();
+    applyEventDispatcherMock();
 
     // 2. Re-initialize tracker for this test run
     readyDispatchTracker = { events: [] };
