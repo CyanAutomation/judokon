@@ -63,6 +63,14 @@ async function advanceToPlayerActionState() {
   await dispatchEvents(["cardsRevealed"]);
 }
 
+async function flushFallbackTimers() {
+  if (typeof vi.runOnlyPendingTimersAsync === "function") {
+    await vi.runOnlyPendingTimersAsync();
+    return;
+  }
+  vi.advanceTimersByTime(5000);
+}
+
 function beginSelection(store, stat) {
   const playerStats = store?.currentPlayerJudoka?.stats ?? {};
   const opponentStats = store?.currentOpponentJudoka?.stats ?? {};
@@ -104,6 +112,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
       expect(store.playerChoice).toBe("speed");
 
       await dispatchBattleEvent("interrupt", { reason: "noSelection" });
+      await flushFallbackTimers();
 
       await selectionTask;
 
@@ -136,6 +145,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
       expect(store.playerChoice).toBe("technique");
 
       await dispatchBattleEvent("interruptMatch", { reason: "fatal" });
+      await flushFallbackTimers();
 
       await selectionTask;
 
