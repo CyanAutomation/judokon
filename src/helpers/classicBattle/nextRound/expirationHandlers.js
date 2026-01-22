@@ -588,9 +588,7 @@ export async function dispatchReadyDirectly(params) {
           const original = getOriginalGlobalDispatchBattleEvent();
           const shouldSkipMachineDispatch =
             hasMockIndicators(current) ||
-            hasMockIndicators(machine?.dispatch) ||
-            (isTestEnv && (!original || current !== original));
-          if (shouldSkipMachineDispatch) return recordSuccess(true);
+            hasMockIndicators(machine?.dispatch);
           if (!shouldInvokeMachineAfterShared()) {
             // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
             return recordSuccess(true);
