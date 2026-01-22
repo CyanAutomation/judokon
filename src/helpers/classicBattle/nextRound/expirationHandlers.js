@@ -545,9 +545,10 @@ export async function dispatchReadyDirectly(params) {
   let fallbackError = null;
   let machineError = null;
   let dedupeTracked = false;
-  const shouldInvokeMachineAfterShared = () => {
+  const shouldInvokeMachineAfterShared = (currentDispatch) => {
     try {
-      const current = getGlobalDispatch();
+      const current =
+        typeof currentDispatch === "function" ? currentDispatch : getGlobalDispatch();
       if (typeof current !== "function") return false;
       const original = getOriginalGlobalDispatchBattleEvent();
       if (hasMockIndicators(current)) return true;
@@ -579,17 +580,7 @@ export async function dispatchReadyDirectly(params) {
         const result = await current("ready");
         if (result !== false) {
           dedupeTracked = true;
-          let isTestEnv = false;
-          try {
-            isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
-          } catch {
-            isTestEnv = false;
-          }
-          const original = getOriginalGlobalDispatchBattleEvent();
-          const shouldSkipMachineDispatch =
-            hasMockIndicators(current) ||
-            hasMockIndicators(machine?.dispatch);
-          if (!shouldInvokeMachineAfterShared()) {
+          if (!shouldInvokeMachineAfterShared(current)) {
             // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
             return recordSuccess(true);
           }
