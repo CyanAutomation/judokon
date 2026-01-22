@@ -550,7 +550,7 @@ export async function dispatchReadyDirectly(params) {
       const current = getGlobalDispatch();
       if (typeof current !== "function") return false;
       const original = getOriginalGlobalDispatchBattleEvent();
-      if (hasMockIndicators(current)) return false;
+      if (hasMockIndicators(current)) return true;
       let isTestEnv = false;
       try {
         isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
