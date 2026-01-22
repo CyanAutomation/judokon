@@ -147,6 +147,28 @@ describe("setupScheduler", () => {
     ).toBe(false);
   });
 
+  it("returns true when env and globals are undefined", () => {
+    expect(
+      shouldStartScheduler({
+        env: undefined,
+        globals: undefined,
+        testModeEnabled: false,
+        hasRAF: true
+      })
+    ).toBe(true);
+  });
+
+  it("returns true when env and globals are null", () => {
+    expect(
+      shouldStartScheduler({
+        env: null,
+        globals: null,
+        testModeEnabled: false,
+        hasRAF: true
+      })
+    ).toBe(true);
+  });
+
   it("wires scheduler start and listeners when guards allow", () => {
     const startSpy = vi.spyOn(scheduler, "start");
     const stopSpy = vi.spyOn(scheduler, "stop");
