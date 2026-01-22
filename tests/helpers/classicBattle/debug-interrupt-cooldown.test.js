@@ -12,11 +12,11 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOr
     dispatchBattleEvent: vi.fn(async (...args) => {
       const [eventName] = args;
       console.log("[MOCK] dispatchBattleEvent called with:", eventName);
-      const result = await actual.dispatchBattleEvent(...args);
       if (eventName === "ready") {
         console.log("[MOCK] Returning true for ready");
         return true;
       }
+      const result = await actual.dispatchBattleEvent(...args);
       return result;
     })
   };
