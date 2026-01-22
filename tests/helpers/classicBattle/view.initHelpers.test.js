@@ -99,21 +99,23 @@ describe("setupScheduler", () => {
     // Remove Vitest environment flags and disable test mode
     delete globalThis.__VITEST__;
     delete process.env.VITEST;
-    
+
     // Ensure requestAnimationFrame is available
     if (typeof globalThis.requestAnimationFrame !== "function") {
       globalThis.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
     }
-    
+
     // Import setTestMode and disable it
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(false);
-    
+
     // Re-import modules after environment changes
     vi.resetModules();
     const freshScheduler = await import("../../../src/utils/scheduler.js");
-    const freshSetupScheduler = (await import("../../../src/helpers/classicBattle/setupScheduler.js")).default;
-    
+    const freshSetupScheduler = (
+      await import("../../../src/helpers/classicBattle/setupScheduler.js")
+    ).default;
+
     const add = vi.spyOn(window, "addEventListener");
     const startSpy = vi.spyOn(freshScheduler, "start");
     const stopSpy = vi.spyOn(freshScheduler, "stop");
@@ -121,11 +123,7 @@ describe("setupScheduler", () => {
     freshSetupScheduler();
 
     expect(startSpy).toHaveBeenCalled();
-    expect(add).toHaveBeenCalledWith(
-      "pagehide",
-      expect.any(Function),
-      { once: true }
-    );
+    expect(add).toHaveBeenCalledWith("pagehide", expect.any(Function), { once: true });
 
     // Restore test mode and environment
     if (originalRAF === undefined) {
@@ -133,7 +131,7 @@ describe("setupScheduler", () => {
     } else {
       globalThis.requestAnimationFrame = originalRAF;
     }
-    
+
     if (originalTestMode === undefined) {
       setTestMode(false);
       if (typeof window !== "undefined") {
@@ -157,7 +155,7 @@ describe("setupScheduler", () => {
     add.mockRestore();
     startSpy.mockRestore();
     stopSpy.mockRestore();
-    
+
     // Reset modules again to restore original state
     vi.resetModules();
   });
@@ -171,21 +169,23 @@ describe("setupScheduler", () => {
     // Remove Vitest environment flags and disable test mode
     delete globalThis.__VITEST__;
     delete process.env.VITEST;
-    
+
     // Ensure requestAnimationFrame is available
     if (typeof globalThis.requestAnimationFrame !== "function") {
       globalThis.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
     }
-    
+
     // Import setTestMode and disable it
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(false);
-    
+
     // Re-import modules after environment changes
     vi.resetModules();
     const freshScheduler = await import("../../../src/utils/scheduler.js");
-    const freshSetupScheduler = (await import("../../../src/helpers/classicBattle/setupScheduler.js")).default;
-    
+    const freshSetupScheduler = (
+      await import("../../../src/helpers/classicBattle/setupScheduler.js")
+    ).default;
+
     const addWindowListener = vi.spyOn(window, "addEventListener");
     const addDocListener = vi.spyOn(document, "addEventListener");
     const pauseSpy = vi.spyOn(freshScheduler, "pause");
@@ -225,14 +225,14 @@ describe("setupScheduler", () => {
     } else {
       delete document.hidden;
     }
-    
+
     // Restore test mode and environment
     if (originalRAF === undefined) {
       delete globalThis.requestAnimationFrame;
     } else {
       globalThis.requestAnimationFrame = originalRAF;
     }
-    
+
     if (originalTestMode === undefined) {
       setTestMode(false);
       if (typeof window !== "undefined") {
@@ -257,7 +257,7 @@ describe("setupScheduler", () => {
     addDocListener.mockRestore();
     pauseSpy.mockRestore();
     resumeSpy.mockRestore();
-    
+
     // Reset modules again to restore original state
     vi.resetModules();
   });
