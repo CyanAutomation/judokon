@@ -66,12 +66,15 @@ async function advanceToPlayerActionState() {
 function beginSelection(store, stat) {
   const playerStats = store?.currentPlayerJudoka?.stats ?? {};
   const opponentStats = store?.currentOpponentJudoka?.stats ?? {};
-  const selectionPromise = handleStatSelection(store, stat, {
+  const selectionTask = handleStatSelection(store, stat, {
     playerVal: playerStats[stat],
     opponentVal: opponentStats[stat],
     forceDirectResolution: true
   });
-  return selectionPromise.catch(() => {});
+  const selectionAppliedPromise = selectionTask?.selectionAppliedPromise;
+  const safeSelectionTask = selectionTask.catch(() => {});
+  safeSelectionTask.selectionAppliedPromise = selectionAppliedPromise;
+  return safeSelectionTask;
 }
 
 describe.sequential("classic battle orchestrator interrupt flows", () => {
@@ -94,6 +97,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
       await advanceToPlayerActionState();
 
       const selectionTask = beginSelection(store, "speed");
+      await (selectionTask.selectionAppliedPromise ?? Promise.resolve());
 
       expect(store.selectionMade).toBe(true);
       expect(store.__lastSelectionMade).toBe(true);
@@ -125,6 +129,7 @@ describe.sequential("classic battle orchestrator interrupt flows", () => {
       await advanceToPlayerActionState();
 
       const selectionTask = beginSelection(store, "technique");
+      await (selectionTask.selectionAppliedPromise ?? Promise.resolve());
 
       expect(store.selectionMade).toBe(true);
       expect(store.__lastSelectionMade).toBe(true);
