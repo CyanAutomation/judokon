@@ -186,9 +186,7 @@ describe("setupScheduler", () => {
     try {
       setupScheduler();
     } finally {
-      if (originalVitestEnv === undefined) {
-        delete process.env.VITEST;
-      } else {
+      if (originalVitestEnv !== undefined) {
         process.env.VITEST = originalVitestEnv;
       }
     }
