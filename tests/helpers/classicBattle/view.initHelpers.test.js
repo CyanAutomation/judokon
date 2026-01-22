@@ -176,12 +176,9 @@ describe("setupScheduler", () => {
     const resumeSpy = vi.spyOn(scheduler, "resume");
     const addWindowListener = vi.spyOn(window, "addEventListener");
     const addDocListener = vi.spyOn(document, "addEventListener");
-    const originalRAF = globalThis.requestAnimationFrame;
-    const originalVitestFlag = globalThis.__VITEST__;
 
     testModeUtils.isTestModeEnabled.mockReturnValue(false);
-    globalThis.requestAnimationFrame = vi.fn();
-    delete globalThis.__VITEST__;
+    vi.stubGlobal("requestAnimationFrame", vi.fn());
 
     setupScheduler();
 
@@ -208,16 +205,6 @@ describe("setupScheduler", () => {
     expect(resumeSpy).toHaveBeenCalled();
 
     hiddenGetter.mockRestore();
-    if (originalRAF === undefined) {
-      delete globalThis.requestAnimationFrame;
-    } else {
-      globalThis.requestAnimationFrame = originalRAF;
-    }
-    if (originalVitestFlag === undefined) {
-      delete globalThis.__VITEST__;
-    } else {
-      globalThis.__VITEST__ = originalVitestFlag;
-    }
 
     addWindowListener.mockRestore();
     addDocListener.mockRestore();
@@ -225,6 +212,7 @@ describe("setupScheduler", () => {
     stopSpy.mockRestore();
     pauseSpy.mockRestore();
     resumeSpy.mockRestore();
+    vi.unstubAllGlobals();
   });
 });
 
