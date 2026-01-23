@@ -192,11 +192,9 @@ describe("setupScheduler", () => {
     }
 
     expect(startSpy).toHaveBeenCalled();
-    expect(addWindowListener).toHaveBeenCalledWith(
-      "pagehide",
-      expect.any(Function),
-      { once: true }
-    );
+    expect(addWindowListener).toHaveBeenCalledWith("pagehide", expect.any(Function), {
+      once: true
+    });
     const pagehideCall = addWindowListener.mock.calls.find((call) => call[0] === "pagehide");
     expect(pagehideCall).toBeDefined();
     pagehideCall[1]();
