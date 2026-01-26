@@ -13,6 +13,7 @@ import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { isEnabled } from "../featureFlags.js";
 import * as engineFacade from "../BattleEngine.js";
+import { registerBridgeOnEngineCreated } from "./orchestrator.js";
 import { setupScoreboard } from "../setupScoreboard.js";
 // Test API exposure for Playwright and unit tests
 import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestApi.js";
@@ -42,6 +43,7 @@ function canAccessWindow() {
 export async function setupClassicBattlePage() {
   try {
     engineFacade.createBattleEngine?.();
+    registerBridgeOnEngineCreated();
   } catch (err) {
     if (typeof console !== "undefined" && typeof console.warn === "function") {
       console.warn("[classicBattle.bootstrap] Engine creation failed:", err);

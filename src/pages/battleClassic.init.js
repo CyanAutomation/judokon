@@ -73,7 +73,10 @@ import {
   scheduleDelayed,
   clearScheduled
 } from "../helpers/classicBattle/timerSchedule.js";
-import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
+import {
+  initClassicBattleOrchestrator,
+  registerBridgeOnEngineCreated
+} from "../helpers/classicBattle/orchestrator.js";
 import { setBattleStateSnapshot } from "../helpers/classicBattle/eventBus.js";
 import { getDocumentRef } from "../helpers/documentHelper.js";
 
@@ -1779,6 +1782,7 @@ async function initializePhase2_UI() {
 async function initializePhase3_Engine(store) {
   console.log("battleClassic: initializePhase3_Engine");
   createBattleEngine(window.__ENGINE_CONFIG || {});
+  registerBridgeOnEngineCreated();
 
   const shouldDeferOrchestrator =
     (typeof process !== "undefined" && process.env?.VITEST === "true") ||

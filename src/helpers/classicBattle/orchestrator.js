@@ -102,7 +102,18 @@ function attachEngineEventBridge(engine) {
   });
 }
 
-function registerEngineEventBridge() {
+/**
+ * Register the engine event bridge when the battle engine is created.
+ *
+ * @summary Attach the classic battle bridge via `onEngineCreated`.
+ * @pseudocode
+ * 1. Exit early if the bridge registration already ran.
+ * 2. Subscribe to `onEngineCreated` and attach the engine event bridge.
+ * 3. Reset the guard if subscription fails.
+ *
+ * @returns {void}
+ */
+export function registerBridgeOnEngineCreated() {
   if (hasRegisteredEngineBridge) {
     return;
   }
@@ -368,7 +379,7 @@ export async function initClassicBattleOrchestrator(
   hooks = {}
 ) {
   debugLog("initClassicBattleOrchestrator() called");
-  registerEngineEventBridge();
+  registerBridgeOnEngineCreated();
   window.__INIT_ORCHESTRATOR_CALLED = true;
   if (machine) {
     window.__ORCHESTRATOR_EARLY_RETURN_MACHINE = true;
