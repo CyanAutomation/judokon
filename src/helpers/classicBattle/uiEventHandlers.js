@@ -346,7 +346,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         await new Promise((resolve) => {
           delayController.resolve = resolve;
           opponentSnackbarId = setTimeout(() => {
-            if (opponentDelayController === delayController) {
+            if (opponentDelayController === delayController && !delayController.canceled) {
               resolve();
             }
           }, resolvedDelay);
