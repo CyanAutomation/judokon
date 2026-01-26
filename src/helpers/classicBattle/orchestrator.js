@@ -28,6 +28,7 @@ import { createStateManager } from "./stateManager.js";
 import "./uiService.js";
 import { debugLog } from "./debugLog.js";
 import { STATS, onEngineCreated } from "../BattleEngine.js";
+import { updateScore } from "../setupScoreboard.js";
 
 const bridgedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
 let hasRegisteredEngineBridge = false;
