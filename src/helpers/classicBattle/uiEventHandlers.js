@@ -205,7 +205,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     if (!container) {
       clearPendingOpponentCardData(undefined, selectionToken);
       return;
-    }
     const capturedToken = pendingOpponentCardDataToken;
     if (selectionToken !== undefined && selectionToken !== capturedToken) {
       return;
