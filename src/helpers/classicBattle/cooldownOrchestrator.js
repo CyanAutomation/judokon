@@ -29,65 +29,30 @@ function createErrorContext(operation, context = {}) {
 }
 
 /**
- * @summary Assign a fallback timer handle to runtime state with polymorphic support.
+ * @summary Assign a fallback timer handle to runtime state using a single handle shape.
  * @param {object} runtime - Runtime state object to update.
- * @param {Function|object|Array|number|null} handle - Timer handle in various formats.
+ * @param {{id: any, scheduler?: object}|ReturnType<typeof setTimeout>|null} handle - Timer handle.
  * @returns {void}
  * @pseudocode
  * 1. Reset stored fallback metadata to their default null values.
  * 2. Persist the original handle reference for debugging visibility.
- * 3. Exit early when the provided handle is falsy.
- * 4. Treat function handles as direct cancellation callbacks.
- * 5. Support tuple handles by extracting their identifier and scheduler helpers.
- * 6. Detect object handles with cancel/clear methods or scheduler metadata.
- * 7. Fall back to clearTimeout when the handle exposes no explicit cancel hook.
- * 8. Store primitive handles as identifiers for the global clearTimeout API.
+ * 3. Exit early when the provided handle is nullish.
+ * 4. Extract the identifier from an explicit handle object when provided.
+ * 5. Capture the scheduler for explicit handles that include a clearTimeout helper.
+ * 6. Store primitive handles as identifiers for the global clearTimeout API.
  */
 function assignFallbackHandle(runtime, handle) {
   runtime.fallbackCancel = null;
   runtime.fallbackSchedulerControl = null;
-  runtime.fallbackHandle =
-    typeof handle === "function" || (handle && typeof handle === "object") ? handle : null;
+  runtime.fallbackHandle = handle ?? null;
   runtime.fallbackId = null;
-  if (!handle) return;
-  if (typeof handle === "function") {
-    runtime.fallbackCancel = handle;
-    return;
-  }
-  if (Array.isArray(handle)) {
-    const [idCandidate, schedulerCandidate] = handle;
-    if (idCandidate !== undefined) runtime.fallbackId = idCandidate;
-    if (schedulerCandidate && typeof schedulerCandidate.clearTimeout === "function") {
-      runtime.fallbackSchedulerControl = schedulerCandidate;
-    }
-    if (schedulerCandidate && typeof schedulerCandidate.cancel === "function") {
-      runtime.fallbackCancel = () => schedulerCandidate.cancel(idCandidate);
-    }
-    return;
-  }
+  if (isNil(handle)) return;
   if (typeof handle === "object") {
-    if (typeof handle.cancel === "function") {
-      runtime.fallbackCancel = () => handle.cancel();
-    } else if (typeof handle.clear === "function") {
-      runtime.fallbackCancel = () => handle.clear();
-    }
-    if (typeof handle.clearTimeout === "function") {
-      runtime.fallbackSchedulerControl = handle;
-    }
-    if (
-      typeof handle.scheduler === "object" &&
-      typeof handle.scheduler.clearTimeout === "function"
-    ) {
-      runtime.fallbackSchedulerControl = handle.scheduler;
-    }
     if (handle.id !== undefined) {
       runtime.fallbackId = handle.id;
-    } else if (handle.timerId !== undefined) {
-      runtime.fallbackId = handle.timerId;
     }
-    if (isNil(runtime.fallbackCancel) && isNil(runtime.fallbackId)) {
-      runtime.fallbackCancel = () => clearTimeout(handle);
-      runtime.fallbackId = handle;
+    if (handle.scheduler && typeof handle.scheduler.clearTimeout === "function") {
+      runtime.fallbackSchedulerControl = handle.scheduler;
     }
     return;
   }
@@ -1123,7 +1088,7 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
             console.debug(`[TEST DEBUG] scheduling fallback timer ms=${ms}`);
           } catch {}
         }
-        const handle = runtime.fallbackScheduler(ms, () => {
+        const fallbackId = runtime.fallbackScheduler(ms, () => {
           safeRound(
             "wireCooldownTimer.fallback.clearSchedulerTimeout",
             () => {
@@ -1143,7 +1108,12 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
           runtime.fallbackId = null;
           onExpired();
         });
-        assignFallbackHandle(runtime, handle);
+        const fallbackHandle = isNil(fallbackId)
+          ? null
+          : typeof fallbackId === "object"
+            ? fallbackId
+            : { id: fallbackId, scheduler: realScheduler };
+        assignFallbackHandle(runtime, fallbackHandle);
       };
       const hasCustomScheduler =
         runtime.scheduler && typeof runtime.scheduler.setTimeout === "function";
