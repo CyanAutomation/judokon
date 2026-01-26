@@ -25,6 +25,7 @@ let pendingOpponentCardData = null;
 let currentOpponentSnackbarController = null;
 let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
+let opponentDelayController = null;
 const DEFAULT_MIN_OBSCURE_DURATION_MS = 16;
 let lastOpponentRevealTimestamp = 0;
 let lastNowValue = Date.now() || 0;
@@ -33,7 +34,14 @@ function clearOpponentSnackbarTimeout() {
   if (opponentSnackbarId) {
     clearTimeout(opponentSnackbarId);
   }
+  if (opponentDelayController) {
+    opponentDelayController.canceled = true;
+    if (typeof opponentDelayController.resolve === "function") {
+      opponentDelayController.resolve();
+    }
+  }
   opponentSnackbarId = 0;
+  opponentDelayController = null;
 }
 
 function clearFallbackPromptTimer() {
@@ -333,11 +341,23 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         const minDuration = Number(getOpponentPromptMinDurationFn()) || 750;
 
         // Wait for the configured delay before showing opponent message
+        const delayController = { canceled: false, resolve: null };
+        opponentDelayController = delayController;
         await new Promise((resolve) => {
+          delayController.resolve = resolve;
           opponentSnackbarId = setTimeout(() => {
-            resolve();
+            if (opponentDelayController === delayController) {
+              resolve();
+            }
           }, resolvedDelay);
         });
+        if (opponentDelayController === delayController) {
+          opponentDelayController = null;
+          opponentSnackbarId = 0;
+        }
+        if (delayController.canceled) {
+          return;
+        }
 
         // Show opponent choosing message with high priority
         currentOpponentSnackbarController = snackbarManager.show({
