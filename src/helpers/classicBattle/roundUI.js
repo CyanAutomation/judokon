@@ -4,6 +4,7 @@ import { startTimer } from "./timerService.js";
 import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
 import * as scoreboard from "../setupScoreboard.js";
+import { attachCooldownRenderer, dismissCountdownSnackbar } from "../CooldownRenderer.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
@@ -11,6 +12,7 @@ import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { disableStatButtons, resetStatButtons } from "./statButtons.js";
 import { runWhenIdle } from "./idleCallback.js";
@@ -416,11 +418,9 @@ export async function handleRoundStartedEvent(event, deps = {}) {
 
   // Dismiss countdown snackbar when new round starts (fire-and-forget)
   try {
-    void import("../CooldownRenderer.js").then(({ dismissCountdownSnackbar }) => {
-      if (typeof dismissCountdownSnackbar === "function") {
-        void dismissCountdownSnackbar();
-      }
-    });
+    if (typeof dismissCountdownSnackbar === "function") {
+      void dismissCountdownSnackbar();
+    }
   } catch {
     // Non-critical
   }
@@ -867,8 +867,6 @@ export function bindRoundUIEventHandlersDynamic() {
   const loadRoundManager = createPreloader(
     () => import("/src/helpers/classicBattle/roundManager.js")
   );
-  const loadCooldownRenderer = createPreloader(() => import("../CooldownRenderer.js"));
-  const loadCreateRoundTimer = createPreloader(() => import("../timers/createRoundTimer.js"));
   const loadUiHelpers = createPreloader(() => import("/src/helpers/classicBattle/uiHelpers.js"));
   onBattleEvent("roundStarted", async (event) => {
     await handleRoundStartedEvent(event);
@@ -876,7 +874,6 @@ export function bindRoundUIEventHandlersDynamic() {
   onBattleEvent("round.start", async () => {
     // Dismiss countdown snackbar immediately when Next is clicked
     try {
-      const { dismissCountdownSnackbar } = await import("../CooldownRenderer.js");
       if (typeof dismissCountdownSnackbar === "function") {
         await dismissCountdownSnackbar();
       }
@@ -901,19 +898,11 @@ export function bindRoundUIEventHandlersDynamic() {
     handleStatSelectedEvent(event);
   });
   onBattleEvent("roundResolved", async (event) => {
-    const [
-      scoreboardModule,
-      roundManagerModule,
-      cooldownModule,
-      timerModule,
-      rendererModule,
-      uiHelpersModule
-    ] = await Promise.all([
+    const [scoreboardModule, roundManagerModule, cooldownModule, uiHelpersModule] =
+      await Promise.all([
       loadScoreboard(),
       loadRoundManager(),
       loadComputeNextRoundCooldown(),
-      loadCreateRoundTimer(),
-      loadCooldownRenderer(),
       loadUiHelpers()
     ]);
     await handleRoundResolvedEvent(event, {
@@ -922,8 +911,8 @@ export function bindRoundUIEventHandlersDynamic() {
       handleReplay: roundManagerModule?.handleReplay,
       isOrchestrated: roundManagerModule?.isOrchestrated,
       computeNextRoundCooldown: cooldownModule?.computeNextRoundCooldown,
-      createRoundTimer: timerModule?.createRoundTimer,
-      attachCooldownRenderer: rendererModule?.attachCooldownRenderer,
+      createRoundTimer,
+      attachCooldownRenderer,
       resetStatButtons,
       syncScoreDisplay,
       updateDebugPanel: uiHelpersModule?.updateDebugPanel

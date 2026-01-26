@@ -23,7 +23,6 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { logStateTransition } from "./debugLogger.js";
 import { preloadTimerUtils } from "../TimerController.js";
 import { initScoreboardAdapter } from "./scoreboardAdapter.js";
-import { initPreloadServices } from "./preloadService.js";
 import { createStateManager } from "./stateManager.js";
 import "./uiService.js";
 import { debugLog } from "./debugLog.js";
@@ -590,14 +589,14 @@ function emitResolution(event) {
 }
 
 /**
- * Preload non-critical dependencies required before machine start.
+ * Initialize non-critical dependencies required before machine start.
  *
  * @pseudocode
  * 1. Await `preloadTimerUtils`.
  * 2. Initialize `initScoreboardAdapter`.
  * 3. Swallow errors from each step.
  *
- * @returns {Promise<void>} resolves when best-effort preloads finish.
+ * @returns {Promise<void>} resolves when best-effort setup finishes.
  */
 async function preloadDependencies() {
   try {
@@ -605,9 +604,6 @@ async function preloadDependencies() {
   } catch {}
   try {
     initScoreboardAdapter();
-  } catch {}
-  try {
-    initPreloadServices();
   } catch {}
 }
 
