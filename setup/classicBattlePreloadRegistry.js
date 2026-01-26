@@ -99,8 +99,8 @@ export function resetClassicBattlePreloadRegistry() {
 const DEFAULT_LOADERS = [
   [
     "battleEngine",
-    () => import("../src/helpers/battleEngineFacade.js"),
-    "../src/helpers/battleEngineFacade.js"
+    () => import("../src/helpers/BattleEngine.js"),
+    "../src/helpers/BattleEngine.js"
   ],
   [
     "scoreboard",

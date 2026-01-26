@@ -84,7 +84,7 @@ function applyConsoleMuting() {
  */
 async function ensureFreshBattleEngine() {
   try {
-    const facade = await import("../src/helpers/battleEngineFacade.js");
+    const facade = await import("../src/helpers/BattleEngine.js");
     if (facade?.createBattleEngine && typeof facade.createBattleEngine === "function") {
       facade.createBattleEngine({ forceCreate: true });
     }

@@ -49,7 +49,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
       updateRoundCounter: vi.fn()
     };
     // Mock battleEngineFacade for init
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    vi.doMock("../../src/helpers/BattleEngine.js", () => ({
       getPointsToWin: () => 5
     }));
     vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
@@ -94,7 +94,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
   it("should update both CLI and standard elements when updating score", async () => {
     // Mock the engine facade
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    vi.doMock("../../src/helpers/BattleEngine.js", () => ({
       getScores: () => ({ playerScore: 2, opponentScore: 1 }),
       getPointsToWin: () => 5
     }));
@@ -139,7 +139,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   });
 
   it("falls back to engine target when updateRoundHeader receives undefined", async () => {
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    vi.doMock("../../src/helpers/BattleEngine.js", () => ({
       getPointsToWin: () => 9
     }));
 

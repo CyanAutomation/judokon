@@ -102,8 +102,8 @@ const {
 // TOP-LEVEL MOCK REGISTRATIONS - Applied during Vitest module collection
 // ============================================================================
 
-vi.mock("../../../../src/helpers/battleEngineFacade.js", async () => {
-  const actual = await vi.importActual("../../../../src/helpers/battleEngineFacade.js");
+vi.mock("../../../../src/helpers/BattleEngine.js", async () => {
+  const actual = await vi.importActual("../../../../src/helpers/BattleEngine.js");
   return {
     ...actual,
     ...mockBattleEngineFacade

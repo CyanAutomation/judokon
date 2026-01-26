@@ -20,7 +20,7 @@ import { getBattleStore } from "../utils/battleStoreAccess.js";
 import { setupOpponentDelayControl } from "../utils/battleTestUtils.js";
 import { resetOrchestratorForTest } from "../../src/helpers/classicBattle/orchestrator.js";
 import rounds from "../../src/data/battleRounds.js";
-import { getPointsToWin } from "../../src/helpers/battleEngineFacade.js";
+import { getPointsToWin } from "../../src/helpers/BattleEngine.js";
 import { DEFAULT_POINTS_TO_WIN } from "../../src/config/battleDefaults.js";
 import { selectStat } from "../../src/helpers/classicBattle/uiHelpers.js";
 import { onBattleEvent, offBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";

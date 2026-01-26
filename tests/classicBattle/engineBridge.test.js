@@ -23,7 +23,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: (...args) => mockEmitBattleEvent?.(...args)
 }));
 
-vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   __esModule: true,
   on: (...args) => mockOn?.(...args),
   requireEngine: () => mockRequireEngine?.(),

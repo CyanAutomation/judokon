@@ -63,7 +63,7 @@ vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
   initClassicBattleOrchestrator: mockInitOrchestrator
 }));
 vi.mock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
-vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   setPointsToWin: vi.fn(),
   getPointsToWin: vi.fn(),
   getScores: mockGetScores

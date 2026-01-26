@@ -190,7 +190,7 @@ accessing `settings.featureFlags` directly.
 ## Battle Engine Events API
 
 The battle engine exposes a lightweight event emitter. Subscribe via
-`on(event, handler)` from `src/helpers/battleEngineFacade.js`:
+`on(event, handler)` from `src/helpers/BattleEngine.js`:
 
 - `roundStarted` → `{ round }`
 - `roundEnded` → `{ delta, outcome, matchEnded, playerScore, opponentScore }`

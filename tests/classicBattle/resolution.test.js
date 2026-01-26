@@ -98,7 +98,7 @@ vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   }
 }));
 
-vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   createBattleEngine: vi.fn(),
   STATS: STAT_KEYS,
   on: vi.fn(),

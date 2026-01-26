@@ -29,8 +29,8 @@ describe("timerService drift handling", () => {
     }));
     const round = createDriftStarter();
     const startRound = round.starter;
-    vi.doMock("../../../src/helpers/battleEngineFacade.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
+    vi.doMock("../../../src/helpers/BattleEngine.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/BattleEngine.js");
       return { ...actual, startRound };
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
@@ -51,8 +51,8 @@ describe("timerService drift handling", () => {
     const showSnack = vi.spyOn(snackbar, "showSnackbar");
     const cool = createDriftStarter();
     const startCoolDown = cool.starter;
-    vi.doMock("../../../src/helpers/battleEngineFacade.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
+    vi.doMock("../../../src/helpers/BattleEngine.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/BattleEngine.js");
       return { ...actual, startCoolDown, requireEngine: () => ({ startCoolDown }) };
     });
     // Mock opponent prompt tracking to trigger "Opponent is choosing…" snackbar
@@ -173,8 +173,8 @@ describe("timerService drift handling", () => {
       emit: vi.fn(),
       matchEnded: false
     };
-    vi.doMock("../../../src/helpers/battleEngineFacade.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
+    vi.doMock("../../../src/helpers/BattleEngine.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/BattleEngine.js");
       return { ...actual, requireEngine: () => engine };
     });
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({

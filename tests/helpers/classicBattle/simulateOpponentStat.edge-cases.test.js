@@ -16,7 +16,7 @@ describe("simulateOpponentStat edge cases", () => {
       "../../../src/helpers/classicBattle/selectionHandler.js"
     ));
     ({ chooseOpponentStat } = await import("../../../src/helpers/api/battleUI.js"));
-    ({ STATS } = await import("../../../src/helpers/battleEngineFacade.js"));
+    ({ STATS } = await import("../../../src/helpers/BattleEngine.js"));
     ({ setTestMode } = await import("../../../src/helpers/testModeUtils.js"));
     setTestMode(false);
   });

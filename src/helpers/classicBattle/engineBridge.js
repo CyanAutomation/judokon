@@ -1,5 +1,5 @@
 import { emitBattleEvent } from "./battleEvents.js";
-import * as engineFacade from "../battleEngineFacade.js";
+import * as engineFacade from "../BattleEngine.js";
 import { updateScore } from "../setupScoreboard.js";
 
 const trackedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();

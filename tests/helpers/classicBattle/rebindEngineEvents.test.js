@@ -8,7 +8,7 @@ const { mockOn, mockCreateBattleEngine, mockOnEngineCreated } = vi.hoisted(() =>
 }));
 
 // ===== Top-level vi.mock() call (Vitest static analysis phase) =====
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   createBattleEngine: mockCreateBattleEngine,
   on: mockOn,
   onEngineCreated: mockOnEngineCreated

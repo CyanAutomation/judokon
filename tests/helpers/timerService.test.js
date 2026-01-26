@@ -50,7 +50,7 @@ vi.mock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
   autoSelectStat: mockAutoSelectStat
 }));
 
-vi.mock("../../src/helpers/battleEngineFacade.js", () => {
+vi.mock("../../src/helpers/BattleEngine.js", () => {
   // Create makeTimer factory function with reference to scheduler
   const makeTimer = (onTick, onExpired, duration) => {
     onTick(duration);

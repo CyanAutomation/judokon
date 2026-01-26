@@ -1,6 +1,6 @@
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
-import * as battleEngine from "../battleEngineFacade.js";
+import * as battleEngine from "../BattleEngine.js";
 import { showResult } from "../battle/index.js";
 import { showEndModal } from "./endModal.js";
 import { getOutcomeMessage } from "../api/battleUI.js";

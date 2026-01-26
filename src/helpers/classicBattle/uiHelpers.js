@@ -1,5 +1,5 @@
 import { isEnabled } from "../featureFlags.js";
-import { STATS } from "../battleEngineFacade.js";
+import { STATS } from "../BattleEngine.js";
 
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";

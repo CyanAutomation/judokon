@@ -115,7 +115,7 @@ describe("battleEngineFacade timer interactions", () => {
       pauseTimer,
       resumeTimer,
       getTimerState
-    } = await import("../../src/helpers/battleEngineFacade.js");
+    } = await import("../../src/helpers/BattleEngine.js");
 
     createBattleEngine();
 
@@ -149,7 +149,7 @@ describe("battleEngineFacade timer interactions", () => {
 describe("createBattleEngine environment isolation", () => {
   it("creates a fresh engine for each call in test environments", async () => {
     const { timerControllerMock } = mockTimerController();
-    const { createBattleEngine } = await import("../../src/helpers/battleEngineFacade.js");
+    const { createBattleEngine } = await import("../../src/helpers/BattleEngine.js");
 
     withProcessEnv(
       {
@@ -175,7 +175,7 @@ describe("createBattleEngine browser reuse", () => {
     const fakeWindow = {};
     global.window = fakeWindow;
 
-    const { createBattleEngine } = await import("../../src/helpers/battleEngineFacade.js");
+    const { createBattleEngine } = await import("../../src/helpers/BattleEngine.js");
 
     const firstEngine = createBattleEngine();
     expect(timerControllerMock).toHaveBeenCalledTimes(1);

@@ -5,7 +5,7 @@ import { applyMockSetup } from "./mockSetup.js";
 import "./commonMocks.js";
 
 // ===== Top-level vi.mock() call (Vitest static analysis phase) =====
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => {
+vi.mock("../../../src/helpers/BattleEngine.js", () => {
   const mockEngine = { on: vi.fn(), off: vi.fn() };
   const mockGetRoundsPlayed = vi.fn(() => 0);
   return {

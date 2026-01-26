@@ -37,7 +37,7 @@ const battleEngineFacadeMock = vi.hoisted(() => {
 });
 
 vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => orchestratorMock);
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => battleEngineFacadeMock);
+vi.mock("../../../src/helpers/BattleEngine.js", () => battleEngineFacadeMock);
 
 describe("ClassicBattleController.init", () => {
   /** @type {ReturnType<typeof vi.fn>} */

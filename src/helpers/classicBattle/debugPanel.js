@@ -1,4 +1,4 @@
-import { getScores, getTimerState, isMatchEnded } from "../battleEngineFacade.js";
+import { getScores, getTimerState, isMatchEnded } from "../BattleEngine.js";
 import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
 import { isEnabled } from "../featureFlags.js";
 import { setDetailsOpen } from "../detailsToggle.js";

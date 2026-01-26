@@ -28,7 +28,7 @@ function createEngineStub({ pointsToWin = 10, scores } = {}) {
 }
 
 function mockEngineFacade(overrides) {
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+  vi.doMock("../../src/helpers/BattleEngine.js", () => ({
     setPointsToWin: overrides.setPointsToWin,
     getPointsToWin: overrides.getPointsToWin,
     getScores: overrides.getScores,

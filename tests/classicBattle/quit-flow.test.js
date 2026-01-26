@@ -19,7 +19,7 @@ describe("Classic Battle quit flow", () => {
   test("clicking Quit opens confirmation modal", async () => {
     document.documentElement.innerHTML = getHtmlContent();
 
-    const battleEngine = await import("../../src/helpers/battleEngineFacade.js");
+    const battleEngine = await import("../../src/helpers/BattleEngine.js");
     const navUtils = await import("../../src/helpers/navUtils.js");
     const eventDispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const eventBus = await import("../../src/helpers/classicBattle/eventBus.js");

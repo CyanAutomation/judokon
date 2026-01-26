@@ -46,7 +46,7 @@ vi.mock("../../src/helpers/timerUtils.js", () => ({
   _resetForTest: vi.fn()
 }));
 
-vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   startRound: mockStartRound,
   stopTimer: vi.fn(),
   pauseTimer: vi.fn(),

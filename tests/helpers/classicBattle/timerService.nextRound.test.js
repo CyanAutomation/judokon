@@ -52,7 +52,7 @@ describe("timerService next round handling", () => {
       setSkipHandler: vi.fn()
     }));
     startCoolDown = vi.fn();
-    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
+    vi.doMock("../../../src/helpers/BattleEngine.js", () => ({
       startCoolDown,
       stopTimer: vi.fn(),
       STATS: [],

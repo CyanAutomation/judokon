@@ -28,7 +28,7 @@ import {
   getScores as facadeGetScores,
   requireEngine,
   setPointsToWin as facadeSetPointsToWin
-} from "./battleEngineFacade.js";
+} from "./BattleEngine.js";
 import { setTestMode } from "./testModeUtils.js";
 import {
   readStatButtonSnapshot,
@@ -1628,7 +1628,7 @@ const timerApi = {
 const engineApi = {
   /**
    * Access the current engine instance when available.
-   * @returns {import("./battleEngineFacade.js").BattleEngine|null}
+   * @returns {import("./BattleEngine.js").BattleEngine|null}
    */
   require() {
     try {

@@ -89,7 +89,7 @@ async function seedActiveRoundState() {
     "../../src/pages/battleCLI/dom.js"
   );
   const { selectStat } = await import("../../src/pages/battleCLI/init.js");
-  const facade = await import("../../src/helpers/battleEngineFacade.js");
+  const facade = await import("../../src/helpers/BattleEngine.js");
 
   updateRoundHeader(7, 5);
   setRoundMessage("Fight!");
@@ -134,7 +134,7 @@ describe("battleCLI points select", () => {
     await mod.init();
     await mod.renderStatList();
     const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/battleEngineFacade.js"
+      "../../src/helpers/BattleEngine.js"
     );
     setPointsToWin.mockClear();
 
@@ -174,7 +174,7 @@ describe("battleCLI points select", () => {
     const changeSpy = vi.spyOn(select, "addEventListener");
     await mod.init();
     const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/battleEngineFacade.js"
+      "../../src/helpers/BattleEngine.js"
     );
     setPointsToWin.mockClear();
 
@@ -204,7 +204,7 @@ describe("battleCLI points select", () => {
     const selectSpy = vi.spyOn(select, "addEventListener");
     const checkboxSpy = vi.spyOn(checkbox, "addEventListener");
     await mod.init();
-    const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
+    const { getPointsToWin } = await import("../../src/helpers/BattleEngine.js");
 
     const selectChange = getListener(selectSpy, "change");
     select.value = "10";
@@ -242,7 +242,7 @@ describe("battleCLI points select", () => {
     await mod.init();
 
     const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/battleEngineFacade.js"
+      "../../src/helpers/BattleEngine.js"
     );
     setPointsToWin.mockClear();
 

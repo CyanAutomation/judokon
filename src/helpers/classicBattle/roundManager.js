@@ -1,7 +1,7 @@
 // Battle engine & core logic
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
-import { createBattleEngine } from "../battleEngineFacade.js";
-import * as battleEngine from "../battleEngineFacade.js";
+import { createBattleEngine } from "../BattleEngine.js";
+import * as battleEngine from "../BattleEngine.js";
 import { bridgeEngineEvents } from "./engineBridge.js";
 import { logSelectionMutation, shouldClearSelectionForNextRound } from "./selectionHandler.js";
 

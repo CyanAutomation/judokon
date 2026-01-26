@@ -15,7 +15,7 @@ const { mockScoreboard, mockGetScores } = vi.hoisted(() => ({
 
 // ===== Top-level vi.mock() calls =====
 vi.mock("../../src/components/Scoreboard.js", () => mockScoreboard);
-vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   getScores: mockGetScores
 }));
 

@@ -45,7 +45,7 @@ describe("skip handler clears fallback timer", () => {
       offBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => {
+    vi.doMock("../../../src/helpers/BattleEngine.js", () => {
       const makeTimer = (onTick, onExpired, duration) => {
         onTick(duration);
         if (duration <= 0) {

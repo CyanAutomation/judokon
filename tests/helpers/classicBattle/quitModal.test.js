@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   quitMatch: vi.fn(() => ({
     outcome: "QUIT",
     matchEnded: true,
@@ -33,7 +33,7 @@ vi.mock("../../../src/components/Button.js", () => ({
 
 import { quitMatch } from "../../../src/helpers/classicBattle/quitModal.js";
 import { createBattleStore } from "../../../src/helpers/classicBattle/roundManager.js";
-import { quitMatch as engineQuit } from "../../../src/helpers/battleEngineFacade.js";
+import { quitMatch as engineQuit } from "../../../src/helpers/BattleEngine.js";
 import { showResult } from "../../../src/helpers/battle/index.js";
 
 describe("quitModal", () => {

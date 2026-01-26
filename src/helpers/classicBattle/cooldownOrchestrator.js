@@ -13,7 +13,7 @@ import { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { createResourceRegistry, createEnhancedCleanup, eventCleanup } from "./enhancedCleanup.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { updateDebugPanel } from "./debugPanel.js";
-import { requireEngine } from "../battleEngineFacade.js";
+import { requireEngine } from "../BattleEngine.js";
 import {
   computeOpponentPromptWaitBudget,
   DEFAULT_PROMPT_POLL_INTERVAL_MS

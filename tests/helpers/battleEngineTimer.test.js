@@ -55,7 +55,7 @@ describe("timer defaults", () => {
       }));
 
       ({ createBattleEngine, startRound, startCoolDown } = await import(
-        "../../src/helpers/battleEngineFacade.js"
+        "../../src/helpers/BattleEngine.js"
       ));
       timerUtils = await import("../../src/helpers/timerUtils.js");
       createBattleEngine();
@@ -106,7 +106,7 @@ describe("pause and resume timer", () => {
     });
 
     const { createBattleEngine, startRound, pauseTimer, resumeTimer, getTimerState } = await import(
-      "../../src/helpers/battleEngineFacade.js"
+      "../../src/helpers/BattleEngine.js"
     );
     createBattleEngine();
     await startRound(

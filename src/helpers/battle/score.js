@@ -1,4 +1,4 @@
-import { STATS } from "../battleEngineFacade.js";
+import { STATS } from "../BattleEngine.js";
 
 /**
  * Safely record a query selector error for diagnostics.

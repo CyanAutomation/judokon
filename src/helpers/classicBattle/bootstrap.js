@@ -12,7 +12,7 @@ import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { isEnabled } from "../featureFlags.js";
-import * as engineFacade from "../battleEngineFacade.js";
+import * as engineFacade from "../BattleEngine.js";
 // Bridge engine events to PRD taxonomy on the classic battle event bus
 import { bridgeEngineEvents } from "./engineBridge.js";
 import { setupScoreboard } from "../setupScoreboard.js";

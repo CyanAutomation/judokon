@@ -66,7 +66,7 @@ describe("Classic Battle round select modal", () => {
 
     await roundPrompt;
 
-    const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
+    const { getPointsToWin } = await import("../../src/helpers/BattleEngine.js");
     expect(getPointsToWin()).toBe(10);
     expect(document.body.dataset.target).toBe("10");
   });

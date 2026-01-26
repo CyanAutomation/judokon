@@ -1,6 +1,6 @@
 import { createButton } from "../../components/Button.js";
 import { createModal } from "../../components/Modal.js";
-import { getPointsToWin, setPointsToWin } from "../battleEngineFacade.js";
+import { getPointsToWin, setPointsToWin } from "../BattleEngine.js";
 import { initTooltips } from "../tooltip.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent } from "./battleEvents.js";

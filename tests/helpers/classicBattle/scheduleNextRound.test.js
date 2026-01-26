@@ -293,7 +293,7 @@ describe("classicBattle startCooldown", () => {
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     battleEventsMod.__resetBattleEventTarget();
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
-    const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
+    const battleEngineMod = await import("../../../src/helpers/BattleEngine.js");
     battleEngineMod.createBattleEngine();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
@@ -389,7 +389,7 @@ describe("classicBattle startCooldown", () => {
     mockBattleData(cooldownEnter);
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
-    const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
+    const battleEngineMod = await import("../../../src/helpers/BattleEngine.js");
     battleEngineMod.createBattleEngine();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
@@ -535,7 +535,7 @@ describe("classicBattle startCooldown", () => {
     mockBattleData();
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
-    const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
+    const battleEngineMod = await import("../../../src/helpers/BattleEngine.js");
     battleEngineMod.createBattleEngine();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");

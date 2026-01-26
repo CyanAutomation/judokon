@@ -1,5 +1,5 @@
 import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
-import { stopTimer } from "../battleEngineFacade.js";
+import { stopTimer } from "../BattleEngine.js";
 import * as roundUIModule from "./roundUI.js";
 import * as uiServiceModule from "./uiService.js";
 import * as uiEventHandlersModule from "./uiEventHandlers.js";

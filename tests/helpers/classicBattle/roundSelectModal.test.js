@@ -49,7 +49,7 @@ vi.mock("../../../src/components/Button.js", () => ({
 vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (...args) => mocks.createModal(...args)
 }));
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   createBattleEngine: vi.fn(),
   getPointsToWin: vi.fn(),
   getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),

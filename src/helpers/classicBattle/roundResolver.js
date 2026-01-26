@@ -1,7 +1,7 @@
 import { evaluateRound as evaluateRoundApi, getOutcomeMessage } from "../api/battleUI.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import * as engineFacade from "../battleEngineFacade.js";
+import * as engineFacade from "../BattleEngine.js";
 import { isEnabled } from "../featureFlags.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";

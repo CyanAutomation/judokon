@@ -14,7 +14,7 @@ describe("handleStatSelection machine interaction", () => {
     vi.resetModules();
 
     // Set up mocks before importing modules
-    vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+    vi.mock("../../../src/helpers/BattleEngine.js", () => ({
       STATS: ["power"],
       stopTimer: vi.fn()
     }));

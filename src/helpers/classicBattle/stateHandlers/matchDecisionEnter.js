@@ -3,7 +3,7 @@ import { showEndModal } from "../endModal.js";
 import {
   getScores as getFacadeScores,
   isMatchEnded as facadeIsMatchEnded
-} from "../../battleEngineFacade.js";
+} from "../../BattleEngine.js";
 import { reportSentryError } from "./sentryReporter.js";
 
 /**

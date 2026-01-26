@@ -659,7 +659,7 @@ export function createTimerServiceHarness(customConfig = {}) {
       "../../src/helpers/classicBattle/uiHelpers.js": () => ({
         skipRoundCooldownIfEnabled: vi.fn()
       }),
-      "../../src/helpers/battleEngineFacade.js": () => ({
+      "../../src/helpers/BattleEngine.js": () => ({
         startRound: vi.fn()
       }),
       ...customMocks
@@ -813,7 +813,7 @@ export function createBattleCLIHandlersHarness(customConfig = {}) {
         BattleEngine: vi.fn()
       }),
       // Mock battle engine facade
-      "../../src/helpers/battleEngineFacade.js": () => ({
+      "../../src/helpers/BattleEngine.js": () => ({
         createBattleEngineFacade: vi.fn(() => ({}))
       }),
       // Mock orchestrator handlers

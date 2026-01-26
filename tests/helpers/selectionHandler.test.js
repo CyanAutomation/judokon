@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 // Mock all dependencies before any imports
-vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   STATS: ["power"],
   stopTimer: vi.fn()
 }));
@@ -68,7 +68,7 @@ describe("handleStatSelection helpers", () => {
     vi.resetModules();
 
     // Re-declare mocks after reset
-    vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+    vi.mock("../../src/helpers/BattleEngine.js", () => ({
       STATS: ["power"],
       stopTimer: vi.fn()
     }));
@@ -121,7 +121,7 @@ describe("handleStatSelection helpers", () => {
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
 
     // Import all modules after setting up mocks
-    const battleEngineFacade = await import("../../src/helpers/battleEngineFacade.js");
+    const battleEngineFacade = await import("../../src/helpers/BattleEngine.js");
     stopTimer = battleEngineFacade.stopTimer;
 
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");

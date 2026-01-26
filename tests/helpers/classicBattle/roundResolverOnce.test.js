@@ -18,7 +18,7 @@ vi.mock("../../../src/helpers/api/battleUI.js", () => ({
   })),
   chooseOpponentStat: vi.fn()
 }));
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   STATS: ["power", "speed", "technique", "kumikata", "newaza"],
   // Ensure all named exports used by code under test exist on the mock.
   createBattleEngine: vi.fn(),

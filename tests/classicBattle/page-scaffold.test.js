@@ -41,7 +41,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", async () => {
   };
 });
 
-vi.mock("../../src/helpers/battleEngineFacade.js", () => {
+vi.mock("../../src/helpers/BattleEngine.js", () => {
   const engineCreatedListeners = new Set();
   const notifyEngineCreated = (engine) => {
     for (const listener of engineCreatedListeners) {
@@ -1126,7 +1126,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
   test("onEngineCreated listeners can unsubscribe and stop receiving notifications", async () => {
     const { withMutedConsole } = await import("../utils/console.js");
-    const facade = await import("../../src/helpers/battleEngineFacade.js");
+    const facade = await import("../../src/helpers/BattleEngine.js");
     const listener = vi.fn();
     const unsubscribe = facade.onEngineCreated(listener);
 
