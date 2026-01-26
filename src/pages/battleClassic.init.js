@@ -20,7 +20,6 @@ import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import { setupScoreboard } from "../helpers/setupScoreboard.js";
 import { syncScoreboardDisplay } from "../helpers/classicBattle/scoreDisplay.js";
-import { resetFallbackScores } from "../helpers/api/battleUI.js";
 import {
   createBattleEngine,
   STATS,
@@ -1545,7 +1544,6 @@ function wireControlButtons(store) {
       await waitForStatButtonsReady();
       updateScore(0, 0);
       updateRoundCounter(1);
-      resetFallbackScores();
     });
     replayBtn.__controlBound = true;
   }
