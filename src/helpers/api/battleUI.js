@@ -150,8 +150,17 @@ export function getOutcomeMessage(outcome) {
  */
 export function evaluateRound(playerVal, opponentVal) {
   // Use the battle engine facade (requires engine initialization)
-  const result = handleStatSelection(playerVal, opponentVal);
-  const message = getOutcomeMessage(result.outcome);
+  try {
+    const result = handleStatSelection(playerVal, opponentVal);
+    const message = getOutcomeMessage(result.outcome);
+
+    return {
+      ...result,
+      message
+    };
+  } catch (error) {
+    throw new Error(`Battle engine not initialized: ${error.message}`);
+  }
 
   return {
     ...result,
