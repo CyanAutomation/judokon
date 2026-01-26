@@ -205,6 +205,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     if (!container) {
       clearPendingOpponentCardData(undefined, selectionToken);
       return;
+    }
     const capturedToken = pendingOpponentCardDataToken;
     if (selectionToken !== undefined && selectionToken !== capturedToken) {
       return;
@@ -233,30 +234,23 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       clearPendingOpponentCardData(undefined, selectionToken);
       return;
     }
-      try {
-        await renderOpponentCardFn(resolvedCardData, container);
-      } catch {
-        clearPendingOpponentCardData(undefined, selectionToken);
-        return;
-      }
-      await waitForMinimumOpponentObscureDuration();
-      await waitForNextFrame();
-      if (!isCurrentReveal()) {
-        clearPendingOpponentCardData(revealSequence, selectionToken);
-        return;
-      }
-      try {
-        const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
-        if (placeholder) placeholder.remove();
-      } catch {}
-      try {
-        container.classList.remove("is-obscured");
-        container.classList.remove("opponent-hidden");
-      } catch {}
-      try {
-        container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
-      } catch {}
+    await waitForMinimumOpponentObscureDuration();
+    await waitForNextFrame();
+    if (!isCurrentReveal()) {
+      clearPendingOpponentCardData(revealSequence, selectionToken);
+      return;
     }
+    try {
+      const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
+      if (placeholder) placeholder.remove();
+    } catch {}
+    try {
+      container.classList.remove("is-obscured");
+      container.classList.remove("opponent-hidden");
+    } catch {}
+    try {
+      container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
+    } catch {}
     if (tokenMatches) {
       clearPendingOpponentCardData(undefined, selectionToken);
     }
@@ -478,6 +472,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   });
 
   onBattleEvent("roundResolved", async (e) => {
+    const selectionToken = pendingOpponentCardDataToken;
     clearOpponentSnackbarTimeout();
 
     // Remove both opponent choosing and picked snackbars if still active
@@ -498,7 +493,6 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       currentPickedSnackbarController = null;
     }
 
-    const selectionToken = pendingOpponentCardDataToken;
     await revealOpponentCardAfterResolution(selectionToken);
     const { store, stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;
