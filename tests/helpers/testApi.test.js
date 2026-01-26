@@ -68,7 +68,6 @@ describe("testApi.isTestMode", () => {
     restoreWindowProperty("__TIMER_API", originalTimerApi);
     restoreWindowProperty("__INIT_API", originalInitApi);
     restoreWindowProperty("__INSPECT_API", originalInspectApi);
-    restoreWindowProperty("__VIEWPORT_API", originalViewportApi);
     restoreWindowProperty("__battleCLIinit", originalBattleCliInit);
     restoreWindowProperty("__PLAYWRIGHT_TEST__", originalPlaywrightTestFlag);
 
