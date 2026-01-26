@@ -123,7 +123,11 @@ export async function matchDecisionEnter(machine) {
   }
 
   // Emit the matchDecision event with final outcome
-  emitBattleEvent("matchDecision", detail);
+  try {
+    emitBattleEvent("matchDecision", detail);
+  } catch (error) {
+    console.error("Failed to emit matchDecision event:", error);
+  }
 
   // Persist outcome to store for later reference (if store is mutable)
   if (store && typeof store === "object") {
