@@ -22,6 +22,7 @@ import snackbarManager, { SnackbarPriority } from "../SnackbarManager.js";
 
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
+let pendingOpponentCardDataSequence = 0;
 let currentOpponentSnackbarController = null;
 let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
@@ -52,6 +53,20 @@ function clearFallbackPromptTimer() {
     clearScheduled(id);
   }
   setOpponentPromptFallbackTimerId(0);
+}
+
+function setPendingOpponentCardData(cardData, sequence) {
+  pendingOpponentCardData = cardData;
+  if (Number.isFinite(sequence)) {
+    pendingOpponentCardDataSequence = sequence;
+  }
+}
+
+function clearPendingOpponentCardData(sequence) {
+  if (!Number.isFinite(sequence) || pendingOpponentCardDataSequence < sequence) {
+    pendingOpponentCardData = null;
+    pendingOpponentCardDataSequence = 0;
+  }
 }
 
 function waitForNextFrame() {
@@ -175,7 +190,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     const isCurrentReveal = () => revealSequence === opponentRevealSequence;
     const container = document.getElementById("opponent-card");
     if (!container) {
-      pendingOpponentCardData = null;
+      clearPendingOpponentCardData();
       return;
     }
     let cardData = pendingOpponentCardData;
@@ -187,18 +202,20 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
     }
     if (!isCurrentReveal()) {
+      clearPendingOpponentCardData(revealSequence);
       return;
     }
     if (cardData) {
       try {
         await renderOpponentCardFn(cardData, container);
       } catch {
-        pendingOpponentCardData = null;
+        clearPendingOpponentCardData();
         return;
       }
       await waitForMinimumOpponentObscureDuration();
       await waitForNextFrame();
       if (!isCurrentReveal()) {
+        clearPendingOpponentCardData(revealSequence);
         return;
       }
       try {
@@ -213,7 +230,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
       } catch {}
     }
-    pendingOpponentCardData = null;
+    clearPendingOpponentCardData();
     lastOpponentRevealTimestamp = 0;
   }
 
@@ -259,9 +276,14 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       if (!isCurrentReveal()) {
         return;
       }
-      pendingOpponentCardData = await getOpponentCardDataFn();
+      const opponentCardData = await getOpponentCardDataFn();
+      if (!isCurrentReveal()) {
+        clearPendingOpponentCardData(revealSequence);
+        return;
+      }
+      setPendingOpponentCardData(opponentCardData, revealSequence);
     } catch {
-      pendingOpponentCardData = null;
+      clearPendingOpponentCardData(revealSequence);
     }
   });
 
