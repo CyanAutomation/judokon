@@ -27,6 +27,94 @@ import { initPreloadServices } from "./preloadService.js";
 import { createStateManager } from "./stateManager.js";
 import "./uiService.js";
 import { debugLog } from "./debugLog.js";
+import { STATS, onEngineCreated } from "../BattleEngine.js";
+import { updateScore } from "../setupScoreboard.js";
+
+const bridgedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
+let hasRegisteredEngineBridge = false;
+
+function attachEngineEventBridge(engine) {
+  if (!engine || typeof engine !== "object") {
+    return;
+  }
+
+  if (bridgedEngines.has(engine)) {
+    return;
+  }
+
+  const on = engine?.on;
+  if (typeof on !== "function") {
+    return;
+  }
+
+  bridgedEngines.add(engine);
+  const availableStats = Array.isArray(engine?.stats)
+    ? engine.stats.slice()
+    : Array.isArray(STATS)
+      ? STATS.slice()
+      : [];
+
+  on.call(engine, "roundStarted", (detail) => {
+    emitBattleEvent("round.started", {
+      roundIndex: Number(detail?.round) || 0,
+      availableStats
+    });
+  });
+
+  on.call(engine, "roundEnded", (detail) => {
+    emitBattleEvent("roundResolved", detail);
+    try {
+      const player = Number(detail?.playerScore) || 0;
+      const opponent = Number(detail?.opponentScore) || 0;
+      emitBattleEvent("display.score.update", { player, opponent });
+      if (typeof updateScore === "function") {
+        updateScore(player, opponent);
+      }
+    } catch {}
+  });
+
+  on.call(engine, "timerTick", (detail) => {
+    const remaining = Number(detail?.remaining) || 0;
+    if (detail?.phase === "round") {
+      emitBattleEvent("round.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+    } else if (detail?.phase === "cooldown") {
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+    }
+  });
+
+  on.call(engine, "matchEnded", (detail) => {
+    // Legacy handler
+    emitBattleEvent("matchOver", detail);
+  });
+
+  on.call(engine, "matchEnded", (detail) => {
+    // PRD taxonomy handler
+    const outcome = detail?.outcome;
+    const winner =
+      outcome === "matchWinPlayer" ? "player" : outcome === "matchWinOpponent" ? "opponent" : "none";
+    emitBattleEvent("match.concluded", {
+      winner,
+      scores: {
+        player: Number(detail?.playerScore) || 0,
+        opponent: Number(detail?.opponentScore) || 0
+      },
+      reason: outcome || "unknown"
+    });
+  });
+}
+
+function registerEngineEventBridge() {
+  if (hasRegisteredEngineBridge) {
+    return;
+  }
+
+  hasRegisteredEngineBridge = true;
+  try {
+    onEngineCreated((engine) => attachEngineEventBridge(engine));
+  } catch {
+    hasRegisteredEngineBridge = false;
+  }
+}
 
 let machine = null;
 let machineInitPromise = null;
@@ -281,6 +369,7 @@ export async function initClassicBattleOrchestrator(
   hooks = {}
 ) {
   debugLog("initClassicBattleOrchestrator() called");
+  registerEngineEventBridge();
   window.__INIT_ORCHESTRATOR_CALLED = true;
   if (machine) {
     window.__ORCHESTRATOR_EARLY_RETURN_MACHINE = true;

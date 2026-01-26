@@ -55,8 +55,6 @@ vi.mock("../../src/helpers/BattleEngine.js", () => {
     STATS: ["Power", "Speed", "Skill"],
     createBattleEngine: vi.fn(() => {
       engineMock.listeners.clear();
-      const bridgeKey = Symbol.for("classicBattle.bridgeEngineEvents.attached");
-      delete engineMock[bridgeKey];
       const engine = {
         on: engineMock.on.bind(engineMock),
         off: engineMock.off.bind(engineMock)

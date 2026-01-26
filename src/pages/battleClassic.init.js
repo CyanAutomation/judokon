@@ -33,7 +33,6 @@ import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
-import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { setTestMode } from "../helpers/testModeUtils.js";
@@ -1780,7 +1779,6 @@ async function initializePhase2_UI() {
 async function initializePhase3_Engine(store) {
   console.log("battleClassic: initializePhase3_Engine");
   createBattleEngine(window.__ENGINE_CONFIG || {});
-  bridgeEngineEvents();
 
   const shouldDeferOrchestrator =
     (typeof process !== "undefined" && process.env?.VITEST === "true") ||

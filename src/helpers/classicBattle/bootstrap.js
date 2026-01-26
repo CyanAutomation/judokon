@@ -13,8 +13,6 @@ import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { isEnabled } from "../featureFlags.js";
 import * as engineFacade from "../BattleEngine.js";
-// Bridge engine events to PRD taxonomy on the classic battle event bus
-import { bridgeEngineEvents } from "./engineBridge.js";
 import { setupScoreboard } from "../setupScoreboard.js";
 // Test API exposure for Playwright and unit tests
 import { exposeClassicBattleTestAPI } from "../testing/exposeClassicBattleTestApi.js";
@@ -49,7 +47,6 @@ export async function setupClassicBattlePage() {
       console.warn("[classicBattle.bootstrap] Engine creation failed:", err);
     }
   }
-  bridgeEngineEvents();
   let debugApi;
   const view = new ClassicBattleView();
   const controller = new ClassicBattleController();
