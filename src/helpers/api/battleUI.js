@@ -135,28 +135,22 @@ export function getOutcomeMessage(outcome) {
   return OUTCOME_MESSAGES[outcome] || "";
 }
 
-// Simple score tracking for fallback mode
-let fallbackPlayerScore = 0;
-let fallbackOpponentScore = 0;
-
 /**
  * Evaluate a stat matchup and return engine results with a user-facing message.
  *
- * @summary Compute round outcome via engine or fallback logic. Pure function (no side effects).
+ * @summary Compute round outcome via engine. Pure function (no side effects).
  * @pseudocode
- * 1. Try to invoke `handleStatSelection(playerVal, opponentVal)` on the battle engine.
+ * 1. Invoke `handleStatSelection(playerVal, opponentVal)` on the battle engine.
  * 2. Map the outcome code to a localized message.
  * 3. Return the result with the message.
- * 4. If the engine throws, compute a simple delta outcome and track fallback scores.
- * 5. Return the fallback result with the message.
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
  * @returns {{delta: number, outcome: string, matchEnded: boolean, playerScore: number, opponentScore: number, message: string}}
  */
 export function evaluateRound(playerVal, opponentVal) {
+  // Use the battle engine facade (requires engine initialization)
   try {
-    // Use the battle engine facade
     const result = handleStatSelection(playerVal, opponentVal);
     const message = getOutcomeMessage(result.outcome);
 
@@ -164,32 +158,14 @@ export function evaluateRound(playerVal, opponentVal) {
       ...result,
       message
     };
-  } catch {
-    // Fallback when engine is unavailable: compute a simple outcome with cumulative scoring
-    const p = Number(playerVal) || 0;
-    const o = Number(opponentVal) || 0;
-    const delta = p - o;
-    const outcome = delta > 0 ? "winPlayer" : delta < 0 ? "winOpponent" : "draw";
-
-    // Update cumulative scores
-    if (outcome === "winPlayer") {
-      fallbackPlayerScore += 1;
-    } else if (outcome === "winOpponent") {
-      fallbackOpponentScore += 1;
-    }
-
-    const matchEnded = false;
-    const message = getOutcomeMessage(outcome);
-
-    return {
-      delta,
-      outcome,
-      matchEnded,
-      playerScore: fallbackPlayerScore,
-      opponentScore: fallbackOpponentScore,
-      message
-    };
+  } catch (error) {
+    throw new Error(`Battle engine not initialized: ${error.message}`);
   }
+
+  return {
+    ...result,
+    message
+  };
 }
 
 /**
@@ -235,20 +211,4 @@ export function applyRoundResultToDOM(roundResult) {
   } catch {
     // Silently ignore DOM update errors in test environment
   }
-}
-
-// Reset function for tests
-/**
- * Reset the cumulative fallback scores used when the engine is unavailable.
- *
- * Useful for tests that rely on deterministic cumulative scoring.
- *
- * @returns {void}
- *
- * @pseudocode
- * 1. Set module-scoped `fallbackPlayerScore` and `fallbackOpponentScore` back to 0.
- */
-export function resetFallbackScores() {
-  fallbackPlayerScore = 0;
-  fallbackOpponentScore = 0;
 }

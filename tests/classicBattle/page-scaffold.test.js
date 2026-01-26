@@ -362,7 +362,6 @@ vi.mock("../../src/helpers/classicBattle/snackbar.js", () => ({
 
 import { setupClassicBattleHooks } from "../helpers/classicBattle/setupTestEnv.js";
 import * as timerUtils from "../../src/helpers/timerUtils.js";
-import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
 import { resetStatButtons } from "../../src/helpers/battle/battleUI.js";
 
 const scoreboardMock = vi.hoisted(() => ({
@@ -1376,7 +1375,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     }
 
     test("render enabled after start; clicking resolves and starts cooldown", async () => {
-      resetFallbackScores();
       const { timerSpy } = getEnv();
       const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
         if (cat === "roundTimer") return 5;
@@ -1419,7 +1417,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     });
 
     test("stat buttons re-enable when scheduler loop is idle", async () => {
-      resetFallbackScores();
       const { statControls, container } = await initBattle();
       const button = container.querySelector("button[data-stat]");
       expect(button).toBeTruthy();

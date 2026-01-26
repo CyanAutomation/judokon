@@ -90,23 +90,16 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
   const statsSnapshot = resolveStatsSnapshot(store);
 
-  try {
-    debugLog("[DIAGNOSTIC] evaluateOutcome: calling engineFacade.handleStatSelection");
-    const result = engineFacade.handleStatSelection(pVal, oVal, statsSnapshot);
-    debugLog("DEBUG: evaluateOutcome result", result);
-    debugLog("[DIAGNOSTIC] evaluateOutcome: handleStatSelection returned", result);
+  debugLog("[DIAGNOSTIC] evaluateOutcome: calling engineFacade.handleStatSelection");
+  const result = engineFacade.handleStatSelection(pVal, oVal, statsSnapshot);
+  debugLog("DEBUG: evaluateOutcome result", result);
+  debugLog("[DIAGNOSTIC] evaluateOutcome: handleStatSelection returned", result);
 
-    // Add message generation for tests and real usage
-    const message = getOutcomeMessage(result.outcome);
-    const resultWithMessage = { ...result, message };
+  // Add message generation for tests and real usage
+  const message = getOutcomeMessage(result.outcome);
+  const resultWithMessage = { ...result, message };
 
-    return resultWithMessage;
-  } catch (error) {
-    // Fallback when engine is not initialized
-    debugLog("DEBUG: evaluateOutcome fallback due to error", error);
-    debugLog("[DIAGNOSTIC] evaluateOutcome error:", error?.message);
-    return evaluateRoundData(pVal, oVal);
-  }
+  return resultWithMessage;
 }
 
 /**
