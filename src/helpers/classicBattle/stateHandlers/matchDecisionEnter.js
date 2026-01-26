@@ -48,7 +48,11 @@ function readScores(engine) {
  * @returns {boolean}
  */
 function isMatchComplete(engine) {
-  return Boolean(engine?.isMatchEnded?.());
+  try {
+    return Boolean(engine?.isMatchEnded?.());
+  } catch {
+    return false;
+  }
 }
 
 /**
