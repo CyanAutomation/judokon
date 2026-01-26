@@ -30,11 +30,6 @@ import {
   setPointsToWin as facadeSetPointsToWin
 } from "./BattleEngine.js";
 import { setTestMode } from "./testModeUtils.js";
-import {
-  readStatButtonSnapshot,
-  refreshStatButtonSnapshotFromDom
-} from "./testing/statButtonTracker.js";
-import { createStatButtonTestApi } from "./classicBattle/statButtonTestSignals.js";
 import { getAutoContinue, setAutoContinue } from "./classicBattle/autoContinue.js";
 
 const FRAME_DELAY_MS = 16;
@@ -42,137 +37,6 @@ const FRAME_DELAY_MS = 16;
 function toFiniteNumber(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function readScoreboardSnapshot() {
-  try {
-    const node = document.getElementById("score-display");
-    if (!node) return null;
-
-    const dataset = {};
-    if (node.dataset) {
-      for (const [key, val] of Object.entries(node.dataset)) {
-        dataset[key] = val;
-      }
-    }
-
-    const pickFromDataset = (keys) => {
-      for (const key of keys) {
-        const numeric = toFiniteNumber(dataset[key]);
-        if (numeric !== null) return numeric;
-      }
-      return null;
-    };
-
-    const text = String(node.textContent ?? "");
-    let player = pickFromDataset(["player", "playerScore", "you", "user"]);
-    let opponent = pickFromDataset(["opponent", "opponentScore", "cpu", "enemy"]);
-
-    if (player === null || opponent === null) {
-      const match = text.match(/You:[^0-9]*([0-9]+)[\s\S]*Opponent:[^0-9]*([0-9]+)/i);
-      if (match) {
-        player = toFiniteNumber(match[1]);
-        opponent = toFiniteNumber(match[2]);
-      }
-    }
-
-    const endedAttr = dataset.matchEnded ?? node.getAttribute?.("data-match-ended");
-    const matchEnded =
-      typeof endedAttr === "string"
-        ? endedAttr.trim().toLowerCase() === "true"
-        : endedAttr === true;
-
-    return {
-      text,
-      dataset,
-      player,
-      opponent,
-      matchEnded
-    };
-  } catch {
-    return null;
-  }
-}
-
-function readMatchEndModalSnapshot() {
-  try {
-    const modal = document.getElementById("match-end-modal");
-    if (!modal) {
-      return { present: false, visible: false, title: null, ariaHidden: null };
-    }
-
-    const ariaHidden = modal.getAttribute("aria-hidden");
-    const computed =
-      isWindowAvailable() && typeof window.getComputedStyle === "function"
-        ? window.getComputedStyle(modal)
-        : null;
-
-    let visible = modal.hidden !== true;
-    if (ariaHidden && ariaHidden !== "false") {
-      visible = false;
-    }
-    if (computed) {
-      const opacity = toFiniteNumber(computed.opacity);
-      if (
-        computed.display === "none" ||
-        computed.visibility === "hidden" ||
-        computed.pointerEvents === "none" ||
-        (opacity !== null && opacity <= 0.01)
-      ) {
-        visible = false;
-      }
-    }
-
-    const title = modal.querySelector?.("#match-end-title")?.textContent?.trim() ?? null;
-
-    return { present: true, visible, title, ariaHidden };
-  } catch {
-    return { present: false, visible: false, title: null, ariaHidden: null };
-  }
-}
-
-function collectMatchUiSnapshot() {
-  let battleState = null;
-  try {
-    battleState = document.body?.dataset?.battleState ?? null;
-  } catch {
-    battleState = null;
-  }
-
-  return {
-    battleState,
-    scoreboard: readScoreboardSnapshot(),
-    modal: readMatchEndModalSnapshot()
-  };
-}
-
-function normalizeMatchScores(primary, scoreboard) {
-  /**
-   * Extract and validate scores from a candidate object.
-   * @param {any} candidate - Object with player/playerScore and opponent/opponentScore
-   * @returns {{player: number, opponent: number}|null} Validated scores or null if invalid
-   */
-  const extractValidScores = (candidate) => {
-    if (!isValidScoresObject(candidate)) {
-      return null;
-    }
-    const player = toFiniteNumber(candidate.player ?? candidate.playerScore);
-    const opponent = toFiniteNumber(candidate.opponent ?? candidate.opponentScore);
-    return { player, opponent };
-  };
-
-  const normalizedPrimary = extractValidScores(primary);
-  if (normalizedPrimary) return normalizedPrimary;
-
-  if (scoreboard) {
-    const fallback = extractValidScores({
-      player: scoreboard.player,
-      opponent: scoreboard.opponent
-    });
-    if (fallback) return fallback;
-  }
-
-  return null;
 }
 
 async function waitForNextFrame() {
@@ -304,23 +168,6 @@ function extractStatValue(stats, key) {
 }
 
 /**
- * Safely read a value with optional chaining, returning a default on any error.
- * Eliminates repetitive try-catch IIFEs for DOM and window access.
- *
- * @param {() => any} getter - Function that returns the value
- * @param {any} defaultValue - Value to return if getter throws
- * @returns {any} The getter result or defaultValue
- * @internal
- */
-function safeRead(getter, defaultValue = null) {
-  try {
-    return getter();
-  } catch {
-    return defaultValue;
-  }
-}
-
-/**
  * Check if window is available (browser environment).
  * Replaces repeated "typeof window !== 'undefined'" checks throughout the file.
  *
@@ -331,61 +178,14 @@ function isWindowAvailable() {
   return typeof window !== "undefined";
 }
 
-function isAutomationNavigator(nav) {
-  if (!nav) return false;
-
-  try {
-    if (nav.webdriver === true) {
-      return true;
-    }
-  } catch {
-    // Ignore property access errors – fall back to user agent heuristics.
-  }
-
-  let userAgent = "";
-
-  try {
-    if (typeof nav.userAgent === "string") {
-      userAgent = nav.userAgent;
-    }
-  } catch {
-    userAgent = "";
-  }
-
-  if (!userAgent) {
-    try {
-      const brands = nav.userAgentData?.brands;
-      if (Array.isArray(brands)) {
-        userAgent = brands.map((brand) => brand.brand).join(" ");
-      }
-    } catch {
-      userAgent = "";
-    }
-  }
-
-  if (!userAgent) return false;
-
-  const normalizedAgent = userAgent.toLowerCase();
-  if (normalizedAgent.includes("playwright")) {
-    return true;
-  }
-
-  if (normalizedAgent.includes("headless")) {
-    return true;
-  }
-
-  return false;
-}
-
 // Test mode detection
 /**
  * Determine whether the runtime should expose the test API helpers.
  *
  * @pseudocode
  * 1. Check Node-based test flags (NODE_ENV, VITEST) for early exit.
- * 2. Inspect browser globals for explicit test flags or localhost URLs.
- * 3. Evaluate navigator automation hints (webdriver, headless UAs).
- * 4. Fallback to the enableTestMode feature flag toggle.
+ * 2. Inspect browser globals for explicit test flags.
+ * 3. Fallback to the enableTestMode feature flag toggle.
  *
  * @returns {boolean} True when test-only helpers should be mounted.
  * @internal
@@ -397,24 +197,16 @@ export function isTestMode() {
     if (process.env?.VITEST) return true;
   }
 
-  // Check for browser test indicators
-  if (isWindowAvailable()) {
-    if (window.__TEST__ || window.__PLAYWRIGHT_TEST__) return true;
-    if (
-      window.location?.href?.includes("127.0.0.1") ||
-      window.location?.href?.includes("localhost")
-    )
-      return true;
+  const runtime =
+    isWindowAvailable() && window
+      ? window
+      : typeof globalThis !== "undefined"
+        ? globalThis
+        : null;
 
-    if (isAutomationNavigator(window.navigator)) return true;
-  }
-
-  if (
-    !isWindowAvailable() &&
-    typeof navigator !== "undefined" &&
-    isAutomationNavigator(navigator)
-  ) {
-    return true;
+  if (runtime) {
+    if (runtime.__TEST__ || runtime.__PLAYWRIGHT_TEST__) return true;
+    if (runtime.__TEST_MODE?.enabled) return true;
   }
 
   // Check feature flag
@@ -423,59 +215,6 @@ export function isTestMode() {
   } catch {
     return false;
   }
-}
-
-/**
- * Read rounds played from all available sources with fallback chain.
- * Single source of truth for rounds reading to eliminate duplication.
- *
- * @pseudocode
- * 1. Try engine facade first via getRoundsPlayed()
- * 2. Fall back to window.battleStore.roundsPlayed
- * 3. Fall back to inspect API getBattleSnapshot().roundsPlayed
- * 4. Return first non-null result or null if all fail
- *
- * @returns {number|null} Rounds played or null if unavailable
- * @internal
- */
-function readRoundsPlayedFromAllSources() {
-  // Try engine API first
-  try {
-    if (stateApi && typeof stateApi.getRoundsPlayed === "function") {
-      const engineRounds = stateApi.getRoundsPlayed();
-      if (typeof engineRounds === "number" && Number.isFinite(engineRounds)) {
-        return engineRounds;
-      }
-    }
-  } catch {}
-
-  // Fall back to store
-  try {
-    const store = isWindowAvailable() ? window.battleStore : null;
-    const fromStore = toFiniteNumber(store?.roundsPlayed);
-    if (typeof fromStore === "number") {
-      return fromStore;
-    }
-  } catch {}
-
-  // Fall back to inspect API
-  try {
-    const inspectApi =
-      (isWindowAvailable() && window.__TEST_API?.inspect) ||
-      (isWindowAvailable() && window.__INSPECT_API);
-    if (inspectApi) {
-      const snapshot =
-        typeof inspectApi.getBattleSnapshot === "function"
-          ? inspectApi.getBattleSnapshot()
-          : (inspectApi.getDebugInfo?.()?.store ?? null);
-      const fromSnapshot = toFiniteNumber(snapshot?.roundsPlayed);
-      if (typeof fromSnapshot === "number") {
-        return fromSnapshot;
-      }
-    }
-  } catch {}
-
-  return null;
 }
 
 /**
@@ -677,8 +416,7 @@ const stateApi = {
       return false;
     }
 
-    // Delegate to unified rounds reading helper
-    const readCurrentRounds = () => readRoundsPlayedFromAllSources();
+    const readCurrentRounds = () => stateApi.getRoundsPlayed();
 
     return new Promise((resolve) => {
       const startTime = Date.now();
@@ -1024,9 +762,8 @@ const stateApi = {
    * @returns {Promise<{eventName:string,detail:object|null,scores:{player:number,opponent:number}|null,winner:string|null,reason:string|null,elapsedMs:number,timedOut:boolean,dom:object|null}>}
    * @pseudocode
    * 1. Subscribe to `match.concluded` and start a timeout guard.
-   * 2. When the event fires, wait a frame so UI bindings settle.
-   * 3. Capture the emitted detail, normalized scores, and modal/scoreboard DOM state.
-   * 4. Resolve with the collected payload; on timeout resolve with `timedOut=true`.
+   * 2. When the event fires, capture the emitted detail and normalize scores.
+   * 3. Resolve with the collected payload; on timeout resolve with `timedOut=true`.
    */
   async waitForMatchCompletion(timeout = 10000) {
     const startTime = Date.now();
@@ -1036,7 +773,7 @@ const stateApi = {
       let timeoutId;
       let listenerBound = false;
 
-      const finish = async (result) => {
+      const finish = (result) => {
         if (finished) return;
         finished = true;
 
@@ -1047,19 +784,14 @@ const stateApi = {
           } catch {}
         }
 
-        if (result.timedOut !== true) {
-          await waitForNextFrame();
-        }
-
-        if (!result.dom) {
-          result.dom = collectMatchUiSnapshot();
-        }
-
         const detail = result.detail ?? null;
-        const scores = normalizeMatchScores(
-          result.scores ?? detail?.scores,
-          result.dom?.scoreboard
-        );
+        const scoresCandidate = result.scores ?? detail?.scores;
+        const scores = isValidScoresObject(scoresCandidate)
+          ? {
+              player: toFiniteNumber(scoresCandidate.player ?? scoresCandidate.playerScore),
+              opponent: toFiniteNumber(scoresCandidate.opponent ?? scoresCandidate.opponentScore)
+            }
+          : null;
 
         resolve({
           eventName: "match.concluded",
@@ -1069,56 +801,14 @@ const stateApi = {
           reason: result.reason ?? detail?.reason ?? null,
           elapsedMs: Date.now() - startTime,
           timedOut: result.timedOut === true,
-          dom: result.dom ?? null,
-          uiState: result.uiState ?? null
+          dom: null
         });
       };
 
-      const handleMatchConcluded = async (event) => {
+      const handleMatchConcluded = (event) => {
         const detail = event?.detail ?? null;
-        const scores = normalizeMatchScores(detail?.scores);
-
-        // Wait for the end modal to be shown after match conclusion
-        // The modal is created in matchDecisionEnter state handler
-        const modalWaitTimeout = 5000;
-        let uiState = null;
-
-        const modalShown = await createPollingPromise({
-          condition: () => {
-            const modalCount =
-              typeof window !== "undefined" ? window.__classicBattleEndModalCount : 0;
-            return Number(modalCount) > 0;
-          },
-          timeout: modalWaitTimeout,
-          pollInterval: 50 // Matches the original setTimeout delay
-        });
-
-        if (modalShown) {
-          // Capture UI state atomically when modal is confirmed
-          try {
-            const statButtons = document.querySelectorAll("#stat-buttons button");
-            const nextButton = document.getElementById("next-button");
-            const modal = document.getElementById("match-end-modal");
-
-            uiState = {
-              statButtonsDisabled: Array.from(statButtons).every((btn) => btn.disabled),
-              nextButtonDisabled: nextButton?.disabled === true,
-              modalExists: modal !== null,
-              modalOpen: modal?.open === true
-            };
-          } catch {}
-        }
-
-        if (!modalShown) {
-          // Log warning but don't fail - modal might be shown via different path
-          if (typeof console !== "undefined" && typeof console.warn === "function") {
-            console.warn(
-              "Test API: match.concluded event fired but modal counter not incremented within 5s"
-            );
-          }
-        }
-
-        finish({ detail, scores, timedOut: false, uiState });
+        const scores = detail?.scores ?? null;
+        finish({ detail, scores, timedOut: false });
       };
 
       try {
@@ -1133,15 +823,6 @@ const stateApi = {
         });
         return;
       }
-
-      Promise.resolve()
-        .then(() => {
-          const immediateDom = collectMatchUiSnapshot();
-          if (immediateDom?.scoreboard?.matchEnded) {
-            finish({ detail: null, scores: null, timedOut: false, dom: immediateDom });
-          }
-        })
-        .catch(() => {});
 
       timeoutId = setTimeout(() => {
         finish({ detail: null, scores: null, timedOut: true });
@@ -1789,8 +1470,7 @@ const engineApi = {
       }
     }
 
-    // Delegate to unified rounds reading helper
-    const readCurrentRounds = () => readRoundsPlayedFromAllSources();
+    const readCurrentRounds = () => this.getRoundsPlayed();
 
     return new Promise((resolve) => {
       const startTime = Date.now();
@@ -1831,94 +1511,6 @@ const engineApi = {
         );
       }
     });
-  }
-};
-
-const MIN_VIEWPORT_ZOOM = 0.1;
-const MAX_VIEWPORT_ZOOM = 10;
-
-// Viewport control API
-const viewportApi = {
-  /**
-   * Adjust the document zoom level to simulate browser zoom in tests.
-   *
-   * @pseudocode
-   * 1. Normalize the input zoom value (default to 1 when invalid or non-positive)
-   * 2. Clamp the normalized zoom within the supported safety bounds (0.1 - 10)
-   * 3. Ensure the document and body elements are available before mutating styles
-   * 4. Apply or remove zoom styles plus tracking attributes based on the target zoom
-   * 5. Log failures during development and return a boolean success indicator
-   *
-   * @param {number} zoomLevel - Target zoom multiplier (1 = 100%).
-   * @returns {boolean} True when zoom is applied synchronously.
-   */
-  setZoom(zoomLevel = 1) {
-    if (typeof document === "undefined") return false;
-
-    const root = document.documentElement;
-    const body = document.body;
-
-    if (!root || !body) {
-      return false;
-    }
-
-    const numericZoom = Number(zoomLevel);
-    const normalizedZoom = Number.isFinite(numericZoom) && numericZoom > 0 ? numericZoom : 1;
-    const clampedZoom = Math.min(Math.max(normalizedZoom, MIN_VIEWPORT_ZOOM), MAX_VIEWPORT_ZOOM);
-
-    if (clampedZoom !== normalizedZoom) {
-      logDevWarning(
-        `Viewport zoom ${normalizedZoom} outside safe bounds; clamped to ${clampedZoom}.`
-      );
-    }
-
-    try {
-      if (clampedZoom === 1) {
-        body.style.removeProperty("zoom");
-        try {
-          delete root.dataset.testZoom;
-        } catch {}
-        try {
-          root.style.removeProperty("--test-zoom-scale");
-        } catch {}
-        return true;
-      }
-
-      const zoomString = String(clampedZoom);
-
-      body.style.zoom = zoomString;
-      try {
-        root.dataset.testZoom = zoomString;
-      } catch {}
-      try {
-        root.style.setProperty("--test-zoom-scale", zoomString);
-      } catch {}
-
-      return true;
-    } catch (error) {
-      logDevWarning("Failed to set viewport zoom", error);
-      return false;
-    }
-  },
-
-  /**
-   * Clear any simulated zoom overrides applied during a test run.
-   *
-   * @pseudocode
-   * 1. Delegate to `setZoom(1)` so the same validation and cleanup paths are reused
-   * 2. Allow the shared implementation to handle DOM availability checks
-   * 3. Rely on `setZoom` for style cleanup, attribute removal, and logging
-   * 4. Return the boolean success status from the delegated call
-   *
-   * @returns {boolean} True when cleanup is completed.
-   */
-  resetZoom() {
-    try {
-      return this.setZoom(1);
-    } catch (error) {
-      logDevWarning("Failed to reset viewport zoom", error);
-      return false;
-    }
   }
 };
 
@@ -2347,120 +1939,8 @@ const initApi = {
   __resetBattleCliModuleResetCount() {
     battleCliModuleResetCount = 0;
     return battleCliModuleResetCount;
-  },
-
-  /**
-   * Create a component factory for testing
-   * @param {string} componentName - Name of component to create
-   * @param {object} options - Component options
-   * @returns {object} Component instance with test API access
-   */
-  createComponent(componentName) {
-    try {
-      const testApi = {
-        getState: () => this.getComponentState(componentName),
-        setState: (state) => this.setComponentState(componentName, state),
-        triggerEvent: (event, data) => this.triggerComponentEvent(componentName, event, data),
-        cleanup: () => this.cleanupComponent(componentName)
-      };
-
-      return {
-        component: null, // Will be populated by specific component factories
-        testApi,
-        isTestMode: true
-      };
-    } catch {
-      return { component: null, testApi: null, isTestMode: false };
-    }
-  },
-
-  /**
-   * Get internal state of a component
-   * @param {string} componentName - Component identifier
-   * @returns {any} Component state
-   */
-  getComponentState(componentName) {
-    try {
-      if (isWindowAvailable() && window.__testComponentStates) {
-        return window.__testComponentStates[componentName];
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  },
-
-  /**
-   * Set internal state of a component
-   * @param {string} componentName - Component identifier
-   * @param {any} state - New state
-   */
-  setComponentState(componentName, state) {
-    try {
-      if (isWindowAvailable()) {
-        if (!window.__testComponentStates) {
-          window.__testComponentStates = {};
-        }
-        window.__testComponentStates[componentName] = state;
-      }
-    } catch {}
-  },
-
-  /**
-   * Trigger component event for testing
-   * @param {string} componentName - Component identifier
-   * @param {string} event - Event name
-   * @param {any} data - Event data
-   */
-  triggerComponentEvent(componentName, event, data) {
-    try {
-      if (isWindowAvailable() && window.__testComponentEvents) {
-        const handler = window.__testComponentEvents[componentName]?.[event];
-        if (typeof handler === "function") {
-          handler(data);
-        }
-      }
-    } catch {}
-  },
-
-  /**
-   * Cleanup component test state
-   * @param {string} componentName - Component identifier
-   */
-  cleanupComponent(componentName) {
-    try {
-      if (isWindowAvailable()) {
-        if (window.__testComponentStates) {
-          delete window.__testComponentStates[componentName];
-        }
-        if (window.__testComponentEvents) {
-          delete window.__testComponentEvents[componentName];
-        }
-      }
-    } catch {}
-  },
-
-  /**
-   * Get all available initialization promises
-   * @returns {object} Object containing available promises
-   */
-  getInitPromises() {
-    const promises = {};
-
-    if (isWindowAvailable()) {
-      if (window.battleReadyPromise) promises.battle = window.battleReadyPromise;
-      if (window.settingsReadyPromise) promises.settings = window.settingsReadyPromise;
-      if (window.navReadyPromise) promises.nav = window.navReadyPromise;
-      if (window.quoteReadyPromise) promises.quote = window.quoteReadyPromise;
-      if (window.tooltipsReady) promises.tooltips = window.tooltipsReady;
-    }
-
-    return promises;
   }
 };
-
-let cachedRoundsEstimate = 0;
-let lastBattleState = null;
 
 // Component inspection API
 const inspectionApi = {
@@ -2527,31 +2007,12 @@ const inspectionApi = {
   },
 
   /**
-   * Get a snapshot of the rendered stat buttons, including stable identity tokens.
-   *
-   * @param {{ refresh?: boolean }} [options] - Optional behavior overrides.
-   * @param {boolean} [options.refresh=false] - When true, re-queries the DOM before returning.
-   * @returns {{ capturedAt: number|null, containerReady: boolean|null, buttonCount: number, buttons: Array<{ id: string, stat: string|null, disabled: boolean, ariaDisabled: boolean, selected: boolean, tabIndex: number|null, text: string, isConnected: boolean|null, testId: string|null }> }}
-   *   Snapshot data for assertions.
-   */
-  getStatButtonSnapshot(options = {}) {
-    const normalizedOptions = options && typeof options === "object" ? options : { refresh: false };
-    const refresh = normalizedOptions.refresh === true;
-    try {
-      return refresh ? refreshStatButtonSnapshotFromDom() : readStatButtonSnapshot();
-    } catch {
-      return { capturedAt: null, containerReady: null, buttonCount: 0, buttons: [] };
-    }
-  },
-
-  /**
    * Read a normalized battle snapshot for assertions.
    * @returns {{ roundsPlayed: number|null, selectionMade: boolean|null, playerScore: number|null, opponentScore: number|null }|null}
    */
   getBattleSnapshot() {
     try {
       const store = this.getBattleStore();
-      const debug = this.getDebugInfo?.() ?? null;
 
       const normalizeBoolean = (value) => {
         if (typeof value === "boolean") {
@@ -2565,26 +2026,11 @@ const inspectionApi = {
         return null;
       };
 
-      const extract = (key, transform = (v) => v) => {
-        if (store && Object.prototype.hasOwnProperty.call(store, key)) {
-          return transform(store[key]);
-        }
-        if (debug?.store && Object.prototype.hasOwnProperty.call(debug.store, key)) {
-          return transform(debug.store[key]);
-        }
-        return null;
-      };
-
-      const readSelectionFinalized = () => {
-        try {
-          // Use unified selection state API (prefers store.selectionMade, falls back to window global)
-          return getSelectionFinalized(normalizedStore);
-        } catch {}
-        return false;
-      };
+      const extract = (key, transform = (v) => v) =>
+        store && Object.prototype.hasOwnProperty.call(store, key) ? transform(store[key]) : null;
 
       const selectionFromStore = extract("selectionMade", normalizeBoolean);
-      const selectionFinalized = readSelectionFinalized();
+      const selectionFinalized = getSelectionFinalized(store);
 
       // Resolution logic: if BOTH are explicitly false, return false
       // Otherwise, if EITHER is true, return true
@@ -2595,7 +2041,6 @@ const inspectionApi = {
             ? true
             : null;
 
-      // Read scores from the engine using the facade, not from the store
       let playerScore = null;
       let opponentScore = null;
       try {
@@ -2605,9 +2050,8 @@ const inspectionApi = {
           opponentScore = toFiniteNumber(scores.opponentScore ?? scores.opponent);
         }
       } catch {
-        // Fall back to trying to read from store if engine fails
-        playerScore = extract("playerScore", (value) => toFiniteNumber(value));
-        opponentScore = extract("opponentScore", (value) => toFiniteNumber(value));
+        playerScore = null;
+        opponentScore = null;
       }
 
       const snapshot = {
@@ -2702,69 +2146,6 @@ const inspectionApi = {
   },
 
   /**
-   * Read instrumentation describing stat button listener attachments.
-   * @returns {{ available: boolean, attachedCount: number, buttonCount: number|null, stats: string[], details: Array<{stat: string|null, datasetStat: string|null, label: string|null}>, updatedAt: number|null }}
-   */
-  getStatButtonListenerSnapshot() {
-    const fallback = {
-      available: false,
-      attachedCount: 0,
-      buttonCount: null,
-      stats: [],
-      details: [],
-      updatedAt: null
-    };
-
-    try {
-      if (!isWindowAvailable()) {
-        return fallback;
-      }
-
-      const registry = window.__classicBattleStatButtonListeners;
-      if (!registry) {
-        return fallback;
-      }
-
-      const stats = Array.isArray(registry.stats)
-        ? registry.stats.map((value) => String(value))
-        : [];
-
-      const details = Array.isArray(registry.details)
-        ? registry.details.map((entry) => ({
-            stat: typeof entry?.stat === "string" ? entry.stat : null,
-            datasetStat: typeof entry?.datasetStat === "string" ? entry.datasetStat : null,
-            label: typeof entry?.label === "string" ? entry.label : null
-          }))
-        : [];
-
-      const attachedCount =
-        typeof registry.attachedCount === "number" && Number.isFinite(registry.attachedCount)
-          ? registry.attachedCount
-          : stats.length || 0;
-
-      return {
-        available: true,
-        attachedCount,
-        buttonCount:
-          typeof registry.buttonCount === "number" && Number.isFinite(registry.buttonCount)
-            ? registry.buttonCount
-            : null,
-        stats,
-        details,
-        updatedAt:
-          typeof registry.updatedAt === "number" && Number.isFinite(registry.updatedAt)
-            ? registry.updatedAt
-            : null
-      };
-    } catch (error) {
-      if (isDevelopmentEnvironment()) {
-        logDevWarning("testApi.inspect.getStatButtonListenerSnapshot failed", error);
-      }
-      return fallback;
-    }
-  },
-
-  /**
    * Determine which stat currently favours the player.
    * @param {{ requirePositiveDelta?: boolean }} [options]
    * @returns {{ key: string|null, normalizedKey: string|null, player: number|null, opponent: number|null, delta: number|null }}
@@ -2802,20 +2183,6 @@ const inspectionApi = {
   },
 
   /**
-   * Reset cached inspection state used when computing rounds played.
-   *
-   * @pseudocode
-   * 1. Reset cachedRoundsEstimate to 0 to clear any accumulated round counts
-   * 2. Reset lastBattleState to null to clear state transition tracking
-   * 3. Ensure each test starts with a clean slate for rounds computation
-   * Note: Call this method in test setup (beforeEach) to ensure proper test isolation
-   */
-  resetCache() {
-    cachedRoundsEstimate = 0;
-    lastBattleState = null;
-  },
-
-  /**
    * Get debug information about the current battle state
    * @returns {object} Debug information
    */
@@ -2824,23 +2191,7 @@ const inspectionApi = {
       const store = this.getBattleStore();
       const machine = getBattleStateMachine();
       const engineRounds = stateApi.getRoundsPlayed();
-      const storeRounds = store ? toFiniteNumber(store.roundsPlayed) : null;
-      const scoreboard = readScoreboardSnapshot();
-      const scoreboardSum =
-        scoreboard &&
-        typeof scoreboard.player === "number" &&
-        typeof scoreboard.opponent === "number"
-          ? scoreboard.player + scoreboard.opponent
-          : Number.isFinite(Number(scoreboard?.player)) &&
-              Number.isFinite(Number(scoreboard?.opponent))
-            ? Number(scoreboard.player) + Number(scoreboard.opponent)
-            : null;
-      const statSelected = safeRead(() => document.body?.dataset?.statSelected === "true", false);
-      const selectionFinalized = safeRead(
-        // Use unified selection state API (prefers store.selectionMade, falls back to window global)
-        () => getSelectionFinalized(store),
-        false
-      );
+      const selectionFinalized = getSelectionFinalized(store);
       const selectionFromStore =
         typeof store?.selectionMade === "boolean" ? store.selectionMade : null;
       const resolvedSelectionMade =
@@ -2853,60 +2204,10 @@ const inspectionApi = {
             : selectionFinalized
               ? true
               : null;
-      const scoreboardRounds =
-        typeof scoreboardSum === "number" && Number.isFinite(scoreboardSum) ? scoreboardSum : null;
-      const hasEngineRounds = typeof engineRounds === "number" && Number.isFinite(engineRounds);
-
-      let roundsPlayed = hasEngineRounds ? engineRounds : null;
-      if (
-        typeof roundsPlayed === "number" &&
-        Number.isFinite(roundsPlayed) &&
-        scoreboardRounds !== null
-      ) {
-        roundsPlayed = Math.max(roundsPlayed, scoreboardRounds);
-      } else if (scoreboardRounds !== null) {
-        roundsPlayed = scoreboardRounds;
-      } else if (typeof storeRounds === "number" && Number.isFinite(storeRounds)) {
-        roundsPlayed = storeRounds;
-      }
-
-      const currentState = safeRead(() => document.body?.dataset?.battleState ?? null, null);
-
-      if (
-        (!currentState ||
-          currentState === "roundSelectModal" ||
-          currentState === "waitingForRoundSelection") &&
-        !statSelected &&
-        (scoreboardRounds === null || scoreboardRounds === 0) &&
-        !hasEngineRounds
-      ) {
-        cachedRoundsEstimate = 0;
-      }
-
-      if (currentState === "roundDecision" && lastBattleState !== "roundDecision") {
-        cachedRoundsEstimate = Math.max(cachedRoundsEstimate, 0) + 1;
-      }
-
-      if (
-        currentState === "roundDecision" &&
-        (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)
-      ) {
-        roundsPlayed = cachedRoundsEstimate;
-      } else if (statSelected && (!Number.isFinite(roundsPlayed) || roundsPlayed === 0)) {
-        roundsPlayed = Math.max(cachedRoundsEstimate, 1);
-      }
-
-      if (typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)) {
-        cachedRoundsEstimate = Math.max(cachedRoundsEstimate, roundsPlayed);
-      }
-      const computedRounds =
-        typeof roundsPlayed === "number" && Number.isFinite(roundsPlayed)
-          ? roundsPlayed
-          : cachedRoundsEstimate > 0
-            ? cachedRoundsEstimate
-            : null;
-
-      lastBattleState = currentState ?? lastBattleState;
+      const roundsPlayed =
+        typeof engineRounds === "number" && Number.isFinite(engineRounds)
+          ? engineRounds
+          : toFiniteNumber(store?.roundsPlayed);
       let snapshot = null;
 
       if (machine) {
@@ -2917,54 +2218,12 @@ const inspectionApi = {
         }
       }
 
-      const readStoreRounds = () => {
-        const candidates = [];
-        if (store && typeof store === "object") {
-          candidates.push(store.roundsPlayed);
-        }
-        try {
-          if (isWindowAvailable()) {
-            candidates.push(window.battleStore?.roundsPlayed);
-          }
-        } catch (error) {
-          if (
-            isDevelopmentEnvironment() &&
-            typeof console !== "undefined" &&
-            typeof console.debug === "function"
-          ) {
-            console.debug("testApi: Failed to read window.battleStore.roundsPlayed", error);
-          }
-        }
-
-        const finite = candidates
-          .map((value) => toFiniteNumber(value))
-          .filter((value) => value !== null);
-        return finite.length ? Math.max(...finite) : null;
-      };
-
-      const readEngineRounds = () => {
-        try {
-          if (engineApi?.getRoundsPlayed) {
-            const value = toFiniteNumber(engineApi.getRoundsPlayed());
-            if (value !== null) {
-              return value;
-            }
-          }
-        } catch {}
-        return null;
-      };
-
-      const combinedRounds = [readStoreRounds(), readEngineRounds()].filter(
-        (value) => value !== null
-      );
-      const aggregatedRounds = combinedRounds.length ? Math.max(...combinedRounds) : null;
-
       return {
         store: store
           ? {
               selectionMade: resolvedSelectionMade,
               playerChoice: store.playerChoice,
-              roundsPlayed: aggregatedRounds ?? computedRounds
+              roundsPlayed
             }
           : null,
         machine: machine
@@ -2973,12 +2232,7 @@ const inspectionApi = {
               hasDispatch: typeof machine.dispatch === "function"
             }
           : null,
-        snapshot,
-        dom: {
-          battleState: document.body?.dataset?.battleState || null,
-          hasNextButton: !!document.getElementById("next-button"),
-          nextButtonReady: document.getElementById("next-button")?.dataset?.nextReady === "true"
-        }
+        snapshot
       };
     } catch (error) {
       return { error: error.message };
@@ -3313,7 +2567,6 @@ const testApi = {
   timers: timerApi,
   init: initApi,
   inspect: inspectionApi,
-  viewport: viewportApi,
   engine: engineApi,
   autoSelect: {
     /**
@@ -3374,16 +2627,7 @@ export function exposeTestAPI() {
   if (!isTestMode()) return;
 
   if (isWindowAvailable()) {
-    const previous =
-      typeof window.__TEST_API === "object" && window.__TEST_API !== null
-        ? window.__TEST_API
-        : null;
     window.__TEST_API = testApi;
-    if (previous?.statButtons && !window.__TEST_API.statButtons) {
-      window.__TEST_API.statButtons = previous.statButtons;
-    } else if (!window.__TEST_API.statButtons) {
-      window.__TEST_API.statButtons = createStatButtonTestApi();
-    }
 
     // Initialize stat buttons ready promise if not already set
     if (!window.statButtonsReadyPromise) {
@@ -3397,7 +2641,6 @@ export function exposeTestAPI() {
     window.__TIMER_API = timerApi;
     window.__INIT_API = initApi;
     window.__INSPECT_API = inspectionApi;
-    window.__VIEWPORT_API = viewportApi;
     window.__ENGINE_API = engineApi;
 
     // Expose emitBattleEvent for test compatibility

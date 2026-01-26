@@ -20,21 +20,8 @@ const originalInitApi = window.__INIT_API;
 const originalInspectApi = window.__INSPECT_API;
 const originalViewportApi = window.__VIEWPORT_API;
 const originalOpponentDelay = window.__OPPONENT_RESOLVE_DELAY_MS;
-const originalWebdriverDescriptor = Object.getOwnPropertyDescriptor(window.navigator, "webdriver");
-const originalUserAgentDescriptor = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
+const originalPlaywrightTestFlag = window.__PLAYWRIGHT_TEST__;
 const originalBattleCliInit = window.__battleCLIinit;
-
-function setNavigatorWebdriver(value) {
-  try {
-    Object.defineProperty(window.navigator, "webdriver", {
-      configurable: true,
-      get: () => value
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function restoreWindowProperty(key, value) {
   if (value === undefined) {
@@ -68,24 +55,9 @@ describe("testApi.isTestMode", () => {
     restoreWindowProperty("__INSPECT_API", undefined);
     restoreWindowProperty("__VIEWPORT_API", undefined);
     restoreWindowProperty("__battleCLIinit", undefined);
+    restoreWindowProperty("__PLAYWRIGHT_TEST__", undefined);
     delete window.__OPPONENT_RESOLVE_DELAY_MS;
     delete window.__initCalled;
-
-    // Mock location to return a URL that doesn't trigger localhost check
-    vi.stubGlobal("location", {
-      href: "http://example.com/",
-      hostname: "example.com",
-      protocol: "http:",
-      host: "example.com"
-    });
-
-    Object.defineProperty(window.navigator, "userAgent", {
-      configurable: true,
-      value: "Mozilla/5.0 (jsdom)",
-      writable: false
-    });
-
-    setNavigatorWebdriver(false);
   });
 
   afterEach(() => {
@@ -99,6 +71,7 @@ describe("testApi.isTestMode", () => {
     restoreWindowProperty("__INSPECT_API", originalInspectApi);
     restoreWindowProperty("__VIEWPORT_API", originalViewportApi);
     restoreWindowProperty("__battleCLIinit", originalBattleCliInit);
+    restoreWindowProperty("__PLAYWRIGHT_TEST__", originalPlaywrightTestFlag);
 
     if (originalOpponentDelay === undefined) {
       delete window.__OPPONENT_RESOLVE_DELAY_MS;
@@ -106,24 +79,13 @@ describe("testApi.isTestMode", () => {
       window.__OPPONENT_RESOLVE_DELAY_MS = originalOpponentDelay;
     }
 
-    if (originalWebdriverDescriptor) {
-      Object.defineProperty(window.navigator, "webdriver", originalWebdriverDescriptor);
-    } else {
-      delete window.navigator.webdriver;
-    }
-
-    if (originalUserAgentDescriptor) {
-      Object.defineProperty(window.navigator, "userAgent", originalUserAgentDescriptor);
-    }
-
     delete window.__initCalled;
-
     vi.doUnmock("../../src/helpers/featureFlags.js");
     vi.resetModules();
     vi.clearAllMocks();
   });
 
-  it("treats webdriver automation as test mode and exposes the API", async () => {
+  it("treats the explicit Playwright flag as test mode and exposes the API", async () => {
     // Clean up before testing
     vi.resetModules();
 
@@ -133,13 +95,13 @@ describe("testApi.isTestMode", () => {
     vi.stubEnv("VITEST", "");
     vi.stubEnv("NODE_ENV", "production");
 
-    setNavigatorWebdriver(true);
     delete window.__TEST__;
+    window.__PLAYWRIGHT_TEST__ = true;
 
     const mod = await import("../../src/helpers/testApi.js");
     const { isTestMode } = mod;
 
-    // Should return true based on webdriver automation signals.
+    // Should return true based on explicit Playwright flag.
     expect(isTestMode()).toBe(true);
 
     const originalInitCalled = window.__initCalled;
