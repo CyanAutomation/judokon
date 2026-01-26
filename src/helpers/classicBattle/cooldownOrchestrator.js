@@ -100,41 +100,25 @@ function assignFallbackHandle(runtime, handle) {
  * @returns {void}
  * @pseudocode
  * 1. Determine whether an identifier has been stored for the fallback timer.
- * 2. Prefer invoking a stored cancellation callback when available.
- * 3. Otherwise, clear the timer through a scheduler controller when both exist.
- * 4. Fall back to the global clearTimeout API when only an identifier is stored.
- * 5. Reset all fallback-related runtime fields to their default null state.
+ * 2. Choose the scheduler clearTimeout when available, otherwise use the global clearTimeout.
+ * 3. Reset all fallback-related runtime fields to their default null state.
  */
 function clearFallbackTimer(runtime) {
   const hasId = runtime.fallbackId !== null && runtime.fallbackId !== undefined;
-  if (typeof runtime.fallbackCancel === "function") {
-    safeRound(
-      "wireCooldownTimer.fallbackCancel",
-      () => {
-        runtime.fallbackCancel?.();
-      },
-      { suppressInProduction: true }
-    );
-  } else if (
-    runtime.fallbackSchedulerControl &&
-    hasId &&
-    typeof runtime.fallbackSchedulerControl.clearTimeout === "function"
-  ) {
-    safeRound(
-      "wireCooldownTimer.fallbackScheduler.clear",
-      () => {
+  if (hasId) {
+    const clearFallback = () => {
+      if (
+        runtime.fallbackSchedulerControl &&
+        typeof runtime.fallbackSchedulerControl.clearTimeout === "function"
+      ) {
         runtime.fallbackSchedulerControl.clearTimeout(runtime.fallbackId);
-      },
-      { suppressInProduction: true }
-    );
-  } else if (hasId) {
-    safeRound(
-      "wireCooldownTimer.fallback.clearTimeout",
-      () => {
-        clearTimeout(runtime.fallbackId);
-      },
-      { suppressInProduction: true }
-    );
+        return;
+      }
+      clearTimeout(runtime.fallbackId);
+    };
+    safeRound("wireCooldownTimer.fallback.clearTimeout", clearFallback, {
+      suppressInProduction: true
+    });
   }
   runtime.fallbackCancel = null;
   runtime.fallbackSchedulerControl = null;
