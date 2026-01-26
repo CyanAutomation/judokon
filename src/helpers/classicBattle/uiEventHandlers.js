@@ -26,6 +26,8 @@ let currentOpponentSnackbarController = null;
 let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
 let opponentDelayController = null;
+let statSelectedSequence = 0;
+let opponentRevealSequence = 0;
 const DEFAULT_MIN_OBSCURE_DURATION_MS = 16;
 let lastOpponentRevealTimestamp = 0;
 let lastNowValue = Date.now() || 0;
@@ -169,6 +171,8 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   // Create local helper that uses injected dependencies
   async function revealOpponentCardAfterResolution() {
+    const revealSequence = ++opponentRevealSequence;
+    const isCurrentReveal = () => revealSequence === opponentRevealSequence;
     const container = document.getElementById("opponent-card");
     if (!container) {
       pendingOpponentCardData = null;
@@ -182,6 +186,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         cardData = null;
       }
     }
+    if (!isCurrentReveal()) {
+      return;
+    }
     if (cardData) {
       try {
         await renderOpponentCardFn(cardData, container);
@@ -191,6 +198,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
       await waitForMinimumOpponentObscureDuration();
       await waitForNextFrame();
+      if (!isCurrentReveal()) {
+        return;
+      }
       try {
         const placeholder = container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`);
         if (placeholder) placeholder.remove();
@@ -227,6 +237,8 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
    */
 
   onBattleEvent("opponentReveal", async () => {
+    const revealSequence = ++opponentRevealSequence;
+    const isCurrentReveal = () => revealSequence === opponentRevealSequence;
     const container = document.getElementById("opponent-card");
     try {
       if (container && !container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`)) {
@@ -234,6 +246,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
     } catch {}
     try {
+      if (!isCurrentReveal()) {
+        return;
+      }
       if (container) {
         lastOpponentRevealTimestamp = now();
         container.classList.add("is-obscured");
@@ -241,6 +256,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
     } catch {}
     try {
+      if (!isCurrentReveal()) {
+        return;
+      }
       pendingOpponentCardData = await getOpponentCardDataFn();
     } catch {
       pendingOpponentCardData = null;
@@ -248,9 +266,14 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   });
 
   onBattleEvent("statSelected", async (e) => {
+    const handlerSequence = ++statSelectedSequence;
+    const isCurrentHandler = () => handlerSequence === statSelectedSequence;
     // Create promise that resolves when handler completes
     const handlerPromise = (async () => {
       try {
+        if (!isCurrentHandler()) {
+          return;
+        }
         scoreboardObj.clearTimer?.();
       } catch {
         // Timer clearing is non-critical
@@ -264,6 +287,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         const flagEnabled = isEnabledFn("opponentDelayMessage");
         const shouldDelay = flagEnabled && opts.delayOpponentMessage !== false;
 
+        if (!isCurrentHandler()) {
+          return;
+        }
         clearOpponentSnackbarTimeout();
         clearFallbackPromptTimer();
 
@@ -285,6 +311,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           currentPickedSnackbarController = null;
         }
 
+        if (!isCurrentHandler()) {
+          return;
+        }
         // When no delay or flag disabled, show opponent message immediately (no "You Picked" message)
         if (!shouldDelay || opts.delayOpponentMessage === false) {
           currentOpponentSnackbarController = snackbarManager.show({
@@ -309,6 +338,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           return;
         }
 
+        if (!isCurrentHandler()) {
+          return;
+        }
         const delaySource = Object.prototype.hasOwnProperty.call(opts, "delayMs")
           ? Number(opts.delayMs)
           : Number(getOpponentDelayFn());
@@ -355,7 +387,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
           opponentDelayController = null;
           opponentSnackbarId = 0;
         }
-        if (delayController.canceled) {
+        if (delayController.canceled || !isCurrentHandler()) {
           return;
         }
 
