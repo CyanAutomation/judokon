@@ -100,7 +100,11 @@ export async function matchDecisionEnter(machine) {
 
   // Ensure match is complete before proceeding; if not, log and return early
   if (!isMatchComplete(engine)) {
+  try {
     emitBattleEvent("matchDecision", { matchEnded: false, scores });
+  } catch (error) {
+    console.error("Failed to emit matchDecision event:", error);
+  }
     return;
   }
 
