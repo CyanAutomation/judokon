@@ -23,6 +23,8 @@ import snackbarManager, { SnackbarPriority } from "../SnackbarManager.js";
 let opponentSnackbarId = 0;
 let pendingOpponentCardData = null;
 let pendingOpponentCardDataSequence = 0;
+let pendingOpponentCardDataToken = null;
+let pendingOpponentCardDataTokenSequence = 0;
 let currentOpponentSnackbarController = null;
 let currentPickedSnackbarController = null;
 let statSelectedHandlerPromise = null;
@@ -55,17 +57,28 @@ function clearFallbackPromptTimer() {
   setOpponentPromptFallbackTimerId(0);
 }
 
-function setPendingOpponentCardData(cardData, sequence) {
+function createPendingOpponentCardDataToken() {
+  pendingOpponentCardDataTokenSequence += 1;
+  return pendingOpponentCardDataTokenSequence;
+}
+
+function setPendingOpponentCardData(cardData, sequence, token) {
   pendingOpponentCardData = cardData;
   if (Number.isFinite(sequence)) {
     pendingOpponentCardDataSequence = sequence;
   }
+  if (token !== undefined) {
+    pendingOpponentCardDataToken = token;
+  }
 }
 
-function clearPendingOpponentCardData(sequence) {
-  if (!Number.isFinite(sequence) || pendingOpponentCardDataSequence < sequence) {
+function clearPendingOpponentCardData(sequence, token) {
+  const isSequenceClearable = !Number.isFinite(sequence) || pendingOpponentCardDataSequence < sequence;
+  const isTokenMatch = token === undefined || pendingOpponentCardDataToken === token;
+  if (isSequenceClearable && isTokenMatch) {
     pendingOpponentCardData = null;
     pendingOpponentCardDataSequence = 0;
+    pendingOpponentCardDataToken = null;
   }
 }
 
@@ -185,15 +198,19 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   // Contract: Always call __resetBattleEventTarget() before binding handlers to ensure clean state
 
   // Create local helper that uses injected dependencies
-  async function revealOpponentCardAfterResolution() {
+  async function revealOpponentCardAfterResolution(selectionToken) {
     const revealSequence = ++opponentRevealSequence;
     const isCurrentReveal = () => revealSequence === opponentRevealSequence;
     const container = document.getElementById("opponent-card");
     if (!container) {
-      clearPendingOpponentCardData();
+      clearPendingOpponentCardData(undefined, selectionToken);
+      return;
+    const capturedToken = pendingOpponentCardDataToken;
+    if (selectionToken !== undefined && selectionToken !== capturedToken) {
       return;
     }
-    let cardData = pendingOpponentCardData;
+    const capturedCardData = pendingOpponentCardData;
+    let cardData = capturedCardData;
     if (!cardData) {
       try {
         cardData = await getOpponentCardDataFn();
@@ -202,20 +219,30 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
     }
     if (!isCurrentReveal()) {
-      clearPendingOpponentCardData(revealSequence);
+      clearPendingOpponentCardData(revealSequence, selectionToken);
       return;
     }
-    if (cardData) {
+    const tokenMatches = selectionToken === undefined || selectionToken === capturedToken;
+    const resolvedCardData = tokenMatches ? cardData : capturedCardData;
+    if (!resolvedCardData) {
+      return;
+    }
+    try {
+      await renderOpponentCardFn(resolvedCardData, container);
+    } catch {
+      clearPendingOpponentCardData(undefined, selectionToken);
+      return;
+    }
       try {
-        await renderOpponentCardFn(cardData, container);
+        await renderOpponentCardFn(resolvedCardData, container);
       } catch {
-        clearPendingOpponentCardData();
+        clearPendingOpponentCardData(undefined, selectionToken);
         return;
       }
       await waitForMinimumOpponentObscureDuration();
       await waitForNextFrame();
       if (!isCurrentReveal()) {
-        clearPendingOpponentCardData(revealSequence);
+        clearPendingOpponentCardData(revealSequence, selectionToken);
         return;
       }
       try {
@@ -230,7 +257,9 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
         container.setAttribute("aria-label", OPPONENT_CARD_CONTAINER_ARIA_LABEL);
       } catch {}
     }
-    clearPendingOpponentCardData();
+    if (tokenMatches) {
+      clearPendingOpponentCardData(undefined, selectionToken);
+    }
     lastOpponentRevealTimestamp = 0;
   }
 
@@ -256,6 +285,8 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
   onBattleEvent("opponentReveal", async () => {
     const revealSequence = ++opponentRevealSequence;
     const isCurrentReveal = () => revealSequence === opponentRevealSequence;
+    const revealToken = createPendingOpponentCardDataToken();
+    setPendingOpponentCardData(null, revealSequence, revealToken);
     const container = document.getElementById("opponent-card");
     try {
       if (container && !container.querySelector(`#${OPPONENT_PLACEHOLDER_ID}`)) {
@@ -278,12 +309,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       }
       const opponentCardData = await getOpponentCardDataFn();
       if (!isCurrentReveal()) {
-        clearPendingOpponentCardData(revealSequence);
+        clearPendingOpponentCardData(revealSequence, revealToken);
         return;
       }
-      setPendingOpponentCardData(opponentCardData, revealSequence);
+      setPendingOpponentCardData(opponentCardData, revealSequence, revealToken);
     } catch {
-      clearPendingOpponentCardData(revealSequence);
+      clearPendingOpponentCardData(revealSequence, revealToken);
     }
   });
 
@@ -467,7 +498,8 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       currentPickedSnackbarController = null;
     }
 
-    await revealOpponentCardAfterResolution();
+    const selectionToken = pendingOpponentCardDataToken;
+    await revealOpponentCardAfterResolution(selectionToken);
     const { store, stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;
     try {
