@@ -1,38 +1,5 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import { showEndModal } from "../endModal.js";
-import {
-  getScores as getFacadeScores,
-  isMatchEnded as facadeIsMatchEnded
-} from "../../BattleEngine.js";
-import { reportSentryError } from "./sentryReporter.js";
-
-/**
- * Safely capture errors to Sentry with context.
- * @param {Error} error
- * @param {Object} context
- */
-function captureError(error, context = {}) {
-  try {
-    reportSentryError(error, { contexts: { error: context } });
-  } catch {}
-}
-
-/**
- * Execute a function safely, capturing any errors to Sentry.
- * @param {Function} fn
- * @param {string} errorLabel
- * @returns {any}
- */
-function safeTry(fn, errorLabel) {
-  try {
-    return fn();
-  } catch (error) {
-    captureError(new Error(`matchDecisionEnter: ${errorLabel}`), {
-      original: error.message
-    });
-    return null;
-  }
-}
 
 /**
  * Normalize numeric score values.
@@ -44,15 +11,6 @@ function coerceScore(value) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : 0;
 }
-
-/**
- * Map round outcome tokens to match outcome tokens.
- * @type {Object<string, string>}
- */
-const OUTCOME_MAP = {
-  winPlayer: "matchWinPlayer",
-  winOpponent: "matchWinOpponent"
-};
 
 /**
  * Map match outcome token to winner identifier.
@@ -67,17 +25,14 @@ function getWinner(outcome) {
 }
 
 /**
- * Read the latest match scores from the engine or facade helpers.
- * Tries engine.getScores() first, then falls back to getFacadeScores().
- * Returns normalized scores with graceful degradation on error.
+ * Read the latest match scores from the engine.
+ * Returns normalized scores with graceful degradation when values are missing.
  *
  * @param {Object} engine - Battle engine (may have getScores())
  * @returns {{ player: number, opponent: number }}
  */
 function readScores(engine) {
-  const raw =
-    safeTry(() => engine?.getScores?.(), "engine.getScores() threw") ||
-    safeTry(() => getFacadeScores(), "getFacadeScores() threw");
+  const raw = engine?.getScores?.() ?? null;
 
   return {
     player: coerceScore(raw?.playerScore ?? raw?.player),
@@ -87,24 +42,17 @@ function readScores(engine) {
 
 /**
  * Determine whether the match has definitively ended.
- * Checks store, engine, and facade helpers in priority order.
+ * Uses the battle engine as the source of truth.
  *
- * @param {Object} store - Battle store (may contain matchEnded flag)
  * @param {Object} engine - Battle engine (may have isMatchEnded())
  * @returns {boolean}
  */
-function isMatchComplete(store, engine) {
-  if (store?.matchEnded === true) return true;
-
-  if (safeTry(() => engine?.isMatchEnded?.(), "engine.isMatchEnded() threw")) {
-    return true;
+function isMatchComplete(engine) {
+  try {
+    return Boolean(engine?.isMatchEnded?.());
+  } catch {
+    return false;
   }
-
-  if (safeTry(() => facadeIsMatchEnded(), "facadeIsMatchEnded() threw")) {
-    return true;
-  }
-
-  return false;
 }
 
 /**
@@ -123,7 +71,7 @@ function resolveOutcome(store, scores) {
   const lastOutcome = store?.lastRoundResult?.outcome;
 
   if (typeof lastOutcome === "string") {
-    return OUTCOME_MAP[lastOutcome] || lastOutcome;
+    return lastOutcome;
   }
 
   if (scores.player > scores.opponent) return "matchWinPlayer";
@@ -137,7 +85,7 @@ function resolveOutcome(store, scores) {
  * @param {import("../stateManager.js").ClassicBattleStateManager} machine
  * @returns {Promise<void>}
  * @pseudocode
- * 1. Resolve final scores from the active engine (fallback to facade helpers).
+ * 1. Resolve final scores from the active engine.
  * 2. Ensure the match has ended; emit event and surface the end-of-match modal.
  * 3. Derive the outcome token using the stored round result or score comparison.
  * 4. Build match detail object with outcome, winner, scores, and optional message.
@@ -151,11 +99,12 @@ export async function matchDecisionEnter(machine) {
   const scores = readScores(engine);
 
   // Ensure match is complete before proceeding; if not, log and return early
-  if (!isMatchComplete(store, engine)) {
-    safeTry(
-      () => emitBattleEvent("matchDecision", { matchEnded: false, scores }),
-      "emitBattleEvent threw"
-    );
+  if (!isMatchComplete(engine)) {
+  try {
+    emitBattleEvent("matchDecision", { matchEnded: false, scores });
+  } catch (error) {
+    console.error("Failed to emit matchDecision event:", error);
+  }
     return;
   }
 
@@ -174,18 +123,24 @@ export async function matchDecisionEnter(machine) {
   }
 
   // Emit the matchDecision event with final outcome
-  safeTry(() => emitBattleEvent("matchDecision", detail), "emitBattleEvent threw");
+  try {
+    emitBattleEvent("matchDecision", detail);
+  } catch (error) {
+    console.error("Failed to emit matchDecision event:", error);
+  }
 
   // Persist outcome to store for later reference (if store is mutable)
   if (store && typeof store === "object") {
-    safeTry(() => {
-      store.matchOutcome = detail;
-    }, "unable to set store.matchOutcome");
+    store.matchOutcome = detail;
   }
 
   // Display the end-of-match modal with Replay and Quit options
   if (store) {
-    safeTry(() => showEndModal(store, detail), "showEndModal threw");
+  try {
+    showEndModal(store, detail);
+  } catch (error) {
+    console.error("Failed to show end modal:", error);
+  }
   }
 }
 
