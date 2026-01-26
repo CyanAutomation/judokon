@@ -63,7 +63,7 @@ function setPendingOpponentCardData(cardData, sequence) {
 }
 
 function clearPendingOpponentCardData(sequence) {
-  if (!Number.isFinite(sequence) || pendingOpponentCardDataSequence <= sequence) {
+  if (!Number.isFinite(sequence) || pendingOpponentCardDataSequence < sequence) {
     pendingOpponentCardData = null;
     pendingOpponentCardDataSequence = 0;
   }
