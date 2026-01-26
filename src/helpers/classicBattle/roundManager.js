@@ -2,7 +2,6 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../BattleEngine.js";
 import * as battleEngine from "../BattleEngine.js";
-import { bridgeEngineEvents } from "./engineBridge.js";
 import { logSelectionMutation, shouldClearSelectionForNextRound } from "./selectionHandler.js";
 
 // Utilities
@@ -174,7 +173,7 @@ function getStartRound(store) {
  * @summary Reset match state and UI, then begin a new round.
  *
  * @pseudocode
- * 1. Reset the battle engine via `resetBattleEnginePreservingConfig()` (falling back to `createBattleEngine()` when unavailable) and then rebind events with `bridgeEngineEvents()`.
+ * 1. Reset the battle engine via `resetBattleEnginePreservingConfig()` (falling back to `createBattleEngine()` when unavailable).
  * 2. Dispatch `game:reset-ui` and zero the scoreboard so UI surfaces show a fresh match state.
  * 3. Resolve the `startRound` implementation (allowing debug overrides), await its result, then reaffirm zeroed scores before returning.
  *
@@ -203,8 +202,6 @@ export async function handleReplay(store) {
   };
 
   safeRound("handleReplay.resetEngine", resetEngine, { suppressInProduction: true });
-
-  bridgeEngineEvents();
 
   const applyZeroScores = () => {
     syncScoreboardDisplay(0, 0);
@@ -1200,8 +1197,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
  * @summary Reset match subsystems and UI for tests.
  *
  * @pseudocode
- * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`,
- *    and rebind engine events with `bridgeEngineEvents()`.
+ * 1. Reset skip and selection subsystems and recreate the engine via `createBattleEngine()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
  * 3. If a `store` is provided, clear its timeouts and selection state and
  *    dispatch `game:reset-ui` with the store detail. Otherwise dispatch a
@@ -1243,51 +1239,6 @@ export function _resetForTest(store, preserveConfig = {}) {
       rethrow: true
     });
   }
-  bridgeEngineEvents();
-  // In certain test environments, module mocking can cause `bridgeEngineEvents`
-  // to bind using a different facade instance than the one the test spies on.
-  // As a safety net, rebind via the locally imported facade when it's a mock.
-  safeRound(
-    "_resetForTest.rebindMockListeners",
-    () => {
-      const maybeMock = /** @type {any} */ (battleEngine).on;
-      if (typeof maybeMock === "function" && typeof maybeMock.mock === "object") {
-        /**
-         * Mirrors the production bridge's `handleRoundEnded` logic when the engine facade
-         * is mocked, ensuring scoreboard observers and round resolution listeners stay
-         * synchronized during test resets.
-         *
-         * @pseudocode
-         * ```
-         * on fallback roundEnded detail:
-         *   emit roundResolved(detail)
-         *   emit display.score.update({ player: Number(detail.playerScore) || 0,
-         *                               opponent: Number(detail.opponentScore) || 0 })
-         * ```
-         * @param {{ playerScore?: number|string, opponentScore?: number|string }} detail
-         *   Round payload provided by the mocked engine facade.
-         * @returns {void}
-         */
-        const emitFallbackRoundEvents = (detail) => {
-          emitBattleEvent("roundResolved", detail);
-          try {
-            const player = Number(detail?.playerScore) || 0;
-            const opponent = Number(detail?.opponentScore) || 0;
-            emitBattleEvent("display.score.update", { player, opponent });
-          } catch (error) {
-            // Scoreboard updates are opportunistic; swallow errors after recording usage.
-            void error;
-          }
-        };
-
-        maybeMock("roundEnded", emitFallbackRoundEvents);
-        maybeMock("matchEnded", (detail) => {
-          emitBattleEvent("matchOver", detail);
-        });
-      }
-    },
-    { suppressInProduction: true }
-  );
   stopScheduler();
   // Reset module-level cooldown state to prevent test pollution
   currentNextRound = null;

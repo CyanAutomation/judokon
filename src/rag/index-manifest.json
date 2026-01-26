@@ -2122,7 +2122,6 @@
     "src/helpers/classicBattle/eventAliases.js [getMigrationInfo]": 1,
     "src/helpers/classicBattle/eventAliases.js [disableAliases]": 1,
     "src/helpers/classicBattle/eventAliases.js [isDeprecatedEventName]": 1,
-    "src/helpers/classicBattle/engineBridge.js [bridgeEngineEvents]": 1,
     "src/helpers/classicBattle/endModal.js [showEndModal]": 1,
     "src/helpers/classicBattle/debugPanel.js [collectDebugState]": 1,
     "src/helpers/classicBattle/debugPanel.js [renderDebugState]": 1,

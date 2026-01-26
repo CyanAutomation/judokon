@@ -27,6 +27,66 @@ import { initPreloadServices } from "./preloadService.js";
 import { createStateManager } from "./stateManager.js";
 import "./uiService.js";
 import { debugLog } from "./debugLog.js";
+import { STATS, onEngineCreated } from "../BattleEngine.js";
+
+const bridgedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
+let hasRegisteredEngineBridge = false;
+
+function attachEngineEventBridge(engine) {
+  if (!engine || typeof engine !== "object") {
+    return;
+  }
+
+  if (bridgedEngines.has(engine)) {
+    return;
+  }
+
+  const on = engine?.on;
+  if (typeof on !== "function") {
+    return;
+  }
+
+  bridgedEngines.add(engine);
+  const availableStats = Array.isArray(engine?.stats)
+    ? engine.stats.slice()
+    : Array.isArray(STATS)
+      ? STATS.slice()
+      : [];
+
+  on.call(engine, "roundStarted", (detail) => {
+    emitBattleEvent("round.started", {
+      roundIndex: Number(detail?.round) || 0,
+      availableStats
+    });
+  });
+
+  on.call(engine, "matchEnded", (detail) => {
+    const outcome = detail?.outcome;
+    const winner =
+      outcome === "matchWinPlayer" ? "player" : outcome === "matchWinOpponent" ? "opponent" : "none";
+    emitBattleEvent("match.concluded", {
+      winner,
+      scores: {
+        player: Number(detail?.playerScore) || 0,
+        opponent: Number(detail?.opponentScore) || 0
+      },
+      reason: outcome || "unknown"
+    });
+  });
+}
+
+function registerEngineEventBridge() {
+  if (hasRegisteredEngineBridge) {
+    return;
+  }
+
+  hasRegisteredEngineBridge = true;
+  try {
+    onEngineCreated((engine) => attachEngineEventBridge(engine));
+  } catch {
+    hasRegisteredEngineBridge = false;
+  }
+}
 
 let machine = null;
 let machineInitPromise = null;
@@ -281,6 +341,7 @@ export async function initClassicBattleOrchestrator(
   hooks = {}
 ) {
   debugLog("initClassicBattleOrchestrator() called");
+  registerEngineEventBridge();
   window.__INIT_ORCHESTRATOR_CALLED = true;
   if (machine) {
     window.__ORCHESTRATOR_EARLY_RETURN_MACHINE = true;
