@@ -53,7 +53,6 @@ describe("testApi.isTestMode", () => {
     restoreWindowProperty("__TIMER_API", undefined);
     restoreWindowProperty("__INIT_API", undefined);
     restoreWindowProperty("__INSPECT_API", undefined);
-    restoreWindowProperty("__VIEWPORT_API", undefined);
     restoreWindowProperty("__battleCLIinit", undefined);
     restoreWindowProperty("__PLAYWRIGHT_TEST__", undefined);
     delete window.__OPPONENT_RESOLVE_DELAY_MS;
