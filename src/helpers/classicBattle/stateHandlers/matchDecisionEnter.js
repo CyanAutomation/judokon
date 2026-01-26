@@ -32,7 +32,7 @@ function getWinner(outcome) {
  * @returns {{ player: number, opponent: number }}
  */
 function readScores(engine) {
-  const raw = engine?.getScores?.();
+  const raw = engine?.getScores?.() ?? null;
 
   return {
     player: coerceScore(raw?.playerScore ?? raw?.player),
