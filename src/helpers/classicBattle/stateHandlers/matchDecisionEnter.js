@@ -136,7 +136,11 @@ export async function matchDecisionEnter(machine) {
 
   // Display the end-of-match modal with Replay and Quit options
   if (store) {
+  try {
     showEndModal(store, detail);
+  } catch (error) {
+    console.error("Failed to show end modal:", error);
+  }
   }
 }
 
