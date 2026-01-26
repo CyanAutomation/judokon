@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // This ensures vi.mock() declarations apply to all subsequent imports
 vi.resetModules();
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   STATS: ["power"],
   stopTimer: vi.fn(),
   getScores: vi.fn()

@@ -20,8 +20,8 @@
  */
 import { escapeHTML } from "../helpers/utils.js";
 import { loadStatNames } from "../helpers/stats.js";
-import { STATS } from "../helpers/battleEngineFacade.js";
-import * as engineFacade from "../helpers/battleEngineFacade.js";
+import { STATS } from "../helpers/BattleEngine.js";
+import * as engineFacade from "../helpers/BattleEngine.js";
 
 export class StatsPanel {
   /**

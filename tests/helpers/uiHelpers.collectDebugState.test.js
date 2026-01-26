@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { __setStateSnapshot } from "../../src/helpers/classicBattle/battleDebug.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
-vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
   getScores: () => ({ player: 1, opponent: 2 }),
   getTimerState: () => ({ timeLeft: 30 }),
   isMatchEnded: () => false,

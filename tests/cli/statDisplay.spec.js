@@ -1,5 +1,5 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
-import * as engineFacade from "../../src/helpers/battleEngineFacade.js";
+import * as engineFacade from "../../src/helpers/BattleEngine.js";
 import { StatsPanel } from "../../src/components/StatsPanel.js";
 
 describe("CLI StatDisplay sync via StatsPanel", () => {

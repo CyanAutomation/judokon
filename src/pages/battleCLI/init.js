@@ -15,7 +15,7 @@ import {
 import * as battleOrchestrator from "../../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../../helpers/BattleEngine.js";
-import * as engineFacade from "../../helpers/battleEngineFacade.js";
+import * as engineFacade from "../../helpers/BattleEngine.js";
 import statNamesData from "../../data/statNames.js";
 import { fetchJson } from "../../helpers/dataUtils.js";
 import { createModal } from "../../components/Modal.js";

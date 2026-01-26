@@ -250,7 +250,7 @@ describe("classicBattle stat selection", () => {
   ])(
     "dispatches matchPointReached when $description",
     async ({ pointsToWin, playerStat, opponentStat, outcome, rounds }) => {
-      const { setPointsToWin } = await import("../../../src/helpers/battleEngineFacade.js");
+      const { setPointsToWin } = await import("../../../src/helpers/BattleEngine.js");
       const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
       setPointsToWin(pointsToWin);
       eventDispatcher.__reset();
@@ -275,7 +275,7 @@ describe("classicBattle stat selection", () => {
   );
 
   it("simulateOpponentStat returns a valid stat", async () => {
-    const { STATS } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { STATS } = await import("../../../src/helpers/BattleEngine.js");
     const stat = simulateOpponentStat({ power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 });
     expect(STATS.includes(stat)).toBe(true);
   });

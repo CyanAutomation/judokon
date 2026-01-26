@@ -1,4 +1,4 @@
-import { STATS, handleStatSelection } from "../battleEngineFacade.js";
+import { STATS, handleStatSelection } from "../BattleEngine.js";
 import { seededRandom } from "../testModeUtils.js";
 import { writeScoreDisplay } from "../classicBattle/scoreDisplay.js";
 

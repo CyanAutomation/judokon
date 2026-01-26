@@ -22,7 +22,7 @@ describe("syncScoreDisplay", () => {
       .fn()
       .mockReturnValueOnce({ playerScore: 1, opponentScore: 2 })
       .mockReturnValueOnce({ playerScore: 3, opponentScore: 4 });
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    vi.doMock("../../src/helpers/BattleEngine.js", () => ({
       getScores,
       startCoolDown: vi.fn(),
       pauseTimer: vi.fn(),

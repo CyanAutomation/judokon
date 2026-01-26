@@ -28,7 +28,7 @@ import {
   isMatchEnded,
   getScores,
   getPointsToWin
-} from "../helpers/battleEngineFacade.js";
+} from "../helpers/BattleEngine.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";

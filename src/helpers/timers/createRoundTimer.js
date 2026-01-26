@@ -1,4 +1,4 @@
-import { stopTimer } from "../battleEngineFacade.js";
+import { stopTimer } from "../BattleEngine.js";
 import { exposeDebugState } from "../classicBattle/debugHooks.js";
 
 const VALID_EVENTS = ["tick", "expired", "drift"];

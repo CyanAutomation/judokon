@@ -7,7 +7,7 @@ vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
   _resetForTest: vi.fn()
 }));
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   getRoundsPlayed: vi.fn(() => 0),
   _resetForTest: vi.fn(),
   onEngineCreated: vi.fn(() => () => {})

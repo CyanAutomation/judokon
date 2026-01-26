@@ -20,7 +20,7 @@ vi.mock("/src/helpers/classicBattle/eventDispatcher.js", () => ({
 }));
 
 // Mock battle engine facade with scheduler support
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   requireEngine: () => ({
     startRound: mockMakeTimer,
     startCoolDown: mockMakeTimer,

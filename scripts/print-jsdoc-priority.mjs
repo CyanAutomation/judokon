@@ -14,7 +14,7 @@ async function main() {
   }
   console.log("\nSuggested hot-path files to prioritize (heuristic):");
   const heur = [
-    "src/helpers/battleEngineFacade.js",
+    "src/helpers/BattleEngine.js",
     "src/helpers/classicBattle/orchestratorHandlers.js",
     "src/helpers/classicBattle/uiHelpers.js",
     "src/helpers/battle/battleUI.js",

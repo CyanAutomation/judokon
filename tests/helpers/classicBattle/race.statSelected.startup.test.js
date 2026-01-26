@@ -16,8 +16,8 @@ afterEach(() => {
   delete document.body.dataset.battleState;
 });
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", async () => {
-  const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
+vi.mock("../../../src/helpers/BattleEngine.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/BattleEngine.js");
   return {
     ...actual,
     stopTimer: vi.fn()

@@ -33,7 +33,7 @@ describe("simulateOpponentStat difficulty", () => {
       "../../../src/helpers/classicBattle/selectionHandler.js"
     ));
     ({ createBattleStore } = await import("../../../src/helpers/classicBattle/roundManager.js"));
-    ({ STATS: statKeys } = await import("../../../src/helpers/battleEngineFacade.js"));
+    ({ STATS: statKeys } = await import("../../../src/helpers/BattleEngine.js"));
     ({ setTestMode } = await import("../../../src/helpers/testModeUtils.js"));
     setTestMode(false);
     roundResolverMock.resolveRound.mockClear();

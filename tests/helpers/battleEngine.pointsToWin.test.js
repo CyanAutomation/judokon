@@ -4,7 +4,7 @@ import {
   createBattleEngine,
   getPointsToWin,
   setPointsToWin
-} from "../../src/helpers/battleEngineFacade.js";
+} from "../../src/helpers/BattleEngine.js";
 
 describe("battleEngine pointsToWin", () => {
   beforeEach(() => createBattleEngine());

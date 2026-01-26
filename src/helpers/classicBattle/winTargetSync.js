@@ -1,4 +1,4 @@
-import { getPointsToWin } from "../battleEngineFacade.js";
+import { getPointsToWin } from "../BattleEngine.js";
 
 /**
  * Safely retrieve an element by id.

@@ -24,7 +24,7 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   return await import("../../../src/helpers/timers/createRoundTimer.js");
 });
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   startCoolDown: vi.fn()
 }));
 

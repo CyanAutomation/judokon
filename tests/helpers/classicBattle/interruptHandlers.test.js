@@ -15,7 +15,7 @@ const createFakeTimeoutHandle = () => {
   return handle;
 };
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   interruptMatch: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
@@ -99,7 +99,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/BattleEngine.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
@@ -134,7 +134,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/BattleEngine.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
@@ -157,7 +157,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/BattleEngine.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
@@ -183,7 +183,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/BattleEngine.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );

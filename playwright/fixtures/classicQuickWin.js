@@ -8,7 +8,7 @@ let facade = null;
 
 async function ensureFacade() {
   if (!facadePromise) {
-    facadePromise = import("/src/helpers/battleEngineFacade.js")
+    facadePromise = import("/src/helpers/BattleEngine.js")
       .then((module) => {
         facade = module;
         return module;

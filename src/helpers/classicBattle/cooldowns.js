@@ -6,7 +6,7 @@ import { guard, guardAsync } from "./guard.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
-import { startCoolDown } from "../battleEngineFacade.js";
+import { startCoolDown } from "../BattleEngine.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
   resetReadyDispatchState,

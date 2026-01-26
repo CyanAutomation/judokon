@@ -9,7 +9,7 @@ import {
   resumeTimer,
   createBattleEngine,
   getEngine
-} from "../battleEngineFacade.js";
+} from "../BattleEngine.js";
 import { emitBattleEvent } from "./battleEvents.js";
 
 /**

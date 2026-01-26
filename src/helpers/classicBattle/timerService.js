@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { startRound as engineStartRound, getRoundsPlayed } from "../battleEngineFacade.js";
+import { startRound as engineStartRound, getRoundsPlayed } from "../BattleEngine.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";

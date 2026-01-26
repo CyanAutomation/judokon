@@ -1,4 +1,4 @@
-import { interruptMatch } from "../battleEngineFacade.js";
+import { interruptMatch } from "../BattleEngine.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { showMessage, clearTimer } from "../setupScoreboard.js";
 import { stop as stopScheduler, cancel as cancelFrame } from "../../utils/scheduler.js";

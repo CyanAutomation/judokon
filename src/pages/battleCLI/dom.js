@@ -1,4 +1,4 @@
-import * as engineFacade from "../../helpers/battleEngineFacade.js";
+import * as engineFacade from "../../helpers/BattleEngine.js";
 
 // Phase 4: Simplified scoreboard helpers - now primarily rely on shared Scoreboard adapter
 // Dynamic import kept for fallback scenarios only

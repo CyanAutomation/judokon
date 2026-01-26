@@ -54,7 +54,7 @@ describe("onEngineCreated", () => {
   it("invokes the listener immediately when an engine already exists", async () => {
     const { timerControllerMock } = mockTimerController();
     const { createBattleEngine, onEngineCreated } = await import(
-      "../../src/helpers/battleEngineFacade.js"
+      "../../src/helpers/BattleEngine.js"
     );
 
     const existingEngine = createBattleEngine();

@@ -47,7 +47,7 @@ describe("battleCLI verbose win target", () => {
     const { toggleVerbose } = await initModule.setupFlags();
     expect(toggleVerbose).toEqual(expect.any(Function));
 
-    const battleFacade = await import("../../src/helpers/battleEngineFacade.js");
+    const battleFacade = await import("../../src/helpers/BattleEngine.js");
     const { getPointsToWin } = battleFacade;
     const setPointsToWinSpy = vi.spyOn(battleFacade, "setPointsToWin");
 

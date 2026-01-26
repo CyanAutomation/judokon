@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   getPointsToWin: vi.fn()
 }));
 
@@ -39,7 +39,7 @@ describe("syncWinTargetDropdown", () => {
   });
 
   it("injects missing target option and updates header metadata", async () => {
-    const battleFacade = await import("../../../src/helpers/battleEngineFacade.js");
+    const battleFacade = await import("../../../src/helpers/BattleEngine.js");
     battleFacade.getPointsToWin.mockReturnValue(7);
     const { syncWinTargetDropdown } = await import(
       "../../../src/helpers/classicBattle/winTargetSync.js"
@@ -56,7 +56,7 @@ describe("syncWinTargetDropdown", () => {
   });
 
   it("falls back to stored dataset target when facade target is invalid", async () => {
-    const battleFacade = await import("../../../src/helpers/battleEngineFacade.js");
+    const battleFacade = await import("../../../src/helpers/BattleEngine.js");
     battleFacade.getPointsToWin.mockReturnValue(Number.NaN);
     document.body.dataset.target = "11";
     const { syncWinTargetDropdown } = await import(
@@ -74,7 +74,7 @@ describe("syncWinTargetDropdown", () => {
   });
 
   it("ignores invalid targets that would not render in the dropdown", async () => {
-    const battleFacade = await import("../../../src/helpers/battleEngineFacade.js");
+    const battleFacade = await import("../../../src/helpers/BattleEngine.js");
     battleFacade.getPointsToWin.mockReturnValue(-3);
     const header = document.getElementById("round-counter");
     if (header) {

@@ -1,4 +1,4 @@
-import { STATS, stopTimer, getScores, getRoundsPlayed } from "../battleEngineFacade.js";
+import { STATS, stopTimer, getScores, getRoundsPlayed } from "../BattleEngine.js";
 import { chooseOpponentStat } from "../api/battleUI.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";

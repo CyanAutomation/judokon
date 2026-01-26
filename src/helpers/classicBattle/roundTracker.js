@@ -8,7 +8,7 @@ import {
   getHighestDisplayedRound as getHighestRoundGlobal,
   setHighestDisplayedRound as setHighestRoundGlobal
 } from "./globalState.js";
-import { getRoundsPlayed } from "../battleEngineFacade.js";
+import { getRoundsPlayed } from "../BattleEngine.js";
 
 let lastForcedTargetRound = null;
 let lastRoundCounterUpdateContext = "init";
