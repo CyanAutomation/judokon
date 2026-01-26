@@ -18,7 +18,7 @@ import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js"
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
-import { getDebugPanelLazy } from "./preloadService.js";
+import { updateDebugPanel } from "./debugPanel.js";
 import { setNextButtonFinalizedState } from "./uiHelpers.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
@@ -87,22 +87,6 @@ const ACTIVE_ROUND_PAYLOAD = Symbol.for("classicBattle.activeRoundPayload");
 const ROUND_RESOLUTION_GUARD = Symbol.for("classicBattle.roundResolutionGuard");
 const LAST_ROUND_RESULT = Symbol.for("classicBattle.lastResolvedRoundResult");
 const SELECTION_IN_FLIGHT_GUARD = Symbol.for("classicBattle.selectionInFlight");
-
-// Lazy-loaded debug panel updater
-let lazyUpdateDebugPanel = null;
-
-/**
- * @summary Load the debug panel updater lazily on first request.
- *
- * @returns {Promise<(()=>void)>} The updateDebugPanel function.
- */
-async function getLazyUpdateDebugPanel() {
-  if (!lazyUpdateDebugPanel) {
-    const debugPanel = await getDebugPanelLazy();
-    lazyUpdateDebugPanel = debugPanel.updateDebugPanel;
-  }
-  return lazyUpdateDebugPanel;
-}
 
 /**
  * @summary Construct the state container used by classic battle round orchestration helpers.
@@ -1103,8 +1087,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     button: btn,
     documentRef: typeof document !== "undefined" ? document : null,
     updateDebugPanel: async () => {
-      const updatePanel = options.updateDebugPanel || (await getLazyUpdateDebugPanel());
-      if (typeof updatePanel === "function") updatePanel();
+      const updatePanel = options.updateDebugPanel || updateDebugPanel;
+      if (typeof updatePanel === "function") {
+        updatePanel();
+      }
     }
   });
   const { strategies, fallbackDispatchers } = createReadyDispatchConfiguration({
