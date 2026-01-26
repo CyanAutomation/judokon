@@ -91,15 +91,19 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   const statsSnapshot = resolveStatsSnapshot(store);
 
   debugLog("[DIAGNOSTIC] evaluateOutcome: calling engineFacade.handleStatSelection");
-  const result = engineFacade.handleStatSelection(pVal, oVal, statsSnapshot);
-  debugLog("DEBUG: evaluateOutcome result", result);
-  debugLog("[DIAGNOSTIC] evaluateOutcome: handleStatSelection returned", result);
+  try {
+    const result = engineFacade.handleStatSelection(pVal, oVal, statsSnapshot);
+    debugLog("DEBUG: evaluateOutcome result", result);
+    debugLog("[DIAGNOSTIC] evaluateOutcome: handleStatSelection returned", result);
 
-  // Add message generation for tests and real usage
-  const message = getOutcomeMessage(result.outcome);
-  const resultWithMessage = { ...result, message };
+    // Add message generation for tests and real usage
+    const message = getOutcomeMessage(result.outcome);
+    const resultWithMessage = { ...result, message };
 
-  return resultWithMessage;
+    return resultWithMessage;
+  } catch (error) {
+    throw new Error(`Battle engine not initialized: ${error.message}`);
+  }
 }
 
 /**

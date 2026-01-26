@@ -161,11 +161,6 @@ export function evaluateRound(playerVal, opponentVal) {
   } catch (error) {
     throw new Error(`Battle engine not initialized: ${error.message}`);
   }
-
-  return {
-    ...result,
-    message
-  };
 }
 
 /**
