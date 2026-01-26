@@ -228,7 +228,12 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
     if (!resolvedCardData) {
       return;
     }
-    if (resolvedCardData) {
+    try {
+      await renderOpponentCardFn(resolvedCardData, container);
+    } catch {
+      clearPendingOpponentCardData(undefined, selectionToken);
+      return;
+    }
       try {
         await renderOpponentCardFn(resolvedCardData, container);
       } catch {
