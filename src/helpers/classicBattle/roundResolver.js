@@ -89,10 +89,15 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
   const statsSnapshot = resolveStatsSnapshot(store);
+  const statsContext = statsSnapshot
+    ? { ...statsSnapshot, statKey: stat }
+    : stat
+      ? { statKey: stat }
+      : undefined;
 
   debugLog("[DIAGNOSTIC] evaluateOutcome: calling engineFacade.handleStatSelection");
   try {
-    const result = engineFacade.handleStatSelection(pVal, oVal, statsSnapshot);
+    const result = engineFacade.handleStatSelection(pVal, oVal, statsContext);
     debugLog("DEBUG: evaluateOutcome result", result);
     debugLog("[DIAGNOSTIC] evaluateOutcome: handleStatSelection returned", result);
 
