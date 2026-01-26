@@ -171,7 +171,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
 
   // Create local helper that uses injected dependencies
   async function revealOpponentCardAfterResolution() {
-    const revealSequence = opponentRevealSequence;
+    const revealSequence = ++opponentRevealSequence;
     const isCurrentReveal = () => revealSequence === opponentRevealSequence;
     const container = document.getElementById("opponent-card");
     if (!container) {
