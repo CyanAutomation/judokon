@@ -159,10 +159,11 @@ export async function loadBattleCLI(options = {}) {
     });
   }
 
-  vi.doMock("../../../src/helpers/BattleEngine.js", () => ({ STATS: battleStats }));
   let pts = pointsToWin;
+  const baseBattleEngineMock = { STATS: battleStats };
   if (mockBattleEngine) {
     vi.doMock("../../../src/helpers/BattleEngine.js", () => ({
+      ...baseBattleEngineMock,
       setPointsToWin: vi.fn((v) => {
         pts = v;
       }),
@@ -170,6 +171,8 @@ export async function loadBattleCLI(options = {}) {
       getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
       stopTimer: vi.fn()
     }));
+  } else {
+    vi.doMock("../../../src/helpers/BattleEngine.js", () => baseBattleEngineMock);
   }
   vi.doMock("../../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue(stats)

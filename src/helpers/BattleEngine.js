@@ -1013,7 +1013,6 @@ export function resetBattleEnginePreservingConfig(preserveConfig = {}) {
   }
 
   // Update module-level reference to ensure all subsequent calls get the reset engine
-  // Update module-level reference to ensure all subsequent calls get the reset engine
   battleEngine = engine;
   if (typeof window !== "undefined") {
     battleEngines.set(window, engine);
