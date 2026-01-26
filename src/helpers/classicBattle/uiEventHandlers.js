@@ -222,7 +222,7 @@ export function bindUIHelperEventHandlersDynamic(deps = {}) {
       clearPendingOpponentCardData(revealSequence, selectionToken);
       return;
     }
-    const tokenMatches = selectionToken === undefined || selectionToken === pendingOpponentCardDataToken;
+    const tokenMatches = selectionToken === undefined || selectionToken === capturedToken;
     const resolvedCardData = tokenMatches ? cardData : capturedCardData;
     if (!resolvedCardData) {
       return;
