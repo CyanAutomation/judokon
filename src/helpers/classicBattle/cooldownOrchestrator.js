@@ -108,7 +108,7 @@ function clearFallbackTimer(runtime) {
     safeRound(
       "wireCooldownTimer.fallbackCancel",
       () => {
-        runtime.fallbackCancel?.();
+        runtime.fallbackCancel();
       },
       { suppressInProduction: true }
     );
