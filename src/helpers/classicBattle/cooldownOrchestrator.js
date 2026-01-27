@@ -99,13 +99,20 @@ function assignFallbackHandle(runtime, handle) {
  * @param {object} runtime - Runtime state containing fallback timer metadata.
  * @returns {void}
  * @pseudocode
- * 1. Determine whether an identifier has been stored for the fallback timer.
- * 2. Choose the scheduler clearTimeout when available, otherwise use the global clearTimeout.
+ * 1. Prefer invoking a custom cancellation callback when available.
+ * 2. Otherwise clear by identifier using a scheduler when provided, falling back to global clearTimeout.
  * 3. Reset all fallback-related runtime fields to their default null state.
  */
 function clearFallbackTimer(runtime) {
-  const hasId = runtime.fallbackId !== null && runtime.fallbackId !== undefined;
-  if (hasId) {
+  if (typeof runtime.fallbackCancel === "function") {
+    safeRound(
+      "wireCooldownTimer.fallbackCancel",
+      () => {
+        runtime.fallbackCancel?.();
+      },
+      { suppressInProduction: true }
+    );
+  } else if (runtime.fallbackId !== null && runtime.fallbackId !== undefined) {
     const clearFallback = () => {
       if (
         runtime.fallbackSchedulerControl &&
