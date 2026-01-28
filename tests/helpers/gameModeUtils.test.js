@@ -5,8 +5,6 @@ import gameModesFixture from "../fixtures/gameModes.json" with { type: "json" };
 
 // ===== Top-level vi.hoisted() for shared mock state =====
 const {
-  mockNavigationCacheLoad,
-  mockNavigationCacheSave,
   mockFetchJson,
   mockValidateWithSchema,
   mockImportJsonModule,
@@ -14,21 +12,12 @@ const {
   mockSetItem,
   mockRemoveItem
 } = vi.hoisted(() => ({
-  mockNavigationCacheLoad: vi.fn().mockResolvedValue([]),
-  mockNavigationCacheSave: vi.fn(),
   mockFetchJson: vi.fn().mockResolvedValue([]),
   mockValidateWithSchema: vi.fn().mockResolvedValue(),
   mockImportJsonModule: vi.fn(),
   mockGetItem: vi.fn().mockReturnValue(null),
   mockSetItem: vi.fn(),
   mockRemoveItem: vi.fn()
-}));
-
-// ===== Top-level vi.mock() calls =====
-vi.mock("../../src/helpers/navigationCache.js", () => ({
-  __esModule: true,
-  load: mockNavigationCacheLoad,
-  save: mockNavigationCacheSave
 }));
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
@@ -70,15 +59,14 @@ describe("loadNavigationItems", () => {
     const navSubset = navFixture.slice(0, 3).map((item) => ({ ...item }));
 
     // Configure mocks for this test
-    mockNavigationCacheLoad.mockResolvedValue(navSubset);
-    mockNavigationCacheSave.mockClear();
-
     const fetchedGameModes = cloneGameModes();
     mockFetchJson.mockResolvedValue(fetchedGameModes);
     mockValidateWithSchema.mockResolvedValue();
     mockImportJsonModule.mockClear();
 
-    mockGetItem.mockReturnValue(null);
+    mockGetItem.mockImplementation((key) =>
+      key === "navigationItems" ? navSubset : null
+    );
     mockSetItem.mockClear();
     mockRemoveItem.mockClear();
 
@@ -103,9 +91,9 @@ describe("loadNavigationItems", () => {
         name: expectedNames[0],
         description: fetchedGameModes.find((gm) => gm.id === navSubset[0].gameModeId)?.description
       });
-      expect(mockNavigationCacheLoad).toHaveBeenCalledTimes(1);
-      expect(mockNavigationCacheSave).not.toHaveBeenCalled();
-      expect(mockGetItem).toHaveBeenCalledTimes(1);
+      expect(mockGetItem).toHaveBeenCalledTimes(2);
+      expect(mockGetItem).toHaveBeenNthCalledWith(1, "navigationItems");
+      expect(mockGetItem).toHaveBeenNthCalledWith(2, "gameModes");
       expect(mockFetchJson).toHaveBeenCalledTimes(1);
       expect(mockSetItem).toHaveBeenCalledTimes(1);
       const [savedKey, savedValue] = mockSetItem.mock.calls[0];
@@ -125,18 +113,22 @@ describe("loadNavigationItems", () => {
     const cacheError = new Error("cache fail");
 
     // Configure mocks for this test
-    mockNavigationCacheLoad
-      .mockReset()
-      .mockRejectedValueOnce(cacheError)
-      .mockResolvedValue(navSubset);
-    mockNavigationCacheSave.mockClear();
-
     const fetchedGameModes = cloneGameModes();
     mockFetchJson.mockReset().mockResolvedValue(fetchedGameModes);
     mockValidateWithSchema.mockReset().mockResolvedValue();
     mockImportJsonModule.mockReset();
 
-    mockGetItem.mockReset().mockReturnValueOnce(null).mockReturnValue(fetchedGameModes);
+    let gameModeCalls = 0;
+    mockGetItem.mockReset().mockImplementation((key) => {
+      if (key === "navigationItems") {
+        throw cacheError;
+      }
+      if (key === "gameModes") {
+        gameModeCalls += 1;
+        return gameModeCalls === 1 ? null : fetchedGameModes;
+      }
+      return null;
+    });
     mockSetItem.mockReset();
     mockRemoveItem.mockReset();
 
@@ -160,11 +152,13 @@ describe("loadNavigationItems", () => {
       expect(savedKey).toBe("gameModes");
       expect(savedValue).toEqual(fetchedGameModes);
       expect(mockFetchJson).toHaveBeenCalledTimes(1);
-      expect(mockGetItem).toHaveBeenCalledTimes(1);
+      expect(mockGetItem).toHaveBeenCalledTimes(2);
       expect(mockRemoveItem).not.toHaveBeenCalled();
 
+      mockGetItem.mockImplementation((key) =>
+        key === "navigationItems" ? navSubset : fetchedGameModes
+      );
       const secondResult = await mod.loadNavigationItems();
-      expect(mockNavigationCacheLoad).toHaveBeenCalledTimes(2);
       expect(secondResult.map((item) => item.id)).toEqual(navSubset.map((item) => item.id));
       const expectedSecondNames = navSubset.map((item) => {
         const mode = fetchedGameModes.find((gm) => gm.id === item.gameModeId);
@@ -172,9 +166,8 @@ describe("loadNavigationItems", () => {
       });
       expect(secondResult.map((item) => item.name)).toEqual(expectedSecondNames);
       expect(mockFetchJson).toHaveBeenCalledTimes(1);
-      expect(mockGetItem).toHaveBeenCalledTimes(2);
+      expect(mockGetItem).toHaveBeenCalledTimes(4);
       expect(mockValidateWithSchema).toHaveBeenCalledTimes(1);
-      expect(mockNavigationCacheSave).not.toHaveBeenCalled();
       expect(mockImportJsonModule).not.toHaveBeenCalled();
       expect(fetchMock).toHaveBeenCalledTimes(1);
     } finally {

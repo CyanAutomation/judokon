@@ -2,7 +2,6 @@ import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js"
 import { DATA_DIR } from "./constants.js";
 import { getItem, setItem, removeItem } from "./storage.js";
 import navigationFallback from "../data/navigationItems.js";
-import * as navigationCache from "./navigationCache.js";
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
@@ -42,6 +41,7 @@ async function getNavigationSchema() {
 }
 
 const GAMEMODES_KEY = "gameModes";
+const NAVIGATION_KEY = "navigationItems";
 
 /**
  * Load game modes from storage or fallback to the default game modes JSON file.
@@ -108,7 +108,7 @@ async function resolveNavigationItems(schema) {
   let navItems = null;
 
   try {
-    const cached = navigationCache.load();
+    const cached = getItem(NAVIGATION_KEY);
     if (Array.isArray(cached)) {
       navItems = cloneNavigationItems(cached);
     }
@@ -129,7 +129,7 @@ async function resolveNavigationItems(schema) {
  *
  * @pseudocode
  * 1. Resolve the navigation schema via `getNavigationSchema()`.
- * 2. Attempt to load cached navigation items using `navigationCache.load()`.
+ * 2. Attempt to load cached navigation items using `getItem(NAVIGATION_KEY)`.
  *    - On failure, log the error and fall back to the bundled data.
  *    - Validate the fallback data with the schema.
  * 3. Read cached game modes from storage; fetch and persist them when absent.
@@ -142,7 +142,7 @@ export async function loadNavigationItems() {
   const navigationSchema = await getNavigationSchema();
   let navItems = null;
   try {
-    const cached = await navigationCache.load();
+    const cached = await getItem(NAVIGATION_KEY);
     if (Array.isArray(cached)) {
       navItems = cloneNavigationItems(cached);
     } else {
@@ -191,10 +191,10 @@ export async function loadNavigationItems() {
  * Update the hidden state for a navigation item linked to a game mode.
  *
  * @pseudocode
- * 1. Load navigation items via `navigationCache.load()`; fall back to bundled data when missing.
+ * 1. Load navigation items via `getItem(NAVIGATION_KEY)`; fall back to bundled data when missing.
  * 2. Clone the array and update the matching entry's `isHidden` flag.
  * 3. Validate the updated collection against the navigation schema.
- * 4. Persist the updated entries via `navigationCache.save()` and return them.
+ * 4. Persist the updated entries via `setItem(NAVIGATION_KEY, updated)` and return them.
  *
  * @param {number} gameModeId - Identifier of the game mode to update.
  * @param {boolean} hidden - Whether the associated navigation entry should be hidden.
@@ -209,6 +209,6 @@ export async function updateNavigationItemHidden(gameModeId, hidden) {
   );
 
   await validateWithSchema(updated, schema);
-  navigationCache.save(updated);
+  setItem(NAVIGATION_KEY, updated);
   return updated;
 }
