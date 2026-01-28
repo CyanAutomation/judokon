@@ -2,6 +2,20 @@ import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { withMutedConsole } from "../utils/console.js";
 
+vi.mock("../../src/helpers/BattleEngine.js", () => ({
+  STATS: ["power", "speed", "technique", "kumikata", "newaza"],
+  handleStatSelection: vi.fn(() => ({
+    delta: 0,
+    outcome: "draw",
+    matchEnded: false,
+    playerScore: 0,
+    opponentScore: 0
+  })),
+  stopTimer: vi.fn(),
+  getScores: vi.fn(() => ({ player: 0, opponent: 0 })),
+  getRoundsPlayed: vi.fn(() => 0)
+}));
+
 describe("Classic Battle UI Event Binding", () => {
   let dom;
   let window;
