@@ -143,7 +143,10 @@ export async function expandQuery(query) {
   // Deduplication rule: each normalized term should appear exactly once so
   // embeddings and keyword search do not overweight repeated tokens.
   const dedupedTerms = Array.from(new Set([...words, ...addedTermsSet]));
-  const expanded = dedupedTerms.join(" ").slice(0, MAX_QUERY_LENGTH);
+  const expandedJoined = dedupedTerms.join(" ");
+  const expanded = expandedJoined.length <= MAX_QUERY_LENGTH 
+    ? expandedJoined 
+    : expandedJoined.substring(0, expandedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH));
 
   return {
     original: query,
