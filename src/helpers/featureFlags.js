@@ -101,18 +101,20 @@ export function buildFeatureFlagSnapshot(options = {}) {
     const hasPersisted = typeof normalizedPersisted === "boolean";
     const normalizedDefaultBoolean =
       typeof normalizedDefault === "boolean" ? normalizedDefault : !!normalizedDefault;
+    const storedEnabled = hasPersisted ? normalizedPersisted : normalizedDefaultBoolean;
     const hasOverride = Object.prototype.hasOwnProperty.call(overrideFlags, flagName);
     const overrideValue = hasOverride ? !!overrideFlags[flagName] : undefined;
 
     const enabled = hasOverride
       ? overrideValue
-      : hasPersisted
-        ? normalizedPersisted
-        : normalizedDefaultBoolean;
+      : typeof storedEnabled === "boolean"
+        ? storedEnabled
+        : !!normalizedDefault;
 
     snapshot[flagName] = {
       enabled,
-      stored: hasPersisted
+      stored: storedEnabled
+    };
     };
 
     if (hasOverride) {
