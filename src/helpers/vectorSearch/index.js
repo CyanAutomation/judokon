@@ -11,11 +11,8 @@ import { expandQuery as expandQueryBase } from "../queryExpander.js";
  */
 async function expandQuery(query) {
   const result = await expandQueryBase(query);
-  const lower = typeof query === "string" ? query.toLowerCase() : "";
-  const words = lower.split(/\s+/).filter(Boolean);
-  const additions = Array.isArray(result.addedTerms) ? result.addedTerms : [];
-  const expanded = [...new Set([...words, ...additions.map((term) => term.toLowerCase())])];
-  return expanded.join(" ");
+  return result.expanded;
+}
 }
 
 /**
