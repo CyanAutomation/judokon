@@ -850,7 +850,11 @@ async function handleFallbackResolution(
       delayMs: normalizedDelay,
       forceOpponentPrompt: true
     });
-  } catch {}
+  } catch {} finally {
+    if (store && typeof store === "object") {
+      store.playerChoice = null;
+    }
+  }
 
   if (selectionWasMade) {
     try {
