@@ -12,7 +12,6 @@ import { TimerController } from "./TimerController.js";
 import { setTestMode } from "./testModeUtils.js";
 import { stop as stopScheduler } from "../utils/scheduler.js";
 import { SimpleEmitter } from "./events/SimpleEmitter.js";
-import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import logger from "./logger.js";
 import {
   startRoundTimer,
@@ -946,6 +945,7 @@ export function createBattleEngine(config = {}) {
   logger.log("BattleEngine: createBattleEngine called with config:", config);
   const forceCreate = config.forceCreate || isTestEnvironment();
   const currentEngine = getCurrentEngine();
+  const { debugHooks = {}, ...restConfig } = config;
 
   if (currentEngine && !forceCreate) {
     logger.log("BattleEngine: returning existing engine instance");
@@ -957,8 +957,8 @@ export function createBattleEngine(config = {}) {
     pointsToWin: CLASSIC_BATTLE_POINTS_TO_WIN,
     maxRounds: CLASSIC_BATTLE_MAX_ROUNDS,
     stats: STATS,
-    debugHooks: { getStateSnapshot },
-    ...config
+    debugHooks,
+    ...restConfig
   });
   if (typeof window !== "undefined") {
     battleEngines.set(window, battleEngine);
