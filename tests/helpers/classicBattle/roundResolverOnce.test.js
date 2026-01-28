@@ -16,6 +16,7 @@ vi.mock("../../../src/helpers/api/battleUI.js", () => ({
     opponentScore: 0,
     outcome: "winPlayer"
   })),
+  getOutcomeMessage: vi.fn(() => ""),
   chooseOpponentStat: vi.fn()
 }));
 vi.mock("../../../src/helpers/BattleEngine.js", () => ({
