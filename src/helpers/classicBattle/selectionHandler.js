@@ -643,6 +643,10 @@ export function cleanupTimers(store) {
   } catch {}
   clearNextRoundTimerFallback();
   const schedulers = collectSelectionSchedulers(store);
+  clearTimerHandle(store?.selectionFallbackTimeoutId, schedulers);
+  if (store) {
+    store.selectionFallbackTimeoutId = null;
+  }
   clearTimerHandle(store?.statTimeoutId, schedulers);
   store.statTimeoutId = null;
   clearTimerHandle(store?.autoSelectId, schedulers);
@@ -818,6 +822,11 @@ async function handleFallbackResolution(
   opts,
   normalizedDelay
 ) {
+  const latestState = getCurrentBattleState();
+  const selectionReset = store?.playerChoice == null && !store?.selectionMade;
+  if (selectionReset || (typeof latestState === "string" && latestState.startsWith("interrupt"))) {
+    return;
+  }
   const selectionWasMade = !!store?.selectionMade;
   let previousState = currentState;
   if (previousState === undefined) {
@@ -905,8 +914,16 @@ export async function resolveWithFallback(
       const normalizedDelay =
         Number.isFinite(opponentDelay) && opponentDelay >= 0 ? opponentDelay : 0;
       const fallbackDelay = normalizedDelay + FALLBACK_BUFFER_MS;
+      const schedulers = collectSelectionSchedulers(store);
+      clearTimerHandle(store?.selectionFallbackTimeoutId, schedulers);
+      if (store) {
+        store.selectionFallbackTimeoutId = null;
+      }
 
       const timeoutId = setTimeout(async () => {
+        if (store && store.selectionFallbackTimeoutId === timeoutId) {
+          store.selectionFallbackTimeoutId = null;
+        }
         await handleFallbackResolution(
           store,
           currentState,
@@ -917,11 +934,17 @@ export async function resolveWithFallback(
           normalizedDelay
         );
       }, fallbackDelay);
+      if (store && typeof store === "object") {
+        store.selectionFallbackTimeoutId = timeoutId;
+      }
 
       try {
         getRoundResolvedPromise()
           .then(() => {
             clearTimeout(timeoutId);
+            if (store && store.selectionFallbackTimeoutId === timeoutId) {
+              store.selectionFallbackTimeoutId = null;
+            }
           })
           .catch(() => {});
       } catch {}
