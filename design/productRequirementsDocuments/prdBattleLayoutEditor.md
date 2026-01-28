@@ -87,7 +87,7 @@ Currently, layout creation relies on manual JSON or CSS edits. This approach is 
 - Compatible with Chrome, Edge, and Firefox (latest versions).
 - Uses `postMessage` for iframe communication.
 - Sandboxed iframe permissions: `sandbox="allow-scripts allow-same-origin"`.
-- Layout schema must match Layout Engine format (grid and regions).
+- Layout schema must match the Battle Layout Schema v1 contract documented in the Layout Engine PRD (grid, regions, and metadata).
 
 ---
 
@@ -107,6 +107,7 @@ Currently, layout creation relies on manual JSON or CSS edits. This approach is 
 
 - A lightweight validator checks for valid grid integers, defined regions, and unique IDs.
 - Invalid entries trigger a red border and warning message.
+- Validation uses the Battle Layout Schema v1 rules to ensure exports and previews match runtime expectations.
 
 ### Versioning
 
