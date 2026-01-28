@@ -30,22 +30,13 @@ describe("query building", () => {
     const synonyms = { "seoi nage": ["seoi-nage"] };
     const findMatches = vi.fn().mockResolvedValue([]);
     vi.doMock("../../../src/helpers/vectorSearch/index.js", async () => {
-      const { expandQuery: expandQueryBase } = await import(
-        "../../../src/helpers/queryExpander.js"
-      );
-      const expandQuery = async (query) => {
-        const result = await expandQueryBase(query);
-        const lower = typeof query === "string" ? query.toLowerCase() : "";
-        const words = lower.split(/\s+/).filter(Boolean);
-        const additions = Array.isArray(result.addedTerms) ? result.addedTerms : [];
-        return [...new Set([...words, ...additions.map((term) => term.toLowerCase())])].join(" ");
-      };
+      const actual = await vi.importActual("../../../src/helpers/vectorSearch/index.js");
       return {
         default: {
+          ...actual.default,
           findMatches,
           fetchContextById: vi.fn(),
           loadEmbeddings: vi.fn().mockResolvedValue([]),
-          expandQuery,
           CURRENT_EMBEDDING_VERSION: 1
         }
       };

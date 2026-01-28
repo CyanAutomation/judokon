@@ -13,7 +13,6 @@ async function expandQuery(query) {
   const result = await expandQueryBase(query);
   return result.expanded;
 }
-}
 
 /**
  * Centralized vector search API.
