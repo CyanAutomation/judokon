@@ -256,3 +256,7 @@ Header and action layout are inconsistent, cluttered, and violate basic navigati
   - [ ] 6.2 Test error cases: missing data, save failure, invalid input
   - [ ] 6.3 Test conflicting edits across devices with conflict messaging
   - [ ] 6.4 Test accessibility compliance
+
+## Mockups
+
+![Update judoka mockup](assets/mockups/mockupUpdateJudoka1.png)

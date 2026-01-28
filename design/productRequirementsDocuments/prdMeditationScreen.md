@@ -232,3 +232,11 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - [PRD: Pseudo-Japanese Text Conversion Function](prdPseudoJapanese.md)
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Quote screen mockup 1](assets/mockups/mockupQuoteScreen1.png)
+![Quote screen mockup 2](assets/mockups/mockupQuoteScreen2.png)
+![Quote screen mockup 3](assets/mockups/mockupQuoteScreen3.png)
+![Quote screen mockup 4](assets/mockups/mockupQuoteScreen4.png)
+![Quote screen mockup 5](assets/mockups/mockupQuoteScreen.png)

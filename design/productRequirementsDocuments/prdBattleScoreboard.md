@@ -222,3 +222,8 @@ And it is cleared on the next state change
 ---
 
 Would you like me to now do the **same reconciliation pass for the Battle Engine PRD** — i.e. check what detail from the original was lost when I aligned it, and merge back any important omissions?
+
+## Mockups
+
+![Battle scoreboard mockup 1](assets/mockups/mockupBattleScoreboard1.png)
+![Battle scoreboard mockup 2](assets/mockups/mockupBattleScoreboard2.png)

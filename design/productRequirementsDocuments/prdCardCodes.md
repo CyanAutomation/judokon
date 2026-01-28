@@ -247,3 +247,8 @@ F7KP-WQ9M-ZD23-HYTR
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Card codes mockup 1](assets/mockups/mockupCardCode1.png)
+![Card codes mockup 2](assets/mockups/mockupCardCode2.png)

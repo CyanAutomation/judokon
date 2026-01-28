@@ -510,3 +510,10 @@ SVG Icon: M80-120v-80h160v-160h-80v-80h84q12-75 66.5-129.5T440-636v-204h280v160H
 SVG Icon: m536-84-56-56 142-142-340-340-142 142-56-56 56-58-56-56 84-84-56-58 56-56 58 56 84-84 56 56 58-56 56 56-142 142 340 340 142-142 56 56-56 58 56 56-84 84 56 58-56 56-58-56-84 84-56-56-58 56Z
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Game modes mockup 1](assets/mockups/mockupGameModes1.png)
+![Game modes mockup 2](assets/mockups/mockupGameModes2.png)
+![Game modes mockup 3](assets/mockups/mockupGameModes3.png)
+![Game modes mockup 4](assets/mockups/mockupGameModes4.png)

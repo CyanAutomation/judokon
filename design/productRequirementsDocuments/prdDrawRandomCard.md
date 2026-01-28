@@ -267,3 +267,8 @@ instantly without movement.
 This PRD covers the technical implementation of the random card draw helper function. For UI details and user-facing flows, see [PRD: Random Judoka](prdRandomJudoka.md). Both documents reference the same logic and should remain consistent.
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Draw random card mockup 1](assets/mockups/mockupDrawCard1.png)
+![Draw random card mockup 2](assets/mockups/mockupDrawCard2.png)
