@@ -29,6 +29,7 @@ import {
   getScores,
   getPointsToWin
 } from "../helpers/BattleEngine.js";
+import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
@@ -1781,7 +1782,11 @@ async function initializePhase2_UI() {
 
 async function initializePhase3_Engine(store) {
   console.log("battleClassic: initializePhase3_Engine");
-  createBattleEngine(window.__ENGINE_CONFIG || {});
+  const engineConfig = window.__ENGINE_CONFIG || {};
+  createBattleEngine({
+    ...engineConfig,
+    debugHooks: { getStateSnapshot, ...(engineConfig.debugHooks ?? {}) }
+  });
   registerBridgeOnEngineCreated();
 
   const shouldDeferOrchestrator =
