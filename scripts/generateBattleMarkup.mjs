@@ -6,13 +6,18 @@ const outputPath = new URL(
   import.meta.url
 );
 
-const raw = await readFile(jsonPath, "utf8");
-const data = JSON.parse(raw);
+try {
+  const raw = await readFile(jsonPath, "utf8");
+  const data = JSON.parse(raw);
 
-const output = `// Generated from design/dataSchemas/battleMarkup.json. Do not edit by hand.\nexport default ${JSON.stringify(
-  data,
-  null,
-  2
-)};\n`;
+  const output = `// Generated from design/dataSchemas/battleMarkup.json. Do not edit by hand.\nexport default ${JSON.stringify(
+    data,
+    null,
+    2
+  )};\n`;
 
-await writeFile(outputPath, output, "utf8");
+  await writeFile(outputPath, output, "utf8");
+} catch (error) {
+  console.error("Failed to generate battleMarkup.generated.js:", error.message);
+  process.exit(1);
+}
