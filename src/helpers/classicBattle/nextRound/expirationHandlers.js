@@ -487,7 +487,7 @@ export async function dispatchReadyWithOptions(params) {
  * @param {object} params
  * @param {() => any} params.machineReader
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
- * @param {boolean} [params.forceMachineDispatchAfterShared]
+ * @param {boolean} [params.forceMachineDispatchAfterShared] When true, allows machine dispatch after successful shared dispatch
  * @returns {Promise<{ dispatched: boolean, dedupeTracked: boolean }>}
  */
 export async function dispatchReadyDirectly(params) {
