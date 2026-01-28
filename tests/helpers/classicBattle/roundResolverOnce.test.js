@@ -48,8 +48,8 @@ vi.mock("../../../src/helpers/BattleEngine.js", () => ({
       delta: 0,
       outcome: "draw",
       matchEnded: false,
-      playerScore: 2,
-      opponentScore: 2
+      playerScore: 0,
+      opponentScore: 0
     };
   }),
   _resetForTest: vi.fn(),
