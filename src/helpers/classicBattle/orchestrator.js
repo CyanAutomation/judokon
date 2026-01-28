@@ -90,7 +90,11 @@ function attachEngineEventBridge(engine) {
     // PRD taxonomy handler
     const outcome = detail?.outcome;
     const winner =
-      outcome === "matchWinPlayer" ? "player" : outcome === "matchWinOpponent" ? "opponent" : "none";
+      outcome === "matchWinPlayer"
+        ? "player"
+        : outcome === "matchWinOpponent"
+          ? "opponent"
+          : "none";
     emitBattleEvent("match.concluded", {
       winner,
       scores: {

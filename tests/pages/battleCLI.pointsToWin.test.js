@@ -133,9 +133,7 @@ describe("battleCLI points select", () => {
     const changeSpy = vi.spyOn(select, "addEventListener");
     await mod.init();
     await mod.renderStatList();
-    const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/BattleEngine.js"
-    );
+    const { setPointsToWin, getPointsToWin } = await import("../../src/helpers/BattleEngine.js");
     setPointsToWin.mockClear();
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
@@ -173,9 +171,7 @@ describe("battleCLI points select", () => {
     const select = root.querySelector("#points-select");
     const changeSpy = vi.spyOn(select, "addEventListener");
     await mod.init();
-    const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/BattleEngine.js"
-    );
+    const { setPointsToWin, getPointsToWin } = await import("../../src/helpers/BattleEngine.js");
     setPointsToWin.mockClear();
 
     select.value = String(target);
@@ -241,9 +237,7 @@ describe("battleCLI points select", () => {
     const changeSpy = vi.spyOn(select, "addEventListener");
     await mod.init();
 
-    const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/BattleEngine.js"
-    );
+    const { setPointsToWin, getPointsToWin } = await import("../../src/helpers/BattleEngine.js");
     setPointsToWin.mockClear();
 
     expect(select.value).toBe("10");

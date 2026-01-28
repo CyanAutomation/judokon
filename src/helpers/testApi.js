@@ -197,11 +197,7 @@ export function isTestMode() {
   }
 
   const runtime =
-    isWindowAvailable() && window
-      ? window
-      : typeof globalThis !== "undefined"
-        ? globalThis
-        : null;
+    isWindowAvailable() && window ? window : typeof globalThis !== "undefined" ? globalThis : null;
 
   if (runtime) {
     if (runtime.__TEST__ || runtime.__PLAYWRIGHT_TEST__) return true;

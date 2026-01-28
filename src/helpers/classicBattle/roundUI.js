@@ -900,11 +900,11 @@ export function bindRoundUIEventHandlersDynamic() {
   onBattleEvent("roundResolved", async (event) => {
     const [scoreboardModule, roundManagerModule, cooldownModule, uiHelpersModule] =
       await Promise.all([
-      loadScoreboard(),
-      loadRoundManager(),
-      loadComputeNextRoundCooldown(),
-      loadUiHelpers()
-    ]);
+        loadScoreboard(),
+        loadRoundManager(),
+        loadComputeNextRoundCooldown(),
+        loadUiHelpers()
+      ]);
     await handleRoundResolvedEvent(event, {
       scoreboard: scoreboardModule || scoreboard,
       showMatchSummary: showMatchSummaryModal,

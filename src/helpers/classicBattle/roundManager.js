@@ -1225,10 +1225,14 @@ export function _resetForTest(store, preserveConfig = {}) {
     );
   } else {
     // In production, always create a fresh engine with preserved config
-    safeRound("_resetForTest.createEngine", () => createBattleEngine(buildEngineConfig(preserveConfig)), {
-      suppressInProduction: true,
-      rethrow: true
-    });
+    safeRound(
+      "_resetForTest.createEngine",
+      () => createBattleEngine(buildEngineConfig(preserveConfig)),
+      {
+        suppressInProduction: true,
+        rethrow: true
+      }
+    );
   }
   stopScheduler();
   // Reset module-level cooldown state to prevent test pollution

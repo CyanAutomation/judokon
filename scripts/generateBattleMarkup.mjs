@@ -1,10 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const jsonPath = new URL("../design/dataSchemas/battleMarkup.json", import.meta.url);
-const outputPath = new URL(
-  "../design/dataSchemas/battleMarkup.generated.js",
-  import.meta.url
-);
+const outputPath = new URL("../design/dataSchemas/battleMarkup.generated.js", import.meta.url);
 
 try {
   const raw = await readFile(jsonPath, "utf8");

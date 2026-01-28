@@ -73,7 +73,8 @@ function setPendingOpponentCardData(cardData, sequence, token) {
 }
 
 function clearPendingOpponentCardData(sequence, token) {
-  const isSequenceClearable = !Number.isFinite(sequence) || pendingOpponentCardDataSequence < sequence;
+  const isSequenceClearable =
+    !Number.isFinite(sequence) || pendingOpponentCardDataSequence < sequence;
   const isTokenMatch = token === undefined || pendingOpponentCardDataToken === token;
   if (isSequenceClearable && isTokenMatch) {
     pendingOpponentCardData = null;

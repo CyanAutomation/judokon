@@ -64,9 +64,7 @@ describe("loadNavigationItems", () => {
     mockValidateWithSchema.mockResolvedValue();
     mockImportJsonModule.mockClear();
 
-    mockGetItem.mockImplementation((key) =>
-      key === "navigationItems" ? navSubset : null
-    );
+    mockGetItem.mockImplementation((key) => (key === "navigationItems" ? navSubset : null));
     mockSetItem.mockClear();
     mockRemoveItem.mockClear();
 

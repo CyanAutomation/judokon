@@ -100,11 +100,11 @@ export async function matchDecisionEnter(machine) {
 
   // Ensure match is complete before proceeding; if not, log and return early
   if (!isMatchComplete(engine)) {
-  try {
-    emitBattleEvent("matchDecision", { matchEnded: false, scores });
-  } catch (error) {
-    console.error("Failed to emit matchDecision event:", error);
-  }
+    try {
+      emitBattleEvent("matchDecision", { matchEnded: false, scores });
+    } catch (error) {
+      console.error("Failed to emit matchDecision event:", error);
+    }
     return;
   }
 
@@ -136,11 +136,11 @@ export async function matchDecisionEnter(machine) {
 
   // Display the end-of-match modal with Replay and Quit options
   if (store) {
-  try {
-    showEndModal(store, detail);
-  } catch (error) {
-    console.error("Failed to show end modal:", error);
-  }
+    try {
+      showEndModal(store, detail);
+    } catch (error) {
+      console.error("Failed to show end modal:", error);
+    }
   }
 }
 

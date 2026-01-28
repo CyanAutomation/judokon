@@ -124,9 +124,7 @@ export async function expandQuery(query) {
 
   const synonymMap = await loadSynonyms();
   const normalized = query.toLowerCase().trim();
-  const words = new Set(
-    normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS)
-  );
+  const words = new Set(normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS));
 
   // Find matching synonyms
   const synonymMatches = findSynonymMatches(normalized, synonymMap);
@@ -144,9 +142,10 @@ export async function expandQuery(query) {
   // embeddings and keyword search do not overweight repeated tokens.
   const dedupedTerms = Array.from(new Set([...words, ...addedTermsSet])).slice(0, MAX_QUERY_TERMS);
   const expandedJoined = dedupedTerms.join(" ");
-  const expanded = expandedJoined.length <= MAX_QUERY_LENGTH 
-    ? expandedJoined 
-    : expandedJoined.substring(0, expandedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH));
+  const expanded =
+    expandedJoined.length <= MAX_QUERY_LENGTH
+      ? expandedJoined
+      : expandedJoined.substring(0, expandedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH));
 
   return {
     original: query,
