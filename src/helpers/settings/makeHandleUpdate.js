@@ -54,8 +54,11 @@ import { DEFAULT_SETTINGS } from "../../config/settingsDefaults.js";
 export function makeHandleUpdate(setCurrentSettings, showErrorAndRevert, onUpdate) {
   return function handleUpdate(key, value, revert, controlElement) {
     return Promise.resolve(loadSettings())
-      .then((settings) => ({ ...(settings ?? DEFAULT_SETTINGS), [key]: value }))
-      .then((updated) => saveSettings(updated).then(() => updated))
+      .then((settings) => {
+        const current = settings ?? DEFAULT_SETTINGS;
+        const updated = { ...current, [key]: value };
+        return saveSettings(updated).then(() => updated);
+      })
       .then((updated) => {
         setCurrentSettings(updated);
         if (typeof onUpdate === "function") {
