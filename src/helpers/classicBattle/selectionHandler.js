@@ -823,7 +823,7 @@ async function handleFallbackResolution(
   normalizedDelay
 ) {
   const latestState = getCurrentBattleState();
-  const selectionReset = store?.playerChoice == null && !store?.selectionMade;
+  const selectionReset = store?.playerChoice === null && !store?.selectionMade;
   if (selectionReset || (typeof latestState === "string" && latestState.startsWith("interrupt"))) {
     return;
   }
