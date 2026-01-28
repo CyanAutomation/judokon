@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSettingsDom, resetDom } from "../utils/testUtils.js";
 import { createSimpleHarness } from "./integrationHarness.js";
 import { flushUnhandledRejections } from "../utils/flushUnhandledRejections.js";
+import { flushMicrotasks } from "../utils/flushMicrotasks.js";
+import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 // ===== Top-level vi.hoisted() for shared mock state (MUST be before baseSettings) =====
 const {
@@ -13,11 +15,11 @@ const {
   mockToggleTooltipOverlayDebug,
   mockToggleLayoutDebugPanel,
   mockOnDomReady,
-  mockUpdateSetting,
+  mockLoadSettings,
+  mockSaveSettings,
   mockUpdateNavigationItemHidden,
   mockGetTooltips,
   mockInitTooltips,
-  mockResetSettings,
   mockShowSnackbar,
   mockShowSettingsError,
   mockLoadNavigationItems
@@ -30,11 +32,11 @@ const {
   mockToggleTooltipOverlayDebug: vi.fn(),
   mockToggleLayoutDebugPanel: vi.fn(),
   mockOnDomReady: vi.fn(),
-  mockUpdateSetting: vi.fn(),
+  mockLoadSettings: vi.fn(),
+  mockSaveSettings: vi.fn(),
   mockUpdateNavigationItemHidden: vi.fn(),
   mockGetTooltips: vi.fn(),
   mockInitTooltips: vi.fn(),
-  mockResetSettings: vi.fn(),
   mockShowSnackbar: vi.fn(),
   mockShowSettingsError: vi.fn(),
   mockLoadNavigationItems: vi.fn()
@@ -111,9 +113,8 @@ vi.mock("../../src/helpers/gameModeUtils.js", () => ({
 }));
 
 vi.mock("../../src/helpers/settingsStorage.js", () => ({
-  updateSetting: mockUpdateSetting,
-  loadSettings: vi.fn(),
-  resetSettings: mockResetSettings
+  saveSettings: mockSaveSettings,
+  loadSettings: mockLoadSettings
 }));
 
 vi.mock("../../src/helpers/tooltip.js", () => ({
@@ -142,11 +143,11 @@ function resetAllMocks() {
   mockToggleTooltipOverlayDebug.mockReset();
   mockToggleLayoutDebugPanel.mockReset();
   mockOnDomReady.mockReset();
-  mockUpdateSetting.mockReset().mockResolvedValue(baseSettings);
+  mockLoadSettings.mockReset().mockResolvedValue(baseSettings);
+  mockSaveSettings.mockReset().mockResolvedValue();
   mockUpdateNavigationItemHidden.mockReset().mockResolvedValue([]);
   mockGetTooltips.mockReset().mockResolvedValue({});
   mockInitTooltips.mockReset().mockResolvedValue(() => {});
-  mockResetSettings.mockReset();
   mockShowSnackbar.mockReset();
   mockShowSettingsError.mockReset();
   mockLoadNavigationItems.mockReset();
@@ -160,6 +161,7 @@ beforeEach(async () => {
   currentFlags = baseSettings.featureFlags;
   harness = createSimpleHarness();
   await harness.setup();
+  mockLoadSettings.mockResolvedValue(baseSettings);
   resetDom();
   localStorage.clear();
   document.body.appendChild(createSettingsDom());
@@ -212,7 +214,7 @@ describe("renderSettingsControls", () => {
     // Configure mocks for this test
     const updateSettingFn = vi.fn().mockResolvedValue(baseSettings);
     const updateNavFn = vi.fn().mockResolvedValue([]);
-    mockUpdateSetting.mockImplementation(updateSettingFn);
+    mockSaveSettings.mockImplementation(updateSettingFn);
     mockUpdateNavigationItemHidden.mockImplementation(updateNavFn);
 
     const { renderSettingsControls, handleGameModeChange } = await import(
@@ -279,7 +281,7 @@ describe("renderSettingsControls", () => {
     const updateNavFn = vi.fn().mockResolvedValue([]);
 
     // Configure mocks for this test
-    mockUpdateSetting.mockImplementation(updateSettingImpl);
+    mockSaveSettings.mockImplementation(updateSettingImpl);
     mockUpdateNavigationItemHidden.mockImplementation(updateNavFn);
 
     const { handleGameModeChange } = await import("../../src/helpers/settings/gameModeSwitches.js");
@@ -317,7 +319,7 @@ describe("renderSettingsControls", () => {
     const showSnackbarFn = vi.fn();
 
     // Configure mocks for this test
-    mockUpdateSetting.mockImplementation(updateSettingImpl);
+    mockSaveSettings.mockImplementation(updateSettingImpl);
     mockUpdateNavigationItemHidden.mockImplementation(updateNavFn);
     mockShowSnackbar.mockImplementation(showSnackbarFn);
 
@@ -348,7 +350,7 @@ describe("renderSettingsControls", () => {
     const showSettingsErrorFn = vi.fn();
 
     // Configure mocks for this test
-    mockUpdateSetting.mockImplementation(updateSettingImpl);
+    mockSaveSettings.mockImplementation(updateSettingImpl);
     mockUpdateNavigationItemHidden.mockImplementation(updateNavFn);
     mockShowSettingsError.mockImplementation(showSettingsErrorFn);
 
@@ -373,7 +375,7 @@ describe("renderSettingsControls", () => {
 
   it("persists feature flag changes", async () => {
     const updateSettingImpl = vi.fn().mockResolvedValue(baseSettings);
-    mockUpdateSetting.mockImplementation(updateSettingImpl);
+    mockSaveSettings.mockImplementation(updateSettingImpl);
 
     const { renderSettingsControls, handleFeatureFlagChange } = await import(
       "../../src/helpers/settingsPage.js"
@@ -402,7 +404,7 @@ describe("renderSettingsControls", () => {
 
   it("shows transient save status feedback when settings persist", async () => {
     const updateSettingImpl = vi.fn().mockResolvedValue(baseSettings);
-    mockUpdateSetting.mockImplementation(updateSettingImpl);
+    mockSaveSettings.mockImplementation(updateSettingImpl);
 
     const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
     renderSettingsControls(baseSettings, [], tooltipMap);
@@ -412,7 +414,7 @@ describe("renderSettingsControls", () => {
     soundToggle.checked = false;
     soundToggle.dispatchEvent(new Event("change", { bubbles: true }));
 
-    await Promise.resolve();
+    await flushMicrotasks(4);
     expect(status.dataset.visible).toBe("true");
     expect(status.textContent).toBe("Saved!");
 
@@ -434,7 +436,7 @@ describe("renderSettingsControls", () => {
     const showSnackbarFn = vi.fn();
 
     // Configure mocks for this test
-    mockResetSettings.mockReset();
+    mockSaveSettings.mockReset().mockResolvedValue();
     mockInitFeatureFlags.mockImplementation(initFeatureFlagsFn);
     mockShowSnackbar.mockImplementation(showSnackbarFn);
 
@@ -451,8 +453,8 @@ describe("renderSettingsControls", () => {
     expect(document.getElementById("feature-enable-test-mode").checked).toBe(true);
     document.getElementById("reset-settings-button").dispatchEvent(new Event("click"));
     document.getElementById("confirm-reset-button").dispatchEvent(new Event("click"));
-    await Promise.resolve();
-    expect(mockResetSettings).toHaveBeenCalled();
+    await flushMicrotasks(2);
+    expect(mockSaveSettings).toHaveBeenCalledWith(expect.objectContaining(DEFAULT_SETTINGS));
     expect(initFeatureFlagsFn).toHaveBeenCalled();
     expect(showSnackbarFn).toHaveBeenCalledWith("Settings restored to defaults");
     expect(document.getElementById("feature-enable-test-mode").checked).toBe(false);

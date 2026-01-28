@@ -6,7 +6,7 @@
  * 2. Render page controls with `renderSettingsControls`.
  * 3. Show an error message if initialization fails.
  */
-import { resetSettings } from "./settingsStorage.js";
+import { saveSettings } from "./settingsStorage.js";
 import { loadGameModes } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
@@ -19,6 +19,7 @@ import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { initDebugFlagHud } from "./debugFlagHud.js";
+import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -197,7 +198,7 @@ function initializeControls(settings) {
   const renderSwitches = makeRenderSwitches(controls, () => currentSettings, handleUpdate);
 
   const resetModal = createResetModal(async () => {
-    resetSettings();
+    await saveSettings({ ...DEFAULT_SETTINGS }).catch(() => {});
     currentSettings = await initFeatureFlags();
     withViewTransition(() => {
       applyDisplayMode(currentSettings.displayMode);

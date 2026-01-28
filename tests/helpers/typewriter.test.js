@@ -1,13 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { shouldEnableTypewriter } from "../../src/helpers/typewriter.js";
-import { loadSettings, resetSettings, updateSetting } from "../../src/helpers/settingsStorage.js";
+import { loadSettings, saveSettings } from "../../src/helpers/settingsStorage.js";
+import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 // Tests for typewriter helper
 
 describe("typewriter", () => {
   beforeEach(async () => {
-    resetSettings();
     localStorage.clear();
+    await saveSettings(DEFAULT_SETTINGS);
     await loadSettings();
   });
 
@@ -16,12 +17,12 @@ describe("typewriter", () => {
   });
 
   it("returns true when setting enabled", async () => {
-    await updateSetting("typewriterEffect", true);
+    await saveSettings({ ...DEFAULT_SETTINGS, typewriterEffect: true });
     expect(shouldEnableTypewriter()).toBe(true);
   });
 
   it("uses cached settings synchronously", async () => {
-    await updateSetting("typewriterEffect", true);
+    await saveSettings({ ...DEFAULT_SETTINGS, typewriterEffect: true });
     expect(shouldEnableTypewriter()).toBe(true);
     localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
     expect(shouldEnableTypewriter()).toBe(true);

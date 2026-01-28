@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { shouldReduceMotionSync, applyMotionPreference } from "../../src/helpers/motionUtils.js";
-import { loadSettings, resetSettings } from "../../src/helpers/settingsStorage.js";
+import { loadSettings, saveSettings } from "../../src/helpers/settingsStorage.js";
+import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 const matchMediaMock = (matches) =>
   vi.fn().mockImplementation((query) => ({
@@ -15,9 +16,9 @@ const matchMediaMock = (matches) =>
 
 describe("motionUtils", () => {
   beforeEach(async () => {
-    resetSettings();
     localStorage.clear();
     document.body.className = "";
+    await saveSettings(DEFAULT_SETTINGS);
     await loadSettings();
   });
 

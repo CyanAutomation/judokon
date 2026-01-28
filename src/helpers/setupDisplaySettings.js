@@ -17,7 +17,7 @@ import { onDomReady } from "./domReady.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
-import { updateSetting } from "./settingsStorage.js";
+import { saveSettings } from "./settingsStorage.js";
 
 async function init() {
   try {
@@ -26,7 +26,8 @@ async function init() {
     applyDisplayMode(settings.displayMode);
     if (normalizedMode && normalizedMode !== settings.displayMode) {
       try {
-        await updateSetting("displayMode", normalizedMode);
+        const updated = { ...settings, displayMode: normalizedMode };
+        await saveSettings(updated);
         settings.displayMode = normalizedMode;
       } catch {}
     }

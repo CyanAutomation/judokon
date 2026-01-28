@@ -11,11 +11,9 @@ import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 describe("initFeatureFlags", () => {
   it("falls back to defaults and emits change on load failure", async () => {
     vi.resetModules();
-    vi.doMock("../../src/config/loadSettings.js", () => ({
-      loadSettings: vi.fn().mockRejectedValue(new Error("fail"))
-    }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-      updateSetting: vi.fn()
+      loadSettings: vi.fn().mockRejectedValue(new Error("fail")),
+      saveSettings: vi.fn()
     }));
     const { initFeatureFlags, featureFlagsEmitter, isEnabled } = await import(
       "../../src/helpers/featureFlags.js"
@@ -47,14 +45,10 @@ describe("initFeatureFlags", () => {
       ...DEFAULT_SETTINGS,
       featureFlags: { ...DEFAULT_SETTINGS.featureFlags }
     });
-    const updateSetting = vi.fn().mockImplementation(async (key, flags) => ({
-      ...DEFAULT_SETTINGS,
-      featureFlags: flags
-    }));
+    const saveSettings = vi.fn().mockResolvedValue();
     const setCachedSettings = vi.fn();
 
-    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings, saveSettings }));
     vi.doMock("../../src/helpers/settingsCache.js", () => ({ setCachedSettings }));
 
     try {
@@ -90,7 +84,6 @@ describe("initFeatureFlags", () => {
       } else {
         delete globalThis.CustomEvent;
       }
-      vi.doUnmock("../../src/config/loadSettings.js");
       vi.doUnmock("../../src/helpers/settingsStorage.js");
       vi.doUnmock("../../src/helpers/settingsCache.js");
     }
@@ -114,17 +107,10 @@ describe("setFlag", () => {
       ...DEFAULT_SETTINGS,
       featureFlags: null
     });
-    const updateSetting = vi.fn().mockImplementation(async (key, flags) => {
-      expect(key).toBe("featureFlags");
-      return {
-        ...DEFAULT_SETTINGS,
-        featureFlags: flags
-      };
-    });
+    const saveSettings = vi.fn().mockResolvedValue();
     const setCachedSettings = vi.fn();
 
-    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings, saveSettings }));
     vi.doMock("../../src/helpers/settingsCache.js", () => ({ setCachedSettings }));
 
     try {
@@ -132,15 +118,15 @@ describe("setFlag", () => {
       const result = await setFlag(flagName, true);
 
       expect(loadSettings).toHaveBeenCalledTimes(1);
-      expect(updateSetting).toHaveBeenCalledWith(
-        "featureFlags",
+      expect(saveSettings).toHaveBeenCalledWith(
         expect.objectContaining({
-          [flagName]: expect.objectContaining({ enabled: true })
+          featureFlags: expect.objectContaining({
+            [flagName]: expect.objectContaining({ enabled: true })
+          })
         })
       );
       expect(result.featureFlags[flagName].enabled).toBe(true);
     } finally {
-      vi.doUnmock("../../src/config/loadSettings.js");
       vi.doUnmock("../../src/helpers/settingsStorage.js");
       vi.doUnmock("../../src/helpers/settingsCache.js");
     }
@@ -171,11 +157,10 @@ describe("enableFlag", () => {
       ...DEFAULT_SETTINGS,
       featureFlags: { ...DEFAULT_SETTINGS.featureFlags }
     });
-    const updateSetting = vi.fn().mockRejectedValue(new Error("persist failed"));
+    const saveSettings = vi.fn().mockRejectedValue(new Error("persist failed"));
     const setCachedSettings = vi.fn();
 
-    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings, saveSettings }));
     vi.doMock("../../src/helpers/settingsCache.js", () => ({ setCachedSettings }));
 
     try {
@@ -189,10 +174,9 @@ describe("enableFlag", () => {
       expect(featureFlagsModule.isEnabled(flagName)).toBe(true);
       expect(unhandled).toHaveLength(0);
       expect(loadSettings).toHaveBeenCalledTimes(1);
-      expect(updateSetting).toHaveBeenCalledWith("featureFlags", expect.any(Object));
+      expect(saveSettings).toHaveBeenCalledWith(expect.any(Object));
     } finally {
       process.removeListener("unhandledRejection", captureUnhandled);
-      vi.doUnmock("../../src/config/loadSettings.js");
       vi.doUnmock("../../src/helpers/settingsStorage.js");
       vi.doUnmock("../../src/helpers/settingsCache.js");
     }

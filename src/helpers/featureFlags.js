@@ -1,5 +1,4 @@
-import { loadSettings } from "../config/loadSettings.js";
-import { updateSetting } from "./settingsStorage.js";
+import { loadSettings, saveSettings } from "./settingsStorage.js";
 import { setCachedSettings } from "./settingsCache.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
@@ -114,7 +113,6 @@ export function buildFeatureFlagSnapshot(options = {}) {
     snapshot[flagName] = {
       enabled,
       stored: storedEnabled
-    };
     };
 
     if (hasOverride) {
@@ -245,7 +243,7 @@ export function isEnabled(flag) {
  * 1. Call `loadSettings()` to retrieve current settings.
  * 2. Optionally warn if `flag` is not in `DEFAULT_SETTINGS.featureFlags`.
  * 3. Merge existing flag data with `{ enabled: value }` into `settings.featureFlags`.
- * 4. Persist the merged object with `updateSetting('featureFlags', merged)`.
+ * 4. Persist the merged object with `saveSettings(updatedSettings)`.
  * 5. Update `cachedFlags` with the saved flags.
  * 6. Dispatch a `change` event on `featureFlagsEmitter`.
  * 7. Return the updated settings object.
@@ -266,10 +264,11 @@ export async function setFlag(flag, value) {
     ...currentFlags,
     [flag]: { ...(currentFlags[flag] || {}), enabled: value }
   };
-  const updated = await updateSetting("featureFlags", updatedFlags);
-  cachedFlags = updated.featureFlags || {};
+  const updatedSettings = { ...settings, featureFlags: updatedFlags };
+  await saveSettings(updatedSettings);
+  cachedFlags = updatedSettings.featureFlags || {};
   dispatchFeatureFlagChange({ flag, value });
-  return updated;
+  return updatedSettings;
 }
 
 /**

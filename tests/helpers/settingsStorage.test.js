@@ -1,223 +1,66 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../setup/fakeTimers.js";
-import {
-  updateSetting,
-  resetSettings,
-  saveSettings,
-  flushSettingsSave
-} from "../../src/helpers/settingsStorage.js";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { saveSettings, loadSettings } from "../../src/helpers/settingsStorage.js";
 import { getCachedSettings, resetCache } from "../../src/helpers/settingsCache.js";
 import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 /**
  * @vitest-environment jsdom
  */
-describe("updateSetting", () => {
-  beforeEach(() => {
-    resetSettings();
-    localStorage.clear();
-  });
 
-  it("persists changes when localStorage is available", async () => {
-    await updateSetting("sound", false);
-    const stored = JSON.parse(localStorage.getItem("settings"));
-    expect(stored.sound).toBe(false);
-    expect(getCachedSettings().sound).toBe(false);
-  });
-
-  it("updates cache when localStorage is unavailable", async () => {
-    const original = globalThis.localStorage;
-    // Simulate environment without localStorage
-    Object.defineProperty(globalThis, "localStorage", {
-      value: undefined,
-      configurable: true
-    });
-    resetCache();
-
-    await updateSetting("sound", false);
-    expect(getCachedSettings().sound).toBe(false);
-
-    Object.defineProperty(globalThis, "localStorage", {
-      value: original,
-      configurable: true
-    });
-  });
-
-  it("serializes concurrent updates", async () => {
-    const update1 = updateSetting("sound", false);
-    const update2 = updateSetting("motionEffects", false);
-    await Promise.all([update1, update2]);
-    const stored = JSON.parse(localStorage.getItem("settings"));
-    expect(stored.sound).toBe(false);
-    expect(stored.motionEffects).toBe(false);
-  });
-});
-
-describe("resetSettings", () => {
-  let timerControl;
-
-  beforeEach(() => {
-    resetSettings();
-    localStorage.clear();
-    resetCache();
-    timerControl = useCanonicalTimers();
-  });
-
-  afterEach(() => {
-    timerControl.cleanup();
-  });
-
-  it("cancels a pending debounced save so defaults persist", async () => {
-    const pendingSave = saveSettings({
-      ...DEFAULT_SETTINGS,
-      sound: false
-    });
-
-    // Simulate a pre-existing custom value to verify the reset overwrites it.
-    localStorage.setItem("settings", JSON.stringify({ ...DEFAULT_SETTINGS, sound: true }));
-
-    resetSettings();
-
-    await expect(pendingSave).rejects.toMatchObject({ name: "DebounceError" });
-
-    expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
-
-    vi.runAllTimers();
-
-    expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
-    expect(getCachedSettings()).toEqual(DEFAULT_SETTINGS);
-  });
-});
-
-describe("saveSettings", () => {
+describe("settingsStorage", () => {
   beforeEach(() => {
     resetCache();
     localStorage.clear();
   });
 
-  it("updates the cache after the debounced write resolves", async () => {
-    const nextSettings = {
-      ...DEFAULT_SETTINGS,
-      sound: false
-    };
+  it("persists settings and updates the cache", async () => {
+    const nextSettings = { ...DEFAULT_SETTINGS, sound: false };
 
-    const pending = saveSettings(nextSettings);
-    flushSettingsSave();
+    await saveSettings(nextSettings);
 
-    await pending;
-
-    expect(getCachedSettings()).toEqual({
-      ...DEFAULT_SETTINGS,
-      sound: false
-    });
-    expect(JSON.parse(localStorage.getItem("settings")).sound).toBe(false);
+    expect(JSON.parse(localStorage.getItem("settings"))).toEqual(nextSettings);
+    expect(getCachedSettings()).toEqual(nextSettings);
   });
 
-  it("reflects the latest values once the save promise resolves", async () => {
-    const timers = useCanonicalTimers();
-
-    try {
-      const nextSettings = {
-        ...DEFAULT_SETTINGS,
-        motionEffects: false
-      };
-
-      const pending = saveSettings(nextSettings);
-
-      timers.advanceTimersByTime(10);
-
-      await pending;
-
-      expect(getCachedSettings()).toEqual({
-        ...DEFAULT_SETTINGS,
-        motionEffects: false
-      });
-    } finally {
-      timers.cleanup();
-    }
-  });
-
-  it("rejects yet still updates the cache when localStorage is unavailable", async () => {
+  it("rejects when localStorage is unavailable but still updates the cache", async () => {
     const originalStorage = globalThis.localStorage;
     Object.defineProperty(globalThis, "localStorage", {
       value: undefined,
       configurable: true
     });
-    resetCache();
 
-    const nextSettings = {
-      ...DEFAULT_SETTINGS,
-      motionEffects: false
-    };
+    const nextSettings = { ...DEFAULT_SETTINGS, motionEffects: false };
 
     await expect(saveSettings(nextSettings)).rejects.toThrow("localStorage unavailable");
-    expect(getCachedSettings()).toEqual({
-      ...DEFAULT_SETTINGS,
-      motionEffects: false
-    });
+    expect(getCachedSettings()).toEqual(nextSettings);
 
     Object.defineProperty(globalThis, "localStorage", {
       value: originalStorage,
       configurable: true
     });
   });
-});
 
-describe("getSettingsSchema", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.unstubAllGlobals();
+  it("loads defaults when storage is empty", async () => {
+    const settings = await loadSettings();
+
+    expect(settings).toEqual(DEFAULT_SETTINGS);
+    expect(getCachedSettings()).toEqual(DEFAULT_SETTINGS);
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
-    vi.unstubAllGlobals();
-    vi.resetModules();
+  it("clears invalid stored JSON and restores defaults", async () => {
+    localStorage.setItem("settings", "{bad json}");
+    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+
+    const settings = await loadSettings();
+
+    expect(settings).toEqual(DEFAULT_SETTINGS);
+    expect(localStorage.getItem("settings")).toBeNull();
+    debugSpy.mockRestore();
   });
 
-  it("retries after a rejection by clearing the cached promise", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("network unavailable"))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ title: "schema-from-fetch" })
-      });
-    vi.stubGlobal("fetch", fetchMock);
+  it("rejects invalid schema on save", async () => {
+    const invalid = { ...DEFAULT_SETTINGS, unknownSetting: true };
 
-    // Reset module state so the module-level settingsSchemaPromise starts undefined.
-    vi.resetModules();
-
-    let restoreImporter;
-
-    try {
-      const module = await import("../../src/helpers/settingsStorage.js");
-      const { getSettingsSchema, __setSettingsSchemaImporter } = module;
-
-      let importAttempts = 0;
-      __setSettingsSchemaImporter(async () => {
-        importAttempts += 1;
-        if (importAttempts === 1) {
-          throw new Error("import failure");
-        }
-        return { default: { title: "schema-from-import" } };
-      });
-      restoreImporter = () => __setSettingsSchemaImporter(undefined);
-
-      await expect(getSettingsSchema()).rejects.toThrow("import failure");
-
-      // Wait for the retry-clearing timeout to run before attempting again.
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      const schema = await getSettingsSchema();
-      expect(schema).toEqual({ title: "schema-from-fetch" });
-
-      expect(fetchMock).toHaveBeenCalledTimes(2);
-      expect(importAttempts).toBe(1);
-    } finally {
-      if (typeof restoreImporter === "function") {
-        restoreImporter();
-      }
-    }
+    await expect(saveSettings(invalid)).rejects.toThrow("Schema validation failed");
   });
 });

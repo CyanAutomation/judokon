@@ -2,7 +2,7 @@
  * Create a settings update handler.
  *
  * @pseudocode
- * 1. Call `updateSetting` with the provided key/value.
+ * 1. Load the latest settings and persist the updated value.
  * 2. On success, store the returned settings via `setCurrentSettings`.
  * 3. On failure, log an error, invoke `showErrorAndRevert` with `revert`, and rethrow.
  *
@@ -10,7 +10,8 @@
  * @param {(revert?: Function) => void} showErrorAndRevert - Displays an error and reverts UI state.
  * @returns {(key: string, value: any, revert?: Function) => Promise<void>} Persist helper.
  */
-import { updateSetting } from "../settingsStorage.js";
+import { loadSettings, saveSettings } from "../settingsStorage.js";
+import { DEFAULT_SETTINGS } from "../../config/settingsDefaults.js";
 
 /**
  * @summary TODO: Add summary
@@ -41,7 +42,7 @@ import { updateSetting } from "../settingsStorage.js";
  * - Error mode: call `showErrorAndRevert(revert)` and rethrow the error.
  *
  * @pseudocode
- * 1. Call `updateSetting(key, value)` to persist the change.
+ * 1. Load current settings, update `key`/`value`, and persist the change.
  * 2. On success, call `setCurrentSettings(updated)` to keep in-memory state in sync.
  * 3. On failure, log the error, call `showErrorAndRevert(revert)` to restore UI,
  *    then rethrow the error so callers can react.
@@ -52,7 +53,9 @@ import { updateSetting } from "../settingsStorage.js";
  */
 export function makeHandleUpdate(setCurrentSettings, showErrorAndRevert, onUpdate) {
   return function handleUpdate(key, value, revert, controlElement) {
-    return updateSetting(key, value)
+    return Promise.resolve(loadSettings())
+      .then((settings) => ({ ...(settings ?? DEFAULT_SETTINGS), [key]: value }))
+      .then((updated) => saveSettings(updated).then(() => updated))
       .then((updated) => {
         setCurrentSettings(updated);
         if (typeof onUpdate === "function") {

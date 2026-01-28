@@ -10,12 +10,7 @@
  * 3. Re-export `DEFAULT_SETTINGS` and `loadSettings` for app bootstrap.
  */
 
-export {
-  saveSettings,
-  updateSetting,
-  resetSettings,
-  getSettingsSchema
-} from "./settingsStorage.js";
+export { saveSettings } from "./settingsStorage.js";
 
 /**
  * Retrieve a runtime setting value from the settings cache.
@@ -88,4 +83,4 @@ export { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
  *
  * @returns {Promise<Object>|Object} The merged settings (may be async depending on implementation).
  */
-export { loadSettings } from "../config/loadSettings.js";
+export { loadSettings } from "./settingsStorage.js";
