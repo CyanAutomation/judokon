@@ -24,6 +24,34 @@ vi.mock("../../../src/helpers/BattleEngine.js", () => ({
   createBattleEngine: vi.fn(),
   stopTimer: vi.fn(),
   getRoundsPlayed: vi.fn(() => 0),
+  handleStatSelection: vi.fn((playerVal, opponentVal) => {
+    const delta = Number(playerVal) - Number(opponentVal);
+    if (delta > 0) {
+      return {
+        delta,
+        outcome: "winPlayer",
+        matchEnded: false,
+        playerScore: 1,
+        opponentScore: 0
+      };
+    }
+    if (delta < 0) {
+      return {
+        delta,
+        outcome: "winOpponent",
+        matchEnded: false,
+        playerScore: 0,
+        opponentScore: 1
+      };
+    }
+    return {
+      delta: 0,
+      outcome: "draw",
+      matchEnded: false,
+      playerScore: 2,
+      opponentScore: 2
+    };
+  }),
   _resetForTest: vi.fn(),
   onEngineCreated: vi.fn(() => () => {})
 }));
