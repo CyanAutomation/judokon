@@ -26,6 +26,9 @@ const { mocks } = vi.hoisted(() => {
     loadSettings: vi.fn().mockResolvedValue(baseSettings),
     loadGokyoLookup: vi.fn().mockResolvedValue({}),
     renderJudokaCard: vi.fn().mockResolvedValue(),
+    preloadRandomCardData: vi
+      .fn()
+      .mockResolvedValue({ judokaData: [], gokyoData: [], error: null }),
     applyMotionPreference: vi.fn(),
     shouldReduceMotionSync: vi.fn().mockReturnValue(false),
     readyCallbacks: [],
@@ -39,7 +42,8 @@ const { mocks } = vi.hoisted(() => {
 vi.mock("../../src/helpers/randomCard.js", () => ({
   generateRandomCard: mocks.generateRandomCard,
   loadGokyoLookup: mocks.loadGokyoLookup,
-  renderJudokaCard: mocks.renderJudokaCard
+  renderJudokaCard: mocks.renderJudokaCard,
+  preloadRandomCardData: mocks.preloadRandomCardData
 }));
 
 vi.mock("../../src/helpers/dataUtils.js", async () => ({
