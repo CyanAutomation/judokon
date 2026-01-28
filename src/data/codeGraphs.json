@@ -394,7 +394,7 @@
         "./fixtures/waits.js",
         "fs",
         "wcag-contrast",
-        "../src/helpers/settingsUtils.js",
+        "../src/config/settingsDefaults.js",
         "./fixtures/navigationChecks.js"
       ],
       "functions": {
@@ -1680,10 +1680,6 @@
           "patterns": []
         }
       }
-    },
-    "src/helpers/settingsUtils.js": {
-      "imports": [],
-      "functions": {}
     },
     "src/helpers/settingsStorage.js": {
       "imports": [

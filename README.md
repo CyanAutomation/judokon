@@ -164,7 +164,7 @@ Place this element **before** any script that may trigger snackbars during page 
 
 Settings are loaded once and cached for synchronous use. Default values come
 from `DEFAULT_SETTINGS` in `src/config/settingsDefaults.js` and are overlaid
-with any persisted values. Helpers in `src/helpers/settingsUtils.js` provide
+with any persisted values. Helpers in `src/helpers/settingsCache.js` provide
 safe access:
 
 - `getSetting(key)` – read a setting value from the cache.
@@ -175,7 +175,7 @@ Feature flags are managed through `src/helpers/featureFlags.js`:
 - `setFlag(flag, value)` – persist a flag change and emit an update.
 - `featureFlagsEmitter` – listen for `change` events when flags toggle.
 
-Call `loadSettings()` during startup to populate the cache before using
+Call `loadSettings()` from `src/config/loadSettings.js` during startup to populate the cache before using
 these helpers. Pages should rely on `featureFlags.isEnabled` rather than
 accessing `settings.featureFlags` directly.
 

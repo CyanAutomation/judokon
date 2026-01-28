@@ -4,7 +4,7 @@ import { resetSettings, flushSettingsSave } from "../../src/helpers/settingsStor
 
 /**
  * @fileoverview
- * Unit tests for settingsUtils helper functions.
+ * Unit tests for settings storage helper functions.
  * Covers loading, saving, updating, and error handling for settings in localStorage.
  */
 

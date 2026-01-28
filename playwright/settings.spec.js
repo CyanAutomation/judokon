@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForSettingsReady } from "./fixtures/waits.js";
 import fs from "fs";
 import { hex } from "wcag-contrast";
-import { DEFAULT_SETTINGS } from "../src/helpers/settingsUtils.js";
+import { DEFAULT_SETTINGS } from "../src/config/settingsDefaults.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 import { configureApp } from "./fixtures/appConfig.js";
 

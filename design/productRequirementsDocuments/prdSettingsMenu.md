@@ -74,10 +74,10 @@ Players need to easily adjust game settings to personalize their experience, imp
 ### Settings API
 
 Modules access player preferences via helpers in
-`src/helpers/settingsUtils.js`:
+`src/helpers/settingsCache.js`:
 
 ```js
-import { getSetting } from "./src/helpers/settingsUtils.js";
+import { getSetting } from "./src/helpers/settingsCache.js";
 
 const currentTheme = getSetting("displayMode");
 ```
