@@ -52,19 +52,6 @@ const originalDispatchStore = (() => {
   return { get: getStored, set: setStored };
 })();
 
-const getOriginalGlobalDispatchBattleEvent = () => {
-  const stored = originalDispatchStore.get();
-  if (stored) return stored;
-  try {
-    const current = getGlobalDispatch();
-    if (typeof current === "function" && !hasMockIndicators(current)) {
-      originalDispatchStore.set(current);
-      return current;
-    }
-  } catch {}
-  return null;
-};
-
 // Dynamic accessor so test module mocks replace the runtime dispatcher.
 function getGlobalDispatch() {
   const logTestDebug = (fn) => {

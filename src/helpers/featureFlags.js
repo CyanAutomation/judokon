@@ -115,7 +115,6 @@ export function buildFeatureFlagSnapshot(options = {}) {
       enabled,
       stored: storedEnabled
     };
-    };
 
     if (hasOverride) {
       snapshot[flagName].override = overrideValue;

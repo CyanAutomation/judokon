@@ -19,7 +19,6 @@ const originalTimerApi = window.__TIMER_API;
 const originalInitApi = window.__INIT_API;
 const originalInspectApi = window.__INSPECT_API;
 const originalOpponentDelay = window.__OPPONENT_RESOLVE_DELAY_MS;
-const originalOpponentDelay = window.__OPPONENT_RESOLVE_DELAY_MS;
 const originalPlaywrightTestFlag = window.__PLAYWRIGHT_TEST__;
 const originalBattleCliInit = window.__battleCLIinit;
 
