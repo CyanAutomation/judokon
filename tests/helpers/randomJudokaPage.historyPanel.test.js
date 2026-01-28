@@ -23,11 +23,15 @@ describe("randomJudokaPage history panel", () => {
     const applyMotionPreference = vi.fn();
     const loadGokyoLookup = vi.fn().mockResolvedValue({});
     const renderJudokaCard = vi.fn().mockResolvedValue();
+    const preloadRandomCardData = vi
+      .fn()
+      .mockResolvedValue({ judokaData: [], gokyoData: [], error: null });
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({
       generateRandomCard,
       loadGokyoLookup,
-      renderJudokaCard
+      renderJudokaCard,
+      preloadRandomCardData
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -85,11 +89,15 @@ describe("randomJudokaPage history panel", () => {
     const applyMotionPreference = vi.fn();
     const loadGokyoLookup = vi.fn().mockResolvedValue({});
     const renderJudokaCard = vi.fn().mockResolvedValue();
+    const preloadRandomCardData = vi
+      .fn()
+      .mockResolvedValue({ judokaData: [], gokyoData: [], error: null });
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({
       generateRandomCard,
       loadGokyoLookup,
-      renderJudokaCard
+      renderJudokaCard,
+      preloadRandomCardData
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -138,11 +146,15 @@ describe("randomJudokaPage history panel", () => {
     const applyMotionPreference = vi.fn();
     const loadGokyoLookup = vi.fn().mockResolvedValue({});
     const renderJudokaCard = vi.fn().mockResolvedValue();
+    const preloadRandomCardData = vi
+      .fn()
+      .mockResolvedValue({ judokaData: [], gokyoData: [], error: null });
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({
       generateRandomCard,
       loadGokyoLookup,
-      renderJudokaCard
+      renderJudokaCard,
+      preloadRandomCardData
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -180,11 +192,15 @@ describe("randomJudokaPage history panel", () => {
     const applyMotionPreference = vi.fn();
     const loadGokyoLookup = vi.fn().mockResolvedValue({});
     const renderJudokaCard = vi.fn().mockResolvedValue();
+    const preloadRandomCardData = vi
+      .fn()
+      .mockResolvedValue({ judokaData: [], gokyoData: [], error: null });
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({
       generateRandomCard,
       loadGokyoLookup,
-      renderJudokaCard
+      renderJudokaCard,
+      preloadRandomCardData
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
