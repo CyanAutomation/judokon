@@ -142,7 +142,7 @@ export async function loadNavigationItems() {
   const navigationSchema = await getNavigationSchema();
   let navItems = null;
   try {
-    const cached = getItem(NAVIGATION_KEY);
+    const cached = await getItem(NAVIGATION_KEY);
     if (Array.isArray(cached)) {
       navItems = cloneNavigationItems(cached);
     } else {
