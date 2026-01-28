@@ -62,7 +62,7 @@ This approach removes race conditions, avoids stale caches on GitHub Pages, and 
 | -------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | Dynamic import in hot path | Violates engine policy, introduces jitter on slow connections | Replace with static registry generated at build time (`layouts/index.js`)               |
 | Inline fallback drift      | Startup regressions when module and fallback disagree         | CLI sync command + CI check; embed fallback hash next to `<script id="layout-default">` |
-| Schema under-specification | Validation false positives/negatives                          | Publish `layoutSchema.v1.json` ref alongside PRD; update acceptance tests               |
+| Schema under-specification | Validation false positives/negatives                          | Publish the Battle Layout Schema v1 section in this PRD; update acceptance tests       |
 | Feature flag latency       | Layout flash when async flag loads                            | Require synchronous flag hydration before `applyLayout()`; document dependency ordering |
 
 Overall feasibility is high once the mitigations above are incorporated into the implementation plan.
@@ -152,6 +152,135 @@ Overall feasibility is high once the mitigations above are incorporated into the
 
 ---
 
+## Battle Layout Schema v1
+
+This schema defines the canonical layout payload used by the Layout Engine. It is the source of truth for runtime validation, editor export, and debug tooling. All layouts must conform to this contract, and no additional properties are allowed at any level.
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cyanautomation.github.io/judokon/schemas/layoutSchema.v1.json",
+  "title": "JU-DO-KON Battle Layout Schema v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["grid", "regions"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for the layout."
+    },
+    "variantId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional variant identifier (e.g. 'night-mode')."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version string for schema compatibility (e.g. '1.0.0')."
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hash": {
+          "type": "string",
+          "description": "Hash of the source layout payload."
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp indicating when the fallback was generated."
+        },
+        "author": {
+          "type": "string",
+          "description": "Optional author or generator tag."
+        }
+      }
+    },
+    "grid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cols", "rows"],
+      "properties": {
+        "cols": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "rows": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "regions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "rect"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ariaLabel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "zIndex": {
+            "type": "number"
+          },
+          "rect": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["x", "y", "width", "height"],
+            "properties": {
+              "x": {
+                "type": "number",
+                "minimum": 0
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          },
+          "visibleIf": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["featureFlag"],
+            "properties": {
+              "featureFlag": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "snapTo": {
+            "type": "string",
+            "description": "Optional snap-to anchor reference."
+          }
+        }
+      },
+      "uniqueItems": true
+    }
+  }
+}
+```
+
+---
+
 ## Implementation Notes
 
 - Inline default layout stored in `<script type="application/json" id="layout-default">…</script>` and stamped with a version/hash that matches the source `.layout.js`.
@@ -164,7 +293,7 @@ Overall feasibility is high once the mitigations above are incorporated into the
 ## Recommended Enhancements
 
 1. **Schema & validation contract**
-   - Publish `design/specs/layoutSchema.v1.json` plus a generated `src/layouts/types.d.ts` so editors and tests share the same contract.
+   - Use the Battle Layout Schema v1 section in this PRD plus a generated `src/layouts/types.d.ts` so editors and tests share the same contract.
    - Document allowed region metadata (`visibleIf`, `ariaLabel`, `snapTo`) and reject unknown keys to keep layouts deterministic.
 2. **Fallback synchronisation**
    - Create `npm run layouts:sync` that regenerates inline fallbacks from `.layout.js` modules, writes hash/version metadata, and fails CI if drift is detected.
@@ -221,7 +350,7 @@ Overall feasibility is high once the mitigations above are incorporated into the
   - [ ] 2.3 Emit telemetry for skipped regions (flag disabled).
 
 - [ ] 3.0 Layout Schema & Validation
-  - [ ] 3.1 Publish `layoutSchema.v1.json` and generated typings.
+  - [ ] 3.1 Publish Battle Layout Schema v1 in this PRD and generated typings.
   - [ ] 3.2 Validate shape, bounds, overlap, and fallback version/hash at runtime.
 
 - [ ] 4.0 ASCII + JSON Export
