@@ -21,7 +21,13 @@
  *
  * @returns {Promise<void>} A promise that resolves when the page setup is complete.
  */
-import { generateRandomCard, loadGokyoLookup, renderJudokaCard } from "./randomCard.js";
+import {
+  generateRandomCard,
+  loadGokyoLookup,
+  renderJudokaCard,
+  preloadRandomCardData,
+  createHistoryManager
+} from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { applyMotionPreference, shouldReduceMotionSync } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
@@ -29,7 +35,6 @@ import { initTooltips } from "./tooltip.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { setTestMode } from "./testModeUtils.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
-import { preloadRandomCardData, createHistoryManager } from "./randomCardService.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { createDrawCardStateMachine, updateDrawButtonLabel } from "./drawCardStateMachine.js";
