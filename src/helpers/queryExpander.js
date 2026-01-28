@@ -71,53 +71,24 @@ async function loadSynonyms() {
 }
 
 /**
- * Compute Levenshtein distance between two strings
- * Measures the minimum number of edits (insertions, deletions, substitutions)
- * @param {string} a - First string
- * @param {string} b - Second string
- * @returns {number} Edit distance
- * @private
- */
-function levenshtein(a, b) {
-  const dp = Array.from({ length: a.length + 1 }, () => []);
-  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
-  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
-    }
-  }
-  return dp[a.length][b.length];
-}
-
-/**
  * Find matching synonym mappings for a query
- * Uses exact matches and fuzzy matching (Levenshtein distance <= 2)
+ * Uses exact matches against the full query or individual query terms.
  * @param {string} query - Input query string
  * @param {Record<string, string[]>} synonymMap - Synonym mapping
  * @returns {Set<string>} Matched synonym expansions
  * @private
  */
 function findSynonymMatches(query, synonymMap) {
-  const lower = query.toLowerCase();
-  const words = lower.split(/\s+/).filter(Boolean);
+  const lower = query.toLowerCase().trim();
+  const words = new Set(lower.split(/\s+/).filter(Boolean));
   const matches = new Set();
 
   for (const [key, synonyms] of Object.entries(synonymMap)) {
     const variants = Array.isArray(synonyms) ? synonyms : [];
-    const allTerms = [key, ...variants];
+    const allTerms = [key, ...variants].map((term) => term.toLowerCase());
 
-    // Check if any variant matches the query (exact or fuzzy)
-    const isMatched = allTerms.some((term) => {
-      const t = term.toLowerCase();
-      // Exact substring match
-      if (lower.includes(t)) return true;
-      // Fuzzy match on whole query
-      if (levenshtein(lower, t) <= 2) return true;
-      // Fuzzy match on individual words
-      return words.some((w) => levenshtein(w, t) <= 2);
-    });
+    // Check if any variant matches the query (exact only).
+    const isMatched = allTerms.some((term) => term === lower || words.has(term));
 
     // Add all synonyms if match found
     if (isMatched) {
@@ -128,59 +99,17 @@ function findSynonymMatches(query, synonymMap) {
   return matches;
 }
 
-// Unicode-aware character classification patterns
-const UNICODE_LETTER_NUMBER_REGEX = /[\p{L}\p{N}]/u;
-const UNICODE_WHITESPACE_REGEX = /\s/;
-
-// Strip special characters (preserving hyphens), normalize case, and clamp length/term count
-// so expanded terms never include punctuation even when the original query does. Uses
-// character-by-character filtering to stay Unicode-aware without regex backtracking risks.
-function sanitizeUnicodeWords(query) {
-  return query.replace(/[\s\S]/gu, (char) => {
-    if (char === "-") return "-";
-    if (char === "_") return " ";
-    if (UNICODE_LETTER_NUMBER_REGEX.test(char)) return char;
-    if (UNICODE_WHITESPACE_REGEX.test(char)) return " ";
-    return " ";
-  });
-}
-
-function normalizeAndLimitQuery(query) {
-  const normalized = sanitizeUnicodeWords(query.toLowerCase()).replace(/\s+/g, " ").trim();
-
-  if (!normalized) {
-    return "";
-  }
-
-  const limitedTerms = normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS);
-  const limitedJoined = limitedTerms.join(" ");
-  if (limitedJoined.length <= MAX_QUERY_LENGTH) {
-    return limitedJoined;
-  }
-
-  const lastSpaceBeforeLimit = limitedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH - 1);
-  if (lastSpaceBeforeLimit > 0) {
-    return limitedJoined.slice(0, lastSpaceBeforeLimit);
-  }
-
-  return limitedJoined.slice(0, MAX_QUERY_LENGTH);
-}
-
 /**
  * Expand a query with synonyms for improved search relevance
- * Uses Levenshtein distance (max 2 edits) for fuzzy matching
- * Applies sensible limits to avoid runaway work on extremely long queries
- * Normalizes queries by removing punctuation (while preserving hyphens) so added terms are
- * free of special characters, while still returning the caller's original input unchanged.
+ * Uses exact matches only for synonym expansion.
  * @param {string} query - Search query to expand
  * @returns {Promise<ExpandedQueryResult>} Result with original query, expanded query, and matched terms
  *
  * @pseudocode
  * 1. Guard against empty inputs and return baseline result
  * 2. Load cached synonym map from disk
- * 3. Normalize and cap the query length/term count for predictable processing
- * 4. Compute fuzzy synonym matches for the provided query (max 2 Levenshtein edits)
- * 5. Merge original tokens with matched synonyms and report statistics
+ * 3. Compute exact synonym matches for the provided query
+ * 4. Merge original tokens with matched synonyms and report statistics
  */
 export async function expandQuery(query) {
   if (!query || typeof query !== "string") {
@@ -194,8 +123,10 @@ export async function expandQuery(query) {
   }
 
   const synonymMap = await loadSynonyms();
-  const normalized = normalizeAndLimitQuery(query);
-  const words = new Set(normalized.split(/\s+/).filter(Boolean));
+  const normalized = query.toLowerCase().trim();
+  const words = new Set(
+    normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS)
+  );
 
   // Find matching synonyms
   const synonymMatches = findSynonymMatches(normalized, synonymMap);
@@ -212,7 +143,7 @@ export async function expandQuery(query) {
   // Deduplication rule: each normalized term should appear exactly once so
   // embeddings and keyword search do not overweight repeated tokens.
   const dedupedTerms = Array.from(new Set([...words, ...addedTermsSet]));
-  const expanded = dedupedTerms.join(" ");
+  const expanded = dedupedTerms.join(" ").slice(0, MAX_QUERY_LENGTH);
 
   return {
     original: query,
