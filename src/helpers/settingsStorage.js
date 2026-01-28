@@ -26,7 +26,11 @@ export async function saveSettings(settings) {
     throw new Error("localStorage unavailable");
   }
 
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch (error) {
+    throw new Error(`Failed to save settings: ${error.message}`);
+  }
   setCachedSettings(settings);
 }
 
