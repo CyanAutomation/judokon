@@ -142,7 +142,7 @@ export async function expandQuery(query) {
   // Build expanded query by combining original words with new terms.
   // Deduplication rule: each normalized term should appear exactly once so
   // embeddings and keyword search do not overweight repeated tokens.
-  const dedupedTerms = Array.from(new Set([...words, ...addedTermsSet]));
+  const dedupedTerms = Array.from(new Set([...words, ...addedTermsSet])).slice(0, MAX_QUERY_TERMS);
   const expandedJoined = dedupedTerms.join(" ");
   const expanded = expandedJoined.length <= MAX_QUERY_LENGTH 
     ? expandedJoined 
