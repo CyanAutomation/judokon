@@ -52,24 +52,28 @@ import { DEFAULT_SETTINGS } from "../../config/settingsDefaults.js";
  * @returns {(key: string, value: any, revert?: Function) => Promise<object>} handleUpdate
  */
 export function makeHandleUpdate(setCurrentSettings, showErrorAndRevert, onUpdate) {
+  let updateQueue = Promise.resolve();
+
   return function handleUpdate(key, value, revert, controlElement) {
-    return Promise.resolve(loadSettings())
-      .then((settings) => {
+    const queuedUpdate = updateQueue.then(async () => {
+      try {
+        const settings = await loadSettings();
         const current = settings ?? DEFAULT_SETTINGS;
         const updated = { ...current, [key]: value };
-        return saveSettings(updated).then(() => updated);
-      })
-      .then((updated) => {
+        await saveSettings(updated);
         setCurrentSettings(updated);
         if (typeof onUpdate === "function") {
           onUpdate(controlElement);
         }
         return updated;
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Failed to update setting", err);
         showErrorAndRevert(revert);
         throw err;
-      });
+      }
+    });
+
+    updateQueue = queuedUpdate.catch(() => {});
+    return queuedUpdate;
   };
 }
