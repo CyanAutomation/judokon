@@ -487,10 +487,11 @@ export async function dispatchReadyWithOptions(params) {
  * @param {object} params
  * @param {() => any} params.machineReader
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
+ * @param {boolean} [params.forceMachineDispatchAfterShared] When true, allows machine dispatch after successful shared dispatch
  * @returns {Promise<{ dispatched: boolean, dedupeTracked: boolean }>}
  */
 export async function dispatchReadyDirectly(params) {
-  const { machineReader, emitTelemetry } = params;
+  const { machineReader, emitTelemetry, forceMachineDispatchAfterShared = false } = params;
   let machine = null;
   try {
     machine = machineReader?.();
@@ -546,21 +547,8 @@ export async function dispatchReadyDirectly(params) {
   let machineError = null;
   let dedupeTracked = false;
   const shouldInvokeMachineAfterShared = (currentDispatch) => {
-    try {
-      if (typeof currentDispatch !== "function") return false;
-      const original = getOriginalGlobalDispatchBattleEvent();
-      if (hasMockIndicators(currentDispatch)) return true;
-      let isTestEnv = false;
-      try {
-        isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
-      } catch {
-        isTestEnv = false;
-      }
-      if (!isTestEnv) return false;
-      return Boolean(original && currentDispatch !== original);
-    } catch {
-      return false;
-    }
+    if (!forceMachineDispatchAfterShared) return false;
+    return typeof currentDispatch === "function";
   };
   try {
     const sharedDispatch =
