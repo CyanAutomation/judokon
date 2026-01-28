@@ -126,6 +126,11 @@ This section is the canonical, PRD-owned schema list that fully represents the r
 `battleMarkup.json`/`battleMarkup.generated.js` artifacts. The table below is authoritative for
 selectors, data-test IDs, roles, and aliases.
 
+**Generation note:** `design/dataSchemas/battleMarkup.generated.js` is produced from
+`design/dataSchemas/battleMarkup.json` via `node scripts/generateBattleMarkup.mjs` (also run in
+`npm run pretest` via `npm run generate:battleMarkup`) so CI/test environments always have the
+artifact in place.
+
 **Selector authority note:** The authoritative selector for `statButton` is
 `.stat-button[data-stat][data-player]` (requires `data-player`). Earlier generated output omitted
 `[data-player]`; that omission is incorrect and should not be used.
