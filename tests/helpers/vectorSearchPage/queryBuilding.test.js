@@ -20,21 +20,9 @@ describe("query building", () => {
   it("expands query terms using the synonym list", async () => {
     const synonyms = { "shoulder throw": ["seoi-nage"] };
     mockConstants();
-    vi.doMock("../../../src/helpers/vectorSearch/index.js", async () => {
-      const { expandQueryWithSynonyms } = await import("../../../src/helpers/vectorSearchQuery.js");
-      return {
-        default: {
-          findMatches: vi.fn().mockResolvedValue([]),
-          fetchContextById: vi.fn(),
-          loadEmbeddings: vi.fn().mockResolvedValue([]),
-          expandQueryWithSynonyms,
-          CURRENT_EMBEDDING_VERSION: 1
-        }
-      };
-    });
     mockDataUtils(vi.fn().mockResolvedValue(synonyms));
     const vectorSearch = (await import("../../../src/helpers/vectorSearch/index.js")).default;
-    const result = await vectorSearch.expandQueryWithSynonyms("shoulder throw");
+    const result = await vectorSearch.expandQuery("shoulder throw");
     expect(result).toContain("seoi-nage");
   });
 
@@ -42,13 +30,22 @@ describe("query building", () => {
     const synonyms = { "seoi nage": ["seoi-nage"] };
     const findMatches = vi.fn().mockResolvedValue([]);
     vi.doMock("../../../src/helpers/vectorSearch/index.js", async () => {
-      const { expandQueryWithSynonyms } = await import("../../../src/helpers/vectorSearchQuery.js");
+      const { expandQuery: expandQueryBase } = await import(
+        "../../../src/helpers/queryExpander.js"
+      );
+      const expandQuery = async (query) => {
+        const result = await expandQueryBase(query);
+        const lower = typeof query === "string" ? query.toLowerCase() : "";
+        const words = lower.split(/\s+/).filter(Boolean);
+        const additions = Array.isArray(result.addedTerms) ? result.addedTerms : [];
+        return [...new Set([...words, ...additions.map((term) => term.toLowerCase())])].join(" ");
+      };
       return {
         default: {
           findMatches,
           fetchContextById: vi.fn(),
           loadEmbeddings: vi.fn().mockResolvedValue([]),
-          expandQueryWithSynonyms,
+          expandQuery,
           CURRENT_EMBEDDING_VERSION: 1
         }
       };

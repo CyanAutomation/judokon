@@ -16,7 +16,7 @@ export function mockVectorSearch(overrides = {}) {
     findMatches: vi.fn(),
     fetchContextById: vi.fn(),
     loadEmbeddings: vi.fn().mockResolvedValue([]),
-    expandQueryWithSynonyms: vi.fn((q) => q),
+    expandQuery: vi.fn((q) => q),
     CURRENT_EMBEDDING_VERSION: 1
   };
   const impl = { ...defaults, ...overrides };

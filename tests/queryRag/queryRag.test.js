@@ -40,7 +40,7 @@ describe("queryRag", () => {
       return {
         default: {
           ...actual.default,
-          expandQueryWithSynonyms: vi.fn(async (q) => `${q} kumi kata`),
+          expandQuery: vi.fn(async (q) => `${q} kumi kata`),
           // Return our dataset directly so queryRag hits expected entries
           findMatches: vi.fn(async () => dataset)
         }
@@ -52,7 +52,7 @@ describe("queryRag", () => {
     delete process.env.RAG_FORCE_JSON;
 
     const vectorSearch = await import("../../src/helpers/vectorSearch/index.js");
-    expect(vectorSearch.default.expandQueryWithSynonyms).toHaveBeenCalledWith("grip fighting");
+    expect(vectorSearch.default.expandQuery).toHaveBeenCalledWith("grip fighting");
     expect(extractor).toHaveBeenCalledWith("grip fighting kumi kata", { pooling: "mean" });
     expect(results.length).toBeGreaterThanOrEqual(1);
     expect(results[0].id).toBe("grip");
@@ -88,7 +88,7 @@ describe("queryRag", () => {
 
     vi.doMock("../../src/helpers/vectorSearch/index.js", async () => ({
       default: {
-        expandQueryWithSynonyms: vi.fn(async (q) => q),
+        expandQuery: vi.fn(async (q) => q),
         findMatches
       }
     }));

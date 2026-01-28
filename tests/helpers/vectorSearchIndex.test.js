@@ -70,7 +70,7 @@ describe("vectorSearch index", () => {
     const embeddings = await vectorSearch.loadEmbeddings();
     expect(embeddings).toEqual(fixtureEmbeddings);
 
-    const expanded = await vectorSearch.expandQueryWithSynonyms("bata");
+    const expanded = await vectorSearch.expandQuery("bata");
     expect(expanded.split(" ")).toEqual(["bata", "release-notes", "beta-guide"]);
   });
 
@@ -79,7 +79,7 @@ describe("vectorSearch index", () => {
     expect(vectorSearch).toMatchObject({
       loadEmbeddings: expect.any(Function),
       findMatches: expect.any(Function),
-      expandQueryWithSynonyms: expect.any(Function),
+      expandQuery: expect.any(Function),
       fetchContextById: expect.any(Function),
       CURRENT_EMBEDDING_VERSION: expect.any(Number)
     });

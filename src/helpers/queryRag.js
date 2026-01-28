@@ -28,7 +28,7 @@ export async function queryRag(question, opts = {}) {
     allowLexicalFallback = false
   } = opts;
   const t0 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
-  const expanded = await vectorSearch.expandQueryWithSynonyms(question);
+  const expanded = await vectorSearch.expandQuery(question);
   let vector;
   let extractor;
   try {
@@ -70,7 +70,7 @@ export async function queryRag(question, opts = {}) {
   if (subQueries.length > 1) {
     const parts = await Promise.all(
       subQueries.map(async (q) => {
-        const exp = await vectorSearch.expandQueryWithSynonyms(q);
+        const exp = await vectorSearch.expandQuery(q);
         const emb = await extractor(exp, { pooling: "mean" });
         const src = emb && typeof emb === "object" && "data" in emb ? emb.data : emb;
         if (!isIterable(src)) return [];
