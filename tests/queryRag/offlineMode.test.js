@@ -118,7 +118,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
 
     vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
       default: {
-        expandQueryWithSynonyms: vi.fn(async (q) => q),
+        expandQuery: vi.fn(async (q) => q),
         findMatches: vi.fn(async () => mockResults)
       }
     }));
@@ -296,7 +296,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
     ];
     vi.doMock(vectorSearchIndexPath, () => ({
       default: {
-        expandQueryWithSynonyms: vi.fn(async (query) => query),
+        expandQuery: vi.fn(async (query) => query),
         findMatches: vi.fn(async () => lexicalEntries),
         loadEmbeddings: vi.fn(async () => lexicalEntries),
         fetchContextById: vi.fn(),
@@ -389,7 +389,7 @@ describe("queryRag offline mode with local MiniLM model", () => {
 
     vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
       default: {
-        expandQueryWithSynonyms: vi.fn(async (query) => `${query} expanded`),
+        expandQuery: vi.fn(async (query) => `${query} expanded`),
         findMatches: vi.fn(async () => mockResults),
         loadEmbeddings: vi.fn(),
         fetchContextById: vi.fn(),

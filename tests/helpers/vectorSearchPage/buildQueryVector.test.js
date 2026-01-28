@@ -7,14 +7,14 @@ afterEach(() => {
 
 describe("buildQueryVector", () => {
   it("expands the query and returns a vector", async () => {
-    const expandQueryWithSynonyms = vi.fn().mockResolvedValue("expanded");
-    mockVectorSearch({ expandQueryWithSynonyms });
+    const expandQuery = vi.fn().mockResolvedValue("expanded");
+    mockVectorSearch({ expandQuery });
     await mockExtractor(async () => ({ data: [1, 2, 3] }));
     const { buildQueryVector } = await import(
       "../../../src/helpers/vectorSearchPage/buildQueryVector.js"
     );
     const result = await buildQueryVector("Hello World");
-    expect(expandQueryWithSynonyms).toHaveBeenCalledWith("Hello World");
+    expect(expandQuery).toHaveBeenCalledWith("Hello World");
     expect(result.terms).toEqual(["hello", "world"]);
     expect(result.vector).toEqual([1, 2, 3]);
   });

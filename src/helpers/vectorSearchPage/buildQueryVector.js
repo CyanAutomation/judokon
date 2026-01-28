@@ -22,7 +22,7 @@ function isIterable(value) {
  */
 export async function buildQueryVector(query) {
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const expanded = await vectorSearch.expandQueryWithSynonyms(query);
+  const expanded = await vectorSearch.expandQuery(query);
   const model = await getExtractor();
   const result = await model(expanded, { pooling: "mean" });
   let source;

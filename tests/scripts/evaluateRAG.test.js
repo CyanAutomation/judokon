@@ -17,11 +17,11 @@ vi.mock("../../src/helpers/api/vectorSearchPage.js", () => ({
 }));
 
 const findMatches = vi.hoisted(() => vi.fn(async () => [{ source: "design/doc.md", score: 0.95 }]));
-const expandQueryWithSynonyms = vi.hoisted(() => vi.fn(async (query) => query));
+const expandQuery = vi.hoisted(() => vi.fn(async (query) => query));
 vi.mock("../../src/helpers/vectorSearch/index.js", () => ({
   default: {
     findMatches,
-    expandQueryWithSynonyms,
+    expandQuery,
     loadEmbeddings: vi.fn(),
     fetchContextById: vi.fn()
   }
