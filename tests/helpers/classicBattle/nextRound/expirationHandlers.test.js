@@ -219,7 +219,7 @@ describe("dispatchReadyDirectly", () => {
     expect(mocked).toHaveBeenCalledTimes(1);
     expect(mocked).toHaveBeenCalledWith("ready");
     expect(mocked.mock.results[0]?.value).toBeTruthy();
-    expect(dispatch).not.toHaveBeenCalled();
+    expect(dispatch).toHaveBeenCalledWith("ready");
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
   });
 
