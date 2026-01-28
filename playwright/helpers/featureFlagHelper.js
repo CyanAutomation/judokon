@@ -1,5 +1,5 @@
 import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
-import { buildFeatureFlagSnapshot } from "../../src/helpers/featureFlagSnapshot.js";
+import { buildFeatureFlagSnapshot } from "../../src/helpers/featureFlags.js";
 
 const DEFAULT_TIMEOUT = 5000;
 const POLL_INTERVAL_MS = 50;
