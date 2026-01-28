@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
+vi.mock("../../../src/helpers/BattleEngine.js", () => ({
+  handleStatSelection: vi.fn(() => ({
+    outcome: "draw",
+    playerScore: 0,
+    opponentScore: 0,
+    matchEnded: false
+  }))
+}));
+
 async function setup() {
   const mod = await import("../../../src/helpers/classicBattle/roundResolver.js");
   vi.spyOn(mod, "ensureRoundDecisionState").mockResolvedValue();
