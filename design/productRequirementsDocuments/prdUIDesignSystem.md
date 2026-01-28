@@ -460,3 +460,7 @@ This PRD consolidates content from the following design files:
 - [PRD: Development Standards](./prdDevelopmentStandards.md#5-ui-design-system-integration-p2) - Comprehensive UI design guidelines, typography, component patterns, tokens, and accessibility standards (formerly `design/codeStandards/codeUIDesignStandards.md`)
 - [PRD: Development Standards – Settings Page Guidelines](./prdDevelopmentStandards.md#6-settings-page-guidelines-p2) - Settings interface layout, styling, accessibility, and feature flag requirements (formerly `design/codeStandards/settingsPageDesignGuidelines.md`)
 - `src/styles/base.css` - CSS custom properties and design tokens currently in use
+
+## Mockups
+
+![Button types mockup](assets/mockups/mockupButtonTypes1.jpeg)

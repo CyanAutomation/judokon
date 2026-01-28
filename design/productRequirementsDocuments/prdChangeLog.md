@@ -191,3 +191,7 @@ Players and developers currently lack a simple, in-game method to see which Judo
 - Responsive two-column layout for narrow screens has not been built.
 - Loading spinner shows immediately; add delay logic or update requirement.
 - QA: verify responsive behavior (Task **6.3**) and confirm header/footer integration across routes (Task **6.4**).
+
+## Mockups
+
+![Changelog mockup](assets/mockups/mockupChangeLog1.png)

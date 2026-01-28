@@ -239,3 +239,8 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Country picker mockup 1](assets/mockups/mockupCountryPicker1.png)
+![Country picker mockup 2](assets/mockups/mockupCountryPicker2.png)

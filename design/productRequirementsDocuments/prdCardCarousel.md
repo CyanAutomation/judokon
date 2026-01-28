@@ -205,3 +205,9 @@ listeners or leaked references during navigation.
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Card carousel mockup 1](assets/mockups/mockupCardCarousel1.png)
+![Card carousel mockup 2](assets/mockups/mockupCardCarousel2.png)
+![Card carousel mockup 3](assets/mockups/mockupCardCarousel3.png)

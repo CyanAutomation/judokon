@@ -275,3 +275,8 @@ User behavior linkage: when a player intentionally clicks a Next/Skip control du
   - [ ] 6.3 Add `aria-describedby` for stat buttons.
   - [ ] 6.4 Mark scoreboard as `role="status"` with `aria-live="polite"`.
   - [ ] 6.5 Keyboard navigation for all stat buttons and quit flow.
+
+## Mockups
+
+![Classic battle screen mockup 1](assets/mockups/mockupBattleScreen1.jpg)
+![Classic battle screen mockup 2](assets/mockups/mockupBattleScreen2.png)

@@ -126,3 +126,7 @@ Designers and developers previously relied on scattered folder structures to fin
   - [ ] 6.1 Apply fade-in transition on image switches (~300ms)
   - [ ] 6.2 Ensure responsive layout on desktop/tablet/mobile
   - [ ] 6.3 Align visual style with JU-DO-KON! branding
+
+## Mockups
+
+![Mockup viewer mockup](assets/mockups/mockupMockupViewer1.png)

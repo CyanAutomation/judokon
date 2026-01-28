@@ -183,3 +183,7 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Bottom navigation mockup](assets/mockups/mockupBottomNavigation2.png)

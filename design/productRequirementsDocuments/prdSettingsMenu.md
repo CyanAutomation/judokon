@@ -521,3 +521,9 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Settings menu mockup 1](assets/mockups/mockupGameSettings1.png)
+![Settings menu mockup 2](assets/mockups/mockupGameSettings2.png)
+![Settings menu mockup 3](assets/mockups/mockupGameSettings3.png)

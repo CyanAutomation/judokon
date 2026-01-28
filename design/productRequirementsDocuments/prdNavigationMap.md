@@ -180,3 +180,12 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
+
+## Mockups
+
+![Navigation map mockup 1](assets/mockups/mockupNavigationMap1.png)
+![Navigation map mockup 2](assets/mockups/mockupNavigationMap2.png)
+![Navigation map mockup 3](assets/mockups/mockupNavigationMap3.png)
+![Map navigation mockup 1](assets/mockups/mockupMapNavigation1.png)
+![Map navigation mockup 2](assets/mockups/mockupMapNavigation2.png)
+![Map navigation mockup 3](assets/mockups/mockupMapNavigation3.png)
