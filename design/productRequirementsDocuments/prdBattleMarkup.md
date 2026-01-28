@@ -117,6 +117,30 @@ Acceptance Criteria:
 - Mapping file follows semantic versioning for the contract (major.minor.patch). Breaking changes bump major and require a documented migration plan.
 - Minor/patch changes may be applied with PRD update and automated test updates.
 
+## Battle Markup Schema
+
+**Schema version:** 1.0.0  
+**Generated at:** 2025-09-20T00:00:00Z
+
+This section is the canonical, PRD-owned schema list that fully represents the retired
+`battleMarkup.json`/`battleMarkup.generated.js` artifacts. The table below is authoritative for
+selectors, data-test IDs, roles, and aliases.
+
+**Selector authority note:** The authoritative selector for `statButton` is
+`.stat-button[data-stat][data-player]` (requires `data-player`). Earlier generated output omitted
+`[data-player]`; that omission is incorrect and should not be used.
+
+| logicalName        | selector                               | dataTestId           | role    | description                                                                 | owner          | stability     | aliases               |
+| ------------------ | -------------------------------------- | -------------------- | ------- | --------------------------------------------------------------------------- | -------------- | ------------- | --------------------- |
+| roundMessage       | `#round-message`                       | `battle:round-message` | status  | Message shown for round prompts and results.                                | frontend-team  | stable        | `[]`                  |
+| snackbarContainer  | `#snackbar-container`                  | `ui:snackbar`        | status  | Global transient messages (hints, countdown).                               | frontend-team  | stable        | `[]`                  |
+| battleStateBadge   | `#battle-state-badge`                  | `battle:state-badge` | status  | Compact badge showing the current battle state (e.g., selecting, resolving). | frontend-team  | stable        | `[]`                  |
+| playerCard         | `.player-card[data-player]`            | `battle:player-card` | group   | Root element for a player's card. Has attribute data-player with values 0 or 1. | frontend-team  | stable        | `[]`                  |
+| statButton         | `.stat-button[data-stat][data-player]` | `battle:stat-button` | button  | Interactive stat button. Attributes: data-stat (strength|speed|tech) and data-player. | frontend-team  | stable        | `["button.stat-action"]` |
+| selectStatButton   | `button[data-action=select-stat]`      | `battle:select-stat` | button  | Primary control used to confirm a selected stat (if present in UI variants). | frontend-team  | experimental  | `[]`                  |
+| autoSelectIndicator| `.auto-select-indicator`               | `battle:auto-select` | status  | Visual indicator shown when the system auto-selects a stat.                 | frontend-team  | stable        | `[]`                  |
+| modalRoot          | `#modal-root`                          | `ui:modal-root`      | dialog  | Root for modals used during battle (confirmations, results).                | frontend-team  | stable        | `[]`                  |
+
 ## Example canonical mapping (human-readable excerpt)
 
 - `roundMessage`
@@ -133,7 +157,7 @@ Acceptance Criteria:
   - role: `status`
   - description: Global transient messages (hints, countdown).
 
-See the machine-readable file `design/dataSchemas/battleMarkup.json` for the full list.
+See the Battle Markup Schema section above for the full authoritative list.
 
 ## Example Playwright usage (recommended pattern)
 
@@ -153,12 +177,12 @@ test("player can select a stat via keyboard", async ({ page }) => {
 
 ## Dependencies and Open Questions
 
-- Depends on: `playwright/helpers` (selector helpers), `design/dataSchemas/` as canonical artifacts, and test owner contact list.
+- Depends on: `playwright/helpers` (selector helpers), this PRD as the canonical artifact, and test owner contact list.
 - Open: final canonical attribute name (`data-testid` vs `data-test-id`) — recommend `data-testid` for consistency with Playwright conventions but allow repo-wide lint rule to enforce chosen form.
 
 ## Next steps
 
-1. Populate `design/dataSchemas/battleMarkup.json` with full inventory (owner to fill missing entries).
+1. Keep the Battle Markup Schema table in this PRD current with any selector changes.
 2. Add a small selector helper under `playwright/helpers/selectors.js` that resolves logical names to selectors using the canonical mapping.
 3. Update a sample Playwright test to use the helper and show the end-to-end workflow.
 
@@ -212,6 +236,6 @@ Every required ID must expose a matching `data-testid` so automation can bind to
 
 Acceptance notes for PRD tests:
 
-- Ensure the canonical mapping JSON (`design/dataSchemas/battleMarkup.json`) includes entries for all Required IDs above and provides `data-testid` values.
+- Ensure the canonical mapping in this PRD includes entries for all Required IDs above and provides `data-testid` values.
 - Add unit tests that validate the selector helper maps logical names to the canonical selectors.
 - Add a DOM-level test to assert that the `next-button`, `stat-help`, and `quit-match-button` have matching `data-testid` attributes when rendered.
