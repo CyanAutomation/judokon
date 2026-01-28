@@ -85,10 +85,10 @@ export function createHistoryManager(limit = 5) {
   const history = [];
   return {
     add(judoka) {
-      if (!judoka) return history.slice();
+      if (!judoka) return [...history];
       history.unshift(judoka);
       if (history.length > limit) history.pop();
-      return history.slice();
+      return [...history];
     },
     get() {
       return [...history];
