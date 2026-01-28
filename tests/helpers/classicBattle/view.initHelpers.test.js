@@ -181,13 +181,25 @@ describe("setupScheduler", () => {
     vi.stubGlobal("requestAnimationFrame", vi.fn());
 
     const originalVitestEnv = process.env.VITEST;
+    const hasVitestGlobal = Object.prototype.hasOwnProperty.call(globalThis, "__VITEST__");
+    const hasTestGlobal = Object.prototype.hasOwnProperty.call(globalThis, "__TEST__");
+    const originalVitestGlobal = globalThis.__VITEST__;
+    const originalTestGlobal = globalThis.__TEST__;
     delete process.env.VITEST;
+    delete globalThis.__VITEST__;
+    delete globalThis.__TEST__;
 
     try {
       setupScheduler();
     } finally {
       if (originalVitestEnv !== undefined) {
         process.env.VITEST = originalVitestEnv;
+      }
+      if (hasVitestGlobal) {
+        globalThis.__VITEST__ = originalVitestGlobal;
+      }
+      if (hasTestGlobal) {
+        globalThis.__TEST__ = originalTestGlobal;
       }
     }
 
