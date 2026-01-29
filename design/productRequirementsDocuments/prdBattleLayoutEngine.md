@@ -62,7 +62,7 @@ This approach removes race conditions, avoids stale caches on GitHub Pages, and 
 | -------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | Dynamic import in hot path | Violates engine policy, introduces jitter on slow connections | Replace with static registry generated at build time (`layouts/index.js`)               |
 | Inline fallback drift      | Startup regressions when module and fallback disagree         | CLI sync command + CI check; embed fallback hash next to `<script id="layout-default">` |
-| Schema under-specification | Validation false positives/negatives                          | Publish the Battle Layout Schema v1 section in this PRD; update acceptance tests       |
+| Schema under-specification | Validation false positives/negatives                          | Publish the Battle Layout Schema v1 section in this PRD; update acceptance tests        |
 | Feature flag latency       | Layout flash when async flag loads                            | Require synchronous flag hydration before `applyLayout()`; document dependency ordering |
 
 Overall feasibility is high once the mitigations above are incorporated into the implementation plan.

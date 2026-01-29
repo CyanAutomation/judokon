@@ -135,16 +135,16 @@ artifact in place.
 `.stat-button[data-stat][data-player]` (requires `data-player`). Earlier generated output omitted
 `[data-player]`; that omission is incorrect and should not be used.
 
-| logicalName        | selector                               | dataTestId           | role    | description                                                                 | owner          | stability     | aliases               |
-| ------------------ | -------------------------------------- | -------------------- | ------- | --------------------------------------------------------------------------- | -------------- | ------------- | --------------------- |
-| roundMessage       | `#round-message`                       | `battle:round-message` | status  | Message shown for round prompts and results.                                | frontend-team  | stable        | `[]`                  |
-| snackbarContainer  | `#snackbar-container`                  | `ui:snackbar`        | status  | Global transient messages (hints, countdown).                               | frontend-team  | stable        | `[]`                  |
-| battleStateBadge   | `#battle-state-badge`                  | `battle:state-badge` | status  | Compact badge showing the current battle state (e.g., selecting, resolving). | frontend-team  | stable        | `[]`                  |
-| playerCard         | `.player-card[data-player]`            | `battle:player-card` | group   | Root element for a player's card. Has attribute data-player with values 0 or 1. | frontend-team  | stable        | `[]`                  |
-| statButton         | `.stat-button[data-stat][data-player]` | `battle:stat-button` | button  | Interactive stat button. Attributes: data-stat (strength|speed|tech) and data-player. | frontend-team  | stable        | `["button.stat-action"]` |
-| selectStatButton   | `button[data-action=select-stat]`      | `battle:select-stat` | button  | Primary control used to confirm a selected stat (if present in UI variants). | frontend-team  | experimental  | `[]`                  |
-| autoSelectIndicator| `.auto-select-indicator`               | `battle:auto-select` | status  | Visual indicator shown when the system auto-selects a stat.                 | frontend-team  | stable        | `[]`                  |
-| modalRoot          | `#modal-root`                          | `ui:modal-root`      | dialog  | Root for modals used during battle (confirmations, results).                | frontend-team  | stable        | `[]`                  |
+| logicalName         | selector                               | dataTestId             | role   | description                                                                     | owner         | stability              | aliases       |
+| ------------------- | -------------------------------------- | ---------------------- | ------ | ------------------------------------------------------------------------------- | ------------- | ---------------------- | ------------- | ------ | ------------------------ |
+| roundMessage        | `#round-message`                       | `battle:round-message` | status | Message shown for round prompts and results.                                    | frontend-team | stable                 | `[]`          |
+| snackbarContainer   | `#snackbar-container`                  | `ui:snackbar`          | status | Global transient messages (hints, countdown).                                   | frontend-team | stable                 | `[]`          |
+| battleStateBadge    | `#battle-state-badge`                  | `battle:state-badge`   | status | Compact badge showing the current battle state (e.g., selecting, resolving).    | frontend-team | stable                 | `[]`          |
+| playerCard          | `.player-card[data-player]`            | `battle:player-card`   | group  | Root element for a player's card. Has attribute data-player with values 0 or 1. | frontend-team | stable                 | `[]`          |
+| statButton          | `.stat-button[data-stat][data-player]` | `battle:stat-button`   | button | Interactive stat button. Attributes: data-stat (strength                        | speed         | tech) and data-player. | frontend-team | stable | `["button.stat-action"]` |
+| selectStatButton    | `button[data-action=select-stat]`      | `battle:select-stat`   | button | Primary control used to confirm a selected stat (if present in UI variants).    | frontend-team | experimental           | `[]`          |
+| autoSelectIndicator | `.auto-select-indicator`               | `battle:auto-select`   | status | Visual indicator shown when the system auto-selects a stat.                     | frontend-team | stable                 | `[]`          |
+| modalRoot           | `#modal-root`                          | `ui:modal-root`        | dialog | Root for modals used during battle (confirmations, results).                    | frontend-team | stable                 | `[]`          |
 
 ## Example canonical mapping (human-readable excerpt)
 
