@@ -65,6 +65,16 @@ function normalizeQuery(query) {
 }
 
 /**
+ * Normalize a term for fuzzy comparison by stripping whitespace and hyphens.
+ * @param {string} term - Normalized term
+ * @returns {string} Comparison-ready term
+ * @private
+ */
+function normalizeComparison(term) {
+  return term.replace(/[\s-]+/g, "");
+}
+
+/**
  * Compute Levenshtein distance with an upper-bound cutoff.
  * @param {string} left - First term
  * @param {string} right - Second term
@@ -149,15 +159,36 @@ async function loadSynonyms() {
  * Test whether a term fuzzily matches any of the query tokens.
  * @param {string} term - Normalized term to compare
  * @param {string[]} tokens - Normalized query tokens
+ * @param {string[]} tokenComparisons - Normalized comparison tokens
  * @param {number} maxDistance - Maximum distance to evaluate
  * @returns {boolean} True when a fuzzy token match is found
  * @private
  */
-function matchesAnyToken(term, tokens, maxDistance) {
+function matchesAnyToken(term, termComparison, tokens, tokenComparisons, maxDistance) {
+  const minFuzzyLength = maxDistance + 2;
   return tokens.some(
-    (token) =>
-      Math.abs(term.length - token.length) <= maxDistance &&
-      levenshteinDistance(term, token, maxDistance) <= maxDistance
+    (token, index) => {
+      if (term.length < minFuzzyLength || token.length < minFuzzyLength) {
+        return false;
+      }
+
+      if (
+        Math.abs(term.length - token.length) <= maxDistance &&
+        levenshteinDistance(term, token, maxDistance) <= maxDistance
+      ) {
+        return true;
+      }
+
+      const tokenComparison = tokenComparisons[index];
+      if (!termComparison || !tokenComparison) {
+        return false;
+      }
+
+      return (
+        Math.abs(termComparison.length - tokenComparison.length) <= maxDistance &&
+        levenshteinDistance(termComparison, tokenComparison, maxDistance) <= maxDistance
+      );
+    }
   );
 }
 
@@ -167,11 +198,21 @@ function matchesAnyToken(term, tokens, maxDistance) {
  * @param {string} normalizedQuery - Normalized full query
  * @param {string[]} tokens - Normalized query tokens
  * @param {Set<string>} words - Token set for fast exact comparisons
- * @param {string} queryNoSpace - Normalized query without spaces
+ * @param {Set<string>} comparisonWords - Token set normalized without spaces/hyphens
+ * @param {string} queryComparison - Normalized query without spaces/hyphens
+ * @param {string[]} tokenComparisons - Normalized query tokens without spaces/hyphens
  * @returns {boolean} True when the term matches the query
  * @private
  */
-function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
+function isSynonymMatch(
+  term,
+  normalizedQuery,
+  tokens,
+  words,
+  comparisonWords,
+  queryComparison,
+  tokenComparisons
+) {
   if (term === normalizedQuery || words.has(term)) {
     return true;
   }
@@ -179,6 +220,11 @@ function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
   const maxDistance = MAX_FUZZY_DISTANCE;
   const normalizedLength = normalizedQuery.length;
   const termLength = term.length;
+  const termComparison = normalizeComparison(term);
+
+  if (termComparison && comparisonWords.has(termComparison)) {
+    return true;
+  }
 
   if (
     Math.abs(termLength - normalizedLength) <= maxDistance &&
@@ -187,27 +233,29 @@ function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
     return true;
   }
 
-  const hasSpaces = term.includes(" ");
-
-  if (hasSpaces && queryNoSpace) {
-    const termNoSpace = term.replace(/\s+/g, "");
-    if (
-      termNoSpace &&
-      Math.abs(termNoSpace.length - queryNoSpace.length) <= maxDistance &&
-      levenshteinDistance(termNoSpace, queryNoSpace, maxDistance) <= maxDistance
-    ) {
-      return true;
-    }
-  }
-
-  if (matchesAnyToken(term, tokens, maxDistance)) {
+  if (
+    termComparison &&
+    queryComparison &&
+    Math.abs(termComparison.length - queryComparison.length) <= maxDistance &&
+    levenshteinDistance(termComparison, queryComparison, maxDistance) <= maxDistance
+  ) {
     return true;
   }
 
-  if (hasSpaces) {
+  if (matchesAnyToken(term, termComparison, tokens, tokenComparisons, maxDistance)) {
+    return true;
+  }
+
+  if (term.includes(" ")) {
     const termTokens = term.split(/\s+/).filter(Boolean);
     return termTokens.some((termToken) =>
-      matchesAnyToken(termToken, tokens, maxDistance)
+      matchesAnyToken(
+        termToken,
+        normalizeComparison(termToken),
+        tokens,
+        tokenComparisons,
+        maxDistance
+      )
     );
   }
 
@@ -226,7 +274,9 @@ function findSynonymMatches(query, synonymMap) {
   const normalized = normalizeQuery(query);
   const tokens = normalized.split(/\s+/).filter(Boolean);
   const words = new Set(tokens);
-  const queryNoSpace = normalized.replace(/\s+/g, "");
+  const tokenComparisons = tokens.map((token) => normalizeComparison(token));
+  const comparisonWords = new Set(tokenComparisons.filter(Boolean));
+  const queryComparison = normalizeComparison(normalized);
   const matches = new Set();
 
   for (const [key, synonyms] of Object.entries(synonymMap)) {
@@ -236,7 +286,15 @@ function findSynonymMatches(query, synonymMap) {
       .filter(Boolean);
 
     const isMatched = allTerms.some((term) =>
-      isSynonymMatch(term, normalized, tokens, words, queryNoSpace)
+      isSynonymMatch(
+        term,
+        normalized,
+        tokens,
+        words,
+        comparisonWords,
+        queryComparison,
+        tokenComparisons
+      )
     );
 
     // Add all synonyms if match found

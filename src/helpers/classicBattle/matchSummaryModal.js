@@ -2,6 +2,28 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { navigateToHome } from "../navUtils.js";
 
+const DEFAULT_MATCH_SUMMARY = {
+  message: "Match Complete",
+  playerScore: 0,
+  opponentScore: 0
+};
+
+function normalizeMatchSummary(result) {
+  if (!result || typeof result !== "object") {
+    return { ...DEFAULT_MATCH_SUMMARY };
+  }
+
+  return {
+    message: typeof result.message === "string" ? result.message : DEFAULT_MATCH_SUMMARY.message,
+    playerScore: Number.isFinite(result.playerScore)
+      ? result.playerScore
+      : DEFAULT_MATCH_SUMMARY.playerScore,
+    opponentScore: Number.isFinite(result.opponentScore)
+      ? result.opponentScore
+      : DEFAULT_MATCH_SUMMARY.opponentScore
+  };
+}
+
 /**
  * Show a match summary modal with result message and scores.
  *
@@ -13,24 +35,20 @@ import { navigateToHome } from "../navUtils.js";
  *    - Quit navigates to `index.html`.
  *    - Next runs `onNext`.
  *
- * @param {{message: string, playerScore: number, opponentScore: number}} result
+ * @param {{message?: string, playerScore?: number, opponentScore?: number}|null|undefined} result
  * @param {Function} onNext Callback invoked when starting the next match.
  * @returns {ReturnType<typeof createModal>} Created modal instance.
  */
 export function showMatchSummaryModal(result, onNext) {
-  if (!result || typeof result !== "object") {
-    throw new Error("Invalid result parameter: expected object with message, playerScore, and opponentScore");
-  }
+  const normalizedResult = normalizeMatchSummary(result);
 
   const title = document.createElement("h2");
   title.id = "match-summary-title";
-  title.textContent = result.message || "Match Complete";
+  title.textContent = normalizedResult.message;
 
   const scoreEl = document.createElement("p");
   scoreEl.id = "match-summary-score";
-  const playerScore = typeof result.playerScore === "number" ? result.playerScore : 0;
-  const opponentScore = typeof result.opponentScore === "number" ? result.opponentScore : 0;
-  scoreEl.textContent = `Final Score – You: ${playerScore} Opponent: ${opponentScore}`;
+  scoreEl.textContent = `Final Score – You: ${normalizedResult.playerScore} Opponent: ${normalizedResult.opponentScore}`;
 
   const actions = document.createElement("div");
   actions.className = "modal-actions";
