@@ -19,6 +19,8 @@ import { vi } from "vitest";
  * @param {string} [options.url] - URL to stub as `location`.
  * @param {Array} [options.stats=[]] - Stat metadata returned by `fetchJson`.
  * @param {Array} [options.battleStats=[]] - Values for `BattleEngine.STATS`.
+ * @param {boolean} [options.mockBattleEngine=true] - When true, this helper owns the
+ * BattleEngine mock. When false, the caller must supply their own mock (caller-supplied wins).
  * @returns {Promise<import("../../../src/pages/index.js")["battleCLI"]>} Loaded module.
  */
 const orchestratorSpies = new Set();
@@ -159,9 +161,10 @@ export async function loadBattleCLI(options = {}) {
     });
   }
 
-  let pts = pointsToWin;
-  const baseBattleEngineMock = { STATS: battleStats };
-  if (mockBattleEngine) {
+  if (mockBattleEngine === true) {
+    // Helper-owned mock: provides base BattleEngine stub for CLI page tests.
+    let pts = pointsToWin;
+    const baseBattleEngineMock = { STATS: battleStats };
     vi.doMock("../../../src/helpers/BattleEngine.js", () => ({
       ...baseBattleEngineMock,
       setPointsToWin: vi.fn((v) => {
@@ -170,11 +173,6 @@ export async function loadBattleCLI(options = {}) {
       getPointsToWin: vi.fn(() => pts),
       getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
       stopTimer: vi.fn()
-    }));
-  } else {
-    vi.doMock("../../../src/helpers/BattleEngine.js", async (importOriginal) => ({
-      ...(await importOriginal()),
-      ...baseBattleEngineMock
     }));
   }
   vi.doMock("../../../src/helpers/dataUtils.js", () => ({
