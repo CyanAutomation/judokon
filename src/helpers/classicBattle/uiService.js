@@ -13,7 +13,7 @@ import {
 } from "./opponentPromptWaiter.js";
 import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
-import { roundStore } from "./roundStore.js";
+import { roundState } from "./roundState.js";
 
 /** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
 let activeCountdown = null;
@@ -73,7 +73,7 @@ function handleRoundStart(event) {
   const roundIndex = parseRoundNumber(detail.roundIndex);
   const normalizedRoundNumber = roundNumber ?? roundIndex;
   if (typeof normalizedRoundNumber === "number") {
-    roundStore.setRoundNumber(normalizedRoundNumber, { emitLegacyEvent: false });
+    roundState.setRoundNumber(normalizedRoundNumber, { emitLegacyEvent: false });
     // Skip round counter update in CLI mode (CLI handles its own format with target)
     if (!isCliMode()) {
       try {
@@ -192,7 +192,7 @@ function bindScoreboardEventHandlers() {
     }
   };
 
-  scoreboardBindingsReady = roundStore.wireIntoScoreboardAdapter({
+  scoreboardBindingsReady = roundState.wireIntoScoreboardAdapter({
     updateRoundCounter: wrappedUpdateRoundCounter,
     clearRoundCounter: scoreboard.clearRoundCounter
   });

@@ -2,6 +2,7 @@ import { resetStatButtons } from "./statButtons.js";
 import { skipCurrentPhase } from "./skipHandler.js";
 import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { roundState } from "./roundState.js";
 /**
  * Create a debug API for Classic Battle used in tests and developer tooling.
  *
@@ -28,10 +29,10 @@ export function createClassicBattleDebugAPI(view) {
         const btn = buttons[i];
         if (btn && !btn.disabled) {
           btn.click();
-          return store?.roundStore?.getCurrentRound?.() || {};
+          return roundState.getCurrentRound();
         }
       } catch {}
-      return store?.roundStore?.getCurrentRound?.() || {};
+      return roundState.getCurrentRound();
     },
     selectStat: (statKey) => {
       try {
@@ -45,7 +46,7 @@ export function createClassicBattleDebugAPI(view) {
         document.body?.setAttribute?.("data-stat-selected", "true");
       } catch {}
       try {
-        return store?.roundStore?.getCurrentRound?.() || {};
+        return roundState.getCurrentRound();
       } catch {
         return {};
       }
@@ -104,7 +105,7 @@ export function createClassicBattleDebugAPI(view) {
     round: {
       get: () => {
         try {
-          return store?.roundStore?.getCurrentRound?.() || {};
+        return roundState.getCurrentRound();
         } catch {
           return {};
         }

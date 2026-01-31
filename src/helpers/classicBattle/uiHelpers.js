@@ -13,7 +13,7 @@ import { onNextButtonClick } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
-import { roundStore } from "./roundStore.js";
+import { roundState } from "./roundState.js";
 
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
@@ -448,7 +448,7 @@ export function applyNextButtonFinalizedState() {
       // Update highest round using NEXT round number (current + 1)
       // This is called during cooldown BEFORE the round number is updated in the store
       try {
-        const currentRound = roundStore.getCurrentRound();
+        const currentRound = roundState.getCurrentRound();
         if (currentRound && typeof currentRound.number === "number" && currentRound.number >= 1) {
           const nextRoundNumber = currentRound.number + 1;
           updateHighestDisplayedRoundDiagnostic(nextRoundNumber);
