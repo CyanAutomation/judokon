@@ -41,6 +41,22 @@ let synonymsCachePromise;
 let synonymCacheHits = 0;
 
 /**
+ * Normalize a query string for tokenization and expansion.
+ * @param {string} query - Input query string
+ * @returns {string} Normalized query
+ * @private
+ */
+function normalizeQuery(query) {
+  return query
+    .toLowerCase()
+    .trim()
+    .replace(/_/g, " ")
+    .replace(/[^\p{L}\p{M}\p{N}\s-]+/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
  * Load the synonym mapping JSON
  * @returns {Promise<Record<string, string[]>>} Synonym map or empty object on failure
  */
@@ -79,20 +95,25 @@ async function loadSynonyms() {
  * @private
  */
 function findSynonymMatches(query, synonymMap) {
-  const lower = query.toLowerCase().trim();
-  const words = new Set(lower.split(/\s+/).filter(Boolean));
+  const normalized = normalizeQuery(query);
+  const words = new Set(normalized.split(/\s+/).filter(Boolean));
   const matches = new Set();
 
   for (const [key, synonyms] of Object.entries(synonymMap)) {
     const variants = Array.isArray(synonyms) ? synonyms : [];
-    const allTerms = [key, ...variants].map((term) => term.toLowerCase());
+    const allTerms = [key, ...variants]
+      .map((term) => normalizeQuery(term))
+      .filter(Boolean);
 
     // Check if any variant matches the query (exact only).
-    const isMatched = allTerms.some((term) => term === lower || words.has(term));
+    const isMatched = allTerms.some((term) => term === normalized || words.has(term));
 
     // Add all synonyms if match found
     if (isMatched) {
-      variants.forEach((v) => matches.add(v.toLowerCase()));
+      variants
+        .map((variant) => normalizeQuery(variant))
+        .filter(Boolean)
+        .forEach((variant) => matches.add(variant));
     }
   }
 
@@ -123,7 +144,7 @@ export async function expandQuery(query) {
   }
 
   const synonymMap = await loadSynonyms();
-  const normalized = query.toLowerCase().trim();
+  const normalized = normalizeQuery(query);
   const words = new Set(normalized.split(/\s+/).filter(Boolean).slice(0, MAX_QUERY_TERMS));
 
   // Find matching synonyms
