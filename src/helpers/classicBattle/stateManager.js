@@ -66,6 +66,17 @@ function isWinConditionMet(context) {
   }
 
   const { playerScore, opponentScore } = scores;
+  if (typeof playerScore !== "number" || typeof opponentScore !== "number") {
+    logWarn("isWinConditionMet: invalid score values", { playerScore, opponentScore });
+    return false;
+  }
+
+  if (!scores || typeof pointsToWin !== "number") {
+    logWarn("isWinConditionMet: scores or pointsToWin is missing", { scores, pointsToWin });
+    return false;
+  }
+
+  const { playerScore, opponentScore } = scores;
   return playerScore >= pointsToWin || opponentScore >= pointsToWin;
 }
 
