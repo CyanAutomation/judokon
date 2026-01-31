@@ -10,6 +10,7 @@ import {
 // ===== Shared test data (factory to avoid hoisting issues) =====
 function getMockSynonymMap() {
   return {
+    beta: ["release-notes", "beta-guide"],
     kumikata: ["kumi-kata", "grip fighting"],
     scoreboard: ["score board"],
     countdown: ["timer"],
@@ -88,10 +89,23 @@ describe("Query Expansion", () => {
       expect(result.addedTerms.length).toBeGreaterThan(0);
     });
 
+    it("should match misspelled synonym keys like 'bata' -> 'beta'", async () => {
+      const result = await expandQuery("bata");
+      expect(result.hasExpansion).toBe(true);
+      expect(result.addedTerms).toContain("release-notes");
+      expect(result.addedTerms).toContain("beta-guide");
+    });
+
     it("should match 'count down' (space) to 'countdown'", async () => {
       const result = await expandQuery("count down");
       expect(result.hasExpansion).toBe(true);
       // "countdown" is the key that matches fuzzy, and its synonym is "timer"
+      expect(result.addedTerms).toContain("timer");
+    });
+
+    it("should match hyphenated terms like 'count-down' to 'countdown'", async () => {
+      const result = await expandQuery("count-down");
+      expect(result.hasExpansion).toBe(true);
       expect(result.addedTerms).toContain("timer");
     });
 
