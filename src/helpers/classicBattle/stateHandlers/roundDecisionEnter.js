@@ -60,8 +60,11 @@ export async function roundDecisionEnter(machine) {
 
     const cancel = guardSelectionResolution(store, machine);
     try {
-      const resolved = await resolveSelectionIfPresent(store);
-      if (!resolved) await awaitPlayerChoice(store);
+      let resolved = await resolveSelectionIfPresent(store);
+      if (!resolved) {
+        await awaitPlayerChoice(store);
+        resolved = await resolveSelectionIfPresent(store);
+      }
       cancel();
       schedulePostResolveWatchdog(machine);
     } catch (err) {
