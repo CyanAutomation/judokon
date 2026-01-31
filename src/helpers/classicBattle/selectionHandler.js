@@ -11,7 +11,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { writeScoreDisplay } from "./scoreDisplay.js";
-import { roundStore } from "./roundStore.js";
+import { roundState } from "./roundState.js";
 import { getScheduler } from "../scheduler.js";
 import { debugLog } from "../debug.js";
 import { awaitStatSelectedHandler } from "./uiEventHandlers.js";
@@ -499,10 +499,10 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 
   logSelectionMutation("applySelectionToStore", store, { stat });
 
-  // Mirror selection to RoundStore
+  // Mirror selection to round state
   try {
     try {
-      roundStore.setSelectedStat(stat, { emitLegacyEvent: false });
+      roundState.setSelectedStat(stat, { emitLegacyEvent: false });
     } catch {
       // swallow to preserve legacy behaviour
     }

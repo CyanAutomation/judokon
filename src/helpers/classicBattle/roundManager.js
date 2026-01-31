@@ -8,7 +8,7 @@ import { logSelectionMutation, shouldClearSelectionForNextRound } from "./select
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import { roundStore } from "./roundStore.js";
+import { roundState } from "./roundState.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import { writeScoreDisplay, syncScoreboardDisplay } from "./scoreDisplay.js";
 import * as scoreboard from "../setupScoreboard.js";
@@ -217,8 +217,8 @@ export async function handleReplay(store) {
   safeRound("handleReplay.resetScoreboard", applyZeroScores, { suppressInProduction: true });
 
   safeRound(
-    "handleReplay.resetRoundStoreNumber",
-    () => roundStore.setRoundNumber(0, { emitLegacyEvent: false }),
+    "handleReplay.resetRoundStateNumber",
+    () => roundState.setRoundNumber(0, { emitLegacyEvent: false }),
     { suppressInProduction: true }
   );
 
@@ -230,7 +230,7 @@ export async function handleReplay(store) {
   // Ensure round counter is explicitly set to 1 after replay to prevent stale state issues
   safeRound(
     "handleReplay.confirmRoundOne",
-    () => roundStore.setRoundNumber(1, { emitLegacyEvent: false }),
+    () => roundState.setRoundNumber(1, { emitLegacyEvent: false }),
     { suppressInProduction: true }
   );
 
@@ -392,12 +392,12 @@ export async function startRound(store, onRoundStart) {
     // Synchronise centralized store
     try {
       try {
-        roundStore.setRoundNumber(roundNumber);
+        roundState.setRoundNumber(roundNumber);
       } catch {
         /* keep behaviour stable on failure */
       }
       try {
-        roundStore.setRoundState("roundStart", "startRound");
+        roundState.setRoundState("roundStart", "startRound");
       } catch {
         /* ignore */
       }

@@ -2,7 +2,7 @@ import { startCooldown } from "../roundManager.js";
 import { initStartCooldown } from "../cooldowns.js";
 import { exposeDebugState } from "../debugHooks.js";
 import { debugLog } from "../debugLog.js";
-import { roundStore } from "../roundStore.js";
+import { roundState } from "../roundState.js";
 import { disableStatButtons } from "../statButtons.js";
 import { guard } from "../guard.js";
 import { withStateGuard } from "../stateGuards.js";
@@ -128,8 +128,8 @@ function disableStatButtonsDuringCooldown() {
 function updateRoundStateAtomically(round) {
   const nextRoundNumber = computeNextRoundNumber(round);
   debugLog("cooldownEnter: updating round state", { nextRoundNumber });
-  roundStore.setRoundState(STATE_COOLDOWN, HANDLER_COOLDOWN_ENTER);
-  roundStore.setRoundNumber(nextRoundNumber);
+  roundState.setRoundState(STATE_COOLDOWN, HANDLER_COOLDOWN_ENTER);
+  roundState.setRoundNumber(nextRoundNumber);
 }
 
 /**
@@ -183,7 +183,7 @@ export async function cooldownEnter(machine, payload) {
     () => {
       // Update round state atomically; errors logged but non-blocking
       guard(() => {
-        updateRoundStateAtomically(roundStore.getCurrentRound());
+        updateRoundStateAtomically(roundState.getCurrentRound());
       });
     },
     {
