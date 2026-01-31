@@ -22,9 +22,8 @@ import stateCatalog from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { logStateTransition } from "./debugLogger.js";
 import { preloadTimerUtils } from "../TimerController.js";
-import { initScoreboardAdapter } from "./scoreboardAdapter.js";
 import { createStateManager } from "./stateManager.js";
-import "./uiService.js";
+import { bindScoreboardEventHandlersOnce } from "./uiService.js";
 import { debugLog } from "./debugLog.js";
 import { STATS, onEngineCreated } from "../BattleEngine.js";
 import { updateScore } from "../setupScoreboard.js";
@@ -608,7 +607,7 @@ function emitResolution(event) {
  *
  * @pseudocode
  * 1. Await `preloadTimerUtils`.
- * 2. Initialize `initScoreboardAdapter`.
+ * 2. Initialize scoreboard event bindings.
  * 3. Swallow errors from each step.
  *
  * @returns {Promise<void>} resolves when best-effort setup finishes.
@@ -618,7 +617,7 @@ async function preloadDependencies() {
     await preloadTimerUtils();
   } catch {}
   try {
-    initScoreboardAdapter();
+    bindScoreboardEventHandlersOnce();
   } catch {}
 }
 

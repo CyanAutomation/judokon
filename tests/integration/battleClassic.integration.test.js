@@ -50,7 +50,17 @@ async function triggerStatSelection(store, statButton, statKey) {
     await selectionResult;
   });
 
+  if (selectionResult?.roundResolutionPromise) {
+    await withMutedConsole(async () => {
+      await selectionResult.roundResolutionPromise;
+    });
+  }
+
   return selectionResult;
+}
+
+function disableAutoContinue(testApi) {
+  testApi?.autoSelect?.setAutoContinue?.(false);
 }
 
 /**
@@ -69,6 +79,7 @@ async function triggerStatSelection(store, statButton, statKey) {
  */
 async function performStatSelectionFlow(testApi) {
   const { state, inspect, engine, init: initApi } = testApi;
+  disableAutoContinue(testApi);
   const ensureStore = () => {
     const currentStore = getBattleStore();
     expect(currentStore).toBeTruthy();
@@ -117,6 +128,10 @@ async function performStatSelectionFlow(testApi) {
   expect(selectedStat).toBeTruthy();
 
   // Step 4: Click the stat button and verify immediate store update
+  await withMutedConsole(async () => {
+    await state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+    await state.waitForStatButtonsReady(5000);
+  });
   await triggerStatSelection(store, statButtons[0], selectedStat);
 
   // NOW check that store was updated - this happens synchronously in applySelectionToStore
@@ -148,7 +163,7 @@ async function performStatSelectionFlow(testApi) {
   // Step 5: Wait for state machine to reach roundOver to ensure full resolution
   // roundOver is entered after evaluation completes and engine rounds are incremented
   await withMutedConsole(async () => {
-    await state.waitForBattleState("roundOver", 5000);
+    await state.waitForBattleState(["roundOver", "cooldown"], 5000);
   });
 
   const nextRoundButton = document.querySelector('[data-role="next-round"]');
@@ -251,6 +266,7 @@ describe("Battle Classic Page Integration", () => {
     await init();
 
     const testApi = window.__TEST_API;
+    disableAutoContinue(testApi);
 
     // Wait for battle ready
     await withMutedConsole(async () => {
@@ -277,6 +293,10 @@ describe("Battle Classic Page Integration", () => {
     const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     expect(statButtons.length).toBeGreaterThan(0);
 
+    await withMutedConsole(async () => {
+      await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+      await testApi.state.waitForStatButtonsReady(5000);
+    });
     await triggerStatSelection(store, statButtons[0], statButtons[0].dataset.stat);
 
     await withMutedConsole(async () => {
@@ -301,6 +321,7 @@ describe("Battle Classic Page Integration", () => {
     // Wait for battle to be ready before dispatching events
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
+    disableAutoContinue(testApi);
     await withMutedConsole(async () => {
       const isReady = await testApi.init.waitForBattleReady(5000);
       expect(isReady).toBe(true);
@@ -431,6 +452,10 @@ describe("Battle Classic Page Integration", () => {
       }
 
       try {
+        await withMutedConsole(async () => {
+          await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+          await testApi.state.waitForStatButtonsReady(5000);
+        });
         await triggerStatSelection(store, selectedButton, selectedStat);
         const storeAfterSelection = getBattleStore();
         const storeRefAfter = storeAfterSelection;
@@ -510,6 +535,7 @@ describe("Battle Classic Page Integration", () => {
 
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
+    disableAutoContinue(testApi);
 
     const result = await performStatSelectionFlow(testApi);
     expect(result.store).toBeTruthy();
@@ -534,6 +560,7 @@ describe("Battle Classic Page Integration", () => {
 
     const testApi = window.__TEST_API;
     expect(testApi).toBeDefined();
+    disableAutoContinue(testApi);
 
     const initialStore = getBattleStore();
     expect(initialStore).toBe(testApi.inspect.getBattleStore());
@@ -562,6 +589,10 @@ describe("Battle Classic Page Integration", () => {
     const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     expect(statButtons.length).toBeGreaterThan(0);
 
+    await withMutedConsole(async () => {
+      await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+      await testApi.state.waitForStatButtonsReady(5000);
+    });
     await triggerStatSelection(initialStore, statButtons[0], statButtons[0].dataset.stat);
 
     const postStatStore = getBattleStore();
@@ -571,7 +602,7 @@ describe("Battle Classic Page Integration", () => {
     // The selection happened if we reach here without errors
 
     await withMutedConsole(async () => {
-      await testApi.state.waitForBattleState("roundOver", 5000);
+      await testApi.state.waitForBattleState(["roundOver", "cooldown"], 5000);
     });
 
     const postRoundOverStore = getBattleStore();
@@ -632,6 +663,10 @@ describe("Battle Classic Page Integration", () => {
       const statButtons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
       expect(statButtons.length).toBeGreaterThan(0);
 
+      await withMutedConsole(async () => {
+        await testApi.state.waitForBattleState(["waitingForPlayerAction", "roundDecision"], 5000);
+        await testApi.state.waitForStatButtonsReady(5000);
+      });
       // Capture the placeholder state synchronously when opponentReveal fires
       let placeholderWasPresentDuringReveal = false;
       let wasObscuredDuringReveal = false;
