@@ -115,7 +115,7 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
     onBattleEvent("battleStateChange", recordTransition);
 
     try {
-      await machine.dispatch("matchStart");
+      await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
@@ -123,7 +123,7 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
       // Clear any pending timers before interrupt to prevent old timers from firing
       vi.clearAllTimers();
 
-      await machine.dispatch("interruptRound");
+      await machine.dispatch("interrupt");
 
       const { dispatchBattleEvent } = await import(
         "../../../src/helpers/classicBattle/eventDispatcher.js"
