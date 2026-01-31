@@ -350,7 +350,7 @@ function resolveMatchOverTransition(eventName) {
 function resolveInterruptRoundTransition(eventName, context, guardOverrides, payload) {
   if (eventName === "roundModifyFlag") {
     if (payload?.adminTest) return "roundModification";
-    return isRoundModifyEnabled(context, guardOverrides) ? "roundModification" : null;
+    return isRoundModifyEnabled(context, guardOverrides) ? "roundModification" : "interruptRound";
   }
   if (eventName === "restartRound") return "cooldown";
   if (eventName === "resumeLobby") return "waitingForMatchStart";
