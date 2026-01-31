@@ -167,7 +167,7 @@ function findSynonymMatches(query, synonymMap) {
         return true;
       }
 
-      const maxDistance = 2;
+      const maxDistance = MAX_FUZZY_DISTANCE;
       
       // Early exit for strings that are too different in length
       if (Math.abs(term.length - normalized.length) > maxDistance) {
