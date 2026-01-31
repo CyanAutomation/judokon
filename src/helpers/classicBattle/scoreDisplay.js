@@ -163,9 +163,9 @@ export function syncScoreDisplay() {
 
   try {
     const result = typeof getScores === "function" ? getScores() : null;
-    if (result) {
-      playerScore = result.playerScore;
-      opponentScore = result.opponentScore;
+    if (result && typeof result === "object") {
+      playerScore = typeof result.playerScore === "number" ? result.playerScore : 0;
+      opponentScore = typeof result.opponentScore === "number" ? result.opponentScore : 0;
     }
   } catch {}
 
