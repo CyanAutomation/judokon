@@ -729,6 +729,13 @@ export function createRandomJudokaPageHarness(customConfig = {}) {
       "../../src/helpers/randomCard.js": () => ({
         generateRandomCard: vi.fn(),
         loadGokyoLookup: vi.fn(),
+        preloadRandomCardData: vi
+          .fn()
+          .mockResolvedValue({ judokaData: [], gokyoData: [], error: null }),
+        createHistoryManager: vi.fn(() => ({
+          add: vi.fn(),
+          get: vi.fn().mockReturnValue([])
+        })),
         renderJudokaCard: vi.fn()
       }),
       // Mock data utilities
