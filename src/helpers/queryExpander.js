@@ -162,33 +162,55 @@ function findSynonymMatches(query, synonymMap) {
       .filter(Boolean);
 
     const isMatched = allTerms.some((term) => {
+      // Fast exact matches first
       if (term === normalized || words.has(term)) {
         return true;
       }
 
-      const termNoSpace = term.replace(/\s+/g, "");
       const maxDistance = 2;
+      
+      // Early exit for strings that are too different in length
+      if (Math.abs(term.length - normalized.length) > maxDistance) {
+        // Only check individual tokens if full query comparison fails length check
+        return tokens.some((token) => 
+          Math.abs(term.length - token.length) <= maxDistance &&
+          levenshteinDistance(term, token, maxDistance) <= maxDistance
+        );
+      }
 
+      // Full query fuzzy match
       if (levenshteinDistance(term, normalized, maxDistance) <= maxDistance) {
         return true;
       }
 
+      // Space-removed comparison for multi-word handling
+      const termNoSpace = term.replace(/\s+/g, "");
+      const queryNoSpace = normalized.replace(/\s+/g, "");
       if (
         termNoSpace &&
         queryNoSpace &&
+        Math.abs(termNoSpace.length - queryNoSpace.length) <= maxDistance &&
         levenshteinDistance(termNoSpace, queryNoSpace, maxDistance) <= maxDistance
       ) {
         return true;
       }
 
-      if (tokens.some((token) => levenshteinDistance(term, token, maxDistance) <= maxDistance)) {
+      // Token-level fuzzy matching with early length check
+      if (tokens.some((token) => 
+        Math.abs(term.length - token.length) <= maxDistance &&
+        levenshteinDistance(term, token, maxDistance) <= maxDistance
+      )) {
         return true;
       }
 
+      // Multi-word term token matching
       if (term.includes(" ")) {
         const termTokens = term.split(/\s+/).filter(Boolean);
         return termTokens.some((termToken) =>
-          tokens.some((token) => levenshteinDistance(termToken, token, maxDistance) <= maxDistance)
+          tokens.some((token) => 
+            Math.abs(termToken.length - token.length) <= maxDistance &&
+            levenshteinDistance(termToken, token, maxDistance) <= maxDistance
+          )
         );
       }
 
