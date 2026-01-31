@@ -71,7 +71,7 @@ export const byId = (id) => (typeof document === "undefined" ? null : document.g
 export function updateRoundHeader(round, target) {
   // Phase 3: Primary update via shared Scoreboard component
   // Note: In CLI mode, the shared scoreboard's updateRoundCounter is skipped
-  // via the scoreboardAdapter's isCliMode() check, so the CLI-specific
+  // via the uiService isCliMode() check, so the CLI-specific
   // format with target will be preserved.
   try {
     if (sharedScoreboardHelpers?.updateRoundCounter) {
