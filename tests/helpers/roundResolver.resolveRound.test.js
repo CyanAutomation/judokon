@@ -10,15 +10,6 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
 
-vi.mock("../../src/helpers/BattleEngine.js", () => ({
-  handleStatSelection: vi.fn(() => ({
-    outcome: "draw",
-    playerScore: 0,
-    opponentScore: 0,
-    matchEnded: false
-  }))
-}));
-
 describe("resolveRound", () => {
   let dispatchMock;
   let emitMock;
@@ -40,15 +31,6 @@ describe("resolveRound", () => {
     // Clear module cache to ensure fresh imports with mocks applied
     vi.resetModules();
 
-    // Re-declare mocks after reset
-    vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-      dispatchBattleEvent: vi.fn()
-    }));
-
-    vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn()
-    }));
-
     vi.mock("../../src/helpers/BattleEngine.js", () => ({
       handleStatSelection: vi.fn(() => ({
         outcome: "draw",
@@ -56,6 +38,15 @@ describe("resolveRound", () => {
         opponentScore: 0,
         matchEnded: false
       }))
+    }));
+
+    // Re-declare mocks after reset
+    vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn()
+    }));
+
+    vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+      emitBattleEvent: vi.fn()
     }));
 
     timers = useCanonicalTimers();
