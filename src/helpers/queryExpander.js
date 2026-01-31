@@ -47,11 +47,14 @@ let synonymCacheHits = 0;
  * @private
  */
 function normalizeQuery(query) {
+  if (!query || typeof query !== "string") {
+    return "";
+  }
   return query
     .toLowerCase()
     .trim()
     .replace(/_/g, " ")
-    .replace(/[^\p{L}\p{Mn}\p{N}\s-]+/gu, "")
+    .replace(/[^\p{L}\p{M}\p{N}\s-]+/gu, "")
     .replace(/\s+/g, " ")
     .trim();
 }
