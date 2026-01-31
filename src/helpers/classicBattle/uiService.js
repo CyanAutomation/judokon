@@ -1,11 +1,7 @@
-import { getScores } from "../BattleEngine.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { createModal } from "../../components/Modal.js";
-import { createButton } from "../../components/Button.js";
-import { navigateToHome } from "../navUtils.js";
-import * as uiHelpers from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { onBattleEvent, getBattleEventTarget, emitBattleEvent } from "./battleEvents.js";
+import { bindCountdownEventHandlersOnce } from "./timerService.js";
 import * as battleEvents from "./battleEvents.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
@@ -354,114 +350,6 @@ function bindUIServiceEventHandlers() {
     } catch {}
   });
 
-  onBattleEvent("countdownStart", async (e) => {
-    // If the skip flag is enabled, immediately finish the countdown
-    let skipHandled = false;
-    const skipEnabled =
-      uiHelpers.skipRoundCooldownIfEnabled?.({
-        onSkip: () => {
-          handleCountdownExpired();
-          skipHandled = true;
-        }
-      }) ?? false;
-    if (skipEnabled && skipHandled) {
-      return;
-    }
-    const { duration, onFinished } = e.detail || {};
-    if (typeof duration !== "number") return;
-    try {
-      if (activeCountdown) {
-        try {
-          activeCountdown.timer.off("expired", activeCountdown.onExpired);
-        } catch {}
-        try {
-          activeCountdown.timer.stop();
-        } catch {}
-        activeCountdown = null;
-      }
-
-      const timer = createRoundTimer();
-      const onExpired = () => {
-        handleCountdownExpired();
-        if (typeof onFinished === "function") {
-          onFinished();
-        }
-      };
-
-      activeCountdown = { timer, onExpired };
-      let rendererOptions = {};
-      let promptBudget = null;
-      let shouldWaitForPrompt = false;
-      try {
-        const readyState =
-          typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() : null;
-        shouldWaitForPrompt = readyState !== true && readyState !== null;
-      } catch {
-        shouldWaitForPrompt = true;
-      }
-      if (shouldWaitForPrompt) {
-        try {
-          promptBudget = computeOpponentPromptWaitBudget();
-        } catch {
-          promptBudget = null;
-        }
-        if (promptBudget && Number.isFinite(promptBudget.totalMs) && promptBudget.totalMs > 0) {
-          const promptPollInterval = DEFAULT_PROMPT_POLL_INTERVAL_MS; // Shared interval for consistency.
-          rendererOptions = {
-            waitForOpponentPrompt: true,
-            maxPromptWaitMs: promptBudget.totalMs,
-            opponentPromptBufferMs: promptBudget.bufferMs,
-            promptPollIntervalMs: promptPollInterval
-          };
-        } else {
-          shouldWaitForPrompt = false;
-        }
-      }
-      attachCooldownRenderer(timer, duration, rendererOptions);
-      timer.on("expired", onExpired);
-      const countdownSnapshot = activeCountdown;
-      if (!activeCountdown) {
-        // A pending skip consumed the countdown before it began
-        return;
-      }
-      if (shouldWaitForPrompt && promptBudget) {
-        let timeoutId = null;
-        try {
-          const waitPromise = waitForDelayedOpponentPromptDisplay(promptBudget, {
-            intervalMs: rendererOptions.promptPollIntervalMs
-          });
-          const maxWaitMs = Number(promptBudget.totalMs);
-          if (Number.isFinite(maxWaitMs) && maxWaitMs > 0 && typeof setTimeout === "function") {
-            const timeoutPromise = new Promise((resolve) => {
-              timeoutId = setTimeout(resolve, maxWaitMs);
-            });
-            await Promise.race([waitPromise, timeoutPromise]);
-          } else {
-            await waitPromise;
-          }
-        } catch (error) {
-          if (
-            typeof process !== "undefined" &&
-            process?.env?.NODE_ENV !== "production" &&
-            typeof console !== "undefined" &&
-            typeof console.warn === "function"
-          ) {
-            console.warn("waitForDelayedOpponentPromptDisplay failed:", error);
-          }
-        } finally {
-          if (timeoutId !== null && typeof clearTimeout === "function") {
-            clearTimeout(timeoutId);
-          }
-        }
-      }
-      if (!activeCountdown || activeCountdown !== countdownSnapshot) {
-        return;
-      }
-      timer.start(duration);
-    } catch (err) {
-      console.error("Error in countdownStart event handler:", err);
-    }
-  });
 }
 
 /**
@@ -520,4 +408,7 @@ export function bindUIServiceEventHandlersOnce() {
   if (shouldBind) {
     bindUIServiceEventHandlers();
   }
+  try {
+    bindCountdownEventHandlersOnce();
+  } catch {}
 }

@@ -11,7 +11,7 @@ vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   clearRoundCounter: vi.fn()
 }));
 
-vi.mock("../../src/helpers/classicBattle/uiService.js", () => ({
+vi.mock("../../src/helpers/classicBattle/scoreDisplay.js", () => ({
   syncScoreDisplay: vi.fn()
 }));
 
@@ -74,12 +74,12 @@ describe("resetBattleUI helpers", () => {
     helpers.clearScoreboardAndMessages();
 
     const scoreboard = await import("../../src/helpers/setupScoreboard.js");
-    const uiService = await import("../../src/helpers/classicBattle/uiService.js");
+    const scoreDisplay = await import("../../src/helpers/classicBattle/scoreDisplay.js");
 
     expect(scoreboard.clearMessage).toHaveBeenCalledTimes(1);
     expect(scoreboard.clearTimer).toHaveBeenCalledTimes(1);
     expect(document.getElementById("round-result").textContent).toBe("");
-    expect(uiService.syncScoreDisplay).toHaveBeenCalledTimes(1);
+    expect(scoreDisplay.syncScoreDisplay).toHaveBeenCalledTimes(1);
   });
   afterEach(() => {
     clearBody();

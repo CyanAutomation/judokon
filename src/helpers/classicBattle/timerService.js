@@ -5,11 +5,12 @@ import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
-import { emitBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
 import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 import { logTimerOperation, createComponentLogger } from "./debugLogger.js";
 import { resetSelectionFinalized } from "./selectionState.js";
+import { attachCooldownRenderer } from "../CooldownRenderer.js";
 
 const timerLogger = createComponentLogger("TimerService");
 
@@ -27,6 +28,12 @@ import { realScheduler } from "../scheduler.js";
 export { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
+import {
+  computeOpponentPromptWaitBudget,
+  waitForDelayedOpponentPromptDisplay,
+  DEFAULT_PROMPT_POLL_INTERVAL_MS
+} from "./opponentPromptWaiter.js";
+import { isOpponentPromptReady } from "./opponentPromptTracker.js";
 import { getNextRoundControls } from "./roundManager.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
@@ -55,6 +62,173 @@ export { getNextRoundControls } from "./roundManager.js";
 let cooldownWarningTimeoutId = null;
 // Prevent re-entrant Next clicks from advancing multiple rounds at once.
 let nextClickInFlight = false;
+
+/** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
+let activeCountdown = null;
+
+function clearActiveCountdown() {
+  if (!activeCountdown) return;
+  const { timer, onExpired } = activeCountdown;
+  try {
+    timer.off("expired", onExpired);
+  } catch {}
+  try {
+    timer.stop();
+  } catch {}
+  activeCountdown = null;
+}
+
+function handleCountdownExpired() {
+  setSkipHandler(null);
+  activeCountdown = null;
+  emitBattleEvent("countdownFinished");
+  emitBattleEvent("round.start");
+}
+
+function resolveOpponentPromptWait() {
+  let shouldWaitForPrompt = false;
+  let promptBudget = null;
+  let rendererOptions = {};
+  try {
+    const readyState = typeof isOpponentPromptReady === "function" ? isOpponentPromptReady() : null;
+    shouldWaitForPrompt = readyState !== true && readyState !== null;
+  } catch {
+    shouldWaitForPrompt = true;
+  }
+  if (!shouldWaitForPrompt) {
+    return { shouldWaitForPrompt, promptBudget, rendererOptions };
+  }
+  try {
+    promptBudget = computeOpponentPromptWaitBudget();
+  } catch {
+    promptBudget = null;
+  }
+  if (promptBudget && Number.isFinite(promptBudget.totalMs) && promptBudget.totalMs > 0) {
+    rendererOptions = {
+      waitForOpponentPrompt: true,
+      maxPromptWaitMs: promptBudget.totalMs,
+      opponentPromptBufferMs: promptBudget.bufferMs,
+      promptPollIntervalMs: DEFAULT_PROMPT_POLL_INTERVAL_MS
+    };
+  } else {
+    shouldWaitForPrompt = false;
+  }
+  return { shouldWaitForPrompt, promptBudget, rendererOptions };
+}
+
+async function waitForOpponentPrompt(promptBudget, rendererOptions) {
+  let timeoutId = null;
+  try {
+    const waitPromise = waitForDelayedOpponentPromptDisplay(promptBudget, {
+      intervalMs: rendererOptions.promptPollIntervalMs
+    });
+    const maxWaitMs = Number(promptBudget.totalMs);
+    if (Number.isFinite(maxWaitMs) && maxWaitMs > 0 && typeof setTimeout === "function") {
+      const timeoutPromise = new Promise((resolve) => {
+        timeoutId = setTimeout(resolve, maxWaitMs);
+      });
+      await Promise.race([waitPromise, timeoutPromise]);
+    } else {
+      await waitPromise;
+    }
+  } catch (error) {
+    if (
+      typeof process !== "undefined" &&
+      process?.env?.NODE_ENV !== "production" &&
+      typeof console !== "undefined" &&
+      typeof console.warn === "function"
+    ) {
+      console.warn("waitForDelayedOpponentPromptDisplay failed:", error);
+    }
+  } finally {
+    if (timeoutId !== null && typeof clearTimeout === "function") {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
+async function startCountdownSequence(duration, onFinished) {
+  clearActiveCountdown();
+
+  const timer = createRoundTimer();
+  const onExpired = () => {
+    handleCountdownExpired();
+    if (typeof onFinished === "function") {
+      onFinished();
+    }
+  };
+  activeCountdown = { timer, onExpired };
+
+  const { shouldWaitForPrompt, promptBudget, rendererOptions } = resolveOpponentPromptWait();
+  attachCooldownRenderer(timer, duration, rendererOptions);
+  timer.on("expired", onExpired);
+
+  const countdownSnapshot = activeCountdown;
+  if (!activeCountdown) {
+    return;
+  }
+
+  if (shouldWaitForPrompt && promptBudget) {
+    await waitForOpponentPrompt(promptBudget, rendererOptions);
+  }
+
+  if (!activeCountdown || activeCountdown !== countdownSnapshot) {
+    return;
+  }
+  timer.start(duration);
+}
+
+async function handleCountdownStartEvent(e) {
+  let skipHandled = false;
+  const skipEnabled =
+    skipRoundCooldownIfEnabled?.({
+      onSkip: () => {
+        handleCountdownExpired();
+        skipHandled = true;
+      }
+    }) ?? false;
+  if (skipEnabled && skipHandled) {
+    return;
+  }
+  const { duration, onFinished } = e.detail || {};
+  if (typeof duration !== "number") return;
+  try {
+    await startCountdownSequence(duration, onFinished);
+  } catch (err) {
+    console.error("Error in countdownStart event handler:", err);
+  }
+}
+
+function bindCountdownEventHandlers() {
+  onBattleEvent("countdownStart", handleCountdownStartEvent);
+}
+
+/**
+ * Bind countdown handlers once per battle event target.
+ *
+ * @pseudocode
+ * 1. Fetch the shared battle event target.
+ * 2. Track bound targets via a WeakSet on the global object.
+ * 3. Skip binding when the target was already handled.
+ * 4. Otherwise attach countdown event handlers.
+ *
+ * @returns {void}
+ */
+export function bindCountdownEventHandlersOnce() {
+  let shouldBind = true;
+  try {
+    const KEY = "__cbCountdownBoundTargets";
+    const target = getBattleEventTarget();
+    if (target) {
+      const set = (globalThis[KEY] ||= new WeakSet());
+      if (set.has(target)) shouldBind = false;
+      else set.add(target);
+    }
+  } catch {}
+  if (shouldBind) {
+    bindCountdownEventHandlers();
+  }
+}
 
 /**
  * Get the round counter element from the DOM root.

@@ -34,11 +34,13 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
 vi.mock("../../../src/helpers/classicBattle/uiService.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/uiService.js");
   return {
-    syncScoreDisplay: actual.syncScoreDisplay,
-    bindUIServiceEventHandlersOnce: actual.bindUIServiceEventHandlersOnce,
-    showMatchSummaryModal: vi.fn()
+    ...actual
   };
 });
+
+vi.mock("../../../src/helpers/classicBattle/matchSummaryModal.js", () => ({
+  showMatchSummaryModal: vi.fn()
+}));
 
 function expectDeselected(button) {
   expect(button.classList.contains("selected")).toBe(false);

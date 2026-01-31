@@ -45,10 +45,10 @@ let showMatchSummaryModal = null;
 // or only used in other environments.
 void _updateSnackbar;
 
-let hasScheduledUiServicePreload = false;
+let hasScheduledMatchSummaryPreload = false;
 
-function preloadUiService() {
-  import("/src/helpers/classicBattle/uiService.js")
+function preloadMatchSummaryModal() {
+  import("/src/helpers/classicBattle/matchSummaryModal.js")
     .then((m) => {
       showMatchSummaryModal = m.showMatchSummaryModal;
     })
@@ -94,14 +94,14 @@ function clearStatButtonSelections(store) {
   });
   return buttons;
 }
-function scheduleUiServicePreload() {
-  if (hasScheduledUiServicePreload) return;
-  hasScheduledUiServicePreload = true;
+function scheduleMatchSummaryPreload() {
+  if (hasScheduledMatchSummaryPreload) return;
+  hasScheduledMatchSummaryPreload = true;
   try {
-    runWhenIdle(preloadUiService);
+    runWhenIdle(preloadMatchSummaryModal);
   } catch {
     try {
-      preloadUiService();
+      preloadMatchSummaryModal();
     } catch {}
   }
 }
@@ -817,7 +817,7 @@ export function bindRoundUIEventHandlers() {
  * @returns {void}
  */
 export function bindRoundUIEventHandlersOnce() {
-  scheduleUiServicePreload();
+  scheduleMatchSummaryPreload();
   let shouldBind = true;
   try {
     const KEY = "__cbRoundUIStaticBoundTargets";
@@ -850,7 +850,7 @@ export function bindRoundUIEventHandlersOnce() {
  * @returns {void}
  */
 export function bindRoundUIEventHandlersDynamic() {
-  scheduleUiServicePreload();
+  scheduleMatchSummaryPreload();
   // Contract: Always call __resetBattleEventTarget() before binding handlers to ensure clean state
   // Each EventTarget reset creates a fresh instance with no handlers attached
   const createPreloader = (loader) => {

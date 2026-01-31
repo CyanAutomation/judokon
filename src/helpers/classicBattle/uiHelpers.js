@@ -39,8 +39,7 @@ import { emitStatButtonTestEvent } from "./statButtonTestSignals.js";
  */
 export { updateDebugPanelImpl as updateDebugPanel };
 
-import { runWhenIdle } from "./idleCallback.js";
-import { writeScoreDisplay } from "./scoreDisplay.js";
+import { syncScoreDisplay as syncScoreDisplayImpl } from "./scoreDisplay.js";
 import { bindUIHelperEventHandlersDynamic } from "./uiEventHandlers.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { getCurrentSeed } from "../testModeUtils.js";
@@ -155,40 +154,12 @@ export function applyBattleFeatureFlags(battleArea, banner) {
 }
 
 /**
- * Ensure the scoreboard has initial text.
+ * Synchronize the scoreboard UI with current battle scores.
  *
  * @pseudocode
- * 1. Select `header #score-display`.
- * 2. If empty, set to `INITIAL_SCOREBOARD_TEXT`.
+ * 1. Delegate to the shared score display helper.
  */
-export let syncScoreDisplay = () => {
-  try {
-    const el = document.querySelector("header #score-display");
-    if (el && !el.textContent) {
-      writeScoreDisplay(0, 0);
-    }
-  } catch {}
-};
-
-/**
- * Preload UI service module during idle time.
- *
- * @pseudocode
- * 1. Import uiService module asynchronously during idle time.
- * 2. Update syncScoreDisplay function with module implementation if available.
- * 3. Fall back to local implementation if module export is missing.
- * 4. Handle import errors gracefully without affecting main functionality.
- */
-function preloadUiService() {
-  // Preload optional module during idle; keep hot path clean
-  import("./uiService.js")
-    .then((m) => {
-      // Fall back to local implementation if export missing
-      syncScoreDisplay = m.syncScoreDisplay || syncScoreDisplay;
-    })
-    .catch(() => {});
-}
-runWhenIdle(preloadUiService);
+export const syncScoreDisplay = syncScoreDisplayImpl;
 
 /**
  * Ensure the debug panel has a copy button that copies the panel text.
