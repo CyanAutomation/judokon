@@ -18,6 +18,11 @@ export const MAX_QUERY_TERMS = 50;
  * @type {number}
  */
 export const MAX_QUERY_LENGTH = 512;
+/**
+ * Maximum Levenshtein distance allowed for fuzzy synonym matches.
+ * @type {number}
+ */
+export const MAX_FUZZY_DISTANCE = 2;
 
 /**
  * @typedef {object} ExpandedQueryResult
@@ -141,6 +146,74 @@ async function loadSynonyms() {
 }
 
 /**
+ * Test whether a term fuzzily matches any of the query tokens.
+ * @param {string} term - Normalized term to compare
+ * @param {string[]} tokens - Normalized query tokens
+ * @param {number} maxDistance - Maximum distance to evaluate
+ * @returns {boolean} True when a fuzzy token match is found
+ * @private
+ */
+function matchesAnyToken(term, tokens, maxDistance) {
+  return tokens.some(
+    (token) =>
+      Math.abs(term.length - token.length) <= maxDistance &&
+      levenshteinDistance(term, token, maxDistance) <= maxDistance
+  );
+}
+
+/**
+ * Determine whether a normalized term matches a query via exact or fuzzy comparison.
+ * @param {string} term - Normalized synonym term
+ * @param {string} normalizedQuery - Normalized full query
+ * @param {string[]} tokens - Normalized query tokens
+ * @param {Set<string>} words - Token set for fast exact comparisons
+ * @param {string} queryNoSpace - Normalized query without spaces
+ * @returns {boolean} True when the term matches the query
+ * @private
+ */
+function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
+  if (term === normalizedQuery || words.has(term)) {
+    return true;
+  }
+
+  const maxDistance = MAX_FUZZY_DISTANCE;
+  const normalizedLength = normalizedQuery.length;
+  const termLength = term.length;
+
+  if (
+    Math.abs(termLength - normalizedLength) <= maxDistance &&
+    levenshteinDistance(term, normalizedQuery, maxDistance) <= maxDistance
+  ) {
+    return true;
+  }
+
+  const hasSpaces = term.includes(" ");
+  
+  if (hasSpaces) {
+    const termNoSpace = term.replace(/\s+/g, "");
+    if (
+      termNoSpace &&
+      queryNoSpace &&
+      Math.abs(termNoSpace.length - queryNoSpace.length) <= maxDistance &&
+      levenshteinDistance(termNoSpace, queryNoSpace, maxDistance) <= maxDistance
+    ) {
+      return true;
+    }
+  }
+
+  if (matchesAnyToken(term, tokens, maxDistance)) {
+    return true;
+  }
+
+  if (hasSpaces) {
+    const termTokens = term.split(/\s+/).filter(Boolean);
+    return termTokens.some((termToken) => matchesAnyToken(termToken, tokens, maxDistance));
+  }
+
+  return false;
+}
+
+/**
  * Find matching synonym mappings for a query
  * Uses exact or fuzzy matches against the full query or individual query terms.
  * @param {string} query - Input query string
@@ -161,61 +234,9 @@ function findSynonymMatches(query, synonymMap) {
       .map((term) => normalizeQuery(term))
       .filter(Boolean);
 
-    const isMatched = allTerms.some((term) => {
-      // Fast exact matches first
-      if (term === normalized || words.has(term)) {
-        return true;
-      }
-
-      const maxDistance = MAX_FUZZY_DISTANCE;
-      
-      // Early exit for strings that are too different in length
-      if (Math.abs(term.length - normalized.length) > maxDistance) {
-        // Only check individual tokens if full query comparison fails length check
-        return tokens.some((token) => 
-          Math.abs(term.length - token.length) <= maxDistance &&
-          levenshteinDistance(term, token, maxDistance) <= maxDistance
-        );
-      }
-
-      // Full query fuzzy match
-      if (levenshteinDistance(term, normalized, maxDistance) <= maxDistance) {
-        return true;
-      }
-
-      // Space-removed comparison for multi-word handling
-      const termNoSpace = term.replace(/\s+/g, "");
-      const queryNoSpace = normalized.replace(/\s+/g, "");
-      if (
-        termNoSpace &&
-        queryNoSpace &&
-        Math.abs(termNoSpace.length - queryNoSpace.length) <= maxDistance &&
-        levenshteinDistance(termNoSpace, queryNoSpace, maxDistance) <= maxDistance
-      ) {
-        return true;
-      }
-
-      // Token-level fuzzy matching with early length check
-      if (tokens.some((token) => 
-        Math.abs(term.length - token.length) <= maxDistance &&
-        levenshteinDistance(term, token, maxDistance) <= maxDistance
-      )) {
-        return true;
-      }
-
-      // Multi-word term token matching
-      if (term.includes(" ")) {
-        const termTokens = term.split(/\s+/).filter(Boolean);
-        return termTokens.some((termToken) =>
-          tokens.some((token) => 
-            Math.abs(termToken.length - token.length) <= maxDistance &&
-            levenshteinDistance(termToken, token, maxDistance) <= maxDistance
-          )
-        );
-      }
-
-      return false;
-    });
+    const isMatched = allTerms.some((term) =>
+      isSynonymMatch(term, normalized, tokens, words, queryNoSpace)
+    );
 
     // Add all synonyms if match found
     if (isMatched) {
