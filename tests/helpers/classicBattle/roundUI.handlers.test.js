@@ -17,8 +17,7 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
 vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
 }));
-vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({
-  syncScoreDisplay: vi.fn(),
+vi.mock("../../../src/helpers/classicBattle/matchSummaryModal.js", () => ({
   showMatchSummaryModal: vi.fn()
 }));
 vi.mock("../../../src/helpers/battle/index.js", () => ({

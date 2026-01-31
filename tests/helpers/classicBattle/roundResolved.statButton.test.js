@@ -37,8 +37,7 @@ vi.mock("../../../src/helpers/classicBattle/statButtons.js", () => ({
   resetStatButtons: resetSpy,
   disableStatButtons: disableSpy
 }));
-vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({
-  syncScoreDisplay: vi.fn(),
+vi.mock("../../../src/helpers/classicBattle/matchSummaryModal.js", () => ({
   showMatchSummaryModal: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
