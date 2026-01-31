@@ -352,15 +352,14 @@ export async function expandQuery(query) {
   // embeddings and keyword search do not overweight repeated tokens.
   const dedupedTerms = Array.from(new Set([...words, ...addedTermsSet])).slice(0, MAX_QUERY_TERMS);
   const expandedJoined = dedupedTerms.join(" ");
-  const expanded =
-    expandedJoined.length <= MAX_QUERY_LENGTH
-      ? expandedJoined
-      : (() => {
-          const cutoffIndex = expandedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH);
-          return cutoffIndex > -1
-            ? expandedJoined.substring(0, cutoffIndex)
-            : expandedJoined.substring(0, MAX_QUERY_LENGTH);
-        })();
+  let expanded = expandedJoined;
+  if (expandedJoined.length > MAX_QUERY_LENGTH) {
+    const lastSpaceIndex = expandedJoined.lastIndexOf(" ", MAX_QUERY_LENGTH);
+    expanded =
+      lastSpaceIndex === -1
+        ? expandedJoined.slice(0, MAX_QUERY_LENGTH)
+        : expandedJoined.substring(0, lastSpaceIndex);
+  }
 
   return {
     original: query,
