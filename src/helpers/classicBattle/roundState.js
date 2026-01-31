@@ -124,14 +124,16 @@ export const roundState = {
    */
   setSelectedStat(stat, options = {}) {
     const safeOptions = typeof options === "object" && options !== null ? options : {};
-    void safeOptions;
+    const { emitLegacyEvent = true } = safeOptions;
 
     roundState.currentRound.selectedStat = stat;
 
     if (roundState.callbacks.onStatSelected) {
       roundState.callbacks.onStatSelected(stat);
     }
-  },
+
+    // Note: Legacy event emission removed as per refactoring goals
+  }
 
   /**
    * Set the outcome for the current round.
