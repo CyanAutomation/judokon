@@ -59,16 +59,23 @@ export async function roundDecisionEnter(machine) {
     });
 
     const cancel = guardSelectionResolution(store, machine);
+    let guardCanceled = false;
+    const cancelGuardOnce = () => {
+      if (guardCanceled) return;
+      guardCanceled = true;
+      cancel();
+    };
     try {
       let resolved = await resolveSelectionIfPresent(store);
       if (!resolved) {
+        cancelGuardOnce();
         await awaitPlayerChoice(store);
         resolved = await resolveSelectionIfPresent(store);
         if (!resolved) {
           stateLogger.warn("No player choice resolved after awaitPlayerChoice", {
             playerChoice: store?.playerChoice
           });
-          cancel();
+          cancelGuardOnce();
           guard(() =>
             emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
           );
@@ -77,10 +84,10 @@ export async function roundDecisionEnter(machine) {
           return;
         }
       }
-      cancel();
+      cancelGuardOnce();
       schedulePostResolveWatchdog(machine);
     } catch (err) {
-      cancel();
+      cancelGuardOnce();
 
       reportSentryError(err, {
         contexts: {
