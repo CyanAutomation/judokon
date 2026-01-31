@@ -64,6 +64,11 @@ export async function roundDecisionEnter(machine) {
       if (!resolved) {
         await awaitPlayerChoice(store);
         resolved = await resolveSelectionIfPresent(store);
+        if (!resolved) {
+          stateLogger.warn("No player choice resolved after awaitPlayerChoice", {
+            playerChoice: store?.playerChoice
+          });
+        }
       }
       cancel();
       schedulePostResolveWatchdog(machine);
