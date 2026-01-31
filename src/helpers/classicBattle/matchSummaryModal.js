@@ -18,13 +18,19 @@ import { navigateToHome } from "../navUtils.js";
  * @returns {ReturnType<typeof createModal>} Created modal instance.
  */
 export function showMatchSummaryModal(result, onNext) {
+  if (!result || typeof result !== "object") {
+    throw new Error("Invalid result parameter: expected object with message, playerScore, and opponentScore");
+  }
+
   const title = document.createElement("h2");
   title.id = "match-summary-title";
-  title.textContent = result.message;
+  title.textContent = result.message || "Match Complete";
 
   const scoreEl = document.createElement("p");
   scoreEl.id = "match-summary-score";
-  scoreEl.textContent = `Final Score – You: ${result.playerScore} Opponent: ${result.opponentScore}`;
+  const playerScore = typeof result.playerScore === "number" ? result.playerScore : 0;
+  const opponentScore = typeof result.opponentScore === "number" ? result.opponentScore : 0;
+  scoreEl.textContent = `Final Score – You: ${playerScore} Opponent: ${opponentScore}`;
 
   const actions = document.createElement("div");
   actions.className = "modal-actions";
