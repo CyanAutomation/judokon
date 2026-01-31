@@ -188,12 +188,11 @@ function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
   }
 
   const hasSpaces = term.includes(" ");
-  
-  if (hasSpaces) {
+
+  if (hasSpaces && queryNoSpace) {
     const termNoSpace = term.replace(/\s+/g, "");
     if (
       termNoSpace &&
-      queryNoSpace &&
       Math.abs(termNoSpace.length - queryNoSpace.length) <= maxDistance &&
       levenshteinDistance(termNoSpace, queryNoSpace, maxDistance) <= maxDistance
     ) {
@@ -207,7 +206,9 @@ function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
 
   if (hasSpaces) {
     const termTokens = term.split(/\s+/).filter(Boolean);
-    return termTokens.some((termToken) => matchesAnyToken(termToken, tokens, maxDistance));
+    return termTokens.some((termToken) =>
+      matchesAnyToken(termToken, tokens, maxDistance)
+    );
   }
 
   return false;
