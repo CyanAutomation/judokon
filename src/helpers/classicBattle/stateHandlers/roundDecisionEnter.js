@@ -68,6 +68,13 @@ export async function roundDecisionEnter(machine) {
           stateLogger.warn("No player choice resolved after awaitPlayerChoice", {
             playerChoice: store?.playerChoice
           });
+          cancel();
+          guard(() =>
+            emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
+          );
+          guard(() => emitBattleEvent("debugPanelUpdate"));
+          await guardAsync(() => machine.dispatch("interrupt", { reason: "noSelection" }));
+          return;
         }
       }
       cancel();
