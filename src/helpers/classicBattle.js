@@ -114,12 +114,10 @@ export {
 } from "./classicBattle/testHooks.js";
 
 // ============================================================================
-// ORCHESTRATOR API SHIMS — Battle integration and state access
+// ORCHESTRATOR API — Battle integration and state access
 // ============================================================================
 
-export {
-  confirmReadiness,
-  requestInterrupt,
-  getState as getOrchestratorState,
-  injectFakeTimers
-} from "./classicBattle/orchestratorApi.js";
+/**
+ * @summary Access the battle state machine and dispatch battle events.
+ */
+export { dispatchBattleEvent, getBattleStateMachine } from "./classicBattle/orchestrator.js";
