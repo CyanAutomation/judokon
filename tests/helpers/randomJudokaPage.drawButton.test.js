@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createRandomJudokaPageHarness } from "./integrationHarness.js";
+import { createSimpleHarness } from "./integrationHarness.js";
 import { createRandomCardDom } from "../utils/testUtils.js";
 import { withMutedConsole } from "../utils/console.js";
 
-const harness = createRandomJudokaPageHarness();
+const harness = createSimpleHarness();
 
 // ===== Top-level vi.hoisted() for shared mock state =====
 const { mocks } = vi.hoisted(() => {
@@ -43,7 +43,11 @@ vi.mock("../../src/helpers/randomCard.js", () => ({
   generateRandomCard: mocks.generateRandomCard,
   loadGokyoLookup: mocks.loadGokyoLookup,
   renderJudokaCard: mocks.renderJudokaCard,
-  preloadRandomCardData: mocks.preloadRandomCardData
+  preloadRandomCardData: mocks.preloadRandomCardData,
+  createHistoryManager: vi.fn(() => ({
+    add: vi.fn(),
+    get: vi.fn().mockReturnValue([])
+  }))
 }));
 
 vi.mock("../../src/helpers/dataUtils.js", async () => ({
@@ -184,11 +188,9 @@ describe("randomJudokaPage draw button", () => {
 
   it("disables draw button when data load fails", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
-    const dataUtils = await import("../../src/helpers/dataUtils.js");
-    const fetchSpy = vi.spyOn(dataUtils, "fetchJson").mockRejectedValue(new Error("fail"));
 
     // Update module-level mocks for this test
-    mocks.fetchJson.mockRejectedValue(new Error("fail"));
+    mocks.preloadRandomCardData.mockRejectedValue(new Error("fail"));
 
     const { section } = createRandomCardDom();
     document.body.append(section);
@@ -203,7 +205,6 @@ describe("randomJudokaPage draw button", () => {
     expect(button.getAttribute("aria-disabled")).toBe("true");
     const errorEl = document.getElementById("draw-error-message");
     expect(errorEl?.textContent).toMatch(/Unable to load judoka data/);
-    fetchSpy.mockRestore();
   });
 
   it("does not duplicate controls when initialized twice", async () => {
