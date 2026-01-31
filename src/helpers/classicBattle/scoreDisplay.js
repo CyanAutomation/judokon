@@ -1,3 +1,4 @@
+import { getScores } from "../BattleEngine.js";
 import { updateScore as updateScoreboard } from "../setupScoreboard.js";
 
 function normalizeScore(value) {
@@ -143,4 +144,46 @@ export function syncScoreboardDisplay(playerScore, opponentScore) {
   renderScoreDisplay(normalized.player, normalized.opponent);
 
   return normalized;
+}
+
+/**
+ * @summary Synchronize scoreboard UI with the battle engine scores.
+ *
+ * @pseudocode
+ * 1. Read the latest scores from the battle engine.
+ * 2. Log debug details in test environments.
+ * 3. Update the scoreboard component and DOM fallback.
+ * 4. Log the updated DOM text in test environments.
+ *
+ * @returns {void}
+ */
+export function syncScoreDisplay() {
+  let playerScore = 0;
+  let opponentScore = 0;
+
+  try {
+    const result = typeof getScores === "function" ? getScores() : null;
+    if (result) {
+      playerScore = result.playerScore;
+      opponentScore = result.opponentScore;
+    }
+  } catch {}
+
+  // Debug logging for tests
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      console.log("[DEBUG] syncScoreDisplay called:", { playerScore, opponentScore });
+    }
+  } catch {}
+
+  syncScoreboardDisplay(playerScore, opponentScore);
+
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      const el = document.getElementById("score-display");
+      if (el) {
+        console.log("[DEBUG] syncScoreDisplay updated DOM:", el.textContent);
+      }
+    }
+  } catch {}
 }
