@@ -172,7 +172,10 @@ export async function loadBattleCLI(options = {}) {
       stopTimer: vi.fn()
     }));
   } else {
-    vi.doMock("../../../src/helpers/BattleEngine.js", () => baseBattleEngineMock);
+    vi.doMock("../../../src/helpers/BattleEngine.js", async (importOriginal) => ({
+      ...(await importOriginal()),
+      ...baseBattleEngineMock
+    }));
   }
   vi.doMock("../../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue(stats)
