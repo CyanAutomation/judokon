@@ -70,6 +70,7 @@ function isWinConditionMet(context) {
     logWarn("isWinConditionMet: invalid score values", { playerScore, opponentScore });
     return false;
   }
+  const { playerScore, opponentScore } = scores;
   return playerScore >= pointsToWin || opponentScore >= pointsToWin;
 }
 
