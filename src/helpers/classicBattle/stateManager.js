@@ -328,7 +328,7 @@ function resolveRoundDecisionTransition(eventName) {
 
 function resolveRoundOverTransition(eventName, context) {
   if (eventName === "matchPointReached") {
-    return isWinConditionMet(context) ? "matchDecision" : null;
+    return isWinConditionMet(context) ? "matchDecision" : "cooldown";
   }
   if (eventName === "continue") return "cooldown";
   if (eventName === "interrupt") return "interruptRound";
