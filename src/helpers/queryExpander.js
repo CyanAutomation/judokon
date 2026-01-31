@@ -60,6 +60,57 @@ function normalizeQuery(query) {
 }
 
 /**
+ * Compute Levenshtein distance with an upper-bound cutoff.
+ * @param {string} left - First term
+ * @param {string} right - Second term
+ * @param {number} maxDistance - Maximum distance to evaluate
+ * @returns {number} Distance value (maxDistance + 1 if exceeded)
+ * @private
+ */
+function levenshteinDistance(left, right, maxDistance) {
+  if (left === right) {
+    return 0;
+  }
+
+  const leftLength = left.length;
+  const rightLength = right.length;
+  const lengthDelta = Math.abs(leftLength - rightLength);
+
+  if (lengthDelta > maxDistance) {
+    return maxDistance + 1;
+  }
+
+  const previous = Array.from({ length: rightLength + 1 }, (_, index) => index);
+  const current = new Array(rightLength + 1);
+
+  for (let i = 1; i <= leftLength; i += 1) {
+    current[0] = i;
+    let rowMin = current[0];
+
+    for (let j = 1; j <= rightLength; j += 1) {
+      const substitutionCost = left[i - 1] === right[j - 1] ? 0 : 1;
+      const nextValue = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + substitutionCost
+      );
+      current[j] = nextValue;
+      rowMin = Math.min(rowMin, nextValue);
+    }
+
+    if (rowMin > maxDistance) {
+      return maxDistance + 1;
+    }
+
+    for (let j = 0; j <= rightLength; j += 1) {
+      previous[j] = current[j];
+    }
+  }
+
+  return previous[rightLength];
+}
+
+/**
  * Load the synonym mapping JSON
  * @returns {Promise<Record<string, string[]>>} Synonym map or empty object on failure
  */
@@ -91,7 +142,7 @@ async function loadSynonyms() {
 
 /**
  * Find matching synonym mappings for a query
- * Uses exact matches against the full query or individual query terms.
+ * Uses exact or fuzzy matches against the full query or individual query terms.
  * @param {string} query - Input query string
  * @param {Record<string, string[]>} synonymMap - Synonym mapping
  * @returns {Set<string>} Matched synonym expansions
@@ -99,7 +150,9 @@ async function loadSynonyms() {
  */
 function findSynonymMatches(query, synonymMap) {
   const normalized = normalizeQuery(query);
-  const words = new Set(normalized.split(/\s+/).filter(Boolean));
+  const tokens = normalized.split(/\s+/).filter(Boolean);
+  const words = new Set(tokens);
+  const queryNoSpace = normalized.replace(/\s+/g, "");
   const matches = new Set();
 
   for (const [key, synonyms] of Object.entries(synonymMap)) {
@@ -108,8 +161,61 @@ function findSynonymMatches(query, synonymMap) {
       .map((term) => normalizeQuery(term))
       .filter(Boolean);
 
-    // Check if any variant matches the query (exact only).
-    const isMatched = allTerms.some((term) => term === normalized || words.has(term));
+    const isMatched = allTerms.some((term) => {
+      // Fast exact matches first
+      if (term === normalized || words.has(term)) {
+        return true;
+      }
+
+      const maxDistance = MAX_FUZZY_DISTANCE;
+      
+      // Early exit for strings that are too different in length
+      if (Math.abs(term.length - normalized.length) > maxDistance) {
+        // Only check individual tokens if full query comparison fails length check
+        return tokens.some((token) => 
+          Math.abs(term.length - token.length) <= maxDistance &&
+          levenshteinDistance(term, token, maxDistance) <= maxDistance
+        );
+      }
+
+      // Full query fuzzy match
+      if (levenshteinDistance(term, normalized, maxDistance) <= maxDistance) {
+        return true;
+      }
+
+      // Space-removed comparison for multi-word handling
+      const termNoSpace = term.replace(/\s+/g, "");
+      const queryNoSpace = normalized.replace(/\s+/g, "");
+      if (
+        termNoSpace &&
+        queryNoSpace &&
+        Math.abs(termNoSpace.length - queryNoSpace.length) <= maxDistance &&
+        levenshteinDistance(termNoSpace, queryNoSpace, maxDistance) <= maxDistance
+      ) {
+        return true;
+      }
+
+      // Token-level fuzzy matching with early length check
+      if (tokens.some((token) => 
+        Math.abs(term.length - token.length) <= maxDistance &&
+        levenshteinDistance(term, token, maxDistance) <= maxDistance
+      )) {
+        return true;
+      }
+
+      // Multi-word term token matching
+      if (term.includes(" ")) {
+        const termTokens = term.split(/\s+/).filter(Boolean);
+        return termTokens.some((termToken) =>
+          tokens.some((token) => 
+            Math.abs(termToken.length - token.length) <= maxDistance &&
+            levenshteinDistance(termToken, token, maxDistance) <= maxDistance
+          )
+        );
+      }
+
+      return false;
+    });
 
     // Add all synonyms if match found
     if (isMatched) {
@@ -125,7 +231,7 @@ function findSynonymMatches(query, synonymMap) {
 
 /**
  * Expand a query with synonyms for improved search relevance
- * Uses exact matches only for synonym expansion.
+ * Uses exact or fuzzy matches for synonym expansion.
  * @param {string} query - Search query to expand
  * @returns {Promise<ExpandedQueryResult>} Result with original query, expanded query, and matched terms
  *
