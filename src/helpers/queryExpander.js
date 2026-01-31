@@ -187,7 +187,9 @@ function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
     return true;
   }
 
-  if (term.includes(" ")) {
+  const hasSpaces = term.includes(" ");
+  
+  if (hasSpaces) {
     const termNoSpace = term.replace(/\s+/g, "");
     if (
       termNoSpace &&
@@ -203,7 +205,7 @@ function isSynonymMatch(term, normalizedQuery, tokens, words, queryNoSpace) {
     return true;
   }
 
-  if (term.includes(" ")) {
+  if (hasSpaces) {
     const termTokens = term.split(/\s+/).filter(Boolean);
     return termTokens.some((termToken) => matchesAnyToken(termToken, tokens, maxDistance));
   }
