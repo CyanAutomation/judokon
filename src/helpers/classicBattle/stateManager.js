@@ -70,12 +70,6 @@ function isWinConditionMet(context) {
     logWarn("isWinConditionMet: invalid score values", { playerScore, opponentScore });
     return false;
   }
-
-  if (!scores || typeof pointsToWin !== "number") {
-    logWarn("isWinConditionMet: scores or pointsToWin is missing", { scores, pointsToWin });
-    return false;
-  }
-
   const { playerScore, opponentScore } = scores;
   return playerScore >= pointsToWin || opponentScore >= pointsToWin;
 }
@@ -263,16 +257,12 @@ function validateHandlerMap(onEnterMap, definedStates) {
  * Resolve the target state for a given event in a specific state.
  *
  * @pseudocode
- * 1. Evaluate guarded triggers first (in order of definition).
- * 2. If no guarded trigger passes, check fast-path trigger map (O(1) unguarded triggers).
- * 3. If no trigger matches, check if event name is a valid state name (fallback).
- * 4. Return target state name or null if no valid transition exists.
+ * 1. Select the per-state resolver based on the current state.
+ * 2. Execute explicit event/guard checks for that state.
+ * 3. Return the target state name or null if no valid transition exists.
  *
  * @param {string} currentState - Current state name.
  * @param {string} eventName - Event/trigger name.
- * @param {object} currentStateDef - State definition for the current state.
- * @param {Map} triggerMap - Fast-path trigger map for O(1) lookups (unguarded only).
- * @param {Map} statesByName - Map of state name -> state definition.
  * @param {object} context - Machine context for guard evaluation.
  * @returns {string|null} Target state name or null if no valid transition.
  */
