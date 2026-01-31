@@ -33,7 +33,7 @@ import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
-import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
+import { bindScoreboardEventHandlersOnce } from "../helpers/classicBattle/uiService.js";
 import { initFeatureFlags, isEnabled } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { setTestMode } from "../helpers/testModeUtils.js";
@@ -1448,7 +1448,7 @@ function setupInitialUI() {
     opponentCard.classList.add("is-obscured");
   }
 
-  initScoreboardAdapter();
+  bindScoreboardEventHandlersOnce();
   updateScore(0, 0);
 
   const sd = getScoreDisplay();
