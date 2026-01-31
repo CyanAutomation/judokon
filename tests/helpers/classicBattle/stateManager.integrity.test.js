@@ -115,7 +115,7 @@ describe("state manager integrity", () => {
     expect(initialState).toBeDefined();
 
     // Attempt the first transition - matchStart
-    let result = await machine.dispatch("matchStart");
+    let result = await machine.dispatch("startClicked");
     expect(result).toBe(true);
 
     // The important thing is that the dispatch succeeded,
@@ -133,13 +133,13 @@ describe("state manager integrity", () => {
     const machine = getBattleStateMachine();
 
     // Setup: reach cardsRevealed state
-    await machine.dispatch("matchStart");
+    await machine.dispatch("startClicked");
     await machine.dispatch("ready");
     await machine.dispatch("ready");
     await machine.dispatch("cardsRevealed");
 
     // Test: interrupt should successfully transition to cooldown
-    const result = await machine.dispatch("interruptRound");
+    const result = await machine.dispatch("interrupt");
     expect(result).toBe(true);
 
     // Verify the state is cooldown

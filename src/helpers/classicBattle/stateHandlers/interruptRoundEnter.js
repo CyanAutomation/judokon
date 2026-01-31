@@ -58,7 +58,7 @@ export async function interruptRoundEnter(machine, payload) {
   // Route to appropriate next state based on interrupt reason
   if (payload?.adminTest) {
     // Admin-initiated test scenario bypasses normal flow
-    await machine.dispatch("roundModification", payload);
+    await machine.dispatch("roundModifyFlag", payload);
   } else if (payload?.reason === "quit") {
     // User quit: abort entire match instead of just this round
     await machine.dispatch("abortMatch");

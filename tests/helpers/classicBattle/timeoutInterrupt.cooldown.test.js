@@ -198,7 +198,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     onBattleEvent("battleStateChange", recordTransition);
 
     try {
-      await machine.dispatch("matchStart");
+      await machine.dispatch("startClicked");
       await machine.dispatch("ready");
       await machine.dispatch("ready");
       await machine.dispatch("cardsRevealed");
@@ -219,7 +219,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
         globalThis.__MOCK_TIMERS.length = 0;
       }
 
-      await machine.dispatch("interruptRound");
+      await machine.dispatch("interrupt");
       const { dispatchBattleEvent } = await import(
         "../../../src/helpers/classicBattle/eventDispatcher.js"
       );
@@ -277,7 +277,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
         expect.objectContaining({
           from: "waitingForPlayerAction",
           to: "interruptRound",
-          event: "interruptRound"
+          event: "interrupt"
         }),
         expect.objectContaining({ from: "interruptRound", to: "cooldown", event: "restartRound" })
       ]);

@@ -79,7 +79,7 @@ describe("classic battle onTransition", () => {
     onBattleEvent("control.readiness.required", requiredSpy);
     onBattleEvent("control.readiness.confirmed", confirmedSpy);
 
-    await machine.dispatch("matchStart");
+    await machine.dispatch("startClicked");
     await machine.dispatch("ready");
 
     expect(requiredSpy).toHaveBeenCalledTimes(1);

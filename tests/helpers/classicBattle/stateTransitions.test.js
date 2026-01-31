@@ -46,7 +46,13 @@ async function createMachineForTransition(state, trigger, onTransition) {
   }
 
   // For feature flag guards, mock isEnabled to return appropriate value
-  if (trigger.guard === GUARD_CONDITIONS.AUTO_SELECT_DISABLED) {
+  if (trigger.guard === GUARD_CONDITIONS.AUTO_SELECT_ENABLED) {
+    // Guard is "autoSelectEnabled", so we want autoSelect to be true (enabled)
+    vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) => {
+      if (flag === "autoSelect") return true;
+      return false;
+    });
+  } else if (trigger.guard === GUARD_CONDITIONS.AUTO_SELECT_DISABLED) {
     // Guard is "!autoSelectEnabled", so we want autoSelect to be false (disabled)
     vi.spyOn(featureFlags, "isEnabled").mockReturnValue(false);
   } else if (trigger.guard === GUARD_CONDITIONS.FF_ROUND_MODIFY) {

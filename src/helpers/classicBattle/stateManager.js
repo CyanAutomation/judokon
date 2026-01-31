@@ -8,43 +8,19 @@ const DEFAULT_INITIAL_STATE = "waitingForMatchStart";
 const VALIDATION_WARN_ENABLED = true;
 
 // ============================================================================
-// Guard Evaluator Registry
-// ============================================================================
-
-/**
- * Registry of guard evaluator functions.
- * Maps guard condition identifiers to evaluation logic.
- * Each evaluator receives (context, guardOverrides?) and returns boolean.
- *
- * @type {Map<string, (context: object, guardOverrides?: Record<string, boolean>) => boolean>}
- */
-const guardEvaluators = new Map();
-
-// ============================================================================
 // Helper Functions
 // ============================================================================
 
 /**
- * Register a guard evaluator function.
- * Allows dynamic registration of custom guard logic without modifying evaluateGuard().
+ * Resolve a feature-flag-based guard with overrides.
  *
- * @pseudocode
- * 1. Validate that evaluatorFn is a function.
- * 2. Store evaluator in guardEvaluators map by guardId.
- * 3. Log confirmation of registration for debugging.
- *
- * @param {string} guardId - Unique identifier for the guard (e.g., "autoSelectEnabled").
- * @param {(context: object, guardOverrides?: Record<string, boolean>) => boolean} evaluatorFn - Function that evaluates the guard.
- * @returns {void}
+ * @param {object} args - Guard resolver parameters.
+ * @param {string} args.guardName - Guard name for overrides (e.g., "autoSelectEnabled").
+ * @param {string} args.featureFlagKey - Feature flag key (e.g., "autoSelect").
+ * @param {object} args.context - Machine context for flag overrides.
+ * @param {Record<string, boolean>} args.guardOverrides - Explicit overrides.
+ * @returns {boolean} True if guard passes.
  */
-export function registerGuardEvaluator(guardId, evaluatorFn) {
-  if (typeof evaluatorFn !== "function") {
-    throw new Error(`Guard evaluator for '${guardId}' must be a function`);
-  }
-  guardEvaluators.set(guardId, evaluatorFn);
-  debugLog(`Guard evaluator registered: ${guardId}`);
-}
-
 function resolveGuardToggle({ guardName, featureFlagKey, context, guardOverrides }) {
   if (guardOverrides && Object.prototype.hasOwnProperty.call(guardOverrides, guardName)) {
     return !!guardOverrides[guardName];
@@ -57,64 +33,52 @@ function resolveGuardToggle({ guardName, featureFlagKey, context, guardOverrides
   return isEnabled(featureFlagKey) === true;
 }
 
-// Initialize default guard evaluators.
-// Called once at module load to set up built-in guards.
-//
-// @pseudocode
-// 1. Register autoSelectEnabled (feature flag).
-// 2. Register FF_ROUND_MODIFY (admin flag).
-// 3. Register WIN_CONDITION_MET (score-based logic).
-function initializeDefaultGuards() {
-  // Feature flag: autoSelectEnabled
-
-  registerGuardEvaluator(GUARD_CONDITIONS.AUTO_SELECT_ENABLED, (context, guardOverrides) => {
-    return resolveGuardToggle({
-      guardName: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
-      featureFlagKey: "autoSelect",
-      context,
-      guardOverrides
-    });
-  });
-
-  // Feature flag: FF_ROUND_MODIFY
-
-  registerGuardEvaluator(GUARD_CONDITIONS.FF_ROUND_MODIFY, (context, guardOverrides) => {
-    return resolveGuardToggle({
-      guardName: GUARD_CONDITIONS.FF_ROUND_MODIFY,
-      featureFlagKey: "roundModify",
-      context,
-      guardOverrides
-    });
-  });
-
-  // Score-based guard: WIN_CONDITION_MET
-  registerGuardEvaluator(GUARD_CONDITIONS.WIN_CONDITION_MET, (context) => {
-    if (!context?.engine) {
-      logWarn("evaluateGuard: WIN_CONDITION_MET guard evaluated but context.engine is missing");
-      return false;
-    }
-
-    const scores = context.engine.getScores?.();
-    const pointsToWin = context.engine.pointsToWin;
-
-    if (!scores || typeof pointsToWin !== "number") {
-      logWarn(
-        "evaluateGuard: WIN_CONDITION_MET guard evaluated but scores or pointsToWin is missing",
-        {
-          scores,
-          pointsToWin
-        }
-      );
-      return false;
-    }
-
-    const { playerScore, opponentScore } = scores;
-    return playerScore >= pointsToWin || opponentScore >= pointsToWin;
+function isAutoSelectEnabled(context, guardOverrides) {
+  return resolveGuardToggle({
+    guardName: GUARD_CONDITIONS.AUTO_SELECT_ENABLED,
+    featureFlagKey: "autoSelect",
+    context,
+    guardOverrides
   });
 }
 
-// Initialize guards at module load
-initializeDefaultGuards();
+function isRoundModifyEnabled(context, guardOverrides) {
+  return resolveGuardToggle({
+    guardName: GUARD_CONDITIONS.FF_ROUND_MODIFY,
+    featureFlagKey: "roundModify",
+    context,
+    guardOverrides
+  });
+}
+
+function isWinConditionMet(context) {
+  if (!context?.engine) {
+    logWarn("isWinConditionMet: context.engine is missing");
+    return false;
+  }
+
+  const scores = context.engine.getScores?.();
+  const pointsToWin = context.engine.pointsToWin;
+
+  if (!scores || typeof pointsToWin !== "number") {
+    logWarn("isWinConditionMet: scores or pointsToWin is missing", { scores, pointsToWin });
+    return false;
+  }
+
+  const { playerScore, opponentScore } = scores;
+  if (typeof playerScore !== "number" || typeof opponentScore !== "number") {
+    logWarn("isWinConditionMet: invalid score values", { playerScore, opponentScore });
+    return false;
+  }
+
+  if (!scores || typeof pointsToWin !== "number") {
+    logWarn("isWinConditionMet: scores or pointsToWin is missing", { scores, pointsToWin });
+    return false;
+  }
+
+  const { playerScore, opponentScore } = scores;
+  return playerScore >= pointsToWin || opponentScore >= pointsToWin;
+}
 
 /**
  * Build a lookup map from state table and find initial state.
@@ -138,76 +102,6 @@ function initializeStateTable(stateTable) {
   }
 
   return { byName, initialState };
-}
-
-/**
- * Build a trigger lookup map for fast O(1) access to transitions.
- *
- * Note: This map is used as a fast path for triggers without guards.
- * When guards are present, dispatch() will fall back to linear search through triggers array.
- *
- * @param {Map} statesByName - State lookup map.
- * @returns {Map} Map of "stateName:eventName" -> target state (only for unguarded triggers).
- */
-function buildTriggerMap(statesByName) {
-  const triggerMap = new Map();
-
-  for (const [stateName, stateDef] of statesByName) {
-    for (const trigger of stateDef.triggers || []) {
-      // Only add unguarded triggers to the fast-path map
-      // Guarded triggers must be evaluated in dispatch()
-      if (!trigger.guard) {
-        const key = `${stateName}:${trigger.on}`;
-        triggerMap.set(key, trigger.target);
-      }
-    }
-  }
-
-  return triggerMap;
-}
-
-/**
- * Evaluate a guard condition using the registered evaluators.
- *
- * @pseudocode
- * 1. Handle null/empty guards (pass by default).
- * 2. Parse negation prefix (e.g., "!guardName").
- * 3. Look up evaluator in guardEvaluators registry.
- * 4. Execute evaluator and apply negation if present.
- * 5. Log warning if evaluator not found (unknown guard).
- *
- * @param {string} guard - Guard condition string or identifier.
- * @param {object} context - State machine context with optional engine.
- * @param {Record<string, boolean>} [guardOverrides] - Optional guard override map.
- * @returns {boolean} True if guard passes, false otherwise.
- */
-function evaluateGuard(guard, context, guardOverrides) {
-  if (!guard || typeof guard !== "string") {
-    return true; // No guard means always pass
-  }
-
-  // Handle negation prefix
-  const isNegated = guard.startsWith("!");
-  const guardName = isNegated ? guard.slice(1) : guard;
-
-  // Look up evaluator in registry
-  const evaluator = guardEvaluators.get(guardName);
-
-  if (!evaluator) {
-    logWarn(`Unknown guard condition: ${guardName}`);
-    return false; // Unknown guard defaults to false for safety
-  }
-
-  // Execute evaluator and apply negation
-  let result = false;
-  try {
-    result = evaluator(context, guardOverrides);
-  } catch (err) {
-    logError(`Guard evaluator failed for '${guardName}':`, err);
-    result = false;
-  }
-
-  return isNegated ? !result : result;
 }
 
 /**
@@ -382,43 +276,131 @@ function validateHandlerMap(onEnterMap, definedStates) {
  * @param {object} context - Machine context for guard evaluation.
  * @returns {string|null} Target state name or null if no valid transition.
  */
-function resolveTransitionTarget(
-  currentState,
-  eventName,
-  currentStateDef,
-  triggerMap,
-  statesByName,
-  context,
-  guardOverrides
-) {
-  let target = null;
+function resolveWaitingForMatchStartTransition(eventName) {
+  if (eventName === "startClicked") return "matchStart";
+  if (eventName === "interrupt") return "waitingForMatchStart";
+  return null;
+}
 
-  // First, check if there are any triggers with guards that need evaluation
-  const triggersForEvent = (currentStateDef?.triggers || []).filter((t) => t.on === eventName);
+function resolveMatchStartTransition(eventName) {
+  if (eventName === "ready") return "cooldown";
+  if (eventName === "interrupt" || eventName === "error") return "interruptMatch";
+  return null;
+}
 
-  if (triggersForEvent.length > 0) {
-    // Evaluate guards to find the first matching trigger
-    for (const trigger of triggersForEvent) {
-      const guardPassed = evaluateGuard(trigger.guard, context, guardOverrides);
-      if (guardPassed) {
-        target = trigger.target;
-        break;
-      }
-    }
+function resolveCooldownTransition(eventName) {
+  if (eventName === "ready") return "roundStart";
+  if (eventName === "interrupt") return "interruptRound";
+  return null;
+}
+
+function resolveRoundStartTransition(eventName) {
+  if (eventName === "cardsRevealed") return "waitingForPlayerAction";
+  if (eventName === "interrupt") return "interruptRound";
+  return null;
+}
+
+function resolveWaitingForPlayerActionTransition(eventName, context, guardOverrides) {
+  if (eventName === "statSelected") return "waitingForOpponentDecision";
+  if (eventName === "timeout") {
+    return isAutoSelectEnabled(context, guardOverrides)
+      ? "waitingForOpponentDecision"
+      : "interruptRound";
   }
+  if (eventName === "interrupt") return "interruptRound";
+  return null;
+}
 
-  // If no guarded trigger matched, try the fast-path trigger map
-  if (!target) {
-    const triggerKey = `${currentState}:${eventName}`;
-    target = triggerMap.get(triggerKey);
+function resolveWaitingForOpponentDecisionTransition(eventName) {
+  if (eventName === "opponentDecisionReady") return "roundDecision";
+  if (eventName === "interrupt") return "interruptRound";
+  return null;
+}
+
+function resolveRoundDecisionTransition(eventName) {
+  if (eventName === "outcome=winPlayer") return "roundOver";
+  if (eventName === "outcome=winOpponent") return "roundOver";
+  if (eventName === "outcome=draw") return "roundOver";
+  if (eventName === "evaluate") return "roundDecision";
+  if (eventName === "interrupt") return "interruptRound";
+  return null;
+}
+
+function resolveRoundOverTransition(eventName, context) {
+  if (eventName === "matchPointReached") {
+    return isWinConditionMet(context) ? "matchDecision" : "cooldown";
   }
+  if (eventName === "continue") return "cooldown";
+  if (eventName === "interrupt") return "interruptRound";
+  return null;
+}
 
-  // Fallback: check if event name is a direct state name
-  if (!target && statesByName.has(eventName)) {
-    target = eventName;
+function resolveMatchDecisionTransition(eventName) {
+  if (eventName === "finalize") return "matchOver";
+  if (eventName === "interrupt") return "interruptMatch";
+  return null;
+}
+
+function resolveMatchOverTransition(eventName) {
+  if (eventName === "rematch") return "waitingForMatchStart";
+  if (eventName === "home") return "waitingForMatchStart";
+  return null;
+}
+
+function resolveInterruptRoundTransition(eventName, context, guardOverrides, payload) {
+  if (eventName === "roundModifyFlag") {
+    if (payload?.adminTest) return "roundModification";
+    return isRoundModifyEnabled(context, guardOverrides) ? "roundModification" : "interruptRound";
   }
+  if (eventName === "restartRound") return "cooldown";
+  if (eventName === "resumeLobby") return "waitingForMatchStart";
+  if (eventName === "abortMatch") return "matchOver";
+  return null;
+}
 
-  return target;
+function resolveRoundModificationTransition(eventName) {
+  if (eventName === "modifyRoundDecision") return "roundDecision";
+  if (eventName === "cancelModification") return "interruptRound";
+  return null;
+}
+
+function resolveInterruptMatchTransition(eventName) {
+  if (eventName === "restartMatch") return "matchStart";
+  if (eventName === "toLobby") return "waitingForMatchStart";
+  return null;
+}
+
+function resolveClassicBattleTransition(currentState, eventName, context, guardOverrides, payload) {
+  switch (currentState) {
+    case "waitingForMatchStart":
+      return resolveWaitingForMatchStartTransition(eventName);
+    case "matchStart":
+      return resolveMatchStartTransition(eventName);
+    case "cooldown":
+      return resolveCooldownTransition(eventName);
+    case "roundStart":
+      return resolveRoundStartTransition(eventName);
+    case "waitingForPlayerAction":
+      return resolveWaitingForPlayerActionTransition(eventName, context, guardOverrides);
+    case "waitingForOpponentDecision":
+      return resolveWaitingForOpponentDecisionTransition(eventName);
+    case "roundDecision":
+      return resolveRoundDecisionTransition(eventName);
+    case "roundOver":
+      return resolveRoundOverTransition(eventName, context);
+    case "matchDecision":
+      return resolveMatchDecisionTransition(eventName);
+    case "matchOver":
+      return resolveMatchOverTransition(eventName);
+    case "interruptRound":
+      return resolveInterruptRoundTransition(eventName, context, guardOverrides, payload);
+    case "roundModification":
+      return resolveRoundModificationTransition(eventName);
+    case "interruptMatch":
+      return resolveInterruptMatchTransition(eventName);
+    default:
+      return null;
+  }
 }
 
 /**
@@ -571,11 +553,10 @@ export function debugStateTable(statesByName, options = {}) {
  * @pseudocode
  * 1. Validate state table and context.
  * 2. Initialize state lookup map and determine initial state.
- * 3. Build trigger lookup for O(1) event resolution.
- * 4. Validate handler map coverage.
- * 5. Create machine with context, getState(), dispatch(), and getAvailableTransitions().
- * 6. In dispatch(): resolve target state, validate transition, run onEnter.
- * 7. Initialize machine state and run initial onEnter handler.
+ * 3. Validate handler map coverage.
+ * 4. Create machine with context, getState(), dispatch(), and getAvailableTransitions().
+ * 5. In dispatch(): resolve target state via explicit transition function, validate transition, run onEnter.
+ * 6. Initialize machine state and run initial onEnter handler.
  *
  * @example
  * const machine = await createStateManager({
@@ -594,18 +575,12 @@ export function debugStateTable(statesByName, options = {}) {
  * const { byName } = initializeStateTable(CLASSIC_BATTLE_STATES);
  * debugStateTable(byName, { useConsole: true });
  *
- * @example
- * // Register custom guard evaluator
- * import { registerGuardEvaluator } from './stateManager.js';
- * registerGuardEvaluator('customGuard', (context) => context.value > 10);
- *
  * 1. Validate state table and context.
  * 2. Initialize state lookup map and determine initial state.
- * 3. Build trigger lookup for O(1) event resolution.
- * 4. Validate handler map coverage.
- * 5. Create machine with context, getState(), and async dispatch().
- * 6. In dispatch(): resolve target state, validate transition, run onEnter.
- * 7. Initialize machine state and run initial onEnter handler.
+ * 3. Validate handler map coverage.
+ * 4. Create machine with context, getState(), and async dispatch().
+ * 5. In dispatch(): resolve target state, validate transition, run onEnter.
+ * 6. Initialize machine state and run initial onEnter handler.
  *
  * @param {Record<string, Function>} [onEnterMap={}] - Map of state name -> onEnter handler.
  * @param {object} [context={}] - Initial machine context object.
@@ -636,9 +611,6 @@ export async function createStateManager(
   // Resolve guard overrides with precedence: parameter > context.guardOverrides
   const resolvedGuardOverrides = guardOverrides || context?.guardOverrides;
 
-  // Build trigger map for O(1) lookup
-  const triggerMap = buildTriggerMap(statesByName);
-
   // Validate handler coverage
   validateHandlerMap(onEnterMap, definedStates);
 
@@ -657,15 +629,13 @@ export async function createStateManager(
       const currentStateDef = statesByName.get(from);
       const availableTriggers = getAvailableTriggers(currentStateDef);
 
-      // Resolve target state via priority: guarded triggers -> fast-path -> fallback
-      const target = resolveTransitionTarget(
+      // Resolve target state via explicit transition mapping
+      const target = resolveClassicBattleTransition(
         from,
         eventName,
-        currentStateDef,
-        triggerMap,
-        statesByName,
         context,
-        resolvedGuardOverrides
+        resolvedGuardOverrides,
+        payload
       );
 
       // Validate target resolution
