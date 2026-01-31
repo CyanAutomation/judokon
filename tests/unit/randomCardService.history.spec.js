@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { createHistoryManager } from "../../src/helpers/randomCardService.js";
+import { createHistoryManager } from "../../src/helpers/randomCard.js";
 
 describe("createHistoryManager", () => {
   it("returns a shallow copy from add without leaking internal state", () => {
