@@ -105,6 +105,7 @@ export const roundState = {
   setRoundNumber(number, options = {}) {
     const safeOptions = typeof options === "object" && options !== null ? options : {};
     const { emitLegacyEvent = true } = safeOptions;
+    void emitLegacyEvent;
     const oldNumber = roundState.currentRound.number;
     if (oldNumber === number) return;
 
@@ -115,7 +116,7 @@ export const roundState = {
     }
 
     // Note: Legacy event emission removed as per refactoring goals
-  }
+  },
 
   /**
    * Set the selected stat for the current round.
@@ -125,6 +126,7 @@ export const roundState = {
   setSelectedStat(stat, options = {}) {
     const safeOptions = typeof options === "object" && options !== null ? options : {};
     const { emitLegacyEvent = true } = safeOptions;
+    void emitLegacyEvent;
 
     roundState.currentRound.selectedStat = stat;
 
@@ -133,7 +135,7 @@ export const roundState = {
     }
 
     // Note: Legacy event emission removed as per refactoring goals
-  }
+  },
 
   /**
    * Set the outcome for the current round.
