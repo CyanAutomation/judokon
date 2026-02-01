@@ -380,6 +380,11 @@ async function displayCard({
     }
 
     // Transition to DRAWING state
+    // Debug: trace draw state changes during tests
+    /* istanbul ignore next: debug logging for failing test investigations */
+    try {
+      console.debug?.("displayCard: transitioning to DRAWING", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+    } catch {}
     stateMachine.transition("DRAWING");
     announceCard("Drawing card…");
     const errorEl = document.getElementById("draw-error-message");
@@ -404,7 +409,15 @@ async function displayCard({
         onSelect,
         { enableInspector: isEnabled("enableCardInspector") }
       );
+      /* istanbul ignore next: debug logging for failing test investigations */
+      try {
+        console.debug?.("displayCard: generateRandomCard completed", { announcedJudoka, current: stateMachine.currentState, disabled: drawButton?.disabled });
+      } catch {}
       stateMachine.transition("SUCCESS");
+      /* istanbul ignore next: debug logging for failing test investigations */
+      try {
+        console.debug?.("displayCard: after SUCCESS transition", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+      } catch {}
     } catch (err) {
       console.error("Error generating card:", err);
       const fallbackJudoka = await getFallbackJudoka();
@@ -438,9 +451,37 @@ async function displayCard({
       settle();
     } else if (!cardEl) {
       // Card element not found: transition to IDLE with fallback timer
+      try {
+        console.debug?.("displayCard: card element missing, transitioning to IDLE", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+      } catch {}
       stateMachine.transition("IDLE");
+      try {
+        console.debug?.("displayCard: after IDLE transition", { current: stateMachine.currentState, disabled: drawButton?.disabled });
+      } catch {}
+
+      // Ensure button is re-enabled synchronously in the missing-markup case to avoid
+      // test-time race conditions where UI state remains disabled unexpectedly.
+      try {
+        drawButton.disabled = false;
+        drawButton.removeAttribute("aria-disabled");
+        drawButton.classList.remove("is-loading");
+        drawButton.removeAttribute("aria-busy");
+        // Ensure label is restored to idle text
+        try {
+          const idleLabel = drawButton.dataset.drawButtonIdleLabel || "Draw Card!";
+          const labelEl = drawButton.querySelector?.(".button-label");
+          if (labelEl) labelEl.textContent = idleLabel;
+          else drawButton.textContent = idleLabel;
+        } catch {}
+      } catch (err) {
+        // swallow: defensive update shouldn't break flow
+      }
+
       globalThis.requestAnimationFrame?.(() => {
         if (drawButton.disabled) {
+          try {
+            console.debug?.("displayCard: RAF found drawButton still disabled, reapplying IDLE", { disabled: drawButton?.disabled });
+          } catch {}
           stateMachine.transition("IDLE");
         }
       });

@@ -84,15 +84,24 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
 
     emitBattleEvent("display.timer.show", { secondsRemaining: 5 });
     await vi.advanceTimersByTimeAsync(220);
-    const timer1 = document.getElementById("next-round-timer").textContent.replace(/\s+/g, " ").trim();
+    const timer1 = document
+      .getElementById("next-round-timer")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
     expect(timer1).toBe("Time Left: 5s");
     emitBattleEvent("display.timer.tick", { secondsRemaining: 4 });
     await vi.advanceTimersByTimeAsync(220);
-    const timer2 = document.getElementById("next-round-timer").textContent.replace(/\s+/g, " ").trim();
+    const timer2 = document
+      .getElementById("next-round-timer")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
     expect(timer2).toBe("Time Left: 4s");
     emitBattleEvent("display.timer.hide");
     await vi.advanceTimersByTimeAsync(220);
-    const timerHidden = document.getElementById("next-round-timer").textContent.replace(/\s+/g, " ").trim();
+    const timerHidden = document
+      .getElementById("next-round-timer")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
     expect(timerHidden).toBe("");
 
     emitBattleEvent("display.score.update", { player: 2, opponent: 1 });
