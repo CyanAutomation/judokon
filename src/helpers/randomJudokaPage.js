@@ -496,7 +496,28 @@ export async function setupRandomJudokaPage() {
     cardContainer.appendChild(placeholderTemplate.content.cloneNode(true));
   }
 
-  const { judokaData, gokyoData, error: preloadError } = await preloadRandomCardData();
+  // Preload data with robust error handling. If the preload rejects,
+  // or resolves to a non-object value, treat as an error and ensure
+  // `judokaData`, `gokyoData`, and `preloadError` are set accordingly.
+  let judokaData = null;
+  let gokyoData = null;
+  let preloadError = null;
+  try {
+    const result = await preloadRandomCardData();
+    if (result && typeof result === "object") {
+      judokaData = result.judokaData ?? null;
+      gokyoData = result.gokyoData ?? null;
+      preloadError = result.error ?? null;
+    } else {
+      preloadError = new Error("preloadRandomCardData returned invalid value");
+      // Log for diagnostics but don't throw so page can render a graceful error
+      console.error("preloadRandomCardData returned invalid value:", result);
+    }
+  } catch (err) {
+    preloadError = err || new Error("Unknown error preloading data");
+    judokaData = null;
+    gokyoData = null;
+  }
   const dataLoaded = !preloadError;
   const historyManager = createHistoryManager();
   const { historyPanel, historyList, toggleHistoryBtn } =

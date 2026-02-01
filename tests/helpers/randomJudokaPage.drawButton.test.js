@@ -207,6 +207,27 @@ describe("randomJudokaPage draw button", () => {
     expect(errorEl?.textContent).toMatch(/Unable to load judoka data/);
   });
 
+  it("disables draw button when preload resolves to invalid value", async () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    // preload resolves to a non-object value
+    mocks.preloadRandomCardData.mockResolvedValue("invalid");
+
+    const { section } = createRandomCardDom();
+    document.body.append(section);
+
+    await withMutedConsole(async () => {
+      const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+      await initRandomJudokaPage();
+    });
+
+    const button = document.getElementById("draw-card-btn");
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    const errorEl = document.getElementById("draw-error-message");
+    expect(errorEl?.textContent).toMatch(/Unable to load judoka data/);
+  });
+
   it("does not duplicate controls when initialized twice", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 

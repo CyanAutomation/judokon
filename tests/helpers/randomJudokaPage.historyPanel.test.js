@@ -31,7 +31,8 @@ describe("randomJudokaPage history panel", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), getAll: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -97,7 +98,8 @@ describe("randomJudokaPage history panel", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), getAll: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -154,7 +156,8 @@ describe("randomJudokaPage history panel", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), getAll: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
@@ -200,7 +203,8 @@ describe("randomJudokaPage history panel", () => {
       generateRandomCard,
       loadGokyoLookup,
       renderJudokaCard,
-      preloadRandomCardData
+      preloadRandomCardData,
+      createHistoryManager: vi.fn(() => ({ add: vi.fn(), getAll: vi.fn(() => []) }))
     }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
