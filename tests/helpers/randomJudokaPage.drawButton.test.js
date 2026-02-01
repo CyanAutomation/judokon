@@ -183,8 +183,7 @@ describe("randomJudokaPage draw button", () => {
       button.click();
 
       await button.drawPromise;
-      // Wait for any pending microtasks
-      await Promise.resolve();
+      await harness.timerControl.runAllTimersAsync();
 
       // Missing card markup is now treated as an error, so fallback is rendered
       // and button transitions to IDLE after error handling

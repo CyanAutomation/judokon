@@ -95,9 +95,8 @@ export function createDrawCardStateMachine(drawButton) {
     },
     ERROR: {
       onEnter() {
-        // Error state: button disabled but no aria-busy
-        drawButton.disabled = true;
-        drawButton.setAttribute("aria-disabled", "true");
+        // Error state: button is still disabled from DRAWING.
+        // We just need to remove the busy indicator.
         drawButton.removeAttribute("aria-busy");
       }
     }
