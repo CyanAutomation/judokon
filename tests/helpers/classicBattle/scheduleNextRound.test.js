@@ -1,9 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../../setup/fakeTimers.js";
 // Enable fake timers before any scheduler/timer modules load.
-vi.useFakeTimers({
-  toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date", "performance"]
-});
-import "./commonMocks.js";
+useCanonicalTimers();
+
+// Import only the mocks we need (NOT commonMocks.js which has scheduler mock that conflicts with fake timers)
+vi.mock("../../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: () => true
+}));
+
+vi.mock("node:url", () => ({
+  fileURLToPath: (url) => {
+    try {
+      return new URL(url).pathname;
+    } catch {
+      return String(url).replace("file://", "");
+    }
+  },
+  pathToFileURL: (path) => {
+    return `file://${path}`;
+  }
+}));
+
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
@@ -16,14 +33,13 @@ import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
-  attachCooldownRenderer: vi.fn((timer, initialRemaining, options = {}) => {
+  attachCooldownRenderer: vi.fn((timer, initialRemaining) => {
     // Mock implementation that simulates the countdown renderer behavior
     // In production, this attaches UI handlers and ticks. In tests, we just need
     // to ensure the timer's callbacks are invoked properly when time expires.
     if (!timer) return () => {};
 
     // Track the expired callback so we can call it when the timer "expires"
-    let expiredCallback = null;
     let timerHandle = null;
 
     // Store original methods if they exist
@@ -36,7 +52,7 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
     if (originalOn) {
       const mockOn = vi.fn((eventType, handler) => {
         if (eventType === "expired") {
-          expiredCallback = handler;
+          // expiredCallback = handler;
         }
         return originalOn(eventType, handler);
       });
@@ -56,7 +72,6 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
 
     // Return a cleanup function
     return () => {
-      expiredCallback = null;
       if (timerHandle !== null) {
         try {
           globalThis.clearTimeout(timerHandle);
